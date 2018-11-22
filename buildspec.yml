@@ -14,4 +14,4 @@ phases:
   post_build:
     commands:
     - echo Build completed on `date`
-    - echo Publishing latest release to NPM registry (https://www.npmjs.com/org/kiltprotocol)...
+    - echo Publishing latest release to NPM registry https://www.npmjs.com/org/kiltprotocol
