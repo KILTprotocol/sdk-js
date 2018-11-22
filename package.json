@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --coverage",
-    "testCi": "jest --ci --coverage",
+    "testCI": "jest --ci --coverage",
     "testWatch": "jest --watch --coverage",
     "lint": "tslint --project tsconfig.json --config tslint.json src/**/*.ts",
     "lintFix": "tslint --project tsconfig.json --config tslint.json --fix src/**/*.ts",
