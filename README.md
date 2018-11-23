@@ -1,5 +1,14 @@
 # prototype-sdk
 
-Polkadot-js tsconfig.json: https://github.com/polkadot-js/dev/blob/master/packages/dev/config/tsconfig.json
+## How to access
 
-__NB: Test coverage does not seem to be work except for testWatch__
+Edit your `~/.npmrc` and insert add kiltbot's auth token to the registry
+
+e.g. //registry.npmjs.org/:_authToken=8...
+
+Use within your project with `yarn add @kilt/prototype-sdk`
+
+## NB
+
+Test coverage does not seem to be fail in all cases, except for testWatch.
+

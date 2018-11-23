@@ -1,0 +1,12 @@
+/src/coverage
+/yarn.lock
+/yarn-error.log
+/buildspec.yml
+/Dockerfile
+/.nvmrc
+/src
+/jest.config.js
+/tsconfig.json
+/tslint.json
+/.npmrc
+/npm-create-rc.js

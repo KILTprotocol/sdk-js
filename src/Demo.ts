@@ -1,5 +1,5 @@
 export default class Demo {
-  public hello () {
+  public hello (): string {
     return 'Hello World'
   }
 }
