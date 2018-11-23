@@ -1,9 +1,9 @@
 {
   "name": "@kiltprotocol/prototype-sdk",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "./build/index.js",
-  "typings": "./build/index.js",
+  "typings": "./build/index.d.ts",
   "scripts": {
     "test": "jest --coverage",
     "testCI": "jest --ci --coverage",
