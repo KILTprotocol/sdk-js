@@ -1,4 +1,5 @@
 import Identity from './Identity'
+import * as NaCl from '@polkadot/util-crypto/nacl'
 
 describe('Identity', () => {
   it('should create different identities with random phrases', () => {
@@ -36,4 +37,17 @@ describe('Identity', () => {
     const expectedPhrase = 'taxi toddler rally tonight certain tired program settle topple what execute stew' // stew instead of few
     expect(() => new Identity(expectedPhrase)).toThrowError()
   })
+
+  it('should restore keypair from secret', () => {
+    const alice = new Identity()
+    const aliceKeypair = NaCl.naclKeypairFromSecret(alice.secretKey)
+    expect(aliceKeypair.secretKey).toEqual(alice.secretKey)
+    expect(aliceKeypair.publicKey).toEqual(alice.publicKey)
+
+    const bob = new Identity()
+    const bobKeypair = NaCl.naclKeypairFromSecret(bob.secretKey)
+    expect(bobKeypair.secretKey).not.toEqual(alice.secretKey)
+    expect(bobKeypair.publicKey).not.toEqual(alice.publicKey)
+  })
+
 })
