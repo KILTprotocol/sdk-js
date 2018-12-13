@@ -20,8 +20,8 @@ describe('Crypto', () => {
   // https://polkadot.js.org/common/examples/util-crypto/01_encrypt_decrypt_message_nacl/
   it('should encrypt and decrypt symmetrical using secret key', () => {
     const secret = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])
-    const data = Crypto.encrypt(message, secret)
-    expect(Crypto.decrypt(data.encrypted, data.nonce, secret)).toEqual(message)
+    const data = Crypto.encryptSymmetric(message, secret)
+    expect(Crypto.decryptSymmetric(data.encrypted, data.nonce, secret)).toEqual(message)
   })
 
   it('should hash', () => {

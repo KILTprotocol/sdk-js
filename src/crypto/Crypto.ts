@@ -21,11 +21,11 @@ export default class Crypto {
     return naclVerify(message, signature, publicKey)
   }
 
-  public static encrypt (message: Uint8Array, secret: Uint8Array, nonce?: Uint8Array): Encrypted {
+  public static encryptSymmetric (message: Uint8Array, secret: Uint8Array, nonce?: Uint8Array): Encrypted {
     return naclEncrypt(message, secret, nonce)
   }
 
-  public static decrypt (encrypted: Uint8Array, nonce: Uint8Array, secret: Uint8Array): Uint8Array | null {
+  public static decryptSymmetric (encrypted: Uint8Array, nonce: Uint8Array, secret: Uint8Array): Uint8Array | null {
     return naclDecrypt(encrypted, nonce, secret)
   }
 
