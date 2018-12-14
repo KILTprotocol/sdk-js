@@ -1,6 +1,8 @@
 import Identity from '../identity/Identity'
 import * as string from '@polkadot/util/string'
+// import * as u8a from '@polkadot/util/u8a'
 import Crypto from './Crypto'
+import nacl from 'tweetnacl'
 
 describe('Crypto', () => {
 
@@ -31,4 +33,37 @@ describe('Crypto', () => {
     expect(Crypto.hash(new Uint8Array([0, 0, 0]))).not.toEqual(Crypto.hash(message))
     expect(Crypto.hash('123')).not.toEqual(Crypto.hash(message))
   })
+
+  it('should do something', () => {
+    const secretKeyCombiner = (secretKey: Uint8Array) => {
+      const newSecretKey: number[] = []
+      if (secretKey.length !== 64) {
+        throw Error('Secret key too short')
+      }
+
+      secretKey.forEach((value, index) => {
+        const newIndex = Math.floor(index / 2)
+        const previousValue = newSecretKey[newIndex] || 0
+        newSecretKey[newIndex] = previousValue + value
+      })
+
+      return new Uint8Array(newSecretKey)
+    }
+
+    const aliceSecretKey = secretKeyCombiner(alice.secretKey)
+    const bobSecretKey = secretKeyCombiner(bob.secretKey)
+
+    const aliceKeypair = nacl.box.keyPair.fromSecretKey(aliceSecretKey)
+    const bobKeypair = nacl.box.keyPair.fromSecretKey(bobSecretKey)
+
+    const nonce = nacl.randomBytes(24)
+    const box = nacl.box(message, nonce, aliceKeypair.publicKey, bobKeypair.secretKey)
+    const encrypted = { box, nonce }
+    const decrypted = nacl.box.open(encrypted.box, encrypted.nonce, bobKeypair.publicKey, aliceKeypair.secretKey)
+    if (!decrypted) {
+      throw Error('decrypted missing')
+    }
+    expect(decrypted).toEqual(message)
+  })
+
 })
