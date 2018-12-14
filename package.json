@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/prototype-sdk",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "",
   "main": "./build/index.js",
   "typings": "./build/index.js",
@@ -40,5 +40,9 @@
     "tslint": "^5.11.0",
     "tslint-config-standard": "^8.0.1",
     "typescript": "^3.1.6"
+  },
+  "dependencies": {
+    "@polkadot/util": "^0.33.13",
+    "@polkadot/util-crypto": "^0.33.13"
   }
 }
