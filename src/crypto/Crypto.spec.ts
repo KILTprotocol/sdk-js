@@ -12,11 +12,11 @@ describe('Crypto', () => {
   const message = new Uint8Array(string.stringToU8a('This is a test'))
 
   it('should sign and verify', () => {
-    const signature = Crypto.sign(message, alice.secretKey)
-    expect(Crypto.verify(message, signature, alice.publicKey)).toBe(true)
+    const signature = Crypto.sign(message, alice.signKeyPair.secretKey)
+    expect(Crypto.verify(message, signature, alice.signKeyPair.publicKey)).toBe(true)
 
-    expect(Crypto.verify(message, signature, bob.publicKey)).toBe(false)
-    expect(Crypto.verify(new Uint8Array([0, 0, 0]), signature, alice.publicKey)).toBe(false)
+    expect(Crypto.verify(message, signature, bob.signKeyPair.publicKey)).toBe(false)
+    expect(Crypto.verify(new Uint8Array([0, 0, 0]), signature, alice.signKeyPair.publicKey)).toBe(false)
   })
 
   // https://polkadot.js.org/common/examples/util-crypto/01_encrypt_decrypt_message_nacl/
@@ -27,11 +27,13 @@ describe('Crypto', () => {
   })
 
   it('should hash', () => {
+    expect(Crypto.hash(message)).toHaveLength(32)
     expect(Crypto.hash(message)).toEqual(Crypto.hash(message))
     expect(Crypto.hash('123')).toEqual(Crypto.hash('123'))
 
     expect(Crypto.hash(new Uint8Array([0, 0, 0]))).not.toEqual(Crypto.hash(message))
     expect(Crypto.hash('123')).not.toEqual(Crypto.hash(message))
+
   })
 
   it('should do something', () => {
@@ -50,8 +52,8 @@ describe('Crypto', () => {
       return new Uint8Array(newSecretKey)
     }
 
-    const aliceSecretKey = secretKeyCombiner(alice.secretKey)
-    const bobSecretKey = secretKeyCombiner(bob.secretKey)
+    const aliceSecretKey = secretKeyCombiner(alice.signKeyPair.secretKey)
+    const bobSecretKey = secretKeyCombiner(bob.signKeyPair.secretKey)
 
     const aliceKeypair = nacl.box.keyPair.fromSecretKey(aliceSecretKey)
     const bobKeypair = nacl.box.keyPair.fromSecretKey(bobSecretKey)

@@ -43,7 +43,9 @@
   },
   "dependencies": {
     "@polkadot/util": "^0.33.13",
-    "@polkadot/util-crypto": "^0.33.13",
+    "@polkadot/util-crypto": "^0.33.13"
+  },
+  "peerDependencies": {
     "tweetnacl": "^1.0.0"
   }
 }
