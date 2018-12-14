@@ -1,3 +1,6 @@
+/**
+ * @module SDK
+ */
 import * as mnemonic from '@polkadot/util-crypto/mnemonic'
 import * as nacl from '@polkadot/util-crypto/nacl'
 import { KeypairType } from '@polkadot/util-crypto/types'
