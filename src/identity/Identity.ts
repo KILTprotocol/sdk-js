@@ -1,3 +1,6 @@
+/**
+ * @module SDK
+ */
 import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
 import generate from '@polkadot/util-crypto/mnemonic/generate'

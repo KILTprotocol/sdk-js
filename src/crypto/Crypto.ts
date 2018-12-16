@@ -1,3 +1,6 @@
+/**
+ * @module SDK
+ */
 import { default as naclSign } from '@polkadot/util-crypto/nacl/sign'
 import { default as naclVerify } from '@polkadot/util-crypto/nacl/verify'
 import { default as naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
