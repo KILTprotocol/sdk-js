@@ -36,6 +36,8 @@ describe('Crypto', () => {
 
   xit('should encrypt and decrypt asymmetrical', () => {
     const encrypted = Crypto.encryptAsymmetric(message, alice.boxKeyPair.publicKey, bob.boxKeyPair.secretKey)
+    expect(encrypted).not.toEqual(message)
+
     const decrypted = Crypto.decryptAsymmetric(encrypted, bob.boxKeyPair.publicKey, alice.boxKeyPair.secretKey)
     expect(decrypted).toEqual(message)
   })
