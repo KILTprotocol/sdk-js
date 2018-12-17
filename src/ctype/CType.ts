@@ -13,7 +13,7 @@ export default class CType {
    */
   public static fromInputModel(ctypeInput: any): any {
     if (!CType.verifySchema(ctypeInput, CTypeInputModel)) {
-      throw new Error('CType input does not correspond to input model schema')
+      throw Error('CType input does not correspond to input model schema')
     }
     const ctype = {
       schema: {
@@ -48,7 +48,7 @@ export default class CType {
 
   public static verifyClaimStructure(claim: any, schema: any): boolean {
     if (!CType.verifySchema(schema, CTypeModel)) {
-      throw new Error('CType does not correspond to schema')
+      throw Error('CType does not correspond to schema')
     }
     return CType.verifySchema(claim, schema)
   }
@@ -81,7 +81,7 @@ export default class CType {
 
   public constructor(ctype: any) {
     if (!CType.verifySchema(ctype, CTypeWrapperModel)) {
-      throw new Error('CType does not correspond to schema')
+      throw Error('CType does not correspond to schema')
     }
     this.ctype = ctype
 
