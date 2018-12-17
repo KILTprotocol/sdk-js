@@ -66,6 +66,11 @@ describe('CType', () => {
         expect(JSON.stringify(ctypeFromInput.getCTypeInputModel())).toEqual(JSON.stringify(ctypeInput));
         expect(ctypeFromInput.verifyClaimStructure(goodClaim)).toBeTruthy();
         expect(ctypeFromInput.verifyClaimStructure(badClaim)).toBeFalsy();
+        expect(CType.verifyClaimStructure(goodClaim, ctypeModel)).toBeTruthy();
+        expect(CType.verifyClaimStructure(badClaim, ctypeModel)).toBeTruthy();
+        expect(function(){ new CType(goodClaim); }).toThrow(new Error("CType does not correspond to schema"));
+        expect(function(){ CType.verifyClaimStructure(badClaim, ctypeInput) }).toThrow(new Error("CType does not correspond to schema"));
+        expect(function(){ CType.fromInputModel(ctypeModel) }).toThrow(new Error("CType input does not correspond to input model schema"));
     })
 
 

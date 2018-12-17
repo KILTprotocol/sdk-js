@@ -142,5 +142,6 @@ export const CTypeWrapperModel = {
                 }
             }
         }
-    }
+    },
+    "required": [ "schema" ]
 };

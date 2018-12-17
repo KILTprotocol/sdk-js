@@ -1,6 +1,5 @@
 import Ajv from 'ajv'
 import {CTypeModel, CTypeInputModel, CTypeWrapperModel} from './CTypeSchema'
-import {Error} from "tslint/lib/error";
 import Crypto from '../crypto/Crypto';
 
 export default class CType {
@@ -9,7 +8,7 @@ export default class CType {
 
     public constructor(ctype: any) {
         if (!CType.verifySchema(ctype, CTypeWrapperModel)) {
-            throw new Error("CType not correspond to schema");
+            throw new Error("CType does not correspond to schema");
         }
         this.ctype = ctype;
 
@@ -108,7 +107,7 @@ export default class CType {
      */
     public static fromInputModel(ctypeInput: any): any {
         if (!CType.verifySchema(ctypeInput, CTypeInputModel)) {
-            throw new Error("CType input does not correspond to schema");
+            throw new Error("CType input does not correspond to input model schema");
         }
         let ctype = {
             schema: {
