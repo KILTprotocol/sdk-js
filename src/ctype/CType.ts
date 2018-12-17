@@ -32,6 +32,12 @@ export default class CType {
         return o[lang];
     }
 
+    /**
+     * This method creates an input model for a claim from a CTYPE.
+     * It selects translations for a specific language from the localized part of the CTYPE meta data.
+     * @param {string} lang the language to choose translations for
+     * @returns {any} The claim input model
+     */
     public getClaimInputModel(lang?: string): any {
         // create clone
         let result = JSON.parse(JSON.stringify(this.ctype.schema));
@@ -45,6 +51,13 @@ export default class CType {
         return result;
     }
 
+    /**
+     * Create the CTYPE input model for a CTYPE editing component form the CTYPE model.
+     * This is necessary because component editors rely on editing arrays of properties instead of
+     * arbitrary properties of an object. Additionally the default language translatinos are integratred
+     * into the input model. This is the reverse function of CType.fromInputModel(...).
+     * @returns {any} The CTYPE input model.
+     */
     public getCTypeInputModel(): any {
         // create clone
         let result = JSON.parse(JSON.stringify(this.ctype.schema));
@@ -85,6 +98,14 @@ export default class CType {
         return result ? true : false;
     }
 
+    /**
+     * Create the CTYPE model from a CTYPE input model (used in CTYPE editing components).
+     * This is necessary because component editors rely on editing arrays of properties instead of
+     * arbitrary properties of an object. Additionally the default language translatinos are integratred
+     * into the input modeland need to be separated for the CTYPE model.
+     * This is the reverse function of CType.getCTypeInputModel(...).
+     * @returns {any} The CTYPE for the input model.
+     */
     public static fromInputModel(ctypeInput: any): any {
         if (!CType.verifySchema(ctypeInput, CTypeInputModel)) {
             throw new Error("CType input does not correspond to schema");
