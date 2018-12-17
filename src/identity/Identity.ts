@@ -9,7 +9,7 @@ import * as u8a from '@polkadot/util/u8a'
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { SignKeyPair, BoxKeyPair } from 'tweetnacl'
-import * as Crypto from '../crypto/Crypto'
+import Crypto from '../crypto'
 
 export default class Identity {
   get phrase(): string {

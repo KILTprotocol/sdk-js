@@ -1,6 +1,6 @@
 import Ajv from 'ajv'
 import { Error } from 'tslint/lib/error'
-import * as Crypto from '../crypto/Crypto'
+import Crypto from '../crypto'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 
 export default class CType {
