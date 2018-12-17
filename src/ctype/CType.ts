@@ -1,12 +1,7 @@
 import Ajv from 'ajv'
 import {CTypeModel, CTypeInputModel, CTypeWrapperModel} from './CTypeSchema'
 import {Error} from "tslint/lib/error";
-import crypto from 'crypto';
-
-function sha256(data: any) : string {
-    // returns Buffer
-    return crypto.createHash('sha256').update(data).digest().toString('hex')
-}
+import Crypto from '../crypto/Crypto';
 
 export default class CType {
 
@@ -19,7 +14,7 @@ export default class CType {
         this.ctype = ctype;
 
         if (!this.ctype.hash) {
-            this.ctype.hash = sha256(JSON.stringify(this.ctype.schema));
+            this.ctype.hash = Crypto.hash(JSON.stringify(this.ctype.schema));
         }
     }
 
