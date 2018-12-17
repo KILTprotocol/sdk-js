@@ -1,5 +1,5 @@
-import Identity from './Identity'
 import * as NaCl from '@polkadot/util-crypto/nacl'
+import Identity from './Identity'
 
 describe('Identity', () => {
   it('should create different identities with random phrases', () => {

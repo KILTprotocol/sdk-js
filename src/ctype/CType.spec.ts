@@ -61,8 +61,8 @@ describe('CType', () => {
       'third-property': true,
     }
 
-    let ctypeFromInput = CType.fromInputModel(ctypeInput)
-    let ctypeFromModel = new CType(ctypeModel)
+    const ctypeFromInput = CType.fromInputModel(ctypeInput)
+    const ctypeFromModel = new CType(ctypeModel)
     expect(JSON.stringify(ctypeFromInput.getModel())).toEqual(
       JSON.stringify(ctypeFromModel.getModel())
     )

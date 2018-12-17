@@ -1,11 +1,11 @@
 /**
  * @module SDK
  */
+import { default as keccakAsU8a } from '@polkadot/util-crypto/keccak/asU8a'
+import { default as naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
+import { default as naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import { default as naclSign } from '@polkadot/util-crypto/nacl/sign'
 import { default as naclVerify } from '@polkadot/util-crypto/nacl/verify'
-import { default as naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
-import { default as naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
-import { default as keccakAsU8a } from '@polkadot/util-crypto/keccak/asU8a'
 import nacl from 'tweetnacl'
 
 export type EncryptedSymmetric = {
@@ -19,8 +19,6 @@ export type EncryptedAsymmetric = {
 }
 
 export default class Crypto {
-  private constructor() {}
-
   public static sign(message: Uint8Array, secretKey: Uint8Array): Uint8Array {
     return naclSign(message, secretKey)
   }
@@ -76,4 +74,5 @@ export default class Crypto {
     )
     return decrypted
   }
+  private constructor() {}
 }
