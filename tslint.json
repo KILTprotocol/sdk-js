@@ -1,9 +1,18 @@
 {
     "defaultSeverity": "error",
     "extends": [
-        "tslint-config-standard"
+        "tslint:recommended", "tslint-config-prettier"
     ],
     "jsRules": {},
-    "rules": {},
-    "rulesDirectory": []
+    "rules": {
+        "semicolon": [true, "never"],
+        "interface-over-type-literal": false,
+        "no-console": false,
+        "no-parameter-reassignment": true,
+        "variable-name": false,
+        "quotemark": [true, "single"],
+        "object-literal-sort-keys": false,
+        "prettier": [true, ".prettierrc"]
+    },
+    "rulesDirectory": ["tslint-plugin-prettier"]
 }
