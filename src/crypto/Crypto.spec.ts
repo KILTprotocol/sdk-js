@@ -1,7 +1,7 @@
 import Identity from '../identity/Identity'
 import * as string from '@polkadot/util/string'
 // import * as u8a from '@polkadot/util/u8a'
-import Crypto from './Crypto'
+import * as Crypto from './Crypto'
 
 describe('Crypto', () => {
 
