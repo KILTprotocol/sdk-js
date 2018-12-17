@@ -1,7 +1,7 @@
 import * as string from '@polkadot/util/string'
 import Identity from '../identity/Identity'
 // import * as u8a from '@polkadot/util/u8a'
-import Crypto from './Crypto'
+import Crypto from './index'
 
 describe('Crypto', () => {
   const alice = new Identity()

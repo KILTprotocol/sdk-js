@@ -1,4 +1,5 @@
 import CType from './CType'
+import { CTypeWrapperModel } from './CTypeSchema'
 
 describe('CType', () => {
   it('verify model transformations', () => {
@@ -73,6 +74,21 @@ describe('CType', () => {
       JSON.stringify(ctypeInput)
     )
     expect(ctypeFromInput.verifyClaimStructure(goodClaim)).toBeTruthy()
+    expect(CType.verifyClaimStructure(goodClaim, ctypeModel)).toBeTruthy()
     expect(ctypeFromInput.verifyClaimStructure(badClaim)).toBeFalsy()
+    expect(
+      CType.verifySchemaWithErrors(badClaim, CTypeWrapperModel, [''])
+    ).toBeFalsy()
+    expect(() => {
+      new CType(goodClaim).verifyClaimStructure(goodClaim)
+    }).toThrow(new Error('CType does not correspond to schema'))
+    expect(() => {
+      CType.verifyClaimStructure(badClaim, ctypeInput)
+    }).toThrow(new Error('CType does not correspond to schema'))
+    expect(() => {
+      CType.fromInputModel(ctypeModel)
+    }).toThrow(
+      new Error('CType input does not correspond to input model schema')
+    )
   })
 })
