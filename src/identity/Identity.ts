@@ -12,7 +12,6 @@ import nacl, { SignKeyPair, BoxKeyPair } from 'tweetnacl'
 import Crypto from '../crypto/Crypto'
 
 export default class Identity {
-
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
 
   private _phrase: string
@@ -21,7 +20,7 @@ export default class Identity {
   private _seed: Uint8Array
   private _seedAsHex: string
 
-  constructor (phrase?: string) {
+  constructor(phrase?: string) {
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
         // https://www.npmjs.com/package/bip39
@@ -47,14 +46,16 @@ export default class Identity {
   }
 
   // fromSeed is hashing its seed, therefore an independent secret key should be considered as derived
-  private static createSignKeyPair (seed: Uint8Array) {
+  private static createSignKeyPair(seed: Uint8Array) {
     return nacl.sign.keyPair.fromSeed(seed)
   }
 
   // As fromSeed() is not implemented here we do our own hashing in order to prohibit inferring the original seed from a secret key
   // To be sure that we don't generate the same hash by accidentally using the same hash algorithm we do some padding
-  private static createBoxKeyPair (seed: Uint8Array) {
-    const paddedSeed = new Uint8Array(seed.length + Identity.ADDITIONAL_ENTROPY_FOR_HASHING.length)
+  private static createBoxKeyPair(seed: Uint8Array) {
+    const paddedSeed = new Uint8Array(
+      seed.length + Identity.ADDITIONAL_ENTROPY_FOR_HASHING.length
+    )
     paddedSeed.set(seed)
     paddedSeed.set(Identity.ADDITIONAL_ENTROPY_FOR_HASHING, seed.length)
 
@@ -62,23 +63,23 @@ export default class Identity {
     return nacl.box.keyPair.fromSecretKey(hash)
   }
 
-  get phrase (): string {
+  get phrase(): string {
     return this._phrase
   }
 
-  get signKeyPair (): SignKeyPair {
+  get signKeyPair(): SignKeyPair {
     return this._signKeyPair
   }
 
-  get boxKeyPair (): BoxKeyPair {
+  get boxKeyPair(): BoxKeyPair {
     return this._boxKeyPair
   }
 
-  get seed (): Uint8Array {
+  get seed(): Uint8Array {
     return this._seed
   }
 
-  get seedAsHex (): string {
+  get seedAsHex(): string {
     return this._seedAsHex
   }
 }
