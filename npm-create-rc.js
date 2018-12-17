@@ -1,7 +1,7 @@
 (() => {
   const RegClient = require('npm-registry-client')
   const client = new RegClient({})
-  var fs = require('fs')
+  const fs = require('fs')
 
   const loadConfigFromEnv = () => {
     return {
