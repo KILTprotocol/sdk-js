@@ -8,8 +8,8 @@ import * as u8a from '@polkadot/util/u8a'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
-import nacl, { BoxKeyPair, SignKeyPair } from 'tweetnacl'
-import Crypto from '../crypto/Crypto'
+import nacl, { SignKeyPair, BoxKeyPair } from 'tweetnacl'
+import Crypto from '../crypto'
 
 export default class Identity {
   get phrase(): string {

@@ -1,5 +1,5 @@
 import Ajv from 'ajv'
-import Crypto from '../crypto/Crypto'
+import Crypto from '../crypto'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 
 export default class CType {
