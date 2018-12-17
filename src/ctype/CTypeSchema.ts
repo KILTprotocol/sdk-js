@@ -85,62 +85,56 @@ export const CTypeModel = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "http://kilt-protocol.org/draft-01/ctype#",
     "type": "object",
-    "properties" : {
-        "schema": {
+    "properties": {
+        "$id": {
+            "type": "string"
+        },
+        "$schema": {
+            "type": "string",
+            "format": "uri"
+        },
+        "type": {
+            "type": "string",
+            "enum": ["object"],
+        },
+        "properties": {
             "type": "object",
             "patternProperties": {
                 "^.*$": {
                     "type": "object",
                     "properties": {
-                        "type": "string"
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "string",
+                                "integer",
+                                "number",
+                                "boolean",
+                                "array"
+                            ]
+                        }
                     }
-                }
-            },
-            "required" : [ "$id", "$schema" ]
-        },
-        "hash": {
-            type: "string"
-        },
-        "metamodel": {
-            "type": "object",
-            "properties" : {
-
-            },
-            "patternProperties": {
-                "^.*$": {
-                    "type": "object",
-                    "properties": {}
                 }
             }
         }
     }
-
 };
 
 export const CTypeWrapperModel = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "http://kilt-protocol.org/draft-01/ctype-wrapper#",
     "type": "object",
-    "properties" : {
+    "properties": {
         "schema": {
             "type": "object",
-            "patternProperties": {
-                "^.*$": {
-                    "type": "object",
-                    "properties": {
-
-                    }
-                }
-            }
+            "properties": CTypeModel.properties
         },
         "hash": {
             type: "string"
         },
         "metamodel": {
             "type": "object",
-            "properties" : {
-
-            },
+            "properties": {},
             "patternProperties": {
                 "^.*$": {
                     "type": "object",

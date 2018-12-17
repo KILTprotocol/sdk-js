@@ -43,6 +43,9 @@
   },
   "dependencies": {
     "@polkadot/util": "^0.33.13",
-    "@polkadot/util-crypto": "^0.33.13"
+    "@polkadot/util-crypto": "^0.33.13",
+    "ajv": "^6.6.1",
+    "merkletreejs": "^0.0.20",
+    "npm": "^6.5.0"
   }
 }

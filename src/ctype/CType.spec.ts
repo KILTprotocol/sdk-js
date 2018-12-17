@@ -1,62 +1,71 @@
 import CType from './CType'
 
 describe('CType', () => {
-    // TODO: better model
+
     it('verify model transformations', () => {
         const ctypeInput = {
-            "$id": "CTYPE 1",
-            "$schema": "http://kilt-protocol.org/draft-01/ctype#",
-            "title": "CTYPE Title",
+            "$id": "http://example.com/ctype-1",
+            "$schema": "http://kilt-protocol.org/draft-01/ctype-input#",
             "properties": [
                 {
-                    "title": "My First Property",
+                    "title": "First Property",
                     "$id": "first-property",
                     "type": "integer"
                 },
                 {
-                    "title": "A new property is born",
-                    "$id": "new-property",
+                    "title": "Second Property",
+                    "$id": "second-property",
                     "type": "string"
                 }
             ],
-            "type": "object"
+            "type": "object",
+            "title": "CType Title",
+            "required": ["first-property", "second-property"]
         };
         const ctypeModel = {
             "schema": {
-                "$id": "CTYPE 1",
+                "$id": "http://example.com/ctype-1",
                 "$schema": "http://kilt-protocol.org/draft-01/ctype#",
-                "properties": {"first-property": {"type": "integer"}, "new-property": {"type": "string"}},
+                "properties": {"first-property": {"type": "integer"}, "second-property": {"type": "string"}},
                 "type": "object"
             },
             "metadata": {
-                "title": {"default": "CTYPE Title"},
+                "title": {"default": "CType Title"},
                 "description": {},
                 "properties": {
-                    "first-property": {"title": {"default": "My First Property"}},
-                    "new-property": {"title": {"default": "A new property is born"}}
+                    "first-property": {"title": {"default": "First Property"}},
+                    "second-property": {"title": {"default": "Second Property"}}
                 }
             }
         };
         const claimInput = {
-            "$id": "CTYPE 1",
+            "$id": "http://example.com/ctype-1",
             "$schema": "http://kilt-protocol.org/draft-01/ctype#",
             "properties": {
-                "first-property": {"type": "integer", "title": "My First Property"},
-                "new-property": {"type": "string", "title": "A new property is born"}
+                "first-property": {"type": "integer", "title": "First Property"},
+                "second-property": {"type": "string", "title": "Second Property"}
             },
             "type": "object",
-            "title": "CTYPE Title",
-            "required": ["first-property", "new-property"]
+            "title": "CType Title",
+            "required": ["first-property", "second-property"]
         };
-        const claim = {
+        const goodClaim = {
             "first-property": 10,
-            "new-property": "12"
+            "second-property": "12"
+        };
+        const badClaim = {
+            "first-property": "1",
+            "second-property": "12",
+            "third-property": true
         };
 
-        let ctype = CType.fromInputModel(ctypeInput);
-        expect(JSON.stringify(ctype.getModel())).toEqual(JSON.stringify(ctypeModel));
-        expect(JSON.stringify(ctype.getClaimInputModel("en"))).toEqual(JSON.stringify(claimInput));
-        expect(ctype.verifyClaimStructure(claim)).toBeTruthy();
+        let ctypeFromInput = CType.fromInputModel(ctypeInput);
+        let ctypeFromModel = new CType(ctypeModel);
+        expect(JSON.stringify(ctypeFromInput.getModel())).toEqual(JSON.stringify(ctypeFromModel.getModel()));
+        expect(JSON.stringify(ctypeFromInput.getClaimInputModel("en"))).toEqual(JSON.stringify(claimInput));
+        expect(JSON.stringify(ctypeFromInput.getCTypeInputModel())).toEqual(JSON.stringify(ctypeInput));
+        expect(ctypeFromInput.verifyClaimStructure(goodClaim)).toBeTruthy();
+        expect(ctypeFromInput.verifyClaimStructure(badClaim)).toBeFalsy();
     })
 
 

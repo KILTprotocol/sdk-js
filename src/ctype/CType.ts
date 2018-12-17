@@ -1,4 +1,12 @@
+import Ajv from 'ajv'
 import {CTypeModel, CTypeInputModel, CTypeWrapperModel} from './CTypeSchema'
+import {Error} from "tslint/lib/error";
+import crypto from 'crypto';
+
+function sha256(data: any) : string {
+    // returns Buffer
+    return crypto.createHash('sha256').update(data).digest().toString('hex')
+}
 
 export default class CType {
 
@@ -6,10 +14,13 @@ export default class CType {
 
     public constructor(ctype: any) {
         if (!CType.verifySchema(ctype, CTypeWrapperModel)) {
-            // TODO: throw new
+            throw new Error("CType not correspond to schema");
         }
         this.ctype = ctype;
-        // TODO: calc hash if not yet done
+
+        if (!this.ctype.hash) {
+            this.ctype.hash = sha256(JSON.stringify(this.ctype.schema));
+        }
     }
 
 
@@ -21,12 +32,12 @@ export default class CType {
         return this.ctype;
     }
 
-    private getLocalized(o: any, lang: string): any {
+    private getLocalized(o: any, lang?: string): any {
         if (lang == null || !o[lang]) return o.default;
         return o[lang];
     }
 
-    public getClaimInputModel(lang: string): any {
+    public getClaimInputModel(lang?: string): any {
         // create clone
         let result = JSON.parse(JSON.stringify(this.ctype.schema));
         result.title = this.getLocalized(this.ctype.metadata.title, lang);
@@ -39,19 +50,54 @@ export default class CType {
         return result;
     }
 
+    public getCTypeInputModel(): any {
+        // create clone
+        let result = JSON.parse(JSON.stringify(this.ctype.schema));
+        result["$schema"] = CTypeInputModel.$id;
+        result.title = this.getLocalized(this.ctype.metadata.title);
+        result.description = this.getLocalized(this.ctype.metadata.description);
+        result.required = [];
+        result.properties = [];
+        for (let x in this.ctype.schema.properties) {
+            let p = this.ctype.schema.properties[x];
+            result.properties.push({
+                "title":  this.getLocalized(this.ctype.metadata.properties[x].title),
+                "$id": x,
+                "type": p["type"],
+            });
+            result.required.push(x);
+        }
+        return result;
+    }
+
+
     private static verifySchema(model: any, metaModel: any): boolean {
-        // TODO: verify
-        return true;
+        return CType.verifySchemaWithErrors(model, metaModel);
+    }
+
+    private static verifySchemaWithErrors(model: any, metaModel: any, messages?: [string]): boolean {
+        const ajv = new Ajv({
+            meta: false,
+        });
+        ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-07.json'));
+        ajv.addMetaSchema(CTypeModel);
+        let result = ajv.validate(metaModel, model);
+        if (!result && ajv.errors) {
+            ajv.errors.map((error: any) => {
+                if (messages) messages.push(error.message);
+            });
+        }
+        return result ? true : false;
     }
 
     public static fromInputModel(ctypeInput: any): any {
         if (!CType.verifySchema(ctypeInput, CTypeInputModel)) {
-            // TODO: throw new
+            throw new Error("CType input does not correspond to schema");
         }
         let ctype = {
             schema: {
                 "$id": ctypeInput.$id,
-                "$schema": ctypeInput.$schema,
+                "$schema": CTypeModel.$id,
                 properties: {},
                 type: "object"
             },
@@ -83,7 +129,7 @@ export default class CType {
 
     public static verifyClaimStructure(claim: any, schema: any) : boolean {
         if (!CType.verifySchema(schema, CTypeModel)) {
-            // TODO: throw new
+            throw new Error("CType does not correspond to schema");
         }
         return CType.verifySchema(claim, schema);
     }
