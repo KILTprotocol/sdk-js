@@ -3,7 +3,7 @@
   "version": "0.0.5",
   "description": "",
   "main": "./build/index.js",
-  "typings": "./build/index.js",
+  "typings": "./build/index.d.ts",
   "scripts": {
     "test": "jest --coverage",
     "testCI": "jest --ci --coverage",
