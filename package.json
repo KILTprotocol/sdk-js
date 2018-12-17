@@ -9,14 +9,16 @@
     "testCI": "jest --ci --coverage",
     "testWatch": "jest --watch --coverage",
     "lint": "tslint --project tsconfig.json --config tslint.json src/**/*.ts",
-    "lintFix": "tslint --project tsconfig.json --config tslint.json --fix src/**/*.ts",
+    "lint:fix": "yarn lint --fix",
+    "style": "prettier -l src/**/*.ts src/**/*.js",
+    "style:fix": "yarn style --write",
     "build": "tsc --declaration",
     "build:docs": "typedoc --theme default --out docs",
     "deploy": "node ./npm-create-rc.js && npm publish"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn lint",
+      "pre-commit": "yarn lint && yarn style",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
