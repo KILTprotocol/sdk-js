@@ -11,12 +11,16 @@ describe('Identity', () => {
     expect(alice.boxKeyPair.publicKey).not.toBeFalsy()
     expect(alice.signKeyPair.secretKey).not.toBeFalsy()
     expect(alice.boxKeyPair.secretKey).not.toBeFalsy()
+    expect(alice.seed).not.toBeFalsy()
+    expect(alice.seedAsHex).not.toBeFalsy()
 
     expect(alice.phrase).not.toEqual(bob.phrase)
     expect(alice.signKeyPair.publicKey).not.toEqual(bob.signKeyPair.publicKey)
     expect(alice.signKeyPair.secretKey).not.toEqual(bob.signKeyPair.secretKey)
     expect(alice.boxKeyPair.publicKey).not.toEqual(bob.boxKeyPair.publicKey)
     expect(alice.boxKeyPair.secretKey).not.toEqual(bob.boxKeyPair.secretKey)
+    expect(alice.seed).not.toEqual(bob.seed)
+    expect(alice.seedAsHex).not.toEqual(bob.seedAsHex)
   })
 
   it('should restore identity based on phrase', () => {
@@ -29,7 +33,6 @@ describe('Identity', () => {
 
     expect(alice.boxKeyPair.publicKey).toEqual(new Uint8Array([175, 87, 221, 35, 227, 105, 199, 201, 61, 151, 137, 28, 10, 80, 146, 96, 195, 213, 42, 148, 133, 212, 248, 235, 47, 138, 152, 54, 136, 170, 172, 17]))
     expect(alice.boxKeyPair.secretKey).toEqual(new Uint8Array([67, 215, 171, 20, 39, 118, 28, 127, 119, 60, 49, 59, 61, 51, 237, 235, 51, 121, 239, 53, 110, 241, 10, 94, 239, 199, 125, 217, 153, 117, 75, 169]))
-
   })
 
   it('should have different (secret) keys for signing and boxing', () => {
@@ -40,8 +43,11 @@ describe('Identity', () => {
   })
 
   it('should fail creating identity based on invalid phrase', () => {
-    const expectedPhrase = 'taxi toddler rally tonight certain tired program settle topple what execute stew' // stew instead of few
-    expect(() => new Identity(expectedPhrase)).toThrowError()
+    const phraseWithUnknownWord = 'taxi toddler rally tonight certain tired program settle topple what execute stew' // stew instead of few
+    expect(() => new Identity(phraseWithUnknownWord)).toThrowError()
+
+    const phraseTooLong = 'taxi toddler rally tonight certain tired program settle topple what execute' // stew instead of few
+    expect(() => new Identity(phraseTooLong)).toThrowError()
   })
 
   it('should restore signing keypair from secret', () => {
