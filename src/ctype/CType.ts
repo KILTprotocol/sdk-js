@@ -54,7 +54,7 @@ export default class CType {
     /**
      * Create the CTYPE input model for a CTYPE editing component form the CTYPE model.
      * This is necessary because component editors rely on editing arrays of properties instead of
-     * arbitrary properties of an object. Additionally the default language translatinos are integratred
+     * arbitrary properties of an object. Additionally the default language translations are integrated
      * into the input model. This is the reverse function of CType.fromInputModel(...).
      * @returns {any} The CTYPE input model.
      */
@@ -101,8 +101,8 @@ export default class CType {
     /**
      * Create the CTYPE model from a CTYPE input model (used in CTYPE editing components).
      * This is necessary because component editors rely on editing arrays of properties instead of
-     * arbitrary properties of an object. Additionally the default language translatinos are integratred
-     * into the input modeland need to be separated for the CTYPE model.
+     * arbitrary properties of an object. Additionally the default language translations are integrated
+     * into the input model and need to be separated for the CTYPE model.
      * This is the reverse function of CType.getCTypeInputModel(...).
      * @returns {any} The CTYPE for the input model.
      */
