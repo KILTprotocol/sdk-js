@@ -1,10 +1,10 @@
 import { ApiPromise } from '@polkadot/api'
 import { Header } from '@polkadot/types'
-// import BN from 'bn.js/'
+import BN from 'bn.js/'
 import partial from 'lodash/partial'
 import Identity from '../identity/Identity'
 import Blockchain from './Blockchain'
-// NB: see jst.config.js - include this dir to be tested for test coverage again
+// NB: see jest.config.js - include this dir to be tested for test coverage again
 // to acquire a connection as singleton, async and without jest complaining about
 // 'Jest: Coverage data for ./src/blockchain/ was not found.' I use this construct for now
 let apiSingleton: ApiPromise
@@ -41,14 +41,13 @@ describe('Blockchain', async () => {
     console.log(`Subscription Id: ${subscriptionId}`)
   }, 20000)
 
-  it('should listen to balance changes', async () => {
+  it('should listen to balance changes', async done => {
     const api = await getConnectionOnce()
     const bob = Identity.buildFromSeedString('Bob')
-    const listener = undefined
-    // const listener = (account: string, balance: BN, change: BN) => {
-    //   console.log({ account, balance, change })
-    //   done()
-    // }
+    const listener = (account: string, balance: BN, change: BN) => {
+      console.log({ account, balance, change })
+      done()
+    }
 
     const currentBalance = await partial(
       Blockchain.listenToBalanceChanges,

@@ -10,6 +10,8 @@ import { Codec } from '@polkadot/types/types'
 import BN from 'bn.js'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
+
+// Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
 
 export default class Blockchain {
