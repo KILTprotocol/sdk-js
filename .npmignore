@@ -10,3 +10,5 @@
 /tslint.json
 /.npmrc
 /npm-create-rc.js
+/.prettierrc
+/typedoc.js
