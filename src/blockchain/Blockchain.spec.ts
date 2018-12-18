@@ -41,7 +41,7 @@ describe('Blockchain', async () => {
     console.log(`Subscription Id: ${subscriptionId}`)
   }, 20000)
 
-  it('should listen to balance changes', async done => {
+  xit('should listen to balance changes', async done => {
     const api = await getConnectionOnce()
     const bob = Identity.buildFromSeedString('Bob')
     const listener = (account: string, balance: BN, change: BN) => {
