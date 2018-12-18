@@ -1,6 +1,8 @@
 /**
  * @module SDK
  */
+import pair from '@polkadot/keyring/pair'
+import { KeyringPair } from '@polkadot/keyring/types'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
 import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
@@ -20,6 +22,10 @@ export default class Identity {
     return this._signKeyPair
   }
 
+  get signKeyringPair(): KeyringPair {
+    return this._signKeyringpair
+  }
+
   get boxKeyPair(): BoxKeyPair {
     return this._boxKeyPair
   }
@@ -31,6 +37,7 @@ export default class Identity {
   get seedAsHex(): string {
     return this._seedAsHex
   }
+
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
 
   // fromSeed is hashing its seed, therefore an independent secret key should be considered as derived
@@ -53,6 +60,7 @@ export default class Identity {
 
   private _phrase: string
   private _signKeyPair: SignKeyPair
+  private _signKeyringpair: KeyringPair
   private _boxKeyPair: BoxKeyPair
   private _seed: Uint8Array
   private _seedAsHex: string
@@ -79,6 +87,11 @@ export default class Identity {
     // compromising both key pairs at the same time if one key becomes public
     // Maybe use BIP32 and BIP44
     this._signKeyPair = Identity.createSignKeyPair(this._seed)
+    this._signKeyringpair = pair({
+      publicKey: this._signKeyPair.publicKey,
+      secretKey: this._signKeyPair.secretKey,
+    })
+
     this._boxKeyPair = Identity.createBoxKeyPair(this._seed)
   }
 }
