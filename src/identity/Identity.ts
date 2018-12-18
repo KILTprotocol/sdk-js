@@ -6,7 +6,9 @@ import { KeyringPair } from '@polkadot/keyring/types'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
 import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
-import * as u8a from '@polkadot/util/u8a'
+import * as stringUtil from '@polkadot/util/string'
+import * as u8aUtil from '@polkadot/util/u8a'
+import padEnd from 'lodash/padEnd'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
@@ -14,7 +16,7 @@ import nacl, { BoxKeyPair, SignKeyPair } from 'tweetnacl'
 import Crypto from '../crypto'
 
 export default class Identity {
-  get phrase(): string {
+  get phrase(): string | undefined {
     return this._phrase
   }
 
@@ -23,7 +25,7 @@ export default class Identity {
   }
 
   get signKeyringPair(): KeyringPair {
-    return this._signKeyringpair
+    return this._signKeyringPair
   }
 
   get boxKeyPair(): BoxKeyPair {
@@ -36,6 +38,31 @@ export default class Identity {
 
   get seedAsHex(): string {
     return this._seedAsHex
+  }
+
+  public static buildFromMnemonic(phraseArg?: string) {
+    let phrase = phraseArg
+    if (phrase) {
+      if (phrase.trim().split(/\s+/g).length < 12) {
+        // https://www.npmjs.com/package/bip39
+        throw Error(`Phrase '${phrase}' too long or malformed`)
+      }
+    } else {
+      phrase = generate()
+    }
+
+    if (!validate(phrase)) {
+      throw Error(`Invalid phrase '${phrase}'`)
+    }
+
+    const seed = toSeed(phrase)
+    return new Identity(seed, phrase)
+  }
+
+  public static buildFromSeedString(seedArg: string) {
+    const padded = padEnd(seedArg, 32, ' ')
+    const asU8a = stringUtil.stringToU8a(padded)
+    return new Identity(asU8a)
   }
 
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
@@ -58,36 +85,23 @@ export default class Identity {
     return nacl.box.keyPair.fromSecretKey(hash)
   }
 
-  private _phrase: string
+  private _phrase?: string
   private _signKeyPair: SignKeyPair
-  private _signKeyringpair: KeyringPair
+  private _signKeyringPair: KeyringPair
   private _boxKeyPair: BoxKeyPair
   private _seed: Uint8Array
   private _seedAsHex: string
 
-  constructor(phrase?: string) {
-    if (phrase) {
-      if (phrase.trim().split(/\s+/g).length < 12) {
-        // https://www.npmjs.com/package/bip39
-        throw Error(`Phrase '${phrase}' too long or malformed`)
-      }
-      this._phrase = phrase
-    } else {
-      this._phrase = generate()
-    }
-
-    if (!validate(this._phrase)) {
-      throw Error(`Invalid phrase '${this._phrase}'`)
-    }
-
-    this._seed = toSeed(this._phrase)
-    this._seedAsHex = u8a.u8aToHex(this._seed)
+  private constructor(seed: Uint8Array, phrase?: string) {
+    this._phrase = phrase
+    this._seed = seed
+    this._seedAsHex = u8aUtil.u8aToHex(this._seed)
 
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public
     // Maybe use BIP32 and BIP44
     this._signKeyPair = Identity.createSignKeyPair(this._seed)
-    this._signKeyringpair = pair({
+    this._signKeyringPair = pair({
       publicKey: this._signKeyPair.publicKey,
       secretKey: this._signKeyPair.secretKey,
     })

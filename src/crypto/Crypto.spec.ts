@@ -4,8 +4,8 @@ import Identity from '../identity/Identity'
 import Crypto from './index'
 
 describe('Crypto', () => {
-  const alice = new Identity()
-  const bob = new Identity()
+  const alice = Identity.buildFromMnemonic()
+  const bob = Identity.buildFromMnemonic()
 
   const message = new Uint8Array(string.stringToU8a('This is a test'))
 

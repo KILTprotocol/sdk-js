@@ -1,5 +1,6 @@
 import { ApiPromise } from '@polkadot/api'
 import { Header } from '@polkadot/types'
+// import BN from 'bn.js/'
 import partial from 'lodash/partial'
 import Identity from '../identity/Identity'
 import Blockchain from './Blockchain'
@@ -40,11 +41,11 @@ describe('Blockchain', async () => {
     console.log(`Subscription Id: ${subscriptionId}`)
   }, 20000)
 
-  xit('should listen to balance changes', async () => {
+  it('should listen to balance changes', async () => {
     const api = await getConnectionOnce()
-    const alice = new Identity()
+    const bob = Identity.buildFromSeedString('Bob')
     const listener = undefined
-    // const listener = (account: string, balance: Balance, change: BN) => {
+    // const listener = (account: string, balance: BN, change: BN) => {
     //   console.log({ account, balance, change })
     //   done()
     // }
@@ -52,15 +53,16 @@ describe('Blockchain', async () => {
     const currentBalance = await partial(
       Blockchain.listenToBalanceChanges,
       api
-    )(alice.signKeyringPair.address(), listener)
+    )(bob.signKeyringPair.address(), listener)
 
-    expect(currentBalance.toString()).toEqual('0')
-  }, 10000)
+    expect(currentBalance.toString()).toBeTruthy()
+    expect(currentBalance.toString()).not.toEqual('0')
+  }, 50000)
 
   xit('should make transfer', async () => {
     const api = await getConnectionOnce()
-    const alice = new Identity()
-    const bob = new Identity()
+    const alice = Identity.buildFromSeedString('Alice')
+    const bob = Identity.buildFromSeedString('Bob')
 
     const hash = await partial(Blockchain.makeTransfer, api)(
       alice,
@@ -73,11 +75,8 @@ describe('Blockchain', async () => {
   xit('should hash ctype', async () => {
     const api = await getConnectionOnce()
 
-    const identity = new Identity()
-    const hash = await partial(Blockchain.ctypeHash, api)(
-      identity,
-      'hello world'
-    )
+    const alice = Identity.buildFromSeedString('Alice')
+    const hash = await partial(Blockchain.ctypeHash, api)(alice, 'hello world')
     console.log(hash)
   }, 10000)
 })

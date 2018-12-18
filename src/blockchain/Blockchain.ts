@@ -4,7 +4,7 @@
 import { ApiPromise } from '@polkadot/api'
 import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic'
 import { WsProvider } from '@polkadot/rpc-provider'
-import { Balance, Header } from '@polkadot/types'
+import { Header } from '@polkadot/types'
 import Hash from '@polkadot/types/Hash'
 import { Codec } from '@polkadot/types/types'
 import BN from 'bn.js'
@@ -45,14 +45,14 @@ export default class Blockchain {
   public static async listenToBalanceChanges(
     api: ApiPromise,
     accountAddress: string,
-    listener?: (account: string, balance: Balance, change: BN) => void
+    listener?: (account: string, balance: BN, change: BN) => void
   ) {
     // @ts-ignore
-    let previous: Balance = await api.query.balances.freeBalance(accountAddress)
+    let previous: BN = await api.query.balances.freeBalance(accountAddress)
 
     if (listener) {
       // @ts-ignore
-      api.query.balances.freeBalance(accountAddress, (current: Balance) => {
+      api.query.balances.freeBalance(accountAddress, (current: BN) => {
         const change = current.sub(previous)
         previous = current
         listener(accountAddress, current, change)
