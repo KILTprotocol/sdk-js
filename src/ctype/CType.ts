@@ -53,11 +53,11 @@ export default class CType {
     return CType.verifySchema(claim, schema)
   }
 
-  private static verifySchema(model: any, metaModel: any): boolean {
+  public static verifySchema(model: any, metaModel: any): boolean {
     return CType.verifySchemaWithErrors(model, metaModel)
   }
 
-  private static verifySchemaWithErrors(
+  public static verifySchemaWithErrors(
     model: any,
     metaModel: any,
     messages?: [string]
