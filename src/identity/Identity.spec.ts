@@ -1,10 +1,33 @@
 import * as NaCl from '@polkadot/util-crypto/nacl'
+import * as u8aUtil from '@polkadot/util/u8a'
 import Identity from './Identity'
 
 describe('Identity', () => {
+  // https://polkadot.js.org/api/examples/promise/
+  // testing to create correct demo accounts
+  it('should create known identities', () => {
+    const alice = Identity.buildFromSeedString('Alice')
+
+    expect(alice.phrase).toBeUndefined()
+    expect(alice.seedAsHex).toEqual(
+      '0x416c696365202020202020202020202020202020202020202020202020202020'
+    )
+    expect(u8aUtil.u8aToHex(alice.signKeyPair.secretKey)).toEqual(
+      '0x416c696365202020202020202020202020202020202020202020202020202020d172a74cda4c865912c32ba0a80a57ae69abae410e5ccb59dee84e2f4432db4f'
+    )
+
+    expect(alice.signKeyringPair.address()).toEqual(
+      '5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ'
+    )
+
+    expect(u8aUtil.u8aToHex(alice.signKeyringPair.publicKey())).toEqual(
+      '0xd172a74cda4c865912c32ba0a80a57ae69abae410e5ccb59dee84e2f4432db4f'
+    )
+  })
+
   it('should create different identities with random phrases', () => {
-    const alice = new Identity()
-    const bob = new Identity()
+    const alice = Identity.buildFromMnemonic()
+    const bob = Identity.buildFromMnemonic()
 
     expect(alice.phrase).not.toBeFalsy()
     expect(alice.signKeyPair.publicKey).not.toBeFalsy()
@@ -26,190 +49,26 @@ describe('Identity', () => {
   it('should restore identity based on phrase', () => {
     const expectedPhrase =
       'taxi toddler rally tonight certain tired program settle topple what execute few'
-    const alice = new Identity(expectedPhrase)
+    const alice = Identity.buildFromMnemonic(expectedPhrase)
 
     expect(alice.phrase).toEqual(expectedPhrase)
-    expect(alice.signKeyPair.publicKey).toEqual(
-      new Uint8Array([
-        60,
-        214,
-        73,
-        213,
-        33,
-        208,
-        250,
-        41,
-        218,
-        148,
-        10,
-        204,
-        217,
-        148,
-        75,
-        96,
-        236,
-        114,
-        148,
-        142,
-        38,
-        102,
-        173,
-        184,
-        68,
-        147,
-        179,
-        227,
-        83,
-        3,
-        251,
-        41,
-      ])
+    expect(u8aUtil.u8aToHex(alice.signKeyPair.publicKey)).toEqual(
+      '0x3cd649d521d0fa29da940accd9944b60ec72948e2666adb84493b3e35303fb29'
     )
-    expect(alice.signKeyPair.secretKey).toEqual(
-      new Uint8Array([
-        178,
-        155,
-        7,
-        202,
-        208,
-        114,
-        231,
-        41,
-        243,
-        116,
-        80,
-        53,
-        145,
-        122,
-        243,
-        7,
-        171,
-        116,
-        178,
-        189,
-        126,
-        253,
-        184,
-        69,
-        71,
-        66,
-        25,
-        44,
-        34,
-        240,
-        82,
-        29,
-        60,
-        214,
-        73,
-        213,
-        33,
-        208,
-        250,
-        41,
-        218,
-        148,
-        10,
-        204,
-        217,
-        148,
-        75,
-        96,
-        236,
-        114,
-        148,
-        142,
-        38,
-        102,
-        173,
-        184,
-        68,
-        147,
-        179,
-        227,
-        83,
-        3,
-        251,
-        41,
-      ])
+    expect(u8aUtil.u8aToHex(alice.signKeyPair.secretKey)).toEqual(
+      '0xb29b07cad072e729f3745035917af307ab74b2bd7efdb8454742192c22f0521d3cd649d521d0fa29da940accd9944b60ec72948e2666adb84493b3e35303fb29'
     )
 
-    expect(alice.boxKeyPair.publicKey).toEqual(
-      new Uint8Array([
-        175,
-        87,
-        221,
-        35,
-        227,
-        105,
-        199,
-        201,
-        61,
-        151,
-        137,
-        28,
-        10,
-        80,
-        146,
-        96,
-        195,
-        213,
-        42,
-        148,
-        133,
-        212,
-        248,
-        235,
-        47,
-        138,
-        152,
-        54,
-        136,
-        170,
-        172,
-        17,
-      ])
+    expect(u8aUtil.u8aToHex(alice.boxKeyPair.publicKey)).toEqual(
+      '0xaf57dd23e369c7c93d97891c0a509260c3d52a9485d4f8eb2f8a983688aaac11'
     )
-    expect(alice.boxKeyPair.secretKey).toEqual(
-      new Uint8Array([
-        67,
-        215,
-        171,
-        20,
-        39,
-        118,
-        28,
-        127,
-        119,
-        60,
-        49,
-        59,
-        61,
-        51,
-        237,
-        235,
-        51,
-        121,
-        239,
-        53,
-        110,
-        241,
-        10,
-        94,
-        239,
-        199,
-        125,
-        217,
-        153,
-        117,
-        75,
-        169,
-      ])
+    expect(u8aUtil.u8aToHex(alice.boxKeyPair.secretKey)).toEqual(
+      '0x43d7ab1427761c7f773c313b3d33edeb3379ef356ef10a5eefc77dd999754ba9'
     )
   })
 
   it('should have different (secret) keys for signing and boxing', () => {
-    const alice = new Identity()
+    const alice = Identity.buildFromMnemonic()
     expect(alice.signKeyPair.secretKey.length).not.toEqual(
       alice.boxKeyPair.secretKey.length
     )
@@ -220,20 +79,22 @@ describe('Identity', () => {
   it('should fail creating identity based on invalid phrase', () => {
     const phraseWithUnknownWord =
       'taxi toddler rally tonight certain tired program settle topple what execute stew' // stew instead of few
-    expect(() => new Identity(phraseWithUnknownWord)).toThrowError()
+    expect(() =>
+      Identity.buildFromMnemonic(phraseWithUnknownWord)
+    ).toThrowError()
 
     const phraseTooLong =
       'taxi toddler rally tonight certain tired program settle topple what execute' // stew instead of few
-    expect(() => new Identity(phraseTooLong)).toThrowError()
+    expect(() => Identity.buildFromMnemonic(phraseTooLong)).toThrowError()
   })
 
   it('should restore signing keypair from secret', () => {
-    const alice = new Identity()
+    const alice = Identity.buildFromMnemonic()
     const aliceKeypair = NaCl.naclKeypairFromSecret(alice.signKeyPair.secretKey)
     expect(aliceKeypair.secretKey).toEqual(alice.signKeyPair.secretKey)
     expect(aliceKeypair.publicKey).toEqual(alice.signKeyPair.publicKey)
 
-    const bob = new Identity()
+    const bob = Identity.buildFromMnemonic()
     const bobKeypair = NaCl.naclKeypairFromSecret(bob.signKeyPair.secretKey)
     expect(bobKeypair.secretKey).not.toEqual(alice.signKeyPair.secretKey)
     expect(bobKeypair.publicKey).not.toEqual(alice.signKeyPair.publicKey)
