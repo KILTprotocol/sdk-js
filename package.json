@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/prototype-sdk",
-  "version": "0.0.6",
+  "version": "0.0.9",
   "description": "",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -14,7 +14,7 @@
     "style:fix": "yarn style --write",
     "build": "tsc --declaration",
     "build:docs": "typedoc --theme default --out docs",
-    "deploy": "node ./npm-create-rc.js && npm publish"
+    "deploy": "node ./npm-create-rc.js && npm publish --dry-run"
   },
   "husky": {
     "hooks": {
