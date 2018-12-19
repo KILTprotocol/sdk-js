@@ -8,7 +8,6 @@ import { Header } from '@polkadot/types'
 import Hash from '@polkadot/types/Hash'
 import { Codec } from '@polkadot/types/types'
 import BN from 'bn.js'
-import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 
 // Code taken from
@@ -78,23 +77,18 @@ export default class Blockchain {
     return hash
   }
 
-  public static async ctypeHash(
+  public static async submitTx(
     api: ApiPromise,
     identity: Identity,
-    schema: string
-  ) {
+    tx: SubmittableExtrinsic
+  ): Promise<Hash> {
     const accountAddress = identity.signKeyringPair.address()
-
     const nonce = await Blockchain.getNonce(api, accountAddress)
-    const schemaHash = Crypto.hash(schema)
-    const signature = Crypto.sign(schemaHash, identity.signKeyPair.secretKey)
-    const ctypeAdd = await api.tx.ctype.add(schemaHash, signature)
-    const signed: SubmittableExtrinsic = ctypeAdd.sign(
+    const signed: SubmittableExtrinsic = tx.sign(
       identity.signKeyringPair,
       nonce.toHex()
     )
-    const hashed: Hash = await signed.send()
-    return hashed
+    return signed.send()
   }
 
   public static async getNonce(

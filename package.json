@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/prototype-sdk",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "description": "",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -66,8 +66,7 @@
     "@polkadot/api": "^0.33.19",
     "@polkadot/util": "^0.33.13",
     "@polkadot/util-crypto": "^0.33.13",
-    "ajv": "^6.6.1",
-    "merkletreejs": "^0.0.20"
+    "ajv": "^6.6.1"
   },
   "peerDependencies": {
     "tweetnacl": "^1.0.0"

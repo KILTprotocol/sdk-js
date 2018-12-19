@@ -1,5 +1,9 @@
+import { ApiPromise } from '@polkadot/api'
+import Hash from '@polkadot/types/Hash'
 import Ajv from 'ajv'
+import Blockchain from '../blockchain/Blockchain'
 import Crypto from '../crypto'
+import Identity from '../identity/Identity'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 
 export default class CType {
@@ -11,7 +15,7 @@ export default class CType {
    * This is the reverse function of CType.getCTypeInputModel(...).
    * @returns {any} The CTYPE for the input model.
    */
-  public static fromInputModel(ctypeInput: any): any {
+  public static fromInputModel(ctypeInput: any): CType {
     if (!CType.verifySchema(ctypeInput, CTypeInputModel)) {
       throw new Error('CType input does not correspond to input model schema')
     }
@@ -77,6 +81,16 @@ export default class CType {
     }
     return result ? true : false
   }
+
+  public static async verifyStored(
+    api: ApiPromise,
+    hash: string
+  ): Promise<any> {
+    // @ts-ignore
+    const result = await api.query.ctypes.cTYPEs(hash)
+    return result ? result.toJSON() : null
+  }
+
   public ctype: any
 
   public constructor(ctype: any) {
@@ -152,6 +166,18 @@ export default class CType {
       }
     }
     return result
+  }
+
+  public async store(api: ApiPromise, identity: Identity): Promise<Hash> {
+    const schemaHash = Crypto.hash(this.ctype.hash)
+    const signature = Crypto.sign(schemaHash, identity.signKeyPair.secretKey)
+    // @ts-ignore
+    const ctypeAdd = await api.tx.ctype.add(schemaHash, signature)
+    return Blockchain.submitTx(api, identity, ctypeAdd)
+  }
+
+  public async verifyStored(api: ApiPromise): Promise<boolean> {
+    return CType.verifyStored(api, this.ctype.hash)
   }
 
   private getLocalized(o: any, lang?: string): any {
