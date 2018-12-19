@@ -1,3 +1,6 @@
+/**
+ * @module CType
+ */
 import Ajv from 'ajv'
 import Crypto from '../crypto'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'

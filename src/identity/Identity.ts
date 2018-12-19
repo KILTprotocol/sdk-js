@@ -1,5 +1,5 @@
 /**
- * @module SDK
+ * @module Identity
  */
 import pair from '@polkadot/keyring/pair'
 import { KeyringPair } from '@polkadot/keyring/types'

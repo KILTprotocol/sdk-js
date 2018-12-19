@@ -1,5 +1,5 @@
 /**
- * @module SDK
+ * @module Crypto
  */
 import { default as keccakAsU8a } from '@polkadot/util-crypto/keccak/asU8a'
 import { default as naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
