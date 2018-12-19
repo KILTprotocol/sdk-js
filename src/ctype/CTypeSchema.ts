@@ -1,3 +1,6 @@
+/**
+ * @module CType
+ */
 export const CTypeInputModel = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'http://kilt-protocol.org/draft-01/ctype-input#',
