@@ -1,3 +1,6 @@
+/**
+ * @module CType
+ */
 import { ApiPromise } from '@polkadot/api'
 import Hash from '@polkadot/types/Hash'
 import Ajv from 'ajv'
