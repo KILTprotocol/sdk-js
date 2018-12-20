@@ -1,5 +1,5 @@
 /**
- * @module SDK
+ * @module Blockchain
  */
 import { ApiPromise } from '@polkadot/api'
 import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic'

@@ -2,9 +2,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "outDir": "build",
-    "module": "esnext",
-    "target": "es5",
-    "lib": ["es6", "dom"],
+    "module": "none",
+    "target": "esnext",
+    "lib": ["es6"],
     "sourceMap": true,
     "strict": true,
     "allowJs": false,
