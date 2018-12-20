@@ -1,12 +1,14 @@
-/src/coverage
+# https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package, see list of default ignored files
+
+# Step 2/2: ignore files needed for build, but not meant for publishing
+/src
 /yarn.lock
 /yarn-error.log
-/buildspec.yml
-/Dockerfile
-/.nvmrc
-/src
-/jest.config.js
-/tsconfig.json
-/tslint.json
-/.npmrc
+## build helper
 /npm-create-rc.js
+/tsconfig.json
+/.nvmrc
+## testing, linting
+/jest.config.js
+/tslint.json
+/.prettierrc
