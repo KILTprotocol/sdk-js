@@ -70,12 +70,4 @@ describe('Blockchain', async () => {
     )
     console.log({ hash })
   }, 10000)
-
-  xit('should hash ctype', async () => {
-    const api = await getConnectionOnce()
-
-    const alice = Identity.buildFromSeedString('Alice')
-    const hash = await partial(Blockchain.ctypeHash, api)(alice, 'hello world')
-    console.log(hash)
-  }, 10000)
 })
