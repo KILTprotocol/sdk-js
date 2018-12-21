@@ -131,7 +131,7 @@ export default class Blockchain {
     return nonce
   }
 
-  private api: ApiPromise
+  public api: ApiPromise
 
   private constructor(api: ApiPromise) {
     this.api = api

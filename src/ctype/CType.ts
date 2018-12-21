@@ -1,7 +1,7 @@
 /**
  * @module CType
  */
-import { ApiPromise } from '@polkadot/api'
+
 import Hash from '@polkadot/types/Hash'
 import Ajv from 'ajv'
 import Blockchain from '../blockchain/Blockchain'
@@ -86,11 +86,11 @@ export default class CType {
   }
 
   public static async verifyStored(
-    api: ApiPromise,
+    blockchain: Blockchain,
     hash: string
   ): Promise<any> {
     // @ts-ignore
-    const result = await api.query.ctypes.cTYPEs(hash)
+    const result = await blockchain.api.query.ctypes.cTYPEs(hash)
     return result ? result.toJSON() : null
   }
 
@@ -171,16 +171,19 @@ export default class CType {
     return result
   }
 
-  public async store(api: ApiPromise, identity: Identity): Promise<Hash> {
+  public async store(
+    blockchain: Blockchain,
+    identity: Identity
+  ): Promise<Hash> {
     const schemaHash = Crypto.hash(this.ctype.hash)
     const signature = Crypto.sign(schemaHash, identity.signKeyPair.secretKey)
     // @ts-ignore
-    const ctypeAdd = await api.tx.ctype.add(schemaHash, signature)
-    return Blockchain.submitTx(api, identity, ctypeAdd)
+    const ctypeAdd = await blockchain.api.tx.ctype.add(schemaHash, signature)
+    return blockchain.submitTx(identity, ctypeAdd)
   }
 
-  public async verifyStored(api: ApiPromise): Promise<boolean> {
-    return CType.verifyStored(api, this.ctype.hash)
+  public async verifyStored(blockchain: Blockchain): Promise<boolean> {
+    return CType.verifyStored(blockchain, this.ctype.hash)
   }
 
   private getLocalized(o: any, lang?: string): any {
