@@ -16,10 +16,8 @@ import Identity from '../identity/Identity'
 export default class Blockchain {
   public static DEFAULT_WS_ADDRESS = 'ws://127.0.0.1:9944'
 
-  private api: ApiPromise
-
   public static async build(
-      host: string = Blockchain.DEFAULT_WS_ADDRESS
+    host: string = Blockchain.DEFAULT_WS_ADDRESS
   ): Promise<Blockchain> {
     const provider = new WsProvider(host)
     const api = await ApiPromise.create(provider)
@@ -133,8 +131,10 @@ export default class Blockchain {
     return nonce
   }
 
+  private api: ApiPromise
+
   private constructor(api: ApiPromise) {
-    this.api = api;
+    this.api = api
   }
 
   public async getStats() {
@@ -148,16 +148,14 @@ export default class Blockchain {
   }
 
   // TODO: implement unsubscribe as subscriptionId continuously increases
-  public async listenToBlocks(
-      listener: (header: Header) => void
-  ) {
+  public async listenToBlocks(listener: (header: Header) => void) {
     const subscriptionId = await this.api.rpc.chain.subscribeNewHead(listener)
     return subscriptionId
   }
 
   public async listenToBalanceChanges(
-      accountAddress: string,
-      listener?: (account: string, balance: BN, change: BN) => void
+    accountAddress: string,
+    listener?: (account: string, balance: BN, change: BN) => void
   ) {
     // @ts-ignore
     let previous: BN = await this.api.query.balances.freeBalance(accountAddress)
@@ -174,9 +172,9 @@ export default class Blockchain {
   }
 
   public async makeTransfer(
-      identity: Identity,
-      accountAddressTo: string,
-      amount: number
+    identity: Identity,
+    accountAddressTo: string,
+    amount: number
   ) {
     const accountAddressFrom = identity.signKeyringPair.address()
 
@@ -187,14 +185,15 @@ export default class Blockchain {
     return hash
   }
 
-  public async submitTx(identity: Identity,
-      tx: SubmittableExtrinsic
+  public async submitTx(
+    identity: Identity,
+    tx: SubmittableExtrinsic
   ): Promise<Hash> {
     const accountAddress = identity.signKeyringPair.address()
     const nonce = await this.getNonce(accountAddress)
     const signed: SubmittableExtrinsic = tx.sign(
-        identity.signKeyringPair,
-        nonce.toHex()
+      identity.signKeyringPair,
+      nonce.toHex()
     )
     return signed.send()
   }
@@ -207,6 +206,4 @@ export default class Blockchain {
 
     return nonce
   }
-
-
 }
