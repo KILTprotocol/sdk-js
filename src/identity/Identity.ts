@@ -40,6 +40,22 @@ export default class Identity {
     return this._seedAsHex
   }
 
+  get signPublicKeyAsHex(): string {
+    return u8aUtil.u8aToHex(this._signKeyPair.publicKey)
+  }
+
+  get signSecretKeyAsHex(): string {
+    return u8aUtil.u8aToHex(this._signKeyPair.secretKey)
+  }
+
+  get boxPublicKeyAsHex(): string {
+    return u8aUtil.u8aToHex(this._boxKeyPair.publicKey)
+  }
+
+  get boxSecretKeyAsHex(): string {
+    return u8aUtil.u8aToHex(this._boxKeyPair.secretKey)
+  }
+
   public static buildFromMnemonic(phraseArg?: string) {
     let phrase = phraseArg
     if (phrase) {

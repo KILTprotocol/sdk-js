@@ -7,9 +7,10 @@ describe('Crypto', () => {
   const alice = Identity.buildFromMnemonic()
   const bob = Identity.buildFromMnemonic()
 
-  const message = new Uint8Array(string.stringToU8a('This is a test'))
+  const messageStr = 'This is a test'
+  const message = new Uint8Array(string.stringToU8a(messageStr))
 
-  it('should sign and verify', () => {
+  it('should sign and verify (UInt8Array)', () => {
     const signature = Crypto.sign(message, alice.signKeyPair.secretKey)
     expect(signature).not.toBeFalsy()
     expect(Crypto.verify(message, signature, alice.signKeyPair.publicKey)).toBe(
@@ -28,8 +29,23 @@ describe('Crypto', () => {
     ).toBe(false)
   })
 
+  it('should sign and verify (string)', () => {
+    const signature = Crypto.signStr(messageStr, alice.signSecretKeyAsHex)
+    expect(signature).not.toBeFalsy()
+    expect(Crypto.verify(messageStr, signature, alice.signPublicKeyAsHex)).toBe(
+      true
+    )
+
+    expect(Crypto.verify(messageStr, signature, bob.signPublicKeyAsHex)).toBe(
+      false
+    )
+    expect(Crypto.verify('0x000000', signature, alice.signPublicKeyAsHex)).toBe(
+      false
+    )
+  })
+
   // https://polkadot.js.org/common/examples/util-crypto/01_encrypt_decrypt_message_nacl/
-  it('should encrypt and decrypt symmetrical using random secret key', () => {
+  it('should encrypt and decrypt symmetrical using random secret key (UInt8Array)', () => {
     const secret = new Uint8Array([
       0,
       1,
@@ -67,6 +83,32 @@ describe('Crypto', () => {
     const data = Crypto.encryptSymmetric(message, secret)
     expect(data).not.toBeFalsy()
     expect(Crypto.decryptSymmetric(data, secret)).toEqual(message)
+    const dataWithNonce = Crypto.encryptSymmetric(message, secret, data.nonce)
+    expect(Crypto.decryptSymmetric(dataWithNonce, secret)).toEqual(message)
+  })
+
+  // https://polkadot.js.org/common/examples/util-crypto/01_encrypt_decrypt_message_nacl/
+  it('should encrypt and decrypt symmetrical using random secret key (string)', () => {
+    const secret =
+      '0x000102030405060708090A0B0C0D0E0F' + '101112131415161718191A1B1C1D1E1F'
+
+    const data = Crypto.encryptSymmetricAsStr(messageStr, secret)
+    expect(data).not.toBeFalsy()
+    expect(Crypto.decryptSymmetricStr(data, secret)).toEqual(messageStr)
+    expect(
+      Crypto.decryptSymmetricStr(
+        { encrypted: '0x000102030405060708090A0B0C0D0E0F', nonce: data.nonce },
+        secret
+      )
+    ).toEqual(null)
+    const dataWithNonce = Crypto.encryptSymmetricAsStr(
+      messageStr,
+      secret,
+      data.nonce
+    )
+    expect(Crypto.decryptSymmetricStr(dataWithNonce, secret)).toEqual(
+      messageStr
+    )
   })
 
   it('should hash', () => {
@@ -78,9 +120,32 @@ describe('Crypto', () => {
       Crypto.hash(message)
     )
     expect(Crypto.hash('123')).not.toEqual(Crypto.hash(message))
+    expect(Crypto.hashStr('123')).not.toEqual(Crypto.hashStr(message))
   })
 
-  it('should encrypt and decrypt asymmetrical', () => {
+  it('should encrypt and decrypt asymmetrical (string)', () => {
+    const encrypted = Crypto.encryptAsymmetricAsStr(
+      messageStr,
+      alice.boxPublicKeyAsHex,
+      bob.boxSecretKeyAsHex
+    )
+    expect(encrypted).not.toEqual(messageStr)
+
+    const decrypted = Crypto.decryptAsymmetricAsStr(
+      encrypted,
+      bob.boxPublicKeyAsHex,
+      alice.boxSecretKeyAsHex
+    )
+    expect(decrypted).toEqual(messageStr)
+    const decryptedFalse = Crypto.decryptAsymmetricAsStr(
+      encrypted,
+      bob.boxPublicKeyAsHex,
+      bob.boxSecretKeyAsHex
+    )
+    expect(decryptedFalse).toEqual(false)
+  })
+
+  it('should encrypt and decrypt asymmetrical (UInt8Array)', () => {
     const encrypted = Crypto.encryptAsymmetric(
       message,
       alice.boxKeyPair.publicKey,
