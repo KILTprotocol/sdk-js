@@ -90,8 +90,8 @@ export default class CType {
     hash: string
   ): Promise<any> {
     // @ts-ignore
-    const result = await blockchain.api.query.ctypes.cTYPEs(hash)
-    return result ? result.toJSON() : null
+    const result = await blockchain.api.query.ctype.cTYPEs(hash)
+    return result && result.encodedLength ? result.toJSON() : null
   }
 
   public ctype: any
