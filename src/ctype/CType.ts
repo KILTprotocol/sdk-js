@@ -103,7 +103,7 @@ export default class CType {
     this.ctype = ctype
 
     if (!this.ctype.hash) {
-      this.ctype.hash = Crypto.hash(JSON.stringify(this.ctype.schema))
+      this.ctype.hash = Crypto.hashStr(JSON.stringify(this.ctype.schema))
     }
   }
 
