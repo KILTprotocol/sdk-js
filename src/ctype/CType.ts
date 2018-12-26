@@ -8,6 +8,7 @@ import Blockchain from '../blockchain/Blockchain'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
+import { ExtrinsicStatus } from '@polkadot/types/index'
 
 export default class CType {
   /**
@@ -173,13 +174,32 @@ export default class CType {
 
   public async store(
     blockchain: Blockchain,
-    identity: Identity
+    identity: Identity,
+    onsuccess?: () => void
   ): Promise<Hash> {
-    const schemaHash = Crypto.hash(this.ctype.hash)
-    const signature = Crypto.sign(schemaHash, identity.signKeyPair.secretKey)
+    const signature = Crypto.sign(
+      this.ctype.hash,
+      identity.signKeyPair.secretKey
+    )
     // @ts-ignore
-    const ctypeAdd = await blockchain.api.tx.ctype.add(schemaHash, signature)
-    return blockchain.submitTx(identity, ctypeAdd)
+    const ctypeAdd = await blockchain.api.tx.ctype.add(
+      this.ctype.hash,
+      signature
+    )
+    return blockchain.submitTx(
+      identity,
+      ctypeAdd,
+      (status: ExtrinsicStatus) => {
+        if (
+          onsuccess &&
+          status.type === 'Finalised' &&
+          status.value &&
+          status.value.encodedLength > 0
+        ) {
+          onsuccess()
+        }
+      }
+    )
   }
 
   public async verifyStored(blockchain: Blockchain): Promise<boolean> {
