@@ -9,6 +9,7 @@ import Hash from '@polkadot/types/Hash'
 import { Codec } from '@polkadot/types/types'
 import BN from 'bn.js'
 import Identity from '../identity/Identity'
+import { ExtrinsicStatus } from '@polkadot/types/index'
 
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
@@ -131,7 +132,7 @@ export default class Blockchain {
     return nonce
   }
 
-  private api: ApiPromise
+  public api: ApiPromise
 
   private constructor(api: ApiPromise) {
     this.api = api
@@ -187,7 +188,8 @@ export default class Blockchain {
 
   public async submitTx(
     identity: Identity,
-    tx: SubmittableExtrinsic
+    tx: SubmittableExtrinsic,
+    status?: (status: ExtrinsicStatus) => void
   ): Promise<Hash> {
     const accountAddress = identity.signKeyringPair.address()
     const nonce = await this.getNonce(accountAddress)
@@ -195,7 +197,7 @@ export default class Blockchain {
       identity.signKeyringPair,
       nonce.toHex()
     )
-    return signed.send()
+    return signed.send(status)
   }
 
   public async getNonce(accountAddress: string): Promise<Codec> {

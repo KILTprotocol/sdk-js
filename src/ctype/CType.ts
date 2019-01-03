@@ -1,13 +1,14 @@
 /**
  * @module CType
  */
-import { ApiPromise } from '@polkadot/api'
+
 import Hash from '@polkadot/types/Hash'
 import Ajv from 'ajv'
 import Blockchain from '../blockchain/Blockchain'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
+import { ExtrinsicStatus } from '@polkadot/types/index'
 
 export default class CType {
   /**
@@ -86,12 +87,12 @@ export default class CType {
   }
 
   public static async verifyStored(
-    api: ApiPromise,
+    blockchain: Blockchain,
     hash: string
   ): Promise<any> {
     // @ts-ignore
-    const result = await api.query.ctypes.cTYPEs(hash)
-    return result ? result.toJSON() : null
+    const result = await blockchain.api.query.ctype.cTYPEs(hash)
+    return result && result.encodedLength ? result.toJSON() : null
   }
 
   public ctype: any
@@ -103,7 +104,7 @@ export default class CType {
     this.ctype = ctype
 
     if (!this.ctype.hash) {
-      this.ctype.hash = Crypto.hash(JSON.stringify(this.ctype.schema))
+      this.ctype.hash = Crypto.hashStr(JSON.stringify(this.ctype.schema))
     }
   }
 
@@ -171,16 +172,38 @@ export default class CType {
     return result
   }
 
-  public async store(api: ApiPromise, identity: Identity): Promise<Hash> {
-    const schemaHash = Crypto.hash(this.ctype.hash)
-    const signature = Crypto.sign(schemaHash, identity.signKeyPair.secretKey)
+  public async store(
+    blockchain: Blockchain,
+    identity: Identity,
+    onsuccess?: () => void
+  ): Promise<Hash> {
+    const signature = Crypto.sign(
+      this.ctype.hash,
+      identity.signKeyPair.secretKey
+    )
     // @ts-ignore
-    const ctypeAdd = await api.tx.ctype.add(schemaHash, signature)
-    return Blockchain.submitTx(api, identity, ctypeAdd)
+    const ctypeAdd = await blockchain.api.tx.ctype.add(
+      this.ctype.hash,
+      signature
+    )
+    return blockchain.submitTx(
+      identity,
+      ctypeAdd,
+      (status: ExtrinsicStatus) => {
+        if (
+          onsuccess &&
+          status.type === 'Finalised' &&
+          status.value &&
+          status.value.encodedLength > 0
+        ) {
+          onsuccess()
+        }
+      }
+    )
   }
 
-  public async verifyStored(api: ApiPromise): Promise<boolean> {
-    return CType.verifyStored(api, this.ctype.hash)
+  public async verifyStored(blockchain: Blockchain): Promise<boolean> {
+    return CType.verifyStored(blockchain, this.ctype.hash)
   }
 
   private getLocalized(o: any, lang?: string): any {
