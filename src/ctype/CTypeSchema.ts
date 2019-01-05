@@ -89,10 +89,12 @@ export const CTypeModel = {
               enum: ['string', 'integer', 'number', 'boolean', 'array'],
             },
           },
+          required: ['type'],
         },
       },
     },
   },
+  required: ['$id', '$schema', 'type'],
 }
 
 export const CTypeWrapperModel = {
