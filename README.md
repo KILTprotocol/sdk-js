@@ -11,7 +11,10 @@ Use within your project with `yarn add @kilt/prototype-sdk`
 ## Development setup
 
 You can use different SDK branches or versions, by linking it into your projects.  
-Execute `yarn link` in the sdk and copy the command in the output, which should look like this: `yarn link "@kiltprotocol/prototype-sdk"`.  
+
+First build the SDK by executing `yarn build`.
+
+After that, execute `yarn link` in the sdk and copy the command in the output, which should look like this: `yarn link "@kiltprotocol/prototype-sdk"`.  
 Go into your project folder and execute that second command.
 
 The SDK is now symlinked in your projects `node_modules` folder
