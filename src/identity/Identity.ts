@@ -6,6 +6,7 @@ import { KeyringPair } from '@polkadot/keyring/types'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
 import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
+import * as mnemonic from '@polkadot/util-crypto/mnemonic'
 import * as stringUtil from '@polkadot/util/string'
 import * as u8aUtil from '@polkadot/util/u8a'
 import padEnd from 'lodash/padEnd'
@@ -73,6 +74,10 @@ export default class Identity {
 
     const seed = toSeed(phrase)
     return new Identity(seed, phrase)
+  }
+
+  public static createRandomSeed(): string {
+    return mnemonic.mnemonicGenerate()
   }
 
   public static buildFromSeedString(seedArg: string) {

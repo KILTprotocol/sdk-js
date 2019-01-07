@@ -74,7 +74,9 @@ describe('CType', () => {
       JSON.stringify(ctypeInput)
     )
     expect(ctypeFromInput.verifyClaimStructure(goodClaim)).toBeTruthy()
-    expect(CType.verifyClaimStructure(goodClaim, ctypeModel)).toBeTruthy()
+    expect(
+      CType.verifyClaimStructure(goodClaim, ctypeModel.schema)
+    ).toBeTruthy()
     expect(ctypeFromInput.verifyClaimStructure(badClaim)).toBeFalsy()
     expect(
       CType.verifySchemaWithErrors(badClaim, CTypeWrapperModel, [''])
