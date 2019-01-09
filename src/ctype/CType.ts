@@ -3,14 +3,37 @@
  */
 
 import Hash from '@polkadot/types/Hash'
-import Ajv from 'ajv'
+
 import Blockchain from '../blockchain/Blockchain'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
-import { ExtrinsicStatus } from '@polkadot/types/index'
+import * as CTypeUtils from './CTypeUtils'
 
-export default class CType {
+export type CTypeSchema = {
+  $id: any
+  $schema: any
+  properties: any
+  type: 'object'
+}
+
+export type CtypeMetadata = {
+  title: {
+    default: string
+  }
+  description: {
+    default: string
+  }
+  properties: any
+}
+
+export interface ICType {
+  hash?: string
+  schema: CTypeSchema
+  metadata: CtypeMetadata
+}
+
+export default class CType implements ICType {
   /**
    * Create the CTYPE model from a CTYPE input model (used in CTYPE editing components).
    * This is necessary because component editors rely on editing arrays of properties instead of
@@ -20,7 +43,7 @@ export default class CType {
    * @returns {any} The CTYPE for the input model.
    */
   public static fromInputModel(ctypeInput: any): CType {
-    if (!CType.verifySchema(ctypeInput, CTypeInputModel)) {
+    if (!CTypeUtils.verifySchema(ctypeInput, CTypeInputModel)) {
       throw new Error('CType input does not correspond to input model schema')
     }
     const ctype = {
@@ -39,7 +62,7 @@ export default class CType {
         },
         properties: {},
       },
-    }
+    } as ICType
 
     const properties = {}
     for (const p of ctypeInput.properties) {
@@ -54,66 +77,30 @@ export default class CType {
     return new CType(ctype)
   }
 
-  public static verifyClaimStructure(claim: any, schema: any): boolean {
-    if (!CType.verifySchema(schema, CTypeModel)) {
+  public hash: string
+  public schema: CTypeSchema
+  public metadata: CtypeMetadata
+
+  public constructor(ctype: ICType) {
+    if (!CTypeUtils.verifySchema(ctype, CTypeWrapperModel)) {
       throw new Error('CType does not correspond to schema')
     }
-    return CType.verifySchema(claim, schema)
-  }
+    this.schema = ctype.schema
+    this.metadata = ctype.metadata
 
-  public static verifySchema(model: any, metaModel: any): boolean {
-    return CType.verifySchemaWithErrors(model, metaModel)
-  }
+    this.hash = Crypto.hashStr(JSON.stringify(this.schema))
 
-  public static verifySchemaWithErrors(
-    model: any,
-    metaModel: any,
-    messages?: [string]
-  ): boolean {
-    const ajv = new Ajv({
-      meta: false,
-    })
-    ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-07.json'))
-    ajv.addMetaSchema(CTypeModel)
-    const result = ajv.validate(metaModel, model)
-    if (!result && ajv.errors) {
-      ajv.errors.map((error: any) => {
-        if (messages) {
-          messages.push(error.message)
-        }
-      })
-    }
-    return result ? true : false
-  }
-
-  public static async verifyStored(
-    blockchain: Blockchain,
-    hash: string
-  ): Promise<any> {
-    // @ts-ignore
-    const result = await blockchain.api.query.ctype.cTYPEs(hash)
-    return result && result.encodedLength ? result.toJSON() : null
-  }
-
-  public ctype: any
-
-  public constructor(ctype: any) {
-    if (!CType.verifySchema(ctype, CTypeWrapperModel)) {
-      throw new Error('CType does not correspond to schema')
-    }
-    this.ctype = ctype
-
-    if (!this.ctype.hash) {
-      this.ctype.hash = Crypto.hashStr(JSON.stringify(this.ctype.schema))
+    if (ctype.hash && this.hash !== ctype.hash) {
+      throw Error('provided and generated ctype hash are not the same')
     }
   }
 
   public verifyClaimStructure(claim: any): boolean {
-    return CType.verifySchema(claim, this.ctype.schema)
+    return CTypeUtils.verifySchema(claim, this.schema)
   }
 
-  public getModel(): any {
-    return this.ctype
+  public getModel(): ICType {
+    return this
   }
 
   /**
@@ -124,17 +111,14 @@ export default class CType {
    */
   public getClaimInputModel(lang?: string): any {
     // create clone
-    const result = JSON.parse(JSON.stringify(this.ctype.schema))
-    result.title = this.getLocalized(this.ctype.metadata.title, lang)
-    result.description = this.getLocalized(
-      this.ctype.metadata.description,
-      lang
-    )
+    const result = JSON.parse(JSON.stringify(this.schema))
+    result.title = this.getLocalized(this.metadata.title, lang)
+    result.description = this.getLocalized(this.metadata.description, lang)
     result.required = []
-    for (const x in this.ctype.metadata.properties) {
-      if (this.ctype.metadata.properties.hasOwnProperty(x)) {
+    for (const x in this.metadata.properties) {
+      if (this.metadata.properties.hasOwnProperty(x)) {
         result.properties[x].title = this.getLocalized(
-          this.ctype.metadata.properties[x].title,
+          this.metadata.properties[x].title,
           lang
         )
         result.required.push(x)
@@ -152,17 +136,17 @@ export default class CType {
    */
   public getCTypeInputModel(): any {
     // create clone
-    const result = JSON.parse(JSON.stringify(this.ctype.schema))
+    const result = JSON.parse(JSON.stringify(this.schema))
     result.$schema = CTypeInputModel.$id
-    result.title = this.getLocalized(this.ctype.metadata.title)
-    result.description = this.getLocalized(this.ctype.metadata.description)
+    result.title = this.getLocalized(this.metadata.title)
+    result.description = this.getLocalized(this.metadata.description)
     result.required = []
     result.properties = []
-    for (const x in this.ctype.schema.properties) {
-      if (this.ctype.schema.properties.hasOwnProperty(x)) {
-        const p = this.ctype.schema.properties[x]
+    for (const x in this.schema.properties) {
+      if (this.schema.properties.hasOwnProperty(x)) {
+        const p = this.schema.properties[x]
         result.properties.push({
-          title: this.getLocalized(this.ctype.metadata.properties[x].title),
+          title: this.getLocalized(this.metadata.properties[x].title),
           $id: x,
           type: p.type,
         })
@@ -177,33 +161,11 @@ export default class CType {
     identity: Identity,
     onsuccess?: () => void
   ): Promise<Hash> {
-    const signature = Crypto.sign(
-      this.ctype.hash,
-      identity.signKeyPair.secretKey
-    )
-    // @ts-ignore
-    const ctypeAdd = await blockchain.api.tx.ctype.add(
-      this.ctype.hash,
-      signature
-    )
-    return blockchain.submitTx(
-      identity,
-      ctypeAdd,
-      (status: ExtrinsicStatus) => {
-        if (
-          onsuccess &&
-          status.type === 'Finalised' &&
-          status.value &&
-          status.value.encodedLength > 0
-        ) {
-          onsuccess()
-        }
-      }
-    )
+    return CTypeUtils.store(blockchain, identity, this.hash, onsuccess)
   }
 
   public async verifyStored(blockchain: Blockchain): Promise<boolean> {
-    return CType.verifyStored(blockchain, this.ctype.hash)
+    return CTypeUtils.verifyStored(blockchain, this.hash)
   }
 
   private getLocalized(o: any, lang?: string): any {

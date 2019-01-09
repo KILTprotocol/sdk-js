@@ -8,3 +8,4 @@ export {
   CTypeInputModel,
   CTypeWrapperModel,
 } from './ctype/CTypeSchema'
+export * from './ctype/CTypeUtils'
