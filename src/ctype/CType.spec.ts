@@ -1,5 +1,4 @@
-import CType from './CType'
-import { CTypeWrapperModel } from './CTypeSchema'
+import CType, { ICType } from './CType'
 
 describe('CType', () => {
   it('verify model transformations', () => {
@@ -40,7 +39,7 @@ describe('CType', () => {
           'second-property': { title: { default: 'Second Property' } },
         },
       },
-    }
+    } as ICType
     const claimInput = {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -73,17 +72,13 @@ describe('CType', () => {
     expect(JSON.stringify(ctypeFromInput.getCTypeInputModel())).toEqual(
       JSON.stringify(ctypeInput)
     )
+
     expect(ctypeFromInput.verifyClaimStructure(goodClaim)).toBeTruthy()
-    expect(CType.verifyClaimStructure(goodClaim, ctypeModel)).toBeTruthy()
     expect(ctypeFromInput.verifyClaimStructure(badClaim)).toBeFalsy()
-    expect(
-      CType.verifySchemaWithErrors(badClaim, CTypeWrapperModel, [''])
-    ).toBeFalsy()
+
     expect(() => {
+      // @ts-ignore
       new CType(goodClaim).verifyClaimStructure(goodClaim)
-    }).toThrow(new Error('CType does not correspond to schema'))
-    expect(() => {
-      CType.verifyClaimStructure(badClaim, ctypeInput)
     }).toThrow(new Error('CType does not correspond to schema'))
     expect(() => {
       CType.fromInputModel(ctypeModel)
