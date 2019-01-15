@@ -17,7 +17,7 @@ export interface IClaim {
   alias: string
   ctype: string
   contents: object
-  id: string
+  hash: string
   owner: string
   signature: string
 }
@@ -32,7 +32,7 @@ class Claim implements IClaim {
   public alias: string
   public ctype: string
   public contents: object
-  public id: string
+  public hash: string
   public owner: string
   public signature: string
 
@@ -41,7 +41,7 @@ class Claim implements IClaim {
     ctype: Ctype,
     contents: object,
     identity: Identity,
-    id?: string
+    hash?: string
   ) {
     if (!verifyClaim(contents, ctype)) {
       throw Error('Claim not valid')
@@ -51,10 +51,10 @@ class Claim implements IClaim {
     this.contents = contents
     this.owner = identity.address
 
-    if (!id) {
-      this.id = uuid()
+    if (!hash) {
+      this.hash = uuid()
     } else {
-      this.id = id
+      this.hash = hash
     }
     this.signature = this.sign(identity)
   }
