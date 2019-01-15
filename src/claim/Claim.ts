@@ -15,7 +15,7 @@ function verfifySignature(claim: Claim): boolean {
 
 export interface IClaim {
   alias: string
-  ctype: Ctype
+  ctype: string
   contents: object
   id: string
   owner: string
@@ -25,15 +25,12 @@ export interface IClaim {
 class Claim implements IClaim {
   public static fromObject(obj: any): Claim {
     // TODO: verify all properties
-    if (!(obj.ctype instanceof Ctype)) {
-      obj.ctype = Ctype.fromObject(obj.ctype)
-    }
     const newClaim = Object.create(Claim.prototype)
     return Object.assign(newClaim, obj)
   }
 
   public alias: string
-  public ctype: Ctype
+  public ctype: string
   public contents: object
   public id: string
   public owner: string
@@ -50,7 +47,7 @@ class Claim implements IClaim {
       throw Error('Claim not valid')
     }
     this.alias = alias
-    this.ctype = ctype
+    this.ctype = ctype.hash
     this.contents = contents
     this.owner = identity.address
 
