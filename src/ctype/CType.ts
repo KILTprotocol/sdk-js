@@ -77,6 +77,12 @@ export default class CType implements ICType {
     return new CType(ctype)
   }
 
+  public static fromObject(obj: any): CType {
+    // TODO: verify all properties
+    const newObject = Object.create(CType.prototype)
+    return Object.assign(newObject, obj)
+  }
+
   public hash: string
   public schema: CTypeSchema
   public metadata: CtypeMetadata
@@ -99,7 +105,7 @@ export default class CType implements ICType {
     return CTypeUtils.verifySchema(claim, this.schema)
   }
 
-  public getModel(): ICType {
+  public getModel(): CType {
     return this
   }
 

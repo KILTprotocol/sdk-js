@@ -9,3 +9,4 @@ export {
   CTypeWrapperModel,
 } from './ctype/CTypeSchema'
 export * from './ctype/CTypeUtils'
+export { default as Claim, IClaim } from './claim/Claim'
