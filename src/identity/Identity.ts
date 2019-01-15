@@ -20,6 +20,10 @@ export default class Identity {
     return this._phrase
   }
 
+  get address(): string {
+    return this._address
+  }
+
   get signKeyPair(): SignKeyPair {
     return this._signKeyPair
   }
@@ -102,6 +106,7 @@ export default class Identity {
   }
 
   private _phrase?: string
+  private _address: string
   private _signKeyPair: SignKeyPair
   private _signKeyringPair: KeyringPair
   private _boxKeyPair: BoxKeyPair
@@ -121,6 +126,8 @@ export default class Identity {
       publicKey: this._signKeyPair.publicKey,
       secretKey: this._signKeyPair.secretKey,
     })
+
+    this._address = this._signKeyringPair.address()
 
     this._boxKeyPair = Identity.createBoxKeyPair(this._seed)
   }

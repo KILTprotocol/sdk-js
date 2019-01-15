@@ -13,19 +13,11 @@ describe('Crypto', () => {
   it('should sign and verify (UInt8Array)', () => {
     const signature = Crypto.sign(message, alice.signKeyPair.secretKey)
     expect(signature).not.toBeFalsy()
-    expect(Crypto.verify(message, signature, alice.signKeyPair.publicKey)).toBe(
-      true
-    )
+    expect(Crypto.verify(message, signature, alice.address)).toBe(true)
 
-    expect(Crypto.verify(message, signature, bob.signKeyPair.publicKey)).toBe(
-      false
-    )
+    expect(Crypto.verify(message, signature, bob.address)).toBe(false)
     expect(
-      Crypto.verify(
-        new Uint8Array([0, 0, 0]),
-        signature,
-        alice.signKeyPair.publicKey
-      )
+      Crypto.verify(new Uint8Array([0, 0, 0]), signature, alice.address)
     ).toBe(false)
   })
 

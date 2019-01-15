@@ -10,11 +10,7 @@ function verifyClaim(claimContents: object, ctype: Ctype) {
 }
 
 function verfifySignature(claim: Claim): boolean {
-  return verify(
-    JSON.stringify(claim.contents),
-    claim.signature,
-    claim.identity.signPublicKeyAsHex
-  )
+  return verify(JSON.stringify(claim.contents), claim.signature, claim.owner)
 }
 
 export interface IClaim {
@@ -22,7 +18,7 @@ export interface IClaim {
   ctype: Ctype
   contents: object
   id: string
-  identity: Identity
+  owner: string
   signature: string
 }
 
@@ -32,9 +28,6 @@ class Claim implements IClaim {
     if (!(obj.ctype instanceof Ctype)) {
       obj.ctype = Ctype.fromObject(obj.ctype)
     }
-    if (!(obj.identity instanceof Identity)) {
-      obj.identity = Identity.buildFromMnemonic(obj.identity._phrase)
-    }
     const newClaim = Object.create(Claim.prototype)
     return Object.assign(newClaim, obj)
   }
@@ -43,7 +36,7 @@ class Claim implements IClaim {
   public ctype: Ctype
   public contents: object
   public id: string
-  public identity: Identity
+  public owner: string
   public signature: string
 
   constructor(
@@ -59,24 +52,22 @@ class Claim implements IClaim {
     this.alias = alias
     this.ctype = ctype
     this.contents = contents
-    this.identity = identity
+    this.owner = identity.address
+
     if (!id) {
       this.id = uuid()
     } else {
       this.id = id
     }
-    this.signature = this.sign()
+    this.signature = this.sign(identity)
   }
 
   public verifySignature(): boolean {
     return verfifySignature(this)
   }
 
-  private sign() {
-    return signStr(
-      JSON.stringify(this.contents),
-      this.identity.signSecretKeyAsHex
-    )
+  private sign(identity: Identity) {
+    return signStr(JSON.stringify(this.contents), identity.signSecretKeyAsHex)
   }
 }
 
