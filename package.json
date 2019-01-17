@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/prototype-sdk",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -48,6 +48,7 @@
     "@commitlint/cli": "^7.2.1",
     "@commitlint/config-conventional": "^7.1.2",
     "@types/jest": "^23.3.9",
+    "@types/uuid": "^3.4.4",
     "eslint-plugin-tsc": "^1.2.0",
     "husky": "^1.2.1",
     "jest": "^23.6.0",
@@ -66,7 +67,8 @@
     "@polkadot/api": "^0.33.19",
     "@polkadot/util": "^0.33.22",
     "@polkadot/util-crypto": "^0.33.13",
-    "ajv": "^6.6.1"
+    "ajv": "^6.6.1",
+    "uuid": "^3.3.2"
   },
   "peerDependencies": {
     "tweetnacl": "^1.0.0"

@@ -14,8 +14,12 @@ import {
   u8aToString,
   u8aToU8a,
 } from '@polkadot/util'
+import { encodeAddress, decodeAddress } from '@polkadot/keyring/address'
+export { encodeAddress, decodeAddress }
 
 export type CryptoInput = Buffer | Uint8Array | string
+
+export type Address = string
 
 export type EncryptedSymmetric = {
   encrypted: Uint8Array
@@ -58,8 +62,9 @@ export function signStr(message: CryptoInput, secretKey: CryptoInput): string {
 export function verify(
   message: CryptoInput,
   signature: CryptoInput,
-  publicKey: CryptoInput
+  address: Address
 ): boolean {
+  const publicKey = decodeAddress(address)
   return naclVerify(
     coToUInt8(message),
     coToUInt8(signature),
