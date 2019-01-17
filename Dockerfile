@@ -14,6 +14,7 @@ COPY tsconfig.json ./
 COPY .nvmrc ./
 ## testing, linting
 COPY jest.config.js ./
+COPY jest.env.js ./
 COPY tslint.json ./
 COPY .prettierrc ./
 ## ignoring files within build later
