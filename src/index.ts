@@ -10,3 +10,4 @@ export {
 } from './ctype/CTypeSchema'
 export * from './ctype/CTypeUtils'
 export { default as Claim, IClaim } from './claim/Claim'
+export { default as Attestation, IAttestation } from './attestation/Attestation'
