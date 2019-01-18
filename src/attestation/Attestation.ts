@@ -1,5 +1,7 @@
-import { v4 as uuid } from 'uuid'
-import { Identity } from '../index'
+import Hash from '@polkadot/types/Hash';
+import { IClaim } from '../claim/Claim';
+import { Blockchain, Identity } from '../index';
+import * as AttestationUtils from './AttestationUtils';
 
 export interface IAttestation {
   claimHash: string
@@ -14,10 +16,10 @@ class Attestation implements IAttestation {
   public owner: string
   public revoked: boolean
 
-  constructor(claim: any, attester: Identity, revoked = false) {
+  constructor(claim: IClaim, attester: Identity, revoked = false) {
     this.owner = attester.address
-    this.claimHash = this.generateClaimHash(claim)
-    this.signature = this.sign()
+    this.claimHash = AttestationUtils.generateClaimHash(claim)
+    this.signature = AttestationUtils.signStr(this.claimHash, attester)
     this.revoked = revoked
   }
 
@@ -29,14 +31,12 @@ class Attestation implements IAttestation {
     // TODO check attestation onChain
   }
 
-  private generateClaimHash(claim: any): string {
-    // TODO
-    return uuid()
-  }
-
-  private sign(): string {
-    // TODO
-    return `${this.claimHash}-${this.owner}`
+  public async store(
+    blockchain: Blockchain,
+    identity: Identity,
+    onsuccess?: () => void
+  ): Promise<Hash> {
+    return AttestationUtils.store(blockchain, identity, this.claimHash, onsuccess)
   }
 }
 
