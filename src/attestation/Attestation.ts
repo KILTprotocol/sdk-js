@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid'
 import { Identity } from '../index'
 
 export interface IAttestation {
@@ -14,9 +15,9 @@ class Attestation implements IAttestation {
   public revoked: boolean
 
   constructor(claim: any, attester: Identity, revoked = false) {
+    this.owner = attester.address
     this.claimHash = this.generateClaimHash(claim)
     this.signature = this.sign()
-    this.owner = attester.address
     this.revoked = revoked
   }
 
@@ -29,12 +30,13 @@ class Attestation implements IAttestation {
   }
 
   private generateClaimHash(claim: any): string {
-    return '1234'
+    // TODO
+    return uuid()
   }
 
   private sign(): string {
     // TODO
-    return 'signature'
+    return `${this.claimHash}-${this.owner}`
   }
 }
 
