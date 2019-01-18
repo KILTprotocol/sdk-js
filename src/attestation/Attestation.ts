@@ -1,6 +1,13 @@
 import { Identity } from '../index'
 
-class Attestation {
+export interface IAttestation {
+  claimHash: string
+  signature: string
+  owner: string
+  revoked: boolean
+}
+
+class Attestation implements IAttestation {
   public claimHash: string
   public signature: string
   public owner: string
