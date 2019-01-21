@@ -23,8 +23,8 @@ export interface IClaim {
 }
 
 class Claim implements IClaim {
-  public static fromObject(obj: any): Claim {
-    // TODO: verify all properties
+  
+  public static fromObject(obj: IClaim): Claim {
     const newClaim = Object.create(Claim.prototype)
     return Object.assign(newClaim, obj)
   }

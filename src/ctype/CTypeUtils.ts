@@ -1,11 +1,6 @@
-import Ajv from 'ajv'
-import { ExtrinsicStatus } from '@polkadot/types/index'
-import Hash from '@polkadot/types/Hash'
+import Ajv from 'ajv';
+import { CTypeModel } from './CTypeSchema';
 
-import { CTypeModel } from './CTypeSchema'
-import Blockchain from '../blockchain/Blockchain'
-import Identity from '../identity/Identity'
-import Crypto from '../crypto'
 
 export function verifyClaimStructure(claim: any, schema: any): boolean {
   if (!verifySchema(schema, CTypeModel)) {
@@ -37,34 +32,4 @@ export function verifySchemaWithErrors(
     })
   }
   return result ? true : false
-}
-
-export async function verifyStored(
-  blockchain: Blockchain,
-  hash: string
-): Promise<any> {
-  // @ts-ignore
-  const result = await blockchain.api.query.ctype.cTYPEs(hash)
-  return result && result.encodedLength ? result.toJSON() : null
-}
-
-export async function store(
-  blockchain: Blockchain,
-  identity: Identity,
-  hash: string,
-  onsuccess?: () => void
-): Promise<Hash> {
-  const signature = Crypto.sign(hash, identity.signKeyPair.secretKey)
-  // @ts-ignore
-  const ctypeAdd = await blockchain.api.tx.ctype.add(hash, signature)
-  return blockchain.submitTx(identity, ctypeAdd, (status: ExtrinsicStatus) => {
-    if (
-      onsuccess &&
-      status.type === 'Finalised' &&
-      status.value &&
-      status.value.encodedLength > 0
-    ) {
-      onsuccess()
-    }
-  })
 }
