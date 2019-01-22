@@ -9,6 +9,7 @@ import Identity from '../identity/Identity';
 import * as AttestationUtils from './AttestationUtils';
 
 
+
 const log = factory.getLogger("Attestation");
 
 export interface IAttestation {
@@ -26,12 +27,11 @@ class Attestation extends BlockchainStorable implements IAttestation {
   }
 
   public static async queryAll(blockchain: Blockchain, hash: string): Promise<Attestation[]> {
-    const query: Codec | null | undefined = await Attestation.queryApi(blockchain, hash)
-    log.debug(() => `Query chain for attestations with hash ${hash}`);
+    const query: Codec | null | undefined = await Attestation.doQueryChain(blockchain, hash)
     const value = query && query.encodedLength ? query.toJSON() : null
     let attestations: Attestation[] = []
     if (value instanceof Array) {
-      attestations = value.map((attestationTuple) => {
+      attestations = value.map((attestationTuple:any[]) => {
         return {
           claimHash: attestationTuple[0],
           owner: attestationTuple[1],
@@ -87,11 +87,14 @@ class Attestation extends BlockchainStorable implements IAttestation {
   }
 
   protected async query(blockchain: Blockchain, hash: string): Promise<Codec | null | undefined> {
-    return Attestation.queryApi(blockchain, hash)
+    return Attestation.doQueryChain(blockchain, hash)
   }
 
-  private static queryApi(blockchain: Blockchain, hash: string): Promise<Codec | null | undefined> {
-    return blockchain.api.query.attestation.attestations(hash)
+  private static async doQueryChain(blockchain: Blockchain, hash: string): Promise<Codec | null | undefined> {
+    log.debug(() => `Query chain for attestations with hash ${hash}`);
+    const result: Codec | null | undefined = await blockchain.api.query.attestation.attestations(hash)
+    log.debug(() => `Result: ${result}`);
+    return result
   }
 }
 

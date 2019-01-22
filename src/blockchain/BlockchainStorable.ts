@@ -78,9 +78,9 @@ export abstract class BlockchainStorable implements IBlockchainStorable {
 
     public async verifyStored(blockchain: Blockchain): Promise<boolean> {
         const query: Codec | null | undefined = await this.query(blockchain, this.getHash())
+        // @ts-ignore
         const value = query && query.encodedLength ? query.toJSON() : null
-        log.debug(() => `Query chain for hash ${this.getHash()}. Result: ${value}`);
-        return !!value
+        return value != null
     }
 
     /**
