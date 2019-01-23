@@ -6,7 +6,7 @@ import { BlockchainStorable } from '../blockchain/BlockchainStorable';
 import { IClaim } from '../claim/Claim';
 import { factory } from "../config/ConfigLog";
 import Identity from '../identity/Identity';
-import * as AttestationUtils from './AttestationUtils';
+import * as ClaimUtils from '../claim/ClaimUtils';
 
 
 
@@ -55,8 +55,8 @@ class Attestation extends BlockchainStorable implements IAttestation {
   constructor(claim: IClaim, attester: Identity, revoked = false) {
     super()
     this.owner = attester.address
-    this.claimHash = AttestationUtils.generateClaimHash(claim)
-    this.signature = AttestationUtils.signStr(this.claimHash, attester)
+    this.claimHash = ClaimUtils.generateClaimHash(claim)
+    this.signature = ClaimUtils.signStr(this.claimHash, attester)
     this.revoked = revoked
   }
 

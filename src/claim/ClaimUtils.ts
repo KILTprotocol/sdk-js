@@ -1,4 +1,4 @@
-import { IClaim } from '../claim/Claim';
+import { IClaim } from './Claim';
 import Crypto from '../crypto';
 import Identity from '../identity/Identity';
 
