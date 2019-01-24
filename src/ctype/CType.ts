@@ -2,15 +2,14 @@
  * @module CType
  */
 
-import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic';
-import { Codec } from '@polkadot/types/types';
+import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic'
+import { Codec } from '@polkadot/types/types'
 
-import Blockchain from '../blockchain/Blockchain';
-import { BlockchainStorable } from '../blockchain/BlockchainStorable';
-import Crypto from '../crypto';
-import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema';
-import * as CTypeUtils from './CTypeUtils';
-
+import Blockchain from '../blockchain/Blockchain'
+import { BlockchainStorable } from '../blockchain/BlockchainStorable'
+import Crypto from '../crypto'
+import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
+import * as CTypeUtils from './CTypeUtils'
 
 export type CTypeSchema = {
   $id: any
@@ -165,11 +164,17 @@ export default class CType extends BlockchainStorable implements ICType {
     return result
   }
 
-  protected async query(blockchain: Blockchain, hash: string): Promise<Codec | null | undefined> {
+  protected async query(
+    blockchain: Blockchain,
+    hash: string
+  ): Promise<Codec | null | undefined> {
     return blockchain.api.query.ctype.cTYPEs(hash)
   }
 
-  protected async submit(blockchain: Blockchain, signature: Uint8Array): Promise<SubmittableExtrinsic> {
+  protected async submit(
+    blockchain: Blockchain,
+    signature: Uint8Array
+  ): Promise<SubmittableExtrinsic> {
     return blockchain.api.tx.ctype.add(this.getHash(), signature)
   }
 

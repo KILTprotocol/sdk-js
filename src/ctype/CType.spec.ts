@@ -1,10 +1,9 @@
 import CType, { ICType } from './CType'
-import Blockchain from '../blockchain/Blockchain';
-import Identity from '../identity/Identity';
-import Crypto from '../crypto';
+import Blockchain from '../blockchain/Blockchain'
+import Identity from '../identity/Identity'
+import Crypto from '../crypto'
 
 describe('CType', () => {
-
   const ctypeModel = {
     schema: {
       $id: 'http://example.com/ctype-1',
@@ -45,7 +44,7 @@ describe('CType', () => {
       title: 'CType Title',
       required: ['first-property', 'second-property'],
     }
-    
+
     const claimInput = {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
