@@ -1,16 +1,7 @@
-import { ICType } from './CType'
-import { CTypeWrapperModel, CTypeInputModel } from './CTypeSchema'
-import {
-  verifyClaimStructure,
-  verifySchema,
-  verifySchemaWithErrors,
-  store,
-  verifyStored,
-} from './CTypeUtils'
+import { ICType } from './CType';
+import { CTypeInputModel, CTypeWrapperModel } from './CTypeSchema';
+import { verifyClaimStructure, verifySchema, verifySchemaWithErrors } from './CTypeUtils';
 
-import Crypto from '../crypto'
-import Blockchain from '../blockchain/Blockchain'
-import Identity from '../identity/Identity'
 
 jest.mock('../blockchain/Blockchain')
 
@@ -79,53 +70,5 @@ describe('CTypeUtils', () => {
   it('verifies ctypes', () => {
     expect(verifySchema(ctypeInput, CTypeInputModel)).toBeTruthy()
     expect(verifySchema(ctypeModel, CTypeInputModel)).toBeFalsy()
-  })
-
-  it('stores ctypes', async () => {
-    const resultHash = Crypto.hashStr('987654')
-    // @ts-ignore
-    const blockchain = {
-      api: {
-        tx: {
-          ctype: {
-            add: jest.fn((hash, signature) => {
-              return Promise.resolve({ hash, signature })
-            }),
-          },
-        },
-        query: {
-          ctype: {
-            cTYPEs: jest.fn(hash => {
-              return true
-            }),
-          },
-        },
-      },
-      getStats: jest.fn(),
-      listenToBlocks: jest.fn(),
-      listenToBalanceChanges: jest.fn(),
-      makeTransfer: jest.fn(),
-      submitTx: jest.fn((identity, tx, statusCb) => {
-        statusCb({
-          type: 'Finalised',
-          value: {
-            encodedLength: 2,
-          },
-        })
-        return Promise.resolve(resultHash)
-      }),
-      getNonce: jest.fn(),
-    } as Blockchain
-
-    const identityAlice = Identity.buildFromSeedString('Alice')
-    const testHash = Crypto.hashStr('1234')
-    const onsuccess = () => {
-      return true
-    }
-
-    expect(await store(blockchain, identityAlice, testHash, onsuccess)).toEqual(
-      resultHash
-    )
-    expect(verifyStored(blockchain, '1234')).toBeTruthy()
   })
 })

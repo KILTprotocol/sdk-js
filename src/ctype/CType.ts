@@ -2,13 +2,15 @@
  * @module CType
  */
 
-import Hash from '@polkadot/types/Hash'
+import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic';
+import { Codec } from '@polkadot/types/types';
 
-import Blockchain from '../blockchain/Blockchain'
-import Crypto from '../crypto'
-import Identity from '../identity/Identity'
-import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
-import * as CTypeUtils from './CTypeUtils'
+import Blockchain from '../blockchain/Blockchain';
+import { BlockchainStorable } from '../blockchain/BlockchainStorable';
+import Crypto from '../crypto';
+import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema';
+import * as CTypeUtils from './CTypeUtils';
+
 
 export type CTypeSchema = {
   $id: any
@@ -33,7 +35,7 @@ export interface ICType {
   metadata: CtypeMetadata
 }
 
-export default class CType implements ICType {
+export default class CType extends BlockchainStorable implements ICType {
   /**
    * Create the CTYPE model from a CTYPE input model (used in CTYPE editing components).
    * This is necessary because component editors rely on editing arrays of properties instead of
@@ -88,6 +90,7 @@ export default class CType implements ICType {
   public metadata: CtypeMetadata
 
   public constructor(ctype: ICType) {
+    super()
     if (!CTypeUtils.verifySchema(ctype, CTypeWrapperModel)) {
       throw new Error('CType does not correspond to schema')
     }
@@ -162,16 +165,16 @@ export default class CType implements ICType {
     return result
   }
 
-  public async store(
-    blockchain: Blockchain,
-    identity: Identity,
-    onsuccess?: () => void
-  ): Promise<Hash> {
-    return CTypeUtils.store(blockchain, identity, this.hash, onsuccess)
+  protected async query(blockchain: Blockchain, hash: string): Promise<Codec | null | undefined> {
+    return blockchain.api.query.ctype.cTYPEs(hash)
   }
 
-  public async verifyStored(blockchain: Blockchain): Promise<boolean> {
-    return CTypeUtils.verifyStored(blockchain, this.hash)
+  protected async submit(blockchain: Blockchain, signature: Uint8Array): Promise<SubmittableExtrinsic> {
+    return blockchain.api.tx.ctype.add(this.getHash(), signature)
+  }
+
+  protected getHash(): string {
+    return this.hash
   }
 
   private getLocalized(o: any, lang?: string): any {
