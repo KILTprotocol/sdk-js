@@ -1,6 +1,5 @@
-import Ajv from 'ajv';
-import { CTypeModel } from './CTypeSchema';
-
+import Ajv from 'ajv'
+import { CTypeModel } from './CTypeSchema'
 
 export function verifyClaimStructure(claim: any, schema: any): boolean {
   if (!verifySchema(schema, CTypeModel)) {

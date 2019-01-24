@@ -1,7 +1,10 @@
-import { ICType } from './CType';
-import { CTypeInputModel, CTypeWrapperModel } from './CTypeSchema';
-import { verifyClaimStructure, verifySchema, verifySchemaWithErrors } from './CTypeUtils';
-
+import { ICType } from './CType'
+import { CTypeInputModel, CTypeWrapperModel } from './CTypeSchema'
+import {
+  verifyClaimStructure,
+  verifySchema,
+  verifySchemaWithErrors,
+} from './CTypeUtils'
 
 jest.mock('../blockchain/Blockchain')
 
