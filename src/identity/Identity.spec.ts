@@ -12,14 +12,16 @@ describe('Identity', () => {
     expect(alice.seedAsHex).toEqual(
       '0x416c696365202020202020202020202020202020202020202020202020202020'
     )
+    // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.signKeyPair.secretKey)).toEqual(
       '0x416c696365202020202020202020202020202020202020202020202020202020d172a74cda4c865912c32ba0a80a57ae69abae410e5ccb59dee84e2f4432db4f'
     )
 
-    expect(alice.signKeyringPair.address()).toEqual(
+    expect(alice.address).toEqual(
       '5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ'
     )
 
+    // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.signKeyringPair.publicKey())).toEqual(
       '0xd172a74cda4c865912c32ba0a80a57ae69abae410e5ccb59dee84e2f4432db4f'
     )
@@ -30,17 +32,25 @@ describe('Identity', () => {
     const bob = Identity.buildFromMnemonic()
 
     expect(alice.phrase).not.toBeFalsy()
+    // @ts-ignore
     expect(alice.signKeyPair.publicKey).not.toBeFalsy()
+    // @ts-ignore
     expect(alice.boxKeyPair.publicKey).not.toBeFalsy()
+    // @ts-ignore
     expect(alice.signKeyPair.secretKey).not.toBeFalsy()
+    // @ts-ignore
     expect(alice.boxKeyPair.secretKey).not.toBeFalsy()
     expect(alice.seed).not.toBeFalsy()
     expect(alice.seedAsHex).not.toBeFalsy()
 
     expect(alice.phrase).not.toEqual(bob.phrase)
+    // @ts-ignore
     expect(alice.signKeyPair.publicKey).not.toEqual(bob.signKeyPair.publicKey)
+    // @ts-ignore
     expect(alice.signKeyPair.secretKey).not.toEqual(bob.signKeyPair.secretKey)
+    // @ts-ignore
     expect(alice.boxKeyPair.publicKey).not.toEqual(bob.boxKeyPair.publicKey)
+    // @ts-ignore
     expect(alice.boxKeyPair.secretKey).not.toEqual(bob.boxKeyPair.secretKey)
     expect(alice.seed).not.toEqual(bob.seed)
     expect(alice.seedAsHex).not.toEqual(bob.seedAsHex)
@@ -52,16 +62,20 @@ describe('Identity', () => {
     const alice = Identity.buildFromMnemonic(expectedPhrase)
 
     expect(alice.phrase).toEqual(expectedPhrase)
+    // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.signKeyPair.publicKey)).toEqual(
       '0x3cd649d521d0fa29da940accd9944b60ec72948e2666adb84493b3e35303fb29'
     )
+    // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.signKeyPair.secretKey)).toEqual(
       '0xb29b07cad072e729f3745035917af307ab74b2bd7efdb8454742192c22f0521d3cd649d521d0fa29da940accd9944b60ec72948e2666adb84493b3e35303fb29'
     )
 
+    // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.boxKeyPair.publicKey)).toEqual(
       '0xaf57dd23e369c7c93d97891c0a509260c3d52a9485d4f8eb2f8a983688aaac11'
     )
+    // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.boxKeyPair.secretKey)).toEqual(
       '0x43d7ab1427761c7f773c313b3d33edeb3379ef356ef10a5eefc77dd999754ba9'
     )
@@ -69,10 +83,14 @@ describe('Identity', () => {
 
   it('should have different (secret) keys for signing and boxing', () => {
     const alice = Identity.buildFromMnemonic()
+    // @ts-ignore
     expect(alice.signKeyPair.secretKey.length).not.toEqual(
+      // @ts-ignore
       alice.boxKeyPair.secretKey.length
     )
+    // @ts-ignore
     expect(alice.signKeyPair.secretKey).not.toEqual(alice.boxKeyPair.secretKey)
+    // @ts-ignore
     expect(alice.signKeyPair.publicKey).not.toEqual(alice.boxKeyPair.publicKey)
   })
 
@@ -90,13 +108,19 @@ describe('Identity', () => {
 
   it('should restore signing keypair from secret', () => {
     const alice = Identity.buildFromMnemonic()
+    // @ts-ignore
     const aliceKeypair = NaCl.naclKeypairFromSecret(alice.signKeyPair.secretKey)
+    // @ts-ignore
     expect(aliceKeypair.secretKey).toEqual(alice.signKeyPair.secretKey)
+    // @ts-ignore
     expect(aliceKeypair.publicKey).toEqual(alice.signKeyPair.publicKey)
 
     const bob = Identity.buildFromMnemonic()
+    // @ts-ignore
     const bobKeypair = NaCl.naclKeypairFromSecret(bob.signKeyPair.secretKey)
+    // @ts-ignore
     expect(bobKeypair.secretKey).not.toEqual(alice.signKeyPair.secretKey)
+    // @ts-ignore
     expect(bobKeypair.publicKey).not.toEqual(alice.signKeyPair.publicKey)
   })
 })

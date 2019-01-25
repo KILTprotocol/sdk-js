@@ -7,9 +7,9 @@ export function generateClaimHash(claim: IClaim): string {
 }
 
 export function sign(claimHash: string, identity: Identity): Uint8Array {
-  return Crypto.sign(claimHash, identity.signKeyPair.secretKey)
+  return identity.sign(claimHash)
 }
 
 export function signStr(claimHash: string, identity: Identity): string {
-  return Crypto.signStr(claimHash, identity.signKeyPair.secretKey)
+  return identity.signStr(claimHash)
 }

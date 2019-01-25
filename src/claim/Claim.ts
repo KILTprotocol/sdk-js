@@ -1,9 +1,9 @@
 import { v4 as uuid } from 'uuid'
+import { verify } from '../crypto/Crypto'
 
 import Ctype from '../ctype/CType'
 import { verifyClaimStructure } from '../ctype/CTypeUtils'
 import Identity from '../identity/Identity'
-import { signStr, verify } from '../crypto/Crypto'
 
 function verifyClaim(claimContents: object, ctype: Ctype) {
   return verifyClaimStructure(claimContents, ctype.schema)
@@ -63,7 +63,7 @@ class Claim implements IClaim {
   }
 
   private sign(identity: Identity) {
-    return signStr(JSON.stringify(this.contents), identity.signSecretKeyAsHex)
+    return identity.signStr(JSON.stringify(this.contents))
   }
 }
 
