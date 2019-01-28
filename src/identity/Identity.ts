@@ -43,7 +43,7 @@ export default class Identity extends PublicIdentity {
     }
 
     const seed = toSeed(phrase)
-    return new Identity(seed, phrase)
+    return new Identity(seed)
   }
 
   public static buildFromSeedString(seedArg: string) {
@@ -72,7 +72,6 @@ export default class Identity extends PublicIdentity {
     return nacl.box.keyPair.fromSecretKey(hash)
   }
 
-  public readonly phrase?: string
   public readonly seed: Uint8Array
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
@@ -81,7 +80,7 @@ export default class Identity extends PublicIdentity {
   private readonly signKeyringPair: KeyringPair
   private readonly boxKeyPair: BoxKeyPair
 
-  private constructor(seed: Uint8Array, phrase?: string) {
+  private constructor(seed: Uint8Array) {
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public
     // Maybe use BIP32 and BIP44
@@ -100,7 +99,6 @@ export default class Identity extends PublicIdentity {
 
     super(address, boxPublicKeyAsHex)
 
-    this.phrase = phrase
     this.seed = seed
     this.seedAsHex = seedAsHex
 

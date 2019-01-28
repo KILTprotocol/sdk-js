@@ -8,7 +8,6 @@ describe('Identity', () => {
   it('should create known identities', () => {
     const alice = Identity.buildFromSeedString('Alice')
 
-    expect(alice.phrase).toBeUndefined()
     expect(alice.seedAsHex).toEqual(
       '0x416c696365202020202020202020202020202020202020202020202020202020'
     )
@@ -31,7 +30,6 @@ describe('Identity', () => {
     const alice = Identity.buildFromMnemonic()
     const bob = Identity.buildFromMnemonic()
 
-    expect(alice.phrase).not.toBeFalsy()
     // @ts-ignore
     expect(alice.signKeyPair.publicKey).not.toBeFalsy()
     // @ts-ignore
@@ -43,7 +41,6 @@ describe('Identity', () => {
     expect(alice.seed).not.toBeFalsy()
     expect(alice.seedAsHex).not.toBeFalsy()
 
-    expect(alice.phrase).not.toEqual(bob.phrase)
     // @ts-ignore
     expect(alice.signKeyPair.publicKey).not.toEqual(bob.signKeyPair.publicKey)
     // @ts-ignore
@@ -61,7 +58,6 @@ describe('Identity', () => {
       'taxi toddler rally tonight certain tired program settle topple what execute few'
     const alice = Identity.buildFromMnemonic(expectedPhrase)
 
-    expect(alice.phrase).toEqual(expectedPhrase)
     // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.signKeyPair.publicKey)).toEqual(
       '0x3cd649d521d0fa29da940accd9944b60ec72948e2666adb84493b3e35303fb29'
