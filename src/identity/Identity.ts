@@ -109,6 +109,11 @@ export default class Identity extends PublicIdentity {
     this.boxKeyPair = boxKeyPair
   }
 
+  public getPublicIdentity(): PublicIdentity {
+    const { address, boxPublicKeyAsHex } = this
+    return { address, boxPublicKeyAsHex }
+  }
+
   public sign(cryptoInput: CryptoInput) {
     return Crypto.sign(cryptoInput, this.signKeyPair.secretKey)
   }
