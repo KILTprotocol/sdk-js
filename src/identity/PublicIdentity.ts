@@ -14,4 +14,9 @@ export default class PublicIdentity implements IPublicIdentity {
     this.address = address
     this.boxPublicKeyAsHex = boxPublicKeyAsHex
   }
+
+  public getPublicIdentity(): IPublicIdentity {
+    const { address, boxPublicKeyAsHex } = this
+    return { address, boxPublicKeyAsHex }
+  }
 }
