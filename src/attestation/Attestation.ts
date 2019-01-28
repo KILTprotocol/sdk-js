@@ -118,11 +118,11 @@ class Attestation extends BlockchainStorable implements IAttestation {
         return attestation.signedWith(this.owner) && !attestation.revoked
       }
     )
-    if (verifiedAttestation !== undefined) {
-      return Promise.resolve(true)
+    const attestationValid: boolean = verifiedAttestation !== undefined
+    if (!attestationValid) {
+      log.debug(() => 'No valid attestation found')
     }
-    log.debug(() => 'No valid attestation found')
-    return Promise.resolve(false)
+    return Promise.resolve(attestationValid)
   }
 
   /**
