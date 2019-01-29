@@ -52,10 +52,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_blockchain_blockchainstorable_.html">&quot;blockchain/BlockchainStorable&quot;</a>
+					<a href="../modules/blockchain.html">Blockchain</a>
 				</li>
 				<li>
-					<a href="_blockchain_blockchainstorable_.iblockchainstorable.html">IBlockchainStorable</a>
+					<a href="blockchain.iblockchainstorable.html">IBlockchainStorable</a>
 				</li>
 			</ul>
 			<h1>Interface IBlockchainStorable</h1>
@@ -76,7 +76,8 @@
 			<section class="tsd-panel">
 				<h3>Implemented by</h3>
 				<ul class="tsd-hierarchy">
-					<li><a href="../classes/_blockchain_blockchainstorable_.blockchainstorable.html" class="tsd-signature-type">BlockchainStorable</a></li>
+					<li><a href="../classes/attestation.attestation-1.html" class="tsd-signature-type">Attestation</a></li>
+					<li><a href="../classes/blockchain.blockchainstorable.html" class="tsd-signature-type">BlockchainStorable</a></li>
 					<li><a href="../classes/ctype.ctype-1.html" class="tsd-signature-type">CType</a></li>
 				</ul>
 			</section>
@@ -87,8 +88,8 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_blockchain_blockchainstorable_.iblockchainstorable.html#store" class="tsd-kind-icon">store</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_blockchain_blockchainstorable_.iblockchainstorable.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="blockchain.iblockchainstorable.html#store" class="tsd-kind-icon">store</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="blockchain.iblockchainstorable.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a></li>
 							</ul>
 						</section>
 					</div>
@@ -100,13 +101,13 @@
 					<a name="store" class="tsd-anchor"></a>
 					<h3>store</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">store<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a>, identity<span class="tsd-signature-symbol">: </span><a href="../classes/_identity_identity_.identity.html" class="tsd-signature-type">Identity</a>, onsuccess<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Hash</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">store<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a>, identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a>, onsuccess<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Hash</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/7d60b85/src/blockchain/BlockchainStorable.ts#L20">blockchain/BlockchainStorable.ts:20</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/313daf1/src/blockchain/BlockchainStorable.ts#L23">blockchain/BlockchainStorable.ts:23</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -124,7 +125,7 @@
 									</div>
 								</li>
 								<li>
-									<h5>identity: <a href="../classes/_identity_identity_.identity.html" class="tsd-signature-type">Identity</a></h5>
+									<h5>identity: <a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>the identity used to store the entity on chain</p>
 									</div>
@@ -150,7 +151,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/7d60b85/src/blockchain/BlockchainStorable.ts#L31">blockchain/BlockchainStorable.ts:31</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/313daf1/src/blockchain/BlockchainStorable.ts#L34">blockchain/BlockchainStorable.ts:34</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -180,40 +181,25 @@
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 					<li class=" tsd-kind-external-module">
-						<a href="../modules/_attestation_attestation_.html">"attestation/<wbr>Attestation"</a>
+						<a href="../modules/attestation.html">Attestation</a>
 					</li>
 					<li class="current tsd-kind-external-module">
-						<a href="../modules/_blockchain_blockchainstorable_.html">"blockchain/<wbr>Blockchain<wbr>Storable"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_claim_claim_.html">"claim/<wbr>Claim"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_config_configlog_.html">"config/<wbr>Config<wbr>Log"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_crypto_index_.html">"crypto/index"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_ctype_ctypeutils_.html">"ctype/CType<wbr>Utils"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_identity_identity_.html">"identity/<wbr>Identity"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_identity_publicidentity_.html">"identity/<wbr>Public<wbr>Identity"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_index_.html">"index"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
 						<a href="../modules/blockchain.html">Blockchain</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="../modules/ctype.html">CType</a>
 					</li>
 					<li class=" tsd-kind-external-module">
+						<a href="../modules/claim.html">Claim</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="../modules/config.html">Config</a>
+					</li>
+					<li class=" tsd-kind-external-module">
 						<a href="../modules/crypto.html">Crypto</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="../modules/identity.html">Identity</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="../modules/sdk.html">SDK</a>
@@ -223,18 +209,21 @@
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_blockchain_blockchainstorable_.blockchainstorable.html" class="tsd-kind-icon">Blockchain<wbr>Storable</a>
+						<a href="../classes/blockchain.blockchain-1.html" class="tsd-kind-icon">Blockchain</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-external-module">
+						<a href="../classes/blockchain.blockchainstorable.html" class="tsd-kind-icon">Blockchain<wbr>Storable</a>
 					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_blockchain_blockchainstorable_.iblockchainstorable.html" class="tsd-kind-icon">IBlockchain<wbr>Storable</a>
+						<a href="blockchain.iblockchainstorable.html" class="tsd-kind-icon">IBlockchain<wbr>Storable</a>
 						<ul>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_blockchain_blockchainstorable_.iblockchainstorable.html#store" class="tsd-kind-icon">store</a>
+								<a href="blockchain.iblockchainstorable.html#store" class="tsd-kind-icon">store</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_blockchain_blockchainstorable_.iblockchainstorable.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a>
+								<a href="blockchain.iblockchainstorable.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a>
 							</li>
 						</ul>
 					</li>

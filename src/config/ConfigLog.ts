@@ -1,3 +1,6 @@
+/**
+ * @module Config
+ */
 import {
   LoggerFactoryOptions,
   LFService,

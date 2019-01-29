@@ -1,3 +1,6 @@
+/**
+ * @module SDK
+ */
 export { default as Demo } from './demo/Demo'
 export { default as Identity } from './identity/Identity'
 export { default as PublicIdentity } from './identity/PublicIdentity'

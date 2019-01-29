@@ -41,7 +41,7 @@ export default class CType extends BlockchainStorable implements ICType {
    * arbitrary properties of an object. Additionally the default language translations are integrated
    * into the input model and need to be separated for the CTYPE model.
    * This is the reverse function of CType.getCTypeInputModel(...).
-   * @returns {any} The CTYPE for the input model.
+   * @returns The CTYPE for the input model.
    */
   public static fromInputModel(ctypeInput: any): CType {
     if (!CTypeUtils.verifySchema(ctypeInput, CTypeInputModel)) {
@@ -140,7 +140,7 @@ export default class CType extends BlockchainStorable implements ICType {
    * This is necessary because component editors rely on editing arrays of properties instead of
    * arbitrary properties of an object. Additionally the default language translations are integrated
    * into the input model. This is the reverse function of CType.fromInputModel(...).
-   * @returns {any} The CTYPE input model.
+   * @returns The CTYPE input model.
    */
   public getCTypeInputModel(): any {
     // create clone

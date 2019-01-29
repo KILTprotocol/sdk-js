@@ -1,3 +1,6 @@
+/**
+ * @module Claim
+ */
 import { v4 as uuid } from 'uuid'
 import { verify } from '../crypto/Crypto'
 
@@ -22,7 +25,7 @@ export interface IClaim {
   signature: string
 }
 
-class Claim implements IClaim {
+export default class Claim implements IClaim {
   public static fromObject(obj: IClaim): Claim {
     const newClaim = Object.create(Claim.prototype)
     return Object.assign(newClaim, obj)
@@ -66,5 +69,3 @@ class Claim implements IClaim {
     return identity.signStr(JSON.stringify(this.contents))
   }
 }
-
-export default Claim

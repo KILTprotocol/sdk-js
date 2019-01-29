@@ -1,3 +1,6 @@
+/**
+ * @module CType
+ */
 import Ajv from 'ajv'
 import { CTypeModel } from './CTypeSchema'
 
