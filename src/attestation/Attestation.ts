@@ -1,3 +1,6 @@
+/**
+ * @module Attestation
+ */
 import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic'
 import { Codec } from '@polkadot/types/types'
 
@@ -7,7 +10,7 @@ import { IClaim } from '../claim/Claim'
 import { factory } from '../config/ConfigLog'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
-import { Address } from '../crypto/Crypto';
+import { Address } from '../crypto/Crypto'
 
 const log = factory.getLogger('Attestation')
 
@@ -18,7 +21,8 @@ export interface IAttestation {
   revoked: boolean
 }
 
-class Attestation extends BlockchainStorable implements IAttestation {
+export default class Attestation extends BlockchainStorable
+  implements IAttestation {
   public static fromObject(obj: IAttestation): Attestation {
     const newAttestation: Attestation = Object.create(Attestation.prototype)
     return Object.assign(newAttestation, obj)
@@ -154,5 +158,3 @@ class Attestation extends BlockchainStorable implements IAttestation {
     return Attestation.doQueryChain(blockchain, hash)
   }
 }
-
-export default Attestation

@@ -1,3 +1,6 @@
+/**
+ * @module Identity
+ */
 import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic'
 /**
  * @module Identity

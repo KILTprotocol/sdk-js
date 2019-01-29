@@ -1,3 +1,6 @@
+/**
+ * @module Identity
+ */
 interface IPublicIdentity {
   address: string
   boxPublicKeyAsHex: string

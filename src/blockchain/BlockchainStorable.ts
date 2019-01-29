@@ -1,3 +1,6 @@
+/**
+ * @module Blockchain
+ */
 import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic'
 import { ExtrinsicStatus, Hash } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
