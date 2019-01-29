@@ -7,7 +7,7 @@ import { IClaim } from '../claim/Claim'
 import { factory } from '../config/ConfigLog'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
-import { Address } from '../crypto/Crypto';
+import { Address } from '../crypto/Crypto'
 
 const log = factory.getLogger('Attestation')
 
