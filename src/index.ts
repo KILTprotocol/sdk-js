@@ -1,5 +1,6 @@
 export { default as Demo } from './demo/Demo'
 export { default as Identity } from './identity/Identity'
+export { default as PublicIdentity } from './identity/PublicIdentity'
 export { default as Blockchain } from './blockchain/Blockchain'
 export { default as BlockchainStorable } from './blockchain/BlockchainStorable'
 export { default as Crypto } from './crypto'

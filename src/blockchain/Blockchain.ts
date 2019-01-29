@@ -91,11 +91,11 @@ export default class Blockchain {
     accountAddressTo: string,
     amount: number
   ) {
-    const accountAddressFrom = identity.signKeyringPair.address()
+    const accountAddressFrom = identity.address
 
     const nonce = await Blockchain.getNonce(api, accountAddressFrom)
     const transfer = api.tx.balances.transfer(accountAddressTo, amount)
-    transfer.sign(identity.signKeyringPair, nonce.toHex())
+    identity.signSubmittableExtrinsic(transfer, nonce.toHex())
     const hash = await transfer.send()
     return hash
   }
@@ -108,10 +108,10 @@ export default class Blockchain {
     identity: Identity,
     tx: SubmittableExtrinsic
   ): Promise<Hash> {
-    const accountAddress = identity.signKeyringPair.address()
+    const accountAddress = identity.address
     const nonce = await Blockchain.getNonce(api, accountAddress)
-    const signed: SubmittableExtrinsic = tx.sign(
-      identity.signKeyringPair,
+    const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
+      tx,
       nonce.toHex()
     )
     return signed.send()
@@ -177,11 +177,11 @@ export default class Blockchain {
     accountAddressTo: string,
     amount: number
   ) {
-    const accountAddressFrom = identity.signKeyringPair.address()
+    const accountAddressFrom = identity.address
 
     const nonce = await this.getNonce(accountAddressFrom)
     const transfer = this.api.tx.balances.transfer(accountAddressTo, amount)
-    transfer.sign(identity.signKeyringPair, nonce.toHex())
+    identity.signSubmittableExtrinsic(transfer, nonce.toHex())
     const hash = await transfer.send()
     return hash
   }
@@ -191,10 +191,10 @@ export default class Blockchain {
     tx: SubmittableExtrinsic,
     status?: (status: ExtrinsicStatus) => void
   ): Promise<Hash> {
-    const accountAddress = identity.signKeyringPair.address()
+    const accountAddress = identity.address
     const nonce = await this.getNonce(accountAddress)
-    const signed: SubmittableExtrinsic = tx.sign(
-      identity.signKeyringPair,
+    const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
+      tx,
       nonce.toHex()
     )
     return signed.send(status)

@@ -3,7 +3,6 @@ import { ExtrinsicStatus, Hash } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 
 import { factory } from '../config/ConfigLog'
-import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import Blockchain from './Blockchain'
 
@@ -60,10 +59,7 @@ export abstract class BlockchainStorable implements IBlockchainStorable {
     identity: Identity,
     onsuccess?: () => void
   ): Promise<Hash> {
-    const signature = Crypto.sign(
-      this.getHash(),
-      identity.signKeyPair.secretKey
-    )
+    const signature = identity.sign(this.getHash())
     const submittedExtrinsic: SubmittableExtrinsic = await this.submit(
       blockchain,
       signature

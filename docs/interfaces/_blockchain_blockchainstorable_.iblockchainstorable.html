@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>IClaim | @kiltprotocol/prototype-sdk</title>
+	<title>IBlockchainStorable | @kiltprotocol/prototype-sdk</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -52,13 +52,13 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_claim_claim_.html">&quot;claim/Claim&quot;</a>
+					<a href="../modules/_blockchain_blockchainstorable_.html">&quot;blockchain/BlockchainStorable&quot;</a>
 				</li>
 				<li>
-					<a href="_claim_claim_.iclaim.html">IClaim</a>
+					<a href="_blockchain_blockchainstorable_.iblockchainstorable.html">IBlockchainStorable</a>
 				</li>
 			</ul>
-			<h1>Interface IClaim</h1>
+			<h1>Interface IBlockchainStorable</h1>
 		</div>
 	</div>
 </header>
@@ -69,8 +69,15 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">IClaim</span>
+						<span class="target">IBlockchainStorable</span>
 					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implemented by</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../classes/_blockchain_blockchainstorable_.blockchainstorable.html" class="tsd-signature-type">BlockchainStorable</a></li>
+					<li><a href="../classes/ctype.ctype-1.html" class="tsd-signature-type">CType</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -78,80 +85,91 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Properties</h3>
+							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_claim_claim_.iclaim.html#alias" class="tsd-kind-icon">alias</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_claim_claim_.iclaim.html#contents" class="tsd-kind-icon">contents</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_claim_claim_.iclaim.html#ctype" class="tsd-kind-icon">ctype</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_claim_claim_.iclaim.html#hash" class="tsd-kind-icon">hash</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_claim_claim_.iclaim.html#owner" class="tsd-kind-icon">owner</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_claim_claim_.iclaim.html#signature" class="tsd-kind-icon">signature</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_blockchain_blockchainstorable_.iblockchainstorable.html#store" class="tsd-kind-icon">store</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_blockchain_blockchainstorable_.iblockchainstorable.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="alias" class="tsd-anchor"></a>
-					<h3>alias</h3>
-					<div class="tsd-signature tsd-kind-icon">alias<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/7d60b85/src/claim/Claim.ts#L17">claim/Claim.ts:17</a></li>
-						</ul>
-					</aside>
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="store" class="tsd-anchor"></a>
+					<h3>store</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">store<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a>, identity<span class="tsd-signature-symbol">: </span><a href="../classes/_identity_identity_.identity.html" class="tsd-signature-type">Identity</a>, onsuccess<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Hash</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/7d60b85/src/blockchain/BlockchainStorable.ts#L20">blockchain/BlockchainStorable.ts:20</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Stores the entity on the blockchain.
+									TODO: populate errors via another callback</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>blockchain: <a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the blockchain API object</p>
+									</div>
+								</li>
+								<li>
+									<h5>identity: <a href="../classes/_identity_identity_.identity.html" class="tsd-signature-type">Identity</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the identity used to store the entity on chain</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> onsuccess: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the success callback</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Hash</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="contents" class="tsd-anchor"></a>
-					<h3>contents</h3>
-					<div class="tsd-signature tsd-kind-icon">contents<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/7d60b85/src/claim/Claim.ts#L19">claim/Claim.ts:19</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="ctype" class="tsd-anchor"></a>
-					<h3>ctype</h3>
-					<div class="tsd-signature tsd-kind-icon">ctype<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/7d60b85/src/claim/Claim.ts#L18">claim/Claim.ts:18</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="hash" class="tsd-anchor"></a>
-					<h3>hash</h3>
-					<div class="tsd-signature tsd-kind-icon">hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/7d60b85/src/claim/Claim.ts#L20">claim/Claim.ts:20</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="owner" class="tsd-anchor"></a>
-					<h3>owner</h3>
-					<div class="tsd-signature tsd-kind-icon">owner<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/7d60b85/src/claim/Claim.ts#L21">claim/Claim.ts:21</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="signature" class="tsd-anchor"></a>
-					<h3>signature</h3>
-					<div class="tsd-signature tsd-kind-icon">signature<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/7d60b85/src/claim/Claim.ts#L22">claim/Claim.ts:22</a></li>
-						</ul>
-					</aside>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="verifystored" class="tsd-anchor"></a>
+					<h3>verify<wbr>Stored</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">verify<wbr>Stored<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/7d60b85/src/blockchain/BlockchainStorable.ts#L31">blockchain/BlockchainStorable.ts:31</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Verifies that the entity is stored on the blockchain.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>blockchain: <a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the blockchain API object</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -164,10 +182,10 @@
 					<li class=" tsd-kind-external-module">
 						<a href="../modules/_attestation_attestation_.html">"attestation/<wbr>Attestation"</a>
 					</li>
-					<li class=" tsd-kind-external-module">
+					<li class="current tsd-kind-external-module">
 						<a href="../modules/_blockchain_blockchainstorable_.html">"blockchain/<wbr>Blockchain<wbr>Storable"</a>
 					</li>
-					<li class="current tsd-kind-external-module">
+					<li class=" tsd-kind-external-module">
 						<a href="../modules/_claim_claim_.html">"claim/<wbr>Claim"</a>
 					</li>
 					<li class=" tsd-kind-external-module">
@@ -204,28 +222,19 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
+					<li class=" tsd-kind-class tsd-parent-kind-external-module">
+						<a href="../classes/_blockchain_blockchainstorable_.blockchainstorable.html" class="tsd-kind-icon">Blockchain<wbr>Storable</a>
+					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_claim_claim_.iclaim.html" class="tsd-kind-icon">IClaim</a>
+						<a href="_blockchain_blockchainstorable_.iblockchainstorable.html" class="tsd-kind-icon">IBlockchain<wbr>Storable</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_claim_claim_.iclaim.html#alias" class="tsd-kind-icon">alias</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_blockchain_blockchainstorable_.iblockchainstorable.html#store" class="tsd-kind-icon">store</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_claim_claim_.iclaim.html#contents" class="tsd-kind-icon">contents</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_claim_claim_.iclaim.html#ctype" class="tsd-kind-icon">ctype</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_claim_claim_.iclaim.html#hash" class="tsd-kind-icon">hash</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_claim_claim_.iclaim.html#owner" class="tsd-kind-icon">owner</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_claim_claim_.iclaim.html#signature" class="tsd-kind-icon">signature</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_blockchain_blockchainstorable_.iblockchainstorable.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a>
 							</li>
 						</ul>
 					</li>
