@@ -7,6 +7,7 @@ import { IClaim } from '../claim/Claim'
 import { factory } from '../config/ConfigLog'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
+import { Address } from '../crypto/Crypto';
 
 const log = factory.getLogger('Attestation')
 
@@ -56,6 +57,22 @@ class Attestation extends BlockchainStorable implements IAttestation {
     return Promise.resolve(attestations)
   }
 
+  /**
+   * Verifies that there is a non-revoked attestation for the given `claim` signed by `attester` on the blockchain.
+   *
+   * @param blockchain the blockchain API object
+   * @param claim the claim to check
+   * @param attester the attester the attestation must be signed with
+   */
+  public static async verify(
+    blockchain: Blockchain,
+    claim: IClaim,
+    attester: Identity
+  ): Promise<boolean> {
+    const attestation: Attestation = new Attestation(claim, attester)
+    return attestation.verify(blockchain)
+  }
+
   private static async doQueryChain(
     blockchain: Blockchain,
     hash: string
@@ -87,19 +104,35 @@ class Attestation extends BlockchainStorable implements IAttestation {
     // TODO revoke onChain
   }
 
-  public async verify(blockchain: Blockchain): Promise<boolean> {
-    log.debug(() => `Verifying attestations with hash ${this.getHash()}`)
+  public async verify(
+    blockchain: Blockchain,
+    claimHash: string = this.claimHash
+  ): Promise<boolean> {
+    // 1) Query attestations for claimHash
     const attestations: Attestation[] = await Attestation.queryAll(
       blockchain,
-      this.getHash()
+      claimHash
     )
-    let validAttestations: number = 0
-    attestations.forEach(attestation => {
-      if (!attestation.revoked) {
-        validAttestations++
+    // 2) Find non-revoked attestation signed by this attestations' owner
+    const verifiedAttestation = attestations.find(
+      (attestation: Attestation) => {
+        return attestation.signedWith(this.owner) && !attestation.revoked
       }
-    })
-    return validAttestations === attestations.length && validAttestations > 0
+    )
+    const attestationValid: boolean = verifiedAttestation !== undefined
+    if (!attestationValid) {
+      log.debug(() => 'No valid attestation found')
+    }
+    return Promise.resolve(attestationValid)
+  }
+
+  /**
+   * Checks if the attestation is signed by the given `attester`.
+   *
+   * @param attester the address of the attester
+   */
+  public signedWith(attester: Address): boolean {
+    return Crypto.verify(this.claimHash, this.signature, attester)
   }
 
   protected getHash(): string {
