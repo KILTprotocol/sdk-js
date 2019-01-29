@@ -7,6 +7,7 @@ import { IClaim } from '../claim/Claim'
 import { factory } from '../config/ConfigLog'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
+import { Address } from '../crypto/Crypto';
 
 const log = factory.getLogger('Attestation')
 
@@ -130,7 +131,7 @@ class Attestation extends BlockchainStorable implements IAttestation {
    *
    * @param attester the address of the attester
    */
-  public signedWith(attester: string): boolean {
+  public signedWith(attester: Address): boolean {
     return Crypto.verify(this.claimHash, this.signature, attester)
   }
 

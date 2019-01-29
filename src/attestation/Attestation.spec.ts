@@ -22,10 +22,7 @@ describe('Attestation', () => {
   it('stores attestation', async () => {
     const resultHash = Crypto.hashStr('987654')
     const claimHash = Crypto.hashStr(JSON.stringify(claim))
-    const signatureAlice = Crypto.signStr(
-      claimHash,
-      identityAlice.signKeyPair.secretKey
-    )
+    const signatureAlice = identityAlice.signStr(claimHash)
     // @ts-ignore
     const blockchain = {
       api: {
@@ -97,10 +94,7 @@ describe('Attestation', () => {
 
   it('verify attestation revoked', async () => {
     const claimHash = Crypto.hashStr(JSON.stringify(claim))
-    const signatureAlice = Crypto.signStr(
-      claimHash,
-      identityAlice.signKeyPair.secretKey
-    )
+    const signatureAlice = identityAlice.signStr(claimHash)
     // @ts-ignore
     const blockchain = {
       api: {
@@ -139,22 +133,10 @@ describe('Attestation', () => {
     const identityFerdie = Identity.buildFromSeedString('Ferdie')
     const claimHash = Crypto.hashStr(JSON.stringify(claim))
     const invalidClaimHash = Crypto.hashStr(JSON.stringify(invalidClaim))
-    const signatureAlice = Crypto.signStr(
-      claimHash,
-      identityAlice.signKeyPair.secretKey
-    )
-    const signatureBob = Crypto.signStr(
-      claimHash,
-      identityBob.signKeyPair.secretKey
-    )
-    const signatureSteve = Crypto.signStr(
-      claimHash,
-      identitySteve.signKeyPair.secretKey
-    )
-    const invalidSignatureFerdie = Crypto.signStr(
-      invalidClaimHash,
-      identityFerdie.signKeyPair.secretKey
-    )
+    const signatureAlice = identityAlice.signStr(claimHash)
+    const signatureBob = identityBob.signStr(claimHash)
+    const signatureSteve = identitySteve.signStr(claimHash)
+    const invalidSignatureFerdie = identityFerdie.signStr(invalidClaimHash)
     // @ts-ignore
     const blockchain = {
       api: {
