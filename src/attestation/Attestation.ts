@@ -3,6 +3,7 @@
  */
 import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic'
 import { Codec } from '@polkadot/types/types'
+import { ExtrinsicStatus, Hash } from '@polkadot/types'
 
 import Blockchain from '../blockchain/Blockchain'
 import { BlockchainStorable } from '../blockchain/BlockchainStorable'
@@ -103,9 +104,35 @@ export default class Attestation extends BlockchainStorable
     this.revoked = revoked
   }
 
-  public revoke() {
+  public async revoke(
+    blockchain: Blockchain,
+    identity: Identity,
+    onsuccess?: () => void
+  ): Promise<Hash> {
     log.debug(() => `Revoking attestations with hash ${this.getHash()}`)
-    // TODO revoke onChain
+    const signature = identity.sign(this.getHash())
+    const extrinsic: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
+      this.getHash(),
+      signature
+    )
+
+    return blockchain.submitTx(
+      identity,
+      extrinsic,
+      (status: ExtrinsicStatus) => {
+        if (
+          onsuccess &&
+          status.type === 'Finalised' &&
+          status.value &&
+          status.value.encodedLength > 0
+        ) {
+          log.debug(
+            () => `Entity successfully stored on chain. Status: ${status}`
+          )
+          onsuccess()
+        }
+      }
+    )
   }
 
   public async verify(
