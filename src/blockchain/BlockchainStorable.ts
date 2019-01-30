@@ -32,44 +32,53 @@ export interface IBlockchainStorable {
    * @param blockchain the blockchain API object
    */
   verifyStored(blockchain: Blockchain): Promise<boolean>
+
+  /**
+   * Each blockchain storable must provide a unique hash used to store and retrieve it on/from the blockchain.
+   */
+  getHash(): string
 }
 
 export abstract class BlockchainStorable implements IBlockchainStorable {
-  /**
-   * Query a 1-to-many entity from the blockchain
-   * (Intended to be implemented in subclasses).
-   *
-   * @param blockchain the blockchain API object
-   * @param hash the key to query the entities on the blockchain
-   */
-  public static queryAll(blockchain: Blockchain, hash: string): Promise<any[]> {
-    throw new Error('not implemented')
-  }
-
-  /**
-   * Query a 1-to-1 entity from the blockchain.
-   * (Intended to be implemented in subclasses).
-   *
-   * @param blockchain the blockchain API object
-   * @param hash the key to query the entity on the blockchain
-   */
-  public static queryOne(blockchain: Blockchain, hash: string): Promise<any> {
-    throw new Error('not implemented')
-  }
-
   public async store(
     blockchain: Blockchain,
     identity: Identity,
     onsuccess?: () => void
   ): Promise<Hash> {
     const signature = identity.sign(this.getHash())
-    const submittedExtrinsic: SubmittableExtrinsic = await this.submit(
+    const submittedExtrinsic: SubmittableExtrinsic = await this.callStoreFunction(
       blockchain,
       signature
     )
-    return blockchain.submitTx(
+    return this.submitToBlockchain(
+      blockchain,
       identity,
       submittedExtrinsic,
+      onsuccess
+    )
+  }
+
+  public async verifyStored(blockchain: Blockchain): Promise<boolean> {
+    const query: Codec | null | undefined = await this.query(
+      blockchain,
+      this.getHash()
+    )
+    // @ts-ignore
+    const value = query && query.encodedLength ? query.toJSON() : null
+    return value != null
+  }
+
+  public abstract getHash(): string
+
+  protected submitToBlockchain(
+    blockchain: Blockchain,
+    identity: Identity,
+    extrinsic: SubmittableExtrinsic,
+    onsuccess?: () => void
+  ) {
+    return blockchain.submitTx(
+      identity,
+      extrinsic,
       (status: ExtrinsicStatus) => {
         if (
           onsuccess &&
@@ -86,16 +95,6 @@ export abstract class BlockchainStorable implements IBlockchainStorable {
     )
   }
 
-  public async verifyStored(blockchain: Blockchain): Promise<boolean> {
-    const query: Codec | null | undefined = await this.query(
-      blockchain,
-      this.getHash()
-    )
-    // @ts-ignore
-    const value = query && query.encodedLength ? query.toJSON() : null
-    return value != null
-  }
-
   /**
    * Implementations must provide the concrete implementation for querying the entity on the blockchain.
    *
@@ -108,18 +107,13 @@ export abstract class BlockchainStorable implements IBlockchainStorable {
   ): Promise<Codec | null | undefined>
 
   /**
-   * Implementations must provide the concrete implementation for submitting the entity to the blockchain network.
+   * Subclasses must call the concrete blockchain module for storing the entity.
    *
    * @param blockchain the blockchain API object
    * @param signature the signed entity
    */
-  protected abstract submit(
+  protected abstract callStoreFunction(
     blockchain: Blockchain,
     signature: Uint8Array
   ): Promise<SubmittableExtrinsic>
-
-  /**
-   * Implementations must provide the hash of the entity used to store and retrieve the entity on/from the blockchain.
-   */
-  protected abstract getHash(): string
 }
