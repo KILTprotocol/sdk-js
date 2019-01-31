@@ -16,7 +16,6 @@ import { ExtrinsicStatus } from '@polkadot/types/index'
 
 export default class Blockchain {
   public static DEFAULT_WS_ADDRESS = 'ws://127.0.0.1:9944'
-
   public static async build(
     host: string = Blockchain.DEFAULT_WS_ADDRESS
   ): Promise<Blockchain> {

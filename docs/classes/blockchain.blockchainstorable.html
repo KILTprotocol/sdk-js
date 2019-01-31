@@ -94,13 +94,12 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="blockchain.blockchainstorable.html#gethash" class="tsd-kind-icon">get<wbr>Hash</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="blockchain.blockchainstorable.html#callstorefunction" class="tsd-kind-icon">call<wbr>Store<wbr>Function</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="blockchain.blockchainstorable.html#gethash" class="tsd-kind-icon">get<wbr>Hash</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="blockchain.blockchainstorable.html#query" class="tsd-kind-icon">query</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="blockchain.blockchainstorable.html#store" class="tsd-kind-icon">store</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="blockchain.blockchainstorable.html#submit" class="tsd-kind-icon">submit</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="blockchain.blockchainstorable.html#submittoblockchain" class="tsd-kind-icon">submit<wbr>ToBlockchain</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="blockchain.blockchainstorable.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="blockchain.blockchainstorable.html#queryall" class="tsd-kind-icon">query<wbr>All</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="blockchain.blockchainstorable.html#queryone" class="tsd-kind-icon">query<wbr>One</a></li>
 							</ul>
 						</section>
 					</div>
@@ -109,23 +108,56 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-					<a name="gethash" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagAbstract">Abstract</span> get<wbr>Hash</h3>
+					<a name="callstorefunction" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagAbstract">Abstract</span> call<wbr>Store<wbr>Function</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Hash<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+						<li class="tsd-signature tsd-kind-icon">call<wbr>Store<wbr>Function<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><a href="blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a>, signature<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/313daf1/src/blockchain/BlockchainStorable.ts#L124">blockchain/BlockchainStorable.ts:124</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/blockchain/BlockchainStorable.ts#L115">blockchain/BlockchainStorable.ts:115</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Implementations must provide the hash of the entity used to store and retrieve the entity on/from the blockchain.</p>
+									<p>Subclasses must call the concrete blockchain module for storing the entity.</p>
 								</div>
 							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>blockchain: <a href="blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the blockchain API object</p>
+									</div>
+								</li>
+								<li>
+									<h5>signature: <span class="tsd-signature-type">Uint8Array</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the signed entity</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="gethash" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagAbstract">Abstract</span> get<wbr>Hash</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Hash<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/blockchain.iblockchainstorable.html">IBlockchainStorable</a>.<a href="../interfaces/blockchain.iblockchainstorable.html#gethash">getHash</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/blockchain/BlockchainStorable.ts#L71">blockchain/BlockchainStorable.ts:71</a></li>
+								</ul>
+							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
 						</li>
 					</ul>
@@ -140,7 +172,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/313daf1/src/blockchain/BlockchainStorable.ts#L105">blockchain/BlockchainStorable.ts:105</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/blockchain/BlockchainStorable.ts#L104">blockchain/BlockchainStorable.ts:104</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -177,7 +209,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/313daf1/src/blockchain/BlockchainStorable.ts#L60">blockchain/BlockchainStorable.ts:60</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/blockchain/BlockchainStorable.ts#L43">blockchain/BlockchainStorable.ts:43</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -197,39 +229,34 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-					<a name="submit" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagAbstract">Abstract</span> submit</h3>
+					<a name="submittoblockchain" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> submit<wbr>ToBlockchain</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon">submit<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><a href="blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a>, signature<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">submit<wbr>ToBlockchain<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><a href="blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a>, identity<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a>, extrinsic<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SubmittableExtrinsic</span>, onsuccess<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Hash</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/313daf1/src/blockchain/BlockchainStorable.ts#L116">blockchain/BlockchainStorable.ts:116</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/blockchain/BlockchainStorable.ts#L73">blockchain/BlockchainStorable.ts:73</a></li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Implementations must provide the concrete implementation for submitting the entity to the blockchain network.</p>
-								</div>
-							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>blockchain: <a href="blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the blockchain API object</p>
-									</div>
 								</li>
 								<li>
-									<h5>signature: <span class="tsd-signature-type">Uint8Array</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the signed entity</p>
-									</div>
+									<h5>identity: <a href="identity.identity-1.html" class="tsd-signature-type">Identity</a></h5>
+								</li>
+								<li>
+									<h5>extrinsic: <span class="tsd-signature-type">SubmittableExtrinsic</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> onsuccess: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Hash</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -244,7 +271,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/blockchain.iblockchainstorable.html">IBlockchainStorable</a>.<a href="../interfaces/blockchain.iblockchainstorable.html#verifystored">verifyStored</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/313daf1/src/blockchain/BlockchainStorable.ts#L89">blockchain/BlockchainStorable.ts:89</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/blockchain/BlockchainStorable.ts#L61">blockchain/BlockchainStorable.ts:61</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -254,82 +281,6 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
-					<a name="queryall" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagStatic">Static</span> query<wbr>All</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">query<wbr>All<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><a href="blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a>, hash<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/313daf1/src/blockchain/BlockchainStorable.ts#L45">blockchain/BlockchainStorable.ts:45</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Query a 1-to-many entity from the blockchain
-									(Intended to be implemented in subclasses).</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>blockchain: <a href="blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the blockchain API object</p>
-									</div>
-								</li>
-								<li>
-									<h5>hash: <span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the key to query the entities on the blockchain</p>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
-					<a name="queryone" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagStatic">Static</span> query<wbr>One</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">query<wbr>One<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><a href="blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a>, hash<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/313daf1/src/blockchain/BlockchainStorable.ts#L56">blockchain/BlockchainStorable.ts:56</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Query a 1-to-1 entity from the blockchain.
-									(Intended to be implemented in subclasses).</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>blockchain: <a href="blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the blockchain API object</p>
-									</div>
-								</li>
-								<li>
-									<h5>hash: <span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the key to query the entity on the blockchain</p>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -378,6 +329,9 @@
 						<a href="blockchain.blockchainstorable.html" class="tsd-kind-icon">Blockchain<wbr>Storable</a>
 						<ul>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+								<a href="blockchain.blockchainstorable.html#callstorefunction" class="tsd-kind-icon">call<wbr>Store<wbr>Function</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="blockchain.blockchainstorable.html#gethash" class="tsd-kind-icon">get<wbr>Hash</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -387,16 +341,10 @@
 								<a href="blockchain.blockchainstorable.html#store" class="tsd-kind-icon">store</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-								<a href="blockchain.blockchainstorable.html#submit" class="tsd-kind-icon">submit</a>
+								<a href="blockchain.blockchainstorable.html#submittoblockchain" class="tsd-kind-icon">submit<wbr>ToBlockchain</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="blockchain.blockchainstorable.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="blockchain.blockchainstorable.html#queryall" class="tsd-kind-icon">query<wbr>All</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="blockchain.blockchainstorable.html#queryone" class="tsd-kind-icon">query<wbr>One</a>
 							</li>
 						</ul>
 					</li>

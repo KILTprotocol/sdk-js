@@ -30,7 +30,6 @@ export default class Claim implements IClaim {
     const newClaim = Object.create(Claim.prototype)
     return Object.assign(newClaim, obj)
   }
-
   public alias: string
   public ctype: string
   public contents: object

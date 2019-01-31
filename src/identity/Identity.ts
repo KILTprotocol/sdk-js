@@ -30,6 +30,7 @@ type BoxPublicKey =
   | Identity['boxKeyPair']['publicKey']
 
 export default class Identity extends PublicIdentity {
+  private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
   public static buildFromMnemonic(phraseArg?: string) {
     let phrase = phraseArg
     if (phrase) {
@@ -54,34 +55,9 @@ export default class Identity extends PublicIdentity {
     const asU8a = stringUtil.stringToU8a(padded)
     return new Identity(asU8a)
   }
-
-  private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
-
-  // fromSeed is hashing its seed, therefore an independent secret key should be considered as derived
-  private static createSignKeyPair(seed: Uint8Array) {
-    return nacl.sign.keyPair.fromSeed(seed)
-  }
-
-  // As fromSeed() is not implemented here we do our own hashing in order to prohibit inferring the original seed from a secret key
-  // To be sure that we don't generate the same hash by accidentally using the same hash algorithm we do some padding
-  private static createBoxKeyPair(seed: Uint8Array) {
-    const paddedSeed = new Uint8Array(
-      seed.length + Identity.ADDITIONAL_ENTROPY_FOR_HASHING.length
-    )
-    paddedSeed.set(seed)
-    paddedSeed.set(Identity.ADDITIONAL_ENTROPY_FOR_HASHING, seed.length)
-
-    const hash = Crypto.hash(paddedSeed)
-    return nacl.box.keyPair.fromSecretKey(hash)
-  }
-
   public readonly seed: Uint8Array
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
-
-  private readonly signKeyPair: SignKeyPair
-  private readonly signKeyringPair: KeyringPair
-  private readonly boxKeyPair: BoxKeyPair
 
   private constructor(seed: Uint8Array) {
     // NB: use different secret keys for each key pair in order to avoid
@@ -111,6 +87,10 @@ export default class Identity extends PublicIdentity {
 
     this.boxKeyPair = boxKeyPair
   }
+
+  private readonly signKeyPair: SignKeyPair
+  private readonly signKeyringPair: KeyringPair
+  private readonly boxKeyPair: BoxKeyPair
 
   public getPublicIdentity(): PublicIdentity {
     const { address, boxPublicKeyAsHex } = this
@@ -171,5 +151,23 @@ export default class Identity extends PublicIdentity {
     nonceAsHex: string
   ): SubmittableExtrinsic {
     return submittableExtrinsic.sign(this.signKeyringPair, nonceAsHex)
+  }
+
+  // fromSeed is hashing its seed, therefore an independent secret key should be considered as derived
+  private static createSignKeyPair(seed: Uint8Array) {
+    return nacl.sign.keyPair.fromSeed(seed)
+  }
+
+  // As fromSeed() is not implemented here we do our own hashing in order to prohibit inferring the original seed from a secret key
+  // To be sure that we don't generate the same hash by accidentally using the same hash algorithm we do some padding
+  private static createBoxKeyPair(seed: Uint8Array) {
+    const paddedSeed = new Uint8Array(
+      seed.length + Identity.ADDITIONAL_ENTROPY_FOR_HASHING.length
+    )
+    paddedSeed.set(seed)
+    paddedSeed.set(Identity.ADDITIONAL_ENTROPY_FOR_HASHING, seed.length)
+
+    const hash = Crypto.hash(paddedSeed)
+    return nacl.box.keyPair.fromSecretKey(hash)
   }
 }

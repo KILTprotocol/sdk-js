@@ -177,14 +177,16 @@ describe('Attestation', () => {
     } as Blockchain
 
     expect(
-      await Attestation.verify(blockchain, claim, identityAlice)
-    ).toBeTruthy()
-    expect(await Attestation.verify(blockchain, claim, identityBob)).toBeFalsy()
-    expect(
-      await Attestation.verify(blockchain, claim, identitySteve)
+      await new Attestation(claim, identityAlice).verify(blockchain)
     ).toBeTruthy()
     expect(
-      await Attestation.verify(blockchain, claim, identityFerdie)
+      await new Attestation(claim, identityBob).verify(blockchain)
+    ).toBeFalsy()
+    expect(
+      await new Attestation(claim, identitySteve).verify(blockchain)
+    ).toBeTruthy()
+    expect(
+      await new Attestation(claim, identityFerdie).verify(blockchain)
     ).toBeFalsy()
   })
 })

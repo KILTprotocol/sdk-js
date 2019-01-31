@@ -8,8 +8,11 @@ import { Codec } from '@polkadot/types/types'
 import Blockchain from '../blockchain/Blockchain'
 import { BlockchainStorable } from '../blockchain/BlockchainStorable'
 import Crypto from '../crypto'
+import { factory } from '../config/ConfigLog'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
+
+const log = factory.getLogger('CType')
 
 export type CTypeSchema = {
   $id: any
@@ -78,12 +81,10 @@ export default class CType extends BlockchainStorable implements ICType {
     return new CType(ctype)
   }
 
-  public static fromObject(obj: any): CType {
-    // TODO: verify all properties
+  public static fromObject(obj: ICType): CType {
     const newObject = Object.create(CType.prototype)
     return Object.assign(newObject, obj)
   }
-
   public hash: string
   public schema: CTypeSchema
   public metadata: CtypeMetadata
@@ -164,6 +165,10 @@ export default class CType extends BlockchainStorable implements ICType {
     return result
   }
 
+  public getHash(): string {
+    return this.hash
+  }
+
   protected async query(
     blockchain: Blockchain,
     hash: string
@@ -171,15 +176,14 @@ export default class CType extends BlockchainStorable implements ICType {
     return blockchain.api.query.ctype.cTYPEs(hash)
   }
 
-  protected async submit(
+  protected async callStoreFunction(
     blockchain: Blockchain,
     signature: Uint8Array
   ): Promise<SubmittableExtrinsic> {
+    log.debug(
+      () => `Initializing transaction 'ctype.add' for hash '${this.getHash()}'`
+    )
     return blockchain.api.tx.ctype.add(this.getHash(), signature)
-  }
-
-  protected getHash(): string {
-    return this.hash
   }
 
   private getLocalized(o: any, lang?: string): any {
