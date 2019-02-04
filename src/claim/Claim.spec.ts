@@ -26,17 +26,7 @@ describe('Claim', () => {
     name: 'Bob',
   }
 
-  const claim = new Claim('testclaim', ctype, claimContents, identity)
-
-  it('signature should be verifiable', () => {
-    expect(claim.verifySignature()).toBeTruthy()
-  })
-
-  it('can be made with hash', () => {
-    expect(
-      new Claim('testclaimwithhash', ctype, claimContents, identity, '1234')
-    ).toBeDefined()
-  })
+  const claim = new Claim(ctype, claimContents, identity)
 
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))
