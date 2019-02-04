@@ -13,8 +13,8 @@ function buildRequestForAttestation(
 ): RequestForAttestation {
   // create claim
   const claim = {
-    ctype: ctype,
-    contents: contents,
+    ctype,
+    contents,
     owner: claimer.address,
   } as IClaim
   // build request for attestation with legimitations
@@ -58,8 +58,9 @@ describe('RequestForAttestation', () => {
     expect(request.verifyData()).toBeTruthy()
 
     // just deleting a field will result in a wrong proof
-    delete request.claim.contents['a']
-    delete request.claimHashTree['a']
+    const propertyName: string = 'a'
+    delete request.claim.contents[propertyName]
+    delete request.claimHashTree[propertyName]
     expect(request.verifyData()).toBeFalsy()
   })
 })

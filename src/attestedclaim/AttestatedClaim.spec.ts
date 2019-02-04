@@ -14,8 +14,8 @@ function buildAttestedClaim(
 ): AttestedClaim {
   // create claim
   const claim = {
-    ctype: ctype,
-    contents: contents,
+    ctype,
+    contents,
     owner: claimer.address,
   } as IClaim
   // build request for attestation with legimitations
@@ -73,8 +73,9 @@ describe('RequestForAttestation', () => {
 
     // just deleting a field will result in a wrong proof
     const falsePresentation = attestedClaim.createPresentation([])
-    delete falsePresentation.request.claim.contents['a']
-    delete falsePresentation.request.claimHashTree['a']
+    const propertyName: string = 'a'
+    delete falsePresentation.request.claim.contents[propertyName]
+    delete falsePresentation.request.claimHashTree[propertyName]
     expect(attestedClaim.verifyData()).toBeFalsy()
   })
 })

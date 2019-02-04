@@ -3,11 +3,10 @@
  */
 import { v4 as uuid } from 'uuid'
 import { verify, hashStr, hash } from '../crypto/Crypto'
+import MerkleTree from 'merkletreejs'
 
 import Identity from '../identity/Identity'
 import IClaim from '../claim/Claim'
-
-import MerkleTree from 'merkletreejs'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 
 function hashNonceValue(nonce: string, value: any) {
@@ -17,14 +16,14 @@ function hashNonceValue(nonce: string, value: any) {
 function generateHash(value: any): NonceHash {
   const nonce: string = uuid()
   return {
-    nonce: nonce,
+    nonce,
     hash: hashNonceValue(nonce, value),
   }
 }
 
 function generateHashTree(contents: object): object {
-  let result = {}
-  for (let key in contents) {
+  const result = {}
+  for (const key of Object.keys(contents)) {
     result[key] = generateHash(contents[key])
   }
 
@@ -83,43 +82,19 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.claimerSignature = this.sign(identity)
   }
 
-  private getHashLeafs(): Buffer[] {
-    let result: Buffer[] = []
-    result.push(new Buffer(this.ctypeHash.hash, 'hex'))
-    for (let key in this.claimHashTree) {
-      result.push(new Buffer(this.claimHashTree[key]['hash'], 'hex'))
-    }
-    if (this.legitimations) {
-      this.legitimations.forEach(legitimation => {
-        result.push(new Buffer(legitimation.getHash(), 'hex'))
-      })
-    }
-
-    return result
-  }
-
   public removeClaimProperties(properties: string[]) {
     properties.forEach(key => {
       if (!this.claimHashTree.hasOwnProperty(key)) {
-        throw Error("Property '" + key + "' not found in claim")
+        throw Error(`Property '${key}' not found in claim`)
       }
       delete this.claim.contents[key]
-      delete this.claimHashTree[key]['nonce']
+      delete this.claimHashTree[key].nonce
     })
-  }
-
-  private calculateRootHash(): string {
-    const hashes: Buffer[] = this.getHashLeafs()
-    const root: Buffer =
-      hashes.length == 1
-        ? hashes[0]
-        : new MerkleTree(this.getHashLeafs(), hashing).getRoot()
-    return root.toString('hex')
   }
 
   public verifyData(): boolean {
     // check claim hash
-    if (this.hash != this.calculateRootHash()) {
+    if (this.hash !== this.calculateRootHash()) {
       return false
     }
     // check ctype hash
@@ -129,18 +104,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
     ) {
       throw Error('Invalid hash for CTYPE')
     }
-    hashNonceValue
     // check all hashes for provided claim properties
-    for (let key in this.claim.contents) {
-      let value: any = this.claim.contents[key]
+    for (const key of Object.keys(this.claim.contents)) {
+      const value: any = this.claim.contents[key]
       if (!this.claimHashTree.hasOwnProperty(key)) {
-        throw Error("Property '" + key + "' not in claim hash tree")
+        throw Error(`Property '${key}' not in claim hash tree`)
       }
-      let hashed: NonceHash = this.claimHashTree[key]
+      const hashed: NonceHash = this.claimHashTree[key]
       if (hashed.hash !== hashNonceValue(hashed.nonce, value)) {
-        throw Error(
-          "Invalid hash for property '" + key + "' in claim hash tree"
-        )
+        throw Error(`Invalid hash for property '${key}' in claim hash tree`)
       }
     }
 
@@ -151,7 +123,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
         valid = valid && legitimation.verifyData()
       })
     }
-    if (!valid) return false
+    if (!valid) {
+      return false
+    }
 
     // check signature
     return this.verifySignature()
@@ -159,6 +133,30 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
   public verifySignature(): boolean {
     return verifyClaimerSignature(this)
+  }
+
+  private getHashLeafs(): Buffer[] {
+    const result: Buffer[] = []
+    result.push(new Buffer(this.ctypeHash.hash, 'hex'))
+    for (const key of Object.keys(this.claimHashTree)) {
+      result.push(new Buffer(this.claimHashTree[key].hash, 'hex'))
+    }
+    if (this.legitimations) {
+      this.legitimations.forEach(legitimation => {
+        result.push(new Buffer(legitimation.getHash(), 'hex'))
+      })
+    }
+
+    return result
+  }
+
+  private calculateRootHash(): string {
+    const hashes: Buffer[] = this.getHashLeafs()
+    const root: Buffer =
+      hashes.length === 1
+        ? hashes[0]
+        : new MerkleTree(this.getHashLeafs(), hashing).getRoot()
+    return root.toString('hex')
   }
 
   private sign(identity: Identity) {

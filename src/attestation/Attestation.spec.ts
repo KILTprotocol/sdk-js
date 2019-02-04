@@ -14,6 +14,9 @@ import RequestForAttestation, {
 describe('Attestation', () => {
   const identityAlice = Identity.buildFromSeedString('Alice')
   const identityBob = Identity.buildFromSeedString('Bob')
+  const identitySteve = Identity.buildFromSeedString('Steve')
+  const identityFerdie = Identity.buildFromSeedString('Ferdie')
+
   const claim = {
     ctype: 'testCtype',
     contents: {},
@@ -146,9 +149,6 @@ describe('Attestation', () => {
       claimerSignature: 'fraudSignature',
     } as IRequestForAttestation
 
-    const identityBob = Identity.buildFromSeedString('Bob')
-    const identitySteve = Identity.buildFromSeedString('Steve')
-    const identityFerdie = Identity.buildFromSeedString('Ferdie')
     const claimHash = requestForAttestation.hash
     const invalidClaimHash = invalidRequstForAttestation.hash
     const signatureAlice = identityAlice.signStr(claimHash)
