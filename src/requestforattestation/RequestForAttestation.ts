@@ -135,7 +135,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return verifyClaimerSignature(this)
   }
 
-  private getHashLeafs(): Buffer[] {
+  private getHashLeaves(): Buffer[] {
     const result: Buffer[] = []
     result.push(new Buffer(this.ctypeHash.hash, 'hex'))
     for (const key of Object.keys(this.claimHashTree)) {
@@ -151,11 +151,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   private calculateRootHash(): string {
-    const hashes: Buffer[] = this.getHashLeafs()
+    const hashes: Buffer[] = this.getHashLeaves()
     const root: Buffer =
       hashes.length === 1
         ? hashes[0]
-        : new MerkleTree(this.getHashLeafs(), hashing).getRoot()
+        : new MerkleTree(this.getHashLeaves(), hashing).getRoot()
     return root.toString('hex')
   }
 
