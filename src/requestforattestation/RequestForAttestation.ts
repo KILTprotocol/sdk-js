@@ -144,7 +144,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return verifyClaimerSignature(this)
   }
 
-  private getHashLeafs(): Hash[] {
+  private getHashLeaves(): Hash[] {
     const result: Hash[] = []
     result.push(this.ctypeHash.hash)
     for (const key of Object.keys(this.claimHashTree)) {
@@ -160,9 +160,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   private calculateRootHash(): Hash {
-    const hashes: Hash[] = this.getHashLeafs()
+    const hashes: Hash[] = this.getHashLeaves()
     const root: Hash =
-      hashes.length === 1 ? hashes[0] : getRoot(this.getHashLeafs())
+      hashes.length === 1 ? hashes[0] : getRoot(this.getHashLeaves())
     return root
   }
 
