@@ -2,15 +2,21 @@
  * @module Claim
  */
 import { v4 as uuid } from 'uuid'
-import { verify, hashStr, hash } from '../crypto/Crypto'
-import MerkleTree from 'merkletreejs'
+import {
+  verify,
+  hashStr,
+  hash,
+  coToUInt8,
+  u8aToHex,
+  u8aConcat,
+} from '../crypto/Crypto'
 
 import Identity from '../identity/Identity'
 import IClaim from '../claim/Claim'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 
 function hashNonceValue(nonce: string, value: any) {
-  return hashStr(nonce + JSON.stringify(value)).substr(2) // cut off "0x",
+  return hashStr(nonce + JSON.stringify(value))
 }
 
 function generateHash(value: any): NonceHash {
@@ -34,13 +40,16 @@ function verifyClaimerSignature(rfa: RequestForAttestation): boolean {
   return verify(rfa.hash, rfa.claimerSignature, rfa.claim.owner)
 }
 
-function hashing(data: any): Buffer {
-  return new Buffer(hash(data))
+function getHashRoot(leaves: Uint8Array[]): Uint8Array {
+  const result = u8aConcat(...leaves)
+  return hash(result)
 }
+
+type Hash = string
 
 type NonceHash = {
   nonce: string
-  hash: string
+  hash: Hash
 }
 
 export interface IRequestForAttestation {
@@ -48,7 +57,7 @@ export interface IRequestForAttestation {
   ctypeHash: NonceHash
   claimHashTree: object
   legitimations: AttestedClaim[]
-  hash: string
+  hash: Hash
   claimerSignature: string
 }
 
@@ -62,7 +71,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public ctypeHash: NonceHash
   public claimHashTree: object
   public legitimations: AttestedClaim[]
-  public hash: string
+  public hash: Hash
   public claimerSignature: string
 
   constructor(
@@ -135,28 +144,26 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return verifyClaimerSignature(this)
   }
 
-  private getHashLeaves(): Buffer[] {
-    const result: Buffer[] = []
-    result.push(new Buffer(this.ctypeHash.hash, 'hex'))
+  private getHashLeaves(): Uint8Array[] {
+    const result: Uint8Array[] = []
+    result.push(coToUInt8(this.ctypeHash.hash))
     for (const key of Object.keys(this.claimHashTree)) {
-      result.push(new Buffer(this.claimHashTree[key].hash, 'hex'))
+      result.push(coToUInt8(this.claimHashTree[key].hash))
     }
     if (this.legitimations) {
       this.legitimations.forEach(legitimation => {
-        result.push(new Buffer(legitimation.getHash(), 'hex'))
+        result.push(coToUInt8(legitimation.getHash()))
       })
     }
 
     return result
   }
 
-  private calculateRootHash(): string {
-    const hashes: Buffer[] = this.getHashLeaves()
-    const root: Buffer =
-      hashes.length === 1
-        ? hashes[0]
-        : new MerkleTree(this.getHashLeaves(), hashing).getRoot()
-    return root.toString('hex')
+  private calculateRootHash(): Hash {
+    const hashes: Uint8Array[] = this.getHashLeaves()
+    const root: Uint8Array =
+      hashes.length === 1 ? hashes[0] : getHashRoot(hashes)
+    return u8aToHex(root)
   }
 
   private sign(identity: Identity) {

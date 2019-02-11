@@ -13,9 +13,10 @@ import {
   u8aToHex,
   u8aToString,
   u8aToU8a,
+  u8aConcat,
 } from '@polkadot/util'
 import { encodeAddress, decodeAddress } from '@polkadot/keyring/address'
-export { encodeAddress, decodeAddress }
+export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
 export type CryptoInput = Buffer | Uint8Array | string
 
