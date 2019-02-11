@@ -2,14 +2,21 @@
  * @module Claim
  */
 import { v4 as uuid } from 'uuid'
-import { verify, hashStr } from '../crypto/Crypto'
+import {
+  verify,
+  hashStr,
+  hash,
+  coToUInt8,
+  u8aToHex,
+  u8aConcat,
+} from '../crypto/Crypto'
 
 import Identity from '../identity/Identity'
 import IClaim from '../claim/Claim'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 
 function hashNonceValue(nonce: string, value: any) {
-  return hashStr(nonce + JSON.stringify(value)).substr(2) // cut off "0x",
+  return hashStr(nonce + JSON.stringify(value))
 }
 
 function generateHash(value: any): NonceHash {
@@ -33,16 +40,9 @@ function verifyClaimerSignature(rfa: RequestForAttestation): boolean {
   return verify(rfa.hash, rfa.claimerSignature, rfa.claim.owner)
 }
 
-function getRoot(leaves: Hash[]): Hash {
-  let result = leaves[0]
-  if (leaves.length === 1) {
-    return result
-  } else {
-    for (let i = 1; i < leaves.length; i++) {
-      result += leaves[i]
-    }
-    return hashStr(result)
-  }
+function getHashRoot(leaves: Uint8Array[]): Uint8Array {
+  const result = u8aConcat(...leaves)
+  return hash(result)
 }
 
 type Hash = string
@@ -144,15 +144,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return verifyClaimerSignature(this)
   }
 
-  private getHashLeaves(): Hash[] {
-    const result: Hash[] = []
-    result.push(this.ctypeHash.hash)
+  private getHashLeaves(): Uint8Array[] {
+    const result: Uint8Array[] = []
+    result.push(coToUInt8(this.ctypeHash.hash))
     for (const key of Object.keys(this.claimHashTree)) {
-      result.push(this.claimHashTree[key].hash)
+      result.push(coToUInt8(this.claimHashTree[key].hash))
     }
     if (this.legitimations) {
       this.legitimations.forEach(legitimation => {
-        result.push(legitimation.getHash())
+        result.push(coToUInt8(legitimation.getHash()))
       })
     }
 
@@ -160,10 +160,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   private calculateRootHash(): Hash {
-    const hashes: Hash[] = this.getHashLeaves()
-    const root: Hash =
-      hashes.length === 1 ? hashes[0] : getRoot(this.getHashLeaves())
-    return root
+    const hashes: Uint8Array[] = this.getHashLeaves()
+    const root: Uint8Array =
+      hashes.length === 1 ? hashes[0] : getHashRoot(hashes)
+    return u8aToHex(root)
   }
 
   private sign(identity: Identity) {
