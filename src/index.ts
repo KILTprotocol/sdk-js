@@ -16,3 +16,5 @@ export {
 export * from './ctype/CTypeUtils'
 export { default as Claim, IClaim } from './claim/Claim'
 export { default as Attestation, IAttestation } from './attestation/Attestation'
+export { default as RequestForAttestation, IRequestForAttestation } from './requestforattestation/RequestForAttestation'
+export { default as AttestedClaim, IAttestedClaim } from './attestedclaim/AttestedClaim'

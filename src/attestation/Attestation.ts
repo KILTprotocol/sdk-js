@@ -7,11 +7,11 @@ import { Codec } from '@polkadot/types/types'
 
 import Blockchain from '../blockchain/Blockchain'
 import { BlockchainStorable } from '../blockchain/BlockchainStorable'
-import { IClaim } from '../claim/Claim'
 import { factory } from '../config/ConfigLog'
 import Crypto from '../crypto'
 import { Address } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
+import { IRequestForAttestation } from '../requestforattestation/RequestForAttestation'
 
 const log = factory.getLogger('Attestation')
 
@@ -36,10 +36,14 @@ export default class Attestation extends BlockchainStorable
   public owner: string
   public revoked: boolean
 
-  constructor(claim: IClaim, attester: Identity, revoked = false) {
+  constructor(
+    requestForAttestation: IRequestForAttestation,
+    attester: Identity,
+    revoked = false
+  ) {
     super()
     this.owner = attester.address
-    this.claimHash = Crypto.hashStr(JSON.stringify(claim))
+    this.claimHash = requestForAttestation.hash
     this.signature = attester.signStr(this.claimHash)
     this.revoked = revoked
   }

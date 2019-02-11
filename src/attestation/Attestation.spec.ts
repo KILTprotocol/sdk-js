@@ -7,17 +7,26 @@ import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
 import { Constructor, Codec } from '@polkadot/types/types'
+import RequestForAttestation, {
+  IRequestForAttestation,
+} from '../requestforattestation/RequestForAttestation'
 
 describe('Attestation', () => {
   const identityAlice = Identity.buildFromSeedString('Alice')
+  const identityBob = Identity.buildFromSeedString('Bob')
+  const identitySteve = Identity.buildFromSeedString('Steve')
+  const identityFerdie = Identity.buildFromSeedString('Ferdie')
+
   const claim = {
-    alias: 'test',
     ctype: 'testCtype',
     contents: {},
-    hash: '1234',
-    owner: 'alice',
-    signature: '98765',
+    owner: identityBob.address,
   } as IClaim
+  const requestForAttestation: RequestForAttestation = new RequestForAttestation(
+    claim,
+    [],
+    identityBob
+  )
 
   it('stores attestation', async () => {
     const resultHash = Crypto.hashStr('987654')
@@ -65,7 +74,7 @@ describe('Attestation', () => {
       return true
     }
 
-    const attestation = new Attestation(claim, identityAlice)
+    const attestation = new Attestation(requestForAttestation, identityAlice)
     expect(
       await attestation.store(blockchain, identityAlice, onsuccess)
     ).toEqual(resultHash)
@@ -87,13 +96,17 @@ describe('Attestation', () => {
       },
     } as Blockchain
 
-    const attestation = new Attestation(claim, identityAlice, false)
+    const attestation = new Attestation(
+      requestForAttestation,
+      identityAlice,
+      false
+    )
     expect(await attestation.verifyStored(blockchain)).toBeFalsy()
     expect(await attestation.verify(blockchain)).toBeFalsy()
   })
 
   it('verify attestation revoked', async () => {
-    const claimHash = Crypto.hashStr(JSON.stringify(claim))
+    const claimHash = requestForAttestation.hash
     const signatureAlice = identityAlice.signStr(claimHash)
     // @ts-ignore
     const blockchain = {
@@ -113,26 +126,31 @@ describe('Attestation', () => {
       },
     } as Blockchain
 
-    const attestation = new Attestation(claim, identityAlice, false)
+    const attestation = new Attestation(
+      requestForAttestation,
+      identityAlice,
+      false
+    )
     expect(await attestation.verifyStored(blockchain)).toBeTruthy()
     expect(await attestation.verify(blockchain)).toBeFalsy()
   })
 
   it('verify attestation', async () => {
-    const invalidClaim = {
-      alias: 'test',
-      ctype: 'testCtype',
-      contents: {},
+    const invalidRequstForAttestation = {
+      claim: {
+        ctype: 'testCtype',
+        contents: {},
+        owner: 'bob',
+      },
+      ctypeHash: { nonce: '12345', hash: '12345' },
+      claimHashTree: {},
+      legitimations: [],
       hash: '1234',
-      owner: 'bob',
-      signature: 'fraudSignature',
-    } as IClaim
+      claimerSignature: 'fraudSignature',
+    } as IRequestForAttestation
 
-    const identityBob = Identity.buildFromSeedString('Bob')
-    const identitySteve = Identity.buildFromSeedString('Steve')
-    const identityFerdie = Identity.buildFromSeedString('Ferdie')
-    const claimHash = Crypto.hashStr(JSON.stringify(claim))
-    const invalidClaimHash = Crypto.hashStr(JSON.stringify(invalidClaim))
+    const claimHash = requestForAttestation.hash
+    const invalidClaimHash = invalidRequstForAttestation.hash
     const signatureAlice = identityAlice.signStr(claimHash)
     const signatureBob = identityBob.signStr(claimHash)
     const signatureSteve = identitySteve.signStr(claimHash)
@@ -177,16 +195,24 @@ describe('Attestation', () => {
     } as Blockchain
 
     expect(
-      await new Attestation(claim, identityAlice).verify(blockchain)
+      await new Attestation(requestForAttestation, identityAlice).verify(
+        blockchain
+      )
     ).toBeTruthy()
     expect(
-      await new Attestation(claim, identityBob).verify(blockchain)
+      await new Attestation(requestForAttestation, identityBob).verify(
+        blockchain
+      )
     ).toBeFalsy()
     expect(
-      await new Attestation(claim, identitySteve).verify(blockchain)
+      await new Attestation(requestForAttestation, identitySteve).verify(
+        blockchain
+      )
     ).toBeTruthy()
     expect(
-      await new Attestation(claim, identityFerdie).verify(blockchain)
+      await new Attestation(requestForAttestation, identityFerdie).verify(
+        blockchain
+      )
     ).toBeFalsy()
   })
 })
