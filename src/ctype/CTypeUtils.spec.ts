@@ -1,5 +1,5 @@
 import { ICType } from './CType'
-import { CTypeInputModel, CTypeWrapperModel } from './CTypeSchema'
+import { CTypeModel, CTypeInputModel, CTypeWrapperModel } from './CTypeSchema'
 import {
   verifyClaimStructure,
   verifySchema,
@@ -28,7 +28,7 @@ const ctypeInput = {
   required: ['first-property', 'second-property'],
 }
 
-const ctypeModel = {
+const ctypeWrapperModel = {
   schema: {
     $id: 'http://example.com/ctype-1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -61,17 +61,31 @@ const badClaim = {
 
 describe('CTypeUtils', () => {
   it('verifies claims', () => {
-    expect(verifyClaimStructure(goodClaim, ctypeModel.schema)).toBeTruthy()
-    expect(verifyClaimStructure(badClaim, ctypeModel.schema)).toBeFalsy()
     expect(
-      verifySchemaWithErrors(badClaim, CTypeWrapperModel, [''])
-    ).toBeFalsy()
+      verifyClaimStructure(goodClaim, ctypeWrapperModel.schema)
+    ).toBeTruthy()
+    expect(verifyClaimStructure(badClaim, ctypeWrapperModel.schema)).toBeFalsy()
+    expect(verifySchemaWithErrors(badClaim, CTypeWrapperModel, [])).toBeFalsy()
     expect(() => {
       verifyClaimStructure(badClaim, ctypeInput)
     }).toThrow(new Error('CType does not correspond to schema'))
   })
   it('verifies ctypes', () => {
     expect(verifySchema(ctypeInput, CTypeInputModel)).toBeTruthy()
-    expect(verifySchema(ctypeModel, CTypeInputModel)).toBeFalsy()
+    expect(verifySchema(ctypeWrapperModel.schema, CTypeModel)).toBeTruthy()
+    expect(verifySchema(ctypeWrapperModel, CTypeInputModel)).toBeFalsy()
+    expect(verifySchema(ctypeWrapperModel.schema, CTypeInputModel)).toBeFalsy()
+    expect(
+      verifySchema(
+        {
+          $id: 'http://example.com/ctype-1',
+          $schema: 'http://kilt-protocol.org/draft-01/ctype-input#',
+          properties: [],
+          type: 'object',
+          title: '',
+        },
+        CTypeInputModel
+      )
+    ).toBeFalsy()
   })
 })

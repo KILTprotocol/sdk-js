@@ -11,18 +11,21 @@ export const CTypeInputModel = {
       title: 'Identifier',
       type: 'string',
       format: 'uri-reference',
+      minLength: 1,
     },
     $schema: {
       title: 'Schema',
       type: 'string',
       format: 'uri',
-      default: 'http://kilt-protocol.org/draft-01/ctype#',
+      enum: ['http://kilt-protocol.org/draft-01/ctype-input#'],
+      default: 'http://kilt-protocol.org/draft-01/ctype-input#',
       readonly: true,
       className: 'hidden',
     },
     title: {
       title: 'Title',
       type: 'string',
+      minLength: 1,
     },
     properties: {
       title: 'Data',
@@ -34,17 +37,19 @@ export const CTypeInputModel = {
             title: 'Title',
             type: 'string',
             default: 'New Property',
+            minLength: 1,
           },
           $id: {
             title: 'Identifier',
             type: 'string',
             format: 'uri-reference',
+            minLength: 1,
           },
           type: {
             title: 'Type',
             type: 'string',
-            enum: ['string', 'integer', 'number', 'boolean', 'array'],
-            enumTitles: ['Text', 'Number', 'Decimal', 'Yes/No', 'List'],
+            enum: ['string', 'integer', 'number', 'boolean'],
+            enumTitles: ['Text', 'Number', 'Decimal', 'Yes/No'],
           },
         },
         required: ['$id', 'title', 'type'],
@@ -69,10 +74,13 @@ export const CTypeModel = {
   properties: {
     $id: {
       type: 'string',
+      minLength: 1,
     },
     $schema: {
       type: 'string',
       format: 'uri',
+      default: 'http://kilt-protocol.org/draft-01/ctype#',
+      enum: ['http://kilt-protocol.org/draft-01/ctype#'],
     },
     type: {
       type: 'string',
@@ -86,13 +94,15 @@ export const CTypeModel = {
           properties: {
             type: {
               type: 'string',
-              enum: ['string', 'integer', 'number', 'boolean', 'array'],
+              enum: ['string', 'integer', 'number', 'boolean'],
             },
           },
+          required: ['type'],
         },
       },
     },
   },
+  required: ['$id', '$schema', 'properties', 'type'],
 }
 
 export const CTypeWrapperModel = {
@@ -106,6 +116,7 @@ export const CTypeWrapperModel = {
     },
     hash: {
       type: 'string',
+      minLength: 1,
     },
     metamodel: {
       type: 'object',
