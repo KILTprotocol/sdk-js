@@ -53,7 +53,7 @@ export default class CType extends BlockchainStorable implements ICType {
     const ctype = {
       schema: {
         $id: ctypeInput.$id,
-        $schema: CTypeModel.$id,
+        $schema: CTypeModel.properties.$schema.default,
         properties: {},
         type: 'object',
       },

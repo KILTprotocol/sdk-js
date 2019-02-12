@@ -18,7 +18,7 @@ export function verifySchema(model: any, metaModel: any): boolean {
 export function verifySchemaWithErrors(
   model: any,
   metaModel: any,
-  messages?: [string]
+  messages?: string[]
 ): boolean {
   const ajv = new Ajv({
     meta: false,
