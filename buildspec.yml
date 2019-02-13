@@ -3,12 +3,12 @@ version: 0.2
 phases:
   pre_build:
     commands:
-    - echo Run build / lint / test
+    - echo Run 'build / lint / test'
     - docker build -t prototype-sdk . 
     - docker run prototype-sdk yarn build
     - docker run prototype-sdk yarn lint
     - docker run prototype-sdk yarn testCI
-    - echo Build / lint / test successful!  
+    - echo 'build / lint / test' successful!  
   build:
     commands:
     - echo Build started on `date`, afterwards pushing to NPM registry https://www.npmjs.com/org/kiltprotocol
