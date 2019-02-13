@@ -76,6 +76,6 @@ describe('RequestForAttestation', () => {
     const propertyName: string = 'a'
     delete falsePresentation.request.claim.contents[propertyName]
     delete falsePresentation.request.claimHashTree[propertyName]
-    expect(attestedClaim.verifyData()).toBeFalsy()
+    expect(falsePresentation.verifyData()).toBeFalsy()
   })
 })

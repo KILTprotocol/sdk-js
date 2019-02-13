@@ -1,6 +1,7 @@
 /**
  * @module AttestationPresentation
  */
+import cloneDeep from 'lodash/cloneDeep'
 import Attestation, { IAttestation } from '../attestation/Attestation'
 import {
   IRequestForAttestation,
@@ -53,7 +54,7 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   public createPresentation(excludedClaimProperties: string[]): AttestedClaim {
-    const result: AttestedClaim = AttestedClaim.fromObject(this)
+    const result: AttestedClaim = AttestedClaim.fromObject(cloneDeep(this))
     result.request.removeClaimProperties(excludedClaimProperties)
     return result
   }
