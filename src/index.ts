@@ -7,7 +7,7 @@ export { default as PublicIdentity } from './identity/PublicIdentity'
 export { default as Blockchain } from './blockchain/Blockchain'
 export { default as BlockchainStorable } from './blockchain/BlockchainStorable'
 export { default as Crypto } from './crypto'
-export { default as CType } from './ctype/CType'
+export { default as CType, ICType } from './ctype/CType'
 export {
   CTypeModel,
   CTypeInputModel,

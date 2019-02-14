@@ -14,7 +14,7 @@ function buildAttestedClaim(
 ): AttestedClaim {
   // create claim
   const claim = {
-    ctype,
+    cType: ctype,
     contents,
     owner: claimer.address,
   } as IClaim

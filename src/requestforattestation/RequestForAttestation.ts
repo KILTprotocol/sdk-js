@@ -83,7 +83,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       throw Error('Claim owner is not identity')
     }
     this.claim = claim
-    this.ctypeHash = generateHash(this.claim.ctype)
+    this.ctypeHash = generateHash(this.claim.cType)
     this.legitimations = legitimations
 
     this.claimHashTree = generateHashTree(claim.contents)
@@ -106,10 +106,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
     if (this.hash !== this.calculateRootHash()) {
       return false
     }
-    // check ctype hash
+    // check cType hash
     if (
       this.ctypeHash.hash !==
-      hashNonceValue(this.ctypeHash.nonce, this.claim.ctype)
+      hashNonceValue(this.ctypeHash.nonce, this.claim.cType)
     ) {
       throw Error('Invalid hash for CTYPE')
     }

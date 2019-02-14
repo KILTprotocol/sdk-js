@@ -2,18 +2,19 @@
  * @module Claim
  */
 
-import Ctype from '../ctype/CType'
+import CType from '../ctype/CType'
 import { verifyClaimStructure } from '../ctype/CTypeUtils'
 import Identity from '../identity/Identity'
+import PublicIdentity from '../identity/PublicIdentity'
 
-function verifyClaim(claimContents: object, ctype: Ctype) {
-  return verifyClaimStructure(claimContents, ctype.schema)
+function verifyClaim(claimContents: object, cType: CType) {
+  return verifyClaimStructure(claimContents, cType.schema)
 }
 
 export interface IClaim {
-  ctype: string
+  cType: CType['hash']
   contents: object
-  owner: string
+  owner: PublicIdentity['address']
 }
 
 export default class Claim implements IClaim {
@@ -21,15 +22,15 @@ export default class Claim implements IClaim {
     const newClaim = Object.create(Claim.prototype)
     return Object.assign(newClaim, obj)
   }
-  public ctype: string
+  public cType: CType['hash']
   public contents: object
-  public owner: string
+  public owner: PublicIdentity['address']
 
-  constructor(ctype: Ctype, contents: object, identity: Identity) {
-    if (!verifyClaim(contents, ctype)) {
+  constructor(cType: CType, contents: object, identity: Identity) {
+    if (!verifyClaim(contents, cType)) {
       throw Error('Claim not valid')
     }
-    this.ctype = ctype.hash
+    this.cType = cType.hash
     this.contents = contents
     this.owner = identity.address
   }

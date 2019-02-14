@@ -100,7 +100,7 @@ export default class CType extends BlockchainStorable implements ICType {
     this.hash = Crypto.hashStr(JSON.stringify(this.schema))
 
     if (ctype.hash && this.hash !== ctype.hash) {
-      throw Error('provided and generated ctype hash are not the same')
+      throw Error('provided and generated cType hash are not the same')
     }
   }
 
