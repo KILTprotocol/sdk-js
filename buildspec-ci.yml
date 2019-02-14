@@ -1,0 +1,11 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+    - echo Run build / lint / test
+    - docker build -t prototype-sdk . 
+    - docker run prototype-sdk yarn build
+    - docker run prototype-sdk yarn lint
+    - docker run prototype-sdk yarn testCI
+    - echo Build / lint / test successful!
