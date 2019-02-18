@@ -5,8 +5,8 @@ import Identity from '../identity/Identity'
 describe('Claim', () => {
   const ctype = new CType({
     schema: {
-      $id: 'http://example.com/cType-1',
-      $schema: 'http://kilt-protocol.org/draft-01/cType#',
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       properties: {
         name: { type: 'string' },
       },
