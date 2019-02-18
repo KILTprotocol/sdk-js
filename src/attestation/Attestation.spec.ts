@@ -18,7 +18,7 @@ describe('Attestation', () => {
   const identityFerdie = Identity.buildFromSeedString('Ferdie')
 
   const claim = {
-    ctype: 'testCtype',
+    cType: 'testCtype',
     contents: {},
     owner: identityBob.address,
   } as IClaim
@@ -138,7 +138,7 @@ describe('Attestation', () => {
   it('verify attestation', async () => {
     const invalidRequstForAttestation = {
       claim: {
-        ctype: 'testCtype',
+        cType: 'testCtype',
         contents: {},
         owner: 'bob',
       },
