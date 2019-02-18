@@ -2,7 +2,7 @@
  * @module CType
  */
 
-import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic'
+import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
 import { Codec } from '@polkadot/types/types'
 
 import Blockchain from '../blockchain/Blockchain'
@@ -11,6 +11,7 @@ import Crypto from '../crypto'
 import { factory } from '../config/ConfigLog'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
+import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 
 const log = factory.getLogger('CType')
 
@@ -179,7 +180,7 @@ export default class CType extends BlockchainStorable implements ICType {
   protected async callStoreFunction(
     blockchain: Blockchain,
     signature: Uint8Array
-  ): Promise<SubmittableExtrinsic> {
+  ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
     log.debug(
       () => `Initializing transaction 'ctype.add' for hash '${this.getHash()}'`
     )

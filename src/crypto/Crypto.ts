@@ -53,11 +53,17 @@ export function coToUInt8(
 }
 
 export function sign(message: CryptoInput, secretKey: CryptoInput): Uint8Array {
-  return naclSign(coToUInt8(message), coToUInt8(secretKey))
+  return naclSign(coToUInt8(message), {
+    secretKey: coToUInt8(secretKey),
+  })
 }
 
 export function signStr(message: CryptoInput, secretKey: CryptoInput): string {
-  return u8aToHex(naclSign(coToUInt8(message), coToUInt8(secretKey)))
+  return u8aToHex(
+    naclSign(coToUInt8(message), {
+      secretKey: coToUInt8(secretKey),
+    })
+  )
 }
 
 export function verify(
