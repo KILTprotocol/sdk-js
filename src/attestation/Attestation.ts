@@ -2,6 +2,7 @@
  * @module Attestation
  */
 import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
+import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import { Hash } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 
@@ -12,7 +13,6 @@ import Crypto from '../crypto'
 import { Address } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
 import { IRequestForAttestation } from '../requestforattestation/RequestForAttestation'
-import { CodecResult } from '@polkadot/api/promise/types'
 
 const log = factory.getLogger('Attestation')
 
@@ -58,7 +58,7 @@ export default class Attestation extends BlockchainStorable
     const signature = identity.sign(this.getHash())
     const extrinsic: SubmittableExtrinsic<
       CodecResult,
-      any
+      SubscriptionResult
     > = blockchain.api.tx.attestation.revoke(this.getHash(), signature)
     return super.submitToBlockchain(blockchain, identity, extrinsic, onsuccess)
   }
@@ -92,7 +92,7 @@ export default class Attestation extends BlockchainStorable
   protected async callStoreFunction(
     blockchain: Blockchain,
     signature: Uint8Array
-  ): Promise<SubmittableExtrinsic<CodecResult, any>> {
+  ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
     log.debug(
       () =>
         `Initializing transaction 'attestation.add' for claim hash '${this.getHash()}'`

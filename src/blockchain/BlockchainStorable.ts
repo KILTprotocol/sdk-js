@@ -5,6 +5,7 @@ import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
 import { ExtrinsicStatus, Hash } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
+
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import Blockchain from './Blockchain'
@@ -115,5 +116,5 @@ export abstract class BlockchainStorable implements IBlockchainStorable {
   protected abstract callStoreFunction(
     blockchain: Blockchain,
     signature: Uint8Array
-  ): Promise<SubmittableExtrinsic<CodecResult, any>>
+  ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>>
 }
