@@ -1,7 +1,7 @@
 /**
  * @module Identity
  */
-import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic'
+import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
 /**
  * @module Identity
  */
@@ -24,6 +24,7 @@ import {
   EncryptedAsymmetricString,
 } from '../crypto/Crypto'
 import PublicIdentity from './PublicIdentity'
+import { SubscriptionResult, CodecResult } from '@polkadot/api/promise/types'
 
 type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
@@ -65,9 +66,9 @@ export default class Identity extends PublicIdentity {
     // Maybe use BIP32 and BIP44
     const signKeyPair = Identity.createSignKeyPair(seed)
     const signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyPair.publicKey)
-    const signKeyringPair: KeyringPair = pair({
+    const signKeyringPair: KeyringPair = pair('ed25519', {
       publicKey: signKeyPair.publicKey,
-      secretKey: signKeyPair.secretKey,
+      seed,
     })
 
     const seedAsHex = u8aUtil.u8aToHex(seed)
@@ -147,10 +148,12 @@ export default class Identity extends PublicIdentity {
   }
 
   public signSubmittableExtrinsic(
-    submittableExtrinsic: SubmittableExtrinsic,
+    submittableExtrinsic: SubmittableExtrinsic<CodecResult, SubscriptionResult>,
     nonceAsHex: string
-  ): SubmittableExtrinsic {
-    return submittableExtrinsic.sign(this.signKeyringPair, nonceAsHex)
+  ): SubmittableExtrinsic<CodecResult, SubscriptionResult> {
+    return submittableExtrinsic.sign(this.signKeyringPair, {
+      nonce: nonceAsHex,
+    })
   }
 
   // fromSeed is hashing its seed, therefore an independent secret key should be considered as derived

@@ -1,7 +1,8 @@
 /**
  * @module Blockchain
  */
-import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic'
+import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
+import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
 import { ExtrinsicStatus, Hash } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 
@@ -46,10 +47,10 @@ export abstract class BlockchainStorable implements IBlockchainStorable {
     onsuccess?: () => void
   ): Promise<Hash> {
     const signature = identity.sign(this.getHash())
-    const submittedExtrinsic: SubmittableExtrinsic = await this.callStoreFunction(
-      blockchain,
-      signature
-    )
+    const submittedExtrinsic: SubmittableExtrinsic<
+      CodecResult,
+      any
+    > = await this.callStoreFunction(blockchain, signature)
     return this.submitToBlockchain(
       blockchain,
       identity,
@@ -73,7 +74,7 @@ export abstract class BlockchainStorable implements IBlockchainStorable {
   protected submitToBlockchain(
     blockchain: Blockchain,
     identity: Identity,
-    extrinsic: SubmittableExtrinsic,
+    extrinsic: SubmittableExtrinsic<CodecResult, SubscriptionResult>,
     onsuccess?: () => void
   ) {
     return blockchain.submitTx(
@@ -115,5 +116,5 @@ export abstract class BlockchainStorable implements IBlockchainStorable {
   protected abstract callStoreFunction(
     blockchain: Blockchain,
     signature: Uint8Array
-  ): Promise<SubmittableExtrinsic>
+  ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>>
 }

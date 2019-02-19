@@ -1,12 +1,13 @@
 {
   "name": "@kiltprotocol/prototype-sdk",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "scripts": {
-    "test": "jest --coverage",
-    "testCI": "jest --ci --coverage",
+    "_comment": "NODE_ENV=custom is set because otherwise tests won't compile (see https://github.com/polkadot-js/common/issues/321)",
+    "test": "export NODE_ENV=custom; jest --coverage",
+    "testCI": "export NODE_ENV=custom; jest --ci --coverage",
     "testWatch": "jest --watch --coverage",
     "lint": "tslint --project tsconfig.json --config tslint.json src/**/*.ts",
     "lint:fix": "yarn lint --fix",
@@ -64,9 +65,7 @@
     "typescript": "^3.1.6"
   },
   "dependencies": {
-    "@polkadot/api": "^0.33.19",
-    "@polkadot/util": "^0.33.22",
-    "@polkadot/util-crypto": "^0.33.13",
+    "@polkadot/api": "^0.43.14",
     "ajv": "^6.6.1",
     "lodash": "^4.17.11",
     "typescript-logging": "^0.6.3",

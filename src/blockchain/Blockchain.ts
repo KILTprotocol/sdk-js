@@ -2,7 +2,9 @@
  * @module Blockchain
  */
 import { ApiPromise } from '@polkadot/api'
-import SubmittableExtrinsic from '@polkadot/api/promise/SubmittableExtrinsic'
+import SubmittableExtrinsic, {
+  SubmittableResult,
+} from '@polkadot/api/SubmittableExtrinsic'
 import { WsProvider } from '@polkadot/rpc-provider'
 import { Header } from '@polkadot/types'
 import Hash from '@polkadot/types/Hash'
@@ -10,6 +12,7 @@ import { Codec } from '@polkadot/types/types'
 import BN from 'bn.js'
 import Identity from '../identity/Identity'
 import { ExtrinsicStatus } from '@polkadot/types/index'
+import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
@@ -105,14 +108,14 @@ export default class Blockchain {
   public static async submitTx(
     api: ApiPromise,
     identity: Identity,
-    tx: SubmittableExtrinsic
+    tx: SubmittableExtrinsic<CodecResult, SubscriptionResult>
   ): Promise<Hash> {
     const accountAddress = identity.address
     const nonce = await Blockchain.getNonce(api, accountAddress)
-    const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
-      tx,
-      nonce.toHex()
-    )
+    const signed: SubmittableExtrinsic<
+      CodecResult,
+      SubscriptionResult
+    > = identity.signSubmittableExtrinsic(tx, nonce.toHex())
     return signed.send()
   }
 
@@ -187,16 +190,21 @@ export default class Blockchain {
 
   public async submitTx(
     identity: Identity,
-    tx: SubmittableExtrinsic,
+    tx: SubmittableExtrinsic<CodecResult, SubscriptionResult>,
     status?: (status: ExtrinsicStatus) => void
-  ): Promise<Hash> {
+  ): Promise<any> {
     const accountAddress = identity.address
     const nonce = await this.getNonce(accountAddress)
-    const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
-      tx,
-      nonce.toHex()
-    )
-    return signed.send(status)
+    const signed: SubmittableExtrinsic<
+      CodecResult,
+      SubscriptionResult
+    > = identity.signSubmittableExtrinsic(tx, nonce.toHex())
+    signed.send((result: SubmittableResult) => {
+      if (status) {
+        status(result.status)
+      }
+    })
+    return Promise.resolve()
   }
 
   public async getNonce(accountAddress: string): Promise<Codec> {
