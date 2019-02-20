@@ -1,7 +1,29 @@
-import CType from './CType'
-import { CTypeWrapperModel } from './CTypeSchema'
+import CType, { ICType } from './CType'
+import Blockchain from '../blockchain/Blockchain'
+import Identity from '../identity/Identity'
+import Crypto from '../crypto'
 
 describe('CType', () => {
+  const ctypeModel = {
+    schema: {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        'first-property': { type: 'integer' },
+        'second-property': { type: 'string' },
+      },
+      type: 'object',
+    },
+    metadata: {
+      title: { default: 'CType Title' },
+      description: {},
+      properties: {
+        'first-property': { title: { default: 'First Property' } },
+        'second-property': { title: { default: 'Second Property' } },
+      },
+    },
+  } as ICType
+
   it('verify model transformations', () => {
     const ctypeInput = {
       $id: 'http://example.com/ctype-1',
@@ -22,25 +44,7 @@ describe('CType', () => {
       title: 'CType Title',
       required: ['first-property', 'second-property'],
     }
-    const ctypeModel = {
-      schema: {
-        $id: 'http://example.com/ctype-1',
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-        properties: {
-          'first-property': { type: 'integer' },
-          'second-property': { type: 'string' },
-        },
-        type: 'object',
-      },
-      metadata: {
-        title: { default: 'CType Title' },
-        description: {},
-        properties: {
-          'first-property': { title: { default: 'First Property' } },
-          'second-property': { title: { default: 'Second Property' } },
-        },
-      },
-    }
+
     const claimInput = {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -73,22 +77,68 @@ describe('CType', () => {
     expect(JSON.stringify(ctypeFromInput.getCTypeInputModel())).toEqual(
       JSON.stringify(ctypeInput)
     )
+
     expect(ctypeFromInput.verifyClaimStructure(goodClaim)).toBeTruthy()
-    expect(CType.verifyClaimStructure(goodClaim, ctypeModel)).toBeTruthy()
     expect(ctypeFromInput.verifyClaimStructure(badClaim)).toBeFalsy()
-    expect(
-      CType.verifySchemaWithErrors(badClaim, CTypeWrapperModel, [''])
-    ).toBeFalsy()
+
     expect(() => {
+      // @ts-ignore
       new CType(goodClaim).verifyClaimStructure(goodClaim)
-    }).toThrow(new Error('CType does not correspond to schema'))
-    expect(() => {
-      CType.verifyClaimStructure(badClaim, ctypeInput)
     }).toThrow(new Error('CType does not correspond to schema'))
     expect(() => {
       CType.fromInputModel(ctypeModel)
     }).toThrow(
       new Error('CType input does not correspond to input model schema')
     )
+  })
+
+  it('stores ctypes', async () => {
+    const resultHash = Crypto.hashStr('987654')
+    // @ts-ignore
+    const blockchain = {
+      api: {
+        tx: {
+          ctype: {
+            add: jest.fn((hash, signature) => {
+              return Promise.resolve({ hash, signature })
+            }),
+          },
+        },
+        query: {
+          ctype: {
+            cTYPEs: jest.fn(hash => {
+              return true
+            }),
+          },
+        },
+      },
+      getStats: jest.fn(),
+      listenToBlocks: jest.fn(),
+      listenToBalanceChanges: jest.fn(),
+      makeTransfer: jest.fn(),
+      submitTx: jest.fn((identity, tx, statusCb) => {
+        statusCb({
+          type: 'Finalised',
+          value: {
+            encodedLength: 2,
+          },
+        })
+        return Promise.resolve(resultHash)
+      }),
+      getNonce: jest.fn(),
+    } as Blockchain
+
+    const identityAlice = Identity.buildFromSeedString('Alice')
+    const testHash = Crypto.hashStr('1234')
+    const onsuccess = () => {
+      return true
+    }
+
+    const ctype = new CType(ctypeModel)
+    ctype.hash = testHash
+    expect(await ctype.store(blockchain, identityAlice, onsuccess)).toEqual(
+      resultHash
+    )
+    expect(ctype.verifyStored(blockchain)).toBeTruthy()
   })
 })

@@ -1,5 +1,9 @@
 /**
- * @module SDK
+ * @module Identity
+ */
+import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
+/**
+ * @module Identity
  */
 import pair from '@polkadot/keyring/pair'
 import { KeyringPair } from '@polkadot/keyring/types'
@@ -14,32 +18,20 @@ import padEnd from 'lodash/padEnd'
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair, SignKeyPair } from 'tweetnacl'
 import Crypto from '../crypto'
+import {
+  CryptoInput,
+  EncryptedAsymmetric,
+  EncryptedAsymmetricString,
+} from '../crypto/Crypto'
+import PublicIdentity from './PublicIdentity'
+import { SubscriptionResult, CodecResult } from '@polkadot/api/promise/types'
 
-export default class Identity {
-  get phrase(): string | undefined {
-    return this._phrase
-  }
+type BoxPublicKey =
+  | PublicIdentity['boxPublicKeyAsHex']
+  | Identity['boxKeyPair']['publicKey']
 
-  get signKeyPair(): SignKeyPair {
-    return this._signKeyPair
-  }
-
-  get signKeyringPair(): KeyringPair {
-    return this._signKeyringPair
-  }
-
-  get boxKeyPair(): BoxKeyPair {
-    return this._boxKeyPair
-  }
-
-  get seed(): Uint8Array {
-    return this._seed
-  }
-
-  get seedAsHex(): string {
-    return this._seedAsHex
-  }
-
+export default class Identity extends PublicIdentity {
+  private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
   public static buildFromMnemonic(phraseArg?: string) {
     let phrase = phraseArg
     if (phrase) {
@@ -56,7 +48,7 @@ export default class Identity {
     }
 
     const seed = toSeed(phrase)
-    return new Identity(seed, phrase)
+    return new Identity(seed)
   }
 
   public static buildFromSeedString(seedArg: string) {
@@ -64,8 +56,105 @@ export default class Identity {
     const asU8a = stringUtil.stringToU8a(padded)
     return new Identity(asU8a)
   }
+  public readonly seed: Uint8Array
+  public readonly seedAsHex: string
+  public readonly signPublicKeyAsHex: string
 
-  private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
+  private constructor(seed: Uint8Array) {
+    // NB: use different secret keys for each key pair in order to avoid
+    // compromising both key pairs at the same time if one key becomes public
+    // Maybe use BIP32 and BIP44
+    const signKeyPair = Identity.createSignKeyPair(seed)
+    const signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyPair.publicKey)
+    const signKeyringPair: KeyringPair = pair('ed25519', {
+      publicKey: signKeyPair.publicKey,
+      seed,
+    })
+
+    const seedAsHex = u8aUtil.u8aToHex(seed)
+    const address = signKeyringPair.address()
+
+    const boxKeyPair = Identity.createBoxKeyPair(seed)
+    const boxPublicKeyAsHex = u8aUtil.u8aToHex(boxKeyPair.publicKey)
+
+    super(address, boxPublicKeyAsHex)
+
+    this.seed = seed
+    this.seedAsHex = seedAsHex
+
+    this.signKeyPair = signKeyPair
+    this.signKeyringPair = signKeyringPair
+    this.signPublicKeyAsHex = signPublicKeyAsHex
+
+    this.boxKeyPair = boxKeyPair
+  }
+
+  private readonly signKeyPair: SignKeyPair
+  private readonly signKeyringPair: KeyringPair
+  private readonly boxKeyPair: BoxKeyPair
+
+  public getPublicIdentity(): PublicIdentity {
+    const { address, boxPublicKeyAsHex } = this
+    return { address, boxPublicKeyAsHex }
+  }
+
+  public sign(cryptoInput: CryptoInput) {
+    return Crypto.sign(cryptoInput, this.signKeyPair.secretKey)
+  }
+
+  public signStr(cryptoInput: CryptoInput) {
+    return Crypto.signStr(cryptoInput, this.signKeyPair.secretKey)
+  }
+
+  public encryptAsymmetricAsStr(
+    cryptoInput: CryptoInput,
+    boxPublicKey: BoxPublicKey
+  ) {
+    return Crypto.encryptAsymmetricAsStr(
+      cryptoInput,
+      boxPublicKey,
+      this.boxKeyPair.secretKey
+    )
+  }
+
+  public decryptAsymmetricAsStr(
+    encrypted: EncryptedAsymmetric | EncryptedAsymmetricString,
+    boxPublicKey: BoxPublicKey
+  ) {
+    return Crypto.decryptAsymmetricAsStr(
+      encrypted,
+      boxPublicKey,
+      this.boxKeyPair.secretKey
+    )
+  }
+
+  public encryptAsymmetric(input: CryptoInput, boxPublicKey: BoxPublicKey) {
+    return Crypto.encryptAsymmetric(
+      input,
+      boxPublicKey,
+      this.boxKeyPair.secretKey
+    )
+  }
+
+  public decryptAsymmetric(
+    encrypted: EncryptedAsymmetric | EncryptedAsymmetricString,
+    boxPublicKey: BoxPublicKey
+  ) {
+    return Crypto.decryptAsymmetric(
+      encrypted,
+      boxPublicKey,
+      this.boxKeyPair.secretKey
+    )
+  }
+
+  public signSubmittableExtrinsic(
+    submittableExtrinsic: SubmittableExtrinsic<CodecResult, SubscriptionResult>,
+    nonceAsHex: string
+  ): SubmittableExtrinsic<CodecResult, SubscriptionResult> {
+    return submittableExtrinsic.sign(this.signKeyringPair, {
+      nonce: nonceAsHex,
+    })
+  }
 
   // fromSeed is hashing its seed, therefore an independent secret key should be considered as derived
   private static createSignKeyPair(seed: Uint8Array) {
@@ -83,29 +172,5 @@ export default class Identity {
 
     const hash = Crypto.hash(paddedSeed)
     return nacl.box.keyPair.fromSecretKey(hash)
-  }
-
-  private _phrase?: string
-  private _signKeyPair: SignKeyPair
-  private _signKeyringPair: KeyringPair
-  private _boxKeyPair: BoxKeyPair
-  private _seed: Uint8Array
-  private _seedAsHex: string
-
-  private constructor(seed: Uint8Array, phrase?: string) {
-    this._phrase = phrase
-    this._seed = seed
-    this._seedAsHex = u8aUtil.u8aToHex(this._seed)
-
-    // NB: use different secret keys for each key pair in order to avoid
-    // compromising both key pairs at the same time if one key becomes public
-    // Maybe use BIP32 and BIP44
-    this._signKeyPair = Identity.createSignKeyPair(this._seed)
-    this._signKeyringPair = pair({
-      publicKey: this._signKeyPair.publicKey,
-      secretKey: this._signKeyPair.secretKey,
-    })
-
-    this._boxKeyPair = Identity.createBoxKeyPair(this._seed)
   }
 }

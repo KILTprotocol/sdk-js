@@ -52,7 +52,7 @@ describe('Blockchain', async () => {
     const currentBalance = await partial(
       Blockchain.listenToBalanceChanges,
       api
-    )(bob.signKeyringPair.address(), listener)
+    )(bob.address, listener)
 
     expect(currentBalance.toString()).toBeTruthy()
     expect(currentBalance.toString()).not.toEqual('0')
@@ -65,17 +65,9 @@ describe('Blockchain', async () => {
 
     const hash = await partial(Blockchain.makeTransfer, api)(
       alice,
-      bob.signKeyringPair.address(),
+      bob.address,
       100
     )
     console.log({ hash })
-  }, 10000)
-
-  xit('should hash ctype', async () => {
-    const api = await getConnectionOnce()
-
-    const alice = Identity.buildFromSeedString('Alice')
-    const hash = await partial(Blockchain.ctypeHash, api)(alice, 'hello world')
-    console.log(hash)
   }, 10000)
 })

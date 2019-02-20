@@ -3,16 +3,14 @@ version: 0.2
 phases:
   pre_build:
     commands:
-    - echo Run tests...
-    - docker build -t prototype-sdk . && docker run prototype-sdk yarn lint && docker run prototype-sdk yarn testCI
-    - echo Test run completed successfully!
+    - echo Run 'build / lint / test'
+    - docker build -t prototype-sdk . 
+    - docker run prototype-sdk yarn build
+    - docker run prototype-sdk yarn lint
+    - docker run prototype-sdk yarn testCI
+    - echo 'build / lint / test' successful!  
   build:
     commands:
-    - echo Building the NPM package
-    - echo Build started on `date`
-    - docker run prototype-sdk yarn build
-  post_build:
-    commands:
-    - echo Build completed on `date`
-    - echo Depploying to NPM registry https://www.npmjs.com/org/kiltprotocol
-    - docker run -e NPM_USER='kiltbot' -e NPM_PASS="${NPM_PASS}" -e NPM_EMAIL='bot@kilt-protocol.io' -e NPM_SCOPE='@kiltprotocol' -e NPM_RC_FILE='./.npmrc' prototype-sdk yarn deploy
+    - echo Build started on `date`, afterwards pushing to NPM registry https://www.npmjs.com/org/kiltprotocol
+    - docker run -e NPM_USER='kiltbot' -e NPM_PASS="${NPM_PASS}" -e NPM_EMAIL='bot@kilt-protocol.io' -e NPM_SCOPE='@kiltprotocol' -e NPM_RC_FILE='./.npmrc' prototype-sdk yarn buildAndPublish
+    - echo Build and publish completed on `date`

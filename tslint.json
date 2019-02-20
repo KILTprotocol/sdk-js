@@ -1,18 +1,50 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended", "tslint-config-prettier"
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended",
+    "tslint-config-prettier"
+  ],
+  "jsRules": {},
+  "rules": {
+    "semicolon": [
+      true,
+      "never"
     ],
-    "jsRules": {},
-    "rules": {
-        "semicolon": [true, "never"],
-        "interface-over-type-literal": false,
-        "no-console": false,
-        "no-parameter-reassignment": true,
-        "variable-name": false,
-        "quotemark": [true, "single"],
-        "object-literal-sort-keys": false,
-        "prettier": [true, ".prettierrc"]
-    },
-    "rulesDirectory": ["tslint-plugin-prettier"]
+    "interface-over-type-literal": false,
+    "no-console": false,
+    "no-parameter-reassignment": true,
+    "ordered-imports": false,
+    "variable-name": false,
+    "quotemark": [
+      true,
+      "single"
+    ],
+    "object-literal-sort-keys": false,
+    "prettier": [
+      true,
+      ".prettierrc"
+    ],
+    "member-ordering": [
+      true,
+      {
+        "order": [
+          "public-static-field",
+          "private-static-field",
+          "public-static-method",
+          "public-instance-field",
+          "public-constructor",
+          "private-constructor",
+          "private-instance-field",
+          "public-instance-method",
+          "protected-instance-method",
+          "private-instance-method",
+          "protected-static-method",
+          "private-static-method"
+        ]
+      }
+    ]
+  },
+  "rulesDirectory": [
+    "tslint-plugin-prettier"
+  ]
 }

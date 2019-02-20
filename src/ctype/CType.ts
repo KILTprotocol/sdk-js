@@ -1,24 +1,60 @@
-import Ajv from 'ajv'
-import Crypto from '../crypto'
-import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
+/**
+ * @module CType
+ */
 
-export default class CType {
+import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
+import { Codec } from '@polkadot/types/types'
+
+import Blockchain from '../blockchain/Blockchain'
+import { BlockchainStorable } from '../blockchain/BlockchainStorable'
+import Crypto from '../crypto'
+import { factory } from '../config/ConfigLog'
+import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
+import * as CTypeUtils from './CTypeUtils'
+import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
+
+const log = factory.getLogger('CType')
+
+export type CTypeSchema = {
+  $id: any
+  $schema: any
+  properties: any
+  type: 'object'
+}
+
+export type CtypeMetadata = {
+  title: {
+    default: string
+  }
+  description: {
+    default: string
+  }
+  properties: any
+}
+
+export interface ICType {
+  hash?: string
+  schema: CTypeSchema
+  metadata: CtypeMetadata
+}
+
+export default class CType extends BlockchainStorable implements ICType {
   /**
    * Create the CTYPE model from a CTYPE input model (used in CTYPE editing components).
    * This is necessary because component editors rely on editing arrays of properties instead of
    * arbitrary properties of an object. Additionally the default language translations are integrated
    * into the input model and need to be separated for the CTYPE model.
    * This is the reverse function of CType.getCTypeInputModel(...).
-   * @returns {any} The CTYPE for the input model.
+   * @returns The CTYPE for the input model.
    */
-  public static fromInputModel(ctypeInput: any): any {
-    if (!CType.verifySchema(ctypeInput, CTypeInputModel)) {
+  public static fromInputModel(ctypeInput: any): CType {
+    if (!CTypeUtils.verifySchema(ctypeInput, CTypeInputModel)) {
       throw new Error('CType input does not correspond to input model schema')
     }
     const ctype = {
       schema: {
         $id: ctypeInput.$id,
-        $schema: CTypeModel.$id,
+        $schema: CTypeModel.properties.$schema.default,
         properties: {},
         type: 'object',
       },
@@ -31,7 +67,7 @@ export default class CType {
         },
         properties: {},
       },
-    }
+    } as ICType
 
     const properties = {}
     for (const p of ctypeInput.properties) {
@@ -46,56 +82,35 @@ export default class CType {
     return new CType(ctype)
   }
 
-  public static verifyClaimStructure(claim: any, schema: any): boolean {
-    if (!CType.verifySchema(schema, CTypeModel)) {
+  public static fromObject(obj: ICType): CType {
+    const newObject = Object.create(CType.prototype)
+    return Object.assign(newObject, obj)
+  }
+  public hash: string
+  public schema: CTypeSchema
+  public metadata: CtypeMetadata
+
+  public constructor(ctype: ICType) {
+    super()
+    if (!CTypeUtils.verifySchema(ctype, CTypeWrapperModel)) {
       throw new Error('CType does not correspond to schema')
     }
-    return CType.verifySchema(claim, schema)
-  }
+    this.schema = ctype.schema
+    this.metadata = ctype.metadata
 
-  public static verifySchema(model: any, metaModel: any): boolean {
-    return CType.verifySchemaWithErrors(model, metaModel)
-  }
+    this.hash = Crypto.hashStr(JSON.stringify(this.schema))
 
-  public static verifySchemaWithErrors(
-    model: any,
-    metaModel: any,
-    messages?: [string]
-  ): boolean {
-    const ajv = new Ajv({
-      meta: false,
-    })
-    ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-07.json'))
-    ajv.addMetaSchema(CTypeModel)
-    const result = ajv.validate(metaModel, model)
-    if (!result && ajv.errors) {
-      ajv.errors.map((error: any) => {
-        if (messages) {
-          messages.push(error.message)
-        }
-      })
-    }
-    return result ? true : false
-  }
-  public ctype: any
-
-  public constructor(ctype: any) {
-    if (!CType.verifySchema(ctype, CTypeWrapperModel)) {
-      throw new Error('CType does not correspond to schema')
-    }
-    this.ctype = ctype
-
-    if (!this.ctype.hash) {
-      this.ctype.hash = Crypto.hash(JSON.stringify(this.ctype.schema))
+    if (ctype.hash && this.hash !== ctype.hash) {
+      throw Error('provided and generated cType hash are not the same')
     }
   }
 
   public verifyClaimStructure(claim: any): boolean {
-    return CType.verifySchema(claim, this.ctype.schema)
+    return CTypeUtils.verifySchema(claim, this.schema)
   }
 
-  public getModel(): any {
-    return this.ctype
+  public getModel(): CType {
+    return this
   }
 
   /**
@@ -106,17 +121,14 @@ export default class CType {
    */
   public getClaimInputModel(lang?: string): any {
     // create clone
-    const result = JSON.parse(JSON.stringify(this.ctype.schema))
-    result.title = this.getLocalized(this.ctype.metadata.title, lang)
-    result.description = this.getLocalized(
-      this.ctype.metadata.description,
-      lang
-    )
+    const result = JSON.parse(JSON.stringify(this.schema))
+    result.title = this.getLocalized(this.metadata.title, lang)
+    result.description = this.getLocalized(this.metadata.description, lang)
     result.required = []
-    for (const x in this.ctype.metadata.properties) {
-      if (this.ctype.metadata.properties.hasOwnProperty(x)) {
+    for (const x in this.metadata.properties) {
+      if (this.metadata.properties.hasOwnProperty(x)) {
         result.properties[x].title = this.getLocalized(
-          this.ctype.metadata.properties[x].title,
+          this.metadata.properties[x].title,
           lang
         )
         result.required.push(x)
@@ -130,21 +142,21 @@ export default class CType {
    * This is necessary because component editors rely on editing arrays of properties instead of
    * arbitrary properties of an object. Additionally the default language translations are integrated
    * into the input model. This is the reverse function of CType.fromInputModel(...).
-   * @returns {any} The CTYPE input model.
+   * @returns The CTYPE input model.
    */
   public getCTypeInputModel(): any {
     // create clone
-    const result = JSON.parse(JSON.stringify(this.ctype.schema))
+    const result = JSON.parse(JSON.stringify(this.schema))
     result.$schema = CTypeInputModel.$id
-    result.title = this.getLocalized(this.ctype.metadata.title)
-    result.description = this.getLocalized(this.ctype.metadata.description)
+    result.title = this.getLocalized(this.metadata.title)
+    result.description = this.getLocalized(this.metadata.description)
     result.required = []
     result.properties = []
-    for (const x in this.ctype.schema.properties) {
-      if (this.ctype.schema.properties.hasOwnProperty(x)) {
-        const p = this.ctype.schema.properties[x]
+    for (const x in this.schema.properties) {
+      if (this.schema.properties.hasOwnProperty(x)) {
+        const p = this.schema.properties[x]
         result.properties.push({
-          title: this.getLocalized(this.ctype.metadata.properties[x].title),
+          title: this.getLocalized(this.metadata.properties[x].title),
           $id: x,
           type: p.type,
         })
@@ -152,6 +164,27 @@ export default class CType {
       }
     }
     return result
+  }
+
+  public getHash(): string {
+    return this.hash
+  }
+
+  protected async query(
+    blockchain: Blockchain,
+    hash: string
+  ): Promise<Codec | null | undefined> {
+    return blockchain.api.query.ctype.cTYPEs(hash)
+  }
+
+  protected async callStoreFunction(
+    blockchain: Blockchain,
+    signature: Uint8Array
+  ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
+    log.debug(
+      () => `Initializing transaction 'ctype.add' for hash '${this.getHash()}'`
+    )
+    return blockchain.api.tx.ctype.add(this.getHash(), signature)
   }
 
   private getLocalized(o: any, lang?: string): any {

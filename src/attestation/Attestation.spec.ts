@@ -1,0 +1,218 @@
+import { Text } from '@polkadot/types'
+import Bool from '@polkadot/types/Bool'
+import { Tuple } from '@polkadot/types/codec'
+import Blockchain from '../blockchain/Blockchain'
+import { IClaim } from '../claim/Claim'
+import Crypto from '../crypto'
+import Identity from '../identity/Identity'
+import Attestation from './Attestation'
+import { Constructor, Codec } from '@polkadot/types/types'
+import RequestForAttestation, {
+  IRequestForAttestation,
+} from '../requestforattestation/RequestForAttestation'
+
+describe('Attestation', () => {
+  const identityAlice = Identity.buildFromSeedString('Alice')
+  const identityBob = Identity.buildFromSeedString('Bob')
+  const identitySteve = Identity.buildFromSeedString('Steve')
+  const identityFerdie = Identity.buildFromSeedString('Ferdie')
+
+  const claim = {
+    cType: 'testCtype',
+    contents: {},
+    owner: identityBob.address,
+  } as IClaim
+  const requestForAttestation: RequestForAttestation = new RequestForAttestation(
+    claim,
+    [],
+    identityBob
+  )
+
+  it('stores attestation', async () => {
+    const resultHash = Crypto.hashStr('987654')
+    const claimHash = Crypto.hashStr(JSON.stringify(claim))
+    const signatureAlice = identityAlice.signStr(claimHash)
+    // @ts-ignore
+    const blockchain = {
+      api: {
+        tx: {
+          attestation: {
+            add: jest.fn((hash, signature) => {
+              return Promise.resolve({ hash, signature })
+            }),
+          },
+        },
+        query: {
+          attestation: {
+            attestations: jest.fn(hash => {
+              const tuple = new Tuple(
+                [Tuple.with([Text, Text, Text, Bool])],
+                [[claimHash, identityAlice.address, signatureAlice, false]]
+              )
+              return Promise.resolve(tuple)
+            }),
+          },
+        },
+      },
+      getStats: jest.fn(),
+      listenToBlocks: jest.fn(),
+      listenToBalanceChanges: jest.fn(),
+      makeTransfer: jest.fn(),
+      submitTx: jest.fn((identity, tx, statusCb) => {
+        statusCb({
+          type: 'Finalised',
+          value: {
+            encodedLength: 2,
+          },
+        })
+        return Promise.resolve(resultHash)
+      }),
+      getNonce: jest.fn(),
+    } as Blockchain
+
+    const onsuccess = () => {
+      return true
+    }
+
+    const attestation = new Attestation(requestForAttestation, identityAlice)
+    expect(
+      await attestation.store(blockchain, identityAlice, onsuccess)
+    ).toEqual(resultHash)
+    expect(await attestation.verifyStored(blockchain)).toBeTruthy()
+    expect(await attestation.verify(blockchain)).toBeTruthy()
+  })
+
+  it('verify attestations not on chain', async () => {
+    // @ts-ignore
+    const blockchain = {
+      api: {
+        query: {
+          attestation: {
+            attestations: jest.fn(hash => {
+              return Promise.resolve(new Tuple([], []))
+            }),
+          },
+        },
+      },
+    } as Blockchain
+
+    const attestation = new Attestation(
+      requestForAttestation,
+      identityAlice,
+      false
+    )
+    expect(await attestation.verifyStored(blockchain)).toBeFalsy()
+    expect(await attestation.verify(blockchain)).toBeFalsy()
+  })
+
+  it('verify attestation revoked', async () => {
+    const claimHash = requestForAttestation.hash
+    const signatureAlice = identityAlice.signStr(claimHash)
+    // @ts-ignore
+    const blockchain = {
+      api: {
+        query: {
+          attestation: {
+            attestations: jest.fn(hash => {
+              return Promise.resolve(
+                new Tuple(
+                  [Tuple.with([Text, Text, Text, Bool])],
+                  [[claimHash, identityAlice, signatureAlice, true]]
+                )
+              )
+            }),
+          },
+        },
+      },
+    } as Blockchain
+
+    const attestation = new Attestation(
+      requestForAttestation,
+      identityAlice,
+      false
+    )
+    expect(await attestation.verifyStored(blockchain)).toBeTruthy()
+    expect(await attestation.verify(blockchain)).toBeFalsy()
+  })
+
+  it('verify attestation', async () => {
+    const invalidRequstForAttestation = {
+      claim: {
+        cType: 'testCtype',
+        contents: {},
+        owner: 'bob',
+      },
+      ctypeHash: { nonce: '12345', hash: '12345' },
+      claimHashTree: {},
+      legitimations: [],
+      hash: '1234',
+      claimerSignature: 'fraudSignature',
+    } as IRequestForAttestation
+
+    const claimHash = requestForAttestation.hash
+    const invalidClaimHash = invalidRequstForAttestation.hash
+    const signatureAlice = identityAlice.signStr(claimHash)
+    const signatureBob = identityBob.signStr(claimHash)
+    const signatureSteve = identitySteve.signStr(claimHash)
+    const invalidSignatureFerdie = identityFerdie.signStr(invalidClaimHash)
+    // @ts-ignore
+    const blockchain = {
+      api: {
+        query: {
+          attestation: {
+            attestations: jest.fn(hash => {
+              const innerTupleType: Constructor<Codec> = Tuple.with([
+                Text,
+                Text,
+                Text,
+                Bool,
+              ])
+              return Promise.resolve(
+                new Tuple(
+                  [
+                    innerTupleType,
+                    innerTupleType,
+                    innerTupleType,
+                    innerTupleType,
+                  ],
+                  [
+                    [claimHash, identityAlice.address, signatureAlice, false],
+                    [claimHash, identityBob.address, signatureBob, true],
+                    [claimHash, identitySteve.address, signatureSteve, false],
+                    [
+                      claimHash,
+                      identityFerdie.address,
+                      invalidSignatureFerdie,
+                      false,
+                    ],
+                  ]
+                )
+              )
+            }),
+          },
+        },
+      },
+    } as Blockchain
+
+    expect(
+      await new Attestation(requestForAttestation, identityAlice).verify(
+        blockchain
+      )
+    ).toBeTruthy()
+    expect(
+      await new Attestation(requestForAttestation, identityBob).verify(
+        blockchain
+      )
+    ).toBeFalsy()
+    expect(
+      await new Attestation(requestForAttestation, identitySteve).verify(
+        blockchain
+      )
+    ).toBeTruthy()
+    expect(
+      await new Attestation(requestForAttestation, identityFerdie).verify(
+        blockchain
+      )
+    ).toBeFalsy()
+  })
+})

@@ -1,20 +1,20 @@
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
+  testEnvironment: '../jest.env.js',
   clearMocks: true,
   coverageThreshold: {
     global: {
-      branches: 80,
+      branches: 70,
       functions: 80,
       lines: 80,
-      statements: 80
+      statements: 80,
     },
-    './src/blockchain/': {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0
-    }
   },
-  rootDir: 'src'
-}
+  collectCoverageFrom: [
+    '**/*.ts',
+    '!**/blockchain/**/*.ts',
+    '!index.ts',
+  ],
+  rootDir: 'src',
+  coverageDirectory: '../coverage',
+};
