@@ -14,7 +14,7 @@ import Crypto from '../crypto'
 export interface IMessage {
   messageId?: string
   receivedAt?: number
-  body?: MessageBody
+  body: MessageBody
   createdAt: number
   receiverAddress: IPublicIdentity['address']
   senderAddress: IPublicIdentity['address']
@@ -33,11 +33,47 @@ export interface IEncryptedMessage {
 }
 
 export default class Message implements IMessage {
+  public static ensureOwnerIsSender(
+    message: IMessage
+  ): void {
+    switch (message.body.type) {
+      case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM:
+        const requestAttestation: IRequestAttestationForClaim = message.body as IRequestAttestationForClaim
+        if (requestAttestation.content.claim.owner !== message.senderAddress) {
+          throw new Error('Sender is not owner of the claim')
+        }
+        break
+      case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
+        const submitAttestation: ISubmitAttestationForClaim = message.body as ISubmitAttestationForClaim
+        if (submitAttestation.content.attestation.owner !== message.senderAddress) {
+          throw new Error('Sender is not owner of the attestation')
+        }
+        break
+    }
+  }
+
+  public static ensureHashAndSignature(
+    encrypted: IEncryptedMessage,
+    sender: IPublicIdentity
+  ): void {
+    const hashInput: string =
+      encrypted.message + encrypted.nonce + encrypted.createdAt
+    const hash = Crypto.hashStr(hashInput)
+    if (hash !== encrypted.hash) {
+      throw new Error('Hash of message not correct')
+    }
+    if (!Crypto.verify(hash, encrypted.signature, sender.address)) {
+      throw new Error('Signature of message not correct')
+    }
+  }
+
   public static createFromEncryptedMessage(
     encrypted: IEncryptedMessage,
     sender: IPublicIdentity,
     receiver: Identity
   ): IMessage {
+    Message.ensureHashAndSignature(encrypted, sender)
+
     const ea: EncryptedAsymmetricString = {
       box: encrypted.message,
       nonce: encrypted.nonce,
@@ -48,16 +84,6 @@ export default class Message implements IMessage {
     )
     if (!decoded) {
       throw new Error('Error decoding message')
-    }
-
-    const hashInput: string =
-      encrypted.message + encrypted.nonce + encrypted.createdAt
-    const hash = Crypto.hashStr(hashInput)
-    if (hash !== encrypted.hash) {
-      throw new Error('Hash of message not correct')
-    }
-    if (!Crypto.verify(hash, encrypted.signature, sender.address)) {
-      throw new Error('Signature of message not correct')
     }
 
     try {
@@ -77,7 +103,7 @@ export default class Message implements IMessage {
 
   public messageId?: string
   public receivedAt?: number
-  public body?: MessageBody
+  public body: MessageBody
   public createdAt: number
   public receiverAddress: IPublicIdentity['address']
   public senderAddress: IPublicIdentity['address']
