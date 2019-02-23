@@ -176,13 +176,13 @@ describe('Messaging', () => {
     )
 
     const submitClaimsForCTypeBody: ISubmitClaimsForCtype = {
-      content: [ submitAttestationBody.content ],
+      content: [submitAttestationBody.content],
       type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPE,
     }
 
     Message.ensureOwnerIsSender(
       new Message(
-          submitClaimsForCTypeBody,
+        submitClaimsForCTypeBody,
         identityAlice,
         identityBob.getPublicIdentity()
       )
@@ -190,7 +190,7 @@ describe('Messaging', () => {
     expect(() =>
       Message.ensureOwnerIsSender(
         new Message(
-            submitClaimsForCTypeBody,
+          submitClaimsForCTypeBody,
           identityBob,
           identityAlice.getPublicIdentity()
         )
