@@ -117,12 +117,7 @@ describe('CType', () => {
       listenToBalanceChanges: jest.fn(),
       makeTransfer: jest.fn(),
       submitTx: jest.fn((identity, tx, statusCb) => {
-        statusCb({
-          type: 'Finalised',
-          value: {
-            encodedLength: 2,
-          },
-        })
+        // if (statusCb) statusCb(new ExtrinsicStatus('Finalized'))
         return Promise.resolve(resultHash)
       }),
       getNonce: jest.fn(),
