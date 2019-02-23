@@ -79,17 +79,17 @@ describe('Messaging', () => {
       identityBob.boxPublicKeyAsHex
     )
     const ts: number = Date.now()
-    const hash: string = Crypto.hashStr(
+    const hashStr: string = Crypto.hashStr(
       encryptedWrongBody.box + encryptedWrongBody.nonce + ts
     )
     const encryptedMessageWrongBody: IEncryptedMessage = {
-      timestamp: ts,
+      createdAt: ts,
       receiverAddress: encryptedMessage.receiverAddress,
       senderAddress: encryptedMessage.senderAddress,
       message: encryptedWrongBody.box,
       nonce: encryptedWrongBody.nonce,
-      hash: hash,
-      signature: identityAlice.signStr(hash),
+      hash: hashStr,
+      signature: identityAlice.signStr(hashStr),
     } as IEncryptedMessage
     expect(() =>
       Message.createFromEncryptedMessage(

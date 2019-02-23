@@ -12,18 +12,20 @@ import { EncryptedAsymmetricString } from 'src/crypto/Crypto'
 import Crypto from '../crypto'
 
 export interface IMessage {
-  body?: MessageBody
   messageId?: string
-  timestamp: number
+  receivedAt?: number
+  body?: MessageBody
+  createdAt: number
   receiverAddress: IPublicIdentity['address']
   senderAddress: IPublicIdentity['address']
 }
 
 export interface IEncryptedMessage {
   messageId?: string
+  receivedAt?: number
   message: string
   nonce: string
-  timestamp: number
+  createdAt: number
   hash: string
   signature: string
   receiverAddress: IPublicIdentity['address']
@@ -31,52 +33,6 @@ export interface IEncryptedMessage {
 }
 
 export default class Message implements IMessage {
-  public body?: MessageBody
-  public messageId?: string
-  public timestamp: number
-  public receiverAddress: IPublicIdentity['address']
-  public senderAddress: IPublicIdentity['address']
-
-  private message: string
-  private nonce: string
-  private hash: string
-  private signature: string
-
-  public constructor(
-    body: MessageBody,
-    sender: Identity,
-    receiver: IPublicIdentity
-  ) {
-    this.body = body
-    this.timestamp = Date.now()
-    this.receiverAddress = receiver.address
-    this.senderAddress = sender.address
-
-    const encryptedMessage: EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(
-      JSON.stringify(body),
-      receiver.boxPublicKeyAsHex
-    )
-    this.message = encryptedMessage.box
-    this.nonce = encryptedMessage.nonce
-
-    const hashInput: string = this.message + this.nonce + this.timestamp
-    this.hash = Crypto.hashStr(hashInput)
-    this.signature = sender.signStr(this.hash)
-  }
-
-  public getEncryptedMessage(): IEncryptedMessage {
-    return {
-      messageId: this.messageId,
-      message: this.message,
-      nonce: this.nonce,
-      timestamp: this.timestamp,
-      hash: this.hash,
-      signature: this.signature,
-      receiverAddress: this.receiverAddress,
-      senderAddress: this.senderAddress,
-    }
-  }
-
   public static createFromEncryptedMessage(
     encrypted: IEncryptedMessage,
     sender: IPublicIdentity,
@@ -95,9 +51,9 @@ export default class Message implements IMessage {
     }
 
     const hashInput: string =
-      encrypted.message + encrypted.nonce + encrypted.timestamp
+      encrypted.message + encrypted.nonce + encrypted.createdAt
     const hash = Crypto.hashStr(hashInput)
-    if (hash != encrypted.hash) {
+    if (hash !== encrypted.hash) {
       throw new Error('Hash of message not correct')
     }
     if (!Crypto.verify(hash, encrypted.signature, sender.address)) {
@@ -105,11 +61,12 @@ export default class Message implements IMessage {
     }
 
     try {
-      const body = JSON.parse(decoded)
+      const meesageBody = JSON.parse(decoded)
       return {
-        body: body,
         messageId: encrypted.messageId,
-        timestamp: encrypted.timestamp,
+        receivedAt: encrypted.receivedAt,
+        body: meesageBody,
+        createdAt: encrypted.createdAt,
         receiverAddress: encrypted.receiverAddress,
         senderAddress: encrypted.senderAddress,
       } as IMessage
@@ -117,13 +74,61 @@ export default class Message implements IMessage {
       throw new Error('Error parsing message body')
     }
   }
+
+  public messageId?: string
+  public receivedAt?: number
+  public body?: MessageBody
+  public createdAt: number
+  public receiverAddress: IPublicIdentity['address']
+  public senderAddress: IPublicIdentity['address']
+
+  public constructor(
+    body: MessageBody,
+    sender: Identity,
+    receiver: IPublicIdentity
+  ) {
+    this.body = body
+    this.createdAt = Date.now()
+    this.receiverAddress = receiver.address
+    this.senderAddress = sender.address
+
+    const encryptedMessage: EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(
+      JSON.stringify(body),
+      receiver.boxPublicKeyAsHex
+    )
+    this.message = encryptedMessage.box
+    this.nonce = encryptedMessage.nonce
+
+    const hashInput: string = this.message + this.nonce + this.createdAt
+    this.hash = Crypto.hashStr(hashInput)
+    this.signature = sender.signStr(this.hash)
+  }
+
+  private message: string
+  private nonce: string
+  private hash: string
+  private signature: string
+
+  public getEncryptedMessage(): IEncryptedMessage {
+    return {
+      messageId: this.messageId,
+      receivedAt: this.receivedAt,
+      message: this.message,
+      nonce: this.nonce,
+      createdAt: this.createdAt,
+      hash: this.hash,
+      signature: this.signature,
+      receiverAddress: this.receiverAddress,
+      senderAddress: this.senderAddress,
+    } as IEncryptedMessage
+  }
 }
 
 export enum MessageBodyType {
   REQUEST_LEGITIMATIONS = 'request-legitimations',
   SUBMIT_LEGITIMATIONS = 'submit-legitimations',
   REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
-  APPROVE_ATTESTATION_FOR_CLAIM = 'approve-attestation-for-claim',
+  SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
   REQUEST_CLAIMS_FOR_CTYPE = 'request-claims-for-ctype',
   SUBMIT_CLAIMS_FOR_CTYPE = 'submit-claims-for-ctype',
 }
@@ -151,9 +156,9 @@ export interface IRequestAttestationForClaim extends IMessageBodyBase {
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
 }
 
-export interface IApproveAttestationForClaim extends IMessageBodyBase {
+export interface ISubmitAttestationForClaim extends IMessageBodyBase {
   content: IAttestedClaim
-  type: MessageBodyType.APPROVE_ATTESTATION_FOR_CLAIM
+  type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
 }
 
 export interface IRequestClaimsForCtype extends IMessageBodyBase {
@@ -174,6 +179,6 @@ export type MessageBody =
   | IRequestLegitimations
   | ISubmitLegitimations
   | IRequestAttestationForClaim
-  | IApproveAttestationForClaim
+  | ISubmitAttestationForClaim
   | IRequestClaimsForCtype
   | ISubmitClaimsForCtype
