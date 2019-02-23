@@ -1,7 +1,7 @@
 /**
  * @module Identity
  */
-interface IPublicIdentity {
+export interface IPublicIdentity {
   address: string
   boxPublicKeyAsHex: string
 }
