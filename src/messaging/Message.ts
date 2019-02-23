@@ -33,9 +33,7 @@ export interface IEncryptedMessage {
 }
 
 export default class Message implements IMessage {
-  public static ensureOwnerIsSender(
-    message: IMessage
-  ): void {
+  public static ensureOwnerIsSender(message: IMessage): void {
     switch (message.body.type) {
       case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM:
         const requestAttestation: IRequestAttestationForClaim = message.body as IRequestAttestationForClaim

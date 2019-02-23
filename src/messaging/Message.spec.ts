@@ -168,11 +168,11 @@ describe('Messaging', () => {
       )
     ).toThrowError(new Error('Sender is not owner of the attestation'))
     Message.ensureOwnerIsSender(
-        new Message(
-            submitAttestationBody,
-            identityBob,
-            identityAlice.getPublicIdentity()
-        )
+      new Message(
+        submitAttestationBody,
+        identityBob,
+        identityAlice.getPublicIdentity()
+      )
     )
   })
 })
