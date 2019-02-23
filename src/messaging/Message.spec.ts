@@ -7,6 +7,7 @@ import {
   IMessage,
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
+  ISubmitClaimsForCtype,
 } from './Message'
 import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import Crypto from '../crypto'
@@ -128,19 +129,6 @@ describe('Messaging', () => {
       type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
     }
 
-    const submitAttestationBody: ISubmitAttestationForClaim = {
-      content: {
-        request: requestAttestationBody.content,
-        attestation: {
-          claimHash: requestAttestationBody.content.hash,
-          signature: '0x12345678',
-          owner: identityBob.getPublicIdentity().address,
-          revoked: false,
-        },
-      },
-      type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
-    }
-
     Message.ensureOwnerIsSender(
       new Message(
         requestAttestationBody,
@@ -158,6 +146,18 @@ describe('Messaging', () => {
       )
     ).toThrowError(new Error('Sender is not owner of the claim'))
 
+    const submitAttestationBody: ISubmitAttestationForClaim = {
+      content: {
+        request: requestAttestationBody.content,
+        attestation: {
+          claimHash: requestAttestationBody.content.hash,
+          signature: '0x12345678',
+          owner: identityBob.getPublicIdentity().address,
+          revoked: false,
+        },
+      },
+      type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+    }
     expect(() =>
       Message.ensureOwnerIsSender(
         new Message(
@@ -174,5 +174,27 @@ describe('Messaging', () => {
         identityAlice.getPublicIdentity()
       )
     )
+
+    const submitClaimsForCTypeBody: ISubmitClaimsForCtype = {
+      content: [ submitAttestationBody.content ],
+      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPE,
+    }
+
+    Message.ensureOwnerIsSender(
+      new Message(
+          submitClaimsForCTypeBody,
+        identityAlice,
+        identityBob.getPublicIdentity()
+      )
+    )
+    expect(() =>
+      Message.ensureOwnerIsSender(
+        new Message(
+            submitClaimsForCTypeBody,
+          identityBob,
+          identityAlice.getPublicIdentity()
+        )
+      )
+    ).toThrowError(new Error('Sender is not owner of the claims'))
   })
 })

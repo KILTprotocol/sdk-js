@@ -43,9 +43,19 @@ export default class Message implements IMessage {
         break
       case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
         const submitAttestation: ISubmitAttestationForClaim = message.body as ISubmitAttestationForClaim
-        if (submitAttestation.content.attestation.owner !== message.senderAddress) {
+        if (
+          submitAttestation.content.attestation.owner !== message.senderAddress
+        ) {
           throw new Error('Sender is not owner of the attestation')
         }
+        break
+      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPE:
+        const submitClaimsForCtype: ISubmitClaimsForCtype = message.body as ISubmitClaimsForCtype
+        submitClaimsForCtype.content.forEach(claim => {
+          if (claim.request.claim.owner !== message.senderAddress) {
+            throw new Error('Sender is not owner of the claims')
+          }
+        })
         break
     }
   }
