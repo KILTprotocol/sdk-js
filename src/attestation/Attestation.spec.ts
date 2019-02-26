@@ -38,7 +38,7 @@ describe('Attestation', () => {
         tx: {
           attestation: {
             add: jest.fn((hash, signature) => {
-              return Promise.resolve({ hash, signature })
+              return Promise.resolve()
             }),
           },
         },
@@ -59,12 +59,7 @@ describe('Attestation', () => {
       listenToBalanceChanges: jest.fn(),
       makeTransfer: jest.fn(),
       submitTx: jest.fn((identity, tx, statusCb) => {
-        statusCb({
-          type: 'Finalised',
-          value: {
-            encodedLength: 2,
-          },
-        })
+        // if (statusCb) statusCb(new ExtrinsicStatus('Finalized'))
         return Promise.resolve(resultHash)
       }),
       getNonce: jest.fn(),
