@@ -64,7 +64,11 @@ export interface IRequestForAttestation {
 export default class RequestForAttestation implements IRequestForAttestation {
   public static fromObject(obj: IRequestForAttestation): RequestForAttestation {
     const newClaim = Object.create(RequestForAttestation.prototype)
-    return Object.assign(newClaim, obj)
+    const object = Object.assign(newClaim, obj)
+    object.legitimations = object.legitimations.map(
+      (legitimation: AttestedClaim) => AttestedClaim.fromObject(legitimation)
+    )
+    return object
   }
 
   public claim: IClaim
@@ -152,7 +156,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     }
     if (this.legitimations) {
       this.legitimations.forEach(legitimation => {
-        result.push(coToUInt8(AttestedClaim.fromObject(legitimation).getHash()))
+        result.push(coToUInt8(legitimation.getHash()))
       })
     }
 
