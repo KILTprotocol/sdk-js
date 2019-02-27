@@ -152,7 +152,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     }
     if (this.legitimations) {
       this.legitimations.forEach(legitimation => {
-        result.push(coToUInt8(legitimation.getHash()))
+        result.push(coToUInt8(AttestedClaim.fromObject(legitimation).getHash()))
       })
     }
 
