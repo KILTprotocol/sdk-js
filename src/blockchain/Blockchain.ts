@@ -13,6 +13,9 @@ import BN from 'bn.js'
 import Identity from '../identity/Identity'
 import { ExtrinsicStatus } from '@polkadot/types/index'
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
+import { factory } from '../config/ConfigLog'
+
+const log = factory.getLogger('Blockchain')
 
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
@@ -177,15 +180,21 @@ export default class Blockchain {
   public async makeTransfer(
     identity: Identity,
     accountAddressTo: string,
-    amount: number
+    amount: number,
+    onsuccess?: () => void
   ) {
-    const accountAddressFrom = identity.address
-
-    const nonce = await this.getNonce(accountAddressFrom)
     const transfer = this.api.tx.balances.transfer(accountAddressTo, amount)
-    identity.signSubmittableExtrinsic(transfer, nonce.toHex())
-    const hash = await transfer.send()
-    return hash
+    return this.submitTx(identity, transfer, (status: ExtrinsicStatus) => {
+      if (
+        onsuccess &&
+        status.type === 'Finalised' &&
+        status.value &&
+        status.value.encodedLength > 0
+      ) {
+        log.debug(() => `Balance transfer successful. Status: ${status}`)
+        onsuccess()
+      }
+    })
   }
 
   public async submitTx(
