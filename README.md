@@ -27,6 +27,16 @@ Execute `yarn unlink "@kiltprotocol/prototype-sdk"` in the project folder.
 
 After that execute `yarn install --check-files` to get the version from the registry back.
 
+## Release / Deployment
+
+Deployment is triggered by a push to the master branch as a result to a release build. 
+
+To build a release, start the release build job for the SDK in *AWS CodeBuild*. See [here](https://github.com/KILTprotocol/release-build-job/blob/master/README.md#usage) for more info on building releases.
+
+As a result of a release build, a new version of the SDK is published to the NPM registry.
+
+*Note: Don't forget to reference the correct version in the client and services*
+
 ## NB
 
 Test coverage does not seem to be fail in all cases, except for testWatch.
