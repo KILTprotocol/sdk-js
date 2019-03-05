@@ -165,7 +165,7 @@ export default class Blockchain {
   ) {
     // @ts-ignore
     let previous: BN = await this.api.query.balances.freeBalance(accountAddress)
-    
+
     if (listener) {
       // @ts-ignore
       this.api.query.balances.freeBalance(accountAddress, (current: BN) => {
@@ -179,7 +179,9 @@ export default class Blockchain {
 
   public async getBalance(accountAddress: string): Promise<number> {
     // @ts-ignore
-    const balance: BN = await this.api.query.balances.freeBalance(accountAddress)
+    const balance: BN = await this.api.query.balances.freeBalance(
+      accountAddress
+    )
     return balance.toNumber()
   }
 
