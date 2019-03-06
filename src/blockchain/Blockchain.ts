@@ -14,6 +14,7 @@ import Identity from '../identity/Identity'
 import { ExtrinsicStatus } from '@polkadot/types/index'
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import { factory } from '../config/ConfigLog'
+import { IPublicIdentity } from '../identity/PublicIdentity'
 
 const log = factory.getLogger('Blockchain')
 
@@ -175,6 +176,16 @@ export default class Blockchain {
       })
     }
     return previous
+  }
+
+  public async getBalance(
+    accountAddress: IPublicIdentity['address']
+  ): Promise<number> {
+    // @ts-ignore
+    const balance: BN = await this.api.query.balances.freeBalance(
+      accountAddress
+    )
+    return balance.toNumber()
   }
 
   public async makeTransfer(
