@@ -116,7 +116,7 @@ describe('CType', () => {
       listenToBlocks: jest.fn(),
       listenToBalanceChanges: jest.fn(),
       makeTransfer: jest.fn(),
-      submitTx: jest.fn((identity, tx, statusCb) => {
+      submitTx: jest.fn((identity, tx) => {
         // if (statusCb) statusCb(new ExtrinsicStatus('Finalized'))
         return Promise.resolve(resultHash)
       }),
@@ -125,15 +125,10 @@ describe('CType', () => {
 
     const identityAlice = Identity.buildFromSeedString('Alice')
     const testHash = Crypto.hashStr('1234')
-    const onsuccess = () => {
-      return true
-    }
 
     const ctype = new CType(ctypeModel)
     ctype.hash = testHash
-    expect(await ctype.store(blockchain, identityAlice, onsuccess)).toEqual(
-      resultHash
-    )
+    expect(await ctype.store(blockchain, identityAlice)).toEqual(resultHash)
     expect(ctype.verifyStored(blockchain)).toBeTruthy()
   })
 })

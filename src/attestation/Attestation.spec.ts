@@ -58,21 +58,17 @@ describe('Attestation', () => {
       listenToBlocks: jest.fn(),
       listenToBalanceChanges: jest.fn(),
       makeTransfer: jest.fn(),
-      submitTx: jest.fn((identity, tx, statusCb) => {
+      submitTx: jest.fn((identity, tx) => {
         // if (statusCb) statusCb(new ExtrinsicStatus('Finalized'))
         return Promise.resolve(resultHash)
       }),
       getNonce: jest.fn(),
     } as Blockchain
 
-    const onsuccess = () => {
-      return true
-    }
-
     const attestation = new Attestation(requestForAttestation, identityAlice)
-    expect(
-      await attestation.store(blockchain, identityAlice, onsuccess)
-    ).toEqual(resultHash)
+    expect(await attestation.store(blockchain, identityAlice)).toEqual(
+      resultHash
+    )
     expect(await attestation.verifyStored(blockchain)).toBeTruthy()
     expect(await attestation.verify(blockchain)).toBeTruthy()
   })

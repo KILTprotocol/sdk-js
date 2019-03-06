@@ -1,11 +1,10 @@
 /**
  * @module Attestation
  */
-import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
-import { Hash } from '@polkadot/types'
+import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
+import { ExtrinsicStatus } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
-
 import Blockchain from '../blockchain/Blockchain'
 import { BlockchainStorable } from '../blockchain/BlockchainStorable'
 import { factory } from '../config/ConfigLog'
@@ -23,7 +22,7 @@ export interface IAttestation {
   revoked: boolean
 }
 
-export default class Attestation extends BlockchainStorable
+export default class Attestation extends BlockchainStorable<Attestation[]>
   implements IAttestation {
   /**
    * Creates a new instance of this Attestation class from the given interface.
@@ -51,16 +50,15 @@ export default class Attestation extends BlockchainStorable
 
   public async revoke(
     blockchain: Blockchain,
-    identity: Identity,
-    onsuccess?: () => void
-  ): Promise<Hash> {
+    identity: Identity
+  ): Promise<ExtrinsicStatus> {
     log.debug(() => `Revoking attestations with hash ${this.getHash()}`)
     const signature = identity.sign(this.getHash())
     const extrinsic: SubmittableExtrinsic<
       CodecResult,
       SubscriptionResult
     > = blockchain.api.tx.attestation.revoke(this.getHash(), signature)
-    return super.submitToBlockchain(blockchain, identity, extrinsic, onsuccess)
+    return super.submitToBlockchain(blockchain, identity, extrinsic)
   }
 
   public async verify(
@@ -68,10 +66,7 @@ export default class Attestation extends BlockchainStorable
     claimHash: string = this.claimHash
   ): Promise<boolean> {
     // 1) Query attestations for claimHash
-    const attestations: Attestation[] = await Attestation.queryAll(
-      blockchain,
-      claimHash
-    )
+    const attestations: Attestation[] = await this.query(blockchain, claimHash)
     // 2) Find non-revoked attestation signed by this attestations' owner
     const verifiedAttestation = attestations.find(
       (attestation: Attestation) => {
@@ -89,7 +84,7 @@ export default class Attestation extends BlockchainStorable
     return this.claimHash
   }
 
-  protected async callStoreFunction(
+  protected async createTransaction(
     blockchain: Blockchain,
     signature: Uint8Array
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
@@ -100,56 +95,7 @@ export default class Attestation extends BlockchainStorable
     return blockchain.api.tx.attestation.add(this.getHash(), signature)
   }
 
-  protected async query(
-    blockchain: Blockchain,
-    hash: string
-  ): Promise<Codec | null | undefined> {
-    return Attestation.doQueryChain(blockchain, hash)
-  }
-
-  /**
-   * Checks if the attestation is signed by the given `attester`.
-   *
-   * @param attester the address of the attester
-   */
-  private signedWith(attester: Address): boolean {
-    return Crypto.verify(this.claimHash, this.signature, attester)
-  }
-
-  private static async queryAll(
-    blockchain: Blockchain,
-    hash: string
-  ): Promise<Attestation[]> {
-    const query: Codec | null | undefined = await Attestation.doQueryChain(
-      blockchain,
-      hash
-    )
-    const value = query && query.encodedLength ? query.toJSON() : null
-    let attestations: Attestation[] = []
-    if (value instanceof Array) {
-      attestations = value
-        .map((attestationTuple: any[]) => {
-          return {
-            claimHash: attestationTuple[0],
-            owner: attestationTuple[1],
-            signature: attestationTuple[2],
-            revoked: attestationTuple[3],
-          } as IAttestation
-        })
-        .map(attestationStruct => {
-          return Attestation.fromObject(attestationStruct)
-        })
-    }
-    log.debug(
-      () =>
-        `Found ${attestations.length} attestation(s): ${JSON.stringify(
-          attestations
-        )}`
-    )
-    return Promise.resolve(attestations)
-  }
-
-  private static async doQueryChain(
+  protected async queryRaw(
     blockchain: Blockchain,
     hash: string
   ): Promise<Codec | null | undefined> {
@@ -160,5 +106,34 @@ export default class Attestation extends BlockchainStorable
       | undefined = await blockchain.api.query.attestation.attestations(hash)
     log.debug(() => `Result: ${result}`)
     return result
+  }
+
+  protected decode(encoded: Codec | null | undefined): Attestation[] {
+    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
+    let attestations: Attestation[] = []
+    if (json instanceof Array) {
+      attestations = json
+        .map((attestationTuple: any) => {
+          return {
+            claimHash: attestationTuple[0],
+            owner: attestationTuple[1],
+            signature: attestationTuple[2],
+            revoked: attestationTuple[3],
+          } as IAttestation
+        })
+        .map((iAttestation: IAttestation) => {
+          return Attestation.fromObject(iAttestation)
+        })
+    }
+    return attestations
+  }
+
+  /**
+   * Checks if the attestation is signed by the given `attester`.
+   *
+   * @param attester the address of the attester
+   */
+  private signedWith(attester: Address): boolean {
+    return Crypto.verify(this.claimHash, this.signature, attester)
   }
 }
