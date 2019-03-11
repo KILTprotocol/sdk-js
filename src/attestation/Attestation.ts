@@ -8,18 +8,20 @@ import { Codec } from '@polkadot/types/types'
 import Blockchain from '../blockchain/Blockchain'
 import { BlockchainStorable } from '../blockchain/BlockchainStorable'
 import { factory } from '../config/ConfigLog'
-import Crypto from '../crypto'
-import { Address } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
 import { IRequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import { ICType } from '../ctype/CType'
+import { IPublicIdentity } from 'src/identity/PublicIdentity'
+import { IDelegationBaseNode } from 'src/delegation/Delegation'
 
 const log = factory.getLogger('Attestation')
 
 export interface IAttestation {
   claimHash: string
-  signature: string
-  owner: string
+  ctypeHash: ICType['hash']
+  owner: IPublicIdentity['address']
   revoked: boolean
+  delegationId?: IDelegationBaseNode['id']
 }
 
 export default class Attestation extends BlockchainStorable<Attestation[]>
@@ -32,9 +34,10 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     return Object.assign(newAttestation, obj)
   }
   public claimHash: string
-  public signature: string
-  public owner: string
+  public ctypeHash: string
+  public owner: IPublicIdentity['address']
   public revoked: boolean
+  public delegationId?: IDelegationBaseNode['id']
 
   constructor(
     requestForAttestation: IRequestForAttestation,
@@ -44,7 +47,7 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     super()
     this.owner = attester.address
     this.claimHash = requestForAttestation.hash
-    this.signature = attester.signStr(this.claimHash)
+    this.ctypeHash = requestForAttestation.ctypeHash.hash
     this.revoked = revoked
   }
 
@@ -67,10 +70,10 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
   ): Promise<boolean> {
     // 1) Query attestations for claimHash
     const attestations: Attestation[] = await this.query(blockchain, claimHash)
-    // 2) Find non-revoked attestation signed by this attestations' owner
+    // 2) Find non-revoked attestation by this attestations' owner
     const verifiedAttestation = attestations.find(
       (attestation: Attestation) => {
-        return attestation.signedWith(this.owner) && !attestation.revoked
+        return attestation.owner === this.owner && !attestation.revoked
       }
     )
     const attestationValid: boolean = verifiedAttestation !== undefined
@@ -85,14 +88,18 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
   }
 
   protected async createTransaction(
-    blockchain: Blockchain,
-    signature: Uint8Array
+    blockchain: Blockchain
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
     log.debug(
       () =>
         `Initializing transaction 'attestation.add' for claim hash '${this.getHash()}'`
     )
-    return blockchain.api.tx.attestation.add(this.getHash(), signature)
+    // TODO: Does this work? Third (optional) parameter Option<DelegationNodeId> is missing!
+    return blockchain.api.tx.attestation.add(
+      this.getHash(),
+      this.ctypeHash,
+      this.delegationId
+    )
   }
 
   protected async queryRaw(
@@ -108,16 +115,20 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     return result
   }
 
-  protected decode(encoded: Codec | null | undefined): Attestation[] {
+  protected decode(
+    encoded: Codec | null | undefined,
+    hash: string
+  ): Attestation[] {
     const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
     let attestations: Attestation[] = []
     if (json instanceof Array) {
       attestations = json
         .map((attestationTuple: any) => {
           return {
-            claimHash: attestationTuple[0],
+            claimHash: hash,
+            ctypeHash: attestationTuple[0],
             owner: attestationTuple[1],
-            signature: attestationTuple[2],
+            // delegationId: attestationTuple[2],
             revoked: attestationTuple[3],
           } as IAttestation
         })
@@ -126,14 +137,5 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
         })
     }
     return attestations
-  }
-
-  /**
-   * Checks if the attestation is signed by the given `attester`.
-   *
-   * @param attester the address of the attester
-   */
-  private signedWith(attester: Address): boolean {
-    return Crypto.verify(this.claimHash, this.signature, attester)
   }
 }

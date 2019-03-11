@@ -40,11 +40,10 @@ export abstract class BlockchainStorable<QueryType>
     blockchain: Blockchain,
     identity: Identity
   ): Promise<ExtrinsicStatus> {
-    const signature = identity.sign(this.getHash())
     const submittedExtrinsic: SubmittableExtrinsic<
       CodecResult,
       any
-    > = await this.createTransaction(blockchain, signature)
+    > = await this.createTransaction(blockchain)
     return this.submitToBlockchain(blockchain, identity, submittedExtrinsic)
   }
 
@@ -61,7 +60,7 @@ export abstract class BlockchainStorable<QueryType>
   public async query(blockchain: Blockchain, hash: string): Promise<QueryType> {
     const encoded = await this.queryRaw(blockchain, hash)
     try {
-      return this.decode(encoded)
+      return this.decode(encoded, hash)
     } catch (err) {
       return Promise.reject(err)
     }
@@ -69,7 +68,10 @@ export abstract class BlockchainStorable<QueryType>
 
   public abstract getHash(): string
 
-  protected abstract decode(encoded: Codec | null | undefined): QueryType
+  protected abstract decode(
+    encoded: Codec | null | undefined,
+    hash: string
+  ): QueryType
 
   protected submitToBlockchain(
     blockchain: Blockchain,
@@ -97,7 +99,6 @@ export abstract class BlockchainStorable<QueryType>
    * @param signature the signed entity
    */
   protected abstract createTransaction(
-    blockchain: Blockchain,
-    signature: Uint8Array
+    blockchain: Blockchain
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>>
 }

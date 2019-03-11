@@ -178,7 +178,10 @@ export default class CType extends BlockchainStorable<Partial<ICType>>
     return blockchain.api.query.ctype.cTYPEs(hash)
   }
 
-  protected decode(encoded: Codec | null | undefined): Partial<ICType> {
+  protected decode(
+    encoded: Codec | null | undefined,
+    hash: string
+  ): Partial<ICType> {
     const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
     // just return the hash part of the ctype
     return {
@@ -187,13 +190,12 @@ export default class CType extends BlockchainStorable<Partial<ICType>>
   }
 
   protected async createTransaction(
-    blockchain: Blockchain,
-    signature: Uint8Array
+    blockchain: Blockchain
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
     log.debug(
       () => `Initializing transaction 'ctype.add' for hash '${this.getHash()}'`
     )
-    return blockchain.api.tx.ctype.add(this.getHash(), signature)
+    return blockchain.api.tx.ctype.add(this.getHash())
   }
 
   private getLocalized(o: any, lang?: string): any {
