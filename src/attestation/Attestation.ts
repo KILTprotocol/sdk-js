@@ -55,12 +55,14 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     blockchain: Blockchain,
     identity: Identity
   ): Promise<ExtrinsicStatus> {
-    log.debug(() => `Revoking attestations with hash ${this.getHash()}`)
-    const signature = identity.sign(this.getHash())
+    log.debug(
+      () => `Revoking attestations with claim hash ${this.getIdentifier()}`
+    )
+    const signature = identity.sign(this.getIdentifier())
     const extrinsic: SubmittableExtrinsic<
       CodecResult,
       SubscriptionResult
-    > = blockchain.api.tx.attestation.revoke(this.getHash(), signature)
+    > = blockchain.api.tx.attestation.revoke(this.getIdentifier(), signature)
     return super.submitToBlockchain(blockchain, identity, extrinsic)
   }
 
@@ -83,7 +85,7 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     return Promise.resolve(attestationValid)
   }
 
-  public getHash(): string {
+  public getIdentifier(): string {
     return this.claimHash
   }
 
@@ -92,11 +94,11 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
     log.debug(
       () =>
-        `Initializing transaction 'attestation.add' for claim hash '${this.getHash()}'`
+        `Initializing transaction 'attestation.add' for claim hash '${this.getIdentifier()}'`
     )
     // TODO: Does this work? Third (optional) parameter Option<DelegationNodeId> is missing!
     return blockchain.api.tx.attestation.add(
-      this.getHash(),
+      this.getIdentifier(),
       this.ctypeHash,
       this.delegationId
     )
@@ -104,20 +106,24 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
 
   protected async queryRaw(
     blockchain: Blockchain,
-    hash: string
+    identifier: string
   ): Promise<Codec | null | undefined> {
-    log.debug(() => `Query chain for attestations with claim hash ${hash}`)
+    log.debug(
+      () => `Query chain for attestations with claim hash ${identifier}`
+    )
     const result:
       | Codec
       | null
-      | undefined = await blockchain.api.query.attestation.attestations(hash)
+      | undefined = await blockchain.api.query.attestation.attestations(
+      identifier
+    )
     log.debug(() => `Result: ${result}`)
     return result
   }
 
   protected decode(
     encoded: Codec | null | undefined,
-    hash: string
+    identifier: string
   ): Attestation[] {
     const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
     let attestations: Attestation[] = []
@@ -125,7 +131,7 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
       attestations = json
         .map((attestationTuple: any) => {
           return {
-            claimHash: hash,
+            claimHash: identifier,
             ctypeHash: attestationTuple[0],
             owner: attestationTuple[1],
             // delegationId: attestationTuple[2],

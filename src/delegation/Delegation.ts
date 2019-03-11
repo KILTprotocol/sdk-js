@@ -40,7 +40,7 @@ export abstract class DelegationBaseNode
     this.account = account
   }
 
-  public getHash(): string {
+  public getIdentifier(): string {
     return this.id
   }
 
@@ -75,14 +75,14 @@ export class DelegationNode extends DelegationBaseNode
 
   protected queryRaw(
     blockchain: Blockchain,
-    hash: string
+    identifier: string
   ): Promise<Codec | null | undefined> {
     throw new Error('not implemented.')
   }
 
   protected decode(
     encoded: Codec | null | undefined,
-    hash: string
+    identifier: string
   ): IDelegationNode {
     log.debug(`decode(): encoded: ${encoded}`)
     throw new Error('not implemented')

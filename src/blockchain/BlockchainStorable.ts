@@ -15,7 +15,6 @@ export interface IBlockchainStorable<QueryType> {
    *
    * @param blockchain the blockchain API object
    * @param identity the identity used to store the entity on chain
-   * @param onsuccess the success callback
    */
   store(blockchain: Blockchain, identity: Identity): Promise<ExtrinsicStatus>
 
@@ -26,12 +25,12 @@ export interface IBlockchainStorable<QueryType> {
    */
   verifyStored(blockchain: Blockchain): Promise<boolean>
 
-  query(blockchain: Blockchain, hash: string): Promise<QueryType>
+  query(blockchain: Blockchain, identifier: string): Promise<QueryType>
 
   /**
-   * Each blockchain storable must provide a unique hash used to store and retrieve it on/from the blockchain.
+   * Each blockchain storable must provide a unique identifier used to store and retrieve it on/from the blockchain.
    */
-  getHash(): string
+  getIdentifier(): string
 }
 
 export abstract class BlockchainStorable<QueryType>
@@ -50,27 +49,30 @@ export abstract class BlockchainStorable<QueryType>
   public async verifyStored(blockchain: Blockchain): Promise<boolean> {
     const query: Codec | null | undefined = await this.queryRaw(
       blockchain,
-      this.getHash()
+      this.getIdentifier()
     )
     // @ts-ignore
     const value = query && query.encodedLength ? query.toJSON() : null
     return value != null
   }
 
-  public async query(blockchain: Blockchain, hash: string): Promise<QueryType> {
-    const encoded = await this.queryRaw(blockchain, hash)
+  public async query(
+    blockchain: Blockchain,
+    identifier: string
+  ): Promise<QueryType> {
+    const encoded = await this.queryRaw(blockchain, identifier)
     try {
-      return this.decode(encoded, hash)
+      return this.decode(encoded, identifier)
     } catch (err) {
       return Promise.reject(err)
     }
   }
 
-  public abstract getHash(): string
+  public abstract getIdentifier(): string
 
   protected abstract decode(
     encoded: Codec | null | undefined,
-    hash: string
+    identifier: string
   ): QueryType
 
   protected submitToBlockchain(
@@ -85,11 +87,11 @@ export abstract class BlockchainStorable<QueryType>
    * Implementations must provide the concrete implementation for querying the entity on the blockchain.
    *
    * @param blockchain the blockchain API object
-   * @param hash the hash value serving as the key to the blockchain store
+   * @param identifier the identifier serving as the key to the blockchain store
    */
   protected abstract queryRaw(
     blockchain: Blockchain,
-    hash: string
+    identifier: string
   ): Promise<Codec | null | undefined>
 
   /**
