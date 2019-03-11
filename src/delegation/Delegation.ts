@@ -11,10 +11,11 @@ const log = factory.getLogger('Delegation')
 
 export interface IDelegationBaseNode {
   id: string
-  account: IPublicIdentity['address']
-  getRoot(): IDelegationRootNode
-  getParent(): IDelegationBaseNode | null
-  getChildren(): IDelegationNode[]
+  account?: IPublicIdentity['address']
+  revoked: boolean
+  getRoot(): Promise<IDelegationRootNode>
+  getParent(): Promise<IDelegationBaseNode> | null
+  getChildren(): Promise<IDelegationNode[]>
 }
 
 export interface IDelegationRootNode extends IDelegationBaseNode {
@@ -29,26 +30,23 @@ export abstract class DelegationBaseNode
   extends BlockchainStorable<IDelegationRootNode | IDelegationNode>
   implements IDelegationBaseNode {
   public id: IDelegationBaseNode['id']
-  public account: IPublicIdentity['address']
+  public account?: IPublicIdentity['address']
+  public revoked: boolean = false
 
-  public constructor(
-    id: IDelegationBaseNode['id'],
-    account: IPublicIdentity['address']
-  ) {
+  public constructor(id: IDelegationBaseNode['id']) {
     super()
     this.id = id
-    this.account = account
   }
 
   public getIdentifier(): string {
     return this.id
   }
 
-  public abstract getRoot(): IDelegationRootNode
+  public abstract getRoot(): Promise<IDelegationRootNode>
 
-  public abstract getParent(): IDelegationBaseNode | null
+  public abstract getParent(): Promise<IDelegationBaseNode> | null
 
-  public getChildren(): IDelegationNode[] {
+  public getChildren(): Promise<IDelegationNode[]> {
     throw new Error('not implemented')
   }
 }
@@ -59,17 +57,18 @@ export class DelegationNode extends DelegationBaseNode
 
   constructor(
     id: IDelegationBaseNode['id'],
-    account: IPublicIdentity['address'],
-    permissions: string[]
+    account?: IPublicIdentity['address'],
+    permissions?: string[]
   ) {
-    super(id, account)
-    this.permissions = permissions
+    super(id)
+    this.account = account
+    this.permissions = permissions || []
   }
 
-  public getRoot(): IDelegationRootNode {
+  public getRoot(): Promise<IDelegationRootNode> {
     throw new Error('not implemented')
   }
-  public getParent(): IDelegationBaseNode | null {
+  public getParent(): Promise<IDelegationBaseNode> | null {
     throw new Error('not implemented')
   }
 
@@ -101,38 +100,69 @@ export class DelegationRootNode extends DelegationBaseNode
 
   constructor(
     id: IDelegationBaseNode['id'],
-    ctypeHash: ICType['hash'],
-    account: IPublicIdentity['address']
+    ctypeHash?: ICType['hash'],
+    account?: IPublicIdentity['address']
   ) {
-    super(id, account)
+    super(id)
+    this.account = account
     this.ctypeHash = ctypeHash
   }
 
-  public getRoot(): IDelegationRootNode {
-    return this
+  public getRoot(): Promise<IDelegationRootNode> {
+    return Promise.resolve(this)
   }
-  public getParent(): IDelegationBaseNode | null {
+  public getParent(): Promise<IDelegationBaseNode> | null {
     return null
   }
 
-  protected queryRaw(
+  protected async queryRaw(
     blockchain: Blockchain,
-    hash: string
+    identifier: string
   ): Promise<Codec | null | undefined> {
-    throw new Error('not implemented')
+    log.debug(
+      () => `Query chain for root delegation with identifier ${identifier}`
+    )
+    const result:
+      | Codec
+      | null
+      | undefined = await blockchain.api.query.delegation.root(identifier)
+    log.debug(() => `Result: ${result}`)
+    return result
   }
 
   protected decode(
     encoded: Codec | null | undefined,
-    hash: string
+    identifier: string
   ): IDelegationRootNode {
-    log.debug(`decode(): encoded: ${encoded}`)
-    throw new Error('not implemented')
+    log.debug(`DelegationRootNode.decode(): encoded: ${encoded}`)
+    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
+    log.debug(`DelegationRootNode as JSON: ${json}`)
+    return json.map((tuple: any[]) => {
+      return {
+        id: identifier,
+        ctypeHash: tuple[0],
+        account: tuple[1],
+        revoked: tuple[2],
+      } as IDelegationRootNode
+    })[0]
   }
 
   protected createTransaction(
     blockchain: Blockchain
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
-    throw new Error('not implemented')
+    if (!this.ctypeHash) {
+      log.error(`Missing CTYPE hash in delegation ${this.getIdentifier()}`)
+      throw new Error('No CTYPE hash found for delegation.')
+    }
+    log.debug(
+      () =>
+        `Initializing transaction 'attestation.add' for claim hash '${this.getIdentifier()}'`
+    )
+    // TODO: Does this work? Third (optional) parameter Option<DelegationNodeId> is missing!
+    // @ts-ignore
+    return blockchain.api.tx.delegation.create_root(
+      this.getIdentifier(),
+      this.ctypeHash
+    )
   }
 }

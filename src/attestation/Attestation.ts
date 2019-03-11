@@ -11,8 +11,8 @@ import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { IRequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import { ICType } from '../ctype/CType'
-import { IPublicIdentity } from 'src/identity/PublicIdentity'
-import { IDelegationBaseNode } from 'src/delegation/Delegation'
+import { IPublicIdentity } from '../identity/PublicIdentity'
+import { IDelegationBaseNode } from '../delegation/Delegation'
 
 const log = factory.getLogger('Attestation')
 
