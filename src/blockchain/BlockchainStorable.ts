@@ -12,17 +12,12 @@ import Blockchain from './Blockchain'
 export interface IBlockchainStorable<QueryType> {
   /**
    * Stores the entity on the blockchain.
-   * TODO: populate errors via another callback
    *
    * @param blockchain the blockchain API object
    * @param identity the identity used to store the entity on chain
    * @param onsuccess the success callback
    */
-  store(
-    blockchain: Blockchain,
-    identity: Identity,
-    onsuccess?: () => void
-  ): Promise<ExtrinsicStatus>
+  store(blockchain: Blockchain, identity: Identity): Promise<ExtrinsicStatus>
 
   /**
    * Verifies that the entity is stored on the blockchain.
