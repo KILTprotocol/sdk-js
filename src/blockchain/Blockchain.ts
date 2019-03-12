@@ -27,7 +27,12 @@ export default class Blockchain {
     host: string = Blockchain.DEFAULT_WS_ADDRESS
   ): Promise<Blockchain> {
     const provider = new WsProvider(host)
-    const api = await ApiPromise.create(provider)
+    const api = await ApiPromise.create({
+      provider,
+      types: {
+        DelegationNodeId: 'Hash',
+      },
+    })
     return new Blockchain(api)
   }
 
@@ -38,7 +43,12 @@ export default class Blockchain {
     host: string = Blockchain.DEFAULT_WS_ADDRESS
   ): Promise<ApiPromise> {
     const provider = new WsProvider(host)
-    const api = await ApiPromise.create(provider)
+    const api = await ApiPromise.create({
+      provider,
+      types: {
+        DelegationNodeId: 'Hash',
+      },
+    })
     return api
   }
 
@@ -207,23 +217,26 @@ export default class Blockchain {
       CodecResult,
       SubscriptionResult
     > = identity.signSubmittableExtrinsic(tx, nonce.toHex())
+    log.info(`Submitting ${tx.method}`)
     return new Promise<ExtrinsicStatus>((resolve, reject) => {
-      signed.send((result: SubmittableResult) => {
-        const status = result.status
-        if (
-          status.type === 'Finalised' &&
-          status.value &&
-          status.value.encodedLength > 0
-        ) {
-          log.debug(
-            () =>
-              `Submitted chain operation '${tx}' successful. Status: ${status}`
-          )
-          resolve(result.status)
-        } else {
-          reject(result.status)
-        }
-      })
+      signed
+        .send((result: SubmittableResult) => {
+          log.info(`Got tx status '${result.status.type}'`)
+          const status = result.status
+          if (
+            status.type === 'Finalised' &&
+            status.value &&
+            status.value.encodedLength > 0
+          ) {
+            log.info(() => `Transaction complete. Status: '${status.type}'`)
+            resolve(result.status)
+          } else if (status.type === 'Invalid' || status.type === 'Dropped') {
+            reject(status)
+          }
+        })
+        .catch(err => {
+          log.error(err)
+        })
     })
   }
 

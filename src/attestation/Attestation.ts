@@ -3,7 +3,7 @@
  */
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
-import { ExtrinsicStatus } from '@polkadot/types'
+import { ExtrinsicStatus, Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import Blockchain from '../blockchain/Blockchain'
 import { BlockchainStorable } from '../blockchain/BlockchainStorable'
@@ -47,7 +47,7 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     super()
     this.owner = attester.address
     this.claimHash = requestForAttestation.hash
-    this.ctypeHash = requestForAttestation.ctypeHash.hash
+    this.ctypeHash = requestForAttestation.claim.cType
     this.revoked = revoked
   }
 
@@ -92,15 +92,17 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
   protected async createTransaction(
     blockchain: Blockchain
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
-    log.debug(
-      () =>
-        `Initializing transaction 'attestation.add' for claim hash '${this.getIdentifier()}'`
-    )
-    // TODO: Does this work? Third (optional) parameter Option<DelegationNodeId> is missing!
+    const txParams = {
+      claimHash: this.getIdentifier(),
+      ctypeHash: this.ctypeHash,
+      delegationId: new Option(Text, this.delegationId),
+    }
+    log.debug(() => `Create tx for 'attestation.add'`)
+    // @ts-ignore
     return blockchain.api.tx.attestation.add(
-      this.getIdentifier(),
-      this.ctypeHash,
-      this.delegationId
+      txParams.claimHash,
+      txParams.ctypeHash,
+      txParams.delegationId
     )
   }
 
@@ -117,7 +119,6 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
       | undefined = await blockchain.api.query.attestation.attestations(
       identifier
     )
-    log.debug(() => `Result: ${result}`)
     return result
   }
 
@@ -126,22 +127,21 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     identifier: string
   ): Attestation[] {
     const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-    let attestations: Attestation[] = []
+    let attestations: IAttestation[] = []
     if (json instanceof Array) {
-      attestations = json
-        .map((attestationTuple: any) => {
-          return {
-            claimHash: identifier,
-            ctypeHash: attestationTuple[0],
-            owner: attestationTuple[1],
-            // delegationId: attestationTuple[2],
-            revoked: attestationTuple[3],
-          } as IAttestation
-        })
-        .map((iAttestation: IAttestation) => {
-          return Attestation.fromObject(iAttestation)
-        })
+      attestations = json.map((attestationTuple: any) => {
+        return {
+          claimHash: identifier,
+          ctypeHash: attestationTuple[0],
+          owner: attestationTuple[1],
+          delegationId: attestationTuple[2],
+          revoked: attestationTuple[3],
+        } as IAttestation
+      })
     }
-    return attestations
+    console.log(`Decoded attestations: ${JSON.stringify(attestations)}`)
+    return attestations.map((iAttestation: IAttestation) => {
+      return Attestation.fromObject(iAttestation)
+    })
   }
 }

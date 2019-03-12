@@ -79,7 +79,7 @@ export abstract class BlockchainStorable<QueryType>
     blockchain: Blockchain,
     identity: Identity,
     extrinsic: SubmittableExtrinsic<CodecResult, SubscriptionResult>
-  ) {
+  ): Promise<ExtrinsicStatus> {
     return blockchain.submitTx(identity, extrinsic)
   }
 

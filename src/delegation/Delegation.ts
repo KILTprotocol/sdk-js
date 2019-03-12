@@ -137,7 +137,7 @@ export class DelegationRootNode extends DelegationBaseNode
     log.debug(`DelegationRootNode.decode(): encoded: ${encoded}`)
     const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
     log.debug(`DelegationRootNode as JSON: ${json}`)
-    return json.map((tuple: any[]) => {
+    const delegationRootNode: IDelegationRootNode = json.map((tuple: any[]) => {
       return {
         id: identifier,
         ctypeHash: tuple[0],
@@ -145,6 +145,10 @@ export class DelegationRootNode extends DelegationBaseNode
         revoked: tuple[2],
       } as IDelegationRootNode
     })[0]
+    console.log(
+      `Decoded delegation root node: ${JSON.stringify(delegationRootNode)}`
+    )
+    return delegationRootNode
   }
 
   protected createTransaction(
@@ -154,13 +158,9 @@ export class DelegationRootNode extends DelegationBaseNode
       log.error(`Missing CTYPE hash in delegation ${this.getIdentifier()}`)
       throw new Error('No CTYPE hash found for delegation.')
     }
-    log.debug(
-      () =>
-        `Initializing transaction 'attestation.add' for claim hash '${this.getIdentifier()}'`
-    )
-    // TODO: Does this work? Third (optional) parameter Option<DelegationNodeId> is missing!
+    log.debug(() => `Create tx for 'delegation.createRoot'`)
     // @ts-ignore
-    return blockchain.api.tx.delegation.create_root(
+    return blockchain.api.tx.delegation.createRoot(
       this.getIdentifier(),
       this.ctypeHash
     )

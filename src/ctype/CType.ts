@@ -192,10 +192,7 @@ export default class CType extends BlockchainStorable<Partial<ICType>>
   protected async createTransaction(
     blockchain: Blockchain
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
-    log.debug(
-      () =>
-        `Initializing transaction 'ctype.add' for hash '${this.getIdentifier()}'`
-    )
+    log.debug(() => `Create tx for 'ctype.add'`)
     return blockchain.api.tx.ctype.add(this.getIdentifier())
   }
 
