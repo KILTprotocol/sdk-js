@@ -1,6 +1,7 @@
 import { SubmittableExtrinsic } from '@polkadot/api'
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import { Codec } from '@polkadot/types/types'
+
 import Blockchain from '../blockchain/Blockchain'
 import { BlockchainStorable } from '../blockchain/BlockchainStorable'
 import { factory } from '../config/ConfigLog'
@@ -126,7 +127,6 @@ export class DelegationRootNode extends DelegationBaseNode
       | Codec
       | null
       | undefined = await blockchain.api.query.delegation.root(identifier)
-    log.debug(() => `Result: ${result}`)
     return result
   }
 
@@ -134,9 +134,7 @@ export class DelegationRootNode extends DelegationBaseNode
     encoded: Codec | null | undefined,
     identifier: string
   ): IDelegationRootNode {
-    log.debug(`DelegationRootNode.decode(): encoded: ${encoded}`)
     const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-    log.debug(`DelegationRootNode as JSON: ${json}`)
     const delegationRootNode: IDelegationRootNode = json.map((tuple: any[]) => {
       return {
         id: identifier,
@@ -145,9 +143,7 @@ export class DelegationRootNode extends DelegationBaseNode
         revoked: tuple[2],
       } as IDelegationRootNode
     })[0]
-    console.log(
-      `Decoded delegation root node: ${JSON.stringify(delegationRootNode)}`
-    )
+    log.info(`Decoded delegation root: ${JSON.stringify(delegationRootNode)}`)
     return delegationRootNode
   }
 

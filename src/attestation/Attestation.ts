@@ -139,7 +139,7 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
         } as IAttestation
       })
     }
-    console.log(`Decoded attestations: ${JSON.stringify(attestations)}`)
+    log.info(`Decoded attestations: ${JSON.stringify(attestations)}`)
     return attestations.map((iAttestation: IAttestation) => {
       return Attestation.fromObject(iAttestation)
     })
