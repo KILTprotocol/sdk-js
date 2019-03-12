@@ -44,7 +44,8 @@
           "private-static-method"
         ]
       }
-    ]
+    ],
+    "max-classes-per-file": [true, 3]
   },
   "rulesDirectory": [
     "tslint-plugin-prettier"
