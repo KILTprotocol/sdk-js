@@ -10,6 +10,11 @@ import { IPublicIdentity } from '../identity/PublicIdentity'
 
 const log = factory.getLogger('Delegation')
 
+export enum Permission {
+  ATTEST,
+  DELEGATE,
+}
+
 export interface IDelegationBaseNode {
   id: string
   account?: IPublicIdentity['address']
@@ -23,8 +28,8 @@ export interface IDelegationRootNode extends IDelegationBaseNode {
   ctypeHash: ICType['hash']
 }
 
-export interface IDelegationNode {
-  permissions: string[]
+export interface IDelegationNode extends IDelegationBaseNode {
+  permissions: Permission[]
 }
 
 export abstract class DelegationBaseNode
@@ -54,12 +59,12 @@ export abstract class DelegationBaseNode
 
 export class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
-  public permissions: string[]
+  public permissions: Permission[]
 
   constructor(
     id: IDelegationBaseNode['id'],
     account?: IPublicIdentity['address'],
-    permissions?: string[]
+    permissions?: Permission[]
   ) {
     super(id)
     this.account = account
@@ -123,11 +128,7 @@ export class DelegationRootNode extends DelegationBaseNode
     log.debug(
       () => `Query chain for root delegation with identifier ${identifier}`
     )
-    const result:
-      | Codec
-      | null
-      | undefined = await blockchain.api.query.delegation.root(identifier)
-    return result
+    return blockchain.api.query.delegation.root(identifier)
   }
 
   protected decode(
