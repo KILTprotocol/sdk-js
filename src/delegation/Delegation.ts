@@ -25,7 +25,7 @@ export interface IDelegationBaseNode {
 }
 
 export interface IDelegationRootNode extends IDelegationBaseNode {
-  ctypeHash: ICType['hash']
+  cTypeHash: ICType['hash']
 }
 
 export interface IDelegationNode extends IDelegationBaseNode {
@@ -102,7 +102,7 @@ export class DelegationNode extends DelegationBaseNode
 
 export class DelegationRootNode extends DelegationBaseNode
   implements IDelegationRootNode {
-  public ctypeHash: ICType['hash']
+  public cTypeHash: ICType['hash']
 
   constructor(
     id: IDelegationBaseNode['id'],
@@ -111,7 +111,7 @@ export class DelegationRootNode extends DelegationBaseNode
   ) {
     super(id)
     this.account = account
-    this.ctypeHash = ctypeHash
+    this.cTypeHash = ctypeHash
   }
 
   public getRoot(): Promise<IDelegationRootNode> {
@@ -139,7 +139,7 @@ export class DelegationRootNode extends DelegationBaseNode
     const delegationRootNode: IDelegationRootNode = json.map((tuple: any[]) => {
       return {
         id: identifier,
-        ctypeHash: tuple[0],
+        cTypeHash: tuple[0],
         account: tuple[1],
         revoked: tuple[2],
       } as IDelegationRootNode
@@ -151,7 +151,7 @@ export class DelegationRootNode extends DelegationBaseNode
   protected createTransaction(
     blockchain: Blockchain
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
-    if (!this.ctypeHash) {
+    if (!this.cTypeHash) {
       log.error(`Missing CTYPE hash in delegation ${this.getIdentifier()}`)
       throw new Error('No CTYPE hash found for delegation.')
     }
@@ -159,7 +159,7 @@ export class DelegationRootNode extends DelegationBaseNode
     // @ts-ignore
     return blockchain.api.tx.delegation.createRoot(
       this.getIdentifier(),
-      this.ctypeHash
+      this.cTypeHash
     )
   }
 }

@@ -18,7 +18,7 @@ const log = factory.getLogger('Attestation')
 
 export interface IAttestation {
   claimHash: string
-  ctypeHash: ICType['hash']
+  cTypeHash: ICType['hash']
   owner: IPublicIdentity['address']
   revoked: boolean
   delegationId?: IDelegationBaseNode['id']
@@ -34,7 +34,7 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     return Object.assign(newAttestation, obj)
   }
   public claimHash: string
-  public ctypeHash: string
+  public cTypeHash: string
   public owner: IPublicIdentity['address']
   public revoked: boolean
   public delegationId?: IDelegationBaseNode['id']
@@ -47,7 +47,7 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     super()
     this.owner = attester.address
     this.claimHash = requestForAttestation.hash
-    this.ctypeHash = requestForAttestation.claim.cType
+    this.cTypeHash = requestForAttestation.claim.cType
     this.revoked = revoked
   }
 
@@ -93,7 +93,7 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
     const txParams = {
       claimHash: this.getIdentifier(),
-      ctypeHash: this.ctypeHash,
+      ctypeHash: this.cTypeHash,
       delegationId: new Option(Text, this.delegationId),
     }
     log.debug(() => `Create tx for 'attestation.add'`)
@@ -131,7 +131,7 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
       attestations = json.map((attestationTuple: any) => {
         return {
           claimHash: identifier,
-          ctypeHash: attestationTuple[0],
+          cTypeHash: attestationTuple[0],
           owner: attestationTuple[1],
           delegationId: attestationTuple[2],
           revoked: attestationTuple[3],

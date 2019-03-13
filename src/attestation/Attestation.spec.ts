@@ -12,9 +12,9 @@ describe('Attestation', () => {
   const identityAlice = Identity.buildFromSeedString('Alice')
   const identityBob = Identity.buildFromSeedString('Bob')
 
-  const ctypeHash = Crypto.hashStr('testCtype')
+  const cTypeHash = Crypto.hashStr('testCtype')
   const claim = {
-    cType: ctypeHash,
+    cType: cTypeHash,
     contents: {},
     owner: identityBob.address,
   } as IClaim
@@ -30,7 +30,7 @@ describe('Attestation', () => {
       api: {
         tx: {
           attestation: {
-            add: jest.fn((claimHash, _ctypeHash) => {
+            add: jest.fn((claimHash, _cTypeHash) => {
               return Promise.resolve()
             }),
           },
@@ -41,7 +41,7 @@ describe('Attestation', () => {
               const tuple = new Tuple(
                 // Attestations: claim-hash -> [(ctype-hash, account, delegation-id?, revoked)]
                 [Tuple.with([Text, Text, Text, Bool])],
-                [[ctypeHash, identityAlice.address, undefined, false]]
+                [[cTypeHash, identityAlice.address, undefined, false]]
               )
               return Promise.resolve(tuple)
             }),
@@ -97,7 +97,7 @@ describe('Attestation', () => {
                 new Tuple(
                   // Attestations: claim-hash -> [(ctype-hash, account, delegation-id?, revoked)]
                   [Tuple.with([Text, Text, Text, Bool])],
-                  [[ctypeHash, identityAlice, undefined, true]]
+                  [[cTypeHash, identityAlice, undefined, true]]
                 )
               )
             }),

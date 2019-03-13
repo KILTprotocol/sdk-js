@@ -63,7 +63,7 @@ describe('Delegation', () => {
       ROOT_IDENTIFIER
     )
     expect(queriedDelegation.account).toBe(identityAlice.address)
-    expect(queriedDelegation.ctypeHash).toBe(ctypeHash)
+    expect(queriedDelegation.cTypeHash).toBe(ctypeHash)
     expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
   })
 })
