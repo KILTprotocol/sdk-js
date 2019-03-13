@@ -58,11 +58,10 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     log.debug(
       () => `Revoking attestations with claim hash ${this.getIdentifier()}`
     )
-    const signature = identity.sign(this.getIdentifier())
     const extrinsic: SubmittableExtrinsic<
       CodecResult,
       SubscriptionResult
-    > = blockchain.api.tx.attestation.revoke(this.getIdentifier(), signature)
+    > = blockchain.api.tx.attestation.revoke(this.getIdentifier())
     return super.submitToBlockchain(blockchain, identity, extrinsic)
   }
 
