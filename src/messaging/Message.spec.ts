@@ -151,7 +151,7 @@ describe('Messaging', () => {
         request: requestAttestationBody.content,
         attestation: {
           claimHash: requestAttestationBody.content.hash,
-          signature: '0x12345678',
+          cTypeHash: '0x12345678',
           owner: identityBob.getPublicIdentity().address,
           revoked: false,
         },

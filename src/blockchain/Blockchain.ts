@@ -27,7 +27,12 @@ export default class Blockchain {
     host: string = Blockchain.DEFAULT_WS_ADDRESS
   ): Promise<Blockchain> {
     const provider = new WsProvider(host)
-    const api = await ApiPromise.create(provider)
+    const api = await ApiPromise.create({
+      provider,
+      types: {
+        DelegationNodeId: 'Hash',
+      },
+    })
     return new Blockchain(api)
   }
 
@@ -38,7 +43,12 @@ export default class Blockchain {
     host: string = Blockchain.DEFAULT_WS_ADDRESS
   ): Promise<ApiPromise> {
     const provider = new WsProvider(host)
-    const api = await ApiPromise.create(provider)
+    const api = await ApiPromise.create({
+      provider,
+      types: {
+        DelegationNodeId: 'Hash',
+      },
+    })
     return api
   }
 
@@ -191,40 +201,43 @@ export default class Blockchain {
   public async makeTransfer(
     identity: Identity,
     accountAddressTo: string,
-    amount: number,
-    onsuccess?: () => void
-  ) {
+    amount: number
+  ): Promise<ExtrinsicStatus> {
     const transfer = this.api.tx.balances.transfer(accountAddressTo, amount)
-    return this.submitTx(identity, transfer, (status: ExtrinsicStatus) => {
-      if (
-        onsuccess &&
-        status.type === 'Finalised' &&
-        status.value &&
-        status.value.encodedLength > 0
-      ) {
-        log.debug(() => `Balance transfer successful. Status: ${status}`)
-        onsuccess()
-      }
-    })
+    return this.submitTx(identity, transfer)
   }
 
   public async submitTx(
     identity: Identity,
-    tx: SubmittableExtrinsic<CodecResult, SubscriptionResult>,
-    status?: (status: ExtrinsicStatus) => void
-  ): Promise<any> {
+    tx: SubmittableExtrinsic<CodecResult, SubscriptionResult>
+  ): Promise<ExtrinsicStatus> {
     const accountAddress = identity.address
     const nonce = await this.getNonce(accountAddress)
     const signed: SubmittableExtrinsic<
       CodecResult,
       SubscriptionResult
     > = identity.signSubmittableExtrinsic(tx, nonce.toHex())
-    signed.send((result: SubmittableResult) => {
-      if (status) {
-        status(result.status)
-      }
+    log.info(`Submitting ${tx.method}`)
+    return new Promise<ExtrinsicStatus>((resolve, reject) => {
+      signed
+        .send((result: SubmittableResult) => {
+          log.info(`Got tx status '${result.status.type}'`)
+          const status = result.status
+          if (
+            status.type === 'Finalised' &&
+            status.value &&
+            status.value.encodedLength > 0
+          ) {
+            log.info(() => `Transaction complete. Status: '${status.type}'`)
+            resolve(result.status)
+          } else if (status.type === 'Invalid' || status.type === 'Dropped') {
+            reject(status)
+          }
+        })
+        .catch(err => {
+          log.error(err)
+        })
     })
-    return Promise.resolve()
   }
 
   public async getNonce(accountAddress: string): Promise<Codec> {

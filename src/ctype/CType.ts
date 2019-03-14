@@ -38,7 +38,8 @@ export interface ICType {
   metadata: CtypeMetadata
 }
 
-export default class CType extends BlockchainStorable implements ICType {
+export default class CType extends BlockchainStorable<Partial<ICType>>
+  implements ICType {
   /**
    * Create the CTYPE model from a CTYPE input model (used in CTYPE editing components).
    * This is necessary because component editors rely on editing arrays of properties instead of
@@ -166,25 +167,33 @@ export default class CType extends BlockchainStorable implements ICType {
     return result
   }
 
-  public getHash(): string {
+  public getIdentifier(): string {
     return this.hash
   }
 
-  protected async query(
+  protected async queryRaw(
     blockchain: Blockchain,
-    hash: string
+    identifier: string
   ): Promise<Codec | null | undefined> {
-    return blockchain.api.query.ctype.cTYPEs(hash)
+    return blockchain.api.query.ctype.cTYPEs(identifier)
   }
 
-  protected async callStoreFunction(
-    blockchain: Blockchain,
-    signature: Uint8Array
+  protected decode(
+    encoded: Codec | null | undefined,
+    identifier: string
+  ): Partial<ICType> {
+    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
+    // just return the hash part of the ctype
+    return {
+      hash: json[0],
+    }
+  }
+
+  protected async createTransaction(
+    blockchain: Blockchain
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
-    log.debug(
-      () => `Initializing transaction 'ctype.add' for hash '${this.getHash()}'`
-    )
-    return blockchain.api.tx.ctype.add(this.getHash(), signature)
+    log.debug(() => `Create tx for 'ctype.add'`)
+    return blockchain.api.tx.ctype.add(this.getIdentifier())
   }
 
   private getLocalized(o: any, lang?: string): any {

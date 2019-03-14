@@ -1,5 +1,5 @@
 /**
- * @module Claim
+ * @module RequestForAttestation
  */
 import { v4 as uuid } from 'uuid'
 import {
