@@ -8,12 +8,14 @@ import { factory } from '../config/ConfigLog'
 import { ICType } from '../ctype/CType'
 import { IPublicIdentity } from '../identity/PublicIdentity'
 import { DelegationDecoder } from './DelegationDecoder'
+import { hash, coToUInt8, u8aToHex, u8aConcat } from '../crypto/Crypto'
+import { u8aFixLength } from '@polkadot/util'
 
 const log = factory.getLogger('Delegation')
 
 export enum Permission {
-  ATTEST,
-  DELEGATE,
+  ATTEST = 0x1,
+  DELEGATE = 0x2,
 }
 
 export interface IDelegationBaseNode {
@@ -34,6 +36,9 @@ export interface IDelegationNode extends IDelegationBaseNode {
   parentId?: IDelegationBaseNode['id']
   permissions: Permission[]
 
+  /**
+   * Generate hash of this nodes' properties for signing.
+   */
   generateHash(): string
 }
 
@@ -83,17 +88,25 @@ export class DelegationNode extends DelegationBaseNode
     id: IDelegationBaseNode['id'],
     rootId: IDelegationBaseNode['id'],
     account: IPublicIdentity['address'],
-    parentId?: IDelegationBaseNode['id'],
-    permissions?: Permission[]
+    permissions: Permission[],
+    parentId?: IDelegationBaseNode['id']
   ) {
     super(id, account)
-    this.permissions = permissions || []
+    this.permissions = permissions
     this.rootId = rootId
     this.parentId = parentId
   }
 
   public generateHash(): string {
-    return ''
+    const uint8Props: Uint8Array[] = []
+    uint8Props.push(coToUInt8(this.id))
+    uint8Props.push(coToUInt8(this.rootId))
+    uint8Props.push(this.permissionsAsBitset())
+    if (this.parentId) {
+      uint8Props.push(coToUInt8(this.parentId))
+    }
+    console.log('uint8Props', uint8Props)
+    return u8aToHex(hash(u8aConcat(...uint8Props)))
   }
 
   public getRoot(blockchain: Blockchain): Promise<IDelegationRootNode> {
@@ -124,6 +137,10 @@ export class DelegationNode extends DelegationBaseNode
         signature
       )
     return blockchain.submitTx(identity, tx)
+  }
+
+  private permissionsAsBitset(): Uint8Array {
+    return u8aFixLength(new Uint8Array(this.permissions), 32) // convert u8 to 32 bit
   }
 }
 

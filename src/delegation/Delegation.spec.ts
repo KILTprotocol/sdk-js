@@ -1,7 +1,13 @@
 import { Text, Tuple } from '@polkadot/types'
 import Bool from '@polkadot/types/Bool'
 import { Blockchain, Crypto, Identity } from '../'
-import { DelegationRootNode, IDelegationRootNode } from './Delegation'
+import {
+  DelegationRootNode,
+  IDelegationRootNode,
+  IDelegationNode,
+  DelegationNode,
+  Permission,
+} from './Delegation'
 
 describe('Delegation', () => {
   const identityAlice = Identity.buildFromSeedString('Alice')
@@ -66,5 +72,18 @@ describe('Delegation', () => {
     expect(queriedDelegation.account).toBe(identityAlice.address)
     expect(queriedDelegation.cTypeHash).toBe(ctypeHash)
     expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
+  })
+
+  it('delegation generate hash', () => {
+    const node: IDelegationNode = new DelegationNode(
+      'myId',
+      'myRootId',
+      'myAccount',
+      [Permission.ATTEST],
+      'myParentNodeId'
+    )
+    const hash: string = node.generateHash()
+
+    console.log('hash', hash)
   })
 })
