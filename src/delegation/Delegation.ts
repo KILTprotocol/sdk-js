@@ -7,6 +7,7 @@ import { BlockchainStorable } from '../blockchain/BlockchainStorable'
 import { factory } from '../config/ConfigLog'
 import { ICType } from '../ctype/CType'
 import { IPublicIdentity } from '../identity/PublicIdentity'
+import { Option, Text } from '@polkadot/types'
 
 const log = factory.getLogger('Delegation')
 
@@ -29,6 +30,9 @@ export interface IDelegationRootNode extends IDelegationBaseNode {
 }
 
 export interface IDelegationNode extends IDelegationBaseNode {
+  rootId: IDelegationBaseNode['id']
+  parentId?: IDelegationBaseNode['id']
+  signature: string
   permissions: Permission[]
 }
 
@@ -59,16 +63,25 @@ export abstract class DelegationBaseNode
 
 export class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
+  public rootId: IDelegationBaseNode['id']
+  public parentId: IDelegationBaseNode['id']
+  public signature: string
   public permissions: Permission[]
 
   constructor(
     id: IDelegationBaseNode['id'],
+    rootId: IDelegationBaseNode['id'],
+    parentId: IDelegationBaseNode['id'],
+    signature: string,
     account?: IPublicIdentity['address'],
     permissions?: Permission[]
   ) {
     super(id)
     this.account = account
     this.permissions = permissions || []
+    this.rootId = rootId
+    this.parentId = parentId
+    this.signature = signature
   }
 
   public getRoot(): Promise<IDelegationRootNode> {
@@ -82,7 +95,9 @@ export class DelegationNode extends DelegationBaseNode
     blockchain: Blockchain,
     identifier: string
   ): Promise<Codec | null | undefined> {
-    throw new Error('not implemented.')
+    // Delegations: delegation-id => (root-id, parent-id?, account, permissions, revoked)
+    log.debug(() => `Query chain for delegation with identifier ${identifier}`)
+    return blockchain.api.query.delegation.delegation(identifier)
   }
 
   protected decode(
@@ -90,13 +105,37 @@ export class DelegationNode extends DelegationBaseNode
     identifier: string
   ): IDelegationNode {
     log.debug(`decode(): encoded: ${encoded}`)
+    // (T::DelegationNodeId,Option<T::DelegationNodeId>,T::AccountId,Permissions,bool)
+    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
+    const delegationRootNode: IDelegationNode = json.map((tuple: any[]) => {
+      return {
+        id: tuple[0],
+        parentId: tuple[1],
+        account: tuple[1],
+        permissions: tuple[2],
+        revoked: tuple[3],
+      } as IDelegationNode
+    })[0]
+    log.info(`Decoded delegation root: ${JSON.stringify(delegationRootNode)}`)
+    return delegationRootNode
     throw new Error('not implemented')
   }
 
   protected createTransaction(
     blockchain: Blockchain
   ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
-    throw new Error('not implemented')
+    // @ts-ignore
+    // pub fn add_delegation(origin, delegation_id: T::DelegationNodeId,
+    //   root_id: T::DelegationNodeId, parent_id: Option<T::DelegationNodeId>,
+    //   delegate: T::AccountId, permissions: Permissions, delegate_signature: T::Signature) -> Result {
+    return blockchain.api.tx.delegation.addDelegation(
+      this.getIdentifier(),
+      this.rootId,
+      new Option(Text, this.parentId),
+      this.account,
+      this.permissions,
+      this.signature
+    )
   }
 }
 
