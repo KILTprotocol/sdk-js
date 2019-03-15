@@ -1,6 +1,6 @@
-import { Crypto, Identity, Blockchain } from '../'
-import { Tuple, Text } from '@polkadot/types'
+import { Text, Tuple } from '@polkadot/types'
 import Bool from '@polkadot/types/Bool'
+import { Blockchain, Crypto, Identity } from '../'
 import { DelegationRootNode, IDelegationRootNode } from './Delegation'
 
 describe('Delegation', () => {
@@ -12,7 +12,7 @@ describe('Delegation', () => {
     api: {
       tx: {
         delegation: {
-          create_root: jest.fn((rootId, _ctypeHash) => {
+          createRoot: jest.fn((rootId, _ctypeHash) => {
             return Promise.resolve()
           }),
         },
@@ -39,7 +39,7 @@ describe('Delegation', () => {
       },
     },
     submitTx: jest.fn((identity, tx) => {
-      return Promise.resolve()
+      return Promise.resolve(undefined)
     }),
     getNonce: jest.fn(),
   } as Blockchain

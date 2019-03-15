@@ -5,8 +5,8 @@
 import { CodecResult } from '@polkadot/api/promise/types'
 import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
 import { Codec } from '@polkadot/types/types'
-import { Identity } from 'src'
-import { TxStatus } from 'src/blockchain/TxStatus'
+import Identity from '../identity/Identity'
+import { TxStatus } from '../blockchain/TxStatus'
 import Blockchain from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import Crypto from '../crypto'
@@ -86,7 +86,7 @@ export default class CType implements ICType {
     const newObject = Object.create(CType.prototype)
     return Object.assign(newObject, obj)
   }
-  public hash: ICType['hash']
+  public hash: string
   public schema: CTypeSchema
   public metadata: CtypeMetadata
 

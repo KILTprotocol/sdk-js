@@ -1,13 +1,13 @@
 import { SubmittableExtrinsic } from '@polkadot/api'
 import { CodecResult } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
-import { Codec } from '@polkadot/types/types'
-import { Identity } from 'src'
-import { TxStatus } from 'src/blockchain/TxStatus'
+import Identity from '../identity/Identity'
+import { TxStatus } from '../blockchain/TxStatus'
 import Blockchain from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import { ICType } from '../ctype/CType'
 import { IPublicIdentity } from '../identity/PublicIdentity'
+import { DelegationDecoder } from './DelegationDecoder'
 
 const log = factory.getLogger('Delegation')
 
@@ -18,11 +18,11 @@ export enum Permission {
 
 export interface IDelegationBaseNode {
   id: string
-  account?: IPublicIdentity['address']
+  account: IPublicIdentity['address']
   revoked: boolean
-  getRoot(): Promise<IDelegationRootNode>
-  getParent(): Promise<IDelegationBaseNode> | null
-  getChildren(): Promise<IDelegationNode[]>
+  getRoot(blockchain: Blockchain): Promise<IDelegationRootNode>
+  getParent(blockchain: Blockchain): Promise<IDelegationBaseNode> | null
+  getChildren(blockchain: Blockchain): Promise<IDelegationNode[]>
 }
 
 export interface IDelegationRootNode extends IDelegationBaseNode {
@@ -38,18 +38,24 @@ export interface IDelegationNode extends IDelegationBaseNode {
 
 export abstract class DelegationBaseNode implements IDelegationBaseNode {
   public id: IDelegationBaseNode['id']
-  public account?: IPublicIdentity['address']
+  public account: IPublicIdentity['address']
   public revoked: boolean = false
 
-  public constructor(id: IDelegationBaseNode['id']) {
+  public constructor(
+    id: IDelegationBaseNode['id'],
+    account: IPublicIdentity['address']
+  ) {
+    this.account = account
     this.id = id
   }
 
-  public abstract getRoot(): Promise<IDelegationRootNode>
+  public abstract getRoot(blockchain: Blockchain): Promise<IDelegationRootNode>
 
-  public abstract getParent(): Promise<IDelegationBaseNode> | null
+  public abstract getParent(
+    blockchain: Blockchain
+  ): Promise<IDelegationBaseNode> | null
 
-  public getChildren(): Promise<IDelegationNode[]> {
+  public getChildren(blockchain: Blockchain): Promise<IDelegationNode[]> {
     throw new Error('not implemented')
   }
 }
@@ -60,36 +66,14 @@ export class DelegationNode extends DelegationBaseNode
     blockchain: Blockchain,
     delegationId: IDelegationBaseNode['id']
   ): Promise<IDelegationNode> {
-    // Delegations: delegation-id => (root-id, parent-id?, account, permissions, revoked)
     log.debug(
       () => `Query chain for delegation with identifier ${delegationId}`
     )
-    const encoded:
-      | Codec
-      | null
-      | undefined = await blockchain.api.query.delegation.delegation(
-      delegationId
+    return DelegationDecoder.decodeDelegationNode(
+      await blockchain.api.query.delegation.delegation(delegationId)
     )
-    return DelegationNode.decode(encoded)
   }
 
-  public static decode(encoded: Codec | null | undefined): IDelegationNode {
-    log.debug(`decode(): encoded: ${encoded}`)
-    // (T::DelegationNodeId,Option<T::DelegationNodeId>,T::AccountId,Permissions,bool)
-    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-    const delegationRootNode: IDelegationNode = json.map((tuple: any[]) => {
-      return {
-        id: tuple[0],
-        parentId: tuple[1],
-        account: tuple[1],
-        permissions: tuple[2],
-        revoked: tuple[3],
-      } as IDelegationNode
-    })[0]
-    log.info(`Decoded delegation root: ${JSON.stringify(delegationRootNode)}`)
-    return delegationRootNode
-    throw new Error('not implemented')
-  }
   public rootId: IDelegationBaseNode['id']
   public parentId: IDelegationBaseNode['id']
   public signature: string
@@ -100,21 +84,22 @@ export class DelegationNode extends DelegationBaseNode
     rootId: IDelegationBaseNode['id'],
     parentId: IDelegationBaseNode['id'],
     signature: string,
-    account?: IPublicIdentity['address'],
+    account: IPublicIdentity['address'],
     permissions?: Permission[]
   ) {
-    super(id)
-    this.account = account
+    super(id, account)
     this.permissions = permissions || []
     this.rootId = rootId
     this.parentId = parentId
     this.signature = signature
   }
 
-  public getRoot(): Promise<IDelegationRootNode> {
+  public getRoot(blockchain: Blockchain): Promise<IDelegationRootNode> {
     throw new Error('not implemented')
   }
-  public getParent(): Promise<IDelegationBaseNode> | null {
+  public getParent(
+    blockchain: Blockchain
+  ): Promise<IDelegationBaseNode> | null {
     throw new Error('not implemented')
   }
 
@@ -148,43 +133,32 @@ export class DelegationRootNode extends DelegationBaseNode
     log.debug(
       () => `Query chain for root delegation with identifier ${delegationId}`
     )
-    const encoded:
-      | Codec
-      | null
-      | undefined = await blockchain.api.query.delegation.root(delegationId)
-    const root: IDelegationRootNode = DelegationRootNode.decode(encoded)
+    const root: Partial<
+      IDelegationRootNode
+    > = DelegationDecoder.decodeRootDelegation(
+      await blockchain.api.query.delegation.root(delegationId)
+    )
     root.id = delegationId
-    return root
+    return root as IDelegationRootNode
   }
 
-  public static decode(encoded: Codec | null | undefined): IDelegationRootNode {
-    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-    const delegationRootNode: IDelegationRootNode = json.map((tuple: any[]) => {
-      return {
-        cTypeHash: tuple[0],
-        account: tuple[1],
-        revoked: tuple[2],
-      } as IDelegationRootNode
-    })[0]
-    log.info(`Decoded delegation root: ${JSON.stringify(delegationRootNode)}`)
-    return delegationRootNode
-  }
   public cTypeHash: ICType['hash']
 
   constructor(
     id: IDelegationBaseNode['id'],
-    ctypeHash?: ICType['hash'],
-    account?: IPublicIdentity['address']
+    ctypeHash: ICType['hash'],
+    account: IPublicIdentity['address']
   ) {
-    super(id)
-    this.account = account
+    super(id, account)
     this.cTypeHash = ctypeHash
   }
 
-  public getRoot(): Promise<IDelegationRootNode> {
+  public getRoot(blockchain: Blockchain): Promise<IDelegationRootNode> {
     return Promise.resolve(this)
   }
-  public getParent(): Promise<IDelegationBaseNode> | null {
+  public getParent(
+    blockchain: Blockchain
+  ): Promise<IDelegationBaseNode> | null {
     return null
   }
 
