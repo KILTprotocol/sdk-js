@@ -3,16 +3,17 @@
  */
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
-import { ExtrinsicStatus, Option, Text } from '@polkadot/types'
+import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
+import { TxStatus } from 'src/blockchain/TxStatus'
 import Blockchain from '../blockchain/Blockchain'
 import { BlockchainStorable } from '../blockchain/BlockchainStorable'
 import { factory } from '../config/ConfigLog'
-import Identity from '../identity/Identity'
-import { IRequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import { ICType } from '../ctype/CType'
-import { IPublicIdentity } from '../identity/PublicIdentity'
 import { IDelegationBaseNode } from '../delegation/Delegation'
+import Identity from '../identity/Identity'
+import { IPublicIdentity } from '../identity/PublicIdentity'
+import { IRequestForAttestation } from '../requestforattestation/RequestForAttestation'
 
 const log = factory.getLogger('Attestation')
 
@@ -54,7 +55,7 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
   public async revoke(
     blockchain: Blockchain,
     identity: Identity
-  ): Promise<ExtrinsicStatus> {
+  ): Promise<TxStatus> {
     log.debug(
       () => `Revoking attestations with claim hash ${this.getIdentifier()}`
     )
@@ -62,7 +63,12 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
       CodecResult,
       SubscriptionResult
     > = blockchain.api.tx.attestation.revoke(this.getIdentifier())
-    return super.submitToBlockchain(blockchain, identity, extrinsic)
+    const txStatus: TxStatus = await super.submitToBlockchain(
+      blockchain,
+      identity,
+      extrinsic
+    )
+    return txStatus
   }
 
   public async verify(

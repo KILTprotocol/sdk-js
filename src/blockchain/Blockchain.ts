@@ -2,6 +2,7 @@
  * @module Blockchain
  */
 import { ApiPromise } from '@polkadot/api'
+import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import SubmittableExtrinsic, {
   SubmittableResult,
 } from '@polkadot/api/SubmittableExtrinsic'
@@ -10,11 +11,10 @@ import { Header } from '@polkadot/types'
 import Hash from '@polkadot/types/Hash'
 import { Codec } from '@polkadot/types/types'
 import BN from 'bn.js'
-import Identity from '../identity/Identity'
-import { ExtrinsicStatus } from '@polkadot/types/index'
-import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import { factory } from '../config/ConfigLog'
+import Identity from '../identity/Identity'
 import { IPublicIdentity } from '../identity/PublicIdentity'
+import { TxStatus } from './TxStatus'
 
 const log = factory.getLogger('Blockchain')
 
@@ -202,7 +202,7 @@ export default class Blockchain {
     identity: Identity,
     accountAddressTo: string,
     amount: number
-  ): Promise<ExtrinsicStatus> {
+  ): Promise<TxStatus> {
     const transfer = this.api.tx.balances.transfer(accountAddressTo, amount)
     return this.submitTx(identity, transfer)
   }
@@ -210,7 +210,7 @@ export default class Blockchain {
   public async submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic<CodecResult, SubscriptionResult>
-  ): Promise<ExtrinsicStatus> {
+  ): Promise<TxStatus> {
     const accountAddress = identity.address
     const nonce = await this.getNonce(accountAddress)
     const signed: SubmittableExtrinsic<
@@ -218,7 +218,7 @@ export default class Blockchain {
       SubscriptionResult
     > = identity.signSubmittableExtrinsic(tx, nonce.toHex())
     log.info(`Submitting ${tx.method}`)
-    return new Promise<ExtrinsicStatus>((resolve, reject) => {
+    return new Promise<TxStatus>((resolve, reject) => {
       signed
         .send((result: SubmittableResult) => {
           log.info(`Got tx status '${result.status.type}'`)
@@ -229,13 +229,14 @@ export default class Blockchain {
             status.value.encodedLength > 0
           ) {
             log.info(() => `Transaction complete. Status: '${status.type}'`)
-            resolve(result.status)
+            resolve(new TxStatus(status.type))
           } else if (status.type === 'Invalid' || status.type === 'Dropped') {
-            reject(status)
+            reject(new Error(status.type))
           }
         })
         .catch(err => {
           log.error(err)
+          reject(err)
         })
     })
   }

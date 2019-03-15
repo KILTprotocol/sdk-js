@@ -3,11 +3,10 @@
  */
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
-import { ExtrinsicStatus } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
-
 import Identity from '../identity/Identity'
 import Blockchain from './Blockchain'
+import { TxStatus } from './TxStatus'
 
 export interface IBlockchainStorable<QueryType> {
   /**
@@ -16,7 +15,7 @@ export interface IBlockchainStorable<QueryType> {
    * @param blockchain the blockchain API object
    * @param identity the identity used to store the entity on chain
    */
-  store(blockchain: Blockchain, identity: Identity): Promise<ExtrinsicStatus>
+  store(blockchain: Blockchain, identity: Identity): Promise<TxStatus>
 
   /**
    * Verifies that the entity is stored on the blockchain.
@@ -38,7 +37,7 @@ export abstract class BlockchainStorable<QueryType>
   public async store(
     blockchain: Blockchain,
     identity: Identity
-  ): Promise<ExtrinsicStatus> {
+  ): Promise<TxStatus> {
     const submittedExtrinsic: SubmittableExtrinsic<
       CodecResult,
       any
@@ -79,7 +78,7 @@ export abstract class BlockchainStorable<QueryType>
     blockchain: Blockchain,
     identity: Identity,
     extrinsic: SubmittableExtrinsic<CodecResult, SubscriptionResult>
-  ): Promise<ExtrinsicStatus> {
+  ): Promise<TxStatus> {
     return blockchain.submitTx(identity, extrinsic)
   }
 
