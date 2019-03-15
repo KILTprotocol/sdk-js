@@ -32,8 +32,9 @@ export interface IDelegationRootNode extends IDelegationBaseNode {
 export interface IDelegationNode extends IDelegationBaseNode {
   rootId: IDelegationBaseNode['id']
   parentId?: IDelegationBaseNode['id']
-  signature: string
   permissions: Permission[]
+
+  generateHash(): string
 }
 
 export abstract class DelegationBaseNode implements IDelegationBaseNode {
@@ -75,23 +76,24 @@ export class DelegationNode extends DelegationBaseNode
   }
 
   public rootId: IDelegationBaseNode['id']
-  public parentId: IDelegationBaseNode['id']
-  public signature: string
+  public parentId?: IDelegationBaseNode['id']
   public permissions: Permission[]
 
   constructor(
     id: IDelegationBaseNode['id'],
     rootId: IDelegationBaseNode['id'],
-    parentId: IDelegationBaseNode['id'],
-    signature: string,
     account: IPublicIdentity['address'],
+    parentId?: IDelegationBaseNode['id'],
     permissions?: Permission[]
   ) {
     super(id, account)
     this.permissions = permissions || []
     this.rootId = rootId
     this.parentId = parentId
-    this.signature = signature
+  }
+
+  public generateHash(): string {
+    return ''
   }
 
   public getRoot(blockchain: Blockchain): Promise<IDelegationRootNode> {
@@ -105,7 +107,8 @@ export class DelegationNode extends DelegationBaseNode
 
   public async store(
     blockchain: Blockchain,
-    identity: Identity
+    identity: Identity,
+    signature: string
   ): Promise<TxStatus> {
     const tx: SubmittableExtrinsic<CodecResult, any> =
       // @ts-ignore
@@ -118,7 +121,7 @@ export class DelegationNode extends DelegationBaseNode
         new Option(Text, this.parentId),
         this.account,
         this.permissions,
-        this.signature
+        signature
       )
     return blockchain.submitTx(identity, tx)
   }
