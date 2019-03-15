@@ -2,16 +2,16 @@
  * @module CType
  */
 
+import { CodecResult } from '@polkadot/api/promise/types'
 import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
 import { Codec } from '@polkadot/types/types'
-
+import { Identity } from 'src'
+import { TxStatus } from 'src/blockchain/TxStatus'
 import Blockchain from '../blockchain/Blockchain'
-import { BlockchainStorable } from '../blockchain/BlockchainStorable'
-import Crypto from '../crypto'
 import { factory } from '../config/ConfigLog'
+import Crypto from '../crypto'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
-import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 
 const log = factory.getLogger('CType')
 
@@ -38,8 +38,7 @@ export interface ICType {
   metadata: CtypeMetadata
 }
 
-export default class CType extends BlockchainStorable<Partial<ICType>>
-  implements ICType {
+export default class CType implements ICType {
   /**
    * Create the CTYPE model from a CTYPE input model (used in CTYPE editing components).
    * This is necessary because component editors rely on editing arrays of properties instead of
@@ -87,12 +86,11 @@ export default class CType extends BlockchainStorable<Partial<ICType>>
     const newObject = Object.create(CType.prototype)
     return Object.assign(newObject, obj)
   }
-  public hash: string
+  public hash: ICType['hash']
   public schema: CTypeSchema
   public metadata: CtypeMetadata
 
   public constructor(ctype: ICType) {
-    super()
     if (!CTypeUtils.verifySchema(ctype, CTypeWrapperModel)) {
       throw new Error('CType does not correspond to schema')
     }
@@ -167,34 +165,43 @@ export default class CType extends BlockchainStorable<Partial<ICType>>
     return result
   }
 
-  public getIdentifier(): string {
-    return this.hash
+  // --- Blockchain operations --------------------------------------------------------------------
+
+  public async store(
+    blockchain: Blockchain,
+    identity: Identity
+  ): Promise<TxStatus> {
+    log.debug(() => `Create tx for 'ctype.add'`)
+    const tx: SubmittableExtrinsic<
+      CodecResult,
+      any
+    > = await blockchain.api.tx.ctype.add(this.hash)
+    return blockchain.submitTx(identity, tx)
   }
 
-  protected async queryRaw(
+  public async query(
     blockchain: Blockchain,
-    identifier: string
-  ): Promise<Codec | null | undefined> {
-    return blockchain.api.query.ctype.cTYPEs(identifier)
+    hash: ICType['hash']
+  ): Promise<ICType['hash'] | undefined> {
+    const encoded:
+      | Codec
+      | null
+      | undefined = await blockchain.api.query.ctype.cTYPEs(hash)
+    return this.decode(encoded)
   }
 
   protected decode(
-    encoded: Codec | null | undefined,
-    identifier: string
-  ): Partial<ICType> {
+    encoded: Codec | null | undefined
+  ): ICType['hash'] | undefined {
     const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
     // just return the hash part of the ctype
-    return {
-      hash: json[0],
+    if (json instanceof Array) {
+      return json[0]
     }
+    return undefined
   }
 
-  protected async createTransaction(
-    blockchain: Blockchain
-  ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
-    log.debug(() => `Create tx for 'ctype.add'`)
-    return blockchain.api.tx.ctype.add(this.getIdentifier())
-  }
+  // ----------------------------------------------------------------------------------------------
 
   private getLocalized(o: any, lang?: string): any {
     if (lang == null || !o[lang]) {

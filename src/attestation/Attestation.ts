@@ -7,7 +7,6 @@ import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { TxStatus } from 'src/blockchain/TxStatus'
 import Blockchain from '../blockchain/Blockchain'
-import { BlockchainStorable } from '../blockchain/BlockchainStorable'
 import { factory } from '../config/ConfigLog'
 import { ICType } from '../ctype/CType'
 import { IDelegationBaseNode } from '../delegation/Delegation'
@@ -25,8 +24,7 @@ export interface IAttestation {
   delegationId?: IDelegationBaseNode['id']
 }
 
-export default class Attestation extends BlockchainStorable<Attestation[]>
-  implements IAttestation {
+export default class Attestation implements IAttestation {
   /**
    * Creates a new instance of this Attestation class from the given interface.
    */
@@ -35,7 +33,7 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     return Object.assign(newAttestation, obj)
   }
   public claimHash: string
-  public cTypeHash: string
+  public cTypeHash: ICType['hash']
   public owner: IPublicIdentity['address']
   public revoked: boolean
   public delegationId?: IDelegationBaseNode['id']
@@ -45,30 +43,44 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     attester: Identity,
     revoked = false
   ) {
-    super()
     this.owner = attester.address
     this.claimHash = requestForAttestation.hash
     this.cTypeHash = requestForAttestation.claim.cType
     this.revoked = revoked
   }
 
+  public async store(
+    blockchain: Blockchain,
+    identity: Identity
+  ): Promise<TxStatus> {
+    const txParams = {
+      claimHash: this.claimHash,
+      ctypeHash: this.cTypeHash,
+      delegationId: new Option(Text, this.delegationId),
+    }
+    log.debug(() => `Create tx for 'attestation.add'`)
+    // @ts-ignore
+    const tx: SubmittableExtrinsic<
+      CodecResult,
+      any
+    > = await blockchain.api.tx.attestation.add(
+      txParams.claimHash,
+      txParams.ctypeHash,
+      txParams.delegationId
+    )
+    return blockchain.submitTx(identity, tx)
+  }
+
   public async revoke(
     blockchain: Blockchain,
     identity: Identity
   ): Promise<TxStatus> {
-    log.debug(
-      () => `Revoking attestations with claim hash ${this.getIdentifier()}`
-    )
-    const extrinsic: SubmittableExtrinsic<
+    log.debug(() => `Revoking attestations with claim hash ${this.claimHash}`)
+    const tx: SubmittableExtrinsic<
       CodecResult,
       SubscriptionResult
-    > = blockchain.api.tx.attestation.revoke(this.getIdentifier())
-    const txStatus: TxStatus = await super.submitToBlockchain(
-      blockchain,
-      identity,
-      extrinsic
-    )
-    return txStatus
+    > = blockchain.api.tx.attestation.revoke(this.claimHash)
+    return blockchain.submitTx(identity, tx)
   }
 
   public async verify(
@@ -90,53 +102,42 @@ export default class Attestation extends BlockchainStorable<Attestation[]>
     return Promise.resolve(attestationValid)
   }
 
-  public getIdentifier(): string {
-    return this.claimHash
-  }
-
-  protected async createTransaction(
-    blockchain: Blockchain
-  ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
-    const txParams = {
-      claimHash: this.getIdentifier(),
-      ctypeHash: this.cTypeHash,
-      delegationId: new Option(Text, this.delegationId),
+  public async query(
+    blockchain: Blockchain,
+    claimHash: string
+  ): Promise<Attestation[]> {
+    const encoded = await this.queryRaw(blockchain, claimHash)
+    try {
+      return this.decode(encoded, claimHash)
+    } catch (err) {
+      return Promise.reject(err)
     }
-    log.debug(() => `Create tx for 'attestation.add'`)
-    // @ts-ignore
-    return blockchain.api.tx.attestation.add(
-      txParams.claimHash,
-      txParams.ctypeHash,
-      txParams.delegationId
-    )
   }
 
   protected async queryRaw(
     blockchain: Blockchain,
-    identifier: string
+    claimHash: string
   ): Promise<Codec | null | undefined> {
-    log.debug(
-      () => `Query chain for attestations with claim hash ${identifier}`
-    )
+    log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
     const result:
       | Codec
       | null
       | undefined = await blockchain.api.query.attestation.attestations(
-      identifier
+      claimHash
     )
     return result
   }
 
   protected decode(
     encoded: Codec | null | undefined,
-    identifier: string
+    claimHash: string
   ): Attestation[] {
     const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
     let attestations: IAttestation[] = []
     if (json instanceof Array) {
       attestations = json.map((attestationTuple: any) => {
         return {
-          claimHash: identifier,
+          claimHash,
           cTypeHash: attestationTuple[0],
           owner: attestationTuple[1],
           delegationId: attestationTuple[2],

@@ -52,13 +52,14 @@ describe('Delegation', () => {
       identityAlice.getPublicIdentity().address
     )
     rootDelegation.store(blockchain, identityAlice)
-    expect(await rootDelegation.verifyStored(blockchain)).toBeTruthy()
+    expect(
+      (await DelegationRootNode.query(blockchain, ROOT_IDENTIFIER)).id
+    ).toBe(ROOT_IDENTIFIER)
   })
 
   it('query root delegation', async () => {
-    const rootDelegation = new DelegationRootNode(ROOT_IDENTIFIER)
     // @ts-ignore
-    const queriedDelegation: IDelegationRootNode = await rootDelegation.query(
+    const queriedDelegation: IDelegationRootNode = await DelegationRootNode.query(
       blockchain,
       ROOT_IDENTIFIER
     )

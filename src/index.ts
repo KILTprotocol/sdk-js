@@ -5,7 +5,7 @@ export { default as Demo } from './demo/Demo'
 export { default as Identity } from './identity/Identity'
 export { default as PublicIdentity, IPublicIdentity } from './identity/PublicIdentity'
 export { default as Blockchain } from './blockchain/Blockchain'
-export { default as BlockchainStorable } from './blockchain/BlockchainStorable'
+export { default as TxStatus } from './blockchain/TxStatus'
 export { default as Crypto } from './crypto'
 export { default as CType, ICType } from './ctype/CType'
 export {

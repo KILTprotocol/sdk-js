@@ -59,7 +59,6 @@ describe('Attestation', () => {
     } as Blockchain
 
     const attestation = new Attestation(requestForAttestation, identityAlice)
-    expect(await attestation.verifyStored(blockchain)).toBeTruthy()
     expect(await attestation.verify(blockchain)).toBeTruthy()
   })
 
@@ -82,7 +81,6 @@ describe('Attestation', () => {
       identityAlice,
       false
     )
-    expect(await attestation.verifyStored(blockchain)).toBeFalsy()
     expect(await attestation.verify(blockchain)).toBeFalsy()
   })
 
@@ -111,7 +109,6 @@ describe('Attestation', () => {
       identityAlice,
       false
     )
-    expect(await attestation.verifyStored(blockchain)).toBeTruthy()
     expect(await attestation.verify(blockchain)).toBeFalsy()
   })
 })

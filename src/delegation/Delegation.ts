@@ -1,13 +1,13 @@
 import { SubmittableExtrinsic } from '@polkadot/api'
-import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
+import { CodecResult } from '@polkadot/api/promise/types'
+import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
-
+import { Identity } from 'src'
+import { TxStatus } from 'src/blockchain/TxStatus'
 import Blockchain from '../blockchain/Blockchain'
-import { BlockchainStorable } from '../blockchain/BlockchainStorable'
 import { factory } from '../config/ConfigLog'
 import { ICType } from '../ctype/CType'
 import { IPublicIdentity } from '../identity/PublicIdentity'
-import { Option, Text } from '@polkadot/types'
 
 const log = factory.getLogger('Delegation')
 
@@ -36,20 +36,13 @@ export interface IDelegationNode extends IDelegationBaseNode {
   permissions: Permission[]
 }
 
-export abstract class DelegationBaseNode
-  extends BlockchainStorable<IDelegationRootNode | IDelegationNode>
-  implements IDelegationBaseNode {
+export abstract class DelegationBaseNode implements IDelegationBaseNode {
   public id: IDelegationBaseNode['id']
   public account?: IPublicIdentity['address']
   public revoked: boolean = false
 
   public constructor(id: IDelegationBaseNode['id']) {
-    super()
     this.id = id
-  }
-
-  public getIdentifier(): string {
-    return this.id
   }
 
   public abstract getRoot(): Promise<IDelegationRootNode>
@@ -63,6 +56,40 @@ export abstract class DelegationBaseNode
 
 export class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
+  public static async query(
+    blockchain: Blockchain,
+    delegationId: IDelegationBaseNode['id']
+  ): Promise<IDelegationNode> {
+    // Delegations: delegation-id => (root-id, parent-id?, account, permissions, revoked)
+    log.debug(
+      () => `Query chain for delegation with identifier ${delegationId}`
+    )
+    const encoded:
+      | Codec
+      | null
+      | undefined = await blockchain.api.query.delegation.delegation(
+      delegationId
+    )
+    return DelegationNode.decode(encoded)
+  }
+
+  public static decode(encoded: Codec | null | undefined): IDelegationNode {
+    log.debug(`decode(): encoded: ${encoded}`)
+    // (T::DelegationNodeId,Option<T::DelegationNodeId>,T::AccountId,Permissions,bool)
+    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
+    const delegationRootNode: IDelegationNode = json.map((tuple: any[]) => {
+      return {
+        id: tuple[0],
+        parentId: tuple[1],
+        account: tuple[1],
+        permissions: tuple[2],
+        revoked: tuple[3],
+      } as IDelegationNode
+    })[0]
+    log.info(`Decoded delegation root: ${JSON.stringify(delegationRootNode)}`)
+    return delegationRootNode
+    throw new Error('not implemented')
+  }
   public rootId: IDelegationBaseNode['id']
   public parentId: IDelegationBaseNode['id']
   public signature: string
@@ -91,56 +118,57 @@ export class DelegationNode extends DelegationBaseNode
     throw new Error('not implemented')
   }
 
-  protected queryRaw(
+  public async store(
     blockchain: Blockchain,
-    identifier: string
-  ): Promise<Codec | null | undefined> {
-    // Delegations: delegation-id => (root-id, parent-id?, account, permissions, revoked)
-    log.debug(() => `Query chain for delegation with identifier ${identifier}`)
-    return blockchain.api.query.delegation.delegation(identifier)
-  }
-
-  protected decode(
-    encoded: Codec | null | undefined,
-    identifier: string
-  ): IDelegationNode {
-    log.debug(`decode(): encoded: ${encoded}`)
-    // (T::DelegationNodeId,Option<T::DelegationNodeId>,T::AccountId,Permissions,bool)
-    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-    const delegationRootNode: IDelegationNode = json.map((tuple: any[]) => {
-      return {
-        id: tuple[0],
-        parentId: tuple[1],
-        account: tuple[1],
-        permissions: tuple[2],
-        revoked: tuple[3],
-      } as IDelegationNode
-    })[0]
-    log.info(`Decoded delegation root: ${JSON.stringify(delegationRootNode)}`)
-    return delegationRootNode
-    throw new Error('not implemented')
-  }
-
-  protected createTransaction(
-    blockchain: Blockchain
-  ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
-    // @ts-ignore
-    // pub fn add_delegation(origin, delegation_id: T::DelegationNodeId,
-    //   root_id: T::DelegationNodeId, parent_id: Option<T::DelegationNodeId>,
-    //   delegate: T::AccountId, permissions: Permissions, delegate_signature: T::Signature) -> Result {
-    return blockchain.api.tx.delegation.addDelegation(
-      this.getIdentifier(),
-      this.rootId,
-      new Option(Text, this.parentId),
-      this.account,
-      this.permissions,
-      this.signature
-    )
+    identity: Identity
+  ): Promise<TxStatus> {
+    const tx: SubmittableExtrinsic<CodecResult, any> =
+      // @ts-ignore
+      // pub fn add_delegation(origin, delegation_id: T::DelegationNodeId,
+      //   root_id: T::DelegationNodeId, parent_id: Option<T::DelegationNodeId>,
+      //   delegate: T::AccountId, permissions: Permissions, delegate_signature: T::Signature) -> Result {
+      await blockchain.api.tx.delegation.addDelegation(
+        this.id,
+        this.rootId,
+        new Option(Text, this.parentId),
+        this.account,
+        this.permissions,
+        this.signature
+      )
+    return blockchain.submitTx(identity, tx)
   }
 }
 
 export class DelegationRootNode extends DelegationBaseNode
   implements IDelegationRootNode {
+  public static async query(
+    blockchain: Blockchain,
+    delegationId: IDelegationBaseNode['id']
+  ): Promise<IDelegationRootNode> {
+    log.debug(
+      () => `Query chain for root delegation with identifier ${delegationId}`
+    )
+    const encoded:
+      | Codec
+      | null
+      | undefined = await blockchain.api.query.delegation.root(delegationId)
+    const root: IDelegationRootNode = DelegationRootNode.decode(encoded)
+    root.id = delegationId
+    return root
+  }
+
+  public static decode(encoded: Codec | null | undefined): IDelegationRootNode {
+    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
+    const delegationRootNode: IDelegationRootNode = json.map((tuple: any[]) => {
+      return {
+        cTypeHash: tuple[0],
+        account: tuple[1],
+        revoked: tuple[2],
+      } as IDelegationRootNode
+    })[0]
+    log.info(`Decoded delegation root: ${JSON.stringify(delegationRootNode)}`)
+    return delegationRootNode
+  }
   public cTypeHash: ICType['hash']
 
   constructor(
@@ -160,45 +188,18 @@ export class DelegationRootNode extends DelegationBaseNode
     return null
   }
 
-  protected async queryRaw(
+  public async store(
     blockchain: Blockchain,
-    identifier: string
-  ): Promise<Codec | null | undefined> {
-    log.debug(
-      () => `Query chain for root delegation with identifier ${identifier}`
-    )
-    return blockchain.api.query.delegation.root(identifier)
-  }
-
-  protected decode(
-    encoded: Codec | null | undefined,
-    identifier: string
-  ): IDelegationRootNode {
-    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-    const delegationRootNode: IDelegationRootNode = json.map((tuple: any[]) => {
-      return {
-        id: identifier,
-        cTypeHash: tuple[0],
-        account: tuple[1],
-        revoked: tuple[2],
-      } as IDelegationRootNode
-    })[0]
-    log.info(`Decoded delegation root: ${JSON.stringify(delegationRootNode)}`)
-    return delegationRootNode
-  }
-
-  protected createTransaction(
-    blockchain: Blockchain
-  ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
+    identity: Identity
+  ): Promise<TxStatus> {
     if (!this.cTypeHash) {
-      log.error(`Missing CTYPE hash in delegation ${this.getIdentifier()}`)
+      log.error(`Missing CTYPE hash in delegation ${this.id}`)
       throw new Error('No CTYPE hash found for delegation.')
     }
     log.debug(() => `Create tx for 'delegation.createRoot'`)
-    // @ts-ignore
-    return blockchain.api.tx.delegation.createRoot(
-      this.getIdentifier(),
-      this.cTypeHash
-    )
+    const tx: SubmittableExtrinsic<CodecResult, any> =
+      // @ts-ignore
+      await blockchain.api.tx.delegation.createRoot(this.id, this.cTypeHash)
+    return blockchain.submitTx(identity, tx)
   }
 }
