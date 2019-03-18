@@ -179,15 +179,13 @@ export default class CType implements ICType {
     return blockchain.submitTx(identity, tx)
   }
 
-  public async query(
-    blockchain: Blockchain,
-    hash: ICType['hash']
-  ): Promise<ICType['hash'] | undefined> {
+  public async verifyStored(blockchain: Blockchain): Promise<boolean> {
     const encoded:
       | Codec
       | null
-      | undefined = await blockchain.api.query.ctype.cTYPEs(hash)
-    return this.decode(encoded)
+      | undefined = await blockchain.api.query.ctype.cTYPEs(this.hash)
+    const queriedCTypeHash: ICType['hash'] | undefined = this.decode(encoded)
+    return queriedCTypeHash !== undefined && queriedCTypeHash === this.hash
   }
 
   protected decode(
