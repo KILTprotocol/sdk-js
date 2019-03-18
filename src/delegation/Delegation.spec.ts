@@ -85,5 +85,27 @@ describe('Delegation', () => {
     const hash: string = node.generateHash()
 
     console.log('hash', hash)
+    expect(hash).toBe(
+      '0xff0fa212929afa2f2c63cbf4a2f467dda6466385efcd5f07196aac74b5ce016c'
+    )
+  })
+
+  it('delegation permissionsAsBitset', () => {
+    const node: IDelegationNode = new DelegationNode(
+      'myId',
+      'myRootId',
+      'myAccount',
+      [Permission.ATTEST, Permission.DELEGATE],
+      'myParentNodeId'
+    )
+    // @ts-ignore
+    const permissions: Uint8Array = node.permissionsAsBitset()
+    console.log('permissions', permissions)
+    const expected: Uint8Array = new Uint8Array(4)
+    expected[0] = 0
+    expected[1] = 0
+    expected[2] = 0
+    expected[3] = 3
+    expect(permissions.toString()).toBe(expected.toString())
   })
 })

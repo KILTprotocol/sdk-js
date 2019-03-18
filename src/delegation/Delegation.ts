@@ -14,8 +14,8 @@ import { u8aFixLength } from '@polkadot/util'
 const log = factory.getLogger('Delegation')
 
 export enum Permission {
-  ATTEST = 0x1,
-  DELEGATE = 0x2,
+  ATTEST = 1,
+  DELEGATE = 2,
 }
 
 export interface IDelegationBaseNode {
@@ -105,7 +105,6 @@ export class DelegationNode extends DelegationBaseNode
     if (this.parentId) {
       uint8Props.push(coToUInt8(this.parentId))
     }
-    console.log('uint8Props', uint8Props)
     return u8aToHex(hash(u8aConcat(...uint8Props)))
   }
 
@@ -125,22 +124,24 @@ export class DelegationNode extends DelegationBaseNode
   ): Promise<TxStatus> {
     const tx: SubmittableExtrinsic<CodecResult, any> =
       // @ts-ignore
-      // pub fn add_delegation(origin, delegation_id: T::DelegationNodeId,
-      //   root_id: T::DelegationNodeId, parent_id: Option<T::DelegationNodeId>,
-      //   delegate: T::AccountId, permissions: Permissions, delegate_signature: T::Signature) -> Result {
       await blockchain.api.tx.delegation.addDelegation(
         this.id,
         this.rootId,
         new Option(Text, this.parentId),
         this.account,
-        this.permissions,
+        this.permissionsAsBitset(),
         signature
       )
     return blockchain.submitTx(identity, tx)
   }
 
   private permissionsAsBitset(): Uint8Array {
-    return u8aFixLength(new Uint8Array(this.permissions), 32) // convert u8 to 32 bit
+    const permisssionsAsBitset: number = this.permissions.reduce(
+      (accumulator, currentValue) => accumulator + currentValue
+    )
+    const uint8: Uint8Array = new Uint8Array(1)
+    uint8[0] = permisssionsAsBitset
+    return u8aFixLength(uint8, 32) // convert u8 to 32 bit
   }
 }
 
