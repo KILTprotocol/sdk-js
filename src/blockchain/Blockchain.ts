@@ -47,6 +47,7 @@ export default class Blockchain {
       provider,
       types: {
         DelegationNodeId: 'Hash',
+        Permissions: 'u32',
       },
     })
     return api
