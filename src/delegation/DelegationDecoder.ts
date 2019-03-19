@@ -1,3 +1,10 @@
+/**
+ * Functions to decode types queried from the chain.
+ *
+ * When a type is queried from the chain using the `api.query...` functions, a result of type `Codec` is returned
+ * by the polkadot-js api. We need to decode the encoded data to build the Kilt types from it.
+ */
+
 import { Codec } from '@polkadot/types/types'
 import { IDelegationRootNode, IDelegationNode, Permission } from './Delegation'
 import { factory } from '../config/ConfigLog'
@@ -42,6 +49,7 @@ export function decodeDelegationNode(
 
 /**
  * Decode the permissions from the bitset encoded in the given `number`.
+ * We use bitwise `AND` to check if a permission bit flag is set.
  *
  * @param bitset the u32 number used as the bitset to encode permissions
  */

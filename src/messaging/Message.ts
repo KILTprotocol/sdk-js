@@ -168,7 +168,7 @@ export enum MessageBodyType {
   SUBMIT_CLAIMS_FOR_CTYPE = 'submit-claims-for-ctype',
   REQUEST_ACCEPT_DELEGATION = 'request-accept-delegation',
   SUBMIT_ACCEPT_DELEGATION = 'submit-accept-delegation',
-  SUBMIT_CREATE_DELEGATION = 'submit-create-delegation',
+  INFORM_CREATE_DELEGATION = 'inform-create-delegation',
 }
 
 interface IMessageBodyBase {
@@ -240,7 +240,7 @@ export interface ISubmitAcceptDelegation extends IMessageBodyBase {
 
 export interface ISubmitCreateDelegation extends IMessageBodyBase {
   content: IDelegationBaseNode['id']
-  type: MessageBodyType.SUBMIT_CREATE_DELEGATION
+  type: MessageBodyType.INFORM_CREATE_DELEGATION
 }
 
 export interface IPartialClaim extends Partial<IClaim> {
