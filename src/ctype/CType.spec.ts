@@ -129,6 +129,5 @@ describe('CType', () => {
     const ctype = new CType(ctypeModel)
     ctype.hash = testHash
     expect(await ctype.store(blockchain, identityAlice)).toEqual(resultHash)
-    expect(ctype.verifyStored(blockchain)).toBeTruthy()
   })
 })
