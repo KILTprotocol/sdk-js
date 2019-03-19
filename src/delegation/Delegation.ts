@@ -9,13 +9,12 @@ import { ICType } from '../ctype/CType'
 import { IPublicIdentity } from '../identity/PublicIdentity'
 import { DelegationDecoder } from './DelegationDecoder'
 import { hash, coToUInt8, u8aToHex, u8aConcat } from '../crypto/Crypto'
-import { u8aFixLength } from '@polkadot/util'
 
 const log = factory.getLogger('Delegation')
 
 export enum Permission {
-  ATTEST = 1,
-  DELEGATE = 2,
+  ATTEST = 1 << 0,
+  DELEGATE = 1 << 1,
 }
 
 export interface IDelegationBaseNode {
@@ -76,7 +75,7 @@ export class DelegationNode extends DelegationBaseNode
       () => `Query chain for delegation with identifier ${delegationId}`
     )
     return DelegationDecoder.decodeDelegationNode(
-      await blockchain.api.query.delegation.delegation(delegationId)
+      await blockchain.api.query.delegation.delegations(delegationId)
     )
   }
 
@@ -101,10 +100,10 @@ export class DelegationNode extends DelegationBaseNode
     const uint8Props: Uint8Array[] = []
     uint8Props.push(coToUInt8(this.id))
     uint8Props.push(coToUInt8(this.rootId))
-    uint8Props.push(this.permissionsAsBitset())
     if (this.parentId) {
       uint8Props.push(coToUInt8(this.parentId))
     }
+    uint8Props.push(this.permissionsAsBitset())
     return u8aToHex(hash(u8aConcat(...uint8Props)))
   }
 
@@ -141,7 +140,7 @@ export class DelegationNode extends DelegationBaseNode
     )
     const uint8: Uint8Array = new Uint8Array(1)
     uint8[0] = permisssionsAsBitset
-    return u8aFixLength(uint8, 32) // convert u8 to 32 bit
+    return uint8
   }
 }
 

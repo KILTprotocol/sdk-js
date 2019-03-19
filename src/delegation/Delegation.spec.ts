@@ -86,7 +86,7 @@ describe('Delegation', () => {
 
     console.log('hash', hash)
     expect(hash).toBe(
-      '0xff0fa212929afa2f2c63cbf4a2f467dda6466385efcd5f07196aac74b5ce016c'
+      '0x46993defbaf261efb4796a1eb311fbd2b0d9943aad2a39d3fd54eb79dcce7cc3'
     )
   })
 
@@ -101,11 +101,8 @@ describe('Delegation', () => {
     // @ts-ignore
     const permissions: Uint8Array = node.permissionsAsBitset()
     console.log('permissions', permissions)
-    const expected: Uint8Array = new Uint8Array(4)
-    expected[0] = 0
-    expected[1] = 0
-    expected[2] = 0
-    expected[3] = 3
+    const expected: Uint8Array = new Uint8Array(1)
+    expected[0] = 3
     expect(permissions.toString()).toBe(expected.toString())
   })
 })

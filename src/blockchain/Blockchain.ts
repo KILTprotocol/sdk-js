@@ -9,7 +9,7 @@ import SubmittableExtrinsic, {
 import { WsProvider } from '@polkadot/rpc-provider'
 import { Header } from '@polkadot/types'
 import Hash from '@polkadot/types/Hash'
-import { Codec } from '@polkadot/types/types'
+import { Codec, RegistryTypes } from '@polkadot/types/types'
 import BN from 'bn.js'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
@@ -17,6 +17,11 @@ import { IPublicIdentity } from '../identity/PublicIdentity'
 import { TxStatus } from './TxStatus'
 
 const log = factory.getLogger('Blockchain')
+
+const CUSTOM_TYPES: RegistryTypes = {
+  DelegationNodeId: 'Hash',
+  Permissions: 'u32',
+}
 
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
@@ -29,9 +34,7 @@ export default class Blockchain {
     const provider = new WsProvider(host)
     const api = await ApiPromise.create({
       provider,
-      types: {
-        DelegationNodeId: 'Hash',
-      },
+      types: CUSTOM_TYPES,
     })
     return new Blockchain(api)
   }
@@ -45,10 +48,7 @@ export default class Blockchain {
     const provider = new WsProvider(host)
     const api = await ApiPromise.create({
       provider,
-      types: {
-        DelegationNodeId: 'Hash',
-        Permissions: 'u32',
-      },
+      types: CUSTOM_TYPES,
     })
     return api
   }
