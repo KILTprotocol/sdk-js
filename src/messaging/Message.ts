@@ -238,7 +238,7 @@ export interface ISubmitAcceptDelegation extends IMessageBodyBase {
   type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION
 }
 
-export interface ISubmitCreateDelegation extends IMessageBodyBase {
+export interface IInformCreateDelegation extends IMessageBodyBase {
   content: IDelegationBaseNode['id']
   type: MessageBodyType.INFORM_CREATE_DELEGATION
 }
@@ -256,4 +256,4 @@ export type MessageBody =
   | ISubmitClaimsForCtype
   | IRequestAcceptDelegation
   | ISubmitAcceptDelegation
-  | ISubmitCreateDelegation
+  | IInformCreateDelegation
