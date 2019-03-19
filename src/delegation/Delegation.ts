@@ -7,14 +7,14 @@ import Blockchain from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import { ICType } from '../ctype/CType'
 import { IPublicIdentity } from '../identity/PublicIdentity'
-import { DelegationDecoder } from './DelegationDecoder'
+import { decodeDelegationNode, decodeRootDelegation } from './DelegationDecoder'
 import { hash, coToUInt8, u8aToHex, u8aConcat } from '../crypto/Crypto'
 
 const log = factory.getLogger('Delegation')
 
 export enum Permission {
-  ATTEST = 1 << 0,
-  DELEGATE = 1 << 1,
+  ATTEST = 1 << 0, // 0001
+  DELEGATE = 1 << 1, // 0010
 }
 
 export interface IDelegationBaseNode {
@@ -70,11 +70,11 @@ export class DelegationNode extends DelegationBaseNode
   public static async query(
     blockchain: Blockchain,
     delegationId: IDelegationBaseNode['id']
-  ): Promise<IDelegationNode> {
+  ): Promise<IDelegationNode | undefined> {
     log.debug(
       () => `Query chain for delegation with identifier ${delegationId}`
     )
-    return DelegationDecoder.decodeDelegationNode(
+    return decodeDelegationNode(
       await blockchain.api.query.delegation.delegations(delegationId)
     )
   }
@@ -134,6 +134,17 @@ export class DelegationNode extends DelegationBaseNode
     return blockchain.submitTx(identity, tx)
   }
 
+  /**
+   * Creates a bitset from the permissions in the array where each enum value
+   * is used to set the bit flag in the set.
+   *
+   * ATTEST has `0001`  (decimal 1)
+   * DELEGATE has `0010` (decimal 2)
+   *
+   * Adding the enum values results in a decimal representation of the bitset.
+   *
+   * @returns the bitset as single value uint8 array
+   */
   private permissionsAsBitset(): Uint8Array {
     const permisssionsAsBitset: number = this.permissions.reduce(
       (accumulator, currentValue) => accumulator + currentValue
@@ -149,17 +160,18 @@ export class DelegationRootNode extends DelegationBaseNode
   public static async query(
     blockchain: Blockchain,
     delegationId: IDelegationBaseNode['id']
-  ): Promise<IDelegationRootNode> {
+  ): Promise<IDelegationRootNode | undefined> {
     log.debug(
       () => `Query chain for root delegation with identifier ${delegationId}`
     )
-    const root: Partial<
-      IDelegationRootNode
-    > = DelegationDecoder.decodeRootDelegation(
+    const root: Partial<IDelegationRootNode | undefined> = decodeRootDelegation(
       await blockchain.api.query.delegation.root(delegationId)
     )
-    root.id = delegationId
-    return root as IDelegationRootNode
+    if (root) {
+      root.id = delegationId
+      return root as IDelegationRootNode
+    }
+    return undefined
   }
 
   public cTypeHash: ICType['hash']
