@@ -58,9 +58,11 @@ describe('Delegation', () => {
       identityAlice.getPublicIdentity().address
     )
     rootDelegation.store(blockchain, identityAlice)
-    expect(
-      (await DelegationRootNode.query(blockchain, ROOT_IDENTIFIER)).id
-    ).toBe(ROOT_IDENTIFIER)
+    const rootNode = await DelegationRootNode.query(blockchain, ROOT_IDENTIFIER)
+    expect(rootNode).toBeDefined()
+    if (rootNode) {
+      expect(rootNode.id).toBe(ROOT_IDENTIFIER)
+    }
   })
 
   it('query root delegation', async () => {
