@@ -5,14 +5,19 @@
  * by the polkadot-js api. We need to decode the encoded data to build the Kilt types from it.
  */
 
-import { Codec } from '@polkadot/types/types'
-import { IDelegationRootNode, IDelegationNode, Permission } from './Delegation'
+import { QueryResult } from 'src/blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
+import { IDelegationNode, IDelegationRootNode, Permission } from './Delegation'
 
 const log = factory.getLogger('DelegationDecoder')
 
+export type CodecWithId = {
+  id: string
+  codec: QueryResult
+}
+
 export function decodeRootDelegation(
-  encoded: Codec | null | undefined
+  encoded: QueryResult
 ): Partial<IDelegationRootNode | undefined> {
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
   const delegationRootNode: IDelegationRootNode | undefined = json
@@ -29,7 +34,7 @@ export function decodeRootDelegation(
 }
 
 export function decodeDelegationNode(
-  encoded: Codec | null | undefined
+  encoded: QueryResult
 ): IDelegationNode | undefined {
   log.debug(`decode(): encoded: ${encoded}`)
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null

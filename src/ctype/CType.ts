@@ -4,12 +4,11 @@
 
 import { CodecResult } from '@polkadot/api/promise/types'
 import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
-import { Codec } from '@polkadot/types/types'
-import Identity from '../identity/Identity'
+import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
-import Blockchain from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import Crypto from '../crypto'
+import Identity from '../identity/Identity'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
 
@@ -180,17 +179,14 @@ export default class CType implements ICType {
   }
 
   public async verifyStored(blockchain: Blockchain): Promise<boolean> {
-    const encoded:
-      | Codec
-      | null
-      | undefined = await blockchain.api.query.ctype.cTYPEs(this.hash)
+    const encoded: QueryResult = await blockchain.api.query.ctype.cTYPEs(
+      this.hash
+    )
     const queriedCTypeHash: ICType['hash'] | undefined = this.decode(encoded)
     return queriedCTypeHash !== undefined && queriedCTypeHash === this.hash
   }
 
-  protected decode(
-    encoded: Codec | null | undefined
-  ): ICType['hash'] | undefined {
+  protected decode(encoded: QueryResult): ICType['hash'] | undefined {
     const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
     // just return the hash part of the ctype
     if (json instanceof Array) {
