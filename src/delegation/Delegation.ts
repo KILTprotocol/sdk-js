@@ -12,7 +12,6 @@ import { coToUInt8, u8aToHex, u8aConcat } from '../crypto/Crypto'
 
 import { default as blake2AsU8a } from '@polkadot/util-crypto/blake2/asU8a'
 
-
 const log = factory.getLogger('Delegation')
 
 export enum Permission {
