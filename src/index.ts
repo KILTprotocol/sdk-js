@@ -22,4 +22,5 @@ export { IDelegationRootNode, IDelegationBaseNode, IDelegationNode, Permission }
 export { DelegationNode } from './delegation/DelegationNode'
 export { DelegationRootNode } from './delegation/DelegationRootNode'
 export { default as Message } from './messaging/Message'
+export { UUID } from './util/UUID'
 export * from './messaging/Message'
