@@ -5,7 +5,7 @@
  * by the polkadot-js api. We need to decode the encoded data to build the Kilt types from it.
  */
 
-import { QueryResult } from 'src/blockchain/Blockchain'
+import { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import { IDelegationNode, IDelegationRootNode, Permission } from './Delegation'
 

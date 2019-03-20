@@ -11,7 +11,7 @@ import {
   IDelegationRootNode,
 } from './Delegation'
 import { decodeRootDelegation } from './DelegationDecoder'
-import { ICType } from 'src/ctype/CType'
+import { ICType } from '../ctype/CType'
 
 const log = factory.getLogger('DelegationRootNode')
 
