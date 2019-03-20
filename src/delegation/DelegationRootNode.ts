@@ -59,9 +59,10 @@ export class DelegationRootNode extends DelegationBaseNode
     identity: Identity
   ): Promise<TxStatus> {
     log.debug(() => `Create tx for 'delegation.createRoot'`)
-    const tx: SubmittableExtrinsic<CodecResult, any> =
-      // @ts-ignore
-      await blockchain.api.tx.delegation.createRoot(this.id, this.cTypeHash)
+    const tx: SubmittableExtrinsic<
+      CodecResult,
+      any
+    > = await blockchain.api.tx.delegation.createRoot(this.id, this.cTypeHash)
     return blockchain.submitTx(identity, tx)
   }
 }

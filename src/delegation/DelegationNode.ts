@@ -79,7 +79,7 @@ export class DelegationNode extends DelegationBaseNode
     blockchain: Blockchain
   ): Promise<IDelegationBaseNode | undefined> {
     if (this.parentId === undefined) {
-      // parent is root
+      // parent must be root
       return await this.getRoot(blockchain)
     }
     return await DelegationNode.query(blockchain, this.parentId)
@@ -90,19 +90,31 @@ export class DelegationNode extends DelegationBaseNode
     identity: Identity,
     signature: string
   ): Promise<TxStatus> {
-    const tx: SubmittableExtrinsic<CodecResult, any> =
-      // @ts-ignore
-      await blockchain.api.tx.delegation.addDelegation(
-        this.id,
-        this.rootId,
-        new Option(Text, this.parentId),
-        this.account,
-        this.permissionsAsBitset(),
-        signature
-      )
+    const tx: SubmittableExtrinsic<
+      CodecResult,
+      any
+    > = await blockchain.api.tx.delegation.addDelegation(
+      this.id,
+      this.rootId,
+      new Option(Text, this.parentId),
+      this.account,
+      this.permissionsAsBitset(),
+      signature
+    )
     return blockchain.submitTx(identity, tx)
   }
 
+  /**
+   * Creates a bitset from the permissions in the array where each enum value
+   * is used to set the bit flag in the set.
+   *
+   * ATTEST has `0001`  (decimal 1)
+   * DELEGATE has `0010` (decimal 2)
+   *
+   * Adding the enum values results in a decimal representation of the bitset.
+   *
+   * @returns the bitset as single value uint8 array
+   */
   private permissionsAsBitset(): Uint8Array {
     const permisssionsAsBitset: number = this.permissions.reduce(
       (accumulator, currentValue) => accumulator + currentValue
