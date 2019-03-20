@@ -8,7 +8,10 @@ import { factory } from '../config/ConfigLog'
 import { ICType } from '../ctype/CType'
 import { IPublicIdentity } from '../identity/PublicIdentity'
 import { decodeDelegationNode, decodeRootDelegation } from './DelegationDecoder'
-import { hash, coToUInt8, u8aToHex, u8aConcat } from '../crypto/Crypto'
+import { coToUInt8, u8aToHex, u8aConcat } from '../crypto/Crypto'
+
+import { default as blake2AsU8a } from '@polkadot/util-crypto/blake2/asU8a'
+
 
 const log = factory.getLogger('Delegation')
 
@@ -104,7 +107,7 @@ export class DelegationNode extends DelegationBaseNode
       uint8Props.push(coToUInt8(this.parentId))
     }
     uint8Props.push(this.permissionsAsBitset())
-    return u8aToHex(hash(u8aConcat(...uint8Props)))
+    return u8aToHex(blake2AsU8a(u8aConcat(...uint8Props), 256))
   }
 
   public getRoot(blockchain: Blockchain): Promise<IDelegationRootNode> {
@@ -138,8 +141,8 @@ export class DelegationNode extends DelegationBaseNode
    * Creates a bitset from the permissions in the array where each enum value
    * is used to set the bit flag in the set.
    *
-   * ATTEST has `0001`  (decimal 1)
-   * DELEGATE has `0010` (decimal 2)
+   * ATTEST has `0000000000000001`  (decimal 1)
+   * DELEGATE has `0000000000000010` (decimal 2)
    *
    * Adding the enum values results in a decimal representation of the bitset.
    *
@@ -149,7 +152,7 @@ export class DelegationNode extends DelegationBaseNode
     const permisssionsAsBitset: number = this.permissions.reduce(
       (accumulator, currentValue) => accumulator + currentValue
     )
-    const uint8: Uint8Array = new Uint8Array(1)
+    const uint8: Uint8Array = new Uint8Array(4)
     uint8[0] = permisssionsAsBitset
     return uint8
   }

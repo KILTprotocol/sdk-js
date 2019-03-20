@@ -78,17 +78,16 @@ describe('Delegation', () => {
 
   it('delegation generate hash', () => {
     const node: IDelegationNode = new DelegationNode(
-      'myId',
-      'myRootId',
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
+      '0x0000000000000000000000000000000000000000000000000000000000000002',
       'myAccount',
       [Permission.ATTEST],
-      'myParentNodeId'
-    )
+      '0x0000000000000000000000000000000000000000000000000000000000000003')
     const hash: string = node.generateHash()
 
     console.log('hash', hash)
     expect(hash).toBe(
-      '0x46993defbaf261efb4796a1eb311fbd2b0d9943aad2a39d3fd54eb79dcce7cc3'
+      '0x20c5b0ba186b1eef2eabdb10a5e6399cc8eaa865ad0aaed6d3583c97746392aa'
     )
   })
 
@@ -103,7 +102,7 @@ describe('Delegation', () => {
     // @ts-ignore
     const permissions: Uint8Array = node.permissionsAsBitset()
     console.log('permissions', permissions)
-    const expected: Uint8Array = new Uint8Array(1)
+    const expected: Uint8Array = new Uint8Array(4)
     expected[0] = 3
     expect(permissions.toString()).toBe(expected.toString())
   })
