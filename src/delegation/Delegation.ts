@@ -2,7 +2,7 @@ import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import { ICType } from '../ctype/CType'
 import { IPublicIdentity } from '../identity/PublicIdentity'
-import { decodeDelegationNode, CodecWithId } from './DelegationDecoder'
+import { CodecWithId } from './DelegationDecoder'
 
 const log = factory.getLogger('Delegation')
 
@@ -66,7 +66,7 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
     )
     const children: IDelegationNode[] = queryResults
       .map((codec: CodecWithId) => {
-        const decoded: IDelegationNode | undefined = decodeDelegationNode(
+        const decoded: IDelegationNode | undefined = this.decodeChildNode(
           codec.codec
         )
         if (decoded) {
@@ -80,6 +80,13 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
     log.info(`children: ${JSON.stringify(children)}`)
     return children
   }
+
+  /**
+   * Required to avoid cyclic dependencies btw. DelegationBaseNode and DelegationNode implementations.
+   */
+  protected abstract decodeChildNode(
+    queryResult: QueryResult
+  ): IDelegationNode | undefined
 
   private async fetchChildren(
     childIds: string[],

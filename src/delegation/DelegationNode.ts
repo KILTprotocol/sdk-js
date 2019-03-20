@@ -1,7 +1,7 @@
 import { SubmittableExtrinsic } from '@polkadot/api'
 import { CodecResult } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
-import Blockchain from '../blockchain/Blockchain'
+import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import { coToUInt8, hash, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
@@ -102,6 +102,12 @@ export class DelegationNode extends DelegationBaseNode
       signature
     )
     return blockchain.submitTx(identity, tx)
+  }
+
+  protected decodeChildNode(
+    queryResult: QueryResult
+  ): IDelegationNode | undefined {
+    return decodeDelegationNode(queryResult)
   }
 
   /**

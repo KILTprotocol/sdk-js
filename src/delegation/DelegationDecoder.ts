@@ -8,6 +8,7 @@
 import { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import { IDelegationNode, IDelegationRootNode, Permission } from './Delegation'
+import { DelegationNode } from './DelegationNode'
 
 const log = factory.getLogger('DelegationDecoder')
 
@@ -22,11 +23,11 @@ export function decodeRootDelegation(
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
   const delegationRootNode: IDelegationRootNode | undefined = json
     ? json.map((tuple: any[]) => {
-        return {
+        return Object.assign(Object.create(DelegationNode.prototype), {
           cTypeHash: tuple[0],
           account: tuple[1],
           revoked: tuple[2],
-        } as IDelegationRootNode
+        } as IDelegationRootNode)
       })[0]
     : undefined
   log.info(`Decoded delegation root: ${JSON.stringify(delegationRootNode)}`)
@@ -40,13 +41,13 @@ export function decodeDelegationNode(
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
   let decodedNode: IDelegationNode | undefined
   if (json instanceof Array) {
-    decodedNode = {
+    decodedNode = Object.assign(Object.create(DelegationNode.prototype), {
       rootId: json[0],
       parentId: json[1], // optional
       account: json[2],
       permissions: decodePermissions(json[3]),
       revoked: json[4],
-    } as IDelegationNode
+    } as IDelegationNode)
   }
   log.info(`Decoded delegation node: ${JSON.stringify(decodedNode)}`)
   return decodedNode

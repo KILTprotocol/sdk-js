@@ -1,6 +1,6 @@
 import { SubmittableExtrinsic } from '@polkadot/api'
 import { CodecResult } from '@polkadot/api/promise/types'
-import Blockchain from '../blockchain/Blockchain'
+import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
@@ -9,8 +9,9 @@ import {
   DelegationBaseNode,
   IDelegationBaseNode,
   IDelegationRootNode,
+  IDelegationNode,
 } from './Delegation'
-import { decodeRootDelegation } from './DelegationDecoder'
+import { decodeRootDelegation, decodeDelegationNode } from './DelegationDecoder'
 import { ICType } from '../ctype/CType'
 
 const log = factory.getLogger('DelegationRootNode')
@@ -64,5 +65,11 @@ export class DelegationRootNode extends DelegationBaseNode
       any
     > = await blockchain.api.tx.delegation.createRoot(this.id, this.cTypeHash)
     return blockchain.submitTx(identity, tx)
+  }
+
+  protected decodeChildNode(
+    queryResult: QueryResult
+  ): IDelegationNode | undefined {
+    return decodeDelegationNode(queryResult)
   }
 }
