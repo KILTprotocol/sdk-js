@@ -23,16 +23,16 @@ describe('Delegation', () => {
           root: jest.fn(rootId => {
             const tuple = new Tuple(
               // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-              [Tuple.with([Text, Text, Bool])],
-              [[ctypeHash, identityAlice.address, false]]
+              [Text, Text, Bool],
+              [ctypeHash, identityAlice.address, false]
             )
             return Promise.resolve(tuple)
           }),
           delegation: jest.fn(delegationId => {
             const tuple = new Tuple(
               // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-              [Tuple.with([Text, Text, Bool])],
-              [[ctypeHash, identityAlice.address, false]]
+              [Text, Text, Bool],
+              [ctypeHash, identityAlice.address, false]
             )
             return Promise.resolve(tuple)
           }),

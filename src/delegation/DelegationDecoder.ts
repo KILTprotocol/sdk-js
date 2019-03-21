@@ -7,6 +7,7 @@
 
 import { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
+import { coToUInt8 } from '../crypto/Crypto'
 import { IDelegationNode, IDelegationRootNode, Permission } from './Delegation'
 import { DelegationNode } from './DelegationNode'
 
@@ -20,16 +21,19 @@ export type CodecWithId = {
 export function decodeRootDelegation(
   encoded: QueryResult
 ): Partial<IDelegationRootNode | undefined> {
+  log.debug(`decode(): encoded: ${encoded}`)
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-  const delegationRootNode: IDelegationRootNode | undefined = json
-    ? json.map((tuple: any[]) => {
-        return Object.assign(Object.create(DelegationNode.prototype), {
-          cTypeHash: tuple[0],
-          account: tuple[1],
-          revoked: tuple[2],
-        } as IDelegationRootNode)
-      })[0]
-    : undefined
+  let delegationRootNode: IDelegationRootNode | undefined
+  if (json instanceof Array) {
+    delegationRootNode = Object.assign(
+      Object.create(DelegationNode.prototype),
+      {
+        cTypeHash: json[0],
+        account: json[1],
+        revoked: json[2],
+      } as IDelegationRootNode
+    )
+  }
   log.info(`Decoded delegation root: ${JSON.stringify(delegationRootNode)}`)
   return delegationRootNode
 }
@@ -41,6 +45,11 @@ export function decodeDelegationNode(
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
   let decodedNode: IDelegationNode | undefined
   if (json instanceof Array) {
+    if (!verifyRoot(json[0])) {
+      // Query returns 0x0 for rootId if queried for a root id instead of a node id.
+      // A node without a root node is therefore interpreted as invalid.
+      return undefined
+    }
     decodedNode = Object.assign(Object.create(DelegationNode.prototype), {
       rootId: json[0],
       parentId: json[1], // optional
@@ -51,6 +60,17 @@ export function decodeDelegationNode(
   }
   log.info(`Decoded delegation node: ${JSON.stringify(decodedNode)}`)
   return decodedNode
+}
+
+/**
+ * Checks if `rootId` is set (to something different than `0`)
+ * @param rootId the root id part of the query result for delegation nodes
+ */
+function verifyRoot(rootId: string) {
+  const rootU8: Uint8Array = coToUInt8(rootId)
+  return (
+    rootU8.reduce((accumulator, currentValue) => accumulator + currentValue) > 0
+  )
 }
 
 /**
