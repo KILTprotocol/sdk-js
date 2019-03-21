@@ -1,4 +1,3 @@
-import { ApiPromise } from '@polkadot/api'
 import { Header } from '@polkadot/types'
 import BN from 'bn.js/'
 import partial from 'lodash/partial'
@@ -7,18 +6,18 @@ import Blockchain from './Blockchain'
 // NB: see jest.config.js - include this dir to be tested for test coverage again
 // to acquire a connection as singleton, async and without jest complaining about
 // 'Jest: Coverage data for ./src/blockchain/ was not found.' I use this construct for now
-let apiSingleton: ApiPromise
+let blockchainSingleton: Blockchain
 const getConnectionOnce = async () => {
-  if (!apiSingleton) {
-    apiSingleton = await Blockchain.connect()
+  if (!blockchainSingleton) {
+    blockchainSingleton = await Blockchain.build()
   }
-  return apiSingleton
+  return blockchainSingleton
 }
 
 describe('Blockchain', async () => {
   xit('should get stats', async () => {
     const api = await getConnectionOnce()
-    const stats = await partial(Blockchain.getStats, api)()
+    const stats = await partial(blockchainSingleton.getStats, api)()
     expect(stats).toEqual({
       chain: 'KILT Testnet',
       nodeName: 'substrate-node',
@@ -34,9 +33,10 @@ describe('Blockchain', async () => {
       done()
     }
 
-    const subscriptionId = await partial(Blockchain.listenToBlocks, api)(
-      listener
-    )
+    const subscriptionId = await partial(
+      blockchainSingleton.listenToBlocks,
+      api
+    )(listener)
     expect(subscriptionId).toBeGreaterThanOrEqual(0)
     console.log(`Subscription Id: ${subscriptionId}`)
   }, 20000)
@@ -50,7 +50,7 @@ describe('Blockchain', async () => {
     }
 
     const currentBalance = await partial(
-      Blockchain.listenToBalanceChanges,
+      blockchainSingleton.listenToBalanceChanges,
       api
     )(bob.address, listener)
 
@@ -63,7 +63,7 @@ describe('Blockchain', async () => {
     const alice = Identity.buildFromSeedString('Alice')
     const bob = Identity.buildFromSeedString('Bob')
 
-    const hash = await partial(Blockchain.makeTransfer, api)(
+    const hash = await partial(blockchainSingleton.makeTransfer, api)(
       alice,
       bob.address,
       100

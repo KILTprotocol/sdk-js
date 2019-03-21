@@ -16,7 +16,7 @@
     "no-parameter-reassignment": true,
     "ordered-imports": false,
     "variable-name": false,
-    "max-classes-per-file": [true, 3],
+    "max-classes-per-file": [true, 1],
     "quotemark": [
       true,
       "single"

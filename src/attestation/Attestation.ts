@@ -6,7 +6,7 @@ import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
 import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { TxStatus } from '../blockchain/TxStatus'
-import Blockchain from '../blockchain/Blockchain'
+import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import { ICType } from '../ctype/CType'
 import { IDelegationBaseNode } from '../delegation/Delegation'
@@ -106,7 +106,7 @@ export default class Attestation implements IAttestation {
     blockchain: Blockchain,
     claimHash: string
   ): Promise<Attestation[]> {
-    const encoded = await this.queryRaw(blockchain, claimHash)
+    const encoded: QueryResult = await this.queryRaw(blockchain, claimHash)
     try {
       return this.decode(encoded, claimHash)
     } catch (err) {
@@ -119,19 +119,13 @@ export default class Attestation implements IAttestation {
     claimHash: string
   ): Promise<Codec | null | undefined> {
     log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
-    const result:
-      | Codec
-      | null
-      | undefined = await blockchain.api.query.attestation.attestations(
+    const result: QueryResult = await blockchain.api.query.attestation.attestations(
       claimHash
     )
     return result
   }
 
-  protected decode(
-    encoded: Codec | null | undefined,
-    claimHash: string
-  ): Attestation[] {
+  protected decode(encoded: QueryResult, claimHash: string): Attestation[] {
     const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
     let attestations: IAttestation[] = []
     if (json instanceof Array) {
