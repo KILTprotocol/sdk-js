@@ -22,16 +22,16 @@ export class DelegationRootNode extends DelegationBaseNode
     blockchain: Blockchain,
     delegationId: IDelegationBaseNode['id']
   ): Promise<IDelegationRootNode | undefined> {
-    log.debug(
-      () => `Query chain for root delegation with identifier ${delegationId}`
-    )
+    log.info(`:: query('${delegationId}')`)
     const root: Partial<IDelegationRootNode | undefined> = decodeRootDelegation(
       await blockchain.api.query.delegation.root(delegationId)
     )
     if (root) {
       root.id = delegationId
+      log.info(`result: ${JSON.stringify(root)}`)
       return root as IDelegationRootNode
     }
+    log.info(`root node not found`)
     return root
   }
 
@@ -59,7 +59,7 @@ export class DelegationRootNode extends DelegationBaseNode
     blockchain: Blockchain,
     identity: Identity
   ): Promise<TxStatus> {
-    log.debug(() => `Create tx for 'delegation.createRoot'`)
+    log.debug(() => `:: store()`)
     const tx: SubmittableExtrinsic<
       CodecResult,
       any

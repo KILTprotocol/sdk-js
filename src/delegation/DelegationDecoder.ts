@@ -6,12 +6,10 @@
  */
 
 import { QueryResult } from '../blockchain/Blockchain'
-import { factory } from '../config/ConfigLog'
 import { coToUInt8 } from '../crypto/Crypto'
 import { IDelegationNode, IDelegationRootNode, Permission } from './Delegation'
 import { DelegationNode } from './DelegationNode'
-
-const log = factory.getLogger('DelegationDecoder')
+import { DelegationRootNode } from './DelegationRootNode'
 
 export type CodecWithId = {
   id: string
@@ -21,12 +19,11 @@ export type CodecWithId = {
 export function decodeRootDelegation(
   encoded: QueryResult
 ): Partial<IDelegationRootNode | undefined> {
-  log.debug(`decode(): encoded: ${encoded}`)
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
   let delegationRootNode: IDelegationRootNode | undefined
   if (json instanceof Array) {
     delegationRootNode = Object.assign(
-      Object.create(DelegationNode.prototype),
+      Object.create(DelegationRootNode.prototype),
       {
         cTypeHash: json[0],
         account: json[1],
@@ -34,14 +31,12 @@ export function decodeRootDelegation(
       } as IDelegationRootNode
     )
   }
-  log.info(`Decoded delegation root: ${JSON.stringify(delegationRootNode)}`)
   return delegationRootNode
 }
 
 export function decodeDelegationNode(
   encoded: QueryResult
 ): IDelegationNode | undefined {
-  log.debug(`decode(): encoded: ${encoded}`)
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
   let decodedNode: IDelegationNode | undefined
   if (json instanceof Array) {
@@ -58,7 +53,6 @@ export function decodeDelegationNode(
       revoked: json[4],
     } as IDelegationNode)
   }
-  log.info(`Decoded delegation node: ${JSON.stringify(decodedNode)}`)
   return decodedNode
 }
 

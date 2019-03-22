@@ -26,15 +26,14 @@ export class DelegationNode extends DelegationBaseNode
     blockchain: Blockchain,
     delegationId: IDelegationBaseNode['id']
   ): Promise<IDelegationNode | undefined> {
-    log.debug(
-      () => `Query chain for delegation with identifier ${delegationId}`
-    )
+    log.info(`:: query('${delegationId}')`)
     const decoded: IDelegationNode | undefined = decodeDelegationNode(
       await blockchain.api.query.delegation.delegations(delegationId)
     )
     if (decoded) {
       decoded.id = delegationId
     }
+    log.info(`result: ${JSON.stringify(decoded)}`)
     return decoded
   }
 
@@ -56,12 +55,16 @@ export class DelegationNode extends DelegationBaseNode
   }
 
   public generateHash(): string {
-    const uint8Props: Uint8Array[] = []
-    uint8Props.push(coToUInt8(this.id))
-    uint8Props.push(coToUInt8(this.rootId))
-    if (this.parentId) {
-      uint8Props.push(coToUInt8(this.parentId))
+    const propsToHash: any[] = [this.id, this.rootId]
+    if (this.parentId && this.parentId !== this.rootId) {
+      propsToHash.push(this.parentId)
     }
+    propsToHash.forEach(val => {
+      console.log('property value:', val)
+    })
+    const uint8Props: Uint8Array[] = propsToHash.map(value => {
+      return coToUInt8(value)
+    })
     uint8Props.push(this.permissionsAsBitset())
     const generated: string = u8aToHex(
       blake2AsU8a(u8aConcat(...uint8Props), 256)
@@ -83,7 +86,7 @@ export class DelegationNode extends DelegationBaseNode
   public async getParent(
     blockchain: Blockchain
   ): Promise<IDelegationBaseNode | undefined> {
-    if (this.parentId === undefined) {
+    if (!this.parentId) {
       // parent must be root
       return await this.getRoot(blockchain)
     }
@@ -95,13 +98,17 @@ export class DelegationNode extends DelegationBaseNode
     identity: Identity,
     signature: string
   ): Promise<TxStatus> {
+    log.info(' :: store()')
+    const includeParentId: boolean = this.parentId
+      ? this.parentId !== this.rootId
+      : false
     const tx: SubmittableExtrinsic<
       CodecResult,
       any
     > = await blockchain.api.tx.delegation.addDelegation(
       this.id,
       this.rootId,
-      new Option(Text, this.parentId),
+      new Option(Text, includeParentId ? this.parentId : undefined),
       this.account,
       this.permissionsAsBitset(),
       signature

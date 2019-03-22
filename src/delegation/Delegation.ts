@@ -4,7 +4,7 @@ import { ICType } from '../ctype/CType'
 import { IPublicIdentity } from '../identity/PublicIdentity'
 import { CodecWithId } from './DelegationDecoder'
 
-const log = factory.getLogger('Delegation')
+const log = factory.getLogger('DelegationBaseNode')
 
 export enum Permission {
   ATTEST = 1 << 0, // 0001
@@ -56,11 +56,10 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
   ): Promise<IDelegationBaseNode | undefined>
 
   public async getChildren(blockchain: Blockchain): Promise<IDelegationNode[]> {
-    log.info(`Query children for ${this.id}`)
+    log.info(` :: getChildren('${this.id}')`)
     const childIds: string[] = Blockchain.asArray(
       await blockchain.api.query.delegation.children(this.id)
     )
-    log.info(`Found children: ${childIds}`)
     const queryResults: CodecWithId[] = await this.fetchChildren(
       childIds,
       blockchain
