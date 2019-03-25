@@ -1,6 +1,7 @@
 import { EncryptedAsymmetricString } from 'src/crypto/Crypto'
 import {
   Claim,
+  DelegationNode,
   IAttestedClaim,
   IClaim,
   ICType,
@@ -185,6 +186,7 @@ export interface ISubmitLegitimations extends IMessageBodyBase {
   content: {
     claim: IPartialClaim
     legitimations: IAttestedClaim[]
+    delegationId?: DelegationNode['id']
   }
   type: MessageBodyType.SUBMIT_LEGITIMATIONS
 }
