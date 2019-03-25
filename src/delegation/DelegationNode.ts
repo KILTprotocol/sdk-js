@@ -55,7 +55,7 @@ export class DelegationNode extends DelegationBaseNode
   }
 
   public generateHash(): string {
-    const propsToHash: Uint8Array | string[] = [this.id, this.rootId]
+    const propsToHash: Array<Uint8Array | string> = [this.id, this.rootId]
     if (this.parentId && this.parentId !== this.rootId) {
       propsToHash.push(this.parentId)
     }
