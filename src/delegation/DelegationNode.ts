@@ -109,6 +109,14 @@ export class DelegationNode extends DelegationBaseNode
     return blockchain.submitTx(identity, tx)
   }
 
+  public async verify(blockchain: Blockchain): Promise<boolean> {
+    const node: IDelegationNode | undefined = await DelegationNode.query(
+      blockchain,
+      this.id
+    )
+    return node !== undefined && !node.revoked
+  }
+
   protected decodeChildNode(
     queryResult: QueryResult
   ): IDelegationNode | undefined {

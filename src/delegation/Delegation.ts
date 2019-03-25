@@ -18,6 +18,7 @@ export interface IDelegationBaseNode {
   getRoot(blockchain: Blockchain): Promise<IDelegationRootNode>
   getParent(blockchain: Blockchain): Promise<IDelegationBaseNode | undefined>
   getChildren(blockchain: Blockchain): Promise<IDelegationNode[]>
+  verify(blockchain: Blockchain): Promise<boolean>
 }
 
 export interface IDelegationRootNode extends IDelegationBaseNode {
@@ -80,6 +81,8 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
     log.info(`children: ${JSON.stringify(children)}`)
     return children
   }
+
+  public abstract verify(blockchain: Blockchain): Promise<boolean>
 
   /**
    * Required to avoid cyclic dependencies btw. DelegationBaseNode and DelegationNode implementations.

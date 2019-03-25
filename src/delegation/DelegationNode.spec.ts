@@ -76,4 +76,21 @@ describe('Delegation', () => {
     expected[0] = 3
     expect(permissions.toString()).toBe(expected.toString())
   })
+
+  it('delegation verify', () => {
+    const node: IDelegationNode = new DelegationNode(
+      'myId',
+      'myRootId',
+      'myAccount',
+      [Permission.ATTEST, Permission.DELEGATE],
+      'myParentNodeId'
+    )
+    node.revoked = true
+    // @ts-ignore
+    const permissions: Uint8Array = node.permissionsAsBitset()
+    console.log('permissions', permissions)
+    const expected: Uint8Array = new Uint8Array(4)
+    expected[0] = 3
+    expect(permissions.toString()).toBe(expected.toString())
+  })
 })
