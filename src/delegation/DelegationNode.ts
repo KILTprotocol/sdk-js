@@ -1,7 +1,7 @@
 import { SubmittableExtrinsic } from '@polkadot/api'
 import { CodecResult } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
-import { default as blake2AsU8a } from '@polkadot/util-crypto/blake2/asU8a'
+import Crypto from '../crypto'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
@@ -55,19 +55,16 @@ export class DelegationNode extends DelegationBaseNode
   }
 
   public generateHash(): string {
-    const propsToHash: any[] = [this.id, this.rootId]
+    const propsToHash: Uint8Array | string[] = [this.id, this.rootId]
     if (this.parentId && this.parentId !== this.rootId) {
       propsToHash.push(this.parentId)
     }
-    propsToHash.forEach(val => {
-      console.log('property value:', val)
-    })
     const uint8Props: Uint8Array[] = propsToHash.map(value => {
       return coToUInt8(value)
     })
     uint8Props.push(this.permissionsAsBitset())
     const generated: string = u8aToHex(
-      blake2AsU8a(u8aConcat(...uint8Props), 256)
+      Crypto.hash(u8aConcat(...uint8Props), 256)
     )
     log.debug(`generateHash(): ${generated}`)
     return generated
