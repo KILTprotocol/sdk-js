@@ -71,4 +71,49 @@ describe('Delegation', () => {
     expect(queriedDelegation.cTypeHash).toBe(ctypeHash)
     expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
   })
+
+  it('root delegation verify', async () => {
+    // @ts-ignore
+    const myBlockchain = {
+      api: {
+        query: {
+          delegation: {
+            root: jest.fn(rootId => {
+              if (rootId === 'success') {
+                const tuple = new Tuple(
+                  // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+                  [Text, Text, Bool],
+                  ['myCtypeHash', 'myAccount', false]
+                )
+                return Promise.resolve(tuple)
+              } else {
+                const tuple = new Tuple(
+                  // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+                  [Text, Text, Bool],
+                  ['myCtypeHash', 'myAccount', true]
+                )
+                return Promise.resolve(tuple)
+              }
+            }),
+          },
+        },
+      },
+    } as Blockchain
+
+    expect(
+      await new DelegationRootNode(
+        'success',
+        'myCtypeHash',
+        'myAccount'
+      ).verify(myBlockchain)
+    ).toBe(true)
+
+    expect(
+      await new DelegationRootNode(
+        'failure',
+        'myCtypeHash',
+        'myAccount'
+      ).verify(myBlockchain)
+    ).toBe(false)
+  })
 })
