@@ -59,7 +59,7 @@ export class DelegationRootNode extends DelegationBaseNode
     blockchain: Blockchain,
     identity: Identity
   ): Promise<TxStatus> {
-    log.debug(() => `:: store()`)
+    log.debug(`:: store()`)
     const tx: SubmittableExtrinsic<
       CodecResult,
       any
