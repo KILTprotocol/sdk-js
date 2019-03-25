@@ -1,21 +1,21 @@
 /**
  * @module Crypto
  */
-import { default as keccakAsU8a } from '@polkadot/util-crypto/keccak/asU8a'
+import { decodeAddress, encodeAddress } from '@polkadot/keyring/address'
+import {
+  isString,
+  stringToU8a,
+  u8aConcat,
+  u8aToHex,
+  u8aToString,
+  u8aToU8a,
+} from '@polkadot/util'
+import blake2AsU8a from '@polkadot/util-crypto/blake2/asU8a'
 import { default as naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
 import { default as naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import { default as naclSign } from '@polkadot/util-crypto/nacl/sign'
 import { default as naclVerify } from '@polkadot/util-crypto/nacl/verify'
 import nacl from 'tweetnacl'
-import {
-  isString,
-  stringToU8a,
-  u8aToHex,
-  u8aToString,
-  u8aToU8a,
-  u8aConcat,
-} from '@polkadot/util'
-import { encodeAddress, decodeAddress } from '@polkadot/keyring/address'
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
 export type CryptoInput = Buffer | Uint8Array | string
@@ -129,8 +129,8 @@ export function decryptSymmetricStr(
   return result ? u8aToString(result) : null
 }
 
-export function hash(value: CryptoInput): Uint8Array {
-  return keccakAsU8a(value)
+export function hash(value: CryptoInput, bitLength?: number): Uint8Array {
+  return blake2AsU8a(value, bitLength)
 }
 
 export function hashStr(value: CryptoInput): string {

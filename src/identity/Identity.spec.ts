@@ -69,11 +69,11 @@ describe('Identity', () => {
 
     // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.boxKeyPair.publicKey)).toEqual(
-      '0xaf57dd23e369c7c93d97891c0a509260c3d52a9485d4f8eb2f8a983688aaac11'
+      '0x7dbec771d890b6b15456a407771eef290119a164a60158cf76970168d362304d'
     )
     // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.boxKeyPair.secretKey)).toEqual(
-      '0x43d7ab1427761c7f773c313b3d33edeb3379ef356ef10a5eefc77dd999754ba9'
+      '0x0eaa3cae227044959659476bcbffafd38b2acb201c9cf63f079284f76bf5d28f'
     )
   })
 
