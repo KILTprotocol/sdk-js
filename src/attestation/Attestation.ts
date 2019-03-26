@@ -32,6 +32,31 @@ export default class Attestation implements IAttestation {
     const newAttestation: Attestation = Object.create(Attestation.prototype)
     return Object.assign(newAttestation, obj)
   }
+
+  public static async query(
+    blockchain: Blockchain,
+    claimHash: string
+  ): Promise<Attestation | undefined> {
+    const encoded: QueryResult = await Attestation.queryRaw(
+      blockchain,
+      claimHash
+    )
+    return Attestation.decode(encoded, claimHash)
+  }
+
+  public static revoke(
+    blockchain: Blockchain,
+    claimHash: string,
+    identity: Identity
+  ): Promise<TxStatus> {
+    log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
+    const tx: SubmittableExtrinsic<
+      CodecResult,
+      SubscriptionResult
+    > = blockchain.api.tx.attestation.revoke(claimHash)
+    return blockchain.submitTx(identity, tx)
+  }
+
   public claimHash: string
   public cTypeHash: ICType['hash']
   public owner: IPublicIdentity['address']
@@ -46,6 +71,7 @@ export default class Attestation implements IAttestation {
     this.owner = attester.address
     this.claimHash = requestForAttestation.hash
     this.cTypeHash = requestForAttestation.claim.cType
+    this.delegationId = requestForAttestation.delegationId
     this.revoked = revoked
   }
 
@@ -75,12 +101,7 @@ export default class Attestation implements IAttestation {
     blockchain: Blockchain,
     identity: Identity
   ): Promise<TxStatus> {
-    log.debug(() => `Revoking attestations with claim hash ${this.claimHash}`)
-    const tx: SubmittableExtrinsic<
-      CodecResult,
-      SubscriptionResult
-    > = blockchain.api.tx.attestation.revoke(this.claimHash)
-    return blockchain.submitTx(identity, tx)
+    return Attestation.revoke(blockchain, this.claimHash, identity)
   }
 
   public async verify(
@@ -88,7 +109,7 @@ export default class Attestation implements IAttestation {
     claimHash: string = this.claimHash
   ): Promise<boolean> {
     // 1) Query attestations for claimHash
-    const attestation: Attestation | undefined = await this.query(
+    const attestation: Attestation | undefined = await Attestation.query(
       blockchain,
       claimHash
     )
@@ -103,19 +124,7 @@ export default class Attestation implements IAttestation {
     return Promise.resolve(attestationValid)
   }
 
-  public async query(
-    blockchain: Blockchain,
-    claimHash: string
-  ): Promise<Attestation | undefined> {
-    const encoded: QueryResult = await this.queryRaw(blockchain, claimHash)
-    try {
-      return this.decode(encoded, claimHash)
-    } catch (err) {
-      return Promise.reject(err)
-    }
-  }
-
-  protected async queryRaw(
+  protected static async queryRaw(
     blockchain: Blockchain,
     claimHash: string
   ): Promise<Codec | null | undefined> {
@@ -126,7 +135,7 @@ export default class Attestation implements IAttestation {
     return result
   }
 
-  protected decode(
+  protected static decode(
     encoded: QueryResult,
     claimHash: string
   ): Attestation | undefined {

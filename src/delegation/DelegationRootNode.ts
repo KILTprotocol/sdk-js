@@ -49,6 +49,7 @@ export class DelegationRootNode extends DelegationBaseNode
   public getRoot(blockchain: Blockchain): Promise<IDelegationRootNode> {
     return Promise.resolve(this)
   }
+  // tslint:disable-next-line:prefer-function-over-method
   public getParent(
     blockchain: Blockchain
   ): Promise<IDelegationBaseNode | undefined> {
