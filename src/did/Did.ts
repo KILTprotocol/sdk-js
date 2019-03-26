@@ -87,6 +87,18 @@ export default class Did implements IDid {
     }
     return identifier.substr(DID_IDENTIFIER_PREFIX.length)
   }
+
+  public static async remove(
+    blockchain: Blockchain,
+    identity: Identity
+  ): Promise<TxStatus> {
+    log.debug(`Create tx for 'did.remove'`)
+    const tx: SubmittableExtrinsic<
+      CodecResult,
+      any
+    > = await blockchain.api.tx.did.remove()
+    return blockchain.submitTx(identity, tx)
+  }
   public readonly identifier: string
   public readonly publicBoxKey: string
   public readonly publicSigningKey: string
@@ -117,18 +129,6 @@ export default class Did implements IDid {
       this.publicSigningKey,
       new Option(Text, this.documentStore)
     )
-    return blockchain.submitTx(identity, tx)
-  }
-
-  public async remove(
-    blockchain: Blockchain,
-    identity: Identity
-  ): Promise<TxStatus> {
-    log.debug(`Create tx for 'did.remove'`)
-    const tx: SubmittableExtrinsic<
-      CodecResult,
-      any
-    > = await blockchain.api.tx.did.remove()
     return blockchain.submitTx(identity, tx)
   }
 }
