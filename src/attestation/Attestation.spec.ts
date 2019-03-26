@@ -39,9 +39,8 @@ describe('Attestation', () => {
           attestation: {
             attestations: jest.fn(claimHash => {
               const tuple = new Tuple(
-                // Attestations: claim-hash -> [(ctype-hash, account, delegation-id?, revoked)]
-                [Tuple.with([Text, Text, Text, Bool])],
-                [[cTypeHash, identityAlice.address, undefined, false]]
+                [Text, Text, Text, Bool],
+                [cTypeHash, identityAlice.address, undefined, false]
               )
               return Promise.resolve(tuple)
             }),

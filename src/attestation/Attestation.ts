@@ -88,14 +88,15 @@ export default class Attestation implements IAttestation {
     claimHash: string = this.claimHash
   ): Promise<boolean> {
     // 1) Query attestations for claimHash
-    const attestations: Attestation[] = await this.query(blockchain, claimHash)
-    // 2) Find non-revoked attestation by this attestations' owner
-    const verifiedAttestation = attestations.find(
-      (attestation: Attestation) => {
-        return attestation.owner === this.owner && !attestation.revoked
-      }
+    const attestation: Attestation | undefined = await this.query(
+      blockchain,
+      claimHash
     )
-    const attestationValid: boolean = verifiedAttestation !== undefined
+    // 2) check attestation for being valied, having the correct owner and not being revoked
+    const attestationValid: boolean =
+      attestation !== undefined &&
+      attestation.owner === this.owner &&
+      !attestation.revoked
     if (!attestationValid) {
       log.debug(() => 'No valid attestation found')
     }
@@ -105,7 +106,7 @@ export default class Attestation implements IAttestation {
   public async query(
     blockchain: Blockchain,
     claimHash: string
-  ): Promise<Attestation[]> {
+  ): Promise<Attestation | undefined> {
     const encoded: QueryResult = await this.queryRaw(blockchain, claimHash)
     try {
       return this.decode(encoded, claimHash)
@@ -125,23 +126,22 @@ export default class Attestation implements IAttestation {
     return result
   }
 
-  protected decode(encoded: QueryResult, claimHash: string): Attestation[] {
-    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-    let attestations: IAttestation[] = []
-    if (json instanceof Array) {
-      attestations = json.map((attestationTuple: any) => {
-        return {
-          claimHash,
-          cTypeHash: attestationTuple[0],
-          owner: attestationTuple[1],
-          delegationId: attestationTuple[2],
-          revoked: attestationTuple[3],
-        } as IAttestation
-      })
+  protected decode(
+    encoded: QueryResult,
+    claimHash: string
+  ): Attestation | undefined {
+    if (encoded && encoded.encodedLength) {
+      const attestationTuple = encoded.toJSON()
+      const attestation: IAttestation = {
+        claimHash,
+        cTypeHash: attestationTuple[0],
+        owner: attestationTuple[1],
+        delegationId: attestationTuple[2],
+        revoked: attestationTuple[3],
+      } as IAttestation
+      log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
+      return Attestation.fromObject(attestation)
     }
-    log.info(`Decoded attestations: ${JSON.stringify(attestations)}`)
-    return attestations.map((iAttestation: IAttestation) => {
-      return Attestation.fromObject(iAttestation)
-    })
+    return undefined
   }
 }
