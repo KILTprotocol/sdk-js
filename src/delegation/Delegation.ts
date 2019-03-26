@@ -40,6 +40,40 @@ export interface IDelegationNode extends IDelegationBaseNode {
 }
 
 export abstract class DelegationBaseNode implements IDelegationBaseNode {
+  /**
+   * Gets all attestations made by a Delegation Node.
+   *
+   * @param blockchain The blockchain object.
+   *
+   * @returns All attestations made by this Delegation Node.
+   */
+  public static async getAttestations(
+    blockchain: Blockchain,
+    id: IDelegationBaseNode['id']
+  ): Promise<IAttestation[]> {
+    const attestationHashes = await DelegationBaseNode.getAttestationHashes(
+      blockchain,
+      id
+    )
+    const attestations = await Promise.all(
+      attestationHashes.map(async (claimHash: string) => {
+        return await Attestation.query(blockchain, claimHash)
+      })
+    )
+
+    return attestations.filter(Boolean) as IAttestation[]
+  }
+
+  public static async getAttestationHashes(
+    blockchain: Blockchain,
+    id: IDelegationBaseNode['id']
+  ): Promise<string[]> {
+    const encodedHashes = await blockchain.api.query.attestation.delegatedAttestations(
+      id
+    )
+    return DelegationBaseNode.decodeDelegatedAttestations(encodedHashes)
+  }
+
   public id: IDelegationBaseNode['id']
   public account: IPublicIdentity['address']
   public revoked: boolean = false
@@ -94,21 +128,11 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
   public async getAttestations(
     blockchain: Blockchain
   ): Promise<IAttestation[]> {
-    const attestationHashes = await this.getAttestationHashes(blockchain)
-    const attestations = await Promise.all(
-      attestationHashes.map(async (id: string) => {
-        return await Attestation.query(blockchain, id)
-      })
-    )
-
-    return attestations.filter(Boolean) as IAttestation[]
+    return DelegationBaseNode.getAttestations(blockchain, this.id)
   }
 
   public async getAttestationHashes(blockchain: Blockchain): Promise<string[]> {
-    const encodedHashes = await blockchain.api.query.attestation.delegatedAttestations(
-      this.id
-    )
-    return DelegationBaseNode.decodeDelegatedAttestations(encodedHashes)
+    return DelegationBaseNode.getAttestationHashes(blockchain, this.id)
   }
 
   public abstract verify(blockchain: Blockchain): Promise<boolean>
