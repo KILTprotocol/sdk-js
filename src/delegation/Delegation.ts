@@ -3,6 +3,7 @@ import { factory } from '../config/ConfigLog'
 import { ICType } from '../ctype/CType'
 import { IPublicIdentity } from '../identity/PublicIdentity'
 import { CodecWithId } from './DelegationDecoder'
+import Attestation, { IAttestation } from '../attestation/Attestation'
 
 const log = factory.getLogger('DelegationBaseNode')
 
@@ -18,6 +19,8 @@ export interface IDelegationBaseNode {
   getRoot(blockchain: Blockchain): Promise<IDelegationRootNode>
   getParent(blockchain: Blockchain): Promise<IDelegationBaseNode | undefined>
   getChildren(blockchain: Blockchain): Promise<IDelegationNode[]>
+  getAttestations(blockchain: Blockchain): Promise<IAttestation[]>
+  getAttestationHashes(blockchain: Blockchain): Promise<string[]>
   verify(blockchain: Blockchain): Promise<boolean>
 }
 
@@ -81,6 +84,33 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
     return children
   }
 
+  /**
+   * Gets all attestations made by a Delegation Node.
+   *
+   * @param blockchain The blockchain object.
+   *
+   * @returns All attestations made by this Delegation Node.
+   */
+  public async getAttestations(
+    blockchain: Blockchain
+  ): Promise<IAttestation[]> {
+    const attestationHashes = await this.getAttestationHashes(blockchain)
+    const attestations = await Promise.all(
+      attestationHashes.map(async (id: string) => {
+        return await Attestation.query(blockchain, id)
+      })
+    )
+
+    return attestations.filter(Boolean) as IAttestation[]
+  }
+
+  public async getAttestationHashes(blockchain: Blockchain): Promise<string[]> {
+    const encodedHashes = await blockchain.api.query.attestation.delegatedAttestations(
+      this.id
+    )
+    return DelegationBaseNode.decodeDelegatedAttestations(encodedHashes)
+  }
+
   public abstract verify(blockchain: Blockchain): Promise<boolean>
 
   /**
@@ -106,5 +136,13 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
       })
     )
     return val
+  }
+
+  private static decodeDelegatedAttestations(
+    queryResult: QueryResult
+  ): string[] {
+    const json =
+      queryResult && queryResult.encodedLength ? queryResult.toJSON() : []
+    return json
   }
 }
