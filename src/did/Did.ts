@@ -5,6 +5,8 @@ import { factory } from '../config/ConfigLog'
 import { TxStatus } from '../blockchain/TxStatus'
 import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
 import { CodecResult } from '@polkadot/api/promise/types'
+import { Option, Text } from '@polkadot/types'
+import { hexToU8a, u8aToString } from '@polkadot/util'
 
 const log = factory.getLogger('DID')
 
@@ -18,51 +20,6 @@ export interface IDid {
 }
 
 export default class Did implements IDid {
-  public readonly identifier: string
-  public readonly publicBoxKey: string
-  public readonly publicSigningKey: string
-  public readonly documentStore?: string
-
-  private constructor(
-    identifier: string,
-    publicBoxKey: string,
-    publicSigningKey: string,
-    documentStore?: string
-  ) {
-    this.identifier = identifier
-    this.publicBoxKey = publicBoxKey
-    this.publicSigningKey = publicSigningKey
-    this.documentStore = documentStore
-  }
-
-  public async store(
-    blockchain: Blockchain,
-    identity: Identity
-  ): Promise<TxStatus> {
-    log.debug(() => `Create tx for 'did.add'`)
-    const tx: SubmittableExtrinsic<
-      CodecResult,
-      any
-    > = await blockchain.api.tx.did.add(
-      this.publicBoxKey,
-      this.publicSigningKey,
-      this.documentStore
-    )
-    return blockchain.submitTx(identity, tx)
-  }
-
-  public async remove(
-    blockchain: Blockchain,
-    identity: Identity
-  ): Promise<TxStatus> {
-    log.debug(() => `Create tx for 'did.remove'`)
-    const tx: SubmittableExtrinsic<
-      CodecResult,
-      any
-    > = await blockchain.api.tx.did.remove()
-    return blockchain.submitTx(identity, tx)
-  }
-
   public static decodeDid(
     identifier: string,
     encoded: QueryResult
@@ -70,11 +27,13 @@ export default class Did implements IDid {
     const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
     let result: IDid | undefined
     if (json instanceof Array) {
-        result = Object.assign(Object.create(Did.prototype), {
-        identifier: identifier,
+      const documentStore = hexToU8a(json[2])
+      result = Object.assign(Object.create(Did.prototype), {
+        identifier,
         publicBoxKey: json[0],
         publicSigningKey: json[1],
-        documentStore: json[2],
+        documentStore:
+          documentStore.length > 0 ? u8aToString(documentStore) : undefined,
       } as IDid)
     }
     return result
@@ -87,7 +46,7 @@ export default class Did implements IDid {
     const address = Did.getAddressFromIdentifier(identifier)
     const decoded: IDid | undefined = Did.decodeDid(
       identifier,
-      await blockchain.api.query.dids.dIDs(address)
+      await blockchain.api.query.dID.dIDs(address)
     )
     return decoded
   }
@@ -99,7 +58,7 @@ export default class Did implements IDid {
     const identifier = Did.getIdentifierFromAddress(address)
     const decoded: IDid | undefined = Did.decodeDid(
       identifier,
-      await blockchain.api.query.dids.dIDs(address)
+      await blockchain.api.query.dID.dIDs(address)
     )
     return decoded
   }
@@ -127,5 +86,49 @@ export default class Did implements IDid {
       throw new Error('Not a KILT did: ' + identifier)
     }
     return identifier.substr(DID_IDENTIFIER_PREFIX.length)
+  }
+  public readonly identifier: string
+  public readonly publicBoxKey: string
+  public readonly publicSigningKey: string
+  public readonly documentStore?: string
+
+  private constructor(
+    identifier: string,
+    publicBoxKey: string,
+    publicSigningKey: string,
+    documentStore?: string
+  ) {
+    this.identifier = identifier
+    this.publicBoxKey = publicBoxKey
+    this.publicSigningKey = publicSigningKey
+    this.documentStore = documentStore
+  }
+
+  public async store(
+    blockchain: Blockchain,
+    identity: Identity
+  ): Promise<TxStatus> {
+    log.debug(`Create tx for 'did.add'`)
+    const tx: SubmittableExtrinsic<
+      CodecResult,
+      any
+    > = await blockchain.api.tx.did.add(
+      this.publicBoxKey,
+      this.publicSigningKey,
+      new Option(Text, this.documentStore)
+    )
+    return blockchain.submitTx(identity, tx)
+  }
+
+  public async remove(
+    blockchain: Blockchain,
+    identity: Identity
+  ): Promise<TxStatus> {
+    log.debug(`Create tx for 'did.remove'`)
+    const tx: SubmittableExtrinsic<
+      CodecResult,
+      any
+    > = await blockchain.api.tx.did.remove()
+    return blockchain.submitTx(identity, tx)
   }
 }

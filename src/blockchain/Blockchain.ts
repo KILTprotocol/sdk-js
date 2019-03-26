@@ -21,6 +21,8 @@ export type QueryResult = Codec | undefined | null
 
 const CUSTOM_TYPES: RegistryTypes = {
   DelegationNodeId: 'Hash',
+  PublicSigningKey: 'Hash',
+  PublicBoxKey: 'Hash',
   Permissions: 'u32',
 }
 
