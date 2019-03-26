@@ -56,8 +56,8 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
       id
     )
     const attestations = await Promise.all(
-      attestationHashes.map(async (claimHash: string) => {
-        return await Attestation.query(blockchain, claimHash)
+      attestationHashes.map((claimHash: string) => {
+        return Attestation.query(blockchain, claimHash)
       })
     )
 

@@ -41,11 +41,7 @@ export default class Attestation implements IAttestation {
       blockchain,
       claimHash
     )
-    try {
-      return Attestation.decode(encoded, claimHash)
-    } catch (err) {
-      return Promise.reject(err)
-    }
+    return Attestation.decode(encoded, claimHash)
   }
 
   public static revoke(
