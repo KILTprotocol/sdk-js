@@ -20,6 +20,16 @@ describe('Delegation', () => {
         },
       },
       query: {
+        attestation: {
+          delegatedAttestations: jest.fn(rootId => {
+            const tuple = new Tuple(
+              //  (claim-hash)
+              [Text, Text, Text],
+              ['0x123', '0x456', '0x789']
+            )
+            return Promise.resolve(tuple)
+          }),
+        },
         delegation: {
           root: jest.fn(rootId => {
             const tuple = new Tuple(
@@ -123,5 +133,13 @@ describe('Delegation', () => {
       permissions: [],
       revoked: false,
     })
+  })
+  it('get attestation hashes', async () => {
+    const attestationHashes: string[] = await DelegationNode.getAttestationHashes(
+      blockchain,
+      'myDelegationId'
+    )
+    expect(attestationHashes).toHaveLength(3)
+    expect(attestationHashes).toContain('0x123')
   })
 })
