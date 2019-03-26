@@ -120,12 +120,12 @@ export default class CType implements ICType {
   public getClaimInputModel(lang?: string): any {
     // create clone
     const result = JSON.parse(JSON.stringify(this.schema))
-    result.title = this.getLocalized(this.metadata.title, lang)
-    result.description = this.getLocalized(this.metadata.description, lang)
+    result.title = CType.getLocalized(this.metadata.title, lang)
+    result.description = CType.getLocalized(this.metadata.description, lang)
     result.required = []
     for (const x in this.metadata.properties) {
       if (this.metadata.properties.hasOwnProperty(x)) {
-        result.properties[x].title = this.getLocalized(
+        result.properties[x].title = CType.getLocalized(
           this.metadata.properties[x].title,
           lang
         )
@@ -146,15 +146,15 @@ export default class CType implements ICType {
     // create clone
     const result = JSON.parse(JSON.stringify(this.schema))
     result.$schema = CTypeInputModel.$id
-    result.title = this.getLocalized(this.metadata.title)
-    result.description = this.getLocalized(this.metadata.description)
+    result.title = CType.getLocalized(this.metadata.title)
+    result.description = CType.getLocalized(this.metadata.description)
     result.required = []
     result.properties = []
     for (const x in this.schema.properties) {
       if (this.schema.properties.hasOwnProperty(x)) {
         const p = this.schema.properties[x]
         result.properties.push({
-          title: this.getLocalized(this.metadata.properties[x].title),
+          title: CType.getLocalized(this.metadata.properties[x].title),
           $id: x,
           type: p.type,
         })
@@ -197,7 +197,7 @@ export default class CType implements ICType {
 
   // ----------------------------------------------------------------------------------------------
 
-  private getLocalized(o: any, lang?: string): any {
+  private static getLocalized(o: any, lang?: string): any {
     if (lang == null || !o[lang]) {
       return o.default
     }

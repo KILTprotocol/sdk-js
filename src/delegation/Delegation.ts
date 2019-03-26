@@ -60,7 +60,7 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
     const childIds: string[] = Blockchain.asArray(
       await blockchain.api.query.delegation.children(this.id)
     )
-    const queryResults: CodecWithId[] = await this.fetchChildren(
+    const queryResults: CodecWithId[] = await DelegationBaseNode.fetchChildren(
       childIds,
       blockchain
     )
@@ -90,7 +90,7 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
     queryResult: QueryResult
   ): IDelegationNode | undefined
 
-  private async fetchChildren(
+  private static async fetchChildren(
     childIds: string[],
     blockchain: Blockchain
   ): Promise<CodecWithId[]> {

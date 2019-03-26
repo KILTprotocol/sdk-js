@@ -22,6 +22,7 @@
       "single"
     ],
     "object-literal-sort-keys": false,
+    "prefer-function-over-method": [true, "allow-protected"],
     "prettier": [
       true,
       ".prettierrc"
