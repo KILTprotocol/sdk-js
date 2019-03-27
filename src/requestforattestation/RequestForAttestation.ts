@@ -1,7 +1,8 @@
 /**
- * @module Claim
+ * @module RequestForAttestation
  */
 import { v4 as uuid } from 'uuid'
+import { IDelegationBaseNode } from '..'
 import {
   verify,
   hashStr,
@@ -54,11 +55,13 @@ type NonceHash = {
 
 export interface IRequestForAttestation {
   claim: IClaim
-  ctypeHash: NonceHash
-  claimHashTree: object
-  legitimations: AttestedClaim[]
-  hash: Hash
   claimerSignature: string
+  claimHashTree: object
+  ctypeHash: NonceHash
+  hash: Hash
+  legitimations: AttestedClaim[]
+
+  delegationId?: IDelegationBaseNode['id']
 }
 
 export default class RequestForAttestation implements IRequestForAttestation {
@@ -72,16 +75,19 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   public claim: IClaim
-  public ctypeHash: NonceHash
-  public claimHashTree: object
-  public legitimations: AttestedClaim[]
-  public hash: Hash
   public claimerSignature: string
+  public claimHashTree: object
+  public ctypeHash: NonceHash
+  public hash: Hash
+  public legitimations: AttestedClaim[]
+
+  public delegationId?: IDelegationBaseNode['id']
 
   constructor(
     claim: IClaim,
     legitimations: AttestedClaim[],
-    identity: Identity
+    identity: Identity,
+    delegationId?: IDelegationBaseNode['id']
   ) {
     if (claim.owner !== identity.address) {
       throw Error('Claim owner is not identity')
@@ -89,6 +95,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.claim = claim
     this.ctypeHash = generateHash(this.claim.cType)
     this.legitimations = legitimations
+    this.delegationId = delegationId
 
     this.claimHashTree = generateHashTree(claim.contents)
     this.hash = this.calculateRootHash()
@@ -158,6 +165,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
       this.legitimations.forEach(legitimation => {
         result.push(coToUInt8(legitimation.getHash()))
       })
+    }
+    if (this.delegationId) {
+      result.push(coToUInt8(this.delegationId))
     }
 
     return result

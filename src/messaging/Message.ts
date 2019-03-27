@@ -1,14 +1,16 @@
-import {
-  ICType,
-  IClaim,
-  Claim,
-  IRequestForAttestation,
-  IAttestedClaim,
-  IPublicIdentity,
-  Identity,
-} from '..'
-
 import { EncryptedAsymmetricString } from 'src/crypto/Crypto'
+import {
+  Claim,
+  DelegationNode,
+  IAttestedClaim,
+  IClaim,
+  ICType,
+  IDelegationBaseNode,
+  IDelegationNode,
+  Identity,
+  IPublicIdentity,
+  IRequestForAttestation,
+} from '..'
 import Crypto from '../crypto'
 
 export interface IMessage {
@@ -95,11 +97,11 @@ export default class Message implements IMessage {
     }
 
     try {
-      const meesageBody = JSON.parse(decoded)
+      const messageBody = JSON.parse(decoded)
       return {
         messageId: encrypted.messageId,
         receivedAt: encrypted.receivedAt,
-        body: meesageBody,
+        body: messageBody,
         createdAt: encrypted.createdAt,
         receiverAddress: encrypted.receiverAddress,
         senderAddress: encrypted.senderAddress,
@@ -165,6 +167,9 @@ export enum MessageBodyType {
   SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
   REQUEST_CLAIMS_FOR_CTYPE = 'request-claims-for-ctype',
   SUBMIT_CLAIMS_FOR_CTYPE = 'submit-claims-for-ctype',
+  REQUEST_ACCEPT_DELEGATION = 'request-accept-delegation',
+  SUBMIT_ACCEPT_DELEGATION = 'submit-accept-delegation',
+  INFORM_CREATE_DELEGATION = 'inform-create-delegation',
 }
 
 interface IMessageBodyBase {
@@ -181,6 +186,7 @@ export interface ISubmitLegitimations extends IMessageBodyBase {
   content: {
     claim: IPartialClaim
     legitimations: IAttestedClaim[]
+    delegationId?: DelegationNode['id']
   }
   type: MessageBodyType.SUBMIT_LEGITIMATIONS
 }
@@ -205,6 +211,40 @@ export interface ISubmitClaimsForCtype extends IMessageBodyBase {
   type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPE
 }
 
+export interface IRequestAcceptDelegation extends IMessageBodyBase {
+  content: {
+    delegationData: {
+      account: IDelegationBaseNode['account']
+      id: IDelegationBaseNode['id']
+      parentId: IDelegationNode['id']
+      permissions: IDelegationNode['permissions']
+    }
+    metaData?: {
+      [key: string]: any
+    }
+    signatures: {
+      inviter: string
+    }
+  }
+  type: MessageBodyType.REQUEST_ACCEPT_DELEGATION
+}
+
+export interface ISubmitAcceptDelegation extends IMessageBodyBase {
+  content: {
+    delegationData: IRequestAcceptDelegation['content']['delegationData']
+    signatures: {
+      inviter: string
+      invitee: string
+    }
+  }
+  type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION
+}
+
+export interface IInformCreateDelegation extends IMessageBodyBase {
+  content: IDelegationBaseNode['id']
+  type: MessageBodyType.INFORM_CREATE_DELEGATION
+}
+
 export interface IPartialClaim extends Partial<IClaim> {
   cType: Claim['cType']
 }
@@ -216,3 +256,6 @@ export type MessageBody =
   | ISubmitAttestationForClaim
   | IRequestClaimsForCtype
   | ISubmitClaimsForCtype
+  | IRequestAcceptDelegation
+  | ISubmitAcceptDelegation
+  | IInformCreateDelegation

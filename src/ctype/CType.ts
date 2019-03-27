@@ -2,16 +2,15 @@
  * @module CType
  */
 
+import { CodecResult } from '@polkadot/api/promise/types'
 import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
-import { Codec } from '@polkadot/types/types'
-
-import Blockchain from '../blockchain/Blockchain'
-import { BlockchainStorable } from '../blockchain/BlockchainStorable'
-import Crypto from '../crypto'
+import Blockchain, { QueryResult } from '../blockchain/Blockchain'
+import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
+import Crypto from '../crypto'
+import Identity from '../identity/Identity'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
-import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 
 const log = factory.getLogger('CType')
 
@@ -38,7 +37,7 @@ export interface ICType {
   metadata: CtypeMetadata
 }
 
-export default class CType extends BlockchainStorable implements ICType {
+export default class CType implements ICType {
   /**
    * Create the CTYPE model from a CTYPE input model (used in CTYPE editing components).
    * This is necessary because component editors rely on editing arrays of properties instead of
@@ -91,7 +90,6 @@ export default class CType extends BlockchainStorable implements ICType {
   public metadata: CtypeMetadata
 
   public constructor(ctype: ICType) {
-    super()
     if (!CTypeUtils.verifySchema(ctype, CTypeWrapperModel)) {
       throw new Error('CType does not correspond to schema')
     }
@@ -122,12 +120,12 @@ export default class CType extends BlockchainStorable implements ICType {
   public getClaimInputModel(lang?: string): any {
     // create clone
     const result = JSON.parse(JSON.stringify(this.schema))
-    result.title = this.getLocalized(this.metadata.title, lang)
-    result.description = this.getLocalized(this.metadata.description, lang)
+    result.title = CType.getLocalized(this.metadata.title, lang)
+    result.description = CType.getLocalized(this.metadata.description, lang)
     result.required = []
     for (const x in this.metadata.properties) {
       if (this.metadata.properties.hasOwnProperty(x)) {
-        result.properties[x].title = this.getLocalized(
+        result.properties[x].title = CType.getLocalized(
           this.metadata.properties[x].title,
           lang
         )
@@ -148,15 +146,15 @@ export default class CType extends BlockchainStorable implements ICType {
     // create clone
     const result = JSON.parse(JSON.stringify(this.schema))
     result.$schema = CTypeInputModel.$id
-    result.title = this.getLocalized(this.metadata.title)
-    result.description = this.getLocalized(this.metadata.description)
+    result.title = CType.getLocalized(this.metadata.title)
+    result.description = CType.getLocalized(this.metadata.description)
     result.required = []
     result.properties = []
     for (const x in this.schema.properties) {
       if (this.schema.properties.hasOwnProperty(x)) {
         const p = this.schema.properties[x]
         result.properties.push({
-          title: this.getLocalized(this.metadata.properties[x].title),
+          title: CType.getLocalized(this.metadata.properties[x].title),
           $id: x,
           type: p.type,
         })
@@ -166,28 +164,40 @@ export default class CType extends BlockchainStorable implements ICType {
     return result
   }
 
-  public getHash(): string {
-    return this.hash
+  // --- Blockchain operations --------------------------------------------------------------------
+
+  public async store(
+    blockchain: Blockchain,
+    identity: Identity
+  ): Promise<TxStatus> {
+    log.debug(() => `Create tx for 'ctype.add'`)
+    const tx: SubmittableExtrinsic<
+      CodecResult,
+      any
+    > = await blockchain.api.tx.ctype.add(this.hash)
+    return blockchain.submitTx(identity, tx)
   }
 
-  protected async query(
-    blockchain: Blockchain,
-    hash: string
-  ): Promise<Codec | null | undefined> {
-    return blockchain.api.query.ctype.cTYPEs(hash)
-  }
-
-  protected async callStoreFunction(
-    blockchain: Blockchain,
-    signature: Uint8Array
-  ): Promise<SubmittableExtrinsic<CodecResult, SubscriptionResult>> {
-    log.debug(
-      () => `Initializing transaction 'ctype.add' for hash '${this.getHash()}'`
+  public async verifyStored(blockchain: Blockchain): Promise<boolean> {
+    const encoded: QueryResult = await blockchain.api.query.ctype.cTYPEs(
+      this.hash
     )
-    return blockchain.api.tx.ctype.add(this.getHash(), signature)
+    const queriedCTypeHash: ICType['hash'] | undefined = this.decode(encoded)
+    return queriedCTypeHash !== undefined && queriedCTypeHash === this.hash
   }
 
-  private getLocalized(o: any, lang?: string): any {
+  protected decode(encoded: QueryResult): ICType['hash'] | undefined {
+    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
+    // just return the hash part of the ctype
+    if (json instanceof Array) {
+      return json[0]
+    }
+    return undefined
+  }
+
+  // ----------------------------------------------------------------------------------------------
+
+  private static getLocalized(o: any, lang?: string): any {
     if (lang == null || !o[lang]) {
       return o.default
     }
