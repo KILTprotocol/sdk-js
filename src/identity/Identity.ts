@@ -66,7 +66,7 @@ export default class Identity extends PublicIdentity {
     // Maybe use BIP32 and BIP44
     const signKeyPair = Identity.createSignKeyPair(seed)
     const signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyPair.publicKey)
-    const signKeyringPair: KeyringPair = pair('ed25519', {
+    const signKeyringPair: KeyringPair = pair('sr25519', {
       publicKey: signKeyPair.publicKey,
       seed,
     })
