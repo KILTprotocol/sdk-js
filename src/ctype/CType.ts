@@ -3,7 +3,7 @@
  */
 
 import { CodecResult } from '@polkadot/api/promise/types'
-import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
+import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
