@@ -1,10 +1,11 @@
 import { Option, Text, Tuple } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
-import { Blockchain } from '../'
+import Blockchain from '../blockchain/Blockchain'
 import Identity from '../identity/Identity'
 import { IDelegationNode, Permission } from './Delegation'
 import { DelegationNode } from './DelegationNode'
+import { TxStatus } from '../blockchain/TxStatus'
 
 describe('Delegation', () => {
   it('delegation generate hash', () => {
@@ -76,7 +77,7 @@ describe('Delegation', () => {
         },
       },
       submitTx: jest.fn((identity, tx) => {
-        return Promise.resolve(undefined)
+        return Promise.resolve(new TxStatus(''))
       }),
       getNonce: jest.fn(),
     } as Blockchain
