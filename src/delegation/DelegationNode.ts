@@ -95,7 +95,7 @@ export class DelegationNode extends DelegationBaseNode
     identity: Identity,
     signature: string
   ): Promise<TxStatus> {
-    log.info(' :: store()')
+    log.info(`:: store(${this.id})`)
     const includeParentId: boolean = this.parentId
       ? this.parentId !== this.rootId
       : false
@@ -119,6 +119,18 @@ export class DelegationNode extends DelegationBaseNode
       this.id
     )
     return node !== undefined && !node.revoked
+  }
+
+  public async revoke(
+    blockchain: Blockchain,
+    identity: Identity
+  ): Promise<TxStatus> {
+    log.debug(`:: revoke(${this.id})`)
+    const tx: SubmittableExtrinsic<
+      CodecResult,
+      any
+    > = await blockchain.api.tx.delegation.revokeDelegation(this.id)
+    return blockchain.submitTx(identity, tx)
   }
 
   protected decodeChildNode(
