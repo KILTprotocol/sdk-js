@@ -1,7 +1,7 @@
 /**
  * @module Identity
  */
-import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
+import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 /**
  * @module Identity
  */
@@ -68,7 +68,7 @@ export default class Identity extends PublicIdentity {
     const signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyPair.publicKey)
     const signKeyringPair: KeyringPair = pair('sr25519', {
       publicKey: signKeyPair.publicKey,
-      seed,
+      secretKey: signKeyPair.secretKey,
     })
 
     const seedAsHex = u8aUtil.u8aToHex(seed)
