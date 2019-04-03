@@ -11,6 +11,7 @@ import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
+import { IPublicIdentity } from '../identity/PublicIdentity'
 
 const log = factory.getLogger('CType')
 
@@ -33,6 +34,7 @@ export type CtypeMetadata = {
 
 export interface ICType {
   hash?: string
+  owner?: IPublicIdentity['address']
   schema: CTypeSchema
   metadata: CtypeMetadata
 }
@@ -86,6 +88,7 @@ export default class CType implements ICType {
     return Object.assign(newObject, obj)
   }
   public hash: string
+  public owner?: IPublicIdentity['address']
   public schema: CTypeSchema
   public metadata: CtypeMetadata
 
@@ -95,6 +98,7 @@ export default class CType implements ICType {
     }
     this.schema = ctype.schema
     this.metadata = ctype.metadata
+    this.owner = ctype.owner
 
     this.hash = Crypto.hashStr(JSON.stringify(this.schema))
 
@@ -175,24 +179,33 @@ export default class CType implements ICType {
       CodecResult,
       any
     > = await blockchain.api.tx.ctype.add(this.hash)
-    return blockchain.submitTx(identity, tx)
+    const txStatus: TxStatus = await blockchain.submitTx(identity, tx)
+    if (txStatus.type === 'Finalised') {
+      this.owner = identity.address
+    }
+    return txStatus
   }
 
   public async verifyStored(blockchain: Blockchain): Promise<boolean> {
-    const encoded: QueryResult = await blockchain.api.query.ctype.cTYPEs(
-      this.hash
-    )
-    const queriedCTypeHash: ICType['hash'] | undefined = this.decode(encoded)
-    return queriedCTypeHash !== undefined && queriedCTypeHash === this.hash
+    return (await this.getOwnerOfCType(blockchain)) === this.owner
   }
 
-  protected decode(encoded: QueryResult): ICType['hash'] | undefined {
-    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-    // just return the hash part of the ctype
-    if (json instanceof Array) {
-      return json[0]
-    }
-    return undefined
+  public async getOwnerOfCType(
+    blockchain: Blockchain
+  ): Promise<IPublicIdentity['address'] | undefined> {
+    const encoded: QueryResult = await blockchain.api.query.ctype.cTYPEs(
+      'this.hash'
+    )
+    const queriedCTypeAccount:
+      | IPublicIdentity['address']
+      | undefined = this.decode(encoded)
+    return queriedCTypeAccount
+  }
+
+  protected decode(
+    encoded: QueryResult
+  ): IPublicIdentity['address'] | undefined {
+    return encoded && encoded.encodedLength ? encoded.toString() : undefined
   }
 
   // ----------------------------------------------------------------------------------------------
