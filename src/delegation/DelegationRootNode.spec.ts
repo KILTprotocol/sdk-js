@@ -1,5 +1,5 @@
 import { Text, Tuple } from '@polkadot/types'
-import Bool from '@polkadot/types/Bool'
+import Bool from '@polkadot/types/primitive/Bool'
 import { Blockchain, Crypto, Identity } from '../'
 import { IDelegationRootNode } from './Delegation'
 import { DelegationRootNode } from './DelegationRootNode'

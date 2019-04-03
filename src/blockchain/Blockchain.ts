@@ -3,7 +3,8 @@
  */
 import { ApiPromise } from '@polkadot/api'
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
-import SubmittableExtrinsic, {
+import {
+  SubmittableExtrinsic,
   SubmittableResult,
 } from '@polkadot/api/SubmittableExtrinsic'
 import { WsProvider } from '@polkadot/rpc-provider'

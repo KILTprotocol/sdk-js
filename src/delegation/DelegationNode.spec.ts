@@ -1,9 +1,9 @@
 import { Text, Tuple, Option } from '@polkadot/types'
-import Bool from '@polkadot/types/Bool'
+import Bool from '@polkadot/types/primitive/Bool'
 import { Blockchain } from '../'
 import { IDelegationNode, Permission } from './Delegation'
 import { DelegationNode } from './DelegationNode'
-import U32 from '@polkadot/types/U32'
+import U32 from '@polkadot/types/primitive/U32'
 
 describe('Delegation', () => {
   it('delegation generate hash', () => {

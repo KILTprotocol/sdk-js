@@ -2,7 +2,7 @@
  * @module Attestation
  */
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
-import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
+import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { TxStatus } from '../blockchain/TxStatus'
