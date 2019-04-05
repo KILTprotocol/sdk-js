@@ -194,7 +194,7 @@ export default class CType implements ICType {
     blockchain: Blockchain
   ): Promise<IPublicIdentity['address'] | undefined> {
     const encoded: QueryResult = await blockchain.api.query.ctype.cTYPEs(
-      'this.hash'
+      this.hash
     )
     const queriedCTypeAccount:
       | IPublicIdentity['address']
