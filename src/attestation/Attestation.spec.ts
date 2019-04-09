@@ -1,5 +1,5 @@
 import { Text } from '@polkadot/types'
-import Bool from '@polkadot/types/Bool'
+import Bool from '@polkadot/types/primitive/Bool'
 import { Tuple } from '@polkadot/types/codec'
 import Blockchain from '../blockchain/Blockchain'
 import { IClaim } from '../claim/Claim'

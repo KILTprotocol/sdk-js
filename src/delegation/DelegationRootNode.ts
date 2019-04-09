@@ -1,4 +1,4 @@
-import { SubmittableExtrinsic } from '@polkadot/api'
+import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { CodecResult } from '@polkadot/api/promise/types'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
@@ -60,7 +60,7 @@ export class DelegationRootNode extends DelegationBaseNode
     blockchain: Blockchain,
     identity: Identity
   ): Promise<TxStatus> {
-    log.debug(`:: store()`)
+    log.debug(`:: store(${this.id})`)
     const tx: SubmittableExtrinsic<
       CodecResult,
       any
@@ -73,6 +73,18 @@ export class DelegationRootNode extends DelegationBaseNode
       | IDelegationRootNode
       | undefined = await DelegationRootNode.query(blockchain, this.id)
     return node !== undefined && !node.revoked
+  }
+
+  public async revoke(
+    blockchain: Blockchain,
+    identity: Identity
+  ): Promise<TxStatus> {
+    log.debug(`:: revoke(${this.id})`)
+    const tx: SubmittableExtrinsic<
+      CodecResult,
+      any
+    > = await blockchain.api.tx.delegation.revokeRoot(this.id)
+    return blockchain.submitTx(identity, tx)
   }
 
   protected decodeChildNode(

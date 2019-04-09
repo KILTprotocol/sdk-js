@@ -218,6 +218,7 @@ export interface IRequestAcceptDelegation extends IMessageBodyBase {
       id: IDelegationBaseNode['id']
       parentId: IDelegationNode['id']
       permissions: IDelegationNode['permissions']
+      isPCR: boolean
     }
     metaData?: {
       [key: string]: any
@@ -241,7 +242,10 @@ export interface ISubmitAcceptDelegation extends IMessageBodyBase {
 }
 
 export interface IInformCreateDelegation extends IMessageBodyBase {
-  content: IDelegationBaseNode['id']
+  content: {
+    delegationId: IDelegationBaseNode['id']
+    isPCR: boolean
+  }
   type: MessageBodyType.INFORM_CREATE_DELEGATION
 }
 

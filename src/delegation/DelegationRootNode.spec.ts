@@ -1,8 +1,9 @@
 import { Text, Tuple } from '@polkadot/types'
-import Bool from '@polkadot/types/Bool'
+import Bool from '@polkadot/types/primitive/Bool'
 import { Blockchain, Crypto, Identity } from '../'
 import { IDelegationRootNode } from './Delegation'
 import { DelegationRootNode } from './DelegationRootNode'
+import { TxStatus } from '../blockchain/TxStatus'
 
 describe('Delegation', () => {
   const identityAlice = Identity.buildFromSeedString('Alice')
@@ -115,5 +116,36 @@ describe('Delegation', () => {
         'myAccount'
       ).verify(myBlockchain)
     ).toBe(false)
+  })
+
+  it('root delegation verify', async () => {
+    let calledRootId: string = ''
+    // @ts-ignore
+    const myBlockchain = {
+      api: {
+        tx: {
+          delegation: {
+            revokeRoot: jest.fn(rootId => {
+              calledRootId = rootId
+            }),
+          },
+        },
+      },
+      submitTx: jest.fn((identity, tx) => {
+        return Promise.resolve(new TxStatus(''))
+      }),
+    } as Blockchain
+
+    const aDelegationRootNode = new DelegationRootNode(
+      'myRootId',
+      'myCtypeHash',
+      'myAccount'
+    )
+    const revokeStatus = await aDelegationRootNode.revoke(
+      myBlockchain,
+      identityAlice
+    )
+    expect(calledRootId).toBe('myRootId')
+    expect(revokeStatus).toBeDefined()
   })
 })

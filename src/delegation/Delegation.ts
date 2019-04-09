@@ -2,8 +2,10 @@ import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import { ICType } from '../ctype/CType'
 import { IPublicIdentity } from '../identity/PublicIdentity'
+import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'
 import Attestation, { IAttestation } from '../attestation/Attestation'
+import { TxStatus } from '../blockchain/TxStatus'
 
 const log = factory.getLogger('DelegationBaseNode')
 
@@ -22,6 +24,11 @@ export interface IDelegationBaseNode {
   getAttestations(blockchain: Blockchain): Promise<IAttestation[]>
   getAttestationHashes(blockchain: Blockchain): Promise<string[]>
   verify(blockchain: Blockchain): Promise<boolean>
+
+  /**
+   * Revoke this delegation node and all its' children.
+   */
+  revoke(blockchain: Blockchain, identity: Identity): Promise<TxStatus>
 }
 
 export interface IDelegationRootNode extends IDelegationBaseNode {
@@ -136,6 +143,11 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
   }
 
   public abstract verify(blockchain: Blockchain): Promise<boolean>
+
+  public abstract revoke(
+    blockchain: Blockchain,
+    identity: Identity
+  ): Promise<TxStatus>
 
   /**
    * Required to avoid cyclic dependencies btw. DelegationBaseNode and DelegationNode implementations.

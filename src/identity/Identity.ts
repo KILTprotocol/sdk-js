@@ -1,10 +1,12 @@
 /**
  * @module Identity
  */
-import SubmittableExtrinsic from '@polkadot/api/SubmittableExtrinsic'
+import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 /**
  * @module Identity
  */
+import { DEV_SEED } from '@polkadot/keyring/defaults'
+import { Keyring } from '@polkadot/keyring'
 import pair from '@polkadot/keyring/pair'
 import { KeyringPair } from '@polkadot/keyring/types'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
@@ -56,20 +58,31 @@ export default class Identity extends PublicIdentity {
     const asU8a = stringUtil.stringToU8a(padded)
     return new Identity(asU8a)
   }
+
+  public static buildFromURI(uri: string) {
+    const keyring = new Keyring({ type: 'ed25519' })
+    const derived = keyring.addFromUri(uri)
+    // TODO: heck to create identity from //Alice
+    return new Identity(u8aUtil.u8aToU8a(DEV_SEED), derived)
+  }
+
   public readonly seed: Uint8Array
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
 
-  private constructor(seed: Uint8Array) {
+  private constructor(seed: Uint8Array, signKeyPair_?: KeyringPair) {
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public
     // Maybe use BIP32 and BIP44
     const signKeyPair = Identity.createSignKeyPair(seed)
     const signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyPair.publicKey)
-    const signKeyringPair: KeyringPair = pair('ed25519', {
-      publicKey: signKeyPair.publicKey,
-      seed,
-    })
+    const signKeyringPair: KeyringPair = signKeyPair_
+      ? signKeyPair_
+      : pair('ed25519', {
+          publicKey: signKeyPair.publicKey,
+          secretKey: signKeyPair.secretKey,
+          seed,
+        })
 
     const seedAsHex = u8aUtil.u8aToHex(seed)
     const address = signKeyringPair.address()
