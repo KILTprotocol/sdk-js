@@ -145,9 +145,9 @@ export default class Blockchain {
                 `Transaction detail: ${JSON.stringify(result, null, 2)}`
               )
               reject(new Error('ExtrinsicFailed'))
-              return
+            } else {
+              resolve(new TxStatus(status.type))
             }
-            resolve(new TxStatus(status.type))
           } else if (status.type === 'Invalid' || status.type === 'Dropped') {
             reject(new Error(status.type))
           }
