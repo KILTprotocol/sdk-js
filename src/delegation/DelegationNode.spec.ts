@@ -2,10 +2,10 @@ import { Option, Text, Tuple } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
 import Blockchain from '../blockchain/Blockchain'
-import Identity from '../identity/Identity'
-import { IDelegationNode, Permission } from './Delegation'
-import { DelegationNode } from './DelegationNode'
 import { TxStatus } from '../blockchain/TxStatus'
+import Identity from '../identity/Identity'
+import { IDelegationNode, IDelegationRootNode, Permission } from './Delegation'
+import { DelegationNode } from './DelegationNode'
 
 describe('Delegation', () => {
   it('delegation generate hash', () => {
@@ -106,5 +106,37 @@ describe('Delegation', () => {
       identityAlice
     )
     expect(revokeStatus).toBeDefined()
+  })
+
+  it('get delegation root', async () => {
+    const identityAlice = Identity.buildFromSeedString('Alice')
+    // @ts-ignore
+    const myBlockchain = {
+      api: {
+        query: {
+          delegation: {
+            root: jest.fn(rootId => {
+              const tuple = new Tuple(
+                // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+                [Text, Text, Bool],
+                ['0x1234', identityAlice.address, false]
+              )
+              return Promise.resolve(tuple)
+            }),
+          },
+        },
+      },
+    } as Blockchain
+
+    const node: DelegationNode = new DelegationNode(
+      'nodeId',
+      'rootNodeId',
+      identityAlice.address,
+      []
+    )
+    const rootNode: IDelegationRootNode = await node.getRoot(myBlockchain)
+
+    expect(rootNode).toBeDefined()
+    expect(rootNode.cTypeHash).toBe('0x1234')
   })
 })
