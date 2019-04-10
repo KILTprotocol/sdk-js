@@ -112,11 +112,11 @@ export default class Identity extends PublicIdentity {
   }
 
   public sign(cryptoInput: CryptoInput) {
-    return Crypto.sign(cryptoInput, this.signKeyPair.secretKey)
+    return Crypto.sign(cryptoInput, this.signKeyPair)
   }
 
   public signStr(cryptoInput: CryptoInput) {
-    return Crypto.signStr(cryptoInput, this.signKeyPair.secretKey)
+    return Crypto.signStr(cryptoInput, this.signKeyPair)
   }
 
   public encryptAsymmetricAsStr(

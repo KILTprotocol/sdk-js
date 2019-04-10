@@ -15,7 +15,8 @@ import { default as naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
 import { default as naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import { default as naclSign } from '@polkadot/util-crypto/nacl/sign'
 import { default as naclVerify } from '@polkadot/util-crypto/nacl/verify'
-import nacl from 'tweetnacl'
+import nacl, { SignKeyPair } from 'tweetnacl'
+
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
 export type CryptoInput = Buffer | Uint8Array | string
@@ -52,16 +53,26 @@ export function coToUInt8(
   return u8aToU8a(input)
 }
 
-export function sign(message: CryptoInput, secretKey: CryptoInput): Uint8Array {
+export function sign(
+  message: CryptoInput,
+  signKeyPair: SignKeyPair
+): Uint8Array {
+  const { secretKey, publicKey } = signKeyPair
   return naclSign(coToUInt8(message), {
     secretKey: coToUInt8(secretKey),
+    publicKey: coToUInt8(publicKey),
   })
 }
 
-export function signStr(message: CryptoInput, secretKey: CryptoInput): string {
+export function signStr(
+  message: CryptoInput,
+  signKeyPair: SignKeyPair
+): string {
+  const { secretKey, publicKey } = signKeyPair
   return u8aToHex(
     naclSign(coToUInt8(message), {
       secretKey: coToUInt8(secretKey),
+      publicKey: coToUInt8(publicKey),
     })
   )
 }
