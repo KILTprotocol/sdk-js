@@ -14,12 +14,14 @@ import {
 import Crypto from '../crypto'
 
 export interface IMessage {
-  messageId?: string
-  receivedAt?: number
   body: MessageBody
   createdAt: number
   receiverAddress: IPublicIdentity['address']
   senderAddress: IPublicIdentity['address']
+
+  messageId?: string
+  receivedAt?: number
+  triggerMessageId?: IMessage['messageId']
 }
 
 export interface IEncryptedMessage {
@@ -163,12 +165,20 @@ export default class Message implements IMessage {
 export enum MessageBodyType {
   REQUEST_LEGITIMATIONS = 'request-legitimations',
   SUBMIT_LEGITIMATIONS = 'submit-legitimations',
+  REJECT_LEGITIMATIONS = 'reject-legitimations',
+
   REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
   SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
+  REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
+
   REQUEST_CLAIMS_FOR_CTYPE = 'request-claims-for-ctype',
   SUBMIT_CLAIMS_FOR_CTYPE = 'submit-claims-for-ctype',
+  ACCEPT_CLAIMS_FOR_CTYPE = 'accept-claims-for-ctype',
+  REJECT_CLAIMS_FOR_CTYPE = 'reject-claims-for-ctype',
+
   REQUEST_ACCEPT_DELEGATION = 'request-accept-delegation',
   SUBMIT_ACCEPT_DELEGATION = 'submit-accept-delegation',
+  REJECT_ACCEPT_DELEGATION = 'reject-accept-delegation',
   INFORM_CREATE_DELEGATION = 'inform-create-delegation',
 }
 
@@ -181,7 +191,6 @@ export interface IRequestLegitimations extends IMessageBodyBase {
   content: IPartialClaim
   type: MessageBodyType.REQUEST_LEGITIMATIONS
 }
-
 export interface ISubmitLegitimations extends IMessageBodyBase {
   content: {
     claim: IPartialClaim
@@ -190,25 +199,43 @@ export interface ISubmitLegitimations extends IMessageBodyBase {
   }
   type: MessageBodyType.SUBMIT_LEGITIMATIONS
 }
+export interface IRejectLegitimations extends IMessageBodyBase {
+  content: {
+    claim: IPartialClaim
+    legitimations: IAttestedClaim[]
+    delegationId?: DelegationNode['id']
+  }
+  type: MessageBodyType.REJECT_LEGITIMATIONS
+}
 
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
   content: IRequestForAttestation
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
 }
-
 export interface ISubmitAttestationForClaim extends IMessageBodyBase {
   content: IAttestedClaim
   type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+}
+export interface IRejectAttestationForClaim extends IMessageBodyBase {
+  content: IRequestForAttestation
+  type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM
 }
 
 export interface IRequestClaimsForCtype extends IMessageBodyBase {
   content: ICType['hash']
   type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPE
 }
-
 export interface ISubmitClaimsForCtype extends IMessageBodyBase {
   content: IAttestedClaim[]
   type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPE
+}
+export interface IAcceptClaimsForCtype extends IMessageBodyBase {
+  content: IAttestedClaim[]
+  type: MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPE
+}
+export interface IRejectClaimsForCtype extends IMessageBodyBase {
+  content: IAttestedClaim[]
+  type: MessageBodyType.REJECT_CLAIMS_FOR_CTYPE
 }
 
 export interface IRequestAcceptDelegation extends IMessageBodyBase {
@@ -229,7 +256,6 @@ export interface IRequestAcceptDelegation extends IMessageBodyBase {
   }
   type: MessageBodyType.REQUEST_ACCEPT_DELEGATION
 }
-
 export interface ISubmitAcceptDelegation extends IMessageBodyBase {
   content: {
     delegationData: IRequestAcceptDelegation['content']['delegationData']
@@ -240,7 +266,10 @@ export interface ISubmitAcceptDelegation extends IMessageBodyBase {
   }
   type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION
 }
-
+export interface IRejectAcceptDelegation extends IMessageBodyBase {
+  content: IRequestAcceptDelegation['content']
+  type: MessageBodyType.REJECT_ACCEPT_DELEGATION
+}
 export interface IInformCreateDelegation extends IMessageBodyBase {
   content: {
     delegationId: IDelegationBaseNode['id']
@@ -256,10 +285,18 @@ export interface IPartialClaim extends Partial<IClaim> {
 export type MessageBody =
   | IRequestLegitimations
   | ISubmitLegitimations
+  | IRejectLegitimations
+  //
   | IRequestAttestationForClaim
   | ISubmitAttestationForClaim
+  | IRejectAttestationForClaim
+  //
   | IRequestClaimsForCtype
   | ISubmitClaimsForCtype
+  | IAcceptClaimsForCtype
+  | IRejectClaimsForCtype
+  //
   | IRequestAcceptDelegation
   | ISubmitAcceptDelegation
+  | IRejectAcceptDelegation
   | IInformCreateDelegation
