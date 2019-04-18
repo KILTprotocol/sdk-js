@@ -20,7 +20,7 @@ export class ErrorHandler {
    * transaction events within the given `extrinsicResult`.
    */
   public static extrinsicFailed(extrinsicResult: SubmittableResult): boolean {
-    const events: EventRecord[] = extrinsicResult.events
+    const events: EventRecord[] = extrinsicResult.events || []
     return (
       events.find((eventRecord: EventRecord) => {
         return (
@@ -47,7 +47,7 @@ export class ErrorHandler {
   public getExtrinsicError(
     extrinsicResult: SubmittableResult
   ): ExtrinsicError | undefined {
-    const events: EventRecord[] = extrinsicResult.events
+    const events: EventRecord[] = extrinsicResult.events || []
 
     const errorEvent: EventRecord | undefined = events.find(
       (eventRecord: EventRecord) => {

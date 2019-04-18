@@ -128,41 +128,30 @@ export default class Blockchain {
       SubscriptionResult
     > = identity.signSubmittableExtrinsic(tx, nonce.toHex())
     log.info(`Submitting ${tx.method}`)
+
     return new Promise<TxStatus>((resolve, reject) => {
       signed
         .send((result: SubmittableResult) => {
           log.info(`Got tx status '${result.status.type}'`)
 
           const status = result.status
-          if (
-            status.type === 'Finalised' &&
-            status.value &&
-            status.value.encodedLength > 0
-          ) {
-            log.info(`Transaction complete. Status: '${status.type}'`)
-            if (ErrorHandler.extrinsicFailed(result)) {
-              log.warn(`Extrinsic execution failed`)
-              log.debug(
-                `Transaction detail: ${JSON.stringify(result, null, 2)}`
-              )
-              const extrinsicError:
-                | ExtrinsicError
-                | undefined = this.errorHandler.getExtrinsicError(result)
-              if (extrinsicError) {
-                log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
-                reject(extrinsicError)
-              } else {
-                reject(ERROR_UNKNOWN)
-              }
-            } else {
-              resolve(new TxStatus(status.type))
-            }
+          if (ErrorHandler.extrinsicFailed(result)) {
+            log.warn(`Extrinsic execution failed`)
+            log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
+            const extrinsicError: ExtrinsicError =
+              this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
+
+            log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
+            reject(extrinsicError)
+          }
+          if (status.type === 'Finalised') {
+            resolve(new TxStatus(status.type))
           } else if (status.type === 'Invalid' || status.type === 'Dropped') {
-            reject(new Error(status.type))
+            reject(new Error(`Transaction failed with status '${status.type}'`))
           }
         })
         .catch((err: Error) => {
-          // TODO: do we need to wrap transactional errors also?
+          // just reject with the original tx error from the chain
           reject(err)
         })
     })
