@@ -13,6 +13,10 @@ import {
 } from '..'
 import Crypto from '../crypto'
 
+/**
+ * inReplyTo - should store the id of the parent message
+ * references - should store the references or the in-reply-to of the parent-message followed by the message-id of the parent-message
+ */
 export interface IMessage {
   body: MessageBody
   createdAt: number
@@ -21,7 +25,8 @@ export interface IMessage {
 
   messageId?: string
   receivedAt?: number
-  triggerMessageId?: IMessage['messageId']
+  inReplyTo?: IMessage['messageId']
+  references?: Array<IMessage['messageId']>
 }
 
 export interface IEncryptedMessage {
