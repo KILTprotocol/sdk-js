@@ -8,15 +8,17 @@ import {
   SubmittableResult,
 } from '@polkadot/api/SubmittableExtrinsic'
 import { WsProvider } from '@polkadot/rpc-provider'
-import { Header, EventRecord } from '@polkadot/types'
+import { Header } from '@polkadot/types'
 import { Codec, RegistryTypes } from '@polkadot/types/types'
 import BN from 'bn.js'
-import { factory } from '../config/ConfigLog'
+import { ErrorHandler } from '../errorhandling/ErrorHandler'
+import { factory as LoggerFactory } from '../config/ConfigLog'
+import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 import { IPublicIdentity } from '../identity/PublicIdentity'
 import { TxStatus } from './TxStatus'
 
-const log = factory.getLogger('Blockchain')
+const log = LoggerFactory.getLogger('Blockchain')
 
 export type QueryResult = Codec | undefined | null
 
@@ -25,11 +27,7 @@ const CUSTOM_TYPES: RegistryTypes = {
   PublicSigningKey: 'Hash',
   PublicBoxKey: 'Hash',
   Permissions: 'u32',
-}
-
-export enum SystemEvent {
-  ExtrinsicSuccess = '0x0000',
-  ExtrinsicFailed = '0x0001',
+  ErrorCode: 'u16',
 }
 
 // Code taken from
@@ -61,7 +59,10 @@ export default class Blockchain {
 
   private constructor(api: ApiPromise) {
     this.api = api
+    this.errorHandler = new ErrorHandler(api)
   }
+
+  private errorHandler: ErrorHandler
 
   public async getStats() {
     const [chain, nodeName, nodeVersion] = await Promise.all([
@@ -127,33 +128,30 @@ export default class Blockchain {
       SubscriptionResult
     > = identity.signSubmittableExtrinsic(tx, nonce.toHex())
     log.info(`Submitting ${tx.method}`)
+
     return new Promise<TxStatus>((resolve, reject) => {
       signed
         .send((result: SubmittableResult) => {
           log.info(`Got tx status '${result.status.type}'`)
 
           const status = result.status
-          if (
-            status.type === 'Finalised' &&
-            status.value &&
-            status.value.encodedLength > 0
-          ) {
-            log.info(`Transaction complete. Status: '${status.type}'`)
-            if (Blockchain.hasExtrinsicFailed(result)) {
-              log.warn(`Extrinsic execution failed`)
-              log.debug(
-                `Transaction detail: ${JSON.stringify(result, null, 2)}`
-              )
-              reject(new Error('ExtrinsicFailed'))
-            } else {
-              resolve(new TxStatus(status.type))
-            }
+          if (ErrorHandler.extrinsicFailed(result)) {
+            log.warn(`Extrinsic execution failed`)
+            log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
+            const extrinsicError: ExtrinsicError =
+              this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
+
+            log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
+            reject(extrinsicError)
+          }
+          if (status.type === 'Finalised') {
+            resolve(new TxStatus(status.type))
           } else if (status.type === 'Invalid' || status.type === 'Dropped') {
-            reject(new Error(status.type))
+            reject(new Error(`Transaction failed with status '${status.type}'`))
           }
         })
-        .catch(err => {
-          log.error(err)
+        .catch((err: Error) => {
+          // just reject with the original tx error from the chain
           reject(err)
         })
     })
@@ -166,23 +164,5 @@ export default class Blockchain {
     }
 
     return nonce
-  }
-
-  /**
-   * Checks if there is `SystemEvent.ExtrinsicFailed` in the list of
-   * transaction events within the given `extrinsicResult`.
-   */
-  private static hasExtrinsicFailed(
-    extrinsicResult: SubmittableResult
-  ): boolean {
-    const events: EventRecord[] = extrinsicResult.events
-    return (
-      events.find((eventRecord: EventRecord) => {
-        return (
-          !eventRecord.phase.asApplyExtrinsic.isEmpty &&
-          eventRecord.event.index.toHex() === SystemEvent.ExtrinsicFailed
-        )
-      }) !== undefined
-    )
   }
 }
