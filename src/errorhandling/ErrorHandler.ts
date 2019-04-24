@@ -33,7 +33,6 @@ export class ErrorHandler {
 
   constructor(apiPromise: ApiPromise) {
     ErrorHandler.getErrorModuleIndex(apiPromise).then((moduleIndex: number) => {
-      log.info(`>>> moduleIndex:${moduleIndex}`)
       this.moduleIndex = moduleIndex
     })
   }
@@ -53,9 +52,6 @@ export class ErrorHandler {
     const errorEvent: EventRecord | undefined = events.find(
       (eventRecord: EventRecord) => {
         const eventIndex: EventIndex = eventRecord.event.index
-        log.info(
-          `eventIndex:${eventIndex}, this.moduleIndex:${this.moduleIndex}`
-        )
         return (
           !eventRecord.phase.asApplyExtrinsic.isEmpty &&
           eventIndex[0] === this.moduleIndex
