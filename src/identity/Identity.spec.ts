@@ -1,28 +1,22 @@
-import * as NaCl from '@polkadot/util-crypto/nacl'
 import * as u8aUtil from '@polkadot/util/u8a'
 import Identity from './Identity'
+import { coToUInt8 } from '../crypto/Crypto'
 
 describe('Identity', () => {
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
   it('should create known identities', () => {
-    const alice = Identity.buildFromSeedString('Alice')
+    const alice = Identity.buildFromURI('//Alice')
 
-    expect(alice.seedAsHex).toEqual(
-      '0x416c696365202020202020202020202020202020202020202020202020202020'
-    )
-    // @ts-ignore
-    expect(u8aUtil.u8aToHex(alice.signKeyPair.secretKey)).toEqual(
-      '0x416c696365202020202020202020202020202020202020202020202020202020d172a74cda4c865912c32ba0a80a57ae69abae410e5ccb59dee84e2f4432db4f'
-    )
+    expect(alice.seedAsHex).toEqual('0x2f2f416c696365')
 
     expect(alice.address).toEqual(
-      '5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ'
+      '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd'
     )
 
     // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.signKeyringPair.publicKey())).toEqual(
-      '0xd172a74cda4c865912c32ba0a80a57ae69abae410e5ccb59dee84e2f4432db4f'
+      '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee'
     )
   })
 
@@ -30,23 +24,17 @@ describe('Identity', () => {
     const alice = Identity.buildFromMnemonic()
     const bob = Identity.buildFromMnemonic()
 
-    // @ts-ignore
-    expect(alice.signKeyPair.publicKey).not.toBeFalsy()
+    expect(alice.signPublicKeyAsHex).not.toBeFalsy()
     // @ts-ignore
     expect(alice.boxKeyPair.publicKey).not.toBeFalsy()
-    // @ts-ignore
-    expect(alice.signKeyPair.secretKey).not.toBeFalsy()
     // @ts-ignore
     expect(alice.boxKeyPair.secretKey).not.toBeFalsy()
     expect(alice.seed).not.toBeFalsy()
     expect(alice.seedAsHex).not.toBeFalsy()
 
+    expect(alice.signPublicKeyAsHex).not.toEqual(bob.signPublicKeyAsHex)
     // @ts-ignore
-    expect(alice.signKeyPair.publicKey).not.toEqual(bob.signKeyPair.publicKey)
-    // @ts-ignore
-    expect(alice.signKeyPair.secretKey).not.toEqual(bob.signKeyPair.secretKey)
-    // @ts-ignore
-    expect(alice.boxKeyPair.publicKey).not.toEqual(bob.boxKeyPair.publicKey)
+    expect(alice.boxPublicKeyAsHex).not.toEqual(bob.boxPublicKeyAsHex)
     // @ts-ignore
     expect(alice.boxKeyPair.secretKey).not.toEqual(bob.boxKeyPair.secretKey)
     expect(alice.seed).not.toEqual(bob.seed)
@@ -59,12 +47,8 @@ describe('Identity', () => {
     const alice = Identity.buildFromMnemonic(expectedPhrase)
 
     // @ts-ignore
-    expect(u8aUtil.u8aToHex(alice.signKeyPair.publicKey)).toEqual(
+    expect(alice.signPublicKeyAsHex).toEqual(
       '0x3cd649d521d0fa29da940accd9944b60ec72948e2666adb84493b3e35303fb29'
-    )
-    // @ts-ignore
-    expect(u8aUtil.u8aToHex(alice.signKeyPair.secretKey)).toEqual(
-      '0xb29b07cad072e729f3745035917af307ab74b2bd7efdb8454742192c22f0521d3cd649d521d0fa29da940accd9944b60ec72948e2666adb84493b3e35303fb29'
     )
 
     // @ts-ignore
@@ -77,17 +61,12 @@ describe('Identity', () => {
     )
   })
 
-  it('should have different (secret) keys for signing and boxing', () => {
+  it('should have different keys for signing and boxing', () => {
     const alice = Identity.buildFromMnemonic()
-    // @ts-ignore
-    expect(alice.signKeyPair.secretKey.length).not.toEqual(
+    expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
       // @ts-ignore
-      alice.boxKeyPair.secretKey.length
+      alice.boxKeyPair.publicKey
     )
-    // @ts-ignore
-    expect(alice.signKeyPair.secretKey).not.toEqual(alice.boxKeyPair.secretKey)
-    // @ts-ignore
-    expect(alice.signKeyPair.publicKey).not.toEqual(alice.boxKeyPair.publicKey)
   })
 
   it('should fail creating identity based on invalid phrase', () => {
@@ -100,23 +79,5 @@ describe('Identity', () => {
     const phraseTooLong =
       'taxi toddler rally tonight certain tired program settle topple what execute' // stew instead of few
     expect(() => Identity.buildFromMnemonic(phraseTooLong)).toThrowError()
-  })
-
-  it('should restore signing keypair from secret', () => {
-    const alice = Identity.buildFromMnemonic()
-    // @ts-ignore
-    const aliceKeypair = NaCl.naclKeypairFromSecret(alice.signKeyPair.secretKey)
-    // @ts-ignore
-    expect(aliceKeypair.secretKey).toEqual(alice.signKeyPair.secretKey)
-    // @ts-ignore
-    expect(aliceKeypair.publicKey).toEqual(alice.signKeyPair.publicKey)
-
-    const bob = Identity.buildFromMnemonic()
-    // @ts-ignore
-    const bobKeypair = NaCl.naclKeypairFromSecret(bob.signKeyPair.secretKey)
-    // @ts-ignore
-    expect(bobKeypair.secretKey).not.toEqual(alice.signKeyPair.secretKey)
-    // @ts-ignore
-    expect(bobKeypair.publicKey).not.toEqual(alice.signKeyPair.publicKey)
   })
 })
