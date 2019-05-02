@@ -3,16 +3,9 @@
  */
 import cloneDeep from 'lodash/cloneDeep'
 import Attestation, { IAttestation } from '../attestation/Attestation'
-import {
-  IRequestForAttestation,
-  default as RequestForAttestation,
-} from '../requestforattestation/RequestForAttestation'
+import { default as RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import Blockchain from '../blockchain/Blockchain'
-
-export interface IAttestedClaim {
-  request: IRequestForAttestation
-  attestation: IAttestation
-}
+import IAttestedClaim from '../primitives/AttestedClaim'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -28,9 +21,9 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   public request: RequestForAttestation
-  public attestation: Attestation
+  public attestation: IAttestation
 
-  constructor(request: IRequestForAttestation, attestation: IAttestation) {
+  constructor(request: RequestForAttestation, attestation: IAttestation) {
     // TODO: this should be instantiated w/o fromObject
     this.request = RequestForAttestation.fromObject(request)
     this.attestation = Attestation.fromObject(attestation)

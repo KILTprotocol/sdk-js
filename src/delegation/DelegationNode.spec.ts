@@ -4,8 +4,9 @@ import U32 from '@polkadot/types/primitive/U32'
 import Blockchain from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
-import { IDelegationNode, IDelegationRootNode, Permission } from './Delegation'
+import { IDelegationNode, IDelegationRootNode } from './Delegation'
 import { DelegationNode } from './DelegationNode'
+import { Permission } from '../primitives/Delegation'
 
 describe('Delegation', () => {
   it('delegation generate hash', () => {

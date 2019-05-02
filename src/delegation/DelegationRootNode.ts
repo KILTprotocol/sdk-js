@@ -4,7 +4,6 @@ import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
-import { IPublicIdentity } from '../identity/PublicIdentity'
 import {
   DelegationBaseNode,
   IDelegationBaseNode,
@@ -12,7 +11,6 @@ import {
   IDelegationNode,
 } from './Delegation'
 import { decodeRootDelegation, decodeDelegationNode } from './DelegationDecoder'
-import { ICType } from '../ctype/CType'
 
 const log = factory.getLogger('DelegationRootNode')
 
@@ -35,12 +33,12 @@ export class DelegationRootNode extends DelegationBaseNode
     return root
   }
 
-  public cTypeHash: ICType['hash']
+  public cTypeHash: IDelegationRootNode['cTypeHash']
 
   constructor(
-    id: IDelegationBaseNode['id'],
-    ctypeHash: ICType['hash'],
-    account: IPublicIdentity['address']
+    id: IDelegationRootNode['id'],
+    ctypeHash: IDelegationRootNode['cTypeHash'],
+    account: IDelegationRootNode['account']
   ) {
     super(id, account)
     this.cTypeHash = ctypeHash

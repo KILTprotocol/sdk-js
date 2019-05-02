@@ -1,23 +1,19 @@
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
-import { ICType } from '../ctype/CType'
-import { IPublicIdentity } from '../identity/PublicIdentity'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'
 import Attestation, { IAttestation } from '../attestation/Attestation'
 import { TxStatus } from '../blockchain/TxStatus'
 
+import {
+  IDelegationBaseNode as IDelegationBaseNodePrimitive,
+  IDelegationNode as IDelegationNodePrimitive,
+  IDelegationRootNode as IDelegationRootNodePrimitive,
+} from '../primitives/Delegation'
+
 const log = factory.getLogger('DelegationBaseNode')
 
-export enum Permission {
-  ATTEST = 1 << 0, // 0001
-  DELEGATE = 1 << 1, // 0010
-}
-
-export interface IDelegationBaseNode {
-  id: string
-  account: IPublicIdentity['address']
-  revoked: boolean
+export interface IDelegationBaseNode extends IDelegationBaseNodePrimitive {
   getRoot(blockchain: Blockchain): Promise<IDelegationRootNode>
   getParent(blockchain: Blockchain): Promise<IDelegationBaseNode | undefined>
   getChildren(blockchain: Blockchain): Promise<IDelegationNode[]>
@@ -31,15 +27,13 @@ export interface IDelegationBaseNode {
   revoke(blockchain: Blockchain, identity: Identity): Promise<TxStatus>
 }
 
-export interface IDelegationRootNode extends IDelegationBaseNode {
-  cTypeHash: ICType['hash']
-}
+export interface IDelegationRootNode
+  extends IDelegationBaseNode,
+    IDelegationRootNodePrimitive {}
 
-export interface IDelegationNode extends IDelegationBaseNode {
-  rootId: IDelegationBaseNode['id']
-  parentId?: IDelegationBaseNode['id']
-  permissions: Permission[]
-
+export interface IDelegationNode
+  extends IDelegationBaseNode,
+    IDelegationNodePrimitive {
   /**
    * Generate hash of this nodes' properties for signing.
    */
@@ -81,13 +75,13 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
     return DelegationBaseNode.decodeDelegatedAttestations(encodedHashes)
   }
 
-  public id: IDelegationBaseNode['id']
-  public account: IPublicIdentity['address']
-  public revoked: boolean = false
+  public id: IDelegationBaseNodePrimitive['id']
+  public account: IDelegationBaseNodePrimitive['account']
+  public revoked: IDelegationBaseNodePrimitive['revoked'] = false
 
   public constructor(
-    id: IDelegationBaseNode['id'],
-    account: IPublicIdentity['address']
+    id: IDelegationBaseNodePrimitive['id'],
+    account: IDelegationBaseNodePrimitive['account']
   ) {
     this.account = account
     this.id = id

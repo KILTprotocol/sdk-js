@@ -8,27 +8,23 @@ import { Codec } from '@polkadot/types/types'
 import { TxStatus } from '../blockchain/TxStatus'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
-import { ICType } from '../ctype/CType'
-import { IDelegationBaseNode } from '../delegation/Delegation'
 import Identity from '../identity/Identity'
-import { IPublicIdentity } from '../identity/PublicIdentity'
-import { IRequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import IAttestationPrimitive from '../primitives/Attestation'
+import IRequestForAttestation from '../primitives/RequestForAttestation'
 
 const log = factory.getLogger('Attestation')
 
-export interface IAttestation {
-  claimHash: string
-  cTypeHash: ICType['hash']
-  owner: IPublicIdentity['address']
-  revoked: boolean
-  delegationId?: IDelegationBaseNode['id']
+export interface IAttestation extends IAttestationPrimitive {
+  store(blockchain: Blockchain, identity: Identity): Promise<TxStatus>
+  revoke(blockchain: Blockchain, identity: Identity): Promise<TxStatus>
+  verify(blockchain: Blockchain): Promise<boolean>
 }
 
 export default class Attestation implements IAttestation {
   /**
    * Creates a new instance of this Attestation class from the given interface.
    */
-  public static fromObject(obj: IAttestation): Attestation {
+  public static fromObject(obj: IAttestationPrimitive): Attestation {
     const newAttestation: Attestation = Object.create(Attestation.prototype)
     return Object.assign(newAttestation, obj)
   }
@@ -57,11 +53,11 @@ export default class Attestation implements IAttestation {
     return blockchain.submitTx(identity, tx)
   }
 
-  public claimHash: string
-  public cTypeHash: ICType['hash']
-  public owner: IPublicIdentity['address']
-  public revoked: boolean
-  public delegationId?: IDelegationBaseNode['id']
+  public claimHash: IAttestationPrimitive['claimHash']
+  public cTypeHash: IAttestationPrimitive['cTypeHash']
+  public owner: IAttestationPrimitive['owner']
+  public revoked: IAttestationPrimitive['revoked']
+  public delegationId?: IAttestationPrimitive['delegationId']
 
   constructor(
     requestForAttestation: IRequestForAttestation,

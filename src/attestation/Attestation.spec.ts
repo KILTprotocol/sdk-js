@@ -2,11 +2,11 @@ import { Text } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import { Tuple } from '@polkadot/types/codec'
 import Blockchain from '../blockchain/Blockchain'
-import { IClaim } from '../claim/Claim'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import IClaim from '../primitives/Claim'
 
 describe('Attestation', () => {
   const identityAlice = Identity.buildFromURI('//Alice')

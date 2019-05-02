@@ -7,13 +7,11 @@ import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
-import { IPublicIdentity } from '../identity/PublicIdentity'
 import {
   DelegationBaseNode,
-  IDelegationBaseNode,
   IDelegationNode,
+  IDelegationBaseNode,
   IDelegationRootNode,
-  Permission,
 } from './Delegation'
 import { decodeDelegationNode } from './DelegationDecoder'
 import { DelegationRootNode } from './DelegationRootNode'
@@ -37,16 +35,16 @@ export class DelegationNode extends DelegationBaseNode
     return decoded
   }
 
-  public rootId: IDelegationBaseNode['id']
-  public parentId?: IDelegationBaseNode['id']
-  public permissions: Permission[]
+  public rootId: IDelegationNode['rootId']
+  public parentId?: IDelegationNode['parentId']
+  public permissions: IDelegationNode['permissions']
 
   constructor(
-    id: IDelegationBaseNode['id'],
-    rootId: IDelegationBaseNode['id'],
-    account: IPublicIdentity['address'],
-    permissions: Permission[],
-    parentId?: IDelegationBaseNode['id']
+    id: IDelegationNode['id'],
+    rootId: IDelegationNode['rootId'],
+    account: IDelegationNode['account'],
+    permissions: IDelegationNode['permissions'],
+    parentId?: IDelegationNode['parentId']
   ) {
     super(id, account)
     this.permissions = permissions

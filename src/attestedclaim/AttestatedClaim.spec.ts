@@ -1,9 +1,8 @@
-import { IClaim } from '../claim/Claim'
 import Identity from '../identity/Identity'
-
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
+import IClaim from '../primitives/Claim'
 
 function buildAttestedClaim(
   claimer: Identity,

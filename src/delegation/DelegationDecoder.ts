@@ -7,9 +7,10 @@
 
 import { QueryResult } from '../blockchain/Blockchain'
 import { coToUInt8 } from '../crypto/Crypto'
-import { IDelegationNode, IDelegationRootNode, Permission } from './Delegation'
+import { IDelegationNode } from './Delegation'
 import { DelegationNode } from './DelegationNode'
 import { DelegationRootNode } from './DelegationRootNode'
+import { IDelegationRootNode, Permission } from '../primitives/Delegation'
 
 export type CodecWithId = {
   id: string

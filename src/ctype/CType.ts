@@ -11,33 +11,10 @@ import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
-import { IPublicIdentity } from '../identity/PublicIdentity'
+import IPublicIdentity from '../primitives/PublicIdentity'
+import ICType from '../primitives/CType'
 
 const log = factory.getLogger('CType')
-
-export type CTypeSchema = {
-  $id: any
-  $schema: any
-  properties: any
-  type: 'object'
-}
-
-export type CtypeMetadata = {
-  title: {
-    default: string
-  }
-  description: {
-    default: string
-  }
-  properties: any
-}
-
-export interface ICType {
-  hash?: string
-  owner?: IPublicIdentity['address']
-  schema: CTypeSchema
-  metadata: CtypeMetadata
-}
 
 export default class CType implements ICType {
   /**
@@ -88,10 +65,10 @@ export default class CType implements ICType {
     const newObject = Object.create(CType.prototype)
     return Object.assign(newObject, obj)
   }
-  public hash: string
-  public owner?: IPublicIdentity['address']
-  public schema: CTypeSchema
-  public metadata: CtypeMetadata
+  public hash: ICType['hash']
+  public owner?: ICType['owner']
+  public schema: ICType['schema']
+  public metadata: ICType['metadata']
 
   public constructor(ctype: ICType) {
     if (!CTypeUtils.verifySchema(ctype, CTypeWrapperModel)) {
