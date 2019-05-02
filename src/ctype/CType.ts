@@ -72,10 +72,11 @@ export default class CType implements ICType {
 
     const properties = {}
     for (const p of ctypeInput.properties) {
-      properties[p.$id] = { type: p.type }
-      ctype.metadata.properties[p.$id] = {
+      const { title, $id, ...rest } = p
+      properties[$id] = rest
+      ctype.metadata.properties[$id] = {
         title: {
-          default: p.title,
+          default: title,
         },
       }
     }

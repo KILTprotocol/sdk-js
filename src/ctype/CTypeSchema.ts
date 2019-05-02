@@ -51,6 +51,11 @@ export const CTypeInputModel = {
             enum: ['string', 'integer', 'number', 'boolean'],
             enumTitles: ['Text', 'Number', 'Decimal', 'Yes/No'],
           },
+          format: {
+            title: 'Format',
+            type: 'string',
+            enum: ['date', 'time', 'uri'],
+          },
         },
         required: ['$id', 'title', 'type'],
       },
@@ -95,6 +100,10 @@ export const CTypeModel = {
             type: {
               type: 'string',
               enum: ['string', 'integer', 'number', 'boolean'],
+            },
+            format: {
+              type: 'string',
+              enum: ['date', 'time', 'uri'],
             },
           },
           required: ['type'],

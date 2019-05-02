@@ -2,6 +2,8 @@
  * @module Crypto
  */
 import { decodeAddress, encodeAddress } from '@polkadot/keyring/address'
+import { KeyringPair } from '@polkadot/keyring/types'
+import createPair from '@polkadot/keyring/pair'
 import {
   isString,
   stringToU8a,
@@ -13,9 +15,7 @@ import {
 import blake2AsU8a from '@polkadot/util-crypto/blake2/asU8a'
 import { default as naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
 import { default as naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
-import { default as naclSign } from '@polkadot/util-crypto/nacl/sign'
-import { default as naclVerify } from '@polkadot/util-crypto/nacl/verify'
-import nacl, { SignKeyPair } from 'tweetnacl'
+import nacl from 'tweetnacl'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
@@ -55,26 +55,16 @@ export function coToUInt8(
 
 export function sign(
   message: CryptoInput,
-  signKeyPair: SignKeyPair
+  signKeyPair: KeyringPair
 ): Uint8Array {
-  const { secretKey, publicKey } = signKeyPair
-  return naclSign(coToUInt8(message), {
-    secretKey: coToUInt8(secretKey),
-    publicKey: coToUInt8(publicKey),
-  })
+  return signKeyPair.sign(coToUInt8(message))
 }
 
 export function signStr(
   message: CryptoInput,
-  signKeyPair: SignKeyPair
+  signKeyPair: KeyringPair
 ): string {
-  const { secretKey, publicKey } = signKeyPair
-  return u8aToHex(
-    naclSign(coToUInt8(message), {
-      secretKey: coToUInt8(secretKey),
-      publicKey: coToUInt8(publicKey),
-    })
-  )
+  return u8aToHex(sign(message, signKeyPair))
 }
 
 export function verify(
@@ -83,11 +73,9 @@ export function verify(
   address: Address
 ): boolean {
   const publicKey = decodeAddress(address)
-  return naclVerify(
-    coToUInt8(message),
-    coToUInt8(signature),
-    coToUInt8(publicKey)
-  )
+  const keyringPair = createPair('ed25519', { publicKey })
+
+  return keyringPair.verify(coToUInt8(message), coToUInt8(signature))
 }
 
 export function encryptSymmetric(

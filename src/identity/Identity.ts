@@ -5,20 +5,17 @@ import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 /**
  * @module Identity
  */
-import { DEV_SEED } from '@polkadot/keyring/defaults'
 import { Keyring } from '@polkadot/keyring'
-import pair from '@polkadot/keyring/pair'
 import { KeyringPair } from '@polkadot/keyring/types'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
 import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
 import * as stringUtil from '@polkadot/util/string'
 import * as u8aUtil from '@polkadot/util/u8a'
-import padEnd from 'lodash/padEnd'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
-import nacl, { BoxKeyPair, SignKeyPair } from 'tweetnacl'
+import nacl, { BoxKeyPair } from 'tweetnacl'
 import Crypto from '../crypto'
 import {
   CryptoInput,
@@ -50,40 +47,40 @@ export default class Identity extends PublicIdentity {
     }
 
     const seed = toSeed(phrase)
-    return new Identity(seed)
+    return Identity.buildFromSeed(seed)
   }
 
+  /**
+   * Returns a new Identity, generated from a seed string.
+   *
+   * @param seedArg The seed as string
+   */
   public static buildFromSeedString(seedArg: string) {
-    const padded = padEnd(seedArg, 32, ' ')
-    const asU8a = stringUtil.stringToU8a(padded)
-    return new Identity(asU8a)
+    const asU8a = stringUtil.stringToU8a(seedArg)
+    return Identity.buildFromSeed(asU8a)
+  }
+
+  public static buildFromSeed(seed: Uint8Array) {
+    const keyring = new Keyring({ type: 'ed25519' })
+    const keyringPair = keyring.addFromSeed(seed)
+    return new Identity(seed, keyringPair)
   }
 
   public static buildFromURI(uri: string) {
     const keyring = new Keyring({ type: 'ed25519' })
-    const derived = keyring.addFromUri(uri)
+    const derived = keyring.createFromUri(uri)
     // TODO: heck to create identity from //Alice
-    return new Identity(u8aUtil.u8aToU8a(DEV_SEED), derived)
+    return new Identity(u8aUtil.u8aToU8a(uri), derived)
   }
 
   public readonly seed: Uint8Array
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
 
-  private constructor(seed: Uint8Array, signKeyPair_?: KeyringPair) {
+  private constructor(seed: Uint8Array, signKeyringPair: KeyringPair) {
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public
     // Maybe use BIP32 and BIP44
-    const signKeyPair = Identity.createSignKeyPair(seed)
-    const signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyPair.publicKey)
-    const signKeyringPair: KeyringPair = signKeyPair_
-      ? signKeyPair_
-      : pair('ed25519', {
-          publicKey: signKeyPair.publicKey,
-          secretKey: signKeyPair.secretKey,
-          seed,
-        })
-
     const seedAsHex = u8aUtil.u8aToHex(seed)
     const address = signKeyringPair.address()
 
@@ -95,14 +92,12 @@ export default class Identity extends PublicIdentity {
     this.seed = seed
     this.seedAsHex = seedAsHex
 
-    this.signKeyPair = signKeyPair
     this.signKeyringPair = signKeyringPair
-    this.signPublicKeyAsHex = signPublicKeyAsHex
+    this.signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyringPair.publicKey())
 
     this.boxKeyPair = boxKeyPair
   }
 
-  private readonly signKeyPair: SignKeyPair
   private readonly signKeyringPair: KeyringPair
   private readonly boxKeyPair: BoxKeyPair
 
@@ -112,11 +107,11 @@ export default class Identity extends PublicIdentity {
   }
 
   public sign(cryptoInput: CryptoInput) {
-    return Crypto.sign(cryptoInput, this.signKeyPair)
+    return Crypto.sign(cryptoInput, this.signKeyringPair)
   }
 
   public signStr(cryptoInput: CryptoInput) {
-    return Crypto.signStr(cryptoInput, this.signKeyPair)
+    return Crypto.signStr(cryptoInput, this.signKeyringPair)
   }
 
   public encryptAsymmetricAsStr(
@@ -169,12 +164,7 @@ export default class Identity extends PublicIdentity {
     })
   }
 
-  // fromSeed is hashing its seed, therefore an independent secret key should be considered as derived
-  private static createSignKeyPair(seed: Uint8Array) {
-    return nacl.sign.keyPair.fromSeed(seed)
-  }
-
-  // As fromSeed() is not implemented here we do our own hashing in order to prohibit inferring the original seed from a secret key
+  // As nacl.box.keyPair.fromSeed() is not implemented here we do our own hashing in order to prohibit inferring the original seed from a secret key
   // To be sure that we don't generate the same hash by accidentally using the same hash algorithm we do some padding
   private static createBoxKeyPair(seed: Uint8Array) {
     const paddedSeed = new Uint8Array(

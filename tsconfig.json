@@ -3,7 +3,7 @@
     "baseUrl": ".",
     "outDir": "build",
     "module": "none",
-    "target": "esnext",
+    "target": "es2017",
     "lib": ["es6"],
     "sourceMap": true,
     "strict": true,
