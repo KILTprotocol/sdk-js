@@ -13,8 +13,8 @@ import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import Crypto from '../crypto'
 
 describe('Messaging', () => {
-  const identityAlice = Identity.buildFromSeedString('Alice')
-  const identityBob = Identity.buildFromSeedString('Bob')
+  const identityAlice = Identity.buildFromURI('//Alice')
+  const identityBob = Identity.buildFromURI('//Bob')
 
   it('verify message encryption and signing', () => {
     const messageBody: IRequestClaimsForCtype = {

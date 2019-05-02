@@ -88,14 +88,14 @@ describe('DID', () => {
   })
 
   it('store did', async () => {
-    const alice = Identity.buildFromSeedString('Alice')
+    const alice = Identity.buildFromURI('Alice')
     const did = Did.fromIdentity(alice, 'http://myDID.kilt.io')
     expect(await did.store(blockchain, alice)).toEqual({ status: 'ok' })
   })
 
   it('get default did document', async () => {
     const did = Did.fromIdentity(
-      Identity.buildFromSeedString('Alice'),
+      Identity.buildFromURI('Alice'),
       'http://myDID.kilt.io'
     )
     expect(did.getDefaultDocument('http://myDID.kilt.io/service')).toEqual({
@@ -121,7 +121,7 @@ describe('DID', () => {
             'did:kilt:5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ',
           id: 'did:kilt:5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ#key-2',
           publicKeyHex:
-            '0xd895ac3d67820ad8a53f76384cea3f5f950c7c71c623fcf75154bfa6ce35ed18',
+            '0x609314dc8b462eead4ac69918a63e1a7da065914e902b94c5a120810fbf2ff79',
           type: 'X25519Salsa20Poly1305Key2018',
         },
       ],

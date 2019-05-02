@@ -6,7 +6,7 @@ import { DelegationRootNode } from './DelegationRootNode'
 import { TxStatus } from '../blockchain/TxStatus'
 
 describe('Delegation', () => {
-  const identityAlice = Identity.buildFromSeedString('Alice')
+  const identityAlice = Identity.buildFromURI('Alice')
 
   const ctypeHash = Crypto.hashStr('testCtype')
   // @ts-ignore

@@ -123,7 +123,7 @@ describe('CType', () => {
       getNonce: jest.fn(),
     } as Blockchain
 
-    const identityAlice = Identity.buildFromSeedString('Alice')
+    const identityAlice = Identity.buildFromURI('Alice')
     const testHash = Crypto.hashStr('1234')
 
     const ctype = new CType(ctypeModel)

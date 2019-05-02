@@ -94,7 +94,7 @@ describe('Delegation', () => {
       )
     ).toBe(false)
 
-    const identityAlice = Identity.buildFromSeedString('Alice')
+    const identityAlice = Identity.buildFromURI('//Alice')
     const aDelegationNode = new DelegationNode(
       'myDelegationNode',
       'myRootId',
@@ -109,7 +109,7 @@ describe('Delegation', () => {
   })
 
   it('get delegation root', async () => {
-    const identityAlice = Identity.buildFromSeedString('Alice')
+    const identityAlice = Identity.buildFromURI('Alice')
     // @ts-ignore
     const myBlockchain = {
       api: {
