@@ -6,7 +6,7 @@ import { IDelegationNode, Permission } from './Delegation'
 import { DelegationNode } from './DelegationNode'
 
 describe('Delegation', () => {
-  const identityAlice = Identity.buildFromSeedString('Alice')
+  const identityAlice = Identity.buildFromURI('//Alice')
 
   const ctypeHash = Crypto.hashStr('testCtype')
   // @ts-ignore

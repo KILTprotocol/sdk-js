@@ -13,7 +13,7 @@ describe('Crypto', () => {
 
   it('should sign and verify (UInt8Array)', () => {
     // @ts-ignore
-    const signature = Crypto.sign(message, alice.signKeyPair)
+    const signature = Crypto.sign(message, alice.signKeyringPair)
     expect(signature).not.toBeFalsy()
     expect(Crypto.verify(message, signature, alice.address)).toBe(true)
 
@@ -25,7 +25,7 @@ describe('Crypto', () => {
 
   it('should sign and verify (string)', () => {
     // @ts-ignore
-    const signature = Crypto.signStr(messageStr, alice.signKeyPair)
+    const signature = Crypto.signStr(messageStr, alice.signKeyringPair)
     expect(signature).not.toBeFalsy()
     expect(Crypto.verify(messageStr, signature, alice.signPublicKeyAsHex)).toBe(
       true

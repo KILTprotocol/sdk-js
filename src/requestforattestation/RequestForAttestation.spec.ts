@@ -22,9 +22,9 @@ function buildRequestForAttestation(
 }
 
 describe('RequestForAttestation', () => {
-  const identityAlice = Identity.buildFromSeedString('Alice')
-  const identityBob = Identity.buildFromSeedString('Bob')
-  const identityCharlie = Identity.buildFromSeedString('Charlie')
+  const identityAlice = Identity.buildFromURI('//Alice')
+  const identityBob = Identity.buildFromURI('//Bob')
+  const identityCharlie = Identity.buildFromURI('//Charlie')
 
   const legitimationRequest: RequestForAttestation = buildRequestForAttestation(
     identityAlice,

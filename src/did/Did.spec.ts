@@ -88,40 +88,40 @@ describe('DID', () => {
   })
 
   it('store did', async () => {
-    const alice = Identity.buildFromSeedString('Alice')
+    const alice = Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(alice, 'http://myDID.kilt.io')
     expect(await did.store(blockchain, alice)).toEqual({ status: 'ok' })
   })
 
   it('get default did document', async () => {
     const did = Did.fromIdentity(
-      Identity.buildFromSeedString('Alice'),
+      Identity.buildFromURI('//Alice'),
       'http://myDID.kilt.io'
     )
     expect(did.getDefaultDocument('http://myDID.kilt.io/service')).toEqual({
       '@context': 'https://w3id.org/did/v1',
       authentication: {
         publicKey: [
-          'did:kilt:5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ#key-1',
+          'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd#key-1',
         ],
         type: 'Ed25519SignatureAuthentication2018',
       },
-      id: 'did:kilt:5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ',
+      id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd',
       publicKey: [
         {
           controller:
-            'did:kilt:5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ',
-          id: 'did:kilt:5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ#key-1',
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd',
+          id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd#key-1',
           publicKeyHex:
-            '0xd172a74cda4c865912c32ba0a80a57ae69abae410e5ccb59dee84e2f4432db4f',
+            '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee',
           type: 'Ed25519VerificationKey2018',
         },
         {
           controller:
-            'did:kilt:5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ',
-          id: 'did:kilt:5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ#key-2',
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd',
+          id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd#key-2',
           publicKeyHex:
-            '0xd895ac3d67820ad8a53f76384cea3f5f950c7c71c623fcf75154bfa6ce35ed18',
+            '0xe54bdd5e4f0929471fb333b17c0d865fc4f2cbc45364602bd1b85550328c3c62',
           type: 'X25519Salsa20Poly1305Key2018',
         },
       ],
