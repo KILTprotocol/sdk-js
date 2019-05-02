@@ -43,7 +43,7 @@ describe('Blockchain', async () => {
 
   xit('should listen to balance changes', async done => {
     const api = await getConnectionOnce()
-    const bob = Identity.buildFromURI('Bob')
+    const bob = Identity.buildFromURI('//Bob')
     const listener = (account: string, balance: BN, change: BN) => {
       console.log({ account, balance, change })
       done()
@@ -60,8 +60,8 @@ describe('Blockchain', async () => {
 
   xit('should make transfer', async () => {
     const api = await getConnectionOnce()
-    const alice = Identity.buildFromURI('Alice')
-    const bob = Identity.buildFromURI('Bob')
+    const alice = Identity.buildFromURI('//Alice')
+    const bob = Identity.buildFromURI('//Bob')
 
     const hash = await partial(blockchainSingleton.makeTransfer, api)(
       alice,

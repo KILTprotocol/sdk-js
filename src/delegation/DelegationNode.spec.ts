@@ -109,7 +109,7 @@ describe('Delegation', () => {
   })
 
   it('get delegation root', async () => {
-    const identityAlice = Identity.buildFromURI('Alice')
+    const identityAlice = Identity.buildFromURI('//Alice')
     // @ts-ignore
     const myBlockchain = {
       api: {

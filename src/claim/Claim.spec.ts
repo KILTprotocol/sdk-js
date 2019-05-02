@@ -20,7 +20,7 @@ describe('Claim', () => {
       },
     },
   } as ICType)
-  const identity = Identity.buildFromURI('Alice')
+  const identity = Identity.buildFromURI('//Alice')
 
   const claimContents = {
     name: 'Bob',

@@ -38,10 +38,10 @@ function buildAttestedClaim(
 }
 
 describe('RequestForAttestation', () => {
-  const identityAlice = Identity.buildFromURI('Alice')
-  const identityBob = Identity.buildFromURI('Bob')
-  const identityCharlie = Identity.buildFromURI('Charlie')
-  const identityDoria = Identity.buildFromURI('Doria')
+  const identityAlice = Identity.buildFromURI('//Alice')
+  const identityBob = Identity.buildFromURI('//Bob')
+  const identityCharlie = Identity.buildFromURI('//Charlie')
+  const identityDoria = Identity.buildFromURI('//Doria')
 
   const legitimation: AttestedClaim = buildAttestedClaim(
     identityAlice,

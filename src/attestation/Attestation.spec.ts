@@ -9,8 +9,8 @@ import Attestation from './Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 
 describe('Attestation', () => {
-  const identityAlice = Identity.buildFromURI('Alice')
-  const identityBob = Identity.buildFromURI('Bob')
+  const identityAlice = Identity.buildFromURI('//Alice')
+  const identityBob = Identity.buildFromURI('//Bob')
 
   const cTypeHash = Crypto.hashStr('testCtype')
   const claim = {
