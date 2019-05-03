@@ -18,7 +18,7 @@ export interface ICtypeMetadata {
 }
 
 export default interface ICType {
-  hash?: string
+  hash: string
   owner?: IPublicIdentity['address']
   schema: ICTypeSchema
   metadata: ICtypeMetadata
