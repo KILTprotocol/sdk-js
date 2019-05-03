@@ -4,13 +4,13 @@ import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
+import { DelegationBaseNode } from './Delegation'
+import { decodeRootDelegation, decodeDelegationNode } from './DelegationDecoder'
 import {
-  DelegationBaseNode,
   IDelegationBaseNode,
   IDelegationRootNode,
-  IDelegationNode,
-} from './Delegation'
-import { decodeRootDelegation, decodeDelegationNode } from './DelegationDecoder'
+} from '../primitives/Delegation'
+import { DelegationNode } from './DelegationNode'
 
 const log = factory.getLogger('DelegationRootNode')
 
@@ -19,15 +19,15 @@ export class DelegationRootNode extends DelegationBaseNode
   public static async query(
     blockchain: Blockchain,
     delegationId: IDelegationBaseNode['id']
-  ): Promise<IDelegationRootNode | undefined> {
+  ): Promise<DelegationRootNode | undefined> {
     log.info(`:: query('${delegationId}')`)
-    const root: Partial<IDelegationRootNode | undefined> = decodeRootDelegation(
+    const root = decodeRootDelegation(
       await blockchain.api.query.delegation.root(delegationId)
     )
     if (root) {
       root.id = delegationId
       log.info(`result: ${JSON.stringify(root)}`)
-      return root as IDelegationRootNode
+      return root
     }
     log.info(`root node not found`)
     return root
@@ -87,7 +87,7 @@ export class DelegationRootNode extends DelegationBaseNode
 
   protected decodeChildNode(
     queryResult: QueryResult
-  ): IDelegationNode | undefined {
+  ): DelegationNode | undefined {
     return decodeDelegationNode(queryResult)
   }
 }

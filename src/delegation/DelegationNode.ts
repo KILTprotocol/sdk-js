@@ -7,14 +7,14 @@ import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
-import {
-  DelegationBaseNode,
-  IDelegationNode,
-  IDelegationBaseNode,
-  IDelegationRootNode,
-} from './Delegation'
+import { DelegationBaseNode } from './Delegation'
 import { decodeDelegationNode } from './DelegationDecoder'
 import { DelegationRootNode } from './DelegationRootNode'
+import {
+  IDelegationBaseNode,
+  IDelegationNode,
+  IDelegationRootNode,
+} from '../primitives/Delegation'
 
 const log = factory.getLogger('DelegationNode')
 
@@ -69,13 +69,11 @@ export class DelegationNode extends DelegationBaseNode
   }
 
   public async getRoot(blockchain: Blockchain): Promise<IDelegationRootNode> {
-    const rootNode:
-      | IDelegationRootNode
-      | undefined = await DelegationRootNode.query(blockchain, this.rootId)
+    const rootNode = await DelegationRootNode.query(blockchain, this.rootId)
     if (!rootNode) {
       throw new Error(`Could not find root node with id ${this.rootId}`)
     }
-    return rootNode as IDelegationRootNode
+    return rootNode
   }
 
   public async getParent(
@@ -133,7 +131,7 @@ export class DelegationNode extends DelegationBaseNode
 
   protected decodeChildNode(
     queryResult: QueryResult
-  ): IDelegationNode | undefined {
+  ): DelegationNode | undefined {
     return decodeDelegationNode(queryResult)
   }
 

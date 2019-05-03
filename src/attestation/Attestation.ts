@@ -9,22 +9,16 @@ import { TxStatus } from '../blockchain/TxStatus'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
-import IAttestationPrimitive from '../primitives/Attestation'
+import IAttestation from '../primitives/Attestation'
 import IRequestForAttestation from '../primitives/RequestForAttestation'
 
 const log = factory.getLogger('Attestation')
-
-export interface IAttestation extends IAttestationPrimitive {
-  store(blockchain: Blockchain, identity: Identity): Promise<TxStatus>
-  revoke(blockchain: Blockchain, identity: Identity): Promise<TxStatus>
-  verify(blockchain: Blockchain): Promise<boolean>
-}
 
 export default class Attestation implements IAttestation {
   /**
    * Creates a new instance of this Attestation class from the given interface.
    */
-  public static fromObject(obj: IAttestationPrimitive): Attestation {
+  public static fromObject(obj: IAttestation): Attestation {
     const newAttestation: Attestation = Object.create(Attestation.prototype)
     return Object.assign(newAttestation, obj)
   }
@@ -53,11 +47,11 @@ export default class Attestation implements IAttestation {
     return blockchain.submitTx(identity, tx)
   }
 
-  public claimHash: IAttestationPrimitive['claimHash']
-  public cTypeHash: IAttestationPrimitive['cTypeHash']
-  public owner: IAttestationPrimitive['owner']
-  public revoked: IAttestationPrimitive['revoked']
-  public delegationId?: IAttestationPrimitive['delegationId']
+  public claimHash: IAttestation['claimHash']
+  public cTypeHash: IAttestation['cTypeHash']
+  public owner: IAttestation['owner']
+  public revoked: IAttestation['revoked']
+  public delegationId?: IAttestation['delegationId']
 
   constructor(
     requestForAttestation: IRequestForAttestation,

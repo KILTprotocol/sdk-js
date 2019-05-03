@@ -14,16 +14,12 @@ export {
 } from './ctype/CTypeSchema'
 export * from './ctype/CTypeUtils'
 export { default as Claim } from './claim/Claim'
-export { default as Attestation, IAttestation } from './attestation/Attestation'
+export { default as Attestation } from './attestation/Attestation'
 export {
   default as RequestForAttestation,
 } from './requestforattestation/RequestForAttestation'
 export { default as AttestedClaim } from './attestedclaim/AttestedClaim'
-export {
-  IDelegationRootNode,
-  IDelegationBaseNode,
-  IDelegationNode,
-} from './delegation/Delegation'
+export { DelegationBaseNode } from './delegation/Delegation'
 export { DelegationNode } from './delegation/DelegationNode'
 export { DelegationRootNode } from './delegation/DelegationRootNode'
 export { default as Message } from './messaging/Message'
@@ -37,8 +33,14 @@ export { default as IPublicIdentity } from './primitives/PublicIdentity'
 export { default as ICType } from './primitives/CType'
 export { default as IClaim } from './primitives/Claim'
 export { default as IAttestedClaim } from './primitives/AttestedClaim'
+export { default as IAttestation } from './primitives/Attestation'
 export {
   default as IRequestForAttestation,
 } from './primitives/RequestForAttestation'
 // TODO: export primitive interfaces
-export { Permission } from './primitives/Delegation'
+export {
+  IDelegationRootNode,
+  IDelegationBaseNode,
+  IDelegationNode,
+  Permission,
+} from './primitives/Delegation'

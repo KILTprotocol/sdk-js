@@ -1,7 +1,6 @@
 import { Text, Tuple } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import { Blockchain, Crypto, Identity } from '../'
-import { IDelegationRootNode } from './Delegation'
 import { DelegationRootNode } from './DelegationRootNode'
 import { TxStatus } from '../blockchain/TxStatus'
 
@@ -54,9 +53,7 @@ describe('Delegation', () => {
       identityAlice.getPublicIdentity().address
     )
     rootDelegation.store(blockchain, identityAlice)
-    const rootNode:
-      | IDelegationRootNode
-      | undefined = await DelegationRootNode.query(blockchain, ROOT_IDENTIFIER)
+    const rootNode = await DelegationRootNode.query(blockchain, ROOT_IDENTIFIER)
     if (rootNode) {
       expect(rootNode.id).toBe(ROOT_IDENTIFIER)
     }
@@ -64,13 +61,16 @@ describe('Delegation', () => {
 
   it('query root delegation', async () => {
     // @ts-ignore
-    const queriedDelegation: IDelegationRootNode = await DelegationRootNode.query(
+    const queriedDelegation = await DelegationRootNode.query(
       blockchain,
       ROOT_IDENTIFIER
     )
-    expect(queriedDelegation.account).toBe(identityAlice.address)
-    expect(queriedDelegation.cTypeHash).toBe(ctypeHash)
-    expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
+    expect(queriedDelegation).not.toBe(undefined)
+    if (queriedDelegation) {
+      expect(queriedDelegation.account).toBe(identityAlice.address)
+      expect(queriedDelegation.cTypeHash).toBe(ctypeHash)
+      expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
+    }
   })
 
   it('root delegation verify', async () => {
