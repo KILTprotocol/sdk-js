@@ -5,11 +5,9 @@ import { CodecWithId } from './DelegationDecoder'
 import Attestation from '../attestation/Attestation'
 import { TxStatus } from '../blockchain/TxStatus'
 
-import {
-  IDelegationBaseNode,
-  IDelegationRootNode,
-} from '../primitives/Delegation'
+import { IDelegationBaseNode } from '../primitives/Delegation'
 import { DelegationNode } from './DelegationNode'
+import { DelegationRootNode } from './DelegationRootNode'
 
 const log = factory.getLogger('DelegationBaseNode')
 
@@ -60,11 +58,11 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
     this.id = id
   }
 
-  public abstract getRoot(blockchain: Blockchain): Promise<IDelegationRootNode>
+  public abstract getRoot(blockchain: Blockchain): Promise<DelegationRootNode>
 
   public abstract getParent(
     blockchain: Blockchain
-  ): Promise<IDelegationBaseNode | undefined>
+  ): Promise<DelegationBaseNode | undefined>
 
   public async getChildren(blockchain: Blockchain): Promise<DelegationNode[]> {
     log.info(` :: getChildren('${this.id}')`)

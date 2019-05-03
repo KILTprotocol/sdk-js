@@ -10,11 +10,7 @@ import Identity from '../identity/Identity'
 import { DelegationBaseNode } from './Delegation'
 import { decodeDelegationNode } from './DelegationDecoder'
 import { DelegationRootNode } from './DelegationRootNode'
-import {
-  IDelegationBaseNode,
-  IDelegationNode,
-  IDelegationRootNode,
-} from '../primitives/Delegation'
+import { IDelegationNode } from '../primitives/Delegation'
 
 const log = factory.getLogger('DelegationNode')
 
@@ -22,10 +18,10 @@ export class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
   public static async query(
     blockchain: Blockchain,
-    delegationId: IDelegationBaseNode['id']
-  ): Promise<IDelegationNode | undefined> {
+    delegationId: IDelegationNode['id']
+  ): Promise<DelegationNode | undefined> {
     log.info(`:: query('${delegationId}')`)
-    const decoded: IDelegationNode | undefined = decodeDelegationNode(
+    const decoded: DelegationNode | undefined = decodeDelegationNode(
       await blockchain.api.query.delegation.delegations(delegationId)
     )
     if (decoded) {
@@ -68,7 +64,7 @@ export class DelegationNode extends DelegationBaseNode
     return generated
   }
 
-  public async getRoot(blockchain: Blockchain): Promise<IDelegationRootNode> {
+  public async getRoot(blockchain: Blockchain): Promise<DelegationRootNode> {
     const rootNode = await DelegationRootNode.query(blockchain, this.rootId)
     if (!rootNode) {
       throw new Error(`Could not find root node with id ${this.rootId}`)
@@ -78,7 +74,7 @@ export class DelegationNode extends DelegationBaseNode
 
   public async getParent(
     blockchain: Blockchain
-  ): Promise<IDelegationBaseNode | undefined> {
+  ): Promise<DelegationBaseNode | undefined> {
     if (!this.parentId) {
       // parent must be root
       return await this.getRoot(blockchain)
@@ -110,7 +106,7 @@ export class DelegationNode extends DelegationBaseNode
   }
 
   public async verify(blockchain: Blockchain): Promise<boolean> {
-    const node: IDelegationNode | undefined = await DelegationNode.query(
+    const node: DelegationNode | undefined = await DelegationNode.query(
       blockchain,
       this.id
     )

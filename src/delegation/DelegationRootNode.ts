@@ -6,10 +6,7 @@ import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { DelegationBaseNode } from './Delegation'
 import { decodeRootDelegation, decodeDelegationNode } from './DelegationDecoder'
-import {
-  IDelegationBaseNode,
-  IDelegationRootNode,
-} from '../primitives/Delegation'
+import { IDelegationRootNode } from '../primitives/Delegation'
 import { DelegationNode } from './DelegationNode'
 
 const log = factory.getLogger('DelegationRootNode')
@@ -18,7 +15,7 @@ export class DelegationRootNode extends DelegationBaseNode
   implements IDelegationRootNode {
   public static async query(
     blockchain: Blockchain,
-    delegationId: IDelegationBaseNode['id']
+    delegationId: IDelegationRootNode['id']
   ): Promise<DelegationRootNode | undefined> {
     log.info(`:: query('${delegationId}')`)
     const root = decodeRootDelegation(
@@ -44,13 +41,13 @@ export class DelegationRootNode extends DelegationBaseNode
     this.cTypeHash = ctypeHash
   }
 
-  public getRoot(blockchain: Blockchain): Promise<IDelegationRootNode> {
+  public getRoot(blockchain: Blockchain): Promise<DelegationRootNode> {
     return Promise.resolve(this)
   }
   // tslint:disable-next-line:prefer-function-over-method
   public getParent(
     blockchain: Blockchain
-  ): Promise<IDelegationBaseNode | undefined> {
+  ): Promise<DelegationBaseNode | undefined> {
     return Promise.resolve(undefined)
   }
 
