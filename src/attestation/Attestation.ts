@@ -137,7 +137,7 @@ export default class Attestation implements IAttestation {
         owner: attestationTuple[1],
         delegationId: attestationTuple[2],
         revoked: attestationTuple[3],
-      } as IAttestation
+      }
       log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
       return Attestation.fromObject(attestation)
     }

@@ -23,6 +23,7 @@
     ],
     "object-literal-sort-keys": false,
     "prefer-function-over-method": [true, "allow-protected"],
+    "no-unnecessary-type-assertion": true,
     "prettier": [
       true,
       ".prettierrc"

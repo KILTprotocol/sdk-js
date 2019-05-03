@@ -37,7 +37,7 @@ export default class Did implements IDid {
         publicBoxKey: json[1],
         documentStore:
           documentStore.length > 0 ? u8aToString(documentStore) : undefined,
-      } as IDid)
+      })
     }
     return result
   }

@@ -133,7 +133,7 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
         return {
           id: childId,
           codec: queryResult,
-        } as CodecWithId
+        }
       })
     )
     return val
