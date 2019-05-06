@@ -2,7 +2,6 @@ import { Text, Tuple } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
 import { Blockchain, Crypto, Identity } from '../'
-// import { IDelegationNode } from './Delegation'
 import { DelegationNode } from './DelegationNode'
 import { Permission } from '../primitives/Delegation'
 
