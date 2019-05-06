@@ -7,16 +7,10 @@ import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
-import { IPublicIdentity } from '../identity/PublicIdentity'
-import {
-  DelegationBaseNode,
-  IDelegationBaseNode,
-  IDelegationNode,
-  IDelegationRootNode,
-  Permission,
-} from './Delegation'
+import { DelegationBaseNode } from './Delegation'
 import { decodeDelegationNode } from './DelegationDecoder'
 import { DelegationRootNode } from './DelegationRootNode'
+import { IDelegationNode } from '../types/Delegation'
 
 const log = factory.getLogger('DelegationNode')
 
@@ -24,10 +18,10 @@ export class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
   public static async query(
     blockchain: Blockchain,
-    delegationId: IDelegationBaseNode['id']
-  ): Promise<IDelegationNode | undefined> {
+    delegationId: IDelegationNode['id']
+  ): Promise<DelegationNode | undefined> {
     log.info(`:: query('${delegationId}')`)
-    const decoded: IDelegationNode | undefined = decodeDelegationNode(
+    const decoded: DelegationNode | undefined = decodeDelegationNode(
       await blockchain.api.query.delegation.delegations(delegationId)
     )
     if (decoded) {
@@ -37,16 +31,16 @@ export class DelegationNode extends DelegationBaseNode
     return decoded
   }
 
-  public rootId: IDelegationBaseNode['id']
-  public parentId?: IDelegationBaseNode['id']
-  public permissions: Permission[]
+  public rootId: IDelegationNode['rootId']
+  public parentId?: IDelegationNode['parentId']
+  public permissions: IDelegationNode['permissions']
 
   constructor(
-    id: IDelegationBaseNode['id'],
-    rootId: IDelegationBaseNode['id'],
-    account: IPublicIdentity['address'],
-    permissions: Permission[],
-    parentId?: IDelegationBaseNode['id']
+    id: IDelegationNode['id'],
+    rootId: IDelegationNode['rootId'],
+    account: IDelegationNode['account'],
+    permissions: IDelegationNode['permissions'],
+    parentId?: IDelegationNode['parentId']
   ) {
     super(id, account)
     this.permissions = permissions
@@ -70,19 +64,17 @@ export class DelegationNode extends DelegationBaseNode
     return generated
   }
 
-  public async getRoot(blockchain: Blockchain): Promise<IDelegationRootNode> {
-    const rootNode:
-      | IDelegationRootNode
-      | undefined = await DelegationRootNode.query(blockchain, this.rootId)
+  public async getRoot(blockchain: Blockchain): Promise<DelegationRootNode> {
+    const rootNode = await DelegationRootNode.query(blockchain, this.rootId)
     if (!rootNode) {
       throw new Error(`Could not find root node with id ${this.rootId}`)
     }
-    return rootNode as IDelegationRootNode
+    return rootNode
   }
 
   public async getParent(
     blockchain: Blockchain
-  ): Promise<IDelegationBaseNode | undefined> {
+  ): Promise<DelegationBaseNode | undefined> {
     if (!this.parentId) {
       // parent must be root
       return await this.getRoot(blockchain)
@@ -114,7 +106,7 @@ export class DelegationNode extends DelegationBaseNode
   }
 
   public async verify(blockchain: Blockchain): Promise<boolean> {
-    const node: IDelegationNode | undefined = await DelegationNode.query(
+    const node: DelegationNode | undefined = await DelegationNode.query(
       blockchain,
       this.id
     )
@@ -135,7 +127,7 @@ export class DelegationNode extends DelegationBaseNode
 
   protected decodeChildNode(
     queryResult: QueryResult
-  ): IDelegationNode | undefined {
+  ): DelegationNode | undefined {
     return decodeDelegationNode(queryResult)
   }
 

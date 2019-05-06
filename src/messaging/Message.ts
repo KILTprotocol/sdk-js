@@ -45,13 +45,13 @@ export default class Message implements IMessage {
   public static ensureOwnerIsSender(message: IMessage): void {
     switch (message.body.type) {
       case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM:
-        const requestAttestation: IRequestAttestationForClaim = message.body as IRequestAttestationForClaim
+        const requestAttestation = message.body
         if (requestAttestation.content.claim.owner !== message.senderAddress) {
           throw new Error('Sender is not owner of the claim')
         }
         break
       case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
-        const submitAttestation: ISubmitAttestationForClaim = message.body as ISubmitAttestationForClaim
+        const submitAttestation = message.body
         if (
           submitAttestation.content.attestation.owner !== message.senderAddress
         ) {
@@ -59,7 +59,7 @@ export default class Message implements IMessage {
         }
         break
       case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPE:
-        const submitClaimsForCtype: ISubmitClaimsForCtype = message.body as ISubmitClaimsForCtype
+        const submitClaimsForCtype = message.body
         submitClaimsForCtype.content.forEach(claim => {
           if (claim.request.claim.owner !== message.senderAddress) {
             throw new Error('Sender is not owner of the claims')
@@ -112,7 +112,7 @@ export default class Message implements IMessage {
         createdAt: encrypted.createdAt,
         receiverAddress: encrypted.receiverAddress,
         senderAddress: encrypted.senderAddress,
-      } as IMessage
+      }
     } catch (error) {
       throw new Error('Error parsing message body')
     }
@@ -163,7 +163,7 @@ export default class Message implements IMessage {
       signature: this.signature,
       receiverAddress: this.receiverAddress,
       senderAddress: this.senderAddress,
-    } as IEncryptedMessage
+    }
   }
 }
 

@@ -15,6 +15,10 @@ import {
 import Identity from '../identity/Identity'
 import IClaim from '../claim/Claim'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
+import IRequestForAttestation, {
+  Hash,
+  NonceHash,
+} from '../types/RequestForAttestation'
 
 function hashNonceValue(nonce: string, value: any) {
   return hashStr(nonce + JSON.stringify(value))
@@ -44,24 +48,6 @@ function verifyClaimerSignature(rfa: RequestForAttestation): boolean {
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   const result = u8aConcat(...leaves)
   return hash(result)
-}
-
-type Hash = string
-
-type NonceHash = {
-  nonce: string
-  hash: Hash
-}
-
-export interface IRequestForAttestation {
-  claim: IClaim
-  claimerSignature: string
-  claimHashTree: object
-  ctypeHash: NonceHash
-  hash: Hash
-  legitimations: AttestedClaim[]
-
-  delegationId?: IDelegationBaseNode['id']
 }
 
 export default class RequestForAttestation implements IRequestForAttestation {

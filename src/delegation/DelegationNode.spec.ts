@@ -4,12 +4,12 @@ import U32 from '@polkadot/types/primitive/U32'
 import Blockchain from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
-import { IDelegationNode, IDelegationRootNode, Permission } from './Delegation'
 import { DelegationNode } from './DelegationNode'
+import { Permission } from '../primitives/Delegation'
 
 describe('Delegation', () => {
   it('delegation generate hash', () => {
-    const node: IDelegationNode = new DelegationNode(
+    const node = new DelegationNode(
       '0x0000000000000000000000000000000000000000000000000000000000000001',
       '0x0000000000000000000000000000000000000000000000000000000000000002',
       'myAccount',
@@ -25,7 +25,7 @@ describe('Delegation', () => {
   })
 
   it('delegation permissionsAsBitset', () => {
-    const node: IDelegationNode = new DelegationNode(
+    const node = new DelegationNode(
       'myId',
       'myRootId',
       'myAccount',
@@ -134,7 +134,7 @@ describe('Delegation', () => {
       identityAlice.address,
       []
     )
-    const rootNode: IDelegationRootNode = await node.getRoot(myBlockchain)
+    const rootNode = await node.getRoot(myBlockchain)
 
     expect(rootNode).toBeDefined()
     expect(rootNode.cTypeHash).toBe('0x1234')
