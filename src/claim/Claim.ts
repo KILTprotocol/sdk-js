@@ -5,7 +5,7 @@
 import CType from '../ctype/CType'
 import { verifyClaimStructure } from '../ctype/CTypeUtils'
 import Identity from '../identity/Identity'
-import IClaim from '../primitives/Claim'
+import IClaim from '../types/Claim'
 
 function verifyClaim(claimContents: object, cType: CType) {
   return verifyClaimStructure(claimContents, cType.schema)

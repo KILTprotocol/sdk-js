@@ -9,8 +9,8 @@ import { TxStatus } from '../blockchain/TxStatus'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
-import IAttestation from '../primitives/Attestation'
-import IRequestForAttestation from '../primitives/RequestForAttestation'
+import IAttestation from '../types/Attestation'
+import IRequestForAttestation from '../types/RequestForAttestation'
 
 const log = factory.getLogger('Attestation')
 

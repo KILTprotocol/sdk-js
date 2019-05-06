@@ -29,18 +29,18 @@ export { default as Did, IDid } from './did/Did'
 export * from './errorhandling/ExtrinsicError'
 export { IURLResolver } from './identity/PublicIdentity'
 
-export { default as IPublicIdentity } from './primitives/PublicIdentity'
-export { default as ICType } from './primitives/CType'
-export { default as IClaim } from './primitives/Claim'
-export { default as IAttestedClaim } from './primitives/AttestedClaim'
-export { default as IAttestation } from './primitives/Attestation'
+export { default as IPublicIdentity } from './types/PublicIdentity'
+export { default as ICType } from './types/CType'
+export { default as IClaim } from './types/Claim'
+export { default as IAttestedClaim } from './types/AttestedClaim'
+export { default as IAttestation } from './types/Attestation'
 export {
   default as IRequestForAttestation,
-} from './primitives/RequestForAttestation'
+} from './types/RequestForAttestation'
 // TODO: export primitive interfaces
 export {
   IDelegationRootNode,
   IDelegationBaseNode,
   IDelegationNode,
   Permission,
-} from './primitives/Delegation'
+} from './types/Delegation'

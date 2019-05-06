@@ -5,9 +5,9 @@ import cloneDeep from 'lodash/cloneDeep'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Blockchain from '../blockchain/Blockchain'
-import IAttestedClaim from '../primitives/AttestedClaim'
-import IAttestation from '../primitives/Attestation'
-import IRequestForAttestation from '../primitives/RequestForAttestation'
+import IAttestedClaim from '../types/AttestedClaim'
+import IAttestation from '../types/Attestation'
+import IRequestForAttestation from '../types/RequestForAttestation'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**

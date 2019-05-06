@@ -6,7 +6,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { CodecResult } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
 import { hexToU8a, u8aToString } from '@polkadot/util'
-import IPublicIdentity from '../primitives/PublicIdentity'
+import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('DID')
 

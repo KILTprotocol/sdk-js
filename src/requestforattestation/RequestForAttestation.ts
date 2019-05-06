@@ -18,7 +18,7 @@ import AttestedClaim from '../attestedclaim/AttestedClaim'
 import IRequestForAttestation, {
   Hash,
   NonceHash,
-} from '../primitives/RequestForAttestation'
+} from '../types/RequestForAttestation'
 
 function hashNonceValue(nonce: string, value: any) {
   return hashStr(nonce + JSON.stringify(value))

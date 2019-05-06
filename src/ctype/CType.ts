@@ -11,8 +11,8 @@ import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import { CTypeInputModel, CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
-import IPublicIdentity from '../primitives/PublicIdentity'
-import ICType from '../primitives/CType'
+import IPublicIdentity from '../types/PublicIdentity'
+import ICType from '../types/CType'
 
 const log = factory.getLogger('CType')
 

@@ -2,7 +2,7 @@ import * as DID from '../did/Did'
 import Did from '../did/Did'
 import { IDid } from '../did/Did'
 import Blockchain from '../blockchain/Blockchain'
-import IPublicIdentity from '../primitives/PublicIdentity'
+import IPublicIdentity from '../types/PublicIdentity'
 
 export interface IURLResolver {
   resolve(url: string): object

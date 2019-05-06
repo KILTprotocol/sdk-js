@@ -5,7 +5,7 @@ import { CodecWithId } from './DelegationDecoder'
 import Attestation from '../attestation/Attestation'
 import { TxStatus } from '../blockchain/TxStatus'
 
-import { IDelegationBaseNode } from '../primitives/Delegation'
+import { IDelegationBaseNode } from '../types/Delegation'
 import { DelegationNode } from './DelegationNode'
 import { DelegationRootNode } from './DelegationRootNode'
 

@@ -6,7 +6,7 @@ import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { DelegationBaseNode } from './Delegation'
 import { decodeRootDelegation, decodeDelegationNode } from './DelegationDecoder'
-import { IDelegationRootNode } from '../primitives/Delegation'
+import { IDelegationRootNode } from '../types/Delegation'
 import { DelegationNode } from './DelegationNode'
 
 const log = factory.getLogger('DelegationRootNode')

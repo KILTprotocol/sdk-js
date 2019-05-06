@@ -10,7 +10,7 @@ import Identity from '../identity/Identity'
 import { DelegationBaseNode } from './Delegation'
 import { decodeDelegationNode } from './DelegationDecoder'
 import { DelegationRootNode } from './DelegationRootNode'
-import { IDelegationNode } from '../primitives/Delegation'
+import { IDelegationNode } from '../types/Delegation'
 
 const log = factory.getLogger('DelegationNode')
 
