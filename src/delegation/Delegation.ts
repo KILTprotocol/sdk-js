@@ -1,50 +1,15 @@
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
-import { ICType } from '../ctype/CType'
-import { IPublicIdentity } from '../identity/PublicIdentity'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'
-import Attestation, { IAttestation } from '../attestation/Attestation'
+import Attestation from '../attestation/Attestation'
 import { TxStatus } from '../blockchain/TxStatus'
 
+import { IDelegationBaseNode } from '../types/Delegation'
+import { DelegationNode } from './DelegationNode'
+import { DelegationRootNode } from './DelegationRootNode'
+
 const log = factory.getLogger('DelegationBaseNode')
-
-export enum Permission {
-  ATTEST = 1 << 0, // 0001
-  DELEGATE = 1 << 1, // 0010
-}
-
-export interface IDelegationBaseNode {
-  id: string
-  account: IPublicIdentity['address']
-  revoked: boolean
-  getRoot(blockchain: Blockchain): Promise<IDelegationRootNode>
-  getParent(blockchain: Blockchain): Promise<IDelegationBaseNode | undefined>
-  getChildren(blockchain: Blockchain): Promise<IDelegationNode[]>
-  getAttestations(blockchain: Blockchain): Promise<IAttestation[]>
-  getAttestationHashes(blockchain: Blockchain): Promise<string[]>
-  verify(blockchain: Blockchain): Promise<boolean>
-
-  /**
-   * Revoke this delegation node and all its' children.
-   */
-  revoke(blockchain: Blockchain, identity: Identity): Promise<TxStatus>
-}
-
-export interface IDelegationRootNode extends IDelegationBaseNode {
-  cTypeHash: ICType['hash']
-}
-
-export interface IDelegationNode extends IDelegationBaseNode {
-  rootId: IDelegationBaseNode['id']
-  parentId?: IDelegationBaseNode['id']
-  permissions: Permission[]
-
-  /**
-   * Generate hash of this nodes' properties for signing.
-   */
-  generateHash(): string
-}
 
 export abstract class DelegationBaseNode implements IDelegationBaseNode {
   /**
@@ -57,7 +22,7 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
   public static async getAttestations(
     blockchain: Blockchain,
     id: IDelegationBaseNode['id']
-  ): Promise<IAttestation[]> {
+  ): Promise<Attestation[]> {
     const attestationHashes = await DelegationBaseNode.getAttestationHashes(
       blockchain,
       id
@@ -68,7 +33,7 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
       })
     )
 
-    return attestations.filter(Boolean) as IAttestation[]
+    return attestations.filter((value): value is Attestation => !!value)
   }
 
   public static async getAttestationHashes(
@@ -82,24 +47,24 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
   }
 
   public id: IDelegationBaseNode['id']
-  public account: IPublicIdentity['address']
-  public revoked: boolean = false
+  public account: IDelegationBaseNode['account']
+  public revoked: IDelegationBaseNode['revoked'] = false
 
   public constructor(
     id: IDelegationBaseNode['id'],
-    account: IPublicIdentity['address']
+    account: IDelegationBaseNode['account']
   ) {
     this.account = account
     this.id = id
   }
 
-  public abstract getRoot(blockchain: Blockchain): Promise<IDelegationRootNode>
+  public abstract getRoot(blockchain: Blockchain): Promise<DelegationRootNode>
 
   public abstract getParent(
     blockchain: Blockchain
-  ): Promise<IDelegationBaseNode | undefined>
+  ): Promise<DelegationBaseNode | undefined>
 
-  public async getChildren(blockchain: Blockchain): Promise<IDelegationNode[]> {
+  public async getChildren(blockchain: Blockchain): Promise<DelegationNode[]> {
     log.info(` :: getChildren('${this.id}')`)
     const childIds: string[] = Blockchain.asArray(
       await blockchain.api.query.delegation.children(this.id)
@@ -108,9 +73,9 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
       childIds,
       blockchain
     )
-    const children: IDelegationNode[] = queryResults
+    const children: DelegationNode[] = queryResults
       .map((codec: CodecWithId) => {
-        const decoded: IDelegationNode | undefined = this.decodeChildNode(
+        const decoded: DelegationNode | undefined = this.decodeChildNode(
           codec.codec
         )
         if (decoded) {
@@ -118,9 +83,11 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
         }
         return decoded
       })
-      .map((node: IDelegationNode | undefined) => {
-        return node as IDelegationNode
-      })
+      .filter(
+        (value): value is DelegationNode => {
+          return value !== undefined
+        }
+      )
     log.info(`children: ${JSON.stringify(children)}`)
     return children
   }
@@ -132,9 +99,7 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
    *
    * @returns All attestations made by this Delegation Node.
    */
-  public async getAttestations(
-    blockchain: Blockchain
-  ): Promise<IAttestation[]> {
+  public async getAttestations(blockchain: Blockchain): Promise<Attestation[]> {
     return DelegationBaseNode.getAttestations(blockchain, this.id)
   }
 
@@ -154,7 +119,7 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
    */
   protected abstract decodeChildNode(
     queryResult: QueryResult
-  ): IDelegationNode | undefined
+  ): DelegationNode | undefined
 
   private static async fetchChildren(
     childIds: string[],
@@ -168,7 +133,7 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
         return {
           id: childId,
           codec: queryResult,
-        } as CodecWithId
+        }
       })
     )
     return val

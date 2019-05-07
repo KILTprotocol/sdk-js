@@ -7,9 +7,9 @@
 
 import { QueryResult } from '../blockchain/Blockchain'
 import { coToUInt8 } from '../crypto/Crypto'
-import { IDelegationNode, IDelegationRootNode, Permission } from './Delegation'
 import { DelegationNode } from './DelegationNode'
 import { DelegationRootNode } from './DelegationRootNode'
+import { Permission } from '../types/Delegation'
 
 export type CodecWithId = {
   id: string
@@ -18,9 +18,9 @@ export type CodecWithId = {
 
 export function decodeRootDelegation(
   encoded: QueryResult
-): Partial<IDelegationRootNode | undefined> {
+): DelegationRootNode | undefined {
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-  let delegationRootNode: IDelegationRootNode | undefined
+  let delegationRootNode: DelegationRootNode | undefined
   if (json instanceof Array) {
     delegationRootNode = Object.assign(
       Object.create(DelegationRootNode.prototype),
@@ -28,7 +28,7 @@ export function decodeRootDelegation(
         cTypeHash: json[0],
         account: json[1],
         revoked: json[2],
-      } as IDelegationRootNode
+      }
     )
   }
   return delegationRootNode
@@ -36,9 +36,9 @@ export function decodeRootDelegation(
 
 export function decodeDelegationNode(
   encoded: QueryResult
-): IDelegationNode | undefined {
+): DelegationNode | undefined {
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-  let decodedNode: IDelegationNode | undefined
+  let decodedNode: DelegationNode | undefined
   if (json instanceof Array) {
     if (!verifyRoot(json[0])) {
       // Query returns 0x0 for rootId if queried for a root id instead of a node id.
@@ -51,7 +51,7 @@ export function decodeDelegationNode(
       account: json[2],
       permissions: decodePermissions(json[3]),
       revoked: json[4],
-    } as IDelegationNode)
+    })
   }
   return decodedNode
 }

@@ -2,17 +2,12 @@
  * @module AttestationPresentation
  */
 import cloneDeep from 'lodash/cloneDeep'
-import Attestation, { IAttestation } from '../attestation/Attestation'
-import {
-  IRequestForAttestation,
-  default as RequestForAttestation,
-} from '../requestforattestation/RequestForAttestation'
+import Attestation from '../attestation/Attestation'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Blockchain from '../blockchain/Blockchain'
-
-export interface IAttestedClaim {
-  request: IRequestForAttestation
-  attestation: IAttestation
-}
+import IAttestedClaim from '../types/AttestedClaim'
+import IAttestation from '../types/Attestation'
+import IRequestForAttestation from '../types/RequestForAttestation'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**

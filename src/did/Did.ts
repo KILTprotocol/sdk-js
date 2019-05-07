@@ -1,12 +1,12 @@
 import Identity from '../identity/Identity'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
-import { IPublicIdentity } from '../identity/PublicIdentity'
 import { factory } from '../config/ConfigLog'
 import { TxStatus } from '../blockchain/TxStatus'
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { CodecResult } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
 import { hexToU8a, u8aToString } from '@polkadot/util'
+import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('DID')
 
@@ -37,7 +37,7 @@ export default class Did implements IDid {
         publicBoxKey: json[1],
         documentStore:
           documentStore.length > 0 ? u8aToString(documentStore) : undefined,
-      } as IDid)
+      })
     }
     return result
   }

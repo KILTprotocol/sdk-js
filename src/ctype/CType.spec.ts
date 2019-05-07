@@ -1,7 +1,8 @@
-import CType, { ICType } from './CType'
+import CType from './CType'
 import Blockchain from '../blockchain/Blockchain'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
+import ICType from '../types/CType'
 
 describe('CType', () => {
   const ctypeModel = {

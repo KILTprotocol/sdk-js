@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/prototype-sdk",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",

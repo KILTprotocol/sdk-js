@@ -2,8 +2,8 @@ import { Text, Tuple } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
 import { Blockchain, Crypto, Identity } from '../'
-import { IDelegationNode, Permission } from './Delegation'
 import { DelegationNode } from './DelegationNode'
+import { Permission } from '../types/Delegation'
 
 describe('Delegation', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
@@ -98,14 +98,14 @@ describe('Delegation', () => {
   } as Blockchain
 
   it('get children', async () => {
-    const myDelegation: IDelegationNode = new DelegationNode(
+    const myDelegation = new DelegationNode(
       'myNodeId',
       'rootId',
       identityAlice.getPublicIdentity().address,
       [Permission.ATTEST],
       undefined
     )
-    const children: IDelegationNode[] = await myDelegation.getChildren(
+    const children: DelegationNode[] = await myDelegation.getChildren(
       blockchain
     )
     expect(children).toHaveLength(3)

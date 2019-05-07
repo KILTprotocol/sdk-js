@@ -8,21 +8,11 @@ import { Codec } from '@polkadot/types/types'
 import { TxStatus } from '../blockchain/TxStatus'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
-import { ICType } from '../ctype/CType'
-import { IDelegationBaseNode } from '../delegation/Delegation'
 import Identity from '../identity/Identity'
-import { IPublicIdentity } from '../identity/PublicIdentity'
-import { IRequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import IAttestation from '../types/Attestation'
+import IRequestForAttestation from '../types/RequestForAttestation'
 
 const log = factory.getLogger('Attestation')
-
-export interface IAttestation {
-  claimHash: string
-  cTypeHash: ICType['hash']
-  owner: IPublicIdentity['address']
-  revoked: boolean
-  delegationId?: IDelegationBaseNode['id']
-}
 
 export default class Attestation implements IAttestation {
   /**
@@ -57,11 +47,11 @@ export default class Attestation implements IAttestation {
     return blockchain.submitTx(identity, tx)
   }
 
-  public claimHash: string
-  public cTypeHash: ICType['hash']
-  public owner: IPublicIdentity['address']
-  public revoked: boolean
-  public delegationId?: IDelegationBaseNode['id']
+  public claimHash: IAttestation['claimHash']
+  public cTypeHash: IAttestation['cTypeHash']
+  public owner: IAttestation['owner']
+  public revoked: IAttestation['revoked']
+  public delegationId?: IAttestation['delegationId']
 
   constructor(
     requestForAttestation: IRequestForAttestation,
@@ -147,7 +137,7 @@ export default class Attestation implements IAttestation {
         owner: attestationTuple[1],
         delegationId: attestationTuple[2],
         revoked: attestationTuple[3],
-      } as IAttestation
+      }
       log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
       return Attestation.fromObject(attestation)
     }
