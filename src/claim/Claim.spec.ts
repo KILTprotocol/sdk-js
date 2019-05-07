@@ -1,7 +1,7 @@
 import Claim from './Claim'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
-import ICType from '../primitives/CType'
+import ICType from '../types/CType'
 
 describe('Claim', () => {
   const ctype = new CType({

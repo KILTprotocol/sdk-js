@@ -2,7 +2,7 @@ import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
-import IClaim from '../primitives/Claim'
+import IClaim from '../types/Claim'
 
 function buildAttestedClaim(
   claimer: Identity,
