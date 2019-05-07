@@ -5,7 +5,7 @@ import Blockchain from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import { DelegationNode } from './DelegationNode'
-import { Permission } from '../primitives/Delegation'
+import { Permission } from '../types/Delegation'
 
 describe('Delegation', () => {
   it('delegation generate hash', () => {

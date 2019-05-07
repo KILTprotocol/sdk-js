@@ -1,7 +1,7 @@
 import { Text, Tuple } from '@polkadot/types'
 import Blockchain from '../blockchain/Blockchain'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
-import IPublicIdentity from '../primitives/PublicIdentity'
+import IPublicIdentity from '../types/PublicIdentity'
 
 describe('PublicIdentity', () => {
   // https://polkadot.js.org/api/examples/promise/

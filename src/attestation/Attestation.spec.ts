@@ -6,7 +6,7 @@ import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import IClaim from '../primitives/Claim'
+import IClaim from '../types/Claim'
 
 describe('Attestation', () => {
   const identityAlice = Identity.buildFromURI('//Alice')

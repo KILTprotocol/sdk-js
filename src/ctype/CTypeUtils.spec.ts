@@ -4,7 +4,7 @@ import {
   verifySchema,
   verifySchemaWithErrors,
 } from './CTypeUtils'
-import ICType from '../primitives/CType'
+import ICType from '../types/CType'
 
 jest.mock('../blockchain/Blockchain')
 
