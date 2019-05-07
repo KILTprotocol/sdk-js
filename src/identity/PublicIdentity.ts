@@ -18,7 +18,7 @@ export default class PublicIdentity implements IPublicIdentity {
     try {
       return new PublicIdentity(
         /* tslint:disable:no-string-literal */
-        didDocument['id'],
+        Did.getAddressFromIdentifier(didDocument['id']),
         /* tslint:enable:no-string-literal */
         this.getJSONProperty(
           didDocument,
