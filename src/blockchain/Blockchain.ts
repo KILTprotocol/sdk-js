@@ -11,12 +11,12 @@ import { WsProvider } from '@polkadot/rpc-provider'
 import { Header } from '@polkadot/types'
 import { Codec, RegistryTypes } from '@polkadot/types/types'
 import BN from 'bn.js'
-import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
+import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
-import { TxStatus } from './TxStatus'
 import IPublicIdentity from '../types/PublicIdentity'
+import { TxStatus } from './TxStatus'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -82,7 +82,7 @@ export default class Blockchain {
 
   public async listenToBalanceChanges(
     accountAddress: string,
-    listener?: (account: string, balance: number, change: number) => void
+    listener?: (account: string, balance: BN, change: BN) => void
   ) {
     // @ts-ignore
     let previous: BN = await this.api.query.balances.freeBalance(accountAddress)
@@ -92,7 +92,7 @@ export default class Blockchain {
       this.api.query.balances.freeBalance(accountAddress, (current: BN) => {
         const change = current.sub(previous)
         previous = current
-        listener(accountAddress, current.toNumber(), change.toNumber())
+        listener(accountAddress, current, change)
       })
     }
     return previous
@@ -100,18 +100,18 @@ export default class Blockchain {
 
   public async getBalance(
     accountAddress: IPublicIdentity['address']
-  ): Promise<number> {
+  ): Promise<BN> {
     // @ts-ignore
     const balance: BN = await this.api.query.balances.freeBalance(
       accountAddress
     )
-    return balance.toNumber()
+    return balance
   }
 
   public async makeTransfer(
     identity: Identity,
     accountAddressTo: string,
-    amount: number
+    amount: BN
   ): Promise<TxStatus> {
     const transfer = this.api.tx.balances.transfer(accountAddressTo, amount)
     return this.submitTx(identity, transfer)
