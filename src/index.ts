@@ -25,6 +25,7 @@ export {
 
 import { connect } from './kilt/Kilt'
 import * as BlockchainApiConnection from './blockchainApiConnection'
+import * as Balance from './balance/Balance.chain'
 import Identity from './identity/Identity'
 import PublicIdentity, { IURLResolver } from './identity/PublicIdentity'
 import CType from './ctype/CType'
@@ -41,6 +42,7 @@ import Message from './messaging/Message'
 
 export {
   BlockchainApiConnection,
+  Balance,
   Identity,
   PublicIdentity,
   IURLResolver,
@@ -68,6 +70,7 @@ export * from './messaging/Message'
 // ---- Default export for ease of use ----
 export default {
   connect,
+  Balance,
   Identity,
   PublicIdentity,
   CType,
