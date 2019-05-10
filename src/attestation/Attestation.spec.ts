@@ -1,16 +1,19 @@
 import { Text } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import { Tuple } from '@polkadot/types/codec'
-import Blockchain from '../blockchain/Blockchain'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IClaim from '../types/Claim'
 
+jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+
 describe('Attestation', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
   const identityBob = Identity.buildFromURI('//Bob')
+
+  const Blockchain = require('../blockchain/Blockchain').default
 
   const cTypeHash = Crypto.hashStr('testCtype')
   const claim = {
@@ -25,89 +28,47 @@ describe('Attestation', () => {
   )
 
   it('stores attestation', async () => {
-    // @ts-ignore
-    const blockchain = {
-      api: {
-        tx: {
-          attestation: {
-            add: jest.fn((claimHash, _cTypeHash) => {
-              return Promise.resolve()
-            }),
-          },
-        },
-        query: {
-          attestation: {
-            attestations: jest.fn(claimHash => {
-              const tuple = new Tuple(
-                [Text, Text, Text, Bool],
-                [cTypeHash, identityAlice.address, undefined, false]
-              )
-              return Promise.resolve(tuple)
-            }),
-          },
-        },
-      },
-      getStats: jest.fn(),
-      listenToBlocks: jest.fn(),
-      listenToBalanceChanges: jest.fn(),
-      makeTransfer: jest.fn(),
-      submitTx: jest.fn((identity, tx) => {
-        return Promise.resolve()
-      }),
-      getNonce: jest.fn(),
-    } as Blockchain
+    Blockchain.api.query.attestation.attestations = jest.fn(claimHash => {
+      const tuple = new Tuple(
+        [Text, Text, Text, Bool],
+        [cTypeHash, identityAlice.address, undefined, false]
+      )
+      return Promise.resolve(tuple)
+    })
 
     const attestation = new Attestation(requestForAttestation, identityAlice)
-    expect(await attestation.verify(blockchain)).toBeTruthy()
+    expect(await attestation.verify()).toBeTruthy()
   })
 
   it('verify attestations not on chain', async () => {
-    // @ts-ignore
-    const blockchain = {
-      api: {
-        query: {
-          attestation: {
-            attestations: jest.fn(claimHash => {
-              return Promise.resolve(new Tuple([], []))
-            }),
-          },
-        },
-      },
-    } as Blockchain
+    Blockchain.api.query.attestation.attestations = jest.fn(claimHash => {
+      return Promise.resolve(new Tuple([], []))
+    })
 
     const attestation = new Attestation(
       requestForAttestation,
       identityAlice,
       false
     )
-    expect(await attestation.verify(blockchain)).toBeFalsy()
+    expect(await attestation.verify()).toBeFalsy()
   })
 
   it('verify attestation revoked', async () => {
-    // @ts-ignore
-    const blockchain = {
-      api: {
-        query: {
-          attestation: {
-            attestations: jest.fn(claimHash => {
-              return Promise.resolve(
-                new Tuple(
-                  // Attestations: claim-hash -> [(ctype-hash, account, delegation-id?, revoked)]
-                  [Tuple.with([Text, Text, Text, Bool])],
-                  [[cTypeHash, identityAlice, undefined, true]]
-                )
-              )
-            }),
-          },
-        },
-      },
-    } as Blockchain
+    Blockchain.api.query.attestation.attestations = jest.fn(claimHash => {
+      return Promise.resolve(
+        new Tuple(
+          // Attestations: claim-hash -> [(ctype-hash, account, delegation-id?, revoked)]
+          [Tuple.with([Text, Text, Text, Bool])],
+          [[cTypeHash, identityAlice, undefined, true]]
+        )
+      )
+    })
 
     const attestation = new Attestation(
       requestForAttestation,
       identityAlice,
       false
     )
-    expect(await attestation.verify(blockchain)).toBeFalsy()
+    expect(await attestation.verify()).toBeFalsy()
   })
 })
