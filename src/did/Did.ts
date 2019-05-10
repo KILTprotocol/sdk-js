@@ -1,12 +1,8 @@
 import Identity from '../identity/Identity'
-import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import { TxStatus } from '../blockchain/TxStatus'
-import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
-import { CodecResult } from '@polkadot/api/promise/types'
-import { Option, Text } from '@polkadot/types'
-import { hexToU8a, u8aToString } from '@polkadot/util'
-import IPublicIdentity from '../types/PublicIdentity'
+import { getIdentifierFromAddress } from './Did.utils'
+import { store, queryByAddress, queryByIdentifier, remove } from './Did.chain'
 
 const log = factory.getLogger('DID')
 
@@ -23,51 +19,20 @@ export interface IDid {
 }
 
 export default class Did implements IDid {
-  public static decodeDid(
-    identifier: string,
-    encoded: QueryResult
-  ): IDid | undefined {
-    const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-    let result: IDid | undefined
-    if (json instanceof Array) {
-      const documentStore = hexToU8a(json[2])
-      result = Object.assign(Object.create(Did.prototype), {
-        identifier,
-        publicSigningKey: json[0],
-        publicBoxKey: json[1],
-        documentStore:
-          documentStore.length > 0 ? u8aToString(documentStore) : undefined,
-      })
-    }
-    return result
+  public static queryByIdentifier(identifier: string) {
+    return queryByIdentifier(identifier)
+  }
+  public static queryByAddress(address: string) {
+    return queryByAddress(address)
   }
 
-  public static async queryByIdentifier(
-    blockchain: Blockchain,
-    identifier: IDid['identifier']
-  ): Promise<IDid | undefined> {
-    const address = Did.getAddressFromIdentifier(identifier)
-    const decoded: IDid | undefined = Did.decodeDid(
-      identifier,
-      await blockchain.api.query.dID.dIDs(address)
-    )
-    return decoded
-  }
-
-  public static async queryByAddress(
-    blockchain: Blockchain,
-    address: IPublicIdentity['address']
-  ): Promise<IDid | undefined> {
-    const identifier = Did.getIdentifierFromAddress(address)
-    const decoded: IDid | undefined = Did.decodeDid(
-      identifier,
-      await blockchain.api.query.dID.dIDs(address)
-    )
-    return decoded
+  public static async remove(identity: Identity) {
+    log.debug(`Create tx for 'did.remove'`)
+    return remove(identity)
   }
 
   public static fromIdentity(identity: Identity, documentStore?: string): Did {
-    const identifier = Did.getIdentifierFromAddress(identity.address)
+    const identifier = getIdentifierFromAddress(identity.address)
     return new Did(
       identifier,
       identity.boxPublicKeyAsHex,
@@ -76,32 +41,6 @@ export default class Did implements IDid {
     )
   }
 
-  public static getIdentifierFromAddress(
-    address: IPublicIdentity['address']
-  ): IDid['identifier'] {
-    return IDENTIFIER_PREFIX + address
-  }
-
-  public static getAddressFromIdentifier(
-    identifier: IDid['identifier']
-  ): IPublicIdentity['address'] {
-    if (!identifier.startsWith(IDENTIFIER_PREFIX)) {
-      throw new Error('Not a KILT did: ' + identifier)
-    }
-    return identifier.substr(IDENTIFIER_PREFIX.length)
-  }
-
-  public static async remove(
-    blockchain: Blockchain,
-    identity: Identity
-  ): Promise<TxStatus> {
-    log.debug(`Create tx for 'did.remove'`)
-    const tx: SubmittableExtrinsic<
-      CodecResult,
-      any
-    > = await blockchain.api.tx.did.remove()
-    return blockchain.submitTx(identity, tx)
-  }
   public readonly identifier: string
   public readonly publicBoxKey: string
   public readonly publicSigningKey: string
@@ -119,20 +58,9 @@ export default class Did implements IDid {
     this.documentStore = documentStore
   }
 
-  public async store(
-    blockchain: Blockchain,
-    identity: Identity
-  ): Promise<TxStatus> {
+  public async store(identity: Identity): Promise<TxStatus> {
     log.debug(`Create tx for 'did.add'`)
-    const tx: SubmittableExtrinsic<
-      CodecResult,
-      any
-    > = await blockchain.api.tx.did.add(
-      this.publicBoxKey,
-      this.publicSigningKey,
-      new Option(Text, this.documentStore)
-    )
-    return blockchain.submitTx(identity, tx)
+    return store(this, identity)
   }
 
   public getDefaultDocument(kiltServiceEndpoint?: string): object {

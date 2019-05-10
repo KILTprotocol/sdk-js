@@ -1,4 +1,3 @@
-import { EncryptedAsymmetricString } from 'src/crypto/Crypto'
 import {
   Claim,
   DelegationNode,
@@ -11,7 +10,7 @@ import {
   IPublicIdentity,
   IRequestForAttestation,
 } from '..'
-import Crypto from '../crypto'
+import Crypto, { EncryptedAsymmetricString } from '../crypto'
 
 /**
  * inReplyTo - should store the id of the parent message
@@ -58,7 +57,7 @@ export default class Message implements IMessage {
           throw new Error('Sender is not owner of the attestation')
         }
         break
-      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPE:
+      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES:
         const submitClaimsForCtype = message.body
         submitClaimsForCtype.content.forEach(claim => {
           if (claim.request.claim.owner !== message.senderAddress) {
@@ -176,10 +175,10 @@ export enum MessageBodyType {
   SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
   REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
 
-  REQUEST_CLAIMS_FOR_CTYPE = 'request-claims-for-ctype',
-  SUBMIT_CLAIMS_FOR_CTYPE = 'submit-claims-for-ctype',
-  ACCEPT_CLAIMS_FOR_CTYPE = 'accept-claims-for-ctype',
-  REJECT_CLAIMS_FOR_CTYPE = 'reject-claims-for-ctype',
+  REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
+  SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes',
+  ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
+  REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
 
   REQUEST_ACCEPT_DELEGATION = 'request-accept-delegation',
   SUBMIT_ACCEPT_DELEGATION = 'submit-accept-delegation',
@@ -226,21 +225,21 @@ export interface IRejectAttestationForClaim extends IMessageBodyBase {
   type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM
 }
 
-export interface IRequestClaimsForCtype extends IMessageBodyBase {
-  content: ICType['hash']
-  type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPE
+export interface IRequestClaimsForCTypes extends IMessageBodyBase {
+  content: Array<ICType['hash']>
+  type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
 }
-export interface ISubmitClaimsForCtype extends IMessageBodyBase {
+export interface ISubmitClaimsForCTypes extends IMessageBodyBase {
   content: IAttestedClaim[]
-  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPE
+  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
 }
-export interface IAcceptClaimsForCtype extends IMessageBodyBase {
+export interface IAcceptClaimsForCTypes extends IMessageBodyBase {
   content: IAttestedClaim[]
-  type: MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPE
+  type: MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES
 }
-export interface IRejectClaimsForCtype extends IMessageBodyBase {
+export interface IRejectClaimsForCTypes extends IMessageBodyBase {
   content: IAttestedClaim[]
-  type: MessageBodyType.REJECT_CLAIMS_FOR_CTYPE
+  type: MessageBodyType.REJECT_CLAIMS_FOR_CTYPES
 }
 
 export interface IRequestAcceptDelegation extends IMessageBodyBase {
@@ -296,10 +295,10 @@ export type MessageBody =
   | ISubmitAttestationForClaim
   | IRejectAttestationForClaim
   //
-  | IRequestClaimsForCtype
-  | ISubmitClaimsForCtype
-  | IAcceptClaimsForCtype
-  | IRejectClaimsForCtype
+  | IRequestClaimsForCTypes
+  | ISubmitClaimsForCTypes
+  | IAcceptClaimsForCTypes
+  | IRejectClaimsForCTypes
   //
   | IRequestAcceptDelegation
   | ISubmitAcceptDelegation
