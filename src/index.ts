@@ -23,7 +23,7 @@ export {
   Permission,
 } from './types/Delegation'
 
-import { connect } from './Kilt/Kilt'
+import { connect } from './kilt/Kilt'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import Identity from './identity/Identity'
 import PublicIdentity, { IURLResolver } from './identity/PublicIdentity'
