@@ -14,6 +14,10 @@ export default class Attestation implements IAttestation {
   public static async query(claimHash: string) {
     return query(claimHash)
   }
+
+  public static async revoke(claimHash: string, identity: Identity) {
+    return revoke(claimHash, identity)
+  }
   /**
    * Creates a new instance of this Attestation class from the given interface.
    */
