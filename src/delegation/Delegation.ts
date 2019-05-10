@@ -1,51 +1,23 @@
-import Blockchain, { QueryResult } from '../blockchain/Blockchain'
+import { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'
 import Attestation from '../attestation/Attestation'
 import { TxStatus } from '../blockchain/TxStatus'
-
 import { IDelegationBaseNode } from '../types/Delegation'
-import { DelegationNode } from './DelegationNode'
-import { DelegationRootNode } from './DelegationRootNode'
+import DelegationNode from './DelegationNode'
+import DelegationRootNode from './DelegationRootNode'
+import {
+  getAttestationHashes,
+  fetchChildren,
+  getChildIds,
+} from './Delegation.chain'
+import { query } from '../attestation/Attestation.chain'
 
 const log = factory.getLogger('DelegationBaseNode')
 
-export abstract class DelegationBaseNode implements IDelegationBaseNode {
-  /**
-   * Gets all attestations made by a Delegation Node.
-   *
-   * @param blockchain The blockchain object.
-   *
-   * @returns All attestations made by this Delegation Node.
-   */
-  public static async getAttestations(
-    blockchain: Blockchain,
-    id: IDelegationBaseNode['id']
-  ): Promise<Attestation[]> {
-    const attestationHashes = await DelegationBaseNode.getAttestationHashes(
-      blockchain,
-      id
-    )
-    const attestations = await Promise.all(
-      attestationHashes.map((claimHash: string) => {
-        return Attestation.query(blockchain, claimHash)
-      })
-    )
-
-    return attestations.filter((value): value is Attestation => !!value)
-  }
-
-  public static async getAttestationHashes(
-    blockchain: Blockchain,
-    id: IDelegationBaseNode['id']
-  ): Promise<string[]> {
-    const encodedHashes = await blockchain.api.query.attestation.delegatedAttestations(
-      id
-    )
-    return DelegationBaseNode.decodeDelegatedAttestations(encodedHashes)
-  }
-
+export default abstract class DelegationBaseNode
+  implements IDelegationBaseNode {
   public id: IDelegationBaseNode['id']
   public account: IDelegationBaseNode['account']
   public revoked: IDelegationBaseNode['revoked'] = false
@@ -58,21 +30,14 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
     this.id = id
   }
 
-  public abstract getRoot(blockchain: Blockchain): Promise<DelegationRootNode>
+  public abstract getRoot(): Promise<DelegationRootNode>
 
-  public abstract getParent(
-    blockchain: Blockchain
-  ): Promise<DelegationBaseNode | undefined>
+  public abstract getParent(): Promise<DelegationBaseNode | undefined>
 
-  public async getChildren(blockchain: Blockchain): Promise<DelegationNode[]> {
+  public async getChildren(): Promise<DelegationNode[]> {
     log.info(` :: getChildren('${this.id}')`)
-    const childIds: string[] = Blockchain.asArray(
-      await blockchain.api.query.delegation.children(this.id)
-    )
-    const queryResults: CodecWithId[] = await DelegationBaseNode.fetchChildren(
-      childIds,
-      blockchain
-    )
+    const childIds: string[] = await getChildIds(this.id)
+    const queryResults: CodecWithId[] = await fetchChildren(childIds)
     const children: DelegationNode[] = queryResults
       .map((codec: CodecWithId) => {
         const decoded: DelegationNode | undefined = this.decodeChildNode(
@@ -95,24 +60,26 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
   /**
    * Gets all attestations made by a Delegation Node.
    *
-   * @param blockchain The blockchain object.
-   *
    * @returns All attestations made by this Delegation Node.
    */
-  public async getAttestations(blockchain: Blockchain): Promise<Attestation[]> {
-    return DelegationBaseNode.getAttestations(blockchain, this.id)
+  public async getAttestations(): Promise<Attestation[]> {
+    const attestationHashes = await this.getAttestationHashes()
+    const attestations = await Promise.all(
+      attestationHashes.map((claimHash: string) => {
+        return query(claimHash)
+      })
+    )
+
+    return attestations.filter((value): value is Attestation => !!value)
   }
 
-  public async getAttestationHashes(blockchain: Blockchain): Promise<string[]> {
-    return DelegationBaseNode.getAttestationHashes(blockchain, this.id)
+  public async getAttestationHashes(): Promise<string[]> {
+    return getAttestationHashes(this.id)
   }
 
-  public abstract verify(blockchain: Blockchain): Promise<boolean>
+  public abstract verify(): Promise<boolean>
 
-  public abstract revoke(
-    blockchain: Blockchain,
-    identity: Identity
-  ): Promise<TxStatus>
+  public abstract revoke(identity: Identity): Promise<TxStatus>
 
   /**
    * Required to avoid cyclic dependencies btw. DelegationBaseNode and DelegationNode implementations.
@@ -120,30 +87,4 @@ export abstract class DelegationBaseNode implements IDelegationBaseNode {
   protected abstract decodeChildNode(
     queryResult: QueryResult
   ): DelegationNode | undefined
-
-  private static async fetchChildren(
-    childIds: string[],
-    blockchain: Blockchain
-  ): Promise<CodecWithId[]> {
-    const val: CodecWithId[] = await Promise.all(
-      childIds.map(async (childId: string) => {
-        const queryResult: QueryResult = await blockchain.api.query.delegation.delegations(
-          childId
-        )
-        return {
-          id: childId,
-          codec: queryResult,
-        }
-      })
-    )
-    return val
-  }
-
-  private static decodeDelegatedAttestations(
-    queryResult: QueryResult
-  ): string[] {
-    const json =
-      queryResult && queryResult.encodedLength ? queryResult.toJSON() : []
-    return json
-  }
 }

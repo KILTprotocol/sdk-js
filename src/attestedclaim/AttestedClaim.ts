@@ -35,7 +35,7 @@ export default class AttestedClaim implements IAttestedClaim {
     if (!this.verifyData()) {
       Promise.resolve(false)
     }
-    return this.attestation.verify(blockchain)
+    return this.attestation.verify()
   }
 
   public verifyData(): boolean {

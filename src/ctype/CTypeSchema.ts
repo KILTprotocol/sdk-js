@@ -1,6 +1,8 @@
 /**
  * @module CType
  */
+// TODO: Generate from actual CTypeModel
+// TODO: The SDK is not really responsible for this, since it is editor specific
 export const CTypeInputModel = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'http://kilt-protocol.org/draft-01/ctype-input#',

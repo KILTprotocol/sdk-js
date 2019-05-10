@@ -7,45 +7,40 @@ import {
   SubmittableExtrinsic,
   SubmittableResult,
 } from '@polkadot/api/SubmittableExtrinsic'
-import { WsProvider } from '@polkadot/rpc-provider'
 import { Header } from '@polkadot/types'
-import { Codec, RegistryTypes } from '@polkadot/types/types'
-import BN from 'bn.js'
+import { Codec } from '@polkadot/types/types'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 import { TxStatus } from './TxStatus'
-import IPublicIdentity from '../types/PublicIdentity'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
 export type QueryResult = Codec | undefined | null
 
-const CUSTOM_TYPES: RegistryTypes = {
-  DelegationNodeId: 'Hash',
-  PublicSigningKey: 'Hash',
-  PublicBoxKey: 'Hash',
-  Permissions: 'u32',
-  ErrorCode: 'u16',
+export type Stats = {
+  chain: Codec
+  nodeName: Codec
+  nodeVersion: Codec
+}
+
+export interface IBlockchainApi {
+  api: ApiPromise
+
+  getStats(): Promise<Stats>
+  listenToBlocks(listener: (header: Header) => void): Promise<any> // TODO: change any to something meaningful
+  submitTx(
+    identity: Identity,
+    tx: SubmittableExtrinsic<CodecResult, SubscriptionResult>
+  ): Promise<TxStatus>
+  getNonce(accountAddress: string): Promise<Codec>
 }
 
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
 
-export default class Blockchain {
-  public static DEFAULT_WS_ADDRESS = 'ws://127.0.0.1:9944'
-  public static async build(
-    host: string = Blockchain.DEFAULT_WS_ADDRESS
-  ): Promise<Blockchain> {
-    const provider = new WsProvider(host)
-    const api = await ApiPromise.create({
-      provider,
-      types: CUSTOM_TYPES,
-    })
-    return new Blockchain(api)
-  }
-
+export default class Blockchain implements IBlockchainApi {
   public static asArray(queryResult: QueryResult): any[] {
     const json =
       queryResult && queryResult.encodedLength ? queryResult.toJSON() : null
@@ -57,14 +52,14 @@ export default class Blockchain {
 
   public api: ApiPromise
 
-  private constructor(api: ApiPromise) {
+  public constructor(api: ApiPromise) {
     this.api = api
     this.errorHandler = new ErrorHandler(api)
   }
 
   private errorHandler: ErrorHandler
 
-  public async getStats() {
+  public async getStats(): Promise<Stats> {
     const [chain, nodeName, nodeVersion] = await Promise.all([
       this.api.rpc.system.chain(),
       this.api.rpc.system.name(),
@@ -78,43 +73,6 @@ export default class Blockchain {
   public async listenToBlocks(listener: (header: Header) => void) {
     const subscriptionId = await this.api.rpc.chain.subscribeNewHead(listener)
     return subscriptionId
-  }
-
-  public async listenToBalanceChanges(
-    accountAddress: string,
-    listener?: (account: string, balance: number, change: number) => void
-  ) {
-    // @ts-ignore
-    let previous: BN = await this.api.query.balances.freeBalance(accountAddress)
-
-    if (listener) {
-      // @ts-ignore
-      this.api.query.balances.freeBalance(accountAddress, (current: BN) => {
-        const change = current.sub(previous)
-        previous = current
-        listener(accountAddress, current.toNumber(), change.toNumber())
-      })
-    }
-    return previous
-  }
-
-  public async getBalance(
-    accountAddress: IPublicIdentity['address']
-  ): Promise<number> {
-    // @ts-ignore
-    const balance: BN = await this.api.query.balances.freeBalance(
-      accountAddress
-    )
-    return balance.toNumber()
-  }
-
-  public async makeTransfer(
-    identity: Identity,
-    accountAddressTo: string,
-    amount: number
-  ): Promise<TxStatus> {
-    const transfer = this.api.tx.balances.transfer(accountAddressTo, amount)
-    return this.submitTx(identity, transfer)
   }
 
   public async submitTx(

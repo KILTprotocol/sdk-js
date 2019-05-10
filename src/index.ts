@@ -1,34 +1,13 @@
 /**
  * @module SDK
  */
-export { default as Identity } from './identity/Identity'
-export { default as PublicIdentity } from './identity/PublicIdentity'
 export { default as Blockchain } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
 export { default as Crypto } from './crypto'
-export { default as CType } from './ctype/CType'
-export {
-  CTypeModel,
-  CTypeInputModel,
-  CTypeWrapperModel,
-} from './ctype/CTypeSchema'
-export * from './ctype/CTypeUtils'
-export { default as Claim } from './claim/Claim'
-export { default as Attestation } from './attestation/Attestation'
-export {
-  default as RequestForAttestation,
-} from './requestforattestation/RequestForAttestation'
-export { default as AttestedClaim } from './attestedclaim/AttestedClaim'
-export { DelegationBaseNode } from './delegation/Delegation'
-export { DelegationNode } from './delegation/DelegationNode'
-export { DelegationRootNode } from './delegation/DelegationRootNode'
-export { default as Message } from './messaging/Message'
 export { default as UUID } from './util/UUID'
-export * from './messaging/Message'
-export { default as Did, IDid } from './did/Did'
 export * from './errorhandling/ExtrinsicError'
-export { IURLResolver } from './identity/PublicIdentity'
 
+// ---- Types, which define the most basic KILT objects ----
 export { default as IPublicIdentity } from './types/PublicIdentity'
 export { default as ICType } from './types/CType'
 export { default as IClaim } from './types/Claim'
@@ -37,10 +16,67 @@ export { default as IAttestation } from './types/Attestation'
 export {
   default as IRequestForAttestation,
 } from './types/RequestForAttestation'
-// TODO: export primitive interfaces
 export {
   IDelegationRootNode,
   IDelegationBaseNode,
   IDelegationNode,
   Permission,
 } from './types/Delegation'
+
+import { connect } from './Kilt/Kilt'
+import * as BlockchainApiConnection from './blockchainApiConnection'
+import Identity from './identity/Identity'
+import PublicIdentity, { IURLResolver } from './identity/PublicIdentity'
+import CType from './ctype/CType'
+import * as CTypeUtils from './ctype/CTypeUtils'
+import Claim from './claim/Claim'
+import RequestForAttestation from './requestforattestation/RequestForAttestation'
+import Attestation from './attestation/Attestation'
+import AttestedClaim from './attestedclaim/AttestedClaim'
+import DelegationBaseNode from './delegation/Delegation'
+import DelegationNode from './delegation/DelegationNode'
+import DelegationRootNode from './delegation/DelegationRootNode'
+import Did, { IDid } from './did/Did'
+import Message from './messaging/Message'
+
+export {
+  BlockchainApiConnection,
+  Identity,
+  PublicIdentity,
+  IURLResolver,
+  CType,
+  CTypeUtils,
+  Claim,
+  RequestForAttestation,
+  Attestation,
+  AttestedClaim,
+  DelegationBaseNode,
+  DelegationNode,
+  DelegationRootNode,
+  Did,
+  IDid,
+  Message,
+}
+
+export {
+  CTypeModel,
+  CTypeInputModel,
+  CTypeWrapperModel,
+} from './ctype/CTypeSchema'
+export * from './messaging/Message'
+
+// ---- Default export for ease of use ----
+export default {
+  connect,
+  Identity,
+  PublicIdentity,
+  CType,
+  Claim,
+  RequestForAttestation,
+  Attestation,
+  AttestedClaim,
+  DelegationNode,
+  DelegationRootNode,
+  Did,
+  Message,
+}
