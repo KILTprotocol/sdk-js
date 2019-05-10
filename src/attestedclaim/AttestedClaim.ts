@@ -4,7 +4,6 @@
 import cloneDeep from 'lodash/cloneDeep'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import Blockchain from '../blockchain/Blockchain'
 import IAttestedClaim from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
@@ -31,7 +30,7 @@ export default class AttestedClaim implements IAttestedClaim {
     this.attestation = Attestation.fromObject(attestation)
   }
 
-  public async verify(blockchain: Blockchain): Promise<boolean> {
+  public async verify(): Promise<boolean> {
     if (!this.verifyData()) {
       Promise.resolve(false)
     }
