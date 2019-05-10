@@ -1,7 +1,7 @@
 /**
  * @module SDK
  */
-export { default as Blockchain } from './blockchain/Blockchain'
+export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
 export { default as Crypto } from './crypto'
 export { default as UUID } from './util/UUID'
