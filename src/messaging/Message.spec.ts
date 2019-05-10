@@ -1,13 +1,13 @@
 import Identity from '../identity/Identity'
 import {
-  IRequestClaimsForCtype,
+  IRequestClaimsForCTypes,
   default as Message,
   MessageBodyType,
   IEncryptedMessage,
   IMessage,
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
-  ISubmitClaimsForCtype,
+  ISubmitClaimsForCTypes,
 } from './Message'
 import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import Crypto from '../crypto'
@@ -17,9 +17,9 @@ describe('Messaging', () => {
   const identityBob = Identity.buildFromURI('//Bob')
 
   it('verify message encryption and signing', () => {
-    const messageBody: IRequestClaimsForCtype = {
-      content: '0x12345678',
-      type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPE,
+    const messageBody: IRequestClaimsForCTypes = {
+      content: ['0x12345678'],
+      type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
     }
     const message: Message = new Message(
       messageBody,
@@ -175,9 +175,9 @@ describe('Messaging', () => {
       )
     )
 
-    const submitClaimsForCTypeBody: ISubmitClaimsForCtype = {
+    const submitClaimsForCTypeBody: ISubmitClaimsForCTypes = {
       content: [submitAttestationBody.content],
-      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPE,
+      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
     }
 
     Message.ensureOwnerIsSender(
