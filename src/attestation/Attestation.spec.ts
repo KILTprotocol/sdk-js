@@ -57,9 +57,9 @@ describe('Attestation', () => {
     Blockchain.api.query.attestation.attestations = jest.fn(claimHash => {
       return Promise.resolve(
         new Tuple(
-          // Attestations: claim-hash -> [(ctype-hash, account, delegation-id?, revoked)]
-          [Tuple.with([Text, Text, Text, Bool])],
-          [[cTypeHash, identityAlice, undefined, true]]
+          // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
+          [Text, Text, Text, Bool],
+          [cTypeHash, identityAlice, undefined, true]
         )
       )
     })
@@ -67,7 +67,7 @@ describe('Attestation', () => {
     const attestation = new Attestation(
       requestForAttestation,
       identityAlice,
-      false
+      true
     )
     expect(await attestation.verify()).toBeFalsy()
   })
