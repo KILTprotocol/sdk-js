@@ -8,7 +8,7 @@ import { getAddressFromIdentifier } from '../did/Did.utils'
 import IPublicIdentity from '../types/PublicIdentity'
 
 export interface IURLResolver {
-  resolve(url: string): object
+  resolve(url: string): Promise<object | undefined>
 }
 
 /**
@@ -21,7 +21,9 @@ export default class PublicIdentity implements IPublicIdentity {
     try {
       return new PublicIdentity(
         /* tslint:disable:no-string-literal */
-        didDocument['id'],
+        didDocument['id'].startsWith(IDENTIFIER_PREFIX)
+          ? getAddressFromIdentifier(didDocument['id'])
+          : didDocument['id'],
         /* tslint:enable:no-string-literal */
         this.getJSONProperty(
           didDocument,
@@ -50,10 +52,11 @@ export default class PublicIdentity implements IPublicIdentity {
     if (identifier.startsWith(IDENTIFIER_PREFIX)) {
       const did: IDid | undefined = await Did.queryByIdentifier(identifier)
       if (did !== undefined) {
-        if (did.documentStore) {
-          return this.fromDidDocument(
-            await urlResolver.resolve(did.documentStore)
-          )
+        const didDocument: object | undefined = did.documentStore
+          ? await urlResolver.resolve(did.documentStore)
+          : undefined
+        if (didDocument) {
+          return this.fromDidDocument(didDocument)
         } else {
           return new PublicIdentity(
             getAddressFromIdentifier(did.identifier),
@@ -67,7 +70,7 @@ export default class PublicIdentity implements IPublicIdentity {
           encodeURIComponent(identifier)
       )
       /* tslint:disable:no-string-literal */
-      if (didResult['didDocument']) {
+      if (didResult && didResult['didDocument']) {
         return this.fromDidDocument(didResult['didDocument'])
       }
       /* tslint:enable:no-string-literal */
