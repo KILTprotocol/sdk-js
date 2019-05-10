@@ -1,7 +1,10 @@
-import * as DID from '../did/Did'
-import Did from '../did/Did'
-import { IDid } from '../did/Did'
-import Blockchain from '../blockchain/Blockchain'
+import Did, {
+  IDid,
+  KEY_TYPE_ENCRYPTION,
+  SERVICE_KILT_MESSAGING,
+  IDENTIFIER_PREFIX,
+} from '../did/Did'
+import { getAddressFromIdentifier } from '../did/Did.utils'
 import IPublicIdentity from '../types/PublicIdentity'
 
 export interface IURLResolver {
@@ -18,22 +21,22 @@ export default class PublicIdentity implements IPublicIdentity {
     try {
       return new PublicIdentity(
         /* tslint:disable:no-string-literal */
-        didDocument['id'].startsWith(DID.IDENTIFIER_PREFIX)
-          ? Did.getAddressFromIdentifier(didDocument['id'])
+        didDocument['id'].startsWith(IDENTIFIER_PREFIX)
+          ? getAddressFromIdentifier(didDocument['id'])
           : didDocument['id'],
         /* tslint:enable:no-string-literal */
         this.getJSONProperty(
           didDocument,
           'publicKey',
           'type',
-          DID.KEY_TYPE_ENCRYPTION,
+          KEY_TYPE_ENCRYPTION,
           'publicKeyHex'
         ),
         this.getJSONProperty(
           didDocument,
           'service',
           'type',
-          DID.SERVICE_KILT_MESSAGING,
+          SERVICE_KILT_MESSAGING,
           'serviceEndpoint'
         )
       )
@@ -44,14 +47,10 @@ export default class PublicIdentity implements IPublicIdentity {
 
   public static async resolveFromDid(
     identifier: string,
-    blockchain: Blockchain,
     urlResolver: IURLResolver
   ): Promise<IPublicIdentity | undefined> {
-    if (identifier.startsWith(DID.IDENTIFIER_PREFIX)) {
-      const did: IDid | undefined = await Did.queryByIdentifier(
-        blockchain,
-        identifier
-      )
+    if (identifier.startsWith(IDENTIFIER_PREFIX)) {
+      const did: IDid | undefined = await Did.queryByIdentifier(identifier)
       if (did !== undefined) {
         const didDocument: object | undefined = did.documentStore
           ? await urlResolver.resolve(did.documentStore)
@@ -60,7 +59,7 @@ export default class PublicIdentity implements IPublicIdentity {
           return this.fromDidDocument(didDocument)
         } else {
           return new PublicIdentity(
-            Did.getAddressFromIdentifier(did.identifier),
+            getAddressFromIdentifier(did.identifier),
             did.publicBoxKey
           )
         }

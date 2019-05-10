@@ -1,4 +1,3 @@
-import { EncryptedAsymmetricString } from 'src/crypto/Crypto'
 import {
   Claim,
   DelegationNode,
@@ -11,7 +10,7 @@ import {
   IPublicIdentity,
   IRequestForAttestation,
 } from '..'
-import Crypto from '../crypto'
+import Crypto, { EncryptedAsymmetricString } from '../crypto'
 
 /**
  * inReplyTo - should store the id of the parent message

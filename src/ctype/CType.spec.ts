@@ -1,8 +1,10 @@
 import CType from './CType'
-import Blockchain from '../blockchain/Blockchain'
+import * as CTypeUtils from './CTypeUtils'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
 import ICType from '../types/CType'
+
+jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('CType', () => {
   const ctypeModel = {
@@ -67,17 +69,17 @@ describe('CType', () => {
       'third-property': true,
     }
 
-    const ctypeFromInput = CType.fromInputModel(ctypeInput)
+    const ctypeFromInput = CTypeUtils.fromInputModel(ctypeInput)
     const ctypeFromModel = new CType(ctypeModel)
     expect(JSON.stringify(ctypeFromInput.getModel())).toEqual(
       JSON.stringify(ctypeFromModel.getModel())
     )
-    expect(JSON.stringify(ctypeFromInput.getClaimInputModel('en'))).toEqual(
-      JSON.stringify(claimInput)
-    )
-    expect(JSON.stringify(ctypeFromInput.getCTypeInputModel())).toEqual(
-      JSON.stringify(ctypeInput)
-    )
+    expect(
+      JSON.stringify(CTypeUtils.getClaimInputModel(ctypeFromInput, 'en'))
+    ).toEqual(JSON.stringify(claimInput))
+    expect(
+      JSON.stringify(CTypeUtils.getCTypeInputModel(ctypeFromInput))
+    ).toEqual(JSON.stringify(ctypeInput))
 
     expect(ctypeFromInput.verifyClaimStructure(goodClaim)).toBeTruthy()
     expect(ctypeFromInput.verifyClaimStructure(badClaim)).toBeFalsy()
@@ -87,7 +89,7 @@ describe('CType', () => {
       new CType(goodClaim).verifyClaimStructure(goodClaim)
     }).toThrow(new Error('CType does not correspond to schema'))
     expect(() => {
-      CType.fromInputModel(ctypeModel)
+      CTypeUtils.fromInputModel(ctypeModel)
     }).toThrow(
       new Error('CType input does not correspond to input model schema')
     )
@@ -95,40 +97,13 @@ describe('CType', () => {
 
   it('stores ctypes', async () => {
     const resultHash = Crypto.hashStr('987654')
-    // @ts-ignore
-    const blockchain = {
-      api: {
-        tx: {
-          ctype: {
-            add: jest.fn((hash, signature) => {
-              return Promise.resolve({ hash, signature })
-            }),
-          },
-        },
-        query: {
-          ctype: {
-            cTYPEs: jest.fn(hash => {
-              return true
-            }),
-          },
-        },
-      },
-      getStats: jest.fn(),
-      listenToBlocks: jest.fn(),
-      listenToBalanceChanges: jest.fn(),
-      makeTransfer: jest.fn(),
-      submitTx: jest.fn((identity, tx) => {
-        // if (statusCb) statusCb(new ExtrinsicStatus('Finalized'))
-        return Promise.resolve(resultHash)
-      }),
-      getNonce: jest.fn(),
-    } as Blockchain
+    require('../blockchain/Blockchain').default.__mockResultHash = resultHash
 
     const identityAlice = Identity.buildFromURI('//Alice')
     const testHash = Crypto.hashStr('1234')
 
     const ctype = new CType(ctypeModel)
     ctype.hash = testHash
-    expect(await ctype.store(blockchain, identityAlice)).toEqual(resultHash)
+    expect(await ctype.store(identityAlice)).toEqual(resultHash)
   })
 })

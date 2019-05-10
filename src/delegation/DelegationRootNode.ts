@@ -1,33 +1,27 @@
-import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
-import { CodecResult } from '@polkadot/api/promise/types'
-import Blockchain, { QueryResult } from '../blockchain/Blockchain'
+import { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
-import { DelegationBaseNode } from './Delegation'
-import { decodeRootDelegation, decodeDelegationNode } from './DelegationDecoder'
+import DelegationBaseNode from './Delegation'
+import { decodeDelegationNode } from './DelegationDecoder'
 import { IDelegationRootNode } from '../types/Delegation'
-import { DelegationNode } from './DelegationNode'
+import DelegationNode from './DelegationNode'
+import { store, query, revoke } from './DelegationRootNode.chain'
 
 const log = factory.getLogger('DelegationRootNode')
 
-export class DelegationRootNode extends DelegationBaseNode
+export default class DelegationRootNode extends DelegationBaseNode
   implements IDelegationRootNode {
-  public static async query(
-    blockchain: Blockchain,
-    delegationId: IDelegationRootNode['id']
-  ): Promise<DelegationRootNode | undefined> {
+  public static async query(delegationId: string) {
     log.info(`:: query('${delegationId}')`)
-    const root = decodeRootDelegation(
-      await blockchain.api.query.delegation.root(delegationId)
-    )
-    if (root) {
-      root.id = delegationId
-      log.info(`result: ${JSON.stringify(root)}`)
-      return root
+    const result = await query(delegationId)
+    if (result) {
+      log.info(`result: ${JSON.stringify(result)}`)
+    } else {
+      log.info(`root node not found`)
     }
-    log.info(`root node not found`)
-    return root
+
+    return result
   }
 
   public cTypeHash: IDelegationRootNode['cTypeHash']
@@ -41,45 +35,27 @@ export class DelegationRootNode extends DelegationBaseNode
     this.cTypeHash = ctypeHash
   }
 
-  public getRoot(blockchain: Blockchain): Promise<DelegationRootNode> {
+  public getRoot(): Promise<DelegationRootNode> {
     return Promise.resolve(this)
   }
   // tslint:disable-next-line:prefer-function-over-method
-  public getParent(
-    blockchain: Blockchain
-  ): Promise<DelegationBaseNode | undefined> {
+  public getParent(): Promise<DelegationBaseNode | undefined> {
     return Promise.resolve(undefined)
   }
 
-  public async store(
-    blockchain: Blockchain,
-    identity: Identity
-  ): Promise<TxStatus> {
+  public async store(identity: Identity): Promise<TxStatus> {
     log.debug(`:: store(${this.id})`)
-    const tx: SubmittableExtrinsic<
-      CodecResult,
-      any
-    > = await blockchain.api.tx.delegation.createRoot(this.id, this.cTypeHash)
-    return blockchain.submitTx(identity, tx)
+    return store(this, identity)
   }
 
-  public async verify(blockchain: Blockchain): Promise<boolean> {
-    const node:
-      | IDelegationRootNode
-      | undefined = await DelegationRootNode.query(blockchain, this.id)
+  public async verify(): Promise<boolean> {
+    const node: IDelegationRootNode | undefined = await query(this.id)
     return node !== undefined && !node.revoked
   }
 
-  public async revoke(
-    blockchain: Blockchain,
-    identity: Identity
-  ): Promise<TxStatus> {
+  public async revoke(identity: Identity): Promise<TxStatus> {
     log.debug(`:: revoke(${this.id})`)
-    const tx: SubmittableExtrinsic<
-      CodecResult,
-      any
-    > = await blockchain.api.tx.delegation.revokeRoot(this.id)
-    return blockchain.submitTx(identity, tx)
+    return revoke(this, identity)
   }
 
   protected decodeChildNode(

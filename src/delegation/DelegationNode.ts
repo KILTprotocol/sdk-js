@@ -1,34 +1,26 @@
-import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
-import { CodecResult } from '@polkadot/api/promise/types'
-import { Option, Text } from '@polkadot/types'
 import Crypto from '../crypto'
-import Blockchain, { QueryResult } from '../blockchain/Blockchain'
+import { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
-import { DelegationBaseNode } from './Delegation'
+import DelegationBaseNode from './Delegation'
 import { decodeDelegationNode } from './DelegationDecoder'
-import { DelegationRootNode } from './DelegationRootNode'
+import DelegationRootNode from './DelegationRootNode'
 import { IDelegationNode } from '../types/Delegation'
+import { permissionsAsBitset } from './DelegationNode.utils'
+import { query, store, revoke } from './DelegationNode.chain'
+import { query as queryRoot } from './DelegationRootNode.chain'
 
 const log = factory.getLogger('DelegationNode')
 
-export class DelegationNode extends DelegationBaseNode
+export default class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
-  public static async query(
-    blockchain: Blockchain,
-    delegationId: IDelegationNode['id']
-  ): Promise<DelegationNode | undefined> {
+  public static async query(delegationId: string) {
     log.info(`:: query('${delegationId}')`)
-    const decoded: DelegationNode | undefined = decodeDelegationNode(
-      await blockchain.api.query.delegation.delegations(delegationId)
-    )
-    if (decoded) {
-      decoded.id = delegationId
-    }
-    log.info(`result: ${JSON.stringify(decoded)}`)
-    return decoded
+    const result = await query(delegationId)
+    log.info(`result: ${JSON.stringify(result)}`)
+    return result
   }
 
   public rootId: IDelegationNode['rootId']
@@ -56,7 +48,7 @@ export class DelegationNode extends DelegationBaseNode
     const uint8Props: Uint8Array[] = propsToHash.map(value => {
       return coToUInt8(value)
     })
-    uint8Props.push(this.permissionsAsBitset())
+    uint8Props.push(permissionsAsBitset(this))
     const generated: string = u8aToHex(
       Crypto.hash(u8aConcat(...uint8Props), 256)
     )
@@ -64,90 +56,44 @@ export class DelegationNode extends DelegationBaseNode
     return generated
   }
 
-  public async getRoot(blockchain: Blockchain): Promise<DelegationRootNode> {
-    const rootNode = await DelegationRootNode.query(blockchain, this.rootId)
+  public async getRoot(): Promise<DelegationRootNode> {
+    const rootNode = await queryRoot(this.rootId)
     if (!rootNode) {
       throw new Error(`Could not find root node with id ${this.rootId}`)
     }
     return rootNode
   }
 
-  public async getParent(
-    blockchain: Blockchain
-  ): Promise<DelegationBaseNode | undefined> {
+  public async getParent(): Promise<DelegationBaseNode | undefined> {
     if (!this.parentId) {
       // parent must be root
-      return await this.getRoot(blockchain)
+      return await this.getRoot()
     }
-    return await DelegationNode.query(blockchain, this.parentId)
+    return await query(this.parentId)
   }
 
-  public async store(
-    blockchain: Blockchain,
-    identity: Identity,
-    signature: string
-  ): Promise<TxStatus> {
+  public async store(identity: Identity, signature: string): Promise<TxStatus> {
     log.info(`:: store(${this.id})`)
-    const includeParentId: boolean = this.parentId
-      ? this.parentId !== this.rootId
-      : false
-    const tx: SubmittableExtrinsic<
-      CodecResult,
-      any
-    > = await blockchain.api.tx.delegation.addDelegation(
-      this.id,
-      this.rootId,
-      new Option(Text, includeParentId ? this.parentId : undefined),
-      this.account,
-      this.permissionsAsBitset(),
-      signature
-    )
-    return blockchain.submitTx(identity, tx)
+    return store(this, identity, signature)
   }
 
-  public async verify(blockchain: Blockchain): Promise<boolean> {
-    const node: DelegationNode | undefined = await DelegationNode.query(
-      blockchain,
-      this.id
-    )
+  public async verify(): Promise<boolean> {
+    const node: DelegationNode | undefined = await query(this.id)
     return node !== undefined && !node.revoked
   }
 
-  public async revoke(
-    blockchain: Blockchain,
-    identity: Identity
-  ): Promise<TxStatus> {
+  public async revoke(identity: Identity): Promise<TxStatus> {
     log.debug(`:: revoke(${this.id})`)
-    const tx: SubmittableExtrinsic<
-      CodecResult,
-      any
-    > = await blockchain.api.tx.delegation.revokeDelegation(this.id)
-    return blockchain.submitTx(identity, tx)
+    return revoke(this.id, identity)
+  }
+
+  public permissionsAsBitset() {
+    return permissionsAsBitset(this)
   }
 
   protected decodeChildNode(
     queryResult: QueryResult
   ): DelegationNode | undefined {
     return decodeDelegationNode(queryResult)
-  }
-
-  /**
-   * Creates a bitset from the permissions in the array where each enum value
-   * is used to set the bit flag in the set.
-   *
-   * ATTEST has `0000000000000001`  (decimal 1)
-   * DELEGATE has `0000000000000010` (decimal 2)
-   *
-   * Adding the enum values results in a decimal representation of the bitset.
-   *
-   * @returns the bitset as single value uint8 array
-   */
-  private permissionsAsBitset(): Uint8Array {
-    const permisssionsAsBitset: number = this.permissions.reduce(
-      (accumulator, currentValue) => accumulator + currentValue
-    )
-    const uint8: Uint8Array = new Uint8Array(4)
-    uint8[0] = permisssionsAsBitset
-    return uint8
   }
 }
