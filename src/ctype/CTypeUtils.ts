@@ -6,6 +6,7 @@ import Ajv from 'ajv'
 import { CTypeModel, CTypeInputModel } from './CTypeSchema'
 import CType from './CType'
 import ICType from '../types/CType'
+import Crypto from '../crypto/index'
 
 export function verifyClaimStructure(claim: any, schema: any): boolean {
   if (!verifySchema(schema, CTypeModel)) {
@@ -37,6 +38,10 @@ export function verifySchemaWithErrors(
     })
   }
   return result ? true : false
+}
+
+export function getHashForSchema(schema: ICType['schema']) {
+  return Crypto.hashStr(JSON.stringify(schema))
 }
 
 /**
