@@ -73,21 +73,11 @@
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
-							<h3>Interfaces</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-interface tsd-parent-kind-external-module"><a href="../interfaces/ctype.ictype.html" class="tsd-kind-icon">ICType</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
-							<h3>Type aliases</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-type-alias tsd-parent-kind-external-module"><a href="ctype.html#ctypeschema" class="tsd-kind-icon">CType<wbr>Schema</a></li>
-								<li class="tsd-kind-type-alias tsd-parent-kind-external-module"><a href="ctype.html#ctypemetadata" class="tsd-kind-icon">Ctype<wbr>Metadata</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="ctype.html#frominputmodel" class="tsd-kind-icon">from<wbr>Input<wbr>Model</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="ctype.html#getctypeinputmodel" class="tsd-kind-icon">getCType<wbr>Input<wbr>Model</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="ctype.html#getclaiminputmodel" class="tsd-kind-icon">get<wbr>Claim<wbr>Input<wbr>Model</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="ctype.html#verifyclaimstructure" class="tsd-kind-icon">verify<wbr>Claim<wbr>Structure</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="ctype.html#verifyschema" class="tsd-kind-icon">verify<wbr>Schema</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="ctype.html#verifyschemawitherrors" class="tsd-kind-icon">verify<wbr>Schema<wbr>With<wbr>Errors</a></li>
@@ -105,40 +95,108 @@
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Type aliases</h2>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-external-module">
-					<a name="ctypeschema" class="tsd-anchor"></a>
-					<h3>CType<wbr>Schema</h3>
-					<div class="tsd-signature tsd-kind-icon">CType<wbr>Schema<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CType.ts#L17">ctype/CType.ts:17</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-						</ul>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-external-module">
-					<a name="ctypemetadata" class="tsd-anchor"></a>
-					<h3>Ctype<wbr>Metadata</h3>
-					<div class="tsd-signature tsd-kind-icon">Ctype<wbr>Metadata<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CType.ts#L24">ctype/CType.ts:24</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-						</ul>
-					</div>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="frominputmodel" class="tsd-anchor"></a>
+					<h3>from<wbr>Input<wbr>Model</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Input<wbr>Model<span class="tsd-signature-symbol">(</span>ctypeInput<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/ctype.ctype-1.html" class="tsd-signature-type">CType</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeUtils.ts#L50">ctype/CTypeUtils.ts:50</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Create the CTYPE model from a CTYPE input model (used in CTYPE editing components).
+										This is necessary because component editors rely on editing arrays of properties instead of
+										arbitrary properties of an object. Additionally the default language translations are integrated
+										into the input model and need to be separated for the CTYPE model.
+									This is the reverse function of CType.getCTypeInputModel(...).</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>ctypeInput: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/ctype.ctype-1.html" class="tsd-signature-type">CType</a></h4>
+							<p>The CTYPE for the input model.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="getctypeinputmodel" class="tsd-anchor"></a>
+					<h3>getCType<wbr>Input<wbr>Model</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">getCType<wbr>Input<wbr>Model<span class="tsd-signature-symbol">(</span>ctype<span class="tsd-signature-symbol">: </span><a href="../classes/ctype.ctype-1.html" class="tsd-signature-type">CType</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeUtils.ts#L93">ctype/CTypeUtils.ts:93</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Create the CTYPE input model for a CTYPE editing component form the CTYPE model.
+										This is necessary because component editors rely on editing arrays of properties instead of
+										arbitrary properties of an object. Additionally the default language translations are integrated
+									into the input model. This is the reverse function of CType.fromInputModel(...).</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>ctype: <a href="../classes/ctype.ctype-1.html" class="tsd-signature-type">CType</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+							<p>The CTYPE input model.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="getclaiminputmodel" class="tsd-anchor"></a>
+					<h3>get<wbr>Claim<wbr>Input<wbr>Model</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Claim<wbr>Input<wbr>Model<span class="tsd-signature-symbol">(</span>ctype<span class="tsd-signature-symbol">: </span><a href="../interfaces/_types_ctype_.ictype.html" class="tsd-signature-type">ICType</a>, lang<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeUtils.ts#L121">ctype/CTypeUtils.ts:121</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This method creates an input model for a claim from a CTYPE.
+									It selects translations for a specific language from the localized part of the CTYPE meta data.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>ctype: <a href="../interfaces/_types_ctype_.ictype.html" class="tsd-signature-type">ICType</a></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> lang: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the language to choose translations for</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+							<p>The claim input model</p>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
 					<a name="verifyclaimstructure" class="tsd-anchor"></a>
 					<h3>verify<wbr>Claim<wbr>Structure</h3>
@@ -149,7 +207,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeUtils.ts#L7">ctype/CTypeUtils.ts:7</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeUtils.ts#L10">ctype/CTypeUtils.ts:10</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -175,7 +233,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeUtils.ts#L14">ctype/CTypeUtils.ts:14</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeUtils.ts#L17">ctype/CTypeUtils.ts:17</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -195,13 +253,13 @@
 					<a name="verifyschemawitherrors" class="tsd-anchor"></a>
 					<h3>verify<wbr>Schema<wbr>With<wbr>Errors</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">verify<wbr>Schema<wbr>With<wbr>Errors<span class="tsd-signature-symbol">(</span>model<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, metaModel<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, messages<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+						<li class="tsd-signature tsd-kind-icon">verify<wbr>Schema<wbr>With<wbr>Errors<span class="tsd-signature-symbol">(</span>model<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, metaModel<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, messages<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeUtils.ts#L18">ctype/CTypeUtils.ts:18</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeUtils.ts#L21">ctype/CTypeUtils.ts:21</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -213,7 +271,7 @@
 									<h5>metaModel: <span class="tsd-signature-type">any</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> messages: <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> messages: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -229,7 +287,7 @@
 					<div class="tsd-signature tsd-kind-icon">CType<wbr>Input<wbr>Model<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L4">ctype/CTypeSchema.ts:4</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L6">ctype/CTypeSchema.ts:6</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -240,7 +298,7 @@
 						<div class="tsd-signature tsd-kind-icon">$id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;http://kilt-protocol.org/draft-01/ctype-input#&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L6">ctype/CTypeSchema.ts:6</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L8">ctype/CTypeSchema.ts:8</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -250,7 +308,7 @@
 						<div class="tsd-signature tsd-kind-icon">$schema<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;http://json-schema.org/draft-07/schema#&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L5">ctype/CTypeSchema.ts:5</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L7">ctype/CTypeSchema.ts:7</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -260,7 +318,7 @@
 						<div class="tsd-signature tsd-kind-icon">required<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;$id&#x27;, &#x27;$schema&#x27;, &#x27;title&#x27;, &#x27;properties&#x27;, &#x27;type&#x27;]</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L62">ctype/CTypeSchema.ts:62</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L74">ctype/CTypeSchema.ts:74</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -270,7 +328,7 @@
 						<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;CTYPE&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L7">ctype/CTypeSchema.ts:7</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L9">ctype/CTypeSchema.ts:9</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -280,7 +338,7 @@
 						<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;object&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L8">ctype/CTypeSchema.ts:8</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L10">ctype/CTypeSchema.ts:10</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -290,7 +348,7 @@
 						<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L9">ctype/CTypeSchema.ts:9</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L11">ctype/CTypeSchema.ts:11</a></li>
 							</ul>
 						</aside>
 						<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
@@ -299,7 +357,7 @@
 							<div class="tsd-signature tsd-kind-icon">$id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L10">ctype/CTypeSchema.ts:10</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L12">ctype/CTypeSchema.ts:12</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -308,7 +366,17 @@
 								<div class="tsd-signature tsd-kind-icon">format<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;uri-reference&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L13">ctype/CTypeSchema.ts:13</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L15">ctype/CTypeSchema.ts:15</a></li>
+									</ul>
+								</aside>
+							</section>
+							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+								<a name="ctypeinputmodel.properties._id-1.minlength" class="tsd-anchor"></a>
+								<h3>min<wbr>Length</h3>
+								<div class="tsd-signature tsd-kind-icon">min<wbr>Length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;1</span></div>
+								<aside class="tsd-sources">
+									<ul>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L16">ctype/CTypeSchema.ts:16</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -318,7 +386,7 @@
 								<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Identifier&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L11">ctype/CTypeSchema.ts:11</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L13">ctype/CTypeSchema.ts:13</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -328,7 +396,7 @@
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L12">ctype/CTypeSchema.ts:12</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L14">ctype/CTypeSchema.ts:14</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -339,7 +407,7 @@
 							<div class="tsd-signature tsd-kind-icon">$schema<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L15">ctype/CTypeSchema.ts:15</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L18">ctype/CTypeSchema.ts:18</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -348,17 +416,27 @@
 								<div class="tsd-signature tsd-kind-icon">class<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;hidden&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L21">ctype/CTypeSchema.ts:21</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L25">ctype/CTypeSchema.ts:25</a></li>
 									</ul>
 								</aside>
 							</section>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
 								<a name="ctypeinputmodel.properties._schema-1.default" class="tsd-anchor"></a>
 								<h3>default</h3>
-								<div class="tsd-signature tsd-kind-icon">default<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;http://kilt-protocol.org/draft-01/ctype#&quot;</span></div>
+								<div class="tsd-signature tsd-kind-icon">default<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;http://kilt-protocol.org/draft-01/ctype-input#&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L19">ctype/CTypeSchema.ts:19</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L23">ctype/CTypeSchema.ts:23</a></li>
+									</ul>
+								</aside>
+							</section>
+							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+								<a name="ctypeinputmodel.properties._schema-1.enum" class="tsd-anchor"></a>
+								<h3>enum</h3>
+								<div class="tsd-signature tsd-kind-icon">enum<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;http://kilt-protocol.org/draft-01/ctype-input#&#x27;]</span></div>
+								<aside class="tsd-sources">
+									<ul>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L22">ctype/CTypeSchema.ts:22</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -368,7 +446,7 @@
 								<div class="tsd-signature tsd-kind-icon">format<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;uri&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L18">ctype/CTypeSchema.ts:18</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L21">ctype/CTypeSchema.ts:21</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -378,7 +456,7 @@
 								<div class="tsd-signature tsd-kind-icon">readonly<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;true</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L20">ctype/CTypeSchema.ts:20</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L24">ctype/CTypeSchema.ts:24</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -388,7 +466,7 @@
 								<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Schema&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L16">ctype/CTypeSchema.ts:16</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L19">ctype/CTypeSchema.ts:19</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -398,7 +476,7 @@
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L17">ctype/CTypeSchema.ts:17</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L20">ctype/CTypeSchema.ts:20</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -409,7 +487,7 @@
 							<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L27">ctype/CTypeSchema.ts:27</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L32">ctype/CTypeSchema.ts:32</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -418,7 +496,7 @@
 								<div class="tsd-signature tsd-kind-icon">collapsed<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;false</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L52">ctype/CTypeSchema.ts:52</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L64">ctype/CTypeSchema.ts:64</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -428,7 +506,7 @@
 								<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Data&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L28">ctype/CTypeSchema.ts:28</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L33">ctype/CTypeSchema.ts:33</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -438,7 +516,7 @@
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;array&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L29">ctype/CTypeSchema.ts:29</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L34">ctype/CTypeSchema.ts:34</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -448,7 +526,7 @@
 								<div class="tsd-signature tsd-kind-icon">items<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L30">ctype/CTypeSchema.ts:30</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L35">ctype/CTypeSchema.ts:35</a></li>
 									</ul>
 								</aside>
 								<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -457,7 +535,7 @@
 									<div class="tsd-signature tsd-kind-icon">required<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;$id&#x27;, &#x27;title&#x27;, &#x27;type&#x27;]</span></div>
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L50">ctype/CTypeSchema.ts:50</a></li>
+											<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L62">ctype/CTypeSchema.ts:62</a></li>
 										</ul>
 									</aside>
 								</section>
@@ -467,7 +545,7 @@
 									<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;object&quot;</span></div>
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L31">ctype/CTypeSchema.ts:31</a></li>
+											<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L36">ctype/CTypeSchema.ts:36</a></li>
 										</ul>
 									</aside>
 								</section>
@@ -477,7 +555,7 @@
 									<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L32">ctype/CTypeSchema.ts:32</a></li>
+											<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L37">ctype/CTypeSchema.ts:37</a></li>
 										</ul>
 									</aside>
 									<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
@@ -486,7 +564,7 @@
 										<div class="tsd-signature tsd-kind-icon">$id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 										<aside class="tsd-sources">
 											<ul>
-												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L38">ctype/CTypeSchema.ts:38</a></li>
+												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L44">ctype/CTypeSchema.ts:44</a></li>
 											</ul>
 										</aside>
 										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -495,7 +573,17 @@
 											<div class="tsd-signature tsd-kind-icon">format<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;uri-reference&quot;</span></div>
 											<aside class="tsd-sources">
 												<ul>
-													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L41">ctype/CTypeSchema.ts:41</a></li>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L47">ctype/CTypeSchema.ts:47</a></li>
+												</ul>
+											</aside>
+										</section>
+										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2._id-2.minlength-1" class="tsd-anchor"></a>
+											<h3>min<wbr>Length</h3>
+											<div class="tsd-signature tsd-kind-icon">min<wbr>Length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;1</span></div>
+											<aside class="tsd-sources">
+												<ul>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L48">ctype/CTypeSchema.ts:48</a></li>
 												</ul>
 											</aside>
 										</section>
@@ -505,7 +593,7 @@
 											<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Identifier&quot;</span></div>
 											<aside class="tsd-sources">
 												<ul>
-													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L39">ctype/CTypeSchema.ts:39</a></li>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L45">ctype/CTypeSchema.ts:45</a></li>
 												</ul>
 											</aside>
 										</section>
@@ -515,97 +603,147 @@
 											<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 											<aside class="tsd-sources">
 												<ul>
-													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L40">ctype/CTypeSchema.ts:40</a></li>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L46">ctype/CTypeSchema.ts:46</a></li>
 												</ul>
 											</aside>
 										</section>
 									</section>
 									<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
-										<a name="ctypeinputmodel.properties.properties-1.items.properties-2.title-5" class="tsd-anchor"></a>
+										<a name="ctypeinputmodel.properties.properties-1.items.properties-2.format-3" class="tsd-anchor"></a>
+										<h3>format</h3>
+										<div class="tsd-signature tsd-kind-icon">format<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+										<aside class="tsd-sources">
+											<ul>
+												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L56">ctype/CTypeSchema.ts:56</a></li>
+											</ul>
+										</aside>
+										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.format-3.enum-1" class="tsd-anchor"></a>
+											<h3>enum</h3>
+											<div class="tsd-signature tsd-kind-icon">enum<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;date&#x27;, &#x27;time&#x27;, &#x27;uri&#x27;]</span></div>
+											<aside class="tsd-sources">
+												<ul>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L59">ctype/CTypeSchema.ts:59</a></li>
+												</ul>
+											</aside>
+										</section>
+										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.format-3.title-5" class="tsd-anchor"></a>
+											<h3>title</h3>
+											<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Format&quot;</span></div>
+											<aside class="tsd-sources">
+												<ul>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L57">ctype/CTypeSchema.ts:57</a></li>
+												</ul>
+											</aside>
+										</section>
+										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.format-3.type-6" class="tsd-anchor"></a>
+											<h3>type</h3>
+											<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
+											<aside class="tsd-sources">
+												<ul>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L58">ctype/CTypeSchema.ts:58</a></li>
+												</ul>
+											</aside>
+										</section>
+									</section>
+									<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
+										<a name="ctypeinputmodel.properties.properties-1.items.properties-2.title-6" class="tsd-anchor"></a>
 										<h3>title</h3>
 										<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 										<aside class="tsd-sources">
 											<ul>
-												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L33">ctype/CTypeSchema.ts:33</a></li>
+												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L38">ctype/CTypeSchema.ts:38</a></li>
 											</ul>
 										</aside>
 										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.title-5.default-1" class="tsd-anchor"></a>
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.title-6.default-1" class="tsd-anchor"></a>
 											<h3>default</h3>
 											<div class="tsd-signature tsd-kind-icon">default<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;New Property&quot;</span></div>
 											<aside class="tsd-sources">
 												<ul>
-													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L36">ctype/CTypeSchema.ts:36</a></li>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L41">ctype/CTypeSchema.ts:41</a></li>
 												</ul>
 											</aside>
 										</section>
 										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.title-5.title-6" class="tsd-anchor"></a>
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.title-6.minlength-2" class="tsd-anchor"></a>
+											<h3>min<wbr>Length</h3>
+											<div class="tsd-signature tsd-kind-icon">min<wbr>Length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;1</span></div>
+											<aside class="tsd-sources">
+												<ul>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L42">ctype/CTypeSchema.ts:42</a></li>
+												</ul>
+											</aside>
+										</section>
+										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.title-6.title-7" class="tsd-anchor"></a>
 											<h3>title</h3>
 											<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Title&quot;</span></div>
 											<aside class="tsd-sources">
 												<ul>
-													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L34">ctype/CTypeSchema.ts:34</a></li>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L39">ctype/CTypeSchema.ts:39</a></li>
 												</ul>
 											</aside>
 										</section>
 										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.title-5.type-6" class="tsd-anchor"></a>
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.title-6.type-7" class="tsd-anchor"></a>
 											<h3>type</h3>
 											<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 											<aside class="tsd-sources">
 												<ul>
-													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L35">ctype/CTypeSchema.ts:35</a></li>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L40">ctype/CTypeSchema.ts:40</a></li>
 												</ul>
 											</aside>
 										</section>
 									</section>
 									<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
-										<a name="ctypeinputmodel.properties.properties-1.items.properties-2.type-7" class="tsd-anchor"></a>
+										<a name="ctypeinputmodel.properties.properties-1.items.properties-2.type-8" class="tsd-anchor"></a>
 										<h3>type</h3>
 										<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 										<aside class="tsd-sources">
 											<ul>
-												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L43">ctype/CTypeSchema.ts:43</a></li>
+												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L50">ctype/CTypeSchema.ts:50</a></li>
 											</ul>
 										</aside>
 										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.type-7.enum" class="tsd-anchor"></a>
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.type-8.enum-2" class="tsd-anchor"></a>
 											<h3>enum</h3>
-											<div class="tsd-signature tsd-kind-icon">enum<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;string&#x27;, &#x27;integer&#x27;, &#x27;number&#x27;, &#x27;boolean&#x27;, &#x27;array&#x27;]</span></div>
+											<div class="tsd-signature tsd-kind-icon">enum<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;string&#x27;, &#x27;integer&#x27;, &#x27;number&#x27;, &#x27;boolean&#x27;]</span></div>
 											<aside class="tsd-sources">
 												<ul>
-													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L46">ctype/CTypeSchema.ts:46</a></li>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L53">ctype/CTypeSchema.ts:53</a></li>
 												</ul>
 											</aside>
 										</section>
 										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.type-7.enumtitles" class="tsd-anchor"></a>
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.type-8.enumtitles" class="tsd-anchor"></a>
 											<h3>enum<wbr>Titles</h3>
-											<div class="tsd-signature tsd-kind-icon">enum<wbr>Titles<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;Text&#x27;, &#x27;Number&#x27;, &#x27;Decimal&#x27;, &#x27;Yes/No&#x27;, &#x27;List&#x27;]</span></div>
+											<div class="tsd-signature tsd-kind-icon">enum<wbr>Titles<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;Text&#x27;, &#x27;Number&#x27;, &#x27;Decimal&#x27;, &#x27;Yes/No&#x27;]</span></div>
 											<aside class="tsd-sources">
 												<ul>
-													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L47">ctype/CTypeSchema.ts:47</a></li>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L54">ctype/CTypeSchema.ts:54</a></li>
 												</ul>
 											</aside>
 										</section>
 										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.type-7.title-7" class="tsd-anchor"></a>
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.type-8.title-8" class="tsd-anchor"></a>
 											<h3>title</h3>
 											<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Type&quot;</span></div>
 											<aside class="tsd-sources">
 												<ul>
-													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L44">ctype/CTypeSchema.ts:44</a></li>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L51">ctype/CTypeSchema.ts:51</a></li>
 												</ul>
 											</aside>
 										</section>
 										<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.type-7.type-8" class="tsd-anchor"></a>
+											<a name="ctypeinputmodel.properties.properties-1.items.properties-2.type-8.type-9" class="tsd-anchor"></a>
 											<h3>type</h3>
 											<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 											<aside class="tsd-sources">
 												<ul>
-													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L45">ctype/CTypeSchema.ts:45</a></li>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L52">ctype/CTypeSchema.ts:52</a></li>
 												</ul>
 											</aside>
 										</section>
@@ -614,91 +752,101 @@
 							</section>
 						</section>
 						<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
-							<a name="ctypeinputmodel.properties.title-8" class="tsd-anchor"></a>
+							<a name="ctypeinputmodel.properties.title-9" class="tsd-anchor"></a>
 							<h3>title</h3>
 							<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L23">ctype/CTypeSchema.ts:23</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L27">ctype/CTypeSchema.ts:27</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypeinputmodel.properties.title-8.title-9" class="tsd-anchor"></a>
-								<h3>title</h3>
-								<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Title&quot;</span></div>
+								<a name="ctypeinputmodel.properties.title-9.minlength-3" class="tsd-anchor"></a>
+								<h3>min<wbr>Length</h3>
+								<div class="tsd-signature tsd-kind-icon">min<wbr>Length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;1</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L24">ctype/CTypeSchema.ts:24</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L30">ctype/CTypeSchema.ts:30</a></li>
 									</ul>
 								</aside>
 							</section>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypeinputmodel.properties.title-8.type-9" class="tsd-anchor"></a>
+								<a name="ctypeinputmodel.properties.title-9.title-10" class="tsd-anchor"></a>
+								<h3>title</h3>
+								<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Title&quot;</span></div>
+								<aside class="tsd-sources">
+									<ul>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L28">ctype/CTypeSchema.ts:28</a></li>
+									</ul>
+								</aside>
+							</section>
+							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+								<a name="ctypeinputmodel.properties.title-9.type-10" class="tsd-anchor"></a>
 								<h3>type</h3>
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L25">ctype/CTypeSchema.ts:25</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L29">ctype/CTypeSchema.ts:29</a></li>
 									</ul>
 								</aside>
 							</section>
 						</section>
 						<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
-							<a name="ctypeinputmodel.properties.type-10" class="tsd-anchor"></a>
+							<a name="ctypeinputmodel.properties.type-11" class="tsd-anchor"></a>
 							<h3>type</h3>
 							<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L54">ctype/CTypeSchema.ts:54</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L66">ctype/CTypeSchema.ts:66</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypeinputmodel.properties.type-10.classname-1" class="tsd-anchor"></a>
+								<a name="ctypeinputmodel.properties.type-11.classname-1" class="tsd-anchor"></a>
 								<h3>class<wbr>Name</h3>
 								<div class="tsd-signature tsd-kind-icon">class<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;hidden&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L59">ctype/CTypeSchema.ts:59</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L71">ctype/CTypeSchema.ts:71</a></li>
 									</ul>
 								</aside>
 							</section>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypeinputmodel.properties.type-10.default-2" class="tsd-anchor"></a>
+								<a name="ctypeinputmodel.properties.type-11.default-2" class="tsd-anchor"></a>
 								<h3>default</h3>
 								<div class="tsd-signature tsd-kind-icon">default<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;object&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L57">ctype/CTypeSchema.ts:57</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L69">ctype/CTypeSchema.ts:69</a></li>
 									</ul>
 								</aside>
 							</section>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypeinputmodel.properties.type-10.readonly-1" class="tsd-anchor"></a>
+								<a name="ctypeinputmodel.properties.type-11.readonly-1" class="tsd-anchor"></a>
 								<h3>readonly</h3>
 								<div class="tsd-signature tsd-kind-icon">readonly<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;true</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L58">ctype/CTypeSchema.ts:58</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L70">ctype/CTypeSchema.ts:70</a></li>
 									</ul>
 								</aside>
 							</section>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypeinputmodel.properties.type-10.title-10" class="tsd-anchor"></a>
+								<a name="ctypeinputmodel.properties.type-11.title-11" class="tsd-anchor"></a>
 								<h3>title</h3>
 								<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Object Type&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L55">ctype/CTypeSchema.ts:55</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L67">ctype/CTypeSchema.ts:67</a></li>
 									</ul>
 								</aside>
 							</section>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypeinputmodel.properties.type-10.type-11" class="tsd-anchor"></a>
+								<a name="ctypeinputmodel.properties.type-11.type-12" class="tsd-anchor"></a>
 								<h3>type</h3>
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L56">ctype/CTypeSchema.ts:56</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L68">ctype/CTypeSchema.ts:68</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -711,7 +859,7 @@
 					<div class="tsd-signature tsd-kind-icon">CType<wbr>Model<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L65">ctype/CTypeSchema.ts:65</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L77">ctype/CTypeSchema.ts:77</a></li>
 						</ul>
 					</aside>
 					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -720,7 +868,7 @@
 						<div class="tsd-signature tsd-kind-icon">$id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;http://kilt-protocol.org/draft-01/ctype#&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L67">ctype/CTypeSchema.ts:67</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L79">ctype/CTypeSchema.ts:79</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -730,17 +878,27 @@
 						<div class="tsd-signature tsd-kind-icon">$schema<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;http://json-schema.org/draft-07/schema#&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L66">ctype/CTypeSchema.ts:66</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L78">ctype/CTypeSchema.ts:78</a></li>
 							</ul>
 						</aside>
 					</section>
 					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-						<a name="ctypemodel.type-12" class="tsd-anchor"></a>
+						<a name="ctypemodel.required-2" class="tsd-anchor"></a>
+						<h3>required</h3>
+						<div class="tsd-signature tsd-kind-icon">required<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;$id&#x27;, &#x27;$schema&#x27;, &#x27;properties&#x27;, &#x27;type&#x27;]</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L116">ctype/CTypeSchema.ts:116</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="ctypemodel.type-13" class="tsd-anchor"></a>
 						<h3>type</h3>
 						<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;object&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L68">ctype/CTypeSchema.ts:68</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L80">ctype/CTypeSchema.ts:80</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -750,7 +908,7 @@
 						<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L69">ctype/CTypeSchema.ts:69</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L81">ctype/CTypeSchema.ts:81</a></li>
 							</ul>
 						</aside>
 						<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
@@ -759,16 +917,26 @@
 							<div class="tsd-signature tsd-kind-icon">$id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L70">ctype/CTypeSchema.ts:70</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L82">ctype/CTypeSchema.ts:82</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypemodel.properties-3._id-4.type-13" class="tsd-anchor"></a>
+								<a name="ctypemodel.properties-3._id-4.minlength-4" class="tsd-anchor"></a>
+								<h3>min<wbr>Length</h3>
+								<div class="tsd-signature tsd-kind-icon">min<wbr>Length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;1</span></div>
+								<aside class="tsd-sources">
+									<ul>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L84">ctype/CTypeSchema.ts:84</a></li>
+									</ul>
+								</aside>
+							</section>
+							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+								<a name="ctypemodel.properties-3._id-4.type-14" class="tsd-anchor"></a>
 								<h3>type</h3>
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L71">ctype/CTypeSchema.ts:71</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L83">ctype/CTypeSchema.ts:83</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -779,26 +947,46 @@
 							<div class="tsd-signature tsd-kind-icon">$schema<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L73">ctype/CTypeSchema.ts:73</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L86">ctype/CTypeSchema.ts:86</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypemodel.properties-3._schema-3.format-3" class="tsd-anchor"></a>
-								<h3>format</h3>
-								<div class="tsd-signature tsd-kind-icon">format<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;uri&quot;</span></div>
+								<a name="ctypemodel.properties-3._schema-3.default-3" class="tsd-anchor"></a>
+								<h3>default</h3>
+								<div class="tsd-signature tsd-kind-icon">default<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;http://kilt-protocol.org/draft-01/ctype#&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L75">ctype/CTypeSchema.ts:75</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L89">ctype/CTypeSchema.ts:89</a></li>
 									</ul>
 								</aside>
 							</section>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypemodel.properties-3._schema-3.type-14" class="tsd-anchor"></a>
+								<a name="ctypemodel.properties-3._schema-3.enum-3" class="tsd-anchor"></a>
+								<h3>enum</h3>
+								<div class="tsd-signature tsd-kind-icon">enum<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;http://kilt-protocol.org/draft-01/ctype#&#x27;]</span></div>
+								<aside class="tsd-sources">
+									<ul>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L90">ctype/CTypeSchema.ts:90</a></li>
+									</ul>
+								</aside>
+							</section>
+							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+								<a name="ctypemodel.properties-3._schema-3.format-4" class="tsd-anchor"></a>
+								<h3>format</h3>
+								<div class="tsd-signature tsd-kind-icon">format<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;uri&quot;</span></div>
+								<aside class="tsd-sources">
+									<ul>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L88">ctype/CTypeSchema.ts:88</a></li>
+									</ul>
+								</aside>
+							</section>
+							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+								<a name="ctypemodel.properties-3._schema-3.type-15" class="tsd-anchor"></a>
 								<h3>type</h3>
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L74">ctype/CTypeSchema.ts:74</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L87">ctype/CTypeSchema.ts:87</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -809,16 +997,16 @@
 							<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L81">ctype/CTypeSchema.ts:81</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L96">ctype/CTypeSchema.ts:96</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypemodel.properties-3.properties-4.type-15" class="tsd-anchor"></a>
+								<a name="ctypemodel.properties-3.properties-4.type-16" class="tsd-anchor"></a>
 								<h3>type</h3>
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;object&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L82">ctype/CTypeSchema.ts:82</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L97">ctype/CTypeSchema.ts:97</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -828,7 +1016,7 @@
 								<div class="tsd-signature tsd-kind-icon">pattern<wbr>Properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L83">ctype/CTypeSchema.ts:83</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L98">ctype/CTypeSchema.ts:98</a></li>
 									</ul>
 								</aside>
 								<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
@@ -837,16 +1025,26 @@
 									<div class="tsd-signature tsd-kind-icon">^.*$<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L84">ctype/CTypeSchema.ts:84</a></li>
+											<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L99">ctype/CTypeSchema.ts:99</a></li>
 										</ul>
 									</aside>
 									<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-										<a name="ctypemodel.properties-3.properties-4.patternproperties.____.type-16" class="tsd-anchor"></a>
+										<a name="ctypemodel.properties-3.properties-4.patternproperties.____.required-3" class="tsd-anchor"></a>
+										<h3>required</h3>
+										<div class="tsd-signature tsd-kind-icon">required<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;type&#x27;]</span></div>
+										<aside class="tsd-sources">
+											<ul>
+												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L111">ctype/CTypeSchema.ts:111</a></li>
+											</ul>
+										</aside>
+									</section>
+									<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+										<a name="ctypemodel.properties-3.properties-4.patternproperties.____.type-17" class="tsd-anchor"></a>
 										<h3>type</h3>
 										<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;object&quot;</span></div>
 										<aside class="tsd-sources">
 											<ul>
-												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L85">ctype/CTypeSchema.ts:85</a></li>
+												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L100">ctype/CTypeSchema.ts:100</a></li>
 											</ul>
 										</aside>
 									</section>
@@ -856,35 +1054,65 @@
 										<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 										<aside class="tsd-sources">
 											<ul>
-												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L86">ctype/CTypeSchema.ts:86</a></li>
+												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L101">ctype/CTypeSchema.ts:101</a></li>
 											</ul>
 										</aside>
 										<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
-											<a name="ctypemodel.properties-3.properties-4.patternproperties.____.properties-5.type-17" class="tsd-anchor"></a>
-											<h3>type</h3>
-											<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+											<a name="ctypemodel.properties-3.properties-4.patternproperties.____.properties-5.format-5" class="tsd-anchor"></a>
+											<h3>format</h3>
+											<div class="tsd-signature tsd-kind-icon">format<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 											<aside class="tsd-sources">
 												<ul>
-													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L87">ctype/CTypeSchema.ts:87</a></li>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L106">ctype/CTypeSchema.ts:106</a></li>
 												</ul>
 											</aside>
 											<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-												<a name="ctypemodel.properties-3.properties-4.patternproperties.____.properties-5.type-17.enum-1" class="tsd-anchor"></a>
+												<a name="ctypemodel.properties-3.properties-4.patternproperties.____.properties-5.format-5.enum-4" class="tsd-anchor"></a>
 												<h3>enum</h3>
-												<div class="tsd-signature tsd-kind-icon">enum<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;string&#x27;, &#x27;integer&#x27;, &#x27;number&#x27;, &#x27;boolean&#x27;, &#x27;array&#x27;]</span></div>
+												<div class="tsd-signature tsd-kind-icon">enum<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;date&#x27;, &#x27;time&#x27;, &#x27;uri&#x27;]</span></div>
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L89">ctype/CTypeSchema.ts:89</a></li>
+														<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L108">ctype/CTypeSchema.ts:108</a></li>
 													</ul>
 												</aside>
 											</section>
 											<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-												<a name="ctypemodel.properties-3.properties-4.patternproperties.____.properties-5.type-17.type-18" class="tsd-anchor"></a>
+												<a name="ctypemodel.properties-3.properties-4.patternproperties.____.properties-5.format-5.type-18" class="tsd-anchor"></a>
 												<h3>type</h3>
 												<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L88">ctype/CTypeSchema.ts:88</a></li>
+														<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L107">ctype/CTypeSchema.ts:107</a></li>
+													</ul>
+												</aside>
+											</section>
+										</section>
+										<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
+											<a name="ctypemodel.properties-3.properties-4.patternproperties.____.properties-5.type-19" class="tsd-anchor"></a>
+											<h3>type</h3>
+											<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+											<aside class="tsd-sources">
+												<ul>
+													<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L102">ctype/CTypeSchema.ts:102</a></li>
+												</ul>
+											</aside>
+											<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+												<a name="ctypemodel.properties-3.properties-4.patternproperties.____.properties-5.type-19.enum-5" class="tsd-anchor"></a>
+												<h3>enum</h3>
+												<div class="tsd-signature tsd-kind-icon">enum<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;string&#x27;, &#x27;integer&#x27;, &#x27;number&#x27;, &#x27;boolean&#x27;]</span></div>
+												<aside class="tsd-sources">
+													<ul>
+														<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L104">ctype/CTypeSchema.ts:104</a></li>
+													</ul>
+												</aside>
+											</section>
+											<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+												<a name="ctypemodel.properties-3.properties-4.patternproperties.____.properties-5.type-19.type-20" class="tsd-anchor"></a>
+												<h3>type</h3>
+												<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
+												<aside class="tsd-sources">
+													<ul>
+														<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L103">ctype/CTypeSchema.ts:103</a></li>
 													</ul>
 												</aside>
 											</section>
@@ -894,31 +1122,31 @@
 							</section>
 						</section>
 						<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
-							<a name="ctypemodel.properties-3.type-19" class="tsd-anchor"></a>
+							<a name="ctypemodel.properties-3.type-21" class="tsd-anchor"></a>
 							<h3>type</h3>
 							<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L77">ctype/CTypeSchema.ts:77</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L92">ctype/CTypeSchema.ts:92</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypemodel.properties-3.type-19.enum-2" class="tsd-anchor"></a>
+								<a name="ctypemodel.properties-3.type-21.enum-6" class="tsd-anchor"></a>
 								<h3>enum</h3>
 								<div class="tsd-signature tsd-kind-icon">enum<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;object&#x27;]</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L79">ctype/CTypeSchema.ts:79</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L94">ctype/CTypeSchema.ts:94</a></li>
 									</ul>
 								</aside>
 							</section>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypemodel.properties-3.type-19.type-20" class="tsd-anchor"></a>
+								<a name="ctypemodel.properties-3.type-21.type-22" class="tsd-anchor"></a>
 								<h3>type</h3>
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L78">ctype/CTypeSchema.ts:78</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L93">ctype/CTypeSchema.ts:93</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -931,7 +1159,7 @@
 					<div class="tsd-signature tsd-kind-icon">CType<wbr>Wrapper<wbr>Model<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L98">ctype/CTypeSchema.ts:98</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L119">ctype/CTypeSchema.ts:119</a></li>
 						</ul>
 					</aside>
 					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -940,7 +1168,7 @@
 						<div class="tsd-signature tsd-kind-icon">$id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;http://kilt-protocol.org/draft-01/ctype-wrapper#&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L100">ctype/CTypeSchema.ts:100</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L121">ctype/CTypeSchema.ts:121</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -950,27 +1178,27 @@
 						<div class="tsd-signature tsd-kind-icon">$schema<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;http://json-schema.org/draft-07/schema#&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L99">ctype/CTypeSchema.ts:99</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L120">ctype/CTypeSchema.ts:120</a></li>
 							</ul>
 						</aside>
 					</section>
 					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-						<a name="ctypewrappermodel.required-2" class="tsd-anchor"></a>
+						<a name="ctypewrappermodel.required-4" class="tsd-anchor"></a>
 						<h3>required</h3>
 						<div class="tsd-signature tsd-kind-icon">required<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[&#x27;schema&#x27;]</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L121">ctype/CTypeSchema.ts:121</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L143">ctype/CTypeSchema.ts:143</a></li>
 							</ul>
 						</aside>
 					</section>
 					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-						<a name="ctypewrappermodel.type-21" class="tsd-anchor"></a>
+						<a name="ctypewrappermodel.type-23" class="tsd-anchor"></a>
 						<h3>type</h3>
 						<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;object&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L101">ctype/CTypeSchema.ts:101</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L122">ctype/CTypeSchema.ts:122</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -980,7 +1208,7 @@
 						<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L102">ctype/CTypeSchema.ts:102</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L123">ctype/CTypeSchema.ts:123</a></li>
 							</ul>
 						</aside>
 						<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
@@ -989,16 +1217,26 @@
 							<div class="tsd-signature tsd-kind-icon">hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L107">ctype/CTypeSchema.ts:107</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L128">ctype/CTypeSchema.ts:128</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypewrappermodel.properties-6.hash.type-22" class="tsd-anchor"></a>
+								<a name="ctypewrappermodel.properties-6.hash.minlength-5" class="tsd-anchor"></a>
+								<h3>min<wbr>Length</h3>
+								<div class="tsd-signature tsd-kind-icon">min<wbr>Length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;1</span></div>
+								<aside class="tsd-sources">
+									<ul>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L130">ctype/CTypeSchema.ts:130</a></li>
+									</ul>
+								</aside>
+							</section>
+							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+								<a name="ctypewrappermodel.properties-6.hash.type-24" class="tsd-anchor"></a>
 								<h3>type</h3>
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;string&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L108">ctype/CTypeSchema.ts:108</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L129">ctype/CTypeSchema.ts:129</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -1009,7 +1247,7 @@
 							<div class="tsd-signature tsd-kind-icon">metamodel<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L110">ctype/CTypeSchema.ts:110</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L132">ctype/CTypeSchema.ts:132</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -1018,7 +1256,7 @@
 								<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L112">ctype/CTypeSchema.ts:112</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L134">ctype/CTypeSchema.ts:134</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-type-declaration">
@@ -1028,12 +1266,12 @@
 								</div>
 							</section>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypewrappermodel.properties-6.metamodel.type-23" class="tsd-anchor"></a>
+								<a name="ctypewrappermodel.properties-6.metamodel.type-25" class="tsd-anchor"></a>
 								<h3>type</h3>
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;object&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L111">ctype/CTypeSchema.ts:111</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L133">ctype/CTypeSchema.ts:133</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -1043,7 +1281,7 @@
 								<div class="tsd-signature tsd-kind-icon">pattern<wbr>Properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L113">ctype/CTypeSchema.ts:113</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L135">ctype/CTypeSchema.ts:135</a></li>
 									</ul>
 								</aside>
 								<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
@@ -1052,7 +1290,7 @@
 									<div class="tsd-signature tsd-kind-icon">^.*$<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L114">ctype/CTypeSchema.ts:114</a></li>
+											<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L136">ctype/CTypeSchema.ts:136</a></li>
 										</ul>
 									</aside>
 									<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -1061,7 +1299,7 @@
 										<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 										<aside class="tsd-sources">
 											<ul>
-												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L116">ctype/CTypeSchema.ts:116</a></li>
+												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L138">ctype/CTypeSchema.ts:138</a></li>
 											</ul>
 										</aside>
 										<div class="tsd-type-declaration">
@@ -1071,12 +1309,12 @@
 										</div>
 									</section>
 									<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-										<a name="ctypewrappermodel.properties-6.metamodel.patternproperties-1.____-1.type-24" class="tsd-anchor"></a>
+										<a name="ctypewrappermodel.properties-6.metamodel.patternproperties-1.____-1.type-26" class="tsd-anchor"></a>
 										<h3>type</h3>
 										<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;object&quot;</span></div>
 										<aside class="tsd-sources">
 											<ul>
-												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L115">ctype/CTypeSchema.ts:115</a></li>
+												<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L137">ctype/CTypeSchema.ts:137</a></li>
 											</ul>
 										</aside>
 									</section>
@@ -1089,7 +1327,7 @@
 							<div class="tsd-signature tsd-kind-icon">schema<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L103">ctype/CTypeSchema.ts:103</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L124">ctype/CTypeSchema.ts:124</a></li>
 								</ul>
 							</aside>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -1098,7 +1336,7 @@
 								<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> =&nbsp;CTypeModel.properties</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L105">ctype/CTypeSchema.ts:105</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L126">ctype/CTypeSchema.ts:126</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-type-declaration">
@@ -1108,12 +1346,12 @@
 								</div>
 							</section>
 							<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-								<a name="ctypewrappermodel.properties-6.schema.type-25" class="tsd-anchor"></a>
+								<a name="ctypewrappermodel.properties-6.schema.type-27" class="tsd-anchor"></a>
 								<h3>type</h3>
 								<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;object&quot;</span></div>
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/ctype/CTypeSchema.ts#L104">ctype/CTypeSchema.ts:104</a></li>
+										<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/ctype/CTypeSchema.ts#L125">ctype/CTypeSchema.ts:125</a></li>
 									</ul>
 								</aside>
 							</section>
@@ -1128,29 +1366,8 @@
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="attestation.html">Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="blockchain.html">Blockchain</a>
-					</li>
 					<li class="current tsd-kind-external-module">
 						<a href="ctype.html">CType</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="claim.html">Claim</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="config.html">Config</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="crypto.html">Crypto</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="identity.html">Identity</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="sdk.html">SDK</a>
 					</li>
 				</ul>
 			</nav>
@@ -1159,14 +1376,14 @@
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
 						<a href="../classes/ctype.ctype-1.html" class="tsd-kind-icon">CType</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="../interfaces/ctype.ictype.html" class="tsd-kind-icon">ICType</a>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="ctype.html#frominputmodel" class="tsd-kind-icon">from<wbr>Input<wbr>Model</a>
 					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
-						<a href="ctype.html#ctypeschema" class="tsd-kind-icon">CType<wbr>Schema</a>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="ctype.html#getctypeinputmodel" class="tsd-kind-icon">getCType<wbr>Input<wbr>Model</a>
 					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
-						<a href="ctype.html#ctypemetadata" class="tsd-kind-icon">Ctype<wbr>Metadata</a>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="ctype.html#getclaiminputmodel" class="tsd-kind-icon">get<wbr>Claim<wbr>Input<wbr>Model</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="ctype.html#verifyclaimstructure" class="tsd-kind-icon">verify<wbr>Claim<wbr>Structure</a>

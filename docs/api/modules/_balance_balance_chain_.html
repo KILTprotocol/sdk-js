@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>IAttestation | @kiltprotocol/prototype-sdk</title>
+	<title>&quot;balance/Balance.chain&quot; | @kiltprotocol/prototype-sdk</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -52,90 +52,110 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/attestation.html">Attestation</a>
-				</li>
-				<li>
-					<a href="attestation.iattestation.html">IAttestation</a>
+					<a href="_balance_balance_chain_.html">&quot;balance/Balance.chain&quot;</a>
 				</li>
 			</ul>
-			<h1>Interface IAttestation</h1>
+			<h1>External module &quot;balance/Balance.chain&quot;</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-hierarchy">
-				<h3>Hierarchy</h3>
-				<ul class="tsd-hierarchy">
-					<li>
-						<span class="target">IAttestation</span>
-					</li>
-				</ul>
-			</section>
-			<section class="tsd-panel">
-				<h3>Implemented by</h3>
-				<ul class="tsd-hierarchy">
-					<li><a href="../classes/attestation.attestation-1.html" class="tsd-signature-type">Attestation</a></li>
-				</ul>
-			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Properties</h3>
+							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="attestation.iattestation.html#claimhash" class="tsd-kind-icon">claim<wbr>Hash</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="attestation.iattestation.html#owner" class="tsd-kind-icon">owner</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="attestation.iattestation.html#revoked" class="tsd-kind-icon">revoked</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="attestation.iattestation.html#signature" class="tsd-kind-icon">signature</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_balance_balance_chain_.html#getbalance" class="tsd-kind-icon">get<wbr>Balance</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_balance_balance_chain_.html#listentobalancechanges" class="tsd-kind-icon">listen<wbr>ToBalance<wbr>Changes</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_balance_balance_chain_.html#maketransfer" class="tsd-kind-icon">make<wbr>Transfer</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="claimhash" class="tsd-anchor"></a>
-					<h3>claim<wbr>Hash</h3>
-					<div class="tsd-signature tsd-kind-icon">claim<wbr>Hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/attestation/Attestation.ts#L19">attestation/Attestation.ts:19</a></li>
-						</ul>
-					</aside>
+				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="getbalance" class="tsd-anchor"></a>
+					<h3>get<wbr>Balance</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Balance<span class="tsd-signature-symbol">(</span>accountAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/balance/Balance.chain.ts#L28">balance/Balance.chain.ts:28</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>accountAddress: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="owner" class="tsd-anchor"></a>
-					<h3>owner</h3>
-					<div class="tsd-signature tsd-kind-icon">owner<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/attestation/Attestation.ts#L21">attestation/Attestation.ts:21</a></li>
-						</ul>
-					</aside>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="listentobalancechanges" class="tsd-anchor"></a>
+					<h3>listen<wbr>ToBalance<wbr>Changes</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">listen<wbr>ToBalance<wbr>Changes<span class="tsd-signature-symbol">(</span>accountAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, listener<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/balance/Balance.chain.ts#L8">balance/Balance.chain.ts:8</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>accountAddress: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> listener: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="revoked" class="tsd-anchor"></a>
-					<h3>revoked</h3>
-					<div class="tsd-signature tsd-kind-icon">revoked<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/attestation/Attestation.ts#L22">attestation/Attestation.ts:22</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="signature" class="tsd-anchor"></a>
-					<h3>signature</h3>
-					<div class="tsd-signature tsd-kind-icon">signature<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/attestation/Attestation.ts#L20">attestation/Attestation.ts:20</a></li>
-						</ul>
-					</aside>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="maketransfer" class="tsd-anchor"></a>
+					<h3>make<wbr>Transfer</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">make<wbr>Transfer<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a>, accountAddressTo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, amount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_blockchain_txstatus_.txstatus.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/balance/Balance.chain.ts#L39">balance/Balance.chain.ts:39</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>identity: <a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a></h5>
+								</li>
+								<li>
+									<h5>accountAddressTo: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>amount: <span class="tsd-signature-type">BN</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_blockchain_txstatus_.txstatus.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -146,57 +166,21 @@
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 					<li class="current tsd-kind-external-module">
-						<a href="../modules/attestation.html">Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/blockchain.html">Blockchain</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/ctype.html">CType</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/claim.html">Claim</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/config.html">Config</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/crypto.html">Crypto</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/identity.html">Identity</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/sdk.html">SDK</a>
+						<a href="_balance_balance_chain_.html">"balance/<wbr>Balance.chain"</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/attestation.attestation-1.html" class="tsd-kind-icon">Attestation</a>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_balance_balance_chain_.html#getbalance" class="tsd-kind-icon">get<wbr>Balance</a>
 					</li>
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="attestation.iattestation.html" class="tsd-kind-icon">IAttestation</a>
-						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="attestation.iattestation.html#claimhash" class="tsd-kind-icon">claim<wbr>Hash</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="attestation.iattestation.html#owner" class="tsd-kind-icon">owner</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="attestation.iattestation.html#revoked" class="tsd-kind-icon">revoked</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="attestation.iattestation.html#signature" class="tsd-kind-icon">signature</a>
-							</li>
-						</ul>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_balance_balance_chain_.html#listentobalancechanges" class="tsd-kind-icon">listen<wbr>ToBalance<wbr>Changes</a>
 					</li>
-				</ul>
-				<ul class="after-current">
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_balance_balance_chain_.html#maketransfer" class="tsd-kind-icon">make<wbr>Transfer</a>
+					</li>
 				</ul>
 			</nav>
 		</div>

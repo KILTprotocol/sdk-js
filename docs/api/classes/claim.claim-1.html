@@ -76,7 +76,7 @@
 			<section class="tsd-panel">
 				<h3>Implements</h3>
 				<ul class="tsd-hierarchy">
-					<li><a href="../interfaces/claim.iclaim.html" class="tsd-signature-type">IClaim</a></li>
+					<li><a href="../interfaces/_types_claim_.iclaim.html" class="tsd-signature-type">IClaim</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -92,18 +92,14 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="claim.claim-1.html#alias" class="tsd-kind-icon">alias</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="claim.claim-1.html#ctype" class="tsd-kind-icon">c<wbr>Type</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="claim.claim-1.html#contents" class="tsd-kind-icon">contents</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="claim.claim-1.html#ctype" class="tsd-kind-icon">ctype</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="claim.claim-1.html#hash" class="tsd-kind-icon">hash</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="claim.claim-1.html#owner" class="tsd-kind-icon">owner</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="claim.claim-1.html#signature" class="tsd-kind-icon">signature</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="claim.claim-1.html#verifysignature" class="tsd-kind-icon">verify<wbr>Signature</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="claim.claim-1.html#fromobject" class="tsd-kind-icon">from<wbr>Object</a></li>
 							</ul>
 						</section>
@@ -116,31 +112,25 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Claim<span class="tsd-signature-symbol">(</span>alias<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, ctype<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Ctype</span>, contents<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span>, identity<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a>, hash<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="claim.claim-1.html" class="tsd-signature-type">Claim</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Claim<span class="tsd-signature-symbol">(</span>cType<span class="tsd-signature-symbol">: </span><a href="ctype.ctype-1.html" class="tsd-signature-type">CType</a>, contents<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span>, identity<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="claim.claim-1.html" class="tsd-signature-type">Claim</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/claim/Claim.ts#L38">claim/Claim.ts:38</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/claim/Claim.ts#L21">claim/Claim.ts:21</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>alias: <span class="tsd-signature-type">string</span></h5>
-								</li>
-								<li>
-									<h5>ctype: <span class="tsd-signature-type">Ctype</span></h5>
+									<h5>cType: <a href="ctype.ctype-1.html" class="tsd-signature-type">CType</a></h5>
 								</li>
 								<li>
 									<h5>contents: <span class="tsd-signature-type">object</span></h5>
 								</li>
 								<li>
 									<h5>identity: <a href="identity.identity-1.html" class="tsd-signature-type">Identity</a></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> hash: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="claim.claim-1.html" class="tsd-signature-type">Claim</a></h4>
@@ -151,13 +141,13 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="alias" class="tsd-anchor"></a>
-					<h3>alias</h3>
-					<div class="tsd-signature tsd-kind-icon">alias<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="ctype" class="tsd-anchor"></a>
+					<h3>c<wbr>Type</h3>
+					<div class="tsd-signature tsd-kind-icon">c<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/claim.iclaim.html">IClaim</a>.<a href="../interfaces/claim.iclaim.html#alias">alias</a></p>
+						<p>Implementation of <a href="../interfaces/_types_claim_.iclaim.html">IClaim</a>.<a href="../interfaces/_types_claim_.iclaim.html#ctype">cType</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/claim/Claim.ts#L33">claim/Claim.ts:33</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/claim/Claim.ts#L19">claim/Claim.ts:19</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -166,31 +156,9 @@
 					<h3>contents</h3>
 					<div class="tsd-signature tsd-kind-icon">contents<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/claim.iclaim.html">IClaim</a>.<a href="../interfaces/claim.iclaim.html#contents">contents</a></p>
+						<p>Implementation of <a href="../interfaces/_types_claim_.iclaim.html">IClaim</a>.<a href="../interfaces/_types_claim_.iclaim.html#contents">contents</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/claim/Claim.ts#L35">claim/Claim.ts:35</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="ctype" class="tsd-anchor"></a>
-					<h3>ctype</h3>
-					<div class="tsd-signature tsd-kind-icon">ctype<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/claim.iclaim.html">IClaim</a>.<a href="../interfaces/claim.iclaim.html#ctype">ctype</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/claim/Claim.ts#L34">claim/Claim.ts:34</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="hash" class="tsd-anchor"></a>
-					<h3>hash</h3>
-					<div class="tsd-signature tsd-kind-icon">hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/claim.iclaim.html">IClaim</a>.<a href="../interfaces/claim.iclaim.html#hash">hash</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/claim/Claim.ts#L36">claim/Claim.ts:36</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/claim/Claim.ts#L20">claim/Claim.ts:20</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -199,60 +167,32 @@
 					<h3>owner</h3>
 					<div class="tsd-signature tsd-kind-icon">owner<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/claim.iclaim.html">IClaim</a>.<a href="../interfaces/claim.iclaim.html#owner">owner</a></p>
+						<p>Implementation of <a href="../interfaces/_types_claim_.iclaim.html">IClaim</a>.<a href="../interfaces/_types_claim_.iclaim.html#owner">owner</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/claim/Claim.ts#L37">claim/Claim.ts:37</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="signature" class="tsd-anchor"></a>
-					<h3>signature</h3>
-					<div class="tsd-signature tsd-kind-icon">signature<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/claim.iclaim.html">IClaim</a>.<a href="../interfaces/claim.iclaim.html#signature">signature</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/claim/Claim.ts#L38">claim/Claim.ts:38</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/claim/Claim.ts#L21">claim/Claim.ts:21</a></li>
 						</ul>
 					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="verifysignature" class="tsd-anchor"></a>
-					<h3>verify<wbr>Signature</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">verify<wbr>Signature<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/claim/Claim.ts#L63">claim/Claim.ts:63</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
-						</li>
-					</ul>
-				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
 					<a name="fromobject" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> from<wbr>Object</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">from<wbr>Object<span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../interfaces/claim.iclaim.html" class="tsd-signature-type">IClaim</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="claim.claim-1.html" class="tsd-signature-type">Claim</a></li>
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Object<span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../interfaces/_types_claim_.iclaim.html" class="tsd-signature-type">IClaim</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="claim.claim-1.html" class="tsd-signature-type">Claim</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/claim/Claim.ts#L29">claim/Claim.ts:29</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/claim/Claim.ts#L15">claim/Claim.ts:15</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>obj: <a href="../interfaces/claim.iclaim.html" class="tsd-signature-type">IClaim</a></h5>
+									<h5>obj: <a href="../interfaces/_types_claim_.iclaim.html" class="tsd-signature-type">IClaim</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="claim.claim-1.html" class="tsd-signature-type">Claim</a></h4>
@@ -267,29 +207,8 @@
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/attestation.html">Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/blockchain.html">Blockchain</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/ctype.html">CType</a>
-					</li>
 					<li class="current tsd-kind-external-module">
 						<a href="../modules/claim.html">Claim</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/config.html">Config</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/crypto.html">Crypto</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/identity.html">Identity</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/sdk.html">SDK</a>
 					</li>
 				</ul>
 			</nav>
@@ -304,25 +223,13 @@
 								<a href="claim.claim-1.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="claim.claim-1.html#alias" class="tsd-kind-icon">alias</a>
+								<a href="claim.claim-1.html#ctype" class="tsd-kind-icon">c<wbr>Type</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="claim.claim-1.html#contents" class="tsd-kind-icon">contents</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="claim.claim-1.html#ctype" class="tsd-kind-icon">ctype</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="claim.claim-1.html#hash" class="tsd-kind-icon">hash</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="claim.claim-1.html#owner" class="tsd-kind-icon">owner</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="claim.claim-1.html#signature" class="tsd-kind-icon">signature</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="claim.claim-1.html#verifysignature" class="tsd-kind-icon">verify<wbr>Signature</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
 								<a href="claim.claim-1.html#fromobject" class="tsd-kind-icon">from<wbr>Object</a>
@@ -331,9 +238,6 @@
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="../interfaces/claim.iclaim.html" class="tsd-kind-icon">IClaim</a>
-					</li>
 				</ul>
 			</nav>
 		</div>

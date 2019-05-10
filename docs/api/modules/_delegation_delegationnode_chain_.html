@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>IBlockchainStorable | @kiltprotocol/prototype-sdk</title>
+	<title>&quot;delegation/DelegationNode.chain&quot; | @kiltprotocol/prototype-sdk</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -52,146 +52,108 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/blockchain.html">Blockchain</a>
-				</li>
-				<li>
-					<a href="blockchain.iblockchainstorable.html">IBlockchainStorable</a>
+					<a href="_delegation_delegationnode_chain_.html">&quot;delegation/DelegationNode.chain&quot;</a>
 				</li>
 			</ul>
-			<h1>Interface IBlockchainStorable</h1>
+			<h1>External module &quot;delegation/DelegationNode.chain&quot;</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-hierarchy">
-				<h3>Hierarchy</h3>
-				<ul class="tsd-hierarchy">
-					<li>
-						<span class="target">IBlockchainStorable</span>
-					</li>
-				</ul>
-			</section>
-			<section class="tsd-panel">
-				<h3>Implemented by</h3>
-				<ul class="tsd-hierarchy">
-					<li><a href="../classes/attestation.attestation-1.html" class="tsd-signature-type">Attestation</a></li>
-					<li><a href="../classes/blockchain.blockchainstorable.html" class="tsd-signature-type">BlockchainStorable</a></li>
-					<li><a href="../classes/ctype.ctype-1.html" class="tsd-signature-type">CType</a></li>
-				</ul>
-			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Methods</h3>
+							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="blockchain.iblockchainstorable.html#gethash" class="tsd-kind-icon">get<wbr>Hash</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="blockchain.iblockchainstorable.html#store" class="tsd-kind-icon">store</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="blockchain.iblockchainstorable.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_delegation_delegationnode_chain_.html#query" class="tsd-kind-icon">query</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_delegation_delegationnode_chain_.html#revoke" class="tsd-kind-icon">revoke</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_delegation_delegationnode_chain_.html#store" class="tsd-kind-icon">store</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="gethash" class="tsd-anchor"></a>
-					<h3>get<wbr>Hash</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Hash<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="query" class="tsd-anchor"></a>
+					<h3>query</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">query<span class="tsd-signature-symbol">(</span>delegationId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_delegation_delegationnode_.delegationnode.html" class="tsd-signature-type">DelegationNode</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/blockchain/BlockchainStorable.ts#L39">blockchain/BlockchainStorable.ts:39</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/delegation/DelegationNode.chain.ts#L36">delegation/DelegationNode.chain.ts:36</a></li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Each blockchain storable must provide a unique hash used to store and retrieve it on/from the blockchain.</p>
-								</div>
-							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="store" class="tsd-anchor"></a>
-					<h3>store</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">store<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a>, identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a>, onsuccess<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Hash</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/blockchain/BlockchainStorable.ts#L23">blockchain/BlockchainStorable.ts:23</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Stores the entity on the blockchain.
-									TODO: populate errors via another callback</p>
-								</div>
-							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>blockchain: <a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the blockchain API object</p>
-									</div>
+									<h5>delegationId: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_delegation_delegationnode_.delegationnode.html" class="tsd-signature-type">DelegationNode</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="revoke" class="tsd-anchor"></a>
+					<h3>revoke</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">revoke<span class="tsd-signature-symbol">(</span>delegationId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_blockchain_txstatus_.txstatus.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/delegation/DelegationNode.chain.ts#L49">delegation/DelegationNode.chain.ts:49</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>delegationId: <span class="tsd-signature-type">string</span></h5>
 								</li>
 								<li>
 									<h5>identity: <a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the identity used to store the entity on chain</p>
-									</div>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> onsuccess: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the success callback</p>
-									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Hash</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_blockchain_txstatus_.txstatus.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="verifystored" class="tsd-anchor"></a>
-					<h3>verify<wbr>Stored</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">verify<wbr>Stored<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="store" class="tsd-anchor"></a>
+					<h3>store</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">store<span class="tsd-signature-symbol">(</span>delegation<span class="tsd-signature-symbol">: </span><a href="../interfaces/_types_delegation_.idelegationnode.html" class="tsd-signature-type">IDelegationNode</a>, identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a>, signature<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_blockchain_txstatus_.txstatus.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/cd513f4/src/blockchain/BlockchainStorable.ts#L34">blockchain/BlockchainStorable.ts:34</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/a4cf882/src/delegation/DelegationNode.chain.ts#L13">delegation/DelegationNode.chain.ts:13</a></li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Verifies that the entity is stored on the blockchain.</p>
-								</div>
-							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>blockchain: <a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the blockchain API object</p>
-									</div>
+									<h5>delegation: <a href="../interfaces/_types_delegation_.idelegationnode.html" class="tsd-signature-type">IDelegationNode</a></h5>
+								</li>
+								<li>
+									<h5>identity: <a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a></h5>
+								</li>
+								<li>
+									<h5>signature: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_blockchain_txstatus_.txstatus.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -203,58 +165,22 @@
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/attestation.html">Attestation</a>
-					</li>
 					<li class="current tsd-kind-external-module">
-						<a href="../modules/blockchain.html">Blockchain</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/ctype.html">CType</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/claim.html">Claim</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/config.html">Config</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/crypto.html">Crypto</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/identity.html">Identity</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/sdk.html">SDK</a>
+						<a href="_delegation_delegationnode_chain_.html">"delegation/<wbr>Delegation<wbr>Node.chain"</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/blockchain.blockchain-1.html" class="tsd-kind-icon">Blockchain</a>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_delegation_delegationnode_chain_.html#query" class="tsd-kind-icon">query</a>
 					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/blockchain.blockchainstorable.html" class="tsd-kind-icon">Blockchain<wbr>Storable</a>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_delegation_delegationnode_chain_.html#revoke" class="tsd-kind-icon">revoke</a>
 					</li>
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="blockchain.iblockchainstorable.html" class="tsd-kind-icon">IBlockchain<wbr>Storable</a>
-						<ul>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="blockchain.iblockchainstorable.html#gethash" class="tsd-kind-icon">get<wbr>Hash</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="blockchain.iblockchainstorable.html#store" class="tsd-kind-icon">store</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="blockchain.iblockchainstorable.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a>
-							</li>
-						</ul>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_delegation_delegationnode_chain_.html#store" class="tsd-kind-icon">store</a>
 					</li>
-				</ul>
-				<ul class="after-current">
 				</ul>
 			</nav>
 		</div>
