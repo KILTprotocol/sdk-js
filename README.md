@@ -5,7 +5,7 @@
 
 The KILT SDK is a collection of classes and methods that application developers can utilize to interact with the KILT Network. The SDK is provided in Typescript.
 
-Read the [getting started guide](./docs/getting-started.md), or browse the [API documentation](./docs/api/index.html)
+Read the [getting started guide](./docs/getting-started.md), or browse the [API documentation](https://github.io/KILTprotocol/prototype-sdk)
 
 
 ## How to access
