@@ -31,6 +31,9 @@ type BoxPublicKey =
 
 export default class Identity extends PublicIdentity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
+  public static generateMnemonic() {
+    return generate()
+  }
   public static buildFromMnemonic(phraseArg?: string) {
     let phrase = phraseArg
     if (phrase) {

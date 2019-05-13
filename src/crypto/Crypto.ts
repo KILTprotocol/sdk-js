@@ -137,7 +137,10 @@ export function hashStr(value: CryptoInput): string {
   return u8aToHex(hash(value))
 }
 
-export function hashObjectAsStr(value: any, nonce?: string): string {
+export function hashObjectAsStr(
+  value: object | string,
+  nonce?: string
+): string {
   let input =
     typeof value === 'object' && value !== null
       ? JSON.stringify(jsonabc.sortObj(value))
