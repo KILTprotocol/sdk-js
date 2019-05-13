@@ -1,10 +1,10 @@
 # Getting Started with the KILT SDK
 
-In this simple tutorial we show how you can start developing your own applications on top of the KILT Protocol. The next examples give you a simple skeleton how to use the KILT SDK to create identities, CTYPEs and claims, and also how to issue an attestation with the use of our messaging framework.
+In this simple tutorial we show how you can start developing your own applications on top of the KILT Protocol. The next examples give you a simple skeleton on how to use the KILT SDK to create identities, CTYPEs and claims, and also how to issue an attestation with the use of our messaging framework.
 
 ## How to generate an Identity
 
-To generate an Identity first you generate a [BIP39 mnemonic](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and then use it to create the Identity:
+To generate an Identity first you have to generate a [BIP39 mnemonic](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and then use it to create the Identity:
 
 ```typescript
 import Kilt from '@kiltprotocol/sdk'
@@ -70,7 +70,7 @@ const ctypeMetadata: ICType['metadata'] = {
 }
 ```
 
-Put everything together and construct into a raw structure:
+Combine everything into our Ctype object definition:
 ```typescript
 const rawCtype: ICType = {
   schema: ctypeSchema,
@@ -118,7 +118,7 @@ CType {
 
 ## How to build a Claim
 
-To construct a claim we need to know the structure of the claim that is defined in a CTYPE. Based on the CTYPE, we need to raw claim with the respective fields filled out:
+To construct a claim we need to know the structure of the claim that is defined in a CTYPE. Based on the CTYPE, we need to build a basic claim object with the respective fields filled out:
 
 ```typescript
 const rawClaim = {
@@ -249,7 +249,7 @@ import Message from '@kiltprotocol/sdk'
 Message.ensureHashAndSignature(encrypted, claimer)
 ```
 
-and also the Attester (and only she) can decrypt it:
+and the Attester (and only she) can also decrypt it:
 ```typescript
 const decrypted = Message.createFromEncryptedMessage(
   encrypted,
@@ -276,7 +276,7 @@ The Attester creates the attestation based on the IRequestForAttestation object 
 const attestation = new Kilt.Attestation(extractedRequestForAttestation, attester)
 ```
 
-The complete `attestation` object looks as the following:
+The complete `attestation` object looks as follows:
 ```typescript
 Attestation {
   owner: '5Et4BBKPgfBJSsAmMvHCVd6YH4eaGyo5RWd44W8RPdw14Bi1',
@@ -294,12 +294,13 @@ Now the Attester can store the attestation on the blockchain, which costs tokens
 attestation.store(attester)
 ```
 
-Importantly, the Attester builds the AttestedClaim object, which the Claimer can store and use:
+The request for attestation is fulfilled with the attestation, but it needs to be combined into the `AttestedClaim` object before sending it back to the Claimer:
+
 ```typescript
 const attestedClaim = new Kilt.AttestedClaim(extractedRequestForAttestation, attestation)
 ```
 
-The complete `attestedClaim` object looks as the following:
+The complete `attestedClaim` object looks as follows:
 ```typescript
 AttestedClaim {
   request:
@@ -332,8 +333,7 @@ AttestedClaim {
      revoked: false } }
 ```
 
-
-Of course, the Attester has to send it back to the Claimer in a message:
+The Attester has to send the `attestedClaim` object back to the Claimer in the following message:
 ```typescript
 import ISubmitAttestationForClaim from '@kiltprotocol/sdk'
 
@@ -344,7 +344,7 @@ const messageBodyBack: ISubmitAttestationForClaim = {
 const messageBack = new Message(messageBodyBack, attester, claimer)
 ```
 
-The complete `messageBack` message then looks as the following:
+The complete `messageBack` message then looks as follows:
 ```typescript
 AttestedClaim message Message {
   body:
