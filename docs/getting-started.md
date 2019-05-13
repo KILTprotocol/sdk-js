@@ -134,7 +134,7 @@ import Kilt from '@kiltprotocol/sdk'
 const claim = new Kilt.Claim(ctype, rawClaim, claimer)
 ```
 
-As a result we obtain the following KILT claim:
+As a result we get the following KILT claim:
 ```typescript
 Claim {
   cType:
@@ -144,16 +144,16 @@ Claim {
 ```
 
 
-## How request, create and send an Attestation
+## How to request, create and send an Attestation
 
-First, we need to build a request for an attestation, which has to include a claim and the address of the Claimer:
+First, we need to build a request for an attestation, which has to include a claim and the address of the Claimer. (Note that this object allows much more functionality, however, we do not go into the details here):
 ```typescript
 import Kilt from '@kiltprotocol/sdk'
 
 const requestForAttestation = new Kilt.RequestForAttestation(claim, [], claimer)
 ```
 
-The `requestForAttestation` object looks as the following:
+The `requestForAttestation` object looks like this:
 ```typescript
 RequestForAttestation {
   claim:
@@ -194,7 +194,8 @@ const attester = Kilt.Identity.buildFromMnemonic(mnemonicForAttester)
 
 If the Attester doesn't live on the same machine, we need to send her a message with the request.
 KILT contains a simple messaging system and we describe it through the following example.
-We create the request for an attestation message. This includes that the Claimer encrypts the message with the :
+
+First, we create the request for an attestation message. This includes that the Claimer encrypts the message with the public key of the Attester:
 ```typescript
 import Kilt, {
    IRequestAttestationForClaim,
@@ -208,7 +209,7 @@ const messageBody: IRequestAttestationForClaim = {
 const message = new Kilt.Message(messageBody, claimer, attester)
 ```
 
-The complete `message` looks as the following:
+The complete `message` looks as follows:
 ```typescript
 Message {
   body:
