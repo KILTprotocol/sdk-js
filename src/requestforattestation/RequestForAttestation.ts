@@ -5,11 +5,11 @@ import { v4 as uuid } from 'uuid'
 import { IDelegationBaseNode } from '..'
 import {
   verify,
-  hashStr,
   hash,
   coToUInt8,
   u8aToHex,
   u8aConcat,
+  hashObjectAsStr,
 } from '../crypto/Crypto'
 
 import Identity from '../identity/Identity'
@@ -21,7 +21,7 @@ import IRequestForAttestation, {
 } from '../types/RequestForAttestation'
 
 function hashNonceValue(nonce: string, value: any) {
-  return hashStr(nonce + JSON.stringify(value))
+  return hashObjectAsStr(value, nonce)
 }
 
 function generateHash(value: any): NonceHash {
