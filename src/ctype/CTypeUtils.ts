@@ -41,7 +41,7 @@ export function verifySchemaWithErrors(
 }
 
 export function getHashForSchema(schema: ICType['schema']) {
-  return Crypto.hashStr(JSON.stringify(schema))
+  return Crypto.hashObjectAsStr(schema)
 }
 
 /**
