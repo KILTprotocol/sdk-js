@@ -242,7 +242,7 @@ The message can be encrypted as follows:
 const encrypted = message.getEncryptedMessage()
 ```
 
-The messaging system is transport agnostic. When the Attester received the request message, she can check the validity(TODO: why??) of the message:
+The messaging system is transport agnostic. When the Attester receives the request message, she can check the validity of the message to make sure that nobody has tampered with it on the way:
 ```typescript
 import Message from '@kiltprotocol/sdk'
 
