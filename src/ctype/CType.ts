@@ -26,7 +26,7 @@ export default class CType implements ICType {
     this.metadata = ctype.metadata
     this.owner = ctype.owner
 
-    this.hash = Crypto.hashStr(JSON.stringify(this.schema))
+    this.hash = Crypto.hashObjectAsStr(this.schema)
 
     if (ctype.hash && this.hash !== ctype.hash) {
       throw Error('provided and generated cType hash are not the same')

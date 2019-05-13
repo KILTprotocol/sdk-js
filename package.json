@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/prototype-sdk",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -66,7 +66,9 @@
   },
   "dependencies": {
     "@polkadot/api": "^0.51.1",
+    "@types/jsonabc": "^2.3.1",
     "ajv": "^6.6.1",
+    "jsonabc": "^2.3.1",
     "lodash": "^4.17.11",
     "typescript-logging": "^0.6.3",
     "uuid": "^3.3.2"

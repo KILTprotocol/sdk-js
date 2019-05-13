@@ -16,6 +16,7 @@ import blake2AsU8a from '@polkadot/util-crypto/blake2/asU8a'
 import { default as naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
 import { default as naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import nacl from 'tweetnacl'
+import * as jsonabc from 'jsonabc'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
@@ -134,6 +135,17 @@ export function hash(value: CryptoInput, bitLength?: number): Uint8Array {
 
 export function hashStr(value: CryptoInput): string {
   return u8aToHex(hash(value))
+}
+
+export function hashObjectAsStr(value: any, nonce?: string): string {
+  let input =
+    typeof value === 'object' && value !== null
+      ? JSON.stringify(jsonabc.sortObj(value))
+      : value
+  if (nonce) {
+    input = nonce + input
+  }
+  return hashStr(input)
 }
 
 export function encryptAsymmetric(
