@@ -1,4 +1,12 @@
-# prototype-sdk
+
+![](./KILT_logo.png)
+
+# KILT Testnet (Mash-net) SDK
+
+The KILT SDK is a collection of classes and methods that application developers can utilize to interact with the KILT Network. The SDK is provided in Typescript.
+
+Read the [getting started guide](./docs/getting-started.md), or browse the [API documentation](./docs/api/index.html)
+
 
 ## How to access
 
@@ -12,7 +20,7 @@ Use within your project with `yarn add @kilt/prototype-sdk`
 
 You can use different SDK branches or versions, by linking it into your projects locally.  
 
-Execute `yarn link` in the SDK and copy the command in the output, which should look like this: 
+Execute `yarn link` in the SDK and copy the command in the output, which should look like this:
 
 ```yarn link "@kiltprotocol/prototype-sdk"```
 
@@ -29,7 +37,7 @@ After that execute `yarn install --check-files` to get the version from the regi
 
 ## Release / Deployment
 
-Deployment is triggered by a push to the master branch as a result to a release build. 
+Deployment is triggered by a push to the master branch as a result to a release build.
 
 To build a release, start the release build job for the SDK in *AWS CodeBuild*. See [here](https://github.com/KILTprotocol/release-build-job/blob/master/README.md#usage) for more info on building releases.
 
