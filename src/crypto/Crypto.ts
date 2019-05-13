@@ -16,7 +16,7 @@ import blake2AsU8a from '@polkadot/util-crypto/blake2/asU8a'
 import { default as naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
 import { default as naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import nacl from 'tweetnacl'
-import { default as jsonabc } from 'jsonabc'
+import * as jsonabc from 'jsonabc'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
