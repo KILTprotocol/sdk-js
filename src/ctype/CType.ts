@@ -1,7 +1,6 @@
 /**
  * @module CType
  */
-import Crypto from '../crypto'
 import { CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
 import ICType from '../types/CType'
@@ -26,7 +25,7 @@ export default class CType implements ICType {
     this.metadata = ctype.metadata
     this.owner = ctype.owner
 
-    this.hash = Crypto.hashObjectAsStr(this.schema)
+    this.hash = CTypeUtils.getHashForSchema(this.schema)
 
     if (ctype.hash && this.hash !== ctype.hash) {
       throw Error('provided and generated cType hash are not the same')
