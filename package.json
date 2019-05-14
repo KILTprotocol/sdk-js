@@ -40,7 +40,7 @@
     "registry": "https://registry.npmjs.org"
   },
   "author": "",
-  "license": "ISC",
+  "license": "BSD-4-Clause",
   "bugs": {
     "url": "https://github.com/KILTprotocol/prototype-sdk/issues"
   },
