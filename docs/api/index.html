@@ -60,14 +60,17 @@
 	<div class="row">
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
-				<h1 id="prototype-sdk">prototype-sdk</h1>
+				<p><img src="./KILT_logo.png" alt=""></p>
+				<h1 id="kilt-testnet-mash-net-sdk">KILT Testnet (Mash-net) SDK</h1>
+				<p>The KILT SDK is a collection of classes and methods that application developers can utilize to interact with the KILT Network. The SDK is provided in Typescript.</p>
+				<p>Read the <a href="./docs/getting-started.md">getting started guide</a>, or browse the <a href="https://kiltprotocol.github.io/prototype-sdk/api">API documentation</a>.</p>
 				<h2 id="how-to-access">How to access</h2>
 				<p>Edit your <code>~/.npmrc</code> and insert/add kiltbot&#39;s auth token to the registry</p>
 				<p>e.g. //registry.npmjs.org/:_authToken=8...</p>
 				<p>Use within your project with <code>yarn add @kilt/prototype-sdk</code></p>
 				<h2 id="development-setup">Development setup</h2>
 				<p>You can use different SDK branches or versions, by linking it into your projects locally.  </p>
-				<p>Execute <code>yarn link</code> in the SDK and copy the command in the output, which should look like this: </p>
+				<p>Execute <code>yarn link</code> in the SDK and copy the command in the output, which should look like this:</p>
 				<p><code>yarn link &quot;@kiltprotocol/prototype-sdk&quot;</code></p>
 				<p>Go into your project folder and execute that second command.</p>
 				<p>The SDK is now symlinked in your projects <code>node_modules</code> folder</p>
@@ -76,7 +79,7 @@
 				<p>Execute <code>yarn unlink &quot;@kiltprotocol/prototype-sdk&quot;</code> in the project folder.</p>
 				<p>After that execute <code>yarn install --check-files</code> to get the version from the registry back.</p>
 				<h2 id="release-deployment">Release / Deployment</h2>
-				<p>Deployment is triggered by a push to the master branch as a result to a release build. </p>
+				<p>Deployment is triggered by a push to the master branch as a result to a release build.</p>
 				<p>To build a release, start the release build job for the SDK in <em>AWS CodeBuild</em>. See <a href="https://github.com/KILTprotocol/release-build-job/blob/master/README.md#usage">here</a> for more info on building releases.</p>
 				<p>As a result of a release build, a new version of the SDK is published to the NPM registry.</p>
 				<p><em>Note: Don&#39;t forget to reference the correct version in the client and services</em></p>
