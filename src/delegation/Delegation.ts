@@ -22,6 +22,11 @@ export default abstract class DelegationBaseNode
   public account: IDelegationBaseNode['account']
   public revoked: IDelegationBaseNode['revoked'] = false
 
+  /**
+   * @description Builds a new [DelegationBaseNode] instance.
+   * @param id the unique identifier of the delegation node
+   * @param account the owner address of the delegation node
+   */
   public constructor(
     id: IDelegationBaseNode['id'],
     account: IDelegationBaseNode['account']
@@ -30,10 +35,22 @@ export default abstract class DelegationBaseNode
     this.id = id
   }
 
+  /**
+   * @description Fetches the root of the delegation tree.
+   * @returns promise containing [[DelegationRootNode]]
+   */
   public abstract getRoot(): Promise<DelegationRootNode>
 
+  /**
+   * @description Fetches the parent delegation node. If the parent node is [undefined] this node is a direct child of the root node.
+   * @returns promise containing the parent node or [undefined]
+   */
   public abstract getParent(): Promise<DelegationBaseNode | undefined>
 
+  /**
+   * @description Fetches the children nodes of the current node.
+   * @returns promise containing the resolved children nodes
+   */
   public async getChildren(): Promise<DelegationNode[]> {
     log.info(` :: getChildren('${this.id}')`)
     const childIds: string[] = await getChildIds(this.id)
@@ -58,9 +75,8 @@ export default abstract class DelegationBaseNode
   }
 
   /**
-   * Gets all attestations made by a Delegation Node.
-   *
-   * @returns All attestations made by this Delegation Node.
+   * @description Fetches and resolves all attestations attested with this delegation node.
+   * @returns promise containing all resolved attestations attested with this node
    */
   public async getAttestations(): Promise<Attestation[]> {
     const attestationHashes = await this.getAttestationHashes()
@@ -73,12 +89,24 @@ export default abstract class DelegationBaseNode
     return attestations.filter((value): value is Attestation => !!value)
   }
 
+  /**
+   * @description Fetches all hashes of attestations attested with this delegation node.
+   * @returns promise containing all attestation hashes attested with this node
+   */
   public async getAttestationHashes(): Promise<string[]> {
     return getAttestationHashes(this.id)
   }
 
+  /**
+   * @description Verifies this delegation node by querying it from chain and checking its [revoked] status.
+   * @returns promise containing a boolean flag indicating if the verification succeeded
+   */
   public abstract verify(): Promise<boolean>
 
+  /**
+   * @description Revokes this delegation node on chain.
+   * @returns promise containing the transaction status
+   */
   public abstract revoke(identity: Identity): Promise<TxStatus>
 
   /**
