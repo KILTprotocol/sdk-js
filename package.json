@@ -14,7 +14,7 @@
     "style": "prettier -l src/**/*.ts",
     "style:fix": "yarn style --write",
     "build": "tsc --declaration",
-    "build:docs": "typedoc --theme default --out docs/api && touch docs/api/.nojekyll",
+    "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
     "buildAndPublish": "yarn build && node ./npm-create-rc.js && npm publish"
   },
   "husky": {
