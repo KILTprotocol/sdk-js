@@ -8,11 +8,7 @@ The KILT SDK is a collection of classes and methods that application developers 
 Read the [getting started guide](./docs/getting-started.md), or browse the [API documentation](https://kiltprotocol.github.io/prototype-sdk/api).
 
 
-## How to access
-
-Edit your `~/.npmrc` and insert/add kiltbot's auth token to the registry
-
-e.g. //registry.npmjs.org/:_authToken=8...
+## How to use
 
 Use within your project with `yarn add @kilt/prototype-sdk`
 
