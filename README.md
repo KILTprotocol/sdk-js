@@ -1,5 +1,5 @@
 
-![](./KILT_logo.png)
+![](https://user-images.githubusercontent.com/1248214/57789522-600fcc00-7739-11e9-86d9-73d7032f40fc.png)
 
 # KILT Testnet (Mash-net) SDK
 
