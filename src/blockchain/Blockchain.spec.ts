@@ -2,7 +2,6 @@ import { Header } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
 
 describe('Blockchain', async () => {
-
   xit('should get stats', async () => {
     const blockchainSingleton = await getCached()
     const stats = await blockchainSingleton.getStats()
