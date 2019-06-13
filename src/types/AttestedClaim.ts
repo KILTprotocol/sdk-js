@@ -1,3 +1,6 @@
+/**
+ * @module TypeInterfaces
+ */
 import IRequestForAttestation from './RequestForAttestation'
 import IAttestation from './Attestation'
 

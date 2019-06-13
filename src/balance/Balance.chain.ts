@@ -1,3 +1,7 @@
+/**
+ * @module Balance
+ */
+
 import BN from 'bn.js'
 
 import { getCached } from '../blockchainApiConnection'

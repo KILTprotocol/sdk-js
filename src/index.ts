@@ -1,5 +1,10 @@
 /**
  * @module SDK
+ * @ignore
+ */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
  */
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'

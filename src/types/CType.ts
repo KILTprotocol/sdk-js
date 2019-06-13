@@ -1,3 +1,6 @@
+/**
+ * @module TypeInterfaces
+ */
 import IPublicIdentity from './PublicIdentity'
 
 export interface ICTypeSchema {

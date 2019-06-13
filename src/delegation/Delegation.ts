@@ -1,3 +1,6 @@
+/**
+ * @module Delegation
+ */
 import { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'

@@ -1,3 +1,6 @@
+/**
+ * @module Messaging
+ */
 import {
   Claim,
   DelegationNode,
