@@ -72,7 +72,93 @@
 								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/attestation.attestation-1.html" class="tsd-kind-icon">Attestation</a></li>
 							</ul>
 						</section>
+						<section class="tsd-index-section ">
+							<h3>Functions</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="attestation.html#query" class="tsd-kind-icon">query</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="attestation.html#revoke" class="tsd-kind-icon">revoke</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="attestation.html#store" class="tsd-kind-icon">store</a></li>
+							</ul>
+						</section>
 					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="query" class="tsd-anchor"></a>
+					<h3>query</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">query<span class="tsd-signature-symbol">(</span>claimHash<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/attestation.attestation-1.html" class="tsd-signature-type">Attestation</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/422d0d3/src/attestation/Attestation.chain.ts#L44">attestation/Attestation.chain.ts:44</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>claimHash: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/attestation.attestation-1.html" class="tsd-signature-type">Attestation</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="revoke" class="tsd-anchor"></a>
+					<h3>revoke</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">revoke<span class="tsd-signature-symbol">(</span>claimHash<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.txstatus.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/422d0d3/src/attestation/Attestation.chain.ts#L60">attestation/Attestation.chain.ts:60</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>claimHash: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>identity: <a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.txstatus.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="store" class="tsd-anchor"></a>
+					<h3>store</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">store<span class="tsd-signature-symbol">(</span>attestation<span class="tsd-signature-symbol">: </span><a href="../interfaces/typeinterfaces.iattestation.html" class="tsd-signature-type">IAttestation</a>, identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.txstatus.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/prototype-sdk/blob/422d0d3/src/attestation/Attestation.chain.ts#L19">attestation/Attestation.chain.ts:19</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>attestation: <a href="../interfaces/typeinterfaces.iattestation.html" class="tsd-signature-type">IAttestation</a></h5>
+								</li>
+								<li>
+									<h5>identity: <a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.txstatus.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -85,12 +171,90 @@
 					<li class="current tsd-kind-external-module">
 						<a href="attestation.html">Attestation</a>
 					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="attestationpresentation.html">Attestation<wbr>Presentation</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="balance.html">Balance</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="blockchain.html">Blockchain</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="blockchainapiconnection.html">Blockchain<wbr>Api<wbr>Connection</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="ctype.html">CType</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="claim.html">Claim</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="config.html">Config</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="crypto.html">Crypto</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="did.html">DID</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="delegation.html">Delegation</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="delegation_delegationdecoder.html">Delegation/<wbr>Delegation<wbr>Decoder</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="delegation_delegationnode.html">Delegation/<wbr>Delegation<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="delegation_delegationrootnode.html">Delegation/<wbr>Delegation<wbr>Root<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="errorhandling.html">Error<wbr>Handling</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="errorhandling_extrinsicerror.html">Error<wbr>Handling/<wbr>Extrinsic<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="identity.html">Identity</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="kilt.html">Kilt</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="messaging.html">Messaging</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="requestforattestation.html">Request<wbr>For<wbr>Attestation</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="typeinterfaces.html">Type<wbr>Interfaces</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="typeinterfaces_delegation.html">Type<wbr>Interfaces/<wbr>Delegation</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="typeinterfaces_requestforattestation.html">Type<wbr>Interfaces/<wbr>Request<wbr>For<wbr>Attestation</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="utils.html">Utils</a>
+					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
 						<a href="../classes/attestation.attestation-1.html" class="tsd-kind-icon">Attestation</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="attestation.html#query" class="tsd-kind-icon">query</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="attestation.html#revoke" class="tsd-kind-icon">revoke</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="attestation.html#store" class="tsd-kind-icon">store</a>
 					</li>
 				</ul>
 			</nav>
