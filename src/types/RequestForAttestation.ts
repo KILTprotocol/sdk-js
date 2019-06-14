@@ -1,3 +1,6 @@
+/**
+ * @module TypeInterfaces/RequestForAttestation
+ */
 import IClaim from './Claim'
 import { IDelegationBaseNode } from './Delegation'
 import IAttestedClaim from './AttestedClaim'

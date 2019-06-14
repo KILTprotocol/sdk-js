@@ -1,3 +1,7 @@
+/**
+ * @module BlockchainApiConnection
+ */
+
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { RegistryTypes } from '@polkadot/types/types'
 

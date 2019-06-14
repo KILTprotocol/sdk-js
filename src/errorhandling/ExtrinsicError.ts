@@ -1,3 +1,6 @@
+/**
+ * @module ErrorHandling/ExtrinsicError
+ */
 export enum ErrorCode {
   ERROR_CTYPE_NOT_FOUND = 1001,
   ERROR_CTYPE_ALREADY_EXISTS = 1002,

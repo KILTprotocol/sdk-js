@@ -1,3 +1,6 @@
+/**
+ * @module Delegation/DelegationNode
+ */
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { CodecResult } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'

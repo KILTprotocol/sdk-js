@@ -2,9 +2,6 @@
  * @module Identity
  */
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
-/**
- * @module Identity
- */
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
 import generate from '@polkadot/util-crypto/mnemonic/generate'

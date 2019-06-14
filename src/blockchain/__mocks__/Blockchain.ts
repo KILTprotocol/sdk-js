@@ -1,3 +1,11 @@
+/**
+ * @module Blockchain
+ * @ignore
+ */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
+ */
 const blockchain: any = {
   __mockResultHash: '',
   __mockTxDelegationRoot: jest.fn(),

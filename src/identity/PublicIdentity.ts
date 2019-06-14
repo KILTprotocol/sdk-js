@@ -1,3 +1,6 @@
+/**
+ * @module Identity
+ */
 import Did, {
   IDid,
   KEY_TYPE_ENCRYPTION,
@@ -11,9 +14,6 @@ export interface IURLResolver {
   resolve(url: string): Promise<object | undefined>
 }
 
-/**
- * @module Identity
- */
 export default class PublicIdentity implements IPublicIdentity {
   public static fromDidDocument(
     didDocument: object

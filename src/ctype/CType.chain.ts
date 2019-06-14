@@ -1,3 +1,6 @@
+/**
+ * @module CType
+ */
 import { CodecResult } from '@polkadot/api/promise/types'
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 

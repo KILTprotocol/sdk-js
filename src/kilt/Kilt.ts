@@ -1,3 +1,6 @@
+/**
+ * @module Kilt
+ */
 import { getCached } from '../blockchainApiConnection'
 
 export function connect(host: string) {

@@ -1,3 +1,6 @@
+/**
+ * @module TypeInterfaces
+ */
 import ICType from './CType'
 import IPublicIdentity from './PublicIdentity'
 import { IDelegationBaseNode } from './Delegation'
