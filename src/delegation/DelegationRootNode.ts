@@ -1,3 +1,6 @@
+/**
+ * @module Delegation/DelegationRootNode
+ */
 import { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'

@@ -1,3 +1,11 @@
+/**
+ * @module BlockchainApiConnection
+ * @ignore
+ */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
+ */
 import Blockchain from '../../blockchain/Blockchain'
 
 jest.mock('../../blockchain/Blockchain')

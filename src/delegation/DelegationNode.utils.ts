@@ -1,3 +1,6 @@
+/**
+ * @module Delegation/DelegationNode
+ */
 import { IDelegationNode } from '../types/Delegation'
 
 /**
