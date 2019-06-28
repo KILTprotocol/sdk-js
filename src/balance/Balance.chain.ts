@@ -1,3 +1,7 @@
+/**
+ * @module Balance
+ */
+
 import BN from 'bn.js'
 import { TxStatus } from '../blockchain/TxStatus'
 import { getCached } from '../blockchainApiConnection'

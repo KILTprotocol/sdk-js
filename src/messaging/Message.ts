@@ -1,3 +1,6 @@
+/**
+ * @module Messaging
+ */
 import {
   Claim,
   DelegationNode,
@@ -38,6 +41,7 @@ export interface IEncryptedMessage {
   signature: string
   receiverAddress: IPublicIdentity['address']
   senderAddress: IPublicIdentity['address']
+  senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
 }
 
 export default class Message implements IMessage {
@@ -70,7 +74,7 @@ export default class Message implements IMessage {
 
   public static ensureHashAndSignature(
     encrypted: IEncryptedMessage,
-    sender: IPublicIdentity
+    senderAddress: IPublicIdentity['address']
   ): void {
     const hashInput: string =
       encrypted.message + encrypted.nonce + encrypted.createdAt
@@ -78,17 +82,16 @@ export default class Message implements IMessage {
     if (hash !== encrypted.hash) {
       throw new Error('Hash of message not correct')
     }
-    if (!Crypto.verify(hash, encrypted.signature, sender.address)) {
+    if (!Crypto.verify(hash, encrypted.signature, senderAddress)) {
       throw new Error('Signature of message not correct')
     }
   }
 
   public static createFromEncryptedMessage(
     encrypted: IEncryptedMessage,
-    sender: IPublicIdentity,
     receiver: Identity
   ): IMessage {
-    Message.ensureHashAndSignature(encrypted, sender)
+    Message.ensureHashAndSignature(encrypted, encrypted.senderAddress)
 
     const ea: EncryptedAsymmetricString = {
       box: encrypted.message,
@@ -96,7 +99,7 @@ export default class Message implements IMessage {
     }
     const decoded: string | false = receiver.decryptAsymmetricAsStr(
       ea,
-      sender.boxPublicKeyAsHex
+      encrypted.senderBoxPublicKey
     )
     if (!decoded) {
       throw new Error('Error decoding message')
@@ -123,6 +126,7 @@ export default class Message implements IMessage {
   public createdAt: number
   public receiverAddress: IPublicIdentity['address']
   public senderAddress: IPublicIdentity['address']
+  public senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
 
   public constructor(
     body: MessageBody,
@@ -133,6 +137,7 @@ export default class Message implements IMessage {
     this.createdAt = Date.now()
     this.receiverAddress = receiver.address
     this.senderAddress = sender.address
+    this.senderBoxPublicKey = sender.boxPublicKeyAsHex
 
     const encryptedMessage: EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(
       JSON.stringify(body),
@@ -162,6 +167,7 @@ export default class Message implements IMessage {
       signature: this.signature,
       receiverAddress: this.receiverAddress,
       senderAddress: this.senderAddress,
+      senderBoxPublicKey: this.senderBoxPublicKey,
     }
   }
 }

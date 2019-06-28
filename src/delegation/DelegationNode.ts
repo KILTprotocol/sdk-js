@@ -1,3 +1,6 @@
+/**
+ * @module Delegation/DelegationNode
+ */
 import Crypto from '../crypto'
 import { QueryResult } from '../blockchain/Blockchain'
 import { TxStatus } from '../blockchain/TxStatus'

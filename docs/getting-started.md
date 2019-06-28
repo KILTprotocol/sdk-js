@@ -2,12 +2,19 @@
 
 In this simple tutorial we show how you can start developing your own applications on top of the KILT Protocol. The next examples give you a simple skeleton on how to use the KILT SDK to create identities, CTYPEs and claims, and also how to issue an attestation with the use of our messaging framework.
 
+## Prerequisities
+- make a new directory and navigate into it
+- install the SDK with `npm install @kiltprotocol/sdk-js`
+- install typescript with `npm install typescript`
+- make a new file. E.g. `getting-started.ts`
+- execute file with `npx ts-node getting-started.ts`
+
 ## How to generate an Identity
 
 To generate an Identity first you have to generate a [BIP39 mnemonic](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and then use it to create the Identity:
 
 ```typescript
-import Kilt from '@kiltprotocol/sdk'
+import Kilt from '@kiltprotocol/sdk-js'
 
 const mnemonic = Kilt.Identity.generateMnemonic()
 // mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
@@ -24,7 +31,7 @@ First we build a JSON Schema for the CTYPE:
 import Kilt, {
    ICType,
    CTypeUtils,
-} from '@kiltprotocol/sdk'
+} from '@kiltprotocol/sdk-js'
 
 const ctypeSchema: ICType['schema'] = {
   $id: 'DriversLicense',
@@ -129,7 +136,7 @@ const rawClaim = {
 
 Now we can easily create the KILT compliant claim. We have to include the full CType object, the raw claim object and the address of the owner/creator of the claim in the contstructor:
 ```typescript
-import Kilt from '@kiltprotocol/sdk'
+import Kilt from '@kiltprotocol/sdk-js'
 
 const claim = new Kilt.Claim(ctype, rawClaim, claimer)
 ```
@@ -148,7 +155,7 @@ Claim {
 
 First, we need to build a request for an attestation, which has to include a claim and the address of the Claimer. (Note that this object allows much more functionality, however, we do not go into the details here):
 ```typescript
-import Kilt from '@kiltprotocol/sdk'
+import Kilt from '@kiltprotocol/sdk-js'
 
 const requestForAttestation = new Kilt.RequestForAttestation(claim, [], claimer)
 ```
@@ -186,7 +193,7 @@ RequestForAttestation {
 
 To send the request for an attestation to an Attester, first we need to create an Attester identity:
 ```typescript
-import Kilt from '@kiltprotocol/sdk'
+import Kilt from '@kiltprotocol/sdk-js'
 
 const mnemonicForAttester = Kilt.Identity.generateMnemonic()
 const attester = Kilt.Identity.buildFromMnemonic(mnemonicForAttester)
@@ -200,7 +207,7 @@ First, we create the request for an attestation message. This includes that the 
 import Kilt, {
    IRequestAttestationForClaim,
    MessageBodyType
-} from '@kiltprotocol/sdk'
+} from '@kiltprotocol/sdk-js'
 
 const messageBody: IRequestAttestationForClaim = {
   content: requestForAttestation,
@@ -245,7 +252,7 @@ const encrypted = message.getEncryptedMessage()
 
 The messaging system is transport agnostic. When the Attester receives the request message, she can check the validity of the message to make sure that nobody has tampered with it on the way:
 ```typescript
-import Message from '@kiltprotocol/sdk'
+import Message from '@kiltprotocol/sdk-js'
 
 Message.ensureHashAndSignature(encrypted, claimer)
 ```
@@ -336,7 +343,7 @@ AttestedClaim {
 
 The Attester has to send the `attestedClaim` object back to the Claimer in the following message:
 ```typescript
-import ISubmitAttestationForClaim from '@kiltprotocol/sdk'
+import ISubmitAttestationForClaim from '@kiltprotocol/sdk-js'
 
 const messageBodyBack: ISubmitAttestationForClaim = {
   content: attestedClaim,

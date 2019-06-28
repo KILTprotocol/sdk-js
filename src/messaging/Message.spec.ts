@@ -30,7 +30,6 @@ describe('Messaging', () => {
 
     const decryptedMessage: IMessage = Message.createFromEncryptedMessage(
       encryptedMessage,
-      identityAlice.getPublicIdentity(),
       identityBob
     )
     expect(JSON.stringify(messageBody)).toEqual(
@@ -42,11 +41,7 @@ describe('Messaging', () => {
     ) as IEncryptedMessage
     encryptedMessageWrongHash.hash = '0x00000000'
     expect(() =>
-      Message.createFromEncryptedMessage(
-        encryptedMessageWrongHash,
-        identityAlice.getPublicIdentity(),
-        identityBob
-      )
+      Message.createFromEncryptedMessage(encryptedMessageWrongHash, identityBob)
     ).toThrowError(new Error('Hash of message not correct'))
 
     const encryptedMessageWrongSignature: IEncryptedMessage = JSON.parse(
@@ -60,7 +55,6 @@ describe('Messaging', () => {
     expect(() =>
       Message.createFromEncryptedMessage(
         encryptedMessageWrongSignature,
-        identityAlice.getPublicIdentity(),
         identityBob
       )
     ).toThrowError(new Error('Signature of message not correct'))
@@ -81,7 +75,6 @@ describe('Messaging', () => {
       expect(() =>
         Message.createFromEncryptedMessage(
           encryptedMessageWrongContent,
-          identityAlice.getPublicIdentity(),
           identityBob
         )
       ).toThrowError(new Error('Error decoding message'))
@@ -102,13 +95,10 @@ describe('Messaging', () => {
       nonce: encryptedWrongBody.nonce,
       hash: hashStrBadContent,
       signature: identityAlice.signStr(hashStrBadContent),
+      senderBoxPublicKey: encryptedMessage.senderBoxPublicKey,
     } as IEncryptedMessage
     expect(() =>
-      Message.createFromEncryptedMessage(
-        encryptedMessageWrongBody,
-        identityAlice.getPublicIdentity(),
-        identityBob
-      )
+      Message.createFromEncryptedMessage(encryptedMessageWrongBody, identityBob)
     ).toThrowError(new Error('Error parsing message body'))
   })
 

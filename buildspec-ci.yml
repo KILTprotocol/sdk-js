@@ -4,8 +4,8 @@ phases:
   build:
     commands:
     - echo Run build / lint / test
-    - docker build -t prototype-sdk . 
-    - docker run prototype-sdk yarn build
-    - docker run prototype-sdk yarn lint
-    - docker run prototype-sdk yarn testCI
+    - docker build -t sdk-js . 
+    - docker run sdk-js yarn build
+    - docker run sdk-js yarn lint
+    - docker run sdk-js yarn testCI
     - echo Build / lint / test successful!

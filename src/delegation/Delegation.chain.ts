@@ -1,3 +1,6 @@
+/**
+ * @module Delegation
+ */
 import { getCached } from '../blockchainApiConnection'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { CodecWithId } from '../delegation/DelegationDecoder'

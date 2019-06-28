@@ -1,3 +1,6 @@
+/**
+ * @module Utils
+ */
 import { v4 as uuid } from 'uuid'
 import { Hash } from '@polkadot/types'
 

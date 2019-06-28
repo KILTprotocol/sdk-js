@@ -1,3 +1,6 @@
+/**
+ * @module ErrorHandling
+ */
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types'
 import { MetadataModule } from '@polkadot/types/Metadata/v2/Metadata'
