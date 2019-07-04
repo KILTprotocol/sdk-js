@@ -261,7 +261,6 @@ and the Attester (and only she) can also decrypt it:
 ```typescript
 const decrypted = Message.createFromEncryptedMessage(
   encrypted,
-  claimer,
   attester
 )
 ```
