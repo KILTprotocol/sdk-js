@@ -48,9 +48,15 @@ export default class AttestedClaim implements IAttestedClaim {
     return this.attestation.claimHash
   }
 
-  public createPresentation(excludedClaimProperties: string[]): AttestedClaim {
+  public createPresentation(
+    excludedClaimProperties: string[],
+    excludeIdentity: boolean = false
+  ): AttestedClaim {
     const result: AttestedClaim = AttestedClaim.fromObject(cloneDeep(this))
     result.request.removeClaimProperties(excludedClaimProperties)
+    if (excludeIdentity) {
+      result.request.removeClaimOwner()
+    }
     return result
   }
 }
