@@ -13,7 +13,7 @@ import {
   decodeDid,
 } from '../did/Did.utils'
 import Identity from '../identity/Identity'
-import { TxStatus } from '../blockchain/TxStatus'
+import TxStatus from '../blockchain/TxStatus'
 import IPublicIdentity from '../types/PublicIdentity'
 
 export async function queryByIdentifier(

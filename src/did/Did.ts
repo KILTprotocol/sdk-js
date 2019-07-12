@@ -3,7 +3,7 @@
  */
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
-import { TxStatus } from '../blockchain/TxStatus'
+import TxStatus from '../blockchain/TxStatus'
 import { getIdentifierFromAddress } from './Did.utils'
 import { store, queryByAddress, queryByIdentifier, remove } from './Did.chain'
 
@@ -15,25 +15,63 @@ export const KEY_TYPE_SIGNATURE = 'Ed25519VerificationKey2018'
 export const KEY_TYPE_ENCRYPTION = 'X25519Salsa20Poly1305Key2018'
 
 export interface IDid {
+  /**
+   * The DID identifier under which it is store on chain.
+   */
   identifier: string
+  /**
+   * The public box key of the associated identity.
+   */
   publicBoxKey: string
+  /**
+   * The public signing key of the associated identity.
+   */
   publicSigningKey: string
+  /**
+   * The document store reference.
+   */
   documentStore?: string
 }
 
 export default class Did implements IDid {
+  /**
+   * @description Queries the [Did] from chain using the [identifier]
+   *
+   * @param identifier the DIDs identifier
+   * @returns promise containing the [[Did]] or [undefined]
+   */
   public static queryByIdentifier(identifier: string) {
     return queryByIdentifier(identifier)
   }
+
+  /**
+   * @description Queries the [Did] from chain using the [address]
+   *
+   * @param address the DIDs address
+   * @returns promise containing the [[Did]] or [undefined]
+   */
   public static queryByAddress(address: string) {
     return queryByAddress(address)
   }
 
+  /**
+   * @description Removes the [[Did]] attached to [identity] from chain
+   *
+   * @param identity the identity for which to delete the [[Did]]
+   * @returns promise containing the [[TxStatus]]
+   */
   public static async remove(identity: Identity) {
     log.debug(`Create tx for 'did.remove'`)
     return remove(identity)
   }
 
+  /**
+   * @description Builds a [[Did]] from the given [identity].
+   *
+   * @param identity the identity used to build the [[Did]]
+   * @param documentStore optional document store reference
+   * @returns the [[Did]]
+   */
   public static fromIdentity(identity: Identity, documentStore?: string): Did {
     const identifier = getIdentifierFromAddress(identity.address)
     return new Did(
@@ -61,11 +99,23 @@ export default class Did implements IDid {
     this.documentStore = documentStore
   }
 
+  /**
+   * @description Stores the [[Did]] on chain
+   *
+   * @param identity the identity used to store the [[Did]] on chain
+   * @returns promise containing the [[TxStatus]]
+   */
   public async store(identity: Identity): Promise<TxStatus> {
     log.debug(`Create tx for 'did.add'`)
     return store(this, identity)
   }
 
+  /**
+   * @description Builds the default DID document from this [[Did]]
+   *
+   * @param kiltServiceEndpoint URI pointing to the service endpoint
+   * @returns the default DID document
+   */
   public getDefaultDocument(kiltServiceEndpoint?: string): object {
     const result = {
       id: this.identifier,

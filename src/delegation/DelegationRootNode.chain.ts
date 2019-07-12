@@ -7,7 +7,7 @@ import { CodecResult } from '@polkadot/api/promise/types'
 import { getCached } from '../blockchainApiConnection'
 import { decodeRootDelegation } from '../delegation/DelegationDecoder'
 import DelegationRootNode from '../delegation/DelegationRootNode'
-import { TxStatus } from '../blockchain/TxStatus'
+import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import { IDelegationRootNode } from '../types/Delegation'
 

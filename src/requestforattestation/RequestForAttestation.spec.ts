@@ -62,4 +62,26 @@ describe('RequestForAttestation', () => {
     delete request.claimHashTree[propertyName]
     expect(request.verifyData()).toBeFalsy()
   })
+
+  it('hides the claim owner', () => {
+    const request = buildRequestForAttestation(identityBob, 'ctype', {}, [])
+    request.removeClaimOwner()
+    expect(request.claimOwner.nonce).toBeUndefined()
+    expect(request.claim.owner).toBeUndefined()
+  })
+
+  it('hides claim properties', () => {
+    const request = buildRequestForAttestation(
+      identityBob,
+      'ctype',
+      { a: 'a', b: 'b' },
+      []
+    )
+    request.removeClaimProperties(['a'])
+
+    expect((request.claim.contents as any).a).toBeUndefined()
+    expect((request.claimHashTree as any).a.nonce).toBeUndefined()
+    expect((request.claim.contents as any).b).toBe('b')
+    expect((request.claimHashTree as any).b.nonce).toBeDefined()
+  })
 })

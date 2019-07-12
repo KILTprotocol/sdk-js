@@ -61,6 +61,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   public claim: IClaim
+  public claimOwner: NonceHash
   public claimerSignature: string
   public claimHashTree: object
   public ctypeHash: NonceHash
@@ -79,6 +80,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       throw Error('Claim owner is not identity')
     }
     this.claim = claim
+    this.claimOwner = generateHash(this.claim.owner)
     this.ctypeHash = generateHash(this.claim.cType)
     this.legitimations = legitimations
     this.delegationId = delegationId
@@ -98,11 +100,26 @@ export default class RequestForAttestation implements IRequestForAttestation {
     })
   }
 
+  public removeClaimOwner() {
+    delete this.claim.owner
+    delete this.claimOwner.nonce
+  }
+
   public verifyData(): boolean {
     // check claim hash
     if (this.hash !== this.calculateRootHash()) {
       return false
     }
+    // check claim owner hash
+    if (this.claim.owner) {
+      if (
+        this.claimOwner.hash !==
+        hashNonceValue(this.claimOwner.nonce, this.claim.owner)
+      ) {
+        throw Error('Invalid hash for claim owner')
+      }
+    }
+
     // check cType hash
     if (
       this.ctypeHash.hash !==
@@ -110,6 +127,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     ) {
       throw Error('Invalid hash for CTYPE')
     }
+
     // check all hashes for provided claim properties
     for (const key of Object.keys(this.claim.contents)) {
       const value: any = this.claim.contents[key]
@@ -143,6 +161,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
   private getHashLeaves(): Uint8Array[] {
     const result: Uint8Array[] = []
+    result.push(coToUInt8(this.claimOwner.hash))
     result.push(coToUInt8(this.ctypeHash.hash))
     for (const key of Object.keys(this.claimHashTree)) {
       result.push(coToUInt8(this.claimHashTree[key].hash))

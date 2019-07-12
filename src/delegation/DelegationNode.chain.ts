@@ -9,7 +9,7 @@ import { getCached } from '../blockchainApiConnection'
 import { decodeDelegationNode } from '../delegation/DelegationDecoder'
 import DelegationNode from '../delegation/DelegationNode'
 import { permissionsAsBitset } from '../delegation/DelegationNode.utils'
-import { TxStatus } from '../blockchain/TxStatus'
+import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import { IDelegationNode } from '../types/Delegation'
 
