@@ -7,8 +7,8 @@ import { KeyringPair } from '@polkadot/keyring/types'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
 import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
-import * as stringUtil from '@polkadot/util/string'
 import * as u8aUtil from '@polkadot/util/u8a'
+import { hexToU8a } from '@polkadot/util/hex'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
@@ -51,12 +51,12 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Returns a new Identity, generated from a seed string.
+   * Returns a new Identity, generated from a seed string as hex.
    *
-   * @param seedArg The seed as string
+   * @param seedArg The seed as hex string. (Starting with 0x)
    */
   public static buildFromSeedString(seedArg: string) {
-    const asU8a = stringUtil.stringToU8a(seedArg)
+    const asU8a = hexToU8a(seedArg)
     return Identity.buildFromSeed(asU8a)
   }
 
