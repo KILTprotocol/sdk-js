@@ -2,7 +2,7 @@
  * @module Delegation/DelegationRootNode
  */
 import { QueryResult } from '../blockchain/Blockchain'
-import { TxStatus } from '../blockchain/TxStatus'
+import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { IDelegationRootNode } from '../types/Delegation'

@@ -13,7 +13,7 @@ import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
-import { TxStatus } from './TxStatus'
+import TxStatus from './TxStatus'
 
 const log = LoggerFactory.getLogger('Blockchain')
 

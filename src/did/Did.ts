@@ -3,7 +3,7 @@
  */
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
-import { TxStatus } from '../blockchain/TxStatus'
+import TxStatus from '../blockchain/TxStatus'
 import { getIdentifierFromAddress } from './Did.utils'
 import { store, queryByAddress, queryByIdentifier, remove } from './Did.chain'
 

@@ -3,7 +3,7 @@
  */
 import Crypto from '../crypto'
 import { QueryResult } from '../blockchain/Blockchain'
-import { TxStatus } from '../blockchain/TxStatus'
+import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import Identity from '../identity/Identity'

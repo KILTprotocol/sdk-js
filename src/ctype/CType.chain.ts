@@ -6,7 +6,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 
 import { QueryResult } from '../blockchain/Blockchain'
 import { getCached } from '../blockchainApiConnection'
-import { TxStatus } from '../blockchain/TxStatus'
+import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
 import { factory } from '../config/ConfigLog'

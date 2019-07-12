@@ -1,7 +1,7 @@
 /**
  * @module Attestation
  */
-import { TxStatus } from '../blockchain/TxStatus'
+import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import IAttestation from '../types/Attestation'

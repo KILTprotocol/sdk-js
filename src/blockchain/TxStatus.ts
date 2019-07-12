@@ -2,6 +2,6 @@
  * @module Blockchain
  */
 
-export class TxStatus {
+export default class TxStatus {
   constructor(public type: string | undefined, payload?: any) {}
 }
