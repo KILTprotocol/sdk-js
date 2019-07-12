@@ -114,7 +114,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     if (this.claim.owner) {
       if (
         this.claimOwner.hash !==
-        hashNonceValue(this.claimOwner.hash, this.claim.owner)
+        hashNonceValue(this.claimOwner.nonce, this.claim.owner)
       ) {
         throw Error('Invalid hash for claim owner')
       }
