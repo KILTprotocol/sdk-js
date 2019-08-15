@@ -1,15 +1,15 @@
 [![](https://user-images.githubusercontent.com/1248214/57789522-600fcc00-7739-11e9-86d9-73d7032f40fc.png)
 ](https://kilt.io)
 
-    Data sovereignty and interoperability
+Data sovereignty and interoperability
 
 # Mash-Net SDK
 
 The open-source KILT's SDK testnet is written in TypeScript and enables developers to build, play and design permissionless blockchain apps and businesses. [KILT](https://kilt.io) network provides a system for self-sovereign data and interoperability. The SDK provides collection of classes and methods developers can utilize to interact with the KILT Network.
 
-ADD EXAMPLE
+KILT enables the user to describe and attest any kind of characteristics of persons, organisations and even objects in a standardised way.
 
-> _To learn more about the KILT protocol, we suggest further reading from the KILT [Whitepaper](https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf) with more detailing of the System Architecture in chapter 7_.
+> _To learn more about the KILT protocol, we suggest further reading from the KILT [Whitepaper](https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf) with more detailing of the System Architecture in chapter 7 or check out [how it works](https://kilt.io/kilt-data-sovereignty-and-interoperability/)_.
 
 ## How to use
 
