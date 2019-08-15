@@ -9,13 +9,31 @@ The open-source KILT's SDK testnet is written in TypeScript and enables develope
 
 KILT enables the user to describe and attest any kind of characteristics of persons, organisations and even objects in a standardised way.
 
-> _To learn more about the KILT protocol, we suggest further reading from the KILT [Whitepaper](https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf) with more detailing of the System Architecture in chapter 7 or check out [how it works](https://kilt.io/kilt-data-sovereignty-and-interoperability/)_.
+> _To learn more about the KILT protocol, we suggest further reading from the KILT [Whitepaper](https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf) with more detailing of the System Architecture in chapter 7 or check out our [how it works](https://kilt.io/kilt-data-sovereignty-and-interoperability/) video_.
 
-## How to use
+## Tutorials
 
-What to learn how to connect to the KILT Network try the [getting started guide](./docs/getting-started.md), or look to browse the [API documentation](https://kiltprotocol.github.io/sdk-js/api).
+Tutorials to get you started. Connect to the KILT Network try the [getting started guide](./docs/getting-started.md), or look to browse the [API documentation](https://kiltprotocol.github.io/sdk-js/api).
 
-Use within your project with `yarn add @kilt/sdk-js`
+KILT offers a [workshop](https://github.com/KILTprotocol/kilt-workshop-101) tutorial for those interested in an introduction on how to use the SDK code.
+
+Maybe you are looking for a place to test all features of the KILT Protocol? Try our [demo client](https://kilt.io/developers-sub/kilt-demo-client/), or you want to see what goes under the hood? Check out the [demo client code](https://github.com/KILTprotocol/demo-client)
+
+## Installation
+
+Install the KILT-SDK by running the following commands:
+
+```bash
+npm init -y
+npm i @kiltprotocol/sdk-js
+```
+
+Or with `yarn`:
+
+```bash
+yarn init -y
+yarn add @kiltprotocol/sdk-js
+```
 
 ## Development setup
 
@@ -58,11 +76,21 @@ Test coverage does not seem to be fail in all cases, except for testWatch.
 If the sdk build fails on AWS, please check the error log. Usually it says
 
 ```
+
 npm ERR! publish Failed PUT 403
 npm ERR! code E403
 npm ERR! You cannot publish over the previously published versions: 0.0.3. : @kiltprotocol/sdk-js
+
 ```
 
 This is on purpose as a new push to master branch triggers a build, but should not automatically and unintended release a new version.
 
 Please update package.json's version in order to publish a new version to the registry by AWS after pushing to master.
+
+## Job Board
+
+Check to see if we have any [Job Offers](https://kilt.io/job-offers/)
+
+```
+
+```
