@@ -11,15 +11,23 @@ KILT enables the user to describe and attest any kind of characteristics of pers
 
 > _To learn more about the KILT protocol, we suggest further reading from the KILT [Whitepaper](https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf) with more detailing of the System Architecture in chapter 7 or check out our [how it works](https://kilt.io/kilt-data-sovereignty-and-interoperability/) video_.
 
+---
+
 ## Tutorials
 
-Tutorials to get you started. Connect to the KILT Network try the [getting started guide](./docs/getting-started.md), or look to browse the [API documentation](https://kiltprotocol.github.io/sdk-js/api).
+Looking to get started, how about trying some of our tutorials?
 
-KILT offers a [workshop](https://github.com/KILTprotocol/kilt-workshop-101) tutorial for those interested in an introduction on how to use the SDK code.
+- [Getting started guide](./docs/getting-started.md) allows developers or businesses to build their applications on top of the KILT protocol, with a barebones example.
 
-Maybe you are looking for a place to test all features of the KILT Protocol? Try our [demo client](https://kilt.io/developers-sub/kilt-demo-client/), or you want to see what goes under the hood? Check out the [demo client code](https://github.com/KILTprotocol/demo-client)
+- Maybe, you are interested in having a look at our [API documentation](https://kiltprotocol.github.io/sdk-js/api)? You can read through our collection of classes and methods and use them in your next project.
 
-## Installation
+- KILT offers a [workshop](https://github.com/KILTprotocol/kilt-workshop-101) tutorial for those interested in an introduction on how to use the SDK code and walkthrough.
+
+- Perhaps you are looking for a place to test a working demo of all the features of the KILT Protocol? Try our [demo client](https://kilt.io/developers-sub/kilt-demo-client/). Dive under the hood and check out [demo client code](https://github.com/KILTprotocol/demo-client)
+
+---
+
+## Quick Installation
 
 Install the KILT-SDK by running the following commands:
 
@@ -34,6 +42,8 @@ Or with `yarn`:
 yarn init -y
 yarn add @kiltprotocol/sdk-js
 ```
+
+---
 
 ## Development setup
 
