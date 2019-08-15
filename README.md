@@ -11,8 +11,6 @@ KILT enables the user to describe and attest any kind of characteristics of pers
 
 > _To learn more about the KILT protocol, we suggest further reading from the KILT [Whitepaper](https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf) with more detailing of the System Architecture in chapter 7 or check out our [how it works](https://kilt.io/kilt-data-sovereignty-and-interoperability/) video_.
 
----
-
 ## Tutorials
 
 Looking to get started, how about trying some of our tutorials?
@@ -25,45 +23,101 @@ Looking to get started, how about trying some of our tutorials?
 
 - Perhaps you are looking for a place to test a working demo of all the features of the KILT Protocol? Try our [demo client](https://kilt.io/developers-sub/kilt-demo-client/). Dive under the hood and check out [demo client code](https://github.com/KILTprotocol/demo-client)
 
----
-
 ## Quick Installation
 
 Install the KILT-SDK by running the following commands:
 
 ```bash
-npm init -y
-npm i @kiltprotocol/sdk-js
+
+    npm init -y
+    npm i @kiltprotocol/sdk-js
+
 ```
 
 Or with `yarn`:
 
 ```bash
-yarn init -y
-yarn add @kiltprotocol/sdk-js
-```
 
----
+    yarn init -y
+    yarn add @kiltprotocol/sdk-js
+
+```
 
 ## Development setup
 
 You can use different SDK branches or versions, by linking it into your projects locally.
 
-Execute `yarn link` in the SDK and copy the command in the output, which should look like this:
+Execute a `link` in the SDK and copy the command in the output, which should look like this:
 
-`yarn link "@kiltprotocol/sdk-js"`
+```
+
+    npm link "@kiltprotocol/sdk-js"
+
+```
+
+or with `yarn`
+
+```
+
+    yarn link "@kiltprotocol/sdk-js"
+
+```
 
 Go into your project folder and execute that second command.
 
 The SDK is now symlinked in your projects `node_modules` folder
 
-Before you see your changes from the SDK, you have to build it, by executing `yarn build`.
+Before you see your changes from the SDK, you have to build it, by executing a `build`
 
-### Removing the link
+```
 
-Execute `yarn unlink "@kiltprotocol/sdk-js"` in the project folder.
+    npm run build
 
-After that execute `yarn install --check-files` to get the version from the registry back.
+```
+
+or with `yarn`
+
+```
+
+    yarn run build
+
+```
+
+## Removing the link
+
+If you need to remove KILT from your project
+
+Execute `unlink` command in the project folder.
+
+```
+
+    npm unlink "@kiltprotocol/sdk-js"
+
+```
+
+or with `yarn`
+
+```
+
+    yarn unlink "@kiltprotocol/sdk-js"
+
+```
+
+After that execute `install --check-files` to get the version from the registry back
+
+```
+
+    npm install --check-files
+
+```
+
+or with `yarn`
+
+```
+
+    yarn install --check-files
+
+```
 
 ## Release / Deployment
 
@@ -87,9 +141,9 @@ If the sdk build fails on AWS, please check the error log. Usually it says
 
 ```
 
-npm ERR! publish Failed PUT 403
-npm ERR! code E403
-npm ERR! You cannot publish over the previously published versions: 0.0.3. : @kiltprotocol/sdk-js
+    npm ERR! publish Failed PUT 403
+    npm ERR! code E403
+    npm ERR! You cannot publish over the previously published versions: 0.0.3. : @kiltprotocol/sdk-js
 
 ```
 
@@ -100,7 +154,3 @@ Please update package.json's version in order to publish a new version to the re
 ## Job Board
 
 Check to see if we have any [Job Offers](https://kilt.io/job-offers/)
-
-```
-
-```
