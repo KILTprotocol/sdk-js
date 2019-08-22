@@ -7,23 +7,26 @@ Data sovereignty and interoperability
 
 The open-source KILT's SDK testnet is written in TypeScript and enables developers to build, play and design permissionless blockchain apps and businesses. [KILT](https://kilt.io) network provides a system for self-sovereign data and interoperability. The SDK provides collection of classes and methods developers can utilize to interact with the KILT Network.
 
-KILT enables the user to describe and attest any kind of characteristics of persons, organisations and even objects in a standardised way.
+- **Self-sovereign data.** Have ownership of your digital and analog identities, with control over who you share that data with. Providing that extra layer of flexiblity and security.
 
-> _To learn more about the KILT protocol, we suggest further reading from the KILT [Whitepaper](https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf) with more detailing of the System Architecture in chapter 7 or check out our [how it works](https://kilt.io/kilt-data-sovereignty-and-interoperability/) video_.
+- **Interoperability.** The ability to search information freely between other blockchains.
 
-## Tutorials
+To learn more from the KILT [Whitepaper](https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf) or see our [how it works](https://kilt.io/kilt-data-sovereignty-and-interoperability/) video.
 
-Looking to get started, how about trying some of our tutorials?
+## Documentation
 
-- [Getting started guide](./docs/getting-started.md) allows developers or businesses to build their applications on top of the KILT protocol, with a barebones example.
+KILT documentation is provided in several guides and demos.
 
-- Maybe, you are interested in having a look at our [API documentation](https://kiltprotocol.github.io/sdk-js/api)? You can read through our collection of classes and methods and use them in your next project.
+- [Quick start guide](./docs/quick-start-guide.md)
+- [Getting started guide](./docs/getting-started.md)
+- [API documentation](https://kiltprotocol.github.io/sdk-js/api)
+- [KILT workshop](https://github.com/KILTprotocol/kilt-workshop-101)
+- [Demo client](https://kilt.io/developers-sub/kilt-demo-client/)
+- [Demo client code](https://github.com/KILTprotocol/demo-client)
 
-- KILT offers a [workshop](https://github.com/KILTprotocol/kilt-workshop-101) tutorial for those interested in an introduction on how to use the SDK code and walkthrough.
+To help improve, please see our [contribution page](./docs/contribution-guide.md).
 
-- Perhaps you are looking for a place to test a working demo of all the features of the KILT Protocol? Try our [demo client](https://kilt.io/developers-sub/kilt-demo-client/). Dive under the hood and check out [demo client code](https://github.com/KILTprotocol/demo-client)
-
-## Quick Installation
+## How to install the SDK
 
 Install the KILT-SDK by running the following commands:
 
@@ -43,114 +46,41 @@ Or with `yarn`:
 
 ```
 
-## Development setup
+## Example
 
-You can use different SDK branches or versions, by linking it into your projects locally.
+More examples can be found within our [getting started guide](./docs/getting-started.md).
 
-Execute a `link` in the SDK and copy the command in the output, which should look like this:
+A claim type (CTYPE) can be credentials, of any kind, e.g. drivers license.
 
-```
+Building a claim must be done by the defined CTYPE respective fields.
 
-    npm link "@kiltprotocol/sdk-js"
+Now we can easily create the KILT compliant claim. We have to include the full CType object, the raw claim object and the address of the owner/creator of the claim in the contstructor:
 
-```
+```TypeScript
 
-or with `yarn`
+ const rawClaim = {
+  name: 'Alice',
+  age: 29,
+  }
 
-```
+  const claim = new Kilt.Claim(ctype, rawClaim, claimer)
 
-    yarn link "@kiltprotocol/sdk-js"
-
-```
-
-Go into your project folder and execute that second command.
-
-The SDK is now symlinked in your projects `node_modules` folder
-
-Before you see your changes from the SDK, you have to build it, by executing a `build`
-
-```
-
-    npm run build
+  Claim {
+  cType:
+   '0x5a9d939af9fb5423e3e283f16996438da635de8dc152b13d3a67f01e3d6b0fc0',
+  contents: { name: 'Alice', age: 29 },
+  owner: '5EvSHoZF23mZS4XKQBLdqMv7a7CRSANJmxn7XDu6hwoiK4Wz' }
 
 ```
 
-or with `yarn`
+## Development Setup
 
-```
-
-    yarn run build
-
-```
-
-## Removing the link
-
-If you need to remove KILT from your project
-
-Execute `unlink` command in the project folder.
-
-```
-
-    npm unlink "@kiltprotocol/sdk-js"
-
-```
-
-or with `yarn`
-
-```
-
-    yarn unlink "@kiltprotocol/sdk-js"
-
-```
-
-After that execute `install --check-files` to get the version from the registry back
-
-```
-
-    npm install --check-files
-
-```
-
-or with `yarn`
-
-```
-
-    yarn install --check-files
-
-```
-
-## Release / Deployment
-
-Deployment is triggered by a push to the master branch as a result to a release build.
-
-To build a release, start the release build job for the SDK in _AWS CodeBuild_. See [here](https://github.com/KILTprotocol/release-build-job/blob/master/README.md#usage) for more info on building releases.
-
-As a result of a release build, a new version of the SDK is published to the NPM registry.
-
-_Note: Don't forget to reference the correct version in the client and services_
-
-## NB
-
-Test coverage does not seem to be fail in all cases, except for testWatch.
-
-## FAQ
-
-### AWS build fails
-
-If the sdk build fails on AWS, please check the error log. Usually it says
-
-```
-
-    npm ERR! publish Failed PUT 403
-    npm ERR! code E403
-    npm ERR! You cannot publish over the previously published versions: 0.0.3. : @kiltprotocol/sdk-js
-
-```
-
-This is on purpose as a new push to master branch triggers a build, but should not automatically and unintended release a new version.
-
-Please update package.json's version in order to publish a new version to the registry by AWS after pushing to master.
+[Development Setup](./docs/Contribution.md)
 
 ## Job Board
 
 Check to see if we have any [Job Offers](https://kilt.io/job-offers/)
+
+## License
+
+[License](https://github.com/KILTprotocol/sdk-js/blob/develop/LICENSE)
