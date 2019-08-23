@@ -6,12 +6,12 @@ import { CodecResult } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
 
 import { getCached } from '../blockchainApiConnection'
-import { IDid } from '../did/Did'
+import { IDid } from './Did'
 import {
   getAddressFromIdentifier,
   getIdentifierFromAddress,
   decodeDid,
-} from '../did/Did.utils'
+} from './Did.utils'
 import Identity from '../identity/Identity'
 import TxStatus from '../blockchain/TxStatus'
 import IPublicIdentity from '../types/PublicIdentity'

@@ -1,5 +1,5 @@
 import Identity from '../identity/Identity'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import RequestForAttestation from './RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import IClaim from '../types/Claim'
@@ -57,7 +57,7 @@ describe('RequestForAttestation', () => {
     expect(request.verifyData()).toBeTruthy()
 
     // just deleting a field will result in a wrong proof
-    const propertyName: string = 'a'
+    const propertyName = 'a'
     delete request.claim.contents[propertyName]
     delete request.claimHashTree[propertyName]
     expect(request.verifyData()).toBeFalsy()

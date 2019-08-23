@@ -19,9 +19,11 @@
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "prettier"
     ],
     "rules": {
+        "prettier/prettier": "error",
         "semi": ["error", "never"],
         "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
         "@typescript-eslint/explicit-function-return-type": ["warn", {
@@ -34,8 +36,12 @@
     "overrides": [
         {
             "files": ["**/*.spec.ts"],
+            "env": {
+                "jest": true
+            },
             "rules": {
                 "@typescript-eslint/no-object-literal-type-assertion": "off",
+                "@typescript-eslint/no-explicit-any": "off",
                 "no-underscore-dangle": "off",
                 "global-require": "off"
             }

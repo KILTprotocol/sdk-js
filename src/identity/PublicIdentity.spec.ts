@@ -10,20 +10,25 @@ describe('PublicIdentity', () => {
   it('should resolve internal and external dids', async () => {
     require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
       id => {
-        const tuple =
-          id === '1'
-            ? new Tuple(
-                // (root-id, parent-id?, account, permissions, revoked)
-                [Text, Text, Text],
-                ['pub-key', 'box-key', '0x80001f']
-              )
-            : id === '2'
-            ? new Tuple(
-                // (root-id, parent-id?, account, permissions, revoked)
-                [Text, Text, Text],
-                ['pub-key', 'box-key', undefined]
-              )
-            : undefined
+        let tuple
+        switch (id) {
+          case '1':
+            tuple = new Tuple(
+              // (root-id, parent-id?, account, permissions, revoked)
+              [Text, Text, Text],
+              ['pub-key', 'box-key', '0x80001f']
+            )
+            break
+          case '2':
+            tuple = new Tuple(
+              // (root-id, parent-id?, account, permissions, revoked)
+              [Text, Text, Text],
+              ['pub-key', 'box-key', undefined]
+            )
+            break
+          default:
+            tuple = undefined
+        }
         return Promise.resolve(tuple)
       }
     )
@@ -31,7 +36,7 @@ describe('PublicIdentity', () => {
     const externalPubId:
       | IPublicIdentity
       | undefined = await PublicIdentity.resolveFromDid('did:sov:1', {
-      resolve: async (url: string): Promise<object> => {
+      resolve: async (): Promise<object> => {
         return {
           didDocument: {
             id: 'external-id',
@@ -62,7 +67,7 @@ describe('PublicIdentity', () => {
     const internalPubId:
       | IPublicIdentity
       | undefined = await PublicIdentity.resolveFromDid('did:kilt:1', {
-      resolve: async (url: string): Promise<object> => {
+      resolve: async (): Promise<object> => {
         return {
           id: 'internal-id',
           publicKey: [
@@ -102,7 +107,7 @@ describe('PublicIdentity', () => {
 
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (url: string): Promise<object> => {
+        resolve: async (): Promise<object> => {
           return {
             id: 'internal-id',
             publicKey: [],
@@ -113,7 +118,7 @@ describe('PublicIdentity', () => {
     ).toEqual(undefined)
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (url: string): Promise<object> => {
+        resolve: async (): Promise<object> => {
           return {
             id: 'internal-id',
             service: [],
@@ -123,7 +128,7 @@ describe('PublicIdentity', () => {
     ).toEqual(undefined)
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (url: string): Promise<object> => {
+        resolve: async (): Promise<object> => {
           return {
             publicKey: [],
             service: [],
