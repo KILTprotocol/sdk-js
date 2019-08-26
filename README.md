@@ -58,6 +58,7 @@ Now we can easily create the KILT compliant claim. We have to include the full C
 
 ```TypeScript
 
+
     const rawClaim = {
      name: 'Alice',
      age: 29,
