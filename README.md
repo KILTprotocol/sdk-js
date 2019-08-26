@@ -75,7 +75,7 @@ Now we can easily create the KILT compliant claim. We have to include the full C
 
 ## Development Setup
 
-[Development Setup](./docs/Contribution.md)
+[Development Setup](./docs/development-setup.md)
 
 ## Job Board
 
