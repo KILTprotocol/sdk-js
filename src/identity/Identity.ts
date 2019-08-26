@@ -1,5 +1,13 @@
 /**
  * @module Identity
+ * --- Overview ---
+ * Identities are a core building block of the KILT SDK.
+ * An Identity object represent an entity - be it a person, an organization, a machine or other.
+ * --- Usage ---
+ * An Identity object is built via a seed phrase or other, and can later be restored.
+ * An Identity object has a signature keypair, an associated public address, and an encryption ("boxing") keypair. These are needed to:
+ * * create a signed Claim/an Attestation/other (and verify these later);
+ * * encrypt messages between participants.
  */
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { Keyring } from '@polkadot/keyring'
