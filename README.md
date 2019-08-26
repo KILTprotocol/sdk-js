@@ -5,22 +5,22 @@ Data sovereignty and interoperability
 
 # Mash-Net SDK
 
-The open-source KILT's SDK testnet is written in TypeScript and enables developers to build, play and design permissionless blockchain apps and businesses. [KILT](https://kilt.io) network provides a system for self-sovereign data and interoperability. The SDK provides collection of classes and methods developers can utilize to interact with the KILT Network.
+The open-source KILT SDK is written in TypeScript and enables you to quickly and easily build dApps around new business use cases. KILT is a protocol for self-sovereign data and interoperability built on top of the permissionless KILT blockchain. The SDK provides collection of classes and methods you can utilize to interact with the KILT Protocol.
 
-- **Self-sovereign data.** Have ownership of your digital and analog identities, with control over who you share that data with. Providing that extra layer of flexiblity and security.
+- **Self-sovereign data.** Have ownership of your digital and analog identities, with control over who your users share that data with. Providing that extra layer of flexiblity and security.
 
-- **Interoperability.** The ability to search information freely between other blockchains.
+- **Interoperability.** Claim Types (CTYPEs) facilitate the adoption of standardised credential content structures.
 
-To learn more from the KILT [Whitepaper](https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf) or see our [how it works](https://kilt.io/kilt-data-sovereignty-and-interoperability/) video.
+To learn more, checkout the KILT [Whitepaper](https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf) or see our [how it works](https://kilt.io/kilt-data-sovereignty-and-interoperability/) video.
 
 ## Documentation
 
-KILT documentation is provided in several guides and demos.
+[KILT](https://kilt.io) documentation is provided in several guides and demos.
 
+- [KILT workshop](https://github.com/KILTprotocol/kilt-workshop-101) 👈 Start here to get familiar with the basics
+- [Getting started guide](./docs/getting-started.md) 👈 Start here if you'd like to include KILT in your project
 - [Quick start guide](./docs/quick-start-guide.md)
-- [Getting started guide](./docs/getting-started.md)
 - [API documentation](https://kiltprotocol.github.io/sdk-js/api)
-- [KILT workshop](https://github.com/KILTprotocol/kilt-workshop-101)
 - [Demo client](https://kilt.io/developers-sub/kilt-demo-client/)
 - [Demo client code](https://github.com/KILTprotocol/demo-client)
 
@@ -54,22 +54,23 @@ A claim type (CTYPE) can be credentials, of any kind, e.g. drivers license.
 
 Building a claim must be done by the defined CTYPE respective fields.
 
-Now we can easily create the KILT compliant claim. We have to include the full CType object, the raw claim object and the address of the owner/creator of the claim in the contstructor:
+Now we can easily create the KILT compliant claim. We have to include the full CType object, the raw claim object and the address of the owner/creator of the claim in the constructor:
 
 ```TypeScript
 
- const rawClaim = {
-  name: 'Alice',
-  age: 29,
-  }
+    const rawClaim = {
+     name: 'Alice',
+     age: 29,
+     }
 
-  const claim = new Kilt.Claim(ctype, rawClaim, claimer)
+     const claim = new Kilt.Claim(ctype, rawClaim, claimer)
 
-  Claim {
-  cType:
-   '0x5a9d939af9fb5423e3e283f16996438da635de8dc152b13d3a67f01e3d6b0fc0',
-  contents: { name: 'Alice', age: 29 },
-  owner: '5EvSHoZF23mZS4XKQBLdqMv7a7CRSANJmxn7XDu6hwoiK4Wz' }
+    Claim {
+    cType:
+     '0x5a9d939af9fb5423e3e283f16996438da635de8dc152b13d3a67f01e3d6b0fc0',
+    contents: { name: 'Alice', age: 29 },
+    owner: '5EvSHoZF23mZS4XKQBLdqMv7a7CRSANJmxn7XDu6hwoiK4Wz' }
+
 
 ```
 
