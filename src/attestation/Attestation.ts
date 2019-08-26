@@ -8,6 +8,7 @@
  *  The attestation is issued by the attester, sent to and stored with the claimer. We call these attested claims Credentials.
  *
  *  Attestations will be service providers in the KILT ecosystem and the objects will be written on the blockchain.
+ *
  *  An Attestation in the real-world could be the execution of a property deed or a contract for work done.
  *
  *  --- Usage ---
@@ -16,8 +17,7 @@
  *
  * Storing an attestation must be performed with the attester’s identity (owner)
  * Attestation object can be stored in a map on the blockchain, with the claimHash as the key and a tuple of CTYPE hash, owner address a revoked as the value.
- * While the Credentials could be used and verified without writing the corresponding attestations to the chain.
- * Any attestations written on the chain is done to provide an immutable decentralised source of the status (valid or revoked) for the Credential.
+ * While the Credentials could be used and verified without writing the corresponding attestations to the chain, it is done to provide an immutable decentralised source of the status (valid or revoked) for the Credential.
  *
  * Revoke an Attestation,
  *
