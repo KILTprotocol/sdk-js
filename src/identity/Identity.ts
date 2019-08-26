@@ -8,7 +8,7 @@
  * An Identity object has a signature keypair, an associated public address, and an encryption ("boxing") keypair. These are needed to:
  * * create a signed Claim/an Attestation/other (and verify these later);
  * * encrypt messages between participants.
- * A PublicIdentity object that exposes only public information such as the public address, but doesn't expose any secrets such as private keys.
+ * A PublicIdentity object exposes only public information such as the public address, but doesn't expose any secrets such as private keys.
  */
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { Keyring } from '@polkadot/keyring'
