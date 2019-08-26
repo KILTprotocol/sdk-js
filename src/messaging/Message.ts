@@ -1,5 +1,26 @@
 /**
  * @module Messaging
+ *
+ *
+ * --- Overview ---
+ *
+ *  All messages are encrypted with the encryption keys of the involved identities.
+ *  An encrypted message is composed of the encrypted message body and surrounding data.
+ *  Every time someone sends data about an identity, he or she has to sign the message together with the challenge number (a nonce and the timestamp) to prove access to the corresponding private key.
+ *
+ * --- Usage ---
+ *
+ *  Request Attestation for Claim
+ *  Submit Attestation for Claim
+ *  Request claim for CTYPE
+ *  Submit Claim for CTYPE
+ *  Request Legitimations
+ *  Submit Legitimations
+ *  Request Accept Delegation
+ *  Submit Accept Delegation
+ *  Inform Accept Delegation
+ *
+ *
  */
 import {
   Claim,
