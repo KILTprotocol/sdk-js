@@ -1,5 +1,12 @@
 /**
  * @module AttestationPresentation
+ *
+ *  --- Overview ---
+ *
+ *  The verification of a claim, by attesting to the data and verifing the claim.
+ *
+ *
+ *
  */
 import cloneDeep from 'lodash/cloneDeep'
 import Attestation from '../attestation/Attestation'
