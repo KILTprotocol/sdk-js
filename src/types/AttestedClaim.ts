@@ -1,5 +1,6 @@
 /**
  * @module TypeInterfaces
+ * KILT-specific interfaces
  */
 import IRequestForAttestation from './RequestForAttestation'
 import IAttestation from './Attestation'
