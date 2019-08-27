@@ -1,5 +1,15 @@
 /**
  * @module Balance
+ *
+ *  --- Overview ---
+ *
+ *  The balance module provides the accounts and balance of the KILT protocol.
+ *
+ *  --- Usage ---
+ *
+ *  Checking Balances between accounts
+ *  Transfer of assets between accounts
+ *
  */
 
 import BN from 'bn.js'
