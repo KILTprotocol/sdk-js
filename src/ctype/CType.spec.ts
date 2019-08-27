@@ -3,6 +3,7 @@ import * as CTypeUtils from './CTypeUtils'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
 import ICType from '../types/CType'
+import TxStatus from '../blockchain/TxStatus'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -96,14 +97,21 @@ describe('CType', () => {
   })
 
   it('stores ctypes', async () => {
-    const resultHash = Crypto.hashStr('987654')
-    require('../blockchain/Blockchain').default.__mockResultHash = resultHash
-
     const identityAlice = Identity.buildFromURI('//Alice')
     const testHash = Crypto.hashStr('1234')
 
     const ctype = new CType(ctypeModel)
     ctype.hash = testHash
-    expect(await ctype.store(identityAlice)).toEqual(resultHash)
+    const resultCtype = {
+      ...ctype,
+      owner: identityAlice.address,
+    }
+
+    const resultTxStatus = new TxStatus('Finalised', Crypto.hashStr('987654'))
+    require('../blockchain/Blockchain').default.__mockResultHash = resultTxStatus
+
+    const result = await ctype.store(identityAlice)
+    expect(result.type).toEqual(resultTxStatus.type)
+    expect(result.payload).toMatchObject(resultCtype)
   })
 })

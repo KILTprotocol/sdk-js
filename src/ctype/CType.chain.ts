@@ -26,7 +26,10 @@ export async function store(
   > = await blockchain.api.tx.ctype.add(ctype.hash)
   const txStatus: TxStatus = await blockchain.submitTx(identity, tx)
   if (txStatus.type === 'Finalised') {
-    ctype.owner = identity.address
+    txStatus.payload = {
+      ...ctype,
+      owner: identity.address,
+    }
   }
   return txStatus
 }
