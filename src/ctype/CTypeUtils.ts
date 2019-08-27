@@ -13,10 +13,7 @@ export function verifySchemaWithErrors(
   metaModel: any,
   messages?: string[]
 ): boolean {
-  const ajv = new Ajv({
-    meta: false,
-  })
-  ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-07.json'))
+  const ajv = new Ajv()
   ajv.addMetaSchema(CTypeModel)
   const result = ajv.validate(metaModel, model)
   if (!result && ajv.errors) {
