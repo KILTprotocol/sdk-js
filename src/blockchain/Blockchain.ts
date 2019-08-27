@@ -1,5 +1,14 @@
 /**
  * @module Blockchain
+ *
+ *  --- Overview ---
+ *
+ *
+ *
+ *  --- Usage ---
+ *
+ *
+ *
  */
 import { ApiPromise } from '@polkadot/api'
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'

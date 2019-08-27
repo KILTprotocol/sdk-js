@@ -1,5 +1,6 @@
 /**
  * @module TypeInterfaces
+ * KILT-specific interfaces
  */
 import IPublicIdentity from './PublicIdentity'
 
