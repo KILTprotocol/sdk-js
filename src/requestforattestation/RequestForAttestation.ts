@@ -1,6 +1,14 @@
 /**
  * @module RequestForAttestation
+ * --- Overview ---
+ * RequestForAttestations are a core building block of the KILT SDK.
+ * A RequestForAttestation object represents a claim which needs to be attested - in practice, it's sent from a claimer to an attester. 
+ * --- Usage ---
+ * A RequestForAttestation object contains the claim and its hash, and legitimations/delegationId of the
+attester. It's signed by the claimer, to make it tamper proof (claimerSignature is a property of [[claim]]).  
+A RequestForAttestation also supports hiding of claim data during a credential presentation.
  */
+
 import { v4 as uuid } from 'uuid'
 import { IDelegationBaseNode } from '..'
 import {
