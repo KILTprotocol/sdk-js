@@ -5,6 +5,10 @@
  *
  *  Configuration of the logging
  *
+ *  --- Usage ---
+ *
+ *  Debugging of the library
+ *
  */
 import {
   LoggerFactoryOptions,
