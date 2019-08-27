@@ -1,5 +1,10 @@
 /**
  * @module ErrorHandling
+ *
+ *  --- Overview ---
+ *
+ *  Providing error handling logs.
+ *
  */
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types'
