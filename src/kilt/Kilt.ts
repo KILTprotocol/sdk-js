@@ -1,5 +1,9 @@
 /**
  * @module Kilt
+ * --- Overview ---
+ * Minimalistic module dedicated to connecting to the blockchain.
+ * --- Usage ---
+ * ```Kilt.connect('ws://localhost:9944')```
  */
 import { getCached } from '../blockchainApiConnection'
 
