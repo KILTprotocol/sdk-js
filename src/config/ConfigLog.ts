@@ -1,5 +1,10 @@
 /**
  * @module Config
+ *
+ *  --- Overview ---
+ *
+ *  Configuration of the logging
+ *
  */
 import {
   LoggerFactoryOptions,
