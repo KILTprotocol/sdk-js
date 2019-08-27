@@ -31,6 +31,10 @@ export async function store(
   return txStatus
 }
 
+function decode(encoded: QueryResult): IPublicIdentity['address'] | undefined {
+  return encoded && encoded.encodedLength ? encoded.toString() : undefined
+}
+
 export async function getOwner(
   ctypeHash: ICType['hash']
 ): Promise<IPublicIdentity['address'] | undefined> {
@@ -42,8 +46,4 @@ export async function getOwner(
     encoded
   )
   return queriedCTypeAccount
-}
-
-function decode(encoded: QueryResult): IPublicIdentity['address'] | undefined {
-  return encoded && encoded.encodedLength ? encoded.toString() : undefined
 }

@@ -40,7 +40,9 @@ export default class Did implements IDid {
    * @param identifier the DIDs identifier
    * @returns promise containing the [[Did]] or [undefined]
    */
-  public static queryByIdentifier(identifier: string) {
+  public static queryByIdentifier(
+    identifier: string
+  ): Promise<IDid | undefined> {
     return queryByIdentifier(identifier)
   }
 
@@ -50,7 +52,7 @@ export default class Did implements IDid {
    * @param address the DIDs address
    * @returns promise containing the [[Did]] or [undefined]
    */
-  public static queryByAddress(address: string) {
+  public static queryByAddress(address: string): Promise<IDid | undefined> {
     return queryByAddress(address)
   }
 
@@ -60,7 +62,7 @@ export default class Did implements IDid {
    * @param identity the identity for which to delete the [[Did]]
    * @returns promise containing the [[TxStatus]]
    */
-  public static async remove(identity: Identity) {
+  public static async remove(identity: Identity): Promise<TxStatus> {
     log.debug(`Create tx for 'did.remove'`)
     return remove(identity)
   }
@@ -121,17 +123,17 @@ export default class Did implements IDid {
       id: this.identifier,
       authentication: {
         type: 'Ed25519SignatureAuthentication2018',
-        publicKey: [this.identifier + '#key-1'],
+        publicKey: [`${this.identifier}#key-1`],
       },
       publicKey: [
         {
-          id: this.identifier + '#key-1',
+          id: `${this.identifier}#key-1`,
           type: KEY_TYPE_SIGNATURE,
           controller: this.identifier,
           publicKeyHex: this.publicSigningKey,
         },
         {
-          id: this.identifier + '#key-2',
+          id: `${this.identifier}#key-2`,
           type: KEY_TYPE_ENCRYPTION,
           controller: this.identifier,
           publicKeyHex: this.publicBoxKey,

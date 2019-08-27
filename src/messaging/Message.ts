@@ -44,31 +44,61 @@ export interface IEncryptedMessage {
   senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
 }
 
+export enum MessageBodyType {
+  REQUEST_LEGITIMATIONS = 'request-legitimations',
+  SUBMIT_LEGITIMATIONS = 'submit-legitimations',
+  REJECT_LEGITIMATIONS = 'reject-legitimations',
+
+  REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
+  SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
+  REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
+
+  REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
+  SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes',
+  ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
+  REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
+
+  REQUEST_ACCEPT_DELEGATION = 'request-accept-delegation',
+  SUBMIT_ACCEPT_DELEGATION = 'submit-accept-delegation',
+  REJECT_ACCEPT_DELEGATION = 'reject-accept-delegation',
+  INFORM_CREATE_DELEGATION = 'inform-create-delegation',
+}
+
 export default class Message implements IMessage {
   public static ensureOwnerIsSender(message: IMessage): void {
     switch (message.body.type) {
       case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM:
-        const requestAttestation = message.body
-        if (requestAttestation.content.claim.owner !== message.senderAddress) {
-          throw new Error('Sender is not owner of the claim')
+        {
+          const requestAttestation = message.body
+          if (
+            requestAttestation.content.claim.owner !== message.senderAddress
+          ) {
+            throw new Error('Sender is not owner of the claim')
+          }
         }
         break
       case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
-        const submitAttestation = message.body
-        if (
-          submitAttestation.content.attestation.owner !== message.senderAddress
-        ) {
-          throw new Error('Sender is not owner of the attestation')
+        {
+          const submitAttestation = message.body
+          if (
+            submitAttestation.content.attestation.owner !==
+            message.senderAddress
+          ) {
+            throw new Error('Sender is not owner of the attestation')
+          }
         }
         break
       case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES:
-        const submitClaimsForCtype = message.body
-        submitClaimsForCtype.content.forEach(claim => {
-          if (claim.request.claim.owner !== message.senderAddress) {
-            throw new Error('Sender is not owner of the claims')
-          }
-        })
+        {
+          const submitClaimsForCtype = message.body
+          submitClaimsForCtype.content.forEach(claim => {
+            if (claim.request.claim.owner !== message.senderAddress) {
+              throw new Error('Sender is not owner of the claims')
+            }
+          })
+        }
         break
+      default:
     }
   }
 
@@ -170,26 +200,6 @@ export default class Message implements IMessage {
       senderBoxPublicKey: this.senderBoxPublicKey,
     }
   }
-}
-
-export enum MessageBodyType {
-  REQUEST_LEGITIMATIONS = 'request-legitimations',
-  SUBMIT_LEGITIMATIONS = 'submit-legitimations',
-  REJECT_LEGITIMATIONS = 'reject-legitimations',
-
-  REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
-  SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
-  REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
-
-  REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
-  SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes',
-  ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
-  REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
-
-  REQUEST_ACCEPT_DELEGATION = 'request-accept-delegation',
-  SUBMIT_ACCEPT_DELEGATION = 'submit-accept-delegation',
-  REJECT_ACCEPT_DELEGATION = 'reject-accept-delegation',
-  INFORM_CREATE_DELEGATION = 'inform-create-delegation',
 }
 
 interface IMessageBodyBase {

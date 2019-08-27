@@ -14,14 +14,14 @@ describe('PublicIdentity', () => {
         switch (id) {
           case '1':
             tuple = new Tuple(
-              // (root-id, parent-id?, account, permissions, revoked)
+              // (public-signing-key, public-encryption-key, did-reference?)
               [Text, Text, Text],
               ['pub-key', 'box-key', '0x80001f']
             )
             break
           case '2':
             tuple = new Tuple(
-              // (root-id, parent-id?, account, permissions, revoked)
+              // (public-signing-key, public-encryption-key, did-reference?)
               [Text, Text, Text],
               ['pub-key', 'box-key', undefined]
             )

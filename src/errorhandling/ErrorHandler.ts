@@ -4,7 +4,7 @@
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types'
 import { MetadataModule } from '@polkadot/types/Metadata/v2/Metadata'
-import { EventData, EventIndex } from '@polkadot/types/type/Event'
+import { EventIndex } from '@polkadot/types/type/Event'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ExtrinsicError, errorForCode } from './ExtrinsicError'
 
@@ -34,7 +34,7 @@ export class ErrorHandler {
     )
   }
 
-  constructor(apiPromise: ApiPromise) {
+  public constructor(apiPromise: ApiPromise) {
     ErrorHandler.getErrorModuleIndex(apiPromise).then((moduleIndex: number) => {
       this.moduleIndex = moduleIndex
     })
@@ -62,14 +62,13 @@ export class ErrorHandler {
       }
     )
     if (errorEvent) {
-      const data: EventData = errorEvent.event.data
+      const { data } = errorEvent.event
       const errorCode: number | undefined =
         data && !data.isEmpty ? data[0].toJSON() : undefined
       if (errorCode) {
         return errorForCode(errorCode)
-      } else {
-        log.warn(`error event doesn\'t have a valid error code: ${data}`)
       }
+      log.warn(`error event doesn't have a valid error code: ${data}`)
     } else {
       log.warn('no error event found in transaction result')
     }
@@ -85,16 +84,16 @@ export class ErrorHandler {
     // @ts-ignore
     const modules: MetadataModule[] = await apiPromise.runtimeMetadata.metadata
       .asV2.modules
-    let index = 0
     const filtered: MetadataModule[] = modules.filter((mod: MetadataModule) => {
       return !mod.events.isEmpty
     })
-    for (const m of filtered) {
+    let index = 0
+    filtered.forEach(m => {
       if (m.name.toString() === ErrorHandler.ERROR_MODULE_NAME) {
-        break
+        return
       }
-      index++
-    }
+      index += 1
+    })
 
     return index
   }

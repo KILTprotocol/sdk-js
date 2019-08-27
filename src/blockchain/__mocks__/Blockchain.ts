@@ -88,7 +88,6 @@ const blockchain: any = {
   listenToBalanceChanges: jest.fn(),
   makeTransfer: jest.fn(),
   submitTx: jest.fn((identity, tx) => {
-    // if (statusCb) statusCb(new ExtrinsicStatus('Finalized'))
     return Promise.resolve(blockchain.__mockResultHash)
   }),
   getNonce: jest.fn(),

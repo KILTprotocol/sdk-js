@@ -6,18 +6,7 @@ import Ajv from 'ajv'
 import { CTypeModel, CTypeInputModel } from './CTypeSchema'
 import CType from './CType'
 import ICType from '../types/CType'
-import Crypto from '../crypto/index'
-
-export function verifyClaimStructure(claim: any, schema: any): boolean {
-  if (!verifySchema(schema, CTypeModel)) {
-    throw new Error('CType does not correspond to schema')
-  }
-  return verifySchema(claim, schema)
-}
-
-export function verifySchema(model: any, metaModel: any): boolean {
-  return verifySchemaWithErrors(model, metaModel)
-}
+import Crypto from '../crypto'
 
 export function verifySchemaWithErrors(
   model: any,
@@ -31,16 +20,27 @@ export function verifySchemaWithErrors(
   ajv.addMetaSchema(CTypeModel)
   const result = ajv.validate(metaModel, model)
   if (!result && ajv.errors) {
-    ajv.errors.map((error: any) => {
-      if (messages) {
+    if (messages) {
+      ajv.errors.forEach((error: any) => {
         messages.push(error.message)
-      }
-    })
+      })
+    }
   }
-  return result ? true : false
+  return !!result
 }
 
-export function getHashForSchema(schema: ICType['schema']) {
+export function verifySchema(model: any, metaModel: any): boolean {
+  return verifySchemaWithErrors(model, metaModel)
+}
+
+export function verifyClaimStructure(claim: any, schema: any): boolean {
+  if (!verifySchema(schema, CTypeModel)) {
+    throw new Error('CType does not correspond to schema')
+  }
+  return verifySchema(claim, schema)
+}
+
+export function getHashForSchema(schema: ICType['schema']): string {
   return Crypto.hashObjectAsStr(schema)
 }
 
@@ -72,10 +72,10 @@ export function fromInputModel(ctypeInput: any): CType {
       },
       properties: {},
     },
-  } as ICType
+  }
 
   const properties = {}
-  for (const p of ctypeInput.properties) {
+  ctypeInput.properties.forEach((p: any) => {
     const { title, $id, ...rest } = p
     properties[$id] = rest
     ctype.metadata.properties[$id] = {
@@ -83,9 +83,16 @@ export function fromInputModel(ctypeInput: any): CType {
         default: title,
       },
     }
-  }
+  })
   ctype.schema.properties = properties
-  return new CType(ctype)
+  return new CType(ctype as ICType)
+}
+
+function getLocalized(o: any, lang?: string): any {
+  if (lang == null || !o[lang]) {
+    return o.default
+  }
+  return o[lang]
 }
 
 /**
@@ -103,17 +110,16 @@ export function getCTypeInputModel(ctype: CType): any {
   result.description = getLocalized(ctype.metadata.description)
   result.required = []
   result.properties = []
-  for (const x in ctype.schema.properties) {
-    if (ctype.schema.properties.hasOwnProperty(x)) {
-      const p = ctype.schema.properties[x]
-      result.properties.push({
-        title: getLocalized(ctype.metadata.properties[x].title),
-        $id: x,
-        type: p.type,
-      })
-      result.required.push(x)
-    }
-  }
+
+  Object.entries(ctype.schema.properties as object).forEach(([key, value]) => {
+    result.properties.push({
+      title: getLocalized(ctype.metadata.properties[key].title),
+      $id: key,
+      type: value.type,
+    })
+    result.required.push(key)
+  })
+
   return result
 }
 
@@ -129,21 +135,11 @@ export function getClaimInputModel(ctype: ICType, lang?: string): any {
   result.title = getLocalized(ctype.metadata.title, lang)
   result.description = getLocalized(ctype.metadata.description, lang)
   result.required = []
-  for (const x in ctype.metadata.properties) {
-    if (ctype.metadata.properties.hasOwnProperty(x)) {
-      result.properties[x].title = getLocalized(
-        ctype.metadata.properties[x].title,
-        lang
-      )
-      result.required.push(x)
+  Object.entries(ctype.metadata.properties as object).forEach(
+    ([key, value]) => {
+      result.properties[key].title = getLocalized(value.title, lang)
+      result.required.push(key)
     }
-  }
+  )
   return result
-}
-
-function getLocalized(o: any, lang?: string): any {
-  if (lang == null || !o[lang]) {
-    return o.default
-  }
-  return o[lang]
 }

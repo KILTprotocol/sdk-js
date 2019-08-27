@@ -1,7 +1,6 @@
 /**
  * @module Delegation
  */
-import { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'
@@ -16,6 +15,7 @@ import {
   getChildIds,
 } from './Delegation.chain'
 import { query } from '../attestation/Attestation.chain'
+import { QueryResult } from '../blockchain/Blockchain'
 
 const log = factory.getLogger('DelegationBaseNode')
 
