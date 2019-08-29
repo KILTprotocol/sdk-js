@@ -3,8 +3,14 @@
  *
  *  --- Overview ---
  *
- *  The Delegation root node uses methods to embed itself on the chain and distrubite communication either from a point or the endpoint.
+ *  The Delegation root node uses methods to embed itself on the chain and distribute communication either from a point or the endpoint.
  *  Using the delegation ID to find the root nodes.
+ *
+ *  --- Usage ---
+ *
+ *  Delegation nodes inherit by default the root node type.
+ *  Creating a hierarchical delegation tree.
+ *
  */
 import { QueryResult } from '../blockchain/Blockchain'
 import TxStatus from '../blockchain/TxStatus'
