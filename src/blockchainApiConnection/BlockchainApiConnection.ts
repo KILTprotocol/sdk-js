@@ -1,5 +1,11 @@
 /**
  * @module BlockchainApiConnection
+ *
+ *  --- Overview ---
+ *
+ *  Enables the building and access to the blockchain connection.
+ *
+ *
  */
 
 import { ApiPromise, WsProvider } from '@polkadot/api'

@@ -1,5 +1,10 @@
 /**
  * @module Delegation/DelegationRootNode
+ *
+ *  --- Overview ---
+ *
+ *  The Delegation root node uses methods to embed itself on the chain and distrubite communication either from a point or the endpoint.
+ *  Using the delegation ID to find the root nodes.
  */
 import { QueryResult } from '../blockchain/Blockchain'
 import TxStatus from '../blockchain/TxStatus'

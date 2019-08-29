@@ -3,9 +3,12 @@
  *
  *  --- Overview ---
  *
+ *  The bridge that connects the SDK and the KILT blockchain.
+ *  The blockchain class exposes the submitTx function that performs a transaction.
  *
  *
  *  --- Usage ---
+ *
  *
  *
  *

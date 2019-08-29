@@ -1,5 +1,8 @@
 /**
  * @module Delegation/DelegationDecoder
+ *
+ * --- Overview ---
+ *
  * Functions to decode types queried from the chain.
  *
  * When a type is queried from the chain using the `api.query...` functions, a result of type `Codec` is returned

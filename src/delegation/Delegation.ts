@@ -1,7 +1,7 @@
 /**
  * @module Delegation
  * --- Overview ---
- * Delegations are the building blocks of top-down trust structures in KILT. An  attester can inherit trust through delegation from another attester ("top-down"). This helps model real-life trust relationships, e.g. a government clerk can deliver official documents (attestations) on behalf of a governmental organization.
+ * Delegations are the building blocks of top-down trust structures in KILT. An Attester can inherit trust through delegation from another attester ("top-down"). This helps model real-life trust relationships, e.g. a government clerk can deliver official documents (attestations) on behalf of a governmental organization.
  * In order to model these trust hierarchies, a delegation is represented as a node is a delegation tree.
  * --- Usage ---
  * A delegation is stored on-chain, and can be revoked.
