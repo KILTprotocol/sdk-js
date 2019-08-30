@@ -1,15 +1,10 @@
 /**
- * #### Usage
+ * #### Overview
  * Utility types and methods useful for cryptographic operations, such as signing/verifying, encrypting/decrypting and hashing.
  * Most of them are wrappers around existing polkadot functions.
- * #### Overview
+ * #### Usage
  * Crypto utils are used anywhere signing or verifying is needed in KILT.
  * @module Crypto
- * #### Usage
- * Collection of utility types and methods useful for cryptographic operations, such as signing/verifying, encrypting/decrypting and hashing.
- * Most of them are wrappers around existing polkadot functions.
- * #### Overview
- * Crypto utils are used anywhere signing or verifying is needed in KILT.
  */
 
 /**
