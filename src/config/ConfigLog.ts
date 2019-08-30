@@ -1,15 +1,13 @@
 /**
+ * #### Overview
+ * Configuration of the logging, useful to debug the library.
  * @module Config
- *
- *  --- Overview ---
- *
- *  Configuration of the logging
- *
- *  --- Usage ---
- *
- *  Debugging of the library
- *
  */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
+ */
+
 import {
   LoggerFactoryOptions,
   LFService,
