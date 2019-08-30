@@ -1,10 +1,19 @@
 /**
+ * #### Usage
+ * Utility types and methods useful for cryptographic operations, such as signing/verifying, encrypting/decrypting and hashing.
+ * Most of them are wrappers around existing polkadot functions.
+ * #### Overview
+ * Crypto utils are used anywhere signing or verifying is needed in KILT.
  * @module Crypto
- * --- Overview ---
+ * #### Usage
  * Collection of utility types and methods useful for cryptographic operations, such as signing/verifying, encrypting/decrypting and hashing.
  * Most of them are wrappers around existing polkadot functions.
- * --- Usage ---
+ * #### Overview
  * Crypto utils are used anywhere signing or verifying is needed in KILT.
+ */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
  */
 import { decodeAddress, encodeAddress } from '@polkadot/keyring/address'
 import { KeyringPair } from '@polkadot/keyring/types'
@@ -49,6 +58,14 @@ export type EncryptedAsymmetricString = {
   nonce: string
 }
 
+/**
+ * Holds all logic used render and output the final documentation.
+ *
+ * The [[Renderer]] class is the central controller within this namespace. When invoked it creates
+ * an instance of [[BaseTheme]] which defines the layout of the documentation and fires a
+ * series of [[RendererEvent]] events. Instances of [[BasePlugin]] can listen to these events and
+ * alter the generated output.
+ */
 export function coToUInt8(
   input: CryptoInput,
   rawConvert?: boolean
@@ -186,7 +203,7 @@ export function decryptAsymmetric(
   data: EncryptedAsymmetric | EncryptedAsymmetricString,
   publicKeyB: CryptoInput,
   secretKeyA: CryptoInput
-): Uint8Array | false {
+): Uint8Array | false | null {
   const decrypted = nacl.box.open(
     coToUInt8(data.box),
     coToUInt8(data.nonce),
