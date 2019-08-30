@@ -87,14 +87,8 @@ export class ErrorHandler {
     const filtered: MetadataModule[] = modules.filter((mod: MetadataModule) => {
       return !mod.events.isEmpty
     })
-    let index = 0
-    filtered.forEach(m => {
-      if (m.name.toString() === ErrorHandler.ERROR_MODULE_NAME) {
-        return
-      }
-      index += 1
-    })
-
-    return index
+    return filtered
+      .map(m => m.name.toString())
+      .indexOf(ErrorHandler.ERROR_MODULE_NAME)
   }
 }
