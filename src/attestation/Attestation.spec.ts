@@ -28,7 +28,7 @@ describe('Attestation', () => {
   )
 
   it('stores attestation', async () => {
-    Blockchain.api.query.attestation.attestations = jest.fn(claimHash => {
+    Blockchain.api.query.attestation.attestations = jest.fn(() => {
       const tuple = new Tuple(
         [Text, Text, Text, Bool],
         [cTypeHash, identityAlice.address, undefined, false]
@@ -41,7 +41,7 @@ describe('Attestation', () => {
   })
 
   it('verify attestations not on chain', async () => {
-    Blockchain.api.query.attestation.attestations = jest.fn(claimHash => {
+    Blockchain.api.query.attestation.attestations = jest.fn(() => {
       return Promise.resolve(new Tuple([], []))
     })
 
@@ -54,7 +54,7 @@ describe('Attestation', () => {
   })
 
   it('verify attestation revoked', async () => {
-    Blockchain.api.query.attestation.attestations = jest.fn(claimHash => {
+    Blockchain.api.query.attestation.attestations = jest.fn(() => {
       return Promise.resolve(
         new Tuple(
           // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)

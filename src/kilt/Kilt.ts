@@ -6,8 +6,9 @@
  * ```Kilt.connect('ws://localhost:9944')```
  */
 import { getCached } from '../blockchainApiConnection'
+import { IBlockchainApi } from '../blockchain/Blockchain'
 
-export function connect(host: string) {
+export function connect(host: string): Promise<IBlockchainApi> {
   return getCached(host)
 }
 

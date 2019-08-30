@@ -26,6 +26,7 @@ const options = new LoggerFactoryOptions().addLogGroupRule(
 
 // Create a named loggerfactory and pass in the options and export the factory.
 // Named is since version 0.2.+ (it's recommended for future usage)
+// eslint-disable-next-line import/prefer-default-export
 export const factory = LFService.createNamedLoggerFactory(
   'LoggerFactory',
   options

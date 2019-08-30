@@ -3,5 +3,11 @@
  */
 
 export default class TxStatus {
-  constructor(public type: string | undefined, payload?: any) {}
+  public type: string | undefined
+  public payload: any
+
+  public constructor(type: string | undefined, payload?: any) {
+    this.type = type
+    this.payload = payload
+  }
 }

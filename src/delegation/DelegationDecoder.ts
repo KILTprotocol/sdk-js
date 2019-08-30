@@ -39,6 +39,36 @@ export function decodeRootDelegation(
   return delegationRootNode
 }
 
+/**
+ * Decode the permissions from the bitset encoded in the given `number`.
+ * We use bitwise `AND` to check if a permission bit flag is set.
+ *
+ * @param bitset the u32 number used as the bitset to encode permissions
+ */
+function decodePermissions(bitset: number): Permission[] {
+  const permissions: Permission[] = []
+  // eslint-disable-next-line no-bitwise
+  if (bitset & Permission.ATTEST) {
+    permissions.push(Permission.ATTEST)
+  }
+  // eslint-disable-next-line no-bitwise
+  if (bitset & Permission.DELEGATE) {
+    permissions.push(Permission.DELEGATE)
+  }
+  return permissions
+}
+
+/**
+ * Checks if `rootId` is set (to something different than `0`)
+ * @param rootId the root id part of the query result for delegation nodes
+ */
+function verifyRoot(rootId: string): boolean {
+  const rootU8: Uint8Array = coToUInt8(rootId)
+  return (
+    rootU8.reduce((accumulator, currentValue) => accumulator + currentValue) > 0
+  )
+}
+
 export function decodeDelegationNode(
   encoded: QueryResult
 ): DelegationNode | undefined {
@@ -59,32 +89,4 @@ export function decodeDelegationNode(
     })
   }
   return decodedNode
-}
-
-/**
- * Checks if `rootId` is set (to something different than `0`)
- * @param rootId the root id part of the query result for delegation nodes
- */
-function verifyRoot(rootId: string) {
-  const rootU8: Uint8Array = coToUInt8(rootId)
-  return (
-    rootU8.reduce((accumulator, currentValue) => accumulator + currentValue) > 0
-  )
-}
-
-/**
- * Decode the permissions from the bitset encoded in the given `number`.
- * We use bitwise `AND` to check if a permission bit flag is set.
- *
- * @param bitset the u32 number used as the bitset to encode permissions
- */
-function decodePermissions(bitset: number): Permission[] {
-  const permissions: Permission[] = []
-  if (bitset & Permission.ATTEST) {
-    permissions.push(Permission.ATTEST)
-  }
-  if (bitset & Permission.DELEGATE) {
-    permissions.push(Permission.DELEGATE)
-  }
-  return permissions
 }

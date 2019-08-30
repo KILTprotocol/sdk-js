@@ -37,13 +37,19 @@ import { revoke, query, store } from './Attestation.chain'
 const log = factory.getLogger('Attestation')
 
 export default class Attestation implements IAttestation {
-  public static async query(claimHash: string) {
+  public static async query(
+    claimHash: string
+  ): Promise<Attestation | undefined> {
     return query(claimHash)
   }
 
-  public static async revoke(claimHash: string, identity: Identity) {
+  public static async revoke(
+    claimHash: string,
+    identity: Identity
+  ): Promise<TxStatus> {
     return revoke(claimHash, identity)
   }
+
   /**
    * Creates a new instance of this Attestation class from the given interface.
    */
@@ -58,7 +64,7 @@ export default class Attestation implements IAttestation {
   public revoked: IAttestation['revoked']
   public delegationId?: IAttestation['delegationId']
 
-  constructor(
+  public constructor(
     requestForAttestation: IRequestForAttestation,
     attester: Identity,
     revoked = false
@@ -70,7 +76,7 @@ export default class Attestation implements IAttestation {
     this.revoked = revoked
   }
 
-  public async store(identity: Identity) {
+  public async store(identity: Identity): Promise<TxStatus> {
     return store(this, identity)
   }
 

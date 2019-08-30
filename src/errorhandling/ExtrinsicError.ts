@@ -37,8 +37,11 @@ export enum ErrorCode {
 }
 
 export class ExtrinsicError extends Error {
-  constructor(public errorCode: ErrorCode, message: string) {
+  public errorCode: ErrorCode
+
+  public constructor(errorCode: ErrorCode, message: string) {
     super(message)
+    this.errorCode = errorCode
   }
 }
 
@@ -158,6 +161,6 @@ const errorsByCode: ExtrinsicError[] = []
   errorsByCode[value.errorCode] = value
 })
 
-export function errorForCode(errorCode: number) {
+export function errorForCode(errorCode: number): ExtrinsicError {
   return errorsByCode[errorCode]
 }

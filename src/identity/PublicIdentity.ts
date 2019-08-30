@@ -14,17 +14,48 @@ export interface IURLResolver {
   resolve(url: string): Promise<object | undefined>
 }
 
+type DIDPublicKey = {
+  id: string
+  type: string
+  publicKeyHex: string
+}
+
+type DIDService = {
+  id: string
+  type: string
+  serviceEndpoint: string
+}
+
+type DIDDocument = {
+  id: string
+  publicKey: DIDPublicKey[]
+  service: DIDService[]
+}
+
+type DIDResult = {
+  didDocument: DIDDocument
+}
+
+function isDIDDocument(object: object): object is DIDDocument {
+  const didDocument = object as DIDDocument
+  return !!didDocument.id && !!didDocument.publicKey && !!didDocument.service
+}
+
+function isDIDResult(object: object): object is DIDResult {
+  return isDIDDocument((object as DIDResult).didDocument)
+}
+
 export default class PublicIdentity implements IPublicIdentity {
   public static fromDidDocument(
     didDocument: object
   ): IPublicIdentity | undefined {
+    if (!isDIDDocument(didDocument)) return undefined
+
     try {
       return new PublicIdentity(
-        /* tslint:disable:no-string-literal */
-        didDocument['id'].startsWith(IDENTIFIER_PREFIX)
-          ? getAddressFromIdentifier(didDocument['id'])
-          : didDocument['id'],
-        /* tslint:enable:no-string-literal */
+        didDocument.id.startsWith(IDENTIFIER_PREFIX)
+          ? getAddressFromIdentifier(didDocument.id)
+          : didDocument.id,
         this.getJSONProperty(
           didDocument,
           'publicKey',
@@ -52,28 +83,27 @@ export default class PublicIdentity implements IPublicIdentity {
     if (identifier.startsWith(IDENTIFIER_PREFIX)) {
       const did: IDid | undefined = await Did.queryByIdentifier(identifier)
       if (did !== undefined) {
-        const didDocument: object | undefined = did.documentStore
+        const didDocument = did.documentStore
           ? await urlResolver.resolve(did.documentStore)
           : undefined
+        // TODO: check, if did document is complete
         if (didDocument) {
           return this.fromDidDocument(didDocument)
-        } else {
-          return new PublicIdentity(
-            getAddressFromIdentifier(did.identifier),
-            did.publicBoxKey
-          )
         }
+        return new PublicIdentity(
+          getAddressFromIdentifier(did.identifier),
+          did.publicBoxKey
+        )
       }
     } else {
       const didResult = await urlResolver.resolve(
-        'https://uniresolver.io/1.0/identifiers/' +
-          encodeURIComponent(identifier)
+        `https://uniresolver.io/1.0/identifiers/${encodeURIComponent(
+          identifier
+        )}`
       )
-      /* tslint:disable:no-string-literal */
-      if (didResult && didResult['didDocument']) {
-        return this.fromDidDocument(didResult['didDocument'])
+      if (didResult && isDIDResult(didResult)) {
+        return this.fromDidDocument(didResult.didDocument)
       }
-      /* tslint:enable:no-string-literal */
     }
     return undefined
   }
@@ -82,7 +112,7 @@ export default class PublicIdentity implements IPublicIdentity {
   public readonly boxPublicKeyAsHex: IPublicIdentity['boxPublicKeyAsHex']
   public readonly serviceAddress?: IPublicIdentity['serviceAddress']
 
-  constructor(
+  public constructor(
     address: IPublicIdentity['address'],
     boxPublicKeyAsHex: IPublicIdentity['boxPublicKeyAsHex'],
     serviceAddress?: IPublicIdentity['serviceAddress']
@@ -102,14 +132,14 @@ export default class PublicIdentity implements IPublicIdentity {
     if (!did[listProperty]) {
       throw Error()
     }
-    const list: object[] = did[listProperty]
+    const listOfObjects: object[] = did[listProperty]
 
-    for (const o of list) {
-      if (o[filterKey] && o[filterKey] === filterValue) {
-        const result: string = o[property]
-        return result
-      }
-    }
+    const correctObj = listOfObjects.find(object => {
+      return object[filterKey] && object[filterKey] === filterValue
+    })
+
+    if (correctObj && correctObj[property]) return correctObj[property]
+
     throw new Error()
   }
 }
