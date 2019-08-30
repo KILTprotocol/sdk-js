@@ -1,5 +1,4 @@
 /**
- * @module Identity
  * --- Overview ---
  * Identities are a core building block of the KILT SDK.
  * An Identity object represent an entity - be it a person, an organization, a machine or some other entity.
@@ -9,6 +8,11 @@
  * * create a signed Claim/an Attestation/other (and verify these later);
  * * encrypt messages between participants.
  * A PublicIdentity object exposes only public information such as the public address, but doesn't expose any secrets such as private keys.
+ * @module Identity
+ */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
  */
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { Keyring } from '@polkadot/keyring'
@@ -171,7 +175,7 @@ export default class Identity extends PublicIdentity {
   public decryptAsymmetric(
     encrypted: EncryptedAsymmetric | EncryptedAsymmetricString,
     boxPublicKey: BoxPublicKey
-  ): false | Uint8Array {
+  ): null | false | Uint8Array {
     return Crypto.decryptAsymmetric(
       encrypted,
       boxPublicKey,

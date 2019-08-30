@@ -1,7 +1,11 @@
 /**
- * @module Utils
- * --- Overview ---
- * Miscellaneous utility functions
+ * #### Overview
+ * Utility functions to generate UUIDs.
+ * @module UUID
+ */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
  */
 import { v4 as uuid } from 'uuid'
 import { Hash } from '@polkadot/types'
