@@ -58,14 +58,6 @@ export type EncryptedAsymmetricString = {
   nonce: string
 }
 
-/**
- * Holds all logic used render and output the final documentation.
- *
- * The [[Renderer]] class is the central controller within this namespace. When invoked it creates
- * an instance of [[BaseTheme]] which defines the layout of the documentation and fires a
- * series of [[RendererEvent]] events. Instances of [[BasePlugin]] can listen to these events and
- * alter the generated output.
- */
 export function coToUInt8(
   input: CryptoInput,
   rawConvert?: boolean
