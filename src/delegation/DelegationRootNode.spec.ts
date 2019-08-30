@@ -1,6 +1,6 @@
 import { Text, Tuple } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
-import { Crypto, Identity } from '../'
+import { Crypto, Identity } from '..'
 import DelegationRootNode from './DelegationRootNode'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
@@ -10,7 +10,7 @@ describe('Delegation', () => {
 
   const ctypeHash = Crypto.hashStr('testCtype')
   require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
-    rootId => {
+    () => {
       const tuple = new Tuple(
         // Root-Delegation: root-id -> (ctype-hash, account, revoked)
         [Text, Text, Bool],
@@ -20,7 +20,7 @@ describe('Delegation', () => {
     }
   )
   require('../blockchain/Blockchain').default.__mockQueryDelegationDelegation = jest.fn(
-    delegationId => {
+    () => {
       const tuple = new Tuple(
         // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
         [Text, Text, Bool],
@@ -65,14 +65,13 @@ describe('Delegation', () => {
             ['myCtypeHash', 'myAccount', false]
           )
           return Promise.resolve(tuple)
-        } else {
-          const tuple = new Tuple(
-            // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-            [Text, Text, Bool],
-            ['myCtypeHash', 'myAccount', true]
-          )
-          return Promise.resolve(tuple)
         }
+        const tuple = new Tuple(
+          // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+          [Text, Text, Bool],
+          ['myCtypeHash', 'myAccount', true]
+        )
+        return Promise.resolve(tuple)
       }
     )
 
@@ -94,7 +93,7 @@ describe('Delegation', () => {
   })
 
   it('root delegation verify', async () => {
-    let calledRootId: string = ''
+    let calledRootId = ''
 
     require('../blockchain/Blockchain').default.__mockTxDelegationRoot = jest.fn(
       rootId => {

@@ -1,5 +1,5 @@
 import { Text, Tuple, Option } from '@polkadot/types'
-import { Did } from '../'
+import { Did } from '..'
 import { IDid } from './Did'
 import Identity from '../identity/Identity'
 
@@ -15,21 +15,18 @@ describe('DID', () => {
           ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
         )
         return Promise.resolve(tuple)
-      } else {
-        const tuple = new Tuple(
-          // (publicBoxKey, publicSigningKey, documentStore?)
-          [Text, Text, Option],
-          ['0x987', '0x123', null]
-        )
-        return Promise.resolve(tuple)
       }
+      const tuple = new Tuple(
+        // (publicBoxKey, publicSigningKey, documentStore?)
+        [Text, Text, Option],
+        ['0x987', '0x123', null]
+      )
+      return Promise.resolve(tuple)
     }
   )
-  require('../blockchain/Blockchain').default.submitTx = jest.fn(
-    (identity, tx) => {
-      return Promise.resolve({ status: 'ok' })
-    }
-  )
+  require('../blockchain/Blockchain').default.submitTx = jest.fn(() => {
+    return Promise.resolve({ status: 'ok' })
+  })
 
   it('query by address with documentStore', async () => {
     const did = await Did.queryByAddress('withDocumentStore')
@@ -61,12 +58,12 @@ describe('DID', () => {
     } as IDid)
   })
 
-  it('query by identifier invalid identifier', async () => {
+  it('query by identifier invalid identifier', async done => {
     try {
       await Did.queryByIdentifier('invalidIdentifier')
-      fail('should have detected an invalid DID')
+      done.fail('should have detected an invalid DID')
     } catch (err) {
-      expect(true).toBe(true)
+      done()
     }
   })
 

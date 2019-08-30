@@ -21,7 +21,9 @@ export default class DelegationRootNode extends DelegationBaseNode
    * @param delegationId unique identifier of the delegation root
    * @returns promise containing [[DelegationRootNode]] or [undefined]
    */
-  public static async query(delegationId: string) {
+  public static async query(
+    delegationId: string
+  ): Promise<DelegationRootNode | undefined> {
     log.info(`:: query('${delegationId}')`)
     const result = await query(delegationId)
     if (result) {
@@ -35,7 +37,7 @@ export default class DelegationRootNode extends DelegationBaseNode
 
   public cTypeHash: IDelegationRootNode['cTypeHash']
 
-  constructor(
+  public constructor(
     id: IDelegationRootNode['id'],
     ctypeHash: IDelegationRootNode['cTypeHash'],
     account: IDelegationRootNode['account']
@@ -48,10 +50,11 @@ export default class DelegationRootNode extends DelegationBaseNode
     return Promise.resolve(this)
   }
 
-  // tslint:disable-next-line:prefer-function-over-method
+  /* eslint-disable class-methods-use-this */
   public getParent(): Promise<DelegationBaseNode | undefined> {
     return Promise.resolve(undefined)
   }
+  /* eslint-enable class-methods-use-this */
 
   /**
    * @description Stores the delegation root node on chain.
@@ -80,9 +83,11 @@ export default class DelegationRootNode extends DelegationBaseNode
     return revoke(this, identity)
   }
 
+  /* eslint-disable class-methods-use-this */
   protected decodeChildNode(
     queryResult: QueryResult
   ): DelegationNode | undefined {
     return decodeDelegationNode(queryResult)
   }
+  /* eslint-enable class-methods-use-this */
 }

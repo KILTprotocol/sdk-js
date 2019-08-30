@@ -1,7 +1,6 @@
 import Identity from '../identity/Identity'
-import {
+import Message, {
   IRequestClaimsForCTypes,
-  default as Message,
   MessageBodyType,
   IEncryptedMessage,
   IMessage,
@@ -47,11 +46,11 @@ describe('Messaging', () => {
     const encryptedMessageWrongSignature: IEncryptedMessage = JSON.parse(
       JSON.stringify(encryptedMessage)
     ) as IEncryptedMessage
-    encryptedMessageWrongSignature.signature =
-      encryptedMessageWrongSignature.signature.substr(
-        0,
-        encryptedMessageWrongSignature.signature.length - 4
-      ) + '1234'
+    encryptedMessageWrongSignature.signature = encryptedMessageWrongSignature.signature.substr(
+      0,
+      encryptedMessageWrongSignature.signature.length - 4
+    )
+    encryptedMessageWrongSignature.signature += '1234'
     expect(() =>
       Message.createFromEncryptedMessage(
         encryptedMessageWrongSignature,
@@ -69,15 +68,15 @@ describe('Messaging', () => {
         encryptedMessageWrongContent.createdAt
     )
     encryptedMessageWrongContent.hash = hashStrWrongContent
-    ;(encryptedMessageWrongContent.signature = identityAlice.signStr(
+    encryptedMessageWrongContent.signature = identityAlice.signStr(
       hashStrWrongContent
-    )),
-      expect(() =>
-        Message.createFromEncryptedMessage(
-          encryptedMessageWrongContent,
-          identityBob
-        )
-      ).toThrowError(new Error('Error decoding message'))
+    )
+    expect(() =>
+      Message.createFromEncryptedMessage(
+        encryptedMessageWrongContent,
+        identityBob
+      )
+    ).toThrowError(new Error('Error decoding message'))
 
     const encryptedWrongBody: EncryptedAsymmetricString = identityAlice.encryptAsymmetricAsStr(
       '{ wrong JSON',

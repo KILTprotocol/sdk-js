@@ -70,7 +70,9 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   // TODO: implement unsubscribe as subscriptionId continuously increases
-  public async listenToBlocks(listener: (header: Header) => void) {
+  public async listenToBlocks(
+    listener: (header: Header) => void
+  ): Promise<() => void> {
     const subscriptionId = await this.api.rpc.chain.subscribeNewHead(listener)
     return subscriptionId
   }
@@ -92,7 +94,7 @@ export default class Blockchain implements IBlockchainApi {
         .send((result: SubmittableResult) => {
           log.info(`Got tx status '${result.status.type}'`)
 
-          const status = result.status
+          const { status } = result
           if (ErrorHandler.extrinsicFailed(result)) {
             log.warn(`Extrinsic execution failed`)
             log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)

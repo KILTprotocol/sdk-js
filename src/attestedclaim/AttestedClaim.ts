@@ -24,7 +24,10 @@ export default class AttestedClaim implements IAttestedClaim {
   public request: RequestForAttestation
   public attestation: Attestation
 
-  constructor(request: IRequestForAttestation, attestation: IAttestation) {
+  public constructor(
+    request: IRequestForAttestation,
+    attestation: IAttestation
+  ) {
     // TODO: this should be instantiated w/o fromObject
     this.request = RequestForAttestation.fromObject(request)
     this.attestation = Attestation.fromObject(attestation)
