@@ -1,9 +1,13 @@
 /**
- * @module Kilt
- * --- Overview ---
+ * #### Overview
  * Minimalistic module dedicated to connecting to the blockchain.
- * --- Usage ---
+ * #### Usage
  * ```Kilt.connect('ws://localhost:9944')```
+ * @module Kilt
+ */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
  */
 import { getCached } from '../blockchainApiConnection'
 import { IBlockchainApi } from '../blockchain/Blockchain'
