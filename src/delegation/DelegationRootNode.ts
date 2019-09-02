@@ -1,16 +1,11 @@
 /**
- *
- *
- *  Delegation root node uses methods to embed itself on KILTs chain and distribute communication either from a point or the endpoint.
- *
- *  ---
- *
- *  Creating a hierarchical delegation tree with using the delegation ID to identify the root nodes
- *
- *
+ * Delegation root node uses methods to embed itself on KILTs chain and distribute communication either from a point or the endpoint.
+ * ***
+ * Creating a hierarchical delegation tree with using the delegation ID to identify the root nodes.
  * @module Delegation/DelegationRootNode
  * @preferred
  */
+
 /**
  * Dummy comment, so that typedoc ignores this file
  */
