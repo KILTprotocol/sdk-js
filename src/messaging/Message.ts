@@ -144,6 +144,7 @@ export default class Message implements IMessage {
         createdAt: encrypted.createdAt,
         receiverAddress: encrypted.receiverAddress,
         senderAddress: encrypted.senderAddress,
+        senderBoxPublicKey : encrypted.senderBoxPublicKey,
       }
     } catch (error) {
       throw new Error('Error parsing message body')
