@@ -1,6 +1,6 @@
 /**
  * Requests for attestation are a core building block of the KILT SDK.
- * A RequestForAttestation object represents a [[Claim]] which needs to be validated in order to create a valid claim. In practice, it's sent from a claimer to an attester.
+ * A RequestForAttestation represents a [[Claim]] which needs to be validated in order to be valid. In practice, the RequestForAttestation is sent from a claimer to an attester.
  * ***
  * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester. It's signed by the claimer, to make it tamper proof (claimerSignature is a property of [[Claim]]). A RequestForAttestation also supports hiding of claim data during a credential presentation.
  * @module RequestForAttestation
