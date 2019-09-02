@@ -1,14 +1,13 @@
 /**
- *  ### Overview
  *
- *  The balance module provides the accounts and balance of the KILT protocol.
+ *  Balance provides the accounts and balances of the KILT protocol.
  *
- *  ### Usage
- *
+ * ---
  *  * Checking Balances between accounts
  *  * Transfer of assets between accounts
  *
  * @module Balance
+ * @preferred
  */
 
 /**

@@ -1,16 +1,10 @@
 /**
  *
- *  ### Overview
+ *  Blockchain bridges that connects the SDK and the KILT Blockchain.
  *
- *  The bridge that connects the SDK and the KILT blockchain.
- *  The blockchain class exposes the submitTx function that performs a transaction.
+ *  ---
  *
- *  ### Usage
- *
- *  Communicates with the chain via [[listenToBlocks]].
- *  The nonce is created to prevent predictable hashes for a given data (like true/false fields).
- *
- *
+ *  Communicates with the chain via [[listenToBlocks]], exposes the [[submitTx]] function that performs a transaction.
  * @module Blockchain
  * @preferred
  */

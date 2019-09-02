@@ -1,15 +1,13 @@
 /**
- *  ### Overview
  *
- *  The KILT protocol places claim standardisation at the centre of the protocol by enabling Attesters to use a certain claim schema for creating specific credentials
+ *  CTypes are the way KILT protocol places [[Claim]] standardisation at the centre of the protocol by enabling Attesters to use a certain [[Claim]] schema for creating specific credentials
  *
- *  CTYPE metadata contains additional information about the fields of a CTYPE
  *
- *  ### Usage
+ *  ---
  *
  *  * CTYPE's in KILT is the JSON-description of a data structure. It contains a list of key-value pairs.
  *  * CTYPEs are published and stored by the creator and/or in an open storage registry
- *  * Anyone can use a CTYPE to create a new claim.
+ *  * Anyone can use a CTYPE to create a new [[Claim]].
  *
  * @module CType
  * @preferred

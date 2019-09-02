@@ -1,4 +1,5 @@
 /**
+ *
  * Identities are a core building block of the KILT SDK.
  * An Identity object represent an **entity** - be it a person, an organization, a machine or some other entity.
  * ***

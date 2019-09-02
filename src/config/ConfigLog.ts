@@ -1,6 +1,10 @@
 /**
- * #### Overview
- * Configuration of the logging, useful to debug the library.
+ *
+ * Config Logs the configuration of the logging within the KILT protocol
+ *
+ * ---
+ *
+ * Useful to debug the library.
  * @module Config
  * @preferred
  */

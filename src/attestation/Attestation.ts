@@ -1,15 +1,12 @@
 /**
  *
- * #### Overview
- * Attestation issued by the attester sent to and stored with the claimer. We call these attested claims Credentials.
+ * Attestation provide the KILT ecosystem with service of handling [[Claim]] objects and the objects will be written on the [[Blockchain]].
  *
- * Attestations will be service providers in the KILT ecosystem and the objects will be written on the blockchain.
- * #### Usage
- * An Attestation in the real-world could be the execution of a property deed or a contract for work done.
+ * ---
  *
- * Attestation object can be stored in a map on the blockchain, with the claimHash as the key and a tuple of CTYPE hash, owner address a revoked as the value.
+ * Attestation issued by the attester sent to and stored with the claimer. We call these attested [[Claim]]s Credentials.
  *
- * To revoke an Attestation, the Attestation has to be stored on chain. Once the revocation is invoked, it will set the revoked flag to true and update the Attestation entity on-chain.
+ * Attestation object can be stored in a map on the [[Blockchain]], with the claimHash as the key and a tuple of [[CType]] hash, owner address a revoked as the value and the Attester can revoke a [[Claim]].
  * @module Attestation
  * @preferred
  */
