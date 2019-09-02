@@ -18,12 +18,12 @@ To learn more, checkout the KILT [Whitepaper](https://kilt.io/wp-content/uploads
 [KILT](https://kilt.io) documentation is provided in several guides and demos.
 
 - [KILT workshop](https://github.com/KILTprotocol/kilt-workshop-101) 👈 Start here to get familiar with the basics
-- [Getting started guide](./docs/getting-started.md) 👈 Start here if you'd like to include KILT in your project
+- [Getting started guide](https://github.com/KILTprotocol/sdk-js/blob/develop/docs/getting-started.md) 👈 Start here if you'd like to include KILT in your project
 - [API documentation](https://kiltprotocol.github.io/sdk-js/api)
 - [Demo client](https://kilt.io/developers-sub/kilt-demo-client/)
 - [Demo client code](https://github.com/KILTprotocol/demo-client)
 
-To help improve, please see our [contribution page](./docs/contribution-guide.md).
+To help improve, please see our [contribution page](https://github.com/KILTprotocol/sdk-js/blob/develop/docs/contribution-guide.md).
 
 ## How to install the SDK
 
@@ -45,7 +45,7 @@ Or with `yarn`:
 
 ## Example
 
-More examples can be found within our [getting started guide](./docs/getting-started.md).
+More examples can be found within our [getting started guide](https://github.com/KILTprotocol/sdk-js/blob/develop/docs/getting-started.md).
 
 A claim type (CTYPE) can be credentials, of any kind, e.g. drivers license.
 
@@ -74,7 +74,7 @@ Now we can easily create the KILT compliant claim. We have to include the full C
 
 ## Development Setup
 
-[Development Setup](./docs/development-setup.md)
+[Development Setup](https://github.com/KILTprotocol/sdk-js/blob/develop/docs/development-setup.md)
 
 ## Job Board
 
