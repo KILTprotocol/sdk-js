@@ -1,8 +1,6 @@
 /**
- *
  *  Balance provides the accounts and balances of the KILT protocol.
- *
- * ---
+ * ***
  *  * Checking Balances between accounts
  *  * Transfer of assets between accounts
  *

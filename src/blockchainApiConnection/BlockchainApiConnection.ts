@@ -1,9 +1,6 @@
 /**
- *
  * Blockchain Api Connection enables the building and accessing of the KILT [[Blockchain]] connection.
- *
- * ---
- *
+ * ***
  * Other modules can access the [[Blockchain]] as such: `const blockchain = await getCached()`.
  * @module BlockchainApiConnection
  * @preferred

@@ -1,9 +1,6 @@
 /**
- *
  *  Blockchain bridges that connects the SDK and the KILT Blockchain.
- *
- *  ---
- *
+ *  ***
  *  Communicates with the chain via [[listenToBlocks]], exposes the [[submitTx]] function that performs a transaction.
  * @module Blockchain
  * @preferred

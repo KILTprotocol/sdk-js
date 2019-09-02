@@ -1,9 +1,6 @@
 /**
- *
  *  An Attested [[Claim]] enables the [[Attestation]] within the KILT ecosystem.
- *
- *  ---
- *
+ * ***
  *  Creates an instance for the Attester to verify a [[Claim]], by attesting to the data.
  * @module AttestationPresentation
  * @preferred
