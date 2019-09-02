@@ -1,5 +1,5 @@
 /**
- * Universally unique identifiers (UUIDs) are needed in KILT to uniquely identify specific infromation.
+ * Universally unique identifiers (UUIDs) are needed in KILT to uniquely identify specific information.
  * ***
  * UUIDs are used for example in [[RequestForAttestation]] to generate hashes.
  * @module UUID
