@@ -1,8 +1,9 @@
 /**
- * #### Overview
- * Messaging provides KILT participants with communication via a 1:1 messaging system.
- * This module offers interfaces and methods to construct and verify messages.
- * Note that all messages are **encrypted** with the encryption keys of the involved identities. Every time an actor sends data about an [[Identity]], they have to sign the message together with the challenge number (a nonce and the timestamp) to prove access to the corresponding private key.
+ * KILT participants can communicate via a 1:1 messaging system.
+ * ***
+ * All messages are **encrypted** with the encryption keys of the involved identities. Every time an actor sends data about an [[Identity]], they have to sign the message to prove access to the corresponding private key.
+ * <br>
+ * The [[Message]] class exposes methods to construct and verify messages.
  * @module Messaging
  */
 
