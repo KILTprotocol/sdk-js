@@ -1,26 +1,24 @@
 /**
- * @module CType
- *
- *
- *  --- Overview ---
+ *  ### Overview
  *
  *  The KILT protocol places claim standardisation at the centre of the protocol by enabling Attesters to use a certain claim schema for creating specific credentials
+ *
  *  CTYPE metadata contains additional information about the fields of a CTYPE
- *  CTYPE's in KILT is the JSON-description of a data structure. It contains a list of key-value pairs.
  *
- *  --- Usage ---
+ *  ### Usage
  *
- *   Claims are always of a given CTYPE (it's their type)
- *   Anyone can create a CTYPE using a simple CTYPE builder utility or SDK
- *   A CTYPE defines the content and structure of a claim by containing relevant fields
- *   Hashes of all CTYPEs are added to (and registered through) the KILT blockchain
- *   CTYPEs are published and stored by the creator and/or in an open storage registry
- *   Anyone can use a CTYPE to create a new claim
+ *  * CTYPE's in KILT is the JSON-description of a data structure. It contains a list of key-value pairs.
+ *  * CTYPEs are published and stored by the creator and/or in an open storage registry
+ *  * Anyone can use a CTYPE to create a new claim.
  *
- *
- *
- *
+ * @module CType
+ * @preferred
  */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
+ */
+
 import { CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
 import ICType from '../types/CType'

@@ -9,6 +9,7 @@
  * * Contents - among others, the pure content of a claim, for example `"isOver18": yes`;
  * * a CTYPE that represents its data structure.
  * @module Claim
+ * @preferred
  */
 
 /**

@@ -1,17 +1,21 @@
 /**
- * @module Delegation/DelegationNode
  *
- *  --- Overview ---
+ *
+ * ### Overview
  *
  *  The delegation nodes are used to construct a trust hierarchy.
  *  Starting from the root node, entities can delegate the right to issue attestations to Claimers for a certain CTYPE and also delegate the right to attest and to delegate further nodes.
  *
- *  --- Usage ---
+ * ### Usage
  *
  *  The id of the Delegation node, which should be used in the attestation.
  *  A way to find attestations.
  *  To create a delegate node within a tree, a member needs to be the owner of a delegation with the permission to delegate
- *
+ * @module Delegation/DelegationNode
+ * @preferred
+ */
+/**
+ * Dummy comment, so that typedoc ignores this file
  */
 import Crypto from '../crypto'
 import { QueryResult } from '../blockchain/Blockchain'

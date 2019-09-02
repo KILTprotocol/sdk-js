@@ -1,16 +1,18 @@
 /**
- * @module Delegation/DelegationRootNode
- *
- *  --- Overview ---
+ * ### Overview
  *
  *  The Delegation root node uses methods to embed itself on the chain and distribute communication either from a point or the endpoint.
  *  Using the delegation ID to find the root nodes.
  *
- *  --- Usage ---
+ * ### Usage
  *
  *  Delegation nodes inherit by default the root node type.
  *  Creating a hierarchical delegation tree.
- *
+ * @module Delegation/DelegationRootNode
+ * @preferred
+ */
+/**
+ * Dummy comment, so that typedoc ignores this file
  */
 import { QueryResult } from '../blockchain/Blockchain'
 import TxStatus from '../blockchain/TxStatus'

@@ -1,6 +1,11 @@
 /**
  * @module Attestation
  */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
+ */
+
 import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'

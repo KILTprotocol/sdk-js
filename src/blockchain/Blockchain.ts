@@ -1,16 +1,23 @@
 /**
- * @module Blockchain
  *
- *  --- Overview ---
+ *  ### Overview
  *
  *  The bridge that connects the SDK and the KILT blockchain.
  *  The blockchain class exposes the submitTx function that performs a transaction.
  *
- *  --- Usage ---
+ *  ### Usage
  *
- *  Communication within the chain via [[listenToBlocks]].
+ *  Communicates with the chain via [[listenToBlocks]].
+ *  The nonce is created to prevent predictable hashes for a given data (like true/false fields).
  *
+ *
+ * @module Blockchain
+ * @preferred
  */
+/**
+ * Dummy comment, so that typedoc ignores this file
+ */
+
 import { ApiPromise } from '@polkadot/api'
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import {

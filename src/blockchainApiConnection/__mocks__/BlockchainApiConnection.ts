@@ -1,6 +1,5 @@
 /**
  * @module BlockchainApiConnection
- * @ignore
  */
 
 /**

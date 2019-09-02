@@ -1,11 +1,15 @@
 /**
- * @module BlockchainApiConnection
- *
- *  --- Overview ---
+ *  ### Overview
  *  Enables building and accessing the blockchain connection.
  *
- *  --- Usage ---
+ *  ### Usage
  * Other modules can access the blockchain as such: `const blockchain = await getCached()`.
+ * @module BlockchainApiConnection
+ * @preferred
+ */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
  */
 
 import { ApiPromise, WsProvider } from '@polkadot/api'

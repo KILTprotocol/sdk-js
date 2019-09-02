@@ -1,12 +1,23 @@
 /**
- * @module Delegation
- * --- Overview ---
+ *
+ * ### Overview
+ *
  * Delegations are the building blocks of top-down trust structures in KILT. An Attester can inherit trust through delegation from another attester ("top-down"). This helps model real-life trust relationships, e.g. a government clerk can deliver official documents (attestations) on behalf of a governmental organization.
+ *
  * In order to model these trust hierarchies, a delegation is represented as a node is a delegation tree.
- * --- Usage ---
+ *
+ * ### Usage
+ *
  * A delegation is stored on-chain, and can be revoked.
+ *
  * A Delegation object needs a base node to be created. It has an id which nay be used in a [[RequestForAttestation]].
+ * @module Delegation
+ * @preferred
  */
+/**
+ * Dummy comment, so that typedoc ignores this file
+ */
+
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'

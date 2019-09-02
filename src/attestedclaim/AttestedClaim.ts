@@ -1,13 +1,18 @@
 /**
- * @module AttestationPresentation
- *
- *  --- Overview ---
- *
+ *  ### Overview
  *  The verification of a claim, by attesting to the data and verifing the claim.
  *
+ *  ### Usage
  *
- *
+ *  * Creates an instance for the Attester to verify a claim.
+ *  * Verifies a claim made by an Attester.
+ * @module AttestationPresentation
  */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
+ */
+
 import cloneDeep from 'lodash/cloneDeep'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'

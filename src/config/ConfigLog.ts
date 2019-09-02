@@ -2,6 +2,7 @@
  * #### Overview
  * Configuration of the logging, useful to debug the library.
  * @module Config
+ * @preferred
  */
 
 /**
