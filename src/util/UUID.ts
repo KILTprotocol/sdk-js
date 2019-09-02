@@ -1,6 +1,7 @@
 /**
- * #### Overview
- * Utility functions to generate universally unique identifiers (UUIDs).
+ * Universally unique identifiers (UUIDs) are needed in KILT to uniquely identify specific infromation.
+ * ***
+ * UUIDs are used for example in [[RequestForAttestation]] to generate hashes.
  * @module UUID
  */
 
