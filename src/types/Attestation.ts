@@ -1,6 +1,5 @@
 /**
- * @module TypeInterfaces
- * KILT-specific interfaces
+ * @module TypeInterfaces/Attestation
  */
 import ICType from './CType'
 import IPublicIdentity from './PublicIdentity'

@@ -1,6 +1,5 @@
 /**
- * @module TypeInterfaces
- * KILT-specific interfaces
+ * @module TypeInterfaces/PublicIdentity
  */
 export default interface IPublicIdentity {
   address: string

@@ -1,6 +1,5 @@
 /**
  * @module TypeInterfaces/RequestForAttestation
- * KILT-specific interfaces
  */
 import IClaim from './Claim'
 import { IDelegationBaseNode } from './Delegation'
