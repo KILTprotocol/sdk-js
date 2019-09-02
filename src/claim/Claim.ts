@@ -1,14 +1,13 @@
 /**
- *
- * Claims are a core building block of the KILT SDK, it creates an object represent something an entity claims about itself.
- *
+ * Claims are a core building block of the KILT SDK. A claim represents **something an entity claims about itself**.
+ * <br>
+ * Once created, a claim can be used to create a [[RequestForAttestation]].
  * ---
- *
- * A Claim object's owner is (should be) the same entity as the claimer.
- * A Claim object can then be attested, to ultimately create an attested claim - which can later be verified.
- * A Claim object has:
- * * Contents - among others, the pure content of a claim, for example `"isOver18": yes`;
- * * a CTYPE that represents its data structure.
+ * A claim object has: 
+ * * contents - among others, the pure content of a claim, for example `"isOver18": yes`;
+ * * a [[CType]] that represents its data structure.
+ * <br><br>
+ * A claim object's owner is (should be) the same entity as the claimer.
  * @module Claim
  * @preferred
  */
