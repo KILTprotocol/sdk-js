@@ -1,8 +1,8 @@
 /**
- *  An Attested [[Claim]] enables the [[Attestation]] within the KILT ecosystem.
+ * In KILT, the AttestedClaim is a **credential**, which a Claimer can store locally and share with Verifiers as they wish. 
  * ***
- *  Creates an instance for the Attester to verify a [[Claim]], by attesting to the data.
- * @module AttestationPresentation
+ * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[AttestedClaim]] object. This [[AttestedClaim]] also contains the original request for attestation. [[RequestForAttestation]] also exposes a [[createPresentation]] method, than can be used by the claimer to hide some specific information from the verifier for more privacy.
+ * @module AttestedClaim
  * @preferred
  */
 
