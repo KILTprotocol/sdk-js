@@ -7,7 +7,7 @@
  * * create a signed [[Claim]], an [[Attestation]] or other (and verify these later);
  * * encrypt messages between participants.
  * <br><br>
- * Noe: A [[PublicIdentity]] object exposes only public information such as the public address, but doesn't expose any secrets such as private keys.
+ * Note: A [[PublicIdentity]] object exposes only public information such as the public address, but doesn't expose any secrets such as private keys.
  * @module Identity
  * @preferred
  */
