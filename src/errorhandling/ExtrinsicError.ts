@@ -1,6 +1,5 @@
 /**
- * #### Overview
- * KILT-specific errors, with associated codes and descriptions.
+ * ExtrinsicErrors are KILT-specific errors, with associated codes and descriptions.
  * @module ErrorHandling/ExtrinsicErrors
  */
 
