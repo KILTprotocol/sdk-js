@@ -7,9 +7,8 @@
  * It has a signature keypair, an associated public address, and an encryption ("boxing") keypair. These are needed to:
  * * create a signed [[Claim]], an [[Attestation]] or other (and verify these later);
  * * encrypt messages between participants.
- * 
+ * <br><br>
  * A [[PublicIdentity]] object exposes only public information such as the public address, but doesn't expose any secrets such as private keys.
- * 
  * @module Identity
  * @preferred
  */
