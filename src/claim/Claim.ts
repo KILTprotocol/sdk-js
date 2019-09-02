@@ -1,8 +1,9 @@
 /**
- * #### Overview
- * Claims are a core building block of the KILT SDK.
- * A Claim object represent something an entity claims about itself.
- * #### Usage
+ *
+ * Claims are a core building block of the KILT SDK, it creates an object represent something an entity claims about itself.
+ *
+ * ---
+ *
  * A Claim object's owner is (should be) the same entity as the claimer.
  * A Claim object can then be attested, to ultimately create an attested claim - which can later be verified.
  * A Claim object has:
