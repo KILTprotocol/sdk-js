@@ -4,8 +4,8 @@
  *
  *  ### Usage
  *
- *  * Creates an instance for the Attester to verify a claim.
- *  * Verifies a claim made by an Attester.
+ *  * Creates an instance for the attester to verify a claim.
+ *  * Verifies a claim made by an attester.
  * @module AttestationPresentation
  */
 
