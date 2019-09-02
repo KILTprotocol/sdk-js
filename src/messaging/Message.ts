@@ -1,17 +1,10 @@
 /**
  * #### Overview
- * All messages are encrypted with the encryption keys of the involved identities. An encrypted message is composed of the encrypted message body and surrounding data. Every time someone sends data about an identity, he or she has to sign the message together with the challenge number (a nonce and the timestamp) to prove access to the corresponding private key.
- * #### Usage
- *  Request Attestation for Claim
- *  Submit Attestation for Claim
- *  Request claim for CTYPE
- *  Submit Claim for CTYPE
- *  Request Legitimations
- *  Submit Legitimations
- *  Request Accept Delegation
- *  Submit Accept Delegation
- *  Inform Accept Delegation
- * @module Messaging
+ * KILT participants can communicate via a 1:1 messaging system.     
+ *   
+ * This module offers interfaces and methods to construct and verify messages.  
+ * Note that all messages are **encrypted** with the encryption keys of the involved identities. Every time an actor sends data about an [[Identity]], they have to sign the message together with the challenge number (a nonce and the timestamp) to prove access to the corresponding private key.
+ * @module Message
  */
 
 /**

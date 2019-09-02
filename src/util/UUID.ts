@@ -1,6 +1,6 @@
 /**
  * #### Overview
- * Utility functions to generate UUIDs.
+ * Utility functions to generate universally unique identifiers (UUIDs).
  * @module UUID
  */
 
