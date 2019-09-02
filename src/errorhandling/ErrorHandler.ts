@@ -1,5 +1,5 @@
 /**
- * The ErrorHandler class helps spot and determine transaction errors.
+ * [[ErrorHandler]] helps spot and determine transaction errors.
  * @module ErrorHandling
  */
 
