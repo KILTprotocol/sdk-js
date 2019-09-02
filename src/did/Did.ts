@@ -1,18 +1,15 @@
 /**
+ * A Decentralized Identifier (DID) is a new type of identifier that is globally unique, resolveable with high availability, and cryptographically verifiable. Although it's not mandatory in KILT, users can optionally create a DID and anchor it to the KILT blockchain.
+ * <br>
+ * Official DID specification: [[https://w3c-ccg.github.io/did-primer/]].
+ * ***
+ * The [[Did]] class exposes methods to build, store and query decentralized identifiers.
  * @module DID
- *
- *
- *  --- Overview ---
- *
- *  Decentralised Identifiers (DIDs)
- *  Although it is not mandatory for using the KILT protocol, users can optionally create a DID and anchor it to the KILT blockchain.
- *  DIDs are a type of identifier for verifiable, decentralised digital identity.
- *
- *  --- Usage ---
- *
- *  Identity is the sum of characteristics, attributes and traits which describe an entity, an object or an item and as an individuum distinguishes it from all others.
- *  DID creation and DID method pointing to KILT's endpoint.
- *
+ * @preferred
+ */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
  */
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
