@@ -1,14 +1,12 @@
 /**
- * @module ErrorHandling/ExtrinsicError
- *
- *
- *  --- Overview ---
- *
- *  List of possible KILT errors, you may encounter and how to resolve them.
- *
- *
+ * #### Overview
+ * KILT-specific errors, with associated codes and descriptions.
+ * @module ErrorHandling/ExtrinsicErrors
  */
 
+/**
+ * Dummy comment, so that typedoc ignores this file
+ */
 export enum ErrorCode {
   ERROR_CTYPE_NOT_FOUND = 1001,
   ERROR_CTYPE_ALREADY_EXISTS = 1002,

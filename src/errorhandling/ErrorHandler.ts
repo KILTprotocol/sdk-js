@@ -1,10 +1,11 @@
 /**
+ * #### Overview
+ * Determines transaction errors.
  * @module ErrorHandling
- *
- *  --- Overview ---
- *
- *  Providing error handling logs.
- *
+ */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
  */
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types'
