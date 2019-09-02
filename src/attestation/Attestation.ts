@@ -1,6 +1,6 @@
 /**
  *
- *  Attestation provides the KILT ecosystem with service of handling [[Claim]] objects, which are written on the [[Blockchain]].
+ * Attestation provides the KILT ecosystem with handling [[Claim]] objects, which are then written on the [[Blockchain]].
  * ---
  *
  *  Attestation issued by the Attester is sent to and stored with the claimer. We call these attested [[Claim]]s Credentials.
