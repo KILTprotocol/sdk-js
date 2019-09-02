@@ -1,5 +1,5 @@
 /**
- * ConfigLog is used to configure logging.
+ * Config is used to configure logging.
  * @module Config
  * @preferred
  */
