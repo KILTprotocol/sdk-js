@@ -26,12 +26,14 @@ import * as CTypeUtils from './CTypeUtils'
 import ICType from '../types/CType'
 import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
+import TxStatus from '../blockchain/TxStatus'
 
 export default class CType implements ICType {
   public static fromObject(obj: ICType): CType {
     const newObject = Object.create(CType.prototype)
     return Object.assign(newObject, obj)
   }
+
   public hash: ICType['hash']
   public owner?: ICType['owner']
   public schema: ICType['schema']
@@ -52,7 +54,7 @@ export default class CType implements ICType {
     }
   }
 
-  public async store(identity: Identity) {
+  public async store(identity: Identity): Promise<TxStatus> {
     return store(this, identity)
   }
 

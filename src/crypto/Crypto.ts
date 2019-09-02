@@ -1,10 +1,14 @@
 /**
- * @module Crypto
- * --- Overview ---
- * Collection of utility types and methods useful for cryptographic operations, such as signing/verifying, encrypting/decrypting and hashing.
+ * #### Overview
+ * Utility types and methods useful for cryptographic operations, such as signing/verifying, encrypting/decrypting and hashing.
  * Most of them are wrappers around existing polkadot functions.
- * --- Usage ---
+ * #### Usage
  * Crypto utils are used anywhere signing or verifying is needed in KILT.
+ * @module Crypto
+ */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
  */
 import { decodeAddress, encodeAddress } from '@polkadot/keyring/address'
 import { KeyringPair } from '@polkadot/keyring/types'
@@ -18,8 +22,8 @@ import {
   u8aToU8a,
 } from '@polkadot/util'
 import blake2AsU8a from '@polkadot/util-crypto/blake2/asU8a'
-import { default as naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
-import { default as naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
+import naclDecrypt from '@polkadot/util-crypto/nacl/decrypt'
+import naclEncrypt from '@polkadot/util-crypto/nacl/encrypt'
 import nacl from 'tweetnacl'
 import * as jsonabc from 'jsonabc'
 
@@ -186,7 +190,7 @@ export function decryptAsymmetric(
   data: EncryptedAsymmetric | EncryptedAsymmetricString,
   publicKeyB: CryptoInput,
   secretKeyA: CryptoInput
-): Uint8Array | false {
+): Uint8Array | false | null {
   const decrypted = nacl.box.open(
     coToUInt8(data.box),
     coToUInt8(data.nonce),

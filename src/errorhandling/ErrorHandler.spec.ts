@@ -1,7 +1,7 @@
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
+import { Tuple } from '@polkadot/types'
 import { ErrorHandler } from './ErrorHandler'
 import { ErrorCode, ERROR_CTYPE_NOT_FOUND } from './ExtrinsicError'
-import { Tuple } from '@polkadot/types'
 
 describe('ErrorHandler', () => {
   it('test extrinsic failed', () => {

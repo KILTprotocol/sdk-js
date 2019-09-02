@@ -36,7 +36,7 @@ export function getAddressFromIdentifier(
   identifier: IDid['identifier']
 ): IPublicIdentity['address'] {
   if (!identifier.startsWith(IDENTIFIER_PREFIX)) {
-    throw new Error('Not a KILT did: ' + identifier)
+    throw new Error(`Not a KILT did: ${identifier}`)
   }
   return identifier.substr(IDENTIFIER_PREFIX.length)
 }

@@ -1,15 +1,13 @@
 /**
+ * #### Overview
+ * Configuration of the logging, useful to debug the library.
  * @module Config
- *
- *  --- Overview ---
- *
- *  Configuration of the logging
- *
- *  --- Usage ---
- *
- *  Debugging of the library
- *
  */
+
+/**
+ * Dummy comment, so that typedoc ignores this file
+ */
+
 import {
   LoggerFactoryOptions,
   LFService,
@@ -26,6 +24,7 @@ const options = new LoggerFactoryOptions().addLogGroupRule(
 
 // Create a named loggerfactory and pass in the options and export the factory.
 // Named is since version 0.2.+ (it's recommended for future usage)
+// eslint-disable-next-line import/prefer-default-export
 export const factory = LFService.createNamedLoggerFactory(
   'LoggerFactory',
   options

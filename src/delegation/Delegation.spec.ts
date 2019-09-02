@@ -1,7 +1,7 @@
 import { Text, Tuple } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
-import { Crypto, Identity } from '../'
+import { Crypto, Identity } from '..'
 import DelegationNode from './DelegationNode'
 import { getAttestationHashes } from './Delegation.chain'
 import { Permission } from '../types/Delegation'
@@ -13,10 +13,10 @@ describe('Delegation', () => {
 
   const ctypeHash = Crypto.hashStr('testCtype')
   const blockchain = require('../blockchain/Blockchain').default
-  blockchain.api.tx.delegation.createRoot = jest.fn((rootId, _ctypeHash) => {
+  blockchain.api.tx.delegation.createRoot = jest.fn(() => {
     return Promise.resolve()
   })
-  blockchain.api.query.attestation.delegatedAttestations = jest.fn(rootId => {
+  blockchain.api.query.attestation.delegatedAttestations = jest.fn(() => {
     const tuple = new Tuple(
       //  (claim-hash)
       [Text, Text, Text],
@@ -24,7 +24,7 @@ describe('Delegation', () => {
     )
     return Promise.resolve(tuple)
   })
-  blockchain.api.query.delegation.root = jest.fn(rootId => {
+  blockchain.api.query.delegation.root = jest.fn(() => {
     const tuple = new Tuple(
       // Root-Delegation: root-id -> (ctype-hash, account, revoked)
       [Tuple.with([Text, Text, Bool])],
@@ -73,7 +73,7 @@ describe('Delegation', () => {
     }
     return Promise.resolve(result)
   })
-  blockchain.api.query.delegation.children = jest.fn(delegationId => {
+  blockchain.api.query.delegation.children = jest.fn(() => {
     const tuple = new Tuple(
       // Children: delegation-id -> [delegation-ids]
       [Text, Text, Text],

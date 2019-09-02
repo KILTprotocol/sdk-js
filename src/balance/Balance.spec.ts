@@ -1,5 +1,5 @@
-import Identity from '../identity/Identity'
 import BN from 'bn.js/'
+import Identity from '../identity/Identity'
 // import partial from 'lodash/partial'
 import { listenToBalanceChanges, makeTransfer } from './Balance.chain'
 
@@ -19,7 +19,7 @@ describe('Balance', async () => {
 
   it('should listen to balance changes', async done => {
     const bob = Identity.buildFromURI('//Bob')
-    const listener = (account: string, balance: BN, change: BN) => {
+    const listener = (account: string, balance: BN, change: BN): void => {
       expect(account).toBe(bob.address)
       expect(balance.toNumber()).toBe(42)
       expect(change.toNumber()).toBe(30)

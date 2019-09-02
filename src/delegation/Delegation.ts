@@ -7,7 +7,6 @@
  * A delegation is stored on-chain, and can be revoked.
  * A Delegation object needs a base node to be created. It has an id which nay be used in a [[RequestForAttestation]].
  */
-import { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'
@@ -22,6 +21,7 @@ import {
   getChildIds,
 } from './Delegation.chain'
 import { query } from '../attestation/Attestation.chain'
+import { QueryResult } from '../blockchain/Blockchain'
 
 const log = factory.getLogger('DelegationBaseNode')
 

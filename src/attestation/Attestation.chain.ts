@@ -12,7 +12,7 @@ import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import IAttestation from '../types/Attestation'
-import Attestation from '../attestation/Attestation'
+import Attestation from './Attestation'
 
 const log = factory.getLogger('Attestation')
 
@@ -29,44 +29,11 @@ export async function store(
 
   const blockchain = await getCached()
 
-  // @ts-ignore
-  const tx: SubmittableExtrinsic<
-    CodecResult,
-    any
-  > = await blockchain.api.tx.attestation.add(
+  const tx = await blockchain.api.tx.attestation.add(
     txParams.claimHash,
     txParams.ctypeHash,
     txParams.delegationId
   )
-  return blockchain.submitTx(identity, tx)
-}
-
-export async function query(
-  claimHash: string
-): Promise<Attestation | undefined> {
-  const encoded: QueryResult = await queryRaw(claimHash)
-  return decode(encoded, claimHash)
-}
-
-async function queryRaw(claimHash: string): Promise<Codec | null | undefined> {
-  log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
-  const blockchain = await getCached()
-  const result: QueryResult = await blockchain.api.query.attestation.attestations(
-    claimHash
-  )
-  return result
-}
-
-export async function revoke(
-  claimHash: string,
-  identity: Identity
-): Promise<TxStatus> {
-  const blockchain = await getCached()
-  log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
-  const tx: SubmittableExtrinsic<
-    CodecResult,
-    SubscriptionResult
-  > = blockchain.api.tx.attestation.revoke(claimHash)
   return blockchain.submitTx(identity, tx)
 }
 
@@ -87,4 +54,33 @@ function decode(
     return Attestation.fromObject(attestation)
   }
   return undefined
+}
+
+async function queryRaw(claimHash: string): Promise<Codec | null | undefined> {
+  log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
+  const blockchain = await getCached()
+  const result: QueryResult = await blockchain.api.query.attestation.attestations(
+    claimHash
+  )
+  return result
+}
+
+export async function query(
+  claimHash: string
+): Promise<Attestation | undefined> {
+  const encoded: QueryResult = await queryRaw(claimHash)
+  return decode(encoded, claimHash)
+}
+
+export async function revoke(
+  claimHash: string,
+  identity: Identity
+): Promise<TxStatus> {
+  const blockchain = await getCached()
+  log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
+  const tx: SubmittableExtrinsic<
+    CodecResult,
+    SubscriptionResult
+  > = blockchain.api.tx.attestation.revoke(claimHash)
+  return blockchain.submitTx(identity, tx)
 }
