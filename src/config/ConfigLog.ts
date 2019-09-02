@@ -1,7 +1,5 @@
 /**
- * Configuration logging within the KILT protocol
- * ***
- * Useful to debug the library.
+ * ConfigLog is used to configure logging.
  * @module Config
  * @preferred
  */
