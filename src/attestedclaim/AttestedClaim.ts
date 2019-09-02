@@ -9,7 +9,6 @@
 /**
  * Dummy comment, so that typedoc ignores this file
  */
-
 import cloneDeep from 'lodash/cloneDeep'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'

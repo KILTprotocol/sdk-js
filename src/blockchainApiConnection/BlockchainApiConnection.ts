@@ -9,7 +9,6 @@
 /**
  * Dummy comment, so that typedoc ignores this file
  */
-
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { RegistryTypes } from '@polkadot/types/types'
 

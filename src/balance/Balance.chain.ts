@@ -11,7 +11,6 @@
 /**
  * Dummy comment, so that typedoc ignores this file
  */
-
 import BN from 'bn.js'
 import TxStatus from '../blockchain/TxStatus'
 import { getCached } from '../blockchainApiConnection'

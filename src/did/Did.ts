@@ -11,7 +11,6 @@
 /**
  * Dummy comment, so that typedoc ignores this file
  */
-
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import TxStatus from '../blockchain/TxStatus'

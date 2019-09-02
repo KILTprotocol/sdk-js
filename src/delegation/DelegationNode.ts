@@ -9,6 +9,7 @@
  * @module Delegation/DelegationNode
  * @preferred
  */
+
 /**
  * Dummy comment, so that typedoc ignores this file
  */

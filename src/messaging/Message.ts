@@ -10,7 +10,6 @@
 /**
  * Dummy comment, so that typedoc ignores this file
  */
-
 import {
   Claim,
   DelegationNode,

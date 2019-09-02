@@ -13,7 +13,6 @@
 /**
  * Dummy comment, so that typedoc ignores this file
  */
-
 import CType from '../ctype/CType'
 import { verifyClaimStructure } from '../ctype/CTypeUtils'
 import Identity from '../identity/Identity'

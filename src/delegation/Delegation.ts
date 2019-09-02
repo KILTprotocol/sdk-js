@@ -6,10 +6,10 @@
  * @module Delegation
  * @preferred
  */
+
 /**
  * Dummy comment, so that typedoc ignores this file
  */
-
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'

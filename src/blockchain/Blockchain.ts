@@ -5,10 +5,10 @@
  * @module Blockchain
  * @preferred
  */
+
 /**
  * Dummy comment, so that typedoc ignores this file
  */
-
 import { ApiPromise } from '@polkadot/api'
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import {

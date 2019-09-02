@@ -11,7 +11,6 @@
 /**
  * Dummy comment, so that typedoc ignores this file
  */
-
 import { CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
 import ICType from '../types/CType'

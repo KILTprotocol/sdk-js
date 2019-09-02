@@ -9,10 +9,10 @@
  * @module Delegation/DelegationDecoder
  * @preferred
  */
+
 /**
  * Dummy comment, so that typedoc ignores this file
  */
-
 import { QueryResult } from '../blockchain/Blockchain'
 import { coToUInt8 } from '../crypto/Crypto'
 import DelegationNode from './DelegationNode'
