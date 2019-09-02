@@ -1,6 +1,6 @@
 /**
  *
- * Config Logs the configuration of the logging within the KILT protocol
+ * Configuration logging within the KILT protocol
  *
  * ---
  *
