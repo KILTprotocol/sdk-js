@@ -8,7 +8,7 @@
  *
  *  --- Usage ---
  *
- *  Communication within chain via [[listenToBlocks]].
+ *  Communication within the chain via [[listenToBlocks]].
  *
  */
 import { ApiPromise } from '@polkadot/api'

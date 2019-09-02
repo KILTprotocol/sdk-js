@@ -11,7 +11,7 @@
  *  --- Usage ---
  *
  *  Identity is the sum of characteristics, attributes and traits which describe an entity, an object or an item and as an individuum distinguishes it from all others.
- *
+ *  DID creation and DID method pointing to KILT's endpoint.
  *
  */
 import Identity from '../identity/Identity'
