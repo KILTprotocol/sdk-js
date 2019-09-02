@@ -1,19 +1,23 @@
 /**
- * @module DID
  *
- *
- *  --- Overview ---
+ *  ### Overview
  *
  *  Decentralised Identifiers (DIDs)
- *  Although it is not mandatory for using the KILT protocol, users can optionally create a DID and anchor it to the KILT blockchain.
  *  DIDs are a type of identifier for verifiable, decentralised digital identity.
+ *  Although it is not mandatory for using the KILT protocol, users can optionally create a DID and anchor it to the KILT blockchain.
  *
- *  --- Usage ---
+ *  ### Usage
  *
  *  Identity is the sum of characteristics, attributes and traits which describe an entity, an object or an item and as an individuum distinguishes it from all others.
  *  DID creation and DID method pointing to KILT's endpoint.
  *
+ * @module DID
+ * @preferred
  */
+/**
+ * Dummy comment, so that typedoc ignores this file
+ */
+
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import TxStatus from '../blockchain/TxStatus'

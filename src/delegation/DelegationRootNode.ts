@@ -6,8 +6,9 @@
  *
  * ### Usage
  *
- *  Delegation nodes inherit by default the root node type.
- *  Creating a hierarchical delegation tree.
+ *  * Delegation nodes inherit by default the root node type.
+ *  * Creating a hierarchical delegation tree.
+ *
  * @module Delegation/DelegationRootNode
  * @preferred
  */
