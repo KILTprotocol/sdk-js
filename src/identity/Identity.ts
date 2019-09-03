@@ -165,7 +165,7 @@ export default class Identity extends PublicIdentity {
   public decryptAsymmetric(
     encrypted: EncryptedAsymmetric | EncryptedAsymmetricString,
     boxPublicKey: BoxPublicKey
-  ): null | false | Uint8Array {
+  ): false | Uint8Array {
     return Crypto.decryptAsymmetric(
       encrypted,
       boxPublicKey,
