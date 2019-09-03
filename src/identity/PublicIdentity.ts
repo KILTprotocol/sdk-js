@@ -2,7 +2,6 @@
  * @module Identity
  */
 import Did, {
-  IDid,
   KEY_TYPE_ENCRYPTION,
   SERVICE_KILT_MESSAGING,
   IDENTIFIER_PREFIX,
@@ -11,7 +10,7 @@ import { getAddressFromIdentifier } from '../did/Did.utils'
 import IPublicIdentity from '../types/PublicIdentity'
 
 export interface IURLResolver {
-  resolve(url: string): Promise<object | undefined>
+  resolve(url: string): Promise<object | null>
 }
 
 type DIDPublicKey = {
@@ -46,10 +45,8 @@ function isDIDResult(object: object): object is DIDResult {
 }
 
 export default class PublicIdentity implements IPublicIdentity {
-  public static fromDidDocument(
-    didDocument: object
-  ): IPublicIdentity | undefined {
-    if (!isDIDDocument(didDocument)) return undefined
+  public static fromDidDocument(didDocument: object): IPublicIdentity | null {
+    if (!isDIDDocument(didDocument)) return null
 
     try {
       return new PublicIdentity(
@@ -72,20 +69,20 @@ export default class PublicIdentity implements IPublicIdentity {
         )
       )
     } catch (e) {
-      return undefined
+      return null
     }
   }
 
   public static async resolveFromDid(
     identifier: string,
     urlResolver: IURLResolver
-  ): Promise<IPublicIdentity | undefined> {
+  ): Promise<IPublicIdentity | null> {
     if (identifier.startsWith(IDENTIFIER_PREFIX)) {
-      const did: IDid | undefined = await Did.queryByIdentifier(identifier)
-      if (did !== undefined) {
+      const did = await Did.queryByIdentifier(identifier)
+      if (did !== null) {
         const didDocument = did.documentStore
           ? await urlResolver.resolve(did.documentStore)
-          : undefined
+          : null
         // TODO: check, if did document is complete
         if (didDocument) {
           return this.fromDidDocument(didDocument)
@@ -105,7 +102,7 @@ export default class PublicIdentity implements IPublicIdentity {
         return this.fromDidDocument(didResult.didDocument)
       }
     }
-    return undefined
+    return null
   }
 
   public readonly address: IPublicIdentity['address']

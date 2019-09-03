@@ -49,22 +49,19 @@ export class ErrorHandler {
    */
   public getExtrinsicError(
     extrinsicResult: SubmittableResult
-  ): ExtrinsicError | undefined {
+  ): ExtrinsicError | null {
     const events: EventRecord[] = extrinsicResult.events || []
 
-    const errorEvent: EventRecord | undefined = events.find(
-      (eventRecord: EventRecord) => {
-        const eventIndex: EventIndex = eventRecord.event.index
-        return (
-          !eventRecord.phase.asApplyExtrinsic.isEmpty &&
-          eventIndex[0] === this.moduleIndex
-        )
-      }
-    )
+    const errorEvent = events.find((eventRecord: EventRecord) => {
+      const eventIndex: EventIndex = eventRecord.event.index
+      return (
+        !eventRecord.phase.asApplyExtrinsic.isEmpty &&
+        eventIndex[0] === this.moduleIndex
+      )
+    })
     if (errorEvent) {
       const { data } = errorEvent.event
-      const errorCode: number | undefined =
-        data && !data.isEmpty ? data[0].toJSON() : undefined
+      const errorCode = data && !data.isEmpty ? data[0].toJSON() : null
       if (errorCode) {
         return errorForCode(errorCode)
       }
@@ -72,7 +69,7 @@ export class ErrorHandler {
     } else {
       log.warn('no error event found in transaction result')
     }
-    return undefined
+    return null
   }
 
   /**

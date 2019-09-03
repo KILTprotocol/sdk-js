@@ -23,11 +23,11 @@ export default class DelegationNode extends DelegationBaseNode
    * @description Queries the delegation node with [delegationId].
    *
    * @param delegationId the unique identifier of the desired delegation
-   * @returns promise containing the [[DelegationNode]] or [undefined]
+   * @returns promise containing the [[DelegationNode]] or [null]
    */
   public static async query(
     delegationId: string
-  ): Promise<DelegationNode | undefined> {
+  ): Promise<DelegationNode | null> {
     log.info(`:: query('${delegationId}')`)
     const result = await query(delegationId)
     log.info(`result: ${JSON.stringify(result)}`)
@@ -109,10 +109,10 @@ export default class DelegationNode extends DelegationBaseNode
 
   /**
    * @description Fetches the parent node of this delegation node.
-   * @returns promise containing the parent as [[DelegationBaseNode]] or [undefined]
+   * @returns promise containing the parent as [[DelegationBaseNode]] or [null]
    */
 
-  public async getParent(): Promise<DelegationBaseNode | undefined> {
+  public async getParent(): Promise<DelegationBaseNode | null> {
     if (!this.parentId) {
       // parent must be root
       return this.getRoot()
@@ -137,8 +137,8 @@ export default class DelegationNode extends DelegationBaseNode
    * @returns promise containing a boolean flag
    */
   public async verify(): Promise<boolean> {
-    const node: DelegationNode | undefined = await query(this.id)
-    return node !== undefined && !node.revoked
+    const node = await query(this.id)
+    return node !== null && !node.revoked
   }
 
   /**
@@ -152,9 +152,7 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /* eslint-disable class-methods-use-this */
-  protected decodeChildNode(
-    queryResult: QueryResult
-  ): DelegationNode | undefined {
+  protected decodeChildNode(queryResult: QueryResult): DelegationNode | null {
     return decodeDelegationNode(queryResult)
   }
   /* eslint-enable class-methods-use-this */

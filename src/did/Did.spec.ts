@@ -44,7 +44,7 @@ describe('DID', () => {
       identifier: 'did:kilt:w/oDocumentStore',
       publicBoxKey: '0x123',
       publicSigningKey: '0x987',
-      documentStore: undefined,
+      documentStore: null,
     } as IDid)
   })
 
@@ -54,7 +54,7 @@ describe('DID', () => {
       identifier: 'did:kilt:w/oDocumentStore',
       publicBoxKey: '0x123',
       publicSigningKey: '0x987',
-      documentStore: undefined,
+      documentStore: null,
     } as IDid)
   })
 

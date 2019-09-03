@@ -28,7 +28,7 @@ export async function store(
 
 export async function query(
   delegationId: IDelegationRootNode['id']
-): Promise<DelegationRootNode | undefined> {
+): Promise<DelegationRootNode | null> {
   const blockchain = await getCached()
   const root = decodeRootDelegation(
     await blockchain.api.query.delegation.root(delegationId)

@@ -30,7 +30,7 @@ export interface IDid {
   /**
    * The document store reference.
    */
-  documentStore?: string
+  documentStore: string | null
 }
 
 export default class Did implements IDid {
@@ -38,11 +38,9 @@ export default class Did implements IDid {
    * @description Queries the [Did] from chain using the [identifier]
    *
    * @param identifier the DIDs identifier
-   * @returns promise containing the [[Did]] or [undefined]
+   * @returns promise containing the [[Did]] or [null]
    */
-  public static queryByIdentifier(
-    identifier: string
-  ): Promise<IDid | undefined> {
+  public static queryByIdentifier(identifier: string): Promise<IDid | null> {
     return queryByIdentifier(identifier)
   }
 
@@ -50,9 +48,9 @@ export default class Did implements IDid {
    * @description Queries the [Did] from chain using the [address]
    *
    * @param address the DIDs address
-   * @returns promise containing the [[Did]] or [undefined]
+   * @returns promise containing the [[Did]] or [null]
    */
-  public static queryByAddress(address: string): Promise<IDid | undefined> {
+  public static queryByAddress(address: string): Promise<IDid | null> {
     return queryByAddress(address)
   }
 
@@ -87,13 +85,13 @@ export default class Did implements IDid {
   public readonly identifier: string
   public readonly publicBoxKey: string
   public readonly publicSigningKey: string
-  public readonly documentStore?: string
+  public readonly documentStore: string | null
 
   private constructor(
     identifier: string,
     publicBoxKey: string,
     publicSigningKey: string,
-    documentStore?: string
+    documentStore: string | null = null
   ) {
     this.identifier = identifier
     this.publicBoxKey = publicBoxKey

@@ -34,19 +34,17 @@ export async function store(
   return txStatus
 }
 
-function decode(encoded: QueryResult): IPublicIdentity['address'] | undefined {
-  return encoded && encoded.encodedLength ? encoded.toString() : undefined
+function decode(encoded: QueryResult): IPublicIdentity['address'] | null {
+  return encoded && encoded.encodedLength ? encoded.toString() : null
 }
 
 export async function getOwner(
   ctypeHash: ICType['hash']
-): Promise<IPublicIdentity['address'] | undefined> {
+): Promise<IPublicIdentity['address'] | null> {
   const blockchain = await getCached()
   const encoded: QueryResult = await blockchain.api.query.ctype.cTYPEs(
     ctypeHash
   )
-  const queriedCTypeAccount: IPublicIdentity['address'] | undefined = decode(
-    encoded
-  )
+  const queriedCTypeAccount = decode(encoded)
   return queriedCTypeAccount
 }

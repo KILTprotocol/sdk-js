@@ -18,10 +18,10 @@ import IPublicIdentity from '../types/PublicIdentity'
 
 export async function queryByIdentifier(
   identifier: IDid['identifier']
-): Promise<IDid | undefined> {
+): Promise<IDid | null> {
   const blockchain = await getCached()
   const address = getAddressFromIdentifier(identifier)
-  const decoded: IDid | undefined = decodeDid(
+  const decoded = decodeDid(
     identifier,
     await blockchain.api.query.dID.dIDs(address)
   )
@@ -30,10 +30,10 @@ export async function queryByIdentifier(
 
 export async function queryByAddress(
   address: IPublicIdentity['address']
-): Promise<IDid | undefined> {
+): Promise<IDid | null> {
   const blockchain = await getCached()
   const identifier = getIdentifierFromAddress(address)
-  const decoded: IDid | undefined = decodeDid(
+  const decoded = decodeDid(
     identifier,
     await blockchain.api.query.dID.dIDs(address)
   )
