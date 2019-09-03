@@ -1,7 +1,7 @@
 /**
- * Attestation provides the KILT ecosystem with handling [[Claim]] objects, which are then written on the [[Blockchain]].
+ * Attestation provides the KILT ecosystem with certifying [[Claim]] objects, which are then written on the [[Blockchain]].
  * ***
- *  Attestation issued by the Attester is sent to and stored with the claimer. We call these attested [[Claim]]s Credentials.
+ *  Attestation issued by the Attester is sent to and stored with the claimer. We call these [[AttestedClaim]]s Credentials.
  *
  *  Attestation objects are stored on a map within the [[Blockchain]], the claimHash used as a key and a tuple of [[CType]] hash. The Attester can revoke a [[Claim]].
  * @module Attestation
