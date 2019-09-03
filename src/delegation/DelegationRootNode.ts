@@ -1,7 +1,8 @@
 /**
- * Delegation root node uses methods to embed itself on KILTs chain and distribute communication either from a point or the endpoint.
+ * KILT enables top-down trust structures (see [[Delegation]]). On the lowest level, a delegation structure is always a **tree**. The root of this tree is DelegationRootNode.
  * ***
- * Creating a hierarchical delegation tree with using the delegation ID to identify the root nodes.
+ * Apart from inheriting [[DelegationBaseNode]]'s structure, a DelegationRootNode has a [[cTypeHash]] property that refers to a specific [[CType]]. A DelegationRootNode is written on-chain, and can be queried by [[delegationId]] via the [[query]] method.
+ * ***
  * @module Delegation/DelegationRootNode
  * @preferred
  */
