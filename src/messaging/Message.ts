@@ -24,7 +24,7 @@ export interface IMessage {
   createdAt: number
   receiverAddress: IPublicIdentity['address']
   senderAddress: IPublicIdentity['address']
-  senderBoxPublicKey?: IPublicIdentity['boxPublicKeyAsHex']
+  senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
 
   messageId?: string
   receivedAt?: number
