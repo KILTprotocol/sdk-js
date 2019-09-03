@@ -3,7 +3,7 @@
  */
 
 /**
- * Dummy comment, so that typedoc ignores this file
+ * Dummy comment needed for correct doc display, do not remove
  */
 export default class TxStatus {
   public type: string | undefined

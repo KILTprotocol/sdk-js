@@ -9,7 +9,7 @@
  */
 
 /**
- * Dummy comment, so that typedoc ignores this file
+ * Dummy comment needed for correct doc display, do not remove
  */
 import cloneDeep from 'lodash/cloneDeep'
 import Attestation from '../attestation/Attestation'

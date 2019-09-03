@@ -4,7 +4,7 @@
  */
 
 /**
- * Dummy comment, so that typedoc ignores this file
+ * Dummy comment needed for correct doc display, do not remove
  */
 export enum ErrorCode {
   ERROR_CTYPE_NOT_FOUND = 1001,

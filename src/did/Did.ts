@@ -9,7 +9,7 @@
  */
 
 /**
- * Dummy comment, so that typedoc ignores this file
+ * Dummy comment needed for correct doc display, do not remove
  */
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'

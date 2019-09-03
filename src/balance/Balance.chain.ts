@@ -9,7 +9,7 @@
  */
 
 /**
- * Dummy comment, so that typedoc ignores this file
+ * Dummy comment needed for correct doc display, do not remove
  */
 import BN from 'bn.js'
 import TxStatus from '../blockchain/TxStatus'
