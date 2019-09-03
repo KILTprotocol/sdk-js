@@ -7,7 +7,7 @@
  */
 
 /**
- * Dummy comment, so that typedoc ignores this file
+ * Dummy comment needed for correct doc display, do not remove
  */
 import { v4 as uuid } from 'uuid'
 import { IDelegationBaseNode } from '..'

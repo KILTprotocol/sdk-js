@@ -4,7 +4,7 @@
  */
 
 /**
- * Dummy comment, so that typedoc ignores this file
+ * Dummy comment needed for correct doc display, do not remove
  */
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types'
