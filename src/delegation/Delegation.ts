@@ -68,9 +68,11 @@ export default abstract class DelegationBaseNode
         }
         return decoded
       })
-      .filter((value): value is DelegationNode => {
-        return value !== undefined
-      })
+      .filter(
+        (value): value is DelegationNode => {
+          return value !== undefined
+        }
+      )
     log.info(`children: ${JSON.stringify(children)}`)
     return children
   }
