@@ -3,6 +3,13 @@
  * In order to model these trust hierarchies, a delegation is represented as a **node** in a **delegation tree**.
  * ***
  * A delegation object is stored on-chain, and can be revoked. A base node is created, a ID which may be used in a [[RequestForAttestation]].
+ *
+ * A delegation can and may restrict permissions.
+ *
+ * Permissions:
+ *
+ *  * Delegate
+ *  * Attest
  * @module Delegation
  * @preferred
  */
