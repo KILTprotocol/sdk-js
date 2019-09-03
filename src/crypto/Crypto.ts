@@ -189,7 +189,7 @@ export function decryptAsymmetric(
   data: EncryptedAsymmetric | EncryptedAsymmetricString,
   publicKeyB: CryptoInput,
   secretKeyA: CryptoInput
-): Uint8Array | false | null {
+): Uint8Array | false {
   const decrypted = nacl.box.open(
     coToUInt8(data.box),
     coToUInt8(data.nonce),
