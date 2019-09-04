@@ -38,9 +38,9 @@ export async function store(
 
 export async function query(
   delegationId: IDelegationNode['id']
-): Promise<DelegationNode | undefined> {
+): Promise<DelegationNode | null> {
   const blockchain = await getCached()
-  const decoded: DelegationNode | undefined = decodeDelegationNode(
+  const decoded = decodeDelegationNode(
     await blockchain.api.query.delegation.delegations(delegationId)
   )
   if (decoded) {

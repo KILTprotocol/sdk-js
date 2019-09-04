@@ -45,10 +45,10 @@ export default abstract class DelegationBaseNode
   public abstract getRoot(): Promise<DelegationRootNode>
 
   /**
-   * @description Fetches the parent delegation node. If the parent node is [undefined] this node is a direct child of the root node.
-   * @returns promise containing the parent node or [undefined]
+   * @description Fetches the parent delegation node. If the parent node is [null] this node is a direct child of the root node.
+   * @returns promise containing the parent node or [null]
    */
-  public abstract getParent(): Promise<DelegationBaseNode | undefined>
+  public abstract getParent(): Promise<DelegationBaseNode | null>
 
   /**
    * @description Fetches the children nodes of the current node.
@@ -60,9 +60,7 @@ export default abstract class DelegationBaseNode
     const queryResults: CodecWithId[] = await fetchChildren(childIds)
     const children: DelegationNode[] = queryResults
       .map((codec: CodecWithId) => {
-        const decoded: DelegationNode | undefined = this.decodeChildNode(
-          codec.codec
-        )
+        const decoded = this.decodeChildNode(codec.codec)
         if (decoded) {
           decoded.id = codec.id
         }
@@ -70,7 +68,7 @@ export default abstract class DelegationBaseNode
       })
       .filter(
         (value): value is DelegationNode => {
-          return value !== undefined
+          return value !== null
         }
       )
     log.info(`children: ${JSON.stringify(children)}`)
@@ -117,5 +115,5 @@ export default abstract class DelegationBaseNode
    */
   protected abstract decodeChildNode(
     queryResult: QueryResult
-  ): DelegationNode | undefined
+  ): DelegationNode | null
 }

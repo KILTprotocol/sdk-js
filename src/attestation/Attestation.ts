@@ -11,9 +11,7 @@ import { revoke, query, store } from './Attestation.chain'
 const log = factory.getLogger('Attestation')
 
 export default class Attestation implements IAttestation {
-  public static async query(
-    claimHash: string
-  ): Promise<Attestation | undefined> {
+  public static async query(claimHash: string): Promise<Attestation | null> {
     return query(claimHash)
   }
 
@@ -60,10 +58,10 @@ export default class Attestation implements IAttestation {
 
   public async verify(claimHash: string = this.claimHash): Promise<boolean> {
     // 1) Query attestations for claimHash
-    const attestation: Attestation | undefined = await query(claimHash)
+    const attestation: Attestation | null = await query(claimHash)
     // 2) check attestation for being valied, having the correct owner and not being revoked
     const attestationValid: boolean =
-      attestation !== undefined &&
+      attestation !== null &&
       attestation.owner === this.owner &&
       !attestation.revoked
     if (!attestationValid) {

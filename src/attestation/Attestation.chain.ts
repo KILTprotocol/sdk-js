@@ -37,10 +37,7 @@ export async function store(
   return blockchain.submitTx(identity, tx)
 }
 
-function decode(
-  encoded: QueryResult,
-  claimHash: string
-): Attestation | undefined {
+function decode(encoded: QueryResult, claimHash: string): Attestation | null {
   if (encoded && encoded.encodedLength) {
     const attestationTuple = encoded.toJSON()
     const attestation: IAttestation = {
@@ -53,10 +50,10 @@ function decode(
     log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
     return Attestation.fromObject(attestation)
   }
-  return undefined
+  return null
 }
 
-async function queryRaw(claimHash: string): Promise<Codec | null | undefined> {
+async function queryRaw(claimHash: string): Promise<Codec | null> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await getCached()
   const result: QueryResult = await blockchain.api.query.attestation.attestations(
@@ -65,9 +62,7 @@ async function queryRaw(claimHash: string): Promise<Codec | null | undefined> {
   return result
 }
 
-export async function query(
-  claimHash: string
-): Promise<Attestation | undefined> {
+export async function query(claimHash: string): Promise<Attestation | null> {
   const encoded: QueryResult = await queryRaw(claimHash)
   return decode(encoded, claimHash)
 }

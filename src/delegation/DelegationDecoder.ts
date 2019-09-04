@@ -19,20 +19,16 @@ export type CodecWithId = {
 
 export function decodeRootDelegation(
   encoded: QueryResult
-): DelegationRootNode | undefined {
+): DelegationRootNode | null {
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-  let delegationRootNode: DelegationRootNode | undefined
   if (json instanceof Array) {
-    delegationRootNode = Object.assign(
-      Object.create(DelegationRootNode.prototype),
-      {
-        cTypeHash: json[0],
-        account: json[1],
-        revoked: json[2],
-      }
-    )
+    return Object.assign(Object.create(DelegationRootNode.prototype), {
+      cTypeHash: json[0],
+      account: json[1],
+      revoked: json[2],
+    })
   }
-  return delegationRootNode
+  return null
 }
 
 /**
@@ -67,16 +63,15 @@ function verifyRoot(rootId: string): boolean {
 
 export function decodeDelegationNode(
   encoded: QueryResult
-): DelegationNode | undefined {
+): DelegationNode | null {
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-  let decodedNode: DelegationNode | undefined
   if (json instanceof Array) {
     if (!verifyRoot(json[0])) {
       // Query returns 0x0 for rootId if queried for a root id instead of a node id.
       // A node without a root node is therefore interpreted as invalid.
-      return undefined
+      return null
     }
-    decodedNode = Object.assign(Object.create(DelegationNode.prototype), {
+    return Object.assign(Object.create(DelegationNode.prototype), {
       rootId: json[0],
       parentId: json[1], // optional
       account: json[2],
@@ -84,5 +79,5 @@ export function decodeDelegationNode(
       revoked: json[4],
     })
   }
-  return decodedNode
+  return null
 }
