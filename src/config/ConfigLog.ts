@@ -1,5 +1,11 @@
 /**
+ * Config is used to configure logging.
  * @module Config
+ * @preferred
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import {
   LoggerFactoryOptions,
