@@ -34,8 +34,8 @@ export default class Identity extends PublicIdentity {
    * @example
    * ```javascript
    *
-   *      Identity.generateMnemonic()
-   *      mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
+   * Identity.generateMnemonic()
+   * mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    *
    * ```
    */
@@ -44,28 +44,25 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * [STATIC] Build an identity object from a mnemonic string.
-   * @param phraseArg BIP39 Mnemonic word phrase.
+   * [STATIC] Builds an identity object from a mnemonic string.
+   * @param phraseArg [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase.
    * @returns `Identity`
    *
    * @example
    *
-   *
    * ```javascript
+   * //Build a Mnemonic to use as an argument
    *
-   *         //Build a Mnemonic to use as an argument
+   * const mnemonic = Identity.generateMnemonic()
+   * // "mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention"
    *
-   *      const mnemonic = Identity.generateMnemonic()
+   * const testIdentity = Identity.buildFromMnemonic(mnemonic)
+   * // testIdentity: Identity {
+   * // address: '5GwqmTBQHWi6M6Bjek2ppXLVMDVBHx6ND8rs9eh1PnCjZBkr',
+   * //  boxPublicKeyAsHex: '0x26b353bb20038ff5068f00dd1d2a7bf4899a77bd9f6cf33c5ba267800d225872',
+   * //  ...
+   * //}
    *
-   *         // "mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention"
-   *
-   *      const testIdentity = Identity.buildFromMnemonic(mnemonic)
-   *
-   *         // testIdentity: Identity {
-   *         // address: '5GwqmTBQHWi6M6Bjek2ppXLVMDVBHx6ND8rs9eh1PnCjZBkr',
-   *         //  boxPublicKeyAsHex: '0x26b353bb20038ff5068f00dd1d2a7bf4899a77bd9f6cf33c5ba267800d225872',
-   *         //  ...
-   *         //}
    * ```
    */
   public static buildFromMnemonic(phraseArg?: string) {
@@ -88,19 +85,67 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * [STATIC] Returns a new Identity, generated from a seed string as hex.
+   * [STATIC] Builds a new Identity, generated from a seed string as a hex.
    *
    * @param seedArg The seed as hex string. (Starting with 0x)
    * @returns `Identity` built from the seed
+   * @example
+   *
+   * ```javascript
+   *
+   * // Using the Mnemonic below to generate an Identity to check if the seed is the same.
+   *
+   * const mnemonic = "coast ugly state lunch repeat step armed goose together pottery bind mention";
+   *
+   * const testerIdentity = Kilt.Identity.buildFromMnemonic(mnemonic);
+   *
+   * // testerIdentity.address 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
+   * // testerIdentity.seedAsHex = 0x6ce9fd060c70165c0fc8da25810d249106d5df100aa980e0d9a11409d6b35261
+   *
+   * const testerIdentityCheck = Kilt.Identity.buildFromSeed(tester.seed);
+   *
+   * // testerIdentityCheck.address 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
+   * // testerIdentityCheck.seedAsHex = 0x6ce9fd060c70165c0fc8da25810d249106d5df100aa980e0d9a11409d6b35261
+   * // The address is the same and the seed is the same.
+   * ```
    */
   public static buildFromSeedString(seedArg: string) {
     const asU8a = hexToU8a(seedArg)
     return Identity.buildFromSeed(asU8a)
   }
   /**
-   * [STATIC] Returns a new Identity, generated from a seed.
+   * [STATIC] Builds a new Identity, generated from a seed.
    * @param seed
    * @returns `Identity`
+   * @example
+   *
+   * ```javascript
+   *
+   * // Using the Mnemonic below to generate an Identity to check if the seed is the same.
+   *
+   * const mnemonic = "coast ugly state lunch repeat step armed goose together pottery bind mention";
+   *
+   * const testerIdentity = Kilt.Identity.buildFromMnemonic(mnemonic);
+   *
+   * // testerIdentity.address 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
+   * // testerIdentity.seed = seed: Uint8Array [
+   * // 108, 233, 253,  6,  12, 112,  22,  92,
+   * // 15, 200, 218, 37, 129,  13,  36, 145,
+   * // 6, 213, 223, 16,  10, 169, 128, 224,
+   * // 217, 161,  20,  9, 214, 179,  82,  97
+   * // ],
+   *
+   * const testerIdentityCheck = Kilt.Identity.buildFromSeed(tester.seed);
+   *
+   * // testerIdentityCheck.address 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
+   * // testerIdentityCheck.seed = seed: Uint8Array [
+   * // 108, 233, 253,  6,  12, 112,  22,  92,
+   * // 15, 200, 218, 37, 129,  13,  36, 145,
+   * // 6, 213, 223, 16,  10, 169, 128, 224,
+   * // 217, 161,  20,  9, 214, 179,  82,  97
+   * // ],
+   * // The address is the same and the seed is the same.
+   * ```
    */
   public static buildFromSeed(seed: Uint8Array) {
     const keyring = new Keyring({ type: 'ed25519' })
@@ -108,12 +153,19 @@ export default class Identity extends PublicIdentity {
     return new Identity(seed, keyringPair)
   }
   /**
-   * [STATIC] buildFromURI
+   * [STATIC] Builds a new Identity, generated from a uniform resource identifier (URIs).
    * @param uri A phrase built from a mnemonic string.
    * @returns `Identity`
    * @example
    * ```javascript
+   * // An Identity of Bob
+   * const identityBob = Identity.buildFromURI('//Bob')
    *
+   * // Provides an uri.
+   * // URI of Bob: Identity {
+   * // address: '5GoNkf6WdbxCFnPdAnYYQyCjAKPJgLNxXwPjwTh6DGg6gcWn',
+   * // ...
+   * // }
    * ```
    */
   public static buildFromURI(uri: string) {
@@ -151,15 +203,11 @@ export default class Identity extends PublicIdentity {
   private readonly signKeyringPair: KeyringPair
   private readonly boxKeyPair: BoxKeyPair
   /**
-   * get Public Identity as this
-   * @returns `address` boxPublicKeyAsHex
-   * @example
-   * ```javascript
-   *
-   *
-   *
-   * ```
+   * Gets the public identity object
+   * @returns `address`
+   * @returns `boxPublicKeyAsHex`
    */
+
   public getPublicIdentity(): PublicIdentity {
     const { address, boxPublicKeyAsHex } = this
     return { address, boxPublicKeyAsHex }
@@ -169,12 +217,6 @@ export default class Identity extends PublicIdentity {
    * Sign
    * @param cryptoInput
    * @returns `Crypto sign`
-   * @example
-   * ```javascript
-   *
-   *
-   *
-   * ```
    */
   public sign(cryptoInput: CryptoInput) {
     return Crypto.sign(cryptoInput, this.signKeyringPair)
