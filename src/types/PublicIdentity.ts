@@ -1,5 +1,5 @@
 /**
- * @module TypeInterfaces
+ * @module TypeInterfaces/PublicIdentity
  */
 export default interface IPublicIdentity {
   address: string

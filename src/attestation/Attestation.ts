@@ -1,5 +1,15 @@
 /**
+ * Attestations are used to certify [[Claim]] objects, which are then written on the [[Blockchain]].
+ * ***
+ *  Attestation issued by the Attester is sent to and stored with the claimer. We call these [[AttestedClaim]]s "Credentials".
+ *
+ *  Attestation objects are stored on a map within the [[Blockchain]], with the claimHash as a key and a tuple of [[CType]] hash, account, delegationId and revoked flag. The Attester can revoke a [[Claim]].
  * @module Attestation
+ * @preferred
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
