@@ -1,14 +1,5 @@
 /**
- * KILT participants can communicate via a 1:1 messaging system.
- * ***
- * All messages are **encrypted** with the encryption keys of the involved identities. Every time an actor sends data about an [[Identity]], they have to sign the message to prove access to the corresponding private key.
- * <br>
- * The [[Message]] class exposes methods to construct and verify messages.
  * @module Messaging
- */
-
-/**
- * Dummy comment needed for correct doc display, do not remove
  */
 import {
   Claim,

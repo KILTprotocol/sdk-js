@@ -1,5 +1,5 @@
 /**
- * @module TypeInterfaces/Attestation
+ * @module TypeInterfaces
  */
 import ICType from './CType'
 import IPublicIdentity from './PublicIdentity'

@@ -1,5 +1,5 @@
 /**
- * @module TypeInterfaces/CType
+ * @module TypeInterfaces
  */
 import IPublicIdentity from './PublicIdentity'
 

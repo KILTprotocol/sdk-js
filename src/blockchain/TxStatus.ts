@@ -2,9 +2,6 @@
  * @module Blockchain
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
 export default class TxStatus {
   public type: string
   public payload: any

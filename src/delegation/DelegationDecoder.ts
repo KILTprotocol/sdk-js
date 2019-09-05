@@ -1,15 +1,11 @@
 /**
- * When [[DelegationNode]]s or [[DelegationRootNode]]s are written on the blockchain, they're encoded.
- * DelegationDecoder helps to decode them when they're queried from the chain.
- * ***
- * The DelegationDecoder methods transform a [[QueryResult]] into an object of a KILT type.
  * @module Delegation/DelegationDecoder
- * @preferred
+ * Functions to decode types queried from the chain.
+ *
+ * When a type is queried from the chain using the `api.query...` functions, a result of type `Codec` is returned
+ * by the polkadot-js api. We need to decode the encoded data to build the Kilt types from it.
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
 import { QueryResult } from '../blockchain/Blockchain'
 import { coToUInt8 } from '../crypto/Crypto'
 import DelegationNode from './DelegationNode'
