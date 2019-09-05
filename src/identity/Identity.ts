@@ -44,21 +44,28 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * [STATIC] Returns an identity instances by passing the mnemonic string, created by the Identity Class.
+   * [STATIC] Build an identity object from a mnemonic string.
    * @param phraseArg BIP39 Mnemonic word phrase.
    * @returns `Identity`
+   *
    * @example
+   *
+   *
    * ```javascript
    *
-   *      const mnemonic = Identity.generateMnemonic()
-   *      mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
-   *      const tester = Identity.buildFromMnemonic(mnemonic)
-   *      tester: Identity {
-   *      address: '5GwqmTBQHWi6M6Bjek2ppXLVMDVBHx6ND8rs9eh1PnCjZBkr',
-   *      boxPublicKeyAsHex: '0x26b353bb20038ff5068f00dd1d2a7bf4899a77bd9f6cf33c5ba267800d225872',
-   *     ...
-   *    }
+   *         //Build a Mnemonic to use as an argument
    *
+   *      const mnemonic = Identity.generateMnemonic()
+   *
+   *         // "mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention"
+   *
+   *      const testIdentity = Identity.buildFromMnemonic(mnemonic)
+   *
+   *         // testIdentity: Identity {
+   *         // address: '5GwqmTBQHWi6M6Bjek2ppXLVMDVBHx6ND8rs9eh1PnCjZBkr',
+   *         //  boxPublicKeyAsHex: '0x26b353bb20038ff5068f00dd1d2a7bf4899a77bd9f6cf33c5ba267800d225872',
+   *         //  ...
+   *         //}
    * ```
    */
   public static buildFromMnemonic(phraseArg?: string) {
