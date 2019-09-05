@@ -1,5 +1,13 @@
 /**
+ * Delegation nodes are used within the KILT protocol to construct the trust hierarchy.
+ * ***
+ *  Starting from the root node, entities can delegate the right to issue attestations to Claimers for a certain CTYPE and also delegate the right to attest and to delegate further nodes.
  * @module Delegation/DelegationNode
+ * @preferred
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import Crypto from '../crypto'
 import { QueryResult } from '../blockchain/Blockchain'

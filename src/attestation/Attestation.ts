@@ -1,11 +1,15 @@
 /**
- * Attestation provides the KILT ecosystem with certifying [[Claim]] objects, which are then written on the [[Blockchain]].
+ * Attestations are used to certify [[Claim]] objects, which are then written on the [[Blockchain]].
  * ***
- *  Attestation issued by the Attester is sent to and stored with the claimer. We call these [[AttestedClaim]]s Credentials.
+ *  Attestation issued by the Attester is sent to and stored with the claimer. We call these [[AttestedClaim]]s "Credentials".
  *
- * Attestation objects are stored on a map within the [[Blockchain]], the claimHash used as a key and a tuple of [[CType]] hash, account, delegation-id and revoked.
- * The Attester can [[revoke]] a [[Claim]].
+ *  Attestation objects are stored on a map within the [[Blockchain]], with the claimHash as a key and a tuple of [[CType]] hash, account, delegationId and revoked flag. The Attester can revoke a [[Claim]].
  * @module Attestation
+ * @preferred
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
@@ -17,7 +21,6 @@ import { revoke, query, store } from './Attestation.chain'
 const log = factory.getLogger('Attestation')
 
 export default class Attestation implements IAttestation {
-
   public claimHash: IAttestation['claimHash']
   public cTypeHash: IAttestation['cTypeHash']
   public owner: IAttestation['owner']
@@ -77,7 +80,7 @@ export default class Attestation implements IAttestation {
    * ```javascript
    * // connect to the blockchain
    * Kilt.default.connect('wss://full-nodes.kilt.io:9944');
-   * 
+   *
    * // store the attestation on chain
    * attestation.store(attester).then(() => {
    *    // attestation was successfully stored so we can create an AttestedClaim
@@ -104,7 +107,7 @@ export default class Attestation implements IAttestation {
    * Queries the chain and returns whether the attestation is valid. An attestation is valid if it exist on chain, has the correct owner, and is not revoked.
    * @param `claimHash` The hash of the claim to check.
    * @returns A promise containing the boolean `attestationValid`.
-   * @example 
+   * @example
    * ```javascript
    * attestation.verify().then(isVerified => {
    *    console.log('isVerified', isVerified);

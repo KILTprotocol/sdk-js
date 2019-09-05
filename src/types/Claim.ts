@@ -1,5 +1,5 @@
 /**
- * @module TypeInterfaces
+ * @module TypeInterfaces/Claim
  */
 import ICType from './CType'
 import IPublicIdentity from './PublicIdentity'
