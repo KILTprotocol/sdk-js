@@ -28,21 +28,36 @@ type BoxPublicKey =
 
 export default class Identity extends PublicIdentity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
+  /**
+   * [STATIC] Generates Mnemonic phrase used to create identities from phrase seed.
+   * @returns `generate`
+   * @example
+   * ```javascript
+   *
+   *      Identity.generateMnemonic()
+   *      mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
+   *
+   * ```
+   */
   public static generateMnemonic() {
     return generate()
   }
 
   /**
    * [STATIC] Returns an identity instances by passing the mnemonic string, created by the Identity Class.
-   * @param phraseArg A phrase built from a mnemonic string.
+   * @param phraseArg BIP39 Mnemonic word phrase.
    * @returns `Identity`
    * @example
    * ```javascript
    *
    *      const mnemonic = Identity.generateMnemonic()
-   *      mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
-   *      const claimer = Identity.buildFromMnemonic(mnemonic)
-   *      claimer.address: 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
+   *      mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
+   *      const tester = Identity.buildFromMnemonic(mnemonic)
+   *      tester: Identity {
+   *      address: '5GwqmTBQHWi6M6Bjek2ppXLVMDVBHx6ND8rs9eh1PnCjZBkr',
+   *      boxPublicKeyAsHex: '0x26b353bb20038ff5068f00dd1d2a7bf4899a77bd9f6cf33c5ba267800d225872',
+   *     ...
+   *    }
    *
    * ```
    */
@@ -66,21 +81,34 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Returns a new Identity, generated from a seed string as hex.
+   * [STATIC] Returns a new Identity, generated from a seed string as hex.
    *
    * @param seedArg The seed as hex string. (Starting with 0x)
+   * @returns `Identity` built from the seed
    */
   public static buildFromSeedString(seedArg: string) {
     const asU8a = hexToU8a(seedArg)
     return Identity.buildFromSeed(asU8a)
   }
-
+  /**
+   * [STATIC] Returns a new Identity, generated from a seed.
+   * @param seed
+   * @returns `Identity`
+   */
   public static buildFromSeed(seed: Uint8Array) {
     const keyring = new Keyring({ type: 'ed25519' })
     const keyringPair = keyring.addFromSeed(seed)
     return new Identity(seed, keyringPair)
   }
-
+  /**
+   * [STATIC] buildFromURI
+   * @param uri A phrase built from a mnemonic string.
+   * @returns `Identity`
+   * @example
+   * ```javascript
+   *
+   * ```
+   */
   public static buildFromURI(uri: string) {
     const keyring = new Keyring({ type: 'ed25519' })
     const derived = keyring.createFromUri(uri)
@@ -115,20 +143,63 @@ export default class Identity extends PublicIdentity {
 
   private readonly signKeyringPair: KeyringPair
   private readonly boxKeyPair: BoxKeyPair
-
+  /**
+   * get Public Identity as this
+   * @returns `address` boxPublicKeyAsHex
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
   public getPublicIdentity(): PublicIdentity {
     const { address, boxPublicKeyAsHex } = this
     return { address, boxPublicKeyAsHex }
   }
 
+  /**
+   * Sign
+   * @param cryptoInput
+   * @returns `Crypto sign`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
   public sign(cryptoInput: CryptoInput) {
     return Crypto.sign(cryptoInput, this.signKeyringPair)
   }
 
+  /**
+   * sign String
+   * @param cryptoInput
+   * @returns `sign string`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
   public signStr(cryptoInput: CryptoInput) {
     return Crypto.signStr(cryptoInput, this.signKeyringPair)
   }
 
+  /**
+   * encrypt Asymmetric As Str
+   * @param cryptoInput
+   * @param boxPublicKey
+   * @returns `encryptAsymmetricAsStr`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
   public encryptAsymmetricAsStr(
     cryptoInput: CryptoInput,
     boxPublicKey: BoxPublicKey
@@ -139,6 +210,19 @@ export default class Identity extends PublicIdentity {
       this.boxKeyPair.secretKey
     )
   }
+
+  /**
+   * Decrypt Asymmetric As String
+   * @param encrypted
+   * @param boxPublicKey
+   * @returns `decryptAsymmetricAsStr`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
 
   public decryptAsymmetricAsStr(
     encrypted: EncryptedAsymmetric | EncryptedAsymmetricString,
@@ -151,6 +235,19 @@ export default class Identity extends PublicIdentity {
     )
   }
 
+  /**
+   * encrypt Asymmetric
+   * @param input
+   * @param boxPublicKey
+   * @returns `encryptAsymmetric`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
+
   public encryptAsymmetric(input: CryptoInput, boxPublicKey: BoxPublicKey) {
     return Crypto.encryptAsymmetric(
       input,
@@ -159,6 +256,18 @@ export default class Identity extends PublicIdentity {
     )
   }
 
+  /**
+   * Decrypt Asymmetric
+   * @param encrypted
+   * @param boxPublicKey
+   * @returns `decryptAsymmetric`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
   public decryptAsymmetric(
     encrypted: EncryptedAsymmetric | EncryptedAsymmetricString,
     boxPublicKey: BoxPublicKey
@@ -170,6 +279,18 @@ export default class Identity extends PublicIdentity {
     )
   }
 
+  /**
+   * sign Submittable Extrinsic
+   * @param submittableExtrinsic
+   * @param nonceAsHex
+   * @returns `submittableExtrinsic`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
   public signSubmittableExtrinsic(
     submittableExtrinsic: SubmittableExtrinsic<CodecResult, SubscriptionResult>,
     nonceAsHex: string

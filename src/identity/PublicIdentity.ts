@@ -15,6 +15,16 @@ export interface IURLResolver {
 }
 
 export default class PublicIdentity implements IPublicIdentity {
+  /**
+   * [STATIC] from Did Document
+   * @param didDocument
+   * @returns A new `PublicIdentity`
+   * @example
+   * ```javascript
+   *
+   *
+   * ```
+   */
   public static fromDidDocument(
     didDocument: object
   ): IPublicIdentity | undefined {
@@ -44,7 +54,16 @@ export default class PublicIdentity implements IPublicIdentity {
       return undefined
     }
   }
-
+  /**
+   * [STATIC] Resolve from DID
+   * @param identifier
+   * @param urlResolver
+   * @returns `PublicIdentity`
+   * @example
+   * ```javascript
+   *
+   * ```
+   */
   public static async resolveFromDid(
     identifier: string,
     urlResolver: IURLResolver
