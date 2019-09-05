@@ -31,6 +31,21 @@ export default class Identity extends PublicIdentity {
   public static generateMnemonic() {
     return generate()
   }
+
+  /**
+   * [STATIC] Returns an identity instances by passing the mnemonic string, created by the Identity Class.
+   * @param phraseArg A phrase built from a mnemonic string.
+   * @returns `Identity`
+   * @example
+   * ```javascript
+   *
+   *      const mnemonic = Identity.generateMnemonic()
+   *      mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
+   *      const claimer = Identity.buildFromMnemonic(mnemonic)
+   *      claimer.address: 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
+   *
+   * ```
+   */
   public static buildFromMnemonic(phraseArg?: string) {
     let phrase = phraseArg
     if (phrase) {
