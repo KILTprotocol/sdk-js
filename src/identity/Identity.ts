@@ -203,7 +203,7 @@ export default class Identity extends PublicIdentity {
   private readonly signKeyringPair: KeyringPair
   private readonly boxKeyPair: BoxKeyPair
   /**
-   * Gets the public identity object, from using the address and box public key as a hex.
+   * Creates a new instance of public identity.
    * @returns `address`
    * @returns `boxPublicKeyAsHex`
    */
@@ -214,22 +214,37 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Sign
+   * Adds the signing for a message with an Identity using signing key ring pairs.
    * @param cryptoInput
    * @returns `Crypto`
+   * @example
+   * ```javascript
+   * // Using Alices signing key ring pair to sign the message
+   * const alice = Identity.buildFromMnemonic()
+   *
+   * const messageStr = 'This is a test'
+   *
+   * const message = new Uint8Array(string.stringToU8a(messageStr))
+   * const signature = Crypto.sign(message, alice.signKeyringPair)
+   *
+   * ```
    */
   public sign(cryptoInput: CryptoInput) {
     return Crypto.sign(cryptoInput, this.signKeyringPair)
   }
 
   /**
-   * sign String
+   * Adds the signing for a message string with an Identity using signing key ring pairs.
    * @param cryptoInput
-   * @returns `sign string`
+   * @returns `Crypto`
    * @example
    * ```javascript
+   * // Using Alices signing key ring pair to sign the message
+   * const alice = Identity.buildFromMnemonic()
    *
+   * const messageStr = 'This is a test'
    *
+   * const signature = Crypto.sign(messageStr, alice.signKeyringPair)
    *
    * ```
    */
@@ -238,14 +253,22 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * encrypt Asymmetric As Str
+   * Encrypt symmetrical using random secret key (string)
    * @param cryptoInput
    * @param boxPublicKey
    * @returns `Crypto`
    * @example
    * ```javascript
+   *  const secret =
+   * '0x000102030405060708090A0B0C0D0E0F' + '101112131415161718191A1B1C1D1E1F'
+   *  const messageStr = 'This is a test'
+   *  const data = Crypto.encryptSymmetricAsStr(messageStr, secret)
    *
-   *
+   * // producing an encrypted message and a nonce.
+   * //data {
+   * //encrypted: '0xdcac5f00808e0678d5016b6461408c78cf7fcb6230d78a91c846ad4af7dd',
+   * //nonce: '0x31e577468a890fc3c6efae112d11ed7db628a3d237435c30'
+   * //}
    *
    * ```
    */
@@ -261,14 +284,20 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Decrypt Asymmetric As String
+   * Decrypt symmetrical using random secret key (string)
    * @param encrypted
    * @param boxPublicKey
    * @returns `Crypto`
    * @example
    * ```javascript
+   *  const secret =
+   * '0x000102030405060708090A0B0C0D0E0F' + '101112131415161718191A1B1C1D1E1F'
    *
+   *  const data = Crypto.encryptSymmetricAsStr(messageStr, secret)
    *
+   *  // The encrypted data can be passed along with the secret to find the original message.
+   * const decrypted = Kilt.Crypto.decryptSymmetricStr(data, secret);
+   * // Decryption: This is a test
    *
    * ```
    */
@@ -285,14 +314,21 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * encrypt Asymmetric
+   * Encrypt symmetrical using random secret key (UInt8Array)
    * @param input
    * @param boxPublicKey
    * @returns `Crypto`
    * @example
    * ```javascript
    *
+   * const messageStr = 'This is a test'
    *
+   * const message = new Uint8Array(string.stringToU8a(messageStr));
+   *
+   *
+   * const secret = new Uint8Array([0,1,2,3,4,5,6,6,7,8,9,10])
+   *
+   * const data = Crypto.encryptSymmetric(message, secret)
    *
    * ```
    */
@@ -306,7 +342,7 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Decrypt Asymmetric
+   * Decrypt symmetrical using random secret key (UInt8Array)
    * @param encrypted
    * @param boxPublicKey
    * @returns `Crypto`
