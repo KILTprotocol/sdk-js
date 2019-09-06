@@ -16,12 +16,9 @@ export interface IURLResolver {
 
 export default class PublicIdentity implements IPublicIdentity {
   /**
-   * [STATIC] from Did Document
+   * [STATIC] Creates a new Public Identity from a Did object.
    * @param didDocument
-   * @returns A new `PublicIdentity`
-   * @example
-   * ```javascript
-   *
+   * @returns `PublicIdentity`
    *
    * ```
    */
@@ -55,14 +52,10 @@ export default class PublicIdentity implements IPublicIdentity {
     }
   }
   /**
-   * [STATIC] Resolve from DID
+   * [STATIC] Resolve internal and external DIDs from a specific identifier
    * @param identifier
    * @param urlResolver
    * @returns `PublicIdentity`
-   * @example
-   * ```javascript
-   *
-   * ```
    */
   public static async resolveFromDid(
     identifier: string,

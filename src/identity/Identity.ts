@@ -264,7 +264,7 @@ export default class Identity extends PublicIdentity {
    *  const messageStr = 'This is a test'
    *  const data = Crypto.encryptSymmetricAsStr(messageStr, secret)
    *
-   * // producing an encrypted message and a nonce.
+   * //producing an encrypted message and a nonce.
    * //data {
    * //encrypted: '0xdcac5f00808e0678d5016b6461408c78cf7fcb6230d78a91c846ad4af7dd',
    * //nonce: '0x31e577468a890fc3c6efae112d11ed7db628a3d237435c30'
@@ -297,6 +297,8 @@ export default class Identity extends PublicIdentity {
    *
    *  // The encrypted data can be passed along with the secret to find the original message.
    * const decrypted = Kilt.Crypto.decryptSymmetricStr(data, secret);
+   *
+   * // Decodes the encrypted message.
    * // Decryption: This is a test
    *
    * ```
@@ -394,16 +396,10 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * sign Submittable Extrinsic
+   * Signs a submittable extrinsic
    * @param submittableExtrinsic
    * @param nonceAsHex
    * @returns `submittableExtrinsic`
-   * @example
-   * ```javascript
-   *
-   *
-   *
-   * ```
    */
   public signSubmittableExtrinsic(
     submittableExtrinsic: SubmittableExtrinsic<CodecResult, SubscriptionResult>,
