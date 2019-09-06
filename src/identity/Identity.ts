@@ -35,7 +35,7 @@ export default class Identity extends PublicIdentity {
    * ```javascript
    *
    * Identity.generateMnemonic()
-   * mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
+   * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    *
    * ```
    */
@@ -203,7 +203,7 @@ export default class Identity extends PublicIdentity {
   private readonly signKeyringPair: KeyringPair
   private readonly boxKeyPair: BoxKeyPair
   /**
-   * Gets the public identity object
+   * Gets the public identity object, from using the address and box public key as a hex.
    * @returns `address`
    * @returns `boxPublicKeyAsHex`
    */
@@ -216,7 +216,7 @@ export default class Identity extends PublicIdentity {
   /**
    * Sign
    * @param cryptoInput
-   * @returns `Crypto sign`
+   * @returns `Crypto`
    */
   public sign(cryptoInput: CryptoInput) {
     return Crypto.sign(cryptoInput, this.signKeyringPair)
@@ -241,7 +241,7 @@ export default class Identity extends PublicIdentity {
    * encrypt Asymmetric As Str
    * @param cryptoInput
    * @param boxPublicKey
-   * @returns `encryptAsymmetricAsStr`
+   * @returns `Crypto`
    * @example
    * ```javascript
    *
@@ -264,7 +264,7 @@ export default class Identity extends PublicIdentity {
    * Decrypt Asymmetric As String
    * @param encrypted
    * @param boxPublicKey
-   * @returns `decryptAsymmetricAsStr`
+   * @returns `Crypto`
    * @example
    * ```javascript
    *
@@ -288,7 +288,7 @@ export default class Identity extends PublicIdentity {
    * encrypt Asymmetric
    * @param input
    * @param boxPublicKey
-   * @returns `encryptAsymmetric`
+   * @returns `Crypto`
    * @example
    * ```javascript
    *
@@ -309,7 +309,7 @@ export default class Identity extends PublicIdentity {
    * Decrypt Asymmetric
    * @param encrypted
    * @param boxPublicKey
-   * @returns `decryptAsymmetric`
+   * @returns `Crypto`
    * @example
    * ```javascript
    *
