@@ -326,9 +326,27 @@ export default class Identity extends PublicIdentity {
    * const message = new Uint8Array(string.stringToU8a(messageStr));
    *
    *
-   * const secret = new Uint8Array([0,1,2,3,4,5,6,6,7,8,9,10])
+   * const secret = new Uint8Array([0,
+   * 1, ..., 31
+   * ])
    *
    * const data = Crypto.encryptSymmetric(message, secret)
+   *
+   * // encodes the message.
+   * // data {
+   * // encrypted: Uint8Array [
+   * //    56,  27,   2, 254, 137, 222, 219, 254,
+   * //    78, 197, 188,  74, 157,  70,  70,  69,
+   * //   108, 205, 194,  63, 199,  67,  45,  62,
+   * //   218, 131, 228, 121, 110,  95
+   * // ],
+   * // nonce: Uint8Array [
+   * //    20, 195, 230,  66,  65, 199, 121,
+   * //   119,   4, 193, 214, 164,  82, 188,
+   * //    30,  21, 210,  60, 238,  44,  22,
+   * //   129,  40,  40
+   * // ]
+   * //}
    *
    * ```
    */
@@ -348,8 +366,19 @@ export default class Identity extends PublicIdentity {
    * @returns `Crypto`
    * @example
    * ```javascript
+   * const messageStr = 'This is a test'
+   *
+   * const message = new Uint8Array(string.stringToU8a(messageStr));
    *
    *
+   * const secret = new Uint8Array([0,
+   * 1, ..., 31
+   * ])
+   *
+   * const data = Crypto.decryptSymmetric(message, secret)
+   *
+   * // Decodes the encrypted message.
+   * // Test: this is a test
    *
    * ```
    */
