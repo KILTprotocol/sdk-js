@@ -27,6 +27,19 @@ export default class Attestation implements IAttestation {
   public revoked: IAttestation['revoked']
   public delegationId?: IAttestation['delegationId']
 
+  /**
+   * @description Builds a new [[Attestation]] instance.
+   * @param requestForAttestation A request for attestation, usually sent by a claimer.
+   * @param attester The identity of the attester.
+   * @param revoked A flag indicating whether the attestation is revoked.
+   * @example
+   * ```javascript
+   * const attestation = new Kilt.Attestation(requestForAttestation, attester)
+   * ```
+   * About this example:
+   * * To create `requestForAttestation`, see [[RequestForAttestation]]'s constructor.
+   * * To create `attester`, see [[buildFromMnemonic]] and [[generateMnemonic]] in [[Identity]].
+   */
   public constructor(
     requestForAttestation: IRequestForAttestation,
     attester: Identity,
@@ -51,12 +64,15 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * [STATIC] Creates a new instance of this Attestation class from the given interface.
+   * @description (STATIC) Creates a new [[Attestation]] instance from the given interface.
    * @param `obj`
    * @returns `Attestation`
    * @example
    * ```javascript
+   * // `encodedQueryResult` is the result of a chain query
    * const attestationTuple = encodedQueryResult.toJSON();
+   *
+   * // transform the tuple into an IAttestation object
    * const attestationObj: IAttestation = {
    *    claimHash,
    *    cTypeHash: attestationTuple[0],
@@ -64,7 +80,9 @@ export default class Attestation implements IAttestation {
    *    delegationId: attestationTuple[2],
    *    revoked: attestationTuple[3],
    * };
-   * const attestation = Attestation.fromObject(attestation)
+   *
+   * // create an Attestation object
+   * const attestation = Attestation.fromObject(attestationObj)
    * ```
    */
   public static fromObject(obj: IAttestation): Attestation {
@@ -73,10 +91,10 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description Stores the Attestation on chain. Async.
+   * @description (ASYNC) Stores an attestation on chain.
    * @param identity Account used to store the attestation.
-   * @returns Promise containing the [[TxStatus]].
-   * @example Use [store] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
+   * @returns A promise containing the [[TxStatus]].
+   * @example Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * ```javascript
    * // connect to the blockchain
    * Kilt.default.connect('wss://full-nodes.kilt.io:9944');
@@ -84,7 +102,7 @@ export default class Attestation implements IAttestation {
    * // store the attestation on chain
    * attestation.store(attester).then(() => {
    *    // attestation was successfully stored so we can create an AttestedClaim
-   *    const attestedClaim = new Kilt.AttestedClaim(requestForAttestation, attestation);
+   *    return new Kilt.AttestedClaim(requestForAttestation, attestation);
    * }).catch(e => {
    *    console.log(e);
    * }).finally(() => {
@@ -104,7 +122,7 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * Queries the chain and returns whether the attestation is valid. An attestation is valid if it exist on chain, has the correct owner, and is not revoked.
+   * @description (ASYNC) Queries the chain about attestation validity. An attestation is valid if it exist on chain, has the correct owner, and is not revoked.
    * @param `claimHash` The hash of the claim to check.
    * @returns A promise containing the boolean `attestationValid`.
    * @example
