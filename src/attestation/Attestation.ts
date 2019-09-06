@@ -1,8 +1,9 @@
 /**
- * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain**.
+ * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revokable**.
  * ***
- * An [[Attestation]] object can be queried on-chain and revoked.
- * [[Attestation]] objects are stored on-chain in a map - the key is the `claimHash` and the value is a tuple ([[CType]] hash, account, delegationId, revoked flag).
+ * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
+ * * the key is the hash of the corresponding claim;
+ * * the value is a tuple ([[CType]] hash, account, id of the [[Delegation]], and revoked flag).
  * @module Attestation
  * @preferred
  */
@@ -64,7 +65,7 @@ export default class Attestation implements IAttestation {
    * @description (STATIC) (ASYNC) Revokes an attestation.
    * @param claimHash The hash of the claim that corresponds to the attestation to query.
    * @param identity The identity used to revoke the attestation.
-   * @returns A promise containing the [[TxStatus]].
+   * @returns A promise containing the [[TxStatus]] (transaction status).
    */
   public static async revoke(
     claimHash: string,
@@ -102,8 +103,8 @@ export default class Attestation implements IAttestation {
 
   /**
    * @description (ASYNC) Stores an attestation on chain.
-   * @param identity Account used to store the attestation.
-   * @returns A promise containing the [[TxStatus]].
+   * @param identity The identity used to store the attestation.
+   * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * ```javascript
    * // connect to the blockchain
@@ -112,7 +113,8 @@ export default class Attestation implements IAttestation {
    * // store the attestation on chain
    * attestation.store(attester).then(() => {
    *    // attestation was successfully stored so we can create an AttestedClaim
-   *    return new Kilt.AttestedClaim(requestForAttestation, attestation);
+   *    const attestedClaim = new Kilt.AttestedClaim(requestForAttestation, attestation)
+   *    console.log(JSON.stringify(attestedClaim))
    * }).catch(e => {
    *    console.log(e);
    * }).finally(() => {
@@ -130,14 +132,14 @@ export default class Attestation implements IAttestation {
   /**
    * @description (STATIC) (ASYNC) Revokes an attestation.
    * @param identity The identity used to revoke the attestation.
-   * @returns A promise containing the [[TxStatus]].
+   * @returns A promise containing the [[TxStatus]] (transaction status).
    */
   public async revoke(identity: Identity): Promise<TxStatus> {
     return revoke(this.claimHash, identity)
   }
 
   /**
-   * @description (ASYNC) Queries an attestation from the chain and checks on-chain if it's valid.
+   * @description (ASYNC) Queries an attestation from the chain and checks its validity.
    * @param claimHash The hash of the claim that corresponds to the attestation to check.
    * @returns A promise containing the boolean `attestationValid`.
    * @example
@@ -148,7 +150,7 @@ export default class Attestation implements IAttestation {
    * ```
    */
   public async verify(claimHash: string = this.claimHash): Promise<boolean> {
-    // Query attestation by claimHash
+    // Query attestation by claimHash. null if no attestation is found on-chain for this hash
     const attestation: Attestation | null = await query(claimHash)
     // Check if attestation is valid
     const isValid: boolean = this.isAttestationValid(attestation)
