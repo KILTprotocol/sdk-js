@@ -51,6 +51,17 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 }
 
 export default class RequestForAttestation implements IRequestForAttestation {
+  /**
+   * @description From Object
+   * @param obj
+   * @returns `object`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
   public static fromObject(obj: IRequestForAttestation): RequestForAttestation {
     const newClaim = Object.create(RequestForAttestation.prototype)
     const object = Object.assign(newClaim, obj)
@@ -89,7 +100,18 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.hash = this.calculateRootHash()
     this.claimerSignature = this.sign(identity)
   }
-
+  /**
+   * @description Remove Claim Properties
+   * @param properties
+   * @delete `this.claim.contents[key]`
+   * @delete `this.claimHashTree[key].nonce`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
   public removeClaimProperties(properties: string[]) {
     properties.forEach(key => {
       if (!this.claimHashTree.hasOwnProperty(key)) {
@@ -99,12 +121,32 @@ export default class RequestForAttestation implements IRequestForAttestation {
       delete this.claimHashTree[key].nonce
     })
   }
-
+  /**
+   * @description Remove Claim Owner
+   * @delete `this.claim.owner`
+   * @delete `this.claimOwner.nonce`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
   public removeClaimOwner() {
     delete this.claim.owner
     delete this.claimOwner.nonce
   }
 
+  /**
+   * @description Verify Data
+   * @returns `this.verifySignature()`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
   public verifyData(): boolean {
     // check claim hash
     if (this.hash !== this.calculateRootHash()) {
@@ -155,6 +197,16 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return this.verifySignature()
   }
 
+  /**
+   * @description Verify Signature
+   * @returns `verifyClaimerSignature(this)`
+   * @example
+   * ```javascript
+   *
+   *
+   *
+   * ```
+   */
   public verifySignature(): boolean {
     return verifyClaimerSignature(this)
   }
