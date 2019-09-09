@@ -57,6 +57,10 @@ export default class Attestation implements IAttestation {
    * @description (STATIC) (ASYNC) Queries the chain about a given attestation, by `claimHash`.
    * @param claimHash The hash of the claim that corresponds to the attestation to query.
    * @returns A promise containing the [[Attestation]] or `null`.
+   * @example
+   * ```javascript
+   * const attestation = await Attestation.query("0xd810224b1b6a4db8d1d1e909d1aeb7d441846914ed024cdc147c4fa9221cd177");
+   * ```
    */
   public static async query(claimHash: string): Promise<Attestation | null> {
     return query(claimHash)
