@@ -30,7 +30,7 @@ export default class Identity extends PublicIdentity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
   /**
    * @description [STATIC] Generates Mnemonic phrase used to create identities from phrase seed.
-   * @returns `generate` randomly mnemonic
+   * @returns `generate` randomly generated mnemonic phrase (Secret phrase)
    * @example
    * ```javascript
    *
@@ -45,8 +45,8 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description [STATIC] Builds an identity object from a mnemonic string.
-   * @param phraseArg [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase.
-   * @returns `Identity` buid from the mnemonic
+   * @param phraseArg [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase. (Secret phrase)
+   * @returns `Identity`
    *
    * @example
    *
@@ -86,8 +86,8 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description [STATIC] Builds an Identity, generated from a seed string as a hex.
-   * @param seedArg The seed as hex string. (Starting with 0x)
-   * @returns `Identity` built from the seed hex string
+   * @param seedArg as hex string. (Starting with 0x)
+   * @returns  `Identity`
    * @example
    *
    * ```javascript
@@ -110,9 +110,9 @@ export default class Identity extends PublicIdentity {
     return Identity.buildFromSeed(asU8a)
   }
   /**
-   * @description [STATIC] Builds a new Identity, generated from a seed.
-   * @param seed
-   * @returns `Identity` build from the seed Unit 8 Array
+   * @description [STATIC] Builds a new Identity, generated from a seed (Secret Seed).
+   * @param seed as a Unit 8 Array
+   * @returns `Identity`
    * @example
    *
    * ```javascript
@@ -143,7 +143,7 @@ export default class Identity extends PublicIdentity {
   }
   /**
    * @description [STATIC] Builds a new Identity, generated from a uniform resource identifier (URIs).
-   * @param uri
+   * @param uri Standard identifiers (//Alice)
    * @returns `Identity` built from an URI
    * @example
    * ```javascript
@@ -219,8 +219,8 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description Signs for a message with an Identity.
-   * @param cryptoInput
+   * @description Signs for a message with an Identity's key.
+   * @param cryptoInput The 'CryptoInput' is raw data hashed.
    * @returns `Crypto.sign(...)`
    * @example
    * ```javascript
@@ -248,7 +248,7 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description Signs for a message string with an Identity.
-   * @param cryptoInput
+   * @param cryptoInput The 'CryptoInput' is raw data hashed.
    * @returns `Crypto.signStr(...)`
    * @example
    * ```javascript
@@ -265,15 +265,15 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description Encrypt Asymmetrical using random secret key (string)
-   * @param cryptoInput
+   * @description Encrypts Asymmetrical using random secret key (string)
+   * @param cryptoInput The 'CryptoInput' is raw data hashed.
    * @param boxPublicKey
    * @returns `Crypto.encryptAsymmetricAsStr(...)`
    * @example
    * ```javascript
    *
    *  const secret =
-   * '0x000102030405060708090A0B0C0D0E0F' + '101112131415161718191A1B1C1D1E1F'
+   * '0x000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F'
    *  const messageStr = 'This is a test'
    *
    * const alice = Identity.buildFromMnemonic()
@@ -299,15 +299,15 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description Decrypt Asymmetrical using random secret key (string)
-   * @param encrypted
-   * @param boxPublicKey
+   * @description Decrypts Asymmetrical using random secret key (string)
+   * @param encrypted An excrypted message/data
+   * @param boxPublicKey A random secret key
    * @returns `Crypto.decryptAsymmetricAsStr(...)`
    * @example
    * ```javascript
    *
    *  const secret =
-   * '0x000102030405060708090A0B0C0D0E0F' + '101112131415161718191A1B1C1D1E1F'
+   * '0x000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F'
    *  const alice = Identity.buildFromMnemonic()
    *
    *  const data = alice.encryptAsymmetricAsStr(messageStr, secret)
@@ -332,9 +332,9 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description Encrypt Asymmetrical using random secret key (UInt8Array)
-   * @param input
-   * @param boxPublicKey
+   * @description Encrypts Asymmetrical using random secret key (UInt8Array)
+   * @param input The 'input' is raw data hashed.
+   * @param boxPublicKey A random secret key
    * @returns `Crypto.encryptAsymmetric(...)`
    * @example
    * ```javascript
@@ -372,9 +372,9 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description Decrypt Asymmetrical using random secret key (UInt8Array)
-   * @param encrypted
-   * @param boxPublicKey
+   * @description Decrypts Asymmetrical using random secret key (UInt8Array)
+   * @param encrypted An excrypted message/data
+   * @param boxPublicKey A random secret key
    * @returns `Crypto.decryptAsymmetric(...)`
    * @example
    * ```javascript
@@ -390,8 +390,8 @@ export default class Identity extends PublicIdentity {
    *
    * const data = alice.decryptAsymmetric(message, secret)
    *
-   * // (output) Decodes the encrypted message.
-   * //           Test: this is a test
+   * // Decodes the encrypted message.
+   * // (output) Test: this is a test
    *
    * ```
    */
@@ -408,13 +408,14 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description Signs a submittable extrinsic, an extrinsic are pieces of information not from within the state of the chain.
-   * @param submittableExtrinsic
-   * @param nonceAsHex
+   * @param submittableExtrinsic A transaction made to the chain.
+   * @param nonceAsHex a hex number added to a hashed or encrypted
    * @returns `submittableExtrinsic`
    * @example
    * ```javascript
    *
-   *  alice.signSubmittableExtrinsic();
+   *  // Alice makes a transaction
+   *  alice.signSubmittableExtrinsic(tx, nonceAsHex);
    *
    * ```
    */
