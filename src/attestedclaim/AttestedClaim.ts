@@ -34,6 +34,30 @@ export default class AttestedClaim implements IAttestedClaim {
   public request: RequestForAttestation
   public attestation: Attestation
 
+  /**
+   * @description Builds a new [[AttestedClaim]] instance.
+   * @param request A request for attestation, usually sent by a claimer.
+   * @param attestation The attestation to base the [[AttestedClaim]] on.
+   * @example Ceate an [[AttestedClaim]] upon successful [[Attestation]] creation:
+   * ```javascript
+   * // connect to the blockchain
+   * Kilt.default.connect('wss://full-nodes.kilt.io:9944');
+   *
+   * // store the attestation on chain
+   * attestation.store(attester).then(() => {
+   *    // attestation was successfully stored so we can create an AttestedClaim
+   *    const attestedClaim = new Kilt.AttestedClaim(requestForAttestation, attestation);
+   *    console.log(JSON.stringify(attestedClaim));
+   * }).catch(e => {
+   *    console.log(e);
+   * }).finally(() => {
+   *    // disconnect from the blockchain
+   *    Kilt.BlockchainApiConnection.getCached().then(blockchain => {
+   *      blockchain.api.disconnect();
+   *    });
+   * });
+   * ```
+   */
   public constructor(
     request: IRequestForAttestation,
     attestation: IAttestation
@@ -43,6 +67,19 @@ export default class AttestedClaim implements IAttestedClaim {
     this.attestation = Attestation.fromObject(attestation)
   }
 
+  /**
+   * @description (ASYNC) Verifies if this attested claim is valid. It's valid if:
+   * * the data is valid (see [[verifyData()]]);
+   * and
+   * * the attestation associated to this attestated claim is valid (see [[Attestation.verify()]]).
+   * @returns A promise containing whether this attested claim is valid.
+   * @example
+   * ```javascript
+   * attestedClaim.verify().then(data => {
+   *    console.log('isVerified', data)
+   * });
+   * ```
+   */
   public async verify(): Promise<boolean> {
     if (!this.verifyData()) {
       Promise.resolve(false)
@@ -50,6 +87,17 @@ export default class AttestedClaim implements IAttestedClaim {
     return this.attestation.verify()
   }
 
+  /**
+   * @description Verifies if the attestation's data is valid. It's valid if:
+   * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[RequestForAttestation.verifyData()]]);
+   * and
+   * * the hash of the [[RequestForAttestation]] object associated to this attested claim, and the hash of the [[Claim]] associated to this attestated claim are the same.
+   * @returns Whether the attestation's data is valid.
+   * @example
+   * ```javascript
+   * const isDataValid = attestedClaim.verifyData();
+   * ```
+   */
   public verifyData(): boolean {
     return (
       this.request.verifyData() &&
@@ -57,10 +105,34 @@ export default class AttestedClaim implements IAttestedClaim {
     )
   }
 
+  /**
+   * @description Gets the hash of the claim that corresponds to this attestation.
+   * @returns claimHash The hash of the claim that corresponds to this attestation.
+   * @example
+   * ```javascript
+   * const claimHash = attestation.getHash();
+   * ```
+   */
   public getHash(): string {
     return this.attestation.claimHash
   }
 
+  /**
+   * @description Builds a presentation. A presentation is a custom view of the [[AttestedClaim]], in which the claimer controls what information should be showed.
+   * @param excludedClaimProperty An array of claim properties to **exclude**.
+   * @param excludeIdentity Whether the claimer's identity should be excluded from the presentation.
+   * @example
+   * ```javascript
+   * // if claim.contents are:
+   * // {
+   * //   isOver18: true,
+   * //   birthYear: 1990
+   * // }
+   *
+   * // create a presentation that only discloses `isOver18`, while `birthYear` and `identity` remain private
+   * const presentation = createPresentation(['birthYear'], true);
+   * ```
+   */
   public createPresentation(
     excludedClaimProperties: string[],
     excludeIdentity: boolean = false
