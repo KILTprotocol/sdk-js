@@ -69,7 +69,7 @@ export default class Attestation implements IAttestation {
   /**
    * @description (STATIC) (ASYNC) Revokes an attestation.
    * @param claimHash The hash of the claim that corresponds to the attestation to revoke.
-   * @param identity The identity used to revoke the attestation (should be an attester identity).
+   * @param identity The identity used to revoke the attestation (should be an attester identity or have delegated rights).
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example
    * ```javascript
@@ -142,7 +142,7 @@ export default class Attestation implements IAttestation {
 
   /**
    * @description (ASYNC) Revokes **this** attestation.
-   * @param identity The identity used to revoke the attestation (should be an attester identity).
+   * @param identity The identity used to revoke the attestation (should be an attester identity or have delegated rights).
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example
    * ```javascript
