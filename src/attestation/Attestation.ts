@@ -68,9 +68,15 @@ export default class Attestation implements IAttestation {
 
   /**
    * @description (STATIC) (ASYNC) Revokes an attestation.
-   * @param claimHash The hash of the claim that corresponds to the attestation to query.
-   * @param identity The identity used to revoke the attestation.
+   * @param claimHash The hash of the claim that corresponds to the attestation to revoke.
+   * @param identity The identity used to revoke the attestation (should be an attester identity).
    * @returns A promise containing the [[TxStatus]] (transaction status).
+   * @example
+   * ```javascript
+   * Attestation.revoke("0xd810224b1b6a4db8d1d1e909d1aeb7d441846914ed024cdc147c4fa9221cd177", identity);
+   * ```
+   * About this example:
+   * * To create `identity`, see [[buildFromMnemonic]] and [[generateMnemonic]] in [[Identity]].
    */
   public static async revoke(
     claimHash: string,
@@ -135,9 +141,15 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description (STATIC) (ASYNC) Revokes an attestation.
-   * @param identity The identity used to revoke the attestation.
+   * @description (ASYNC) Revokes **this** attestation.
+   * @param identity The identity used to revoke the attestation (should be an attester identity).
    * @returns A promise containing the [[TxStatus]] (transaction status).
+   * @example
+   * ```javascript
+   * revoke(identity);
+   * ```
+   * About this example:
+   * * To create `identity`, see [[buildFromMnemonic]] and [[generateMnemonic]] in [[Identity]].
    */
   public async revoke(identity: Identity): Promise<TxStatus> {
     return revoke(this.claimHash, identity)
