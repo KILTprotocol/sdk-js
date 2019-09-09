@@ -16,7 +16,7 @@ export interface IURLResolver {
 
 export default class PublicIdentity implements IPublicIdentity {
   /**
-   * [STATIC] Creates a new Public Identity from a DID object.
+   * @description [STATIC] Creates a new Public Identity from a DID object.
    * @param didDocument
    * @returns `PublicIdentity`
    *
@@ -52,7 +52,7 @@ export default class PublicIdentity implements IPublicIdentity {
     }
   }
   /**
-   * [STATIC] Resolve internal and external DIDs from a specific identifier
+   * @description [STATIC] Resolve internal and external DIDs from a specific identifier
    * @param identifier
    * @param urlResolver
    * @returns `PublicIdentity`
