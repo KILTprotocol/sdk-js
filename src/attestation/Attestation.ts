@@ -88,7 +88,7 @@ export default class Attestation implements IAttestation {
   /**
    * @description (STATIC) Creates a new [[Attestation]] instance from the given interface.
    * @param obj The base object from which to create the attestation.
-   * @returns
+   * @returns A new attestation.
    * @example
    * ```javascript
    * // `encodedQueryResult` is the result of a chain query
@@ -183,7 +183,7 @@ export default class Attestation implements IAttestation {
    * * and has the correct owner;
    * * and is not revoked.
    * @param attestation The attestation to check.
-   * @returns attestationValid Whether the assestation is valid.
+   * @returns Whether the attestation is valid.
    */
   private isAttestationValid(attestation: Attestation | null): boolean {
     return (
