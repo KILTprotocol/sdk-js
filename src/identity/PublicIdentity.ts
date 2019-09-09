@@ -16,7 +16,7 @@ export interface IURLResolver {
 
 export default class PublicIdentity implements IPublicIdentity {
   /**
-   * [STATIC] Creates a new Public Identity from a Did object.
+   * [STATIC] Creates a new Public Identity from a DID object.
    * @param didDocument
    * @returns `PublicIdentity`
    *
