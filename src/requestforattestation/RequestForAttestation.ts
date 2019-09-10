@@ -63,7 +63,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * const ctype = require("./ctype.json");
    *
    * const alice = Kilt.Identity.buildFromMnemonic();
-   *
+   *  const rawClaim = {
+   *  	name: "Alice",
+   *  	age: 29
+   *  };
    *
    * const claim = new Kilt.Claim(ctype, rawClaim, alice);
    *
