@@ -193,8 +193,8 @@ export default class Identity extends PublicIdentity {
   private readonly signKeyringPair: KeyringPair
   private readonly boxKeyPair: BoxKeyPair
   /**
-   * @description Creates a new instance of public identity.
-   * @returns An `address` which identity's a specific account on the chain.
+   * @description Returns the public identity's address and public key.
+   * @returns The identity's `address` which correlates to the account on the chain.
    * @returns  A `boxPublicKeyAsHex` public half of the cryptographic key pair in hexadecimal
    * @example
    * ```javascript
@@ -203,7 +203,7 @@ export default class Identity extends PublicIdentity {
    *
    * // The identity is able to call the getPublicIdentity()
    *
-   * alice.getPublicIdentity()
+   * const identity = alice.getPublicIdentity()
    *
    * // (output) Identity {
    * //          address: '5HLrbwg9CG9p7FQ2czRHfjBeNzkPH3bXTCyhZoq7Arop5EZQ',
@@ -265,7 +265,7 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description Encrypts Asymmetrical using random secret key (string)
+   * @description Encrypts an asymmetrical message/data using random secret key (string)
    * @param cryptoInput The 'CryptoInput' is raw data hashed.
    * @param boxPublicKey A random secret key
    * @returns `Crypto.encryptAsymmetricAsStr(...)`
@@ -299,8 +299,8 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description Decrypts Asymmetrical using random secret key (string)
-   * @param encrypted An excrypted message/data
+   * @description Decrypts an asymmetrical message/data using random secret key (string)
+   * @param encrypted An encrypted message/data
    * @param boxPublicKey A random secret key
    * @returns `Crypto.decryptAsymmetricAsStr(...)`
    * @example
@@ -332,10 +332,10 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description Encrypts Asymmetrical using random secret key (UInt8Array)
+   * @description Encrypts an asymmetrical message/data using random secret key.
    * @param input The 'input' is raw data hashed.
    * @param boxPublicKey A random secret key
-   * @returns `Crypto.encryptAsymmetric(...)`
+   * @returns A `Crypto.encryptAsymmetric(...)` provides the encrypted input value.
    * @example
    * ```javascript
    *
@@ -372,10 +372,10 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description Decrypts Asymmetrical using random secret key (UInt8Array)
-   * @param encrypted An excrypted message/data
+   * @description Decrypts an asymmetrical message/data using random secret key.
+   * @param encrypted An encrypted message/data
    * @param boxPublicKey A random secret key
-   * @returns `Crypto.decryptAsymmetric(...)`
+   * @returns The `Crypto.decryptAsymmetric(...)` returns the decrypted data.
    * @example
    * ```javascript
    *
@@ -407,10 +407,10 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description Signs a submittable extrinsic, an extrinsic are pieces of information not from within the state of the chain.
+   * @description Signs a submittable extrinsic, an extrinsic is a piece of information not within the blockchain.
    * @param submittableExtrinsic A transaction made to the chain.
-   * @param nonceAsHex a hex number added to a hashed or encrypted
-   * @returns `submittableExtrinsic`
+   * @param nonceAsHex A hex number added to hash or encrypt the [[submittableExtrinisic]]
+   * @returns A `submittableExtrinsic` provides a signed transaction.
    * @example
    * ```javascript
    *

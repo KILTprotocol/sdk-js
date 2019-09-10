@@ -17,12 +17,12 @@ export interface IURLResolver {
 export default class PublicIdentity implements IPublicIdentity {
   /**
    * @description (STATIC) Creates a new Public Identity from a DID (Decentralised identifier) object.
-   * @param didDocument Public keys and pseudonymous biometrics
+   * @param didDocument Contains the public key, external ID and service endpoint
    * @returns A new [[PublicIdentity]] object
    * @example
    * ```javascript
    *
-   * PublicIdentity.fromDidDocument(didDocument);
+   * const identity = PublicIdentity.fromDidDocument(didDocument);
    *
    * ```
    */
@@ -63,7 +63,7 @@ export default class PublicIdentity implements IPublicIdentity {
    * @example
    * ```javascript
    *
-   * PublicIdentity.resolveFromDid(identifier, urlResolver)
+   * const identity = PublicIdentity.resolveFromDid(identifier, urlResolver)
    *
    * ```
    */
