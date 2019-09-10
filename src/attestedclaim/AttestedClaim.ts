@@ -38,7 +38,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @description Builds a new [[AttestedClaim]] instance.
    * @param request A request for attestation, usually sent by a claimer.
    * @param attestation The attestation to base the [[AttestedClaim]] on.
-   * @example Ceate an [[AttestedClaim]] upon successful [[Attestation]] creation:
+   * @example Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
    * ```javascript
    * // connect to the blockchain
    * Kilt.default.connect('wss://full-nodes.kilt.io:9944');
@@ -69,9 +69,9 @@ export default class AttestedClaim implements IAttestedClaim {
 
   /**
    * @description (ASYNC) Verifies if this attested claim is valid. It's valid if:
-   * * the data is valid (see [[verifyData()]]);
+   * * the data is valid (see [[verifyData]]);
    * and
-   * * the attestation associated to this attestated claim is valid (see [[Attestation.verify()]]).
+   * * the [[Attestation]] object associated to this attestated claim is valid (see [[Attestation.verify]]).
    * @returns A promise containing whether this attested claim is valid.
    * @example
    * ```javascript
@@ -88,8 +88,8 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * @description Verifies if the attestation's data is valid. It's valid if:
-   * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[RequestForAttestation.verifyData()]]);
+   * @description Verifies if the attestation's data is valid. It is valid if:
+   * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[verifyData]] in [[RequestForAttestation]]);
    * and
    * * the hash of the [[RequestForAttestation]] object associated to this attested claim, and the hash of the [[Claim]] associated to this attestated claim are the same.
    * @returns Whether the attestation's data is valid.
@@ -119,8 +119,9 @@ export default class AttestedClaim implements IAttestedClaim {
 
   /**
    * @description Builds a presentation. A presentation is a custom view of the [[AttestedClaim]], in which the claimer controls what information should be showed.
-   * @param excludedClaimProperty An array of claim properties to **exclude**.
-   * @param excludeIdentity Whether the claimer's identity should be excluded from the presentation.
+   * @param excludedClaimProperties An array of claim properties to **exclude**.
+   * @param excludeIdentity Whether the claimer's identity should be **excluded** from the presentation.
+   * @returns The so-created presentation.
    * @example
    * ```javascript
    * // if claim.contents are:
