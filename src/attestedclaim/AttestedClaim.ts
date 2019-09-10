@@ -25,8 +25,9 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns A new attested claim.
    * @example
    * ```javascript
-   * // if cloneDeep is utility function that deep clones objects
+   * // if cloneDeep is a utility function that deep clones objects
    * const attestedClaimCopy = AttestedClaim.fromObject(cloneDeep(attestedClaim));
+   * ```
    */
   public static fromObject(obj: IAttestedClaim): AttestedClaim {
     const newAttestedClaim: AttestedClaim = Object.create(
@@ -81,6 +82,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * * the data is valid (see [[verifyData]]);
    * and
    * * the [[Attestation]] object associated to this attestated claim is valid (see [[Attestation.verify]], where the **chain** is queried).
+   *
    * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
    * @returns A promise containing whether this attested claim is valid.
    * @example
