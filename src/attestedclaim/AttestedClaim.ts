@@ -20,7 +20,17 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
-   * Creates a new instance of this Attestation class from the given interface.
+   * @description (ASYNC) Verifies if this attested claim is valid. It is valid if:
+   * * the data is valid (see [[verifyData]]);
+   * and
+   * * the [[Attestation]] object associated to this attestated claim is valid (see [[Attestation.verify]]).
+   * @returns A promise containing whether this attested claim is valid.
+   * @example
+   * ```javascript
+   * attestedClaim.verify().then(data => {
+   *    console.log('isVerified', data)
+   * });
+   * ```
    */
   public static fromObject(obj: IAttestedClaim): AttestedClaim {
     const newAttestedClaim: AttestedClaim = Object.create(
@@ -43,9 +53,9 @@ export default class AttestedClaim implements IAttestedClaim {
    * // connect to the blockchain
    * Kilt.default.connect('wss://full-nodes.kilt.io:9944');
    *
-   * // store the attestation on chain
+   * // store an attestation on chain
    * attestation.store(attester).then(() => {
-   *    // attestation was successfully stored so we can create an AttestedClaim
+   *    // the attestation was successfully stored so we can create an AttestedClaim
    *    const attestedClaim = new Kilt.AttestedClaim(requestForAttestation, attestation);
    *    console.log(JSON.stringify(attestedClaim));
    * }).catch(e => {
@@ -57,6 +67,9 @@ export default class AttestedClaim implements IAttestedClaim {
    *    });
    * });
    * ```
+   *
+   * About this example:
+   * * see [[Attestation.store]] for details on the `store` method
    */
   public constructor(
     request: IRequestForAttestation,
@@ -68,7 +81,7 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * @description (ASYNC) Verifies if this attested claim is valid. It's valid if:
+   * @description (ASYNC) Verifies if this attested claim is valid. It is valid if:
    * * the data is valid (see [[verifyData]]);
    * and
    * * the [[Attestation]] object associated to this attestated claim is valid (see [[Attestation.verify]]).
@@ -88,8 +101,8 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * @description Verifies if the attestation's data is valid. It is valid if:
-   * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[verifyData]] in [[RequestForAttestation]]);
+   * @description Verifies if the data of this attested claim is valid. It is valid if:
+   * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[RequestForAttestation.verifyData]]);
    * and
    * * the hash of the [[RequestForAttestation]] object associated to this attested claim, and the hash of the [[Claim]] associated to this attestated claim are the same.
    * @returns Whether the attestation's data is valid.
