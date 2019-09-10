@@ -28,11 +28,9 @@ type BoxPublicKey =
 
 export default class Identity extends PublicIdentity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
-
   public static generateMnemonic() {
     return generate()
   }
-
   public static buildFromMnemonic(phraseArg?: string) {
     let phrase = phraseArg
     if (phrase) {
@@ -52,6 +50,11 @@ export default class Identity extends PublicIdentity {
     return Identity.buildFromSeed(seed)
   }
 
+  /**
+   * Returns a new Identity, generated from a seed string as hex.
+   *
+   * @param seedArg The seed as hex string. (Starting with 0x)
+   */
   public static buildFromSeedString(seedArg: string) {
     const asU8a = hexToU8a(seedArg)
     return Identity.buildFromSeed(asU8a)
