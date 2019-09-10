@@ -15,18 +15,6 @@ export interface IURLResolver {
 }
 
 export default class PublicIdentity implements IPublicIdentity {
-  /**
-   * @description [STATIC] Creates a new Public Identity from a DID object.
-   * @param didDocument Public keys and pseudonymous biometrics.
-   * @returns `PublicIdentity`
-   * @example
-   * ```javascript
-   *
-   * PublicIdentity.fromDidDocument(didDocument);
-   *
-   *
-   * ```
-   */
   public static fromDidDocument(
     didDocument: object
   ): IPublicIdentity | undefined {
@@ -56,18 +44,7 @@ export default class PublicIdentity implements IPublicIdentity {
       return undefined
     }
   }
-  /**
-   * @description [STATIC] Resolve internal and external DIDs from a specific identifier
-   * @param identifier URL scheme identifier
-   * @param urlResolver  DID URL always identifies the resource to be located
-   * @returns `PublicIdentity`
-   * @example
-   * ```javascript
-   *
-   * PublicIdentity.resolveFromDid(identifier, urlResolver)
-   *
-   * ```
-   */
+
   public static async resolveFromDid(
     identifier: string,
     urlResolver: IURLResolver
