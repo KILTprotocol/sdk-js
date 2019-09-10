@@ -147,7 +147,8 @@ export default class Attestation implements IAttestation {
    * revoke(identity);
    * ```
    * About this example:
-   * * To create `identity`, see [[buildFromMnemonic]] and [[generateMnemonic]] in [[Identity]].
+   * * To create an Attester `identity`, see [[buildFromMnemonic]] and [[generateMnemonic]] in [[Identity]].
+   * * Note that the Attester must have rights or delegated rights in order to revoke the attestation.
    */
   public async revoke(identity: Identity): Promise<TxStatus> {
     return revoke(this.claimHash, identity)
