@@ -80,12 +80,13 @@ export default class AttestedClaim implements IAttestedClaim {
    * @description (ASYNC) Verifies whether this attested claim is valid. It is valid if:
    * * the data is valid (see [[verifyData]]);
    * and
-   * * the [[Attestation]] object associated to this attestated claim is valid (see [[Attestation.verify]]).
+   * * the [[Attestation]] object associated to this attestated claim is valid (see [[Attestation.verify]], where the **chain** is queried).
+   * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
    * @returns A promise containing whether this attested claim is valid.
    * @example
    * ```javascript
    * attestedClaim.verify().then(data => {
-   *    console.log('isVerified', data)
+   *    console.log('isVerified', data);
    * });
    * ```
    */
