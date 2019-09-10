@@ -16,14 +16,13 @@ export interface IURLResolver {
 
 export default class PublicIdentity implements IPublicIdentity {
   /**
-   * @description [STATIC] Creates a new Public Identity from a DID object.
-   * @param didDocument Public keys and pseudonymous biometrics.
-   * @returns `PublicIdentity`
+   * @description (STATIC) Creates a new Public Identity from a DID (Decentralised identifier) object.
+   * @param didDocument Public keys and pseudonymous biometrics
+   * @returns A new [[PublicIdentity]] object
    * @example
    * ```javascript
    *
    * PublicIdentity.fromDidDocument(didDocument);
-   *
    *
    * ```
    */
@@ -57,10 +56,10 @@ export default class PublicIdentity implements IPublicIdentity {
     }
   }
   /**
-   * @description [STATIC] Resolve internal and external DIDs from a specific identifier
+   * @description (STATIC) (ASYNC) Resolves internal and external DIDs (Decentralised identifier) from a specific identifier
    * @param identifier URL scheme identifier
    * @param urlResolver  DID URL always identifies the resource to be located
-   * @returns `PublicIdentity`
+   * @returns  A new [[PublicIdentity]] object
    * @example
    * ```javascript
    *

@@ -29,8 +29,8 @@ type BoxPublicKey =
 export default class Identity extends PublicIdentity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
   /**
-   * @description [STATIC] Generates Mnemonic phrase used to create identities from phrase seed.
-   * @returns `generate` randomly generated mnemonic phrase (Secret phrase)
+   * @description (STATIC) Generates Mnemonic phrase used to create identities from phrase seed.
+   * @returns Randomly [[generate]]s mnemonic phrase (Secret phrase)
    * @example
    * ```javascript
    *
@@ -44,9 +44,9 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description [STATIC] Builds an identity object from a mnemonic string.
+   * @description (STATIC) Builds an identity object from a mnemonic string.
    * @param phraseArg [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase. (Secret phrase)
-   * @returns `Identity`
+   * @returns An [[Identity]]
    *
    * @example
    *
@@ -85,9 +85,9 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description [STATIC] Builds an Identity, generated from a seed string as a hex.
+   * @description (STATIC) Builds an [[Identity]], generated from a seed string as a hex.
    * @param seedArg as hex string. (Starting with 0x)
-   * @returns  `Identity`
+   * @returns  An [[Identity]]
    * @example
    *
    * ```javascript
@@ -110,9 +110,9 @@ export default class Identity extends PublicIdentity {
     return Identity.buildFromSeed(asU8a)
   }
   /**
-   * @description [STATIC] Builds a new Identity, generated from a seed (Secret Seed).
-   * @param seed as a Unit 8 Array
-   * @returns `Identity`
+   * @description (STATIC) Builds a new [[Identity]], generated from a seed (Secret Seed).
+   * @param seed A seed as an Unit 8 Array
+   * @returns An [[Identity]]
    * @example
    *
    * ```javascript
@@ -142,9 +142,9 @@ export default class Identity extends PublicIdentity {
     return new Identity(seed, keyringPair)
   }
   /**
-   * @description [STATIC] Builds a new Identity, generated from a uniform resource identifier (URIs).
+   * @description (STATIC) Builds a new [[Identity]], generated from a uniform resource identifier (URIs).
    * @param uri Standard identifiers (//Alice)
-   * @returns `Identity` built from an URI
+   * @returns  An [[Identity]]
    * @example
    * ```javascript
    *
@@ -194,8 +194,8 @@ export default class Identity extends PublicIdentity {
   private readonly boxKeyPair: BoxKeyPair
   /**
    * @description Creates a new instance of public identity.
-   * @returns `address` can identify a specific account on the chain.
-   * @returns `boxPublicKeyAsHex` public half of the cryptographic key pair in hexadecimal
+   * @returns An `address` which identity's a specific account on the chain.
+   * @returns  A `boxPublicKeyAsHex` public half of the cryptographic key pair in hexadecimal
    * @example
    * ```javascript
    *
@@ -221,7 +221,7 @@ export default class Identity extends PublicIdentity {
   /**
    * @description Signs for a message with an Identity's key.
    * @param cryptoInput The 'CryptoInput' is raw data hashed.
-   * @returns `Crypto.sign(...)`
+   * @returns A signed [[Crypto]].sign(...) output
    * @example
    * ```javascript
    *
@@ -247,7 +247,7 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * @description Signs for a message string with an Identity.
+   * @description Signs for a message string with an Identity's key string.
    * @param cryptoInput The 'CryptoInput' is raw data hashed.
    * @returns `Crypto.signStr(...)`
    * @example
@@ -267,7 +267,7 @@ export default class Identity extends PublicIdentity {
   /**
    * @description Encrypts Asymmetrical using random secret key (string)
    * @param cryptoInput The 'CryptoInput' is raw data hashed.
-   * @param boxPublicKey
+   * @param boxPublicKey A random secret key
    * @returns `Crypto.encryptAsymmetricAsStr(...)`
    * @example
    * ```javascript
