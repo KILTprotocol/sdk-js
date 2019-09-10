@@ -103,8 +103,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * @description Remove Claim Properties
    * @param properties
-   * @delete `this.claim.contents[key]`
-   * @delete `this.claimHashTree[key].nonce`
+   * @returns `this.claim.contents[key]` On a successful deletation it returns true, else false will be returned
+   * @returns `this.claimHashTree[key].nonce` On a successful deletation it returns true, else false will be returned
    * @example
    * ```javascript
    *
@@ -123,8 +123,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
   /**
    * @description Remove Claim Owner
-   * @delete `this.claim.owner`
-   * @delete `this.claimOwner.nonce`
+   * @returns `this.claim.owner` On a successful deletation it returns true, else false will be returned
+   * @returns `this.claimOwner.nonce` On a successful deletation it returns true, else false will be returned
    * @example
    * ```javascript
    *
