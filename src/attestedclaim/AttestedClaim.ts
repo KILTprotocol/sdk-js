@@ -77,7 +77,7 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * @description (ASYNC) Verifies if this attested claim is valid. It is valid if:
+   * @description (ASYNC) Verifies whether this attested claim is valid. It is valid if:
    * * the data is valid (see [[verifyData]]);
    * and
    * * the [[Attestation]] object associated to this attestated claim is valid (see [[Attestation.verify]]).
@@ -97,11 +97,11 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * @description Verifies if the data of this attested claim is valid. It is valid if:
+   * @description Verifies whether the data of this attested claim is valid. It is valid if:
    * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[RequestForAttestation.verifyData]]);
    * and
    * * the hash of the [[RequestForAttestation]] object associated to this attested claim, and the hash of the [[Claim]] associated to this attestated claim are the same.
-   * @returns Whether the attestation's data is valid.
+   * @returns Whether the attestated claim's data is valid.
    * @example
    * ```javascript
    * const isDataValid = attestedClaim.verifyData();
