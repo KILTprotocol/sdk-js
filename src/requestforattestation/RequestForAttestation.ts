@@ -52,13 +52,35 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 
 export default class RequestForAttestation implements IRequestForAttestation {
   /**
-   * @description From Object
-   * @param obj
-   * @returns `object`
+   * @description Builds a new [[Claim]] as an object
+   * @param obj An object built from the [[Claim]], [[Identity]] and legitimation objects
+   * @returns Creates an [[RequestForAttestation]] `object`
    * @example
    * ```javascript
    *
+   * // Using a CType schema
    *
+   * const ctype = require("./ctype.json");
+   *
+   * const alice = Kilt.Identity.buildFromMnemonic();
+   *
+   *
+   * const claim = new Kilt.Claim(ctype, rawClaim, alice);
+   *
+   * const test = new Kilt.RequestForAttestation(claim, [], alice);
+   *
+   * Kilt.RequestForAttestation.fromObject(test)
+   *
+   * // (output) RequestForAttestation {
+   * //           claim: Claim {
+   * //           cType: '0x981955a2b7990554f6193a9e770ea625c68d2bfc5a1ff996e6e28d2a620fae16',
+   * //           contents: { name: 'Alice', age: 29 },
+   * //           owner: '5GfsMWtwtfLDP74V3vsJKkhJWuCh6GL8KFFuiHZZwkBL7xRT'
+   * //           },
+   * //          ...
+   * //        },
+   * //      ...
+   * //     }
    *
    * ```
    */
@@ -101,13 +123,34 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.claimerSignature = this.sign(identity)
   }
   /**
-   * @description Remove Claim Properties
-   * @param properties
-   * @returns `this.claim.contents[key]` On a successful deletation it returns true, else false will be returned
-   * @returns `this.claimHashTree[key].nonce` On a successful deletation it returns true, else false will be returned
+   * @description Removes a [[Claim]] Property from a [[Attestation]] object.
+   * @param properties A property within the [[Claim]] object
+   * @returns  On a successful deletation of `this.claim.contents[key]` it returns true, else false will be returned
+   * @returns On a successful deletation of `this.claimHashTree[key].nonce` it returns true, else false will be returned
    * @example
    * ```javascript
    *
+   *  const alice = Kilt.Identity.buildFromMnemonic();
+   *
+   *  const rawClaim = {
+   *  	name: "Alice",
+   *  	age: 29
+   *  };
+   *
+   *  const claim = new Kilt.Claim(ctype, rawClaim, alice);
+   *
+   *  const test = new Kilt.RequestForAttestation(claim, [], alice);
+   *  // Removing the name field of the raw claim
+   *  test.removeClaimProperties(["name"]);
+   *
+   *  Kilt.RequestForAttestation.fromObject(test);
+   *
+   *  // (output) RequestForAttestation {
+   *  //           claim: Claim {
+   *  //           cType: '0x981955a2b7990554f6193a9e770ea625c68d2bfc5a1ff996e6e28d2a620fae16',
+   *  //           contents: { age: 29 },
+   *  //           owner: '5Gf3Y1CC9UmXYQbSzbA3JE71nCWPjr8LVngzpjqC3YiAwuSp'
+   *  //           },
    *
    *
    * ```
@@ -122,13 +165,32 @@ export default class RequestForAttestation implements IRequestForAttestation {
     })
   }
   /**
-   * @description Remove Claim Owner
-   * @returns `this.claim.owner` On a successful deletation it returns true, else false will be returned
-   * @returns `this.claimOwner.nonce` On a successful deletation it returns true, else false will be returned
+   * @description Removes a [[Claim]] Owner from a [[Attestation]] object.
+   * @returns  On a successful deletation of `this.claim.owner` it returns true, else false will be returned
+   * @returns  On a successful deletation of `this.claimOwner.nonce` it returns true, else false will be returned
    * @example
    * ```javascript
    *
+   *  const alice = Kilt.Identity.buildFromMnemonic();
    *
+   *  const rawClaim = {
+   *  	name: "Alice",
+   *  	age: 29
+   *    };
+   *
+   *  const claim = new Kilt.Claim(ctype, rawClaim, alice);
+   *
+   *  const test = new Kilt.RequestForAttestation(claim, [], alice);
+   * // Removing the owner from the claim object
+   *  test.removeClaimOwner();
+   *
+   *  Kilt.RequestForAttestation.fromObject(test);
+   *
+   * //(output) RequestForAttestation {
+   * //          claim: Claim {
+   * //          cType: '0x981955a2b7990554f6193a9e770ea625c68d2bfc5a1ff996e6e28d2a620fae16',
+   * //          contents: { name: 'Alice', age: 29 }
+   * //          },
    *
    * ```
    */
