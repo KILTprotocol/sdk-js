@@ -69,7 +69,7 @@ export default class Attestation implements IAttestation {
   /**
    * @description (STATIC) (ASYNC) Revokes an attestation.
    * @param claimHash The hash of the claim that corresponds to the attestation to revoke.
-   * @param identity The identity used to revoke the attestation (should be an attester identity or have delegated rights).
+   * @param identity The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example
    * ```javascript
@@ -113,7 +113,7 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description (ASYNC) Stores an attestation on chain.
+   * @description (ASYNC) Stores the attestation on chain.
    * @param identity The identity used to store the attestation.
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
@@ -123,9 +123,7 @@ export default class Attestation implements IAttestation {
    *
    * // store the attestation on chain
    * attestation.store(attester).then(() => {
-   *    // attestation was successfully stored so we can create an AttestedClaim
-   *    const attestedClaim = new Kilt.AttestedClaim(requestForAttestation, attestation)
-   *    console.log(JSON.stringify(attestedClaim));
+   *    // ... attestation was successfully stored so we could for exampl create an AttestedClaim
    * }).catch(e => {
    *    console.log(e);
    * }).finally(() => {
@@ -141,8 +139,8 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description (ASYNC) Revokes **this** attestation.
-   * @param identity The identity used to revoke the attestation (should be an attester identity or have delegated rights).
+   * @description (ASYNC) Revokes the attestation.
+   * @param identity The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example
    * ```javascript
@@ -157,7 +155,7 @@ export default class Attestation implements IAttestation {
 
   /**
    * @description (ASYNC) Queries an attestation from the chain and checks its validity.
-   * @param claimHash The hash of the claim that corresponds to the attestation to check.
+   * @param claimHash The hash of the claim that corresponds to the attestation to check, defaults to **this** `claimHash`.
    * @returns A promise containing the boolean `attestationValid`.
    * @example
    * ```javascript
@@ -178,7 +176,7 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description Checks if an attestation is valid. An attestation is valid if it:
+   * @description Checks if the attestation is valid. An attestation is valid if it:
    * * exists;
    * * and has the correct owner;
    * * and is not revoked.
