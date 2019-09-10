@@ -203,12 +203,25 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * @description Verify Data
-   * @returns `this.verifySignature()`
+   * @description Verifies the data of the [[Attestation]] [[Claim]].
+   * @returns On successful verification of data `this.verifySignature()` it returns true, else false will be returned.
    * @example
    * ```javascript
    *
+   * const alice = Kilt.Identity.buildFromMnemonic();
    *
+   *  const rawClaim = {
+   * name: "Alice",
+   * age: 29
+   * };
+   *
+   * const claim = new Kilt.Claim(ctype, rawClaim, alice);
+   *
+   * const test = new Kilt.RequestForAttestation(claim, [], alice);
+   * // Checks the data and returns a
+   * const data = test.verifyData();
+   *
+   * (Output) true
    *
    * ```
    */
@@ -263,13 +276,25 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * @description Verify Signature
-   * @returns `verifyClaimerSignature(this)`
+   * @description Verifies the signature of the claimer with the [[Attestation]] [[Claim]].
+   * @returns On successful verification of the claimers signature `verifyClaimerSignature(this)` it returns true, else false will be returned.
    * @example
    * ```javascript
    *
+   * const alice = Kilt.Identity.buildFromMnemonic();
    *
+   *  const rawClaim = {
+   * name: 'Alice',
+   * age: 29
+   * };
    *
+   * const claim = new Kilt.Claim(ctype, rawClaim, alice);
+   *
+   * const test = new Kilt.RequestForAttestation(claim, [], alice);
+   * // Checks the signature
+   *  const signed = test.verifySignature()
+   *
+   *  (Output) true
    * ```
    */
   public verifySignature(): boolean {
