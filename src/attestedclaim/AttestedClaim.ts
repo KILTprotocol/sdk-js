@@ -20,17 +20,13 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
-   * @description (ASYNC) Verifies if this attested claim is valid. It is valid if:
-   * * the data is valid (see [[verifyData]]);
-   * and
-   * * the [[Attestation]] object associated to this attestated claim is valid (see [[Attestation.verify]]).
-   * @returns A promise containing whether this attested claim is valid.
+   * @description (STATIC) Creates a new [[AttestedClaim]] instance from the given interface.
+   * @param obj The base object from which to create the attested claim.
+   * @returns A new attested claim.
    * @example
    * ```javascript
-   * attestedClaim.verify().then(data => {
-   *    console.log('isVerified', data)
-   * });
-   * ```
+   * // if cloneDeep is utility function that deep clones objects
+   * const attestedClaimCopy = AttestedClaim.fromObject(cloneDeep(attestedClaim));
    */
   public static fromObject(obj: IAttestedClaim): AttestedClaim {
     const newAttestedClaim: AttestedClaim = Object.create(
