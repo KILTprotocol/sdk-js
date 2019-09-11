@@ -1625,6 +1625,11 @@ commander@^2.11.0, commander@~2.20.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.0.tgz#d58bb2b5c1ee8f87b0d340027e9e94e222c5a422"
   integrity sha512-7j2y+40w61zy6YC2iRNpUe/NwhNyoXrYpHMrSunaMG64nRnaf96zO/KMQR4OyN/UnE5KLyEBnKHd4aG3rskjpQ==
 
+comment-parser@^0.6.2:
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/comment-parser/-/comment-parser-0.6.2.tgz#b71e8fcacad954bea616779391838150d0096dcb"
+  integrity sha512-Wdms0Q8d4vvb2Yk72OwZjwNWtMklbC5Re7lD9cjCP/AG1fhocmc0TrxGBBAXPLy8fZQPrfHGgyygwI0lA7pbzA==
+
 compare-func@^1.3.1:
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/compare-func/-/compare-func-1.3.2.tgz#99dd0ba457e1f9bc722b12c08ec33eeab31fa648"
@@ -1846,7 +1851,7 @@ debug@^3.1.0, debug@^3.2.6:
   dependencies:
     ms "^2.1.1"
 
-debug@^4.0.1:
+debug@^4.0.1, debug@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.1.1.tgz#3b72260255109c6b589cee050f1d516139664791"
   integrity sha512-pYAIzeRo8J6KPEaJ0VWOh5Pzkbw/RetuzehGM7QRRX5he4fPHx2rdKMB256ehJCkX+XRQm16eZLqLNS8RSZXZw==
@@ -2202,6 +2207,18 @@ eslint-plugin-import@^2.18.2:
     object.values "^1.1.0"
     read-pkg-up "^2.0.0"
     resolve "^1.11.0"
+
+eslint-plugin-jsdoc@^15.9.1:
+  version "15.9.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-15.9.1.tgz#5cc09ddd7e4568169a710cf5748a0ac8fc1c9af5"
+  integrity sha512-EwW580YgcyZkB83QqY8WuTioGUbIEBlPY+cRI/zSGYrg62GUpmue1HeCBiZRJ40A77BE/MGdGIbAGTdVX49URQ==
+  dependencies:
+    comment-parser "^0.6.2"
+    debug "^4.1.1"
+    jsdoctypeparser "5.0.1"
+    lodash "^4.17.15"
+    object.entries-ponyfill "^1.0.1"
+    regextras "^0.6.1"
 
 eslint-plugin-jsx-a11y@^6.2.3:
   version "6.2.3"
@@ -4030,6 +4047,11 @@ jsbn@~0.1.0:
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
   integrity sha1-peZUwuWi3rXyAdls77yoDA7y9RM=
 
+jsdoctypeparser@5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/jsdoctypeparser/-/jsdoctypeparser-5.0.1.tgz#0d6bc09bb8bebeca5a588fcd508228d2189409a3"
+  integrity sha512-dYwcK6TKzvq+ZKtbp4sbQSW9JMo6s+4YFfUs5D/K7bZsn3s1NhEhZ+jmIPzby0HbkbECBe+hNPEa6a+E21o94w==
+
 jsdom@^11.5.1:
   version "11.12.0"
   resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-11.12.0.tgz#1a80d40ddd378a1de59656e9e6dc5a3ba8657bc8"
@@ -4316,7 +4338,7 @@ lodash@4.17.11:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
 
-lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.14, lodash@^4.17.4, lodash@^4.2.1:
+lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.4, lodash@^4.2.1:
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
@@ -4886,6 +4908,11 @@ object.defaults@^1.0.0, object.defaults@^1.1.0:
     array-slice "^1.0.0"
     for-own "^1.0.0"
     isobject "^3.0.0"
+
+object.entries-ponyfill@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/object.entries-ponyfill/-/object.entries-ponyfill-1.0.1.tgz#29abdf77cbfbd26566dd1aa24e9d88f65433d256"
+  integrity sha1-Kavfd8v70mVm3RqiTp2I9lQz0lY=
 
 object.entries@^1.1.0:
   version "1.1.0"
@@ -5543,6 +5570,11 @@ regexpp@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/regexpp/-/regexpp-2.0.1.tgz#8d19d31cf632482b589049f8281f93dbcba4d07f"
   integrity sha512-lv0M6+TkDVniA3aD1Eg0DVpfU/booSu7Eev3TDO/mZKHBfVjgCGTV4t4buppESEYDtkArYFOxTJWv6S5C+iaNw==
+
+regextras@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/regextras/-/regextras-0.6.1.tgz#9689641bbb338e0ff7001a5c507c6a2008df7b36"
+  integrity sha512-EzIHww9xV2Kpqx+corS/I7OBmf2rZ0pKKJPsw5Dc+l6Zq1TslDmtRIP9maVn3UH+72MIXmn8zzDgP07ihQogUA==
 
 remove-bom-buffer@^3.0.0:
   version "3.0.0"
