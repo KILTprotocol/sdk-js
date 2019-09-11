@@ -53,7 +53,7 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * @description Builds a new [[Claim]] as an object
-   * @param obj An object built from the [[Claim]], [[Identity]] and legitimation objects
+   * @param obj - An object built from the [[Claim]], [[Identity]] and legitimation objects
    * @returns Creates an [[RequestForAttestation]] `object`
    * @example
    * ```javascript
@@ -127,7 +127,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
   /**
    * @description Removes a [[Claim]] Property from a [[Attestation]] object.
-   * @param properties A property within the [[Claim]] object
+   * @param properties - A property within the [[Claim]] object
    * @returns  On a successful deletation of `this.claim.contents[key]` it returns true, else false will be returned
    * @returns On a successful deletation of `this.claimHashTree[key].nonce` it returns true, else false will be returned
    * @example
