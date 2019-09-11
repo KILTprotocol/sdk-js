@@ -130,7 +130,7 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * @description Builds a presentation. A presentation is a custom view of the [[AttestedClaim]], in which the claimer controls what information should be showed.
+   * @description Builds a presentation. A presentation is a custom view of the [[AttestedClaim]], in which the claimer controls what information should be shown.
    * @param excludedClaimProperties - An array of [[Claim]] properties to **exclude**.
    * @param excludeIdentity - Whether the claimer's identity should be **excluded** from the presentation.
    * @returns The newly created presentation.
