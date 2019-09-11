@@ -43,8 +43,8 @@ export default class AttestedClaim implements IAttestedClaim {
 
   /**
    * @description Builds a new [[AttestedClaim]] instance.
-   * @param request A request for attestation, usually sent by a claimer.
-   * @param attestation The attestation to base the [[AttestedClaim]] on.
+   * @param request - A request for attestation, usually sent by a claimer.
+   * @param attestation - The attestation to base the [[AttestedClaim]] on.
    * @example Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
    * ```javascript
    * // connect to the blockchain
@@ -131,9 +131,9 @@ export default class AttestedClaim implements IAttestedClaim {
 
   /**
    * @description Builds a presentation. A presentation is a custom view of the [[AttestedClaim]], in which the claimer controls what information should be showed.
-   * @param excludedClaimProperties An array of [[Claim]] properties to **exclude**.
-   * @param excludeIdentity Whether the claimer's identity should be **excluded** from the presentation.
-   * @returns The so-created presentation.
+   * @param excludedClaimProperties - An array of [[Claim]] properties to **exclude**.
+   * @param excludeIdentity - Whether the claimer's identity should be **excluded** from the presentation.
+   * @returns The newly created presentation.
    * @example
    * ```javascript
    * // if claim.contents are:
