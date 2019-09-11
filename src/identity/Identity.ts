@@ -45,7 +45,7 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description (STATIC) Builds an identity object from a mnemonic string.
-   * @param phraseArg [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase. (Secret phrase)
+   * @param phraseArg - [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase. (Secret phrase)
    * @returns An [[Identity]]
    *
    * @example
@@ -86,7 +86,7 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description (STATIC) Builds an [[Identity]], generated from a seed string as a hex.
-   * @param seedArg as hex string. (Starting with 0x)
+   * @param seedArg - Seed as hex string. (Starting with 0x)
    * @returns  An [[Identity]]
    * @example
    *
@@ -111,7 +111,7 @@ export default class Identity extends PublicIdentity {
   }
   /**
    * @description (STATIC) Builds a new [[Identity]], generated from a seed (Secret Seed).
-   * @param seed A seed as an Unit 8 Array
+   * @param seed - A seed as an Unit 8 Array
    * @returns An [[Identity]]
    * @example
    *
@@ -143,7 +143,7 @@ export default class Identity extends PublicIdentity {
   }
   /**
    * @description (STATIC) Builds a new [[Identity]], generated from a uniform resource identifier (URIs).
-   * @param uri Standard identifiers (//Alice)
+   * @param uri - Standard identifiers (//Alice)
    * @returns  An [[Identity]]
    * @example
    * ```javascript
@@ -220,7 +220,7 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description Signs for a message with an Identity's key.
-   * @param cryptoInput The 'CryptoInput' is raw data hashed.
+   * @param cryptoInput - The 'CryptoInput' is raw data hashed.
    * @returns A signed [[Crypto]].sign(...) output
    * @example
    * ```javascript
@@ -266,8 +266,8 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description Encrypts an asymmetrical message/data using random secret key (string)
-   * @param cryptoInput The 'CryptoInput' is raw data hashed.
-   * @param boxPublicKey A random secret key
+   * @param cryptoInput - The 'CryptoInput' is raw data hashed.
+   * @param boxPublicKey - A random secret key
    * @returns `Crypto.encryptAsymmetricAsStr(...)`
    * @example
    * ```javascript
@@ -300,8 +300,8 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description Decrypts an asymmetrical message/data using random secret key (string)
-   * @param encrypted An encrypted message/data
-   * @param boxPublicKey A random secret key
+   * @param encrypted - An encrypted message/data
+   * @param boxPublicKey - A random secret key
    * @returns `Crypto.decryptAsymmetricAsStr(...)`
    * @example
    * ```javascript
@@ -333,8 +333,8 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description Encrypts an asymmetrical message/data using random secret key.
-   * @param input The 'input' is raw data hashed.
-   * @param boxPublicKey A random secret key
+   * @param input - The 'input' is raw data hashed.
+   * @param boxPublicKey - A random secret key
    * @returns A `Crypto.encryptAsymmetric(...)` provides the encrypted input value.
    * @example
    * ```javascript
@@ -373,8 +373,8 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description Decrypts an asymmetrical message/data using random secret key.
-   * @param encrypted An encrypted message/data
-   * @param boxPublicKey A random secret key
+   * @param encrypted - An encrypted message/data
+   * @param boxPublicKey - A random secret key
    * @returns The `Crypto.decryptAsymmetric(...)` returns the decrypted data.
    * @example
    * ```javascript
@@ -408,8 +408,8 @@ export default class Identity extends PublicIdentity {
 
   /**
    * @description Signs a submittable extrinsic, an extrinsic is a piece of information not within the blockchain.
-   * @param submittableExtrinsic A transaction made to the chain.
-   * @param nonceAsHex A hex number added to hash or encrypt the [[submittableExtrinisic]]
+   * @param submittableExtrinsic - A transaction made to the chain.
+   * @param nonceAsHex - A hex number added to hash or encrypt the [[submittableExtrinisic]]
    * @returns A `submittableExtrinsic` provides a signed transaction.
    * @example
    * ```javascript

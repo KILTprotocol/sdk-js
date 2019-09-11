@@ -17,7 +17,7 @@ export interface IURLResolver {
 export default class PublicIdentity implements IPublicIdentity {
   /**
    * @description (STATIC) Creates a new Public Identity from a DID (Decentralised identifier) object.
-   * @param didDocument Contains the public key, external ID and service endpoint
+   * @param didDocument - Contains the public key, external ID and service endpoint
    * @returns A new [[PublicIdentity]] object
    * @example
    * ```javascript
@@ -57,8 +57,8 @@ export default class PublicIdentity implements IPublicIdentity {
   }
   /**
    * @description (STATIC) (ASYNC) Resolves internal and external DIDs (Decentralised identifier) from a specific identifier
-   * @param identifier URL scheme identifier
-   * @param urlResolver  DID URL always identifies the resource to be located
+   * @param identifier - URL scheme identifier
+   * @param urlResolver  - DID URL always identifies the resource to be located
    * @returns  A new [[PublicIdentity]] object
    * @example
    * ```javascript
