@@ -62,6 +62,16 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>When <a href="../classes/delegation_delegationnode.delegationnode.html">DelegationNode</a>s or <a href="../classes/delegation_delegationrootnode.delegationrootnode.html">DelegationRootNode</a>s are written on the blockchain, they&#39;re encoded.
+						DelegationDecoder helps to decode them when they&#39;re queried from the chain.</p>
+						<hr>
+						<p>The DelegationDecoder methods transform a <a href="blockchain.html#queryresult">QueryResult</a> into an object of a KILT type.</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
@@ -90,7 +100,7 @@
 					<div class="tsd-signature tsd-kind-icon">Codec<wbr>With<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/delegation/DelegationDecoder.ts#L15">delegation/DelegationDecoder.ts:15</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/delegation/DelegationDecoder.ts#L19">delegation/DelegationDecoder.ts:19</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -106,13 +116,13 @@
 					<a name="decodedelegationnode" class="tsd-anchor"></a>
 					<h3>decode<wbr>Delegation<wbr>Node</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">decode<wbr>Delegation<wbr>Node<span class="tsd-signature-symbol">(</span>encoded<span class="tsd-signature-symbol">: </span><a href="blockchain.html#queryresult" class="tsd-signature-type">QueryResult</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/delegation_delegationnode.delegationnode.html" class="tsd-signature-type">DelegationNode</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></li>
+						<li class="tsd-signature tsd-kind-icon">decode<wbr>Delegation<wbr>Node<span class="tsd-signature-symbol">(</span>encoded<span class="tsd-signature-symbol">: </span><a href="blockchain.html#queryresult" class="tsd-signature-type">QueryResult</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/delegation_delegationnode.delegationnode.html" class="tsd-signature-type">DelegationNode</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/delegation/DelegationDecoder.ts#L38">delegation/DelegationDecoder.ts:38</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/delegation/DelegationDecoder.ts#L68">delegation/DelegationDecoder.ts:68</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -123,7 +133,7 @@
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../classes/delegation_delegationnode.delegationnode.html" class="tsd-signature-type">DelegationNode</a>
 								<span class="tsd-signature-symbol"> | </span>
-								<span class="tsd-signature-type">undefined</span>
+								<span class="tsd-signature-type">null</span>
 							</h4>
 						</li>
 					</ul>
@@ -132,13 +142,13 @@
 					<a name="decoderootdelegation" class="tsd-anchor"></a>
 					<h3>decode<wbr>Root<wbr>Delegation</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">decode<wbr>Root<wbr>Delegation<span class="tsd-signature-symbol">(</span>encoded<span class="tsd-signature-symbol">: </span><a href="blockchain.html#queryresult" class="tsd-signature-type">QueryResult</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/delegation_delegationrootnode.delegationrootnode.html" class="tsd-signature-type">DelegationRootNode</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></li>
+						<li class="tsd-signature tsd-kind-icon">decode<wbr>Root<wbr>Delegation<span class="tsd-signature-symbol">(</span>encoded<span class="tsd-signature-symbol">: </span><a href="blockchain.html#queryresult" class="tsd-signature-type">QueryResult</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/delegation_delegationrootnode.delegationrootnode.html" class="tsd-signature-type">DelegationRootNode</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/delegation/DelegationDecoder.ts#L20">delegation/DelegationDecoder.ts:20</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/delegation/DelegationDecoder.ts#L24">delegation/DelegationDecoder.ts:24</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -149,7 +159,7 @@
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../classes/delegation_delegationrootnode.delegationrootnode.html" class="tsd-signature-type">DelegationRootNode</a>
 								<span class="tsd-signature-symbol"> | </span>
-								<span class="tsd-signature-type">undefined</span>
+								<span class="tsd-signature-type">null</span>
 							</h4>
 						</li>
 					</ul>
@@ -162,77 +172,8 @@
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="attestation.html">Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="attestationpresentation.html">Attestation<wbr>Presentation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="balance.html">Balance</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="blockchain.html">Blockchain</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="blockchainapiconnection.html">Blockchain<wbr>Api<wbr>Connection</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="ctype.html">CType</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="claim.html">Claim</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="config.html">Config</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="crypto.html">Crypto</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="did.html">DID</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation.html">Delegation</a>
-					</li>
 					<li class="current tsd-kind-external-module">
 						<a href="delegation_delegationdecoder.html">Delegation/<wbr>Delegation<wbr>Decoder</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationnode.html">Delegation/<wbr>Delegation<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationrootnode.html">Delegation/<wbr>Delegation<wbr>Root<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="errorhandling.html">Error<wbr>Handling</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="errorhandling_extrinsicerror.html">Error<wbr>Handling/<wbr>Extrinsic<wbr>Error</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="identity.html">Identity</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="kilt.html">Kilt</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="messaging.html">Messaging</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="requestforattestation.html">Request<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces.html">Type<wbr>Interfaces</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces_delegation.html">Type<wbr>Interfaces/<wbr>Delegation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces_requestforattestation.html">Type<wbr>Interfaces/<wbr>Request<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="utils.html">Utils</a>
 					</li>
 				</ul>
 			</nav>

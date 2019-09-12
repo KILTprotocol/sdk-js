@@ -60,36 +60,64 @@
 	<div class="row">
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
-				<p><img src="https://user-images.githubusercontent.com/1248214/57789522-600fcc00-7739-11e9-86d9-73d7032f40fc.png" alt=""></p>
-				<h1 id="kilt-testnet-mash-net-sdk">KILT Testnet (Mash-net) SDK</h1>
-				<p>The KILT SDK is a collection of classes and methods that application developers can utilize to interact with the KILT Network. The SDK is provided in Typescript.</p>
-				<p>Read the <a href="./docs/getting-started.md">getting started guide</a>, or browse the <a href="https://kiltprotocol.github.io/sdk-js/api">API documentation</a>.</p>
-				<h2 id="how-to-use">How to use</h2>
-				<p>Use within your project with <code>yarn add @kilt/sdk-js</code></p>
-				<h2 id="development-setup">Development setup</h2>
-				<p>You can use different SDK branches or versions, by linking it into your projects locally.  </p>
-				<p>Execute <code>yarn link</code> in the SDK and copy the command in the output, which should look like this:</p>
-				<p><code>yarn link &quot;@kiltprotocol/sdk-js&quot;</code></p>
-				<p>Go into your project folder and execute that second command.</p>
-				<p>The SDK is now symlinked in your projects <code>node_modules</code> folder</p>
-				<p>Before you see your changes from the SDK, you have to build it, by executing <code>yarn build</code>.</p>
-				<h3 id="removing-the-link">Removing the link</h3>
-				<p>Execute <code>yarn unlink &quot;@kiltprotocol/sdk-js&quot;</code> in the project folder.</p>
-				<p>After that execute <code>yarn install --check-files</code> to get the version from the registry back.</p>
-				<h2 id="release-deployment">Release / Deployment</h2>
-				<p>Deployment is triggered by a push to the master branch as a result to a release build.</p>
-				<p>To build a release, start the release build job for the SDK in <em>AWS CodeBuild</em>. See <a href="https://github.com/KILTprotocol/release-build-job/blob/master/README.md#usage">here</a> for more info on building releases.</p>
-				<p>As a result of a release build, a new version of the SDK is published to the NPM registry.</p>
-				<p><em>Note: Don&#39;t forget to reference the correct version in the client and services</em></p>
-				<h2 id="nb">NB</h2>
-				<p>Test coverage does not seem to be fail in all cases, except for testWatch.</p>
-				<h2 id="faq">FAQ</h2>
-				<h3 id="aws-build-fails">AWS build fails</h3>
-				<p>If the sdk build fails on AWS, please check the error log. Usually it says</p>
-				<pre><code><span class="hljs-selector-tag">npm</span> <span class="hljs-selector-tag">ERR</span>! <span class="hljs-selector-tag">publish</span> <span class="hljs-selector-tag">Failed</span> <span class="hljs-selector-tag">PUT</span> 403
-<span class="hljs-selector-tag">npm</span> <span class="hljs-selector-tag">ERR</span>! <span class="hljs-selector-tag">code</span> <span class="hljs-selector-tag">E403</span>
-<span class="hljs-selector-tag">npm</span> <span class="hljs-selector-tag">ERR</span>! <span class="hljs-selector-tag">You</span> <span class="hljs-selector-tag">cannot</span> <span class="hljs-selector-tag">publish</span> <span class="hljs-selector-tag">over</span> <span class="hljs-selector-tag">the</span> <span class="hljs-selector-tag">previously</span> <span class="hljs-selector-tag">published</span> <span class="hljs-selector-tag">versions</span>: 0<span class="hljs-selector-class">.0</span><span class="hljs-selector-class">.3</span>. : @<span class="hljs-keyword">kiltprotocol</span>/<span class="hljs-keyword">sdk</span>-<span class="hljs-keyword">js</span></code></pre><p>This is on purpose as a new push to master branch triggers a build, but should not automatically and unintended release a new version.</p>
-				<p>Please update package.json&#39;s version in order to publish a new version to the registry by AWS after pushing to master.</p>
+				<p><a href="https://kilt.io"><img src="https://user-images.githubusercontent.com/1248214/57789522-600fcc00-7739-11e9-86d9-73d7032f40fc.png" alt="">
+				</a></p>
+				<p>Data sovereignty and interoperability</p>
+				<h1 id="mash-net-sdk">Mash-Net SDK</h1>
+				<p>The open-source KILT SDK is written in TypeScript and enables you to quickly and easily build dApps around new business use cases. KILT is a protocol for self-sovereign data and interoperability built on top of the permissionless KILT blockchain. The SDK provides collection of classes and methods you can utilize to interact with the KILT Protocol.</p>
+				<ul>
+					<li><p><strong>Self-sovereign data.</strong> Have ownership of your digital and analog identities, with control over who your users share that data with. Providing that extra layer of flexiblity and security.</p>
+					</li>
+					<li><p><strong>Interoperability.</strong> Claim Types (CTYPEs) facilitate the adoption of standardised credential content structures.</p>
+					</li>
+				</ul>
+				<p>To learn more, checkout the KILT <a href="https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf">Whitepaper</a> or see our <a href="https://kilt.io/kilt-data-sovereignty-and-interoperability/">how it works</a> video.</p>
+				<h2 id="documentation">Documentation</h2>
+				<p><a href="https://kilt.io">KILT</a> documentation is provided in several guides and demos.</p>
+				<ul>
+					<li><a href="https://github.com/KILTprotocol/kilt-workshop-101">KILT workshop</a> 👈 Start here to get familiar with the basics</li>
+					<li><a href="https://github.com/KILTprotocol/sdk-js/blob/develop/docs/getting-started.md">Getting started guide</a> 👈 Start here if you&#39;d like to include KILT in your project</li>
+					<li><a href="https://kiltprotocol.github.io/sdk-js/api">API documentation</a></li>
+					<li><a href="https://kilt.io/developers-sub/kilt-demo-client/">Demo client</a></li>
+					<li><a href="https://github.com/KILTprotocol/demo-client">Demo client code</a></li>
+				</ul>
+				<p>To help improve, please see our <a href="https://github.com/KILTprotocol/sdk-js/blob/develop/docs/contribution-guide.md">contribution page</a>.</p>
+				<h2 id="how-to-install-the-sdk">How to install the SDK</h2>
+				<p>Install the KILT-SDK by running the following commands:</p>
+				<pre><code class="language-bash">
+    npm install @kiltprotocol/sdk-js
+</code></pre>
+				<p>Or with <code>yarn</code>:</p>
+				<pre><code class="language-bash">
+    yarn add @kiltprotocol/sdk-js
+</code></pre>
+				<h2 id="example">Example</h2>
+				<p>More examples can be found within our <a href="https://github.com/KILTprotocol/sdk-js/blob/develop/docs/getting-started.md">getting started guide</a>.</p>
+				<p>A claim type (CTYPE) can be credentials, of any kind, e.g. drivers license.</p>
+				<p>Building a claim must be done by the defined CTYPE respective fields.</p>
+				<p>Now we can easily create the KILT compliant claim. We have to include the full CType object, the raw claim object and the address of the owner/creator of the claim in the constructor:</p>
+				<pre><code class="language-TypeScript">
+
+    <span class="hljs-keyword">const</span> rawClaim = {
+     name: <span class="hljs-string">'Alice'</span>,
+     age: <span class="hljs-number">29</span>,
+     }
+
+     <span class="hljs-keyword">const</span> claim = <span class="hljs-keyword">new</span> Kilt.Claim(ctype, rawClaim, claimer)
+
+    Claim {
+    cType:
+     <span class="hljs-string">'0x5a9d939af9fb5423e3e283f16996438da635de8dc152b13d3a67f01e3d6b0fc0'</span>,
+    contents: { name: <span class="hljs-string">'Alice'</span>, age: <span class="hljs-number">29</span> },
+    owner: <span class="hljs-string">'5EvSHoZF23mZS4XKQBLdqMv7a7CRSANJmxn7XDu6hwoiK4Wz'</span> }
+
+</code></pre>
+				<h2 id="development-setup">Development Setup</h2>
+				<p><a href="https://github.com/KILTprotocol/sdk-js/blob/develop/docs/development-setup.md">Development Setup</a></p>
+				<h2 id="job-board">Job Board</h2>
+				<p>Check to see if we have any <a href="https://kilt.io/job-offers/">Job Offers</a></p>
+				<h2 id="license">License</h2>
+				<p><a href="https://github.com/KILTprotocol/sdk-js/blob/develop/LICENSE">License</a></p>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -102,7 +130,7 @@
 						<a href="modules/attestation.html">Attestation</a>
 					</li>
 					<li class=" tsd-kind-external-module">
-						<a href="modules/attestationpresentation.html">Attestation<wbr>Presentation</a>
+						<a href="modules/attestedclaim.html">Attested<wbr>Claim</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="modules/balance.html">Balance</a>
@@ -144,7 +172,7 @@
 						<a href="modules/errorhandling.html">Error<wbr>Handling</a>
 					</li>
 					<li class=" tsd-kind-external-module">
-						<a href="modules/errorhandling_extrinsicerror.html">Error<wbr>Handling/<wbr>Extrinsic<wbr>Error</a>
+						<a href="modules/errorhandling_extrinsicerrors.html">Error<wbr>Handling/<wbr>Extrinsic<wbr>Errors</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="modules/identity.html">Identity</a>
@@ -158,17 +186,32 @@
 					<li class=" tsd-kind-external-module">
 						<a href="modules/requestforattestation.html">Request<wbr>For<wbr>Attestation</a>
 					</li>
+					<li class=" ">
+						<a href="modules/sdk.html">SDK</a>
+					</li>
 					<li class=" tsd-kind-external-module">
-						<a href="modules/typeinterfaces.html">Type<wbr>Interfaces</a>
+						<a href="modules/typeinterfaces_attestation.html">Type<wbr>Interfaces/<wbr>Attestation</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/typeinterfaces_attestedclaim.html">Type<wbr>Interfaces/<wbr>Attested<wbr>Claim</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/typeinterfaces_ctype.html">Type<wbr>Interfaces/CType</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/typeinterfaces_claim.html">Type<wbr>Interfaces/<wbr>Claim</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="modules/typeinterfaces_delegation.html">Type<wbr>Interfaces/<wbr>Delegation</a>
 					</li>
 					<li class=" tsd-kind-external-module">
+						<a href="modules/typeinterfaces_publicidentity.html">Type<wbr>Interfaces/<wbr>Public<wbr>Identity</a>
+					</li>
+					<li class=" tsd-kind-external-module">
 						<a href="modules/typeinterfaces_requestforattestation.html">Type<wbr>Interfaces/<wbr>Request<wbr>For<wbr>Attestation</a>
 					</li>
 					<li class=" tsd-kind-external-module">
-						<a href="modules/utils.html">Utils</a>
+						<a href="modules/uuid.html">UUID</a>
 					</li>
 				</ul>
 			</nav>

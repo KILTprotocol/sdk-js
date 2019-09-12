@@ -62,6 +62,22 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Delegations are the building blocks of top-down trust structures in KILT. An Attester can inherit trust through delegation from another attester (&quot;top-down&quot;).
+						In order to model these trust hierarchies, a delegation is represented as a <strong>node</strong> in a <strong>delegation tree</strong>.</p>
+						<hr>
+						<p>A delegation object is stored on-chain, and can be revoked. A base node is created, a ID which may be used in a <a href="requestforattestation.html">RequestForAttestation</a>.</p>
+					</div>
+					<p>A delegation can and may restrict permissions.</p>
+					<p>Permissions:</p>
+					<ul>
+						<li>Delegate</li>
+						<li>Attest</li>
+					</ul>
+				</div>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
@@ -95,7 +111,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/delegation/Delegation.chain.ts#L32">delegation/Delegation.chain.ts:32</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/delegation/Delegation.chain.ts#L32">delegation/Delegation.chain.ts:32</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -118,7 +134,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/delegation/Delegation.chain.ts#L9">delegation/Delegation.chain.ts:9</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/delegation/Delegation.chain.ts#L15">delegation/Delegation.chain.ts:15</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -141,7 +157,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/delegation/Delegation.chain.ts#L25">delegation/Delegation.chain.ts:25</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/delegation/Delegation.chain.ts#L25">delegation/Delegation.chain.ts:25</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -162,77 +178,8 @@
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="attestation.html">Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="attestationpresentation.html">Attestation<wbr>Presentation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="balance.html">Balance</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="blockchain.html">Blockchain</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="blockchainapiconnection.html">Blockchain<wbr>Api<wbr>Connection</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="ctype.html">CType</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="claim.html">Claim</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="config.html">Config</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="crypto.html">Crypto</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="did.html">DID</a>
-					</li>
 					<li class="current tsd-kind-external-module">
 						<a href="delegation.html">Delegation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationdecoder.html">Delegation/<wbr>Delegation<wbr>Decoder</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationnode.html">Delegation/<wbr>Delegation<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationrootnode.html">Delegation/<wbr>Delegation<wbr>Root<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="errorhandling.html">Error<wbr>Handling</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="errorhandling_extrinsicerror.html">Error<wbr>Handling/<wbr>Extrinsic<wbr>Error</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="identity.html">Identity</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="kilt.html">Kilt</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="messaging.html">Messaging</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="requestforattestation.html">Request<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces.html">Type<wbr>Interfaces</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces_delegation.html">Type<wbr>Interfaces/<wbr>Delegation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces_requestforattestation.html">Type<wbr>Interfaces/<wbr>Request<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="utils.html">Utils</a>
 					</li>
 				</ul>
 			</nav>

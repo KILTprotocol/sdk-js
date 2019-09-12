@@ -62,6 +62,17 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>KILT participants can communicate via a 1:1 messaging system.</p>
+						<hr>
+						<p>All messages are <strong>encrypted</strong> with the encryption keys of the involved identities. Every time an actor sends data about an <a href="identity.html">Identity</a>, they have to sign the message to prove access to the corresponding private key.
+							<br>
+						The <a href="../classes/messaging.message.html">Message</a> class exposes methods to construct and verify messages.</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
@@ -117,7 +128,7 @@
 					<div class="tsd-signature tsd-kind-icon">Message<wbr>Body<span class="tsd-signature-symbol">:</span> <a href="../interfaces/messaging.irequestlegitimations.html" class="tsd-signature-type">IRequestLegitimations</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitlegitimations.html" class="tsd-signature-type">ISubmitLegitimations</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectlegitimations.html" class="tsd-signature-type">IRejectLegitimations</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestattestationforclaim.html" class="tsd-signature-type">IRequestAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitattestationforclaim.html" class="tsd-signature-type">ISubmitAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectattestationforclaim.html" class="tsd-signature-type">IRejectAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestclaimsforctypes.html" class="tsd-signature-type">IRequestClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitclaimsforctypes.html" class="tsd-signature-type">ISubmitClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iacceptclaimsforctypes.html" class="tsd-signature-type">IAcceptClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectclaimsforctypes.html" class="tsd-signature-type">IRejectClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestacceptdelegation.html" class="tsd-signature-type">IRequestAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitacceptdelegation.html" class="tsd-signature-type">ISubmitAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectacceptdelegation.html" class="tsd-signature-type">IRejectAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iinformcreatedelegation.html" class="tsd-signature-type">IInformCreateDelegation</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/messaging/Message.ts#L295">messaging/Message.ts:295</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/messaging/Message.ts#L316">messaging/Message.ts:316</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -129,77 +140,8 @@
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="attestation.html">Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="attestationpresentation.html">Attestation<wbr>Presentation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="balance.html">Balance</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="blockchain.html">Blockchain</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="blockchainapiconnection.html">Blockchain<wbr>Api<wbr>Connection</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="ctype.html">CType</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="claim.html">Claim</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="config.html">Config</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="crypto.html">Crypto</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="did.html">DID</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation.html">Delegation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationdecoder.html">Delegation/<wbr>Delegation<wbr>Decoder</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationnode.html">Delegation/<wbr>Delegation<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationrootnode.html">Delegation/<wbr>Delegation<wbr>Root<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="errorhandling.html">Error<wbr>Handling</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="errorhandling_extrinsicerror.html">Error<wbr>Handling/<wbr>Extrinsic<wbr>Error</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="identity.html">Identity</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="kilt.html">Kilt</a>
-					</li>
 					<li class="current tsd-kind-external-module">
 						<a href="messaging.html">Messaging</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="requestforattestation.html">Request<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces.html">Type<wbr>Interfaces</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces_delegation.html">Type<wbr>Interfaces/<wbr>Delegation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces_requestforattestation.html">Type<wbr>Interfaces/<wbr>Request<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="utils.html">Utils</a>
 					</li>
 				</ul>
 			</nav>

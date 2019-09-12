@@ -62,6 +62,17 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>A Decentralized Identifier (DID) is a new type of identifier that is globally unique, resolveable with high availability, and cryptographically verifiable. Although it&#39;s not mandatory in KILT, users can optionally create a DID and anchor it to the KILT blockchain.
+							<br>
+						Official DID specification: <a href="https://w3c-ccg.github.io/did-primer/" class="external">https://w3c-ccg.github.io/did-primer/</a>.</p>
+						<hr>
+						<p>The <a href="../classes/did.did-1.html">Did</a> class exposes methods to build, store and query decentralized identifiers.</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
@@ -110,7 +121,7 @@
 					<div class="tsd-signature tsd-kind-icon">IDENTIFIER_<wbr>PREFIX<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"did:kilt:"</span><span class="tsd-signature-symbol"> =&nbsp;&quot;did:kilt:&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/did/Did.ts#L12">did/Did.ts:12</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/did/Did.ts#L22">did/Did.ts:22</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -120,7 +131,7 @@
 					<div class="tsd-signature tsd-kind-icon">KEY_<wbr>TYPE_<wbr>ENCRYPTION<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"X25519Salsa20Poly1305Key2018"</span><span class="tsd-signature-symbol"> =&nbsp;&quot;X25519Salsa20Poly1305Key2018&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/did/Did.ts#L15">did/Did.ts:15</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/did/Did.ts#L25">did/Did.ts:25</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -130,7 +141,7 @@
 					<div class="tsd-signature tsd-kind-icon">KEY_<wbr>TYPE_<wbr>SIGNATURE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"Ed25519VerificationKey2018"</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Ed25519VerificationKey2018&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/did/Did.ts#L14">did/Did.ts:14</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/did/Did.ts#L24">did/Did.ts:24</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -140,7 +151,7 @@
 					<div class="tsd-signature tsd-kind-icon">SERVICE_<wbr>KILT_<wbr>MESSAGING<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"KiltMessagingService"</span><span class="tsd-signature-symbol"> =&nbsp;&quot;KiltMessagingService&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/did/Did.ts#L13">did/Did.ts:13</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/did/Did.ts#L23">did/Did.ts:23</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -151,13 +162,13 @@
 					<a name="decodedid" class="tsd-anchor"></a>
 					<h3>decode<wbr>Did</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">decode<wbr>Did<span class="tsd-signature-symbol">(</span>identifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, encoded<span class="tsd-signature-symbol">: </span><a href="blockchain.html#queryresult" class="tsd-signature-type">QueryResult</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/did.idid.html" class="tsd-signature-type">IDid</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></li>
+						<li class="tsd-signature tsd-kind-icon">decode<wbr>Did<span class="tsd-signature-symbol">(</span>identifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, encoded<span class="tsd-signature-symbol">: </span><a href="blockchain.html#queryresult" class="tsd-signature-type">QueryResult</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/did.idid.html" class="tsd-signature-type">IDid</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/did/Did.utils.ts#L10">did/Did.utils.ts:10</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/did/Did.utils.ts#L10">did/Did.utils.ts:10</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -171,7 +182,7 @@
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/did.idid.html" class="tsd-signature-type">IDid</a>
 								<span class="tsd-signature-symbol"> | </span>
-								<span class="tsd-signature-type">undefined</span>
+								<span class="tsd-signature-type">null</span>
 							</h4>
 						</li>
 					</ul>
@@ -186,7 +197,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/did/Did.utils.ts#L35">did/Did.utils.ts:35</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/did/Did.utils.ts#L34">did/Did.utils.ts:34</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -209,7 +220,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/did/Did.utils.ts#L29">did/Did.utils.ts:29</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/did/Did.utils.ts#L28">did/Did.utils.ts:28</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -226,13 +237,13 @@
 					<a name="querybyaddress" class="tsd-anchor"></a>
 					<h3>query<wbr>ByAddress</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">query<wbr>ByAddress<span class="tsd-signature-symbol">(</span>address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/did.idid.html" class="tsd-signature-type">IDid</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">query<wbr>ByAddress<span class="tsd-signature-symbol">(</span>address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/did.idid.html" class="tsd-signature-type">IDid</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/did/Did.chain.ts#L31">did/Did.chain.ts:31</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/did/Did.chain.ts#L31">did/Did.chain.ts:31</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -241,7 +252,7 @@
 									<h5>address: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/did.idid.html" class="tsd-signature-type">IDid</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/did.idid.html" class="tsd-signature-type">IDid</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -249,13 +260,13 @@
 					<a name="querybyidentifier" class="tsd-anchor"></a>
 					<h3>query<wbr>ByIdentifier</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">query<wbr>ByIdentifier<span class="tsd-signature-symbol">(</span>identifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/did.idid.html" class="tsd-signature-type">IDid</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">query<wbr>ByIdentifier<span class="tsd-signature-symbol">(</span>identifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/did.idid.html" class="tsd-signature-type">IDid</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/did/Did.chain.ts#L19">did/Did.chain.ts:19</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/did/Did.chain.ts#L19">did/Did.chain.ts:19</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -264,7 +275,7 @@
 									<h5>identifier: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/did.idid.html" class="tsd-signature-type">IDid</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/did.idid.html" class="tsd-signature-type">IDid</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -278,7 +289,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/did/Did.chain.ts#L43">did/Did.chain.ts:43</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/did/Did.chain.ts#L43">did/Did.chain.ts:43</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -301,7 +312,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/did/Did.chain.ts#L52">did/Did.chain.ts:52</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/did/Did.chain.ts#L52">did/Did.chain.ts:52</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -325,77 +336,8 @@
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="attestation.html">Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="attestationpresentation.html">Attestation<wbr>Presentation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="balance.html">Balance</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="blockchain.html">Blockchain</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="blockchainapiconnection.html">Blockchain<wbr>Api<wbr>Connection</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="ctype.html">CType</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="claim.html">Claim</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="config.html">Config</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="crypto.html">Crypto</a>
-					</li>
 					<li class="current tsd-kind-external-module">
 						<a href="did.html">DID</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation.html">Delegation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationdecoder.html">Delegation/<wbr>Delegation<wbr>Decoder</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationnode.html">Delegation/<wbr>Delegation<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationrootnode.html">Delegation/<wbr>Delegation<wbr>Root<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="errorhandling.html">Error<wbr>Handling</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="errorhandling_extrinsicerror.html">Error<wbr>Handling/<wbr>Extrinsic<wbr>Error</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="identity.html">Identity</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="kilt.html">Kilt</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="messaging.html">Messaging</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="requestforattestation.html">Request<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces.html">Type<wbr>Interfaces</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces_delegation.html">Type<wbr>Interfaces/<wbr>Delegation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces_requestforattestation.html">Type<wbr>Interfaces/<wbr>Request<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="utils.html">Utils</a>
 					</li>
 				</ul>
 			</nav>

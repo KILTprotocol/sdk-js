@@ -62,6 +62,15 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Blockchain Api Connection enables the building and accessing of the KILT <a href="blockchain.html">Blockchain</a> connection. In which it keeps one connection open and allows to reuse the connection for all <a href="blockchain.html">Blockchain</a> related tasks.</p>
+						<hr>
+						<p>Other modules can access the <a href="blockchain.html">Blockchain</a> as such: <code>const blockchain = await getCached()</code>.</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
@@ -70,7 +79,6 @@
 							<h3>Variables</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="blockchainapiconnection.html#default_ws_address" class="tsd-kind-icon">DEFAULT_<wbr>WS_<wbr>ADDRESS</a></li>
-								<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="blockchainapiconnection.html#instance" class="tsd-kind-icon">instance</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -78,6 +86,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="blockchainapiconnection.html#buildconnection" class="tsd-kind-icon">build<wbr>Connection</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="blockchainapiconnection.html#getcached" class="tsd-kind-icon">get<wbr>Cached</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="blockchainapiconnection.html#getcached-1" class="tsd-kind-icon">get<wbr>Cached</a></li>
 							</ul>
 						</section>
 					</div>
@@ -91,17 +100,7 @@
 					<div class="tsd-signature tsd-kind-icon">DEFAULT_<wbr>WS_<wbr>ADDRESS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"ws://127.0.0.1:9944"</span><span class="tsd-signature-symbol"> =&nbsp;&quot;ws://127.0.0.1:9944&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/blockchainApiConnection/BlockchainApiConnection.ts#L10">blockchainApiConnection/BlockchainApiConnection.ts:10</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-external-module">
-					<a name="instance" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagLet">Let</span> instance</h3>
-					<div class="tsd-signature tsd-kind-icon">instance<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/blockchain.iblockchainapi.html" class="tsd-signature-type">IBlockchainApi</a><span class="tsd-signature-symbol">&gt;</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/blockchainApiConnection/BlockchainApiConnection.ts#L12">blockchainApiConnection/BlockchainApiConnection.ts:12</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/blockchainApiConnection/BlockchainApiConnection.ts#L17">blockchainApiConnection/BlockchainApiConnection.ts:17</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -118,7 +117,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/blockchainApiConnection/BlockchainApiConnection.ts#L31">blockchainApiConnection/BlockchainApiConnection.ts:31</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/blockchainApiConnection/BlockchainApiConnection.ts#L29">blockchainApiConnection/BlockchainApiConnection.ts:29</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -141,7 +140,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/085a606/src/blockchainApiConnection/BlockchainApiConnection.ts#L22">blockchainApiConnection/BlockchainApiConnection.ts:22</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/blockchainApiConnection/BlockchainApiConnection.ts#L40">blockchainApiConnection/BlockchainApiConnection.ts:40</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -154,6 +153,23 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="getcached-1" class="tsd-anchor"></a>
+					<h3>get<wbr>Cached</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Cached<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/253801d/src/blockchainApiConnection/__mocks__/BlockchainApiConnection.ts#L12">blockchainApiConnection/__mocks__/BlockchainApiConnection.ts:12</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
 			</section>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -162,77 +178,8 @@
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="attestation.html">Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="attestationpresentation.html">Attestation<wbr>Presentation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="balance.html">Balance</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="blockchain.html">Blockchain</a>
-					</li>
 					<li class="current tsd-kind-external-module">
 						<a href="blockchainapiconnection.html">Blockchain<wbr>Api<wbr>Connection</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="ctype.html">CType</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="claim.html">Claim</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="config.html">Config</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="crypto.html">Crypto</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="did.html">DID</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation.html">Delegation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationdecoder.html">Delegation/<wbr>Delegation<wbr>Decoder</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationnode.html">Delegation/<wbr>Delegation<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="delegation_delegationrootnode.html">Delegation/<wbr>Delegation<wbr>Root<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="errorhandling.html">Error<wbr>Handling</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="errorhandling_extrinsicerror.html">Error<wbr>Handling/<wbr>Extrinsic<wbr>Error</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="identity.html">Identity</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="kilt.html">Kilt</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="messaging.html">Messaging</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="requestforattestation.html">Request<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces.html">Type<wbr>Interfaces</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces_delegation.html">Type<wbr>Interfaces/<wbr>Delegation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="typeinterfaces_requestforattestation.html">Type<wbr>Interfaces/<wbr>Request<wbr>For<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="utils.html">Utils</a>
 					</li>
 				</ul>
 			</nav>
@@ -241,14 +188,14 @@
 					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
 						<a href="blockchainapiconnection.html#default_ws_address" class="tsd-kind-icon">DEFAULT_<wbr>WS_<wbr>ADDRESS</a>
 					</li>
-					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
-						<a href="blockchainapiconnection.html#instance" class="tsd-kind-icon">instance</a>
-					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="blockchainapiconnection.html#buildconnection" class="tsd-kind-icon">build<wbr>Connection</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="blockchainapiconnection.html#getcached" class="tsd-kind-icon">get<wbr>Cached</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="blockchainapiconnection.html#getcached-1" class="tsd-kind-icon">get<wbr>Cached</a>
 					</li>
 				</ul>
 			</nav>
