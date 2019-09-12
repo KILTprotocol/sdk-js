@@ -1,5 +1,15 @@
 /**
+ * Attestations are used to certify [[Claim]] objects, which are then written on the [[Blockchain]].
+ * ***
+ *  Attestation issued by the Attester is sent to and stored with the claimer. We call these [[AttestedClaim]]s "Credentials".
+ *
+ *  Attestation objects are stored on a map within the [[Blockchain]], with the claimHash as a key and a tuple of [[CType]] hash, account, delegationId and revoked flag. The Attester can revoke a [[Claim]].
  * @module Attestation
+ * @preferred
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
@@ -11,13 +21,17 @@ import { revoke, query, store } from './Attestation.chain'
 const log = factory.getLogger('Attestation')
 
 export default class Attestation implements IAttestation {
-  public static async query(claimHash: string) {
+  public static async query(claimHash: string): Promise<Attestation | null> {
     return query(claimHash)
   }
 
-  public static async revoke(claimHash: string, identity: Identity) {
+  public static async revoke(
+    claimHash: string,
+    identity: Identity
+  ): Promise<TxStatus> {
     return revoke(claimHash, identity)
   }
+
   /**
    * Creates a new instance of this Attestation class from the given interface.
    */
@@ -32,7 +46,7 @@ export default class Attestation implements IAttestation {
   public revoked: IAttestation['revoked']
   public delegationId?: IAttestation['delegationId']
 
-  constructor(
+  public constructor(
     requestForAttestation: IRequestForAttestation,
     attester: Identity,
     revoked = false
@@ -44,7 +58,7 @@ export default class Attestation implements IAttestation {
     this.revoked = revoked
   }
 
-  public async store(identity: Identity) {
+  public async store(identity: Identity): Promise<TxStatus> {
     return store(this, identity)
   }
 
@@ -54,10 +68,10 @@ export default class Attestation implements IAttestation {
 
   public async verify(claimHash: string = this.claimHash): Promise<boolean> {
     // 1) Query attestations for claimHash
-    const attestation: Attestation | undefined = await query(claimHash)
+    const attestation: Attestation | null = await query(claimHash)
     // 2) check attestation for being valied, having the correct owner and not being revoked
     const attestationValid: boolean =
-      attestation !== undefined &&
+      attestation !== null &&
       attestation.owner === this.owner &&
       !attestation.revoked
     if (!attestationValid) {

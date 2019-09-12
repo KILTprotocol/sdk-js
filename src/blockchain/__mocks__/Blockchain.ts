@@ -4,7 +4,7 @@
  */
 
 /**
- * Dummy comment, so that typedoc ignores this file
+ * Dummy comment needed for correct doc display, do not remove
  */
 const blockchain: any = {
   __mockResultHash: '',
@@ -88,7 +88,6 @@ const blockchain: any = {
   listenToBalanceChanges: jest.fn(),
   makeTransfer: jest.fn(),
   submitTx: jest.fn((identity, tx) => {
-    // if (statusCb) statusCb(new ExtrinsicStatus('Finalized'))
     return Promise.resolve(blockchain.__mockResultHash)
   }),
   getNonce: jest.fn(),

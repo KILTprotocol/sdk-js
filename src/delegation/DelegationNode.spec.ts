@@ -51,14 +51,13 @@ describe('Delegation', () => {
             ['myRootId', null, 'myAccount', 1, false]
           )
           return Promise.resolve(tuple)
-        } else {
-          const tuple = new Tuple(
-            // (root-id, parent-id?, account, permissions, revoked)
-            [Text, Option, Text, U32, Bool],
-            ['myRootId', null, 'myAccount', 1, true]
-          )
-          return Promise.resolve(tuple)
         }
+        const tuple = new Tuple(
+          // (root-id, parent-id?, account, permissions, revoked)
+          [Text, Option, Text, U32, Bool],
+          ['myRootId', null, 'myAccount', 1, true]
+        )
+        return Promise.resolve(tuple)
       }
     )
 
@@ -85,7 +84,7 @@ describe('Delegation', () => {
     const identityAlice = Identity.buildFromURI('//Alice')
 
     require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
-      rootId => {
+      () => {
         const tuple = new Tuple(
           // Root-Delegation: root-id -> (ctype-hash, account, revoked)
           [Text, Text, Bool],

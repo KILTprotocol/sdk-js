@@ -1,5 +1,13 @@
 /**
+ * Requests for attestation are a core building block of the KILT SDK.
+ * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
+ * ***
+ * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester. It's signed by the claimer, to make it tamper proof (`claimerSignature` is a property of [[Claim]]). A RequestForAttestation also supports hiding of claim data during a credential presentation.
  * @module RequestForAttestation
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import { v4 as uuid } from 'uuid'
 import { IDelegationBaseNode } from '..'
@@ -20,7 +28,7 @@ import IRequestForAttestation, {
   NonceHash,
 } from '../types/RequestForAttestation'
 
-function hashNonceValue(nonce: string, value: any) {
+function hashNonceValue(nonce: string, value: any): string {
   return hashObjectAsStr(value, nonce)
 }
 
@@ -34,9 +42,10 @@ function generateHash(value: any): NonceHash {
 
 function generateHashTree(contents: object): object {
   const result = {}
-  for (const key of Object.keys(contents)) {
+
+  Object.keys(contents).forEach(key => {
     result[key] = generateHash(contents[key])
-  }
+  })
 
   return result
 }
@@ -70,7 +79,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
   public delegationId?: IDelegationBaseNode['id']
 
-  constructor(
+  public constructor(
     claim: IClaim,
     legitimations: AttestedClaim[],
     identity: Identity,
@@ -90,9 +99,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.claimerSignature = this.sign(identity)
   }
 
-  public removeClaimProperties(properties: string[]) {
+  public removeClaimProperties(properties: string[]): void {
     properties.forEach(key => {
-      if (!this.claimHashTree.hasOwnProperty(key)) {
+      if (!this.claimHashTree[key]) {
         throw Error(`Property '${key}' not found in claim`)
       }
       delete this.claim.contents[key]
@@ -100,7 +109,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     })
   }
 
-  public removeClaimOwner() {
+  public removeClaimOwner(): void {
     delete this.claim.owner
     delete this.claimOwner.nonce
   }
@@ -129,19 +138,19 @@ export default class RequestForAttestation implements IRequestForAttestation {
     }
 
     // check all hashes for provided claim properties
-    for (const key of Object.keys(this.claim.contents)) {
-      const value: any = this.claim.contents[key]
-      if (!this.claimHashTree.hasOwnProperty(key)) {
+    Object.keys(this.claim.contents).forEach(key => {
+      const value = this.claim.contents[key]
+      if (!this.claimHashTree[key]) {
         throw Error(`Property '${key}' not in claim hash tree`)
       }
       const hashed: NonceHash = this.claimHashTree[key]
       if (hashed.hash !== hashNonceValue(hashed.nonce, value)) {
         throw Error(`Invalid hash for property '${key}' in claim hash tree`)
       }
-    }
+    })
 
     // check legitimations
-    let valid: boolean = true
+    let valid = true
     if (this.legitimations) {
       this.legitimations.forEach(legitimation => {
         valid = valid && legitimation.verifyData()
@@ -163,9 +172,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
     const result: Uint8Array[] = []
     result.push(coToUInt8(this.claimOwner.hash))
     result.push(coToUInt8(this.ctypeHash.hash))
-    for (const key of Object.keys(this.claimHashTree)) {
+    Object.keys(this.claimHashTree).forEach(key => {
       result.push(coToUInt8(this.claimHashTree[key].hash))
-    }
+    })
     if (this.legitimations) {
       this.legitimations.forEach(legitimation => {
         result.push(coToUInt8(legitimation.getHash()))
@@ -185,7 +194,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return u8aToHex(root)
   }
 
-  private sign(identity: Identity) {
+  private sign(identity: Identity): string {
     return identity.signStr(this.hash)
   }
 }

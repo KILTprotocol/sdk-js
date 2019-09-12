@@ -1,7 +1,22 @@
 /**
+ * Delegations are the building blocks of top-down trust structures in KILT. An Attester can inherit trust through delegation from another attester ("top-down").
+ * In order to model these trust hierarchies, a delegation is represented as a **node** in a **delegation tree**.
+ * ***
+ * A delegation object is stored on-chain, and can be revoked. A base node is created, a ID which may be used in a [[RequestForAttestation]].
+ *
+ * A delegation can and may restrict permissions.
+ *
+ * Permissions:
+ *
+ *  * Delegate
+ *  * Attest
  * @module Delegation
+ * @preferred
  */
-import { QueryResult } from '../blockchain/Blockchain'
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
+ */
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'
@@ -16,6 +31,7 @@ import {
   getChildIds,
 } from './Delegation.chain'
 import { query } from '../attestation/Attestation.chain'
+import { QueryResult } from '../blockchain/Blockchain'
 
 const log = factory.getLogger('DelegationBaseNode')
 
@@ -45,10 +61,10 @@ export default abstract class DelegationBaseNode
   public abstract getRoot(): Promise<DelegationRootNode>
 
   /**
-   * @description Fetches the parent delegation node. If the parent node is [undefined] this node is a direct child of the root node.
-   * @returns promise containing the parent node or [undefined]
+   * @description Fetches the parent delegation node. If the parent node is [null] this node is a direct child of the root node.
+   * @returns promise containing the parent node or [null]
    */
-  public abstract getParent(): Promise<DelegationBaseNode | undefined>
+  public abstract getParent(): Promise<DelegationBaseNode | null>
 
   /**
    * @description Fetches the children nodes of the current node.
@@ -60,9 +76,7 @@ export default abstract class DelegationBaseNode
     const queryResults: CodecWithId[] = await fetchChildren(childIds)
     const children: DelegationNode[] = queryResults
       .map((codec: CodecWithId) => {
-        const decoded: DelegationNode | undefined = this.decodeChildNode(
-          codec.codec
-        )
+        const decoded = this.decodeChildNode(codec.codec)
         if (decoded) {
           decoded.id = codec.id
         }
@@ -70,7 +84,7 @@ export default abstract class DelegationBaseNode
       })
       .filter(
         (value): value is DelegationNode => {
-          return value !== undefined
+          return value !== null
         }
       )
     log.info(`children: ${JSON.stringify(children)}`)
@@ -117,5 +131,5 @@ export default abstract class DelegationBaseNode
    */
   protected abstract decodeChildNode(
     queryResult: QueryResult
-  ): DelegationNode | undefined
+  ): DelegationNode | null
 }

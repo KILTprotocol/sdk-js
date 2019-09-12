@@ -1,5 +1,15 @@
 /**
+ * A Decentralized Identifier (DID) is a new type of identifier that is globally unique, resolveable with high availability, and cryptographically verifiable. Although it's not mandatory in KILT, users can optionally create a DID and anchor it to the KILT blockchain.
+ * <br>
+ * Official DID specification: [[https://w3c-ccg.github.io/did-primer/]].
+ * ***
+ * The [[Did]] class exposes methods to build, store and query decentralized identifiers.
  * @module DID
+ * @preferred
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
@@ -30,7 +40,7 @@ export interface IDid {
   /**
    * The document store reference.
    */
-  documentStore?: string
+  documentStore: string | null
 }
 
 export default class Did implements IDid {
@@ -38,9 +48,9 @@ export default class Did implements IDid {
    * @description Queries the [Did] from chain using the [identifier]
    *
    * @param identifier the DIDs identifier
-   * @returns promise containing the [[Did]] or [undefined]
+   * @returns promise containing the [[Did]] or [null]
    */
-  public static queryByIdentifier(identifier: string) {
+  public static queryByIdentifier(identifier: string): Promise<IDid | null> {
     return queryByIdentifier(identifier)
   }
 
@@ -48,9 +58,9 @@ export default class Did implements IDid {
    * @description Queries the [Did] from chain using the [address]
    *
    * @param address the DIDs address
-   * @returns promise containing the [[Did]] or [undefined]
+   * @returns promise containing the [[Did]] or [null]
    */
-  public static queryByAddress(address: string) {
+  public static queryByAddress(address: string): Promise<IDid | null> {
     return queryByAddress(address)
   }
 
@@ -60,7 +70,7 @@ export default class Did implements IDid {
    * @param identity the identity for which to delete the [[Did]]
    * @returns promise containing the [[TxStatus]]
    */
-  public static async remove(identity: Identity) {
+  public static async remove(identity: Identity): Promise<TxStatus> {
     log.debug(`Create tx for 'did.remove'`)
     return remove(identity)
   }
@@ -85,13 +95,13 @@ export default class Did implements IDid {
   public readonly identifier: string
   public readonly publicBoxKey: string
   public readonly publicSigningKey: string
-  public readonly documentStore?: string
+  public readonly documentStore: string | null
 
   private constructor(
     identifier: string,
     publicBoxKey: string,
     publicSigningKey: string,
-    documentStore?: string
+    documentStore: string | null = null
   ) {
     this.identifier = identifier
     this.publicBoxKey = publicBoxKey
@@ -121,17 +131,17 @@ export default class Did implements IDid {
       id: this.identifier,
       authentication: {
         type: 'Ed25519SignatureAuthentication2018',
-        publicKey: [this.identifier + '#key-1'],
+        publicKey: [`${this.identifier}#key-1`],
       },
       publicKey: [
         {
-          id: this.identifier + '#key-1',
+          id: `${this.identifier}#key-1`,
           type: KEY_TYPE_SIGNATURE,
           controller: this.identifier,
           publicKeyHex: this.publicSigningKey,
         },
         {
-          id: this.identifier + '#key-2',
+          id: `${this.identifier}#key-2`,
           type: KEY_TYPE_ENCRYPTION,
           controller: this.identifier,
           publicKeyHex: this.publicBoxKey,

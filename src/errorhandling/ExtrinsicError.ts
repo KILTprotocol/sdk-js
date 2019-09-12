@@ -1,5 +1,10 @@
 /**
- * @module ErrorHandling/ExtrinsicError
+ * ExtrinsicErrors are KILT-specific errors, with associated codes and descriptions.
+ * @module ErrorHandling/ExtrinsicErrors
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 export enum ErrorCode {
   ERROR_CTYPE_NOT_FOUND = 1001,
@@ -29,8 +34,11 @@ export enum ErrorCode {
 }
 
 export class ExtrinsicError extends Error {
-  constructor(public errorCode: ErrorCode, message: string) {
+  public errorCode: ErrorCode
+
+  public constructor(errorCode: ErrorCode, message: string) {
     super(message)
+    this.errorCode = errorCode
   }
 }
 
@@ -150,6 +158,6 @@ const errorsByCode: ExtrinsicError[] = []
   errorsByCode[value.errorCode] = value
 })
 
-export function errorForCode(errorCode: number) {
+export function errorForCode(errorCode: number): ExtrinsicError {
   return errorsByCode[errorCode]
 }

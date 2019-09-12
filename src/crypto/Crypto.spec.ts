@@ -85,7 +85,7 @@ describe('Crypto', () => {
   // https://polkadot.js.org/common/examples/util-crypto/01_encrypt_decrypt_message_nacl/
   it('should encrypt and decrypt symmetrical using random secret key (string)', () => {
     const secret =
-      '0x000102030405060708090A0B0C0D0E0F' + '101112131415161718191A1B1C1D1E1F'
+      '0x000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F'
 
     const data = Crypto.encryptSymmetricAsStr(messageStr, secret)
     expect(data).not.toBeFalsy()

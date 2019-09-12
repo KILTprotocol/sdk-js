@@ -26,24 +26,25 @@ export async function store(
   > = await blockchain.api.tx.ctype.add(ctype.hash)
   const txStatus: TxStatus = await blockchain.submitTx(identity, tx)
   if (txStatus.type === 'Finalised') {
-    ctype.owner = identity.address
+    txStatus.payload = {
+      ...ctype,
+      owner: identity.address,
+    }
   }
   return txStatus
 }
 
+function decode(encoded: QueryResult): IPublicIdentity['address'] | null {
+  return encoded && encoded.encodedLength ? encoded.toString() : null
+}
+
 export async function getOwner(
   ctypeHash: ICType['hash']
-): Promise<IPublicIdentity['address'] | undefined> {
+): Promise<IPublicIdentity['address'] | null> {
   const blockchain = await getCached()
   const encoded: QueryResult = await blockchain.api.query.ctype.cTYPEs(
     ctypeHash
   )
-  const queriedCTypeAccount: IPublicIdentity['address'] | undefined = decode(
-    encoded
-  )
+  const queriedCTypeAccount = decode(encoded)
   return queriedCTypeAccount
-}
-
-function decode(encoded: QueryResult): IPublicIdentity['address'] | undefined {
-  return encoded && encoded.encodedLength ? encoded.toString() : undefined
 }

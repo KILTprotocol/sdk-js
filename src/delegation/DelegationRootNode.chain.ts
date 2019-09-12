@@ -5,8 +5,8 @@ import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { CodecResult } from '@polkadot/api/promise/types'
 
 import { getCached } from '../blockchainApiConnection'
-import { decodeRootDelegation } from '../delegation/DelegationDecoder'
-import DelegationRootNode from '../delegation/DelegationRootNode'
+import { decodeRootDelegation } from './DelegationDecoder'
+import DelegationRootNode from './DelegationRootNode'
 import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import { IDelegationRootNode } from '../types/Delegation'
@@ -28,7 +28,7 @@ export async function store(
 
 export async function query(
   delegationId: IDelegationRootNode['id']
-): Promise<DelegationRootNode | undefined> {
+): Promise<DelegationRootNode | null> {
   const blockchain = await getCached()
   const root = decodeRootDelegation(
     await blockchain.api.query.delegation.root(delegationId)
