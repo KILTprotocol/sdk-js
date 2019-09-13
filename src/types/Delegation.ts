@@ -1,6 +1,9 @@
 /**
  * @module TypeInterfaces/Delegation
  */
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import IPublicIdentity from './PublicIdentity'
 import ICType from './CType'
 

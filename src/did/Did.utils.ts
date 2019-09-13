@@ -1,6 +1,10 @@
 /**
  * @module DID
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import { hexToU8a, u8aToString } from '@polkadot/util'
 
 import IPublicIdentity from '../types/PublicIdentity'
