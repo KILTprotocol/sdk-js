@@ -20,6 +20,7 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 export default class AttestedClaim implements IAttestedClaim {
   /**
    * [STATIC] Creates a new [[AttestedClaim]] instance from the given interface.
+   *
    * @param obj - The base object from which to create the attested claim.
    * @returns A new attested claim.
    * @example
@@ -136,7 +137,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * Builds a presentation. A presentation is a custom view of the [[AttestedClaim]], in which the claimer controls what information should be shown.
    *
    * @param excludedClaimProperties - An array of [[Claim]] properties to **exclude**.
-   * @param excludeIdentity - Whether the claimer's identity should be **excluded** from the presentation.
+   * @param excludeIdentity - Whether the claimer's identity should be **excluded** from the presentation. By default, the claimer's identity is included (`excludeIdentity` is `false`).
    * @returns The newly created presentation.
    * @example
    * ```javascript
