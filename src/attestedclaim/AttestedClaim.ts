@@ -81,7 +81,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * (ASYNC) Verifies whether this attested claim is valid. It is valid if:
    * * the data is valid (see [[verifyData]]);
    * and
-   * * the [[Attestation]] object associated to this attestated claim is valid (see [[Attestation.verify]], where the **chain** is queried).
+   * * the [[Attestation]] object for this attestated claim is valid (see [[Attestation.verify]], where the **chain** is queried).
    *
    * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
    *
@@ -104,7 +104,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * Verifies whether the data of this attested claim is valid. It is valid if:
    * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[RequestForAttestation.verifyData]]);
    * and
-   * * the hash of the [[RequestForAttestation]] object associated to this attested claim, and the hash of the [[Claim]] associated to this attestated claim are the same.
+   * * the hash of the [[RequestForAttestation]] object for this attested claim, and the hash of the [[Claim]] for this attestated claim are the same.
    *
    * @returns Whether the attestated claim's data is valid.
    * @example
