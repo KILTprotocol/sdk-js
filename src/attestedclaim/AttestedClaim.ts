@@ -1,15 +1,14 @@
 /**
  * In KILT, the AttestedClaim is a **credential**, which a Claimer can store locally and share with Verifiers as they wish.
- * ***
- * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[AttestedClaim]] object. This [[AttestedClaim]] also contains the original request for attestation.
- * <br>
- * RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
+ *
+ * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[AttestedClaim]] object. This [[AttestedClaim]] also contains the original request for attestation. RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
+ *
  * @module AttestedClaim
  * @preferred
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import cloneDeep from 'lodash/cloneDeep'
 import Attestation from '../attestation/Attestation'
@@ -20,7 +19,7 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
-   * @description (STATIC) Creates a new [[AttestedClaim]] instance from the given interface.
+   * (STATIC) Creates a new [[AttestedClaim]] instance from the given interface.
    * @param obj - The base object from which to create the attested claim.
    * @returns A new attested claim.
    * @example
@@ -42,7 +41,8 @@ export default class AttestedClaim implements IAttestedClaim {
   public attestation: Attestation
 
   /**
-   * @description Builds a new [[AttestedClaim]] instance.
+   * Builds a new [[AttestedClaim]] instance.
+   *
    * @param request - A request for attestation, usually sent by a claimer.
    * @param attestation - The attestation to base the [[AttestedClaim]] on.
    * @example Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
@@ -78,12 +78,13 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * @description (ASYNC) Verifies whether this attested claim is valid. It is valid if:
+   * (ASYNC) Verifies whether this attested claim is valid. It is valid if:
    * * the data is valid (see [[verifyData]]);
    * and
    * * the [[Attestation]] object associated to this attestated claim is valid (see [[Attestation.verify]], where the **chain** is queried).
    *
    * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
+   *
    * @returns A promise containing whether this attested claim is valid.
    * @example
    * ```javascript
@@ -100,10 +101,11 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * @description Verifies whether the data of this attested claim is valid. It is valid if:
+   * Verifies whether the data of this attested claim is valid. It is valid if:
    * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[RequestForAttestation.verifyData]]);
    * and
    * * the hash of the [[RequestForAttestation]] object associated to this attested claim, and the hash of the [[Claim]] associated to this attestated claim are the same.
+   *
    * @returns Whether the attestated claim's data is valid.
    * @example
    * ```javascript
@@ -118,8 +120,9 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * @description Gets the hash of the claim that corresponds to this attestation.
-   * @returns claimHash The hash of the claim that corresponds to this attestation.
+   * Gets the hash of the claim that corresponds to this attestation.
+   *
+   * @returns The hash of the claim that corresponds to this attestation (claimHash).
    * @example
    * ```javascript
    * const claimHash = attestation.getHash();
@@ -130,7 +133,8 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * @description Builds a presentation. A presentation is a custom view of the [[AttestedClaim]], in which the claimer controls what information should be shown.
+   * Builds a presentation. A presentation is a custom view of the [[AttestedClaim]], in which the claimer controls what information should be shown.
+   *
    * @param excludedClaimProperties - An array of [[Claim]] properties to **exclude**.
    * @param excludeIdentity - Whether the claimer's identity should be **excluded** from the presentation.
    * @returns The newly created presentation.
