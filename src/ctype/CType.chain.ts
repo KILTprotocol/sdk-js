@@ -1,6 +1,10 @@
 /**
  * @module CType
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import { CodecResult } from '@polkadot/api/promise/types'
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 

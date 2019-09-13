@@ -1,6 +1,10 @@
 /**
  * @module CType
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 // TODO: Generate from actual CTypeModel
 // TODO: The SDK is not really responsible for this, since it is editor specific
 export const CTypeInputModel = {
