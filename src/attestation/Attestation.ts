@@ -133,7 +133,7 @@ export default class Attestation implements IAttestation {
    *
    * // store the attestation on chain
    * attestation.store(attester).then(() => {
-   *    // ... attestation was successfully stored so we could for exampl create an AttestedClaim
+   *    // the attestation was successfully stored so we could for example create an AttestedClaim
    * }).catch(e => {
    *    console.log(e);
    * }).finally(() => {
