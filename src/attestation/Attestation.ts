@@ -31,9 +31,9 @@ export default class Attestation implements IAttestation {
   /**
    * Builds a new [[Attestation]] instance.
    *
-   * @param requestForAttestation A request for attestation, usually sent by a claimer.
-   * @param attester The identity of the attester.
-   * @param revoked A flag indicating whether the attestation should be revoked.
+   * @param requestForAttestation - A request for attestation, usually sent by a claimer.
+   * @param attester - The identity of the attester.
+   * @param revoked - A flag indicating whether the attestation should be revoked.
    * @example
    * ```javascript
    * // create a new attestation
@@ -60,7 +60,7 @@ export default class Attestation implements IAttestation {
   /**
    * [STATIC] [ASYNC] Queries the chain about a given attestation, by `claimHash`.
    *
-   * @param claimHash The hash of the claim that corresponds to the attestation to query.
+   * @param claimHash - The hash of the claim that corresponds to the attestation to query.
    * @returns A promise containing the [[Attestation]] or `null`.
    * @example
    * ```javascript
@@ -76,8 +76,8 @@ export default class Attestation implements IAttestation {
   /**
    * [STATIC] [ASYNC] Revokes an attestation.
    *
-   * @param claimHash The hash of the claim that corresponds to the attestation to revoke.
-   * @param identity The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
+   * @param claimHash - The hash of the claim that corresponds to the attestation to revoke.
+   * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example
    * ```javascript
@@ -96,7 +96,7 @@ export default class Attestation implements IAttestation {
   /**
    * [STATIC] Creates a new [[Attestation]] instance from the given interface.
    *
-   * @param obj The base object from which to create the attestation.
+   * @param obj - The base object from which to create the attestation.
    * @returns A new attestation.
    * @example
    * ```javascript
@@ -124,7 +124,7 @@ export default class Attestation implements IAttestation {
   /**
    * [ASYNC] Stores the attestation on chain.
    *
-   * @param identity The identity used to store the attestation.
+   * @param identity - The identity used to store the attestation.
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * ```javascript
@@ -151,7 +151,7 @@ export default class Attestation implements IAttestation {
   /**
    * [ASYNC] Revokes the attestation.
    *
-   * @param identity The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
+   * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example
    * ```javascript
@@ -169,7 +169,7 @@ export default class Attestation implements IAttestation {
   /**
    * [ASYNC] Queries an attestation from the chain and checks its validity.
    *
-   * @param claimHash The hash of the claim that corresponds to the attestation to check, defaults to **this** `claimHash`.
+   * @param claimHash - The hash of the claim that corresponds to the attestation to check, defaults to **this** `claimHash`.
    * @returns A promise containing the boolean `attestationValid`.
    * @example
    * ```javascript
@@ -196,7 +196,7 @@ export default class Attestation implements IAttestation {
    * * and has the correct owner;
    * * and is not revoked.
    *
-   * @param attestation The attestation to check.
+   * @param attestation - The attestation to check.
    * @returns Whether the attestation is valid.
    */
   private isAttestationValid(attestation: Attestation | null): boolean {
