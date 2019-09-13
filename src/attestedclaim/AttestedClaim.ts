@@ -19,7 +19,7 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
-   * (STATIC) Creates a new [[AttestedClaim]] instance from the given interface.
+   * [STATIC] Creates a new [[AttestedClaim]] instance from the given interface.
    * @param obj - The base object from which to create the attested claim.
    * @returns A new attested claim.
    * @example
