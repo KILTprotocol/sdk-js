@@ -122,7 +122,7 @@ export default class AttestedClaim implements IAttestedClaim {
   /**
    * Gets the hash of the claim that corresponds to this attestation.
    *
-   * @returns The hash of the claim that corresponds to this attestation (claimHash).
+   * @returns The hash of the claim for this attestation (claimHash).
    * @example
    * ```javascript
    * const claimHash = attestation.getHash();
