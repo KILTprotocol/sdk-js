@@ -29,13 +29,17 @@ export default class Attestation implements IAttestation {
   public delegationId?: IAttestation['delegationId']
 
   /**
-   * @description Builds a new [[Attestation]] instance.
+   * Builds a new [[Attestation]] instance.
+   *
    * @param requestForAttestation A request for attestation, usually sent by a claimer.
    * @param attester The identity of the attester.
    * @param revoked A flag indicating whether the attestation should be revoked.
    * @example
    * ```javascript
+   * // create a new attestation
    * const attestation = new Kilt.Attestation(requestForAttestation, attester);
+   *
+   * // Now the attestation could be for example stored (see store method in this class)
    * ```
    * About this example:
    * * To create `requestForAttestation`, see [[RequestForAttestation]]'s constructor.
@@ -54,12 +58,15 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description (STATIC) (ASYNC) Queries the chain about a given attestation, by `claimHash`.
+   * (STATIC) (ASYNC) Queries the chain about a given attestation, by `claimHash`.
+   *
    * @param claimHash The hash of the claim that corresponds to the attestation to query.
    * @returns A promise containing the [[Attestation]] or `null`.
    * @example
    * ```javascript
    * const attestation = await Attestation.query("0xd810224b1b6a4db8d1d1e909d1aeb7d441846914ed024cdc147c4fa9221cd177");
+   *
+   * // Now the attestation could be for example revoked (see revoke method in this class)
    * ```
    */
   public static async query(claimHash: string): Promise<Attestation | null> {
@@ -67,7 +74,8 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description (STATIC) (ASYNC) Revokes an attestation.
+   * (STATIC) (ASYNC) Revokes an attestation.
+   *
    * @param claimHash The hash of the claim that corresponds to the attestation to revoke.
    * @param identity The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @returns A promise containing the [[TxStatus]] (transaction status).
@@ -86,7 +94,8 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description (STATIC) Creates a new [[Attestation]] instance from the given interface.
+   * (STATIC) Creates a new [[Attestation]] instance from the given interface.
+   *
    * @param obj The base object from which to create the attestation.
    * @returns A new attestation.
    * @example
@@ -113,7 +122,8 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description (ASYNC) Stores the attestation on chain.
+   * (ASYNC) Stores the attestation on chain.
+   *
    * @param identity The identity used to store the attestation.
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
@@ -139,12 +149,14 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description (ASYNC) Revokes the attestation.
+   * (ASYNC) Revokes the attestation.
+   *
    * @param identity The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example
    * ```javascript
-   * revoke(identity);
+   * const revokeStatus = await attestation.revoke(identityAlice);
+   * // true if the attestation is revoked, false otherwise
    * ```
    * About this example:
    * * To create an Attester `identity`, see [[buildFromMnemonic]] and [[generateMnemonic]] in [[Identity]].
@@ -155,12 +167,14 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description (ASYNC) Queries an attestation from the chain and checks its validity.
+   * (ASYNC) Queries an attestation from the chain and checks its validity.
+   *
    * @param claimHash The hash of the claim that corresponds to the attestation to check, defaults to **this** `claimHash`.
    * @returns A promise containing the boolean `attestationValid`.
    * @example
    * ```javascript
    * attestation.verify().then(isVerified => {
+   *     // log the attestaion verified status
    *    console.log('isVerified', isVerified);
    * });
    * ```
@@ -177,10 +191,11 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * @description Checks if the attestation is valid. An attestation is valid if it:
+   * Checks if the attestation is valid. An attestation is valid if it:
    * * exists;
    * * and has the correct owner;
    * * and is not revoked.
+   *
    * @param attestation The attestation to check.
    * @returns Whether the attestation is valid.
    */
