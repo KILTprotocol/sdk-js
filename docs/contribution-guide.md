@@ -6,6 +6,8 @@
 
 ## Documentation
 
+We want the KILT SDK to be easy to use for all fellow developers. We ❤️well-documented code.
+
 In the KILT SDK, podules and public methods are documented inline, in the code. The API doc is generated from these inline "doc blocks", and is available at our [online API Doc][api].
 
 We're using [jsdoc][jsdoc] linting rules, along with [typedoc][typedoc] to generate the documentation.
@@ -29,7 +31,7 @@ For reference, look for example at the doc block in `Attestation.ts`.
 
 Public methods should be documented. Some lint rules are set up: see the `jsdoc` rules in `eslintrc.json`, and [their description][jsdoc].
 
-Additionally, we recommend you observe the following guidelines, to make the documentation as helpful as possible:
+Additionally, we recommend that you observe the following guidelines, to make the documentation as helpful as possible:
 
 * Method description:
   * Make it concise and clear;
@@ -37,40 +39,43 @@ Additionally, we recommend you observe the following guidelines, to make the doc
   * If the method is async and/or static, add [ASYNC] and/or [STATIC] right before the description content.
 * `@param` and `@returns` fields: don't add types, since this is automatically added into the API doc;
 * Make sure you explain opaque abbreviations or jargon (example: TxStatus = transaction status);
-* SDK Classes and methods should be linked when possible, using `[[]]`;
+* When referring to SDK Classes and methods, make sure you link them in, using `[[]]`;
 * `@example`:
-  * Create it as valid, executable code;
+  * Create it as valid, executable code 😎;
   * Illustrate only this method's functionality, but also provide enough context for fellow developers to try it out:
     * Imports;
     * Preparation step;
     * Actual function call;
     * Expected output;
-    * Suggestion for the next step.
-  * Don't hesitate to include comments 😎.
+    * Suggestion for the next step;
+    * ...
+  * Don't hesitate to include comments.
 
-Here is an example that follows these guidelines:
 
-/**
-[STATIC] [ASYNC] Revokes an attestation.
+💡As of this writing, the linting rules for the example snippet are the same as the SDK codebase linitng rules.
 
-@param claimHash - The hash of the claim that corresponds to the attestation to revoke.
-@param identity - The identity used to revoke the attestation. It should be an attester identity, or an identity with delegated rights.
-@returns A promise containing the [[TxStatus]] (transaction status).
-@example
+Example of a method doc block that follows these guidelines:
 
 ```javascript
-// To create `identity`, see `buildFromMnemonic` and `generateMnemonic` in the `Identity` class.
-Attestation.revoke("0xd810224b1b6a4db8d1d1e909d1aeb7d441846914ed024cdc147c4fa9221cd177", identity);
+/**
+ * [STATIC] [ASYNC] Revokes an attestation.
+ *
+ * @param claimHash - The hash of the claim that corresponds to the attestation to revoke.
+ * @param identity - The identity used to revoke the attestation. It should be an attester identity, or an identity with delegated rights.
+ * @returns A promise containing the [[TxStatus]] (transaction status).
+ * @example ```javascript
+ * // revoke the attestation that's mapped to the claim hash "0xd8024cdc147c4fa9221cd177" with `identity` (to create `identity`, see `buildFromMnemonic` and `generateMnemonic` in the `Identity` class). The attestation can not be un-revoked.
+ * Attestation.revoke("0xd8024cdc147c4fa9221cd177", identity)
+ * ```
+ */
 ```
 
-**/
-
-### Check locally how the [online API Doc][api] would look like
+### Check locally how the [online API Doc][api] will look like
 
 * Run `yarn build:docs` within the `sdk-js` folder. This generates the doc at `sdk-js/docs/api`.
-* Open any of the generated files in your browser, such as `sdk-js/docs/api/classes/attestation.attestation-1.html`. You can now navigate.
+* Open any of the generated files in your browser, such as `sdk-js/docs/api/classes/attestation.attestation-1.html`. You can now use the menu or inline links to navigate across modules and classes.
 
-Make sure you don't commit all these generated files.
+Make sure you don't commit these generated files.
 
 ## Tests
 
