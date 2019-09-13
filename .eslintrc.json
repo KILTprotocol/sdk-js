@@ -41,7 +41,7 @@
         "jsdoc/require-returns-type": "off",
         "jsdoc/require-jsdoc": "off",
         "jsdoc/check-examples": ["warn", {
-            "exampleCodeRegex": "^```(?:js|javascript)\\n([\\s\\S]*)```\\s*$",
+            "exampleCodeRegex": "^```(?:js|javascript|typescript)\\n([\\s\\S]*)```\\s*$",
             "configFile": ".eslintrc-jsdoc.json"
         }]
     },
