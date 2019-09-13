@@ -2,7 +2,28 @@
 
 In this simple tutorial we show how you can start developing your own applications on top of the KILT Protocol. The next examples give you a simple skeleton on how to use the KILT SDK to create identities, CTYPEs and claims, and also how to issue an attestation with the use of our messaging framework.
 
+# Quick Start Guide
+
+## How to install the SDK
+
+Install the KILT-SDK by running the following commands:
+
+```bash
+
+    npm install @kiltprotocol/sdk-js
+
+```
+
+Or with `yarn`:
+
+```bash
+
+    yarn add @kiltprotocol/sdk-js
+
+```
+
 ## Prerequisities
+
 - make a new directory and navigate into it
 - install the SDK with `npm install @kiltprotocol/sdk-js`
 - install typescript with `npm install typescript`
@@ -27,11 +48,9 @@ At this point the generated Identity has no tokens. If you want to interact with
 ## How to build a Claim Type (CTYPE)
 
 First we build a JSON Schema for the CTYPE:
+
 ```typescript
-import Kilt, {
-   ICType,
-   CTypeUtils,
-} from '@kiltprotocol/sdk-js'
+import Kilt, { ICType, CTypeUtils } from '@kiltprotocol/sdk-js'
 
 const ctypeSchema: ICType['schema'] = {
   $id: 'DriversLicense',
@@ -49,11 +68,13 @@ const ctypeSchema: ICType['schema'] = {
 ```
 
 Next we generate the hash for the CTYPE:
+
 ```typescript
 const ctypeHash = CTypeUtils.getHashForSchema(ctypeSchema)
 ```
 
 Then we build metadata for the CTYPE schema:
+
 ```typescript
 const ctypeMetadata: ICType['metadata'] = {
   title: {
@@ -78,6 +99,7 @@ const ctypeMetadata: ICType['metadata'] = {
 ```
 
 Combine everything into our Ctype object definition:
+
 ```typescript
 const rawCtype: ICType = {
   schema: ctypeSchema,
@@ -88,17 +110,20 @@ const rawCtype: ICType = {
 ```
 
 Now we can build the CTYPE object from the raw structure:
+
 ```typescript
 const ctype = new Kilt.CType(rawCtype)
 ```
 
 Note that before you can store the CTYPE on the blockchain, you have to connect to it.
 First, [setup your local node](https://github.com/KILTprotocol/prototype-chain) and start it, using the dev chain and then you can connect to it with:
+
 ```typescript
 Kilt.connect('ws://localhost:9944')
 ```
 
 To store the CTYPE on the blockchain, you have to call:
+
 ```typescript
 ctype.store(claimer)
 ```
@@ -106,6 +131,7 @@ ctype.store(claimer)
 Be aware that this step costs tokens, so you have to have sufficient funds on your account of the identity. Also note, that the completely same CTYPE can only be stored once on the blockchain.
 
 At the end of the process, the `CType` object should contain the following. This can be saved anywhere, for example on a CTYPE registry service:
+
 ```typescript
 CType {
   schema:
@@ -122,7 +148,6 @@ CType {
    '0x5a9d939af9fb5423e3e283f16996438da635de8dc152b13d3a67f01e3d6b0fc0' }
 ```
 
-
 ## How to build a Claim
 
 To construct a claim we need to know the structure of the claim that is defined in a CTYPE. Based on the CTYPE, we need to build a basic claim object with the respective fields filled out:
@@ -135,6 +160,7 @@ const rawClaim = {
 ```
 
 Now we can easily create the KILT compliant claim. We have to include the full CType object, the raw claim object and the address of the owner/creator of the claim in the contstructor:
+
 ```typescript
 import Kilt from '@kiltprotocol/sdk-js'
 
@@ -142,6 +168,7 @@ const claim = new Kilt.Claim(ctype, rawClaim, claimer)
 ```
 
 As a result we get the following KILT claim:
+
 ```typescript
 Claim {
   cType:
@@ -150,10 +177,10 @@ Claim {
   owner: '5EvSHoZF23mZS4XKQBLdqMv7a7CRSANJmxn7XDu6hwoiK4Wz' }
 ```
 
-
 ## How to request, create and send an Attestation
 
 First, we need to build a request for an attestation, which has to include a claim and the address of the Claimer. (Note that this object allows much more functionality, however, we do not go into the details here):
+
 ```typescript
 import Kilt from '@kiltprotocol/sdk-js'
 
@@ -161,6 +188,7 @@ const requestForAttestation = new Kilt.RequestForAttestation(claim, [], claimer)
 ```
 
 The `requestForAttestation` object looks like this:
+
 ```typescript
 RequestForAttestation {
   claim:
@@ -190,8 +218,8 @@ RequestForAttestation {
    '0x3de3b6c245f43533a9f78730dc9f32664098adec5e31ae643f826b2439c00fa18720e1c40dcfde3a99eda74903e5be09303096286ef7659ba312a3b4a807550b' }
 ```
 
-
 To send the request for an attestation to an Attester, first we need to create an Attester identity:
+
 ```typescript
 import Kilt from '@kiltprotocol/sdk-js'
 
@@ -203,10 +231,11 @@ If the Attester doesn't live on the same machine, we need to send her a message 
 KILT contains a simple messaging system and we describe it through the following example.
 
 First, we create the request for an attestation message. This includes that the Claimer encrypts the message with the public key of the Attester:
+
 ```typescript
 import Kilt, {
-   IRequestAttestationForClaim,
-   MessageBodyType
+  IRequestAttestationForClaim,
+  MessageBodyType,
 } from '@kiltprotocol/sdk-js'
 
 const messageBody: IRequestAttestationForClaim = {
@@ -217,6 +246,7 @@ const message = new Kilt.Message(messageBody, claimer, attester)
 ```
 
 The complete `message` looks as follows:
+
 ```typescript
 Message {
   body:
@@ -244,13 +274,14 @@ Message {
    '0xefdfbbac968ec805c22bfe97219268d470cfb74e27ae13ef29c399a74ffae68d55a0a474b6c5ecea37e4716c0ec81dc83761ee99b13a8c984ea4c76101bab204' }
 ```
 
-
 The message can be encrypted as follows:
+
 ```typescript
 const encrypted = message.getEncryptedMessage()
 ```
 
 The messaging system is transport agnostic. When the Attester receives the request message, she can check the validity of the message to make sure that nobody has tampered with it on the way:
+
 ```typescript
 import Message from '@kiltprotocol/sdk-js'
 
@@ -258,32 +289,37 @@ Message.ensureHashAndSignature(encrypted, claimer)
 ```
 
 and the Attester (and only she) can also decrypt it:
+
 ```typescript
-const decrypted = Message.createFromEncryptedMessage(
-  encrypted,
-  attester
-)
+const decrypted = Message.createFromEncryptedMessage(encrypted, attester)
 ```
 
 and make sure, that the sender is the owner of the identity:
+
 ```typescript
 Message.ensureOwnerIsSender(decrypted)
 ```
 
 At this point, the Attester has the original request for attestation object:
+
 ```typescript
 if (decrypted.body.type === MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
-   const extractedRequestForAttestation: IRequestForAttestation = decrypted.body.content
+  const extractedRequestForAttestation: IRequestForAttestation =
+    decrypted.body.content
 }
 ```
 
-
 The Attester creates the attestation based on the IRequestForAttestation object she received:
+
 ```typescript
-const attestation = new Kilt.Attestation(extractedRequestForAttestation, attester)
+const attestation = new Kilt.Attestation(
+  extractedRequestForAttestation,
+  attester
+)
 ```
 
 The complete `attestation` object looks as follows:
+
 ```typescript
 Attestation {
   owner: '5Et4BBKPgfBJSsAmMvHCVd6YH4eaGyo5RWd44W8RPdw14Bi1',
@@ -295,8 +331,8 @@ Attestation {
   revoked: false }
 ```
 
-
 Now the Attester can store the attestation on the blockchain, which costs tokens:
+
 ```typescript
 attestation.store(attester)
 ```
@@ -304,10 +340,14 @@ attestation.store(attester)
 The request for attestation is fulfilled with the attestation, but it needs to be combined into the `AttestedClaim` object before sending it back to the Claimer:
 
 ```typescript
-const attestedClaim = new Kilt.AttestedClaim(extractedRequestForAttestation, attestation)
+const attestedClaim = new Kilt.AttestedClaim(
+  extractedRequestForAttestation,
+  attestation
+)
 ```
 
 The complete `attestedClaim` object looks as follows:
+
 ```typescript
 AttestedClaim {
   request:
@@ -341,6 +381,7 @@ AttestedClaim {
 ```
 
 The Attester has to send the `attestedClaim` object back to the Claimer in the following message:
+
 ```typescript
 import ISubmitAttestationForClaim from '@kiltprotocol/sdk-js'
 
@@ -352,6 +393,7 @@ const messageBack = new Message(messageBodyBack, attester, claimer)
 ```
 
 The complete `messageBack` message then looks as follows:
+
 ```typescript
 AttestedClaim message Message {
   body:
@@ -370,10 +412,10 @@ AttestedClaim message Message {
    '0xa52d2d36beed55a2762b1790233302faf82cff8b50b26e8764c5061a65a7fce04fc3f938bf0d186f255f58abbbaae1a343a04d521b13836b0f96d0d0dbeac70e' }
 ```
 
-
 After receiving the message, the Claimer just needs to save it and can use it later for verification:
+
 ```typescript
 if (messageBack.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
-   const myAttestedClaim = messageBack.body.content
+  const myAttestedClaim = messageBack.body.content
 }
 ```

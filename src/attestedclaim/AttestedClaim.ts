@@ -1,5 +1,15 @@
 /**
- * @module AttestationPresentation
+ * In KILT, the AttestedClaim is a **credential**, which a Claimer can store locally and share with Verifiers as they wish.
+ * ***
+ * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[AttestedClaim]] object. This [[AttestedClaim]] also contains the original request for attestation.
+ * <br>
+ * RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
+ * @module AttestedClaim
+ * @preferred
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import cloneDeep from 'lodash/cloneDeep'
 import Attestation from '../attestation/Attestation'
@@ -24,7 +34,10 @@ export default class AttestedClaim implements IAttestedClaim {
   public request: RequestForAttestation
   public attestation: Attestation
 
-  constructor(request: IRequestForAttestation, attestation: IAttestation) {
+  public constructor(
+    request: IRequestForAttestation,
+    attestation: IAttestation
+  ) {
     // TODO: this should be instantiated w/o fromObject
     this.request = RequestForAttestation.fromObject(request)
     this.attestation = Attestation.fromObject(attestation)

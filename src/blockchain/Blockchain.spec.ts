@@ -13,7 +13,7 @@ describe('Blockchain', async () => {
   })
 
   xit('should listen to blocks', async done => {
-    const listener = (header: Header) => {
+    const listener = (header: Header): void => {
       console.log(`Best block number ${header.blockNumber}`)
       done()
     }

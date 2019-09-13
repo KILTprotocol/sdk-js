@@ -1,5 +1,14 @@
 /**
+ * KILT enables top-down trust structures (see [[Delegation]]). On the lowest level, a delegation structure is always a **tree**. The root of this tree is DelegationRootNode.
+ * ***
+ * Apart from inheriting [[DelegationBaseNode]]'s structure, a DelegationRootNode has a [[cTypeHash]] property that refers to a specific [[CType]]. A DelegationRootNode is written on-chain, and can be queried by [[delegationId]] via the [[query]] method.
+ * ***
  * @module Delegation/DelegationRootNode
+ * @preferred
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import { QueryResult } from '../blockchain/Blockchain'
 import TxStatus from '../blockchain/TxStatus'
@@ -19,9 +28,11 @@ export default class DelegationRootNode extends DelegationBaseNode
    * @description Queries the delegation root with [delegationId].
    *
    * @param delegationId unique identifier of the delegation root
-   * @returns promise containing [[DelegationRootNode]] or [undefined]
+   * @returns promise containing [[DelegationRootNode]] or [null]
    */
-  public static async query(delegationId: string) {
+  public static async query(
+    delegationId: string
+  ): Promise<DelegationRootNode | null> {
     log.info(`:: query('${delegationId}')`)
     const result = await query(delegationId)
     if (result) {
@@ -35,7 +46,7 @@ export default class DelegationRootNode extends DelegationBaseNode
 
   public cTypeHash: IDelegationRootNode['cTypeHash']
 
-  constructor(
+  public constructor(
     id: IDelegationRootNode['id'],
     ctypeHash: IDelegationRootNode['cTypeHash'],
     account: IDelegationRootNode['account']
@@ -48,10 +59,11 @@ export default class DelegationRootNode extends DelegationBaseNode
     return Promise.resolve(this)
   }
 
-  // tslint:disable-next-line:prefer-function-over-method
-  public getParent(): Promise<DelegationBaseNode | undefined> {
-    return Promise.resolve(undefined)
+  /* eslint-disable class-methods-use-this */
+  public getParent(): Promise<DelegationBaseNode | null> {
+    return Promise.resolve(null)
   }
+  /* eslint-enable class-methods-use-this */
 
   /**
    * @description Stores the delegation root node on chain.
@@ -68,8 +80,8 @@ export default class DelegationRootNode extends DelegationBaseNode
    * @see [[DelegationBaseNode#verify]]
    */
   public async verify(): Promise<boolean> {
-    const node: IDelegationRootNode | undefined = await query(this.id)
-    return node !== undefined && !node.revoked
+    const node = await query(this.id)
+    return node !== null && !node.revoked
   }
 
   /**
@@ -80,9 +92,9 @@ export default class DelegationRootNode extends DelegationBaseNode
     return revoke(this, identity)
   }
 
-  protected decodeChildNode(
-    queryResult: QueryResult
-  ): DelegationNode | undefined {
+  /* eslint-disable class-methods-use-this */
+  protected decodeChildNode(queryResult: QueryResult): DelegationNode | null {
     return decodeDelegationNode(queryResult)
   }
+  /* eslint-enable class-methods-use-this */
 }
