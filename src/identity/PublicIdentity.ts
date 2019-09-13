@@ -1,6 +1,10 @@
 /**
  * @module Identity
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import Did, {
   KEY_TYPE_ENCRYPTION,
   SERVICE_KILT_MESSAGING,
