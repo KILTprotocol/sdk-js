@@ -8,11 +8,11 @@
 
 We want the KILT SDK to be easy to use for all fellow developers. We ❤️ well-documented code.
 
-KILT's API doc is available [here][apidoc]. 
+KILT's API doc is available [here][apidoc].
 
-In the KILT SDK, modules and public methods are documented inline, in the code. These inline "doc blocks" need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted. We also check them on commit, so that you're protected: you can't push a linting error to the repo. 
+In the KILT SDK, modules and public methods are documented inline, in the code. These inline "doc blocks" need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted. We also check them on commit, so that you're protected: you can't push a linting error to the repo.
 
-You can see all the linting rules for the inline doc blocks in `.eslintrc.json`, and check what they mean on [jsdoc][jsdoc]. But if your code editor is set up to highlight linting errors, you don't need to.
+Yyou don't need to - but if you're interested, you can see all the linting rules for the inline doc blocks in `.eslintrc.json`, and check what they mean on [jsdoc][jsdoc].
 
 We're using [typedoc][typedoc] to generate the API doc from the inline "doc blocks". 
 
@@ -68,8 +68,8 @@ Example of a method doc block that follows these guidelines:
  * @param identity - The identity used to revoke the attestation. It should be an attester identity, or an identity with delegated rights.
  * @returns A promise containing the [[TxStatus]] (transaction status).
  * @example ```javascript
- * // revoke the attestation that's mapped to the claim hash "0xd8024cdc147c4fa9221cd177" with `identity` (to create `identity`, see `buildFromMnemonic` and `generateMnemonic` in the `Identity` class). The attestation can not be un-revoked.
- * Attestation.revoke("0xd8024cdc147c4fa9221cd177", identity)
+ * // revoke the attestation mapped to the claim hash "0xd8024cdc147c4fa9221cd177" with `identity`. To create `identity`, see `buildFromMnemonic` and `generateMnemonic` in the `Identity` class. The attestation can not be un-revoked.
+ * Attestation.revoke("0xd8024cdc147c4fa9221cd177", identity);
  * ```
  */
 ```
