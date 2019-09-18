@@ -10,7 +10,7 @@ We want the KILT SDK to be easy to use for all fellow developers. We ❤️ well
 
 KILT's API doc is available [here][apidoc].
 
-In the KILT SDK, modules and public methods are documented directly in the code, in what is called *dockBlocks*. DockBlocks are basically special comments which are here to document the code they precede. DocBlocks need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
+In the KILT SDK, modules and public methods are documented directly in the code, in what is called *docBlocks*. DocBlocks are basically special comments which are here to document the code they precede. DocBlocks need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
 
 We also check these rules on commit, so that you're protected: you can't push a linting error to the repo.
 
@@ -81,7 +81,7 @@ You probably don't need to do this. You can trust the doc will be rendered prope
 If you have a doubt:
 
 * Run `yarn build:docs` within the `sdk-js` folder. This generates the doc at `sdk-js/docs/api`.
-* Open any of the generated files in your browser, such as `sdk-js/docs/api/classes/attestation.attestation-1.html`. You can now use the menu or inline links to navigate across modules and classes.
+* Open any of the generated files in your browser, such as `sdk-js/docs/api/index.html`. You can now use the menu or inline links to navigate across modules and classes.
 
 ⚠️ Make sure you don't commit these generated files.
 
