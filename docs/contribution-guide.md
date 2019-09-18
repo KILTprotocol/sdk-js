@@ -16,7 +16,7 @@ We also check these rules on commit, so that you're protected: you can't push a 
 
 You don't need to - but if you're interested, you can see all the linting rules for the inline doc blocks in `.eslintrc.json`, and check what they mean on [jsdoc][jsdoc].
 
-We're using [typedoc][typedoc] to generate the API doc from the inline "doc blocks".
+We're using [typedoc][typedoc] to generate the API doc from the inline doc blocks.
 
 ### Documenting modules
 
@@ -47,7 +47,7 @@ On top of the the linting rules mentioned above (must document all parameters, m
 * Make sure you explain opaque abbreviations or jargon (example: TxStatus = transaction status);
 * When referring to SDK Classes and methods, make sure you link them in, using `[[]]`;
 * `@example`:
-  * Create it as valid, executable code 😎;
+  * Create it as valid code 😎;
   * Illustrate only this method's functionality, but also provide enough context for fellow developers to try it out:
     * Imports;
     * Preparation step;
@@ -56,7 +56,6 @@ On top of the the linting rules mentioned above (must document all parameters, m
     * Suggestion for the next step;
     * ...
   * Don't hesitate to include comments.
-
 
 💡The linting rules for the example snippet are **not** the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolumns. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter should be enough to help you figure the rules out.
 
@@ -79,11 +78,12 @@ Example of a method doc block that follows these guidelines:
 ### Checking locally how the [online API Doc][apidoc] will look like
 
 You probably don't need to do this. You can trust the doc will be rendered properly.
+If you have a doubt:
 
 * Run `yarn build:docs` within the `sdk-js` folder. This generates the doc at `sdk-js/docs/api`.
 * Open any of the generated files in your browser, such as `sdk-js/docs/api/classes/attestation.attestation-1.html`. You can now use the menu or inline links to navigate across modules and classes.
 
-Make sure you don't commit these generated files.
+⚠️ Make sure you don't commit these generated files.
 
 ## Tests
 
