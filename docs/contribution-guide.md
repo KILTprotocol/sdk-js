@@ -12,7 +12,7 @@ KILT's API doc is available [here][apidoc].
 
 In the KILT SDK, modules and public methods are documented directly in the code, in what is called *docBlocks*. DocBlocks are special comments which document the code they precede. DocBlocks need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
 
-We also check these rules on commit, so that you're protected: you can't push a linting error to the repo.
+We also check these rules on commit and in our CI pipeline, so that you're protected: you can't push a linting error to the repo.
 
 You don't need to - but if you're interested, you can see all the linting rules for the inline docBlocks in `.eslintrc.json`, and check what they mean on [jsdoc][jsdoc].
 
@@ -55,7 +55,8 @@ On top of the the linting rules mentioned above (must document all parameters, m
     * Expected output;
     * Suggestion for the next step;
     * ...
-  * Don't hesitate to include comments.
+  * Don't hesitate to include comments;
+  * Keep it short! No need to overdo it: just the bit of context required to understand the method call is enough.
 
 💡The linting rules for the example snippet are **not** the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolumns. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter should be enough to help you figure the rules out.
 
@@ -69,8 +70,10 @@ Example of a method docBlock that follows these guidelines:
  * @param identity - The identity used to revoke the attestation. It should be an attester identity, or an identity with delegated rights.
  * @returns A promise containing the [[TxStatus]] (transaction status).
  * @example ```javascript
- * // revoke the attestation mapped to the claim hash "0xd8024cdc147c4fa9221cd177" with `identity`. To create `identity`, see `buildFromMnemonic` and `generateMnemonic` in the `Identity` class. The attestation can not be un-revoked.
+ * // revoke the attestation mapped to the claim hash "0xd8024cdc147c4fa9221cd177". To create `identity`, see `buildFromMnemonic` and `generateMnemonic` in the `Identity` class. Note that `identity` should have revokation rights.
  * Attestation.revoke("0xd8024cdc147c4fa9221cd177", identity);
+ * Attestation.query("0xd8024cdc147c4fa9221cd177").then((attestation) => console.log(attestation.revoked));
+ * // should log `true`
  * ```
  */
 ```
