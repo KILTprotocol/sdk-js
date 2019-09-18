@@ -1,4 +1,4 @@
-[api]: https://kiltprotocol.github.io/sdk-js/api/index.html
+[apidoc]: https://kiltprotocol.github.io/sdk-js/api/index.html
 [jsdoc]: https://www.npmjs.com/package/eslint-plugin-jsdoc
 [typedoc]: https://github.com/TypeStrong/typedoc
 
@@ -6,15 +6,19 @@
 
 ## Documentation
 
-We want the KILT SDK to be easy to use for all fellow developers. We ❤️well-documented code.
+We want the KILT SDK to be easy to use for all fellow developers. We ❤️ well-documented code.
 
-In the KILT SDK, podules and public methods are documented inline, in the code. The API doc is generated from these inline "doc blocks", and is available at our [online API Doc][api].
+KILT's API doc is available [here][apidoc]. 
 
-We're using [jsdoc][jsdoc] linting rules, along with [typedoc][typedoc] to generate the documentation.
+In the KILT SDK, modules and public methods are documented inline, in the code. These inline "doc blocks" need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted. We also check them on commit, so that you're protected: you can't push a linting error to the repo. 
+
+You can see all the linting rules for the inline doc blocks in `.eslintrc.json`, and check what they mean on [jsdoc][jsdoc]. But if your code editor is set up to highlight linting errors, you don't need to.
+
+We're using [typedoc][typedoc] to generate the API doc from the inline "doc blocks". 
 
 ### Documenting modules
 
-Direct child folders of `src` such as `attestation` should be marked as `@modules`, so that they're listed in the [online API Doc][api] main menu.
+Direct child folders of `src` such as `attestation` should be marked as `@modules`, so that they're listed in the [online API Doc][apidoc] main menu.
 
 Some of these modules are purely technical utilities, such as `crypto`. Others map to KILT concepts, such as `attestation`.
 
@@ -52,7 +56,7 @@ Additionally, we recommend that you observe the following guidelines, to make th
   * Don't hesitate to include comments.
 
 
-💡The linting rules for the example snippet are not the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolumns. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter will help you figure the rules out anyways.
+💡The linting rules for the example snippet are **not** the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolumns. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter should be enough to help you figure the rules out.
 
 Example of a method doc block that follows these guidelines:
 
@@ -70,7 +74,7 @@ Example of a method doc block that follows these guidelines:
  */
 ```
 
-### Check locally how the [online API Doc][api] will look like
+### Check locally how the [online API Doc][apidoc] will look like
 
 * Run `yarn build:docs` within the `sdk-js` folder. This generates the doc at `sdk-js/docs/api`.
 * Open any of the generated files in your browser, such as `sdk-js/docs/api/classes/attestation.attestation-1.html`. You can now use the menu or inline links to navigate across modules and classes.
