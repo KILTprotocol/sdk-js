@@ -1,6 +1,10 @@
 /**
  * @module CType
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import Ajv from 'ajv'
 
 import { CTypeModel, CTypeInputModel } from './CTypeSchema'
