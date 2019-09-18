@@ -10,13 +10,13 @@ We want the KILT SDK to be easy to use for all fellow developers. We ❤️ well
 
 KILT's API doc is available [here][apidoc].
 
-In the KILT SDK, modules and public methods are documented inline, in the code. These inline "doc blocks" need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
+In the KILT SDK, modules and public methods are documented directly in the code, in what is called *dockBlocks*. DockBlocks are basically special comments which are here to document the code they precede. DocBlocks need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
 
 We also check these rules on commit, so that you're protected: you can't push a linting error to the repo.
 
-You don't need to - but if you're interested, you can see all the linting rules for the inline doc blocks in `.eslintrc.json`, and check what they mean on [jsdoc][jsdoc].
+You don't need to - but if you're interested, you can see all the linting rules for the inline docBlocks in `.eslintrc.json`, and check what they mean on [jsdoc][jsdoc].
 
-We're using [typedoc][typedoc] to generate the API doc from the inline doc blocks.
+We're using [typedoc][typedoc] to generate the API doc from the inline docBlocks.
 
 ### Documenting modules
 
@@ -31,7 +31,7 @@ Both types of modules shall be documented with a short text in one of their chil
   * Paragraph 1: Explanation of the overall concept, and the role it fulfills in the KILT Protocol;
   * Paragraph 2: Technical details of interest.
 
-For reference, look for example at the doc block in `Attestation.ts`.
+For reference, look for example at the docBlock at the beginning of `Attestation.ts`.
 
 ### Documenting public methods
 
@@ -59,7 +59,7 @@ On top of the the linting rules mentioned above (must document all parameters, m
 
 💡The linting rules for the example snippet are **not** the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolumns. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter should be enough to help you figure the rules out.
 
-Example of a method doc block that follows these guidelines:
+Example of a method docBlock that follows these guidelines:
 
 ```javascript
 /**
