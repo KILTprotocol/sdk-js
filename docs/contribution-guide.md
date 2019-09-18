@@ -10,7 +10,7 @@ We want the KILT SDK to be easy to use for all fellow developers. We ❤️ well
 
 KILT's API doc is available [here][apidoc].
 
-In the KILT SDK, modules and public methods are documented directly in the code, in what is called *docBlocks*. DocBlocks are basically special comments which are here to document the code they precede. DocBlocks need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
+In the KILT SDK, modules and public methods are documented directly in the code, in what is called *docBlocks*. DocBlocks are special comments which document the code they precede. DocBlocks need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
 
 We also check these rules on commit, so that you're protected: you can't push a linting error to the repo.
 
