@@ -1,16 +1,17 @@
 /**
  * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revokable**.
  * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as an [[AttestedClaim]] (= "Credential").
- * ***
+ *
  * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
  * * the key is the hash of the corresponding claim;
  * * the value is a tuple ([[CType]] hash, account, id of the [[Delegation]], and revoked flag).
+ *
  * @module Attestation
  * @preferred
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
@@ -81,6 +82,7 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example
    * ```javascript
+   * // `identity` should have rights to revoke this attestation
    * Attestation.revoke("0xd810224b1b6a4db8d1d1e909d1aeb7d441846914ed024cdc147c4fa9221cd177", identity);
    * ```
    * About this example:
@@ -128,14 +130,11 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * ```javascript
-   * // connect to the blockchain
-   * Kilt.default.connect('wss://full-nodes.kilt.io:9944');
-   *
-   * // store the attestation on chain
+   * // `attestation` is a newly created Attestation instance
    * attestation.store(attester).then(() => {
-   *    // the attestation was successfully stored so we could for example create an AttestedClaim
+   *    // the attestation was successfully stored so we could create an AttestedClaim
    * }).catch(e => {
-   *    console.log(e);
+   *    // log errors
    * }).finally(() => {
    *    // disconnect from the blockchain
    *    Kilt.BlockchainApiConnection.getCached().then(blockchain => {
@@ -155,7 +154,7 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example
    * ```javascript
-   * const revokeStatus = await attestation.revoke(identityAlice);
+   * const revokeStatus = await attestation.revoke(identity);
    * // true if the attestation is revoked, false otherwise
    * ```
    * About this example:
@@ -169,13 +168,13 @@ export default class Attestation implements IAttestation {
   /**
    * [ASYNC] Queries an attestation from the chain and checks its validity.
    *
-   * @param claimHash - The hash of the claim that corresponds to the attestation to check, defaults to **this** `claimHash`.
-   * @returns A promise containing the boolean `attestationValid`.
+   * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to **this** `claimHash`.
+   * @returns A promise containing whether the attestation is valid.
    * @example
    * ```javascript
    * attestation.verify().then(isVerified => {
-   *     // log the attestaion verified status
-   *    console.log('isVerified', isVerified);
+   *   // log the attestaion verified status
+   *   console.log('isVerified', isVerified);
    * });
    * ```
    */
