@@ -52,7 +52,7 @@ Additionally, we recommend that you observe the following guidelines, to make th
   * Don't hesitate to include comments.
 
 
-💡As of this writing, the linting rules for the example snippet are the same as the SDK codebase linitng rules.
+💡The linting rules for the example snippet are not the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolumns. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter will help you figure the rules out anyways.
 
 Example of a method doc block that follows these guidelines:
 
