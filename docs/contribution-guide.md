@@ -10,11 +10,13 @@ We want the KILT SDK to be easy to use for all fellow developers. We ❤️ well
 
 KILT's API doc is available [here][apidoc].
 
-In the KILT SDK, modules and public methods are documented inline, in the code. These inline "doc blocks" need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted. We also check them on commit, so that you're protected: you can't push a linting error to the repo.
+In the KILT SDK, modules and public methods are documented inline, in the code. These inline "doc blocks" need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
 
-Yyou don't need to - but if you're interested, you can see all the linting rules for the inline doc blocks in `.eslintrc.json`, and check what they mean on [jsdoc][jsdoc].
+We also check these rules on commit, so that you're protected: you can't push a linting error to the repo.
 
-We're using [typedoc][typedoc] to generate the API doc from the inline "doc blocks". 
+You don't need to - but if you're interested, you can see all the linting rules for the inline doc blocks in `.eslintrc.json`, and check what they mean on [jsdoc][jsdoc].
+
+We're using [typedoc][typedoc] to generate the API doc from the inline "doc blocks".
 
 ### Documenting modules
 
@@ -33,9 +35,9 @@ For reference, look for example at the doc block in `Attestation.ts`.
 
 ### Documenting public methods
 
-Public methods should be documented. Some lint rules are set up: see the `jsdoc` rules in `eslintrc.json`, and [their description][jsdoc].
+Since they're available to SDK users, public methods must be documented.
 
-Additionally, we recommend that you observe the following guidelines, to make the documentation as helpful as possible:
+On top of the the linting rules mentioned above (must document all parameters, must have a description...), we recommend that you observe the following guidelines to make the documentation as helpful as possible:
 
 * Method description:
   * Make it concise and clear;
@@ -74,7 +76,9 @@ Example of a method doc block that follows these guidelines:
  */
 ```
 
-### Check locally how the [online API Doc][apidoc] will look like
+### Checking locally how the [online API Doc][apidoc] will look like
+
+You probably don't need to do this. You can trust the doc will be rendered properly.
 
 * Run `yarn build:docs` within the `sdk-js` folder. This generates the doc at `sdk-js/docs/api`.
 * Open any of the generated files in your browser, such as `sdk-js/docs/api/classes/attestation.attestation-1.html`. You can now use the menu or inline links to navigate across modules and classes.
