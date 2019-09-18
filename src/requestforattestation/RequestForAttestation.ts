@@ -1,13 +1,14 @@
 /**
  * Requests for attestation are a core building block of the KILT SDK.
  * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
- * ***
+ *
  * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester. It's signed by the claimer, to make it tamper proof (`claimerSignature` is a property of [[Claim]]). A RequestForAttestation also supports hiding of claim data during a credential presentation.
+ *
  * @module RequestForAttestation
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import { v4 as uuid } from 'uuid'
 import { IDelegationBaseNode } from '..'
@@ -61,39 +62,19 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 
 export default class RequestForAttestation implements IRequestForAttestation {
   /**
-   * @description Builds a new [[Claim]] as an object
-   * @param obj - An object built from the [[Claim]], [[Identity]] and legitimation objects
-   * @returns Creates an [[RequestForAttestation]] `object`
-   * @example
-   * ```javascript
+   * Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
+   * Used for deserialization.
    *
-   * // Using a CType schema
+   * @param obj - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
+   * @returns  A new [[RequestForAttestation]] `object`.
+   * @example ```javascript
+   * const serialized =
+   *   '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
+   * const deserialized = JSON.parse(serialized);
    *
-   * const ctype = require("./ctype.json");
+   * const initialized = Kilt.RequestForAttestation.fromObject(deserialized);
    *
-   * const alice = Kilt.Identity.buildFromMnemonic();
-   *  const rawClaim = {
-   *  	name: "Alice",
-   *  	age: 29
-   *  };
-   *
-   * const claim = new Kilt.Claim(ctype, rawClaim, alice);
-   *
-   * const test = new Kilt.RequestForAttestation(claim, [], alice);
-   *
-   * Kilt.RequestForAttestation.fromObject(test)
-   *
-   * // (output) RequestForAttestation {
-   * //           claim: Claim {
-   * //           cType: '0x981955a2b7990554f6193a9e770ea625c68d2bfc5a1ff996e6e28d2a620fae16',
-   * //           contents: { name: 'Alice', age: 29 },
-   * //           owner: '5GfsMWtwtfLDP74V3vsJKkhJWuCh6GL8KFFuiHZZwkBL7xRT'
-   * //           },
-   * //          ...
-   * //        },
-   * //      ...
-   * //     }
-   *
+   * // Now you can call methods on `initialized`.
    * ```
    */
   public static fromObject(obj: IRequestForAttestation): RequestForAttestation {
@@ -136,36 +117,26 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * @description Removes a [[Claim]] Property from a [[Attestation]] object.
-   * @param properties - A property within the [[Claim]] object
-   * @returns  On a successful deletation of `this.claim.contents[key]` it returns true, else false will be returned
-   * @returns On a successful deletation of `this.claimHashTree[key].nonce` it returns true, else false will be returned
-   * @example
-   * ```javascript
+   * Removes [[Claim]] properties from the [[RequestForAttestation]] object.
    *
-   *  const alice = Kilt.Identity.buildFromMnemonic();
+   * @param properties - A property within the underlying [[Claim]] object.
+   * @throws An error, when a property, which should be deleted, wasn't found.
+   * @example ```javascript
+   * const rawClaim = {
+   *   name: 'Alice',
+   *   age: 29,
+   * };
+   * const claim = new Kilt.Claim(ctype, rawClaim, alice);
+   * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
+   * reqForAtt.removeClaimProperties(['name']);
    *
-   *  const rawClaim = {
-   *  	name: "Alice",
-   *  	age: 29
-   *  };
-   *
-   *  const claim = new Kilt.Claim(ctype, rawClaim, alice);
-   *
-   *  const test = new Kilt.RequestForAttestation(claim, [], alice);
-   *  // Removing the name field of the raw claim
-   *  test.removeClaimProperties(["name"]);
-   *
-   *  Kilt.RequestForAttestation.fromObject(test);
-   *
-   *  // (output) RequestForAttestation {
-   *  //           claim: Claim {
-   *  //           cType: '0x981955a2b7990554f6193a9e770ea625c68d2bfc5a1ff996e6e28d2a620fae16',
-   *  //           contents: { age: 29 },
-   *  //           owner: '5Gf3Y1CC9UmXYQbSzbA3JE71nCWPjr8LVngzpjqC3YiAwuSp'
-   *  //           },
-   *
-   *
+   * // reqForAtt does not contain `name` in its claim contents anymore.
+   * // reqForAtt = RequestForAttestation {
+   * //             claim: Claim {
+   * //             cType: '0x981955a2b7990554f6193a9e770ea625c68d2bfc5a1ff996e6e28d2a620fae16',
+   * //             contents: { age: 29 },
+   * //             owner: '5Gf3Y1CC9UmXYQbSzbA3JE71nCWPjr8LVngzpjqC3YiAwuSp'
+   * //             },
    * ```
    */
   public removeClaimProperties(properties: string[]): void {
@@ -179,33 +150,18 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * @description Removes a [[Claim]] Owner from a [[Attestation]] object.
-   * @returns  On a successful deletation of `this.claim.owner` it returns true, else false will be returned
-   * @returns  On a successful deletation of `this.claimOwner.nonce` it returns true, else false will be returned
-   * @example
-   * ```javascript
+   * Removes the [[Claim]] Owner from the [[RequestForAttestation]] object.
    *
-   *  const alice = Kilt.Identity.buildFromMnemonic();
+   * @example ```javascript
+   * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
+   * reqForAtt.removeClaimOwner();
    *
-   *  const rawClaim = {
-   *  	name: "Alice",
-   *  	age: 29
-   *    };
-   *
-   *  const claim = new Kilt.Claim(ctype, rawClaim, alice);
-   *
-   *  const test = new Kilt.RequestForAttestation(claim, [], alice);
-   * // Removing the owner from the claim object
-   *  test.removeClaimOwner();
-   *
-   *  Kilt.RequestForAttestation.fromObject(test);
-   *
-   * //(output) RequestForAttestation {
-   * //          claim: Claim {
-   * //          cType: '0x981955a2b7990554f6193a9e770ea625c68d2bfc5a1ff996e6e28d2a620fae16',
-   * //          contents: { name: 'Alice', age: 29 }
-   * //          },
-   *
+   * // reqForAtt does not conatin the claim owner anymore.
+   * // reqForAtt = RequestForAttestation {
+   * //             claim: Claim {
+   * //             cType: '0x981955a2b7990554f6193a9e770ea625c68d2bfc5a1ff996e6e28d2a620fae16',
+   * //             contents: { name: 'Alice', age: 29 }
+   * //             },
    * ```
    */
   public removeClaimOwner(): void {
@@ -214,26 +170,12 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * @description Verifies the data of the [[Attestation]] [[Claim]].
-   * @returns On successful verification of data `this.verifySignature()` it returns true, else false will be returned.
-   * @example
-   * ```javascript
+   * Verifies the data of the [[RequestForAttestation]] object.
    *
-   * const alice = Kilt.Identity.buildFromMnemonic();
-   *
-   *  const rawClaim = {
-   * name: "Alice",
-   * age: 29
-   * };
-   *
-   * const claim = new Kilt.Claim(ctype, rawClaim, alice);
-   *
-   * const test = new Kilt.RequestForAttestation(claim, [], alice);
-   * // Checks the data and returns a
-   * const data = test.verifyData();
-   *
-   * (Output) true
-   *
+   * @returns Whether verifying the data inside the object was successful.
+   * @example ```javascript
+   * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
+   * reqForAtt.verifyData(); // returns true
    * ```
    */
   public verifyData(): boolean {
@@ -287,25 +229,12 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * @description Verifies the signature of the claimer with the [[Attestation]] [[Claim]].
-   * @returns On successful verification of the claimers signature `verifyClaimerSignature(this)` it returns true, else false will be returned.
-   * @example
-   * ```javascript
+   * Verifies the signature inside the [[RequestForAttestation]] object.
    *
-   * const alice = Kilt.Identity.buildFromMnemonic();
-   *
-   *  const rawClaim = {
-   * name: 'Alice',
-   * age: 29
-   * };
-   *
-   * const claim = new Kilt.Claim(ctype, rawClaim, alice);
-   *
-   * const test = new Kilt.RequestForAttestation(claim, [], alice);
-   * // Checks the signature
-   *  const signed = test.verifySignature()
-   *
-   *  (Output) true
+   * @returns Whether the verification of the claimers signature was successful.
+   * @example ```javascript
+   * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
+   * reqForAtt.verifySignature(); // returns true
    * ```
    */
   public verifySignature(): boolean {
