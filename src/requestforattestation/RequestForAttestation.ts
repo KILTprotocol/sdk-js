@@ -70,11 +70,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @example ```javascript
    * const serialized =
    *   '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
-   * const deserialized = JSON.parse(serialized);
+   * const parsed = JSON.parse(serialized);
    *
-   * const initialized = Kilt.RequestForAttestation.fromObject(deserialized);
-   *
-   * // Now you can call methods on `initialized`.
+   * RequestForAttestation.fromObject(parsed);
    * ```
    */
   public static fromObject(obj: IRequestForAttestation): RequestForAttestation {
@@ -126,17 +124,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *   name: 'Alice',
    *   age: 29,
    * };
-   * const claim = new Kilt.Claim(ctype, rawClaim, alice);
-   * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
+   * const claim = new Claim(ctype, rawClaim, alice);
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
    * reqForAtt.removeClaimProperties(['name']);
-   *
-   * // reqForAtt does not contain `name` in its claim contents anymore.
-   * // reqForAtt = RequestForAttestation {
-   * //             claim: Claim {
-   * //             cType: '0x981955a2b7990554f6193a9e770ea625c68d2bfc5a1ff996e6e28d2a620fae16',
-   * //             contents: { age: 29 },
-   * //             owner: '5Gf3Y1CC9UmXYQbSzbA3JE71nCWPjr8LVngzpjqC3YiAwuSp'
-   * //             },
+   * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
    * ```
    */
   public removeClaimProperties(properties: string[]): void {
@@ -155,13 +146,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @example ```javascript
    * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
    * reqForAtt.removeClaimOwner();
-   *
    * // reqForAtt does not conatin the claim owner anymore.
-   * // reqForAtt = RequestForAttestation {
-   * //             claim: Claim {
-   * //             cType: '0x981955a2b7990554f6193a9e770ea625c68d2bfc5a1ff996e6e28d2a620fae16',
-   * //             contents: { name: 'Alice', age: 29 }
-   * //             },
    * ```
    */
   public removeClaimOwner(): void {
