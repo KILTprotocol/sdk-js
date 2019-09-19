@@ -169,7 +169,7 @@ export default class Attestation implements IAttestation {
    * @example
    * ```javascript
    * attestation.verify().then(isVerified => {
-   *   // logs true if the attestation is verified, false otherwise
+   *   // log true if the attestation is verified, false otherwise
    *   console.log('isVerified', isVerified);
    * });
    * ```
