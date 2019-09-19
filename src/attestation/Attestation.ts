@@ -129,7 +129,7 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * ```javascript
-   * // `attestation` is a newly created Attestation instance
+   * // attestation is a newly created Attestation instance
    * attestation.store(attester).then(() => {
    *    // the attestation was successfully stored, so now we could for example create an AttestedClaim
    * }).catch(e => {
