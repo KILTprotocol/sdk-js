@@ -101,12 +101,12 @@ export default class Attestation implements IAttestation {
    * @returns A new attestation.
    * @example
    * ```javascript
-   * // `encodedQueryResult` is the result of a chain query
+   * // `encodedQueryResult` is the result of a chain query by claimHash
    * const attestationTuple = encodedQueryResult.toJSON();
    *
    * // transform the tuple into an IAttestation object
    * const attestationObj: IAttestation = {
-   *    claimHash,
+   *    claimHash, // the claimHash used to query encodedQueryResult
    *    cTypeHash: attestationTuple[0],
    *    owner: attestationTuple[1],
    *    delegationId: attestationTuple[2],
