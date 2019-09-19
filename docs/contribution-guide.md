@@ -1,6 +1,7 @@
 [apidoc]: https://kiltprotocol.github.io/sdk-js/api/index.html
 [eslint-plugin-jsdoc]: https://www.npmjs.com/package/eslint-plugin-jsdoc
 [typedoc]: https://github.com/TypeStrong/typedoc
+[TSDoc]: https://github.com/microsoft/tsdoc
 
 # Contribution Guide
 
@@ -8,12 +9,14 @@
 
 We want the KILT SDK to be easy to use for all fellow developers. We ❤️ well-documented code.
 
-KILT's API doc is available [here][apidoc].
+KILT SDK's API doc is available [here][apidoc].
 
-In the KILT SDK, modules and public methods are documented directly in the code, in what is called *docBlocks*. DocBlocks are special comments which document the code they precede. Our docBlocks need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
+In the KILT SDK, modules and public methods are documented directly in the code via [TSDoc][TSDoc]. If you know JSDoc, TSDoc is a stricter and TS-compatible version of it.
 
+Documentation is written in "docBlocks", special comments that document the code they precede. Docblocks start with `/**`.
+
+Our docBlocks need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
 We also check these rules on commit and in our CI pipeline, so that you're protected: you can't push a linting error to the repo.
-
 You don't need to - but if you're interested: you can see all the linting rules for the docBlocks in `.eslintrc.json`, and check what they mean on [eslint-plugin-jsdoc][eslint-plugin-jsdoc].
 
 We're using [typedoc][typedoc] to generate the API doc from the docBlocks.
@@ -47,7 +50,7 @@ On top of the the linting rules mentioned above (must document all parameters, m
 * Make sure you explain opaque abbreviations or jargon (example: TxStatus = transaction status);
 * When referring to SDK Classes and methods, make sure you link them in, using `[[]]`;
 * `@example`:
-  * Create it as valid code 😎;
+  * Create it as valid **JavaScript** code, to make it simple for both TS and JS developers;
   * Illustrate only this method's functionality, but also provide enough context for fellow developers to try it out:
     * Imports;
     * Preparation step;
@@ -55,7 +58,7 @@ On top of the the linting rules mentioned above (must document all parameters, m
     * Expected output;
     * Suggestion for the next step;
     * ...
-  * Don't hesitate to include comments;
+  * Don't hesitate to include comments 😎;
   * Keep it short! No need to overdo it: just the bit of context required to understand the method call is enough.
 
 💡The linting rules for the example snippet are **not** the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolumns. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter should be enough to help you figure the rules out.
