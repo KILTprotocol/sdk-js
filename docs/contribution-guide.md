@@ -53,8 +53,8 @@ On top of the the linting rules mentioned above (must document all parameters, m
   * Create it as valid **JS** code, to make it simple for both TS and JS developers;
   * Keep it really short, illustrate only this method's functionality;
   * Avoid printing the output of full objects;
-  * Don't use `console.log`;
-  * No need to use `Kilt` to signify that a class comes from Kilt (e.g.: ~~`Kilt.Identity`~~, just use `Identity` instead);
+  * Don't use `console.log()`;
+  * No need to write `Kilt` to signify that a class comes from Kilt (e.g.: ~~`Kilt.Identity`~~, just write `Identity` instead);
   * Include comments as needed 😎.
 
 💡The linting rules for the example snippet are **not** the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolumns. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter should be enough to help you figure the rules out.
