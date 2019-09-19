@@ -50,16 +50,12 @@ On top of the the linting rules mentioned above (must document all parameters, m
 * Make sure you explain opaque abbreviations or jargon (example: TxStatus = transaction status);
 * When referring to SDK Classes and methods, make sure you link them in, using `[[]]`;
 * `@example`:
-  * Create it as valid **JavaScript** code, to make it simple for both TS and JS developers;
-  * Illustrate only this method's functionality, but also provide enough context for fellow developers to try it out:
-    * Imports;
-    * Preparation step;
-    * Actual function call;
-    * Expected output;
-    * Suggestion for the next step;
-    * ...
-  * Don't hesitate to include comments 😎;
-  * Keep it short! No need to overdo it: just the bit of context required to understand the method call is enough.
+  * Create it as valid **JS** code, to make it simple for both TS and JS developers;
+  * Keep it really short, illustrate only this method's functionality;
+  * Avoid printing the output of full objects;
+  * Don't use `console.log`;
+  * No need to use `Kilt` to signify that a class comes from Kilt (e.g.: ~~`Kilt.Identity`~~, just use `Identity` instead);
+  * Include comments as needed 😎.
 
 💡The linting rules for the example snippet are **not** the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolumns. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter should be enough to help you figure the rules out.
 
@@ -73,9 +69,7 @@ Example of a method docBlock that follows these guidelines:
  * @param identity - The identity used to revoke the attestation. It should be an attester identity, or an identity with delegated rights.
  * @returns A promise containing the [[TxStatus]] (transaction status).
  * @example ```javascript
- * // revoke the attestation mapped to the claim hash "0xd8024cdc147c4fa9221cd177". To create `identity`, see `buildFromMnemonic` and `generateMnemonic` in the `Identity` class. Note that `identity` should have revokation rights.
  * Attestation.revoke("0xd8024cdc147c4fa9221cd177", identity);
- * Attestation.query("0xd8024cdc147c4fa9221cd177").then((attestation) => console.log(attestation.revoked)); // should log true
  * ```
  */
 ```
