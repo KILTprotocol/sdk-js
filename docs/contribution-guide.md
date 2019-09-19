@@ -14,9 +14,9 @@ In the KILT SDK, modules and public methods are documented directly in the code,
 
 We also check these rules on commit and in our CI pipeline, so that you're protected: you can't push a linting error to the repo.
 
-You don't need to - but if you're interested: you can see all the linting rules for the inline docBlocks in `.eslintrc.json`, and check what they mean on [eslint-plugin-jsdoc][eslint-plugin-jsdoc].
+You don't need to - but if you're interested: you can see all the linting rules for the docBlocks in `.eslintrc.json`, and check what they mean on [eslint-plugin-jsdoc][eslint-plugin-jsdoc].
 
-We're using [typedoc][typedoc] to generate the API doc from the inline docBlocks.
+We're using [typedoc][typedoc] to generate the API doc from the docBlocks.
 
 ### Documenting modules
 
