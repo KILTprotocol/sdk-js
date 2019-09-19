@@ -95,26 +95,20 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * [STATIC] Creates a new [[Attestation]] instance from the given interface.
+   * [STATIC] Builds an instance of [[Attestation]], from a simple object with the same properties.
+   * Used for deserialization.
    *
    * @param obj - The base object from which to create the attestation.
-   * @returns A new attestation.
+   * @returns A new [[Attestation]] object.
    * @example
    * ```javascript
-   * // `encodedQueryResult` is the result of a chain query by claimHash
-   * const attestationTuple = encodedQueryResult.toJSON();
-   *
-   * // transform the tuple into an IAttestation object
-   * const attestationObj: IAttestation = {
-   *    claimHash, // the claimHash used to query encodedQueryResult
-   *    cTypeHash: attestationTuple[0],
-   *    owner: attestationTuple[1],
-   *    delegationId: attestationTuple[2],
-   *    revoked: attestationTuple[3],
-   * };
+   * const serialized = '{ "claimHash": "0x967...", "cTypeHash": "0x981..." "owner": "5Gf...", "delegationId": "323..", "revoked": false}';
+   * const deserialized = JSON.parse(serialized);
    *
    * // create an Attestation object
-   * const attestation = Attestation.fromObject(attestationObj);
+   * const attestation = Kilt.Attestation.fromObject(deserialized);
+   *
+   * // now, we can call methods on attestation
    * ```
    */
   public static fromObject(obj: IAttestation): Attestation {
