@@ -1,5 +1,5 @@
 [apidoc]: https://kiltprotocol.github.io/sdk-js/api/index.html
-[jsdoc]: https://www.npmjs.com/package/eslint-plugin-jsdoc
+[eslint-plugin-jsdoc]: https://www.npmjs.com/package/eslint-plugin-jsdoc
 [typedoc]: https://github.com/TypeStrong/typedoc
 
 # Contribution Guide
@@ -10,11 +10,11 @@ We want the KILT SDK to be easy to use for all fellow developers. We ❤️ well
 
 KILT's API doc is available [here][apidoc].
 
-In the KILT SDK, modules and public methods are documented directly in the code, in what is called *docBlocks*. DocBlocks are special comments which document the code they precede. DocBlocks need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
+In the KILT SDK, modules and public methods are documented directly in the code, in what is called *docBlocks*. DocBlocks are special comments which document the code they precede. Our docBlocks need to follow some linting rules. Make sure ESLint is activated in your code editor, so the errors and warnings are highlighted.
 
 We also check these rules on commit and in our CI pipeline, so that you're protected: you can't push a linting error to the repo.
 
-You don't need to - but if you're interested, you can see all the linting rules for the inline docBlocks in `.eslintrc.json`, and check what they mean on [jsdoc][jsdoc].
+You don't need to - but if you're interested: you can see all the linting rules for the inline docBlocks in `.eslintrc.json`, and check what they mean on [eslint-plugin-jsdoc][eslint-plugin-jsdoc].
 
 We're using [typedoc][typedoc] to generate the API doc from the inline docBlocks.
 
@@ -72,8 +72,7 @@ Example of a method docBlock that follows these guidelines:
  * @example ```javascript
  * // revoke the attestation mapped to the claim hash "0xd8024cdc147c4fa9221cd177". To create `identity`, see `buildFromMnemonic` and `generateMnemonic` in the `Identity` class. Note that `identity` should have revokation rights.
  * Attestation.revoke("0xd8024cdc147c4fa9221cd177", identity);
- * Attestation.query("0xd8024cdc147c4fa9221cd177").then((attestation) => console.log(attestation.revoked));
- * // should log `true`
+ * Attestation.query("0xd8024cdc147c4fa9221cd177").then((attestation) => console.log(attestation.revoked)); // should log true
  * ```
  */
 ```
