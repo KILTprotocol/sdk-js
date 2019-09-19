@@ -1,6 +1,10 @@
 /**
  * @module Delegation/DelegationNode
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import { IDelegationNode } from '../types/Delegation'
 
 /**
@@ -14,6 +18,7 @@ import { IDelegationNode } from '../types/Delegation'
  *
  * @returns the bitset as single value uint8 array
  */
+// eslint-disable-next-line import/prefer-default-export
 export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
   const permisssionsAsBitset: number = delegation.permissions.reduce(
     (accumulator, currentValue) => accumulator + currentValue

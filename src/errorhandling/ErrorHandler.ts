@@ -1,10 +1,15 @@
 /**
+ * [[ErrorHandler]] helps spot and determine transaction errors.
  * @module ErrorHandling
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types'
 import { MetadataModule } from '@polkadot/types/Metadata/v2/Metadata'
-import { EventData, EventIndex } from '@polkadot/types/type/Event'
+import { EventIndex } from '@polkadot/types/type/Event'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ExtrinsicError, errorForCode } from './ExtrinsicError'
 
@@ -34,7 +39,7 @@ export class ErrorHandler {
     )
   }
 
-  constructor(apiPromise: ApiPromise) {
+  public constructor(apiPromise: ApiPromise) {
     ErrorHandler.getErrorModuleIndex(apiPromise).then((moduleIndex: number) => {
       this.moduleIndex = moduleIndex
     })
@@ -49,31 +54,27 @@ export class ErrorHandler {
    */
   public getExtrinsicError(
     extrinsicResult: SubmittableResult
-  ): ExtrinsicError | undefined {
+  ): ExtrinsicError | null {
     const events: EventRecord[] = extrinsicResult.events || []
 
-    const errorEvent: EventRecord | undefined = events.find(
-      (eventRecord: EventRecord) => {
-        const eventIndex: EventIndex = eventRecord.event.index
-        return (
-          !eventRecord.phase.asApplyExtrinsic.isEmpty &&
-          eventIndex[0] === this.moduleIndex
-        )
-      }
-    )
+    const errorEvent = events.find((eventRecord: EventRecord) => {
+      const eventIndex: EventIndex = eventRecord.event.index
+      return (
+        !eventRecord.phase.asApplyExtrinsic.isEmpty &&
+        eventIndex[0] === this.moduleIndex
+      )
+    })
     if (errorEvent) {
-      const data: EventData = errorEvent.event.data
-      const errorCode: number | undefined =
-        data && !data.isEmpty ? data[0].toJSON() : undefined
+      const { data } = errorEvent.event
+      const errorCode = data && !data.isEmpty ? data[0].toJSON() : null
       if (errorCode) {
         return errorForCode(errorCode)
-      } else {
-        log.warn(`error event doesn\'t have a valid error code: ${data}`)
       }
+      log.warn(`error event doesn't have a valid error code: ${data}`)
     } else {
       log.warn('no error event found in transaction result')
     }
-    return undefined
+    return null
   }
 
   /**
@@ -85,17 +86,11 @@ export class ErrorHandler {
     // @ts-ignore
     const modules: MetadataModule[] = await apiPromise.runtimeMetadata.metadata
       .asV2.modules
-    let index = 0
     const filtered: MetadataModule[] = modules.filter((mod: MetadataModule) => {
       return !mod.events.isEmpty
     })
-    for (const m of filtered) {
-      if (m.name.toString() === ErrorHandler.ERROR_MODULE_NAME) {
-        break
-      }
-      index++
-    }
-
-    return index
+    return filtered
+      .map(m => m.name.toString())
+      .indexOf(ErrorHandler.ERROR_MODULE_NAME)
   }
 }

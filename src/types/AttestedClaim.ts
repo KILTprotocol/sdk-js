@@ -1,5 +1,8 @@
 /**
- * @module TypeInterfaces
+ * @module TypeInterfaces/AttestedClaim
+ */
+/**
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import IRequestForAttestation from './RequestForAttestation'
 import IAttestation from './Attestation'

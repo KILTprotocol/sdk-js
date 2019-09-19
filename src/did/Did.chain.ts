@@ -1,27 +1,31 @@
 /**
  * @module DID
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { CodecResult } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
 
 import { getCached } from '../blockchainApiConnection'
-import { IDid } from '../did/Did'
+import { IDid } from './Did'
 import {
   getAddressFromIdentifier,
   getIdentifierFromAddress,
   decodeDid,
-} from '../did/Did.utils'
+} from './Did.utils'
 import Identity from '../identity/Identity'
 import TxStatus from '../blockchain/TxStatus'
 import IPublicIdentity from '../types/PublicIdentity'
 
 export async function queryByIdentifier(
   identifier: IDid['identifier']
-): Promise<IDid | undefined> {
+): Promise<IDid | null> {
   const blockchain = await getCached()
   const address = getAddressFromIdentifier(identifier)
-  const decoded: IDid | undefined = decodeDid(
+  const decoded = decodeDid(
     identifier,
     await blockchain.api.query.dID.dIDs(address)
   )
@@ -30,10 +34,10 @@ export async function queryByIdentifier(
 
 export async function queryByAddress(
   address: IPublicIdentity['address']
-): Promise<IDid | undefined> {
+): Promise<IDid | null> {
   const blockchain = await getCached()
   const identifier = getIdentifierFromAddress(address)
-  const decoded: IDid | undefined = decodeDid(
+  const decoded = decodeDid(
     identifier,
     await blockchain.api.query.dID.dIDs(address)
   )

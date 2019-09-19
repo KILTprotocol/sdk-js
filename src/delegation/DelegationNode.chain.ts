@@ -1,14 +1,18 @@
 /**
  * @module Delegation/DelegationNode
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { CodecResult } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
 
 import { getCached } from '../blockchainApiConnection'
-import { decodeDelegationNode } from '../delegation/DelegationDecoder'
-import DelegationNode from '../delegation/DelegationNode'
-import { permissionsAsBitset } from '../delegation/DelegationNode.utils'
+import { decodeDelegationNode } from './DelegationDecoder'
+import DelegationNode from './DelegationNode'
+import { permissionsAsBitset } from './DelegationNode.utils'
 import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import { IDelegationNode } from '../types/Delegation'
@@ -38,9 +42,9 @@ export async function store(
 
 export async function query(
   delegationId: IDelegationNode['id']
-): Promise<DelegationNode | undefined> {
+): Promise<DelegationNode | null> {
   const blockchain = await getCached()
-  const decoded: DelegationNode | undefined = decodeDelegationNode(
+  const decoded = decodeDelegationNode(
     await blockchain.api.query.delegation.delegations(delegationId)
   )
   if (decoded) {

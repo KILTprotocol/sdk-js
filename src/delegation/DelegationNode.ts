@@ -1,5 +1,13 @@
 /**
+ * Delegation nodes are used within the KILT protocol to construct the trust hierarchy.
+ * ***
+ *  Starting from the root node, entities can delegate the right to issue attestations to Claimers for a certain CTYPE and also delegate the right to attest and to delegate further nodes.
  * @module Delegation/DelegationNode
+ * @preferred
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import Crypto from '../crypto'
 import { QueryResult } from '../blockchain/Blockchain'
@@ -23,9 +31,11 @@ export default class DelegationNode extends DelegationBaseNode
    * @description Queries the delegation node with [delegationId].
    *
    * @param delegationId the unique identifier of the desired delegation
-   * @returns promise containing the [[DelegationNode]] or [undefined]
+   * @returns promise containing the [[DelegationNode]] or [null]
    */
-  public static async query(delegationId: string) {
+  public static async query(
+    delegationId: string
+  ): Promise<DelegationNode | null> {
     log.info(`:: query('${delegationId}')`)
     const result = await query(delegationId)
     log.info(`result: ${JSON.stringify(result)}`)
@@ -45,7 +55,7 @@ export default class DelegationNode extends DelegationBaseNode
    * @param permissions list of [[Permission]]s
    * @param parentId identifier of the parent delegation node already stored on-chain. Not required when the parent is the root node.
    */
-  constructor(
+  public constructor(
     id: IDelegationNode['id'],
     rootId: IDelegationNode['rootId'],
     account: IDelegationNode['account'],
@@ -107,15 +117,15 @@ export default class DelegationNode extends DelegationBaseNode
 
   /**
    * @description Fetches the parent node of this delegation node.
-   * @returns promise containing the parent as [[DelegationBaseNode]] or [undefined]
+   * @returns promise containing the parent as [[DelegationBaseNode]] or [null]
    */
 
-  public async getParent(): Promise<DelegationBaseNode | undefined> {
+  public async getParent(): Promise<DelegationBaseNode | null> {
     if (!this.parentId) {
       // parent must be root
-      return await this.getRoot()
+      return this.getRoot()
     }
-    return await query(this.parentId)
+    return query(this.parentId)
   }
 
   /**
@@ -135,8 +145,8 @@ export default class DelegationNode extends DelegationBaseNode
    * @returns promise containing a boolean flag
    */
   public async verify(): Promise<boolean> {
-    const node: DelegationNode | undefined = await query(this.id)
-    return node !== undefined && !node.revoked
+    const node = await query(this.id)
+    return node !== null && !node.revoked
   }
 
   /**
@@ -149,9 +159,9 @@ export default class DelegationNode extends DelegationBaseNode
     return revoke(this.id, identity)
   }
 
-  protected decodeChildNode(
-    queryResult: QueryResult
-  ): DelegationNode | undefined {
+  /* eslint-disable class-methods-use-this */
+  protected decodeChildNode(queryResult: QueryResult): DelegationNode | null {
     return decodeDelegationNode(queryResult)
   }
+  /* eslint-enable class-methods-use-this */
 }

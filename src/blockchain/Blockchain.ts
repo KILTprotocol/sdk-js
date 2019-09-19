@@ -1,5 +1,13 @@
 /**
+ *  Blockchain bridges that connects the SDK and the KILT Blockchain.
+ *  ***
+ *  Communicates with the chain via WebSockets and can [[listenToBlocks]]. It exposes the [[submitTx]] function that performs a transaction.
  * @module Blockchain
+ * @preferred
+ */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove
  */
 import { ApiPromise } from '@polkadot/api'
 import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
@@ -70,7 +78,9 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   // TODO: implement unsubscribe as subscriptionId continuously increases
-  public async listenToBlocks(listener: (header: Header) => void) {
+  public async listenToBlocks(
+    listener: (header: Header) => void
+  ): Promise<() => void> {
     const subscriptionId = await this.api.rpc.chain.subscribeNewHead(listener)
     return subscriptionId
   }
@@ -92,7 +102,7 @@ export default class Blockchain implements IBlockchainApi {
         .send((result: SubmittableResult) => {
           log.info(`Got tx status '${result.status.type}'`)
 
-          const status = result.status
+          const { status } = result
           if (ErrorHandler.extrinsicFailed(result)) {
             log.warn(`Extrinsic execution failed`)
             log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)

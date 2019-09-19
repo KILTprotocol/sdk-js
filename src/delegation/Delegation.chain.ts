@@ -1,10 +1,20 @@
 /**
  * @module Delegation
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import { getCached } from '../blockchainApiConnection'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
-import { CodecWithId } from '../delegation/DelegationDecoder'
+import { CodecWithId } from './DelegationDecoder'
 import { IDelegationBaseNode } from '../types/Delegation'
+
+function decodeDelegatedAttestations(queryResult: QueryResult): string[] {
+  const json =
+    queryResult && queryResult.encodedLength ? queryResult.toJSON() : []
+  return json
+}
 
 export async function getAttestationHashes(
   id: IDelegationBaseNode['id']
@@ -14,12 +24,6 @@ export async function getAttestationHashes(
     id
   )
   return decodeDelegatedAttestations(encodedHashes)
-}
-
-function decodeDelegatedAttestations(queryResult: QueryResult): string[] {
-  const json =
-    queryResult && queryResult.encodedLength ? queryResult.toJSON() : []
-  return json
 }
 
 export async function getChildIds(
