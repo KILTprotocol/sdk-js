@@ -50,14 +50,39 @@ function isDIDResult(object: object): object is DIDResult {
 
 export default class PublicIdentity implements IPublicIdentity {
   /**
-   * @description (STATIC) Creates a new Public Identity from a DID (Decentralised identifier) object.
-   * @param didDocument - Contains the public key, external ID and service endpoint
-   * @returns A new [[PublicIdentity]] object
-   * @example
-   * ```javascript
+   * (STATIC) Creates a new Public Identity from a DID (Decentralised identifier) document.
    *
-   * const identity = PublicIdentity.fromDidDocument(didDocument);
-   *
+   * @param didDocument - Contains the public key, external ID and service endpoint.
+   * @returns A new [[PublicIdentity]] object.
+   * @example ```javascript
+   * const didDocument = {
+   *   id: 'did:kilt:1234567',
+   *   authentication: {
+   *     type: 'Ed25519SignatureAuthentication2018',
+   *     publicKey: ['did:kilt:1234567#key-1'],
+   *   },
+   *   publicKey: [
+   *     {
+   *       id: 'did:kilt:1234567#key-1',
+   *       type: 'Ed25519VerificationKey2018',
+   *       controller: 'did:kilt:1234567',
+   *       publicKeyHex: '0x25346245...',
+   *     },
+   *     {
+   *       id: 'did:kilt:1234567#key-2',
+   *       type: 'X25519Salsa20Poly1305Key2018',
+   *       controller: 'did:kilt:1234567',
+   *       publicKeyHex: '0x98765456...',
+   *     },
+   *   ],
+   *   service: [
+   *     {
+   *       type: 'KiltMessagingService',
+   *       serviceEndpoint: 'http://services.kilt.io/messaging',
+   *     },
+   *   ],
+   * };
+   * PublicIdentity.fromDidDocument(didDocument);
    * ```
    */
   public static fromDidDocument(didDocument: object): IPublicIdentity | null {
@@ -89,15 +114,21 @@ export default class PublicIdentity implements IPublicIdentity {
   }
 
   /**
-   * @description (STATIC) (ASYNC) Resolves internal and external DIDs (Decentralised identifier) from a specific identifier
-   * @param identifier - URL scheme identifier
-   * @param urlResolver  - DID URL always identifies the resource to be located
-   * @returns  A new [[PublicIdentity]] object
-   * @example
-   * ```javascript
+   * (STATIC) (ASYNC) Requests internal and external DID (Decentralised identifier) documents
+   * and converts them to a [[PublicIdentity]] object.
    *
-   * const identity = PublicIdentity.resolveFromDid(identifier, urlResolver)
-   *
+   * @param identifier - The Decentralized Identifier to be resolved.
+   * @param urlResolver  - A url resolver, which is used to query the did document.
+   * @returns A new [[PublicIdentity]] object.
+   * @example ```javascript
+   * const urlResolver = {
+   *   resolve: (url: string) => {
+   *     return fetch(url)
+   *       .then(response => response.json());
+   *   },
+   * };
+   * const identifier = 'did:kilt:1234567';
+   * PublicIdentity.resolveFromDid(identifier, urlResolver);
    * ```
    */
   public static async resolveFromDid(
