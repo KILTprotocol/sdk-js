@@ -62,16 +62,25 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 
 export default class RequestForAttestation implements IRequestForAttestation {
   /**
-   * Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
+   * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
    * @param obj - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
    * @returns  A new [[RequestForAttestation]] `object`.
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const serialized =
-   *   '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
+   *   '{ "claim":
+   *      { "cType": "0x981...",
+   *        "contents":
+   *        { "name": "Alice",
+   *          "age": 29
+   *        },
+   *      owner: "5Gf..."
+   *      }, ...
+   *    }, ...
+   *  }';
    * const parsed = JSON.parse(serialized);
-   *
    * RequestForAttestation.fromObject(parsed);
    * ```
    */
@@ -115,11 +124,12 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * Removes [[Claim]] properties from the [[RequestForAttestation]] object.
+   * Removes [[Claim]] properties from the [[RequestForAttestation]] object, provides anonymity and security when building the [[createPresentation]] method.
    *
    * @param properties - A property within the underlying [[Claim]] object.
    * @throws An error, when a property, which should be deleted, wasn't found.
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const rawClaim = {
    *   name: 'Alice',
    *   age: 29,
@@ -127,7 +137,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * const claim = new Claim(ctype, rawClaim, alice);
    * const reqForAtt = new RequestForAttestation(claim, [], alice);
    * reqForAtt.removeClaimProperties(['name']);
-   * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
+   * // reqForAtt does not contain name in its claimHashTree and its claim contents anymore.
    * ```
    */
   public removeClaimProperties(properties: string[]): void {
@@ -141,12 +151,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * Removes the [[Claim]] Owner from the [[RequestForAttestation]] object.
+   * Removes the [[Claim]] Owner from the [[RequestForAttestation]] object, provides an option to **exclude** the [[Claim]] owner in the [[createPresentation]] method.
    *
-   * @example ```javascript
-   * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
+   * @example
+   * ```javascript
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
    * reqForAtt.removeClaimOwner();
-   * // reqForAtt does not conatin the claim owner anymore.
+   * // reqForAtt does not conatin the claim owner or the nonce anymore.
    * ```
    */
   public removeClaimOwner(): void {
@@ -158,9 +169,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Verifies the data of the [[RequestForAttestation]] object.
    *
    * @returns Whether verifying the data inside the object was successful.
-   * @example ```javascript
-   * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
-   * reqForAtt.verifyData(); // returns true
+   * @example
+   * ```javascript
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.verifyData();
+   * // returns true
    * ```
    */
   public verifyData(): boolean {
@@ -214,12 +227,14 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * Verifies the signature inside the [[RequestForAttestation]] object.
+   * Verifies the signature inside the [[RequestForAttestation]] object, an unsuccessful signature will stop the Tx (Transaction).
    *
    * @returns Whether the verification of the claimers signature was successful.
-   * @example ```javascript
-   * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
-   * reqForAtt.verifySignature(); // returns true
+   * @example
+   * ```javascript
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.verifySignature();
+   * // returns true
    * ```
    */
   public verifySignature(): boolean {
