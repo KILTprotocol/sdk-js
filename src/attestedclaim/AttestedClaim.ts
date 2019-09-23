@@ -25,8 +25,11 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns A new attested claim.
    * @example
    * ```javascript
-   * // if cloneDeep is a utility function that deep clones objects
-   * const attestedClaimCopy = AttestedClaim.fromObject(cloneDeep(attestedClaim));
+   * // `serialized` is a serialized AttestedClaim object, e.g.: '{ "request": "...", "attestation": "...", ...}'
+   * const deserialized = JSON.parse(serialized);
+   *
+   * // create an AttestedClaim object, so we can call methods on it
+   * const attestedClaim = AttestedClaim.fromObject(attestedClaim);
    * ```
    */
   public static fromObject(obj: IAttestedClaim): AttestedClaim {
@@ -48,22 +51,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param attestation - The attestation to base the [[AttestedClaim]] on.
    * @example Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
    * ```javascript
-   * // connect to the blockchain
-   * Kilt.default.connect('wss://full-nodes.kilt.io:9944');
-   *
-   * // store an attestation on chain
-   * attestation.store(attester).then(() => {
-   *    // the attestation was successfully stored so we can create an AttestedClaim
-   *    const attestedClaim = new Kilt.AttestedClaim(requestForAttestation, attestation);
-   *    console.log(JSON.stringify(attestedClaim));
-   * }).catch(e => {
-   *    console.log(e);
-   * }).finally(() => {
-   *    // disconnect from the blockchain
-   *    Kilt.BlockchainApiConnection.getCached().then(blockchain => {
-   *      blockchain.api.disconnect();
-   *    });
-   * });
+   * new AttestedClaim(requestForAttestation, attestation);
    * ```
    *
    * About this example:
@@ -89,8 +77,8 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns A promise containing whether this attested claim is valid.
    * @example
    * ```javascript
-   * attestedClaim.verify().then(data => {
-   *    console.log('isVerified', data);
+   * attestedClaim.verify().then(isVerified => {
+   *   // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```
    */
@@ -110,7 +98,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns Whether the attestated claim's data is valid.
    * @example
    * ```javascript
-   * const isDataValid = attestedClaim.verifyData();
+   * attestedClaim.verifyData();
    * ```
    */
   public verifyData(): boolean {
@@ -126,7 +114,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns The hash of the claim for this attestation (claimHash).
    * @example
    * ```javascript
-   * const claimHash = attestation.getHash();
+   * attestation.getHash();
    * ```
    */
   public getHash(): string {
@@ -141,14 +129,8 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns The newly created presentation.
    * @example
    * ```javascript
-   * // if claim.contents are:
-   * // {
-   * //   isOver18: true,
-   * //   birthYear: 1990
-   * // }
-   *
-   * // create a presentation that only discloses `isOver18`, while `birthYear` and `identity` remain private
-   * const presentation = createPresentation(['birthYear'], true);
+   * // create a presentation that keeps `birthYear` and `identity` private
+   * createPresentation(['birthYear'], true);
    * ```
    */
   public createPresentation(
