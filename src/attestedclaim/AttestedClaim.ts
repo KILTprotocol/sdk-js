@@ -53,9 +53,6 @@ export default class AttestedClaim implements IAttestedClaim {
    * ```javascript
    * new AttestedClaim(requestForAttestation, attestation);
    * ```
-   *
-   * About this example:
-   * * see [[Attestation.store]] for details on the `store` method
    */
   public constructor(
     request: IRequestForAttestation,
