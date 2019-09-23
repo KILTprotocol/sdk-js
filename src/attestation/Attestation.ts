@@ -37,10 +37,8 @@ export default class Attestation implements IAttestation {
    * @param revoked - Whether the attestation should be revoked.
    * @example
    * ```javascript
-   * // create a new attestation. To create requestForAttestation, see RequestForAttestation's constructor. To create attester, see buildFromMnemonic and generateMnemonic in Identity.
-   * const attestation = new Kilt.Attestation(requestForAttestation, attester);
-   *
-   * // now we could for example store the attestation on-chain (see store method in this class)
+   * // create an attestation, e.g. to store it on-chain
+   * const attestation = new Attestation(requestForAttestation, attester);
    * ```
    */
   public constructor(
@@ -62,9 +60,9 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[Attestation]] or null.
    * @example
    * ```javascript
-   * const attestation = await Attestation.query("0xd8024cdc147c4fa9221cd177");
-   *
-   * // now we could for example revoke the attestation (see revoke methods in this class)
+   * Attestation.query('0xd8024cdc147c4fa9221cd177').then(attestation => {
+   *    // now we can for example revoke `attestation`
+   * });
    * ```
    */
   public static async query(claimHash: string): Promise<Attestation | null> {
@@ -79,12 +77,9 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example
    * ```javascript
-   * // the identity should have revocation rights
-   * Attestation.revoke('0xd8024cdc147c4fa9221cd177', identity);
-   *
-   * Attestation.query('0xd8024cdc147c4fa9221cd177').then(attestation =>
-   *   console.log(attestation.revoked) // should log true
-   * );
+   * Attestation.revoke('0xd8024cdc147c4fa9221cd177').then(() => {
+   *   // the attestation was successfully revoked
+   * });
    * ```
    */
   public static async revoke(
@@ -102,13 +97,11 @@ export default class Attestation implements IAttestation {
    * @returns A new [[Attestation]] object.
    * @example
    * ```javascript
-   * const serialized = '{ "claimHash": "0x967...", "cTypeHash": "0x981..." "owner": "5Gf...", "delegationId": "323..", "revoked": false}';
+   * // `serialized` is a serialized attestation object, e.g.: '{ "claimHash": "0x967...", "cTypeHash": "0x981..." "owner": "5Gf...", "delegationId": "323..", "revoked": false}'
    * const deserialized = JSON.parse(serialized);
    *
-   * // create an Attestation object
-   * const attestation = Kilt.Attestation.fromObject(deserialized);
-   *
-   * // now, we can call methods on attestation
+   * // create an Attestation object, so we can call methods on it
+   * const attestation = Attestation.fromObject(deserialized);
    * ```
    */
   public static fromObject(obj: IAttestation): Attestation {
@@ -123,16 +116,8 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * ```javascript
-   * // attestation is a newly created Attestation instance
    * attestation.store(attester).then(() => {
-   *    // the attestation was successfully stored, so now we could for example create an AttestedClaim
-   * }).catch(e => {
-   *    // log errors
-   * }).finally(() => {
-   *    // disconnect from the blockchain
-   *    Kilt.BlockchainApiConnection.getCached().then(blockchain => {
-   *      blockchain.api.disconnect();
-   *    });
+   *    // the attestation was successfully stored, so now we can for example create an AttestedClaim
    * });
    * ```
    */
@@ -147,8 +132,9 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example
    * ```javascript
-   * // the identity should have revocation rights
-   * const revokeStatus = await attestation.revoke(identity); // should be true
+   * attestation.revoke(identity).then(() => {
+   *    // the attestation was successfully revoked
+   * });
    * ```
    */
   public async revoke(identity: Identity): Promise<TxStatus> {
@@ -163,8 +149,7 @@ export default class Attestation implements IAttestation {
    * @example
    * ```javascript
    * attestation.verify().then(isVerified => {
-   *   // log true if the attestation is verified, false otherwise
-   *   console.log('isVerified', isVerified);
+   *   // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```
    */
