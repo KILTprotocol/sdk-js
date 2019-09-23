@@ -38,7 +38,7 @@ export default class Attestation implements IAttestation {
    * @example
    * ```javascript
    * // create an attestation, e.g. to store it on-chain
-   * const attestation = new Attestation(requestForAttestation, attester);
+   * new Attestation(requestForAttestation, attester);
    * ```
    */
   public constructor(
@@ -97,7 +97,7 @@ export default class Attestation implements IAttestation {
    * @returns A new [[Attestation]] object.
    * @example
    * ```javascript
-   * // `serialized` is a serialized attestation object, e.g.: '{ "claimHash": "0x967...", "cTypeHash": "0x981..." "owner": "5Gf...", "delegationId": "323..", "revoked": false}'
+   * // `serialized` is a serialized Attestation object, e.g.: '{ "claimHash": "0x967...", "cTypeHash": "0x981..." "owner": "5Gf...", "delegationId": "323..", "revoked": false}'
    * const deserialized = JSON.parse(serialized);
    *
    * // create an Attestation object, so we can call methods on it
