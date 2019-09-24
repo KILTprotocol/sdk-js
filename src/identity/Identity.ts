@@ -47,7 +47,8 @@ export default class Identity extends PublicIdentity {
    * (STATIC) Generates Mnemonic phrase used to create identities from phrase seed.
    *
    * @returns Randomly generated [[BIP39]](https://www.npmjs.com/package/bip39) mnemonic phrase (Secret phrase).
-   * @example ```javascript
+   * @example
+   * ```javascript
    * Identity.generateMnemonic();
    * // returns: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    * ```
@@ -62,7 +63,8 @@ export default class Identity extends PublicIdentity {
    * @param phraseArg - [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
    * @returns An [[Identity]].
    *
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const mnemonic = Identity.generateMnemonic();
    * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    *
@@ -93,7 +95,8 @@ export default class Identity extends PublicIdentity {
    *
    * @param seedArg - Seed as hex string (Starting with 0x).
    * @returns  An [[Identity]]
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const seed =
    *   '0x6ce9fd060c70165c0fc8da25810d249106d5df100aa980e0d9a11409d6b35261';
    * Identity.buildFromSeedString(seed);
@@ -109,7 +112,8 @@ export default class Identity extends PublicIdentity {
    *
    * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
    * @returns An [[Identity]].
-   * @example ```javascript
+   * @example
+   * ```javascript
    * // prettier-ignore
    * const seed = new Uint8Array([108, 233, 253,  6,  12, 112,  22,  92,
    *                               15, 200, 218, 37, 129,  13,  36, 145,
@@ -130,7 +134,8 @@ export default class Identity extends PublicIdentity {
    *
    * @param uri - Standard identifiers, e.g. //Alice.
    * @returns  An [[Identity]].
-   * @example ```javascript
+   * @example
+   * ```javascript
    * Identity.buildFromURI('//Bob');
    * ```
    */
@@ -174,7 +179,8 @@ export default class Identity extends PublicIdentity {
    * Can be given to third-parties to communicate and process signatures.
    *
    * @returns The [[PublicIdentity]], corresponding to the [[Identity]].
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const alice = Kilt.Identity.buildFromMnemonic();
    * alice.getPublicIdentity();
    * ```
@@ -189,7 +195,8 @@ export default class Identity extends PublicIdentity {
    *
    * @param cryptoInput - The data to be signed.
    * @returns The signed data.
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const alice = Identity.buildFromMnemonic();
    * const data = 'This is a test';
    * alice.sign(data);
@@ -224,7 +231,8 @@ export default class Identity extends PublicIdentity {
    * @param cryptoInput - The data to be encrypted.
    * @param boxPublicKey - The public key of the receiver of the encrypted data.
    * @returns The encrypted data.
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const bob = new PublicIdentity('523....', '0xab1234...');
    *
@@ -253,7 +261,8 @@ export default class Identity extends PublicIdentity {
    * @param encrypted - The encrypted data.
    * @param boxPublicKey - The public key of the sender of the encrypted data.
    * @returns The decrypted data.
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const alice = new PublicIdentity('74be...', '0xeb98765...');
    * const bob = Identity.buildFromMnemonic('house cat ...');
    *
@@ -283,7 +292,8 @@ export default class Identity extends PublicIdentity {
    * @param input - The data to be encrypted.
    * @param boxPublicKey - The public key of the receiver of the encrypted data.
    * @returns The encrypted data.
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const bob = new PublicIdentity('523....', '0xab1234...');
    *
@@ -313,7 +323,8 @@ export default class Identity extends PublicIdentity {
    * @param encrypted - The encrypted data.
    * @param boxPublicKey - The public key of the sender of the encrypted data.
    * @returns The decrypted data.
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const alice = new PublicIdentity('74be...', '0xeb98765...');
    * const bob = Identity.buildFromMnemonic('house cat ...');
    *
@@ -343,7 +354,8 @@ export default class Identity extends PublicIdentity {
    * @param submittableExtrinsic - A chain transaction.
    * @param nonceAsHex - The AccountNonce of the address doing the transaction.
    * @returns The signed SubmittableExtrinsic.
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const tx = await blockchain.api.tx.ctype.add(ctype.hash);
    * const nonce = await blockchain.api.query.system.accountNonce(alice.address);

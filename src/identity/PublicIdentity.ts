@@ -54,7 +54,8 @@ export default class PublicIdentity implements IPublicIdentity {
    *
    * @param didDocument - Contains the public key, external ID and service endpoint.
    * @returns A new [[PublicIdentity]] object.
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const didDocument = {
    *   id: 'did:kilt:1234567',
    *   authentication: {
@@ -120,7 +121,8 @@ export default class PublicIdentity implements IPublicIdentity {
    * @param identifier - The Decentralized Identifier to be resolved.
    * @param urlResolver  - A url resolver, which is used to query the did document.
    * @returns A new [[PublicIdentity]] object.
-   * @example ```javascript
+   * @example
+   * ```javascript
    * const urlResolver = {
    *   resolve: (url: string) => {
    *     return fetch(url)
