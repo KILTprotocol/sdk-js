@@ -9,8 +9,8 @@ import ICType from '../types/CType'
 import Crypto from '../crypto'
 
 export function verifySchemaWithErrors(
-  model: object,
-  metaModel: object,
+  model: any,
+  metaModel: any,
   messages?: string[]
 ): boolean {
   const ajv = new Ajv()
@@ -26,11 +26,11 @@ export function verifySchemaWithErrors(
   return !!result
 }
 
-export function verifySchema(model: object, metaModel: object): boolean {
+export function verifySchema(model: any, metaModel: any): boolean {
   return verifySchemaWithErrors(model, metaModel)
 }
 
-export function verifyClaimStructure(claim: object, schema: object): boolean {
+export function verifyClaimStructure(claim: any, schema: any): boolean {
   if (!verifySchema(schema, CTypeModel)) {
     throw new Error('CType does not correspond to schema')
   }
@@ -99,7 +99,7 @@ function getLocalized(o: any, lang?: string): any {
  * into the input model. This is the reverse function of CType.fromInputModel(...).
  * @returns The CTYPE input model.
  */
-export function getCTypeInputModel(ctype: CType): CType {
+export function getCTypeInputModel(ctype: CType): any {
   // create clone
   const result = JSON.parse(JSON.stringify(ctype.schema))
   result.$schema = CTypeInputModel.$id
@@ -126,7 +126,7 @@ export function getCTypeInputModel(ctype: CType): CType {
  * @param {string} lang the language to choose translations for
  * @returns {any} The claim input model
  */
-export function getClaimInputModel(ctype: ICType, lang?: string): ICType {
+export function getClaimInputModel(ctype: ICType, lang?: string): any {
   // create clone
   const result = JSON.parse(JSON.stringify(ctype.schema))
   result.title = getLocalized(ctype.metadata.title, lang)

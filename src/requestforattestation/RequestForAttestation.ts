@@ -28,11 +28,11 @@ import IRequestForAttestation, {
   NonceHash,
 } from '../types/RequestForAttestation'
 
-function hashNonceValue(nonce: string, value: object | string): string {
+function hashNonceValue(nonce: string, value: any): string {
   return hashObjectAsStr(value, nonce)
 }
 
-function generateHash(value: object | string): NonceHash {
+function generateHash(value: any): NonceHash {
   const nonce: string = uuid()
   return {
     nonce,
