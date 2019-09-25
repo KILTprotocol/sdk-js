@@ -5,7 +5,7 @@ import Ajv from 'ajv'
 
 import { CTypeModel, CTypeInputModel } from './CTypeSchema'
 import CType from './CType'
-import ICType from '../types/CType'
+import ICType, { ICTypeInput } from '../types/CType'
 import Crypto from '../crypto'
 
 export function verifySchemaWithErrors(
@@ -72,7 +72,7 @@ export function fromInputModel(ctypeInput: any): CType {
   }
 
   const properties = {}
-  ctypeInput.properties.forEach((p: any) => {
+  ctypeInput.properties.forEach((p: ICTypeInput) => {
     const { title, $id, ...rest } = p
     properties[$id] = rest
     ctype.metadata.properties[$id] = {

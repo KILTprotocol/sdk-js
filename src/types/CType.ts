@@ -26,3 +26,14 @@ export default interface ICType {
   schema: ICTypeSchema
   metadata: ICtypeMetadata
 }
+
+export interface ICTypeInput {
+  $id: any
+  title: {
+    default: string
+  }
+  description: {
+    default: string
+  }
+  properties: any
+}
