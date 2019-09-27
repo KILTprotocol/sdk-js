@@ -69,7 +69,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns  A new [[RequestForAttestation]] `object`.
    * @example
    * ```javascript
-   * // create an RequestForAttestation object, so we can call methods on it (`serialized` is a RequestForAttestation object )
+   * // create an RequestForAttestation object, so we can call methods on it (`serialized` is a serialized RequestForAttestation object)
    * RequestForAttestation.fromObject(JSON.parse(serialized));
    * ```
    */
@@ -92,6 +92,19 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
   public delegationId?: IDelegationBaseNode['id']
 
+  /**
+   * Builds a new [[RequestForAttestation]] instance.
+   *
+   * @param claim - A claim, usually sent by a claimer.
+   * @param legitimations - Attested claims used as legitimations.
+   * @param identity - Identity of the claimer.
+   * @param delegationId - A delegation tree's root node id.
+   * @example
+   * ```javascript
+   * // create a new request for attestation
+   * new RequestForAttestation(claim, [], alice);
+   * ```
+   */
   public constructor(
     claim: IClaim,
     legitimations: AttestedClaim[],
@@ -115,12 +128,12 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * Removes [[Claim]] properties from the [[RequestForAttestation]] object, provides anonymity and security when building the [[createPresentation]] method.
    *
-   * @param properties - A property within the underlying [[Claim]] object.
-   * @throws An error, when a property, which should be deleted, wasn't found.
+   * @param properties - Properties to remove from the [[Claim]] object.
+   * @throws An error when a property which should be deleted wasn't found.
    * @example
    * ```javascript
    *  requestForAttestation.removeClaimProperties(['name']);
-   * // RequestForAttestation does not contain name in its claimHashTree and its claim contents anymore.
+   * // `name` is deleted from `requestForAttestation`
    * ```
    */
   public removeClaimProperties(properties: string[]): void {
@@ -134,12 +147,12 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * Removes the [[Claim]] Owner from the [[RequestForAttestation]] object, provides an option to **exclude** the [[Claim]] owner in the [[createPresentation]] method.
+   * Removes the [[Claim]] owner from the [[RequestForAttestation]] object.
    *
    * @example
    * ```javascript
    * requestForAttestation.removeClaimOwner();
-   * // RequestForAttestation does not conatin the claim owner or the nonce anymore.
+   * // `requestForAttestation` does not contain the claim `owner` or the `claimOwner`'s nonce anymore.
    * ```
    */
   public removeClaimOwner(): void {
@@ -148,13 +161,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * Verifies the data of the [[RequestForAttestation]] object.
+   * Verifies the data of the [[RequestForAttestation]] object; used to check that the data was not tampered with, by checking the data against hashes.
    *
-   * @returns Whether verifying the data inside the object was successful.
+   * @returns Whether the data is valid.
    * @example
    * ```javascript
    *  requestForAttestation.verifyData();
-   * // returns true
+   * // returns `true` if the data is correct
    * ```
    */
   public verifyData(): boolean {
@@ -208,13 +221,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * Verifies the signature inside the [[RequestForAttestation]] object, an unsuccessful signature will stop the Tx (Transaction).
+   * Verifies the signature of the [[RequestForAttestation]] object.
    *
-   * @returns Whether the verification of the claimers signature was successful.
+   * @returns Whether the signature is correct.
    * @example
    * ```javascript
    * requestForAttestation.verifySignature();
-   * // returns true
+   * // returns `true` if the signature is correct
    * ```
    */
   public verifySignature(): boolean {
