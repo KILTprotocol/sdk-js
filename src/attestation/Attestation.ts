@@ -98,10 +98,8 @@ export default class Attestation implements IAttestation {
    * @example
    * ```javascript
    * // `serialized` is a serialized Attestation object, e.g.: '{ "claimHash": "0x967...", "cTypeHash": "0x981..." "owner": "5Gf...", "delegationId": "323..", "revoked": false}'
-   * const deserialized = JSON.parse(serialized);
-   *
    * // create an Attestation object, so we can call methods on it
-   * const attestation = Attestation.fromObject(deserialized);
+   * Attestation.fromObject(JSON.parse(serialized));
    * ```
    */
   public static fromObject(obj: IAttestation): Attestation {
