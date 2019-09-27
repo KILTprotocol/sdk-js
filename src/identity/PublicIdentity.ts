@@ -56,33 +56,7 @@ export default class PublicIdentity implements IPublicIdentity {
    * @returns A new [[PublicIdentity]] object.
    * @example
    * ```javascript
-   * const didDocument = {
-   *   id: 'did:kilt:1234567',
-   *   authentication: {
-   *     type: 'Ed25519SignatureAuthentication2018',
-   *     publicKey: ['did:kilt:1234567#key-1'],
-   *   },
-   *   publicKey: [
-   *     {
-   *       id: 'did:kilt:1234567#key-1',
-   *       type: 'Ed25519VerificationKey2018',
-   *       controller: 'did:kilt:1234567',
-   *       publicKeyHex: '0x25346245...',
-   *     },
-   *     {
-   *       id: 'did:kilt:1234567#key-2',
-   *       type: 'X25519Salsa20Poly1305Key2018',
-   *       controller: 'did:kilt:1234567',
-   *       publicKeyHex: '0x98765456...',
-   *     },
-   *   ],
-   *   service: [
-   *     {
-   *       type: 'KiltMessagingService',
-   *       serviceEndpoint: 'http://services.kilt.io/messaging',
-   *     },
-   *   ],
-   * };
+   * // creates a new PublicIdentity, using a DID document
    * PublicIdentity.fromDidDocument(didDocument);
    * ```
    */
@@ -123,14 +97,7 @@ export default class PublicIdentity implements IPublicIdentity {
    * @returns A new [[PublicIdentity]] object.
    * @example
    * ```javascript
-   * const urlResolver = {
-   *   resolve: (url: string) => {
-   *     return fetch(url)
-   *       .then(response => response.json());
-   *   },
-   * };
-   * const identifier = 'did:kilt:1234567';
-   * PublicIdentity.resolveFromDid(identifier, urlResolver);
+   * PublicIdentity.resolveFromDid('did:kilt:1234567', urlResolver);
    * ```
    */
   public static async resolveFromDid(
