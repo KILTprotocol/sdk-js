@@ -19,17 +19,15 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
-   * [STATIC] Creates a new [[AttestedClaim]] instance from the given interface.
+   * [STATIC] Builds an instance of [[AttestedClaim]], from a simple object with the same properties.
+   * Used for deserialization.
    *
    * @param obj - The base object from which to create the attested claim.
-   * @returns A new attested claim.
+   * @returns A new [[AttestedClaim]] object.
    * @example
    * ```javascript
-   * // `serialized` is a serialized AttestedClaim object, e.g.: '{ "request": "...", "attestation": "...", ...}'
-   * const deserialized = JSON.parse(serialized);
-   *
-   * // create an AttestedClaim object, so we can call methods on it
-   * const attestedClaim = AttestedClaim.fromObject(attestedClaim);
+   * // create an AttestedClaim object, so we can call methods on it (`serialized` is a serialized AttestedClaim object )
+   * AttestedClaim.fromObject(JSON.parse(serialized));
    * ```
    */
   public static fromObject(obj: IAttestedClaim): AttestedClaim {
