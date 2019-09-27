@@ -1,6 +1,6 @@
 /**
  * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revokable**.
- * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as an [[AttestedClaim]] (= "Credential").
+ * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as an [[AttestedClaim]] ("Credential").
  *
  * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
  * * the key is the hash of the corresponding claim;
