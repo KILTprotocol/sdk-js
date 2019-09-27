@@ -50,13 +50,12 @@ function isDIDResult(object: object): object is DIDResult {
 
 export default class PublicIdentity implements IPublicIdentity {
   /**
-   * (STATIC) Creates a new Public Identity from a DID (Decentralised identifier) document.
+   * [STATIC] Creates a new Public Identity from a DID document (DID - Decentralized Identifiers: https://w3c-ccg.github.io/did-spec/).
    *
    * @param didDocument - Contains the public key, external ID and service endpoint.
    * @returns A new [[PublicIdentity]] object.
    * @example
    * ```javascript
-   * // creates a new PublicIdentity, using a DID document
    * PublicIdentity.fromDidDocument(didDocument);
    * ```
    */
@@ -89,11 +88,10 @@ export default class PublicIdentity implements IPublicIdentity {
   }
 
   /**
-   * (STATIC) (ASYNC) Requests internal and external DID (Decentralised identifier) documents
-   * and converts them to a [[PublicIdentity]] object.
+   * [STATIC] [ASYNC] Resolves a decentralized identifier (DID) into a [[PublicIdentity]].
    *
    * @param identifier - The Decentralized Identifier to be resolved.
-   * @param urlResolver  - A url resolver, which is used to query the did document.
+   * @param urlResolver  - A URL resolver, which is used to query the did document.
    * @returns A new [[PublicIdentity]] object.
    * @example
    * ```javascript
@@ -139,15 +137,14 @@ export default class PublicIdentity implements IPublicIdentity {
   /**
    * Builds a new [[PublicIdentity]] instance.
    *
-   * @param address - An address of an Identity
-   * @param boxPublicKeyAsHex - The public key of the sender to build the Public.
-   * @param serviceAddress - The DID reference address
-   * @example Builds a [[PublicIdentity]] from the DID (Decentralised identifier) documents
+   * @param address - A public address.
+   * @param boxPublicKeyAsHex - The public encryption key.
+   * @param serviceAddress - The address of the service used to retreive the DID.
+   * @example
    * ```javascript
    * new PublicIdentity(address, boxPublicKeyAsHex, serviceAddress);
    * ```
    */
-
   public constructor(
     address: IPublicIdentity['address'],
     boxPublicKeyAsHex: IPublicIdentity['boxPublicKeyAsHex'],
