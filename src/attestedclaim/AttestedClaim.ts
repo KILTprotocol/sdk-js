@@ -26,7 +26,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns A new [[AttestedClaim]] object.
    * @example
    * ```javascript
-   * // create an AttestedClaim object, so we can call methods on it (`serialized` is a serialized AttestedClaim object )
+   * // create an AttestedClaim object, so we can call methods on it (`serialized` is a serialized AttestedClaim object)
    * AttestedClaim.fromObject(JSON.parse(serialized));
    * ```
    */
