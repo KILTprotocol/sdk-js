@@ -69,6 +69,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns  A new [[RequestForAttestation]] `object`.
    * @example
    * ```javascript
+   * // create an RequestForAttestation object, so we can call methods on it (`serialized` is a Claim, Identity and legitimation object )
    * RequestForAttestation.fromObject(JSON.parse(serialized));
    * ```
    */
@@ -118,7 +119,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @throws An error, when a property, which should be deleted, wasn't found.
    * @example
    * ```javascript
-   * new RequestForAttestation(claim, [], alice).removeClaimProperties(['name']);
+   *  RequestForAttestation.removeClaimProperties(['name']);
    * // RequestForAttestation does not contain name in its claimHashTree and its claim contents anymore.
    * ```
    */
@@ -137,7 +138,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @example
    * ```javascript
-   * new RequestForAttestation(claim, [], alice).removeClaimOwner();
+   * RequestForAttestation.removeClaimOwner();
    * // RequestForAttestation does not conatin the claim owner or the nonce anymore.
    * ```
    */
@@ -152,7 +153,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns Whether verifying the data inside the object was successful.
    * @example
    * ```javascript
-   * new RequestForAttestation(claim, [], alice).verifyData();
+   *  RequestForAttestation.verifyData();
    * // returns true
    * ```
    */
@@ -212,7 +213,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns Whether the verification of the claimers signature was successful.
    * @example
    * ```javascript
-   * new RequestForAttestation(claim, [], alice).verifySignature();
+   * RequestForAttestation.verifySignature();
    * // returns true
    * ```
    */
