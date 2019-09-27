@@ -3,7 +3,6 @@
     "semi": ["error", "always"],
     "prettier/prettier": ["warn", {
       "semi": true
-    }],
-    "@typescript-eslint/no-unused-vars": "off"
+    }]
   }
 }
