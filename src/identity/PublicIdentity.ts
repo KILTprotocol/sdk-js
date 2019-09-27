@@ -136,6 +136,18 @@ export default class PublicIdentity implements IPublicIdentity {
   public readonly boxPublicKeyAsHex: IPublicIdentity['boxPublicKeyAsHex']
   public readonly serviceAddress?: IPublicIdentity['serviceAddress']
 
+  /**
+   * Builds a new [[PublicIdentity]] instance.
+   *
+   * @param address - An address of an Identity
+   * @param boxPublicKeyAsHex - The public key of the sender to build the Public.
+   * @param serviceAddress - The DID reference address
+   * @example Builds a [[PublicIdentity]] from the DID (Decentralised identifier) documents
+   * ```javascript
+   * new PublicIdentity(address, boxPublicKeyAsHex, serviceAddress);
+   * ```
+   */
+
   public constructor(
     address: IPublicIdentity['address'],
     boxPublicKeyAsHex: IPublicIdentity['boxPublicKeyAsHex'],
