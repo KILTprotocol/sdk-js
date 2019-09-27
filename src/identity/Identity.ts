@@ -119,9 +119,9 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * [STATIC] Builds a new [[Identity]], generated from a uniform resource identifier (URIs).
+   * [STATIC] Builds a new [[Identity]], generated from a uniform resource identifier (URI).
    *
-   * @param uri - Standard identifiers, e.g. //Alice.
+   * @param uri - Standard identifiers.
    * @returns  An [[Identity]].
    * @example
    * ```javascript
@@ -170,7 +170,7 @@ export default class Identity extends PublicIdentity {
    * @returns The [[PublicIdentity]], corresponding to the [[Identity]].
    * @example
    * ```javascript
-   * // provides a PublicIdentity from an Identity address
+   * // provides a PublicIdentity
    * identity.getPublicIdentity();
    * ```
    */
@@ -180,14 +180,13 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Signs data with an Identity's key.
+   * Signs data with an [[Identity]] object's key.
    *
    * @param cryptoInput - The data to be signed.
    * @returns The signed data.
    * @example
    * ```javascript
    * identity.sign(data);
-   * // an Identity signed data
    * ```
    */
   public sign(cryptoInput: CryptoInput): Uint8Array {
@@ -195,15 +194,13 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Signs data with an Identity's key and returns it as string.
+   * Signs data with an [[Identity]] object's key returns it as string.
    *
    * @param cryptoInput - The data to be signed.
    * @returns The signed data.
-   * @example ```javascript
-   * const alice = Identity.buildFromMnemonic();
-   * const data = 'This is a test';
-   * alice.signStr(data);
-   * // (output) "0x0327f479bb8a6914...afc68c3ab0bf4e8de004"
+   * @example
+   * ```javascript
+   * identity.signStr(data);
    * ```
    */
   public signStr(cryptoInput: CryptoInput): string {
@@ -211,7 +208,7 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Encrypts data asymmetrically and returns it as strings.
+   * Encrypts data asymmetrically and returns it as string.
    *
    * @param cryptoInput - The data to be encrypted.
    * @param boxPublicKey - The public key of the receiver of the encrypted data.
@@ -233,7 +230,7 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Decrypts data asymmetrical and returns it as strings.
+   * Decrypts data asymmetrical and returns it as string.
    *
    * @param encrypted - The encrypted data.
    * @param boxPublicKey - The public key of the sender of the encrypted data.
@@ -256,7 +253,7 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Encrypts data asymmetrically and returns it as byte array.
+   * Encrypts data asymmetrically and returns it as a byte array.
    *
    * @param input - The data to be encrypted.
    * @param boxPublicKey - The public key of the receiver of the encrypted data.
@@ -279,7 +276,7 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Decrypts data asymmetrical and returns it as byte array.
+   * Decrypts data asymmetrical and returns it as a byte array.
    *
    * @param encrypted - The encrypted data.
    * @param boxPublicKey - The public key of the sender of the encrypted data.
@@ -302,10 +299,10 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * Signs a submittable extrinsic, in preparation to pushing it to the blockchain.
+   * Signs a submittable extrinsic (transaction), in preparation to pushing it to the blockchain.
    *
    * @param submittableExtrinsic - A chain transaction.
-   * @param nonceAsHex - The AccountNonce of the address doing the transaction.
+   * @param nonceAsHex - The nonce of the address operating the transaction.
    * @returns The signed SubmittableExtrinsic.
    * @example
    * ```javascript
