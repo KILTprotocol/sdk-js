@@ -97,8 +97,7 @@ export default class Attestation implements IAttestation {
    * @returns A new [[Attestation]] object.
    * @example
    * ```javascript
-   * // `serialized` is a serialized Attestation object, e.g.: '{ "claimHash": "0x967...", "cTypeHash": "0x981..." "owner": "5Gf...", "delegationId": "323..", "revoked": false}'
-   * // create an Attestation object, so we can call methods on it
+   * // create an Attestation object, so we can call methods on it (`serialized` is a serialized Attestation object )
    * Attestation.fromObject(JSON.parse(serialized));
    * ```
    */
