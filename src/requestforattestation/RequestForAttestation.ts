@@ -119,7 +119,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @throws An error, when a property, which should be deleted, wasn't found.
    * @example
    * ```javascript
-   *  RequestForAttestation.removeClaimProperties(['name']);
+   *  requestForAttestation.removeClaimProperties(['name']);
    * // RequestForAttestation does not contain name in its claimHashTree and its claim contents anymore.
    * ```
    */
@@ -138,7 +138,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @example
    * ```javascript
-   * RequestForAttestation.removeClaimOwner();
+   * requestForAttestation.removeClaimOwner();
    * // RequestForAttestation does not conatin the claim owner or the nonce anymore.
    * ```
    */
