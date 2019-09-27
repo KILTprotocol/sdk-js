@@ -69,19 +69,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns  A new [[RequestForAttestation]] `object`.
    * @example
    * ```javascript
-   * const serialized =
-   *   '{ "claim":
-   *      { "cType": "0x981...",
-   *        "contents":
-   *        { "name": "Alice",
-   *          "age": 29
-   *        },
-   *      owner: "5Gf..."
-   *      }, ...
-   *    }, ...
-   *  }';
-   * const parsed = JSON.parse(serialized);
-   * RequestForAttestation.fromObject(parsed);
+   * RequestForAttestation.fromObject(JSON.parse(serialized));
    * ```
    */
   public static fromObject(obj: IRequestForAttestation): RequestForAttestation {
@@ -130,14 +118,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @throws An error, when a property, which should be deleted, wasn't found.
    * @example
    * ```javascript
-   * const rawClaim = {
-   *   name: 'Alice',
-   *   age: 29,
-   * };
-   * const claim = new Claim(ctype, rawClaim, alice);
-   * const reqForAtt = new RequestForAttestation(claim, [], alice);
-   * reqForAtt.removeClaimProperties(['name']);
-   * // reqForAtt does not contain name in its claimHashTree and its claim contents anymore.
+   * new RequestForAttestation(claim, [], alice).removeClaimProperties(['name']);
+   * // RequestForAttestation does not contain name in its claimHashTree and its claim contents anymore.
    * ```
    */
   public removeClaimProperties(properties: string[]): void {
@@ -155,9 +137,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @example
    * ```javascript
-   * const reqForAtt = new RequestForAttestation(claim, [], alice);
-   * reqForAtt.removeClaimOwner();
-   * // reqForAtt does not conatin the claim owner or the nonce anymore.
+   * new RequestForAttestation(claim, [], alice).removeClaimOwner();
+   * // RequestForAttestation does not conatin the claim owner or the nonce anymore.
    * ```
    */
   public removeClaimOwner(): void {
@@ -171,8 +152,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns Whether verifying the data inside the object was successful.
    * @example
    * ```javascript
-   * const reqForAtt = new RequestForAttestation(claim, [], alice);
-   * reqForAtt.verifyData();
+   * new RequestForAttestation(claim, [], alice).verifyData();
    * // returns true
    * ```
    */
@@ -232,8 +212,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns Whether the verification of the claimers signature was successful.
    * @example
    * ```javascript
-   * const reqForAtt = new RequestForAttestation(claim, [], alice);
-   * reqForAtt.verifySignature();
+   * new RequestForAttestation(claim, [], alice).verifySignature();
    * // returns true
    * ```
    */
