@@ -83,16 +83,12 @@ describe('CType', () => {
     ).toEqual(JSON.stringify(ctypeInput))
     expect(ctypeFromInput.verifyClaimStructure(goodClaim)).toBeTruthy()
     expect(ctypeFromInput.verifyClaimStructure(badClaim)).toBeFalsy()
-    console.log(CTypeUtils.fromInputModel(ctypeInput))
-    console.log('The ctypeInput', ctypeInput)
-    console.log('what is this doing', ctypeFromInput)
-    console.log('What is the ctype mode', ctypeModel)
-    console.log('What is this ctype from Model', ctypeFromModel)
     expect(() => {
       // @ts-ignore
       new CType(goodClaim).verifyClaimStructure(goodClaim)
     }).toThrow(new Error('CType does not correspond to schema'))
     expect(() => {
+      ctypeInput.$schema = 'object'
       CTypeUtils.fromInputModel(ctypeInput)
     }).toThrow(
       new Error('CType input does not correspond to input model schema')
