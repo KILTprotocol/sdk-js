@@ -49,7 +49,7 @@ export function getHashForSchema(schema: ICType['schema']): string {
  * This is the reverse function of CType.getCTypeInputModel(...).
  * @returns The CTYPE for the input model.
  */
-export function fromInputModel(ctypeInput: any): CType {
+export function fromInputModel(ctypeInput: ICTypeInput): CType {
   if (!verifySchema(ctypeInput, CTypeInputModel)) {
     throw new Error('CType input does not correspond to input model schema')
   }
@@ -70,9 +70,8 @@ export function fromInputModel(ctypeInput: any): CType {
       properties: {},
     },
   }
-
   const properties = {}
-  ctypeInput.properties.forEach((p: ICTypeInput) => {
+  ctypeInput.properties.forEach((p: any) => {
     const { title, $id, ...rest } = p
     properties[$id] = rest
     ctype.metadata.properties[$id] = {
@@ -99,7 +98,7 @@ function getLocalized(o: any, lang?: string): any {
  * into the input model. This is the reverse function of CType.fromInputModel(...).
  * @returns The CTYPE input model.
  */
-export function getCTypeInputModel(ctype: CType): any {
+export function getCTypeInputModel(ctype: CType): ICTypeInput {
   // create clone
   const result = JSON.parse(JSON.stringify(ctype.schema))
   result.$schema = CTypeInputModel.$id
@@ -116,7 +115,6 @@ export function getCTypeInputModel(ctype: CType): any {
     })
     result.required.push(key)
   })
-
   return result
 }
 
@@ -128,6 +126,7 @@ export function getCTypeInputModel(ctype: CType): any {
  */
 export function getClaimInputModel(ctype: ICType, lang?: string): any {
   // create clone
+  console.log(ctype)
   const result = JSON.parse(JSON.stringify(ctype.schema))
   result.title = getLocalized(ctype.metadata.title, lang)
   result.description = getLocalized(ctype.metadata.description, lang)

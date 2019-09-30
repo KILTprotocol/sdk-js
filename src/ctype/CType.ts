@@ -28,7 +28,6 @@ export default class CType implements ICType {
   public owner?: ICType['owner']
   public schema: ICType['schema']
   public metadata: ICType['metadata']
-
   public constructor(ctype: ICType) {
     if (!CTypeUtils.verifySchema(ctype, CTypeWrapperModel)) {
       throw new Error('CType does not correspond to schema')
@@ -36,9 +35,9 @@ export default class CType implements ICType {
     this.schema = ctype.schema
     this.metadata = ctype.metadata
     this.owner = ctype.owner
-
     this.hash = CTypeUtils.getHashForSchema(this.schema)
 
+    console.log('Checking the ctype', ctype)
     if (ctype.hash && this.hash !== ctype.hash) {
       throw Error('provided and generated cType hash are not the same')
     }

@@ -4,8 +4,8 @@
 import IPublicIdentity from './PublicIdentity'
 
 export interface ICTypeSchema {
-  $id: any
-  $schema: any
+  $id: string
+  $schema: string
   properties: any
   type: 'object'
 }
@@ -28,12 +28,11 @@ export default interface ICType {
 }
 
 export interface ICTypeInput {
-  $id: any
-  title: {
-    default: string
-  }
-  description: {
-    default: string
-  }
-  properties: any
+  $id: string
+  $schema: string
+  properties: object[]
+  required: string[]
+  title: string
+  description?: string
+  type: string
 }
