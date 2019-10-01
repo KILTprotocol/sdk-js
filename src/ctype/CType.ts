@@ -37,7 +37,6 @@ export default class CType implements ICType {
     this.owner = ctype.owner
     this.hash = CTypeUtils.getHashForSchema(this.schema)
 
-    console.log('Checking the ctype', ctype)
     if (ctype.hash && this.hash !== ctype.hash) {
       throw Error('provided and generated cType hash are not the same')
     }

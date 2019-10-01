@@ -18,8 +18,8 @@ import { verifyClaimStructure } from '../ctype/CTypeUtils'
 import Identity from '../identity/Identity'
 import IClaim from '../types/Claim'
 
-function verifyClaim(claimContents: object, cType: CType): boolean {
-  console.log(claimContents, cType.schema)
+function verifyClaim(claimContents: IClaim['contents'], cType: CType): boolean {
+  console.log('Checking claimcontents', claimContents, 'Checking ctype schema', cType.schema)
   return verifyClaimStructure(claimContents, cType.schema)
 }
 

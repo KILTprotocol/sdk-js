@@ -7,6 +7,7 @@ import { CTypeModel, CTypeInputModel } from './CTypeSchema'
 import CType from './CType'
 import ICType, { ICTypeInput } from '../types/CType'
 import Crypto from '../crypto'
+import IClaimInput from '../types/Claim'
 
 export function verifySchemaWithErrors(
   model: any,
@@ -27,10 +28,13 @@ export function verifySchemaWithErrors(
 }
 
 export function verifySchema(model: any, metaModel: any): boolean {
+  console.log('whatis the model', model, 'whatis the metaModel', metaModel)
   return verifySchemaWithErrors(model, metaModel)
 }
 
 export function verifyClaimStructure(claim: any, schema: any): boolean {
+  console.log('whatis the claim', claim, 'whatis the schema', schema)
+
   if (!verifySchema(schema, CTypeModel)) {
     throw new Error('CType does not correspond to schema')
   }
@@ -84,7 +88,7 @@ export function fromInputModel(ctypeInput: ICTypeInput): CType {
   return new CType(ctype as ICType)
 }
 
-function getLocalized(o: any, lang?: string): any {
+function getLocalized(o: any, lang?: string): string {
   if (lang == null || !o[lang]) {
     return o.default
   }
@@ -103,7 +107,9 @@ export function getCTypeInputModel(ctype: CType): ICTypeInput {
   const result = JSON.parse(JSON.stringify(ctype.schema))
   result.$schema = CTypeInputModel.$id
   result.title = getLocalized(ctype.metadata.title)
+  console.log('What is the gelocalised doing', result.title)
   result.description = getLocalized(ctype.metadata.description)
+  console.log('What is the getLocalized doing', result.description)
   result.required = []
   result.properties = []
 
@@ -122,9 +128,9 @@ export function getCTypeInputModel(ctype: CType): ICTypeInput {
  * This method creates an input model for a claim from a CTYPE.
  * It selects translations for a specific language from the localized part of the CTYPE meta data.
  * @param {string} lang the language to choose translations for
- * @returns {any} The claim input model
+ * @returns {IClaimInput} The claim input model
  */
-export function getClaimInputModel(ctype: ICType, lang?: string): any {
+export function getClaimInputModel(ctype: ICType, lang?: string): IClaimInput {
   // create clone
   console.log(ctype)
   const result = JSON.parse(JSON.stringify(ctype.schema))
