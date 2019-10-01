@@ -19,7 +19,7 @@ import Identity from '../identity/Identity'
 import IClaim from '../types/Claim'
 
 function verifyClaim(claimContents: IClaim['contents'], cType: CType): boolean {
-  console.log('Checking claimcontents', claimContents, 'Checking ctype schema', cType.schema)
+  console.log('Checking claimcontents', claimContents, cType.schema)
   return verifyClaimStructure(claimContents, cType.schema)
 }
 

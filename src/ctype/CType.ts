@@ -17,6 +17,7 @@ import ICType from '../types/CType'
 import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
+import IClaim from '../types/Claim'
 
 export default class CType implements ICType {
   public static fromObject(obj: ICType): CType {
@@ -46,7 +47,7 @@ export default class CType implements ICType {
     return store(this, identity)
   }
 
-  public verifyClaimStructure(claim: any): boolean {
+  public verifyClaimStructure(claim: IClaim['contents']): boolean {
     return CTypeUtils.verifySchema(claim, this.schema)
   }
 

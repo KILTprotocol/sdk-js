@@ -7,7 +7,7 @@ import { CTypeModel, CTypeInputModel } from './CTypeSchema'
 import CType from './CType'
 import ICType, { ICTypeInput } from '../types/CType'
 import Crypto from '../crypto'
-import IClaimInput from '../types/Claim'
+import IClaim, { IClaimInput } from '../types/Claim'
 
 export function verifySchemaWithErrors(
   model: any,
@@ -32,9 +32,10 @@ export function verifySchema(model: any, metaModel: any): boolean {
   return verifySchemaWithErrors(model, metaModel)
 }
 
-export function verifyClaimStructure(claim: any, schema: any): boolean {
-  console.log('whatis the claim', claim, 'whatis the schema', schema)
-
+export function verifyClaimStructure(
+  claim: IClaim['contents'],
+  schema: ICType['schema']
+): boolean {
   if (!verifySchema(schema, CTypeModel)) {
     throw new Error('CType does not correspond to schema')
   }

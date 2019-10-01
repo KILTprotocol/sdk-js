@@ -26,7 +26,7 @@ const ctypeInput = {
   type: 'object',
   title: 'CType Title',
   required: ['first-property', 'second-property'],
-}
+} as ICType['schema']
 
 const ctypeWrapperModel = {
   schema: {
