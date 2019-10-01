@@ -11,7 +11,6 @@
 /**
  * Dummy comment needed for correct doc display, do not remove
  */
-import cloneDeep from 'lodash/cloneDeep'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim from '../types/AttestedClaim'
@@ -23,12 +22,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * Creates a new instance of this Attestation class from the given interface.
    */
   public static fromObject(obj: IAttestedClaim): AttestedClaim {
-    const newAttestedClaim: AttestedClaim = Object.create(
-      AttestedClaim.prototype
-    )
-    newAttestedClaim.request = RequestForAttestation.fromObject(obj.request)
-    newAttestedClaim.attestation = Attestation.fromObject(obj.attestation)
-    return newAttestedClaim
+    return new AttestedClaim(obj.request, obj.attestation)
   }
 
   public request: RequestForAttestation
@@ -38,7 +32,7 @@ export default class AttestedClaim implements IAttestedClaim {
     request: IRequestForAttestation,
     attestation: IAttestation
   ) {
-    // TODO: this should be instantiated w/o fromObject
+    // TODO: this should be instantiated without Object.create and Object.assign
     this.request = RequestForAttestation.fromObject(request)
     this.attestation = Attestation.fromObject(attestation)
   }
@@ -53,7 +47,7 @@ export default class AttestedClaim implements IAttestedClaim {
   public verifyData(): boolean {
     return (
       this.request.verifyData() &&
-      this.request.hash === this.attestation.claimHash
+      this.request.rootHash === this.attestation.claimHash
     )
   }
 
@@ -65,7 +59,9 @@ export default class AttestedClaim implements IAttestedClaim {
     excludedClaimProperties: string[],
     excludeIdentity: boolean = false
   ): AttestedClaim {
-    const result: AttestedClaim = AttestedClaim.fromObject(cloneDeep(this))
+    const result: AttestedClaim = AttestedClaim.fromObject(
+      JSON.parse(JSON.stringify(this))
+    )
     result.request.removeClaimProperties(excludedClaimProperties)
     if (excludeIdentity) {
       result.request.removeClaimOwner()

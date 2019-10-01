@@ -1,11 +1,13 @@
 import { Text } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import { Tuple } from '@polkadot/types/codec'
-import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
+import CType from '../ctype/CType'
+import IAttestation from '../types/Attestation'
+import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import IClaim from '../types/Claim'
+import Claim from '../claim/Claim'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -15,14 +17,32 @@ describe('Attestation', () => {
 
   const Blockchain = require('../blockchain/Blockchain').default
 
-  const cTypeHash = Crypto.hashStr('testCtype')
-  const claim = {
-    cType: cTypeHash,
-    contents: {},
-    owner: identityBob.address,
-  } as IClaim
+  const testCType: CType = new CType({
+    schema: {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    },
+    metadata: {
+      title: { default: 'CType Title' },
+      description: {},
+      properties: {
+        name: { title: { default: 'Name' } },
+      },
+    },
+  } as ICType)
+  const testcontents = {}
+  const testClaim = new Claim(
+    testCType.hash,
+    testcontents,
+    identityBob.address,
+    testCType.schema
+  )
   const requestForAttestation: RequestForAttestation = new RequestForAttestation(
-    claim,
+    testClaim,
     [],
     identityBob
   )
@@ -31,12 +51,18 @@ describe('Attestation', () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
       const tuple = new Tuple(
         [Text, Text, Text, Bool],
-        [cTypeHash, identityAlice.address, undefined, false]
+        [testCType.hash, identityAlice.address, undefined, false]
       )
       return Promise.resolve(tuple)
     })
 
-    const attestation = new Attestation(requestForAttestation, identityAlice)
+    const attestation: Attestation = new Attestation(
+      requestForAttestation.rootHash,
+      requestForAttestation.claim.cTypeHash,
+      identityAlice.address,
+      testCType.hash,
+      false
+    )
     expect(await attestation.verify()).toBeTruthy()
   })
 
@@ -45,11 +71,12 @@ describe('Attestation', () => {
       return Promise.resolve(new Tuple([], []))
     })
 
-    const attestation = new Attestation(
-      requestForAttestation,
-      identityAlice,
-      false
-    )
+    const attestation: Attestation = Attestation.fromObject({
+      claimHash: requestForAttestation.rootHash,
+      cTypeHash: testCType.hash,
+      owner: identityAlice.address,
+      revoked: false,
+    } as IAttestation)
     expect(await attestation.verify()).toBeFalsy()
   })
 
@@ -59,16 +86,17 @@ describe('Attestation', () => {
         new Tuple(
           // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
           [Text, Text, Text, Bool],
-          [cTypeHash, identityAlice, undefined, true]
+          [testCType.hash, identityAlice, undefined, true]
         )
       )
     })
 
-    const attestation = new Attestation(
-      requestForAttestation,
-      identityAlice,
-      true
-    )
+    const attestation: Attestation = Attestation.fromObject({
+      claimHash: requestForAttestation.rootHash,
+      cTypeHash: testCType.hash,
+      owner: identityAlice.address,
+      revoked: true,
+    } as IAttestation)
     expect(await attestation.verify()).toBeFalsy()
   })
 })

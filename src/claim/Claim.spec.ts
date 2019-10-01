@@ -4,7 +4,13 @@ import Identity from '../identity/Identity'
 import ICType from '../types/CType'
 
 describe('Claim', () => {
-  const ctype = new CType({
+  const identity = Identity.buildFromURI('//Alice')
+
+  const claimContents = {
+    name: 'Bob',
+  }
+
+  const testCType: CType = new CType({
     schema: {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -21,13 +27,12 @@ describe('Claim', () => {
       },
     },
   } as ICType)
-  const identity = Identity.buildFromURI('//Alice')
-
-  const claimContents = {
-    name: 'Bob',
-  }
-
-  const claim = new Claim(ctype, claimContents, identity)
+  const claim = new Claim(
+    testCType.hash,
+    claimContents,
+    identity.address,
+    testCType.schema
+  )
 
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))

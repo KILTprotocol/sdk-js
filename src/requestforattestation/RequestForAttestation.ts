@@ -27,6 +27,7 @@ import IRequestForAttestation, {
   Hash,
   NonceHash,
 } from '../types/RequestForAttestation'
+import IAttestedClaim from '../types/AttestedClaim'
 
 function hashNonceValue(nonce: string, value: any): string {
   return hashObjectAsStr(value, nonce)
@@ -51,7 +52,7 @@ function generateHashTree(contents: object): object {
 }
 
 function verifyClaimerSignature(rfa: RequestForAttestation): boolean {
-  return verify(rfa.hash, rfa.claimerSignature, rfa.claim.owner)
+  return verify(rfa.rootHash, rfa.claimerSignature, rfa.claim.owner)
 }
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
@@ -61,12 +62,17 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 
 export default class RequestForAttestation implements IRequestForAttestation {
   public static fromObject(obj: IRequestForAttestation): RequestForAttestation {
-    const newClaim = Object.create(RequestForAttestation.prototype)
-    const object = Object.assign(newClaim, obj)
-    object.legitimations = object.legitimations.map(
-      (legitimation: AttestedClaim) => AttestedClaim.fromObject(legitimation)
+    return new RequestForAttestation(
+      obj.claim,
+      obj.legitimations,
+      undefined,
+      obj.claimOwner,
+      obj.claimerSignature,
+      obj.claimHashTree,
+      obj.ctypeHash,
+      obj.rootHash,
+      obj.delegationId
     )
-    return object
   }
 
   public claim: IClaim
@@ -74,29 +80,62 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public claimerSignature: string
   public claimHashTree: object
   public ctypeHash: NonceHash
-  public hash: Hash
+  public rootHash: Hash
   public legitimations: AttestedClaim[]
 
   public delegationId?: IDelegationBaseNode['id']
 
   public constructor(
     claim: IClaim,
-    legitimations: AttestedClaim[],
-    identity: Identity,
+    legitimations: IAttestedClaim[],
+    identity?: Identity,
+    claimOwner?: NonceHash,
+    claimerSignature?: string,
+    claimHashTree?: object,
+    ctypeHash?: NonceHash,
+    rootHash?: Hash,
     delegationId?: IDelegationBaseNode['id']
   ) {
-    if (claim.owner !== identity.address) {
-      throw Error('Claim owner is not identity')
-    }
-    this.claim = claim
-    this.claimOwner = generateHash(this.claim.owner)
-    this.ctypeHash = generateHash(this.claim.cType)
-    this.legitimations = legitimations
-    this.delegationId = delegationId
+    if (identity !== undefined) {
+      if (claim.owner !== identity.address) {
+        throw Error('Claim owner is not identity')
+      }
+      this.claim = claim
+      this.claimOwner = generateHash(this.claim.owner)
+      this.ctypeHash = generateHash(this.claim.cTypeHash)
+      this.legitimations = legitimations.map((legitimation: IAttestedClaim) =>
+        AttestedClaim.fromObject(JSON.parse(
+          JSON.stringify(legitimation)
+        ) as IAttestedClaim)
+      )
+      this.delegationId = delegationId
 
-    this.claimHashTree = generateHashTree(claim.contents)
-    this.hash = this.calculateRootHash()
-    this.claimerSignature = this.sign(identity)
+      this.claimHashTree = generateHashTree(claim.contents)
+      this.rootHash = this.calculateRootHash()
+      this.claimerSignature = this.sign(identity)
+    } else if (
+      claimerSignature !== undefined &&
+      claimOwner !== undefined &&
+      ctypeHash !== undefined &&
+      claimHashTree !== undefined &&
+      rootHash !== undefined
+    ) {
+      this.claim = claim
+      this.claimOwner = claimOwner
+      this.ctypeHash = ctypeHash
+      this.legitimations = legitimations.map((legitimation: IAttestedClaim) =>
+        AttestedClaim.fromObject(JSON.parse(
+          JSON.stringify(legitimation)
+        ) as IAttestedClaim)
+      )
+      this.delegationId = delegationId
+
+      this.claimHashTree = claimHashTree
+      this.rootHash = rootHash
+      this.claimerSignature = claimerSignature
+    } else {
+      throw Error('Signature Mismatch')
+    }
   }
 
   public removeClaimProperties(properties: string[]): void {
@@ -116,7 +155,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
   public verifyData(): boolean {
     // check claim hash
-    if (this.hash !== this.calculateRootHash()) {
+    if (this.rootHash !== this.calculateRootHash()) {
       return false
     }
     // check claim owner hash
@@ -132,7 +171,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     // check cType hash
     if (
       this.ctypeHash.hash !==
-      hashNonceValue(this.ctypeHash.nonce, this.claim.cType)
+      hashNonceValue(this.ctypeHash.nonce, this.claim.cTypeHash)
     ) {
       throw Error('Invalid hash for CTYPE')
     }
@@ -195,6 +234,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   private sign(identity: Identity): string {
-    return identity.signStr(this.hash)
+    return identity.signStr(this.rootHash)
   }
 }

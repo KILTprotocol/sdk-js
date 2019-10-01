@@ -10,6 +10,8 @@ import Message, {
 } from './Message'
 import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import Crypto from '../crypto'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import IClaim from '../types/Claim'
 
 describe('Messaging', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
@@ -102,19 +104,25 @@ describe('Messaging', () => {
   })
 
   it('verify message sender is owner', () => {
-    const requestAttestationBody: IRequestAttestationForClaim = {
-      content: {
-        ctypeHash: { nonce: '0x12345678', hash: '0x12345678' },
-        claim: {
-          cType: '0x12345678',
-          owner: identityAlice.getPublicIdentity().address,
-          contents: {},
+    const requestForAttestation: RequestForAttestation = new RequestForAttestation(
+      {
+        cTypeHash: '0x12345678',
+        cTypeSchema: {
+          $id: 'http://example.com/ctype-1',
+          $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+          properties: {
+            name: { type: 'string' },
+          },
+          type: 'object',
         },
-        claimHashTree: {},
-        legitimations: [],
-        hash: '0x12345678',
-        claimerSignature: '0x12345678',
-      },
+        owner: identityAlice.getPublicIdentity().address,
+        contents: {},
+      } as IClaim,
+      [],
+      identityAlice
+    )
+    const requestAttestationBody: IRequestAttestationForClaim = {
+      content: requestForAttestation,
       type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
     }
 
@@ -139,7 +147,7 @@ describe('Messaging', () => {
       content: {
         request: requestAttestationBody.content,
         attestation: {
-          claimHash: requestAttestationBody.content.hash,
+          claimHash: requestAttestationBody.content.rootHash,
           cTypeHash: '0x12345678',
           owner: identityBob.getPublicIdentity().address,
           revoked: false,

@@ -15,8 +15,10 @@ import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import IAttestation from '../types/Attestation'
-import IRequestForAttestation from '../types/RequestForAttestation'
 import { revoke, query, store } from './Attestation.chain'
+import ICType from '../types/CType'
+import IPublicIdentity from '../types/PublicIdentity'
+import { IDelegationBaseNode } from '../types/Delegation'
 
 const log = factory.getLogger('Attestation')
 
@@ -36,8 +38,13 @@ export default class Attestation implements IAttestation {
    * Creates a new instance of this Attestation class from the given interface.
    */
   public static fromObject(obj: IAttestation): Attestation {
-    const newAttestation: Attestation = Object.create(Attestation.prototype)
-    return Object.assign(newAttestation, obj)
+    return new Attestation(
+      obj.claimHash,
+      obj.cTypeHash,
+      obj.owner,
+      obj.delegationId,
+      obj.revoked
+    )
   }
 
   public claimHash: IAttestation['claimHash']
@@ -47,15 +54,21 @@ export default class Attestation implements IAttestation {
   public delegationId?: IAttestation['delegationId']
 
   public constructor(
-    requestForAttestation: IRequestForAttestation,
-    attester: Identity,
-    revoked = false
+    claimHash: string,
+    cTypeHash: ICType['hash'],
+    attestationOwner: IPublicIdentity['address'],
+    delegationId?: IDelegationBaseNode['id'],
+    revoked?: boolean
   ) {
-    this.owner = attester.address
-    this.claimHash = requestForAttestation.hash
-    this.cTypeHash = requestForAttestation.claim.cType
-    this.delegationId = requestForAttestation.delegationId
-    this.revoked = revoked
+    this.owner = attestationOwner
+    this.claimHash = claimHash
+    this.cTypeHash = cTypeHash
+    this.delegationId = delegationId
+    if (revoked !== undefined) {
+      this.revoked = revoked
+    } else {
+      this.revoked = false
+    }
   }
 
   public async store(identity: Identity): Promise<TxStatus> {

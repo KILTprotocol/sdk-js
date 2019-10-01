@@ -17,11 +17,11 @@ export type NonceHash = {
 
 export default interface IRequestForAttestation {
   claim: IClaim
+  legitimations: IAttestedClaim[]
+  claimOwner: NonceHash
   claimerSignature: string
   claimHashTree: object
   ctypeHash: NonceHash
-  hash: Hash
-  legitimations: IAttestedClaim[]
-
+  rootHash: Hash
   delegationId?: IDelegationBaseNode['id']
 }

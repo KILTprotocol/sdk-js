@@ -13,35 +13,40 @@
 /**
  * Dummy comment needed for correct doc display, do not remove
  */
-import CType from '../ctype/CType'
+import ICType from '../ctype/CType'
 import { verifyClaimStructure } from '../ctype/CTypeUtils'
-import Identity from '../identity/Identity'
 import IClaim from '../types/Claim'
+import IPublicIdentity from '../types/PublicIdentity'
 
-function verifyClaim(claimContents: object, cType: CType): boolean {
-  return verifyClaimStructure(claimContents, cType.schema)
+function verifyClaim(
+  claimContents: object,
+  cTypeSchema: ICType['schema']
+): boolean {
+  return verifyClaimStructure(claimContents, cTypeSchema)
 }
 
 export default class Claim implements IClaim {
   public static fromObject(obj: IClaim): Claim {
-    const newClaim = Object.create(Claim.prototype)
-    return Object.assign(newClaim, obj)
+    return new Claim(obj.cTypeHash, obj.contents, obj.owner, undefined)
   }
 
-  public cType: IClaim['cType']
+  public cTypeHash: IClaim['cTypeHash']
   public contents: IClaim['contents']
   public owner: IClaim['owner']
 
   public constructor(
-    cType: CType,
-    contents: IClaim['contents'],
-    identity: Identity
+    cTypeHash: ICType['hash'],
+    contents: object,
+    owner: IPublicIdentity['address'],
+    cTypeSchema?: ICType['schema']
   ) {
-    if (!verifyClaim(contents, cType)) {
-      throw Error('Claim not valid')
+    if (cTypeSchema !== undefined) {
+      if (!verifyClaim(contents, cTypeSchema)) {
+        throw Error('Claim not valid')
+      }
     }
-    this.cType = cType.hash
+    this.cTypeHash = cTypeHash
     this.contents = contents
-    this.owner = identity.address
+    this.owner = owner
   }
 }

@@ -50,7 +50,9 @@ function isDIDResult(object: object): object is DIDResult {
 
 export default class PublicIdentity implements IPublicIdentity {
   public static fromDidDocument(didDocument: object): IPublicIdentity | null {
-    if (!isDIDDocument(didDocument)) return null
+    if (!isDIDDocument(didDocument)) {
+      return null
+    }
 
     try {
       return new PublicIdentity(
@@ -139,7 +141,9 @@ export default class PublicIdentity implements IPublicIdentity {
       return object[filterKey] && object[filterKey] === filterValue
     })
 
-    if (correctObj && correctObj[property]) return correctObj[property]
+    if (correctObj && correctObj[property]) {
+      return correctObj[property]
+    }
 
     throw new Error()
   }

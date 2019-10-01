@@ -19,9 +19,8 @@ import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
 
 export default class CType implements ICType {
-  public static fromObject(obj: ICType): CType {
-    const newObject = Object.create(CType.prototype)
-    return Object.assign(newObject, obj)
+  public static fromObject(obj: CType): CType {
+    return new CType(JSON.parse(JSON.stringify(obj)))
   }
 
   public hash: ICType['hash']
@@ -40,7 +39,7 @@ export default class CType implements ICType {
     this.hash = CTypeUtils.getHashForSchema(this.schema)
 
     if (ctype.hash && this.hash !== ctype.hash) {
-      throw Error('provided and generated cType hash are not the same')
+      throw Error('provided and generated cType hash are not matching')
     }
   }
 
