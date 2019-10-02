@@ -10,10 +10,11 @@ import Crypto from '../crypto'
 import IClaim, { IClaimInput } from '../types/Claim'
 
 export function verifySchemaWithErrors(
-  model: any,
-  metaModel: any,
+  model: object,
+  metaModel: object,
   messages?: string[]
 ): boolean {
+  // would like to change these to something more meaningful other then object
   const ajv = new Ajv()
   ajv.addMetaSchema(CTypeModel)
   const result = ajv.validate(metaModel, model)
@@ -27,8 +28,8 @@ export function verifySchemaWithErrors(
   return !!result
 }
 
-export function verifySchema(model: any, metaModel: any): boolean {
-  console.log('whatis the model', model, 'whatis the metaModel', metaModel)
+export function verifySchema(model: object, metaModel: object): boolean {
+  // would like to change these to something more meaningful other then object
   return verifySchemaWithErrors(model, metaModel)
 }
 
@@ -108,9 +109,7 @@ export function getCTypeInputModel(ctype: CType): ICTypeInput {
   const result = JSON.parse(JSON.stringify(ctype.schema))
   result.$schema = CTypeInputModel.$id
   result.title = getLocalized(ctype.metadata.title)
-  console.log('What is the gelocalised doing', result.title)
   result.description = getLocalized(ctype.metadata.description)
-  console.log('What is the getLocalized doing', result.description)
   result.required = []
   result.properties = []
 
@@ -133,7 +132,6 @@ export function getCTypeInputModel(ctype: CType): ICTypeInput {
  */
 export function getClaimInputModel(ctype: ICType, lang?: string): IClaimInput {
   // create clone
-  console.log(ctype)
   const result = JSON.parse(JSON.stringify(ctype.schema))
   result.title = getLocalized(ctype.metadata.title, lang)
   result.description = getLocalized(ctype.metadata.description, lang)

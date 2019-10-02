@@ -3,8 +3,6 @@
  */
 import IPublicIdentity from './PublicIdentity'
 
-
-
 export interface ICTypeSchema {
   $id: string
   $schema: string
