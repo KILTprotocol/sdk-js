@@ -3,10 +3,12 @@
  */
 import IPublicIdentity from './PublicIdentity'
 
+
+
 export interface ICTypeSchema {
   $id: string
   $schema: string
-  properties: any
+  properties: object // TO DO: need to refine what properties are
   type: 'object'
 }
 
@@ -17,7 +19,7 @@ export interface ICtypeMetadata {
   description: {
     default: string
   }
-  properties: any
+  properties: object // TO DO: need to refine what properties are
 }
 
 export default interface ICType {
@@ -30,7 +32,7 @@ export default interface ICType {
 export interface ICTypeInput {
   $id: string
   $schema: string
-  properties: object[]
+  properties: object[] // TO DO: need to refine what properties are
   required: string[]
   title: string
   description?: string
