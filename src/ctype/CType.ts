@@ -47,8 +47,8 @@ export default class CType implements ICType {
     return store(this, identity)
   }
 
-  public verifyClaimStructure(claim: IClaim['contents']): boolean {
-    return CTypeUtils.verifySchema(claim, this.schema)
+  public verifyClaimStructure(claimContents: IClaim['contents']): boolean {
+    return CTypeUtils.verifySchema(claimContents, this.schema)
   }
 
   public getModel(): CType {

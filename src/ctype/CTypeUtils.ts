@@ -33,13 +33,13 @@ export function verifySchema(model: any, metaModel: any): boolean {
 }
 
 export function verifyClaimStructure(
-  claim: IClaim['contents'],
+  claimContents: IClaim['contents'], // Checking the SDK and demo-client I feel this should be named claimContents
   schema: ICType['schema']
 ): boolean {
   if (!verifySchema(schema, CTypeModel)) {
     throw new Error('CType does not correspond to schema')
   }
-  return verifySchema(claim, schema)
+  return verifySchema(claimContents, schema)
 }
 
 export function getHashForSchema(schema: ICType['schema']): string {
