@@ -67,10 +67,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @param obj - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
    * @returns  A new [[RequestForAttestation]] `object`.
-   * @example
-   * ```javascript
-   * // create an RequestForAttestation object, so we can call methods on it (`serialized` is a RequestForAttestation object )
-   * RequestForAttestation.fromObject(JSON.parse(serialized));
+   * @example ```javascript
+   *  const serialized = '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
+   * const parsed = JSON.parse(serialized);
+   * RequestForAttestation.fromObject(parsed);
    * ```
    */
   public static fromObject(obj: IRequestForAttestation): RequestForAttestation {
@@ -117,9 +117,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @param properties - A property within the underlying [[Claim]] object.
    * @throws An error, when a property, which should be deleted, wasn't found.
-   * @example
-   * ```javascript
-   *  requestForAttestation.removeClaimProperties(['name']);
+   * @example ```javascript
+   *  const rawClaim = {
+   *   name: 'Alice',
+   *   age: 29,
+   * };
+   * const claim = new Claim(ctype, rawClaim, alice);
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.removeClaimProperties(['name']);
+   * // reqForAtt does not contain name in its claimHashTree and its claim contents anymore.
    * // RequestForAttestation does not contain name in its claimHashTree and its claim contents anymore.
    * ```
    */
@@ -136,9 +142,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * Removes the [[Claim]] Owner from the [[RequestForAttestation]] object, provides an option to **exclude** the [[Claim]] owner in the [[createPresentation]] method.
    *
-   * @example
-   * ```javascript
-   * requestForAttestation.removeClaimOwner();
+   * @example ```javascript
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.removeClaimOwner();
    * // RequestForAttestation does not conatin the claim owner or the nonce anymore.
    * ```
    */
@@ -151,9 +157,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Verifies the data of the [[RequestForAttestation]] object.
    *
    * @returns Whether verifying the data inside the object was successful.
-   * @example
-   * ```javascript
-   *  requestForAttestation.verifyData();
+   * @example ```javascript
+   *  const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.verifyData();
    * // returns true
    * ```
    */
@@ -211,9 +217,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Verifies the signature inside the [[RequestForAttestation]] object, an unsuccessful signature will stop the Tx (Transaction).
    *
    * @returns Whether the verification of the claimers signature was successful.
-   * @example
-   * ```javascript
-   * requestForAttestation.verifySignature();
+   * @example ```javascript
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.verifySignature();
    * // returns true
    * ```
    */
