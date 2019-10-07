@@ -47,8 +47,7 @@ export default class Identity extends PublicIdentity {
    * [STATIC] Generates Mnemonic phrase used to create identities from phrase seed.
    *
    * @returns Randomly generated [[BIP39]](https://www.npmjs.com/package/bip39) mnemonic phrase (Secret phrase).
-   * @example
-   * ```javascript
+   * @example ```javascript
    * Identity.generateMnemonic();
    * // returns: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    * ```
@@ -63,8 +62,7 @@ export default class Identity extends PublicIdentity {
    * @param phraseArg - [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
    * @returns An [[Identity]].
    *
-   * @example
-   * ```javascript
+   * @example ```javascript
    * const mnemonic = Identity.generateMnemonic();
    * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    * Identity.buildFromMnemonic(mnemonic);
@@ -94,8 +92,9 @@ export default class Identity extends PublicIdentity {
    *
    * @param seedArg - Seed as hex string (Starting with 0x).
    * @returns  An [[Identity]]
-   * @example
-   * ```javascript
+   * @example ```javascript
+   * const seed =
+   *   '0x6ce9fd060c70165c0fc8da25810d249106d5df100aa980e0d9a11409d6b35261';
    * Identity.buildFromSeedString(seed);
    * ```
    */
@@ -109,8 +108,13 @@ export default class Identity extends PublicIdentity {
    *
    * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
    * @returns An [[Identity]].
-   * @example
-   * ```javascript
+   * @example ```javascript
+   * // prettier-ignore
+   * const seed = new Uint8Array([108, 233, 253,  6,  12, 112,  22,  92,
+   *                               15, 200, 218, 37, 129,  13,  36, 145,
+   *                                6, 213, 223, 16,  10, 169, 128, 224,
+   *                              217, 161,  20,  9, 214, 179,  82,  97
+   *                            ]);
    * Identity.buildFromSeed(seed);
    * ```
    */
@@ -125,8 +129,7 @@ export default class Identity extends PublicIdentity {
    *
    * @param uri - Standard identifiers, e.g. //Alice.
    * @returns  An [[Identity]].
-   * @example
-   * ```javascript
+   * @example```javascript
    * Identity.buildFromURI('//Bob');
    * ```
    */
@@ -170,10 +173,10 @@ export default class Identity extends PublicIdentity {
    * Can be given to third-parties to communicate and process signatures.
    *
    * @returns The [[PublicIdentity]], corresponding to the [[Identity]].
-   * @example
-   * ```javascript
+   * @example ```javascript
    * // provides a PublicIdentity from an Identity address
-   * identity.getPublicIdentity();
+   * const alice = Kilt.Identity.buildFromMnemonic();
+   * alice.getPublicIdentity();
    * ```
    */
   public getPublicIdentity(): PublicIdentity {
@@ -186,10 +189,13 @@ export default class Identity extends PublicIdentity {
    *
    * @param cryptoInput - The data to be signed.
    * @returns The signed data.
-   * @example
-   * ```javascript
-   * identity.sign(data);
-   * // an Identity signed data
+   * @example ```javascript
+   * const alice = Identity.buildFromMnemonic();
+   * const data = 'This is a test';
+   * alice.sign(data);
+   * // (output) Uint8Array [
+   * //           205, 120,  29, 236, 152, 144, 114, 133,  65, ...
+   * //          ]
    * ```
    */
   public sign(cryptoInput: CryptoInput): Uint8Array {
@@ -218,9 +224,16 @@ export default class Identity extends PublicIdentity {
    * @param cryptoInput - The data to be encrypted.
    * @param boxPublicKey - The public key of the receiver of the encrypted data.
    * @returns The encrypted data.
-   * @example
-   * ```javascript
-   * identity.encryptAsymmetricAsStr(messageStr, PublicIdentity.boxPublicKeyAsHex);
+   * @example ```javascript
+   * const alice = Identity.buildFromMnemonic('car dog ...');
+   * const bob = new PublicIdentity('523....', '0xab1234...');
+   *
+   * const messageStr = 'This is a test';
+   * alice.encryptAsymmetricAsStr(messageStr, bob.boxPublicKeyAsHex);
+   * // (output) EncryptedAsymmetricString {
+   * //           box: '0xd0b556c4438270901662ff2d3e9359f244f211a225d66dcf74b64f814a92',
+   * //           nonce: '0xe4c82d261d1f8fc8a0cf0bbd524530afcc5b201541827580'
+   * //          }
    * ```
    */
   public encryptAsymmetricAsStr(
@@ -240,9 +253,17 @@ export default class Identity extends PublicIdentity {
    * @param encrypted - The encrypted data.
    * @param boxPublicKey - The public key of the sender of the encrypted data.
    * @returns The decrypted data.
-   * @example
-   * ```javascript
-   * identity.decryptAsymmetricAsStr(encryptedData, PublicIdentity.boxPublicKeyAsHex);
+   * @example ```javascript
+   * const alice = new PublicIdentity('74be...', '0xeb98765...');
+   * const bob = Identity.buildFromMnemonic('house cat ...');
+   *
+   * const encryptedData = {
+   *   box: '0xd0b556c4438270901662ff2d3e9359f244f211a225d66dcf74b64f814a92',
+   *   nonce: '0xe4c82d261d1f8fc8a0cf0bbd524530afcc5b201541827580',
+   * };
+   *
+   * bob.decryptAsymmetricAsStr(encryptedData, alice.boxPublicKeyAsHex);
+   * // (output) "This is a test"
    * // decrypted data
    * ```
    */
@@ -263,9 +284,17 @@ export default class Identity extends PublicIdentity {
    * @param input - The data to be encrypted.
    * @param boxPublicKey - The public key of the receiver of the encrypted data.
    * @returns The encrypted data.
-   * @example
-   * ```javascript
-   * identity.encryptAsymmetric(data, PublicIdentity.boxPublicKeyAsHex);
+   * @example ```javascript
+   * const alice = Identity.buildFromMnemonic('car dog ...');
+   * const bob = new PublicIdentity('523....', '0xab1234...');
+   *
+   * const message = 'This is a test';
+   * const data = stringToU8a(message);
+   * alice.encryptAsymmetric(data, bob.boxPublicKeyAsHex);
+   * // (output) EncryptedAsymmetric {
+   * //           box: Uint8Array [ 56,  27,   2, 254, ... ],
+   * //           nonce: Uint8Array [ 76, 23, 145, 216, ...]
+   * //         }
    * // encrypted data
    * ```
    */
@@ -286,9 +315,17 @@ export default class Identity extends PublicIdentity {
    * @param encrypted - The encrypted data.
    * @param boxPublicKey - The public key of the sender of the encrypted data.
    * @returns The decrypted data.
-   * @example
-   * ```javascript
-   * identity.decryptAsymmetric(encryptedData, PublicIdentity.boxPublicKeyAsHex);
+   * @example ```javascript
+   * const alice = new PublicIdentity('74be...', '0xeb98765...');
+   * const bob = Identity.buildFromMnemonic('house cat ...');
+   *
+   * const encryptedData = {
+   *   box: '0xd0b556c4438270901662ff2d3e9359f244f211a225d66dcf74b64f814a92',
+   *   nonce: '0xe4c82d261d1f8fc8a0cf0bbd524530afcc5b201541827580',
+   * };
+   *
+   * bob.decryptAsymmetric(encryptedData, alice.boxPublicKeyAsHex);
+   * // (output) "This is a test"
    * // decrypted data
    * ```
    */
@@ -309,9 +346,11 @@ export default class Identity extends PublicIdentity {
    * @param submittableExtrinsic - A chain transaction.
    * @param nonceAsHex - The AccountNonce of the address doing the transaction.
    * @returns The signed SubmittableExtrinsic.
-   * @example
-   * ```javascript
-   * identity.signSubmittableExtrinsic(tx, nonce.tohex());
+   * @example ```javascript
+   * const alice = Identity.buildFromMnemonic('car dog ...');
+   * const tx = await blockchain.api.tx.ctype.add(ctype.hash);
+   * const nonce = await blockchain.api.query.system.accountNonce(alice.address);
+   * alice.signSubmittableExtrinsic(tx, nonce.tohex());
    * // A signed chain transaction
    * ```
    */
