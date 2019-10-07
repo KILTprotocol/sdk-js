@@ -65,6 +65,8 @@ export default class Identity extends PublicIdentity {
    *
    * @example
    * ```javascript
+   * const mnemonic = Identity.generateMnemonic();
+   * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    * Identity.buildFromMnemonic(mnemonic);
    * ```
    */
