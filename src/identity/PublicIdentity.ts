@@ -45,8 +45,6 @@ function isDIDResult(object: object): object is DIDResult {
 }
 
 export default class PublicIdentity implements IPublicIdentity {
-<<<<<<< HEAD
-=======
   /**
    * (STATIC) Creates a new Public Identity from a DID (Decentralised identifier) document.
    *
@@ -84,7 +82,6 @@ export default class PublicIdentity implements IPublicIdentity {
    * PublicIdentity.fromDidDocument(didDocument);
    * ```
    */
->>>>>>> parent of 9e0e844... docs: changed to the new example ident
   public static fromDidDocument(didDocument: object): IPublicIdentity | null {
     if (!isDIDDocument(didDocument)) return null
 
@@ -113,8 +110,6 @@ export default class PublicIdentity implements IPublicIdentity {
     }
   }
 
-<<<<<<< HEAD
-=======
   /**
    * (STATIC) (ASYNC) Requests internal and external DID (Decentralised identifier) documents
    * and converts them to a [[PublicIdentity]] object.
@@ -134,7 +129,6 @@ export default class PublicIdentity implements IPublicIdentity {
    * PublicIdentity.resolveFromDid(identifier, urlResolver);
    * ```
    */
->>>>>>> parent of 9e0e844... docs: changed to the new example ident
   public static async resolveFromDid(
     identifier: string,
     urlResolver: IURLResolver
