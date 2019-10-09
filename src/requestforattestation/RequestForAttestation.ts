@@ -145,7 +145,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @example ```javascript
    * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
    * reqForAtt.removeClaimOwner();
-   * // reqForAtt does not conatin the claim owner anymore.
+   * // reqForAtt does not conatin the claim owner anymore or the nonce anymore.
    * ```
    */
   public removeClaimOwner(): void {
