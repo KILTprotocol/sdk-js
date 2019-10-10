@@ -2,7 +2,7 @@
  * @module Delegation/DelegationRootNode
  */
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
-import { CodecResult } from '@polkadot/api/promise/types'
+import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 
 import { getCached } from '../blockchainApiConnection'
 import { decodeRootDelegation } from './DelegationDecoder'
@@ -18,7 +18,7 @@ export async function store(
   const blockchain = await getCached()
   const tx: SubmittableExtrinsic<
     CodecResult,
-    any
+    SubscriptionResult
   > = await blockchain.api.tx.delegation.createRoot(
     delegation.id,
     delegation.cTypeHash
@@ -47,7 +47,7 @@ export async function revoke(
   const blockchain = await getCached()
   const tx: SubmittableExtrinsic<
     CodecResult,
-    any
+    SubscriptionResult
   > = await blockchain.api.tx.delegation.revokeRoot(delegation.id)
   return blockchain.submitTx(identity, tx)
 }

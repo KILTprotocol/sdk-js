@@ -2,7 +2,7 @@
  * @module DID
  */
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
-import { CodecResult } from '@polkadot/api/promise/types'
+import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types' // These are promises with any
 import { Option, Text } from '@polkadot/types'
 
 import { getCached } from '../blockchainApiConnection'
@@ -44,7 +44,7 @@ export async function remove(identity: Identity): Promise<TxStatus> {
   const blockchain = await getCached()
   const tx: SubmittableExtrinsic<
     CodecResult,
-    any
+    SubscriptionResult
   > = await blockchain.api.tx.did.remove()
   return blockchain.submitTx(identity, tx)
 }
@@ -53,7 +53,7 @@ export async function store(did: IDid, identity: Identity): Promise<TxStatus> {
   const blockchain = await getCached()
   const tx: SubmittableExtrinsic<
     CodecResult,
-    any
+    SubscriptionResult
   > = await blockchain.api.tx.did.add(
     did.publicBoxKey,
     did.publicSigningKey,
