@@ -7,7 +7,7 @@
  */
 
 import { Codec } from '@polkadot/types/types'
-import ICType from 'src/types/CType'
+import ICType from '../types/CType'
 
 export type QueryResult = Codec | undefined | null | ICType | string
 
