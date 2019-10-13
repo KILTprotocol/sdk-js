@@ -2,10 +2,8 @@ import Identity from '../identity/Identity'
 import AttestedClaim from './AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
-import IAttestation from '../types/Attestation'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import IAttestedClaim from '../types/AttestedClaim'
 import Claim from '../claim/Claim'
 
 function buildAttestedClaim(
@@ -18,7 +16,7 @@ function buildAttestedClaim(
   // create claim
 
   const contentsCopy = contents
-  const testCType: CType = new CType({
+  const testCType: CType = CType.fromObject({
     schema: {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -35,30 +33,23 @@ function buildAttestedClaim(
       },
     },
   } as ICType)
-  const claim = new Claim(
-    testCType.hash,
-    contentsCopy,
-    claimer.address,
-    testCType.schema
-  )
+  const claim = Claim.fromCType(testCType, contentsCopy, claimer.address)
   // build request for attestation with legimitations
-  const requestForAttestation = new RequestForAttestation(
+  const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
     claim,
-    legitimations,
-    claimer
+    claimer,
+    legitimations
   )
   // build attestation
-  const testAttestation: Attestation = Attestation.fromObject({
-    claimHash: requestForAttestation.rootHash,
-    cTypeHash: requestForAttestation.claim.cTypeHash,
-    owner: attester.address,
-    revoked: false,
-  } as IAttestation)
+  const testAttestation: Attestation = Attestation.fromRequest(
+    requestForAttestation,
+    attester
+  )
   // combine to attested claim
-  const attestedClaim: AttestedClaim = AttestedClaim.fromObject({
-    request: requestForAttestation,
-    attestation: testAttestation,
-  } as IAttestedClaim)
+  const attestedClaim: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
+    requestForAttestation,
+    testAttestation
+  )
   return attestedClaim
 }
 

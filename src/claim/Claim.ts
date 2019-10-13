@@ -26,8 +26,26 @@ function verifyClaim(
 }
 
 export default class Claim implements IClaim {
-  public static fromObject(obj: IClaim): Claim {
-    return new Claim(obj.cTypeHash, obj.contents, obj.owner, undefined)
+  public static fromClaimInterface(obj: IClaim): Claim {
+    if (obj.cTypeSchema !== undefined) {
+      if (!verifyClaim(obj.contents, obj.cTypeSchema)) {
+        throw Error('Claim not valid')
+      }
+    }
+    return new Claim(obj.cTypeHash, obj.contents, obj.owner)
+  }
+
+  public static fromCType(
+    ctype: ICType,
+    contents: object,
+    owner: IPublicIdentity['address']
+  ): Claim {
+    if (ctype.schema !== undefined) {
+      if (!verifyClaim(contents, ctype.schema)) {
+        throw Error('Claim not valid')
+      }
+    }
+    return new Claim(ctype.hash, contents, owner)
   }
 
   public cTypeHash: IClaim['cTypeHash']
@@ -37,14 +55,8 @@ export default class Claim implements IClaim {
   public constructor(
     cTypeHash: ICType['hash'],
     contents: object,
-    owner: IPublicIdentity['address'],
-    cTypeSchema?: ICType['schema']
+    owner: IPublicIdentity['address']
   ) {
-    if (cTypeSchema !== undefined) {
-      if (!verifyClaim(contents, cTypeSchema)) {
-        throw Error('Claim not valid')
-      }
-    }
     this.cTypeHash = cTypeHash
     this.contents = contents
     this.owner = owner

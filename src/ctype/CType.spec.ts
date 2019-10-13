@@ -71,7 +71,7 @@ describe('CType', () => {
     }
 
     const ctypeFromInput = CTypeUtils.fromInputModel(ctypeInput)
-    const ctypeFromModel = new CType(ctypeModel)
+    const ctypeFromModel = CType.fromObject(ctypeModel)
     expect(JSON.stringify(ctypeFromInput.getModel())).toEqual(
       JSON.stringify(ctypeFromModel.getModel())
     )
@@ -87,7 +87,7 @@ describe('CType', () => {
 
     expect(() => {
       // @ts-ignore
-      new CType(goodClaim).verifyClaimStructure(goodClaim)
+      CType.fromObject(goodClaim).verifyClaimStructure(goodClaim)
     }).toThrow(new Error('CType does not correspond to schema'))
     expect(() => {
       CTypeUtils.fromInputModel(ctypeModel)
@@ -100,7 +100,7 @@ describe('CType', () => {
     const identityAlice = Identity.buildFromURI('//Alice')
     const testHash = Crypto.hashStr('1234')
 
-    const ctype = new CType(ctypeModel)
+    const ctype = CType.fromObject(ctypeModel)
     ctype.hash = testHash
     const resultCtype = {
       ...ctype,

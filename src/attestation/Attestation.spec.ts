@@ -17,7 +17,7 @@ describe('Attestation', () => {
 
   const Blockchain = require('../blockchain/Blockchain').default
 
-  const testCType: CType = new CType({
+  const testCType: CType = CType.fromObject({
     schema: {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -35,16 +35,15 @@ describe('Attestation', () => {
     },
   } as ICType)
   const testcontents = {}
-  const testClaim = new Claim(
-    testCType.hash,
+  const testClaim = Claim.fromCType(
+    testCType,
     testcontents,
-    identityBob.address,
-    testCType.schema
+    identityBob.address
   )
-  const requestForAttestation: RequestForAttestation = new RequestForAttestation(
+  const requestForAttestation: RequestForAttestation = RequestForAttestation.fromClaimAndIdentity(
     testClaim,
-    [],
-    identityBob
+    identityBob,
+    []
   )
 
   it('stores attestation', async () => {
@@ -71,7 +70,7 @@ describe('Attestation', () => {
       return Promise.resolve(new Tuple([], []))
     })
 
-    const attestation: Attestation = Attestation.fromObject({
+    const attestation: Attestation = Attestation.fromAttestationInterface({
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
       owner: identityAlice.address,
@@ -91,12 +90,10 @@ describe('Attestation', () => {
       )
     })
 
-    const attestation: Attestation = Attestation.fromObject({
-      claimHash: requestForAttestation.rootHash,
-      cTypeHash: testCType.hash,
-      owner: identityAlice.address,
-      revoked: true,
-    } as IAttestation)
+    const attestation: Attestation = Attestation.fromRequest(
+      requestForAttestation,
+      identityAlice
+    )
     expect(await attestation.verify()).toBeFalsy()
   })
 })

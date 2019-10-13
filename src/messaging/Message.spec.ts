@@ -104,7 +104,7 @@ describe('Messaging', () => {
   })
 
   it('verify message sender is owner', () => {
-    const requestForAttestation: RequestForAttestation = new RequestForAttestation(
+    const requestForAttestation: RequestForAttestation = RequestForAttestation.fromClaimAndIdentity(
       {
         cTypeHash: '0x12345678',
         cTypeSchema: {
@@ -118,8 +118,8 @@ describe('Messaging', () => {
         owner: identityAlice.getPublicIdentity().address,
         contents: {},
       } as IClaim,
-      [],
-      identityAlice
+      identityAlice,
+      []
     )
     const requestAttestationBody: IRequestAttestationForClaim = {
       content: requestForAttestation,

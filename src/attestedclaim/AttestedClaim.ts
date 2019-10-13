@@ -21,8 +21,15 @@ export default class AttestedClaim implements IAttestedClaim {
   /**
    * Creates a new instance of this Attestation class from the given interface.
    */
-  public static fromObject(obj: IAttestedClaim): AttestedClaim {
+  public static fromAttestedClaimInterface(obj: IAttestedClaim): AttestedClaim {
     return new AttestedClaim(obj.request, obj.attestation)
+  }
+
+  public static fromRequestAndAttestation(
+    request: IRequestForAttestation,
+    attestation: IAttestation
+  ) {
+    return new AttestedClaim(request, attestation)
   }
 
   public request: RequestForAttestation
@@ -32,9 +39,8 @@ export default class AttestedClaim implements IAttestedClaim {
     request: IRequestForAttestation,
     attestation: IAttestation
   ) {
-    // TODO: this should be instantiated without Object.create and Object.assign
-    this.request = RequestForAttestation.fromObject(request)
-    this.attestation = Attestation.fromObject(attestation)
+    this.request = RequestForAttestation.fromRequestInterface(request)
+    this.attestation = Attestation.fromAttestationInterface(attestation)
   }
 
   public async verify(): Promise<boolean> {
@@ -59,8 +65,8 @@ export default class AttestedClaim implements IAttestedClaim {
     excludedClaimProperties: string[],
     excludeIdentity: boolean = false
   ): AttestedClaim {
-    const result: AttestedClaim = AttestedClaim.fromObject(
-      JSON.parse(JSON.stringify(this))
+    const result: AttestedClaim = AttestedClaim.fromAttestedClaimInterface(
+      this as IAttestedClaim
     )
     result.request.removeClaimProperties(excludedClaimProperties)
     if (excludeIdentity) {

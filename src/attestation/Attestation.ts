@@ -11,6 +11,7 @@
 /**
  * Dummy comment needed for correct doc display, do not remove
  */
+import IRequestForAttestation from '../types/RequestForAttestation'
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
@@ -37,13 +38,26 @@ export default class Attestation implements IAttestation {
   /**
    * Creates a new instance of this Attestation class from the given interface.
    */
-  public static fromObject(obj: IAttestation): Attestation {
+  public static fromAttestationInterface(obj: IAttestation): Attestation {
     return new Attestation(
       obj.claimHash,
       obj.cTypeHash,
       obj.owner,
       obj.delegationId,
       obj.revoked
+    )
+  }
+
+  public static fromRequest(
+    request: IRequestForAttestation,
+    attesterIdentity: Identity,
+    delegationId?: IDelegationBaseNode['id']
+  ) {
+    return new Attestation(
+      request.rootHash,
+      request.claim.cTypeHash,
+      attesterIdentity.address,
+      delegationId
     )
   }
 
@@ -58,17 +72,13 @@ export default class Attestation implements IAttestation {
     cTypeHash: ICType['hash'],
     attestationOwner: IPublicIdentity['address'],
     delegationId?: IDelegationBaseNode['id'],
-    revoked?: boolean
+    revoked = false
   ) {
     this.owner = attestationOwner
     this.claimHash = claimHash
     this.cTypeHash = cTypeHash
     this.delegationId = delegationId
-    if (revoked !== undefined) {
-      this.revoked = revoked
-    } else {
-      this.revoked = false
-    }
+    this.revoked = revoked
   }
 
   public async store(identity: Identity): Promise<TxStatus> {

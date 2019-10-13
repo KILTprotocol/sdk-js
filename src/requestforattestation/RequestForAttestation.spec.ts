@@ -14,7 +14,7 @@ function buildRequestForAttestation(
 ): RequestForAttestation {
   // create claim
   const contentsCopy = contents
-  const testCType: CType = new CType({
+  const testCType: CType = CType.fromObject({
     schema: {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -38,7 +38,11 @@ function buildRequestForAttestation(
     owner: claimer.address,
   } as IClaim
   // build request for attestation with legimitations
-  return new RequestForAttestation(claim, legitimations, claimer)
+  return RequestForAttestation.fromClaimAndIdentity(
+    claim,
+    claimer,
+    legitimations
+  )
 }
 
 describe('RequestForAttestation', () => {

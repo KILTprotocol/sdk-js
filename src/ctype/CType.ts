@@ -19,8 +19,21 @@ import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
 
 export default class CType implements ICType {
-  public static fromObject(obj: CType): CType {
-    return new CType(JSON.parse(JSON.stringify(obj)))
+  public static fromObject(obj: ICType): CType {
+    if (!CTypeUtils.verifySchema(obj, CTypeWrapperModel)) {
+      throw new Error('CType does not correspond to schema')
+    }
+    if (obj.hash) {
+      if (CTypeUtils.getHashForSchema(obj.schema) !== obj.hash) {
+        throw Error('provided and generated cType hash are not matching')
+      }
+    }
+    return new CType(
+      obj.schema,
+      obj.metadata,
+      CTypeUtils.getHashForSchema(obj.schema),
+      obj.owner
+    )
   }
 
   public hash: ICType['hash']
@@ -28,19 +41,16 @@ export default class CType implements ICType {
   public schema: ICType['schema']
   public metadata: ICType['metadata']
 
-  public constructor(ctype: ICType) {
-    if (!CTypeUtils.verifySchema(ctype, CTypeWrapperModel)) {
-      throw new Error('CType does not correspond to schema')
-    }
-    this.schema = ctype.schema
-    this.metadata = ctype.metadata
-    this.owner = ctype.owner
-
-    this.hash = CTypeUtils.getHashForSchema(this.schema)
-
-    if (ctype.hash && this.hash !== ctype.hash) {
-      throw Error('provided and generated cType hash are not matching')
-    }
+  public constructor(
+    schema: ICType['schema'],
+    metadata: ICType['metadata'],
+    hash: ICType['hash'],
+    owner: ICType['owner']
+  ) {
+    this.schema = schema
+    this.metadata = metadata
+    this.owner = owner
+    this.hash = hash
   }
 
   public async store(identity: Identity): Promise<TxStatus> {

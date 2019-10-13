@@ -86,7 +86,7 @@ export function fromInputModel(ctypeInput: any): CType {
     }
   })
   ctype.schema.properties = properties
-  return new CType(ctype as ICType)
+  return CType.fromObject(ctype as ICType)
 }
 
 function getLocalized(o: any, lang?: string): any {
