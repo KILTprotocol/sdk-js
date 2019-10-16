@@ -62,7 +62,7 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 
 export default class RequestForAttestation implements IRequestForAttestation {
   /**
-   * Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
+   * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
    * @param obj - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
@@ -127,7 +127,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * Removes [[Claim]] properties from the [[RequestForAttestation]] object.
+   * Removes [[Claim]] properties from the [[RequestForAttestation]] object, provides anonymity and security when building the [[createPresentation]] method.
    *
    * @param properties - Properties to remove from the [[Claim]] object.
    * @throws An error when a property which should be deleted wasn't found.
