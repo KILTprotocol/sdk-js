@@ -24,8 +24,7 @@ export default class AttestedClaim implements IAttestedClaim {
    *
    * @param obj - The base object from which to create the attested claim.
    * @returns A new [[AttestedClaim]] object.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * // create an AttestedClaim object, so we can call methods on it (`serialized` is a serialized AttestedClaim object)
    * AttestedClaim.fromObject(JSON.parse(serialized));
    * ```
@@ -44,11 +43,10 @@ export default class AttestedClaim implements IAttestedClaim {
 
   /**
    * Builds a new [[AttestedClaim]] instance.
-   *
+   * Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
    * @param request - A request for attestation, usually sent by a claimer.
    * @param attestation - The attestation to base the [[AttestedClaim]] on.
-   * @example Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
-   * ```javascript
+   * @example  ```javascript
    * new AttestedClaim(requestForAttestation, attestation);
    * ```
    */
@@ -70,8 +68,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
    *
    * @returns A promise containing whether this attested claim is valid.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * attestedClaim.verify().then(isVerified => {
    *   // `isVerified` is true if the attestation is verified, false otherwise
    * });
@@ -91,8 +88,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * * the hash of the [[RequestForAttestation]] object for this attested claim, and the hash of the [[Claim]] for this attestated claim are the same.
    *
    * @returns Whether the attestated claim's data is valid.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * attestedClaim.verifyData();
    * ```
    */
@@ -122,8 +118,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param excludedClaimProperties - An array of [[Claim]] properties to **exclude**.
    * @param excludeIdentity - Whether the claimer's identity should be **excluded** from the presentation. By default, the claimer's identity is included (`excludeIdentity` is `false`).
    * @returns The newly created presentation.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * // create a presentation that keeps `birthYear` and `identity` private
    * createPresentation(['birthYear'], true);
    * ```
