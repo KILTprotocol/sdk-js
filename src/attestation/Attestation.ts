@@ -104,11 +104,11 @@ export default class Attestation implements IAttestation {
 
   /**
    * [ASYNC] Stores the attestation on chain.
-   * Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    *
    * @param identity - The identity used to store the attestation.
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example ```javascript
+   * // Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * attestation.store(attester).then(() => {
    *    // the attestation was successfully stored, so now we can for example create an AttestedClaim
    * });

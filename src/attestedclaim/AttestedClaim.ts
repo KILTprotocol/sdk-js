@@ -43,10 +43,11 @@ export default class AttestedClaim implements IAttestedClaim {
 
   /**
    * Builds a new [[AttestedClaim]] instance.
-   * Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
+   *
    * @param request - A request for attestation, usually sent by a claimer.
    * @param attestation - The attestation to base the [[AttestedClaim]] on.
    * @example  ```javascript
+   * // Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
    * new AttestedClaim(requestForAttestation, attestation);
    * ```
    */
@@ -103,8 +104,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * Gets the hash of the claim that corresponds to this attestation.
    *
    * @returns The hash of the claim for this attestation (claimHash).
-   * @example
-   * ```javascript
+   * @example ```javascript
    * attestation.getHash();
    * ```
    */
