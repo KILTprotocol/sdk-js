@@ -67,10 +67,12 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @param obj - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
    * @returns  A new [[RequestForAttestation]] `object`.
-   * @example
-   * ```javascript
-   * // create an RequestForAttestation object, so we can call methods on it (`serialized` is a serialized RequestForAttestation object)
-   * RequestForAttestation.fromObject(JSON.parse(serialized));
+   * @example ```javascript
+   * const serialized =
+   *   '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
+   * const parsed = JSON.parse(serialized);
+   *
+   * RequestForAttestation.fromObject(parsed);
    * ```
    */
   public static fromObject(obj: IRequestForAttestation): RequestForAttestation {
@@ -99,8 +101,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param legitimations - Attested claims used as legitimations.
    * @param identity - Identity of the claimer.
    * @param delegationId - A delegation tree's root node id.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * // create a new request for attestation
    * new RequestForAttestation(claim, [], alice);
    * ```
@@ -130,10 +131,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @param properties - Properties to remove from the [[Claim]] object.
    * @throws An error when a property which should be deleted wasn't found.
-   * @example
-   * ```javascript
-   *  requestForAttestation.removeClaimProperties(['name']);
-   * // `name` is deleted from `requestForAttestation`
+   * @example ```javascript
+   * const rawClaim = {
+   *   name: 'Alice',
+   *   age: 29,
+   * };
+   * const claim = new Claim(ctype, rawClaim, alice);
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.removeClaimProperties(['name']);
+   * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
    * ```
    */
   public removeClaimProperties(properties: string[]): void {
@@ -149,9 +155,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * Removes the [[Claim]] owner from the [[RequestForAttestation]] object.
    *
-   * @example
-   * ```javascript
-   * requestForAttestation.removeClaimOwner();
+   * @example ```javascript
+   * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
+   * reqForAtt.removeClaimOwner();
    * // `requestForAttestation` does not contain the claim `owner` or the `claimOwner`'s nonce anymore.
    * ```
    */
@@ -164,10 +170,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Verifies the data of the [[RequestForAttestation]] object; used to check that the data was not tampered with, by checking the data against hashes.
    *
    * @returns Whether the data is valid.
-   * @example
-   * ```javascript
-   *  requestForAttestation.verifyData();
-   * // returns `true` if the data is correct
+   * @example ```javascript
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.verifyData();  // returns true if the data is correct
    * ```
    */
   public verifyData(): boolean {
@@ -224,10 +229,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Verifies the signature of the [[RequestForAttestation]] object.
    *
    * @returns Whether the signature is correct.
-   * @example
-   * ```javascript
-   * requestForAttestation.verifySignature();
-   * // returns `true` if the signature is correct
+   * @example ```javascript
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.verifySignature(); // returns `true` if the signature is correct
    * ```
    */
   public verifySignature(): boolean {
