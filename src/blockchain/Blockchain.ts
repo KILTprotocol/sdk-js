@@ -37,7 +37,7 @@ export interface IBlockchainApi {
   api: ApiPromise
 
   getStats(): Promise<Stats>
-  listenToBlocks(listener: (header: Header) => void): SubscriptionResult 
+  listenToBlocks(listener: (header: Header) => void): SubscriptionResult
   submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic<CodecResult, SubscriptionResult>
