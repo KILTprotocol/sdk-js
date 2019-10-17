@@ -29,13 +29,3 @@ export default interface ICType {
   schema: ICTypeSchema
   metadata: ICtypeMetadata
 }
-
-export interface ICTypeInput {
-  $id: string
-  $schema: string
-  properties: object[] // TO DO: need to refine what properties are
-  required: string[]
-  title: string
-  description?: string
-  type: string
-}
