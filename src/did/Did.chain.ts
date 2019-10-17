@@ -1,8 +1,12 @@
 /**
  * @module DID
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
-import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types' // These are promises with any
+import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
 
 import { getCached } from '../blockchainApiConnection'

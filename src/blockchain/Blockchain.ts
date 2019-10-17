@@ -37,7 +37,7 @@ export interface IBlockchainApi {
   api: ApiPromise
 
   getStats(): Promise<Stats>
-  listenToBlocks(listener: (header: Header) => void): SubscriptionResult // Changes this into a Promise function for any, could be better to dig deeper
+  listenToBlocks(listener: (header: Header) => void): SubscriptionResult 
   submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic<CodecResult, SubscriptionResult>
@@ -50,7 +50,7 @@ export interface IBlockchainApi {
 
 export default class Blockchain implements IBlockchainApi {
   public static asArray(queryResult: QueryResult): any[] {
-    // I think this can be changed. Was originally any.
+    // I think this can be changed. Was originally any may need help with this
     const json =
       queryResult && queryResult.encodedLength ? queryResult.toJSON() : null
     if (json instanceof Array) {

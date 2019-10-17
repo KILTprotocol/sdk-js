@@ -8,7 +8,8 @@
         "airbnb-base",
         "plugin:@typescript-eslint/recommended",
         "prettier",
-        "prettier/@typescript-eslint"
+        "prettier/@typescript-eslint",
+        "plugin:jsdoc/recommended"
     ],
     "globals": {
         "Atomics": "readonly",
@@ -20,7 +21,8 @@
     },
     "plugins": [
         "@typescript-eslint",
-        "prettier"
+        "prettier",
+        "jsdoc"
     ],
     "rules": {
         "prettier/prettier": "error",
@@ -31,7 +33,17 @@
         }],
         "@typescript-eslint/interface-name-prefix": ["error", "always"],
         "@typescript-eslint/prefer-interface": "off",
-        "@typescript-eslint/array-type": ["error", "array-simple"]
+        "@typescript-eslint/array-type": ["error", "array-simple"],
+        "jsdoc/require-description": "warn",
+        "jsdoc/require-description-complete-sentence": "warn",
+        "jsdoc/no-types": "warn",
+        "jsdoc/require-param-type": "off",
+        "jsdoc/require-returns-type": "off",
+        "jsdoc/require-jsdoc": "off",
+        "jsdoc/check-examples": ["warn", {
+            "exampleCodeRegex": "^```(?:js|javascript|typescript)\\n([\\s\\S]*)```\\s*$",
+            "configFile": ".eslintrc-jsdoc.json"
+        }]
     },
     "overrides": [
         {
