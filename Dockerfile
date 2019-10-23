@@ -18,6 +18,7 @@ COPY jest.env.js ./
 COPY tslint.json ./
 COPY .prettierrc ./
 COPY .eslintrc.json ./
+COPY .eslintrc-jsdoc.json ./
 COPY .eslintignore ./
 ## ignoring files within build later
 COPY .npmignore ./
