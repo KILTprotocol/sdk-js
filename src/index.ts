@@ -22,12 +22,21 @@ import DelegationNode from './delegation/DelegationNode'
 import DelegationRootNode from './delegation/DelegationRootNode'
 import Did, { IDid } from './did/Did'
 import Message from './messaging/Message'
+import {
+  getAddressFromIdentifier,
+  getIdentifierFromAddress,
+} from './did/Did.utils'
 
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
 export { default as Crypto } from './crypto'
 export { default as UUID } from './util/UUID'
 export * from './errorhandling/ExtrinsicError'
+
+const DidUtils = {
+  getIdentifierFromAddress,
+  getAddressFromIdentifier,
+}
 
 // ---- Types, which define the most basic KILT objects ----
 export { default as IPublicIdentity } from './types/PublicIdentity'
@@ -61,6 +70,7 @@ export {
   DelegationNode,
   DelegationRootNode,
   Did,
+  DidUtils,
   IDid,
   Message,
 }
@@ -86,5 +96,6 @@ export default {
   DelegationNode,
   DelegationRootNode,
   Did,
+  DidUtils,
   Message,
 }
