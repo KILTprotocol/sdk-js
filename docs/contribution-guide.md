@@ -52,6 +52,7 @@ On top of the the linting rules mentioned above (must document all parameters, m
 * `@example`:
   * Create it as valid **JS** code, to make it simple for both TS and JS developers;
   * Keep it really short, illustrate only this method's functionality;
+  * Provide minimal context;
   * Avoid printing the output of full objects;
   * Don't use `console.log()`;
   * No need to write `Kilt` to signify that a class comes from Kilt (e.g.: ~~`Kilt.Identity`~~, just write `Identity` instead);
@@ -63,15 +64,18 @@ Example of a method docBlock that follows these guidelines:
 
 ```javascript
 /**
- * [STATIC] [ASYNC] Revokes an attestation.
- *
- * @param claimHash - The hash of the claim that corresponds to the attestation to revoke.
- * @param identity - The identity used to revoke the attestation. It should be an attester identity, or an identity with delegated rights.
- * @returns A promise containing the [[TxStatus]] (transaction status).
- * @example ```javascript
- * Attestation.revoke("0xd8024cdc147c4fa9221cd177", identity);
- * ```
- */
+  * [STATIC] Builds an identity object from a mnemonic string.
+  *
+  * @param phraseArg - [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
+  * @returns An [[Identity]].
+  *
+  * @example ```javascript
+  * const mnemonic = Identity.generateMnemonic();
+  * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
+  *
+  * Identity.buildFromMnemonic(mnemonic);
+  * ```
+  */
 ```
 
 ### Checking locally how the [online API Doc][apidoc] will look like
