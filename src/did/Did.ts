@@ -14,7 +14,8 @@
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import TxStatus from '../blockchain/TxStatus'
-import { getIdentifierFromAddress } from './Did.utils'
+import IPublicIdentity from '../types/PublicIdentity'
+import { getIdentifierFromAddress, getAddressFromIdentifier } from './Did.utils'
 import { store, queryByAddress, queryByIdentifier, remove } from './Did.chain'
 
 const log = factory.getLogger('DID')
@@ -54,6 +55,17 @@ export default class Did implements IDid {
     return queryByIdentifier(identifier)
   }
 
+  public static getIdentifierFromAddress(
+    address: IPublicIdentity['address']
+  ): IDid['identifier'] {
+    return getIdentifierFromAddress(address)
+  }
+
+  public static getAddressFromIdentifier(
+    identifier: IDid['identifier']
+  ): IPublicIdentity['address'] {
+    return getAddressFromIdentifier(identifier)
+  }
   /**
    * @description Queries the [Did] from chain using the [address]
    *
