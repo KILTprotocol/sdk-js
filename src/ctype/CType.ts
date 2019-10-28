@@ -34,14 +34,9 @@ export default class CType implements ICType {
   public hash: ICType['hash']
   public owner: ICType['owner'] | null
   public schema: ICType['schema']
-  public metadata: ICType['metadata']
 
   public constructor(cTypeInput: ICType) {
     this.schema = cTypeInput.schema
-    if (!cTypeInput.metadata) {
-      throw new Error(`No metadata provided:${cTypeInput.metadata}`)
-    }
-    this.metadata = cTypeInput.metadata
     this.owner = cTypeInput.owner
     if (!cTypeInput.hash) {
       this.hash = CTypeUtils.getHashForSchema(this.schema)
