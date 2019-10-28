@@ -18,7 +18,6 @@ import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
 
-
 export default class CType implements ICType {
   public static fromObject(obj: ICType): CType {
     const newObject = Object.create(CType.prototype)
