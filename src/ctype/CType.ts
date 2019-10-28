@@ -18,6 +18,7 @@ import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
 
+
 export default class CType implements ICType {
   public static fromObject(obj: ICType): CType {
     const newObject = Object.create(CType.prototype)
@@ -27,16 +28,13 @@ export default class CType implements ICType {
   public hash: ICType['hash']
   public owner?: ICType['owner']
   public schema: ICType['schema']
-  public metadata: ICType['metadata']
 
   public constructor(ctype: ICType) {
     if (!CTypeUtils.verifySchema(ctype, CTypeWrapperModel)) {
       throw new Error('CType does not correspond to schema')
     }
     this.schema = ctype.schema
-    this.metadata = ctype.metadata
     this.owner = ctype.owner
-
     this.hash = CTypeUtils.getHashForSchema(this.schema)
 
     if (ctype.hash && this.hash !== ctype.hash) {
