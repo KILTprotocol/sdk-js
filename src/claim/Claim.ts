@@ -31,13 +31,11 @@ export default class Claim implements IClaim {
   public cType: IClaim['cType']
   public contents: IClaim['contents']
   public owner: IClaim['owner']
-  public metadata?: any
 
   public constructor(
     cType: CType,
     contents: IClaim['contents'],
-    identity: Identity,
-    metadata?: IClaim['metadata']
+    identity: Identity
   ) {
     if (!verifyClaim(contents, cType)) {
       throw Error('Claim not valid')
@@ -45,6 +43,5 @@ export default class Claim implements IClaim {
     this.cType = cType.hash
     this.contents = contents
     this.owner = identity.address
-    this.metadata = metadata
   }
 }

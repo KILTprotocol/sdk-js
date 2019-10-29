@@ -18,3 +18,19 @@ export default interface ICType {
   owner?: IPublicIdentity['address']
   schema: ICTypeSchema
 }
+
+export interface ICtypeMetadata {
+  metadata: {
+    $id: string
+    $schema: string
+    title: {
+      type: string
+    }
+    description: {
+      type: string
+    }
+    properties: object
+    type: 'object'
+  }
+  ctypeHash: string
+}

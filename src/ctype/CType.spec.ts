@@ -4,7 +4,6 @@ import Crypto from '../crypto'
 import ICType from '../types/CType'
 import TxStatus from '../blockchain/TxStatus'
 import Claim from '../claim/Claim'
-import { IClaimMetadata } from '../types/Claim'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -32,27 +31,14 @@ describe('CType', () => {
     },
   } as ICType)
 
-  const claimMetadata = {
-    title: { default: 'CType Title' },
-    description: {},
-    properties: {
-      name: { title: { default: 'Name' } },
-    },
-  } as IClaimMetadata
-
   const identityAlice = Identity.buildFromURI('//Alice')
 
   const claimContents = {
     name: 'Bob',
   }
 
-  const claim = new Claim(
-    claimCtype,
-    claimContents,
-    identityAlice,
-    claimMetadata
-  )
-  console.log(claim.metadata.properties)
+  const claim = new Claim(claimCtype, claimContents, identityAlice)
+
   it('stores ctypes', async () => {
     const testHash = Crypto.hashStr('1234')
 
