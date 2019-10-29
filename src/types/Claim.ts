@@ -11,14 +11,4 @@ export default interface IClaim {
   cTypeHash: ICType['hash']
   contents: object
   owner: IPublicIdentity['address']
-  metadata?: IClaimMetadata
-}
-export interface IClaimMetadata {
-  title: {
-    default: string
-  }
-  description: {
-    default: string
-  }
-  properties: any
 }

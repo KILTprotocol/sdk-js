@@ -58,7 +58,6 @@ export default class Claim implements IClaim {
   public cTypeHash: IClaim['cTypeHash']
   public contents: IClaim['contents']
   public owner: IClaim['owner']
-  public metadata?: any
 
   public constructor(claimInput: IClaim) {
     if (!claimInput.cTypeHash || !claimInput.contents || !claimInput.owner) {

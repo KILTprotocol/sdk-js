@@ -8,8 +8,8 @@
 // TODO: Generate from actual CTypeModel
 // TODO: The SDK is not really responsible for this, since it is editor specific
 export const CTypeInputModel = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'http://kilt-protocol.org/draft-01/ctype-input#',
+  $schema: 'http://json-schema.org/draft-07/schema#',
   title: 'CTYPE',
   type: 'object',
   properties: {
@@ -79,8 +79,8 @@ export const CTypeInputModel = {
 }
 
 export const CTypeModel = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'http://kilt-protocol.org/draft-01/ctype#',
+  $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   properties: {
     $id: {
@@ -121,8 +121,8 @@ export const CTypeModel = {
 }
 
 export const CTypeWrapperModel = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'http://kilt-protocol.org/draft-01/ctype-wrapper#',
+  $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   properties: {
     schema: {
@@ -133,7 +133,22 @@ export const CTypeWrapperModel = {
       type: 'string',
       minLength: 1,
     },
-    metamodel: {
+  },
+  required: ['schema'],
+}
+
+export const CTypeWrapperMetadata = {
+  metadata: {
+    $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    title: {
+      type: ' string',
+    },
+    description: {
+      type: 'string',
+    },
+    type: 'object',
+    properties: {
       type: 'object',
       properties: {},
       patternProperties: {
@@ -144,5 +159,6 @@ export const CTypeWrapperModel = {
       },
     },
   },
-  required: ['schema'],
+  ctypeHash: { type: 'string', minLength: 1 },
+  required: ['metamodel', 'ctypeHash'],
 }
