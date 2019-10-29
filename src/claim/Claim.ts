@@ -17,7 +17,6 @@ import CType from '../ctype/CType'
 import { verifyClaimStructure } from '../ctype/CTypeUtils'
 import Identity from '../identity/Identity'
 import IClaim from '../types/Claim'
-import { ICtypeMetadata } from '../types/CType'
 
 function verifyClaim(claimContents: object, cType: CType): boolean {
   return verifyClaimStructure(claimContents, cType.schema)
@@ -38,14 +37,14 @@ export default class Claim implements IClaim {
     cType: CType,
     contents: IClaim['contents'],
     identity: Identity,
-    metadata?: ICtypeMetadata
+    metadata?: IClaim['metadata']
   ) {
     if (!verifyClaim(contents, cType)) {
       throw Error('Claim not valid')
     }
-    this.metadata = metadata
     this.cType = cType.hash
     this.contents = contents
     this.owner = identity.address
+    this.metadata = metadata
   }
 }
