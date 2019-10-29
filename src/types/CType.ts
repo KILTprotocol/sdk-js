@@ -13,16 +13,6 @@ export interface ICTypeSchema {
   type: 'object'
 }
 
-export interface ICtypeMetadata {
-  title: {
-    default: string
-  }
-  description: {
-    default: string
-  }
-  properties: any
-}
-
 export default interface ICType {
   hash: string
   owner: IPublicIdentity['address'] | null

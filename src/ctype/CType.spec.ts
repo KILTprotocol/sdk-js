@@ -18,15 +18,15 @@ describe('CType', () => {
       },
       type: 'object',
     },
-    metadata: {
-      title: { default: 'CType Title' },
-      description: {},
-      properties: {
-        'first-property': { title: { default: 'First Property' } },
-        'second-property': { title: { default: 'Second Property' } },
-      },
-    },
   } as ICType
+
+  const claimMetadata = {
+    title: { default: 'CType Title' },
+    description: {},
+    properties: {
+      name: { title: { default: 'Name' } },
+    },
+  } as IClaimMetadata
 
   const rawCtype = {
     schema: {
@@ -36,13 +36,6 @@ describe('CType', () => {
         name: { type: 'string' },
       },
       type: 'object',
-    },
-    metadata: {
-      title: { default: 'CType Title' },
-      description: {},
-      properties: {
-        name: { title: { default: 'Name' } },
-      },
     },
   } as ICType
 
