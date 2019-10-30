@@ -32,5 +32,5 @@ export interface ICtypeMetadata {
     properties: object
     type: 'object'
   }
-  ctypeHash: string
+  ctypeHash: any
 }

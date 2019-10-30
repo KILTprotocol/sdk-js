@@ -147,7 +147,6 @@ export const CTypeWrapperMetadata = {
     description: {
       type: 'string',
     },
-    type: 'object',
     properties: {
       type: 'object',
       properties: {},
@@ -160,5 +159,5 @@ export const CTypeWrapperMetadata = {
     },
   },
   ctypeHash: { type: 'string', minLength: 1 },
-  required: ['metamodel', 'ctypeHash'],
+  required: ['metadata', 'ctypeHash'],
 }

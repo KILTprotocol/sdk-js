@@ -1,6 +1,6 @@
 import { ICtypeMetadata } from '../types/CType'
 import CType from './CType'
-import { CTypeWrapperModel } from './CTypeSchema'
+import { CTypeWrapperMetadata } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
 
 export default class CTypeMetadata implements ICtypeMetadata {
@@ -8,8 +8,7 @@ export default class CTypeMetadata implements ICtypeMetadata {
   public metadata: ICtypeMetadata['metadata']
 
   public constructor(ctype: CType, ctypeMetadata: CTypeMetadata) {
-    if (!CTypeUtils.verifySchema(ctype, CTypeWrapperModel)) {
-      console.log(ctypeMetadata, CTypeWrapperModel)
+    if (!CTypeUtils.verifySchema(ctypeMetadata, CTypeWrapperMetadata)) {
       throw new Error('CTypeMetadata does not correspond to schema')
     }
     this.metadata = ctypeMetadata.metadata
