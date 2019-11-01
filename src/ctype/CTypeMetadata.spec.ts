@@ -3,7 +3,7 @@ import ICType from '../types/CType'
 import CTypeMetadata from './CTypeMetadata'
 import * as CTypeUtils from './CTypeUtils'
 import { CTypeWrapperMetadata } from './CTypeSchema'
-import ICtypeMetadata from '../types/CTypeMetedata'
+import ICTypeMetadata from '../types/CTypeMetedata'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -33,7 +33,7 @@ describe('CType', () => {
       type: 'object',
     },
     ctypeHash: 'string',
-  } as ICtypeMetadata
+  } as ICTypeMetadata
 
   const metadata = new CTypeMetadata(ctype, ctypeMetadata)
 
