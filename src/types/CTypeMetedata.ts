@@ -4,7 +4,7 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
-export default interface ICtypeMetadata {
+export default interface ICTypeMetadata {
   metadata: {
     $id: string
     $schema: string

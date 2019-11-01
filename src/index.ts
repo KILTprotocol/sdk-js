@@ -33,7 +33,7 @@ export * from './errorhandling/ExtrinsicError'
 // ---- Types, which define the most basic KILT objects ----
 export { default as IPublicIdentity } from './types/PublicIdentity'
 export { default as ICType } from './types/CType'
-export { default as ICtypeMetadata } from './types/CTypeMetedata'
+export { default as ICTypeMetadata } from './types/CTypeMetedata'
 export { default as IClaim } from './types/Claim'
 export { default as IAttestedClaim } from './types/AttestedClaim'
 export { default as IAttestation } from './types/Attestation'
