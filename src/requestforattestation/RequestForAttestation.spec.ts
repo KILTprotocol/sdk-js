@@ -57,7 +57,7 @@ describe('RequestForAttestation', () => {
     []
   )
   // build attestation
-  const legitimationAttestation: Attestation = Attestation.fromRequest(
+  const legitimationAttestation: Attestation = Attestation.fromRequestAndPublicIdentity(
     legitimationRequest,
     identityCharlie
   )

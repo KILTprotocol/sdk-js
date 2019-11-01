@@ -43,7 +43,7 @@ function buildAttestedClaim(
     legitimations
   )
   // build attestation
-  const testAttestation: Attestation = Attestation.fromRequest(
+  const testAttestation: Attestation = Attestation.fromRequestAndPublicIdentity(
     requestForAttestation,
     attester
   )

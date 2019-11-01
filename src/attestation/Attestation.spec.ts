@@ -55,7 +55,7 @@ describe('Attestation', () => {
       return Promise.resolve(tuple)
     })
 
-    const attestation: Attestation = Attestation.fromRequest(
+    const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
       identityAlice
     )
@@ -87,7 +87,7 @@ describe('Attestation', () => {
       )
     })
 
-    const attestation: Attestation = Attestation.fromRequest(
+    const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
       identityAlice
     )
