@@ -19,9 +19,8 @@ import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import IAttestation from '../types/Attestation'
 import { revoke, query, store } from './Attestation.chain'
-import ICType from '../types/CType'
-import IPublicIdentity from '../types/PublicIdentity'
 import { IDelegationBaseNode } from '../types/Delegation'
+import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
 
@@ -65,27 +64,21 @@ export default class Attestation implements IAttestation {
   /**
    * Creates a new instance of this Attestation class from the given interface.
    */
-  public static fromAttestationInterface(obj: IAttestation): Attestation {
-    return new Attestation(
-      obj.claimHash,
-      obj.cTypeHash,
-      obj.owner,
-      obj.delegationId,
-      obj.revoked
-    )
+  public static fromAttestation(obj: IAttestation): Attestation {
+    return new Attestation(obj)
   }
 
-  public static fromRequest(
+  public static fromRequestAndPublicIdentity(
     request: IRequestForAttestation,
-    attesterIdentity: Identity,
-    delegationId?: IDelegationBaseNode['id']
+    attesterPublicIdentity: IPublicIdentity,
+    delegationIdInput?: IDelegationBaseNode['id']
   ) {
-    return new Attestation(
-      request.rootHash,
-      request.claim.cTypeHash,
-      attesterIdentity.address,
-      delegationId
-    )
+    return new Attestation(({
+      claimHash: request.rootHash,
+      cTypeHash: request.claim.cTypeHash,
+      owner: attesterPublicIdentity.address,
+      delegationId: delegationIdInput,
+    } as any) as IAttestation)
   }
 
   /**
@@ -123,18 +116,27 @@ export default class Attestation implements IAttestation {
    * new Attestation(requestForAttestation, attester);
    * ```
    */
-  public constructor(
-    claimHash: string,
-    cTypeHash: ICType['hash'],
-    attestationOwner: IPublicIdentity['address'],
-    delegationId?: IDelegationBaseNode['id'],
-    revoked = false
-  ) {
-    this.owner = attestationOwner
-    this.claimHash = claimHash
-    this.cTypeHash = cTypeHash
-    this.delegationId = delegationId
-    this.revoked = revoked
+  public constructor(attestationInput: IAttestation) {
+    if (
+      !attestationInput.cTypeHash &&
+      !attestationInput.claimHash &&
+      !attestationInput.owner
+    ) {
+      throw new Error(
+        `Property Not Provided while building Attestation!\n
+        attestationInput.cTypeHash:\n
+        ${attestationInput.cTypeHash}\n
+        rattestationInput.claimHash:\n
+        ${attestationInput.claimHash}\n
+        attestationInput.owner:\n
+        ${attestationInput.owner}`
+      )
+    }
+    this.owner = attestationInput.owner
+    this.claimHash = attestationInput.claimHash
+    this.cTypeHash = attestationInput.cTypeHash
+    this.delegationId = attestationInput.delegationId
+    this.revoked = attestationInput.revoked
   }
 
   /**

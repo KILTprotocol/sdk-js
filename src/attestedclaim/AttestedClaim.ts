@@ -29,15 +29,18 @@ export default class AttestedClaim implements IAttestedClaim {
    * AttestedClaim.fromObject(JSON.parse(serialized));
    * ```
    */
-  public static fromAttestedClaimInterface(obj: IAttestedClaim): AttestedClaim {
-    return new AttestedClaim(obj.request, obj.attestation)
+  public static fromAttestedClaim(obj: IAttestedClaim): AttestedClaim {
+    return new AttestedClaim(obj)
   }
 
   public static fromRequestAndAttestation(
     request: IRequestForAttestation,
     attestation: IAttestation
   ) {
-    return new AttestedClaim(request, attestation)
+    return new AttestedClaim(({
+      request,
+      attestation,
+    } as any) as IAttestedClaim)
   }
 
   public request: RequestForAttestation
@@ -53,12 +56,20 @@ export default class AttestedClaim implements IAttestedClaim {
    * new AttestedClaim(requestForAttestation, attestation);
    * ```
    */
-  public constructor(
-    request: IRequestForAttestation,
-    attestation: IAttestation
-  ) {
-    this.request = RequestForAttestation.fromRequestInterface(request)
-    this.attestation = Attestation.fromAttestationInterface(attestation)
+  public constructor(attestedClaimInput: IAttestedClaim) {
+    if (!attestedClaimInput.request && !attestedClaimInput.attestation) {
+      throw new Error(
+        `Property Not Provided while building AttestedClaim!\n
+        attestedClaimInput.request: \n
+        ${attestedClaimInput.request} \n
+        attestedClaimInput.attestation: \n
+        ${attestedClaimInput.attestation}\n`
+      )
+    }
+    this.request = RequestForAttestation.fromRequest(attestedClaimInput.request)
+    this.attestation = Attestation.fromAttestation(
+      attestedClaimInput.attestation
+    )
   }
 
   /**
@@ -132,7 +143,7 @@ export default class AttestedClaim implements IAttestedClaim {
     excludedClaimProperties: string[],
     excludeIdentity: boolean = false
   ): AttestedClaim {
-    const result: AttestedClaim = AttestedClaim.fromAttestedClaimInterface(
+    const result: AttestedClaim = AttestedClaim.fromAttestedClaim(
       this as IAttestedClaim
     )
     result.request.removeClaimProperties(excludedClaimProperties)

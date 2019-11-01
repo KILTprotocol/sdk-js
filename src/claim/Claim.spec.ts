@@ -10,7 +10,7 @@ describe('Claim', () => {
     name: 'Bob',
   }
 
-  const testCType: CType = CType.fromObject({
+  const testCType: CType = CType.fromCType({
     schema: {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -27,10 +27,14 @@ describe('Claim', () => {
       },
     },
   } as ICType)
-  const claim = Claim.fromCType(testCType, claimContents, identity.address)
+  const claim = Claim.fromCTypeAndClaimContents(
+    testCType,
+    claimContents,
+    identity.address
+  )
 
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))
-    expect(Claim.fromClaimInterface(claimObj)).toEqual(claim)
+    expect(Claim.fromClaim(claimObj)).toEqual(claim)
   })
 })

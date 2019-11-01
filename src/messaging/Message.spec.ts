@@ -147,7 +147,7 @@ describe('Messaging', () => {
       content: {
         request: requestAttestationBody.content,
         attestation: {
-          claimHash: requestAttestationBody.content.rootHash,
+          claimHash: requestAttestationBody.content.rootHash as string,
           cTypeHash: '0x12345678',
           owner: identityBob.getPublicIdentity().address,
           revoked: false,

@@ -26,39 +26,49 @@ function verifyClaim(
 }
 
 export default class Claim implements IClaim {
-  public static fromClaimInterface(obj: IClaim): Claim {
+  public static fromClaim(obj: IClaim): Claim {
     if (obj.cTypeSchema !== undefined) {
       if (!verifyClaim(obj.contents, obj.cTypeSchema)) {
         throw Error('Claim not valid')
       }
     }
-    return new Claim(obj.cTypeHash, obj.contents, obj.owner)
+    return new Claim(obj)
   }
 
-  public static fromCType(
+  public static fromCTypeAndClaimContents(
     ctype: ICType,
-    contents: object,
-    owner: IPublicIdentity['address']
+    claimContents: object,
+    claimOwner: IPublicIdentity['address']
   ): Claim {
     if (ctype.schema !== undefined) {
-      if (!verifyClaim(contents, ctype.schema)) {
+      if (!verifyClaim(claimContents, ctype.schema)) {
         throw Error('Claim not valid')
       }
     }
-    return new Claim(ctype.hash, contents, owner)
+    return new Claim(({
+      cTypeHash: ctype.hash,
+      cTypeSchema: undefined,
+      contents: claimContents,
+      owner: claimOwner,
+    } as any) as IClaim)
   }
 
   public cTypeHash: IClaim['cTypeHash']
   public contents: IClaim['contents']
   public owner: IClaim['owner']
 
-  public constructor(
-    cTypeHash: ICType['hash'],
-    contents: object,
-    owner: IPublicIdentity['address']
-  ) {
-    this.cTypeHash = cTypeHash
-    this.contents = contents
-    this.owner = owner
+  public constructor(claimInput: IClaim) {
+    if (!claimInput.cTypeHash) {
+      throw new Error(`No cTypeHash provided: ${claimInput.cTypeHash}`)
+    }
+    this.cTypeHash = claimInput.cTypeHash
+    if (!claimInput.contents) {
+      throw new Error(`No ClaimContents provided: ${claimInput.contents}`)
+    }
+    this.contents = claimInput.contents
+    if (!claimInput.owner) {
+      throw new Error(`No owner provided: ${claimInput.owner}`)
+    }
+    this.owner = claimInput.owner
   }
 }

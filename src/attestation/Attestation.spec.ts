@@ -17,7 +17,7 @@ describe('Attestation', () => {
 
   const Blockchain = require('../blockchain/Blockchain').default
 
-  const testCType: CType = CType.fromObject({
+  const testCType: CType = CType.fromCType({
     schema: {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -35,7 +35,7 @@ describe('Attestation', () => {
     },
   } as ICType)
   const testcontents = {}
-  const testClaim = Claim.fromCType(
+  const testClaim = Claim.fromCTypeAndClaimContents(
     testCType,
     testcontents,
     identityBob.address
@@ -55,12 +55,9 @@ describe('Attestation', () => {
       return Promise.resolve(tuple)
     })
 
-    const attestation: Attestation = new Attestation(
-      requestForAttestation.rootHash,
-      requestForAttestation.claim.cTypeHash,
-      identityAlice.address,
-      testCType.hash,
-      false
+    const attestation: Attestation = Attestation.fromRequest(
+      requestForAttestation,
+      identityAlice
     )
     expect(await attestation.verify()).toBeTruthy()
   })
@@ -70,7 +67,7 @@ describe('Attestation', () => {
       return Promise.resolve(new Tuple([], []))
     })
 
-    const attestation: Attestation = Attestation.fromAttestationInterface({
+    const attestation: Attestation = Attestation.fromAttestation({
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
       owner: identityAlice.address,
