@@ -1,17 +1,17 @@
-import ICTypeMetadata from '../types/CTypeMetedata'
+import ICTypeMetadata, { IMetadata } from '../types/CTypeMetedata'
 import CType from './CType'
-import { CTypeWrapperMetadata } from './CTypeSchema'
+import { WrapperMetadata } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
 
 export default class CTypeMetadata implements ICTypeMetadata {
   public ctypeHash: ICTypeMetadata['ctypeHash']
   public metadata: ICTypeMetadata['metadata']
 
-  public constructor(ctype: CType, ctypeMetadata: CTypeMetadata) {
-    if (!CTypeUtils.verifySchema(ctypeMetadata, CTypeWrapperMetadata)) {
+  public constructor(ctype: CType, ctypeMetadata: IMetadata) {
+    if (!CTypeUtils.verifySchema(CTypeMetadata, WrapperMetadata)) {
       throw new Error('CTypeMetadata does not correspond to schema')
     }
-    this.metadata = ctypeMetadata.metadata
+    this.metadata = ctypeMetadata
     this.ctypeHash = ctype.hash
   }
 }

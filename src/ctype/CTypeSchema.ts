@@ -161,3 +161,26 @@ export const CTypeWrapperMetadata = {
   ctypeHash: { type: 'string', minLength: 1 },
   required: ['metadata', 'ctypeHash'],
 }
+
+export const WrapperMetadata = {
+  metadata: {
+    $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    title: {
+      type: ' string',
+    },
+    description: {
+      type: 'string',
+    },
+    properties: {
+      type: 'object',
+      properties: {},
+      patternProperties: {
+        '^.*$': {
+          type: 'object',
+          properties: {},
+        },
+      },
+    },
+  },
+}
