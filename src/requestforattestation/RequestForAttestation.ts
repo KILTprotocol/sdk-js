@@ -2,7 +2,9 @@
  * Requests for attestation are a core building block of the KILT SDK.
  * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
  *
- * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester. It's signed by the claimer, to make it tamper proof (`claimerSignature` is a property of [[Claim]]). A RequestForAttestation also supports hiding of claim data during a credential presentation.
+ * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
+ * It's signed by the claimer, to make it tamper proof (`claimerSignature` is a property of [[Claim]]).
+ * A RequestForAttestation also supports hiding of claim data during a credential presentation.
  *
  * @module RequestForAttestation
  */
@@ -61,12 +63,38 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 }
 
 export default class RequestForAttestation implements IRequestForAttestation {
+  /**
+   * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
+   * Used for deserialization.
+   *
+   * @param obj - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
+   * @returns  A new [[RequestForAttestation]] `object`.
+   * @example ```javascript
+   * const serializedRequest = '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
+   * const parsedRequest = JSON.parse(serializedRequest);
+   * RequestForAttestation.fromRequest(parsedRequest);
+   * ```
+   */
   public static fromRequest(
     obj: IRequestForAttestation
   ): RequestForAttestation {
     return new RequestForAttestation(obj)
   }
 
+  /**
+   * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of requiered parameters.
+   *
+   * @param claimInput - An `IClaim` object the request for attestation is build for.
+   * @param identity - The Claimers [Identity].
+   * @param [legitimationsInput] - Array of [AttestedClaim] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
+   * @param [delegationInput] - The id of the DelegationNode of the Attester, which should be used in the attestation
+   * @returns  A new [[RequestForAttestation]] `object`.
+   * @example ```javascript
+   * const serializedRequest = '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
+   * const parsedRequest = JSON.parse(serializedRequest);
+   * RequestForAttestation.fromRequest(parsedRequest);
+   * ```
+   */
   public static fromClaimAndIdentity(
     claimInput: IClaim,
     identity: Identity,
@@ -130,8 +158,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param legitimations - Attested claims used as legitimations.
    * @param identity - Identity of the claimer.
    * @param delegationId - A delegation tree's root node id.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * // create a new request for attestation
    * new RequestForAttestation(claim, [], alice);
    * ```
@@ -145,10 +172,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
         throw Error('Claim owner is not identity')
       }
       if (
-        !requestInput.claim &&
-        !requestInput.claimOwner &&
-        !requestInput.cTypeHash &&
-        !requestInput.legitimations &&
+        !requestInput.claim ||
+        !requestInput.claimOwner ||
+        !requestInput.cTypeHash ||
         !requestInput.claimHashTree
       ) {
         throw new Error(
@@ -159,8 +185,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
           ${requestInput.claimOwner}\n
           requestInput.cTypeHash:\n
           ${requestInput.cTypeHash}\n
-          requestInput.legitimations:\n
-          ${requestInput.legitimations}\n
           requestInput.claimHashTree:\n
           ${requestInput.claimHashTree}`
         )
@@ -169,7 +193,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
       this.claim = requestInput.claim
       this.claimOwner = requestInput.claimOwner
       this.cTypeHash = requestInput.cTypeHash
-      if (requestInput.legitimations.length) {
+      if (
+        typeof requestInput.legitimations !== 'undefined' &&
+        Array.isArray(requestInput.legitimations) &&
+        requestInput.legitimations.length
+      ) {
         requestInput.legitimations.forEach(element => {
           const ele = AttestedClaim.fromAttestedClaim(element)
           if (ele instanceof AttestedClaim) {
@@ -183,25 +211,22 @@ export default class RequestForAttestation implements IRequestForAttestation {
       this.claimerSignature = this.sign(identity)
     } else if (requestInput.claimerSignature) {
       if (
-        !requestInput.claim &&
-        !requestInput.claimOwner &&
-        !requestInput.cTypeHash &&
-        !requestInput.legitimations &&
+        !requestInput.claim ||
+        !requestInput.claimOwner ||
+        !requestInput.cTypeHash ||
         !requestInput.claimHashTree
       ) {
         throw new Error(
           `Property Not Provided while building RequestForAttestation without Identity:\n
           requestInput.claim:\n
-          ${requestInput.claim}
-          \nrequestInput.claimOwner:\n
+          ${requestInput.claim}\n
+          requestInput.claimOwner:\n
           ${requestInput.claimOwner}\n
           requestInput.cTypeHash:\n'
-          ${requestInput.cTypeHash}
-          \nrequestInput.legitimations:\n
-          ${requestInput.legitimations}
-          \nrequestInput.claimHashTree:\n
-          ${requestInput.claimHashTree}
-          \nrequestInput.claimerSignature:\n
+          ${requestInput.cTypeHash}\n
+          requestInput.claimHashTree:\n
+          ${requestInput.claimHashTree}\n
+          requestInput.claimerSignature:\n
           ${requestInput.claimerSignature}`
         )
       }
@@ -209,7 +234,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
       this.claim = requestInput.claim
       this.claimOwner = requestInput.claimOwner
       this.cTypeHash = requestInput.cTypeHash
-      if (requestInput.legitimations.length) {
+      if (
+        typeof requestInput.legitimations !== 'undefined' &&
+        Array.isArray(requestInput.legitimations) &&
+        requestInput.legitimations.length
+      ) {
         requestInput.legitimations.forEach(element => {
           const ele = AttestedClaim.fromAttestedClaim(element)
           if (ele instanceof AttestedClaim) {
@@ -221,6 +250,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       this.claimHashTree = requestInput.claimHashTree
       this.rootHash = this.calculateRootHash()
       this.claimerSignature = requestInput.claimerSignature
+      this.verifySignature()
     } else {
       throw Error('Identity and claimerSignature not provided')
     }
@@ -231,8 +261,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @param properties - Properties to remove from the [[Claim]] object.
    * @throws An error when a property which should be deleted wasn't found.
-   * @example
-   * ```javascript
+   * @example ```javascript
    *  requestForAttestation.removeClaimProperties(['name']);
    * // `name` is deleted from `requestForAttestation`
    * ```
@@ -250,8 +279,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * Removes the [[Claim]] owner from the [[RequestForAttestation]] object.
    *
-   * @example
-   * ```javascript
+   * @example ```javascript
    * requestForAttestation.removeClaimOwner();
    * // `requestForAttestation` does not contain the claim `owner` or the `claimOwner`'s nonce anymore.
    * ```
@@ -265,8 +293,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Verifies the data of the [[RequestForAttestation]] object; used to check that the data was not tampered with, by checking the data against hashes.
    *
    * @returns Whether the data is valid.
-   * @example
-   * ```javascript
+   * @example ```javascript
    *  requestForAttestation.verifyData();
    * // returns `true` if the data is correct
    * ```
@@ -325,8 +352,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Verifies the signature of the [[RequestForAttestation]] object.
    *
    * @returns Whether the signature is correct.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * requestForAttestation.verifySignature();
    * // returns `true` if the signature is correct
    * ```

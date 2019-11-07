@@ -30,8 +30,7 @@ export default class Attestation implements IAttestation {
    *
    * @param claimHash - The hash of the claim that corresponds to the attestation to query.
    * @returns A promise containing the [[Attestation]] or null.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * Attestation.query('0xd8024cdc147c4fa9221cd177').then(attestation => {
    *    // now we can for example revoke `attestation`
    * });
@@ -47,8 +46,7 @@ export default class Attestation implements IAttestation {
    * @param claimHash - The hash of the claim that corresponds to the attestation to revoke.
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @returns A promise containing the [[TxStatus]] (transaction status).
-   * @example
-   * ```javascript
+   * @example ```javascript
    * Attestation.revoke('0xd8024cdc147c4fa9221cd177').then(() => {
    *   // the attestation was successfully revoked
    * });
@@ -62,40 +60,44 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * Creates a new instance of this Attestation class from the given interface.
-   */
-  public static fromAttestation(obj: IAttestation): Attestation {
-    return new Attestation(obj)
-  }
-
-  public static fromRequestAndPublicIdentity(
-    request: IRequestForAttestation,
-    attesterPublicIdentity: IPublicIdentity,
-    delegationIdInput?: IDelegationBaseNode['id']
-  ) {
-    return new Attestation(({
-      claimHash: request.rootHash,
-      cTypeHash: request.claim.cTypeHash,
-      owner: attesterPublicIdentity.address,
-      delegationId: delegationIdInput,
-    } as any) as IAttestation)
-  }
-
-  /**
    * [STATIC] Builds an instance of [[Attestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
    * @param obj - The base object from which to create the attestation.
    * @returns A new [[Attestation]] object.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * // create an Attestation object, so we can call methods on it (`serialized` is a serialized Attestation object )
-   * Attestation.fromObject(JSON.parse(serialized));
+   * Attestation.fromAttestation(JSON.parse(serialized));
    * ```
    */
-  public static fromObject(obj: IAttestation): Attestation {
-    const newAttestation: Attestation = Object.create(Attestation.prototype)
-    return Object.assign(newAttestation, obj)
+  public static fromAttestation(obj: IAttestation): Attestation {
+    return new Attestation(obj)
+  }
+
+  /**
+   * [STATIC] Builds an new instance of [[Attestation]], from a complete set of for an attestation requiered input.
+   *
+   * @param request - The base request for attestation.
+   * @param attesterPublicIdentity - The attesters public identity, used to attest the underlying claim.
+   * @param [delegationIdInput] - optional delegationId for which the attester attests the claim.
+   * @returns A new [[Attestation]] object.
+   * @example ```javascript
+   * // create a complete new attestation from the RequestForAttestation and all other needed properties
+   * Attestation.fromRequestAndPublicIdentity(request, attesterPublicIdentity, delegationId);
+   * ```
+   */
+  public static fromRequestAndPublicIdentity(
+    request: IRequestForAttestation,
+    attesterPublicIdentity: IPublicIdentity,
+    delegationIdInput?: IDelegationBaseNode['id']
+  ) {
+    return new Attestation({
+      claimHash: request.rootHash as string,
+      cTypeHash: request.claim.cTypeHash,
+      owner: attesterPublicIdentity.address,
+      delegationId: delegationIdInput,
+      revoked: false,
+    })
   }
 
   public claimHash: IAttestation['claimHash']
@@ -110,16 +112,15 @@ export default class Attestation implements IAttestation {
    * @param requestForAttestation - A request for attestation, usually sent by a claimer.
    * @param attester - The identity of the attester.
    * @param revoked - Whether the attestation should be revoked.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * // create an attestation, e.g. to store it on-chain
    * new Attestation(requestForAttestation, attester);
    * ```
    */
   public constructor(attestationInput: IAttestation) {
     if (
-      !attestationInput.cTypeHash &&
-      !attestationInput.claimHash &&
+      !attestationInput.cTypeHash ||
+      !attestationInput.claimHash ||
       !attestationInput.owner
     ) {
       throw new Error(
@@ -144,8 +145,8 @@ export default class Attestation implements IAttestation {
    *
    * @param identity - The identity used to store the attestation.
    * @returns A promise containing the [[TxStatus]] (transaction status).
-   * @example Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
-   * ```javascript
+   * @example ```javascript
+   * //Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * attestation.store(attester).then(() => {
    *    // the attestation was successfully stored, so now we can for example create an AttestedClaim
    * });
@@ -160,8 +161,7 @@ export default class Attestation implements IAttestation {
    *
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @returns A promise containing the [[TxStatus]] (transaction status).
-   * @example
-   * ```javascript
+   * @example ```javascript
    * attestation.revoke(identity).then(() => {
    *    // the attestation was successfully revoked
    * });
@@ -176,8 +176,7 @@ export default class Attestation implements IAttestation {
    *
    * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
    * @returns A promise containing whether the attestation is valid.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * attestation.verify().then(isVerified => {
    *   // `isVerified` is true if the attestation is verified, false otherwise
    * });
