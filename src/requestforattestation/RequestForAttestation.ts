@@ -213,8 +213,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
       if (
         !requestInput.claim ||
         !requestInput.claimOwner ||
-        !requestInput.cTypeHash ||
-        !requestInput.claimHashTree
+        !requestInput.claimHashTree ||
+        !requestInput.cTypeHash
       ) {
         throw new Error(
           `Property Not Provided while building RequestForAttestation without Identity:\n
