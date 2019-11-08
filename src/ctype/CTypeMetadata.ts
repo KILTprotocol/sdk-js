@@ -7,11 +7,11 @@ export default class CTypeMetadata implements ICTypeMetadata {
   public ctypeHash: ICTypeMetadata['ctypeHash']
   public metadata: ICTypeMetadata['metadata']
 
-  public constructor(ctype: CType, ctypeMetadata: IMetadata) {
+  public constructor(ctype: CType['hash'], ctypeMetadata: IMetadata) {
     if (!CTypeUtils.verifySchema(CTypeMetadata, WrapperMetadata)) {
       throw new Error('CTypeMetadata does not correspond to schema')
     }
     this.metadata = ctypeMetadata
-    this.ctypeHash = ctype.hash
+    this.ctypeHash = ctype
   }
 }

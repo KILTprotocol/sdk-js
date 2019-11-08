@@ -20,6 +20,8 @@ describe('CType', () => {
     },
   } as ICType)
 
+  const ctypeHash = ctype.hash
+
   const ctypeMetadata = {
     title: { type: 'string' },
     description: { type: 'string' },
@@ -29,7 +31,7 @@ describe('CType', () => {
     },
   } as ICTypeMetadata['metadata']
 
-  const metadata = new CTypeMetadata(ctype, ctypeMetadata)
+  const metadata = new CTypeMetadata(ctypeHash, ctypeMetadata)
 
   it('verifies the metadata of a ctype', async () => {
     expect(metadata.ctypeHash).not.toHaveLength(0)
