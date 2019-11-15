@@ -218,9 +218,24 @@ interface IMessageBodyBase {
   type: MessageBodyType
 }
 
+interface IQuote {
+  cost: number
+  acceptance: string // Signature of claimer
+}
+
 export interface IRequestLegitimations extends IMessageBodyBase {
   content: IPartialClaim
   type: MessageBodyType.REQUEST_LEGITIMATIONS
+}
+export interface ISubmitTerms extends IMessageBodyBase {
+  content: {
+    claim: IPartialClaim
+    legitimations: IAttestedClaim[]
+    delegationId?: DelegationNode['id']
+    quote?: IQuote
+    prerequisiteClaims?: Array<IClaim['cType']>
+  }
+  type: MessageBodyType.SUBMIT_LEGITIMATIONS
 }
 export interface ISubmitLegitimations extends IMessageBodyBase {
   content: {
@@ -240,7 +255,11 @@ export interface IRejectLegitimations extends IMessageBodyBase {
 }
 
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
-  content: IRequestForAttestation
+  content: {
+    requestForAttestation: IRequestForAttestation
+    quote?: IQuote
+    prerequisiteClaims?: Array<IClaim['cType']>
+  }
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
 }
 export interface ISubmitAttestationForClaim extends IMessageBodyBase {
