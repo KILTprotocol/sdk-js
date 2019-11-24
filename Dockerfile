@@ -14,6 +14,8 @@ COPY tsconfig.json ./
 COPY .nvmrc ./
 ## testing, linting
 COPY jest.config.js ./
+COPY jest.config.integration.js ./
+COPY jest.config.unit.js ./
 COPY jest.env.js ./
 COPY tslint.json ./
 COPY .prettierrc ./

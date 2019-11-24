@@ -8,4 +8,7 @@ phases:
     - docker run sdk-js yarn build
     - docker run sdk-js yarn lint
     - docker run sdk-js yarn testCI
+    - node_id=$(docker run -d --rm -p 9944:9944 kiltprotocol/mashnet-node ./target/release/mashnet-node --dev --ws-port 9944 --ws-external)
+    - docker run --rm --net="host" sdk-js yarn test_integration
+    - docker stop $node_id
     - echo Build / lint / test successful!
