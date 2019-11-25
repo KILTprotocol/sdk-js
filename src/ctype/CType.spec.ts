@@ -28,7 +28,7 @@ describe('CType', () => {
     },
   } as ICType
 
-  const claimCtype = new CType({
+  const rawCtype = {
     schema: {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -44,7 +44,9 @@ describe('CType', () => {
         name: { title: { default: 'Name' } },
       },
     },
-  } as ICType)
+  } as ICType
+
+  const claimCtype = new CType(rawCtype)
 
   const identityAlice = Identity.buildFromURI('//Alice')
 
@@ -74,5 +76,14 @@ describe('CType', () => {
   it('verifies the claim structure', () => {
     expect(claimCtype.verifyClaimStructure(claim)).toBeTruthy()
     expect(claimCtype.verifyClaimStructure(!claim)).toBeFalsy()
+  })
+  it('throws error on wrong ctype hash', () => {
+    const wrongRawCtype = {
+      ...rawCtype,
+      hash: '0x1234',
+    }
+    expect(() => {
+      return new CType(wrongRawCtype)
+    }).toThrow()
   })
 })

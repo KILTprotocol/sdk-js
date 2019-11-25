@@ -52,10 +52,6 @@ export default class CType implements ICType {
     return CTypeUtils.verifySchema(claim, this.schema)
   }
 
-  public getModel(): CType {
-    return this
-  }
-
   public async verifyStored(): Promise<boolean> {
     return (await getOwner(this.hash)) === this.owner
   }

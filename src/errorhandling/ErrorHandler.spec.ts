@@ -94,10 +94,9 @@ describe('ErrorHandler', () => {
   const apiPromise: ApiPromise = {
     // @ts-ignore
     runtimeMetadata: {
-      metadata: {
-        asV2: {
-          modules,
-        },
+      asV4: {
+        // @ts-ignore
+        modules,
       },
     },
   }
@@ -113,6 +112,7 @@ describe('ErrorHandler', () => {
 
     // @ts-ignore
     const errorCode: Tuple = {
+      // @ts-ignore
       toJSON: jest.fn(() => {
         return ErrorCode.ERROR_CTYPE_NOT_FOUND
       }),

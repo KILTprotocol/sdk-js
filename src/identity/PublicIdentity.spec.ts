@@ -1,4 +1,4 @@
-import { Text, Tuple } from '@polkadot/types'
+import { Text, Tuple, U8a } from '@polkadot/types'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
 import IPublicIdentity from '../types/PublicIdentity'
 
@@ -7,32 +7,33 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 describe('PublicIdentity', () => {
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
-  it('should resolve internal and external dids', async () => {
-    require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
-      id => {
-        let tuple
-        switch (id) {
-          case '1':
-            tuple = new Tuple(
-              // (public-signing-key, public-encryption-key, did-reference?)
-              [Text, Text, Text],
-              ['pub-key', 'box-key', '0x80001f']
-            )
-            break
-          case '2':
-            tuple = new Tuple(
-              // (public-signing-key, public-encryption-key, did-reference?)
-              [Text, Text, Text],
-              ['pub-key', 'box-key', undefined]
-            )
-            break
-          default:
-            tuple = undefined
-        }
-        return Promise.resolve(tuple)
-      }
-    )
 
+  require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
+    id => {
+      let tuple
+      switch (id) {
+        case '1':
+          tuple = new Tuple(
+            // (public-signing-key, public-encryption-key, did-reference?)
+            [Text, Text, U8a],
+            ['pub-key', 'box-key', [14, 75, 23, 14, 55]]
+          )
+          break
+        case '2':
+          tuple = new Tuple(
+            // (public-signing-key, public-encryption-key, did-reference?)
+            [Text, Text, Text],
+            ['pub-key', 'box-key', undefined]
+          )
+          break
+        default:
+          tuple = undefined
+      }
+      return Promise.resolve(tuple)
+    }
+  )
+
+  it('should resolve external dids', async () => {
     const externalPubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
       'did:sov:1',
       {
@@ -64,7 +65,9 @@ describe('PublicIdentity', () => {
       boxPublicKeyAsHex: 'external-box-key',
       serviceAddress: 'external-service-address',
     })
+  })
 
+  it('should resolve internal', async () => {
     const internalPubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
       'did:kilt:1',
       {

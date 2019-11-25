@@ -125,7 +125,7 @@ export default class AttestedClaim implements IAttestedClaim {
    */
   public createPresentation(
     excludedClaimProperties: string[],
-    excludeIdentity: boolean = false
+    excludeIdentity = false
   ): AttestedClaim {
     const result: AttestedClaim = AttestedClaim.fromObject(cloneDeep(this))
     result.request.removeClaimProperties(excludedClaimProperties)
