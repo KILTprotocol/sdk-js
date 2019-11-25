@@ -12,6 +12,6 @@ export default interface IAttestation {
   claimHash: string
   cTypeHash: ICType['hash']
   owner: IPublicIdentity['address']
-  delegationId?: IDelegationBaseNode['id']
+  delegationId?: IDelegationBaseNode['id'] | null
   revoked: boolean
 }
