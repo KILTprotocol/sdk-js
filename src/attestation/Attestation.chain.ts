@@ -48,7 +48,6 @@ function decode(encoded: QueryResult, claimHash: string): Attestation | null {
       typeof attestationTuple[0] === 'string' &&
       typeof attestationTuple[1] === 'string' &&
       (typeof attestationTuple[2] === 'string' ||
-        attestationTuple[2] === undefined ||
         attestationTuple[2] === null) &&
       typeof attestationTuple[3] === 'boolean'
     ) {

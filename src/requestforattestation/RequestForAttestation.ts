@@ -92,7 +92,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public hash: Hash
   public legitimations: AttestedClaim[]
 
-  public delegationId?: IDelegationBaseNode['id']
+  public delegationId: IDelegationBaseNode['id'] | null
 
   /**
    * Builds a new [[RequestForAttestation]] instance.
@@ -110,7 +110,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     claim: IClaim,
     legitimations: AttestedClaim[],
     identity: Identity,
-    delegationId?: IDelegationBaseNode['id']
+    delegationId: IDelegationBaseNode['id'] | null = null
   ) {
     if (claim.owner !== identity.address) {
       throw Error('Claim owner is not identity')

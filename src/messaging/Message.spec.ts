@@ -104,6 +104,7 @@ describe('Messaging', () => {
   it('verify message sender is owner', () => {
     const requestAttestationBody: IRequestAttestationForClaim = {
       content: {
+        delegationId: null,
         ctypeHash: { nonce: '0x12345678', hash: '0x12345678' },
         claim: {
           cType: '0x12345678',
@@ -139,6 +140,7 @@ describe('Messaging', () => {
       content: {
         request: requestAttestationBody.content,
         attestation: {
+          delegationId: null,
           claimHash: requestAttestationBody.content.hash,
           cTypeHash: '0x12345678',
           owner: identityBob.getPublicIdentity().address,
