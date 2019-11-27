@@ -107,6 +107,10 @@ export const CTypeModel = {
               type: 'string',
               enum: ['string', 'integer', 'number', 'boolean'],
             },
+            $ref: {
+              type: 'string',
+              format: 'uri-reference',
+            },
             format: {
               type: 'string',
               enum: ['date', 'time', 'uri'],
