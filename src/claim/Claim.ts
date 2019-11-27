@@ -26,27 +26,27 @@ function verifyClaim(
 }
 
 export default class Claim implements IClaim {
-  public static fromClaim(obj: IClaim): Claim {
-    if (obj.cTypeSchema !== undefined) {
-      if (!verifyClaim(obj.contents, obj.cTypeSchema)) {
+  public static fromClaim(claimInput: IClaim): Claim {
+    if (claimInput.cTypeSchema !== undefined) {
+      if (!verifyClaim(claimInput.contents, claimInput.cTypeSchema)) {
         throw Error('Claim not valid')
       }
     }
-    return new Claim(obj)
+    return new Claim(claimInput)
   }
 
   public static fromCTypeAndClaimContents(
-    ctype: ICType,
+    ctypeInput: ICType,
     claimContents: object,
     claimOwner: IPublicIdentity['address']
   ): Claim {
-    if (ctype.schema !== undefined) {
-      if (!verifyClaim(claimContents, ctype.schema)) {
+    if (ctypeInput.schema !== undefined) {
+      if (!verifyClaim(claimContents, ctypeInput.schema)) {
         throw Error('Claim not valid')
       }
     }
     return new Claim(({
-      cTypeHash: ctype.hash,
+      cTypeHash: ctypeInput.hash,
       cTypeSchema: undefined,
       contents: claimContents,
       owner: claimOwner,

@@ -19,16 +19,16 @@ import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
 
 export default class CType implements ICType {
-  public static fromCType(obj: ICType): CType {
-    if (!CTypeUtils.verifySchema(obj, CTypeWrapperModel)) {
+  public static fromCType(cTypeInput: ICType): CType {
+    if (!CTypeUtils.verifySchema(cTypeInput, CTypeWrapperModel)) {
       throw new Error('CType does not correspond to schema')
     }
-    if (obj.hash) {
-      if (CTypeUtils.getHashForSchema(obj.schema) !== obj.hash) {
+    if (cTypeInput.hash) {
+      if (CTypeUtils.getHashForSchema(cTypeInput.schema) !== cTypeInput.hash) {
         throw Error('provided and generated cType hash are not matching')
       }
     }
-    return new CType(obj)
+    return new CType(cTypeInput)
   }
 
   public hash: ICType['hash']

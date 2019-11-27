@@ -63,19 +63,19 @@ export default class Attestation implements IAttestation {
    * [STATIC] Builds an instance of [[Attestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param obj - The base object from which to create the attestation.
+   * @param attstationInput - The base object from which to create the attestation.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create an Attestation object, so we can call methods on it (`serialized` is a serialized Attestation object )
    * Attestation.fromAttestation(JSON.parse(serialized));
    * ```
    */
-  public static fromAttestation(obj: IAttestation): Attestation {
-    return new Attestation(obj)
+  public static fromAttestation(attstationInput: IAttestation): Attestation {
+    return new Attestation(attstationInput)
   }
 
   /**
-   * [STATIC] Builds an new instance of [[Attestation]], from a complete set of for an attestation requiered input.
+   * [STATIC] Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
    *
    * @param request - The base request for attestation.
    * @param attesterPublicIdentity - The attesters public identity, used to attest the underlying claim.
@@ -109,12 +109,10 @@ export default class Attestation implements IAttestation {
   /**
    * Builds a new [[Attestation]] instance.
    *
-   * @param requestForAttestation - A request for attestation, usually sent by a claimer.
-   * @param attester - The identity of the attester.
-   * @param revoked - Whether the attestation should be revoked.
+   * @param attestationInput - The base object from which to create the attestation.
    * @example ```javascript
    * // create an attestation, e.g. to store it on-chain
-   * new Attestation(requestForAttestation, attester);
+   * new Attestation(attestationInput);
    * ```
    */
   public constructor(attestationInput: IAttestation) {
@@ -146,9 +144,9 @@ export default class Attestation implements IAttestation {
    * @param identity - The identity used to store the attestation.
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example ```javascript
-   * //Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
+   * // Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * attestation.store(attester).then(() => {
-   *    // the attestation was successfully stored, so now we can for example create an AttestedClaim
+   * // the attestation was successfully stored, so now we can for example create an AttestedClaim
    * });
    * ```
    */

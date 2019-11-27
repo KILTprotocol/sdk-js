@@ -21,22 +21,22 @@ export default class AttestedClaim implements IAttestedClaim {
    * [STATIC] Builds an instance of [[AttestedClaim]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param obj - The base object from which to create the attested claim.
+   * @param acInput - The base object from which to create the attested claim.
    * @returns A new [[AttestedClaim]] object.
    * @example ```javascript
    * //create an AttestedClaim object, so we can call methods on it (`serialized` is a serialized AttestedClaim object)
    * AttestedClaim.fromAttestedClaim(JSON.parse(serialized));
    * ```
    */
-  public static fromAttestedClaim(obj: IAttestedClaim): AttestedClaim {
-    return new AttestedClaim(obj)
+  public static fromAttestedClaim(acInput: IAttestedClaim): AttestedClaim {
+    return new AttestedClaim(acInput)
   }
 
   /**
    * [STATIC] Builds a new instance of [[AttestedClaim]], from all requiered properties.
    *
    * @param request - The request for attestation for the claim that was attested.
-   * @param attestation - The attestation for the claim by the attester
+   * @param attestation - The attestation for the claim by the attester.
    * @returns A new [[AttestedClaim]] object.
    * @example ```javascript
    * //create an AttestedClaim object after receiving the attestation from the attester
@@ -59,11 +59,10 @@ export default class AttestedClaim implements IAttestedClaim {
   /**
    * Builds a new [[AttestedClaim]] instance.
    *
-   * @param request - A request for attestation, usually sent by a claimer.
-   * @param attestation - The attestation to base the [[AttestedClaim]] on.
+   * @param attestedClaimInput - The base object with all required input, from which to create the attested claim.
    * @example ```javascript
-   * //Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
-   * new AttestedClaim(requestForAttestation, attestation);
+   * // Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
+   * new AttestedClaim(attestedClaimInput);
    * ```
    */
   public constructor(attestedClaimInput: IAttestedClaim) {

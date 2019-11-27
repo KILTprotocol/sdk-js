@@ -67,7 +67,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param obj - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
+   * @param rfaInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
    * @returns  A new [[RequestForAttestation]] `object`.
    * @example ```javascript
    * const serializedRequest = '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
@@ -76,9 +76,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public static fromRequest(
-    obj: IRequestForAttestation
+    rfaInput: IRequestForAttestation
   ): RequestForAttestation {
-    return new RequestForAttestation(obj)
+    return new RequestForAttestation(rfaInput)
   }
 
   /**
@@ -154,10 +154,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * Builds a new [[RequestForAttestation]] instance.
    *
-   * @param claim - A claim, usually sent by a claimer.
-   * @param legitimations - Attested claims used as legitimations.
-   * @param identity - Identity of the claimer.
-   * @param delegationId - A delegation tree's root node id.
+   * @param requestInput - The base object from which to create the requestForAttestation.
+   * @param [identity] - Optional identity of the claimer, required when not building from an existing object.
    * @example ```javascript
    * // create a new request for attestation
    * new RequestForAttestation(claim, [], alice);
@@ -239,12 +237,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
         Array.isArray(requestInput.legitimations) &&
         requestInput.legitimations.length
       ) {
-        requestInput.legitimations.forEach(element => {
-          const ele = AttestedClaim.fromAttestedClaim(element)
-          if (ele instanceof AttestedClaim) {
-            this.legitimations.push(ele)
-          }
-        })
+        this.legitimations = requestInput.legitimations
+          .map(legitimation => AttestedClaim.fromAttestedClaim(legitimation))
+          .filter(c => c instanceof AttestedClaim)
       }
       this.delegationId = requestInput.delegationId
       this.claimHashTree = requestInput.claimHashTree
