@@ -113,4 +113,20 @@ describe('DID', () => {
       ],
     })
   })
+
+  it('gets identifier from address', () => {
+    expect(
+      Did.getIdentifierFromAddress(
+        '5F59aUtyDc54Sx2yA1hHgncBErSPWRAt5SgQXvPjVNEMPCqY'
+      )
+    ).toBe('did:kilt:5F59aUtyDc54Sx2yA1hHgncBErSPWRAt5SgQXvPjVNEMPCqY')
+  })
+
+  it('gets address from identifier', () => {
+    expect(
+      Did.getAddressFromIdentifier(
+        'did:kilt:5F59aUtyDc54Sx2yA1hHgncBErSPWRAt5SgQXvPjVNEMPCqY'
+      )
+    ).toBe('5F59aUtyDc54Sx2yA1hHgncBErSPWRAt5SgQXvPjVNEMPCqY')
+  })
 })
