@@ -226,7 +226,7 @@ export interface ISubmitLegitimations extends IMessageBodyBase {
   content: {
     claim: IPartialClaim
     legitimations: IAttestedClaim[]
-    delegationId?: DelegationNode['id']
+    delegationId: DelegationNode['id'] | null
   }
   type: MessageBodyType.SUBMIT_LEGITIMATIONS
 }
@@ -234,7 +234,7 @@ export interface IRejectLegitimations extends IMessageBodyBase {
   content: {
     claim: IPartialClaim
     legitimations: IAttestedClaim[]
-    delegationId?: DelegationNode['id']
+    delegationId: DelegationNode['id'] | null
   }
   type: MessageBodyType.REJECT_LEGITIMATIONS
 }
