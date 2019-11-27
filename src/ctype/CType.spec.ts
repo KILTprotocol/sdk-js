@@ -1,5 +1,4 @@
 import CType from './CType'
-import * as CTypeUtils from './CTypeUtils'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
 import ICType from '../types/CType'
@@ -29,7 +28,7 @@ describe('CType', () => {
     },
   } as ICType
 
-  const claimCtype = new CType({
+  const rawCtype = {
     schema: {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -45,91 +44,26 @@ describe('CType', () => {
         name: { title: { default: 'Name' } },
       },
     },
-  } as ICType)
+  } as ICType
+
+  const claimCtype = new CType(rawCtype)
 
   const identityAlice = Identity.buildFromURI('//Alice')
 
   const claimContents = {
     name: 'Bob',
   }
+
   const claim = Claim.fromCTypeAndClaimContents(
     claimCtype,
     claimContents,
     identityAlice.address
   )
 
-  it('verify model transformations', () => {
-    const ctypeInput = {
-      $id: 'http://example.com/ctype-1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype-input#',
-      properties: [
-        {
-          title: 'First Property',
-          $id: 'first-property',
-          type: 'integer',
-        },
-        {
-          title: 'Second Property',
-          $id: 'second-property',
-          type: 'string',
-        },
-      ],
-      type: 'object',
-      title: 'CType Title',
-      required: ['first-property', 'second-property'],
-    }
-
-    const claimInput = {
-      $id: 'http://example.com/ctype-1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      properties: {
-        'first-property': { type: 'integer', title: 'First Property' },
-        'second-property': { type: 'string', title: 'Second Property' },
-      },
-      type: 'object',
-      title: 'CType Title',
-      required: ['first-property', 'second-property'],
-    }
-    const goodClaim = {
-      'first-property': 10,
-      'second-property': '12',
-    }
-    const badClaim = {
-      'first-property': '1',
-      'second-property': '12',
-      'third-property': true,
-    }
-
-    const ctypeFromInput = CTypeUtils.fromInputModel(ctypeInput)
-    const ctypeFromModel = CType.fromCType(ctypeModel)
-    expect(JSON.stringify(ctypeFromInput.getModel())).toEqual(
-      JSON.stringify(ctypeFromModel.getModel())
-    )
-    expect(
-      JSON.stringify(CTypeUtils.getClaimInputModel(ctypeFromInput, 'en'))
-    ).toEqual(JSON.stringify(claimInput))
-    expect(
-      JSON.stringify(CTypeUtils.getCTypeInputModel(ctypeFromInput))
-    ).toEqual(JSON.stringify(ctypeInput))
-
-    expect(ctypeFromInput.verifyClaimStructure(goodClaim)).toBeTruthy()
-    expect(ctypeFromInput.verifyClaimStructure(badClaim)).toBeFalsy()
-
-    expect(() => {
-      // @ts-ignore
-      CType.fromCType(goodClaim).verifyClaimStructure(goodClaim)
-    }).toThrow(new Error('CType does not correspond to schema'))
-    expect(() => {
-      CTypeUtils.fromInputModel(ctypeModel)
-    }).toThrow(
-      new Error('CType input does not correspond to input model schema')
-    )
-  })
-
   it('stores ctypes', async () => {
     const testHash = Crypto.hashStr('1234')
 
-    const ctype = CType.fromCType(ctypeModel)
+    const ctype = new CType(ctypeModel)
     ctype.hash = testHash
     const resultCtype = {
       ...ctype,
@@ -146,5 +80,14 @@ describe('CType', () => {
   it('verifies the claim structure', () => {
     expect(claimCtype.verifyClaimStructure(claim)).toBeTruthy()
     expect(claimCtype.verifyClaimStructure(!claim)).toBeFalsy()
+  })
+  it('throws error on wrong ctype hash', () => {
+    const wrongRawCtype = {
+      ...rawCtype,
+      hash: '0x1234',
+    }
+    expect(() => {
+      return CType.fromCType(wrongRawCtype)
+    }).toThrow()
   })
 })

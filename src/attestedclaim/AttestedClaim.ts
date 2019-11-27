@@ -24,7 +24,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param acInput - The base object from which to create the attested claim.
    * @returns A new [[AttestedClaim]] object.
    * @example ```javascript
-   * //create an AttestedClaim object, so we can call methods on it (`serialized` is a serialized AttestedClaim object)
+   * // create an AttestedClaim object, so we can call methods on it (`serialized` is a serialized AttestedClaim object)
    * AttestedClaim.fromAttestedClaim(JSON.parse(serialized));
    * ```
    */
