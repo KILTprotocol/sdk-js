@@ -1,4 +1,4 @@
-import { Header } from '@polkadot/types'
+import { Header } from '@polkadot/types/interfaces/types'
 import { getCached } from '../blockchainApiConnection'
 
 describe('Blockchain', async () => {
@@ -14,7 +14,7 @@ describe('Blockchain', async () => {
 
   xit('should listen to blocks', async done => {
     const listener = (header: Header): void => {
-      console.log(`Best block number ${header.blockNumber}`)
+      console.log(`Best block number ${header.number}`)
       done()
     }
     const blockchainSingleton = await getCached()

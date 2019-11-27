@@ -1,8 +1,11 @@
 /**
  * @module CType
  */
-import { CodecResult } from '@polkadot/api/promise/types'
-import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 import { QueryResult } from '../blockchain/Blockchain'
 import { getCached } from '../blockchainApiConnection'
@@ -20,10 +23,7 @@ export async function store(
 ): Promise<TxStatus> {
   const blockchain = await getCached()
   log.debug(() => `Create tx for 'ctype.add'`)
-  const tx: SubmittableExtrinsic<
-    CodecResult,
-    any
-  > = await blockchain.api.tx.ctype.add(ctype.hash)
+  const tx: SubmittableExtrinsic = await blockchain.api.tx.ctype.add(ctype.hash)
   const txStatus: TxStatus = await blockchain.submitTx(identity, tx)
   if (txStatus.type === 'Finalised') {
     txStatus.payload = {

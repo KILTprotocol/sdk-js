@@ -1,6 +1,10 @@
 /**
  * @module Identity
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import Did, {
   KEY_TYPE_ENCRYPTION,
   SERVICE_KILT_MESSAGING,
@@ -45,6 +49,42 @@ function isDIDResult(object: object): object is DIDResult {
 }
 
 export default class PublicIdentity implements IPublicIdentity {
+  /**
+   * [STATIC] Creates a new Public Identity from a DID document (DID - Decentralized Identifiers: https://w3c-ccg.github.io/did-spec/).
+   *
+   * @param didDocument - Contains the public key, external ID and service endpoint.
+   * @returns A new [[PublicIdentity]] object.
+   * @example ```javascript
+   * const didDocument = {
+   *   id: 'did:kilt:1234567',
+   *   authentication: {
+   *     type: 'Ed25519SignatureAuthentication2018',
+   *     publicKey: ['did:kilt:1234567#key-1'],
+   *   },
+   *   publicKey: [
+   *     {
+   *       id: 'did:kilt:1234567#key-1',
+   *       type: 'Ed25519VerificationKey2018',
+   *       controller: 'did:kilt:1234567',
+   *       publicKeyHex: '0x25346245...',
+   *     },
+   *     {
+   *       id: 'did:kilt:1234567#key-2',
+   *       type: 'X25519Salsa20Poly1305Key2018',
+   *       controller: 'did:kilt:1234567',
+   *       publicKeyHex: '0x98765456...',
+   *     },
+   *   ],
+   *   service: [
+   *     {
+   *       type: 'KiltMessagingService',
+   *       serviceEndpoint: 'http://services.kilt.io/messaging',
+   *     },
+   *   ],
+   * };
+   * PublicIdentity.fromDidDocument(didDocument);
+   * ```
+   */
   public static fromDidDocument(didDocument: object): IPublicIdentity | null {
     if (!isDIDDocument(didDocument)) return null
 
@@ -73,6 +113,23 @@ export default class PublicIdentity implements IPublicIdentity {
     }
   }
 
+  /**
+   * [STATIC] [ASYNC] Resolves a decentralized identifier (DID) into a [[PublicIdentity]].
+   *
+   * @param identifier - The Decentralized Identifier to be resolved.
+   * @param urlResolver  - A URL resolver, which is used to query the did document.
+   * @returns A new [[PublicIdentity]] object.
+   * @example ```javascript
+   * const urlResolver = {
+   *   resolve: (url: string) => {
+   *     return fetch(url)
+   *       .then(response => response.json());
+   *   },
+   * };
+   * const identifier = 'did:kilt:1234567';
+   * PublicIdentity.resolveFromDid(identifier, urlResolver);
+   * ```
+   */
   public static async resolveFromDid(
     identifier: string,
     urlResolver: IURLResolver
@@ -109,6 +166,16 @@ export default class PublicIdentity implements IPublicIdentity {
   public readonly boxPublicKeyAsHex: IPublicIdentity['boxPublicKeyAsHex']
   public readonly serviceAddress?: IPublicIdentity['serviceAddress']
 
+  /**
+   * Builds a new [[PublicIdentity]] instance.
+   *
+   * @param address - A public address.
+   * @param boxPublicKeyAsHex - The public encryption key.
+   * @param serviceAddress - The address of the service used to retreive the DID.
+   * @example ```javascript
+   * new PublicIdentity(address, boxPublicKeyAsHex, serviceAddress);
+   * ```
+   */
   public constructor(
     address: IPublicIdentity['address'],
     boxPublicKeyAsHex: IPublicIdentity['boxPublicKeyAsHex'],

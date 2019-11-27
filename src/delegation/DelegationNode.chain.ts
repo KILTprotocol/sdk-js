@@ -1,8 +1,11 @@
 /**
  * @module Delegation/DelegationNode
  */
-import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
-import { CodecResult } from '@polkadot/api/promise/types'
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
 
 import { getCached } from '../blockchainApiConnection'
@@ -22,10 +25,7 @@ export async function store(
   const includeParentId: boolean = delegation.parentId
     ? delegation.parentId !== delegation.rootId
     : false
-  const tx: SubmittableExtrinsic<
-    CodecResult,
-    any
-  > = await blockchain.api.tx.delegation.addDelegation(
+  const tx: SubmittableExtrinsic = await blockchain.api.tx.delegation.addDelegation(
     delegation.id,
     delegation.rootId,
     new Option(Text, includeParentId ? delegation.parentId : undefined),
@@ -54,9 +54,8 @@ export async function revoke(
   identity: Identity
 ): Promise<TxStatus> {
   const blockchain = await getCached()
-  const tx: SubmittableExtrinsic<
-    CodecResult,
-    any
-  > = await blockchain.api.tx.delegation.revokeDelegation(delegationId)
+  const tx: SubmittableExtrinsic = await blockchain.api.tx.delegation.revokeDelegation(
+    delegationId
+  )
   return blockchain.submitTx(identity, tx)
 }

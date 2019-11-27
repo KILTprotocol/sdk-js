@@ -1,15 +1,28 @@
 /**
  * @module Delegation
  */
+
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
+import { AnyJson } from '@polkadot/types/types'
 import { getCached } from '../blockchainApiConnection'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { CodecWithId } from './DelegationDecoder'
 import { IDelegationBaseNode } from '../types/Delegation'
 
+function isString(element: AnyJson): element is string {
+  return typeof element === 'string'
+}
+
 function decodeDelegatedAttestations(queryResult: QueryResult): string[] {
   const json =
     queryResult && queryResult.encodedLength ? queryResult.toJSON() : []
-  return json
+  if (json instanceof Array) {
+    const delegatedAttestations: string[] = json.filter<string>(isString)
+    return delegatedAttestations
+  }
+  return []
 }
 
 export async function getAttestationHashes(

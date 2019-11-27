@@ -1,13 +1,14 @@
 /**
  * Requests for attestation are a core building block of the KILT SDK.
  * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
- * ***
+ *
  * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester. It's signed by the claimer, to make it tamper proof (`claimerSignature` is a property of [[Claim]]). A RequestForAttestation also supports hiding of claim data during a credential presentation.
+ *
  * @module RequestForAttestation
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import { v4 as uuid } from 'uuid'
 import { IDelegationBaseNode } from '..'
@@ -60,6 +61,20 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 }
 
 export default class RequestForAttestation implements IRequestForAttestation {
+  /**
+   * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
+   * Used for deserialization.
+   *
+   * @param obj - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
+   * @returns  A new [[RequestForAttestation]] `object`.
+   * @example ```javascript
+   * const serialized =
+   *   '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
+   * const parsed = JSON.parse(serialized);
+   *
+   * RequestForAttestation.fromObject(parsed);
+   * ```
+   */
   public static fromObject(obj: IRequestForAttestation): RequestForAttestation {
     const newClaim = Object.create(RequestForAttestation.prototype)
     const object = Object.assign(newClaim, obj)
@@ -77,13 +92,25 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public hash: Hash
   public legitimations: AttestedClaim[]
 
-  public delegationId?: IDelegationBaseNode['id']
+  public delegationId: IDelegationBaseNode['id'] | null
 
+  /**
+   * Builds a new [[RequestForAttestation]] instance.
+   *
+   * @param claim - A claim, usually sent by a claimer.
+   * @param legitimations - Attested claims used as legitimations.
+   * @param identity - Identity of the claimer.
+   * @param delegationId - A delegation tree's root node id.
+   * @example ```javascript
+   * // create a new request for attestation
+   * new RequestForAttestation(claim, [], alice);
+   * ```
+   */
   public constructor(
     claim: IClaim,
     legitimations: AttestedClaim[],
     identity: Identity,
-    delegationId?: IDelegationBaseNode['id']
+    delegationId: IDelegationBaseNode['id'] | null = null
   ) {
     if (claim.owner !== identity.address) {
       throw Error('Claim owner is not identity')
@@ -99,6 +126,22 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.claimerSignature = this.sign(identity)
   }
 
+  /**
+   * Removes [[Claim]] properties from the [[RequestForAttestation]] object, provides anonymity and security when building the [[createPresentation]] method.
+   *
+   * @param properties - Properties to remove from the [[Claim]] object.
+   * @throws An error when a property which should be deleted wasn't found.
+   * @example ```javascript
+   * const rawClaim = {
+   *   name: 'Alice',
+   *   age: 29,
+   * };
+   * const claim = new Claim(ctype, rawClaim, alice);
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.removeClaimProperties(['name']);
+   * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
+   * ```
+   */
   public removeClaimProperties(properties: string[]): void {
     properties.forEach(key => {
       if (!this.claimHashTree[key]) {
@@ -109,11 +152,29 @@ export default class RequestForAttestation implements IRequestForAttestation {
     })
   }
 
+  /**
+   * Removes the [[Claim]] owner from the [[RequestForAttestation]] object.
+   *
+   * @example ```javascript
+   * const reqForAtt = new Kilt.RequestForAttestation(claim, [], alice);
+   * reqForAtt.removeClaimOwner();
+   * // `requestForAttestation` does not contain the claim `owner` or the `claimOwner`'s nonce anymore.
+   * ```
+   */
   public removeClaimOwner(): void {
     delete this.claim.owner
     delete this.claimOwner.nonce
   }
 
+  /**
+   * Verifies the data of the [[RequestForAttestation]] object; used to check that the data was not tampered with, by checking the data against hashes.
+   *
+   * @returns Whether the data is valid.
+   * @example ```javascript
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.verifyData();  // returns true if the data is correct
+   * ```
+   */
   public verifyData(): boolean {
     // check claim hash
     if (this.hash !== this.calculateRootHash()) {
@@ -164,6 +225,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return this.verifySignature()
   }
 
+  /**
+   * Verifies the signature of the [[RequestForAttestation]] object.
+   *
+   * @returns Whether the signature is correct.
+   * @example ```javascript
+   * const reqForAtt = new RequestForAttestation(claim, [], alice);
+   * reqForAtt.verifySignature(); // returns `true` if the signature is correct
+   * ```
+   */
   public verifySignature(): boolean {
     return verifyClaimerSignature(this)
   }

@@ -14,7 +14,8 @@
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import TxStatus from '../blockchain/TxStatus'
-import { getIdentifierFromAddress } from './Did.utils'
+import IPublicIdentity from '../types/PublicIdentity'
+import { getIdentifierFromAddress, getAddressFromIdentifier } from './Did.utils'
 import { store, queryByAddress, queryByIdentifier, remove } from './Did.chain'
 
 const log = factory.getLogger('DID')
@@ -47,11 +48,35 @@ export default class Did implements IDid {
   /**
    * @description Queries the [Did] from chain using the [identifier]
    *
-   * @param identifier the DIDs identifier
+   * @param identifier the DID identifier
    * @returns promise containing the [[Did]] or [null]
    */
   public static queryByIdentifier(identifier: string): Promise<IDid | null> {
     return queryByIdentifier(identifier)
+  }
+
+  /**
+   * @description Gets the complete KILT DID from an [address] (in KILT, the method-specific ID is an address). Reverse of [[getAddressFromIdentifier]].
+   *
+   * @param address An address, e.g. "5CtPYoDuQQF...".
+   * @returns The associated KILT DID, e.g. "did:kilt:5CtPYoDuQQF...".
+   */
+  public static getIdentifierFromAddress(
+    address: IPublicIdentity['address']
+  ): IDid['identifier'] {
+    return getIdentifierFromAddress(address)
+  }
+
+  /**
+   * @description Gets the [address] from a complete KILT DID (in KILT, the method-specific ID is an address). Reverse of [[getIdentifierFromAddress]].
+   *
+   * @param identifier A KILT DID, e.g. "did:kilt:5CtPYoDuQQF...".
+   * @returns The associated address, e.g. "5CtPYoDuQQF...".
+   */
+  public static getAddressFromIdentifier(
+    identifier: IDid['identifier']
+  ): IPublicIdentity['address'] {
+    return getAddressFromIdentifier(identifier)
   }
 
   /**

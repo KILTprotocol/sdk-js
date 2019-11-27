@@ -1,7 +1,9 @@
 /**
  * @module TypeInterfaces/RequestForAttestation
  */
-
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
 import IClaim from './Claim'
 import { IDelegationBaseNode } from './Delegation'
 import IAttestedClaim from './AttestedClaim'
@@ -21,5 +23,5 @@ export default interface IRequestForAttestation {
   hash: Hash
   legitimations: IAttestedClaim[]
 
-  delegationId?: IDelegationBaseNode['id']
+  delegationId: IDelegationBaseNode['id'] | null
 }

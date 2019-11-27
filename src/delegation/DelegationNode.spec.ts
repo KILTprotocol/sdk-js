@@ -1,4 +1,4 @@
-import { Option, Text, Tuple } from '@polkadot/types'
+import { Option, Text, Tuple, H256 } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
 import Identity from '../identity/Identity'
@@ -87,8 +87,12 @@ describe('Delegation', () => {
       () => {
         const tuple = new Tuple(
           // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          [Text, Text, Bool],
-          ['0x1234', identityAlice.address, false]
+          [H256, Text, Bool],
+          [
+            '0x1234000000000000000000000000000000000000000000000000000000000000',
+            identityAlice.address,
+            false,
+          ]
         )
         return Promise.resolve(tuple)
       }
@@ -103,6 +107,8 @@ describe('Delegation', () => {
     const rootNode = await node.getRoot()
 
     expect(rootNode).toBeDefined()
-    expect(rootNode.cTypeHash).toBe('0x1234')
+    expect(rootNode.cTypeHash).toBe(
+      '0x1234000000000000000000000000000000000000000000000000000000000000'
+    )
   })
 })
