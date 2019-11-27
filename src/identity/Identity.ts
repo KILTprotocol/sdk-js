@@ -15,7 +15,6 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
-import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
@@ -23,7 +22,7 @@ import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
 import * as u8aUtil from '@polkadot/util/u8a'
 import { hexToU8a } from '@polkadot/util/hex'
-import { SubscriptionResult, CodecResult } from '@polkadot/api/promise/types'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
@@ -150,7 +149,7 @@ export default class Identity extends PublicIdentity {
     // compromising both key pairs at the same time if one key becomes public
     // Maybe use BIP32 and BIP44
     const seedAsHex = u8aUtil.u8aToHex(seed)
-    const address = signKeyringPair.address()
+    const { address } = signKeyringPair
 
     const boxKeyPair = Identity.createBoxKeyPair(seed)
     const boxPublicKeyAsHex = u8aUtil.u8aToHex(boxKeyPair.publicKey)
@@ -161,7 +160,7 @@ export default class Identity extends PublicIdentity {
     this.seedAsHex = seedAsHex
 
     this.signKeyringPair = signKeyringPair
-    this.signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyringPair.publicKey())
+    this.signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyringPair.publicKey)
 
     this.boxKeyPair = boxKeyPair
   }
@@ -348,9 +347,9 @@ export default class Identity extends PublicIdentity {
    * ```
    */
   public signSubmittableExtrinsic(
-    submittableExtrinsic: SubmittableExtrinsic<CodecResult, SubscriptionResult>,
+    submittableExtrinsic: SubmittableExtrinsic,
     nonceAsHex: string
-  ): SubmittableExtrinsic<CodecResult, SubscriptionResult> {
+  ): SubmittableExtrinsic {
     return submittableExtrinsic.sign(this.signKeyringPair, {
       nonce: nonceAsHex,
     })

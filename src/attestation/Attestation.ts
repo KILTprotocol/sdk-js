@@ -27,7 +27,7 @@ export default class Attestation implements IAttestation {
   public cTypeHash: IAttestation['cTypeHash']
   public owner: IAttestation['owner']
   public revoked: IAttestation['revoked']
-  public delegationId?: IAttestation['delegationId']
+  public delegationId: IAttestation['delegationId'] | null
 
   /**
    * Builds a new [[Attestation]] instance.

@@ -33,7 +33,10 @@
         }],
         "@typescript-eslint/interface-name-prefix": ["error", "always"],
         "@typescript-eslint/prefer-interface": "off",
-        "@typescript-eslint/array-type": ["error", "array-simple"],
+        "@typescript-eslint/array-type": ["error", {
+            "default": "array-simple"
+        }],
+        "@typescript-eslint/ban-ts-ignore": "warn",
         "jsdoc/require-description": "warn",
         "jsdoc/require-description-complete-sentence": "warn",
         "jsdoc/no-types": "warn",

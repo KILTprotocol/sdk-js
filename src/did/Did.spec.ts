@@ -1,4 +1,4 @@
-import { Text, Tuple, Option } from '@polkadot/types'
+import { Text, Tuple, Option, U8a } from '@polkadot/types'
 import { Did } from '..'
 import { IDid } from './Did'
 import Identity from '../identity/Identity'
@@ -11,7 +11,7 @@ describe('DID', () => {
       if (address === 'withDocumentStore') {
         const tuple = new Tuple(
           // (publicBoxKey, publicSigningKey, documentStore?)
-          [Text, Text, Text],
+          [Text, Text, U8a],
           ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
         )
         return Promise.resolve(tuple)
@@ -82,24 +82,24 @@ describe('DID', () => {
       '@context': 'https://w3id.org/did/v1',
       authentication: {
         publicKey: [
-          'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd#key-1',
+          'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-1',
         ],
         type: 'Ed25519SignatureAuthentication2018',
       },
-      id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd',
+      id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
       publicKey: [
         {
           controller:
-            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd',
-          id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd#key-1',
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
+          id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-1',
           publicKeyHex:
             '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee',
           type: 'Ed25519VerificationKey2018',
         },
         {
           controller:
-            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd',
-          id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd#key-2',
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
+          id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-2',
           publicKeyHex:
             '0xe54bdd5e4f0929471fb333b17c0d865fc4f2cbc45364602bd1b85550328c3c62',
           type: 'X25519Salsa20Poly1305Key2018',

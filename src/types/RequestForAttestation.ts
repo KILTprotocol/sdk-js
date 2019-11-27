@@ -23,5 +23,5 @@ export default interface IRequestForAttestation {
   hash: Hash
   legitimations: IAttestedClaim[]
 
-  delegationId?: IDelegationBaseNode['id']
+  delegationId: IDelegationBaseNode['id'] | null
 }

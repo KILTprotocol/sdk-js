@@ -9,7 +9,7 @@
 /**
  * Dummy comment needed for correct doc display, do not remove
  */
-import { decodeAddress, encodeAddress } from '@polkadot/keyring/address'
+import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
 import createPair from '@polkadot/keyring/pair'
 import {
