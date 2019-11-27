@@ -30,6 +30,7 @@ import IRequestForAttestation, {
   NonceHash,
 } from '../types/RequestForAttestation'
 import { IDelegationBaseNode } from '../types/Delegation'
+import IAttestedClaim from '../types/AttestedClaim'
 
 function hashNonceValue(nonce: string, value: any): string {
   return hashObjectAsStr(value, nonce)
@@ -78,7 +79,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public static fromRequest(
     rfaInput: IRequestForAttestation
   ): RequestForAttestation {
-    return new RequestForAttestation(rfaInput)
+    return new RequestForAttestation(rfaInput, null)
   }
 
   /**
@@ -98,8 +99,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public static fromClaimAndIdentity(
     claimInput: IClaim,
     identity: Identity,
-    legitimationsInput?: AttestedClaim[],
-    delegationIdInput?: IDelegationBaseNode['id']
+    legitimationsInput: AttestedClaim[] | null,
+    delegationIdInput: IDelegationBaseNode['id'] | null
   ): RequestForAttestation {
     if (claimInput.owner !== identity.address) {
       throw Error('Claim owner is not Identity')
@@ -108,7 +109,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     const cTypeHashGenerated = generateHash(claimInput.cTypeHash)
     const claimHashTreeGenerated = generateHashTree(claimInput.contents)
     if (
-      typeof legitimationsInput !== 'undefined' &&
+      legitimationsInput &&
       Array.isArray(legitimationsInput) &&
       legitimationsInput.length
     ) {
@@ -119,8 +120,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
           claimOwner: claimOwnerGenerated,
           claimHashTree: claimHashTreeGenerated,
           cTypeHash: cTypeHashGenerated,
-          rootHash: undefined,
-          claimerSignature: undefined,
+          rootHash: null,
+          claimerSignature: null,
           delegationId: delegationIdInput,
         },
         identity
@@ -133,8 +134,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
         claimOwner: claimOwnerGenerated,
         claimHashTree: claimHashTreeGenerated,
         cTypeHash: cTypeHashGenerated,
-        rootHash: undefined,
-        claimerSignature: undefined,
+        rootHash: null,
+        claimerSignature: null,
         delegationId: delegationIdInput,
       },
       identity
@@ -149,7 +150,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public cTypeHash: NonceHash
   public rootHash: Hash
 
-  public delegationId?: IDelegationBaseNode['id']
+  public delegationId: IDelegationBaseNode['id'] | null
 
   /**
    * Builds a new [[RequestForAttestation]] instance.
@@ -163,7 +164,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
   public constructor(
     requestInput: IRequestForAttestation,
-    identity?: Identity
+    identity: Identity | null
   ) {
     if (identity) {
       if (requestInput.claim.owner !== identity.address) {
@@ -196,12 +197,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
         Array.isArray(requestInput.legitimations) &&
         requestInput.legitimations.length
       ) {
-        requestInput.legitimations.forEach(element => {
-          const ele = AttestedClaim.fromAttestedClaim(element)
-          if (ele instanceof AttestedClaim) {
-            this.legitimations.push(ele)
-          }
-        })
+        this.legitimations = requestInput.legitimations
+          .map(legitimation =>
+            AttestedClaim.fromAttestedClaim(legitimation as IAttestedClaim)
+          )
+          .filter(c => c instanceof AttestedClaim)
       }
       this.delegationId = requestInput.delegationId
       this.claimHashTree = requestInput.claimHashTree
@@ -238,7 +238,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
         requestInput.legitimations.length
       ) {
         this.legitimations = requestInput.legitimations
-          .map(legitimation => AttestedClaim.fromAttestedClaim(legitimation))
+          .map(legitimation =>
+            AttestedClaim.fromAttestedClaim(legitimation as IAttestedClaim)
+          )
           .filter(c => c instanceof AttestedClaim)
       }
       this.delegationId = requestInput.delegationId

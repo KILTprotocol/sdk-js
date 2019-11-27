@@ -146,7 +146,7 @@ export default class AttestedClaim implements IAttestedClaim {
    */
   public createPresentation(
     excludedClaimProperties: string[],
-    excludeIdentity: boolean = false
+    excludeIdentity = false
   ): AttestedClaim {
     const result: AttestedClaim = AttestedClaim.fromAttestedClaim(
       this as IAttestedClaim

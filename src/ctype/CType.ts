@@ -32,7 +32,7 @@ export default class CType implements ICType {
   }
 
   public hash: ICType['hash']
-  public owner?: ICType['owner']
+  public owner: ICType['owner'] | null
   public schema: ICType['schema']
   public metadata: ICType['metadata']
 

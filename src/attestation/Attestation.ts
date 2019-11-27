@@ -89,7 +89,7 @@ export default class Attestation implements IAttestation {
   public static fromRequestAndPublicIdentity(
     request: IRequestForAttestation,
     attesterPublicIdentity: IPublicIdentity,
-    delegationIdInput?: IDelegationBaseNode['id']
+    delegationIdInput: IDelegationBaseNode['id'] | null
   ) {
     return new Attestation({
       claimHash: request.rootHash as string,
@@ -104,7 +104,7 @@ export default class Attestation implements IAttestation {
   public cTypeHash: IAttestation['cTypeHash']
   public owner: IAttestation['owner']
   public revoked: IAttestation['revoked']
-  public delegationId?: IAttestation['delegationId']
+  public delegationId: IAttestation['delegationId'] | null
 
   /**
    * Builds a new [[Attestation]] instance.
@@ -151,7 +151,7 @@ export default class Attestation implements IAttestation {
    * ```
    */
   public async store(identity: Identity): Promise<TxStatus> {
-    return store(this, identity)
+    return store(this as IAttestation, identity)
   }
 
   /**
