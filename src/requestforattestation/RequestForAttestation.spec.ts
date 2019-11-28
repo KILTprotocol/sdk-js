@@ -33,7 +33,6 @@ function buildRequestForAttestation(
   } as ICType)
   const claim = {
     cTypeHash: testCType.hash,
-    cTypeSchema: testCType.schema,
     contents: contentsCopy,
     owner: claimer.address,
   } as IClaim

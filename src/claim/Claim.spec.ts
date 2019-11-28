@@ -35,6 +35,6 @@ describe('Claim', () => {
 
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))
-    expect(Claim.fromClaim(claimObj)).toEqual(claim)
+    expect(Claim.fromClaim(claimObj, testCType.schema)).toEqual(claim)
   })
 })

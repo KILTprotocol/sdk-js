@@ -151,7 +151,7 @@ export default class Attestation implements IAttestation {
    * ```
    */
   public async store(identity: Identity): Promise<TxStatus> {
-    return store(this as IAttestation, identity)
+    return store(this, identity)
   }
 
   /**

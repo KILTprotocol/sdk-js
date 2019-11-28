@@ -26,9 +26,12 @@ function verifyClaim(
 }
 
 export default class Claim implements IClaim {
-  public static fromClaim(claimInput: IClaim): Claim {
-    if (claimInput.cTypeSchema) {
-      if (!verifyClaim(claimInput.contents, claimInput.cTypeSchema)) {
+  public static fromClaim(
+    claimInput: IClaim,
+    cTypeSchema: ICType['schema']
+  ): Claim {
+    if (cTypeSchema) {
+      if (!verifyClaim(claimInput.contents, cTypeSchema)) {
         throw Error('Claim not valid')
       }
     }
@@ -47,7 +50,6 @@ export default class Claim implements IClaim {
     }
     return new Claim({
       cTypeHash: ctypeInput.hash,
-      cTypeSchema: null,
       contents: claimContents,
       owner: claimOwner,
     })
@@ -56,7 +58,6 @@ export default class Claim implements IClaim {
   public cTypeHash: IClaim['cTypeHash']
   public contents: IClaim['contents']
   public owner: IClaim['owner']
-  public cTypeSchema: ICType['schema'] | null
 
   public constructor(claimInput: IClaim) {
     if (!claimInput.cTypeHash || !claimInput.contents || !claimInput.owner) {
@@ -69,11 +70,6 @@ export default class Claim implements IClaim {
           claimInput.owner:\n'
           ${claimInput.owner}`
       )
-    }
-    if (claimInput.cTypeSchema) {
-      this.cTypeSchema = claimInput.cTypeSchema
-    } else {
-      this.cTypeSchema = null
     }
     this.cTypeHash = claimInput.cTypeHash
     this.contents = claimInput.contents

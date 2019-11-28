@@ -9,7 +9,6 @@ import IPublicIdentity from './PublicIdentity'
 
 export default interface IClaim {
   cTypeHash: ICType['hash']
-  cTypeSchema: ICType['schema'] | null
   contents: object
   owner: IPublicIdentity['address']
 }

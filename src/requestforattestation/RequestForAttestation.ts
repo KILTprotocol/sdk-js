@@ -30,7 +30,6 @@ import IRequestForAttestation, {
   NonceHash,
 } from '../types/RequestForAttestation'
 import { IDelegationBaseNode } from '../types/Delegation'
-import IAttestedClaim from '../types/AttestedClaim'
 
 function hashNonceValue(nonce: string, value: any): string {
   return hashObjectAsStr(value, nonce)
@@ -113,28 +112,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
       legitimationsInput,
       delegationIdInput
     )
-    if (
-      legitimationsInput &&
-      Array.isArray(legitimationsInput) &&
-      legitimationsInput.length
-    ) {
-      return new RequestForAttestation({
-        claim: claimInput,
-        legitimations: legitimationsInput,
-        claimOwner: claimOwnerGenerated,
-        claimHashTree: claimHashTreeGenerated,
-        cTypeHash: cTypeHashGenerated,
-        rootHash: calculatedRootHash,
-        claimerSignature: RequestForAttestation.sign(
-          identity,
-          calculatedRootHash
-        ),
-        delegationId: delegationIdInput,
-      })
+    let legitimations: AttestedClaim[] = []
+    if (Array.isArray(legitimationsInput)) {
+      legitimations = legitimationsInput
     }
     return new RequestForAttestation({
       claim: claimInput,
-      legitimations: [] as AttestedClaim[],
+      legitimations,
       claimOwner: claimOwnerGenerated,
       claimHashTree: claimHashTreeGenerated,
       cTypeHash: cTypeHashGenerated,
@@ -202,11 +186,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
       Array.isArray(requestForAttestationInput.legitimations) &&
       requestForAttestationInput.legitimations.length
     ) {
-      this.legitimations = requestForAttestationInput.legitimations
-        .map(legitimation =>
-          AttestedClaim.fromAttestedClaim(legitimation as IAttestedClaim)
-        )
-        .filter(c => c instanceof AttestedClaim)
+      this.legitimations = requestForAttestationInput.legitimations.map(
+        legitimation => AttestedClaim.fromAttestedClaim(legitimation)
+      )
     } else {
       this.legitimations = []
     }

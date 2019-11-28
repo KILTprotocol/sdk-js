@@ -108,7 +108,6 @@ describe('Messaging', () => {
         cTypeHash: '0x12345678',
         owner: identityAlice.getPublicIdentity().address,
         contents: {},
-        cTypeSchema: null,
       },
       delegationId: null,
       legitimations: [],

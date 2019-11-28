@@ -150,9 +150,7 @@ export default class AttestedClaim implements IAttestedClaim {
     excludedClaimProperties: string[],
     excludeIdentity = false
   ): AttestedClaim {
-    const result: AttestedClaim = AttestedClaim.fromAttestedClaim(
-      this as IAttestedClaim
-    )
+    const result: AttestedClaim = AttestedClaim.fromAttestedClaim(this)
     result.request.removeClaimProperties(excludedClaimProperties)
     if (excludeIdentity) {
       result.request.removeClaimOwner()
