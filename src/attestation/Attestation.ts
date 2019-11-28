@@ -63,15 +63,15 @@ export default class Attestation implements IAttestation {
    * [STATIC] Builds an instance of [[Attestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param attstationInput - The base object from which to create the attestation.
+   * @param attestationInput - The base object from which to create the attestation.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create an Attestation object, so we can call methods on it (`serialized` is a serialized Attestation object )
    * Attestation.fromAttestation(JSON.parse(serialized));
    * ```
    */
-  public static fromAttestation(attstationInput: IAttestation): Attestation {
-    return new Attestation(attstationInput)
+  public static fromAttestation(attestationInput: IAttestation): Attestation {
+    return new Attestation(attestationInput)
   }
 
   /**
@@ -125,7 +125,7 @@ export default class Attestation implements IAttestation {
         `Property Not Provided while building Attestation!\n
         attestationInput.cTypeHash:\n
         ${attestationInput.cTypeHash}\n
-        rattestationInput.claimHash:\n
+        attestationInput.claimHash:\n
         ${attestationInput.claimHash}\n
         attestationInput.owner:\n
         ${attestationInput.owner}`

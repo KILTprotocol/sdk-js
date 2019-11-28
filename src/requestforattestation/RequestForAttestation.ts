@@ -3,7 +3,7 @@
  * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
  *
  * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
- * It's signed by the claimer, to make it tamper proof (`claimerSignature` is a property of [[Claim]]).
+ * It's signed by the claimer, to make it tamperproof (`claimerSignature` is a property of [[Claim]]).
  * A RequestForAttestation also supports hiding of claim data during a credential presentation.
  *
  * @module RequestForAttestation
@@ -68,7 +68,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param rfaInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
+   * @param requestForAttestationInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
    * @returns  A new [[RequestForAttestation]] `object`.
    * @example ```javascript
    * const serializedRequest = '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
@@ -77,19 +77,19 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public static fromRequest(
-    rfaInput: IRequestForAttestation
+    requestForAttestationInput: IRequestForAttestation
   ): RequestForAttestation {
-    return new RequestForAttestation(rfaInput)
+    return new RequestForAttestation(requestForAttestationInput)
   }
 
   /**
    * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of requiered parameters.
    *
-   * @param claimInput - An `IClaim` object the request for attestation is build for.
-   * @param identity - The Claimers [Identity].
+   * @param claimInput - An `IClaim` object the request for attestation is built for.
+   * @param identity - The Claimer's [Identity].
    * @param [legitimationsInput] - Array of [AttestedClaim] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param [delegationInput] - The id of the DelegationNode of the Attester, which should be used in the attestation
-   * @returns  A new [[RequestForAttestation]] `object`.
+   * @returns  A new [[RequestForAttestation]] object.
    * @example ```javascript
    * const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(claim,alice,[],null)
    * ```
@@ -161,42 +161,48 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Builds a new [[RequestForAttestation]] instance.
    *
    * @param requestInput - The base object from which to create the requestForAttestation.
-   * @param [identity] - Optional identity of the claimer, required when not building from an existing object.
    * @example ```javascript
    * // create a new request for attestation
-   * new RequestForAttestation(IRequest,alice);
+   * new RequestForAttestation(requestForAttestationInput);
    * ```
    */
-  public constructor(requestInput: IRequestForAttestation) {
+  public constructor(requestForAttestationInput: IRequestForAttestation) {
     if (
-      !requestInput.claim ||
-      !requestInput.claimOwner ||
-      !requestInput.claimHashTree ||
-      !requestInput.cTypeHash
+      !requestForAttestationInput.claim ||
+      !requestForAttestationInput.legitimations ||
+      !requestForAttestationInput.claimOwner ||
+      !requestForAttestationInput.claimerSignature ||
+      !requestForAttestationInput.claimHashTree ||
+      !requestForAttestationInput.cTypeHash ||
+      !requestForAttestationInput.rootHash
     ) {
       throw new Error(
-        `Property Not Provided while building RequestForAttestation without Identity:\n
+        `Property Not Provided while building RequestForAttestation:\n
           requestInput.claim:\n
-          ${requestInput.claim}\n
+          ${requestForAttestationInput.claim}\n
+          requestInput.legitimations:\n
+          ${requestForAttestationInput.legitimations}\n
           requestInput.claimOwner:\n
-          ${requestInput.claimOwner}\n
-          requestInput.cTypeHash:\n'
-          ${requestInput.cTypeHash}\n
-          requestInput.claimHashTree:\n
-          ${requestInput.claimHashTree}\n
+          ${requestForAttestationInput.claimOwner}\n
           requestInput.claimerSignature:\n
-          ${requestInput.claimerSignature}`
+          ${requestForAttestationInput.claimerSignature}
+          requestInput.claimHashTree:\n
+          ${requestForAttestationInput.claimHashTree}\n
+          requestInput.rootHash:\n
+          ${requestForAttestationInput.rootHash}\n
+          requestInput.cTypeHash:\n
+          ${requestForAttestationInput.cTypeHash}\n`
       )
     }
-    this.claim = requestInput.claim
-    this.claimOwner = requestInput.claimOwner
-    this.cTypeHash = requestInput.cTypeHash
+    this.claim = requestForAttestationInput.claim
+    this.claimOwner = requestForAttestationInput.claimOwner
+    this.cTypeHash = requestForAttestationInput.cTypeHash
     if (
-      typeof requestInput.legitimations !== 'undefined' &&
-      Array.isArray(requestInput.legitimations) &&
-      requestInput.legitimations.length
+      typeof requestForAttestationInput.legitimations !== 'undefined' &&
+      Array.isArray(requestForAttestationInput.legitimations) &&
+      requestForAttestationInput.legitimations.length
     ) {
-      this.legitimations = requestInput.legitimations
+      this.legitimations = requestForAttestationInput.legitimations
         .map(legitimation =>
           AttestedClaim.fromAttestedClaim(legitimation as IAttestedClaim)
         )
@@ -204,10 +210,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
     } else {
       this.legitimations = []
     }
-    this.delegationId = requestInput.delegationId
-    this.claimHashTree = requestInput.claimHashTree
-    this.rootHash = requestInput.rootHash
-    this.claimerSignature = requestInput.claimerSignature
+    this.delegationId = requestForAttestationInput.delegationId
+    this.claimHashTree = requestForAttestationInput.claimHashTree
+    this.rootHash = requestForAttestationInput.rootHash
+    this.claimerSignature = requestForAttestationInput.claimerSignature
     this.verifySignature()
     this.verifyData()
   }

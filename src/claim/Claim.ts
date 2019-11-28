@@ -40,7 +40,7 @@ export default class Claim implements IClaim {
     claimContents: object,
     claimOwner: IPublicIdentity['address']
   ): Claim {
-    if (ctypeInput.schema !== undefined) {
+    if (ctypeInput.schema) {
       if (!verifyClaim(claimContents, ctypeInput.schema)) {
         throw Error('Claim not valid')
       }
@@ -59,22 +59,24 @@ export default class Claim implements IClaim {
   public cTypeSchema: ICType['schema'] | null
 
   public constructor(claimInput: IClaim) {
+    if (!claimInput.cTypeHash || !claimInput.contents || !claimInput.owner) {
+      throw new Error(
+        `Property Not Provided while building Claim:\n
+        claimInput.cTypeHash:\n
+          ${claimInput.cTypeHash}\n
+          claimInput.contents:\n
+          ${claimInput.contents}\n
+          claimInput.owner:\n'
+          ${claimInput.owner}`
+      )
+    }
     if (claimInput.cTypeSchema) {
       this.cTypeSchema = claimInput.cTypeSchema
     } else {
       this.cTypeSchema = null
     }
-    if (!claimInput.cTypeHash) {
-      throw new Error(`No cTypeHash provided: ${claimInput.cTypeHash}`)
-    }
     this.cTypeHash = claimInput.cTypeHash
-    if (!claimInput.contents) {
-      throw new Error(`No ClaimContents provided: ${claimInput.contents}`)
-    }
     this.contents = claimInput.contents
-    if (!claimInput.owner) {
-      throw new Error(`No owner provided: ${claimInput.owner}`)
-    }
     this.owner = claimInput.owner
   }
 }

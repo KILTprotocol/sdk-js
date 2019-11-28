@@ -21,15 +21,17 @@ export default class AttestedClaim implements IAttestedClaim {
    * [STATIC] Builds an instance of [[AttestedClaim]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param acInput - The base object from which to create the attested claim.
-   * @returns A new [[AttestedClaim]] object.
+   * @param attestedClaimInput - The base object from which to create the attested claim.
+   * @returns A new instantiated [[AttestedClaim]] object.
    * @example ```javascript
    * // create an AttestedClaim object, so we can call methods on it (`serialized` is a serialized AttestedClaim object)
    * AttestedClaim.fromAttestedClaim(JSON.parse(serialized));
    * ```
    */
-  public static fromAttestedClaim(acInput: IAttestedClaim): AttestedClaim {
-    return new AttestedClaim(acInput)
+  public static fromAttestedClaim(
+    attestedClaimInput: IAttestedClaim
+  ): AttestedClaim {
+    return new AttestedClaim(attestedClaimInput)
   }
 
   /**
