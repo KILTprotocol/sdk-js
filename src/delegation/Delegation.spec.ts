@@ -118,9 +118,7 @@ describe('Delegation', () => {
     })
   })
   it('get attestation hashes', async () => {
-    const attestationHashes: string[] = await getAttestationHashes(
-      'myDelegationId'
-    )
+    const attestationHashes = await getAttestationHashes('myDelegationId')
     expect(attestationHashes).toHaveLength(3)
     expect(attestationHashes).toContain('0x123')
   })

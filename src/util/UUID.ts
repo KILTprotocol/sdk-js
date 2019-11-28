@@ -9,13 +9,13 @@
  * Dummy comment needed for correct doc display, do not remove
  */
 import { v4 as uuid } from 'uuid'
-import { Hash } from '@polkadot/types'
+import { H256 } from '@polkadot/types'
 
 /**
  * Generates a H256 compliant UUID.
  */
 export function generate(): string {
-  return new Hash(uuid()).toString()
+  return new H256(uuid()).toString()
 }
 
 export default {

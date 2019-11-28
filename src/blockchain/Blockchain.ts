@@ -10,12 +10,8 @@
  * Dummy comment needed for correct doc display, do not remove
  */
 import { ApiPromise } from '@polkadot/api'
-import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
-import {
-  SubmittableExtrinsic,
-  SubmittableResult,
-} from '@polkadot/api/SubmittableExtrinsic'
-import { Header } from '@polkadot/types'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import { Header } from '@polkadot/types/interfaces/types'
 import { Codec } from '@polkadot/types/types'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
@@ -38,10 +34,7 @@ export interface IBlockchainApi {
 
   getStats(): Promise<Stats>
   listenToBlocks(listener: (header: Header) => void): Promise<any> // TODO: change any to something meaningful
-  submitTx(
-    identity: Identity,
-    tx: SubmittableExtrinsic<CodecResult, SubscriptionResult>
-  ): Promise<TxStatus>
+  submitTx(identity: Identity, tx: SubmittableExtrinsic): Promise<TxStatus>
   getNonce(accountAddress: string): Promise<Codec>
 }
 
@@ -81,25 +74,25 @@ export default class Blockchain implements IBlockchainApi {
   public async listenToBlocks(
     listener: (header: Header) => void
   ): Promise<() => void> {
-    const subscriptionId = await this.api.rpc.chain.subscribeNewHead(listener)
+    const subscriptionId = await this.api.rpc.chain.subscribeNewHeads(listener)
     return subscriptionId
   }
 
   public async submitTx(
     identity: Identity,
-    tx: SubmittableExtrinsic<CodecResult, SubscriptionResult>
+    tx: SubmittableExtrinsic
   ): Promise<TxStatus> {
     const accountAddress = identity.address
     const nonce = await this.getNonce(accountAddress)
-    const signed: SubmittableExtrinsic<
-      CodecResult,
-      SubscriptionResult
-    > = identity.signSubmittableExtrinsic(tx, nonce.toHex())
+    const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
+      tx,
+      nonce.toHex()
+    )
     log.info(`Submitting ${tx.method}`)
 
     return new Promise<TxStatus>((resolve, reject) => {
       signed
-        .send((result: SubmittableResult) => {
+        .send(result => {
           log.info(`Got tx status '${result.status.type}'`)
 
           const { status } = result
@@ -112,7 +105,7 @@ export default class Blockchain implements IBlockchainApi {
             log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
             reject(extrinsicError)
           }
-          if (status.type === 'Finalised') {
+          if (status.type === 'Finalized') {
             resolve(new TxStatus(status.type))
           } else if (status.type === 'Invalid' || status.type === 'Dropped') {
             reject(new Error(`Transaction failed with status '${status.type}'`))

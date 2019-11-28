@@ -90,6 +90,24 @@ describe('RequestForAttestation', () => {
     expect(request.verifyData()).toBeFalsy()
   })
 
+  it('throws on wrong hash in claim hash tree', () => {
+    const request: RequestForAttestation = buildRequestForAttestation(
+      identityBob,
+      'ctype',
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      []
+    )
+    // @ts-ignore
+    request.claimHashTree.a.nonce = '1234'
+    expect(() => {
+      request.verifyData()
+    }).toThrow()
+  })
+
   it('hides the claim owner', () => {
     const request = buildRequestForAttestation(identityBob, 'ctype', {}, [])
     request.removeClaimOwner()

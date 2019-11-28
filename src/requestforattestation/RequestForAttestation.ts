@@ -91,9 +91,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param [delegationInput] - The id of the DelegationNode of the Attester, which should be used in the attestation
    * @returns  A new [[RequestForAttestation]] `object`.
    * @example ```javascript
-   * const serializedRequest = '{ "claim": { "cType": "0x981...", "contents": { "name": "Alice", "age": 29 }, owner: "5Gf..." }, ... }, ... }';
-   * const parsedRequest = JSON.parse(serializedRequest);
-   * RequestForAttestation.fromRequest(parsedRequest);
+   * const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(claim,alice,[],null)
    * ```
    */
   public static fromClaimAndIdentity(
@@ -159,7 +157,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param [identity] - Optional identity of the claimer, required when not building from an existing object.
    * @example ```javascript
    * // create a new request for attestation
-   * new RequestForAttestation(claim, [], alice);
+   * new RequestForAttestation(IRequest,alice);
    * ```
    */
   public constructor(
@@ -259,8 +257,14 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param properties - Properties to remove from the [[Claim]] object.
    * @throws An error when a property which should be deleted wasn't found.
    * @example ```javascript
-   *  requestForAttestation.removeClaimProperties(['name']);
-   * // `name` is deleted from `requestForAttestation`
+   * const rawClaim = {
+   *   name: 'Alice',
+   *   age: 29,
+   * };
+   * const claim = Claim.fromCTypeAndClaimContents(ctype, rawClaim, alice);
+   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(claim,alice,[],null);
+   * reqForAtt.removeClaimProperties(['name']);
+   * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
    * ```
    */
   public removeClaimProperties(properties: string[]): void {
@@ -277,7 +281,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Removes the [[Claim]] owner from the [[RequestForAttestation]] object.
    *
    * @example ```javascript
-   * requestForAttestation.removeClaimOwner();
+   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(claim,alice,[],null);
+   * reqForAtt.removeClaimOwner();
    * // `requestForAttestation` does not contain the claim `owner` or the `claimOwner`'s nonce anymore.
    * ```
    */
@@ -291,8 +296,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @returns Whether the data is valid.
    * @example ```javascript
-   *  requestForAttestation.verifyData();
-   * // returns `true` if the data is correct
+   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(claim,alice,[],null);
+   * reqForAtt.verifyData();  // returns true if the data is correct
    * ```
    */
   public verifyData(): boolean {
@@ -350,8 +355,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @returns Whether the signature is correct.
    * @example ```javascript
-   * requestForAttestation.verifySignature();
-   * // returns `true` if the signature is correct
+   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(claim,alice,[],null);
+   * reqForAtt.verifySignature(); // returns `true` if the signature is correct
    * ```
    */
   public verifySignature(): boolean {

@@ -54,8 +54,34 @@ export default class PublicIdentity implements IPublicIdentity {
    *
    * @param didDocument - Contains the public key, external ID and service endpoint.
    * @returns A new [[PublicIdentity]] object.
-   * @example
-   * ```javascript
+   * @example ```javascript
+   * const didDocument = {
+   *   id: 'did:kilt:1234567',
+   *   authentication: {
+   *     type: 'Ed25519SignatureAuthentication2018',
+   *     publicKey: ['did:kilt:1234567#key-1'],
+   *   },
+   *   publicKey: [
+   *     {
+   *       id: 'did:kilt:1234567#key-1',
+   *       type: 'Ed25519VerificationKey2018',
+   *       controller: 'did:kilt:1234567',
+   *       publicKeyHex: '0x25346245...',
+   *     },
+   *     {
+   *       id: 'did:kilt:1234567#key-2',
+   *       type: 'X25519Salsa20Poly1305Key2018',
+   *       controller: 'did:kilt:1234567',
+   *       publicKeyHex: '0x98765456...',
+   *     },
+   *   ],
+   *   service: [
+   *     {
+   *       type: 'KiltMessagingService',
+   *       serviceEndpoint: 'http://services.kilt.io/messaging',
+   *     },
+   *   ],
+   * };
    * PublicIdentity.fromDidDocument(didDocument);
    * ```
    */
@@ -95,9 +121,15 @@ export default class PublicIdentity implements IPublicIdentity {
    * @param identifier - The Decentralized Identifier to be resolved.
    * @param urlResolver  - A URL resolver, which is used to query the did document.
    * @returns A new [[PublicIdentity]] object.
-   * @example
-   * ```javascript
-   * PublicIdentity.resolveFromDid('did:kilt:1234567', urlResolver);
+   * @example ```javascript
+   * const urlResolver = {
+   *   resolve: (url: string) => {
+   *     return fetch(url)
+   *       .then(response => response.json());
+   *   },
+   * };
+   * const identifier = 'did:kilt:1234567';
+   * PublicIdentity.resolveFromDid(identifier, urlResolver);
    * ```
    */
   public static async resolveFromDid(
@@ -142,8 +174,7 @@ export default class PublicIdentity implements IPublicIdentity {
    * @param address - A public address.
    * @param boxPublicKeyAsHex - The public encryption key.
    * @param serviceAddress - The address of the service used to retreive the DID.
-   * @example
-   * ```javascript
+   * @example ```javascript
    * new PublicIdentity(address, boxPublicKeyAsHex, serviceAddress);
    * ```
    */

@@ -7,9 +7,8 @@
  * Dummy comment needed for correct doc display, do not remove
  */
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { EventRecord } from '@polkadot/types'
-import { MetadataModule } from '@polkadot/types/Metadata/v2/Metadata'
-import { EventIndex } from '@polkadot/types/type/Event'
+import { EventRecord } from '@polkadot/types/interfaces'
+import { ModuleMetadataV4 } from '@polkadot/types/Metadata/v4'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ExtrinsicError, errorForCode } from './ExtrinsicError'
 
@@ -45,7 +44,7 @@ export class ErrorHandler {
     })
   }
 
-  private moduleIndex: number = -1
+  private moduleIndex = -1
 
   /**
    * Get the extrinsic error from the transaction result.
@@ -58,7 +57,7 @@ export class ErrorHandler {
     const events: EventRecord[] = extrinsicResult.events || []
 
     const errorEvent = events.find((eventRecord: EventRecord) => {
-      const eventIndex: EventIndex = eventRecord.event.index
+      const eventIndex = eventRecord.event.index
       return (
         !eventRecord.phase.asApplyExtrinsic.isEmpty &&
         eventIndex[0] === this.moduleIndex
@@ -67,7 +66,7 @@ export class ErrorHandler {
     if (errorEvent) {
       const { data } = errorEvent.event
       const errorCode = data && !data.isEmpty ? data[0].toJSON() : null
-      if (errorCode) {
+      if (errorCode && typeof errorCode === 'number') {
         return errorForCode(errorCode)
       }
       log.warn(`error event doesn't have a valid error code: ${data}`)
@@ -83,12 +82,13 @@ export class ErrorHandler {
   private static async getErrorModuleIndex(
     apiPromise: ApiPromise
   ): Promise<number> {
-    // @ts-ignore
-    const modules: MetadataModule[] = await apiPromise.runtimeMetadata.metadata
-      .asV2.modules
-    const filtered: MetadataModule[] = modules.filter((mod: MetadataModule) => {
-      return !mod.events.isEmpty
-    })
+    const modules: ModuleMetadataV4[] = await apiPromise.runtimeMetadata.asV4
+      .modules
+    const filtered: ModuleMetadataV4[] = modules.filter(
+      (mod: ModuleMetadataV4) => {
+        return !mod.events.isEmpty
+      }
+    )
     return filtered
       .map(m => m.name.toString())
       .indexOf(ErrorHandler.ERROR_MODULE_NAME)

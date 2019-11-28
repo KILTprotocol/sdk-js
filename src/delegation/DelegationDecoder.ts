@@ -70,6 +70,7 @@ export function decodeDelegationNode(
 ): DelegationNode | null {
   const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
   if (json instanceof Array) {
+    if (typeof json[0] !== 'string' || typeof json[3] !== 'number') return null
     if (!verifyRoot(json[0])) {
       // Query returns 0x0 for rootId if queried for a root id instead of a node id.
       // A node without a root node is therefore interpreted as invalid.
