@@ -45,12 +45,12 @@ export default class Claim implements IClaim {
         throw Error('Claim not valid')
       }
     }
-    return new Claim(({
+    return new Claim({
       cTypeHash: ctypeInput.hash,
-      cTypeSchema: undefined,
+      cTypeSchema: null,
       contents: claimContents,
       owner: claimOwner,
-    } as any) as IClaim)
+    })
   }
 
   public cTypeHash: IClaim['cTypeHash']

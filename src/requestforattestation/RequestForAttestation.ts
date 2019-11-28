@@ -79,7 +79,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public static fromRequest(
     rfaInput: IRequestForAttestation
   ): RequestForAttestation {
-    return new RequestForAttestation(rfaInput, null)
+    return new RequestForAttestation(rfaInput)
   }
 
   /**
@@ -97,7 +97,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public static fromClaimAndIdentity(
     claimInput: IClaim,
     identity: Identity,
-    legitimationsInput: AttestedClaim[] | null,
+    legitimationsInput: AttestedClaim[],
     delegationIdInput: IDelegationBaseNode['id'] | null
   ): RequestForAttestation {
     if (claimInput.owner !== identity.address) {
@@ -106,38 +106,45 @@ export default class RequestForAttestation implements IRequestForAttestation {
     const claimOwnerGenerated = generateHash(claimInput.owner)
     const cTypeHashGenerated = generateHash(claimInput.cTypeHash)
     const claimHashTreeGenerated = generateHashTree(claimInput.contents)
+    const calculatedRootHash = RequestForAttestation.calculateRootHash(
+      claimOwnerGenerated,
+      cTypeHashGenerated,
+      claimHashTreeGenerated,
+      legitimationsInput,
+      delegationIdInput
+    )
     if (
       legitimationsInput &&
       Array.isArray(legitimationsInput) &&
       legitimationsInput.length
     ) {
-      return new RequestForAttestation(
-        {
-          claim: claimInput,
-          legitimations: legitimationsInput,
-          claimOwner: claimOwnerGenerated,
-          claimHashTree: claimHashTreeGenerated,
-          cTypeHash: cTypeHashGenerated,
-          rootHash: null,
-          claimerSignature: null,
-          delegationId: delegationIdInput,
-        },
-        identity
-      )
-    }
-    return new RequestForAttestation(
-      {
+      return new RequestForAttestation({
         claim: claimInput,
-        legitimations: [] as AttestedClaim[],
+        legitimations: legitimationsInput,
         claimOwner: claimOwnerGenerated,
         claimHashTree: claimHashTreeGenerated,
         cTypeHash: cTypeHashGenerated,
-        rootHash: null,
-        claimerSignature: null,
+        rootHash: calculatedRootHash,
+        claimerSignature: RequestForAttestation.sign(
+          identity,
+          calculatedRootHash
+        ),
         delegationId: delegationIdInput,
-      },
-      identity
-    )
+      })
+    }
+    return new RequestForAttestation({
+      claim: claimInput,
+      legitimations: [] as AttestedClaim[],
+      claimOwner: claimOwnerGenerated,
+      claimHashTree: claimHashTreeGenerated,
+      cTypeHash: cTypeHashGenerated,
+      rootHash: calculatedRootHash,
+      claimerSignature: RequestForAttestation.sign(
+        identity,
+        calculatedRootHash
+      ),
+      delegationId: delegationIdInput,
+    })
   }
 
   public claim: IClaim
@@ -160,60 +167,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * new RequestForAttestation(IRequest,alice);
    * ```
    */
-  public constructor(
-    requestInput: IRequestForAttestation,
-    identity: Identity | null
-  ) {
-    if (identity) {
-      if (requestInput.claim.owner !== identity.address) {
-        throw Error('Claim owner is not identity')
-      }
-      if (
-        !requestInput.claim ||
-        !requestInput.claimOwner ||
-        !requestInput.cTypeHash ||
-        !requestInput.claimHashTree
-      ) {
-        throw new Error(
-          `Property Not Provided while building RequestForAttestation with supplied Identity:\n
-          requestInput.claim:\n
-          ${requestInput.claim}\n
-          requestInput.claimOwner:\n
-          ${requestInput.claimOwner}\n
-          requestInput.cTypeHash:\n
-          ${requestInput.cTypeHash}\n
-          requestInput.claimHashTree:\n
-          ${requestInput.claimHashTree}`
-        )
-      }
-      this.legitimations = []
-      this.claim = requestInput.claim
-      this.claimOwner = requestInput.claimOwner
-      this.cTypeHash = requestInput.cTypeHash
-      if (
-        typeof requestInput.legitimations !== 'undefined' &&
-        Array.isArray(requestInput.legitimations) &&
-        requestInput.legitimations.length
-      ) {
-        this.legitimations = requestInput.legitimations
-          .map(legitimation =>
-            AttestedClaim.fromAttestedClaim(legitimation as IAttestedClaim)
-          )
-          .filter(c => c instanceof AttestedClaim)
-      }
-      this.delegationId = requestInput.delegationId
-      this.claimHashTree = requestInput.claimHashTree
-      this.rootHash = this.calculateRootHash()
-      this.claimerSignature = this.sign(identity)
-    } else if (requestInput.claimerSignature) {
-      if (
-        !requestInput.claim ||
-        !requestInput.claimOwner ||
-        !requestInput.claimHashTree ||
-        !requestInput.cTypeHash
-      ) {
-        throw new Error(
-          `Property Not Provided while building RequestForAttestation without Identity:\n
+  public constructor(requestInput: IRequestForAttestation) {
+    if (
+      !requestInput.claim ||
+      !requestInput.claimOwner ||
+      !requestInput.claimHashTree ||
+      !requestInput.cTypeHash
+    ) {
+      throw new Error(
+        `Property Not Provided while building RequestForAttestation without Identity:\n
           requestInput.claim:\n
           ${requestInput.claim}\n
           requestInput.claimOwner:\n
@@ -224,31 +186,30 @@ export default class RequestForAttestation implements IRequestForAttestation {
           ${requestInput.claimHashTree}\n
           requestInput.claimerSignature:\n
           ${requestInput.claimerSignature}`
-        )
-      }
-      this.legitimations = []
-      this.claim = requestInput.claim
-      this.claimOwner = requestInput.claimOwner
-      this.cTypeHash = requestInput.cTypeHash
-      if (
-        typeof requestInput.legitimations !== 'undefined' &&
-        Array.isArray(requestInput.legitimations) &&
-        requestInput.legitimations.length
-      ) {
-        this.legitimations = requestInput.legitimations
-          .map(legitimation =>
-            AttestedClaim.fromAttestedClaim(legitimation as IAttestedClaim)
-          )
-          .filter(c => c instanceof AttestedClaim)
-      }
-      this.delegationId = requestInput.delegationId
-      this.claimHashTree = requestInput.claimHashTree
-      this.rootHash = this.calculateRootHash()
-      this.claimerSignature = requestInput.claimerSignature
-      this.verifySignature()
-    } else {
-      throw Error('Identity and claimerSignature not provided')
+      )
     }
+    this.claim = requestInput.claim
+    this.claimOwner = requestInput.claimOwner
+    this.cTypeHash = requestInput.cTypeHash
+    if (
+      typeof requestInput.legitimations !== 'undefined' &&
+      Array.isArray(requestInput.legitimations) &&
+      requestInput.legitimations.length
+    ) {
+      this.legitimations = requestInput.legitimations
+        .map(legitimation =>
+          AttestedClaim.fromAttestedClaim(legitimation as IAttestedClaim)
+        )
+        .filter(c => c instanceof AttestedClaim)
+    } else {
+      this.legitimations = []
+    }
+    this.delegationId = requestInput.delegationId
+    this.claimHashTree = requestInput.claimHashTree
+    this.rootHash = requestInput.rootHash
+    this.claimerSignature = requestInput.claimerSignature
+    this.verifySignature()
+    this.verifyData()
   }
 
   /**
@@ -302,7 +263,16 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
   public verifyData(): boolean {
     // check claim hash
-    if (this.rootHash !== this.calculateRootHash()) {
+    if (
+      this.rootHash !==
+      RequestForAttestation.calculateRootHash(
+        this.claimOwner,
+        this.cTypeHash,
+        this.claimHashTree,
+        this.legitimations,
+        this.delegationId
+      )
+    ) {
       return false
     }
     // check claim owner hash
@@ -363,33 +333,51 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return verifyClaimerSignature(this)
   }
 
-  private getHashLeaves(): Uint8Array[] {
+  private static sign(identity: Identity, rootHash: Hash): string {
+    return identity.signStr(rootHash)
+  }
+
+  private static getHashLeaves(
+    claimOwner: NonceHash,
+    cTypeHash: NonceHash,
+    claimHashTree: object,
+    legitimations: AttestedClaim[],
+    delegationId: IDelegationBaseNode['id'] | null
+  ): Uint8Array[] {
     const result: Uint8Array[] = []
-    result.push(coToUInt8(this.claimOwner.hash))
-    result.push(coToUInt8(this.cTypeHash.hash))
-    Object.keys(this.claimHashTree).forEach(key => {
-      result.push(coToUInt8(this.claimHashTree[key].hash))
+    result.push(coToUInt8(claimOwner.hash))
+    result.push(coToUInt8(cTypeHash.hash))
+    Object.keys(claimHashTree).forEach(key => {
+      result.push(coToUInt8(claimHashTree[key].hash))
     })
-    if (this.legitimations) {
-      this.legitimations.forEach(legitimation => {
+    if (legitimations) {
+      legitimations.forEach(legitimation => {
         result.push(coToUInt8(legitimation.getHash()))
       })
     }
-    if (this.delegationId) {
-      result.push(coToUInt8(this.delegationId))
+    if (delegationId) {
+      result.push(coToUInt8(delegationId))
     }
 
     return result
   }
 
-  private calculateRootHash(): Hash {
-    const hashes: Uint8Array[] = this.getHashLeaves()
+  private static calculateRootHash(
+    claimOwner: NonceHash,
+    cTypeHash: NonceHash,
+    claimHashTree: object,
+    legitimations: AttestedClaim[],
+    delegationId: IDelegationBaseNode['id'] | null
+  ): Hash {
+    const hashes: Uint8Array[] = RequestForAttestation.getHashLeaves(
+      claimOwner,
+      cTypeHash,
+      claimHashTree,
+      legitimations,
+      delegationId
+    )
     const root: Uint8Array =
       hashes.length === 1 ? hashes[0] : getHashRoot(hashes)
     return u8aToHex(root)
-  }
-
-  private sign(identity: Identity): string {
-    return identity.signStr(this.rootHash)
   }
 }

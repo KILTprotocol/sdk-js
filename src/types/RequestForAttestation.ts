@@ -21,7 +21,7 @@ export default interface IRequestForAttestation {
   claimOwner: NonceHash
   claimHashTree: object
   cTypeHash: NonceHash
-  rootHash: Hash | null
-  claimerSignature: string | null
+  rootHash: Hash
+  claimerSignature: string
   delegationId: IDelegationBaseNode['id'] | null
 }

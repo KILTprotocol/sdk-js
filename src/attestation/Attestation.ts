@@ -92,7 +92,7 @@ export default class Attestation implements IAttestation {
     delegationIdInput: IDelegationBaseNode['id'] | null
   ) {
     return new Attestation({
-      claimHash: request.rootHash as string,
+      claimHash: request.rootHash,
       cTypeHash: request.claim.cTypeHash,
       owner: attesterPublicIdentity.address,
       delegationId: delegationIdInput,
