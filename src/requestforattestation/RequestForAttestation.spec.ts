@@ -41,7 +41,8 @@ function buildRequestForAttestation(
   return RequestForAttestation.fromClaimAndIdentity(
     claim,
     claimer,
-    legitimations
+    legitimations,
+    null
   )
 }
 
@@ -59,7 +60,8 @@ describe('RequestForAttestation', () => {
   // build attestation
   const legitimationAttestation: Attestation = Attestation.fromRequestAndPublicIdentity(
     legitimationRequest,
-    identityCharlie
+    identityCharlie,
+    null
   )
   // combine to attested claim
   const legitimation: AttestedClaim = AttestedClaim.fromRequestAndAttestation(

@@ -43,7 +43,8 @@ describe('Attestation', () => {
   const requestForAttestation: RequestForAttestation = RequestForAttestation.fromClaimAndIdentity(
     testClaim,
     identityBob,
-    []
+    [],
+    null
   )
 
   it('stores attestation', async () => {
@@ -57,7 +58,8 @@ describe('Attestation', () => {
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice,
+      null
     )
     expect(await attestation.verify()).toBeTruthy()
   })
@@ -89,7 +91,8 @@ describe('Attestation', () => {
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice,
+      null
     )
     expect(await attestation.verify()).toBeFalsy()
   })
