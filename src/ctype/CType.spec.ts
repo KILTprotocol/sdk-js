@@ -54,7 +54,11 @@ describe('CType', () => {
     name: 'Bob',
   }
 
-  const claim = new Claim(claimCtype, claimContents, identityAlice)
+  const claim = Claim.fromCTypeAndClaimContents(
+    claimCtype,
+    claimContents,
+    identityAlice.address
+  )
 
   it('stores ctypes', async () => {
     const testHash = Crypto.hashStr('1234')
@@ -83,7 +87,7 @@ describe('CType', () => {
       hash: '0x1234',
     }
     expect(() => {
-      return new CType(wrongRawCtype)
+      return CType.fromCType(wrongRawCtype)
     }).toThrow()
   })
 })

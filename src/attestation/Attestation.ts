@@ -13,45 +13,18 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
+import IRequestForAttestation from '../types/RequestForAttestation'
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import IAttestation from '../types/Attestation'
-import IRequestForAttestation from '../types/RequestForAttestation'
 import { revoke, query, store } from './Attestation.chain'
+import { IDelegationBaseNode } from '../types/Delegation'
+import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
 
 export default class Attestation implements IAttestation {
-  public claimHash: IAttestation['claimHash']
-  public cTypeHash: IAttestation['cTypeHash']
-  public owner: IAttestation['owner']
-  public revoked: IAttestation['revoked']
-  public delegationId: IAttestation['delegationId'] | null
-
-  /**
-   * Builds a new [[Attestation]] instance.
-   *
-   * @param requestForAttestation - A request for attestation, usually sent by a claimer.
-   * @param attester - The identity of the attester.
-   * @param revoked - Whether the attestation should be revoked.
-   * @example ```javascript
-   * // create an attestation, e.g. to store it on-chain
-   * new Attestation(requestForAttestation, attester);
-   * ```
-   */
-  public constructor(
-    requestForAttestation: IRequestForAttestation,
-    attester: Identity,
-    revoked = false
-  ) {
-    this.owner = attester.address
-    this.claimHash = requestForAttestation.hash
-    this.cTypeHash = requestForAttestation.claim.cType
-    this.delegationId = requestForAttestation.delegationId
-    this.revoked = revoked
-  }
-
   /**
    * [STATIC] [ASYNC] Queries the chain for a given attestation, by `claimHash`.
    *
@@ -90,16 +63,79 @@ export default class Attestation implements IAttestation {
    * [STATIC] Builds an instance of [[Attestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param obj - The base object from which to create the attestation.
+   * @param attestationInput - The base object from which to create the attestation.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create an Attestation object, so we can call methods on it (`serialized` is a serialized Attestation object )
-   * Attestation.fromObject(JSON.parse(serialized));
+   * Attestation.fromAttestation(JSON.parse(serialized));
    * ```
    */
-  public static fromObject(obj: IAttestation): Attestation {
-    const newAttestation: Attestation = Object.create(Attestation.prototype)
-    return Object.assign(newAttestation, obj)
+  public static fromAttestation(attestationInput: IAttestation): Attestation {
+    return new Attestation(attestationInput)
+  }
+
+  /**
+   * [STATIC] Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
+   *
+   * @param request - The base request for attestation.
+   * @param attesterPublicIdentity - The attesters public identity, used to attest the underlying claim.
+   * @param [delegationIdInput] - optional delegationId for which the attester attests the claim.
+   * @returns A new [[Attestation]] object.
+   * @example ```javascript
+   * // create a complete new attestation from the RequestForAttestation and all other needed properties
+   * Attestation.fromRequestAndPublicIdentity(request, attesterPublicIdentity, delegationId);
+   * ```
+   */
+  public static fromRequestAndPublicIdentity(
+    request: IRequestForAttestation,
+    attesterPublicIdentity: IPublicIdentity,
+    delegationIdInput: IDelegationBaseNode['id'] | null
+  ) {
+    return new Attestation({
+      claimHash: request.rootHash,
+      cTypeHash: request.claim.cTypeHash,
+      owner: attesterPublicIdentity.address,
+      delegationId: delegationIdInput,
+      revoked: false,
+    })
+  }
+
+  public claimHash: IAttestation['claimHash']
+  public cTypeHash: IAttestation['cTypeHash']
+  public owner: IAttestation['owner']
+  public revoked: IAttestation['revoked']
+  public delegationId: IAttestation['delegationId'] | null
+
+  /**
+   * Builds a new [[Attestation]] instance.
+   *
+   * @param attestationInput - The base object from which to create the attestation.
+   * @example ```javascript
+   * // create an attestation, e.g. to store it on-chain
+   * new Attestation(attestationInput);
+   * ```
+   */
+  public constructor(attestationInput: IAttestation) {
+    if (
+      !attestationInput.cTypeHash ||
+      !attestationInput.claimHash ||
+      !attestationInput.owner
+    ) {
+      throw new Error(
+        `Property Not Provided while building Attestation!\n
+        attestationInput.cTypeHash:\n
+        ${attestationInput.cTypeHash}\n
+        attestationInput.claimHash:\n
+        ${attestationInput.claimHash}\n
+        attestationInput.owner:\n
+        ${attestationInput.owner}`
+      )
+    }
+    this.owner = attestationInput.owner
+    this.claimHash = attestationInput.claimHash
+    this.cTypeHash = attestationInput.cTypeHash
+    this.delegationId = attestationInput.delegationId
+    this.revoked = attestationInput.revoked
   }
 
   /**
@@ -110,7 +146,7 @@ export default class Attestation implements IAttestation {
    * @example ```javascript
    * // Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * attestation.store(attester).then(() => {
-   *    // the attestation was successfully stored, so now we can for example create an AttestedClaim
+   * // the attestation was successfully stored, so now we can for example create an AttestedClaim
    * });
    * ```
    */

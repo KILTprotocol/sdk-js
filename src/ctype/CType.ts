@@ -19,28 +19,34 @@ import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
 
 export default class CType implements ICType {
-  public static fromObject(obj: ICType): CType {
-    const newObject = Object.create(CType.prototype)
-    return Object.assign(newObject, obj)
+  public static fromCType(cTypeInput: ICType): CType {
+    if (!CTypeUtils.verifySchema(cTypeInput, CTypeWrapperModel)) {
+      throw new Error('CType does not correspond to schema')
+    }
+    if (cTypeInput.hash) {
+      if (CTypeUtils.getHashForSchema(cTypeInput.schema) !== cTypeInput.hash) {
+        throw Error('provided and generated cType hash are not matching')
+      }
+    }
+    return new CType(cTypeInput)
   }
 
   public hash: ICType['hash']
-  public owner?: ICType['owner']
+  public owner: ICType['owner'] | null
   public schema: ICType['schema']
   public metadata: ICType['metadata']
 
-  public constructor(ctype: ICType) {
-    if (!CTypeUtils.verifySchema(ctype, CTypeWrapperModel)) {
-      throw new Error('CType does not correspond to schema')
+  public constructor(cTypeInput: ICType) {
+    this.schema = cTypeInput.schema
+    if (!cTypeInput.metadata) {
+      throw new Error(`No metadata provided:${cTypeInput.metadata}`)
     }
-    this.schema = ctype.schema
-    this.metadata = ctype.metadata
-    this.owner = ctype.owner
-
-    this.hash = CTypeUtils.getHashForSchema(this.schema)
-
-    if (ctype.hash && this.hash !== ctype.hash) {
-      throw Error('provided and generated cType hash are not the same')
+    this.metadata = cTypeInput.metadata
+    this.owner = cTypeInput.owner
+    if (!cTypeInput.hash) {
+      this.hash = CTypeUtils.getHashForSchema(this.schema)
+    } else {
+      this.hash = cTypeInput.hash
     }
   }
 
