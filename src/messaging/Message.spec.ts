@@ -104,17 +104,19 @@ describe('Messaging', () => {
   it('verify message sender is owner', () => {
     const requestAttestationBody: IRequestAttestationForClaim = {
       content: {
-        delegationId: null,
-        ctypeHash: { nonce: '0x12345678', hash: '0x12345678' },
-        claim: {
-          cType: '0x12345678',
-          owner: identityAlice.getPublicIdentity().address,
-          contents: {},
+        requestForAttestation: {
+          delegationId: null,
+          ctypeHash: { nonce: '0x12345678', hash: '0x12345678' },
+          claim: {
+            cType: '0x12345678',
+            owner: identityAlice.getPublicIdentity().address,
+            contents: {},
+          },
+          claimHashTree: {},
+          legitimations: [],
+          hash: '0x12345678',
+          claimerSignature: '0x12345678',
         },
-        claimHashTree: {},
-        legitimations: [],
-        hash: '0x12345678',
-        claimerSignature: '0x12345678',
       },
       type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
     }
@@ -138,10 +140,10 @@ describe('Messaging', () => {
 
     const submitAttestationBody: ISubmitAttestationForClaim = {
       content: {
-        request: requestAttestationBody.content,
+        request: requestAttestationBody.content.requestForAttestation,
         attestation: {
           delegationId: null,
-          claimHash: requestAttestationBody.content.hash,
+          claimHash: requestAttestationBody.content.requestForAttestation.hash,
           cTypeHash: '0x12345678',
           owner: identityBob.getPublicIdentity().address,
           revoked: false,

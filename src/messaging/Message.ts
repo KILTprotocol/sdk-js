@@ -34,7 +34,6 @@ export interface IMessage {
   receiverAddress: IPublicIdentity['address']
   senderAddress: IPublicIdentity['address']
   senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
-
   messageId?: string
   receivedAt?: number
   inReplyTo?: IMessage['messageId']
@@ -81,7 +80,8 @@ export default class Message implements IMessage {
         {
           const requestAttestation = message.body
           if (
-            requestAttestation.content.claim.owner !== message.senderAddress
+            requestAttestation.content.requestForAttestation.claim.owner !==
+            message.senderAddress
           ) {
             throw new Error('Sender is not owner of the claim')
           }
@@ -218,9 +218,18 @@ interface IMessageBodyBase {
   type: MessageBodyType
 }
 
+interface ICostBreakdown {
+  tax: number
+  net: number
+  gross: number
+}
+
 interface IQuote {
-  cost: number
+  cost: ICostBreakdown
+  currency: string
   acceptance: string // Signature of claimer
+  termsAndConditions: string
+  offerTimeframe: Date
 }
 
 export interface IRequestLegitimations extends IMessageBodyBase {
