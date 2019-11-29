@@ -42,3 +42,13 @@ export function verifyClaimStructure(claim: any, schema: any): boolean {
 export function getHashForSchema(schema: ICType['schema']): string {
   return Crypto.hashObjectAsStr(schema)
 }
+
+export function validateSchema(
+  schema: object,
+  validate: object
+): boolean | PromiseLike<any> {
+  const ajv = new Ajv()
+  ajv.addMetaSchema(CTypeModel)
+  const result = ajv.validate(schema, validate)
+  return result
+}

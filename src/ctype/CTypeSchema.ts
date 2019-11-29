@@ -146,3 +146,86 @@ export const CTypeWrapperModel = {
   },
   required: ['schema'],
 }
+
+export const offerSchema = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  $id: 'KILT:offer:OFFERHASH',
+  type: 'object',
+  title: 'Offer',
+  properties: {
+    CTypeHash: {
+      type: 'string',
+      title: 'The Ctypehash Schema',
+
+      pattern: '^(.*)$',
+    },
+    cost: {
+      type: 'object',
+      title: 'The Price Schema',
+      required: ['netto', 'brutto', 'tax'],
+      properties: {
+        netto: {
+          type: 'number',
+          title: 'The Netto Schema',
+        },
+        brutto: {
+          type: 'number',
+          title: 'The Brutto Schema',
+        },
+        tax: {
+          type: 'number',
+          title: 'The Tax Schema',
+        },
+      },
+    },
+    currency: {
+      type: 'string',
+      title: 'The currency Schema',
+
+      pattern: '^(.*)$',
+    },
+    TermsConditions: {
+      type: 'string',
+      title: 'The Terms&conditions Schema',
+
+      pattern: '^(.*)$',
+    },
+    prerequisite: {
+      type: 'array',
+      title: 'The Prerequisite Schema',
+      items: {
+        type: 'string',
+        title: 'The Items Schema',
+
+        pattern: '^(.*)$',
+      },
+    },
+    offerTimeFrame: {
+      type: 'string',
+      title: 'The Offertimeframe Schema',
+
+      pattern: '^(.*)$',
+    },
+  },
+  required: [
+    'CTypeHash',
+    'cost',
+    'currency',
+    'TermsConditions',
+    'prerequisite',
+    'offerTimeFrame',
+  ],
+}
+
+export const offerExample = {
+  CTypeHash: '0xa3890sd9f08sg8df9s..',
+  price: {
+    netto: 233,
+    brutto: 23.3,
+    tax: 23.3,
+  },
+  currency: 'Euro',
+  TermsConditions: 'Lots of these',
+  prerequisite: ['claim1Hash', 'claim2Hash'],
+  offerTimeFrame: '3 days',
+}
