@@ -35,7 +35,9 @@ export { default as ICType } from './types/CType'
 export { default as IClaim } from './types/Claim'
 export { default as IAttestedClaim } from './types/AttestedClaim'
 export { default as IAttestation } from './types/Attestation'
-export { default as IRequestForAttestation } from './types/RequestForAttestation'
+export {
+  default as IRequestForAttestation,
+} from './types/RequestForAttestation'
 export {
   IDelegationRootNode,
   IDelegationBaseNode,
