@@ -7,6 +7,7 @@
  */
 import Ajv from 'ajv'
 import { CTypeModel } from './CTypeSchema'
+import { QuoteSchema } from '../quote/OfferSchema'
 import ICType from '../types/CType'
 import Crypto from '../crypto'
 
@@ -43,12 +44,12 @@ export function getHashForSchema(schema: ICType['schema']): string {
   return Crypto.hashObjectAsStr(schema)
 }
 
-export function validateSchema(
+export function validateQuoteSchema(
   schema: object,
   validate: object
 ): boolean | PromiseLike<any> {
   const ajv = new Ajv()
-  ajv.addMetaSchema(CTypeModel)
+  ajv.addMetaSchema(QuoteSchema)
   const result = ajv.validate(schema, validate)
   return result
 }
