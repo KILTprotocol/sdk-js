@@ -104,6 +104,17 @@ describe('Messaging', () => {
   it('verify message sender is owner', () => {
     const requestAttestationBody: IRequestAttestationForClaim = {
       content: {
+        quote: {
+          cost: {
+            tax: 23.45,
+            net: 23.4,
+            gross: 23.5,
+          },
+          currency: 'Euro',
+          acceptance: '0x12345678', // Signature of claimer
+          termsAndConditions: 'www.PDFofExampleTerms&Conditions.com',
+          offerTimeframe: '23.12.2019',
+        },
         requestForAttestation: {
           delegationId: null,
           ctypeHash: { nonce: '0x12345678', hash: '0x12345678' },
@@ -117,6 +128,7 @@ describe('Messaging', () => {
           hash: '0x12345678',
           claimerSignature: '0x12345678',
         },
+        prerequisiteClaims: ['0x12345678', '0x12345678'],
       },
       type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
     }

@@ -229,7 +229,7 @@ interface IQuote {
   currency: string
   acceptance: string // Signature of claimer
   termsAndConditions: string
-  offerTimeframe: Date
+  offerTimeframe: string // Can we use the Date type? How can we do this??
 }
 
 export interface IRequestLegitimations extends IMessageBodyBase {
