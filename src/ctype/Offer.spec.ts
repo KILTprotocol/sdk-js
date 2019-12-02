@@ -1,5 +1,5 @@
 import { offerSchema } from './CTypeSchema'
-import { verifySchemaWithErrors } from './CTypeUtils'
+import { validateSchema } from './CTypeUtils'
 
 describe('Claim', () => {
   const fakeOfferExample = {
@@ -25,7 +25,7 @@ describe('Claim', () => {
   }
 
   it('checking the schema', () => {
-    expect(verifySchemaWithErrors(offerExample, offerSchema)).toBeTruthy()
-    expect(verifySchemaWithErrors(fakeOfferExample, offerSchema)).toBeFalsy()
+    expect(validateSchema(offerSchema, offerExample)).toBeTruthy()
+    expect(validateSchema(offerSchema, fakeOfferExample)).toBeFalsy()
   })
 })
