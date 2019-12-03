@@ -9,11 +9,6 @@ export const QuoteSchema = {
       title: 'The Attester ID Schema',
       pattern: '^(.*)$',
     },
-    claimerAcceptance: {
-      type: 'string',
-      title: 'The Claimer Acceptance Schema',
-      pattern: '^(.*)$',
-    },
     cTypeHash: {
       type: 'string',
       title: 'The Ctypehash Schema',
@@ -61,7 +56,6 @@ export const QuoteSchema = {
   },
   required: [
     'attesterID',
-    'claimerAcceptance',
     'cTypeHash',
     'cost',
     'currency',
@@ -71,7 +65,7 @@ export const QuoteSchema = {
   ],
 }
 
-export const submitTerms = {
+export const termsSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'KILT:offer:SUBMITTERMS',
   type: 'object',

@@ -7,7 +7,6 @@
  */
 import Ajv from 'ajv'
 import { CTypeModel } from './CTypeSchema'
-import { QuoteSchema } from '../quote/OfferSchema'
 import ICType from '../types/CType'
 import Crypto from '../crypto'
 
@@ -49,7 +48,6 @@ export function validateQuoteSchema(
   validate: object
 ): boolean | PromiseLike<any> {
   const ajv = new Ajv()
-  ajv.addMetaSchema(QuoteSchema)
   const result = ajv.validate(schema, validate)
   return result
 }

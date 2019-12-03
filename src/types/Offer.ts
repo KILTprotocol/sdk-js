@@ -1,6 +1,5 @@
-import { IPartialClaim } from '../messaging/Message'
 import IClaim from './Claim'
-import IAttestedClaim from './AttestedClaim'
+// import IAttestedClaim from './AttestedClaim'
 import DelegationNode from '../delegation/DelegationNode'
 
 /**
@@ -18,7 +17,6 @@ export interface ICostBreakdown {
 
 export interface IQuote {
   attesterID: string
-  claimerAcceptance: boolean
   cTypeHash: IClaim['cTypeHash']
   cost: ICostBreakdown
   currency: string
@@ -27,9 +25,9 @@ export interface IQuote {
   version: string
 }
 
-export interface ISubmitTerms {
-  claim: IPartialClaim
-  legitimations: IAttestedClaim[]
+export interface ITerms {
+  claim: string
+  legitimations: string[]
   delegationId?: DelegationNode['id']
   quote?: IQuote
   prerequisiteClaims?: Array<IClaim['cTypeHash']>

@@ -1,8 +1,7 @@
-import { IQuote } from '../types/Quote'
+import { IQuote } from '../types/Offer'
 
 export default class Quote implements IQuote {
   public attesterID: IQuote['attesterID']
-  public claimerAcceptance: IQuote['claimerAcceptance']
   public cTypeHash: IQuote['cTypeHash']
   public cost: IQuote['cost']
   public currency: IQuote['currency']
@@ -12,7 +11,6 @@ export default class Quote implements IQuote {
 
   public constructor(quoteInput: Quote) {
     this.attesterID = quoteInput.attesterID
-    this.claimerAcceptance = quoteInput.claimerAcceptance
     this.cTypeHash = quoteInput.cTypeHash
     this.cost = quoteInput.cost
     this.currency = quoteInput.currency
