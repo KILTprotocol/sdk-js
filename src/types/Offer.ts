@@ -27,7 +27,7 @@ export interface IQuote {
 
 export interface ITerms {
   claim: string
-  legitimations: string[]
+  legitimations: object[]
   delegationId?: DelegationNode['id']
   quote?: IQuote
   prerequisiteClaims?: Array<IClaim['cTypeHash']>

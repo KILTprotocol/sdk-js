@@ -1,6 +1,14 @@
 import { IQuote } from '../types/Offer'
+import { validateQuoteSchema } from '../ctype/CTypeUtils'
+import { QuoteSchema } from './OfferSchema'
 
 export default class Quote implements IQuote {
+  public static fromQuote(quoteInput: IQuote): Quote {
+    if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
+      throw new Error('Quote does not correspond to schema')
+    }
+    return new Quote(quoteInput)
+  }
   public attesterID: IQuote['attesterID']
   public cTypeHash: IQuote['cTypeHash']
   public cost: IQuote['cost']

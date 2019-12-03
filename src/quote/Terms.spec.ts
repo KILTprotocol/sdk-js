@@ -7,6 +7,8 @@ import AttestedClaim from '../attestedclaim/AttestedClaim'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
+import { validateTermsSchema } from '../ctype/CTypeUtils'
+import { TermsSchema } from './OfferSchema'
 
 function buildRequestForAttestation(
   claimer: Identity,
@@ -74,14 +76,14 @@ describe('Claim', () => {
 
   const terms = {
     claim: '0xa3890sd9f08sg8df9s',
-    legitimations: ['legitimationRequest', legitimationRequest],
-    quote: newQuote,
+    legitimations: [legitimationRequest],
     prerequisiteClaims: ['0xa3890sd9f08sg8df9s', '0xa3890sd9f08sg8df9s'],
   }
 
-  const submitTerm = new Terms(terms as ITerms)
-
   it('submitting terms to an Attester', () => {
-    expect(submitTerm).toEqual(terms)
+    const submitTerm = new Terms(terms as ITerms, newQuote)
+
+    expect(validateTermsSchema(TermsSchema, submitTerm)).toBeTruthy()
+    expect(validateTermsSchema(TermsSchema, newQuote)).toBeFalsy()
   })
 })

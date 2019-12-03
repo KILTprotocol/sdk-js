@@ -65,7 +65,7 @@ export const QuoteSchema = {
   ],
 }
 
-export const termsSchema = {
+export const TermsSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'KILT:offer:SUBMITTERMS',
   type: 'object',
@@ -80,7 +80,7 @@ export const termsSchema = {
       type: 'array',
       title: 'The legitimations Schema',
       items: {
-        type: 'string',
+        type: 'object',
         title: 'The Items Schema',
         pattern: '^(.*)$',
       },
