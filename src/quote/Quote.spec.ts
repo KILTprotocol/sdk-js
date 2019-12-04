@@ -1,20 +1,23 @@
 import QuoteSchema from './QuoteSchema'
 import { validateQuoteSchema } from '../ctype/CTypeUtils'
 import Quote from './Quote'
-import IQuote from '../types/Quote'
+import IQuote, { ICostBreakdown } from '../types/Quote'
 import Identity from '../identity/Identity'
 
 describe('Claim', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
-  const fakeOfferExample = {
+  const invalidCost = { gross: 233, tax: 23.3 } as ICostBreakdown
+  const invalidQuoteData = {
+    attesterID: identityAlice.address,
     cTypeHash: '0xa3890sd9f08sg8df9s..',
-    cost: { netto: 233, tax: 23.3 },
+    cost: invalidCost,
     currency: 'Euro',
+    offerTimeframe: '3 days',
     termsAndConditions: 'Lots of these',
-    offerTimeFrame: '3 days',
+    version: '1.1.3',
   }
 
-  const quoteData = {
+  const validQuoteData: IQuote = {
     attesterID: identityAlice.address,
     cTypeHash: '0xa3890sd9f08sg8df9s..',
     cost: {
@@ -27,14 +30,15 @@ describe('Claim', () => {
     termsAndConditions: 'Lots of these',
     version: '1.1.3',
   }
-  const quote = new Quote(quoteData as IQuote)
+  const validQuote = new Quote(validQuoteData)
+  const invalidQuote = new Quote(invalidQuoteData)
 
-  it('creating a new quote', () => {
-    expect(quote).toEqual(quoteData)
-    expect(quote.attesterID).toEqual(identityAlice.address)
+  it('tests created quote data against given data', () => {
+    expect(validQuote).toEqual(validQuoteData)
+    expect(validQuote.attesterID).toEqual(identityAlice.address)
   })
-  it('validating the offer schema', () => {
-    expect(validateQuoteSchema(QuoteSchema, quoteData)).toBeTruthy()
-    expect(validateQuoteSchema(QuoteSchema, fakeOfferExample)).toBeFalsy()
+  it('validates created quotes against QuoteSchema', () => {
+    expect(validateQuoteSchema(QuoteSchema, validQuote)).toBeTruthy()
+    expect(validateQuoteSchema(QuoteSchema, invalidQuote)).toBeFalsy()
   })
 })
