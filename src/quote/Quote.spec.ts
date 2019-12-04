@@ -1,7 +1,7 @@
-import { QuoteSchema } from './OfferSchema'
+import QuoteSchema from './QuoteSchema'
 import { validateQuoteSchema } from '../ctype/CTypeUtils'
 import Quote from './Quote'
-import { IQuote } from '../types/Offer'
+import IQuote from '../types/Quote'
 import Identity from '../identity/Identity'
 
 describe('Claim', () => {

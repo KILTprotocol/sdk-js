@@ -9,7 +9,7 @@ import Ajv from 'ajv'
 import { CTypeModel } from './CTypeSchema'
 import ICType from '../types/CType'
 import Crypto from '../crypto'
-import { TermsSchema, QuoteSchema } from '../quote/OfferSchema'
+import QuoteSchema from '../quote/QuoteSchema'
 
 export function verifySchemaWithErrors(
   model: any,
@@ -42,24 +42,6 @@ export function verifyClaimStructure(claim: any, schema: any): boolean {
 
 export function getHashForSchema(schema: ICType['schema']): string {
   return Crypto.hashObjectAsStr(schema)
-}
-
-export function validateTermsSchema(
-  schema: object,
-  validate: object,
-  messages?: string[]
-): boolean | PromiseLike<any> {
-  const ajv = new Ajv()
-  ajv.addMetaSchema(TermsSchema)
-  const result = ajv.validate(schema, validate)
-  if (!result && ajv.errors) {
-    if (messages) {
-      ajv.errors.forEach((error: any) => {
-        messages.push(error.message)
-      })
-    }
-  }
-  return !!result
 }
 
 export function validateQuoteSchema(

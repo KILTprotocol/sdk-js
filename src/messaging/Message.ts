@@ -23,6 +23,7 @@ import {
   IRequestForAttestation,
 } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
+import ITerms from '../types/Terms'
 
 /**
  * inReplyTo - should store the id of the parent message
@@ -34,7 +35,6 @@ export interface IMessage {
   receiverAddress: IPublicIdentity['address']
   senderAddress: IPublicIdentity['address']
   senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
-
   messageId?: string
   receivedAt?: number
   inReplyTo?: IMessage['messageId']
@@ -81,7 +81,8 @@ export default class Message implements IMessage {
         {
           const requestAttestation = message.body
           if (
-            requestAttestation.content.claim.owner !== message.senderAddress
+            requestAttestation.content.requestForAttestation.claim.owner !==
+            message.senderAddress
           ) {
             throw new Error('Sender is not owner of the claim')
           }
@@ -218,16 +219,26 @@ interface IMessageBodyBase {
   type: MessageBodyType
 }
 
+interface ICostBreakdown {
+  tax: number
+  net: number
+  gross: number
+}
+
+interface IQuote {
+  cost: ICostBreakdown
+  currency: string
+  acceptance: string // Signature of claimer
+  termsAndConditions: string
+  offerTimeframe: string // Can we use the Date type? How can we do this??
+}
+
 export interface IRequestLegitimations extends IMessageBodyBase {
   content: IPartialClaim
   type: MessageBodyType.REQUEST_LEGITIMATIONS
 }
-export interface ISubmitLegitimations extends IMessageBodyBase {
-  content: {
-    claim: IPartialClaim
-    legitimations: IAttestedClaim[]
-    delegationId: DelegationNode['id'] | null
-  }
+export interface ISubmitTerms extends IMessageBodyBase {
+  content: ITerms
   type: MessageBodyType.SUBMIT_LEGITIMATIONS
 }
 export interface IRejectLegitimations extends IMessageBodyBase {
@@ -240,7 +251,11 @@ export interface IRejectLegitimations extends IMessageBodyBase {
 }
 
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
-  content: IRequestForAttestation
+  content: {
+    requestForAttestation: IRequestForAttestation
+    quote?: IQuote
+    prerequisiteClaims?: Array<IClaim['cTypeHash']>
+  }
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
 }
 export interface ISubmitAttestationForClaim extends IMessageBodyBase {
@@ -315,7 +330,7 @@ export interface IPartialClaim extends Partial<IClaim> {
 
 export type MessageBody =
   | IRequestLegitimations
-  | ISubmitLegitimations
+  | ISubmitTerms
   | IRejectLegitimations
   //
   | IRequestAttestationForClaim

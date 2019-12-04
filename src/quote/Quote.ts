@@ -1,6 +1,6 @@
-import { IQuote } from '../types/Offer'
+import IQuote from '../types/Quote'
 import { validateQuoteSchema } from '../ctype/CTypeUtils'
-import { QuoteSchema } from './OfferSchema'
+import QuoteSchema from './QuoteSchema'
 
 export default class Quote implements IQuote {
   public static fromQuote(quoteInput: IQuote): Quote {
@@ -9,6 +9,7 @@ export default class Quote implements IQuote {
     }
     return new Quote(quoteInput)
   }
+
   public attesterID: IQuote['attesterID']
   public cTypeHash: IQuote['cTypeHash']
   public cost: IQuote['cost']

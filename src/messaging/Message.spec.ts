@@ -119,7 +119,21 @@ describe('Messaging', () => {
     } as IRequestForAttestation
 
     const requestAttestationBody: IRequestAttestationForClaim = {
-      content,
+      content: {
+        requestForAttestation: content,
+        quote: {
+          cost: {
+            tax: 23.45,
+            net: 23.4,
+            gross: 23.5,
+          },
+          currency: 'Euro',
+          acceptance: '0x12345678', // Signature of claimer
+          termsAndConditions: 'www.PDFofExampleTerms&Conditions.com',
+          offerTimeframe: '23.12.2019',
+        },
+        prerequisiteClaims: ['0x12345678', '0x12345678'],
+      },
       type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
     }
 
@@ -142,12 +156,13 @@ describe('Messaging', () => {
 
     const submitAttestationBody: ISubmitAttestationForClaim = {
       content: {
-        request: requestAttestationBody.content,
+        request: requestAttestationBody.content.requestForAttestation,
         attestation: {
-          claimHash: requestAttestationBody.content.rootHash,
+          delegationId: null,
+          claimHash:
+            requestAttestationBody.content.requestForAttestation.rootHash,
           cTypeHash: '0x12345678',
           owner: identityBob.getPublicIdentity().address,
-          delegationId: null,
           revoked: false,
         },
       },

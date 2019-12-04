@@ -1,4 +1,4 @@
-export const QuoteSchema = {
+const QuoteSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'KILT:offer:QUOTEHASH',
   type: 'object',
@@ -65,41 +65,4 @@ export const QuoteSchema = {
   ],
 }
 
-export const TermsSchema = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
-  $id: 'KILT:offer:SUBMITTERMS',
-  type: 'object',
-  title: 'Offer',
-  properties: {
-    claim: {
-      type: 'string',
-      title: 'The claim Schema',
-      pattern: '^(.*)$',
-    },
-    legitimations: {
-      type: 'array',
-      title: 'The legitimations Schema',
-      items: {
-        type: 'object',
-        title: 'The Items Schema',
-        pattern: '^(.*)$',
-      },
-    },
-    delegationId: {
-      type: 'string',
-      title: 'The delegationId Schema',
-      pattern: '^(.*)$',
-    },
-    quote: QuoteSchema.properties,
-    prerequisiteClaims: {
-      type: 'array',
-      title: 'The prerequisiteClaims Schema',
-      items: {
-        type: 'string',
-        title: 'The Items Schema',
-        pattern: '^(.*)$',
-      },
-    },
-  },
-  required: ['claim', 'legitimations'],
-}
+export default QuoteSchema

@@ -1,7 +1,3 @@
-import IClaim from './Claim'
-// import IAttestedClaim from './AttestedClaim'
-import DelegationNode from '../delegation/DelegationNode'
-
 /**
  * @module TypeInterfaces/Offer
  */
@@ -9,13 +5,15 @@ import DelegationNode from '../delegation/DelegationNode'
  * Dummy comment needed for correct doc display, do not remove.
  */
 
+import IClaim from './Claim'
+
 export interface ICostBreakdown {
   tax: number
   net: number
   gross: number
 }
 
-export interface IQuote {
+export default interface IQuote {
   attesterID: string
   cTypeHash: IClaim['cTypeHash']
   cost: ICostBreakdown
@@ -23,12 +21,4 @@ export interface IQuote {
   offerTimeframe: string
   termsAndConditions: string
   version: string
-}
-
-export interface ITerms {
-  claim: string
-  legitimations: object[]
-  delegationId?: DelegationNode['id']
-  quote?: IQuote
-  prerequisiteClaims?: Array<IClaim['cTypeHash']>
 }
