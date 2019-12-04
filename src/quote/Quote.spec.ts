@@ -15,7 +15,7 @@ describe('Claim', () => {
   }
 
   const quoteData = {
-    attesterID: identityAlice.address,
+    attesterAddress: identityAlice.address,
     cTypeHash: '0xa3890sd9f08sg8df9s..',
     cost: {
       gross: 233,
@@ -31,7 +31,7 @@ describe('Claim', () => {
 
   it('creating a new quote', () => {
     expect(quote).toEqual(quoteData)
-    expect(quote.attesterID).toEqual(identityAlice.address)
+    expect(quote.attesterAddress).toEqual(identityAlice.address)
   })
   it('validating the offer schema', () => {
     expect(validateQuoteSchema(QuoteSchema, quoteData)).toBeTruthy()

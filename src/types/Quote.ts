@@ -6,6 +6,7 @@
  */
 
 import IClaim from './Claim'
+import PublicIdentity from './PublicIdentity'
 
 export interface ICostBreakdown {
   tax: number
@@ -14,7 +15,7 @@ export interface ICostBreakdown {
 }
 
 export default interface IQuote {
-  attesterID: string
+  attesterAddress: PublicIdentity['address']
   cTypeHash: IClaim['cTypeHash']
   cost: ICostBreakdown
   currency: string
