@@ -10,7 +10,7 @@ export default class Quote implements IQuote {
     return new Quote(quoteInput)
   }
 
-  public attesterID: IQuote['attesterID']
+  public attesterAddress: IQuote['attesterAddress']
   public cTypeHash: IQuote['cTypeHash']
   public cost: IQuote['cost']
   public currency: IQuote['currency']
@@ -19,7 +19,7 @@ export default class Quote implements IQuote {
   public version: IQuote['version']
 
   public constructor(quoteInput: Quote) {
-    this.attesterID = quoteInput.attesterID
+    this.attesterAddress = quoteInput.attesterAddress
     this.cTypeHash = quoteInput.cTypeHash
     this.cost = quoteInput.cost
     this.currency = quoteInput.currency

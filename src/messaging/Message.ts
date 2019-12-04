@@ -57,7 +57,7 @@ export interface IEncryptedMessage {
 
 export enum MessageBodyType {
   REQUEST_LEGITIMATIONS = 'request-legitimations',
-  SUBMIT_LEGITIMATIONS = 'submit-legitimations',
+  SUBMIT_TERMS = 'submit-terms',
   REJECT_LEGITIMATIONS = 'reject-legitimations',
 
   REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
@@ -226,7 +226,7 @@ export interface IRequestLegitimations extends IMessageBodyBase {
 }
 export interface ISubmitTerms extends IMessageBodyBase {
   content: ITerms
-  type: MessageBodyType.SUBMIT_LEGITIMATIONS
+  type: MessageBodyType.SUBMIT_TERMS
 }
 export interface IRejectLegitimations extends IMessageBodyBase {
   content: {

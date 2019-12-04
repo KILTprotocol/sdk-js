@@ -8,7 +8,7 @@ describe('Claim', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
   const invalidCost = { gross: 233, tax: 23.3 } as ICostBreakdown
   const invalidQuoteData = {
-    attesterID: identityAlice.address,
+    attesterAddress: identityAlice.address,
     cTypeHash: '0xa3890sd9f08sg8df9s..',
     cost: invalidCost,
     currency: 'Euro',
@@ -18,7 +18,7 @@ describe('Claim', () => {
   }
 
   const validQuoteData: IQuote = {
-    attesterID: identityAlice.address,
+    attesterAddress: identityAlice.address,
     cTypeHash: '0xa3890sd9f08sg8df9s..',
     cost: {
       gross: 233,
@@ -35,7 +35,7 @@ describe('Claim', () => {
 
   it('tests created quote data against given data', () => {
     expect(validQuote).toEqual(validQuoteData)
-    expect(validQuote.attesterID).toEqual(identityAlice.address)
+    expect(validQuote.attesterAddress).toEqual(identityAlice.address)
   })
   it('validates created quotes against QuoteSchema', () => {
     expect(validateQuoteSchema(QuoteSchema, validQuote)).toBeTruthy()

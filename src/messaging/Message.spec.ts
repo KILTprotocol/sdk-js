@@ -121,7 +121,7 @@ describe('Messaging', () => {
     } as IRequestForAttestation
 
     const quoteData = new Quote({
-      attesterID: identityAlice.address,
+      attesterAddress: identityAlice.address,
       cTypeHash: '0x123474574373456737...',
       cost: {
         tax: 23.45,
