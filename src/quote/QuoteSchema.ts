@@ -1,6 +1,6 @@
 const QuoteSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  $id: 'KILT:offer:QUOTEHASH',
+  $id: 'KILT:quote:QUOTEHASH',
   type: 'object',
   title: 'Quote',
   properties: {
@@ -43,9 +43,9 @@ const QuoteSchema = {
       title: 'The Terms&conditions Schema',
       pattern: '^(.*)$',
     },
-    offerTimeframe: {
+    quoteTimeframe: {
       type: 'string',
-      title: 'The Offertimeframe Schema',
+      title: 'The quotetimeframe Schema',
       pattern: '^(.*)$',
     },
     version: {
@@ -60,7 +60,7 @@ const QuoteSchema = {
     'cost',
     'currency',
     'termsAndConditions',
-    'offerTimeframe',
+    'quoteTimeframe',
     'version',
   ],
 }

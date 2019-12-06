@@ -1,5 +1,5 @@
 /**
- * @module TypeInterfaces/Offer
+ * @module TypeInterfaces/quote
  */
 /**
  * Dummy comment needed for correct doc display, do not remove.
@@ -19,7 +19,7 @@ export default interface IQuote {
   cTypeHash: IClaim['cTypeHash']
   cost: ICostBreakdown
   currency: string
-  offerTimeframe: string
+  quoteTimeframe: string
   termsAndConditions: string
   version: string
 }

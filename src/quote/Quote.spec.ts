@@ -12,7 +12,7 @@ describe('Claim', () => {
     cTypeHash: '0xa3890sd9f08sg8df9s..',
     cost: invalidCost,
     currency: 'Euro',
-    offerTimeframe: '3 days',
+    quoteTimeframe: '3 days',
     termsAndConditions: 'Lots of these',
     version: '1.1.3',
   }
@@ -26,7 +26,7 @@ describe('Claim', () => {
       tax: 23.3,
     },
     currency: 'Euro',
-    offerTimeframe: '3 days',
+    quoteTimeframe: '3 days',
     termsAndConditions: 'Lots of these',
     version: '1.1.3',
   }

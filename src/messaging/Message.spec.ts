@@ -130,7 +130,7 @@ describe('Messaging', () => {
       },
       currency: 'Euro',
       termsAndConditions: 'www.PDFofExampleTerms&Conditions.com',
-      offerTimeframe: '23.12.2019',
+      quoteTimeframe: '23.12.2019',
       version: 'bla',
     })
 
