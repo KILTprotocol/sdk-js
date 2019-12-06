@@ -14,7 +14,7 @@ describe('Claim', () => {
     offerTimeFrame: '3 days',
   }
 
-  const quoteData = {
+  const quoteData: IQuote = {
     attesterAddress: identityAlice.address,
     cTypeHash: '0xa3890sd9f08sg8df9s..',
     cost: {
@@ -27,7 +27,7 @@ describe('Claim', () => {
     termsAndConditions: 'Lots of these',
     version: '1.1.3',
   }
-  const quote = new Quote(quoteData as IQuote)
+  const quote = new Quote(quoteData)
 
   it('creating a new quote', () => {
     expect(quote).toEqual(quoteData)
