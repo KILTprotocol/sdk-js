@@ -24,6 +24,7 @@ import {
 } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
 import ITerms from '../types/Terms'
+import IQuote from '../types/Quote'
 
 /**
  * inReplyTo - should store the id of the parent message
@@ -217,20 +218,6 @@ export default class Message implements IMessage {
 interface IMessageBodyBase {
   content: any
   type: MessageBodyType
-}
-
-interface ICostBreakdown {
-  tax: number
-  net: number
-  gross: number
-}
-
-interface IQuote {
-  cost: ICostBreakdown
-  currency: string
-  acceptance: string // Signature of claimer
-  termsAndConditions: string
-  offerTimeframe: string // Can we use the Date type? How can we do this??
 }
 
 export interface IRequestLegitimations extends IMessageBodyBase {
