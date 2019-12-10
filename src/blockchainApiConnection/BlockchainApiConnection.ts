@@ -16,7 +16,7 @@ import Blockchain, { IBlockchainApi } from '../blockchain/Blockchain'
 
 export const DEFAULT_WS_ADDRESS = 'ws://127.0.0.1:9944'
 
-let instance: Promise<IBlockchainApi>
+let instance: Promise<IBlockchainApi> | null
 
 const CUSTOM_TYPES: RegistryTypes = {
   DelegationNodeId: 'Hash',
@@ -44,6 +44,10 @@ export async function getCached(
     instance = buildConnection(host)
   }
   return instance
+}
+
+export function clearCache() {
+  instance = null
 }
 
 export default getCached
