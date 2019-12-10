@@ -78,7 +78,9 @@ describe('DID', () => {
       Identity.buildFromURI('//Alice'),
       'http://myDID.kilt.io'
     )
-    expect(did.getDefaultDocument('http://myDID.kilt.io/service')).toEqual({
+    expect(
+      did.createDefaultDidDocument('http://myDID.kilt.io/service')
+    ).toEqual({
       '@context': 'https://w3id.org/did/v1',
       authentication: {
         publicKey: [
