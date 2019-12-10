@@ -69,7 +69,6 @@ export interface IDidDocumentUnsigned
     Partial<IDidDocumentPpties> {}
 
 export interface IDidDocumentSigned extends IDidDocumentUnsigned {
-  didDocumentHash: string
   signature: string
 }
 
@@ -229,7 +228,6 @@ export default class Did implements IDid {
     const didDocumentHash = Crypto.hashObjectAsStr(unsignedDidDoc)
     return {
       ...unsignedDidDoc,
-      didDocumentHash,
       signature: Crypto.signStr(didDocumentHash, signKeyringPair),
     }
   }
@@ -260,7 +258,6 @@ export default class Did implements IDid {
     const didDocumentHash = Crypto.hashObjectAsStr(unsignedDidDoc)
     return {
       ...unsignedDidDoc,
-      didDocumentHash,
       signature: Crypto.signStr(didDocumentHash, signKeyringPair),
     }
   }
@@ -285,7 +282,6 @@ export default class Did implements IDid {
     const didDocumentHash = Crypto.hashObjectAsStr(unsignedDidDoc)
     return {
       ...unsignedDidDoc,
-      didDocumentHash,
       signature: identity.signStr(didDocumentHash),
     }
   }
@@ -301,18 +297,11 @@ export default class Did implements IDid {
     didDocument: IDidDocumentSigned,
     address: string
   ): boolean {
-    if (
-      !didDocument ||
-      !didDocument.didDocumentHash ||
-      !didDocument.signature ||
-      !address
-    ) {
+    if (!didDocument || !didDocument.signature || !address) {
       throw new Error(
         `Missing data for verification (either didDocument, didDocumentHash, signature, or address is missing):\n
           didDocument:\n
           ${didDocument}\n
-          didDocumentHash:\n
-          ${didDocument.didDocumentHash}\n
           signature:\n
           ${didDocument.signature}\n
           address:\n
@@ -322,11 +311,15 @@ export default class Did implements IDid {
     }
     if (getAddressFromIdentifier(didDocument.id) !== address) {
       throw new Error(
-        `The input address ${didDocument.id} doesn't match the DID Document's address ${address}`
+        `The input address ${getAddressFromIdentifier(
+          didDocument.id
+        )} doesn't match the DID Document's address ${address}`
       )
     }
+    const unsignedDidDocument = { ...didDocument }
+    delete unsignedDidDocument.signature
     return Crypto.verify(
-      didDocument.didDocumentHash,
+      Crypto.hashObjectAsStr(unsignedDidDocument),
       didDocument.signature,
       address
     )
