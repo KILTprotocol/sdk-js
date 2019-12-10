@@ -35,7 +35,7 @@ export const CONTEXT = 'https://w3id.org/did/v1'
 
 export interface IDid {
   /**
-   * The DID identifier under which it is store on chain.
+   * The DID identifier under which this DID object is stored on-chain.
    */
   identifier: string
   /**
@@ -47,7 +47,7 @@ export interface IDid {
    */
   publicSigningKey: string
   /**
-   * The document store reference.
+   * The document store reference, usually a URL.
    */
   documentStore: string | null
 }
@@ -74,78 +74,6 @@ export interface IDidDocumentSigned extends IDidDocumentUnsigned {
 }
 
 export default class Did implements IDid {
-  /**
-   * Queries the [Did] from chain using the [identifier].
-   *
-   * @param identifier the DID identifier
-   * @returns promise containing the [[Did]] or [null]
-   */
-  public static queryByIdentifier(identifier: string): Promise<IDid | null> {
-    return queryByIdentifier(identifier)
-  }
-
-  /**
-   * Gets the complete KILT DID from an [address] (in KILT, the method-specific ID is an address). Reverse of [[getAddressFromIdentifier]].
-   *
-   * @param address An address, e.g. "5CtPYoDuQQF...".
-   * @returns The associated KILT DID, e.g. "did:kilt:5CtPYoDuQQF...".
-   */
-  public static getIdentifierFromAddress(
-    address: IPublicIdentity['address']
-  ): IDid['identifier'] {
-    return getIdentifierFromAddress(address)
-  }
-
-  /**
-   * Gets the [address] from a complete KILT DID (in KILT, the method-specific ID is an address). Reverse of [[getIdentifierFromAddress]].
-   *
-   * @param identifier A KILT DID, e.g. "did:kilt:5CtPYoDuQQF...".
-   * @returns The associated address, e.g. "5CtPYoDuQQF...".
-   */
-  public static getAddressFromIdentifier(
-    identifier: IDid['identifier']
-  ): IPublicIdentity['address'] {
-    return getAddressFromIdentifier(identifier)
-  }
-
-  /**
-   * Queries the [Did] from chain using the [address]
-   *
-   * @param address the DIDs address
-   * @returns promise containing the [[Did]] or [null]
-   */
-  public static queryByAddress(address: string): Promise<IDid | null> {
-    return queryByAddress(address)
-  }
-
-  /**
-   * Removes the [[Did]] attached to [identity] from chain
-   *
-   * @param identity the identity for which to delete the [[Did]]
-   * @returns promise containing the [[TxStatus]]
-   */
-  public static async remove(identity: Identity): Promise<TxStatus> {
-    log.debug(`Create tx for 'did.remove'`)
-    return remove(identity)
-  }
-
-  /**
-   * Builds a [[Did]] from the given [identity].
-   *
-   * @param identity the identity used to build the [[Did]]
-   * @param documentStore optional document store reference
-   * @returns the [[Did]]
-   */
-  public static fromIdentity(identity: Identity, documentStore?: string): Did {
-    const identifier = getIdentifierFromAddress(identity.address)
-    return new Did(
-      identifier,
-      identity.boxPublicKeyAsHex,
-      identity.signPublicKeyAsHex,
-      documentStore
-    )
-  }
-
   public readonly identifier: string
   public readonly publicBoxKey: string
   public readonly publicSigningKey: string
@@ -164,10 +92,82 @@ export default class Did implements IDid {
   }
 
   /**
-   * Stores the [[Did]] on chain
+   * Gets the complete KILT DID from an [address] (in KILT, the method-specific ID is an address). Reverse of [[getAddressFromIdentifier]].
    *
-   * @param identity the identity used to store the [[Did]] on chain
-   * @returns promise containing the [[TxStatus]]
+   * @param address An address, e.g. "5CtPYoDuQQF...".
+   * @returns The associated KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
+   */
+  public static getIdentifierFromAddress(
+    address: IPublicIdentity['address']
+  ): IDid['identifier'] {
+    return getIdentifierFromAddress(address)
+  }
+
+  /**
+   * Gets the [address] from a complete KILT DID (in KILT, the method-specific ID is an address). Reverse of [[getIdentifierFromAddress]].
+   *
+   * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
+   * @returns The associated address, e.g. "5CtPYoDuQQF...".
+   */
+  public static getAddressFromIdentifier(
+    identifier: IDid['identifier']
+  ): IPublicIdentity['address'] {
+    return getAddressFromIdentifier(identifier)
+  }
+
+  /**
+   * Queries the [[Did]] object from the chain using the [identifier].
+   *
+   * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
+   * @returns A promise containing the [[Did]] or [null].
+   */
+  public static queryByIdentifier(identifier: string): Promise<IDid | null> {
+    return queryByIdentifier(identifier)
+  }
+
+  /**
+   * Queries the [[Did]] object from the chain using the [address].
+   *
+   * @param address The address associated to this [[Did]].
+   * @returns A promise containing the [[Did]] or [null].
+   */
+  public static queryByAddress(address: string): Promise<IDid | null> {
+    return queryByAddress(address)
+  }
+
+  /**
+   * Removes the [[Did]] object attached to a given [identity] from the chain.
+   *
+   * @param identity The identity for which to delete the [[Did]].
+   * @returns A promise containing the [[TxStatus]] (transaction status).
+   */
+  public static async remove(identity: Identity): Promise<TxStatus> {
+    log.debug(`Create tx for 'did.remove'`)
+    return remove(identity)
+  }
+
+  /**
+   * Builds a [[Did]] object from the given [identity].
+   *
+   * @param identity The identity used to build the [[Did]] object.
+   * @param documentStore The storage location of the associated DID Document; usally a URL.
+   * @returns The [[Did]] object.
+   */
+  public static fromIdentity(identity: Identity, documentStore?: string): Did {
+    const identifier = getIdentifierFromAddress(identity.address)
+    return new Did(
+      identifier,
+      identity.boxPublicKeyAsHex,
+      identity.signPublicKeyAsHex,
+      documentStore
+    )
+  }
+
+  /**
+   * Stores the [[Did]] object on-chain.
+   *
+   * @param identity The identity used to store the [[Did]] object on-chain.
+   * @returns A promise containing the [[TxStatus]] (transaction status).
    */
   public async store(identity: Identity): Promise<TxStatus> {
     log.debug(`Create tx for 'did.add'`)
@@ -175,10 +175,10 @@ export default class Did implements IDid {
   }
 
   /**
-   * Builds the default DID document from this [[Did]] object.
+   * Builds the default DID Document from this [[Did]] object.
    *
-   * @param kiltServiceEndpoint - URI pointing to the service endpoint
-   * @returns The default DID document
+   * @param kiltServiceEndpoint A URI pointing to the service endpoint.
+   * @returns The default DID Document.
    */
   public createDefaultDidDocument(
     kiltServiceEndpoint?: string
@@ -192,10 +192,13 @@ export default class Did implements IDid {
   }
 
   /**
-   * Builds the default DID document from this [[Did]] object.
+   * [STATIC] Builds a default DID Document.
    *
-   * @param kiltServiceEndpoint - URI pointing to the service endpoint
-   * @returns The default DID document
+   * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
+   * @param publicBoxKey The public encryption key of the DID subject of this KILT DID identifier.
+   * @param publicSigningKey The public signing key of the DID subject of this KILT DID identifier.
+   * @param kiltServiceEndpoint A URI pointing to the service endpoint.
+   * @returns The default DID Document.
    */
   public static createDefaultDidDocument(
     identifier: string,
@@ -211,6 +214,13 @@ export default class Did implements IDid {
     )
   }
 
+  /**
+   * Builds the signed default DID Document from this [[Did]] object.
+   *
+   * @param signKeyringPair A signing keyring pair.
+   * @param kiltServiceEndpoint A URI pointing to the service endpoint.
+   * @returns The default DID Document.
+   */
   public createDefaultDidDocumentSigned(
     signKeyringPair: KeyringPair,
     kiltServiceEndpoint?: string
@@ -224,6 +234,16 @@ export default class Did implements IDid {
     }
   }
 
+  /**
+   * [STATIC] Builds a signed default DID Document.
+   *
+   * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
+   * @param publicBoxKey The public encryption key of the DID subject of this KILT DID identifier.
+   * @param publicSigningKey The public signing key of the DID subject of this KILT DID identifier.
+   * @param signKeyringPair A signing keyring pair.
+   * @param kiltServiceEndpoint A URI pointing to the service endpoint.
+   * @returns The signed default DID Document.
+   */
   public static createDefaultDidDocumentSigned(
     identifier: string,
     publicBoxKey: string,
@@ -245,6 +265,13 @@ export default class Did implements IDid {
     }
   }
 
+  /**
+   * [STATIC] Builds a signed default DID Document from a KILT identity; convenience method.
+   *
+   * @param identity The [[Identity]], DID subject for this DID Document.
+   * @param kiltServiceEndpoint A URI pointing to the service endpoint.
+   * @returns The signed default DID Document.
+   */
   public static createDefaultDidDocumentSignedFromIdentity(
     identity: Identity,
     kiltServiceEndpoint?: string
@@ -263,6 +290,13 @@ export default class Did implements IDid {
     }
   }
 
+  /**
+   * [STATIC] Verifies the signature of a DID Document, to check whether the data has been tampered with.
+   *
+   * @param didDocument A signed DID Document.
+   * @param address The address to use for signature verification.
+   * @returns Whether the DID Document's signature is valid.
+   */
   public static verifyDidDocumentSignature(
     didDocument: IDidDocumentSigned,
     address: string
