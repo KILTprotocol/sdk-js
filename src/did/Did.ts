@@ -233,36 +233,6 @@ export default class Did implements IDid {
   }
 
   /**
-   * [STATIC] Builds a signed default DID Document.
-   *
-   * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
-   * @param publicBoxKey The public encryption key of the DID subject of this KILT DID identifier.
-   * @param publicSigningKey The public signing key of the DID subject of this KILT DID identifier.
-   * @param signKeyringPair A signing keyring pair.
-   * @param kiltServiceEndpoint A URI pointing to the service endpoint.
-   * @returns The signed default DID Document.
-   */
-  public static createDefaultDidDocumentSigned(
-    identifier: string,
-    publicBoxKey: string,
-    publicSigningKey: string,
-    signKeyringPair: KeyringPair,
-    kiltServiceEndpoint?: string
-  ): IDidDocumentSigned {
-    const unsignedDidDoc = createDefaultDidDocument(
-      identifier,
-      publicBoxKey,
-      publicSigningKey,
-      kiltServiceEndpoint
-    )
-    const didDocumentHash = Crypto.hashObjectAsStr(unsignedDidDoc)
-    return {
-      ...unsignedDidDoc,
-      signature: Crypto.signStr(didDocumentHash, signKeyringPair),
-    }
-  }
-
-  /**
    * [STATIC] Builds a signed default DID Document from a KILT identity; convenience method.
    *
    * @param identity The [[Identity]], DID subject for this DID Document.
