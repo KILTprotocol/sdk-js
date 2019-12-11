@@ -13,13 +13,13 @@
  * Dummy comment needed for correct doc display, do not remove.
  */
 
+import Ajv from 'ajv'
 import IQuote from '../types/Quote'
-import { validateQuoteSchema } from '../ctype/CTypeUtils'
 import QuoteSchema from './QuoteSchema'
 
 export default class Quote implements IQuote {
   public static fromQuote(quoteInput: IQuote): Quote {
-    if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
+    if (!Quote.validateQuoteSchema(QuoteSchema, quoteInput)) {
       throw new Error('Quote does not correspond to schema')
     }
     return new Quote(quoteInput)
@@ -41,5 +41,23 @@ export default class Quote implements IQuote {
     this.quoteTimeframe = quoteInput.quoteTimeframe
     this.termsAndConditions = quoteInput.termsAndConditions
     this.version = quoteInput.version
+  }
+
+  public static validateQuoteSchema(
+    schema: object,
+    validate: object,
+    messages?: string[]
+  ): boolean | PromiseLike<any> {
+    const ajv = new Ajv()
+    ajv.addMetaSchema(QuoteSchema)
+    const result = ajv.validate(schema, validate)
+    if (!result && ajv.errors) {
+      if (messages) {
+        ajv.errors.forEach((error: any) => {
+          messages.push(error.message)
+        })
+      }
+    }
+    return !!result
   }
 }

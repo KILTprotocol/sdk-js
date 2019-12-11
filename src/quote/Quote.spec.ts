@@ -1,13 +1,12 @@
 import QuoteSchema from './QuoteSchema'
-import { validateQuoteSchema } from '../ctype/CTypeUtils'
-import Quote from './Quote'
 import IQuote, { ICostBreakdown } from '../types/Quote'
 import Identity from '../identity/Identity'
+import Quote from './Quote'
 
 describe('Claim', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
   const invalidCost = { gross: 233, tax: 23.3 } as ICostBreakdown
-  const invalidQuoteData = {
+  const invalidQuoteData = ({
     attesterAddress: identityAlice.address,
     cTypeHash: '0xa3890sd9f08sg8df9s..',
     cost: invalidCost,
@@ -15,7 +14,7 @@ describe('Claim', () => {
     quoteTimeframe: '3 days',
     termsAndConditions: 'Lots of these',
     version: '1.1.3',
-  }
+  } as any) as Quote
 
   const validQuoteData: IQuote = {
     attesterAddress: identityAlice.address,
@@ -38,7 +37,7 @@ describe('Claim', () => {
     expect(validQuote.attesterAddress).toEqual(identityAlice.address)
   })
   it('validates created quotes against QuoteSchema', () => {
-    expect(validateQuoteSchema(QuoteSchema, validQuote)).toBeTruthy()
-    expect(validateQuoteSchema(QuoteSchema, invalidQuote)).toBeFalsy()
+    expect(Quote.validateQuoteSchema(QuoteSchema, validQuote)).toBeTruthy()
+    expect(Quote.validateQuoteSchema(QuoteSchema, invalidQuote)).toBeFalsy()
   })
 })
