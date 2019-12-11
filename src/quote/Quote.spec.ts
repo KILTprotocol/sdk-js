@@ -6,7 +6,7 @@ import Quote from './Quote'
 describe('Claim', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
   const invalidCost = { gross: 233, tax: 23.3 } as ICostBreakdown
-  const invalidCostQuoteData = ({
+  const invalidCostQuoteData = {
     attesterAddress: identityAlice.address,
     cTypeHash: '0xa3890sd9f08sg8df9s..',
     cost: invalidCost,
@@ -14,9 +14,9 @@ describe('Claim', () => {
     quoteTimeframe: '3 days',
     termsAndConditions: 'Lots of these',
     version: '1.1.3',
-  } as any) as Quote
+  } as IQuote
 
-  const invalidPropertiesQuoteData = ({
+  const invalidPropertiesQuoteData = {
     attesterAddress: identityAlice.address,
     cTypeHash: '0xa3890sd9f08sg8df9s..',
     cost: {
@@ -27,7 +27,7 @@ describe('Claim', () => {
     currency: 'Euro',
     quoteTimeframe: '3 days',
     termsAndConditions: 'Lots of these',
-  } as any) as Quote
+  } as IQuote
 
   const validQuoteData: IQuote = {
     attesterAddress: identityAlice.address,
