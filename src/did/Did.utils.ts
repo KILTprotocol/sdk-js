@@ -8,11 +8,14 @@
 import { isHex, hexToString } from '@polkadot/util'
 
 import IPublicIdentity from '../types/PublicIdentity'
+import Crypto from '../crypto'
+import Identity from '../identity/Identity'
 import { QueryResult } from '../blockchain/Blockchain'
 import Did, {
   IDid,
+  IDidDocument,
+  IDidDocumentSigned,
   IDENTIFIER_PREFIX,
-  IDidDocumentUnsigned,
   CONTEXT,
   KEY_TYPE_AUTHENTICATION,
   KEY_TYPE_SIGNATURE,
@@ -60,7 +63,7 @@ export function createDefaultDidDocument(
   publicBoxKey: string,
   publicSigningKey: string,
   kiltServiceEndpoint?: string
-): IDidDocumentUnsigned {
+): IDidDocument {
   return {
     id: identifier,
     '@context': CONTEXT,
@@ -90,5 +93,48 @@ export function createDefaultDidDocument(
           },
         ]
       : [],
+  }
+}
+
+export function verifyDidDocumentSignature(
+  didDocument: IDidDocumentSigned,
+  address: string
+): boolean {
+  if (!didDocument || !didDocument.signature || !address) {
+    throw new Error(
+      `Missing data for verification (either didDocument, didDocumentHash, signature, or address is missing):\n
+          didDocument:\n
+          ${didDocument}\n
+          signature:\n
+          ${didDocument.signature}\n
+          address:\n
+          ${address}\n
+          `
+    )
+  }
+  if (getAddressFromIdentifier(didDocument.id) !== address) {
+    throw new Error(
+      `The input address ${getAddressFromIdentifier(
+        didDocument.id
+      )} doesn't match the DID Document's address ${address}`
+    )
+  }
+  const unsignedDidDocument = { ...didDocument }
+  delete unsignedDidDocument.signature
+  return Crypto.verify(
+    Crypto.hashObjectAsStr(unsignedDidDocument),
+    didDocument.signature,
+    address
+  )
+}
+
+export function signDidDocument(
+  didDocument: IDidDocument,
+  identity: Identity
+): IDidDocumentSigned {
+  const didDocumentHash = Crypto.hashObjectAsStr(didDocument)
+  return {
+    ...didDocument,
+    signature: identity.signStr(didDocumentHash),
   }
 }

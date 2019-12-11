@@ -116,22 +116,24 @@ describe('DID', () => {
     })
   })
 
-  it('creates signed default did document from identity', () => {
-    const identity = Identity.buildFromURI('//Alice')
+  it('creates default did document (static)', async () => {
+    const alice = Identity.buildFromURI('//Alice')
     expect(
-      Did.createDefaultDidDocumentSignedFromIdentity(
-        identity,
+      Did.createDefaultDidDocument(
+        Did.getIdentifierFromAddress(alice.address),
+        alice.boxPublicKeyAsHex,
+        alice.signPublicKeyAsHex,
         'http://myDID.kilt.io/service'
       )
     ).toEqual({
-      id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
       '@context': 'https://w3id.org/did/v1',
       authentication: {
-        type: 'Ed25519SignatureAuthentication2018',
         publicKey: [
           'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-1',
         ],
+        type: 'Ed25519SignatureAuthentication2018',
       },
+      id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
       publicKey: [
         {
           controller:
@@ -156,56 +158,78 @@ describe('DID', () => {
           type: 'KiltMessagingService',
         },
       ],
-      signature:
-        '0xc1e24605bc58707e220ad760ba4c18a2b45b65c59731ba9ea1a83933afc67feb4f8f7107cf75b3189dd17617df29af26e55f19eb826e794ab3bdc7d375a3df0b',
     })
   })
 
   it('verifies the did document signature (untampered data)', () => {
     const identity = Identity.buildFromURI('//Alice')
-    const signedDidDoc = Did.createDefaultDidDocumentSignedFromIdentity(
-      identity,
+    const did = Did.fromIdentity(
+      Identity.buildFromURI('//Alice'),
+      'http://myDID.kilt.io'
+    )
+    const didDocument = did.createDefaultDidDocument(
       'http://myDID.kilt.io/service'
     )
+    const signedDidDocument = Did.signDidDocument(didDocument, identity)
     expect(
-      Did.verifyDidDocumentSignature(signedDidDoc, identity.address)
+      Did.verifyDidDocumentSignature(signedDidDocument, identity.address)
     ).toBeTruthy()
   })
 
   it('verifies the did document signature (tampered data)', () => {
     const identity = Identity.buildFromURI('//Alice')
-    const signedDidDoc = Did.createDefaultDidDocumentSignedFromIdentity(
-      identity,
+    const did = Did.fromIdentity(identity, 'http://myDID.kilt.io')
+    const didDocument = did.createDefaultDidDocument(
       'http://myDID.kilt.io/service'
     )
-    const tamperedSignedDidDoc = {
-      ...signedDidDoc,
+    const signedDidDocument = Did.signDidDocument(didDocument, identity)
+    const tamperedSignedDidDocument = {
+      ...signedDidDocument,
       authentication: {
         type: 'Ed25519SignatureAuthentication2018',
         publicKey: ['did:kilt:123'],
       },
     }
     expect(
-      Did.verifyDidDocumentSignature(tamperedSignedDidDoc, identity.address)
+      Did.verifyDidDocumentSignature(
+        tamperedSignedDidDocument,
+        identity.address
+      )
     ).toBeFalsy()
   })
 
   it("throws when verifying the did document signature if addresses don't match", () => {
     const identityAlice = Identity.buildFromURI('//Alice')
     const identityBob = Identity.buildFromURI('//Bob')
-    const signedDidDoc = Did.createDefaultDidDocumentSignedFromIdentity(
-      identityAlice,
+    const did = Did.fromIdentity(identityAlice, 'http://myDID.kilt.io')
+    const didDocument = did.createDefaultDidDocument(
       'http://myDID.kilt.io/service'
     )
+    const signedDidDocument = Did.signDidDocument(didDocument, identityBob)
     expect(() => {
-      Did.verifyDidDocumentSignature(signedDidDoc, identityBob.address)
+      Did.verifyDidDocumentSignature(signedDidDocument, identityBob.address)
     }).toThrowError(
       new Error(
         `The input address ${Did.getAddressFromIdentifier(
-          signedDidDoc.id
+          signedDidDocument.id
         )} doesn't match the DID Document's address ${identityBob.address}`
       )
     )
+  })
+
+  it('throws when ', () => {
+    const identity = Identity.buildFromURI('//Alice')
+    const { address } = identity
+    const did = Did.fromIdentity(identity, 'http://myDID.kilt.io')
+    const didDocument = did.createDefaultDidDocument(
+      'http://myDID.kilt.io/service'
+    )
+    const signedDidDocument = Did.signDidDocument(didDocument, identity)
+    const signedDidDocumentCopy = { ...signedDidDocument }
+    delete signedDidDocumentCopy.signature
+    expect(() => {
+      Did.verifyDidDocumentSignature(signedDidDocumentCopy, address)
+    }).toThrow()
   })
 
   it('gets identifier from address', () => {

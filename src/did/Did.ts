@@ -11,7 +11,6 @@
 /**
  * Dummy comment needed for correct doc display, do not remove
  */
-import { KeyringPair } from '@polkadot/keyring/types'
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import TxStatus from '../blockchain/TxStatus'
@@ -20,9 +19,10 @@ import {
   getIdentifierFromAddress,
   getAddressFromIdentifier,
   createDefaultDidDocument,
+  verifyDidDocumentSignature,
+  signDidDocument,
 } from './Did.utils'
 import { store, queryByAddress, queryByIdentifier, remove } from './Did.chain'
-import Crypto from '../crypto'
 
 const log = factory.getLogger('DID')
 
@@ -58,17 +58,24 @@ export interface IDidDocumentCore {
   '@context': string
 }
 
-export interface IDidDocumentPpties {
-  authentication: object
-  service: any
-  publicKey: object
+export interface IDidDocumentPublicKey {
+  id: string
+  type: string
+  controller: string
+  publicKeyHex: string
 }
 
-export interface IDidDocumentUnsigned
+export interface IDidDocumentPpties {
+  authentication: object
+  publicKey: IDidDocumentPublicKey[]
+  service: any
+}
+
+export interface IDidDocument
   extends IDidDocumentCore,
     Partial<IDidDocumentPpties> {}
 
-export interface IDidDocumentSigned extends IDidDocumentUnsigned {
+export interface IDidDocumentSigned extends IDidDocument {
   signature: string
 }
 
@@ -91,62 +98,7 @@ export default class Did implements IDid {
   }
 
   /**
-   * Gets the complete KILT DID from an [address] (in KILT, the method-specific ID is an address). Reverse of [[getAddressFromIdentifier]].
-   *
-   * @param address An address, e.g. "5CtPYoDuQQF...".
-   * @returns The associated KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
-   */
-  public static getIdentifierFromAddress(
-    address: IPublicIdentity['address']
-  ): IDid['identifier'] {
-    return getIdentifierFromAddress(address)
-  }
-
-  /**
-   * Gets the [address] from a complete KILT DID (in KILT, the method-specific ID is an address). Reverse of [[getIdentifierFromAddress]].
-   *
-   * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
-   * @returns The associated address, e.g. "5CtPYoDuQQF...".
-   */
-  public static getAddressFromIdentifier(
-    identifier: IDid['identifier']
-  ): IPublicIdentity['address'] {
-    return getAddressFromIdentifier(identifier)
-  }
-
-  /**
-   * Queries the [[Did]] object from the chain using the [identifier].
-   *
-   * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
-   * @returns A promise containing the [[Did]] or [null].
-   */
-  public static queryByIdentifier(identifier: string): Promise<IDid | null> {
-    return queryByIdentifier(identifier)
-  }
-
-  /**
-   * Queries the [[Did]] object from the chain using the [address].
-   *
-   * @param address The address associated to this [[Did]].
-   * @returns A promise containing the [[Did]] or [null].
-   */
-  public static queryByAddress(address: string): Promise<IDid | null> {
-    return queryByAddress(address)
-  }
-
-  /**
-   * Removes the [[Did]] object attached to a given [identity] from the chain.
-   *
-   * @param identity The identity for which to delete the [[Did]].
-   * @returns A promise containing the [[TxStatus]] (transaction status).
-   */
-  public static async remove(identity: Identity): Promise<TxStatus> {
-    log.debug(`Create tx for 'did.remove'`)
-    return remove(identity)
-  }
-
-  /**
-   * Builds a [[Did]] object from the given [identity].
+   * Builds a [[Did]] object from the given [[Identity]].
    *
    * @param identity The identity used to build the [[Did]] object.
    * @param documentStore The storage location of the associated DID Document; usally a URL.
@@ -174,14 +126,95 @@ export default class Did implements IDid {
   }
 
   /**
+   * Queries the [[Did]] object from the chain using the [identifier].
+   *
+   * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
+   * @returns A promise containing the [[Did]] or [null].
+   */
+  public static queryByIdentifier(identifier: string): Promise<IDid | null> {
+    return queryByIdentifier(identifier)
+  }
+
+  /**
+   * Queries the [[Did]] object from the chain using the [address].
+   *
+   * @param address The address associated to this [[Did]].
+   * @returns A promise containing the [[Did]] or [null].
+   */
+  public static queryByAddress(address: string): Promise<IDid | null> {
+    return queryByAddress(address)
+  }
+
+  /**
+   * Removes the [[Did]] object attached to a given [[Identity]] from the chain.
+   *
+   * @param identity The identity for which to delete the [[Did]].
+   * @returns A promise containing the [[TxStatus]] (transaction status).
+   */
+  public static async remove(identity: Identity): Promise<TxStatus> {
+    log.debug(`Create tx for 'did.remove'`)
+    return remove(identity)
+  }
+
+  /**
+   * Gets the complete KILT DID from an [address] (in KILT, the method-specific ID is an address). Reverse of [[getAddressFromIdentifier]].
+   *
+   * @param address An address, e.g. "5CtPYoDuQQF...".
+   * @returns The associated KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
+   */
+  public static getIdentifierFromAddress(
+    address: IPublicIdentity['address']
+  ): IDid['identifier'] {
+    return getIdentifierFromAddress(address)
+  }
+
+  /**
+   * Gets the [address] from a complete KILT DID (in KILT, the method-specific ID is an address). Reverse of [[getIdentifierFromAddress]].
+   *
+   * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
+   * @returns The associated address, e.g. "5CtPYoDuQQF...".
+   */
+  public static getAddressFromIdentifier(
+    identifier: IDid['identifier']
+  ): IPublicIdentity['address'] {
+    return getAddressFromIdentifier(identifier)
+  }
+
+  /**
+   * Signs (the hash of) a DID Document.
+   *
+   * @param didDocument A DID Document, e.g. created via [[createDefaultDidDocument]].
+   * @param identity [[Identity]] representing the DID subject for this DID Document, and used for signature.
+   * @returns The signed DID Document.
+   */
+  public static signDidDocument(
+    didDocument: IDidDocument,
+    identity: Identity
+  ): IDidDocumentSigned {
+    return signDidDocument(didDocument, identity)
+  }
+
+  /**
+   * Verifies the signature of a DID Document, to check whether the data has been tampered with.
+   *
+   * @param didDocument A signed DID Document.
+   * @param address The address to use for signature verification.
+   * @returns Whether the DID Document's signature is valid.
+   */
+  public static verifyDidDocumentSignature(
+    didDocument: IDidDocumentSigned,
+    address: string
+  ): boolean {
+    return verifyDidDocumentSignature(didDocument, address)
+  }
+
+  /**
    * Builds the default DID Document from this [[Did]] object.
    *
    * @param kiltServiceEndpoint A URI pointing to the service endpoint.
    * @returns The default DID Document.
    */
-  public createDefaultDidDocument(
-    kiltServiceEndpoint?: string
-  ): IDidDocumentUnsigned {
+  public createDefaultDidDocument(kiltServiceEndpoint?: string): IDidDocument {
     return createDefaultDidDocument(
       this.identifier,
       this.publicBoxKey,
@@ -204,94 +237,12 @@ export default class Did implements IDid {
     publicBoxKey: string,
     publicSigningKey: string,
     kiltServiceEndpoint?: string
-  ): IDidDocumentUnsigned {
+  ): IDidDocument {
     return createDefaultDidDocument(
       identifier,
       publicBoxKey,
       publicSigningKey,
       kiltServiceEndpoint
-    )
-  }
-
-  /**
-   * Builds the signed default DID Document from this [[Did]] object.
-   *
-   * @param signKeyringPair A signing keyring pair.
-   * @param kiltServiceEndpoint A URI pointing to the service endpoint.
-   * @returns The default DID Document.
-   */
-  public createDefaultDidDocumentSigned(
-    signKeyringPair: KeyringPair,
-    kiltServiceEndpoint?: string
-  ): IDidDocumentSigned {
-    const unsignedDidDoc = this.createDefaultDidDocument(kiltServiceEndpoint)
-    const didDocumentHash = Crypto.hashObjectAsStr(unsignedDidDoc)
-    return {
-      ...unsignedDidDoc,
-      signature: Crypto.signStr(didDocumentHash, signKeyringPair),
-    }
-  }
-
-  /**
-   * [STATIC] Builds a signed default DID Document from a KILT identity; convenience method.
-   *
-   * @param identity The [[Identity]], DID subject for this DID Document.
-   * @param kiltServiceEndpoint A URI pointing to the service endpoint.
-   * @returns The signed default DID Document.
-   */
-  public static createDefaultDidDocumentSignedFromIdentity(
-    identity: Identity,
-    kiltServiceEndpoint?: string
-  ): IDidDocumentSigned {
-    const unsignedDidDoc = createDefaultDidDocument(
-      getIdentifierFromAddress(identity.address),
-      identity.boxPublicKeyAsHex,
-      identity.signPublicKeyAsHex,
-      kiltServiceEndpoint
-    )
-    const didDocumentHash = Crypto.hashObjectAsStr(unsignedDidDoc)
-    return {
-      ...unsignedDidDoc,
-      signature: identity.signStr(didDocumentHash),
-    }
-  }
-
-  /**
-   * [STATIC] Verifies the signature of a DID Document, to check whether the data has been tampered with.
-   *
-   * @param didDocument A signed DID Document.
-   * @param address The address to use for signature verification.
-   * @returns Whether the DID Document's signature is valid.
-   */
-  public static verifyDidDocumentSignature(
-    didDocument: IDidDocumentSigned,
-    address: string
-  ): boolean {
-    if (!didDocument || !didDocument.signature || !address) {
-      throw new Error(
-        `Missing data for verification (either didDocument, didDocumentHash, signature, or address is missing):\n
-          didDocument:\n
-          ${didDocument}\n
-          signature:\n
-          ${didDocument.signature}\n
-          address:\n
-          ${address}\n
-          `
-      )
-    }
-    if (getAddressFromIdentifier(didDocument.id) !== address) {
-      throw new Error(
-        `The input address ${getAddressFromIdentifier(
-          didDocument.id
-        )} doesn't match the DID Document's address ${address}`
-      )
-    }
-    const unsignedDidDocument = { ...didDocument }
-    delete unsignedDidDocument.signature
-    return Crypto.verify(
-      Crypto.hashObjectAsStr(unsignedDidDocument),
-      didDocument.signature,
-      address
     )
   }
 }
