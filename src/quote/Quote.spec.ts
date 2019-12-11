@@ -6,7 +6,7 @@ import Quote from './Quote'
 describe('Claim', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
   const invalidCost = { gross: 233, tax: 23.3 } as ICostBreakdown
-  const invalidQuoteData = ({
+  const invalidCostQuoteData = ({
     attesterAddress: identityAlice.address,
     cTypeHash: '0xa3890sd9f08sg8df9s..',
     cost: invalidCost,
@@ -14,6 +14,19 @@ describe('Claim', () => {
     quoteTimeframe: '3 days',
     termsAndConditions: 'Lots of these',
     version: '1.1.3',
+  } as any) as Quote
+
+  const invalidPropertiesQuoteData = ({
+    attesterAddress: identityAlice.address,
+    cTypeHash: '0xa3890sd9f08sg8df9s..',
+    cost: {
+      gross: 233,
+      net: 23.3,
+      tax: 23.3,
+    },
+    currency: 'Euro',
+    quoteTimeframe: '3 days',
+    termsAndConditions: 'Lots of these',
   } as any) as Quote
 
   const validQuoteData: IQuote = {
@@ -30,7 +43,8 @@ describe('Claim', () => {
     version: '1.1.3',
   }
   const validQuote = new Quote(validQuoteData)
-  const invalidQuote = new Quote(invalidQuoteData)
+  const invalidPropertiesQuote = new Quote(invalidPropertiesQuoteData)
+  const invalidCostQuote = new Quote(invalidCostQuoteData)
 
   it('tests created quote data against given data', () => {
     expect(validQuote).toEqual(validQuoteData)
@@ -38,6 +52,9 @@ describe('Claim', () => {
   })
   it('validates created quotes against QuoteSchema', () => {
     expect(Quote.validateQuoteSchema(QuoteSchema, validQuote)).toBeTruthy()
-    expect(Quote.validateQuoteSchema(QuoteSchema, invalidQuote)).toBeFalsy()
+    expect(Quote.validateQuoteSchema(QuoteSchema, invalidCostQuote)).toBeFalsy()
+    expect(
+      Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)
+    ).toBeFalsy()
   })
 })
