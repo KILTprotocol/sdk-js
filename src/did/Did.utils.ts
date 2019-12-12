@@ -132,6 +132,16 @@ export function signDidDocument(
   didDocument: IDidDocument,
   identity: Identity
 ): IDidDocumentSigned {
+  // extra security: only the DID subject can sign
+  const { id } = didDocument
+  const { address } = identity
+  if (getAddressFromIdentifier(id) !== address) {
+    throw new Error(
+      `The signing identity (address: ${getAddressFromIdentifier(
+        id
+      )}) doesn't match the DID Document subject (address: ${address}). Only the DID subject should sign their DID Document.`
+    )
+  }
   const didDocumentHash = Crypto.hashObjectAsStr(didDocument)
   return {
     ...didDocument,

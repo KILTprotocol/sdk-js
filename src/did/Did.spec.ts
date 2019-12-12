@@ -1,6 +1,7 @@
 import { Text, Tuple, Option, U8a } from '@polkadot/types'
 import { Did } from '..'
 import { IDid } from './Did'
+import Crypto from '../crypto'
 import Identity from '../identity/Identity'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
@@ -200,12 +201,19 @@ describe('DID', () => {
 
   it("throws when verifying the did document signature if addresses don't match", () => {
     const identityAlice = Identity.buildFromURI('//Alice')
-    const identityBob = Identity.buildFromURI('//Bob')
     const did = Did.fromIdentity(identityAlice, 'http://myDID.kilt.io')
     const didDocument = did.createDefaultDidDocument(
       'http://myDID.kilt.io/service'
     )
-    const signedDidDocument = Did.signDidDocument(didDocument, identityBob)
+    // sign as Bob, which shouldn't happen
+    // to sign, we're not signing with the correct identity, we're not using signDidDocument() method
+    // since it would throw
+    const identityBob = Identity.buildFromURI('//Bob')
+    const didDocumentHash = Crypto.hashObjectAsStr(didDocument)
+    const signedDidDocument = {
+      ...didDocument,
+      signature: identityBob.signStr(didDocumentHash),
+    }
     expect(() => {
       Did.verifyDidDocumentSignature(signedDidDocument, identityBob.address)
     }).toThrowError(
