@@ -98,9 +98,9 @@ export function createDefaultDidDocument(
 
 export function verifyDidDocumentSignature(
   didDocument: IDidDocumentSigned,
-  address: string
+  identifier: string
 ): boolean {
-  if (!didDocument || !didDocument.signature || !address) {
+  if (!didDocument || !didDocument.signature || !identifier) {
     throw new Error(
       `Missing data for verification (either didDocument, didDocumentHash, signature, or address is missing):\n
           didDocument:\n
@@ -108,15 +108,14 @@ export function verifyDidDocumentSignature(
           signature:\n
           ${didDocument.signature}\n
           address:\n
-          ${address}\n
+          ${identifier}\n
           `
     )
   }
-  if (getAddressFromIdentifier(didDocument.id) !== address) {
+  const { id } = didDocument
+  if (identifier !== id) {
     throw new Error(
-      `The input address ${getAddressFromIdentifier(
-        didDocument.id
-      )} doesn't match the DID Document's address ${address}`
+      `This identifier (${identifier}) doesn't match the DID Document's identifier (${id})`
     )
   }
   const unsignedDidDocument = { ...didDocument }
@@ -124,7 +123,7 @@ export function verifyDidDocumentSignature(
   return Crypto.verify(
     Crypto.hashObjectAsStr(unsignedDidDocument),
     didDocument.signature,
-    address
+    getAddressFromIdentifier(identifier)
   )
 }
 
@@ -132,16 +131,6 @@ export function signDidDocument(
   didDocument: IDidDocument,
   identity: Identity
 ): IDidDocumentSigned {
-  // extra security: only the DID subject can sign
-  const { id } = didDocument
-  const { address } = identity
-  if (getAddressFromIdentifier(id) !== address) {
-    throw new Error(
-      `The signing identity (address: ${getAddressFromIdentifier(
-        id
-      )}) doesn't match the DID Document subject (address: ${address}). Only the DID subject should sign their DID Document.`
-    )
-  }
   const didDocumentHash = Crypto.hashObjectAsStr(didDocument)
   return {
     ...didDocument,

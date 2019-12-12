@@ -198,14 +198,14 @@ export default class Did implements IDid {
    * Verifies the signature of a DID Document, to check whether the data has been tampered with.
    *
    * @param didDocument A signed DID Document.
-   * @param address The address to use for signature verification.
+   * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
    * @returns Whether the DID Document's signature is valid.
    */
   public static verifyDidDocumentSignature(
     didDocument: IDidDocumentSigned,
-    address: string
+    identifier: string
   ): boolean {
-    return verifyDidDocumentSignature(didDocument, address)
+    return verifyDidDocumentSignature(didDocument, identifier)
   }
 
   /**

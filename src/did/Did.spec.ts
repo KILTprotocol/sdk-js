@@ -1,8 +1,8 @@
 import { Text, Tuple, Option, U8a } from '@polkadot/types'
 import { Did } from '..'
 import { IDid } from './Did'
-import Crypto from '../crypto'
 import Identity from '../identity/Identity'
+import { getIdentifierFromAddress } from './Did.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -173,7 +173,10 @@ describe('DID', () => {
     )
     const signedDidDocument = Did.signDidDocument(didDocument, identity)
     expect(
-      Did.verifyDidDocumentSignature(signedDidDocument, identity.address)
+      Did.verifyDidDocumentSignature(
+        signedDidDocument,
+        getIdentifierFromAddress(identity.address)
+      )
     ).toBeTruthy()
   })
 
@@ -194,50 +197,28 @@ describe('DID', () => {
     expect(
       Did.verifyDidDocumentSignature(
         tamperedSignedDidDocument,
-        identity.address
+        getIdentifierFromAddress(identity.address)
       )
     ).toBeFalsy()
   })
 
-  it("throws when verifying the did document signature if addresses don't match", () => {
+  it("throws when verifying the did document signature if identitifiers don't match", () => {
     const identityAlice = Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(identityAlice, 'http://myDID.kilt.io')
     const didDocument = did.createDefaultDidDocument(
       'http://myDID.kilt.io/service'
     )
-    // sign as Bob, which shouldn't happen
-    // to sign, we're not signing with the correct identity, we're not using signDidDocument() method
-    // since it would throw
+    const signedDidDocument = Did.signDidDocument(didDocument, identityAlice)
     const identityBob = Identity.buildFromURI('//Bob')
-    const didDocumentHash = Crypto.hashObjectAsStr(didDocument)
-    const signedDidDocument = {
-      ...didDocument,
-      signature: identityBob.signStr(didDocumentHash),
-    }
+    const id = getIdentifierFromAddress(identityBob.address)
+
     expect(() => {
-      Did.verifyDidDocumentSignature(signedDidDocument, identityBob.address)
+      Did.verifyDidDocumentSignature(signedDidDocument, id)
     }).toThrowError(
       new Error(
-        `The input address ${Did.getAddressFromIdentifier(
-          signedDidDocument.id
-        )} doesn't match the DID Document's address ${identityBob.address}`
+        `This identifier (${id}) doesn't match the DID Document's identifier (${signedDidDocument.id})`
       )
     )
-  })
-
-  it('throws when ', () => {
-    const identity = Identity.buildFromURI('//Alice')
-    const { address } = identity
-    const did = Did.fromIdentity(identity, 'http://myDID.kilt.io')
-    const didDocument = did.createDefaultDidDocument(
-      'http://myDID.kilt.io/service'
-    )
-    const signedDidDocument = Did.signDidDocument(didDocument, identity)
-    const signedDidDocumentCopy = { ...signedDidDocument }
-    delete signedDidDocumentCopy.signature
-    expect(() => {
-      Did.verifyDidDocumentSignature(signedDidDocumentCopy, address)
-    }).toThrow()
   })
 
   it('gets identifier from address', () => {
