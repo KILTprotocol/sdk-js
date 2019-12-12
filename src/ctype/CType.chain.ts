@@ -25,7 +25,7 @@ export async function store(
   log.debug(() => `Create tx for 'ctype.add'`)
   const tx: SubmittableExtrinsic = await blockchain.api.tx.ctype.add(ctype.hash)
   const txStatus: TxStatus = await blockchain.submitTx(identity, tx)
-  if (txStatus.type === 'Finalised') {
+  if (txStatus.type === 'Finalized') {
     txStatus.payload = {
       ...ctype,
       owner: identity.address,
