@@ -45,6 +45,7 @@ const QuoteSchema = {
     },
     quoteTimeframe: {
       type: 'string',
+      format: 'date-time',
       title: 'The quotetimeframe Schema',
       pattern: '^(.*)$',
     },

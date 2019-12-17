@@ -6,39 +6,44 @@ import Quote from './Quote'
 describe('Claim', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
   const invalidCost = { gross: 233, tax: 23.3 } as ICostBreakdown
+  const date = new Date(2019, 11, 10)
+
   const invalidCostQuoteData = {
     attesterAddress: identityAlice.address,
-    cTypeHash: '0xa3890sd9f08sg8df9s..',
+    cTypeHash:
+      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
     cost: invalidCost,
     currency: 'Euro',
-    quoteTimeframe: '3 days',
+    quoteTimeframe: date,
     termsAndConditions: 'Lots of these',
     version: '1.1.3',
   } as IQuote
 
   const invalidPropertiesQuoteData = {
     attesterAddress: identityAlice.address,
-    cTypeHash: '0xa3890sd9f08sg8df9s..',
+    cTypeHash:
+      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
     cost: {
       gross: 233,
       net: 23.3,
       tax: 23.3,
     },
+    quoteTimeframe: date,
     currency: 'Euro',
-    quoteTimeframe: '3 days',
     termsAndConditions: 'Lots of these',
   } as IQuote
 
   const validQuoteData: IQuote = {
     attesterAddress: identityAlice.address,
-    cTypeHash: '0xa3890sd9f08sg8df9s..',
+    cTypeHash:
+      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
     cost: {
       gross: 233,
       net: 23.3,
       tax: 23.3,
     },
     currency: 'Euro',
-    quoteTimeframe: '3 days',
+    quoteTimeframe: date,
     termsAndConditions: 'Lots of these',
     version: '1.1.3',
   }

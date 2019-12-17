@@ -1,9 +1,9 @@
 /**
- * Quote construct a framework for Attesters to make an offer for building a [[Claim]] on a [[CTYPE]] in which it includes a price and other terms & conditions upon which a claimer can agree.
+ * [[Quote]] constructs a framework for Attesters to make an offer for building a [[Claim]] on a [[CTYPE]] in which it includes a price and other terms & conditions upon which a claimer can agree.
  *
- * A Quote object represents a legal **offer** for the closure of a contract attesting a [[Claim]] from the [[CTYPE]] specified within the offer.
+ * A [[Quote]] object represents a legal **offer** for the closure of a contract attesting a [[Claim]] from the [[CTYPE]] specified within the offer.
  *
- * A Quote comes with a versionable spec, allowing different Quote spec to exists over time and tracks under which Quote a contract was closed.
+ * A [[Quote]] comes with a versionable specs, allowing different [[Quote]] specs to exist over time and tracks under which [[Quote]] a contract was closed.
  *
  * @module Quote
  * @preferred
@@ -50,7 +50,10 @@ export default class Quote implements IQuote {
   ): boolean | PromiseLike<any> {
     const ajv = new Ajv()
     ajv.addMetaSchema(QuoteSchema)
-    const result = ajv.validate(schema, validate)
+    const result = ajv.validate(
+      JSON.parse(JSON.stringify(schema)),
+      JSON.parse(JSON.stringify(validate))
+    )
     if (!result && ajv.errors) {
       if (messages) {
         ajv.errors.forEach((error: any) => {

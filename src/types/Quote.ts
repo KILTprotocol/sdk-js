@@ -19,7 +19,7 @@ export default interface IQuote {
   cTypeHash: IClaim['cTypeHash']
   cost: ICostBreakdown
   currency: string
-  quoteTimeframe: string
+  quoteTimeframe: Date
   termsAndConditions: string
   version: string
 }
