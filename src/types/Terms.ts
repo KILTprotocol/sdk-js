@@ -8,9 +8,10 @@
 import DelegationNode from '../delegation/DelegationNode'
 import IClaim from './Claim'
 import IQuote from './Quote'
+import { IPartialClaim } from '../messaging/Message'
 
 export default interface ITerms {
-  claim: string
+  claim: IPartialClaim
   legitimations: object[]
   delegationId?: DelegationNode['id']
   quote?: IQuote

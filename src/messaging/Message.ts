@@ -56,9 +56,9 @@ export interface IEncryptedMessage {
 }
 
 export enum MessageBodyType {
-  REQUEST_LEGITIMATIONS = 'request-legitimations',
+  REQUEST_TERMS = 'request-terms',
   SUBMIT_TERMS = 'submit-terms',
-  REJECT_LEGITIMATIONS = 'reject-legitimations',
+  REJECT_TERMS = 'reject-terms',
 
   REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
   SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
@@ -220,28 +220,29 @@ interface IMessageBodyBase {
   type: MessageBodyType
 }
 
-export interface IRequestLegitimations extends IMessageBodyBase {
+export interface IRequestTerms extends IMessageBodyBase {
   content: IPartialClaim
-  type: MessageBodyType.REQUEST_LEGITIMATIONS
+  type: MessageBodyType.REQUEST_TERMS
 }
 export interface ISubmitTerms extends IMessageBodyBase {
   content: ITerms
   type: MessageBodyType.SUBMIT_TERMS
 }
-export interface IRejectLegitimations extends IMessageBodyBase {
+export interface IRejectTerms extends IMessageBodyBase {
   content: {
     claim: IPartialClaim
     legitimations: IAttestedClaim[]
     delegationId: DelegationNode['id'] | null
   }
-  type: MessageBodyType.REJECT_LEGITIMATIONS
+  type: MessageBodyType.REJECT_TERMS
 }
 
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
   content: {
     requestForAttestation: IRequestForAttestation
     quote?: IQuote
-    prerequisiteClaims?: Array<IClaim['cTypeHash']>
+    // quoteHash: IQuoteHash
+    prerequisiteClaims?: IClaim[]
   }
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
 }
@@ -316,9 +317,9 @@ export interface IPartialClaim extends Partial<IClaim> {
 }
 
 export type MessageBody =
-  | IRequestLegitimations
+  | IRequestTerms
   | ISubmitTerms
-  | IRejectLegitimations
+  | IRejectTerms
   //
   | IRequestAttestationForClaim
   | ISubmitAttestationForClaim
