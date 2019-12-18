@@ -11,11 +11,11 @@ describe('Identity', () => {
     expect(alice.seedAsHex).toEqual('0x2f2f416c696365')
 
     expect(alice.address).toEqual(
-      '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TmTd'
+      '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu'
     )
 
     // @ts-ignore
-    expect(u8aUtil.u8aToHex(alice.signKeyringPair.publicKey())).toEqual(
+    expect(u8aUtil.u8aToHex(alice.signKeyringPair.publicKey)).toEqual(
       '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee'
     )
   })

@@ -10,7 +10,6 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
-import cloneDeep from 'lodash/cloneDeep'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim from '../types/AttestedClaim'
@@ -22,20 +21,38 @@ export default class AttestedClaim implements IAttestedClaim {
    * [STATIC] Builds an instance of [[AttestedClaim]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param obj - The base object from which to create the attested claim.
-   * @returns A new [[AttestedClaim]] object.
+   * @param attestedClaimInput - The base object from which to create the attested claim.
+   * @returns A new instantiated [[AttestedClaim]] object.
    * @example ```javascript
    * // create an AttestedClaim object, so we can call methods on it (`serialized` is a serialized AttestedClaim object)
-   * AttestedClaim.fromObject(JSON.parse(serialized));
+   * AttestedClaim.fromAttestedClaim(JSON.parse(serialized));
    * ```
    */
-  public static fromObject(obj: IAttestedClaim): AttestedClaim {
-    const newAttestedClaim: AttestedClaim = Object.create(
-      AttestedClaim.prototype
-    )
-    newAttestedClaim.request = RequestForAttestation.fromObject(obj.request)
-    newAttestedClaim.attestation = Attestation.fromObject(obj.attestation)
-    return newAttestedClaim
+  public static fromAttestedClaim(
+    attestedClaimInput: IAttestedClaim
+  ): AttestedClaim {
+    return new AttestedClaim(attestedClaimInput)
+  }
+
+  /**
+   * [STATIC] Builds a new instance of [[AttestedClaim]], from all requiered properties.
+   *
+   * @param request - The request for attestation for the claim that was attested.
+   * @param attestation - The attestation for the claim by the attester.
+   * @returns A new [[AttestedClaim]] object.
+   * @example ```javascript
+   * //create an AttestedClaim object after receiving the attestation from the attester
+   * AttestedClaim.fromRequestAndAttestation(request, attestation);
+   * ```
+   */
+  public static fromRequestAndAttestation(
+    request: IRequestForAttestation,
+    attestation: IAttestation
+  ): AttestedClaim {
+    return new AttestedClaim({
+      request,
+      attestation,
+    })
   }
 
   public request: RequestForAttestation
@@ -44,20 +61,26 @@ export default class AttestedClaim implements IAttestedClaim {
   /**
    * Builds a new [[AttestedClaim]] instance.
    *
-   * @param request - A request for attestation, usually sent by a claimer.
-   * @param attestation - The attestation to base the [[AttestedClaim]] on.
-   * @example  ```javascript
+   * @param attestedClaimInput - The base object with all required input, from which to create the attested claim.
+   * @example ```javascript
    * // Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
-   * new AttestedClaim(requestForAttestation, attestation);
+   * new AttestedClaim(attestedClaimInput);
    * ```
    */
-  public constructor(
-    request: IRequestForAttestation,
-    attestation: IAttestation
-  ) {
-    // TODO: this should be instantiated w/o fromObject
-    this.request = RequestForAttestation.fromObject(request)
-    this.attestation = Attestation.fromObject(attestation)
+  public constructor(attestedClaimInput: IAttestedClaim) {
+    if (!attestedClaimInput.request || !attestedClaimInput.attestation) {
+      throw new Error(
+        `Property Not Provided while building AttestedClaim!\n
+        attestedClaimInput.request: \n
+        ${attestedClaimInput.request} \n
+        attestedClaimInput.attestation: \n
+        ${attestedClaimInput.attestation}`
+      )
+    }
+    this.request = RequestForAttestation.fromRequest(attestedClaimInput.request)
+    this.attestation = Attestation.fromAttestation(
+      attestedClaimInput.attestation
+    )
   }
 
   /**
@@ -96,7 +119,7 @@ export default class AttestedClaim implements IAttestedClaim {
   public verifyData(): boolean {
     return (
       this.request.verifyData() &&
-      this.request.hash === this.attestation.claimHash
+      this.request.rootHash === this.attestation.claimHash
     )
   }
 
@@ -125,9 +148,9 @@ export default class AttestedClaim implements IAttestedClaim {
    */
   public createPresentation(
     excludedClaimProperties: string[],
-    excludeIdentity: boolean = false
+    excludeIdentity = false
   ): AttestedClaim {
-    const result: AttestedClaim = AttestedClaim.fromObject(cloneDeep(this))
+    const result: AttestedClaim = AttestedClaim.fromAttestedClaim(this)
     result.request.removeClaimProperties(excludedClaimProperties)
     if (excludeIdentity) {
       result.request.removeClaimOwner()

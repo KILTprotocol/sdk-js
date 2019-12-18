@@ -7,8 +7,7 @@
  */
 import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
-import { CodecResult, SubscriptionResult } from '@polkadot/api/promise/types'
-import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 import { getCached } from '../blockchainApiConnection'
 import { QueryResult } from '../blockchain/Blockchain'
@@ -44,15 +43,24 @@ export async function store(
 function decode(encoded: QueryResult, claimHash: string): Attestation | null {
   if (encoded && encoded.encodedLength) {
     const attestationTuple = encoded.toJSON()
-    const attestation: IAttestation = {
-      claimHash,
-      cTypeHash: attestationTuple[0],
-      owner: attestationTuple[1],
-      delegationId: attestationTuple[2],
-      revoked: attestationTuple[3],
+    if (
+      attestationTuple instanceof Array &&
+      typeof attestationTuple[0] === 'string' &&
+      typeof attestationTuple[1] === 'string' &&
+      (typeof attestationTuple[2] === 'string' ||
+        attestationTuple[2] === null) &&
+      typeof attestationTuple[3] === 'boolean'
+    ) {
+      const attestation: IAttestation = {
+        claimHash,
+        cTypeHash: attestationTuple[0],
+        owner: attestationTuple[1],
+        delegationId: attestationTuple[2],
+        revoked: attestationTuple[3],
+      }
+      log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
+      return Attestation.fromAttestation(attestation)
     }
-    log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
-    return Attestation.fromObject(attestation)
   }
   return null
 }
@@ -77,9 +85,8 @@ export async function revoke(
 ): Promise<TxStatus> {
   const blockchain = await getCached()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
-  const tx: SubmittableExtrinsic<
-    CodecResult,
-    SubscriptionResult
-  > = blockchain.api.tx.attestation.revoke(claimHash)
+  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
+    claimHash
+  )
   return blockchain.submitTx(identity, tx)
 }

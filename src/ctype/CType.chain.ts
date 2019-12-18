@@ -5,8 +5,7 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
-import { CodecResult } from '@polkadot/api/promise/types'
-import { SubmittableExtrinsic } from '@polkadot/api/SubmittableExtrinsic'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 import { QueryResult } from '../blockchain/Blockchain'
 import { getCached } from '../blockchainApiConnection'
@@ -24,12 +23,9 @@ export async function store(
 ): Promise<TxStatus> {
   const blockchain = await getCached()
   log.debug(() => `Create tx for 'ctype.add'`)
-  const tx: SubmittableExtrinsic<
-    CodecResult,
-    any
-  > = await blockchain.api.tx.ctype.add(ctype.hash)
+  const tx: SubmittableExtrinsic = await blockchain.api.tx.ctype.add(ctype.hash)
   const txStatus: TxStatus = await blockchain.submitTx(identity, tx)
-  if (txStatus.type === 'Finalised') {
+  if (txStatus.type === 'Finalized') {
     txStatus.payload = {
       ...ctype,
       owner: identity.address,
@@ -39,7 +35,9 @@ export async function store(
 }
 
 function decode(encoded: QueryResult): IPublicIdentity['address'] | null {
-  return encoded && encoded.encodedLength ? encoded.toString() : null
+  return encoded && encoded.encodedLength && !encoded.isEmpty
+    ? encoded.toString()
+    : null
 }
 
 export async function getOwner(

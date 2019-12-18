@@ -13,35 +13,66 @@
 /**
  * Dummy comment needed for correct doc display, do not remove
  */
-import CType from '../ctype/CType'
+import ICType from '../ctype/CType'
 import { verifyClaimStructure } from '../ctype/CTypeUtils'
-import Identity from '../identity/Identity'
 import IClaim from '../types/Claim'
+import IPublicIdentity from '../types/PublicIdentity'
 
-function verifyClaim(claimContents: object, cType: CType): boolean {
-  return verifyClaimStructure(claimContents, cType.schema)
+function verifyClaim(
+  claimContents: object,
+  cTypeSchema: ICType['schema']
+): boolean {
+  return verifyClaimStructure(claimContents, cTypeSchema)
 }
 
 export default class Claim implements IClaim {
-  public static fromObject(obj: IClaim): Claim {
-    const newClaim = Object.create(Claim.prototype)
-    return Object.assign(newClaim, obj)
+  public static fromClaim(
+    claimInput: IClaim,
+    cTypeSchema: ICType['schema']
+  ): Claim {
+    if (cTypeSchema) {
+      if (!verifyClaim(claimInput.contents, cTypeSchema)) {
+        throw Error('Claim not valid')
+      }
+    }
+    return new Claim(claimInput)
   }
 
-  public cType: IClaim['cType']
+  public static fromCTypeAndClaimContents(
+    ctypeInput: ICType,
+    claimContents: object,
+    claimOwner: IPublicIdentity['address']
+  ): Claim {
+    if (ctypeInput.schema) {
+      if (!verifyClaim(claimContents, ctypeInput.schema)) {
+        throw Error('Claim not valid')
+      }
+    }
+    return new Claim({
+      cTypeHash: ctypeInput.hash,
+      contents: claimContents,
+      owner: claimOwner,
+    })
+  }
+
+  public cTypeHash: IClaim['cTypeHash']
   public contents: IClaim['contents']
   public owner: IClaim['owner']
 
-  public constructor(
-    cType: CType,
-    contents: IClaim['contents'],
-    identity: Identity
-  ) {
-    if (!verifyClaim(contents, cType)) {
-      throw Error('Claim not valid')
+  public constructor(claimInput: IClaim) {
+    if (!claimInput.cTypeHash || !claimInput.contents || !claimInput.owner) {
+      throw new Error(
+        `Property Not Provided while building Claim:\n
+        claimInput.cTypeHash:\n
+          ${claimInput.cTypeHash}\n
+          claimInput.contents:\n
+          ${claimInput.contents}\n
+          claimInput.owner:\n'
+          ${claimInput.owner}`
+      )
     }
-    this.cType = cType.hash
-    this.contents = contents
-    this.owner = identity.address
+    this.cTypeHash = claimInput.cTypeHash
+    this.contents = claimInput.contents
+    this.owner = claimInput.owner
   }
 }

@@ -1,4 +1,4 @@
-import { Text, Tuple } from '@polkadot/types'
+import { Text, Tuple, H256 } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import { Crypto, Identity } from '..'
 import DelegationRootNode from './DelegationRootNode'
@@ -13,7 +13,7 @@ describe('Delegation', () => {
     () => {
       const tuple = new Tuple(
         // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-        [Text, Text, Bool],
+        [H256, Text, Bool],
         [ctypeHash, identityAlice.address, false]
       )
       return Promise.resolve(tuple)
@@ -23,7 +23,7 @@ describe('Delegation', () => {
     () => {
       const tuple = new Tuple(
         // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-        [Text, Text, Bool],
+        [H256, Text, Bool],
         [ctypeHash, identityAlice.address, false]
       )
       return Promise.resolve(tuple)

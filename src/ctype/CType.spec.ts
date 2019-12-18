@@ -20,7 +20,7 @@ describe('CType', () => {
     },
   } as ICType
 
-  const claimCtype = new CType({
+  const rawCtype = {
     schema: {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -29,7 +29,9 @@ describe('CType', () => {
       },
       type: 'object',
     },
-  } as ICType)
+  } as ICType
+
+  const claimCtype = new CType(rawCtype)
 
   const identityAlice = Identity.buildFromURI('//Alice')
 
@@ -37,7 +39,11 @@ describe('CType', () => {
     name: 'Bob',
   }
 
-  const claim = new Claim(claimCtype, claimContents, identityAlice)
+  const claim = Claim.fromCTypeAndClaimContents(
+    claimCtype,
+    claimContents,
+    identityAlice.address
+  )
 
   it('stores ctypes', async () => {
     const testHash = Crypto.hashStr('1234')
@@ -49,7 +55,7 @@ describe('CType', () => {
       owner: identityAlice.address,
     }
 
-    const resultTxStatus = new TxStatus('Finalised', Crypto.hashStr('987654'))
+    const resultTxStatus = new TxStatus('Finalized', Crypto.hashStr('987654'))
     require('../blockchain/Blockchain').default.__mockResultHash = resultTxStatus
 
     const result = await ctype.store(identityAlice)
@@ -59,5 +65,14 @@ describe('CType', () => {
   it('verifies the claim structure', () => {
     expect(claimCtype.verifyClaimStructure(claim)).toBeTruthy()
     expect(claimCtype.verifyClaimStructure(claim.owner)).toBeFalsy()
+  })
+  it('throws error on wrong ctype hash', () => {
+    const wrongRawCtype = {
+      ...rawCtype,
+      hash: '0x1234',
+    }
+    expect(() => {
+      return CType.fromCType(wrongRawCtype)
+    }).toThrow()
   })
 })

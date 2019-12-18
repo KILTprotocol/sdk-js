@@ -1,8 +1,10 @@
 import Identity from '../identity/Identity'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import AttestedClaim from './AttestedClaim'
 import Attestation from '../attestation/Attestation'
-import IClaim from '../types/Claim'
+import CType from '../ctype/CType'
+import ICType from '../types/CType'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import Claim from '../claim/Claim'
 
 function buildAttestedClaim(
   claimer: Identity,
@@ -12,26 +14,38 @@ function buildAttestedClaim(
   legitimations: AttestedClaim[]
 ): AttestedClaim {
   // create claim
-  const claim = {
-    cType: ctype,
+  const testCType: CType = CType.fromCType({
+    schema: {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    },
+  } as ICType)
+  const claim = Claim.fromCTypeAndClaimContents(
+    testCType,
     contents,
-    owner: claimer.address,
-  } as IClaim
+    claimer.address
+  )
   // build request for attestation with legimitations
-  const requstForAttestation: RequestForAttestation = new RequestForAttestation(
+  const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
     claim,
+    claimer,
     legitimations,
-    claimer
+    null
   )
   // build attestation
-  const attestation: Attestation = new Attestation(
-    requstForAttestation,
-    attester
+  const testAttestation: Attestation = Attestation.fromRequestAndPublicIdentity(
+    requestForAttestation,
+    attester,
+    null
   )
   // combine to attested claim
-  const attestedClaim: AttestedClaim = new AttestedClaim(
-    requstForAttestation,
-    attestation
+  const attestedClaim: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
+    requestForAttestation,
+    testAttestation
   )
   return attestedClaim
 }
@@ -40,7 +54,6 @@ describe('RequestForAttestation', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
   const identityBob = Identity.buildFromURI('//Bob')
   const identityCharlie = Identity.buildFromURI('//Charlie')
-  const identityDoria = Identity.buildFromURI('//Doria')
 
   const legitimation: AttestedClaim = buildAttestedClaim(
     identityAlice,
@@ -53,7 +66,7 @@ describe('RequestForAttestation', () => {
   it('verify attested claims', async () => {
     const attestedClaim: AttestedClaim = buildAttestedClaim(
       identityCharlie,
-      identityDoria,
+      identityAlice,
       'ctype',
       {
         a: 'a',

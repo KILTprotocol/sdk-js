@@ -6,7 +6,7 @@
  */
 import IClaim from './Claim'
 import { IDelegationBaseNode } from './Delegation'
-import IAttestedClaim from './AttestedClaim'
+import AttestedClaim from '../attestedclaim/AttestedClaim'
 
 export type Hash = string
 
@@ -17,11 +17,11 @@ export type NonceHash = {
 
 export default interface IRequestForAttestation {
   claim: IClaim
-  claimerSignature: string
+  legitimations: AttestedClaim[]
+  claimOwner: NonceHash
   claimHashTree: object
-  ctypeHash: NonceHash
-  hash: Hash
-  legitimations: IAttestedClaim[]
-
-  delegationId?: IDelegationBaseNode['id']
+  cTypeHash: NonceHash
+  rootHash: Hash
+  claimerSignature: string
+  delegationId: IDelegationBaseNode['id'] | null
 }
