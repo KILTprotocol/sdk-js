@@ -20,6 +20,31 @@ import IQuote, { IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
 import { hashObjectAsStr } from '../crypto/Crypto'
 
 export default class Quote implements IQuote {
+  public static fromQuoteInput(
+    deserializedQuote: IQuoteAttesterSigned
+  ): IQuoteAttesterSigned {
+    const quote = new Quote({
+      attesterAddress: deserializedQuote.attesterAddress,
+      cTypeHash: deserializedQuote.cTypeHash,
+      cost: deserializedQuote.cost,
+      currency: deserializedQuote.currency,
+      quoteTimeframe: deserializedQuote.quoteTimeframe,
+      termsAndConditions: deserializedQuote.termsAndConditions,
+      version: deserializedQuote.version,
+    })
+    return {
+      attesterAddress: quote.attesterAddress,
+      cTypeHash: quote.cTypeHash,
+      cost: quote.cost,
+      currency: quote.currency,
+      quoteTimeframe: quote.quoteTimeframe,
+      termsAndConditions: quote.termsAndConditions,
+      version: quote.version,
+      quoteHash: deserializedQuote.quoteHash,
+      attesterSignature: deserializedQuote.attesterSignature,
+    }
+  }
+
   public static fromQuoteDataAndIdentity(
     quoteInput: IQuote,
     identity: Identity
