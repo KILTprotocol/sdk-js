@@ -14,15 +14,16 @@
  */
 
 import Ajv from 'ajv'
-import IQuote from '../types/Quote'
 import QuoteSchema from './QuoteSchema'
+import Identity from '../identity/Identity'
+import IQuote from '../types/Quote'
 
 export default class Quote implements IQuote {
-  public static fromQuote(quoteInput: IQuote): Quote {
+  public static fromQuote(quoteInput: IQuote, identity: Identity): Quote {
     if (!Quote.validateQuoteSchema(QuoteSchema, quoteInput)) {
       throw new Error('Quote does not correspond to schema')
     }
-    return new Quote(quoteInput)
+    return new Quote(quoteInput, identity)
   }
 
   public attesterAddress: IQuote['attesterAddress']
@@ -32,15 +33,17 @@ export default class Quote implements IQuote {
   public quoteTimeframe: IQuote['quoteTimeframe']
   public termsAndConditions: IQuote['termsAndConditions']
   public version: IQuote['version']
+  // public attesterSignature: string
 
-  public constructor(quoteInput: Quote) {
-    this.attesterAddress = quoteInput.attesterAddress
+  public constructor(quoteInput: Quote, identity: Identity) {
+    this.attesterAddress = identity.address
     this.cTypeHash = quoteInput.cTypeHash
     this.cost = quoteInput.cost
     this.currency = quoteInput.currency
     this.quoteTimeframe = quoteInput.quoteTimeframe
     this.termsAndConditions = quoteInput.termsAndConditions
     this.version = quoteInput.version
+    // this.attesterSignature = identity.signStr(JSON.stringify(quoteInput))
   }
 
   public static validateQuoteSchema(
@@ -63,4 +66,9 @@ export default class Quote implements IQuote {
     }
     return !!result
   }
+
+  // public static signedQuote(identity: Identity, quoteObject: Quote): IQuoteAttesterSigned {
+  //   const QuoteSigned: IQuoteSigned
+  //   return QuoteSigned
+  // }
 }

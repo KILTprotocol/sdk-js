@@ -9,7 +9,6 @@ describe('Claim', () => {
   const date = new Date(2019, 11, 10)
 
   const invalidCostQuoteData = {
-    attesterAddress: identityAlice.address,
     cTypeHash:
       '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
     cost: invalidCost,
@@ -20,7 +19,6 @@ describe('Claim', () => {
   } as IQuote
 
   const invalidPropertiesQuoteData = {
-    attesterAddress: identityAlice.address,
     cTypeHash:
       '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
     cost: {
@@ -47,9 +45,12 @@ describe('Claim', () => {
     termsAndConditions: 'Lots of these',
     version: '1.1.3',
   }
-  const validQuote = new Quote(validQuoteData)
-  const invalidPropertiesQuote = new Quote(invalidPropertiesQuoteData)
-  const invalidCostQuote = new Quote(invalidCostQuoteData)
+  const validQuote = new Quote(validQuoteData, identityAlice)
+  const invalidPropertiesQuote = new Quote(
+    invalidPropertiesQuoteData,
+    identityAlice
+  )
+  const invalidCostQuote = new Quote(invalidCostQuoteData, identityAlice)
 
   it('tests created quote data against given data', () => {
     expect(validQuote).toEqual(validQuoteData)

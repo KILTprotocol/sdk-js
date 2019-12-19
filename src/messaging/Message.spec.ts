@@ -13,11 +13,12 @@ import Crypto from '../crypto'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import Quote from '../quote/Quote'
 import IQuote from '../types/Quote'
+import IClaim from '../types/Claim'
 
 describe('Messaging', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
   const identityBob = Identity.buildFromURI('//Bob')
-
+  const date = new Date(2019, 11, 10)
   it('verify message encryption and signing', () => {
     const messageBody: IRequestClaimsForCTypes = {
       content: ['0x12345678'],
@@ -120,25 +121,28 @@ describe('Messaging', () => {
       claimerSignature: '0x12345678',
     } as IRequestForAttestation
 
-    const quoteData = new Quote({
-      attesterAddress: identityAlice.address,
-      cTypeHash: '0x123474574373456737...',
-      cost: {
-        tax: 23.45,
-        net: 23.4,
-        gross: 23.5,
+    const quoteData = new Quote(
+      {
+        attesterAddress: identityAlice.address,
+        cTypeHash: '0x123474574373456737...',
+        cost: {
+          tax: 23.45,
+          net: 23.4,
+          gross: 23.5,
+        },
+        currency: 'Euro',
+        termsAndConditions: 'www.PDFofExampleTerms&Conditions.com',
+        quoteTimeframe: date,
+        version: 'bla',
       },
-      currency: 'Euro',
-      termsAndConditions: 'www.PDFofExampleTerms&Conditions.com',
-      quoteTimeframe: '23.12.2019',
-      version: 'bla',
-    })
+      identityAlice
+    )
 
     const requestAttestationBody: IRequestAttestationForClaim = {
       content: {
         requestForAttestation: content,
         quote: quoteData as IQuote,
-        prerequisiteClaims: ['0x12345678', '0x12345678'],
+        prerequisiteClaims: [] as IClaim[],
       },
       type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
     }

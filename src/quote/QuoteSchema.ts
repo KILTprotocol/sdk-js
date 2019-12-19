@@ -54,6 +54,11 @@ const QuoteSchema = {
       title: 'The Version Schema',
       pattern: '^(.*)$',
     },
+    quoteHash: {
+      type: 'string',
+      title: 'The quote Hash Schema',
+      pattern: '^(.*)$',
+    },
   },
   required: [
     'attesterAddress',

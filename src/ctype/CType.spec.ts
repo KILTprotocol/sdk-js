@@ -48,8 +48,6 @@ describe('CType', () => {
 
   const claimCtype = new CType(rawCtype)
 
-  console.log(claimCtype)
-
   const identityAlice = Identity.buildFromURI('//Alice')
 
   const claimContents = {

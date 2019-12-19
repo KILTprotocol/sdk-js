@@ -24,7 +24,7 @@ import {
 } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
 import ITerms from '../types/Terms'
-import IQuote from '../types/Quote'
+import IQuoteAgreement from '../types/Quote'
 
 /**
  * inReplyTo - should store the id of the parent message
@@ -240,8 +240,7 @@ export interface IRejectTerms extends IMessageBodyBase {
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
   content: {
     requestForAttestation: IRequestForAttestation
-    quote?: IQuote
-    // quoteHash: IQuoteHash
+    quote?: IQuoteAgreement // Both Parties have agreed and signed the document. Now the
     prerequisiteClaims?: IClaim[]
   }
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
