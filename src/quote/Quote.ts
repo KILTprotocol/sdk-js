@@ -27,7 +27,7 @@ export default class Quote implements IQuote {
     if (!Quote.validateQuoteSchema(QuoteSchema, quoteInput)) {
       throw new Error('Quote does not correspond to schema')
     }
-    const quote = new Quote(quoteInput, identity)
+    const quote = new Quote(quoteInput)
     return quote.createAttesterSignature(identity)
   }
 
@@ -39,8 +39,8 @@ export default class Quote implements IQuote {
   public termsAndConditions: IQuote['termsAndConditions']
   public version: IQuote['version']
 
-  public constructor(quoteInput: IQuote, identity: Identity) {
-    this.attesterAddress = identity.address
+  public constructor(quoteInput: IQuote) {
+    this.attesterAddress = quoteInput.attesterAddress
     this.cTypeHash = quoteInput.cTypeHash
     this.cost = quoteInput.cost
     this.currency = quoteInput.currency
@@ -85,7 +85,7 @@ export default class Quote implements IQuote {
       termsAndConditions: attestersignedQuote.termsAndConditions,
       version: attestersignedQuote.version,
       quoteHash: attestersignedQuote.quoteHash,
-      attesterSignature: signature,
+      attesterSignature: attestersignedQuote.attesterSignature,
       rootHash: requestRootHash,
       claimerSignature: signature,
     }

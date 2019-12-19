@@ -5,12 +5,6 @@ import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
-import IQuote, { IQuoteAttesterSigned, IQuoteAgreement } from '../types/Quote'
-import {
-  IRequestAttestationForClaim,
-  MessageBodyType,
-} from '../messaging/Message'
-import Quote from '../quote/Quote'
 
 function buildRequestForAttestation(
   claimer: Identity,
@@ -19,9 +13,7 @@ function buildRequestForAttestation(
   legitimations: AttestedClaim[]
 ): RequestForAttestation {
   // create claim
-  const identityAlice = Identity.buildFromURI('//Alice')
-
-  const contentsCopy = contents
+  const contentsReference = contents
   const testCType: CType = CType.fromCType({
     schema: {
       $id: 'http://example.com/ctype-1',
@@ -41,48 +33,16 @@ function buildRequestForAttestation(
   } as ICType)
   const claim = {
     cTypeHash: testCType.hash,
-    contents: contentsCopy,
+    contents: contentsReference,
     owner: claimer.address,
   } as IClaim
   // build request for attestation with legimitations
-  const req = RequestForAttestation.fromClaimAndIdentity(
+  return RequestForAttestation.fromClaimAndIdentity(
     claim,
     claimer,
     legitimations,
     null
   )
-  const validQuoteData: IQuote = {
-    attesterAddress: identityAlice.address,
-    cTypeHash:
-      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
-    cost: {
-      gross: 233,
-      net: 23.3,
-      tax: 23.3,
-    },
-    currency: 'Euro',
-    quoteTimeframe: new Date('12-04-2020'),
-    termsAndConditions: 'Lots of these',
-    version: '1.1.3',
-  }
-  const quoteeeee = new Quote(validQuoteData, identityAlice)
-  const hgbhgv: IQuoteAttesterSigned = quoteeeee.createAttesterSignature(
-    identityAlice
-  )
-  const quotttBoth: IQuoteAgreement = Quote.createAgreedQuote(
-    claimer,
-    hgbhgv,
-    req.rootHash
-  )
-  const message: IRequestAttestationForClaim = {
-    content: {
-      requestForAttestation: req,
-      quote: quotttBoth,
-    },
-    type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
-  }
-  console.log(message)
-  return req
 }
 
 describe('RequestForAttestation', () => {
