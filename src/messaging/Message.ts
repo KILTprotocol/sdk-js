@@ -24,7 +24,7 @@ import {
 } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
 import ITerms from '../types/Terms'
-import IQuoteAgreement from '../types/Quote'
+import { IQuoteAgreement } from '../types/Quote'
 
 /**
  * inReplyTo - should store the id of the parent message

@@ -21,13 +21,12 @@ export default interface IQuote {
   termsAndConditions: string
   version: string
 }
-export interface IQuoteAttesterSigned {
-  quote: IQuote
+export interface IQuoteAttesterSigned extends IQuote {
   quoteHash: string
   attesterSignature: string
 }
 
-export interface IQuoteAgreement {
-  quoteSignedAttester: IQuoteAttesterSigned
+export interface IQuoteAgreement extends IQuoteAttesterSigned {
+  rootHash: string
   claimerSignature: string
 }

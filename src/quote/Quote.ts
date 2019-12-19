@@ -16,14 +16,19 @@
 import Ajv from 'ajv'
 import QuoteSchema from './QuoteSchema'
 import Identity from '../identity/Identity'
-import IQuote from '../types/Quote'
+import IQuote, { IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
+import { hashObjectAsStr } from '../crypto/Crypto'
 
 export default class Quote implements IQuote {
-  public static fromQuote(quoteInput: IQuote, identity: Identity): Quote {
+  public static fromQuoteDataAndIdentity(
+    quoteInput: IQuote,
+    identity: Identity
+  ): IQuoteAttesterSigned {
     if (!Quote.validateQuoteSchema(QuoteSchema, quoteInput)) {
       throw new Error('Quote does not correspond to schema')
     }
-    return new Quote(quoteInput, identity)
+    const quote = new Quote(quoteInput, identity)
+    return quote.createAttesterSignature(identity)
   }
 
   public attesterAddress: IQuote['attesterAddress']
@@ -33,9 +38,8 @@ export default class Quote implements IQuote {
   public quoteTimeframe: IQuote['quoteTimeframe']
   public termsAndConditions: IQuote['termsAndConditions']
   public version: IQuote['version']
-  // public attesterSignature: string
 
-  public constructor(quoteInput: Quote, identity: Identity) {
+  public constructor(quoteInput: IQuote, identity: Identity) {
     this.attesterAddress = identity.address
     this.cTypeHash = quoteInput.cTypeHash
     this.cost = quoteInput.cost
@@ -43,7 +47,48 @@ export default class Quote implements IQuote {
     this.quoteTimeframe = quoteInput.quoteTimeframe
     this.termsAndConditions = quoteInput.termsAndConditions
     this.version = quoteInput.version
-    // this.attesterSignature = identity.signStr(JSON.stringify(quoteInput))
+  }
+
+  public createAttesterSignature(
+    attesterIdentity: Identity
+  ): IQuoteAttesterSigned {
+    const generatedQuoteHash = hashObjectAsStr(this)
+    const Quotetemp = { quote: this, quoteHash: generatedQuoteHash }
+    const signature = attesterIdentity.signStr(JSON.stringify(Quotetemp))
+    return {
+      attesterAddress: this.attesterAddress,
+      cTypeHash: this.cTypeHash,
+      cost: this.cost,
+      currency: this.currency,
+      quoteTimeframe: this.quoteTimeframe,
+      termsAndConditions: this.termsAndConditions,
+      version: this.version,
+      quoteHash: generatedQuoteHash,
+      attesterSignature: signature,
+    }
+  }
+
+  public static createAgreedQuote(
+    claimerIdentity: Identity,
+    attestersignedQuote: IQuoteAttesterSigned,
+    requestRootHash: string
+  ): IQuoteAgreement {
+    const signature = claimerIdentity.signStr(
+      JSON.stringify(attestersignedQuote)
+    )
+    return {
+      attesterAddress: attestersignedQuote.attesterAddress,
+      cTypeHash: attestersignedQuote.cTypeHash,
+      cost: attestersignedQuote.cost,
+      currency: attestersignedQuote.currency,
+      quoteTimeframe: attestersignedQuote.quoteTimeframe,
+      termsAndConditions: attestersignedQuote.termsAndConditions,
+      version: attestersignedQuote.version,
+      quoteHash: attestersignedQuote.quoteHash,
+      attesterSignature: signature,
+      rootHash: requestRootHash,
+      claimerSignature: signature,
+    }
   }
 
   public static validateQuoteSchema(
@@ -66,9 +111,4 @@ export default class Quote implements IQuote {
     }
     return !!result
   }
-
-  // public static signedQuote(identity: Identity, quoteObject: Quote): IQuoteAttesterSigned {
-  //   const QuoteSigned: IQuoteSigned
-  //   return QuoteSigned
-  // }
 }

@@ -12,7 +12,6 @@ import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import Crypto from '../crypto'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import Quote from '../quote/Quote'
-import IQuote from '../types/Quote'
 import IClaim from '../types/Claim'
 
 describe('Messaging', () => {
@@ -137,11 +136,16 @@ describe('Messaging', () => {
       },
       identityAlice
     )
-
+    const quoteAttesterSigned = quoteData.createAttesterSignature(identityBob)
+    const bothSigned = Quote.createAgreedQuote(
+      identityAlice,
+      quoteAttesterSigned,
+      content.rootHash
+    )
     const requestAttestationBody: IRequestAttestationForClaim = {
       content: {
         requestForAttestation: content,
-        quote: quoteData as IQuote,
+        quote: bothSigned,
         prerequisiteClaims: [] as IClaim[],
       },
       type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
