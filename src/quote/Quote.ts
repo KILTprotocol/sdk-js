@@ -17,10 +17,10 @@ import Ajv from 'ajv'
 import QuoteSchema from './QuoteSchema'
 import Identity from '../identity/Identity'
 import IQuote, { IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
-import { hashObjectAsStr } from '../crypto/Crypto'
+import { hashObjectAsStr, verify } from '../crypto/Crypto'
 
 export default class Quote implements IQuote {
-  public static fromQuoteInput(
+  public static fromAttesterSignedInput(
     deserializedQuote: IQuoteAttesterSigned
   ): IQuoteAttesterSigned {
     const quote = new Quote({
@@ -37,6 +37,18 @@ export default class Quote implements IQuote {
     }
     if (!Quote.verifyQuoteHash(quote, deserializedQuote.quoteHash)) {
       throw Error('Invalid Quote Hash')
+    }
+    if (
+      !verify(
+        JSON.stringify(quote),
+        deserializedQuote.attesterSignature,
+        deserializedQuote.attesterAddress
+      )
+    ) {
+      throw Error(
+        `attestersSignature ${deserializedQuote.attesterSignature}
+        does not check out with the supplied data`
+      )
     }
     return {
       attesterAddress: quote.attesterAddress,
