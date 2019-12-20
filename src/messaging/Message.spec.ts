@@ -133,7 +133,7 @@ describe('Messaging', () => {
       quoteTimeframe: date,
       version: 'bla',
     })
-    const quoteAttesterSigned = quoteData.createAttesterSignature(identityBob)
+    const quoteAttesterSigned = quoteData.createAttesterSignature(identityAlice)
     const bothSigned = Quote.createAgreedQuote(
       identityAlice,
       quoteAttesterSigned,

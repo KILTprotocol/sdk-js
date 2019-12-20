@@ -93,7 +93,16 @@ export default class Quote implements IQuote {
     attesterIdentity: Identity
   ): IQuoteAttesterSigned {
     const generatedQuoteHash = hashObjectAsStr(this)
-    const Quotetemp = { quote: this, quoteHash: generatedQuoteHash }
+    const Quotetemp = {
+      attesterAddress: this.attesterAddress,
+      cTypeHash: this.cTypeHash,
+      cost: this.cost,
+      currency: this.currency,
+      quoteTimeframe: this.quoteTimeframe,
+      termsAndConditions: this.termsAndConditions,
+      version: this.version,
+      quoteHash: generatedQuoteHash,
+    }
     const signature = attesterIdentity.signStr(JSON.stringify(Quotetemp))
     if (!Quote.verifyQuoteHash(this, generatedQuoteHash)) {
       throw Error('Invalid Quote Hash')
@@ -116,6 +125,24 @@ export default class Quote implements IQuote {
     attestersignedQuote: IQuoteAttesterSigned,
     requestRootHash: string
   ): IQuoteAgreement {
+    if (
+      !verify(
+        JSON.stringify({
+          attesterAddress: attestersignedQuote.attesterAddress,
+          cTypeHash: attestersignedQuote.cTypeHash,
+          cost: attestersignedQuote.cost,
+          currency: attestersignedQuote.currency,
+          quoteTimeframe: attestersignedQuote.quoteTimeframe,
+          termsAndConditions: attestersignedQuote.termsAndConditions,
+          version: attestersignedQuote.version,
+          quoteHash: attestersignedQuote.quoteHash,
+        }),
+        attestersignedQuote.attesterSignature,
+        attestersignedQuote.attesterAddress
+      )
+    ) {
+      throw Error(`Quote Signature could not be verified`)
+    }
     const signature = claimerIdentity.signStr(
       JSON.stringify(attestersignedQuote)
     )

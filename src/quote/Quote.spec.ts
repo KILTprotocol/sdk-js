@@ -6,10 +6,6 @@ import IQuote, {
 } from '../types/Quote'
 import Identity from '../identity/Identity'
 import Quote from './Quote'
-import {
-  IRequestAttestationForClaim,
-  MessageBodyType,
-} from '../messaging/Message'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
@@ -99,14 +95,6 @@ describe('Claim', () => {
     validAttesterSignedQuote,
     request.rootHash
   )
-  const message: IRequestAttestationForClaim = {
-    content: {
-      requestForAttestation: request,
-      quote: quoteBothAgreed,
-    },
-    type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
-  }
-  console.info(JSON.stringify(message, null, 4))
   const invalidPropertiesQuote = new Quote(invalidPropertiesQuoteData)
   const invalidCostQuote = new Quote(invalidCostQuoteData)
 
@@ -124,7 +112,16 @@ describe('Claim', () => {
     ).toBeFalsy()
     expect(
       verify(
-        JSON.stringify(validQuote),
+        JSON.stringify({
+          attesterAddress: validQuote.attesterAddress,
+          cTypeHash: validQuote.cTypeHash,
+          cost: validQuote.cost,
+          currency: validQuote.currency,
+          quoteTimeframe: validQuote.quoteTimeframe,
+          termsAndConditions: validQuote.termsAndConditions,
+          version: validQuote.version,
+          quoteHash: validAttesterSignedQuote.quoteHash,
+        }),
         validAttesterSignedQuote.attesterSignature,
         validAttesterSignedQuote.attesterAddress
       )
