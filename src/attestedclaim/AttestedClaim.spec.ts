@@ -23,13 +23,6 @@ function buildAttestedClaim(
       },
       type: 'object',
     },
-    metadata: {
-      title: { default: 'CType Title' },
-      description: {},
-      properties: {
-        name: { title: { default: 'Name' } },
-      },
-    },
   } as ICType)
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
