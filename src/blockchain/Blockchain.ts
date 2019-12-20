@@ -162,7 +162,18 @@ export default class Blockchain implements IBlockchainApi {
     return Blockchain.submitSignedTx(signedTx, opts)
   }
 
-  public async getNonce(accountAddress: string): Promise<Index> {
-    return this.api.rpc.system.accountNextIndex(accountAddress)
+  public async getNonce(accountAddress: string): Promise<Codec> {
+    if (!this.currentNonce) {
+      this.currentNonce = await this.api.query.system.accountNonce<Index>(
+        accountAddress
+      )
+      if (!this.currentNonce) {
+        throw Error(`Nonce not found for account ${accountAddress}`)
+      }
+    } else {
+      this.currentNonce.addn(1)
+    }
+
+    return this.currentNonce
   }
 }
