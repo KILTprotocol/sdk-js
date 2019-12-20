@@ -19,7 +19,7 @@ export default interface IQuote {
   currency: string
   quoteTimeframe: Date
   termsAndConditions: string
-  version: string
+  specVersion: string
 }
 export interface IQuoteAttesterSigned extends IQuote {
   quoteHash: string

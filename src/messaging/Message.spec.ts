@@ -131,7 +131,7 @@ describe('Messaging', () => {
       currency: 'Euro',
       termsAndConditions: 'www.PDFofExampleTerms&Conditions.com',
       quoteTimeframe: date,
-      version: 'bla',
+      specVersion: 'bla',
     })
     const quoteAttesterSigned = quoteData.createAttesterSignature(identityAlice)
     const bothSigned = Quote.createAgreedQuote(

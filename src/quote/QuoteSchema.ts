@@ -3,16 +3,15 @@ const QuoteSchema = {
   $id: 'KILT:quote:QUOTEHASH',
   type: 'object',
   title: 'Quote',
+  version: '1.0.0',
   properties: {
     attesterAddress: {
       type: 'string',
       title: 'The Attester ID Schema',
-      pattern: '^(.*)$',
     },
     cTypeHash: {
       type: 'string',
       title: 'The Ctypehash Schema',
-      pattern: '^(.*)$',
     },
     cost: {
       type: 'object',
@@ -36,7 +35,6 @@ const QuoteSchema = {
     currency: {
       type: 'string',
       title: 'The currency Schema',
-      pattern: '^(.*)$',
     },
     termsAndConditions: {
       type: 'string',
@@ -47,17 +45,14 @@ const QuoteSchema = {
       type: 'string',
       format: 'date-time',
       title: 'The quotetimeframe Schema',
-      pattern: '^(.*)$',
     },
-    version: {
+    specVersion: {
       type: 'string',
       title: 'The Version Schema',
-      pattern: '^(.*)$',
     },
     quoteHash: {
       type: 'string',
       title: 'The quote Hash Schema',
-      pattern: '^(.*)$',
     },
   },
   required: [
@@ -67,7 +62,7 @@ const QuoteSchema = {
     'currency',
     'termsAndConditions',
     'quoteTimeframe',
-    'version',
+    'specVersion',
   ],
 }
 

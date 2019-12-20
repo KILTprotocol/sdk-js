@@ -3,7 +3,7 @@
  *
  * A [[Quote]] object represents a legal **offer** for the closure of a contract attesting a [[Claim]] from the [[CTYPE]] specified within the offer.
  *
- * A [[Quote]] comes with a versionable specs, allowing different [[Quote]] specs to exist over time and tracks under which [[Quote]] a contract was closed.
+ * A [[Quote]] comes with a versionable spec, allowing different [[Quote]] specs to exist over time and tracks under which [[Quote]] a contract was closed.
  *
  * @module Quote
  * @preferred
@@ -30,7 +30,7 @@ export default class Quote implements IQuote {
       currency: deserializedQuote.currency,
       quoteTimeframe: deserializedQuote.quoteTimeframe,
       termsAndConditions: deserializedQuote.termsAndConditions,
-      version: deserializedQuote.version,
+      specVersion: deserializedQuote.specVersion,
     })
     if (!Quote.validateQuoteSchema(QuoteSchema, quote)) {
       throw new Error('Quote does not correspond to schema')
@@ -57,7 +57,7 @@ export default class Quote implements IQuote {
       currency: quote.currency,
       quoteTimeframe: quote.quoteTimeframe,
       termsAndConditions: quote.termsAndConditions,
-      version: quote.version,
+      specVersion: quote.specVersion,
       quoteHash: deserializedQuote.quoteHash,
       attesterSignature: deserializedQuote.attesterSignature,
     }
@@ -80,7 +80,7 @@ export default class Quote implements IQuote {
   public currency: IQuote['currency']
   public quoteTimeframe: IQuote['quoteTimeframe']
   public termsAndConditions: IQuote['termsAndConditions']
-  public version: IQuote['version']
+  public specVersion: IQuote['specVersion']
 
   public constructor(quoteInput: IQuote) {
     this.attesterAddress = quoteInput.attesterAddress
@@ -89,7 +89,7 @@ export default class Quote implements IQuote {
     this.currency = quoteInput.currency
     this.quoteTimeframe = quoteInput.quoteTimeframe
     this.termsAndConditions = quoteInput.termsAndConditions
-    this.version = quoteInput.version
+    this.specVersion = quoteInput.specVersion
   }
 
   public createAttesterSignature(
@@ -103,7 +103,7 @@ export default class Quote implements IQuote {
       currency: this.currency,
       quoteTimeframe: this.quoteTimeframe,
       termsAndConditions: this.termsAndConditions,
-      version: this.version,
+      specVersion: this.specVersion,
       quoteHash: generatedQuoteHash,
     }
     const signature = attesterIdentity.signStr(JSON.stringify(Quotetemp))
@@ -117,7 +117,7 @@ export default class Quote implements IQuote {
       currency: this.currency,
       quoteTimeframe: this.quoteTimeframe,
       termsAndConditions: this.termsAndConditions,
-      version: this.version,
+      specVersion: this.specVersion,
       quoteHash: generatedQuoteHash,
       attesterSignature: signature,
     }
@@ -137,7 +137,7 @@ export default class Quote implements IQuote {
           currency: attestersignedQuote.currency,
           quoteTimeframe: attestersignedQuote.quoteTimeframe,
           termsAndConditions: attestersignedQuote.termsAndConditions,
-          version: attestersignedQuote.version,
+          specVersion: attestersignedQuote.specVersion,
           quoteHash: attestersignedQuote.quoteHash,
         }),
         attestersignedQuote.attesterSignature,
@@ -156,7 +156,7 @@ export default class Quote implements IQuote {
       currency: attestersignedQuote.currency,
       quoteTimeframe: attestersignedQuote.quoteTimeframe,
       termsAndConditions: attestersignedQuote.termsAndConditions,
-      version: attestersignedQuote.version,
+      specVersion: attestersignedQuote.specVersion,
       quoteHash: attestersignedQuote.quoteHash,
       attesterSignature: attestersignedQuote.attesterSignature,
       rootHash: requestRootHash,

@@ -55,7 +55,7 @@ describe('Claim', () => {
     currency: 'Euro',
     quoteTimeframe: date,
     termsAndConditions: 'Lots of these',
-    version: '1.1.3',
+    specVersion: '1.1.3',
   } as IQuote
 
   const invalidPropertiesQuoteData = {
@@ -83,7 +83,7 @@ describe('Claim', () => {
     currency: 'Euro',
     quoteTimeframe: new Date('12-04-2020'),
     termsAndConditions: 'Lots of these',
-    version: '1.1.3',
+    specVersion: '1.1.3',
   }
   const validQuote = new Quote(validQuoteData)
   const validAttesterSignedQuote: IQuoteAttesterSigned = validQuote.createAttesterSignature(
@@ -119,7 +119,7 @@ describe('Claim', () => {
           currency: validQuote.currency,
           quoteTimeframe: validQuote.quoteTimeframe,
           termsAndConditions: validQuote.termsAndConditions,
-          version: validQuote.version,
+          specVersion: validQuote.specVersion,
           quoteHash: validAttesterSignedQuote.quoteHash,
         }),
         validAttesterSignedQuote.attesterSignature,
