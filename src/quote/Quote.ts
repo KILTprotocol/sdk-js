@@ -83,6 +83,9 @@ export default class Quote implements IQuote {
     const generatedQuoteHash = hashObjectAsStr(this)
     const Quotetemp = { quote: this, quoteHash: generatedQuoteHash }
     const signature = attesterIdentity.signStr(JSON.stringify(Quotetemp))
+    if (!Quote.verifyQuoteHash(this, generatedQuoteHash)) {
+      throw Error('Invalid Quote Hash')
+    }
     return {
       attesterAddress: this.attesterAddress,
       cTypeHash: this.cTypeHash,
