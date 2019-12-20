@@ -15,6 +15,7 @@ import ICType from '../types/CType'
 import IClaim from '../types/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
+import { verify } from '../crypto/Crypto'
 
 describe('Claim', () => {
   const claimerIdentity = Identity.buildFromURI('//Alice')
@@ -121,6 +122,13 @@ describe('Claim', () => {
     expect(
       Quote.verifyQuoteHash(invalidCostQuote, quoteBothAgreed.quoteHash)
     ).toBeFalsy()
+    expect(
+      verify(
+        JSON.stringify(validQuote),
+        validAttesterSignedQuote.attesterSignature,
+        validAttesterSignedQuote.attesterAddress
+      )
+    ).toBeTruthy()
   })
   it('validates created quotes against QuoteSchema', () => {
     expect(Quote.validateQuoteSchema(QuoteSchema, validQuote)).toBeTruthy()
