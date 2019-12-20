@@ -10,7 +10,7 @@
 
 import { ApiPromise } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Header } from '@polkadot/types/interfaces/types'
+import { Header, Index } from '@polkadot/types/interfaces/types'
 import { Codec } from '@polkadot/types/types'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
@@ -52,10 +52,12 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public api: ApiPromise
+  public currentNonce: Index | null
 
   public constructor(api: ApiPromise) {
     this.api = api
     this.errorHandler = new ErrorHandler(api)
+    this.currentNonce = null
   }
 
   private errorHandler: ErrorHandler
@@ -84,10 +86,7 @@ export default class Blockchain implements IBlockchainApi {
   ): Promise<TxStatus> {
     const accountAddress = identity.address
     const nonce = await this.getNonce(accountAddress)
-    const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
-      tx,
-      nonce.toHex()
-    )
+    const signed = identity.signSubmittableExtrinsic(tx, nonce.toHex())
     log.info(`Submitting ${tx.method}`)
 
     return new Promise<TxStatus>((resolve, reject) => {
@@ -119,11 +118,17 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public async getNonce(accountAddress: string): Promise<Codec> {
-    const nonce = await this.api.query.system.accountNonce(accountAddress)
-    if (!nonce) {
-      throw Error(`Nonce not found for account ${accountAddress}`)
+    if (!this.currentNonce) {
+      this.currentNonce = await this.api.query.system.accountNonce<Index>(
+        accountAddress
+      )
+      if (!this.currentNonce) {
+        throw Error(`Nonce not found for account ${accountAddress}`)
+      }
+    } else {
+      this.currentNonce.addn(1)
     }
 
-    return nonce
+    return this.currentNonce
   }
 }
