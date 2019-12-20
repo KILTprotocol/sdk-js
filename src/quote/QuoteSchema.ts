@@ -39,7 +39,6 @@ const QuoteSchema = {
     termsAndConditions: {
       type: 'string',
       title: 'The Terms&conditions Schema',
-      pattern: '^(.*)$',
     },
     quoteTimeframe: {
       type: 'string',
