@@ -23,25 +23,18 @@ export default class Quote implements IQuote {
   public static fromAttesterSignedInput(
     deserializedQuote: IQuoteAttesterSigned
   ): IQuoteAttesterSigned {
-    const quote = new Quote({
-      attesterAddress: deserializedQuote.attesterAddress,
-      cTypeHash: deserializedQuote.cTypeHash,
-      cost: deserializedQuote.cost,
-      currency: deserializedQuote.currency,
-      quoteTimeframe: deserializedQuote.quoteTimeframe,
-      termsAndConditions: deserializedQuote.termsAndConditions,
-      specVersion: deserializedQuote.specVersion,
-    })
+    const { quoteHash, attesterSignature, ...basicQuote } = deserializedQuote
+    const quote = new Quote(basicQuote)
     if (!Quote.validateQuoteSchema(QuoteSchema, quote)) {
       throw new Error('Quote does not correspond to schema')
     }
-    if (!Quote.verifyQuoteHash(quote, deserializedQuote.quoteHash)) {
+    if (!Quote.verifyQuoteHash(quote, quoteHash)) {
       throw Error('Invalid Quote Hash')
     }
     if (
       !verify(
         JSON.stringify(quote),
-        deserializedQuote.attesterSignature,
+        attesterSignature,
         deserializedQuote.attesterAddress
       )
     ) {
@@ -51,15 +44,9 @@ export default class Quote implements IQuote {
       )
     }
     return {
-      attesterAddress: quote.attesterAddress,
-      cTypeHash: quote.cTypeHash,
-      cost: quote.cost,
-      currency: quote.currency,
-      quoteTimeframe: quote.quoteTimeframe,
-      termsAndConditions: quote.termsAndConditions,
-      specVersion: quote.specVersion,
-      quoteHash: deserializedQuote.quoteHash,
-      attesterSignature: deserializedQuote.attesterSignature,
+      ...quote,
+      quoteHash,
+      attesterSignature,
     }
   }
 
@@ -96,29 +83,13 @@ export default class Quote implements IQuote {
     attesterIdentity: Identity
   ): IQuoteAttesterSigned {
     const generatedQuoteHash = hashObjectAsStr(this)
-    const Quotetemp = {
-      attesterAddress: this.attesterAddress,
-      cTypeHash: this.cTypeHash,
-      cost: this.cost,
-      currency: this.currency,
-      quoteTimeframe: this.quoteTimeframe,
-      termsAndConditions: this.termsAndConditions,
-      specVersion: this.specVersion,
-      quoteHash: generatedQuoteHash,
-    }
-    const signature = attesterIdentity.signStr(JSON.stringify(Quotetemp))
+    const quoteWithHash = { ...this, quoteHash: generatedQuoteHash }
+    const signature = attesterIdentity.signStr(JSON.stringify(quoteWithHash))
     if (!Quote.verifyQuoteHash(this, generatedQuoteHash)) {
       throw Error('Invalid Quote Hash')
     }
     return {
-      attesterAddress: this.attesterAddress,
-      cTypeHash: this.cTypeHash,
-      cost: this.cost,
-      currency: this.currency,
-      quoteTimeframe: this.quoteTimeframe,
-      termsAndConditions: this.termsAndConditions,
-      specVersion: this.specVersion,
-      quoteHash: generatedQuoteHash,
+      ...quoteWithHash,
       attesterSignature: signature,
     }
   }
@@ -128,19 +99,11 @@ export default class Quote implements IQuote {
     attestersignedQuote: IQuoteAttesterSigned,
     requestRootHash: string
   ): IQuoteAgreement {
+    const { attesterSignature, ...noAttesterSignature } = attestersignedQuote
     if (
       !verify(
-        JSON.stringify({
-          attesterAddress: attestersignedQuote.attesterAddress,
-          cTypeHash: attestersignedQuote.cTypeHash,
-          cost: attestersignedQuote.cost,
-          currency: attestersignedQuote.currency,
-          quoteTimeframe: attestersignedQuote.quoteTimeframe,
-          termsAndConditions: attestersignedQuote.termsAndConditions,
-          specVersion: attestersignedQuote.specVersion,
-          quoteHash: attestersignedQuote.quoteHash,
-        }),
-        attestersignedQuote.attesterSignature,
+        JSON.stringify({ ...noAttesterSignature }),
+        attesterSignature,
         attestersignedQuote.attesterAddress
       )
     ) {
@@ -150,15 +113,7 @@ export default class Quote implements IQuote {
       JSON.stringify(attestersignedQuote)
     )
     return {
-      attesterAddress: attestersignedQuote.attesterAddress,
-      cTypeHash: attestersignedQuote.cTypeHash,
-      cost: attestersignedQuote.cost,
-      currency: attestersignedQuote.currency,
-      quoteTimeframe: attestersignedQuote.quoteTimeframe,
-      termsAndConditions: attestersignedQuote.termsAndConditions,
-      specVersion: attestersignedQuote.specVersion,
-      quoteHash: attestersignedQuote.quoteHash,
-      attesterSignature: attestersignedQuote.attesterSignature,
+      ...attestersignedQuote,
       rootHash: requestRootHash,
       claimerSignature: signature,
     }
