@@ -96,8 +96,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public static fromClaimAndIdentity(
     claimInput: IClaim,
     identity: Identity,
-    legitimationsInput: AttestedClaim[],
-    delegationIdInput: IDelegationBaseNode['id'] | null
+    legitimationsInput: AttestedClaim[] = [],
+    delegationIdInput: IDelegationBaseNode['id'] | null = null
   ): RequestForAttestation {
     if (claimInput.owner !== identity.address) {
       throw Error('Claim owner is not Identity')

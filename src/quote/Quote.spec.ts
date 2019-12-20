@@ -10,7 +10,6 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { verify } from '../crypto/Crypto'
 
 describe('Claim', () => {
@@ -45,7 +44,7 @@ describe('Claim', () => {
   const request = RequestForAttestation.fromClaimAndIdentity(
     claim,
     claimerIdentity,
-    [] as AttestedClaim[],
+    [],
     null
   )
   const invalidCostQuoteData = {
