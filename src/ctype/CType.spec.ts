@@ -1,4 +1,3 @@
-import { IMetadata } from '../types/CTypeMetedata'
 import CType from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
@@ -20,14 +19,6 @@ describe('CType', () => {
       type: 'object',
     },
   } as ICType
-
-  const claimMetadata = {
-    title: { type: 'CType Title' },
-    description: {},
-    properties: {
-      name: { title: { default: 'Name' } },
-    },
-  } as IMetadata
 
   const rawCtype = {
     schema: {
