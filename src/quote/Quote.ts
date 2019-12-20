@@ -32,6 +32,9 @@ export default class Quote implements IQuote {
       termsAndConditions: deserializedQuote.termsAndConditions,
       version: deserializedQuote.version,
     })
+    if (!Quote.validateQuoteSchema(QuoteSchema, quote)) {
+      throw new Error('Quote does not correspond to schema')
+    }
     if (!Quote.verifyQuoteHash(quote, deserializedQuote.quoteHash)) {
       throw Error('Invalid Quote Hash')
     }
