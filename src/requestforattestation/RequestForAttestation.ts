@@ -90,14 +90,17 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param delegationIdInput - The id of the DelegationNode of the Attester, which should be used in the attestation
    * @returns  A new [[RequestForAttestation]] object.
    * @example ```javascript
-   * const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(claim,alice,[],null);
+   * const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
+   *   claim,
+   *   alice
+   * );
    * ```
    */
   public static fromClaimAndIdentity(
     claimInput: IClaim,
     identity: Identity,
-    legitimationsInput: AttestedClaim[],
-    delegationIdInput: IDelegationBaseNode['id'] | null
+    legitimationsInput: AttestedClaim[] = [],
+    delegationIdInput: IDelegationBaseNode['id'] | null = null
   ): RequestForAttestation {
     if (claimInput.owner !== identity.address) {
       throw Error('Claim owner is not Identity')
