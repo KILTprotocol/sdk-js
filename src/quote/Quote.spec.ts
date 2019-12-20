@@ -112,6 +112,15 @@ describe('Claim', () => {
   it('tests created quote data against given data', () => {
     expect(validQuote).toEqual(validQuoteData)
     expect(validQuote.attesterAddress).toEqual(attesterIdentity.address)
+    expect(
+      Quote.verifyQuoteHash(validQuote, quoteBothAgreed.quoteHash)
+    ).toBeTruthy()
+    expect(
+      Quote.verifyQuoteHash(validAttesterSignedQuote, quoteBothAgreed.currency)
+    ).toBeFalsy()
+    expect(
+      Quote.verifyQuoteHash(invalidCostQuote, quoteBothAgreed.quoteHash)
+    ).toBeFalsy()
   })
   it('validates created quotes against QuoteSchema', () => {
     expect(Quote.validateQuoteSchema(QuoteSchema, validQuote)).toBeTruthy()

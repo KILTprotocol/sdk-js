@@ -32,6 +32,9 @@ export default class Quote implements IQuote {
       termsAndConditions: deserializedQuote.termsAndConditions,
       version: deserializedQuote.version,
     })
+    if (!Quote.verifyQuoteHash(quote, deserializedQuote.quoteHash)) {
+      throw Error('Invalid Quote Hash')
+    }
     return {
       attesterAddress: quote.attesterAddress,
       cTypeHash: quote.cTypeHash,
@@ -135,5 +138,9 @@ export default class Quote implements IQuote {
       }
     }
     return !!result
+  }
+
+  public static verifyQuoteHash(quote: IQuote, quoteHash: string): boolean {
+    return hashObjectAsStr(quote) === quoteHash
   }
 }
