@@ -11,10 +11,10 @@ export default interface ICTypeMetadata {
 
 export interface IMetadata {
   title: {
-    type: string
+    default: string
   }
   description?: {
-    type: string
+    default: string
   }
   properties: object
 }
