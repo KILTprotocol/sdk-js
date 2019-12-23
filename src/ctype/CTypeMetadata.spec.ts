@@ -23,8 +23,8 @@ describe('CType', () => {
   const ctypeHash = ctype.hash
 
   const ctypeMetadata = {
-    title: { type: 'string' },
-    description: { type: 'string' },
+    title: { default: 'string' },
+    description: { default: 'string' },
     properties: {
       'first-property': { type: 'integer' },
       'second-property': { type: 'string' },
