@@ -1,4 +1,4 @@
-import ICTypeMetadata, { IMetadata } from '../types/CTypeMetedata'
+import ICTypeMetadata, { IMetadata } from '../types/CTypeMetadata'
 import CType from './CType'
 import { WrapperMetadata } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'

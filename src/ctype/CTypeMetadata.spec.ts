@@ -3,7 +3,7 @@ import ICType from '../types/CType'
 import CTypeMetadata from './CTypeMetadata'
 import * as CTypeUtils from './CTypeUtils'
 import { CTypeWrapperMetadata } from './CTypeSchema'
-import ICTypeMetadata from '../types/CTypeMetedata'
+import ICTypeMetadata from '../types/CTypeMetadata'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
