@@ -73,6 +73,7 @@ describe('CType', () => {
   })
   it('verifies the claim structure', () => {
     expect(claimCtype.verifyClaimStructure(claim)).toBeTruthy()
+    expect(claimCtype.verifyClaimStructure(claim))
   })
   it('throws error on wrong ctype hash', () => {
     const wrongRawCtype = {
