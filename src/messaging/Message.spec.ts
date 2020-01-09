@@ -11,8 +11,9 @@ import Message, {
 import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import Crypto from '../crypto'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import Quote from '../quote/Quote'
+import * as Quote from '../quote/Quote'
 import IClaim from '../types/Claim'
+import IQuote from '../types/Quote'
 
 describe('Messaging', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
@@ -120,7 +121,7 @@ describe('Messaging', () => {
       claimerSignature: '0x12345678',
     } as IRequestForAttestation
 
-    const quoteData = new Quote({
+    const quoteData: IQuote = {
       attesterAddress: identityAlice.address,
       cTypeHash: '0x123474574373456737...',
       cost: {
@@ -132,8 +133,11 @@ describe('Messaging', () => {
       termsAndConditions: 'www.PDFofExampleTerms&Conditions.com',
       quoteTimeframe: date,
       specVersion: 'bla',
-    })
-    const quoteAttesterSigned = quoteData.createAttesterSignature(identityAlice)
+    }
+    const quoteAttesterSigned = Quote.createAttesterSignature(
+      quoteData,
+      identityAlice
+    )
     const bothSigned = Quote.createAgreedQuote(
       identityAlice,
       quoteAttesterSigned,

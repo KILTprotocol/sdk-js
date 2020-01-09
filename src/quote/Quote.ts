@@ -19,128 +19,107 @@ import Identity from '../identity/Identity'
 import IQuote, { IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
 
-export default class Quote implements IQuote {
-  public static fromAttesterSignedInput(
-    deserializedQuote: IQuoteAttesterSigned
-  ): IQuoteAttesterSigned {
-    const { quoteHash, attesterSignature, ...basicQuote } = deserializedQuote
-    const quote = new Quote(basicQuote)
-    if (!Quote.validateQuoteSchema(QuoteSchema, quote)) {
-      throw new Error('Quote does not correspond to schema')
+export function validateQuoteSchema(
+  schema: object,
+  validate: object,
+  messages?: string[]
+): boolean | PromiseLike<any> {
+  const ajv = new Ajv()
+  ajv.addMetaSchema(QuoteSchema)
+  const result = ajv.validate(
+    JSON.parse(JSON.stringify(schema)),
+    JSON.parse(JSON.stringify(validate))
+  )
+  if (!result && ajv.errors) {
+    if (messages) {
+      ajv.errors.forEach((error: any) => {
+        messages.push(error.message)
+      })
     }
-    if (!Quote.verifyQuoteHash(quote, quoteHash)) {
-      throw Error('Invalid Quote Hash')
-    }
-    if (
-      !verify(
-        JSON.stringify(quote),
-        attesterSignature,
-        deserializedQuote.attesterAddress
-      )
-    ) {
-      throw Error(
-        `attestersSignature ${deserializedQuote.attesterSignature}
-        does not check out with the supplied data`
-      )
-    }
-    return {
-      ...quote,
-      quoteHash,
+  }
+  return !!result
+}
+
+export function verifyQuoteHash(quote: IQuote, quoteHash: string): boolean {
+  return hashObjectAsStr(quote) === quoteHash
+}
+
+export function fromAttesterSignedInput(
+  deserializedQuote: IQuoteAttesterSigned
+): IQuoteAttesterSigned {
+  const { attesterSignature, ...quoteWithHash } = deserializedQuote
+  if (
+    !verify(
+      JSON.stringify(quoteWithHash),
       attesterSignature,
-    }
-  }
-
-  public static fromQuoteDataAndIdentity(
-    quoteInput: IQuote,
-    identity: Identity
-  ): IQuoteAttesterSigned {
-    if (!Quote.validateQuoteSchema(QuoteSchema, quoteInput)) {
-      throw new Error('Quote does not correspond to schema')
-    }
-    const quote = new Quote(quoteInput)
-    return quote.createAttesterSignature(identity)
-  }
-
-  public attesterAddress: IQuote['attesterAddress']
-  public cTypeHash: IQuote['cTypeHash']
-  public cost: IQuote['cost']
-  public currency: IQuote['currency']
-  public quoteTimeframe: IQuote['quoteTimeframe']
-  public termsAndConditions: IQuote['termsAndConditions']
-  public specVersion: IQuote['specVersion']
-
-  public constructor(quoteInput: IQuote) {
-    this.attesterAddress = quoteInput.attesterAddress
-    this.cTypeHash = quoteInput.cTypeHash
-    this.cost = quoteInput.cost
-    this.currency = quoteInput.currency
-    this.quoteTimeframe = quoteInput.quoteTimeframe
-    this.termsAndConditions = quoteInput.termsAndConditions
-    this.specVersion = quoteInput.specVersion
-  }
-
-  public createAttesterSignature(
-    attesterIdentity: Identity
-  ): IQuoteAttesterSigned {
-    const generatedQuoteHash = hashObjectAsStr(this)
-    const quoteWithHash = { ...this, quoteHash: generatedQuoteHash }
-    const signature = attesterIdentity.signStr(JSON.stringify(quoteWithHash))
-    if (!Quote.verifyQuoteHash(this, generatedQuoteHash)) {
-      throw Error('Invalid Quote Hash')
-    }
-    return {
-      ...quoteWithHash,
-      attesterSignature: signature,
-    }
-  }
-
-  public static createAgreedQuote(
-    claimerIdentity: Identity,
-    attestersignedQuote: IQuoteAttesterSigned,
-    requestRootHash: string
-  ): IQuoteAgreement {
-    const { attesterSignature, ...noAttesterSignature } = attestersignedQuote
-    if (
-      !verify(
-        JSON.stringify({ ...noAttesterSignature }),
-        attesterSignature,
-        attestersignedQuote.attesterAddress
-      )
-    ) {
-      throw Error(`Quote Signature could not be verified`)
-    }
-    const signature = claimerIdentity.signStr(
-      JSON.stringify(attestersignedQuote)
+      deserializedQuote.attesterAddress
     )
-    return {
-      ...attestersignedQuote,
-      rootHash: requestRootHash,
-      claimerSignature: signature,
-    }
-  }
-
-  public static validateQuoteSchema(
-    schema: object,
-    validate: object,
-    messages?: string[]
-  ): boolean | PromiseLike<any> {
-    const ajv = new Ajv()
-    ajv.addMetaSchema(QuoteSchema)
-    const result = ajv.validate(
-      JSON.parse(JSON.stringify(schema)),
-      JSON.parse(JSON.stringify(validate))
+  ) {
+    throw Error(
+      `attestersSignature ${deserializedQuote.attesterSignature}
+        does not check out with the supplied data`
     )
-    if (!result && ajv.errors) {
-      if (messages) {
-        ajv.errors.forEach((error: any) => {
-          messages.push(error.message)
-        })
-      }
-    }
-    return !!result
+  }
+  const { quoteHash, ...basicQuote } = quoteWithHash
+  if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
+    throw new Error('Quote does not correspond to schema')
+  }
+  if (!verifyQuoteHash(basicQuote, quoteHash)) {
+    throw Error('Invalid Quote Hash')
   }
 
-  public static verifyQuoteHash(quote: IQuote, quoteHash: string): boolean {
-    return hashObjectAsStr(quote) === quoteHash
+  return {
+    ...basicQuote,
+    quoteHash,
+    attesterSignature,
+  }
+}
+
+export function createAttesterSignature(
+  quoteInput: IQuote,
+  attesterIdentity: Identity
+): IQuoteAttesterSigned {
+  const generatedQuoteHash = hashObjectAsStr(quoteInput)
+  const quoteWithHash = { ...quoteInput, quoteHash: generatedQuoteHash }
+  const signature = attesterIdentity.signStr(JSON.stringify(quoteWithHash))
+  if (!verifyQuoteHash(quoteInput, generatedQuoteHash)) {
+    throw Error('Invalid Quote Hash')
+  }
+  return {
+    ...quoteWithHash,
+    attesterSignature: signature,
+  }
+}
+
+export function fromQuoteDataAndIdentity(
+  quoteInput: IQuote,
+  identity: Identity
+): IQuoteAttesterSigned {
+  if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
+    throw new Error('Quote does not correspond to schema')
+  }
+  return createAttesterSignature(quoteInput, identity)
+}
+
+export function createAgreedQuote(
+  claimerIdentity: Identity,
+  attesterSignedQuote: IQuoteAttesterSigned,
+  requestRootHash: string
+): IQuoteAgreement {
+  const { attesterSignature, ...noAttesterSignature } = attesterSignedQuote
+  if (
+    !verify(
+      JSON.stringify({ ...noAttesterSignature }),
+      attesterSignature,
+      attesterSignedQuote.attesterAddress
+    )
+  ) {
+    throw Error(`Quote Signature could not be verified`)
+  }
+  const signature = claimerIdentity.signStr(JSON.stringify(attesterSignedQuote))
+  return {
+    ...attesterSignedQuote,
+    rootHash: requestRootHash,
+    claimerSignature: signature,
   }
 }

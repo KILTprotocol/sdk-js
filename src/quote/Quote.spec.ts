@@ -5,7 +5,7 @@ import IQuote, {
   IQuoteAgreement,
 } from '../types/Quote'
 import Identity from '../identity/Identity'
-import Quote from './Quote'
+import * as Quote from './Quote'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
@@ -84,24 +84,22 @@ describe('Claim', () => {
     termsAndConditions: 'Lots of these',
     specVersion: '1.1.3',
   }
-  const validQuote = new Quote(validQuoteData)
-  const validAttesterSignedQuote: IQuoteAttesterSigned = validQuote.createAttesterSignature(
+  const validAttesterSignedQuote: IQuoteAttesterSigned = Quote.createAttesterSignature(
+    validQuoteData,
     attesterIdentity
   )
-
   const quoteBothAgreed: IQuoteAgreement = Quote.createAgreedQuote(
     claimerIdentity,
     validAttesterSignedQuote,
     request.rootHash
   )
-  const invalidPropertiesQuote = new Quote(invalidPropertiesQuoteData)
-  const invalidCostQuote = new Quote(invalidCostQuoteData)
+  const invalidPropertiesQuote = invalidPropertiesQuoteData
+  const invalidCostQuote = invalidCostQuoteData
 
   it('tests created quote data against given data', () => {
-    expect(validQuote).toEqual(validQuoteData)
-    expect(validQuote.attesterAddress).toEqual(attesterIdentity.address)
+    expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
     expect(
-      Quote.verifyQuoteHash(validQuote, quoteBothAgreed.quoteHash)
+      Quote.verifyQuoteHash(validQuoteData, quoteBothAgreed.quoteHash)
     ).toBeTruthy()
     expect(
       Quote.verifyQuoteHash(validAttesterSignedQuote, quoteBothAgreed.currency)
@@ -112,22 +110,28 @@ describe('Claim', () => {
     expect(
       verify(
         JSON.stringify({
-          attesterAddress: validQuote.attesterAddress,
-          cTypeHash: validQuote.cTypeHash,
-          cost: validQuote.cost,
-          currency: validQuote.currency,
-          quoteTimeframe: validQuote.quoteTimeframe,
-          termsAndConditions: validQuote.termsAndConditions,
-          specVersion: validQuote.specVersion,
+          attesterAddress: validQuoteData.attesterAddress,
+          cTypeHash: validQuoteData.cTypeHash,
+          cost: validQuoteData.cost,
+          currency: validQuoteData.currency,
+          quoteTimeframe: validQuoteData.quoteTimeframe,
+          termsAndConditions: validQuoteData.termsAndConditions,
+          specVersion: validQuoteData.specVersion,
           quoteHash: validAttesterSignedQuote.quoteHash,
         }),
         validAttesterSignedQuote.attesterSignature,
         validAttesterSignedQuote.attesterAddress
       )
     ).toBeTruthy()
+    expect(Quote.fromAttesterSignedInput(validAttesterSignedQuote)).toEqual(
+      validAttesterSignedQuote
+    )
+    expect(
+      Quote.fromQuoteDataAndIdentity(validQuoteData, attesterIdentity)
+    ).toEqual(validAttesterSignedQuote)
   })
   it('validates created quotes against QuoteSchema', () => {
-    expect(Quote.validateQuoteSchema(QuoteSchema, validQuote)).toBeTruthy()
+    expect(Quote.validateQuoteSchema(QuoteSchema, validQuoteData)).toBeTruthy()
     expect(Quote.validateQuoteSchema(QuoteSchema, invalidCostQuote)).toBeFalsy()
     expect(
       Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)
