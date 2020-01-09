@@ -2,7 +2,7 @@ import Claim from './Claim'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
-import * as CTypeUtils from '../ctype/CTypeUtils'
+import CTypeUtils from '../ctype/CTypeUtils'
 
 describe('Claim', () => {
   const identityAlice = Identity.buildFromURI('//Alice')

@@ -38,6 +38,7 @@ export default class CType implements ICType {
   public constructor(cTypeInput: ICType) {
     this.schema = cTypeInput.schema
     this.owner = cTypeInput.owner
+
     if (!cTypeInput.hash) {
       this.hash = CTypeUtils.getHashForSchema(this.schema)
     } else {

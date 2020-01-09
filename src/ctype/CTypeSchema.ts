@@ -137,50 +137,88 @@ export const CTypeWrapperModel = {
   required: ['schema'],
 }
 
-export const CTypeMetadataModel = {
-  metadata: {
-    $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
-    $schema: 'http://json-schema.org/draft-07/schema#',
-    title: {
-      default: ' string',
-    },
-    description: {
-      type: 'string',
-    },
-    properties: {
+export const MetadataModel = {
+  $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  type: 'object',
+  properties: {
+    metadata: {
       type: 'object',
-      properties: {},
-      patternProperties: {
-        '^.*$': {
+      properties: {
+        title: {
+          type: 'object',
+          properties: {
+            default: {
+              type: 'string',
+            },
+          },
+          patternProperties: {
+            '^.*$': {
+              type: 'string',
+            },
+          },
+          required: ['default'],
+        },
+        description: {
+          type: 'object',
+          properties: {
+            default: {
+              type: 'string',
+            },
+          },
+          patternProperties: {
+            '^.*$': {
+              type: 'string',
+            },
+          },
+          required: ['default'],
+        },
+        properties: {
           type: 'object',
           properties: {},
+          patternProperties: {
+            '^.*$': {
+              type: 'object',
+              properties: {
+                title: {
+                  type: 'object',
+                  properties: {
+                    default: {
+                      type: 'string',
+                    },
+                  },
+                  patternProperties: {
+                    '^.*$': {
+                      type: 'string',
+                    },
+                  },
+                  required: ['default'],
+                },
+              },
+              required: ['title'],
+              additionalProperties: false,
+            },
+          },
         },
       },
+      required: ['title', 'description'],
+      additionalProperties: false,
     },
+    ctypeHash: { type: 'string', minLength: 1 },
   },
-  ctypeHash: { type: 'string', minLength: 1 },
   required: ['metadata', 'ctypeHash'],
+  additionalProperties: false,
 }
 
 export const WrapperMetadata = {
-  metadata: {
-    $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
-    $schema: 'http://json-schema.org/draft-07/schema#',
-    title: {
-      default: ' string',
-    },
-    description: {
-      type: 'string',
-    },
-    properties: {
-      type: 'object',
-      properties: {},
-      patternProperties: {
-        '^.*$': {
-          type: 'object',
-          properties: {},
-        },
-      },
+  $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  type: 'object',
+  properties: {
+    metadata: {
+      $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
+      $schema: 'http://json-schema.org/draft-07/schema#',
+      properties: MetadataModel.properties.metadata.properties,
     },
   },
 }

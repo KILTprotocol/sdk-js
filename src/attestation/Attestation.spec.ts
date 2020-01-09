@@ -8,6 +8,7 @@ import IAttestation from '../types/Attestation'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
+import CTypeUtils from '../ctype/CTypeUtils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -17,16 +18,25 @@ describe('Attestation', () => {
 
   const Blockchain = require('../blockchain/Blockchain').default
 
-  const testCType: CType = CType.fromCType({
-    schema: {
-      $id: 'http://example.com/ctype-1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
+  const rawCType: ICType['schema'] = {
+    $id: 'http://example.com/ctype-1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    properties: {
+      name: { type: 'string' },
     },
-  } as ICType)
+    type: 'object',
+  }
+
+  const rawCTypeHash = CTypeUtils.getHashForSchema(rawCType)
+
+  const fromRawCType: ICType = {
+    schema: rawCType,
+    owner: identityAlice.address,
+    hash: rawCTypeHash,
+  }
+
+  const testCType: CType = CType.fromCType(fromRawCType)
+
   const testcontents = {}
   const testClaim = Claim.fromCTypeAndClaimContents(
     testCType,

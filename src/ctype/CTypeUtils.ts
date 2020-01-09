@@ -42,3 +42,10 @@ export function verifyClaimStructure(claim: any, schema: any): boolean {
 export function getHashForSchema(schema: ICType['schema']): string {
   return Crypto.hashObjectAsStr(schema)
 }
+
+export default {
+  verifySchema,
+  verifySchemaWithErrors,
+  verifyClaimStructure,
+  getHashForSchema,
+}

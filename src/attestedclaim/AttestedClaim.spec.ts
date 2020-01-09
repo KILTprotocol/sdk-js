@@ -5,6 +5,7 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
+import * as CTypeUtils from '../ctype/CTypeUtils'
 
 function buildAttestedClaim(
   claimer: Identity,
@@ -14,16 +15,27 @@ function buildAttestedClaim(
   legitimations: AttestedClaim[]
 ): AttestedClaim {
   // create claim
-  const testCType: CType = CType.fromCType({
-    schema: {
-      $id: 'http://example.com/ctype-1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
+  const identityAlice = Identity.buildFromURI('//Alice')
+
+  const rawCType: ICType['schema'] = {
+    $id: 'http://example.com/ctype-1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    properties: {
+      name: { type: 'string' },
     },
-  } as ICType)
+    type: 'object',
+  }
+
+  const rawCTypeHash = CTypeUtils.getHashForSchema(rawCType)
+
+  const fromRawCType: ICType = {
+    schema: rawCType,
+    owner: identityAlice.address,
+    hash: rawCTypeHash,
+  }
+
+  const testCType: CType = CType.fromCType(fromRawCType)
+
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
     contents,
@@ -52,6 +64,7 @@ function buildAttestedClaim(
 
 describe('RequestForAttestation', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
+
   const identityBob = Identity.buildFromURI('//Bob')
   const identityCharlie = Identity.buildFromURI('//Charlie')
 

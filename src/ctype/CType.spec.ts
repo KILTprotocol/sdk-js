@@ -4,7 +4,6 @@ import Crypto from '../crypto'
 import ICType from '../types/CType'
 import TxStatus from '../blockchain/TxStatus'
 import Claim from '../claim/Claim'
-import * as CTypeUtils from './CTypeUtils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -27,20 +26,19 @@ describe('CType', () => {
     },
     type: 'object',
   }
+
   const identityAlice = Identity.buildFromURI('//Alice')
-  const rawCTypeHash = CTypeUtils.getHashForSchema(rawCType)
-  const cTypeModel = CTypeUtils.getHashForSchema(ctypeModel)
 
   const fromRawCType: ICType = {
     schema: rawCType,
     owner: identityAlice.address,
-    hash: rawCTypeHash,
+    hash: '',
   }
 
   const fromCTypeModel: ICType = {
     schema: ctypeModel,
     owner: identityAlice.address,
-    hash: cTypeModel,
+    hash: '',
   }
   const claimCtype = CType.fromCType(fromRawCType)
 
@@ -73,7 +71,6 @@ describe('CType', () => {
   })
   it('verifies the claim structure', () => {
     expect(claimCtype.verifyClaimStructure(claim)).toBeTruthy()
-    expect(claimCtype.verifyClaimStructure(claim))
   })
   it('throws error on wrong ctype hash', () => {
     const wrongRawCtype = {

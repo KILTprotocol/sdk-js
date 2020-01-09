@@ -5,6 +5,7 @@ import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
+import CTypeUtils from '../ctype/CTypeUtils'
 
 function buildRequestForAttestation(
   claimer: Identity,
@@ -14,21 +15,33 @@ function buildRequestForAttestation(
 ): RequestForAttestation {
   // create claim
   const contentsCopy = contents
-  const testCType: CType = CType.fromCType({
-    schema: {
-      $id: 'http://example.com/ctype-1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
+
+  const identityAlice = Identity.buildFromURI('//Alice')
+
+  const rawCType: ICType['schema'] = {
+    $id: 'http://example.com/ctype-1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    properties: {
+      name: { type: 'string' },
     },
-  } as ICType)
-  const claim = {
+    type: 'object',
+  }
+
+  const rawCTypeHash = CTypeUtils.getHashForSchema(rawCType)
+
+  const fromRawCType: ICType = {
+    schema: rawCType,
+    owner: identityAlice.address,
+    hash: rawCTypeHash,
+  }
+
+  const testCType: CType = CType.fromCType(fromRawCType)
+
+  const claim: IClaim = {
     cTypeHash: testCType.hash,
     contents: contentsCopy,
     owner: claimer.address,
-  } as IClaim
+  }
   // build request for attestation with legimitations
   return RequestForAttestation.fromClaimAndIdentity(
     claim,

@@ -1,8 +1,8 @@
 import CType from './CType'
 import ICType from '../types/CType'
 import CTypeMetadata from './CTypeMetadata'
-import * as CTypeUtils from './CTypeUtils'
-import { CTypeMetadataModel } from './CTypeSchema'
+import CTypeUtils from './CTypeUtils'
+import { MetadataModel } from './CTypeSchema'
 import ICTypeMetadata from '../types/CTypeMetadata'
 import Identity from '../identity/Identity'
 
@@ -31,11 +31,11 @@ describe('CType', () => {
   const ctypeHash = ctype.hash
 
   const ctypeMetadata: ICTypeMetadata['metadata'] = {
-    title: { default: 'string' },
-    description: { default: 'string' },
+    title: { default: 'Title' },
+    description: { default: 'Description' },
     properties: {
-      'first-property': { type: 'integer' },
-      'second-property': { type: 'string' },
+      'first-property': { title: { default: 'First Property' } },
+      'second-property': { title: { default: 'Second Property' } },
     },
   }
 
@@ -43,10 +43,8 @@ describe('CType', () => {
 
   it('verifies the metadata of a ctype', async () => {
     expect(metadata.ctypeHash).not.toHaveLength(0)
-    expect(CTypeUtils.verifySchema(metadata, CTypeMetadataModel)).toBeTruthy()
-    expect(
-      CTypeUtils.verifySchema(ctypeMetadata, CTypeMetadataModel)
-    ).toBeFalsy()
+    expect(CTypeUtils.verifySchema(metadata, MetadataModel)).toBeTruthy()
+    expect(CTypeUtils.verifySchema(ctypeMetadata, MetadataModel)).toBeFalsy()
   })
   it('checks if the metadata matches corresponding ctype hash', async () => {
     expect(metadata.ctypeHash).toEqual(ctype.hash)
