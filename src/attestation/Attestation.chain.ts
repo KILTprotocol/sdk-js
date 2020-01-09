@@ -41,7 +41,7 @@ export async function store(
 }
 
 function decode(encoded: QueryResult, claimHash: string): Attestation | null {
-  if (encoded && encoded.encodedLength) {
+  if (encoded && encoded.encodedLength && !encoded.isEmpty) {
     const attestationTuple = encoded.toJSON()
     if (
       attestationTuple instanceof Array &&

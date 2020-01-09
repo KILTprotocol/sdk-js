@@ -27,7 +27,10 @@ export function decodeDid(
   identifier: string,
   encoded: QueryResult
 ): IDid | null {
-  const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
+  const json =
+    encoded && encoded.encodedLength && !encoded.isEmpty
+      ? encoded.toJSON()
+      : null
   if (json instanceof Array) {
     let documentStore = null
     if (isHex(json[2])) {

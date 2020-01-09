@@ -24,7 +24,10 @@ export type CodecWithId = {
 export function decodeRootDelegation(
   encoded: QueryResult
 ): DelegationRootNode | null {
-  const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
+  const json =
+    encoded && encoded.encodedLength && !encoded.isEmpty
+      ? encoded.toJSON()
+      : null
   if (json instanceof Array) {
     return Object.assign(Object.create(DelegationRootNode.prototype), {
       cTypeHash: json[0],
@@ -68,7 +71,10 @@ function verifyRoot(rootId: string): boolean {
 export function decodeDelegationNode(
   encoded: QueryResult
 ): DelegationNode | null {
-  const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
+  const json =
+    encoded && encoded.encodedLength && !encoded.isEmpty
+      ? encoded.toJSON()
+      : null
   if (json instanceof Array) {
     if (typeof json[0] !== 'string' || typeof json[3] !== 'number') return null
     if (!verifyRoot(json[0])) {

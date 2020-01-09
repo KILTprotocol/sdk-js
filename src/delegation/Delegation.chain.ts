@@ -17,7 +17,9 @@ function isString(element: AnyJson): element is string {
 
 function decodeDelegatedAttestations(queryResult: QueryResult): string[] {
   const json =
-    queryResult && queryResult.encodedLength ? queryResult.toJSON() : []
+    queryResult && queryResult.encodedLength && !queryResult.isEmpty
+      ? queryResult.toJSON()
+      : []
   if (json instanceof Array) {
     const delegatedAttestations: string[] = json.filter<string>(isString)
     return delegatedAttestations
