@@ -19,12 +19,10 @@ describe('CType', () => {
     type: 'object',
   }
 
-  const rawCTypeHash = CTypeUtils.getHashForSchema(rawCType)
-
   const fromRawCType: ICType = {
     schema: rawCType,
     owner: identityAlice.address,
-    hash: rawCTypeHash,
+    hash: '',
   }
   const ctype: ICType = CType.fromCType(fromRawCType)
 

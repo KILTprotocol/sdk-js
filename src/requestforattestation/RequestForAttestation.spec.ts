@@ -5,7 +5,6 @@ import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
-import CTypeUtils from '../ctype/CTypeUtils'
 
 function buildRequestForAttestation(
   claimer: Identity,
@@ -27,12 +26,10 @@ function buildRequestForAttestation(
     type: 'object',
   }
 
-  const rawCTypeHash = CTypeUtils.getHashForSchema(rawCType)
-
   const fromRawCType: ICType = {
     schema: rawCType,
     owner: identityAlice.address,
-    hash: rawCTypeHash,
+    hash: '',
   }
 
   const testCType: CType = CType.fromCType(fromRawCType)

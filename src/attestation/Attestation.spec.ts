@@ -8,7 +8,6 @@ import IAttestation from '../types/Attestation'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
-import CTypeUtils from '../ctype/CTypeUtils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -27,12 +26,10 @@ describe('Attestation', () => {
     type: 'object',
   }
 
-  const rawCTypeHash = CTypeUtils.getHashForSchema(rawCType)
-
   const fromRawCType: ICType = {
     schema: rawCType,
     owner: identityAlice.address,
-    hash: rawCTypeHash,
+    hash: '',
   }
 
   const testCType: CType = CType.fromCType(fromRawCType)

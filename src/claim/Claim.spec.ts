@@ -2,7 +2,6 @@ import Claim from './Claim'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
-import CTypeUtils from '../ctype/CTypeUtils'
 
 describe('Claim', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
@@ -19,12 +18,11 @@ describe('Claim', () => {
     },
     type: 'object',
   }
-  const rawCTypeHash = CTypeUtils.getHashForSchema(rawCType)
 
   const fromRawCType: ICType = {
     schema: rawCType,
     owner: identityAlice.address,
-    hash: rawCTypeHash,
+    hash: '',
   }
 
   const testCType: CType = CType.fromCType(fromRawCType)
