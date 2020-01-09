@@ -31,7 +31,7 @@ export default class CType implements ICType {
     return new CType(cTypeInput)
   }
 
-  public hash: ICType['hash']
+  public hash: ICType['hash'] | null
   public owner: ICType['owner'] | null
   public schema: ICType['schema']
 

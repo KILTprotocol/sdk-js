@@ -28,17 +28,15 @@ const ctypeInput = {
   required: ['first-property', 'second-property'],
 }
 
-const ctypeWrapperModel = {
-  schema: {
-    $id: 'http://example.com/ctype-1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      'first-property': { type: 'integer' },
-      'second-property': { type: 'string' },
-    },
-    type: 'object',
+const ctypeWrapperModel: ICType['schema'] = {
+  $id: 'http://example.com/ctype-1',
+  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  properties: {
+    'first-property': { type: 'integer' },
+    'second-property': { type: 'string' },
   },
-} as ICType
+  type: 'object',
+}
 
 const goodClaim = {
   'first-property': 10,
@@ -53,10 +51,8 @@ const badClaim = {
 
 describe('CTypeUtils', () => {
   it('verifies claims', () => {
-    expect(
-      verifyClaimStructure(goodClaim, ctypeWrapperModel.schema)
-    ).toBeTruthy()
-    expect(verifyClaimStructure(badClaim, ctypeWrapperModel.schema)).toBeFalsy()
+    expect(verifyClaimStructure(goodClaim, ctypeWrapperModel)).toBeTruthy()
+    expect(verifyClaimStructure(badClaim, ctypeWrapperModel)).toBeFalsy()
     expect(verifySchemaWithErrors(badClaim, CTypeWrapperModel, [])).toBeFalsy()
     expect(() => {
       verifyClaimStructure(badClaim, ctypeInput)
@@ -64,9 +60,9 @@ describe('CTypeUtils', () => {
   })
   it('verifies ctypes', () => {
     expect(verifySchema(ctypeInput, CTypeInputModel)).toBeTruthy()
-    expect(verifySchema(ctypeWrapperModel.schema, CTypeModel)).toBeTruthy()
+    expect(verifySchema(ctypeWrapperModel, CTypeModel)).toBeTruthy()
     expect(verifySchema(ctypeWrapperModel, CTypeInputModel)).toBeFalsy()
-    expect(verifySchema(ctypeWrapperModel.schema, CTypeInputModel)).toBeFalsy()
+    expect(verifySchema(ctypeWrapperModel, CTypeInputModel)).toBeFalsy()
     expect(
       verifySchema(
         {

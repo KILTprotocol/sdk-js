@@ -6,7 +6,7 @@
  */
 export default interface ICTypeMetadata {
   metadata: IMetadata
-  ctypeHash: string
+  ctypeHash: string | null
 }
 
 export interface IMetadata {

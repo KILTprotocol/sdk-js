@@ -129,20 +129,20 @@ export const CTypeWrapperModel = {
       type: 'object',
       properties: CTypeModel.properties,
     },
+    owner: { type: 'string' },
     hash: {
       type: 'string',
-      minLength: 1,
     },
   },
   required: ['schema'],
 }
 
-export const CTypeWrapperMetadata = {
+export const CTypeMetadataModel = {
   metadata: {
     $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
     $schema: 'http://json-schema.org/draft-07/schema#',
     title: {
-      type: ' string',
+      default: ' string',
     },
     description: {
       type: 'string',
@@ -167,7 +167,7 @@ export const WrapperMetadata = {
     $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
     $schema: 'http://json-schema.org/draft-07/schema#',
     title: {
-      type: ' string',
+      default: ' string',
     },
     description: {
       type: 'string',

@@ -72,7 +72,7 @@ export {
   CTypeModel,
   CTypeInputModel,
   CTypeWrapperModel,
-  CTypeWrapperMetadata,
+  CTypeMetadataModel,
 } from './ctype/CTypeSchema'
 export * from './messaging/Message'
 

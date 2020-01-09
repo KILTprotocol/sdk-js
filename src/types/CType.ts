@@ -14,7 +14,7 @@ export interface ICTypeSchema {
 }
 
 export default interface ICType {
-  hash: string
+  hash: string | null
   owner: IPublicIdentity['address'] | null
   schema: ICTypeSchema
 }
