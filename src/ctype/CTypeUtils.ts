@@ -11,13 +11,13 @@ import ICType from '../types/CType'
 import Crypto from '../crypto'
 
 export function verifySchemaWithErrors(
-  model: any,
-  metaModel: any,
+  object: any,
+  schema: any,
   messages?: string[]
 ): boolean {
   const ajv = new Ajv()
   ajv.addMetaSchema(CTypeModel)
-  const result = ajv.validate(metaModel, model)
+  const result = ajv.validate(schema, object)
   if (!result && ajv.errors) {
     if (messages) {
       ajv.errors.forEach((error: any) => {
@@ -28,8 +28,8 @@ export function verifySchemaWithErrors(
   return !!result
 }
 
-export function verifySchema(model: any, metaModel: any): boolean {
-  return verifySchemaWithErrors(model, metaModel)
+export function verifySchema(object: any, schema: any): boolean {
+  return verifySchemaWithErrors(object, schema)
 }
 
 export function verifyClaimStructure(claim: any, schema: any): boolean {
