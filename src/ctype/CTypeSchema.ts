@@ -209,16 +209,3 @@ export const MetadataModel = {
   required: ['metadata', 'ctypeHash'],
   additionalProperties: false,
 }
-
-export const WrapperMetadata = {
-  $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
-  $schema: 'http://json-schema.org/draft-07/schema#',
-  type: 'object',
-  properties: {
-    metadata: {
-      $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
-      $schema: 'http://json-schema.org/draft-07/schema#',
-      properties: MetadataModel.properties.metadata.properties,
-    },
-  },
-}

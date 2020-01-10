@@ -24,9 +24,7 @@ describe('CType', () => {
     owner: identityAlice.address,
     hash: '',
   }
-  const ctype: ICType = CType.fromCType(fromRawCType)
-
-  const ctypeHash = ctype.hash
+  const ctype = CType.fromCType(fromRawCType)
 
   const ctypeMetadata: ICTypeMetadata['metadata'] = {
     title: { default: 'Title' },
@@ -37,7 +35,10 @@ describe('CType', () => {
     },
   }
 
-  const metadata = new CTypeMetadata(ctypeHash, ctypeMetadata)
+  const metadata = new CTypeMetadata({
+    metadata: ctypeMetadata,
+    ctypeHash: ctype.hash,
+  })
 
   it('verifies the metadata of a ctype', async () => {
     expect(metadata.ctypeHash).not.toHaveLength(0)
