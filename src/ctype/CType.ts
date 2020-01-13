@@ -42,8 +42,10 @@ export default class CType implements ICType {
 
     if (!cTypeInput.hash) {
       this.hash = CTypeUtils.getHashForSchema(this.schema)
+      this.schema.$id = `KILT:ctype:${CTypeUtils.getHashForSchema(this.schema)}`
     } else {
       this.hash = cTypeInput.hash
+      this.schema.$id = `KILT:ctype:${cTypeInput.hash}`
     }
   }
 

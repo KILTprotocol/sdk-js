@@ -40,6 +40,7 @@ describe('CType', () => {
     owner: identityAlice.address,
     hash: '',
   }
+
   const claimCtype = CType.fromCType(fromRawCType)
 
   const claimContents = {
