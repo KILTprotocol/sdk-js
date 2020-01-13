@@ -105,7 +105,7 @@ export const CTypeModel = {
           properties: {
             type: {
               type: 'string',
-              enum: ['string', 'integer', 'number', 'boolean'],
+              enum: ['string', 'integer', 'number', 'boolean', 'object'],
             },
             $ref: {
               type: 'string',

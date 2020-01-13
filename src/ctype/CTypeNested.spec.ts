@@ -1,7 +1,8 @@
 import CType from './CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
-// import Claim from '../claim/Claim'
+import Claim from '../claim/Claim'
+// import CTypeUtils from './CTypeUtils'
 
 describe('CType', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
@@ -46,9 +47,20 @@ describe('CType', () => {
 
   const kyc = CType.fromCType(fromKYCCType)
 
-  //   const claimContents = {
-  //     name: 'Bob',
-  //   }
+  const claimContents = {
+    Identifier: {
+      fullName: 'Archer Macdonald',
+      passportIdentifer: '34jd83jd',
+      streetAddress: '111 reichenberger Strasse',
+      city: 'Berlin',
+      state: 'Germany',
+    },
+    KYC: {
+      ID: '82740927593982508378-0294584...',
+      number: 324324324,
+      name: 'Archer Macdonald',
+    },
+  }
 
   //   const claim = Claim.fromCTypeAndClaimContents(
   //     nestedCtype,
@@ -72,17 +84,21 @@ describe('CType', () => {
         },
       },
     }
-    console.log('Nested:', nested)
 
     const fromNestedCType: ICType = {
       schema: nested,
       owner: identityAlice.address,
       hash: '',
     }
-    console.log('nested CType:', fromNestedCType)
 
     const nestedCType = CType.fromCType(fromNestedCType)
 
-    console.log(nestedCType)
+    const nestedData = Claim.fromNestedCTypeClaim(
+      nestedCType,
+      [passport.schema, kyc.schema],
+      claimContents,
+      identityAlice.address
+    )
+    console.log(nestedData)
   })
 })

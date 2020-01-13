@@ -43,9 +43,24 @@ export function getHashForSchema(schema: ICType['schema']): string {
   return Crypto.hashObjectAsStr(schema)
 }
 
+export function compileSchema(
+  cType: ICType,
+  nestedCTypes: Array<ICType['schema']>,
+  claimContents: object
+) {
+  const ajv = new Ajv()
+  ajv.addMetaSchema(CTypeModel)
+  const compiledCType = ajv.addSchema(nestedCTypes).compile(cType)
+
+  const result = compiledCType(claimContents)
+  console.log(result)
+  return result
+}
+
 export default {
   verifySchema,
   verifySchemaWithErrors,
   verifyClaimStructure,
   getHashForSchema,
+  compileSchema,
 }

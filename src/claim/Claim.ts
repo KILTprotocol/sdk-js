@@ -14,7 +14,7 @@
  * Dummy comment needed for correct doc display, do not remove
  */
 import ICType from '../ctype/CType'
-import { verifyClaimStructure } from '../ctype/CTypeUtils'
+import CTypeUtils from '../ctype/CTypeUtils'
 import IClaim from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
 
@@ -22,7 +22,7 @@ function verifyClaim(
   claimContents: object,
   cTypeSchema: ICType['schema']
 ): boolean {
-  return verifyClaimStructure(claimContents, cTypeSchema)
+  return CTypeUtils.verifyClaimStructure(claimContents, cTypeSchema)
 }
 
 export default class Claim implements IClaim {
@@ -36,6 +36,22 @@ export default class Claim implements IClaim {
       }
     }
     return new Claim(claimInput)
+  }
+
+  public static fromNestedCTypeClaim(
+    cTypeInput: ICType,
+    nestedCType: Array<ICType['schema']>,
+    claimContents: object,
+    claimOwner: IPublicIdentity['address']
+  ): Claim {
+    if (!CTypeUtils.compileSchema(cTypeInput, nestedCType, claimContents)) {
+      throw Error('Claim not valid')
+    }
+    return new Claim({
+      cTypeHash: cTypeInput.hash,
+      contents: claimContents,
+      owner: claimOwner,
+    })
   }
 
   public static fromCTypeAndClaimContents(

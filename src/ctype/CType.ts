@@ -12,7 +12,7 @@
  * Dummy comment needed for correct doc display, do not remove
  */
 import { CTypeWrapperModel } from './CTypeSchema'
-import * as CTypeUtils from './CTypeUtils'
+import CTypeUtils from './CTypeUtils'
 import ICType from '../types/CType'
 import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
