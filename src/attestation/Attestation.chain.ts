@@ -59,7 +59,7 @@ function decode(encoded: QueryResult, claimHash: string): Attestation | null {
         revoked: attestationTuple[3],
       }
       log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
-      return Attestation.fromObject(attestation)
+      return Attestation.fromAttestation(attestation)
     }
   }
   return null

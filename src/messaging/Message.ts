@@ -310,7 +310,7 @@ export interface IInformCreateDelegation extends IMessageBodyBase {
 }
 
 export interface IPartialClaim extends Partial<IClaim> {
-  cType: Claim['cType']
+  cTypeHash: Claim['cTypeHash']
 }
 
 export type MessageBody =

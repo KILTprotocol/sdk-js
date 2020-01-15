@@ -8,8 +8,8 @@
 // TODO: Generate from actual CTypeModel
 // TODO: The SDK is not really responsible for this, since it is editor specific
 export const CTypeInputModel = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'http://kilt-protocol.org/draft-01/ctype-input#',
+  $schema: 'http://json-schema.org/draft-07/schema#',
   title: 'CTYPE',
   type: 'object',
   properties: {
@@ -79,8 +79,8 @@ export const CTypeInputModel = {
 }
 
 export const CTypeModel = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'http://kilt-protocol.org/draft-01/ctype#',
+  $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   properties: {
     $id: {
@@ -121,28 +121,91 @@ export const CTypeModel = {
 }
 
 export const CTypeWrapperModel = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'http://kilt-protocol.org/draft-01/ctype-wrapper#',
+  $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   properties: {
     schema: {
       type: 'object',
       properties: CTypeModel.properties,
     },
+    owner: { type: 'string' },
     hash: {
       type: 'string',
-      minLength: 1,
-    },
-    metamodel: {
-      type: 'object',
-      properties: {},
-      patternProperties: {
-        '^.*$': {
-          type: 'object',
-          properties: {},
-        },
-      },
     },
   },
   required: ['schema'],
+}
+
+export const MetadataModel = {
+  $id: 'http://kilt-protocol.org/draft-01/ctype-metadata',
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  type: 'object',
+  properties: {
+    metadata: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'object',
+          properties: {
+            default: {
+              type: 'string',
+            },
+          },
+          patternProperties: {
+            '^.*$': {
+              type: 'string',
+            },
+          },
+          required: ['default'],
+        },
+        description: {
+          type: 'object',
+          properties: {
+            default: {
+              type: 'string',
+            },
+          },
+          patternProperties: {
+            '^.*$': {
+              type: 'string',
+            },
+          },
+          required: ['default'],
+        },
+        properties: {
+          type: 'object',
+          properties: {},
+          patternProperties: {
+            '^.*$': {
+              type: 'object',
+              properties: {
+                title: {
+                  type: 'object',
+                  properties: {
+                    default: {
+                      type: 'string',
+                    },
+                  },
+                  patternProperties: {
+                    '^.*$': {
+                      type: 'string',
+                    },
+                  },
+                  required: ['default'],
+                },
+              },
+              required: ['title'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      required: ['title', 'description'],
+      additionalProperties: false,
+    },
+    ctypeHash: { type: 'string', minLength: 1 },
+  },
+  required: ['metadata', 'ctypeHash'],
+  additionalProperties: false,
 }

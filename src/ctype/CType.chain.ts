@@ -35,7 +35,9 @@ export async function store(
 }
 
 function decode(encoded: QueryResult): IPublicIdentity['address'] | null {
-  return encoded && encoded.encodedLength ? encoded.toString() : null
+  return encoded && encoded.encodedLength && !encoded.isEmpty
+    ? encoded.toString()
+    : null
 }
 
 export async function getOwner(

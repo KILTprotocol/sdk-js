@@ -8,58 +8,54 @@ import Claim from '../claim/Claim'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('CType', () => {
-  const ctypeModel = {
-    schema: {
-      $id: 'http://example.com/ctype-1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      properties: {
-        'first-property': { type: 'integer' },
-        'second-property': { type: 'string' },
-      },
-      type: 'object',
+  const ctypeModel: ICType['schema'] = {
+    $id: 'http://example.com/ctype-1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    properties: {
+      'first-property': { type: 'integer' },
+      'second-property': { type: 'string' },
     },
-    metadata: {
-      title: { default: 'CType Title' },
-      description: {},
-      properties: {
-        'first-property': { title: { default: 'First Property' } },
-        'second-property': { title: { default: 'Second Property' } },
-      },
-    },
-  } as ICType
+    type: 'object',
+  }
 
-  const rawCtype = {
-    schema: {
-      $id: 'http://example.com/ctype-1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
+  const rawCType: ICType['schema'] = {
+    $id: 'http://example.com/ctype-1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    properties: {
+      name: { type: 'string' },
     },
-    metadata: {
-      title: { default: 'CType Title' },
-      description: {},
-      properties: {
-        name: { title: { default: 'Name' } },
-      },
-    },
-  } as ICType
-
-  const claimCtype = new CType(rawCtype)
+    type: 'object',
+  }
 
   const identityAlice = Identity.buildFromURI('//Alice')
+
+  const fromRawCType: ICType = {
+    schema: rawCType,
+    owner: identityAlice.address,
+    hash: '',
+  }
+
+  const fromCTypeModel: ICType = {
+    schema: ctypeModel,
+    owner: identityAlice.address,
+    hash: '',
+  }
+  const claimCtype = CType.fromCType(fromRawCType)
 
   const claimContents = {
     name: 'Bob',
   }
 
-  const claim = new Claim(claimCtype, claimContents, identityAlice)
+  const claim = Claim.fromCTypeAndClaimContents(
+    claimCtype,
+    claimContents,
+    identityAlice.address
+  )
 
   it('stores ctypes', async () => {
     const testHash = Crypto.hashStr('1234')
 
-    const ctype = new CType(ctypeModel)
+    const ctype = CType.fromCType(fromCTypeModel)
     ctype.hash = testHash
     const resultCtype = {
       ...ctype,
@@ -75,15 +71,17 @@ describe('CType', () => {
   })
   it('verifies the claim structure', () => {
     expect(claimCtype.verifyClaimStructure(claim)).toBeTruthy()
-    expect(claimCtype.verifyClaimStructure(!claim)).toBeFalsy()
+    // @ts-ignore
+    claim.contents.name = 123
+    expect(claimCtype.verifyClaimStructure(claim)).toBeFalsy()
   })
   it('throws error on wrong ctype hash', () => {
     const wrongRawCtype = {
-      ...rawCtype,
+      ...fromRawCType,
       hash: '0x1234',
     }
     expect(() => {
-      return new CType(wrongRawCtype)
+      return CType.fromCType(wrongRawCtype)
     }).toThrow()
   })
 })
