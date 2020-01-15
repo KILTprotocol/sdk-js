@@ -53,7 +53,6 @@ export function compileSchema(
   ajv.addMetaSchema(CTypeModel)
   const validated = ajv.addSchema(nestedCTypes).compile(cType)
   const result = validated(claimContents)
-  console.log(result)
   return result
 }
 
