@@ -44,8 +44,10 @@ export default class Claim implements IClaim {
     claimContents: object,
     claimOwner: IPublicIdentity['address']
   ): Claim {
-    if (!CTypeUtils.compileSchema(cTypeInput, nestedCType, claimContents)) {
-      throw Error('Claim not valid')
+    if (
+      !CTypeUtils.compileSchema(cTypeInput.schema, nestedCType, claimContents)
+    ) {
+      throw Error('Claim data doesnt match and not valid')
     }
     return new Claim({
       cTypeHash: cTypeInput.hash,

@@ -42,10 +42,19 @@ export default class CType implements ICType {
 
     if (!cTypeInput.hash) {
       this.hash = CTypeUtils.getHashForSchema(this.schema)
-      this.schema.$id = `KILT:ctype:${CTypeUtils.getHashForSchema(this.schema)}`
+      this.schema.$id = `kilt:ctype:${CTypeUtils.getHashForSchema(this.schema)}`
     } else {
+      if (CTypeUtils.getHashForSchema(cTypeInput.schema) !== cTypeInput.hash) {
+        throw Error('provided and generated cType hash are not matching')
+      }
       this.hash = cTypeInput.hash
-      this.schema.$id = `KILT:ctype:${cTypeInput.hash}`
+      if (
+        cTypeInput.schema.$id !==
+        `kilt:ctype:${CTypeUtils.getHashForSchema(this.schema)}`
+      ) {
+        throw Error('Provided and generated $id are not matching')
+      }
+      this.schema.$id = `kilt:ctype:${cTypeInput.hash}`
     }
   }
 

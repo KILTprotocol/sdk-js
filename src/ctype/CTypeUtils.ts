@@ -40,19 +40,19 @@ export function verifyClaimStructure(claim: any, schema: any): boolean {
 }
 
 export function getHashForSchema(schema: ICType['schema']): string {
-  return Crypto.hashObjectAsStr(schema)
+  const { $id, ...schemaWithoutID } = schema
+  return Crypto.hashObjectAsStr(schemaWithoutID)
 }
 
 export function compileSchema(
-  cType: ICType,
+  cType: ICType['schema'],
   nestedCTypes: Array<ICType['schema']>,
   claimContents: object
 ) {
   const ajv = new Ajv()
   ajv.addMetaSchema(CTypeModel)
-  const compiledCType = ajv.addSchema(nestedCTypes).compile(cType)
-
-  const result = compiledCType(claimContents)
+  const validated = ajv.addSchema(nestedCTypes).compile(cType)
+  const result = validated(claimContents)
   console.log(result)
   return result
 }

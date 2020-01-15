@@ -48,25 +48,15 @@ describe('CType', () => {
   const kyc = CType.fromCType(fromKYCCType)
 
   const claimContents = {
-    Identifier: {
-      fullName: 'Archer Macdonald',
-      passportIdentifer: '34jd83jd',
-      streetAddress: '111 reichenberger Strasse',
-      city: 'Berlin',
-      state: 'Germany',
-    },
-    KYC: {
-      ID: '82740927593982508378-0294584...',
-      number: 324324324,
-      name: 'Archer Macdonald',
-    },
+    fullName: 'Archer Macdonald',
+    passportIdentifer: '34jd83jd',
+    streetAddress: '111 reichenberger Strasse',
+    city: 'Berlin',
+    state: 'Germany',
+    ID: '82740927593982508378-0294584...',
+    number: '345678',
+    name: 'Archer Macdonald',
   }
-
-  //   const claim = Claim.fromCTypeAndClaimContents(
-  //     nestedCtype,
-  //     claimContents,
-  //     identityAlice.address
-  //   )
 
   it('verifies the nested structure', () => {
     const nested: ICType['schema'] = {
@@ -74,13 +64,29 @@ describe('CType', () => {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       type: 'object',
       properties: {
-        Identifier: {
-          type: 'object',
-          $ref: passport.schema.$id,
+        fullName: {
+          $ref: `${passport.schema.$id}#/properties/fullName`,
         },
-        KYC: {
-          type: 'object',
-          $ref: kyc.schema.$id,
+        passportIdentifer: {
+          $ref: `${passport.schema.$id}#/properties/passportIdentifer`,
+        },
+        streetAddress: {
+          $ref: `${passport.schema.$id}#/properties/streetAddress`,
+        },
+        city: {
+          $ref: `${passport.schema.$id}#/properties/city`,
+        },
+        state: {
+          $ref: `${passport.schema.$id}#/properties/state`,
+        },
+        ID: {
+          $ref: `${kyc.schema.$id}#/properties/ID`,
+        },
+        number: {
+          $ref: `${kyc.schema.$id}#/properties/number`,
+        },
+        name: {
+          $ref: `${kyc.schema.$id}#/properties/name`,
         },
       },
     }
@@ -99,6 +105,17 @@ describe('CType', () => {
       claimContents,
       identityAlice.address
     )
-    console.log(nestedData)
+    // @ts-ignore
+    claimContents.fullName = {}
+
+    // expect(
+    //   Claim.fromNestedCTypeClaim(
+    //     nestedCType,
+    //     [passport.schema, kyc.schema],
+    //     claimContents,
+    //     identityAlice.address
+    //   )
+    // )
+    expect(nestedData).toBeTruthy()
   })
 })

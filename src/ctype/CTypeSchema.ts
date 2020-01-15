@@ -113,10 +113,9 @@ export const CTypeModel = {
             },
             format: {
               type: 'string',
-              enum: ['date', 'time', 'uri'],
+              enum: ['date', 'time', 'uri-reference'],
             },
           },
-          required: ['type'],
         },
       },
     },
