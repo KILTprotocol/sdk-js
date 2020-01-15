@@ -12,6 +12,7 @@ describe('CType', () => {
   const rawCType: ICType['schema'] = {
     $id: 'http://example.com/ctype-1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'test',
     properties: {
       'first-property': { type: 'integer' },
       'second-property': { type: 'string' },

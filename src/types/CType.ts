@@ -10,6 +10,7 @@ export interface ICTypeSchema {
   $id: any
   $schema: any
   properties: any
+  title: string
   type: 'object'
 }
 

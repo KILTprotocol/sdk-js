@@ -10,6 +10,7 @@ describe('CType', () => {
   const passportCType: ICType['schema'] = {
     $id: 'http://example.com/ctype-1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'test',
     properties: {
       fullName: { type: 'string' },
       passportIdentifer: { type: 'string' },
@@ -23,6 +24,7 @@ describe('CType', () => {
   const kycCType: ICType['schema'] = {
     $id: 'http://example.com/ctype-1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'test',
     properties: {
       ID: { type: 'string' },
       number: { type: 'string' },
@@ -62,6 +64,7 @@ describe('CType', () => {
     const nested: ICType['schema'] = {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'test',
       type: 'object',
       properties: {
         fullName: {

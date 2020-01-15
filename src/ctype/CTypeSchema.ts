@@ -93,6 +93,9 @@ export const CTypeModel = {
       default: 'http://kilt-protocol.org/draft-01/ctype#',
       enum: ['http://kilt-protocol.org/draft-01/ctype#'],
     },
+    title: {
+      type: 'string',
+    },
     type: {
       type: 'string',
       enum: ['object'],
@@ -120,7 +123,7 @@ export const CTypeModel = {
       },
     },
   },
-  required: ['$id', '$schema', 'properties', 'type'],
+  required: ['$id', 'title', '$schema', 'properties', 'type'],
 }
 
 export const CTypeWrapperModel = {
