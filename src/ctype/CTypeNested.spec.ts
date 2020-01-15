@@ -2,7 +2,7 @@ import CType from './CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
 import Claim from '../claim/Claim'
-// import CTypeUtils from './CTypeUtils'
+import CTypeUtils from './CTypeUtils'
 
 describe('CType', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
@@ -110,15 +110,13 @@ describe('CType', () => {
     )
     // @ts-ignore
     claimContents.fullName = {}
-
-    // expect(
-    //   Claim.fromNestedCTypeClaim(
-    //     nestedCType,
-    //     [passport.schema, kyc.schema],
-    //     claimContents,
-    //     identityAlice.address
-    //   )
-    // )
+    expect(
+      CTypeUtils.compileSchema(
+        nestedCType.schema,
+        [passport.schema, kyc.schema],
+        claimContents
+      )
+    ).toBeFalsy()
     expect(nestedData).toBeTruthy()
   })
 })
