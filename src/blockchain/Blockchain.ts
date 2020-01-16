@@ -44,7 +44,9 @@ export interface IBlockchainApi {
 export default class Blockchain implements IBlockchainApi {
   public static asArray(queryResult: QueryResult): any[] {
     const json =
-      queryResult && queryResult.encodedLength ? queryResult.toJSON() : null
+      queryResult && queryResult.encodedLength && !queryResult.isEmpty
+        ? queryResult.toJSON()
+        : null
     if (json instanceof Array) {
       return json
     }
