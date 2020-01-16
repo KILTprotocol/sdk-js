@@ -47,7 +47,7 @@ export default class Claim implements IClaim {
     if (
       !CTypeUtils.compileSchema(cTypeInput.schema, nestedCType, claimContents)
     ) {
-      throw Error('Claim data doesnt match and not valid')
+      throw Error('Claim contents do not match the nested ctype')
     }
     return new Claim({
       cTypeHash: cTypeInput.hash,
