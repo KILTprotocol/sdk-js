@@ -4,7 +4,7 @@ import ICType from '../types/CType'
 import Claim from '../claim/Claim'
 import CTypeUtils from './CTypeUtils'
 
-describe('CType', () => {
+describe('Nested CTypes', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
 
   const passportCType: ICType['schema'] = {
@@ -60,63 +60,75 @@ describe('CType', () => {
     name: 'Archer Macdonald',
   }
 
-  it('verifies the nested structure', () => {
-    const nested: ICType['schema'] = {
-      $id: 'http://example.com/ctype-1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'test',
-      type: 'object',
-      properties: {
-        fullName: {
-          $ref: `${passport.schema.$id}#/properties/fullName`,
-        },
-        passportIdentifer: {
-          $ref: `${passport.schema.$id}#/properties/passportIdentifer`,
-        },
-        streetAddress: {
-          $ref: `${passport.schema.$id}#/properties/streetAddress`,
-        },
-        city: {
-          $ref: `${passport.schema.$id}#/properties/city`,
-        },
-        state: {
-          $ref: `${passport.schema.$id}#/properties/state`,
-        },
-        ID: {
-          $ref: `${kyc.schema.$id}#/properties/ID`,
-        },
-        number: {
-          $ref: `${kyc.schema.$id}#/properties/number`,
-        },
-        name: {
-          $ref: `${kyc.schema.$id}#/properties/name`,
-        },
+  const nested: ICType['schema'] = {
+    $id: 'http://example.com/ctype-1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'test',
+    type: 'object',
+    properties: {
+      fullName: {
+        $ref: `${passport.schema.$id}#/properties/fullName`,
       },
-    }
+      passportIdentifer: {
+        $ref: `${passport.schema.$id}#/properties/passportIdentifer`,
+      },
+      streetAddress: {
+        $ref: `${passport.schema.$id}#/properties/streetAddress`,
+      },
+      city: {
+        $ref: `${passport.schema.$id}#/properties/city`,
+      },
+      state: {
+        $ref: `${passport.schema.$id}#/properties/state`,
+      },
+      ID: {
+        $ref: `${kyc.schema.$id}#/properties/ID`,
+      },
+      number: {
+        $ref: `${kyc.schema.$id}#/properties/number`,
+      },
+      name: {
+        $ref: `${kyc.schema.$id}#/properties/name`,
+      },
+    },
+  }
 
-    const fromNestedCType: ICType = {
-      schema: nested,
-      owner: identityAlice.address,
-      hash: '',
-    }
+  const fromNestedCType: ICType = {
+    schema: nested,
+    owner: identityAlice.address,
+    hash: '',
+  }
 
-    const nestedCType = CType.fromCType(fromNestedCType)
+  const nestedCType = CType.fromCType(fromNestedCType)
 
-    const nestedData = Claim.fromNestedCTypeClaim(
-      nestedCType,
-      [passport.schema, kyc.schema],
-      claimContents,
-      identityAlice.address
-    )
-    // @ts-ignore
-    claimContents.fullName = {}
+  const nestedData = Claim.fromNestedCTypeClaim(
+    nestedCType,
+    [passport.schema, kyc.schema],
+    claimContents,
+    identityAlice.address
+  )
+
+  it('verify ajv compiler', () => {
     expect(
       CTypeUtils.compileSchema(
         nestedCType.schema,
         [passport.schema, kyc.schema],
         claimContents
       )
-    ).toBeFalsy()
+    ).toBeTruthy()
+
+    // @ts-ignore
+    claimContents.fullName = {}
+    expect(() => {
+      Claim.fromNestedCTypeClaim(
+        nestedCType,
+        [passport.schema, kyc.schema],
+        claimContents,
+        identityAlice.address
+      )
+    }).toThrowError(new Error('Claim data doesnt match and not valid'))
+  })
+  it('verify claim from a nested ctype', () => {
     expect(nestedData).toBeTruthy()
   })
 })
