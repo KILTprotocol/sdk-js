@@ -51,8 +51,8 @@ export function compileSchema(
 ) {
   const ajv = new Ajv()
   ajv.addMetaSchema(CTypeModel)
-  const validated = ajv.addSchema(nestedCTypes).compile(cType)
-  const result = validated(claimContents)
+  const validate = ajv.addSchema(nestedCTypes).compile(cType)
+  const result = validate(claimContents)
   return result
 }
 
