@@ -1,6 +1,15 @@
-name: Node CI
+name: Develop / PRs
 
-on: [push]
+on:
+  push:
+    branches: 
+      - develop
+    tags:
+      - '*'
+  pull_request:
+    branches: 
+      - develop
+      - master
 
 jobs:
   build:
