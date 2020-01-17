@@ -5,9 +5,8 @@
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "scripts": {
-    "_comment": "NODE_ENV=custom is set because otherwise tests won't compile (see https://github.com/polkadot-js/common/issues/321)",
-    "test": "export NODE_ENV=custom; jest --coverage",
-    "testCI": "export NODE_ENV=custom; jest --ci --coverage",
+    "test": "jest --coverage",
+    "testCI": "jest --ci --coverage",
     "testWatch": "jest --watch --coverage",
     "lint": "eslint 'src/**'",
     "lint:fix": "yarn lint --fix",
