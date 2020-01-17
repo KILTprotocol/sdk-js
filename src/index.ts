@@ -68,11 +68,7 @@ export {
   Message,
 }
 
-export {
-  CTypeModel,
-  CTypeInputModel,
-  CTypeWrapperModel,
-} from './ctype/CTypeSchema'
+export { CTypeModel, CTypeWrapperModel } from './ctype/CTypeSchema'
 export * from './messaging/Message'
 
 // ---- Default export for ease of use ----
