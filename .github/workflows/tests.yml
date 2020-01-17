@@ -1,4 +1,4 @@
-name: Develop / PRs
+name: Lint and Test
 
 on:
   push:
