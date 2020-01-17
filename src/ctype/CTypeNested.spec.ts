@@ -114,32 +114,10 @@ describe('Nested CTypes', () => {
     type: 'object',
     properties: {
       passport: {
-        fullName: {
-          $ref: `${passport.schema.$id}#/properties/fullName`,
-        },
-        passportIdentifer: {
-          $ref: `${passport.schema.$id}#/properties/passportIdentifer`,
-        },
-        streetAddress: {
-          $ref: `${passport.schema.$id}#/properties/streetAddress`,
-        },
-        city: {
-          $ref: `${passport.schema.$id}#/properties/city`,
-        },
-        state: {
-          $ref: `${passport.schema.$id}#/properties/state`,
-        },
+        $ref: `${passport.schema.$id}`,
       },
       KYC: {
-        ID: {
-          $ref: `${kyc.schema.$id}#/properties/ID`,
-        },
-        number: {
-          $ref: `${kyc.schema.$id}#/properties/number`,
-        },
-        name: {
-          $ref: `${kyc.schema.$id}#/properties/name`,
-        },
+        $ref: `${kyc.schema.$id}`,
       },
     },
   }
@@ -184,15 +162,21 @@ describe('Nested CTypes', () => {
 
     // @ts-ignore
     claimContents.fullName = {}
-    expect(() => {
+    expect(() =>
       Claim.fromNestedCTypeClaim(
         nestedCType,
         [passport.schema, kyc.schema],
         claimContents,
         identityAlice.address
       )
-    }).toThrowError(new Error('Claim contents do not match the nested ctype'))
-    expect(nestedDeepData).toBeTruthy()
+    ).toThrowError(new Error('Claim contents do not match the nested ctype'))
+    expect(
+      CTypeUtils.compileSchema(
+        deeplyNestedCType.schema,
+        [passport.schema, kyc.schema],
+        claimDeepContents
+      )
+    ).toBeTruthy()
     // @ts-ignore
     claimDeepContents.passport.fullName = {}
     expect(
@@ -201,9 +185,18 @@ describe('Nested CTypes', () => {
         [passport.schema, kyc.schema],
         claimDeepContents
       )
-    )
+    ).toBeFalsy()
   })
   it('verify claim from a nested ctype', () => {
     expect(nestedData).toBeTruthy()
+    expect(nestedDeepData).toBeTruthy()
+    expect(() =>
+      Claim.fromNestedCTypeClaim(
+        deeplyNestedCType,
+        [passport.schema, kyc.schema],
+        claimDeepContents,
+        identityAlice.address
+      )
+    ).toThrowError(new Error('Claim contents do not match the nested ctype'))
   })
 })
