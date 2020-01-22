@@ -28,7 +28,10 @@ export function decodeDid(
   encoded: QueryResult
 ): IDid | null {
   const json =
-    encoded && encoded.encodedLength && !encoded.isEmpty
+    encoded &&
+    !encoded.isEmpty &&
+    encoded instanceof Array &&
+    !encoded.every(e => e.isEmpty)
       ? encoded.toJSON()
       : null
   if (json instanceof Array) {
