@@ -1,9 +1,11 @@
+import { U8a } from '@polkadot/types'
 import CType from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
 import ICType from '../types/CType'
 import TxStatus from '../blockchain/TxStatus'
 import Claim from '../claim/Claim'
+import { getOwner } from './CType.chain'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -83,5 +85,25 @@ describe('CType', () => {
     expect(() => {
       return CType.fromCType(wrongRawCtype)
     }).toThrow()
+  })
+  it('decodes query result', async () => {
+    const encoded = new U8a(
+      '0x50e7f659f2ea85c7d2d1a7603db4376f35a61c7aaa967e03e1b5d111183c1b58'
+    )
+    require('../blockchain/Blockchain').default.api.query.ctype.cTYPEs.mockReturnValueOnce(
+      Promise.resolve(encoded)
+    )
+    return expect(getOwner(claimCtype.hash)).resolves.toEqual(
+      encoded.toString()
+    )
+  })
+  it('decodes emtpy query result to null', async () => {
+    const encoded = new U8a(
+      '0x0000000000000000000000000000000000000000000000000000000000000000'
+    )
+    require('../blockchain/Blockchain').default.api.query.ctype.cTYPEs.mockReturnValueOnce(
+      Promise.resolve(encoded)
+    )
+    return expect(getOwner(claimCtype.hash)).resolves.toBeNull()
   })
 })

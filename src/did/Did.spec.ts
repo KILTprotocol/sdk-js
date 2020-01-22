@@ -9,20 +9,30 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 describe('DID', () => {
   require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
     address => {
-      if (address === 'withDocumentStore') {
-        const tuple = new Tuple(
-          // (publicBoxKey, publicSigningKey, documentStore?)
-          [Text, Text, U8a],
-          ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
-        )
-        return Promise.resolve(tuple)
+      let tuple
+      switch (address) {
+        case 'withDocumentStore':
+          tuple = new Tuple(
+            // (publicBoxKey, publicSigningKey, documentStore?)
+            [Text, Text, U8a],
+            ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
+          )
+          return Promise.resolve(tuple)
+        case 'notOnChain':
+          tuple = new Tuple(
+            // (publicBoxKey, publicSigningKey, documentStore?)
+            [U8a, U8a, U8a],
+            [null, null, null]
+          )
+          return Promise.resolve(tuple)
+        default:
+          tuple = new Tuple(
+            // (publicBoxKey, publicSigningKey, documentStore?)
+            [Text, Text, Option],
+            ['0x987', '0x123', null]
+          )
+          return Promise.resolve(tuple)
       }
-      const tuple = new Tuple(
-        // (publicBoxKey, publicSigningKey, documentStore?)
-        [Text, Text, Option],
-        ['0x987', '0x123', null]
-      )
-      return Promise.resolve(tuple)
     }
   )
   require('../blockchain/Blockchain').default.submitTx = jest.fn(() => {
@@ -37,6 +47,11 @@ describe('DID', () => {
       publicSigningKey: '0x987',
       documentStore: 'http://myDID.kilt.io',
     } as IDid)
+  })
+
+  it('query for unknown did returns null', async () => {
+    const did = await Did.queryByAddress('notOnChain')
+    expect(did).toBeNull()
   })
 
   it('query by address w/o documentStore', async () => {
