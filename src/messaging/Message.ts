@@ -240,7 +240,7 @@ export interface IRejectTerms extends IMessageBodyBase {
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
   content: {
     requestForAttestation: IRequestForAttestation
-    quote?: IQuoteAgreement // Both Parties have agreed and signed the document. Now the
+    quote?: IQuoteAgreement
     prerequisiteClaims?: IClaim[]
   }
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM

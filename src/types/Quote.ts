@@ -17,7 +17,7 @@ export default interface IQuote {
   cTypeHash: ICType['hash']
   cost: ICostBreakdown
   currency: string
-  quoteTimeframe: Date
+  timeframe: Date
   termsAndConditions: string
   specVersion: string
 }

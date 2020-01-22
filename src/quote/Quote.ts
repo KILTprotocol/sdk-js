@@ -23,7 +23,7 @@ export function validateQuoteSchema(
   schema: object,
   validate: object,
   messages?: string[]
-): boolean | PromiseLike<any> {
+): boolean {
   const ajv = new Ajv()
   ajv.addMetaSchema(QuoteSchema)
   const result = ajv.validate(
@@ -79,10 +79,10 @@ export function createAttesterSignature(
   quoteInput: IQuote,
   attesterIdentity: Identity
 ): IQuoteAttesterSigned {
-  const generatedQuoteHash = hashObjectAsStr(quoteInput)
-  const quoteWithHash = { ...quoteInput, quoteHash: generatedQuoteHash }
+  const quoteHash = hashObjectAsStr(quoteInput)
+  const quoteWithHash = { ...quoteInput, quoteHash }
   const signature = attesterIdentity.signStr(JSON.stringify(quoteWithHash))
-  if (!verifyQuoteHash(quoteInput, generatedQuoteHash)) {
+  if (!verifyQuoteHash(quoteInput, quoteHash)) {
     throw Error('Invalid Quote Hash')
   }
   return {
@@ -114,7 +114,7 @@ export function createAgreedQuote(
       attesterSignedQuote.attesterAddress
     )
   ) {
-    throw Error(`Quote Signature could not be verified`)
+    throw Error(`Quote Signature is invalid`)
   }
   const signature = claimerIdentity.signStr(JSON.stringify(attesterSignedQuote))
   return {

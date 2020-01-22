@@ -35,6 +35,7 @@ describe('Claim', () => {
       },
     },
   } as ICType)
+
   const claim = {
     cTypeHash: testCType.hash,
     contents: {},
@@ -52,7 +53,7 @@ describe('Claim', () => {
       '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
     cost: invalidCost,
     currency: 'Euro',
-    quoteTimeframe: date,
+    timeframe: date,
     termsAndConditions: 'Lots of these',
     specVersion: '1.1.3',
   } as IQuote
@@ -65,7 +66,7 @@ describe('Claim', () => {
       net: 23.3,
       tax: 23.3,
     },
-    quoteTimeframe: date,
+    timeframe: date,
     currency: 'Euro',
     termsAndConditions: 'Lots of these',
   } as IQuote
@@ -80,7 +81,7 @@ describe('Claim', () => {
       tax: 23.3,
     },
     currency: 'Euro',
-    quoteTimeframe: new Date('12-04-2020'),
+    timeframe: new Date('12-04-2020'),
     termsAndConditions: 'Lots of these',
     specVersion: '1.1.3',
   }
@@ -114,7 +115,7 @@ describe('Claim', () => {
           cTypeHash: validQuoteData.cTypeHash,
           cost: validQuoteData.cost,
           currency: validQuoteData.currency,
-          quoteTimeframe: validQuoteData.quoteTimeframe,
+          timeframe: validQuoteData.timeframe,
           termsAndConditions: validQuoteData.termsAndConditions,
           specVersion: validQuoteData.specVersion,
           quoteHash: validAttesterSignedQuote.quoteHash,

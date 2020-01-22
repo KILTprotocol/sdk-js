@@ -13,7 +13,6 @@ function buildRequestForAttestation(
   legitimations: AttestedClaim[]
 ): RequestForAttestation {
   // create claim
-  const contentsReference = contents
   const testCType: CType = CType.fromCType({
     schema: {
       $id: 'http://example.com/ctype-1',
@@ -33,7 +32,7 @@ function buildRequestForAttestation(
   } as ICType)
   const claim = {
     cTypeHash: testCType.hash,
-    contents: contentsReference,
+    contents,
     owner: claimer.address,
   } as IClaim
   // build request for attestation with legimitations

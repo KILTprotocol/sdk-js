@@ -14,6 +14,7 @@ export default interface ITerms {
   claim: IPartialClaim
   legitimations: object[]
   delegationId?: DelegationNode['id']
-  quote?: IQuoteAttesterSigned // The Attester has Signed the Quote, which the claimer has requested.
+  // The Attester has Signed the Quote, which the claimer has requested.
+  quote?: IQuoteAttesterSigned
   prerequisiteClaims?: ICType['hash']
 }

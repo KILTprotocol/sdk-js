@@ -7,11 +7,9 @@ const QuoteSchema = {
   properties: {
     attesterAddress: {
       type: 'string',
-      title: 'The Attester ID Schema',
     },
     cTypeHash: {
       type: 'string',
-      title: 'The Ctypehash Schema',
     },
     cost: {
       type: 'object',
@@ -20,38 +18,30 @@ const QuoteSchema = {
       properties: {
         net: {
           type: 'number',
-          title: 'The Net Schema',
         },
         gross: {
           type: 'number',
-          title: 'The Gross Schema',
         },
         tax: {
           type: 'number',
-          title: 'The Tax Schema',
         },
       },
     },
     currency: {
       type: 'string',
-      title: 'The currency Schema',
     },
     termsAndConditions: {
       type: 'string',
-      title: 'The Terms&conditions Schema',
     },
-    quoteTimeframe: {
+    timeframe: {
       type: 'string',
       format: 'date-time',
-      title: 'The quotetimeframe Schema',
     },
     specVersion: {
       type: 'string',
-      title: 'The Version Schema',
     },
     quoteHash: {
       type: 'string',
-      title: 'The quote Hash Schema',
     },
   },
   required: [
@@ -60,7 +50,7 @@ const QuoteSchema = {
     'cost',
     'currency',
     'termsAndConditions',
-    'quoteTimeframe',
+    'timeframe',
     'specVersion',
   ],
 }

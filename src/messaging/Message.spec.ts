@@ -123,16 +123,16 @@ describe('Messaging', () => {
 
     const quoteData: IQuote = {
       attesterAddress: identityAlice.address,
-      cTypeHash: '0x123474574373456737...',
+      cTypeHash: '0x12345678',
       cost: {
         tax: 23.45,
         net: 23.4,
         gross: 23.5,
       },
       currency: 'Euro',
-      termsAndConditions: 'www.PDFofExampleTerms&Conditions.com',
-      quoteTimeframe: date,
-      specVersion: 'bla',
+      termsAndConditions: 'https://coolcompany.io/terms.pdf',
+      timeframe: date,
+      specVersion: '1.0',
     }
     const quoteAttesterSigned = Quote.createAttesterSignature(
       quoteData,
