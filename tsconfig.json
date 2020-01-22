@@ -5,7 +5,7 @@
     "module": "none",
     "target": "es2017",
     "lib": ["es6"],
-    "sourceMap": true,
+    "sourceMap": false,
     "strict": true,
     "allowJs": false,
     "esModuleInterop": true,
@@ -31,6 +31,7 @@
     "jest",
     "src/setupTests.ts",
     "jest.config.js",
-    "docs"
+    "docs",
+    "**/*.spec.ts"
   ]
 }

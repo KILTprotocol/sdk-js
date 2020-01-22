@@ -1,13 +1,12 @@
 {
   "name": "@kiltprotocol/sdk-js",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "description": "",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "scripts": {
-    "_comment": "NODE_ENV=custom is set because otherwise tests won't compile (see https://github.com/polkadot-js/common/issues/321)",
-    "test": "export NODE_ENV=custom; jest --coverage",
-    "testCI": "export NODE_ENV=custom; jest --ci --coverage",
+    "test": "jest --coverage",
+    "testCI": "jest --ci --coverage",
     "testWatch": "jest --watch --coverage",
     "lint": "eslint 'src/**'",
     "lint:fix": "yarn lint --fix",
@@ -15,7 +14,7 @@
     "style:fix": "yarn style --write",
     "build": "tsc --declaration",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
-    "buildAndPublish": "yarn build && node ./npm-create-rc.js && npm publish --access public"
+    "buildAndPublish": "yarn build && npm publish --access public"
   },
   "husky": {
     "hooks": {
