@@ -10,6 +10,7 @@
 /**
  * Dummy comment needed for correct doc display, do not remove
  */
+import { bool } from '@polkadot/types'
 import { QueryResult } from '../blockchain/Blockchain'
 import { coToUInt8 } from '../crypto/Crypto'
 import DelegationNode from './DelegationNode'
@@ -25,7 +26,12 @@ export function decodeRootDelegation(
   encoded: QueryResult
 ): DelegationRootNode | null {
   const json =
-    encoded && encoded.encodedLength && !encoded.isEmpty
+    encoded &&
+    !encoded.isEmpty &&
+    encoded instanceof Array &&
+    !encoded.every(e => {
+      return e instanceof bool ? true : e.isEmpty
+    })
       ? encoded.toJSON()
       : null
   if (json instanceof Array) {
@@ -72,7 +78,12 @@ export function decodeDelegationNode(
   encoded: QueryResult
 ): DelegationNode | null {
   const json =
-    encoded && encoded.encodedLength && !encoded.isEmpty
+    encoded &&
+    !encoded.isEmpty &&
+    encoded instanceof Array &&
+    !encoded.every(e => {
+      return e instanceof bool ? true : e.isEmpty
+    })
       ? encoded.toJSON()
       : null
   if (json instanceof Array) {
