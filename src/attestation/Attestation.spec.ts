@@ -1,6 +1,6 @@
-import { Text } from '@polkadot/types'
+import { Text, bool } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
-import { Tuple } from '@polkadot/types/codec'
+import { Tuple, U8a, Option } from '@polkadot/types/codec'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
 import CType from '../ctype/CType'
@@ -76,6 +76,17 @@ describe('Attestation', () => {
       revoked: false,
     } as IAttestation)
     expect(await attestation.verify()).toBeFalsy()
+  })
+
+  it('returns null on query when not on chain', async () => {
+    Blockchain.api.query.attestation.attestations.mockReturnValueOnce(
+      Promise.resolve(
+        new Tuple([U8a, U8a, Option, bool], [null, null, null, null])
+      )
+    )
+    return expect(
+      Attestation.query('0xd8024cdc147c4fa9221cd177')
+    ).resolves.toBeNull()
   })
 
   it('verify attestation revoked', async () => {

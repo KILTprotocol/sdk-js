@@ -5,7 +5,7 @@
 /**
  * Dummy comment needed for correct doc display, do not remove
  */
-import { Option, Text } from '@polkadot/types'
+import { Option, Text, bool } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
@@ -41,7 +41,14 @@ export async function store(
 }
 
 function decode(encoded: QueryResult, claimHash: string): Attestation | null {
-  if (encoded && encoded.encodedLength && !encoded.isEmpty) {
+  if (
+    encoded &&
+    !encoded.isEmpty &&
+    encoded instanceof Array &&
+    !encoded.every(e => {
+      return e instanceof bool ? true : e.isEmpty
+    })
+  ) {
     const attestationTuple = encoded.toJSON()
     if (
       attestationTuple instanceof Array &&
