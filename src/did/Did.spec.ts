@@ -3,6 +3,7 @@ import { Did } from '..'
 import { IDid } from './Did'
 import Identity from '../identity/Identity'
 import { getIdentifierFromAddress } from './Did.utils'
+import { Ok } from '../const/Consts'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -26,7 +27,7 @@ describe('DID', () => {
     }
   )
   require('../blockchain/Blockchain').default.submitTx = jest.fn(() => {
-    return Promise.resolve({ status: 'ok' })
+    return Promise.resolve({ status: Ok })
   })
 
   it('query by address with documentStore', async () => {
@@ -71,7 +72,7 @@ describe('DID', () => {
   it('store did', async () => {
     const alice = Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(alice, 'http://myDID.kilt.io')
-    expect(await did.store(alice)).toEqual({ status: 'ok' })
+    expect(await did.store(alice)).toEqual({ status: Ok })
   })
 
   it('creates default did document', async () => {

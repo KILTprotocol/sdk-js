@@ -4,6 +4,7 @@ import Crypto from '../crypto'
 import ICType from '../types/CType'
 import TxStatus from '../blockchain/TxStatus'
 import Claim from '../claim/Claim'
+import { Finalized } from '../const/Consts'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -62,7 +63,7 @@ describe('CType', () => {
       owner: identityAlice.address,
     }
 
-    const resultTxStatus = new TxStatus('Finalized', Crypto.hashStr('987654'))
+    const resultTxStatus = new TxStatus(Finalized, Crypto.hashStr('987654'))
     require('../blockchain/Blockchain').default.__mockResultHash = resultTxStatus
 
     const result = await ctype.store(identityAlice)
