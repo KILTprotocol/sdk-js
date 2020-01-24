@@ -9,13 +9,11 @@ describe('Blockchain', async () => {
   it('should get stats', async () => {
     const blockchainSingleton = await getCached()
     const stats = await blockchainSingleton.getStats()
-    expect(stats).toMatchInlineSnapshot(`
-Object {
-  "chain": "Development",
-  "nodeName": "substrate-node",
-  "nodeVersion": "0.21.0",
-}
-`)
+    expect(stats).toMatchObject({
+      chain: 'Development',
+      nodeName: 'substrate-node',
+      nodeVersion: expect.stringMatching(/.+\..+\..+/),
+    })
   })
 
   it('should listen to blocks', async done => {
@@ -30,3 +28,5 @@ Object {
     console.log(`Subscription Id: ${subscriptionId}`)
   }, 5000)
 })
+
+afterAll(async () => getCached().then(bc => bc.api.disconnect()))

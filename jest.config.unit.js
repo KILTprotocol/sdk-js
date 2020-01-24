@@ -1,4 +1,4 @@
 var config = require('./jest.config')
-config.testMatch = [ "**/?(*.)+(spec|test).[jt]s?(x)" ] //Overriding testMatch option. Equal to default
+config.testPathIgnorePatterns = ["/node_modules/", "/__integrationtests__/"]
 console.log('RUNNING UNIT TESTS')
 module.exports = config
