@@ -87,26 +87,6 @@ describe('When there is an attester, claimer and ctype drivers license', async (
         },
         type: 'object',
       },
-      metadata: {
-        title: {
-          default: 'DriversLicense',
-        },
-        description: {
-          default: '',
-        },
-        properties: {
-          name: {
-            title: {
-              default: 'name',
-            },
-          },
-          weight: {
-            title: {
-              default: 'weight (kg)',
-            },
-          },
-        },
-      },
     } as ICType)
 
     console.log(badCtype.hash)

@@ -48,31 +48,6 @@ describe('When there is an CtypeCreator and a verifier', async () => {
         },
         type: 'object',
       },
-      metadata: {
-        title: {
-          default: 'Certificate Of Saintship',
-        },
-        description: {
-          default: '',
-        },
-        properties: {
-          miracle1: {
-            title: {
-              default: '1st miracle',
-            },
-          },
-          miracle2: {
-            title: {
-              default: '2nd miracle',
-            },
-          },
-          miracle3: {
-            title: {
-              default: '3rd miracle',
-            },
-          },
-        },
-      },
     } as ICType)
 
     await CTypeSaintship.store(CtypeCreator)

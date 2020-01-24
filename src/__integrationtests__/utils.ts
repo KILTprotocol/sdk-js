@@ -85,26 +85,6 @@ export const DriversLicense = new CType({
     },
     type: 'object',
   },
-  metadata: {
-    title: {
-      default: 'DriversLicense',
-    },
-    description: {
-      default: '',
-    },
-    properties: {
-      name: {
-        title: {
-          default: 'name',
-        },
-      },
-      age: {
-        title: {
-          default: 'age',
-        },
-      },
-    },
-  },
 } as ICType)
 
 export const IsOfficialLicenseAuthority = new CType({
@@ -120,25 +100,5 @@ export const IsOfficialLicenseAuthority = new CType({
       },
     },
     type: 'object',
-  },
-  metadata: {
-    title: {
-      default: 'Is Official License Authority',
-    },
-    description: {
-      default: '',
-    },
-    properties: {
-      LicenseType: {
-        title: {
-          default: 'License Type',
-        },
-      },
-      LicenseSubtypes: {
-        title: {
-          default: 'List of License Subtypes',
-        },
-      },
-    },
   },
 } as ICType)
