@@ -3,7 +3,13 @@
  */
 
 import BN from 'bn.js/'
-import { faucet, transferTokens, NewIdentity, DriversLicense } from './utils'
+import {
+  faucet,
+  transferTokens,
+  NewIdentity,
+  DriversLicense,
+  CtypeOnChain,
+} from './utils'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
@@ -21,9 +27,12 @@ describe('When there is an CtypeCreator and a verifier', async () => {
 
   it('should be possible to create a claim type', async () => {
     const ctype = DriversLicense
-    const status = await ctype.store(CtypeCreator)
-    console.log(status)
-    // await expect(ctype.verifyStored()).resolves.toBeTruthy()
+    const ctypeExists = await CtypeOnChain(DriversLicense)
+    console.log(`ctype exists: ${ctypeExists}`)
+    console.log(`verify stored: ${await DriversLicense.verifyStored()}`)
+    if (!ctypeExists) {
+      await DriversLicense.store(CtypeCreator)
+    }
     await expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.address)
   }, 20000)
 

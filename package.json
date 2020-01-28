@@ -5,6 +5,8 @@
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "scripts": {
+    "node:start": "docker run -d --rm -p 9944:9944 kiltprotocol/mashnet-node ./target/release/mashnet-node --dev --ws-port 9944 --ws-external",
+    "node:stop": "docker stop $(docker ps -f ancestor=kiltprotocol/mashnet-node -q)",
     "test": "jest -c jest.config.unit.js --coverage",
     "test:ci": "jest --ci -c jest.config.unit.js --coverage",
     "test:integration": "jest -c jest.config.integration.js --runInBand",
