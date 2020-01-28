@@ -12,7 +12,6 @@
 import * as gabi from '@kiltprotocol/portablegabi'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Text } from '@polkadot/types'
 import { Header, Index } from '@polkadot/types/interfaces/types'
 import { AnyJson, Codec } from '@polkadot/types/types'
 import { Evaluator, makeSubscriptionPromise } from '../util/SubscriptionPromise'
@@ -160,7 +159,6 @@ export default class Blockchain implements IBlockchainApi {
   public async signTx(
     identity: Identity,
     tx: SubmittableExtrinsic
-<<<<<<< HEAD
   ): Promise<SubmittableExtrinsic> {
     const nonce = await this.getNonce(identity.address)
     const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
@@ -177,48 +175,6 @@ export default class Blockchain implements IBlockchainApi {
   ): Promise<SubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
     return Blockchain.submitSignedTx(signedTx, opts)
-=======
-  ): Promise<SubmittableResult> {
-    try {
-      const nonce: Index = await this.getNonce(identity.address)
-      const signed = identity.signSubmittableExtrinsic(tx, nonce.toHex())
-      log.info(`Submitting ${tx.method} with Nonce ${nonce}`)
-      return new Promise<SubmittableResult>((resolve, reject) => {
-        signed
-          .send(result => {
-            log.info(`Got tx status '${result.status.type}'`)
-            const { status } = result
-            if (ErrorHandler.extrinsicFailed(result)) {
-              log.warn(`Extrinsic execution failed`)
-              log.debug(
-                `Transaction detail: ${JSON.stringify(result, null, 2)}`
-              )
-              const extrinsicError: ExtrinsicError =
-                this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
-
-              log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
-              this.resetAccountQueue(identity.address)
-              reject(extrinsicError)
-            }
-            if (result.isFinalized) {
-              this.resetAccountQueue(identity.address)
-              resolve(new SubmittableResult(result))
-            } else if (result.isError) {
-              reject(
-                new Error(`Transaction failed with status '${status.type}'`)
-              )
-            }
-          })
-          .catch((error: Error) => {
-            // just reject with the original tx error from the chain
-            reject(error)
-          })
-      })
-    } catch (error) {
-      this.resetAccountQueue(identity.address)
-      throw error
-    }
->>>>>>> feat: reset q on new block (chain response)
   }
 
   public async getNonce(accountAddress: string): Promise<Index> {
