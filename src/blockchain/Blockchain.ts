@@ -52,7 +52,7 @@ export interface IBlockchainApi {
     tx: SubmittableExtrinsic,
     opts?: SubscriptionPromiseOptions
   ): Promise<SubmittableResult>
-  getNonce(accountAddress: string): Promise<Codec>
+  getNonce(accountAddress: string): Promise<Index>
 }
 
 export const IS_READY: ResultEvaluator = (result) => result.status.isReady
@@ -118,10 +118,14 @@ export default class Blockchain implements IBlockchainApi {
 
   public api: ApiPromise
   public readonly portablegabi: gabi.Blockchain
+  public accountNonces: Map<Identity['address'], Index>
+  private pending = false
+  private nonceQueue: Array<(unlock: () => Promise<Index>) => void> = []
 
   public constructor(api: ApiPromise) {
     this.api = api
     this.portablegabi = new gabi.Blockchain('portablegabi', this.api as any)
+    this.accountNonces = new Map<Identity['address'], Index>()
   }
 
   public async getStats(): Promise<Stats> {
@@ -162,18 +166,58 @@ export default class Blockchain implements IBlockchainApi {
     return Blockchain.submitSignedTx(signedTx, opts)
   }
 
-  public async getNonce(accountAddress: string): Promise<Codec> {
-    if (!this.currentNonce) {
-      this.currentNonce = await this.api.query.system.accountNonce<Index>(
-        accountAddress
-      )
-      if (!this.currentNonce) {
-        throw Error(`Nonce not found for account ${accountAddress}`)
+  public async getNonce(accountAddress: string): Promise<Index> {
+    const unlock: () => Promise<Index> = await this.lock(accountAddress)
+    const nonce: Index = await unlock()
+    return nonce
+  }
+
+  private handleQueue(accountAddress: Identity['address']): void {
+    if (this.nonceQueue.length > 0) {
+      this.pending = true
+      const queuedPromise = this.nonceQueue.shift()
+      if (queuedPromise) {
+        queuedPromise(async () => {
+          let nonce: Index
+          try {
+            if (!this.accountNonces.has(accountAddress)) {
+              nonce = await this.api.query.system.accountNonce<Index>(
+                accountAddress
+              )
+              this.accountNonces.set(accountAddress, new UInt(nonce.addn(1)))
+            } else {
+              const temp = this.accountNonces.get(accountAddress)
+              if (!temp) {
+                throw new Error(
+                  `Nonce Retrieval Failed for : ${accountAddress}`
+                )
+              } else {
+                nonce = temp
+                this.accountNonces.set(accountAddress, new UInt(temp.addn(1)))
+              }
+            }
+          } catch (error) {
+            log.error(error)
+            nonce = new UInt(-1)
+          }
+          this.handleQueue(accountAddress)
+          return nonce
+        })
       }
     } else {
-      this.currentNonce.addn(1)
+      this.pending = false
     }
+  }
 
-    return this.currentNonce
+  private lock(
+    accountAddress: Identity['address']
+  ): Promise<() => Promise<Index>> {
+    const lock = new Promise<() => Promise<Index>>(resolve =>
+      this.nonceQueue.push(resolve)
+    )
+    if (!this.pending) {
+      this.handleQueue(accountAddress)
+    }
+    return lock
   }
 }
