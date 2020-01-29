@@ -137,10 +137,10 @@ export default class Attestation implements IAttestation {
    */
   public constructor(attestationInput: IAttestation) {
     Attestation.isAttestation(attestationInput)
+    this.owner = attestationInput.owner
     this.claimHash = attestationInput.claimHash
     this.cTypeHash = attestationInput.cTypeHash
     this.delegationId = attestationInput.delegationId
-    this.owner = attestationInput.owner
     this.revoked = attestationInput.revoked
   }
 
@@ -200,6 +200,24 @@ export default class Attestation implements IAttestation {
 
   public async verify(): Promise<boolean> {
     return Attestation.verify(this)
+  }
+
+  private static constructorInputCheck(attestationInput: IAttestation): void {
+    if (
+      !attestationInput.cTypeHash ||
+      !attestationInput.claimHash ||
+      !attestationInput.owner
+    ) {
+      throw new Error(
+        `Property Not Provided while building Attestation!\n
+        attestationInput.cTypeHash:\n
+        ${attestationInput.cTypeHash}\n
+        attestationInput.claimHash:\n
+        ${attestationInput.claimHash}\n
+        attestationInput.owner:\n
+        ${attestationInput.owner}`
+      )
+    }
   }
 
   /**
