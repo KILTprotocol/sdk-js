@@ -167,9 +167,7 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public async getNonce(accountAddress: string): Promise<Index> {
-    const unlock: () => Promise<Index> = await this.lock(accountAddress)
-    const nonce: Index = await unlock()
-    return nonce
+    return (await this.lock(accountAddress))()
   }
 
   private handleQueue(accountAddress: Identity['address']): void {
