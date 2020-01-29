@@ -86,49 +86,57 @@ export default class Blockchain implements IBlockchainApi {
     identity: Identity,
     tx: SubmittableExtrinsic
   ): Promise<TxStatus> {
-    const accountAddress = identity.address
-    const nonce = await this.getNonce(accountAddress)
-    if (nonce === new UInt(-1)) {
-      throw new Error('Error while retrieving Nonce')
-    } else {
-      const signed = identity.signSubmittableExtrinsic(tx, nonce.toHex())
-      log.info(`Submitting ${tx.method} with Nonce ${nonce}`)
+    try {
+      const nonce: Index = await this.getNonce(identity.address)
+      if (nonce.toNumber() === -1) {
+        throw new Error('Error while retrieving Nonce')
+      } else {
+        const signed = identity.signSubmittableExtrinsic(tx, nonce.toHex())
+        log.info(`Submitting ${tx.method} with Nonce ${nonce}`)
 
-      return new Promise<TxStatus>((resolve, reject) => {
-        signed
-          .send(result => {
-            log.info(`Got tx status '${result.status.type}'`)
+        return new Promise<TxStatus>((resolve, reject) => {
+          signed
+            .send(result => {
+              log.info(`Got tx status '${result.status.type}'`)
 
-            const { status } = result
-            if (ErrorHandler.extrinsicFailed(result)) {
-              log.warn(`Extrinsic execution failed`)
-              log.debug(
-                `Transaction detail: ${JSON.stringify(result, null, 2)}`
-              )
-              const extrinsicError: ExtrinsicError =
-                this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
+              const { status } = result
+              if (ErrorHandler.extrinsicFailed(result)) {
+                log.warn(`Extrinsic execution failed`)
+                log.debug(
+                  `Transaction detail: ${JSON.stringify(result, null, 2)}`
+                )
+                const extrinsicError: ExtrinsicError =
+                  this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
 
-              log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
-              reject(extrinsicError)
-            }
-            if (status.type === 'Finalized') {
-              resolve(new TxStatus(status.type))
-            } else if (status.type === 'Invalid' || status.type === 'Dropped') {
-              reject(
-                new Error(`Transaction failed with status '${status.type}'`)
-              )
-            }
-          })
-          .catch((err: Error) => {
-            // just reject with the original tx error from the chain
-            reject(err)
-          })
-      })
+                log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
+                reject(extrinsicError)
+              }
+              if (status.type === 'Finalized') {
+                resolve(new TxStatus(status.type))
+              } else if (
+                status.type === 'Invalid' ||
+                status.type === 'Dropped'
+              ) {
+                reject(
+                  new Error(`Transaction failed with status '${status.type}'`)
+                )
+              }
+            })
+            .catch((err: Error) => {
+              // just reject with the original tx error from the chain
+              reject(err)
+            })
+        })
+      }
+    } catch (err) {
+      return new Promise<TxStatus>((resolve, reject) => reject(err))
     }
   }
 
   public async getNonce(accountAddress: string): Promise<Index> {
-    return (await this.lock(accountAddress))()
+    const unlock: () => Promise<Index> = await this.lock(accountAddress)
+    const nonce: Index = await unlock()
+    return nonce
   }
 
   private handleQueue(accountAddress: Identity['address']): void {
@@ -145,7 +153,9 @@ export default class Blockchain implements IBlockchainApi {
               )
               this.accountNonces.set(accountAddress, new UInt(nonce.addn(1)))
             } else {
-              const temp = this.accountNonces.get(accountAddress)
+              const temp: Index | undefined = this.accountNonces.get(
+                accountAddress
+              )
               if (!temp) {
                 throw new Error(
                   `Nonce Retrieval Failed for : ${accountAddress}`
@@ -171,9 +181,9 @@ export default class Blockchain implements IBlockchainApi {
   private lock(
     accountAddress: Identity['address']
   ): Promise<() => Promise<Index>> {
-    const lock = new Promise<() => Promise<Index>>(resolve =>
-      this.nonceQueue.push(resolve)
-    )
+    const lock: Promise<() => Promise<Index>> = new Promise<
+      () => Promise<Index>
+    >(resolve => this.nonceQueue.push(resolve))
     if (!this.pending) {
       this.handleQueue(accountAddress)
     }
