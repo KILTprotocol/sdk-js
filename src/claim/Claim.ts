@@ -85,6 +85,20 @@ export default class Claim implements IClaim {
     this.owner = claimInput.owner
   }
 
+  private static constructorInputCheck(claimInput: IClaim): void {
+    if (!claimInput.cTypeHash || !claimInput.contents || !claimInput.owner) {
+      throw new Error(
+        `Property Not Provided while building Claim:\n
+        claimInput.cTypeHash:\n
+          ${claimInput.cTypeHash}\n
+          claimInput.contents:\n
+          ${claimInput.contents}\n
+          claimInput.owner:\n'
+          ${claimInput.owner}`
+      )
+    }
+  }
+
   /**
    * Compresses an [[Claim]] object from the [[CompressedClaim]].
    *

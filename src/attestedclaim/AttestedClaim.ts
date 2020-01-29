@@ -130,4 +130,18 @@ export default class AttestedClaim implements IAttestedClaim {
     )
     return AttestedClaim.fromAttestedClaim(decompressedAttestedClaim)
   }
+
+  private static constructorInputCheck(
+    attestedClaimInput: IAttestedClaim
+  ): void {
+    if (!attestedClaimInput.request || !attestedClaimInput.attestation) {
+      throw new Error(
+        `Property Not Provided while building AttestedClaim!\n
+        attestedClaimInput.request: \n
+        ${attestedClaimInput.request} \n
+        attestedClaimInput.attestation: \n
+        ${attestedClaimInput.attestation}`
+      )
+    }
+  }
 }
