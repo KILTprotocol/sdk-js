@@ -112,6 +112,12 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param option.attesterPubKey The privacy enhanced public key of the Attester.
    * @throws When claimInput's owner address does not match the supplied identity's address.
    * @returns A new [[RequestForAttestation]] object.
+   * @example ```javascript
+   * const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
+   *   claim,
+   *   alice
+   * );
+   * ```
    */
   public static async fromClaimAndIdentity(
     claim: IClaim,
@@ -440,5 +446,37 @@ export default class RequestForAttestation implements IRequestForAttestation {
     const root: Uint8Array =
       hashes.length === 1 ? hashes[0] : getHashRoot(hashes)
     return u8aToHex(root)
+  }
+
+  private static constructorInputCheck(
+    requestForAttestationInput: IRequestForAttestation
+  ): void {
+    if (
+      !requestForAttestationInput.claim ||
+      !requestForAttestationInput.legitimations ||
+      !requestForAttestationInput.claimOwner ||
+      !requestForAttestationInput.claimerSignature ||
+      !requestForAttestationInput.claimHashTree ||
+      !requestForAttestationInput.cTypeHash ||
+      !requestForAttestationInput.rootHash
+    ) {
+      throw new Error(
+        `Property Not Provided while building RequestForAttestation:\n
+          requestInput.claim:\n
+          ${requestForAttestationInput.claim}\n
+          requestInput.legitimations:\n
+          ${requestForAttestationInput.legitimations}\n
+          requestInput.claimOwner:\n
+          ${requestForAttestationInput.claimOwner}\n
+          requestInput.claimerSignature:\n
+          ${requestForAttestationInput.claimerSignature}
+          requestInput.claimHashTree:\n
+          ${requestForAttestationInput.claimHashTree}\n
+          requestInput.rootHash:\n
+          ${requestForAttestationInput.rootHash}\n
+          requestInput.cTypeHash:\n
+          ${requestForAttestationInput.cTypeHash}\n`
+      )
+    }
   }
 }

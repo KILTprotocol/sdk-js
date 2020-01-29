@@ -112,11 +112,11 @@ export default class Attestation implements IAttestation {
    * ```
    */
   public constructor(attestationInput: IAttestation) {
-    AttestationUtils.errorCheck(attestationInput)
+    Attestation.constructorInputCheck(attestationInput)
+    this.owner = attestationInput.owner
     this.claimHash = attestationInput.claimHash
     this.cTypeHash = attestationInput.cTypeHash
     this.delegationId = attestationInput.delegationId
-    this.owner = attestationInput.owner
     this.revoked = attestationInput.revoked
   }
 
@@ -171,6 +171,24 @@ export default class Attestation implements IAttestation {
       log.debug(() => 'No valid attestation found')
     }
     return Promise.resolve(isValid)
+  }
+
+  private static constructorInputCheck(attestationInput: IAttestation): void {
+    if (
+      !attestationInput.cTypeHash ||
+      !attestationInput.claimHash ||
+      !attestationInput.owner
+    ) {
+      throw new Error(
+        `Property Not Provided while building Attestation!\n
+        attestationInput.cTypeHash:\n
+        ${attestationInput.cTypeHash}\n
+        attestationInput.claimHash:\n
+        ${attestationInput.claimHash}\n
+        attestationInput.owner:\n
+        ${attestationInput.owner}`
+      )
+    }
   }
 
   /**
