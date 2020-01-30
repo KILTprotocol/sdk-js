@@ -167,41 +167,30 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public async getNonce(accountAddress: string): Promise<Index> {
-    const unlock: () => Promise<Index> = await this.lock(accountAddress)
-    const nonce: Index = await unlock()
+    const unlock = await this.lock(accountAddress)
+    const nonce = await unlock()
     return nonce
+  }
+
+  private lock(
+    accountAddress: Identity['address']
+  ): Promise<() => Promise<Index>> {
+    const lock = new Promise<() => Promise<Index>>(resolve =>
+      this.nonceQueue.push(resolve)
+    )
+    if (!this.pending) {
+      this.handleQueue(accountAddress)
+    }
+    return lock
   }
 
   private handleQueue(accountAddress: Identity['address']): void {
     if (this.nonceQueue.length > 0) {
       this.pending = true
-      const queuedPromise = this.nonceQueue.shift()
-      if (queuedPromise) {
-        queuedPromise(async () => {
-          let nonce: Index
-          try {
-            if (!this.accountNonces.has(accountAddress)) {
-              nonce = await this.api.query.system.accountNonce<Index>(
-                accountAddress
-              )
-              this.accountNonces.set(accountAddress, new UInt(nonce.addn(1)))
-            } else {
-              const temp: Index | undefined = this.accountNonces.get(
-                accountAddress
-              )
-              if (!temp) {
-                throw new Error(
-                  `Nonce Retrieval Failed for : ${accountAddress}`
-                )
-              } else {
-                nonce = temp
-                this.accountNonces.set(accountAddress, new UInt(temp.addn(1)))
-              }
-            }
-          } catch (error) {
-            log.error(error)
-            nonce = new UInt(-1)
-          }
+      const resolve = this.nonceQueue.shift()
+      if (resolve) {
+        resolve(async () => {
+          const nonce = await this.retrieveNonce(accountAddress)
           this.handleQueue(accountAddress)
           return nonce
         })
@@ -211,15 +200,27 @@ export default class Blockchain implements IBlockchainApi {
     }
   }
 
-  private lock(
+  private async retrieveNonce(
     accountAddress: Identity['address']
-  ): Promise<() => Promise<Index>> {
-    const lock: Promise<() => Promise<Index>> = new Promise<
-      () => Promise<Index>
-    >(resolve => this.nonceQueue.push(resolve))
-    if (!this.pending) {
-      this.handleQueue(accountAddress)
+  ): Promise<Index> {
+    let nonce: Index
+    try {
+      if (!this.accountNonces.has(accountAddress)) {
+        nonce = await this.api.query.system.accountNonce<Index>(accountAddress)
+        this.accountNonces.set(accountAddress, new UInt(nonce.addn(1)))
+      } else {
+        const temp: Index | undefined = this.accountNonces.get(accountAddress)
+        if (!temp) {
+          throw new Error(`Nonce Retrieval Failed for : ${accountAddress}`)
+        } else {
+          nonce = temp
+          this.accountNonces.set(accountAddress, new UInt(temp.addn(1)))
+        }
+      }
+    } catch (error) {
+      log.error(error)
+      nonce = new UInt(-1)
     }
-    return lock
+    return nonce
   }
 }
