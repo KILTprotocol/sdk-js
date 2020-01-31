@@ -4,7 +4,7 @@
  */
 
 /**
- * Dummy comment, so that typedoc ignores this file
+ * Dummy comment, so that typedoc ignores this file.
  */
 import { connect } from './kilt/Kilt'
 import * as BlockchainApiConnection from './blockchainApiConnection'

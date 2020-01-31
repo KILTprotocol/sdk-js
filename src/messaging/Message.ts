@@ -4,11 +4,12 @@
  * All messages are **encrypted** with the encryption keys of the involved identities. Every time an actor sends data about an [[Identity]], they have to sign the message to prove access to the corresponding private key.
  * <br>
  * The [[Message]] class exposes methods to construct and verify messages.
+ *
  * @module Messaging
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import {
   Claim,
@@ -25,8 +26,8 @@ import {
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
 
 /**
- * inReplyTo - should store the id of the parent message
- * references - should store the references or the in-reply-to of the parent-message followed by the message-id of the parent-message
+ * InReplyTo - should store the id of the parent message
+ * references - should store the references or the in-reply-to of the parent-message followed by the message-id of the parent-message.
  */
 export interface IMessage {
   body: MessageBody

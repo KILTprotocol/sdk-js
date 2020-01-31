@@ -124,8 +124,7 @@ export default class PublicIdentity implements IPublicIdentity {
    * @example ```javascript
    * const urlResolver = {
    *   resolve: (url: string) => {
-   *     return fetch(url)
-   *       .then(response => response.json());
+   *     return fetch(url).then(response => response.json());
    *   },
    * };
    * const identifier = 'did:kilt:1234567';
