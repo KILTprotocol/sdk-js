@@ -56,6 +56,7 @@ export default class CType implements ICType {
   }
 
   public async verifyStored(): Promise<boolean> {
-    return (await getOwner(this.hash)) === this.owner
+    const actualOwner = await getOwner(this.hash)
+    return this.owner ? actualOwner === this.owner : actualOwner !== null
   }
 }
