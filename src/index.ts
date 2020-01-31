@@ -23,6 +23,7 @@ import DelegationNode from './delegation/DelegationNode'
 import DelegationRootNode from './delegation/DelegationRootNode'
 import Did, { IDid } from './did/Did'
 import Message from './messaging/Message'
+import * as Consts from './util/const/Consts'
 
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
@@ -66,6 +67,7 @@ export {
   Did,
   IDid,
   Message,
+  Consts,
 }
 
 export { CTypeModel, CTypeWrapperModel } from './ctype/CTypeSchema'

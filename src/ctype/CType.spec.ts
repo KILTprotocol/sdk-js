@@ -4,7 +4,7 @@ import Crypto from '../crypto'
 import ICType from '../types/CType'
 import TxStatus from '../blockchain/TxStatus'
 import Claim from '../claim/Claim'
-import { Finalized } from '../const/Consts'
+import { Finalized } from '../util/const/Consts'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 

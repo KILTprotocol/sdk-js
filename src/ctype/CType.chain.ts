@@ -6,7 +6,7 @@
  * Dummy comment needed for correct doc display, do not remove.
  */
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Finalized } from '../const/Consts'
+import { Finalized } from '../util/const/Consts'
 import { QueryResult } from '../blockchain/Blockchain'
 import { getCached } from '../blockchainApiConnection'
 import TxStatus from '../blockchain/TxStatus'

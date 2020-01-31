@@ -3,7 +3,7 @@ import { Did } from '..'
 import { IDid } from './Did'
 import Identity from '../identity/Identity'
 import { getIdentifierFromAddress } from './Did.utils'
-import { Ok } from '../const/Consts'
+import { Ok } from '../util/const/Consts'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 

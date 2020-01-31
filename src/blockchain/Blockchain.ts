@@ -18,7 +18,7 @@ import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 import TxStatus from './TxStatus'
-import { Finalized, Invalid, Dropped } from '../const/Consts'
+import { Finalized, Invalid, Dropped } from '../util/const/Consts'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
