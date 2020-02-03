@@ -23,6 +23,7 @@ function buildRequestForAttestation(
     properties: {
       name: { type: 'string' },
     },
+    title: 'title',
     type: 'object',
   }
 
