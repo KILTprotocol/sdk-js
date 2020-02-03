@@ -40,7 +40,8 @@ export function verifyClaimStructure(claim: any, schema: any): boolean {
 }
 
 export function getHashForSchema(schema: ICType['schema']): string {
-  const { $id, ...schemaWithoutID } = schema
+  const { ...schemaWithoutID } = schema
+  delete schemaWithoutID.$id
   return Crypto.hashObjectAsStr(schemaWithoutID)
 }
 
@@ -48,12 +49,12 @@ export function compileSchema(
   cType: ICType['schema'],
   nestedCTypes: Array<ICType['schema']>,
   claimContents: object
-) {
+): boolean {
   const ajv = new Ajv()
   ajv.addMetaSchema(CTypeModel)
   const validate = ajv.addSchema(nestedCTypes).compile(cType)
   const result = validate(claimContents)
-  return result
+  return !!result
 }
 
 export default {
