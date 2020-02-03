@@ -24,4 +24,5 @@ export async function disconnect(host: string): Promise<void> {
 
 export default {
   connect,
+  disconnect,
 }

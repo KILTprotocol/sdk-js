@@ -46,8 +46,9 @@ export async function getCached(
   return instance
 }
 
-export function clearCache() {
+export function clearCache(): null {
   instance = null
+  return instance
 }
 
 export default getCached
