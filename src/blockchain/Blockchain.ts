@@ -18,6 +18,7 @@ import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 import TxStatus from './TxStatus'
+import { FINALIZED, DROPPED, INVALID } from '../const/TxStatus'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -105,9 +106,9 @@ export default class Blockchain implements IBlockchainApi {
             log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
             reject(extrinsicError)
           }
-          if (status.type === 'Finalized') {
+          if (status.type === FINALIZED) {
             resolve(new TxStatus(status.type))
-          } else if (status.type === 'Invalid' || status.type === 'Dropped') {
+          } else if (status.type === INVALID || status.type === DROPPED) {
             reject(new Error(`Transaction failed with status '${status.type}'`))
           }
         })

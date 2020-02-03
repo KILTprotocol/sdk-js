@@ -76,7 +76,7 @@ const blockchain: any = {
         }),
         children: jest.fn(),
       },
-      dID: {
+      did: {
         dIDs: jest.fn(id => {
           return blockchain.__mockQueryDidDids(id)
         }),

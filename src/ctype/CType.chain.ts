@@ -6,7 +6,7 @@
  * Dummy comment needed for correct doc display, do not remove.
  */
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-
+import { FINALIZED } from '../const/TxStatus'
 import { QueryResult } from '../blockchain/Blockchain'
 import { getCached } from '../blockchainApiConnection'
 import TxStatus from '../blockchain/TxStatus'
@@ -25,7 +25,7 @@ export async function store(
   log.debug(() => `Create tx for 'ctype.add'`)
   const tx: SubmittableExtrinsic = await blockchain.api.tx.ctype.add(ctype.hash)
   const txStatus: TxStatus = await blockchain.submitTx(identity, tx)
-  if (txStatus.type === 'Finalised') {
+  if (txStatus.type === FINALIZED) {
     txStatus.payload = {
       ...ctype,
       owner: identity.address,

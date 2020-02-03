@@ -12,6 +12,7 @@ import * as Balance from './balance/Balance.chain'
 import Identity from './identity/Identity'
 import PublicIdentity, { IURLResolver } from './identity/PublicIdentity'
 import CType from './ctype/CType'
+import CTypeMetadata from './ctype/CTypeMetadata'
 import * as CTypeUtils from './ctype/CTypeUtils'
 import Claim from './claim/Claim'
 import RequestForAttestation from './requestforattestation/RequestForAttestation'
@@ -22,6 +23,7 @@ import DelegationNode from './delegation/DelegationNode'
 import DelegationRootNode from './delegation/DelegationRootNode'
 import Did, { IDid } from './did/Did'
 import Message from './messaging/Message'
+import * as Constants from './const'
 
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
@@ -32,6 +34,7 @@ export * from './errorhandling/ExtrinsicError'
 // ---- Types, which define the most basic KILT objects ----
 export { default as IPublicIdentity } from './types/PublicIdentity'
 export { default as ICType } from './types/CType'
+export { default as ICTypeMetadata } from './types/CTypeMetadata'
 export { default as IClaim } from './types/Claim'
 export { default as IAttestedClaim } from './types/AttestedClaim'
 export { default as IAttestation } from './types/Attestation'
@@ -52,6 +55,7 @@ export {
   PublicIdentity,
   IURLResolver,
   CType,
+  CTypeMetadata,
   CTypeUtils,
   Claim,
   RequestForAttestation,
@@ -63,13 +67,10 @@ export {
   Did,
   IDid,
   Message,
+  Constants,
 }
 
-export {
-  CTypeModel,
-  CTypeInputModel,
-  CTypeWrapperModel,
-} from './ctype/CTypeSchema'
+export { CTypeModel, CTypeWrapperModel } from './ctype/CTypeSchema'
 export * from './messaging/Message'
 
 // ---- Default export for ease of use ----
@@ -79,6 +80,7 @@ export default {
   Identity,
   PublicIdentity,
   CType,
+  CTypeMetadata,
   Claim,
   RequestForAttestation,
   Attestation,

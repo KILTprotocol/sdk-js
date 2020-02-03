@@ -4,11 +4,21 @@
 /src
 /yarn.lock
 /yarn-error.log
+/docs/
+/typedoc.js
 ## build helper
 /npm-create-rc.js
 /tsconfig.json
 /.nvmrc
 ## testing, linting
 /jest.config.js
+/jest.env.js
 /tslint.json
 /.prettierrc
+/coverage/
+/.eslintignore
+/.eslintrc*
+__mocks__
+## CI
+/.github/
+/buildspec*
