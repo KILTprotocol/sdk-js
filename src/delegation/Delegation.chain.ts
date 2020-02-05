@@ -10,16 +10,14 @@ import { getCached } from '../blockchainApiConnection'
 import Blockchain, { QueryResult } from '../blockchain/Blockchain'
 import { CodecWithId } from './DelegationDecoder'
 import { IDelegationBaseNode } from '../types/Delegation'
+import { isNotEmpty } from '../util/decoder'
 
 function isString(element: AnyJson): element is string {
   return typeof element === 'string'
 }
 
 function decodeDelegatedAttestations(queryResult: QueryResult): string[] {
-  const json =
-    queryResult && queryResult.encodedLength && !queryResult.isEmpty
-      ? queryResult.toJSON()
-      : []
+  const json = isNotEmpty(queryResult) ? queryResult!.toJSON() : []
   if (json instanceof Array) {
     const delegatedAttestations: string[] = json.filter<string>(isString)
     return delegatedAttestations

@@ -16,6 +16,8 @@ const blockchain: any = {
   asArray: jest.fn(result => {
     return result.toJSON()
   }),
+  isNotEmpty: jest.fn(qr => (qr ? !qr.isEmpty : false)),
+  emptiesToNull: jest.fn(result => result.toJSON()),
   api: {
     tx: {
       attestation: {

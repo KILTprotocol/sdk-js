@@ -5,7 +5,7 @@
 /**
  * Dummy comment needed for correct doc display, do not remove
  */
-import { Option, Text, bool } from '@polkadot/types'
+import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
@@ -16,6 +16,7 @@ import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import IAttestation from '../types/Attestation'
 import Attestation from './Attestation'
+import { isNotEmpty } from '../util/decoder'
 
 const log = factory.getLogger('Attestation')
 
@@ -41,15 +42,8 @@ export async function store(
 }
 
 function decode(encoded: QueryResult, claimHash: string): Attestation | null {
-  if (
-    encoded &&
-    !encoded.isEmpty &&
-    encoded instanceof Array &&
-    !encoded.every(e => {
-      return e instanceof bool ? true : e.isEmpty
-    })
-  ) {
-    const attestationTuple = encoded.toJSON()
+  if (isNotEmpty(encoded)) {
+    const attestationTuple = encoded!.toJSON()
     if (
       attestationTuple instanceof Array &&
       typeof attestationTuple[0] === 'string' &&

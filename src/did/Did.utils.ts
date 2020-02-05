@@ -22,18 +22,13 @@ import Did, {
   KEY_TYPE_ENCRYPTION,
   SERVICE_KILT_MESSAGING,
 } from './Did'
+import { isNotEmpty } from '../util/decoder'
 
 export function decodeDid(
   identifier: string,
   encoded: QueryResult
 ): IDid | null {
-  const json =
-    encoded &&
-    !encoded.isEmpty &&
-    encoded instanceof Array &&
-    !encoded.every(e => e.isEmpty)
-      ? encoded.toJSON()
-      : null
+  const json = isNotEmpty(encoded) ? encoded!.toJSON() : null
   if (json instanceof Array) {
     let documentStore = null
     if (isHex(json[2])) {

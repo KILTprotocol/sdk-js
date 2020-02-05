@@ -7,13 +7,14 @@
  */
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
-import { QueryResult } from '../blockchain/Blockchain'
 import { getCached } from '../blockchainApiConnection'
 import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
 import { factory } from '../config/ConfigLog'
 import ICType from '../types/CType'
+import { QueryResult } from '../blockchain/Blockchain'
+import { isNotEmpty } from '../util/decoder'
 
 const log = factory.getLogger('CType')
 
@@ -35,9 +36,7 @@ export async function store(
 }
 
 function decode(encoded: QueryResult): IPublicIdentity['address'] | null {
-  return encoded && encoded.encodedLength && !encoded.isEmpty
-    ? encoded.toString()
-    : null
+  return isNotEmpty(encoded) ? encoded!.toString() : null
 }
 
 export async function getOwner(

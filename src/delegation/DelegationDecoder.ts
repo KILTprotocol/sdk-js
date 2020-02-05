@@ -10,12 +10,14 @@
 /**
  * Dummy comment needed for correct doc display, do not remove
  */
-import { bool } from '@polkadot/types'
+import { Codec } from '@polkadot/types/types'
+
 import { QueryResult } from '../blockchain/Blockchain'
 import { coToUInt8 } from '../crypto/Crypto'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
 import { Permission } from '../types/Delegation'
+import { isNotEmpty } from '../util/decoder'
 
 export type CodecWithId = {
   id: string
@@ -25,15 +27,7 @@ export type CodecWithId = {
 export function decodeRootDelegation(
   encoded: QueryResult
 ): DelegationRootNode | null {
-  const json =
-    encoded &&
-    !encoded.isEmpty &&
-    encoded instanceof Array &&
-    !encoded.every(e => {
-      return e instanceof bool ? true : e.isEmpty
-    })
-      ? encoded.toJSON()
-      : null
+  const json = isNotEmpty(encoded) ? encoded!.toJSON() : null
   if (json instanceof Array) {
     return Object.assign(Object.create(DelegationRootNode.prototype), {
       cTypeHash: json[0],
@@ -77,15 +71,7 @@ function verifyRoot(rootId: string): boolean {
 export function decodeDelegationNode(
   encoded: QueryResult
 ): DelegationNode | null {
-  const json =
-    encoded &&
-    !encoded.isEmpty &&
-    encoded instanceof Array &&
-    !encoded.every(e => {
-      return e instanceof bool ? true : e.isEmpty
-    })
-      ? encoded.toJSON()
-      : null
+  const json = isNotEmpty(encoded) ? (encoded as Codec).toJSON() : null
   if (json instanceof Array) {
     if (typeof json[0] !== 'string' || typeof json[3] !== 'number') return null
     if (!verifyRoot(json[0])) {

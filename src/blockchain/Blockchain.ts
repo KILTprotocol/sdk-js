@@ -18,16 +18,17 @@ import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 import TxStatus from './TxStatus'
+import { emptiesToNull } from '../util/decoder'
 
 const log = LoggerFactory.getLogger('Blockchain')
-
-export type QueryResult = Codec | undefined | null
 
 export type Stats = {
   chain: Codec
   nodeName: Codec
   nodeVersion: Codec
 }
+
+export type QueryResult = Codec | undefined | null
 
 export interface IBlockchainApi {
   api: ApiPromise
@@ -43,12 +44,7 @@ export interface IBlockchainApi {
 
 export default class Blockchain implements IBlockchainApi {
   public static asArray(queryResult: QueryResult): any[] {
-    const json =
-      queryResult &&
-      !queryResult.isEmpty &&
-      (queryResult instanceof Array ? !queryResult.every(e => e.isEmpty) : true)
-        ? queryResult.toJSON()
-        : null
+    const json = queryResult ? emptiesToNull(queryResult) : null
     if (json instanceof Array) {
       return json
     }
