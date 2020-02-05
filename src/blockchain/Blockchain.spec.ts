@@ -1,6 +1,11 @@
-import { Text } from '@polkadot/types'
+import { Text, UInt } from '@polkadot/types'
+import { Index } from '@polkadot/types/interfaces/types'
+import { ApiPromise } from '@polkadot/api'
 import getCached from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
+
+import Identity from '../identity/Identity'
+import Blockchain from './Blockchain'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -12,7 +17,7 @@ describe('queries', () => {
     api.rpc.system.chain.mockResolvedValue(new Text(TYPE_REGISTRY, 'mockchain'))
     api.rpc.system.name.mockResolvedValue(new Text(TYPE_REGISTRY, 'KILT node'))
 
-    api.rpc.chain.subscribeNewHeads = jest.fn(async (listener) => {
+    api.rpc.chain.subscribeNewHeads = jest.fn(async listener => {
       listener('mockHead')
       return jest.fn()
     })
@@ -34,5 +39,47 @@ describe('queries', () => {
     const unsubscribe = await blockchain.listenToBlocks(listener)
     expect(listener).toBeCalledWith('mockHead')
     expect(unsubscribe()).toBeUndefined()
+  })
+})
+describe('Blockchain', async () => {
+  it('should return incrementing nonces', async () => {
+    const alice = Identity.buildFromURI('//Alice')
+    const promisedNonces: Array<Promise<Index>> = []
+    const chain = new Blockchain({} as ApiPromise)
+    chain.accountNonces.set(alice.address, new UInt(0) as Index)
+    for (let i = 0; i < 25; i += 1) {
+      promisedNonces.push(chain.getNonce(alice.address))
+    }
+    const nonces = await Promise.all(promisedNonces)
+    expect(nonces.length).toEqual(25)
+    nonces.forEach((value, index) => {
+      expect(value.toNumber()).toEqual(new UInt(index).toNumber())
+    })
+  })
+
+  it('should return seperate incrementing nonces per account', async () => {
+    const alice = Identity.buildFromURI('//Alice')
+    const bob = Identity.buildFromURI('//Bob')
+    const alicePromisedNonces: Array<Promise<Index>> = []
+    const bobPromisedNonces: Array<Promise<Index>> = []
+    const chain = new Blockchain({} as ApiPromise)
+    chain.accountNonces.set(alice.address, new UInt(0) as Index)
+    chain.accountNonces.set(bob.address, new UInt(0) as Index)
+    for (let i = 0; i < 50; i += 1) {
+      if (i % 2 === 0) {
+        alicePromisedNonces.push(chain.getNonce(alice.address))
+      } else bobPromisedNonces.push(chain.getNonce(bob.address))
+    }
+    const aliceNonces = await Promise.all(alicePromisedNonces)
+    const bobNonces = await Promise.all(alicePromisedNonces)
+
+    expect(aliceNonces.length).toEqual(25)
+    expect(bobNonces.length).toEqual(25)
+    aliceNonces.forEach((value, index) => {
+      expect(value.toNumber()).toEqual(new UInt(index).toNumber())
+    })
+    bobNonces.forEach((value, index) => {
+      expect(value.toNumber()).toEqual(new UInt(index).toNumber())
+    })
   })
 })

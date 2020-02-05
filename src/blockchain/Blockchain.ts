@@ -120,7 +120,13 @@ export default class Blockchain implements IBlockchainApi {
   public readonly portablegabi: gabi.Blockchain
   public accountNonces: Map<Identity['address'], Index>
   private pending = false
-  private nonceQueue: Array<(unlock: () => Promise<Index>) => void> = []
+  private nonceQueue: Map<
+    Identity['address'],
+    Array<(unlock: () => Promise<Index>) => void>
+  > = new Map<
+    Identity['address'],
+    Array<(unlock: () => Promise<Index>) => void>
+  >()
 
   public constructor(api: ApiPromise) {
     this.api = api
@@ -175,9 +181,14 @@ export default class Blockchain implements IBlockchainApi {
   private lock(
     accountAddress: Identity['address']
   ): Promise<() => Promise<Index>> {
-    const lock = new Promise<() => Promise<Index>>(resolve =>
-      this.nonceQueue.push(resolve)
-    )
+    const lock = new Promise<() => Promise<Index>>(resolve => {
+      if (!this.nonceQueue.has(accountAddress)) {
+        this.nonceQueue.set(accountAddress, [resolve])
+      } else if (this.nonceQueue.has(accountAddress)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.nonceQueue.get(accountAddress)!.push(resolve)
+      }
+    })
     if (!this.pending) {
       this.handleQueue(accountAddress)
     }
@@ -185,9 +196,14 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   private handleQueue(accountAddress: Identity['address']): void {
-    if (this.nonceQueue.length > 0) {
+    if (
+      this.nonceQueue.has(accountAddress) &&
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.nonceQueue.get(accountAddress)!.length > 0
+    ) {
       this.pending = true
-      const resolve = this.nonceQueue.shift()
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const resolve = this.nonceQueue.get(accountAddress)!.shift()
       if (resolve) {
         resolve(async () => {
           const nonce = await this.retrieveNonce(accountAddress)
