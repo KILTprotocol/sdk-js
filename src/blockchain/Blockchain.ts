@@ -192,7 +192,7 @@ export default class Blockchain implements IBlockchainApi {
     const lock = new Promise<() => Promise<Index>>(resolve => {
       if (!this.nonceQueue.has(accountAddress)) {
         this.nonceQueue.set(accountAddress, [resolve])
-      } else {
+      } else if (this.nonceQueue.has(accountAddress)) {
         this.nonceQueue.get(accountAddress)!.push(resolve)
       }
     })
