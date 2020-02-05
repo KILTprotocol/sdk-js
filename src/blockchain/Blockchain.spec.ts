@@ -28,6 +28,18 @@ describe('Blockchain', async () => {
     console.log(`Subscription Id: ${subscriptionId}`)
   }, 20000)
 
+  it('should increment nonce for account', async () => {
+    const chain = new Blockchain({} as ApiPromise)
+    const alice = Identity.buildFromURI('//Alice')
+    const initialNonce = new UInt(Math.random() * 10 + 1) as Index
+    chain.accountNonces.set(alice.address, initialNonce)
+    // eslint-disable-next-line dot-notation
+    const incrNonce = await chain['retrieveNonce'](alice.address)
+    expect(incrNonce.toNumber()).toEqual(initialNonce.toNumber())
+    expect(chain.accountNonces.get(alice.address)!.toNumber()).toEqual(
+      initialNonce.toNumber() + 1
+    )
+  })
   it('should return incrementing nonces', async () => {
     const alice = Identity.buildFromURI('//Alice')
     const promisedNonces: Array<Promise<Index>> = []

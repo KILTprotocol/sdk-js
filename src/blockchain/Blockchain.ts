@@ -155,7 +155,6 @@ export default class Blockchain implements IBlockchainApi {
       if (!this.nonceQueue.has(accountAddress)) {
         this.nonceQueue.set(accountAddress, [resolve])
       } else if (this.nonceQueue.has(accountAddress)) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.nonceQueue.get(accountAddress)!.push(resolve)
       }
     })
@@ -168,11 +167,9 @@ export default class Blockchain implements IBlockchainApi {
   private handleQueue(accountAddress: Identity['address']): void {
     if (
       this.nonceQueue.has(accountAddress) &&
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.nonceQueue.get(accountAddress)!.length > 0
     ) {
       this.pending = true
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const resolve = this.nonceQueue.get(accountAddress)!.shift()
       if (resolve) {
         resolve(async () => {
