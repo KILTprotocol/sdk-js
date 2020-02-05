@@ -23,7 +23,7 @@ const QuoteSchema = {
           type: 'number',
         },
         tax: {
-          type: 'number',
+          type: 'object',
         },
       },
     },

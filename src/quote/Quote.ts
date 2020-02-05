@@ -109,7 +109,7 @@ export function createAgreedQuote(
   const { attesterSignature, ...noAttesterSignature } = attesterSignedQuote
   if (
     !verify(
-      JSON.stringify({ ...noAttesterSignature }),
+      JSON.stringify(noAttesterSignature),
       attesterSignature,
       attesterSignedQuote.attesterAddress
     )

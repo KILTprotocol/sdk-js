@@ -8,7 +8,7 @@
 import ICType from './CType'
 
 export interface ICostBreakdown {
-  tax: number
+  tax: object
   net: number
   gross: number
 }

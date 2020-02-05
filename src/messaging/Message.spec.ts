@@ -125,7 +125,7 @@ describe('Messaging', () => {
       attesterAddress: identityAlice.address,
       cTypeHash: '0x12345678',
       cost: {
-        tax: 23.45,
+        tax: { vat: 3.3 },
         net: 23.4,
         gross: 23.5,
       },

@@ -15,7 +15,7 @@ import { verify } from '../crypto/Crypto'
 describe('Claim', () => {
   const claimerIdentity = Identity.buildFromURI('//Alice')
   const attesterIdentity = Identity.buildFromURI('//Bob')
-  const invalidCost = { gross: 233, tax: 23.3 } as ICostBreakdown
+  const invalidCost = { gross: 233, tax: { vat: 3.3 } } as ICostBreakdown
   const date = new Date(2019, 11, 10)
 
   const testCType: CType = CType.fromCType({
@@ -64,7 +64,7 @@ describe('Claim', () => {
     cost: {
       gross: 233,
       net: 23.3,
-      tax: 23.3,
+      tax: { vat: 3.3 },
     },
     timeframe: date,
     currency: 'Euro',
@@ -78,7 +78,7 @@ describe('Claim', () => {
     cost: {
       gross: 233,
       net: 23.3,
-      tax: 23.3,
+      tax: { vat: 3.3 },
     },
     currency: 'Euro',
     timeframe: new Date('12-04-2020'),
