@@ -8,6 +8,17 @@ import Blockchain from './Blockchain'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
+const mockedApi = ({
+  query: {
+    system: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      accountNonce: (address: any) => {
+        return new UInt(0) as Index
+      },
+    },
+  },
+} as any) as ApiPromise
+
 describe('queries', () => {
   beforeAll(() => {
     const api = require('../blockchainApiConnection/BlockchainApiConnection')
@@ -41,22 +52,19 @@ describe('queries', () => {
   })
 
   it('should increment nonce for account', async () => {
-    const chain = new Blockchain({} as ApiPromise)
     const alice = Identity.buildFromURI('//Alice')
-    const initialNonce = new UInt(Math.random() * 10 + 1) as Index
-    chain.accountNonces.set(alice.address, initialNonce)
+    const chain = new Blockchain(mockedApi)
     // eslint-disable-next-line dot-notation
-    const incrNonce = await chain['retrieveNonce'](alice.address)
-    expect(incrNonce.toNumber()).toEqual(initialNonce.toNumber())
+    const initialNonce = await chain['retrieveNonce'](alice.address)
     expect(chain.accountNonces.get(alice.address)!.toNumber()).toEqual(
       initialNonce.toNumber() + 1
     )
   })
+
   it('should return incrementing nonces', async () => {
     const alice = Identity.buildFromURI('//Alice')
     const promisedNonces: Array<Promise<Index>> = []
-    const chain = new Blockchain({} as ApiPromise)
-    chain.accountNonces.set(alice.address, new UInt(0) as Index)
+    const chain = new Blockchain(mockedApi)
     for (let i = 0; i < 25; i += 1) {
       promisedNonces.push(chain.getNonce(alice.address))
     }
@@ -72,17 +80,14 @@ describe('queries', () => {
     const bob = Identity.buildFromURI('//Bob')
     const alicePromisedNonces: Array<Promise<Index>> = []
     const bobPromisedNonces: Array<Promise<Index>> = []
-    const chain = new Blockchain({} as ApiPromise)
-    chain.accountNonces.set(alice.address, new UInt(0) as Index)
-    chain.accountNonces.set(bob.address, new UInt(0) as Index)
+    const chain = new Blockchain(mockedApi)
     for (let i = 0; i < 50; i += 1) {
       if (i % 2 === 0) {
         alicePromisedNonces.push(chain.getNonce(alice.address))
       } else bobPromisedNonces.push(chain.getNonce(bob.address))
     }
     const aliceNonces = await Promise.all(alicePromisedNonces)
-    const bobNonces = await Promise.all(alicePromisedNonces)
-
+    const bobNonces = await Promise.all(bobPromisedNonces)
     expect(aliceNonces.length).toEqual(25)
     expect(bobNonces.length).toEqual(25)
     aliceNonces.forEach((value, index) => {
