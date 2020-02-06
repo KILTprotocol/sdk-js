@@ -8,7 +8,7 @@
     "test": "jest -c jest.config.unit.js --coverage",
     "test:ci": "jest --ci -c jest.config.unit.js --coverage",
     "test:integration:run": "jest -c jest.config.integration.js --runInBand",
-    "test:integration": "if lsof -i :9944 > /dev/null; then yarn test:integration:run; else echo 'Can not connect to chain. Is it running?'; fi",
+    "test:integration": "if lsof -i :9944 > /dev/null; then yarn test:integration:run; else echo 'Can not connect to chain. Is it running?'; exit 1;fi",
     "testWatch": "jest --watch --coverage",
     "lint": "eslint 'src/**'",
     "lint:fix": "yarn lint --fix",
