@@ -2,13 +2,12 @@
  * @group integration
  */
 
-import BN from 'bn.js/'
 import {
+  faucet,
+  alice,
+  bob,
   DriversLicense,
-  attester,
-  claimer,
-  UncleSam,
-  assureBalance,
+  endow,
   CtypeOnChain,
   IsOfficialLicenseAuthority,
 } from './utils'
@@ -21,11 +20,26 @@ import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { revoke } from '../attestation/Attestation.chain'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
+import { Identity } from '..'
+
+const attester = faucet
+const UncleSam = alice
+const claimer = bob
+
+describe('handling attestations that do not exist', () => {
+  xtest('Attestation.query', async () => {
+    return expect(Attestation.query('0x012012012')).resolves.toBeNull()
+  }, 30_000)
+
+  test('Attestation.revoke', async () => {
+    return expect(
+      Attestation.revoke('0x012012012', Identity.buildFromURI('//Alice'))
+    ).rejects.toThrow()
+  }, 30_000)
+})
 
 describe('When there is an attester, claimer and ctype drivers license', async () => {
   beforeAll(async () => {
-    await assureBalance(attester, new BN(30_000_000))
-    await assureBalance(claimer, new BN(30_000_000))
     const ctypeExists = await CtypeOnChain(DriversLicense)
     console.log(`ctype exists: ${ctypeExists}`)
     console.log(`verify stored: ${await DriversLicense.verifyStored()}`)
@@ -73,7 +87,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
   }, 60_000)
 
   it('should not be possible to attest a claim on a Ctype that is not on chain', async () => {
-    const badCtype = new CType({
+    const badCtype = CType.fromCType({
       schema: {
         $id: 'badDriversLicense',
         $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -86,7 +100,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
           },
         },
         type: 'object',
-      },
+      } as ICType['schema'],
     } as ICType)
 
     console.log(badCtype.hash)
@@ -146,11 +160,12 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     }, 15000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
+      await endow(claimer)
       await expect(revoke(AttClaim.getHash(), claimer)).rejects.toThrowError(
         'not permitted'
       )
       await expect(AttClaim.verify()).resolves.toBeTruthy()
-    }, 15000)
+    }, 30000)
 
     it('should be possible for the attester to revoke an attestation', async () => {
       await expect(AttClaim.verify()).resolves.toBeTruthy()
@@ -162,9 +177,9 @@ describe('When there is an attester, claimer and ctype drivers license', async (
 
   describe('when there is another Ctype that works as a legitimation', async () => {
     beforeAll(async () => {
-      await assureBalance(UncleSam, new BN(30_000_000))
+      await endow(UncleSam)
       if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
-        await IsOfficialLicenseAuthority.store(UncleSam)
+        await IsOfficialLicenseAuthority.store(attester)
       }
       await expect(
         CtypeOnChain(IsOfficialLicenseAuthority)

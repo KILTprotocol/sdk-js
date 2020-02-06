@@ -9,23 +9,29 @@ import RequestForAttestation from '../requestforattestation/RequestForAttestatio
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import {
-  assureBalance,
-  claimer,
-  attester,
-  UncleSam,
+  faucet,
+  alice,
+  bob,
   DriversLicense,
   CtypeOnChain,
+  endow,
 } from './utils'
+import {
+  getChildIds,
+  getAttestationHashes,
+  fetchChildren,
+} from '../delegation/Delegation.chain'
+import { decodeDelegationNode } from '../delegation/DelegationDecoder'
 
-import BN = require('bn.js')
+const attester = faucet
+const UncleSam = alice
+const claimer = bob
 
 describe('when there is an account hierarchy', async () => {
   beforeAll(async () => {
-    await assureBalance(UncleSam, new BN(30_000_000))
-    await assureBalance(attester, new BN(30_000_000))
-    await assureBalance(claimer, new BN(30_000_000))
+    await endow(UncleSam)
     if (!(await CtypeOnChain(DriversLicense))) {
-      DriversLicense.store(UncleSam)
+      await DriversLicense.store(attester)
     }
   }, 30000)
 
@@ -56,6 +62,8 @@ describe('when there is an account hierarchy', async () => {
     let delegatedNode: DelegationNode
 
     beforeAll(async () => {
+      await endow(attester)
+
       rootNode = new DelegationRootNode(
         UUID.generate(),
         DriversLicense.hash,
@@ -115,6 +123,34 @@ describe('when there is an account hierarchy', async () => {
       const result = await attClaim.attestation.revoke(UncleSam)
       expect(result.type).toBe('Finalized')
     }, 30000)
+  })
+})
+
+describe('handling queries to data not on chain', () => {
+  test('getChildIds on empty', async () => {
+    return expect(getChildIds('0x012012012')).resolves.toEqual([])
+  })
+
+  test('DelegationNode query on empty', async () => {
+    return expect(DelegationNode.query('0x012012012')).resolves.toBeNull()
+  })
+
+  xtest('DelegationRootNode.query on empty', async () => {
+    return expect(DelegationRootNode.query('0x012012012')).resolves.toBeNull()
+  })
+
+  test('getAttestationHashes on empty', async () => {
+    return expect(getAttestationHashes('0x012012012')).resolves.toEqual([])
+  })
+
+  test('fetchChildren on empty', async () => {
+    return expect(
+      fetchChildren(['0x012012012']).then(res =>
+        res.map(el => {
+          return { id: el.id, codec: decodeDelegationNode(el.codec) }
+        })
+      )
+    ).resolves.toEqual([{ id: '0x012012012', codec: null }])
   })
 })
 

@@ -26,6 +26,12 @@ describe('when there is a dev chain with a faucet', async () => {
     console.log(`Faucet has ${Number(balance)} micro Kilt`)
   })
 
+  it('getBalance should return 0 for new identity', async () => {
+    return expect(
+      getBalance(NewIdentity().address).then(n => n.toNumber())
+    ).resolves.toEqual(0)
+  })
+
   it('should be able to faucet coins to a new identity', async () => {
     const ident = NewIdentity()
     const funny = jest.fn()

@@ -10,6 +10,7 @@ import { getOwner } from '../ctype/CType.chain'
 
 export const GAS = new BN(1000000)
 export const MIN_TRANSACTION = new BN(100000000)
+export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 
 export async function transferTokens(
   from: Identity,
@@ -44,22 +45,15 @@ export function NewIdentity(): Identity {
 const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 export const faucet = Identity.buildFromMnemonic(FaucetSeed)
-export const attester = NewIdentity()
-export const claimer = NewIdentity()
-export const UncleSam = NewIdentity()
+export const alice = Identity.buildFromURI('//Alice')
+export const bob = Identity.buildFromURI('//Bob')
 
-export async function assureBalance(receiver: Identity, minBalance: BN) {
-  let balance = await getBalance(receiver.address)
-  if (balance.lt(minBalance)) {
-    await makeTransfer(faucet, receiver.address, minBalance.sub(balance))
-    balance = await getBalance(receiver.address)
+export async function endow(receiver: Identity) {
+  const balance = await getBalance(receiver.address)
+  if (balance.eq(new BN(0))) {
+    await makeTransfer(faucet, receiver.address, ENDOWMENT)
   }
-  if (balance.lt(minBalance)) {
-    throw new Error(
-      `transfer failed; balance expected: ${minBalance.toNumber()}, actual: ${balance.toNumber()}`
-    )
-  }
-  return balance
+  return receiver
 }
 
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
@@ -71,7 +65,7 @@ export async function CtypeOnChain(ctype: CType): Promise<boolean> {
     .catch(() => false)
 }
 
-export const DriversLicense = new CType({
+export const DriversLicense = CType.fromCType({
   schema: {
     $id: 'DriversLicense',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -84,10 +78,10 @@ export const DriversLicense = new CType({
       },
     },
     type: 'object',
-  },
+  } as ICType['schema'],
 } as ICType)
 
-export const IsOfficialLicenseAuthority = new CType({
+export const IsOfficialLicenseAuthority = CType.fromCType({
   schema: {
     $id: 'LicenseAuthority',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -100,5 +94,5 @@ export const IsOfficialLicenseAuthority = new CType({
       },
     },
     type: 'object',
-  },
+  } as ICType['schema'],
 } as ICType)

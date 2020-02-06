@@ -2,14 +2,7 @@
  * @group integration
  */
 
-import BN from 'bn.js/'
-import {
-  faucet,
-  transferTokens,
-  NewIdentity,
-  DriversLicense,
-  CtypeOnChain,
-} from './utils'
+import { faucet } from './utils'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
@@ -17,59 +10,69 @@ import { IBlockchainApi } from '../blockchain/Blockchain'
 import getCached from '../blockchainApiConnection'
 
 describe('When there is an CtypeCreator and a verifier', async () => {
-  const CtypeCreator = NewIdentity()
-  const CopyCat = NewIdentity()
+  const CtypeCreator = faucet
 
-  beforeAll(async () => {
-    await transferTokens(faucet, CtypeCreator, new BN(30_000_000))
-    await transferTokens(faucet, CopyCat, new BN(30_000_000))
-  }, 30000)
+  const ctype = CType.fromCType({
+    schema: {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    } as ICType['schema'],
+  } as ICType)
 
   it('should be possible to create a claim type', async () => {
-    const ctype = DriversLicense
-    const ctypeExists = await CtypeOnChain(DriversLicense)
-    console.log(`ctype exists: ${ctypeExists}`)
-    console.log(`verify stored: ${await DriversLicense.verifyStored()}`)
-    if (!ctypeExists) {
-      await DriversLicense.store(CtypeCreator)
-    }
-    await expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.address)
+    await ctype.store(CtypeCreator)
+    await Promise.all([
+      expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.address),
+      // currently, ctype.verifyStored() is always false when ctype does not have the owner property set
+      // expect(ctype.verifyStored()).resolves.toBeTruthy(),
+    ])
+    ctype.owner = CtypeCreator.address
+    await expect(ctype.verifyStored()).resolves.toBeTruthy()
   }, 20000)
 
   it('should not be possible to create a claim type that exists', async () => {
-    const CTypeSaintship = new CType({
-      schema: {
-        $id: 'CertificateOfSaintship',
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-        properties: {
-          name: {
-            type: 'string',
-          },
-          miracle1: {
-            type: 'string',
-          },
-          miracle2: {
-            type: 'string',
-          },
-          miracle3: {
-            type: 'string',
-          },
-        },
-        type: 'object',
-      },
-    } as ICType)
-
-    await CTypeSaintship.store(CtypeCreator)
-    console.log('Stored Ctype once')
-    await expect(CTypeSaintship.store(CopyCat)).rejects.toThrowError(
+    await expect(ctype.store(CtypeCreator)).rejects.toThrowError(
       'CTYPE already exists'
     )
     console.log('Triggered error on re-submit')
-    // currently failing: await expect(CTypeSaintship.verifyStored()).resolves.toBeTruthy()
-    await expect(getOwner(CTypeSaintship.hash)).resolves.toBe(
-      CtypeCreator.address
-    )
+    await expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.address)
   }, 30000)
+
+  it('should tell when a ctype is not on chain', async () => {
+    const iAmNotThere = CType.fromCType({
+      schema: {
+        $id: 'http://example.com/ctype-2',
+        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+        properties: {
+          game: { type: 'string' },
+        },
+        type: 'object',
+      } as ICType['schema'],
+    } as ICType)
+
+    const iAmNotThereWowner = CType.fromCType({
+      schema: {
+        $id: 'http://example.com/ctype-2',
+        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+        properties: {
+          game: { type: 'string' },
+        },
+        type: 'object',
+      } as ICType['schema'],
+      owner: CtypeCreator.address,
+    } as ICType)
+
+    await Promise.all([
+      expect(iAmNotThere.verifyStored()).resolves.toBeFalsy(),
+      expect(getOwner(iAmNotThere.hash)).resolves.toBeNull(),
+      expect(getOwner('0x012012012')).resolves.toBeNull(),
+      expect(iAmNotThereWowner.verifyStored()).resolves.toBeFalsy(),
+    ])
+  })
 })
 
 afterAll(async () => {
