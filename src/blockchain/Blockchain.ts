@@ -119,7 +119,12 @@ export default class Blockchain implements IBlockchainApi {
   public api: ApiPromise
   public readonly portablegabi: gabi.Blockchain
   public accountNonces: Map<Identity['address'], Index>
-  private pending = false
+
+  private pending: Map<Identity['address'], boolean> = new Map<
+    Identity['address'],
+    boolean
+  >()
+
   private nonceQueue: Map<
     Identity['address'],
     Array<(unlock: () => Promise<Index>) => void>
@@ -181,14 +186,17 @@ export default class Blockchain implements IBlockchainApi {
   private lock(
     accountAddress: Identity['address']
   ): Promise<() => Promise<Index>> {
+    if (!this.pending.has(accountAddress)) {
+      this.pending.set(accountAddress, false)
+    }
     const lock = new Promise<() => Promise<Index>>(resolve => {
       if (!this.nonceQueue.has(accountAddress)) {
         this.nonceQueue.set(accountAddress, [resolve])
-      } else if (this.nonceQueue.has(accountAddress)) {
+      } else {
         this.nonceQueue.get(accountAddress)!.push(resolve)
       }
     })
-    if (!this.pending) {
+    if (!this.pending.get(accountAddress)) {
       this.handleQueue(accountAddress)
     }
     return lock
@@ -199,7 +207,7 @@ export default class Blockchain implements IBlockchainApi {
       this.nonceQueue.has(accountAddress) &&
       this.nonceQueue.get(accountAddress)!.length > 0
     ) {
-      this.pending = true
+      this.pending.set(accountAddress, true)
       const resolve = this.nonceQueue.get(accountAddress)!.shift()
       if (resolve) {
         resolve(async () => {
@@ -209,7 +217,7 @@ export default class Blockchain implements IBlockchainApi {
         })
       }
     } else {
-      this.pending = false
+      this.pending.set(accountAddress, false)
     }
   }
 
