@@ -10,11 +10,7 @@ module.exports = {
       statements: 80,
     },
   },
-  collectCoverageFrom: [
-    '**/*.ts',
-    '!**/blockchain/**/*.ts',
-    '!index.ts',
-  ],
+  collectCoverageFrom: ['**/*.ts', '!**/blockchain/**/*.ts', '!index.ts'],
   rootDir: 'src',
   coverageDirectory: '../coverage',
-};
+}
