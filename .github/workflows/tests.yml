@@ -27,14 +27,27 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: yarn install, build, and test
+    - name: yarn install, build and test
       run: |
         yarn install --frozen-lockfile
         yarn lint
-        yarn node:start
         yarn test:ci
-        yarn test:integration
-        yarn node:stop
         yarn build
       env:
         CI: true
+
+  integration_test:
+      runs-on: ubuntu-latest
+
+      steps:
+        - uses: actions/checkout@v1
+        - name: Use Node.js 10
+          uses: actions/setup-node@v1
+          with:
+            node-version: 10
+        - name: yarn install and test
+          run: |
+            yarn install --frozen-lockfile
+            docker run -d --rm -p 9944:9944 kiltprotocol/mashnet-node ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
+            yarn test:integration
+            docker stop $(docker ps -f ancestor=kiltprotocol/mashnet-node -q)
