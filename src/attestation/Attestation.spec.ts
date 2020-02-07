@@ -10,6 +10,7 @@ import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
 import { CompressedAttestation } from '../types/Attestation'
+import CTypeUtils from '../ctype/CTypeUtils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -166,5 +167,73 @@ describe('Attestation', () => {
     expect(() => {
       AttestationUtils.compress(attestation)
     }).toThrow()
+  it('should throw error on faulty constructor input', () => {
+    const everything = {
+      claimHash: '1',
+      cTypeHash: '1',
+      owner: '5GoNkf6WdbxCFnPdAnYYQyCjAKPJgLNxXwPjwTh6DGg6gN3E',
+    } as IAttestation
+
+    const noClaimHash = {
+      claimHash: '',
+      cTypeHash: '1',
+      owner: '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
+    } as IAttestation
+
+    const noCTypeHash = {
+      claimHash: '1',
+      cTypeHash: '',
+      owner: '5GoNkf6WdbxCFnPdAnYYQyCjAKPJgLNxXwPjwTh6DGg6gN3E',
+    } as IAttestation
+
+    const noOwner = {
+      claimHash: '1',
+      cTypeHash: '1',
+      owner: '',
+    } as IAttestation
+
+    const nothing = {
+      claimHash: '',
+      cTypeHash: '',
+      owner: '',
+    } as IAttestation
+
+    const everythingExcept = {
+      claimHash: '',
+      cTypeHash: '',
+      owner: '',
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    expect(() =>
+      // eslint-disable-next-line dot-notation
+      Attestation['constructorInputCheck'](noClaimHash)
+    ).toThrow()
+
+    expect(() =>
+      // eslint-disable-next-line dot-notation
+      Attestation['constructorInputCheck'](noCTypeHash)
+    ).toThrow()
+
+    expect(() =>
+      // eslint-disable-next-line dot-notation
+      Attestation['constructorInputCheck'](noOwner)
+    ).toThrow()
+
+    expect(() =>
+      // eslint-disable-next-line dot-notation
+      Attestation['constructorInputCheck'](nothing)
+    ).toThrow()
+
+    expect(() =>
+      // eslint-disable-next-line dot-notation
+      Attestation['constructorInputCheck'](everythingExcept)
+    ).toThrow()
+
+    expect(() =>
+      // eslint-disable-next-line dot-notation
+      Attestation['constructorInputCheck'](everything)
+    ).not.toThrow()
   })
 })

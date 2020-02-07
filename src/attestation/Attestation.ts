@@ -174,13 +174,14 @@ export default class Attestation implements IAttestation {
   }
 
   private static constructorInputCheck(attestationInput: IAttestation): void {
+    const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
     if (
       !attestationInput.cTypeHash ||
       !attestationInput.claimHash ||
       !attestationInput.owner
     ) {
       throw new Error(
-        `Property Not Provided while building Attestation!\n
+        `Property not provided while building Attestation!\n
         attestationInput.cTypeHash:\n
         ${attestationInput.cTypeHash}\n
         attestationInput.claimHash:\n
@@ -188,6 +189,21 @@ export default class Attestation implements IAttestation {
         attestationInput.owner:\n
         ${attestationInput.owner}`
       )
+    }
+    if (!attestationInput.claimHash.match(blake2bPattern)) {
+      throw new Error(
+        `Provided claimHash malformed:\n
+        ${attestationInput.claimHash}`
+      )
+    }
+    if (!attestationInput.cTypeHash.match(blake2bPattern)) {
+      throw new Error(
+        `Provided cTypeHash malformed:\n
+        ${attestationInput.cTypeHash}`
+      )
+    }
+    if (!checkAddress(attestationInput.owner, 42)[0]) {
+      throw new Error(`Owner address provided invalid`)
     }
   }
 
