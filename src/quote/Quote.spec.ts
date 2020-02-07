@@ -10,7 +10,7 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import { verify } from '../crypto/Crypto'
+import { verify, hashObjectAsStr } from '../crypto/Crypto'
 
 describe('Claim', () => {
   const claimerIdentity = Identity.buildFromURI('//Alice')
@@ -55,7 +55,6 @@ describe('Claim', () => {
     currency: 'Euro',
     timeframe: date,
     termsAndConditions: 'Lots of these',
-    specVersion: '1.1.3',
   } as IQuote
 
   const invalidPropertiesQuoteData = {
@@ -83,7 +82,6 @@ describe('Claim', () => {
     currency: 'Euro',
     timeframe: new Date('12-04-2020'),
     termsAndConditions: 'Lots of these',
-    specVersion: '1.1.3',
   }
   const validAttesterSignedQuote: IQuoteAttesterSigned = Quote.createAttesterSignature(
     validQuoteData,
@@ -100,13 +98,13 @@ describe('Claim', () => {
   it('tests created quote data against given data', () => {
     expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
     expect(
-      Quote.verifyQuoteHash(validQuoteData, quoteBothAgreed.quoteHash)
+      Quote.verifyQuoteHash(validQuoteData, hashObjectAsStr(validQuoteData))
     ).toBeTruthy()
     expect(
       Quote.verifyQuoteHash(validAttesterSignedQuote, quoteBothAgreed.currency)
     ).toBeFalsy()
     expect(
-      Quote.verifyQuoteHash(invalidCostQuote, quoteBothAgreed.quoteHash)
+      Quote.verifyQuoteHash(invalidCostQuote, hashObjectAsStr(validQuoteData))
     ).toBeFalsy()
     expect(
       verify(
@@ -117,8 +115,6 @@ describe('Claim', () => {
           currency: validQuoteData.currency,
           timeframe: validQuoteData.timeframe,
           termsAndConditions: validQuoteData.termsAndConditions,
-          specVersion: validQuoteData.specVersion,
-          quoteHash: validAttesterSignedQuote.quoteHash,
         }),
         validAttesterSignedQuote.attesterSignature,
         validAttesterSignedQuote.attesterAddress

@@ -132,7 +132,6 @@ describe('Messaging', () => {
       currency: 'Euro',
       termsAndConditions: 'https://coolcompany.io/terms.pdf',
       timeframe: date,
-      specVersion: '1.0',
     }
     const quoteAttesterSigned = Quote.createAttesterSignature(
       quoteData,

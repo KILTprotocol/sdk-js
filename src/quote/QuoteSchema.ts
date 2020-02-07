@@ -1,9 +1,9 @@
 const QuoteSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  $id: 'KILT:quote:QUOTEHASH',
+  $id: 'KILT:quote:v1.0.0',
   type: 'object',
   title: 'Quote',
-  version: '1.0.0',
+  version: 'v1.0.0',
   properties: {
     attesterAddress: {
       type: 'string',
@@ -13,7 +13,6 @@ const QuoteSchema = {
     },
     cost: {
       type: 'object',
-      title: 'The Price Schema',
       required: ['net', 'gross', 'tax'],
       properties: {
         net: {
@@ -37,12 +36,6 @@ const QuoteSchema = {
       type: 'string',
       format: 'date-time',
     },
-    specVersion: {
-      type: 'string',
-    },
-    quoteHash: {
-      type: 'string',
-    },
   },
   required: [
     'attesterAddress',
@@ -51,7 +44,6 @@ const QuoteSchema = {
     'currency',
     'termsAndConditions',
     'timeframe',
-    'specVersion',
   ],
 }
 

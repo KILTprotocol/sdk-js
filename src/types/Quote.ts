@@ -19,10 +19,8 @@ export default interface IQuote {
   currency: string
   timeframe: Date
   termsAndConditions: string
-  specVersion: string
 }
 export interface IQuoteAttesterSigned extends IQuote {
-  quoteHash: string
   attesterSignature: string
 }
 
