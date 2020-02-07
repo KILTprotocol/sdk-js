@@ -233,7 +233,7 @@ export interface IRejectTerms extends IMessageBodyBase {
   content: {
     claim: IPartialClaim
     legitimations: IAttestedClaim[]
-    delegationId: DelegationNode['id'] | null
+    delegationId?: DelegationNode['id']
   }
   type: MessageBodyType.REJECT_TERMS
 }

@@ -16,7 +16,7 @@
 import Ajv from 'ajv'
 import QuoteSchema from './QuoteSchema'
 import Identity from '../identity/Identity'
-import IQuote, { IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
+import { IQuote, IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
 
 export function validateQuoteSchema(

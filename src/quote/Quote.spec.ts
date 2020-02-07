@@ -1,5 +1,6 @@
 import QuoteSchema from './QuoteSchema'
-import IQuote, {
+import {
+  IQuote,
   ICostBreakdown,
   IQuoteAttesterSigned,
   IQuoteAgreement,

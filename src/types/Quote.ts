@@ -12,7 +12,7 @@ export interface ICostBreakdown {
   net: number
   gross: number
 }
-export default interface IQuote {
+export interface IQuote {
   attesterAddress: string
   cTypeHash: ICType['hash']
   cost: ICostBreakdown
