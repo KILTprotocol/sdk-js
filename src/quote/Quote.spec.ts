@@ -48,8 +48,7 @@ describe('Claim', () => {
     null
   )
   const invalidCostQuoteData = {
-    cTypeHash:
-      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
+    cTypeHash: '0x12345678',
     cost: invalidCost,
     currency: 'Euro',
     timeframe: date,
@@ -57,8 +56,7 @@ describe('Claim', () => {
   } as IQuote
 
   const invalidPropertiesQuoteData = {
-    cTypeHash:
-      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
+    cTypeHash: '0x12345678',
     cost: {
       gross: 233,
       net: 23.3,
@@ -71,8 +69,7 @@ describe('Claim', () => {
 
   const validQuoteData: IQuote = {
     attesterAddress: attesterIdentity.address,
-    cTypeHash:
-      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
+    cTypeHash: '0x12345678',
     cost: {
       gross: 233,
       net: 23.3,
