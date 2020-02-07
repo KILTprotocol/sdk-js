@@ -10,7 +10,7 @@ import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
 import { CompressedAttestation } from '../types/Attestation'
-import CTypeUtils from '../ctype/CTypeUtils'
+
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -258,7 +258,6 @@ describe('Attestation', () => {
       // eslint-disable-next-line dot-notation
       Attestation['constructorInputCheck'](everything)
     ).not.toThrow()
-
     expect(() =>
       // eslint-disable-next-line dot-notation
       Attestation['constructorInputCheck'](malformedClaimHash)
