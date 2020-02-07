@@ -167,224 +167,224 @@ describe('Attestation', () => {
     expect(() => {
       AttestationUtils.compress(attestation)
     }).toThrow()
-  it('should throw error on faulty constructor input', () => {
-    const { cTypeHash, claimHash } = {
-      cTypeHash:
-        '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
-      claimHash:
-        '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557',
-    }
+    it('should throw error on faulty constructor input', () => {
+      const { cTypeHash, claimHash } = {
+        cTypeHash:
+          '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
+        claimHash:
+          '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557',
+      }
 
-    const everything = {
-      claimHash,
-      cTypeHash,
-      owner: identityAlice.address,
-    } as IAttestation
+      const everything = {
+        claimHash,
+        cTypeHash,
+        owner: identityAlice.address,
+      } as IAttestation
 
-    const noClaimHash = {
-      claimHash: '',
-      cTypeHash,
-      owner: identityAlice.address,
-    } as IAttestation
+      const noClaimHash = {
+        claimHash: '',
+        cTypeHash,
+        owner: identityAlice.address,
+      } as IAttestation
 
-    const noCTypeHash = {
-      claimHash,
-      cTypeHash: '',
-      owner: identityAlice.address,
-    } as IAttestation
+      const noCTypeHash = {
+        claimHash,
+        cTypeHash: '',
+        owner: identityAlice.address,
+      } as IAttestation
 
-    const noOwner = {
-      claimHash,
-      cTypeHash,
-      owner: '',
-    } as IAttestation
+      const noOwner = {
+        claimHash,
+        cTypeHash,
+        owner: '',
+      } as IAttestation
 
-    const nothing = {
-      claimHash: '',
-      cTypeHash: '',
-      owner: '',
-    } as IAttestation
+      const nothing = {
+        claimHash: '',
+        cTypeHash: '',
+        owner: '',
+      } as IAttestation
 
-    const everythingExceptRequired = {
-      claimHash: '',
-      cTypeHash: '',
-      owner: '',
-      revoked: false,
-      delegationId: null,
-    } as IAttestation
+      const everythingExceptRequired = {
+        claimHash: '',
+        cTypeHash: '',
+        owner: '',
+        revoked: false,
+        delegationId: null,
+      } as IAttestation
 
-    const malformedClaimHash = {
-      claimHash: claimHash.slice(0, 20) + claimHash.slice(21),
-      cTypeHash,
-      owner: identityAlice.address,
-      revoked: false,
-      delegationId: null,
-    } as IAttestation
+      const malformedClaimHash = {
+        claimHash: claimHash.slice(0, 20) + claimHash.slice(21),
+        cTypeHash,
+        owner: identityAlice.address,
+        revoked: false,
+        delegationId: null,
+      } as IAttestation
 
-    const malformedCTypeHash = {
-      claimHash,
-      cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
-      owner: identityAlice.address,
-      revoked: false,
-      delegationId: null,
-    } as IAttestation
+      const malformedCTypeHash = {
+        claimHash,
+        cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
+        owner: identityAlice.address,
+        revoked: false,
+        delegationId: null,
+      } as IAttestation
 
-    expect(() =>
-      // eslint-disable-next-line dot-notation
-      Attestation['constructorInputCheck'](noClaimHash)
-    ).toThrow()
+      expect(() =>
+        // eslint-disable-next-line dot-notation
+        Attestation['constructorInputCheck'](noClaimHash)
+      ).toThrow()
 
-    expect(() =>
-      // eslint-disable-next-line dot-notation
-      Attestation['constructorInputCheck'](noCTypeHash)
-    ).toThrow()
+      expect(() =>
+        // eslint-disable-next-line dot-notation
+        Attestation['constructorInputCheck'](noCTypeHash)
+      ).toThrow()
 
-    expect(() =>
-      // eslint-disable-next-line dot-notation
-      Attestation['constructorInputCheck'](noOwner)
-    ).toThrow()
+      expect(() =>
+        // eslint-disable-next-line dot-notation
+        Attestation['constructorInputCheck'](noOwner)
+      ).toThrow()
 
-    expect(() =>
-      // eslint-disable-next-line dot-notation
-      Attestation['constructorInputCheck'](nothing)
-    ).toThrow()
+      expect(() =>
+        // eslint-disable-next-line dot-notation
+        Attestation['constructorInputCheck'](nothing)
+      ).toThrow()
 
-    expect(() =>
-      // eslint-disable-next-line dot-notation
-      Attestation['constructorInputCheck'](everythingExceptRequired)
-    ).toThrow()
+      expect(() =>
+        // eslint-disable-next-line dot-notation
+        Attestation['constructorInputCheck'](everythingExceptRequired)
+      ).toThrow()
 
-    expect(() =>
-      // eslint-disable-next-line dot-notation
-      Attestation['constructorInputCheck'](everything)
-    ).not.toThrow()
+      expect(() =>
+        // eslint-disable-next-line dot-notation
+        Attestation['constructorInputCheck'](everything)
+      ).not.toThrow()
+      expect(() =>
+        // eslint-disable-next-line dot-notation
+        Attestation['constructorInputCheck'](malformedClaimHash)
+      ).toThrow()
 
-    expect(() =>
-      // eslint-disable-next-line dot-notation
-      Attestation['constructorInputCheck'](malformedClaimHash)
-    ).toThrow()
+      expect(() =>
+        // eslint-disable-next-line dot-notation
+        Attestation['constructorInputCheck'](malformedCTypeHash)
+      ).toThrow()
+    })
+    it('should throw error on faulty constructor input', () => {
+      const { cTypeHash, claimHash } = {
+        cTypeHash:
+          '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
+        claimHash:
+          '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557',
+      }
 
-    expect(() =>
-      // eslint-disable-next-line dot-notation
-      Attestation['constructorInputCheck'](malformedCTypeHash)
-    ).toThrow()
-  })
-  it('should throw error on faulty constructor input', () => {
-    const { cTypeHash, claimHash } = {
-      cTypeHash:
-        '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
-      claimHash:
-        '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557',
-    }
+      const everything = {
+        claimHash,
+        cTypeHash,
+        owner: identityAlice.address,
+        revoked: false,
+        delegationId: null,
+      }
 
-    const everything = {
-      claimHash,
-      cTypeHash,
-      owner: identityAlice.address,
-      revoked: false,
-      delegationId: null,
-    }
+      const noClaimHash = {
+        claimHash: '',
+        cTypeHash,
+        owner: identityAlice.address,
+        revoked: false,
+        delegationId: null,
+      }
 
-    const noClaimHash = {
-      claimHash: '',
-      cTypeHash,
-      owner: identityAlice.address,
-      revoked: false,
-      delegationId: null,
-    }
+      const noCTypeHash = {
+        claimHash,
+        cTypeHash: '',
+        owner: identityAlice.address,
+        revoked: false,
+        delegationId: null,
+      }
 
-    const noCTypeHash = {
-      claimHash,
-      cTypeHash: '',
-      owner: identityAlice.address,
-      revoked: false,
-      delegationId: null,
-    }
+      const noOwner = {
+        claimHash,
+        cTypeHash,
+        owner: '',
+        revoked: false,
+        delegationId: null,
+      }
 
-    const noOwner = {
-      claimHash,
-      cTypeHash,
-      owner: '',
-      revoked: false,
-      delegationId: null,
-    }
+      const nothing = ({
+        claimHash: '',
+        cTypeHash: '',
+        owner: '',
+        revoked: null,
+        delegation: false,
+      } as any) as IAttestation
 
-    const nothing = ({
-      claimHash: '',
-      cTypeHash: '',
-      owner: '',
-      revoked: null,
-      delegation: false,
-    } as any) as IAttestation
+      const everythingExceptRequired = ({
+        claimHash: '',
+        cTypeHash: '',
+        owner: '',
+        revoked: null,
+        delegationId: null,
+      } as any) as IAttestation
 
-    const everythingExceptRequired = ({
-      claimHash: '',
-      cTypeHash: '',
-      owner: '',
-      revoked: null,
-      delegationId: null,
-    } as any) as IAttestation
+      const noRevokationBit = ({
+        claimHash,
+        cTypeHash,
+        owner: identityAlice.address,
+        revoked: null,
+        delegationId: null,
+      } as any) as IAttestation
 
-    const noRevokationBit = ({
-      claimHash,
-      cTypeHash,
-      owner: identityAlice.address,
-      revoked: null,
-      delegationId: null,
-    } as any) as IAttestation
+      const malformedClaimHash = {
+        claimHash: claimHash.slice(0, 20) + claimHash.slice(21),
+        cTypeHash,
+        owner: identityAlice.address,
+        revoked: false,
+        delegationId: null,
+      }
 
-    const malformedClaimHash = {
-      claimHash: claimHash.slice(0, 20) + claimHash.slice(21),
-      cTypeHash,
-      owner: identityAlice.address,
-      revoked: false,
-      delegationId: null,
-    }
+      const malformedCTypeHash = {
+        claimHash,
+        cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
+        owner: identityAlice.address,
+        revoked: false,
+        delegationId: null,
+      }
 
-    const malformedCTypeHash = {
-      claimHash,
-      cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
-      owner: identityAlice.address,
-      revoked: false,
-      delegationId: null,
-    }
+      const malformedAddress = {
+        claimHash,
+        cTypeHash,
+        owner: identityAlice.address.replace('7', 'D'),
+        revoked: false,
+        delegationId: null,
+      }
 
-    const malformedAddress = {
-      claimHash,
-      cTypeHash,
-      owner: identityAlice.address.replace('7', 'D'),
-      revoked: false,
-      delegationId: null,
-    }
+      expect(() => {
+        return Attestation.isAttestation(noClaimHash)
+      }).toThrow()
 
-    expect(() => {
-      return Attestation.isAttestation(noClaimHash)
-    }).toThrow()
+      expect(() => {
+        return Attestation.isAttestation(noCTypeHash)
+      }).toThrow()
 
-    expect(() => {
-      return Attestation.isAttestation(noCTypeHash)
-    }).toThrow()
+      expect(() => {
+        return Attestation.isAttestation(noOwner)
+      }).toThrow()
 
-    expect(() => {
-      return Attestation.isAttestation(noOwner)
-    }).toThrow()
+      expect(() => {
+        return Attestation.isAttestation(nothing)
+      }).toThrow()
 
-    expect(() => {
-      return Attestation.isAttestation(nothing)
-    }).toThrow()
+      expect(() => {
+        return Attestation.isAttestation(everythingExceptRequired)
+      }).toThrow()
 
-    expect(() => {
-      return Attestation.isAttestation(everythingExceptRequired)
-    }).toThrow()
+      expect(() => Attestation.isAttestation(noRevokationBit)).toThrow()
 
-    expect(() => Attestation.isAttestation(noRevokationBit)).toThrow()
+      expect(() => Attestation.isAttestation(everything)).not.toThrow()
 
-    expect(() => Attestation.isAttestation(everything)).not.toThrow()
+      expect(() => Attestation.isAttestation(malformedClaimHash)).toThrow()
 
-    expect(() => Attestation.isAttestation(malformedClaimHash)).toThrow()
+      expect(() => Attestation.isAttestation(malformedCTypeHash)).toThrow()
 
-    expect(() => Attestation.isAttestation(malformedCTypeHash)).toThrow()
-
-    expect(() => Attestation.isAttestation(malformedAddress)).toThrow()
+      expect(() => Attestation.isAttestation(malformedAddress)).toThrow()
+    })
   })
 })

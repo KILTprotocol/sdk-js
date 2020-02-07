@@ -1,3 +1,4 @@
+import * as crypto from '@polkadot/util-crypto';
 import Identity from '../identity/Identity'
 import AttesterIdentity from '../attesteridentity/AttesterIdentity'
 import AttestedClaim from './AttestedClaim'
@@ -170,8 +171,13 @@ describe('RequestForAttestation', () => {
     expect(() => {
       legitimation.compress()
     }).toThrow()
+  })
   it('should throw error on faulty constructor input', () => {
-    expect( () => )
+    const [boolean] = crypto.checkAddress(
+      identityAlice.address.replace('D', 'D'),
+      42
+    )
+    console.log(boolean)
   })
   it('should throw error on faulty constructor input', () => {
     const [boolean] = crypto.checkAddress(
