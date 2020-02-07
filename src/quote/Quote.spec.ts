@@ -36,11 +36,11 @@ describe('Claim', () => {
 
   const testCType = CType.fromCType(fromRawCType)
 
-  const claim = {
+  const claim: IClaim = {
     cTypeHash: testCType.hash,
     contents: {},
     owner: claimerIdentity.address,
-  } as IClaim
+  }
   // build request for attestation with legimitations
   const request = RequestForAttestation.fromClaimAndIdentity(
     claim,
