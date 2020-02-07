@@ -114,11 +114,6 @@ export function createAgreedQuote(
     throw Error(`Quote Signature is invalid`)
   }
   const signature = claimerIdentity.signStr(JSON.stringify(attesterSignedQuote))
-  console.log({
-    ...attesterSignedQuote,
-    rootHash: requestRootHash,
-    claimerSignature: signature,
-  })
   return {
     ...attesterSignedQuote,
     rootHash: requestRootHash,
