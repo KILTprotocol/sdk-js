@@ -1,9 +1,8 @@
 const QuoteSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  $id: 'KILT:quote:v1.0.0',
+  $id: 'KILT:quote:v1',
   type: 'object',
   title: 'Quote',
-  version: 'v1.0.0',
   properties: {
     attesterAddress: {
       type: 'string',

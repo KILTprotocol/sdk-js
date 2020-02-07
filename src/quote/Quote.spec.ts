@@ -97,18 +97,12 @@ describe('Claim', () => {
 
   it('tests created quote data against given data', () => {
     expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
-    expect(
-      Quote.verifyQuoteHash(validQuoteData, hashObjectAsStr(validQuoteData))
-    ).toBeTruthy()
-    expect(
-      Quote.verifyQuoteHash(validAttesterSignedQuote, quoteBothAgreed.currency)
-    ).toBeFalsy()
-    expect(
-      Quote.verifyQuoteHash(invalidCostQuote, hashObjectAsStr(validQuoteData))
-    ).toBeFalsy()
+    expect(quoteBothAgreed.claimerSignature).toEqual(
+      claimerIdentity.signStr(hashObjectAsStr(validAttesterSignedQuote))
+    )
     expect(
       verify(
-        JSON.stringify({
+        hashObjectAsStr({
           attesterAddress: validQuoteData.attesterAddress,
           cTypeHash: validQuoteData.cTypeHash,
           cost: validQuoteData.cost,
