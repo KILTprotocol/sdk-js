@@ -13,7 +13,7 @@ import Crypto from '../crypto'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import * as Quote from '../quote/Quote'
 import IClaim from '../types/Claim'
-import IQuote from '../types/Quote'
+import { IQuote } from '../types/Quote'
 
 describe('Messaging', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
