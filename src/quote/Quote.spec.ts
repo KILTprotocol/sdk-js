@@ -18,23 +18,22 @@ describe('Claim', () => {
   const invalidCost = { gross: 233, tax: { vat: 3.3 } } as ICostBreakdown
   const date = new Date(2019, 11, 10)
 
-  const testCType: CType = CType.fromCType({
-    schema: {
-      $id: 'http://example.com/ctype-1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
+  const cType: ICType['schema'] = {
+    $id: 'http://example.com/ctype-1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    properties: {
+      name: { type: 'string' },
     },
-    metadata: {
-      title: { default: 'CType Title' },
-      description: {},
-      properties: {
-        name: { title: { default: 'Name' } },
-      },
-    },
-  } as ICType)
+    type: 'object',
+  }
+
+  const fromRawCType: ICType = {
+    schema: cType,
+    owner: claimerIdentity.address,
+    hash: '',
+  }
+
+  const testCType = CType.fromCType(fromRawCType)
 
   const claim = {
     cTypeHash: testCType.hash,

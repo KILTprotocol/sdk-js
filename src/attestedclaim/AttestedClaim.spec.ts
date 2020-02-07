@@ -14,23 +14,25 @@ function buildAttestedClaim(
   legitimations: AttestedClaim[]
 ): AttestedClaim {
   // create claim
-  const testCType: CType = CType.fromCType({
-    schema: {
-      $id: 'http://example.com/ctype-1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
+  const identityAlice = Identity.buildFromURI('//Alice')
+
+  const rawCType: ICType['schema'] = {
+    $id: 'http://example.com/ctype-1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    properties: {
+      name: { type: 'string' },
     },
-    metadata: {
-      title: { default: 'CType Title' },
-      description: {},
-      properties: {
-        name: { title: { default: 'Name' } },
-      },
-    },
-  } as ICType)
+    type: 'object',
+  }
+
+  const fromRawCType: ICType = {
+    schema: rawCType,
+    owner: identityAlice.address,
+    hash: '',
+  }
+
+  const testCType: CType = CType.fromCType(fromRawCType)
+
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
     contents,
@@ -59,6 +61,7 @@ function buildAttestedClaim(
 
 describe('RequestForAttestation', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
+
   const identityBob = Identity.buildFromURI('//Bob')
   const identityCharlie = Identity.buildFromURI('//Charlie')
 

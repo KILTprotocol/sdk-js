@@ -17,23 +17,23 @@ describe('Attestation', () => {
 
   const Blockchain = require('../blockchain/Blockchain').default
 
-  const testCType: CType = CType.fromCType({
-    schema: {
-      $id: 'http://example.com/ctype-1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
+  const rawCType: ICType['schema'] = {
+    $id: 'http://example.com/ctype-1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    properties: {
+      name: { type: 'string' },
     },
-    metadata: {
-      title: { default: 'CType Title' },
-      description: {},
-      properties: {
-        name: { title: { default: 'Name' } },
-      },
-    },
-  } as ICType)
+    type: 'object',
+  }
+
+  const fromRawCType: ICType = {
+    schema: rawCType,
+    owner: identityAlice.address,
+    hash: '',
+  }
+
+  const testCType: CType = CType.fromCType(fromRawCType)
+
   const testcontents = {}
   const testClaim = Claim.fromCTypeAndClaimContents(
     testCType,
