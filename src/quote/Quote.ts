@@ -19,6 +19,16 @@ import Identity from '../identity/Identity'
 import { IQuote, IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
 
+/**
+ * Validates the quote against the meta schema and quote data against the provided schema.
+ *
+ * @param schema A [[Quote]] schema object.
+ * @param validate [[Quote]] data to be validated against the provided schema.
+ * @param messages The validating function provides an array of errors, in the case of validation failures.
+ *
+ * @returns Boolean to provide a check against the data.
+ */
+
 export function validateQuoteSchema(
   schema: object,
   validate: object,
@@ -39,6 +49,14 @@ export function validateQuoteSchema(
   }
   return !!result
 }
+
+/**
+ * Deserializes a [[Quote]] object into a readable format.
+ *
+ * @param deserializedQuote A serialized [[Quote]] object.
+ *
+ * @returns A human readable [[Quote]] object.
+ */
 
 export function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned
@@ -66,6 +84,15 @@ export function fromAttesterSignedInput(
   }
 }
 
+/**
+ * Signs a [[Quote]] object by an Attester.
+ *
+ * @param quoteInput A [[Quote]] object e.g. Created via [[fromQuoteDataAndIdentity]].
+ * @param attesterIdentity [[Identity]] used to sign the object.
+ *
+ * @returns A signed [[Quote]] object.
+ */
+
 export function createAttesterSignature(
   quoteInput: IQuote,
   attesterIdentity: Identity
@@ -77,6 +104,15 @@ export function createAttesterSignature(
   }
 }
 
+/**
+ * Creates a [[Quote]] object with a given [[Identity]].
+ *
+ * @param quoteInput
+ * @param identity [[Identity]].
+ *
+ * @returns A [[Quote]] object ready to be signed.
+ */
+
 export function fromQuoteDataAndIdentity(
   quoteInput: IQuote,
   identity: Identity
@@ -86,6 +122,15 @@ export function fromQuoteDataAndIdentity(
   }
   return createAttesterSignature(quoteInput, identity)
 }
+
+/**
+ *
+ * @param claimerIdentity
+ * @param attesterSignedQuote
+ * @param requestRootHash
+ *
+ * @example
+ */
 
 export function createAgreedQuote(
   claimerIdentity: Identity,
