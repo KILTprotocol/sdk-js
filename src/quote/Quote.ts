@@ -24,9 +24,9 @@ import { hashObjectAsStr, verify } from '../crypto/Crypto'
  *
  * @param schema A [[Quote]] schema object.
  * @param validate [[Quote]] data to be validated against the provided schema.
- * @param messages The validating function provides an array of errors, in the case of validation failures.
+ * @param messages Errors provide an array of errors, in the case of validation failures.
  *
- * @returns Boolean to provide a check against the data.
+ * @returns Whether the quote schema is valid.
  */
 
 export function validateQuoteSchema(
@@ -51,11 +51,11 @@ export function validateQuoteSchema(
 }
 
 /**
- * Deserializes a [[Quote]] object into a readable format.
+ * Validates a [[Quote]] object.
  *
- * @param deserializedQuote A serialized [[Quote]] object.
+ * @param deserializedQuote A Deserialized [[Quote]] object.
  *
- * @returns A human readable [[Quote]] object.
+ * @returns A [[Quote]] object signed by an Attester.
  */
 
 export function fromAttesterSignedInput(
@@ -105,7 +105,7 @@ export function createAttesterSignature(
 }
 
 /**
- * Creates a [[Quote]] object with a given [[Identity]].
+ * Creates a [[Quote]] object signed by the given [[Identity]].
  *
  * @param quoteInput A [[Quote]] object.
  * @param identity [[Identity]] to add the public address of the Attester.
@@ -127,7 +127,7 @@ export function fromQuoteDataAndIdentity(
  * Creates a [[Quote]] signed by the Attester and the Claimer.
  *
  * @param claimerIdentity [[Identity]] of the Claimer in order to sign.
- * @param attesterSignedQuote An Attester signed [[Quote]] object.
+ * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
  * @param requestRootHash A root hash of the entire object.
  *
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
