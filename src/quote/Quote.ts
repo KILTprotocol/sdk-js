@@ -85,9 +85,9 @@ export function fromAttesterSignedInput(
 }
 
 /**
- * Signs a [[Quote]] object by an Attester.
+ * Signs a [[Quote]] object as an Attester, created via [[fromQuoteDataAndIdentity]].
  *
- * @param quoteInput A [[Quote]] object e.g. Created via [[fromQuoteDataAndIdentity]].
+ * @param quoteInput A [[Quote]] object.
  * @param attesterIdentity [[Identity]] used to sign the object.
  *
  * @returns A signed [[Quote]] object.
@@ -107,10 +107,10 @@ export function createAttesterSignature(
 /**
  * Creates a [[Quote]] object with a given [[Identity]].
  *
- * @param quoteInput
- * @param identity [[Identity]].
+ * @param quoteInput A [[Quote]] object.
+ * @param identity [[Identity]] to add the public address of the Attester.
  *
- * @returns A [[Quote]] object ready to be signed.
+ * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
  */
 
 export function fromQuoteDataAndIdentity(
@@ -124,12 +124,13 @@ export function fromQuoteDataAndIdentity(
 }
 
 /**
+ * Creates a [[Quote]] signed by the Attester and the Claimer.
  *
- * @param claimerIdentity
- * @param attesterSignedQuote
- * @param requestRootHash
+ * @param claimerIdentity [[Identity]] of the Claimer in order to sign.
+ * @param attesterSignedQuote An Attester signed [[Quote]] object.
+ * @param requestRootHash A root hash of the entire object.
  *
- * @example
+ * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
 
 export function createAgreedQuote(
