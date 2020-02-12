@@ -32,7 +32,7 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[Attestation]] or null.
    * @example ```javascript
    * Attestation.query('0xd8024cdc147c4fa9221cd177').then(attestation => {
-   *    // now we can for example revoke `attestation`
+   *   // now we can for example revoke `attestation`
    * });
    * ```
    */
@@ -79,7 +79,7 @@ export default class Attestation implements IAttestation {
    *
    * @param request - The base request for attestation.
    * @param attesterPublicIdentity - The attesters public identity, used to attest the underlying claim.
-   * @param [delegationIdInput] - optional delegationId for which the attester attests the claim.
+   * @param [delegationIdInput] - Optional delegationId for which the attester attests the claim.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create a complete new attestation from the RequestForAttestation and all other needed properties
@@ -90,7 +90,7 @@ export default class Attestation implements IAttestation {
     request: IRequestForAttestation,
     attesterPublicIdentity: IPublicIdentity,
     delegationIdInput: IDelegationBaseNode['id'] | null
-  ) {
+  ): Attestation {
     return new Attestation({
       claimHash: request.rootHash,
       cTypeHash: request.claim.cTypeHash,
@@ -146,7 +146,7 @@ export default class Attestation implements IAttestation {
    * @example ```javascript
    * // Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * attestation.store(attester).then(() => {
-   * // the attestation was successfully stored, so now we can for example create an AttestedClaim
+   *   // the attestation was successfully stored, so now we can for example create an AttestedClaim
    * });
    * ```
    */
@@ -161,7 +161,7 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example ```javascript
    * attestation.revoke(identity).then(() => {
-   *    // the attestation was successfully revoked
+   *   // the attestation was successfully revoked
    * });
    * ```
    */

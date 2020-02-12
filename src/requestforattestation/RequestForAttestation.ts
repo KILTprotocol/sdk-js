@@ -86,8 +86,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @param claimInput - An `IClaim` object the request for attestation is built for.
    * @param identity - The Claimer's [Identity].
+<<<<<<< HEAD
+   * @param [legitimationsInput] - Array of [AttestedClaim] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
+   * @param [delegationInput] - The id of the DelegationNode of the Attester, which should be used in the attestation.
+=======
    * @param legitimationsInput - Array of [AttestedClaim] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param delegationIdInput - The id of the DelegationNode of the Attester, which should be used in the attestation.
+>>>>>>> ec0ece4f74cffc3003bd3a87b80ed5ceb38b6ea2
    * @returns  A new [[RequestForAttestation]] object.
    * @example ```javascript
    * const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
