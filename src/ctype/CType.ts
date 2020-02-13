@@ -4,12 +4,13 @@
  * * A CTYPE is a description of the [[Claim]] data structure, based on [JSON Schema](http://json-schema.org/).
  * * CTYPEs are published and stored by the creator and/or in an open storage registry.
  * * Anyone can use a CTYPE to create a new [[Claim]].
+ *
  * @module CType
  * @preferred
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import { CTypeWrapperModel } from './CTypeSchema'
 import CTypeUtils from './CTypeUtils'

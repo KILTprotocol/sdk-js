@@ -1,4 +1,4 @@
-import { CTypeModel, CTypeInputModel, CTypeWrapperModel } from './CTypeSchema'
+import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import {
   verifyClaimStructure,
   verifySchema,
@@ -60,21 +60,6 @@ describe('CTypeUtils', () => {
     }).toThrow(new Error('CType does not correspond to schema'))
   })
   it('verifies ctypes', () => {
-    expect(verifySchema(ctypeInput, CTypeInputModel)).toBeTruthy()
     expect(verifySchema(ctypeWrapperModel, CTypeModel)).toBeTruthy()
-    expect(verifySchema(ctypeWrapperModel, CTypeInputModel)).toBeFalsy()
-    expect(verifySchema(ctypeWrapperModel, CTypeInputModel)).toBeFalsy()
-    expect(
-      verifySchema(
-        {
-          $id: 'http://example.com/ctype-1',
-          $schema: 'http://kilt-protocol.org/draft-01/ctype-input#',
-          properties: [],
-          type: 'object',
-          title: '',
-        },
-        CTypeInputModel
-      )
-    ).toBeFalsy()
   })
 })

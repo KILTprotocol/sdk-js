@@ -1,14 +1,15 @@
 /**
  * KILT enables top-down trust structures (see [[Delegation]]). On the lowest level, a delegation structure is always a **tree**. The root of this tree is DelegationRootNode.
- * ***
+ * ***.
  * Apart from inheriting [[DelegationBaseNode]]'s structure, a DelegationRootNode has a [[cTypeHash]] property that refers to a specific [[CType]]. A DelegationRootNode is written on-chain, and can be queried by [[delegationId]] via the [[query]] method.
- * ***
+ * ***.
+ *
  * @module Delegation/DelegationRootNode
  * @preferred
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import { QueryResult } from '../blockchain/Blockchain'
 import TxStatus from '../blockchain/TxStatus'
@@ -25,10 +26,10 @@ const log = factory.getLogger('DelegationRootNode')
 export default class DelegationRootNode extends DelegationBaseNode
   implements IDelegationRootNode {
   /**
-   * @description Queries the delegation root with [delegationId].
+   * Queries the delegation root with [delegationId].
    *
-   * @param delegationId unique identifier of the delegation root
-   * @returns promise containing [[DelegationRootNode]] or [null]
+   * @param delegationId Unique identifier of the delegation root.
+   * @returns Promise containing [[DelegationRootNode]] or [null].
    */
   public static async query(
     delegationId: string
@@ -66,10 +67,10 @@ export default class DelegationRootNode extends DelegationBaseNode
   /* eslint-enable class-methods-use-this */
 
   /**
-   * @description Stores the delegation root node on chain.
+   * Stores the delegation root node on chain.
    *
-   * @param identity the account used to store the delegation root node
-   * @returns promise containing the [[TxStatus]]
+   * @param identity The account used to store the delegation root node.
+   * @returns Promise containing the [[TxStatus]].
    */
   public async store(identity: Identity): Promise<TxStatus> {
     log.debug(`:: store(${this.id})`)

@@ -2,14 +2,14 @@
  *  Balance provides the accounts and balances of the KILT protocol.
  * ***
  *  * Checking Balances between accounts
- *  * Transfer of assets between accounts
+ *  * Transfer of assets between accounts.
  *
  * @module Balance
  * @preferred
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import BN from 'bn.js'
 import { Balance } from '@polkadot/types/interfaces'
@@ -19,12 +19,12 @@ import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
 
 /**
- * @description Attaches the given [listener] for balance changes on the account with [accountAddress].
- * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>
+ * Attaches the given [listener] for balance changes on the account with [accountAddress].
+ * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.
  *
- * @param accountAddress address of the account on which to listen for balance changes.
- * @param listener listener to receive balance change updates
- * @returns a promise containing the current balance of the account
+ * @param accountAddress Address of the account on which to listen for balance changes.
+ * @param listener Listener to receive balance change updates.
+ * @returns A promise containing the current balance of the account.
  *
  * @example
  * <BR>
@@ -66,11 +66,11 @@ export async function listenToBalanceChanges(
 }
 
 /**
- * @description Fetches the current balance of the account with [accountAddress].
- * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>
+ * Fetches the current balance of the account with [accountAddress].
+ * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.
  *
- * @param accountAddress address of the account for which to get the balance.
- * @returns a promise containing the current balance of the account
+ * @param accountAddress Address of the account for which to get the balance.
+ * @returns A promise containing the current balance of the account.
  *
  * @example
  * <BR>
@@ -92,13 +92,13 @@ export async function getBalance(
 }
 
 /**
- * @description Transfer Kilt [amount] tokens to [toAccountAddress] using the given [[Identity]].
- * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>
+ * Transfer Kilt [amount] tokens to [toAccountAddress] using the given [[Identity]].
+ * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.
  *
- * @param identity identity to use for token transfer
- * @param accountAddressTo address of the receiver account
- * @param amount amount of µ-Kilt to transfer
- * @returns promise containing the transaction status
+ * @param identity Identity to use for token transfer.
+ * @param accountAddressTo Address of the receiver account.
+ * @param amount Amount of µ-Kilt to transfer.
+ * @returns Promise containing the transaction status.
  *
  * @example
  * <BR>

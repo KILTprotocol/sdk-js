@@ -6,12 +6,13 @@
  * * a [[CType]] that represents its data structure.
  * <br><br>
  * A claim object's owner is (should be) the same entity as the claimer.
+ *
  * @module Claim
  * @preferred
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import ICType from '../ctype/CType'
 import CTypeUtils from '../ctype/CTypeUtils'

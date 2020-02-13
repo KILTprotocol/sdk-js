@@ -13,7 +13,6 @@ function buildRequestForAttestation(
   legitimations: AttestedClaim[]
 ): RequestForAttestation {
   // create claim
-  const contentsCopy = contents
 
   const identityAlice = Identity.buildFromURI('//Alice')
 
@@ -37,7 +36,7 @@ function buildRequestForAttestation(
 
   const claim: IClaim = {
     cTypeHash: testCType.hash,
-    contents: contentsCopy,
+    contents,
     owner: claimer.address,
   }
   // build request for attestation with legimitations
