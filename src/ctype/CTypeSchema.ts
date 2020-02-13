@@ -60,6 +60,7 @@ export const CTypeModel = {
       },
     },
   },
+  additionalProperties: false,
   required: ['$id', 'title', '$schema', 'properties', 'type'],
 }
 
@@ -77,6 +78,7 @@ export const CTypeWrapperModel = {
       type: 'string',
     },
   },
+  additionalProperties: false,
   required: ['schema'],
 }
 
