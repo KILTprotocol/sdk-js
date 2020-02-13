@@ -45,7 +45,8 @@ describe('Attestation', () => {
     testClaim,
     identityBob,
     [],
-    null
+    null,
+    true
   )
 
   it('stores attestation', async () => {

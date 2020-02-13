@@ -82,25 +82,21 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of requiered parameters.
+   * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
    *
    * @param claimInput - An `IClaim` object the request for attestation is built for.
    * @param identity - The Claimer's [Identity].
    * @param legitimationsInput - Array of [AttestedClaim] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param delegationIdInput - The id of the DelegationNode of the Attester, which should be used in the attestation.
+   * @param privacyEnhanced - If true a privacy enhanced attestation is requested in addition to a normal attestation.
    * @returns  A new [[RequestForAttestation]] object.
-   * @example ```javascript
-   * const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
-   *   claim,
-   *   alice
-   * );
-   * ```
    */
   public static fromClaimAndIdentity(
     claimInput: IClaim,
     identity: Identity,
     legitimationsInput: AttestedClaim[] = [],
-    delegationIdInput: IDelegationBaseNode['id'] | null = null
+    delegationIdInput: IDelegationBaseNode['id'] | null = null,
+    privacyEnhanced: boolean
   ): RequestForAttestation {
     if (claimInput.owner !== identity.address) {
       throw Error('Claim owner is not Identity')
@@ -131,6 +127,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
         calculatedRootHash
       ),
       delegationId: delegationIdInput,
+      privacyEnhanced,
     })
   }
 
@@ -141,7 +138,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public claimHashTree: object
   public cTypeHash: NonceHash
   public rootHash: Hash
-
+  public privacyEnhanced: boolean
   public delegationId: IDelegationBaseNode['id'] | null
 
   /**
@@ -161,24 +158,27 @@ export default class RequestForAttestation implements IRequestForAttestation {
       !requestForAttestationInput.claimerSignature ||
       !requestForAttestationInput.claimHashTree ||
       !requestForAttestationInput.cTypeHash ||
-      !requestForAttestationInput.rootHash
+      !requestForAttestationInput.rootHash ||
+      typeof requestForAttestationInput.privacyEnhanced === 'undefined'
     ) {
       throw new Error(
         `Property Not Provided while building RequestForAttestation:\n
-          requestInput.claim:\n
+          requestInput.claim: 
           ${requestForAttestationInput.claim}\n
-          requestInput.legitimations:\n
+          requestInput.legitimations: 
           ${requestForAttestationInput.legitimations}\n
-          requestInput.claimOwner:\n
+          requestInput.claimOwner: 
           ${requestForAttestationInput.claimOwner}\n
-          requestInput.claimerSignature:\n
+          requestInput.claimerSignature: 
           ${requestForAttestationInput.claimerSignature}
-          requestInput.claimHashTree:\n
+          requestInput.claimHashTree: 
           ${requestForAttestationInput.claimHashTree}\n
-          requestInput.rootHash:\n
+          requestInput.rootHash: 
           ${requestForAttestationInput.rootHash}\n
-          requestInput.cTypeHash:\n
-          ${requestForAttestationInput.cTypeHash}\n`
+          requestInput.cTypeHash: 
+          ${requestForAttestationInput.cTypeHash}\n
+          requestInput.privacyEnhanced: 
+          ${requestForAttestationInput.privacyEnhanced}\n`
       )
     }
     this.claim = requestForAttestationInput.claim
@@ -201,6 +201,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.claimerSignature = requestForAttestationInput.claimerSignature
     this.verifySignature()
     this.verifyData()
+    this.privacyEnhanced = requestForAttestationInput.privacyEnhanced
   }
 
   /**

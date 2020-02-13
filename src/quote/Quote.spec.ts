@@ -46,7 +46,8 @@ describe('Claim', () => {
     claim,
     claimerIdentity,
     [],
-    null
+    null,
+    false
   )
   const invalidCostQuoteData = {
     cTypeHash: '0x12345678',

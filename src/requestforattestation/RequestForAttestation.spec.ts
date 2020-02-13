@@ -43,7 +43,8 @@ function buildRequestForAttestation(
     claim,
     claimer,
     legitimations,
-    null
+    null,
+    true
   )
 }
 

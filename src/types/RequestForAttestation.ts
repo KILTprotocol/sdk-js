@@ -22,4 +22,5 @@ export default interface IRequestForAttestation {
   rootHash: Hash
   claimerSignature: string
   delegationId: IDelegationBaseNode['id'] | null
+  privacyEnhanced: boolean
 }

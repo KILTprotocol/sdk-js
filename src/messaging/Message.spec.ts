@@ -119,6 +119,7 @@ describe('Messaging', () => {
       cTypeHash: { nonce: '0x12345678', hash: '0x12345678' },
       rootHash: '0x12345678',
       claimerSignature: '0x12345678',
+      privacyEnhanced: false,
     } as IRequestForAttestation
 
     const quoteData: IQuote = {
