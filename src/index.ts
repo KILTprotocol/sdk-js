@@ -38,6 +38,7 @@ export { default as ICType } from './types/CType'
 export { default as ICTypeMetadata } from './types/CTypeMetadata'
 export { default as IClaim } from './types/Claim'
 export { default as IAttestedClaim } from './types/AttestedClaim'
+export { default as IAttestedClaimPE } from './types/AttestationPE'
 export { default as IAttestation } from './types/Attestation'
 export {
   IQuote,
