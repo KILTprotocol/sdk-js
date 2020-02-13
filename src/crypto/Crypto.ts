@@ -2,12 +2,13 @@
  * Crypto provides KILT with the utility types and methods useful for cryptographic operations, such as signing/verifying, encrypting/decrypting and hashing.
  * ***
  * The utility types and methods are wrappers for existing Polkadot functions and imported throughout KILT's protocol for various cryptographic needs.
+ *
  * @module Crypto
  * @preferred
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'

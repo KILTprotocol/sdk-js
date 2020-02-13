@@ -6,7 +6,7 @@
 /**
  * Dummy comment, so that typedoc ignores this file.
  */
-import { connect } from './kilt/Kilt'
+import { connect, disconnect } from './kilt/Kilt'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import * as Balance from './balance/Balance.chain'
 import Identity from './identity/Identity'
@@ -86,6 +86,7 @@ export * from './messaging/Message'
 // ---- Default export for ease of use ----
 export default {
   connect,
+  disconnect,
   Balance,
   Identity,
   PublicIdentity,

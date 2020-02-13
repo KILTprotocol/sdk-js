@@ -3,7 +3,7 @@
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
