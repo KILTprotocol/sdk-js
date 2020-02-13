@@ -10,13 +10,20 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
-import { getCached } from '../blockchainApiConnection'
+import { getCached, clearCache } from '../blockchainApiConnection'
 import { IBlockchainApi } from '../blockchain/Blockchain'
 
 export function connect(host: string): Promise<IBlockchainApi> {
   return getCached(host)
 }
 
+export async function disconnect(host: string): Promise<void> {
+  const cached = await getCached(host)
+  await cached.api.disconnect()
+  clearCache()
+}
+
 export default {
   connect,
+  disconnect,
 }
