@@ -36,15 +36,15 @@ export const CTypeModel = {
           properties: {
             type: {
               type: 'string',
-              enum: ['string', 'integer', 'number', 'boolean', 'object'],
+              enum: ['string', 'integer', 'number', 'boolean'],
             },
             $ref: {
               type: 'string',
-              format: 'uri-reference',
+              format: 'uri',
             },
             format: {
               type: 'string',
-              enum: ['date', 'time', 'uri-reference'],
+              enum: ['date', 'time', 'uri'],
             },
           },
         },
