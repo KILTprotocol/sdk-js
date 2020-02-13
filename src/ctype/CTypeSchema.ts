@@ -47,6 +47,15 @@ export const CTypeModel = {
               enum: ['date', 'time', 'uri'],
             },
           },
+          additionalProperties: false,
+          oneOf: [
+            {
+              required: ['type'],
+            },
+            {
+              required: ['$ref'],
+            },
+          ],
         },
       },
     },
