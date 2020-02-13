@@ -33,7 +33,7 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * [STATIC] Builds a new instance of [[AttestedClaim]], from all requiered properties.
+   * [STATIC] Builds a new instance of [[AttestedClaim]], from all required properties.
    *
    * @param request - The request for attestation for the claim that was attested.
    * @param attestation - The attestation for the claim by the attester.
@@ -85,7 +85,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * (ASYNC) Verifies whether this attested claim is valid. It is valid if:
    * * the data is valid (see [[verifyData]]);
    * and
-   * * the [[Attestation]] object for this attestated claim is valid (see [[Attestation.verify]], where the **chain** is queried).
+   * * the [[Attestation]] object for this attested claim is valid (see [[Attestation.verify]], where the **chain** is queried).
    *
    * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
    *
@@ -109,7 +109,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * and
    * * the hash of the [[RequestForAttestation]] object for this attested claim, and the hash of the [[Claim]] for this attestated claim are the same.
    *
-   * @returns Whether the attestated claim's data is valid.
+   * @returns Whether the attested claim's data is valid.
    * @example ```javascript
    * attestedClaim.verifyData();
    * ```

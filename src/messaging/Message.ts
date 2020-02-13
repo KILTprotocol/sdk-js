@@ -11,6 +11,11 @@
  */
 
 import {
+  Attestation as AttestationPE,
+  CombinedPresentation,
+  CombinedPresentationRequest,
+} from '@kiltprotocol/portablegabi'
+import {
   Claim,
   DelegationNode,
   IAttestedClaim,
@@ -21,6 +26,7 @@ import {
   Identity,
   IPublicIdentity,
   IRequestForAttestation,
+  IAttestation,
 } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
 import ITerms from '../types/Terms'
@@ -66,6 +72,7 @@ export enum MessageBodyType {
 
   REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
   SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes',
+  SUBMIT_CLAIMS_FOR_CTYPES_PE = 'submit-claims-for-ctypes-pe',
   ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
   REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
 
@@ -246,28 +253,38 @@ export interface IRequestAttestationForClaim extends IMessageBodyBase {
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
 }
 export interface ISubmitAttestationForClaim extends IMessageBodyBase {
-  content: IAttestedClaim
+  content: {
+    attestation: IAttestation
+    attestationPE: AttestationPE
+  }
   type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
 }
 export interface IRejectAttestationForClaim extends IMessageBodyBase {
-  content: IRequestForAttestation
+  content: false
   type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM
 }
 
 export interface IRequestClaimsForCTypes extends IMessageBodyBase {
-  content: Array<ICType['hash']>
+  content: {
+    ctypes: Array<ICType['hash']>
+    privacyEnhanced?: CombinedPresentationRequest
+  }
   type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
 }
 export interface ISubmitClaimsForCTypes extends IMessageBodyBase {
   content: IAttestedClaim[]
   type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
 }
+export interface ISubmitClaimsForCTypesPE extends IMessageBodyBase {
+  content: CombinedPresentation
+  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
+}
 export interface IAcceptClaimsForCTypes extends IMessageBodyBase {
-  content: IAttestedClaim[]
+  content: true
   type: MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES
 }
 export interface IRejectClaimsForCTypes extends IMessageBodyBase {
-  content: IAttestedClaim[]
+  content: false
   type: MessageBodyType.REJECT_CLAIMS_FOR_CTYPES
 }
 
