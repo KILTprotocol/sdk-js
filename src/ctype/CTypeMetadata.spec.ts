@@ -10,7 +10,7 @@ describe('CType', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
+    $id: 'kilt:ctype:0x123',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     title: 'title',
     properties: {

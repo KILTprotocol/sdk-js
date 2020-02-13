@@ -8,7 +8,7 @@ describe('Nested CTypes', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
 
   const passportCType: ICType['schema'] = {
-    $id: 'kilt:ctype:ctype-1',
+    $id: 'kilt:ctype:0x1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     title: 'Passport',
     properties: {
@@ -22,7 +22,7 @@ describe('Nested CTypes', () => {
   }
 
   const kycCType: ICType['schema'] = {
-    $id: 'kilt:ctype:ctype-2',
+    $id: 'kilt:ctype:0x2',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     title: 'KYC',
     properties: {
@@ -76,7 +76,7 @@ describe('Nested CTypes', () => {
   }
 
   const nested: ICType['schema'] = {
-    $id: 'kilt:ctype:ctype-3',
+    $id: 'kilt:ctype:0x3',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     title: 'KYC and Passport',
     type: 'object',
@@ -108,7 +108,7 @@ describe('Nested CTypes', () => {
     },
   }
   const nestedDeeply: ICType['schema'] = {
-    $id: 'kilt:ctype:ctype-4',
+    $id: 'kilt:ctype:0x4',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     title: 'test',
     type: 'object',

@@ -9,7 +9,7 @@ import ICType from '../types/CType'
 jest.mock('../blockchain/Blockchain')
 
 const ctypeInput = {
-  $id: 'http://example.com/ctype-1',
+  $id: 'kilt:ctype:0x123',
   $schema: 'http://kilt-protocol.org/draft-01/ctype-input#',
   properties: [
     {
@@ -29,7 +29,7 @@ const ctypeInput = {
 }
 
 const ctypeWrapperModel: ICType['schema'] = {
-  $id: 'http://example.com/ctype-1',
+  $id: 'kilt:ctype:0x123',
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
   title: 'title',
   properties: {

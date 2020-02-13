@@ -13,7 +13,8 @@ export const CTypeModel = {
   properties: {
     $id: {
       type: 'string',
-      minLength: 1,
+      format: 'uri',
+      pattern: '^kilt:ctype:0x[0-9a-f]+$',
     },
     $schema: {
       type: 'string',
