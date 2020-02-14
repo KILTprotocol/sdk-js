@@ -11,14 +11,7 @@ import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import {
-  faucet,
-  alice,
-  bob,
-  DriversLicense,
-  CtypeOnChain,
-  endow,
-} from './utils'
+import { faucet, alice, bob, DriversLicense, CtypeOnChain } from './utils'
 import {
   getChildIds,
   getAttestationHashes,
@@ -26,13 +19,12 @@ import {
 } from '../delegation/Delegation.chain'
 import { decodeDelegationNode } from '../delegation/DelegationDecoder'
 
-const attester = faucet
-const UncleSam = alice
+const UncleSam = faucet
+const attester = alice
 const claimer = bob
 
 describe('when there is an account hierarchy', async () => {
   beforeAll(async () => {
-    await endow(UncleSam)
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester)
     }
@@ -65,8 +57,6 @@ describe('when there is an account hierarchy', async () => {
     let delegatedNode: DelegationNode
 
     beforeAll(async () => {
-      await endow(attester)
-
       rootNode = new DelegationRootNode(
         UUID.generate(),
         DriversLicense.hash,
