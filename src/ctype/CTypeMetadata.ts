@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @module CTypeMetadata
+ * @preferred
+ */
+
 import ICTypeMetadata from '../types/CTypeMetadata'
 import { MetadataModel } from './CTypeSchema'
 import CTypeUtils from './CTypeUtils'

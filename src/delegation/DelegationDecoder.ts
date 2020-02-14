@@ -4,8 +4,8 @@
  *
  * The DelegationDecoder methods transform a [[QueryResult]] into an object of a KILT type.
  *
- * @module Delegation/DelegationDecoder
- * @preferred
+ * @packageDocumentation
+ * @ignore
  */
 
 /**

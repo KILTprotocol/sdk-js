@@ -6,12 +6,11 @@
  * It's signed by the claimer, to make it tamperproof (`claimerSignature` is a property of [[Claim]]).
  * A RequestForAttestation also supports hiding of claim data during a credential presentation.
  *
+ * @packageDocumentation
  * @module RequestForAttestation
+ * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { v4 as uuid } from 'uuid'
 import {
   verify,

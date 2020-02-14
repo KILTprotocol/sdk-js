@@ -1,10 +1,11 @@
 /**
- * @module Identity
+ * A [[PublicIdentity]] object exposes only public information such as the public address, but doesn't expose any secrets such as private keys.
+ *
+ * @packageDocumentation
+ * @module PublicIdentity
+ * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import Did, {
   KEY_TYPE_ENCRYPTION,
   SERVICE_KILT_MESSAGING,

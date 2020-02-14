@@ -1,12 +1,10 @@
 /**
  * [[ErrorHandler]] helps spot and determine transaction errors.
  *
- * @module ErrorHandling
+ * @packageDocumentation
+ * @ignore
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types/interfaces'
 import { ModuleMetadataV4 } from '@polkadot/types/Metadata/v4'

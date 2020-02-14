@@ -9,13 +9,11 @@
  *   * Delegate.
  *   * Attest.
  *
- * @module Delegation
+ * @packageDocumentation
+ * @module DelegationBaseNode
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'

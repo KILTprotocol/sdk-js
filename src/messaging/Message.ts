@@ -5,12 +5,11 @@
  *
  * The [[Message]] class exposes methods to construct and verify messages.
  *
+ * @packageDocumentation
  * @module Messaging
+ * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import {
   Claim,
   DelegationNode,

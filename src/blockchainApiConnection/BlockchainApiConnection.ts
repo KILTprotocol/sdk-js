@@ -3,13 +3,11 @@
  *
  * Other modules can access the [[Blockchain]] as such: `const blockchain = await getCached()`.
  *
+ * @packageDocumentation
  * @module BlockchainApiConnection
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { RegistryTypes } from '@polkadot/types/types'
 

@@ -48,7 +48,7 @@
             "configFile": ".eslintrc-jsdoc.json"
         }],
         "jsdoc/check-tag-names": ["warn", {
-            "definedTags": ["preferred"]
+            "definedTags": ["preferred", "packageDocumentation"]
         }],
         "jsdoc/check-alignment": "off"
     },

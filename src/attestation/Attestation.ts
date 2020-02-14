@@ -6,13 +6,11 @@
  * * the key is the hash of the corresponding claim;
  * * the value is a tuple ([[CType]] hash, account, id of the [[Delegation]], and revoked flag).
  *
+ * @packageDocumentation
  * @module Attestation
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import IRequestForAttestation from '../types/RequestForAttestation'
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'

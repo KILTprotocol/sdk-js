@@ -1,11 +1,8 @@
 /**
- * @module SDK
+ * @packageDocumentation
  * @ignore
  */
 
-/**
- * Dummy comment, so that typedoc ignores this file.
- */
 import { connect, disconnect } from './kilt/Kilt'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import * as Balance from './balance/Balance.chain'

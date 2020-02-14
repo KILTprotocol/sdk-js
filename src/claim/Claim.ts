@@ -7,13 +7,11 @@
  *
  * A claim object's owner is (should be) the same entity as the claimer.
  *
+ * @packageDocumentation
  * @module Claim
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import ICType from '../ctype/CType'
 import { verifyClaimStructure } from '../ctype/CTypeUtils'
 import IClaim from '../types/Claim'

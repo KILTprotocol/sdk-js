@@ -5,13 +5,11 @@
  * * CTYPEs are published and stored by the creator and/or in an open storage registry.
  * * Anyone can use a CTYPE to create a new [[Claim]].
  *
+ * @packageDocumentation
  * @module CType
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
 import ICType from '../types/CType'

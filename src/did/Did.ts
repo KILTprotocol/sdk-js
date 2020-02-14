@@ -5,13 +5,11 @@
  *
  * The [[Did]] class exposes methods to build, store and query decentralized identifiers.
  *
+ * @packageDocumentation
  * @module DID
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import TxStatus from '../blockchain/TxStatus'

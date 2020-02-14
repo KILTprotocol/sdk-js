@@ -1,8 +1,6 @@
 /**
- * @module TypeInterfaces/RequestForAttestation
- */
-/**
- * Dummy comment needed for correct doc display, do not remove.
+ * @packageDocumentation
+ * @module IRequestForAttestation
  */
 import IClaim from './Claim'
 import { IDelegationBaseNode } from './Delegation'
