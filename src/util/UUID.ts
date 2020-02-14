@@ -15,7 +15,7 @@ import { H256 } from '@polkadot/types'
 /**
  * Generates a H256 compliant UUID.
  *
- * @returns the hashed uuid.
+ * @returns The hashed uuid.
  */
 export function generate(): string {
   return new H256(uuid()).toString()
