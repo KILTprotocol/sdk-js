@@ -83,7 +83,11 @@ export default class Attestation implements IAttestation {
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create a complete new attestation from the RequestForAttestation and all other needed properties
-   * Attestation.fromRequestAndPublicIdentity(request, attesterPublicIdentity, delegationId);
+   * Attestation.fromRequestAndPublicIdentity(
+   *   request,
+   *   attesterPublicIdentity,
+   *   delegationId
+   * );
    * ```
    */
   public static fromRequestAndPublicIdentity(
@@ -112,7 +116,7 @@ export default class Attestation implements IAttestation {
    * @param attestationInput - The base object from which to create the attestation.
    * @example ```javascript
    * // create an attestation, e.g. to store it on-chain
-   * new Attestation(attestationInput);
+   * const attestation = new Attestation(attestationInput);
    * ```
    */
   public constructor(attestationInput: IAttestation) {

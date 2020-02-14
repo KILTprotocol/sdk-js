@@ -1,6 +1,6 @@
 /**
  * KILT's core functionalities are exposed via connecting to its blockchain.
- * ***
+ *
  * To connect to the blockchain:
  * ```Kilt.connect('ws://localhost:9944');```.
  *

@@ -174,7 +174,7 @@ export default class PublicIdentity implements IPublicIdentity {
    * @param boxPublicKeyAsHex - The public encryption key.
    * @param serviceAddress - The address of the service used to retreive the DID.
    * @example ```javascript
-   * new PublicIdentity(address, boxPublicKeyAsHex, serviceAddress);
+   * const identity = new PublicIdentity(address, boxPublicKeyAsHex, serviceAddress);
    * ```
    */
   public constructor(

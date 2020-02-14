@@ -13,14 +13,15 @@ describe('Blockchain', async () => {
   })
 
   xit('should listen to blocks', async done => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const listener = (header: Header): void => {
-      console.log(`Best block number ${header.number}`)
+      // console.log(`Best block number ${header.number}`)
       done()
     }
     const blockchainSingleton = await getCached()
 
     const subscriptionId = await blockchainSingleton.listenToBlocks(listener)
     expect(subscriptionId).toBeGreaterThanOrEqual(0)
-    console.log(`Subscription Id: ${subscriptionId}`)
+    // console.log(`Subscription Id: ${subscriptionId}`)
   }, 20000)
 })

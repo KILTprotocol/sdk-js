@@ -1,8 +1,7 @@
 /**
  * KILT enables top-down trust structures (see [[Delegation]]). On the lowest level, a delegation structure is always a **tree**. The root of this tree is DelegationRootNode.
- * ***.
+ *
  * Apart from inheriting [[DelegationBaseNode]]'s structure, a DelegationRootNode has a [[cTypeHash]] property that refers to a specific [[CType]]. A DelegationRootNode is written on-chain, and can be queried by [[delegationId]] via the [[query]] method.
- * ***.
  *
  * @module Delegation/DelegationRootNode
  * @preferred
@@ -77,17 +76,11 @@ export default class DelegationRootNode extends DelegationBaseNode
     return store(this, identity)
   }
 
-  /**
-   * @see [[DelegationBaseNode#verify]]
-   */
   public async verify(): Promise<boolean> {
     const node = await query(this.id)
     return node !== null && !node.revoked
   }
 
-  /**
-   * @see [[DelegationBaseNode#revoke]]
-   */
   public async revoke(identity: Identity): Promise<TxStatus> {
     log.debug(`:: revoke(${this.id})`)
     return revoke(this, identity)

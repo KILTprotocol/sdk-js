@@ -64,7 +64,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param attestedClaimInput - The base object with all required input, from which to create the attested claim.
    * @example ```javascript
    * // Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
-   * new AttestedClaim(attestedClaimInput);
+   * const credential = new AttestedClaim(attestedClaimInput);
    * ```
    */
   public constructor(attestedClaimInput: IAttestedClaim) {
