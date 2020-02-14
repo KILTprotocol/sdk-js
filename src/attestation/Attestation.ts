@@ -6,13 +6,11 @@
  * * the key is the hash of the corresponding claim;
  * * the value is a tuple ([[CType]] hash, account, id of the [[Delegation]], and revoked flag).
  *
+ * @packageDocumentation
  * @module Attestation
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import IRequestForAttestation from '../types/RequestForAttestation'
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
@@ -83,7 +81,11 @@ export default class Attestation implements IAttestation {
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create a complete new attestation from the RequestForAttestation and all other needed properties
-   * Attestation.fromRequestAndPublicIdentity(request, attesterPublicIdentity, delegationId);
+   * Attestation.fromRequestAndPublicIdentity(
+   *   request,
+   *   attesterPublicIdentity,
+   *   delegationId
+   * );
    * ```
    */
   public static fromRequestAndPublicIdentity(
@@ -112,7 +114,7 @@ export default class Attestation implements IAttestation {
    * @param attestationInput - The base object from which to create the attestation.
    * @example ```javascript
    * // create an attestation, e.g. to store it on-chain
-   * new Attestation(attestationInput);
+   * const attestation = new Attestation(attestationInput);
    * ```
    */
   public constructor(attestationInput: IAttestation) {

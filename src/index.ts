@@ -1,11 +1,8 @@
 /**
- * @module SDK
+ * @packageDocumentation
  * @ignore
  */
 
-/**
- * Dummy comment, so that typedoc ignores this file.
- */
 import { connect, disconnect } from './kilt/Kilt'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import * as Balance from './balance/Balance.chain'
@@ -14,6 +11,7 @@ import PublicIdentity, { IURLResolver } from './identity/PublicIdentity'
 import CType from './ctype/CType'
 import CTypeMetadata from './ctype/CTypeMetadata'
 import * as CTypeUtils from './ctype/CTypeUtils'
+import * as CTypeSchema from './ctype/CTypeSchema'
 import Claim from './claim/Claim'
 import RequestForAttestation from './requestforattestation/RequestForAttestation'
 import Attestation from './attestation/Attestation'
@@ -30,7 +28,9 @@ export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
 export { default as Crypto } from './crypto'
 export { default as UUID } from './util/UUID'
+export { default as QuoteSchema } from './quote/QuoteSchema'
 export * from './errorhandling/ExtrinsicError'
+export * from './messaging/Message'
 
 // ---- Types, which define the most basic KILT objects ----
 export { default as IPublicIdentity } from './types/PublicIdentity'
@@ -65,6 +65,7 @@ export {
   CType,
   CTypeMetadata,
   CTypeUtils,
+  CTypeSchema,
   Claim,
   RequestForAttestation,
   Attestation,
@@ -78,10 +79,6 @@ export {
   Constants,
   Quote,
 }
-
-export { CTypeModel, CTypeWrapperModel } from './ctype/CTypeSchema'
-export { default as QuoteSchema } from './quote/QuoteSchema'
-export * from './messaging/Message'
 
 // ---- Default export for ease of use ----
 export default {

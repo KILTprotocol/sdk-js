@@ -37,7 +37,7 @@ describe('When there is an CtypeCreator and a verifier', async () => {
     await expect(ctype.store(CtypeCreator)).rejects.toThrowError(
       'CTYPE already exists'
     )
-    console.log('Triggered error on re-submit')
+    // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.address)
   }, 30000)
 

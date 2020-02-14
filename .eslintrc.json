@@ -48,7 +48,7 @@
             "configFile": ".eslintrc-jsdoc.json"
         }],
         "jsdoc/check-tag-names": ["warn", {
-            "definedTags": ["preferred"]
+            "definedTags": ["preferred", "packageDocumentation"]
         }],
         "jsdoc/check-alignment": "off"
     },
@@ -63,7 +63,10 @@
                 "@typescript-eslint/no-explicit-any": "off",
                 "no-underscore-dangle": "off",
                 "global-require": "off",
-                "@typescript-eslint/ban-ts-ignore": "off"
+                "@typescript-eslint/ban-ts-ignore": "off",
+                "jsdoc/check-tag-names": ["warn", {
+                    "definedTags": ["group"]
+                }]
             }
         }
     ],

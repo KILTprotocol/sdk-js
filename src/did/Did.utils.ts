@@ -1,10 +1,8 @@
 /**
- * @module DID
+ * @packageDocumentation
+ * @ignore
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { isHex, hexToString } from '@polkadot/util'
 
 import IPublicIdentity from '../types/PublicIdentity'

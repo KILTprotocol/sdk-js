@@ -1,8 +1,6 @@
 /**
- * @module TypeInterfaces/Claim
- */
-/**
- * Dummy comment needed for correct doc display, do not remove.
+ * @packageDocumentation
+ * @module IClaim
  */
 import ICType from './CType'
 import IPublicIdentity from './PublicIdentity'

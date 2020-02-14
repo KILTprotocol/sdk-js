@@ -1,15 +1,13 @@
 /**
- *  Blockchain bridges that connects the SDK and the KILT Blockchain.
- *  ***
- *  Communicates with the chain via WebSockets and can [[listenToBlocks]]. It exposes the [[submitTx]] function that performs a transaction.
+ * Blockchain bridges that connects the SDK and the KILT Blockchain.
  *
+ * Communicates with the chain via WebSockets and can [[listenToBlocks]]. It exposes the [[submitTx]] function that performs a transaction.
+ *
+ * @packageDocumentation
  * @module Blockchain
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { ApiPromise } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'

@@ -1,8 +1,6 @@
 /**
- * @module TypeInterfaces/quote
- */
-/**
- * Dummy comment needed for correct doc display, do not remove.
+ * @packageDocumentation
+ * @module IQuote
  */
 
 import ICType from './CType'

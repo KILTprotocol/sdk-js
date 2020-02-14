@@ -1,8 +1,6 @@
 /**
- * @module TypeInterfaces/Terms
- */
-/**
- * Dummy comment needed for correct doc display, do not remove.
+ * @packageDocumentation
+ * @module ITerms
  */
 
 import DelegationNode from '../delegation/DelegationNode'
