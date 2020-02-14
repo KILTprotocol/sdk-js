@@ -2,45 +2,41 @@
  * @packageDocumentation
  * @ignore
  */
-
 import { Accumulator, CombinedPresentation } from '@kiltprotocol/portablegabi'
-import { connect, disconnect } from './kilt/Kilt'
+import { connect, disconnect } from './kilt'
+import Blockchain, { IBlockchainApi } from './blockchain'
 import * as BlockchainApiConnection from './blockchainApiConnection'
-import * as Balance from './balance/Balance.chain'
+import * as Balance from './balance'
+import Crypto from './crypto'
+import { Identity, PublicIdentity, IURLResolver } from './identity'
 import AttesterIdentity from './attesteridentity/AttesterIdentity'
-import Identity from './identity/Identity'
-import PublicIdentity, { IURLResolver } from './identity/PublicIdentity'
-import CType from './ctype/CType'
-import CTypeMetadata from './ctype/CTypeMetadata'
-import CTypeUtils from './ctype/CType.utils'
-import * as CTypeSchema from './ctype/CTypeSchema'
-import Claim from './claim/Claim'
+import { CType, CTypeMetadata, CTypeUtils, CTypeSchema } from './ctype'
+import Claim from './claim'
 import ClaimUtils from './claim/Claim.utils'
-import RequestForAttestation from './requestforattestation/RequestForAttestation'
+import RequestForAttestation from './requestforattestation'
 import RequestForAttestationUtils from './requestforattestation/RequestForAttestation.utils'
-import Attestation from './attestation/Attestation'
+import Attestation from './attestation'
 import AttestationUtils from './attestation/Attestation.utils'
-import AttestedClaim from './attestedclaim/AttestedClaim'
+import AttestedClaim from './attestedclaim'
 import AttestedClaimUtils from './attestedclaim/AttestedClaim.utils'
-import DelegationBaseNode from './delegation/Delegation'
-import DelegationNode from './delegation/DelegationNode'
-import DelegationRootNode from './delegation/DelegationRootNode'
-import Did, { IDid } from './did/Did'
-import * as Quote from './quote/Quote'
+import {
+  DelegationBaseNode,
+  DelegationNode,
+  DelegationRootNode,
+} from './delegation'
+import Did, { IDid } from './did'
+import Quote, { QuoteSchema } from './quote'
 import QuoteUtils from './quote/Quote.utils'
-import Message from './messaging/Message'
+import Message from './messaging'
 import * as Verifier from './actor/Verifier'
 import * as Claimer from './actor/Claimer'
 import * as Attester from './actor/Attester'
 import Credential from './credential/Credential'
 
-export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { SubmittableResult } from '@polkadot/api'
-export { default as Crypto } from './crypto'
-export { default as UUID } from './util/UUID'
-export { default as QuoteSchema } from './quote/QuoteSchema'
-export * from './errorhandling/ExtrinsicError'
-export * from './messaging/Message'
+export { UUID } from './util'
+export * from './errorhandling'
+export * from './messaging'
 
 // ---- Types, which define the most basic KILT objects ----
 export { default as IPublicIdentity } from './types/PublicIdentity'
@@ -68,8 +64,11 @@ export {
 
 export {
   AttesterIdentity,
+  Blockchain,
+  IBlockchainApi,
   BlockchainApiConnection,
   Balance,
+  Crypto,
   Identity,
   PublicIdentity,
   IURLResolver,
@@ -92,13 +91,14 @@ export {
   IDid,
   Message,
   Quote,
-  Verifier,
+  Attester,
   Claimer,
+  Verifier,
   Accumulator,
   CombinedPresentation,
-  Attester,
-  QuoteUtils,
   Credential,
+  QuoteUtils,
+  QuoteSchema,
 }
 
 // ---- Default export for ease of use ----
