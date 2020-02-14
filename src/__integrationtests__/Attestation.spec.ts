@@ -1,5 +1,5 @@
 /**
- * @group integration
+ * @group integration/attestation
  */
 
 import {
@@ -12,7 +12,6 @@ import {
   IsOfficialLicenseAuthority,
 } from './utils'
 import Claim from '../claim/Claim'
-import { IBlockchainApi } from '../blockchain/Blockchain'
 import getCached from '../blockchainApiConnection'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
@@ -55,7 +54,14 @@ describe('When there is an attester, claimer and ctype drivers license', async (
       content,
       claimer.address
     )
-    console.log(claim)
+    const request = RequestForAttestation.fromClaimAndIdentity(
+      claim,
+      claimer,
+      [],
+      null
+    )
+    expect(request.verifyData()).toBeTruthy()
+    expect(request.claim.contents).toMatchObject(content)
   })
 
   it('should be possible to attest a claim', async () => {
@@ -83,7 +89,6 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
     expect(aClaim.verifyData()).toBeTruthy()
     await expect(aClaim.verify()).resolves.toBeTruthy()
-    console.log(aClaim)
   }, 60_000)
 
   it('should not be possible to attest a claim on a Ctype that is not on chain', async () => {
@@ -103,7 +108,6 @@ describe('When there is an attester, claimer and ctype drivers license', async (
       } as ICType['schema'],
     } as ICType)
 
-    console.log(badCtype.hash)
     const content = { name: 'Ralfi', weight: 120 }
     const claim = Claim.fromCTypeAndClaimContents(
       badCtype,
@@ -244,13 +248,5 @@ describe('When there is an attester, claimer and ctype drivers license', async (
 })
 
 afterAll(async () => {
-  await getCached().then(
-    (BC: IBlockchainApi) => {
-      BC.api.disconnect()
-    },
-    err => {
-      console.log('not connected to chain')
-      console.log(err)
-    }
-  )
+  await getCached().then(bc => bc.api.disconnect())
 })

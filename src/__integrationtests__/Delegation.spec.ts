@@ -1,9 +1,12 @@
+/**
+ * @group integration/delegation
+ */
+
 import DelegationRootNode from '../delegation/DelegationRootNode'
 import UUID from '../util/UUID'
 import DelegationNode from '../delegation/DelegationNode'
 import { Permission } from '../types/Delegation'
 import getCached from '../blockchainApiConnection'
-import { IBlockchainApi } from '../blockchain/Blockchain'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
@@ -127,23 +130,23 @@ describe('when there is an account hierarchy', async () => {
 })
 
 describe('handling queries to data not on chain', () => {
-  test('getChildIds on empty', async () => {
+  it('getChildIds on empty', async () => {
     return expect(getChildIds('0x012012012')).resolves.toEqual([])
   })
 
-  test('DelegationNode query on empty', async () => {
+  it('DelegationNode query on empty', async () => {
     return expect(DelegationNode.query('0x012012012')).resolves.toBeNull()
   })
 
-  xtest('DelegationRootNode.query on empty', async () => {
+  xit('DelegationRootNode.query on empty', async () => {
     return expect(DelegationRootNode.query('0x012012012')).resolves.toBeNull()
   })
 
-  test('getAttestationHashes on empty', async () => {
+  it('getAttestationHashes on empty', async () => {
     return expect(getAttestationHashes('0x012012012')).resolves.toEqual([])
   })
 
-  test('fetchChildren on empty', async () => {
+  it('fetchChildren on empty', async () => {
     return expect(
       fetchChildren(['0x012012012']).then(res =>
         res.map(el => {
@@ -155,13 +158,5 @@ describe('handling queries to data not on chain', () => {
 })
 
 afterAll(async () => {
-  await getCached().then(
-    (BC: IBlockchainApi) => {
-      BC.api.disconnect()
-    },
-    err => {
-      console.log('not connected to chain')
-      console.log(err)
-    }
-  )
+  await getCached().then(bc => bc.api.disconnect())
 })

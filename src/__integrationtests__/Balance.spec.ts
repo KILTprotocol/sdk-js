@@ -1,5 +1,5 @@
 /**
- * @group integration
+ * @group integration/balance
  */
 
 import BN from 'bn.js/'
@@ -17,7 +17,6 @@ import {
   NewIdentity,
 } from './utils'
 import getCached from '../blockchainApiConnection'
-import { IBlockchainApi } from '../blockchain/Blockchain'
 
 describe('when there is a dev chain with a faucet', async () => {
   it('should have enough coins available on the faucet', async () => {
@@ -98,13 +97,5 @@ describe('When there are haves and have-nots', async () => {
 })
 
 afterAll(async () => {
-  await getCached().then(
-    (BC: IBlockchainApi) => {
-      BC.api.disconnect()
-    },
-    err => {
-      console.log('not connected to chain')
-      console.log(err)
-    }
-  )
+  await getCached().then(bc => bc.api.disconnect())
 })

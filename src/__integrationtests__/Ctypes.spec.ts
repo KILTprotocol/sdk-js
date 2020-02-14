@@ -1,12 +1,11 @@
 /**
- * @group integration
+ * @group integration/ctype
  */
 
 import { faucet } from './utils'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
-import { IBlockchainApi } from '../blockchain/Blockchain'
 import getCached from '../blockchainApiConnection'
 
 describe('When there is an CtypeCreator and a verifier', async () => {
@@ -76,13 +75,5 @@ describe('When there is an CtypeCreator and a verifier', async () => {
 })
 
 afterAll(async () => {
-  await getCached().then(
-    (BC: IBlockchainApi) => {
-      BC.api.disconnect()
-    },
-    err => {
-      console.log('not connected to chain')
-      console.log(err)
-    }
-  )
+  await getCached().then(bc => bc.api.disconnect())
 })
