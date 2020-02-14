@@ -30,9 +30,8 @@ describe('Blockchain', async () => {
       done()
     }
     const blockchainSingleton = await getCached()
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const subscriptionId = await blockchainSingleton.listenToBlocks(listener)
+    await blockchainSingleton.listenToBlocks(listener)
+    // const subscriptionId = await blockchainSingleton.listenToBlocks(listener)
     // console.log(`Subscription Id: ${subscriptionId}`)
   }, 5000)
 })
