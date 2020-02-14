@@ -54,7 +54,7 @@
     },
     "overrides": [
         {
-            "files": ["**/*.spec.ts"],
+            "files": ["**/*.spec.ts", "**/*.intspec.ts"],
             "env": {
                 "jest": true
             },
