@@ -4,12 +4,13 @@
  * Official DID specification: [[https://w3c-ccg.github.io/did-primer/]].
  * ***
  * The [[Did]] class exposes methods to build, store and query decentralized identifiers.
+ *
  * @module DID
  * @preferred
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
@@ -183,7 +184,7 @@ export default class Did implements IDid {
   /**
    * Signs (the hash of) a DID Document.
    *
-   * @param didDocument A DID Document, e.g. created via [[createDefaultDidDocument]].
+   * @param didDocument A DID Document, e.g. Created via [[createDefaultDidDocument]].
    * @param identity [[Identity]] representing the DID subject for this DID Document, and used for signature.
    * @returns The signed DID Document.
    */
