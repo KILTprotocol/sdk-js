@@ -11,15 +11,17 @@ import { IDelegationNode } from '../types/Delegation'
  * Creates a bitset from the permissions in the array where each enum value
  * is used to set the bit flag in the set.
  *
- * ATTEST has `0000000000000001`  (decimal 1)
- * DELEGATE has `0000000000000010` (decimal 2)
+ * ATTEST has `0000000000000001`  (decimal 1).
+ * DELEGATE has `0000000000000010` (decimal 2).
  *
  * Adding the enum values results in a decimal representation of the bitset.
  *
- * @returns the bitset as single value uint8 array
+ * @returns The bitset as single value uint8 array.
  */
 // eslint-disable-next-line import/prefer-default-export
-export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
+export default function permissionsAsBitset(
+  delegation: IDelegationNode
+): Uint8Array {
   const permisssionsAsBitset: number = delegation.permissions.reduce(
     (accumulator, currentValue) => accumulator + currentValue
   )

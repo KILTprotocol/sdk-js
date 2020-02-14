@@ -41,7 +41,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param attestation - The attestation for the claim by the attester.
    * @returns A new [[AttestedClaim]] object.
    * @example ```javascript
-   * //create an AttestedClaim object after receiving the attestation from the attester
+   * // create an AttestedClaim object after receiving the attestation from the attester
    * AttestedClaim.fromRequestAndAttestation(request, attestation);
    * ```
    */

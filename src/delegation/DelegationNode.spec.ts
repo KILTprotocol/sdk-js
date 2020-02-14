@@ -4,7 +4,7 @@ import U32 from '@polkadot/types/primitive/U32'
 import Identity from '../identity/Identity'
 import DelegationNode from './DelegationNode'
 import { Permission } from '../types/Delegation'
-import { permissionsAsBitset } from './DelegationNode.utils'
+import permissionsAsBitset from './DelegationNode.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -18,8 +18,6 @@ describe('Delegation', () => {
       '0x0000000000000000000000000000000000000000000000000000000000000003'
     )
     const hash: string = node.generateHash()
-
-    console.log('hash', hash)
     expect(hash).toBe(
       '0x20c5b0ba186b1eef2eabdb10a5e6399cc8eaa865ad0aaed6d3583c97746392aa'
     )
@@ -35,7 +33,6 @@ describe('Delegation', () => {
     )
     // @ts-ignore
     const permissions: Uint8Array = permissionsAsBitset(node)
-    console.log('permissions', permissions)
     const expected: Uint8Array = new Uint8Array(4)
     expected[0] = 3
     expect(permissions.toString()).toBe(expected.toString())

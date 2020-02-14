@@ -1,10 +1,11 @@
 /**
  * [[ErrorHandler]] helps spot and determine transaction errors.
+ *
  * @module ErrorHandling
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types/interfaces'
@@ -49,7 +50,7 @@ export class ErrorHandler {
   /**
    * Get the extrinsic error from the transaction result.
    *
-   * @param extrinsicResult the transaction result
+   * @param extrinsicResult The transaction result.
    */
   public getExtrinsicError(
     extrinsicResult: SubmittableResult

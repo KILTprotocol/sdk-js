@@ -4,11 +4,12 @@
  * All messages are **encrypted** with the encryption keys of the involved identities. Every time an actor sends data about an [[Identity]], they have to sign the message to prove access to the corresponding private key.
  * <br>
  * The [[Message]] class exposes methods to construct and verify messages.
+ *
  * @module Messaging
  */
 
 /**
- * Dummy comment needed for correct doc display, do not remove
+ * Dummy comment needed for correct doc display, do not remove.
  */
 import {
   Claim,
@@ -23,10 +24,12 @@ import {
   IRequestForAttestation,
 } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
+import ITerms from '../types/Terms'
+import { IQuoteAgreement } from '../types/Quote'
 
 /**
- * inReplyTo - should store the id of the parent message
- * references - should store the references or the in-reply-to of the parent-message followed by the message-id of the parent-message
+ * InReplyTo - should store the id of the parent message
+ * references - should store the references or the in-reply-to of the parent-message followed by the message-id of the parent-message.
  */
 export interface IMessage {
   body: MessageBody
@@ -34,7 +37,6 @@ export interface IMessage {
   receiverAddress: IPublicIdentity['address']
   senderAddress: IPublicIdentity['address']
   senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
-
   messageId?: string
   receivedAt?: number
   inReplyTo?: IMessage['messageId']
@@ -55,9 +57,9 @@ export interface IEncryptedMessage {
 }
 
 export enum MessageBodyType {
-  REQUEST_LEGITIMATIONS = 'request-legitimations',
-  SUBMIT_LEGITIMATIONS = 'submit-legitimations',
-  REJECT_LEGITIMATIONS = 'reject-legitimations',
+  REQUEST_TERMS = 'request-terms',
+  SUBMIT_TERMS = 'submit-terms',
+  REJECT_TERMS = 'reject-terms',
 
   REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
   SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
@@ -81,7 +83,8 @@ export default class Message implements IMessage {
         {
           const requestAttestation = message.body
           if (
-            requestAttestation.content.claim.owner !== message.senderAddress
+            requestAttestation.content.requestForAttestation.claim.owner !==
+            message.senderAddress
           ) {
             throw new Error('Sender is not owner of the claim')
           }
@@ -218,29 +221,29 @@ interface IMessageBodyBase {
   type: MessageBodyType
 }
 
-export interface IRequestLegitimations extends IMessageBodyBase {
+export interface IRequestTerms extends IMessageBodyBase {
   content: IPartialClaim
-  type: MessageBodyType.REQUEST_LEGITIMATIONS
+  type: MessageBodyType.REQUEST_TERMS
 }
-export interface ISubmitLegitimations extends IMessageBodyBase {
+export interface ISubmitTerms extends IMessageBodyBase {
+  content: ITerms
+  type: MessageBodyType.SUBMIT_TERMS
+}
+export interface IRejectTerms extends IMessageBodyBase {
   content: {
     claim: IPartialClaim
     legitimations: IAttestedClaim[]
-    delegationId: DelegationNode['id'] | null
+    delegationId?: DelegationNode['id']
   }
-  type: MessageBodyType.SUBMIT_LEGITIMATIONS
-}
-export interface IRejectLegitimations extends IMessageBodyBase {
-  content: {
-    claim: IPartialClaim
-    legitimations: IAttestedClaim[]
-    delegationId: DelegationNode['id'] | null
-  }
-  type: MessageBodyType.REJECT_LEGITIMATIONS
+  type: MessageBodyType.REJECT_TERMS
 }
 
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
-  content: IRequestForAttestation
+  content: {
+    requestForAttestation: IRequestForAttestation
+    quote?: IQuoteAgreement
+    prerequisiteClaims?: IClaim[]
+  }
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
 }
 export interface ISubmitAttestationForClaim extends IMessageBodyBase {
@@ -314,9 +317,9 @@ export interface IPartialClaim extends Partial<IClaim> {
 }
 
 export type MessageBody =
-  | IRequestLegitimations
-  | ISubmitLegitimations
-  | IRejectLegitimations
+  | IRequestTerms
+  | ISubmitTerms
+  | IRejectTerms
   //
   | IRequestAttestationForClaim
   | ISubmitAttestationForClaim
