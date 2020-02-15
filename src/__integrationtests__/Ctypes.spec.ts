@@ -26,8 +26,7 @@ describe('When there is an CtypeCreator and a verifier', async () => {
     await ctype.store(CtypeCreator)
     await Promise.all([
       expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.address),
-      // currently, ctype.verifyStored() is always false when ctype does not have the owner property set
-      // expect(ctype.verifyStored()).resolves.toBeTruthy(),
+      expect(ctype.verifyStored()).resolves.toBeTruthy(),
     ])
     ctype.owner = CtypeCreator.address
     await expect(ctype.verifyStored()).resolves.toBeTruthy()
