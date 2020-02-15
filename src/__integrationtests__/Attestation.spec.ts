@@ -40,8 +40,8 @@ describe('handling attestations that do not exist', () => {
 describe('When there is an attester, claimer and ctype drivers license', async () => {
   beforeAll(async () => {
     const ctypeExists = await CtypeOnChain(DriversLicense)
-    console.log(`ctype exists: ${ctypeExists}`)
-    console.log(`verify stored: ${await DriversLicense.verifyStored()}`)
+    // console.log(`ctype exists: ${ctypeExists}`)
+    // console.log(`verify stored: ${await DriversLicense.verifyStored()}`)
     if (!ctypeExists) {
       await DriversLicense.store(attester)
     }

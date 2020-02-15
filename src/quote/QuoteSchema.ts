@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @module QuoteSchema
+ * @preferred
+ */
+
 const QuoteSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'KILT:quote:v1',

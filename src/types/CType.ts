@@ -1,8 +1,6 @@
 /**
- * @module TypeInterfaces/CType
- */
-/**
- * Dummy comment needed for correct doc display, do not remove.
+ * @packageDocumentation
+ * @module ICType
  */
 import IPublicIdentity from './PublicIdentity'
 

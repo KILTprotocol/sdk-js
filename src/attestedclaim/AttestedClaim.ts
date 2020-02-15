@@ -3,13 +3,11 @@
  *
  * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[AttestedClaim]] object. This [[AttestedClaim]] also contains the original request for attestation. RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
  *
+ * @packageDocumentation
  * @module AttestedClaim
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim from '../types/AttestedClaim'
@@ -64,7 +62,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param attestedClaimInput - The base object with all required input, from which to create the attested claim.
    * @example ```javascript
    * // Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
-   * new AttestedClaim(attestedClaimInput);
+   * const credential = new AttestedClaim(attestedClaimInput);
    * ```
    */
   public constructor(attestedClaimInput: IAttestedClaim) {

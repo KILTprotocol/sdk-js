@@ -1,9 +1,6 @@
 /**
- * @module Attestation
- */
-
-/**
- * Dummy comment needed for correct doc display, do not remove.
+ * @packageDocumentation
+ * @ignore
  */
 import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'

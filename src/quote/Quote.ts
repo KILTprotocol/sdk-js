@@ -5,12 +5,9 @@
  *
  * A [[Quote]] comes with a versionable spec, allowing different [[Quote]] specs to exist over time and tracks under which [[Quote]] a contract was closed.
  *
+ * @packageDocumentation
  * @module Quote
  * @preferred
- */
-
-/**
- * Dummy comment needed for correct doc display, do not remove.
  */
 
 import Ajv from 'ajv'

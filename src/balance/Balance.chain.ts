@@ -1,16 +1,14 @@
 /**
- *  Balance provides the accounts and balances of the KILT protocol.
- * ***
+ * Balance provides the accounts and balances of the KILT protocol.
+ *
  *  * Checking Balances between accounts
  *  * Transfer of assets between accounts.
  *
+ * @packageDocumentation
  * @module Balance
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import BN from 'bn.js'
 import { Balance } from '@polkadot/types/interfaces'
 import TxStatus from '../blockchain/TxStatus'

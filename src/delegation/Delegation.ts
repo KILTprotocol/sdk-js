@@ -1,22 +1,19 @@
 /**
- * Delegations are the building blocks of top-down trust structures in KILT. An Attester can inherit trust through delegation from another attester ("top-down").
- * In order to model these trust hierarchies, a delegation is represented as a **node** in a **delegation tree**.
- * ***
- * A delegation object is stored on-chain, and can be revoked. A base node is created, a ID which may be used in a [[RequestForAttestation]].
+ * Delegations are the building blocks of top-down trust structures in KILT. An Attester can inherit trust through delegation from another attester ("top-down") a.
+ * In order to model these trust hierarchies, a delegation is represented as a **node** in a **delegation tree** a.
+ *
+ * A delegation object is stored on-chain, and can be revoked. A base node is created, a ID which may be used in a [[RequestForAttestation]] a.
  * A delegation can and may restrict permissions.
  *
  * Permissions:
+ *   * Delegate.
+ *   * Attest.
  *
- *  * Delegate
- *  * Attest
- *
- * @module Delegation
+ * @packageDocumentation
+ * @module DelegationBaseNode
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'

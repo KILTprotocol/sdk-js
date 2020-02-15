@@ -1,9 +1,7 @@
 /**
- * @module CType
- */
-
-/**
- * Dummy comment needed for correct doc display, do not remove.
+ * @packageDocumentation
+ * @module CTypeSchema
+ * @preferred
  */
 
 export const CTypeModel = {

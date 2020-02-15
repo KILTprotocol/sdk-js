@@ -1,12 +1,10 @@
 /**
  * [[ErrorHandler]] helps spot and determine transaction errors.
  *
- * @module ErrorHandling
+ * @packageDocumentation
+ * @ignore
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types/interfaces'
 import { ModuleMetadataV4 } from '@polkadot/types/Metadata/v4'
@@ -26,6 +24,9 @@ export class ErrorHandler {
   /**
    * Checks if there is `SystemEvent.ExtrinsicFailed` in the list of
    * transaction events within the given `extrinsicResult`.
+   *
+   * @param extrinsicResult The result of a submission.
+   * @returns Whether the extrinsic submission failed.
    */
   public static extrinsicFailed(extrinsicResult: SubmittableResult): boolean {
     const events: EventRecord[] = extrinsicResult.events || []
@@ -51,6 +52,7 @@ export class ErrorHandler {
    * Get the extrinsic error from the transaction result.
    *
    * @param extrinsicResult The transaction result.
+   * @returns The extrinsic error.
    */
   public getExtrinsicError(
     extrinsicResult: SubmittableResult
@@ -79,6 +81,9 @@ export class ErrorHandler {
 
   /**
    * Derive the module index from the metadata module descriptor.
+   *
+   * @param apiPromise The api promise object from polkadot/api.
+   * @returns The error module index.
    */
   private static async getErrorModuleIndex(
     apiPromise: ApiPromise

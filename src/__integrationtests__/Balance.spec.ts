@@ -22,7 +22,7 @@ describe('when there is a dev chain with a faucet', async () => {
   it('should have enough coins available on the faucet', async () => {
     const balance = await getBalance(faucet.address)
     expect(balance.gt(new BN(100000000))).toBeTruthy()
-    console.log(`Faucet has ${Number(balance)} micro Kilt`)
+    // console.log(`Faucet has ${Number(balance)} micro Kilt`)
   })
 
   it('getBalance should return 0 for new identity', async () => {
