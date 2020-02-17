@@ -81,8 +81,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     expect(request.verifySignature()).toBeTruthy()
     const attestation = Attestation.fromRequestAndPublicIdentity(
       request,
-      attester.getPublicIdentity(),
-      null
+      attester.getPublicIdentity()
     )
     const status = await attestation.store(attester)
     expect(status.type).toBe('Finalized')
@@ -122,8 +121,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     )
     const attestation = Attestation.fromRequestAndPublicIdentity(
       request,
-      attester.getPublicIdentity(),
-      null
+      attester.getPublicIdentity()
     )
     await expect(attestation.store(attester)).rejects.toThrowError(
       'CTYPE not found'
@@ -148,8 +146,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
       )
       const attestation = Attestation.fromRequestAndPublicIdentity(
         request,
-        attester.getPublicIdentity(),
-        null
+        attester.getPublicIdentity()
       )
       const status = await attestation.store(attester)
       expect(status.type).toBe('Finalized')
@@ -208,8 +205,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
       )
       const LicenseAuthorizationGranted = Attestation.fromRequestAndPublicIdentity(
         request1,
-        UncleSam.getPublicIdentity(),
-        null
+        UncleSam.getPublicIdentity()
       )
       await LicenseAuthorizationGranted.store(UncleSam)
       // make request including legitimation
@@ -231,8 +227,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
       )
       const LicenseGranted = Attestation.fromRequestAndPublicIdentity(
         request2,
-        attester.getPublicIdentity(),
-        null
+        attester.getPublicIdentity()
       )
       await LicenseGranted.store(attester)
       const License = AttestedClaim.fromRequestAndAttestation(
