@@ -76,7 +76,6 @@ export default class Attestation implements IAttestation {
    *
    * @param request - The base request for attestation.
    * @param attesterPublicIdentity - The attesters public identity, used to attest the underlying claim.
-   * @param [delegationIdInput] - Optional delegationId for which the attester attests the claim.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create a complete new attestation from the RequestForAttestation and all other needed properties
