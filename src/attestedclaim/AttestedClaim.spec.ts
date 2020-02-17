@@ -48,8 +48,7 @@ function buildAttestedClaim(
   // build attestation
   const testAttestation: Attestation = Attestation.fromRequestAndPublicIdentity(
     requestForAttestation,
-    attester,
-    null
+    attester
   )
   // combine to attested claim
   const attestedClaim: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
