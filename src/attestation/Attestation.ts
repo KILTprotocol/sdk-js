@@ -17,7 +17,6 @@ import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import IAttestation from '../types/Attestation'
 import { revoke, query, store } from './Attestation.chain'
-import { IDelegationBaseNode } from '../types/Delegation'
 import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
@@ -90,14 +89,13 @@ export default class Attestation implements IAttestation {
    */
   public static fromRequestAndPublicIdentity(
     request: IRequestForAttestation,
-    attesterPublicIdentity: IPublicIdentity,
-    delegationIdInput: IDelegationBaseNode['id'] | null
+    attesterPublicIdentity: IPublicIdentity
   ): Attestation {
     return new Attestation({
       claimHash: request.rootHash,
       cTypeHash: request.claim.cTypeHash,
       owner: attesterPublicIdentity.address,
-      delegationId: delegationIdInput,
+      delegationId: request.delegationId,
       revoked: false,
     })
   }
