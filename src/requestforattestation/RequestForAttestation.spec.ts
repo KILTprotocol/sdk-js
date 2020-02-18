@@ -131,7 +131,7 @@ describe('RequestForAttestation', () => {
       },
       [legitimation]
     )
-    const optimsedResult = request.toCompress()
+    const optimsedResult = request.compress()
     expect(compressRequestForAttestation(request)).toEqual(optimsedResult)
     expect(compressClaimHashTree(request)).toEqual(optimsedResult[4])
     expect(compressClaimContents(request)).toEqual(optimsedResult[0])

@@ -51,6 +51,11 @@ export default class Attestation implements IAttestation {
     return query(claimHash)
   }
 
+  public static decompress(attestation: any): Attestation {
+    const raw = decompressAttestation(attestation)
+    return Attestation.fromAttestation(raw)
+  }
+
   /**
    * [STATIC] [ASYNC] Revokes an attestation. Also available as an instance method.
    *
@@ -200,7 +205,7 @@ export default class Attestation implements IAttestation {
     return Promise.resolve(isValid)
   }
 
-  public toCompress(): any {
+  public compress(): any {
     return compressAttestation(this)
   }
 

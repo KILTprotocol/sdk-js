@@ -63,7 +63,12 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   return hash(result)
 }
 
-function addNonceAndHash(nonceHash: any[]): NonceHash {
+function compressNonceAndHash(nonceHash: any[]): any {
+  if (nonceHash.length === 0) {
+    return {
+      hash: nonceHash[0],
+    }
+  }
   return {
     nonce: nonceHash[0],
     hash: nonceHash[1],
@@ -88,7 +93,7 @@ export function decompressClaimHashTree(
   const result = {}
 
   Object.keys(rfa).forEach(entryKey => {
-    result[entryKey] = addNonceAndHash(Object.values(rfa[entryKey]))
+    result[entryKey] = compressNonceAndHash(Object.values(rfa[entryKey]))
   })
   return result
 }
@@ -108,7 +113,7 @@ export function decompressClaimContents(rfa: any): any {
 }
 
 function compressLegitimaition(leg: AttestedClaim): any {
-  return leg.toCompress()
+  return leg.compress()
 }
 
 export function decompressLegitimaition(leg: any): any {
@@ -137,8 +142,8 @@ export function decompressRequestForAttestation(
 ): IRequestForAttestation {
   return {
     claim: decompressClaimContents(reqForAtt[0]),
-    claimOwner: addNonceAndHash(reqForAtt[1]),
-    cTypeHash: addNonceAndHash(reqForAtt[2]),
+    claimOwner: compressNonceAndHash(reqForAtt[1]),
+    cTypeHash: compressNonceAndHash(reqForAtt[2]),
     legitimations: decompressLegitimaition(reqForAtt[3]),
     claimHashTree: decompressClaimHashTree(reqForAtt[4]),
     rootHash: reqForAtt[5],
@@ -459,7 +464,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return result
   }
 
-  public toCompress(): IRequestForAttestation[] {
+  public compress(): IRequestForAttestation[] {
     return compressRequestForAttestation(this)
   }
 

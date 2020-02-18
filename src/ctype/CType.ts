@@ -18,16 +18,16 @@ import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
 import IClaim from '../types/Claim'
 
-export function optimiseCTypeSchema(cTypeSchema: ICType): any {
+export function compressCTypeSchema(cTypeSchema: ICType): any {
   const { schema } = cTypeSchema
   return [schema.$id, schema.$schema, schema.properties, schema.type]
 }
 
-export function optimiseCType(cType: ICType): any {
+export function compressCType(cType: ICType): any {
   if (cType.owner) {
-    return [optimiseCTypeSchema(cType), cType.owner, cType.hash]
+    return [compressCTypeSchema(cType), cType.owner, cType.hash]
   }
-  return [optimiseCTypeSchema(cType), null, cType.hash]
+  return [compressCTypeSchema(cType), null, cType.hash]
 }
 
 export default class CType implements ICType {
@@ -71,7 +71,7 @@ export default class CType implements ICType {
     return this.owner ? actualOwner === this.owner : actualOwner !== null
   }
 
-  public toOptimise(): any {
-    return optimiseCType(this)
+  public compress(): any {
+    return compressCType(this)
   }
 }

@@ -1,4 +1,4 @@
-import CType, { optimiseCType, optimiseCTypeSchema } from './CType'
+import CType, { compressCType, compressCTypeSchema } from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
 import ICType from '../types/CType'
@@ -53,12 +53,12 @@ describe('CType', () => {
     identityAlice.address
   )
 
-  it('optimises the ctype', () => {
+  it('compress the ctype', () => {
     const ctype = CType.fromCType(fromCTypeModel)
 
-    const optimsedResult = ctype.toOptimise()
-    expect(optimiseCType(ctype)).toEqual(optimsedResult)
-    expect(optimiseCTypeSchema(ctype)).toEqual(optimsedResult[0])
+    const optimsedResult = ctype.compress()
+    expect(compressCType(ctype)).toEqual(optimsedResult)
+    expect(compressCTypeSchema(ctype)).toEqual(optimsedResult[0])
   })
 
   it('stores ctypes', async () => {

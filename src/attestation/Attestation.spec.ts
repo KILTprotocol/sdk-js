@@ -85,7 +85,7 @@ describe('Attestation', () => {
       requestForAttestation,
       identityAlice
     )
-    const optimsedResult = attestation.toCompress()
+    const optimsedResult = attestation.compress()
     expect(compressAttestation(attestation)).toEqual(optimsedResult)
     expect(decompressAttestation(optimsedResult)).toEqual(attestation)
   })

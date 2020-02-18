@@ -175,7 +175,7 @@ export default class AttestedClaim implements IAttestedClaim {
     return result
   }
 
-  public toCompress(): IAttestedClaim[] {
+  public compress(): IAttestedClaim[] {
     return compressAttestedClaim(this)
   }
 }

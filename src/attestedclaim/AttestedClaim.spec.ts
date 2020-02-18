@@ -76,7 +76,7 @@ describe('RequestForAttestation', () => {
   )
 
   it('compress attested claims', () => {
-    const optimsedResult = legitimation.toCompress()
+    const optimsedResult = legitimation.compress()
     expect(compressAttestedClaim(legitimation)).toEqual(optimsedResult)
     expect(decompressAttestedClaim(optimsedResult)).toEqual(legitimation)
   })
