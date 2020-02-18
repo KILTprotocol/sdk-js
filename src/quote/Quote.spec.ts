@@ -91,7 +91,13 @@ describe('Claim', () => {
   )
   const invalidPropertiesQuote = invalidPropertiesQuoteData
   const invalidCostQuote = invalidCostQuoteData
+  it('optimise quote objects', () => {
+    expect(Quote.optimiseQuote(validQuoteData))
+    expect(Quote.optimiseAttesterSignedQuote(validAttesterSignedQuote))
+    expect(Quote.optimiseAgreedQuote(quoteBothAgreed))
 
+    // Need to add test
+  })
   it('tests created quote data against given data', () => {
     expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
     expect(quoteBothAgreed.claimerSignature).toEqual(
