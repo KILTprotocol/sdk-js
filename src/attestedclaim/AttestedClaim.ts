@@ -8,12 +8,20 @@
  * @preferred
  */
 
-import Attestation from '../attestation/Attestation'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import Attestation, { optimiseAttestation } from '../attestation/Attestation'
+import RequestForAttestation, {
+  optimiseRequestForAttestation,
+} from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
 
+export function optimiseAttestedClaim(attestedClaim: IAttestedClaim): any {
+  return [
+    optimiseRequestForAttestation(attestedClaim.request),
+    optimiseAttestation(attestedClaim.attestation),
+  ]
+}
 export default class AttestedClaim implements IAttestedClaim {
   /**
    * [STATIC] Builds an instance of [[AttestedClaim]], from a simple object with the same properties.
@@ -154,5 +162,9 @@ export default class AttestedClaim implements IAttestedClaim {
       result.request.removeClaimOwner()
     }
     return result
+  }
+
+  public toOptimised(): IAttestedClaim[] {
+    return optimiseAttestedClaim(this)
   }
 }

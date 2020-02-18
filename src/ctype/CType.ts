@@ -18,6 +18,18 @@ import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
 import IClaim from '../types/Claim'
 
+export function optimiseCTypeSchema(cTypeSchema: ICType): any {
+  const { schema } = cTypeSchema
+  return [schema.$id, schema.$schema, schema.properties, schema.type]
+}
+
+export function optimiseCType(cType: ICType): any {
+  if (cType.owner) {
+    return [optimiseCTypeSchema(cType), cType.owner, cType.hash]
+  }
+  return [optimiseCTypeSchema(cType), null, cType.hash]
+}
+
 export default class CType implements ICType {
   public static fromCType(cTypeInput: ICType): CType {
     if (!CTypeUtils.verifySchema(cTypeInput, CTypeWrapperModel)) {
@@ -57,5 +69,9 @@ export default class CType implements ICType {
   public async verifyStored(): Promise<boolean> {
     const actualOwner = await getOwner(this.hash)
     return this.owner ? actualOwner === this.owner : actualOwner !== null
+  }
+
+  public toOptimise(): any {
+    return optimiseCType(this)
   }
 }

@@ -1,5 +1,5 @@
 import Identity from '../identity/Identity'
-import AttestedClaim from './AttestedClaim'
+import AttestedClaim, { optimiseAttestedClaim } from './AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
@@ -71,6 +71,11 @@ describe('RequestForAttestation', () => {
     {},
     []
   )
+
+  it('optimise attested claims', () => {
+    const optimsedResult = legitimation.toOptimised()
+    expect(optimiseAttestedClaim(legitimation)).toEqual(optimsedResult)
+  })
 
   it('verify attested claims', async () => {
     const attestedClaim: AttestedClaim = buildAttestedClaim(

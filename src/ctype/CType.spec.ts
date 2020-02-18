@@ -1,4 +1,4 @@
-import CType from './CType'
+import CType, { optimiseCType, optimiseCTypeSchema } from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
 import ICType from '../types/CType'
@@ -52,6 +52,14 @@ describe('CType', () => {
     claimContents,
     identityAlice.address
   )
+
+  it('optimises the ctype', () => {
+    const ctype = CType.fromCType(fromCTypeModel)
+
+    const optimsedResult = ctype.toOptimise()
+    expect(optimiseCType(ctype)).toEqual(optimsedResult)
+    expect(optimiseCTypeSchema(ctype)).toEqual(optimsedResult[0])
+  })
 
   it('stores ctypes', async () => {
     const testHash = Crypto.hashStr('1234')

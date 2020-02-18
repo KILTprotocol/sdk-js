@@ -2,7 +2,7 @@ import { Text } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import { Tuple } from '@polkadot/types/codec'
 import Identity from '../identity/Identity'
-import Attestation from './Attestation'
+import Attestation, { optimiseAttestation } from './Attestation'
 import CType from '../ctype/CType'
 import IAttestation from '../types/Attestation'
 import ICType from '../types/CType'
@@ -75,6 +75,15 @@ describe('Attestation', () => {
       revoked: false,
     } as IAttestation)
     expect(await attestation.verify()).toBeFalsy()
+  })
+
+  it('optimise attestation', () => {
+    const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
+      requestForAttestation,
+      identityAlice
+    )
+    const optimsedResult = attestation.toOptimise()
+    expect(optimiseAttestation(attestation)).toEqual(optimsedResult)
   })
 
   it('verify attestation revoked', async () => {

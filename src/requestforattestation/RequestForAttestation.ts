@@ -77,9 +77,9 @@ export function optimiseClaimContents(rfa: IRequestForAttestation): any {
   return Object.values(rfa.claim)
 }
 
-// function optimiseLegitimaition(leg) {]
-//   return leg.toOptimised()
-// }
+function optimiseLegitimaition(leg: AttestedClaim): any {
+  return leg.toOptimised()
+}
 
 export function optimiseRequestForAttestation(
   reqForAttest: IRequestForAttestation
@@ -88,8 +88,7 @@ export function optimiseRequestForAttestation(
     optimiseClaimContents(reqForAttest),
     Object.values(reqForAttest.claimOwner),
     Object.values(reqForAttest.cTypeHash),
-    // reqForAttest.legitimations.map(optimiseLegitimaition),
-    reqForAttest.legitimations,
+    reqForAttest.legitimations.map(optimiseLegitimaition),
     optimiseClaimHashTree(reqForAttest),
     reqForAttest.rootHash,
     reqForAttest.claimerSignature,

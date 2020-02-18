@@ -21,6 +21,10 @@ import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
 
+export function optimiseAttestation(attestation: IAttestation): any {
+  return Object.values(attestation)
+}
+
 export default class Attestation implements IAttestation {
   /**
    * [STATIC] [ASYNC] Queries the chain for a given attestation, by `claimHash`.
@@ -184,6 +188,10 @@ export default class Attestation implements IAttestation {
       log.debug(() => 'No valid attestation found')
     }
     return Promise.resolve(isValid)
+  }
+
+  public toOptimise(): any {
+    return optimiseAttestation(this)
   }
 
   /**
