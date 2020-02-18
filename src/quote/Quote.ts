@@ -113,6 +113,10 @@ export function compressCost(quote: IQuote): any {
   return Object.values(quote.cost)
 }
 
+export function decompressCost(quote: IQuote['cost']): any {
+  return { gross: quote[0], net: quote[1], vat: quote[2] }
+}
+
 export function compressQuote(quote: IQuote): any {
   return [
     quote.attesterAddress,
@@ -122,6 +126,16 @@ export function compressQuote(quote: IQuote): any {
     quote.termsAndConditions,
     quote.timeframe,
   ]
+}
+export function decompressQuote(quote: any): any {
+  return {
+    attesterAddress: quote[0],
+    cTypeHash: quote[1],
+    cost: decompressCost(quote[2]),
+    currency: quote[3],
+    termsAndConditions: quote[4],
+    timeframe: quote[5],
+  }
 }
 
 export function compressAttesterSignedQuote(
@@ -133,10 +147,36 @@ export function compressAttesterSignedQuote(
   ]
 }
 
+export function decompressAttesterSignedQuote(attesterSignedQuote: any): any {
+  return {
+    attesterAddress: attesterSignedQuote[0],
+    cTypeHash: attesterSignedQuote[1],
+    cost: decompressCost(attesterSignedQuote[2]),
+    currency: attesterSignedQuote[3],
+    termsAndConditions: attesterSignedQuote[4],
+    timeframe: attesterSignedQuote[5],
+    attesterSignature: attesterSignedQuote[6],
+  }
+}
+
 export function compressAgreedQuote(agreedQuote: IQuoteAgreement): any {
   return [
     ...compressAttesterSignedQuote(agreedQuote),
     agreedQuote.rootHash,
     agreedQuote.claimerSignature,
   ]
+}
+
+export function decompressAgreedQuote(agreedQuote: any): any {
+  return {
+    attesterAddress: agreedQuote[0],
+    cTypeHash: agreedQuote[1],
+    cost: decompressCost(agreedQuote[2]),
+    currency: agreedQuote[3],
+    termsAndConditions: agreedQuote[4],
+    timeframe: agreedQuote[5],
+    attesterSignature: agreedQuote[6],
+    rootHash: agreedQuote[7],
+    claimerSignature: agreedQuote[8],
+  }
 }
