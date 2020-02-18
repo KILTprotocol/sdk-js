@@ -23,7 +23,9 @@ import {
 
 import Identity from '../identity/Identity'
 import IClaim from '../claim/Claim'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
+import AttestedClaim, {
+  decompressAttestedClaim,
+} from '../attestedclaim/AttestedClaim'
 import IRequestForAttestation, {
   Hash,
   NonceHash,
@@ -61,7 +63,14 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   return hash(result)
 }
 
-export function optimiseClaimHashTree(
+function addNonceAndHash(nonceHash: any[]): NonceHash {
+  return {
+    nonce: nonceHash[0],
+    hash: nonceHash[1],
+  }
+}
+
+export function compressClaimHashTree(
   rfa: IRequestForAttestation
 ): IRequestForAttestation['claimHashTree'] {
   const result = {}
@@ -73,26 +82,69 @@ export function optimiseClaimHashTree(
   return result
 }
 
-export function optimiseClaimContents(rfa: IRequestForAttestation): any {
+export function decompressClaimHashTree(
+  rfa: IRequestForAttestation[]
+): IRequestForAttestation['claimHashTree'] {
+  const result = {}
+
+  Object.keys(rfa).forEach(entryKey => {
+    result[entryKey] = addNonceAndHash(Object.values(rfa[entryKey]))
+  })
+  return result
+}
+
+export function compressClaimContents(rfa: IRequestForAttestation): any {
+  // should go into the claim module.
   return Object.values(rfa.claim)
 }
 
-function optimiseLegitimaition(leg: AttestedClaim): any {
-  return leg.toOptimised()
+export function decompressClaimContents(rfa: any): any {
+  // should go into the claim module.
+  return {
+    cTypeHash: rfa[0],
+    contents: rfa[1],
+    owner: rfa[2],
+  }
 }
 
-export function optimiseRequestForAttestation(
+function compressLegitimaition(leg: AttestedClaim): any {
+  return leg.toCompress()
+}
+
+export function decompressLegitimaition(leg: any): any {
+  if (!leg[0]) {
+    return []
+  }
+  return [decompressAttestedClaim(leg[0])] // need to test for multiple leg
+}
+
+export function compressRequestForAttestation(
   reqForAttest: IRequestForAttestation
 ): any {
   return [
-    optimiseClaimContents(reqForAttest),
+    compressClaimContents(reqForAttest),
     Object.values(reqForAttest.claimOwner),
     Object.values(reqForAttest.cTypeHash),
-    reqForAttest.legitimations.map(optimiseLegitimaition),
-    optimiseClaimHashTree(reqForAttest),
+    reqForAttest.legitimations.map(compressLegitimaition),
+    compressClaimHashTree(reqForAttest),
     reqForAttest.rootHash,
     reqForAttest.claimerSignature,
   ]
+}
+
+export function decompressRequestForAttestation(
+  reqForAtt: any
+): IRequestForAttestation {
+  return {
+    claim: decompressClaimContents(reqForAtt[0]),
+    claimOwner: addNonceAndHash(reqForAtt[1]),
+    cTypeHash: addNonceAndHash(reqForAtt[2]),
+    legitimations: decompressLegitimaition(reqForAtt[3]),
+    claimHashTree: decompressClaimHashTree(reqForAtt[4]),
+    rootHash: reqForAtt[5],
+    claimerSignature: reqForAtt[6],
+    delegationId: reqForAtt[7] || null,
+  }
 }
 
 export default class RequestForAttestation implements IRequestForAttestation {
@@ -407,8 +459,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return result
   }
 
-  public toOptimised(): IRequestForAttestation[] {
-    return optimiseRequestForAttestation(this)
+  public toCompress(): IRequestForAttestation[] {
+    return compressRequestForAttestation(this)
   }
 
   private static calculateRootHash(

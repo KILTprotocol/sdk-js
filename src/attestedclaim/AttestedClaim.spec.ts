@@ -1,5 +1,8 @@
 import Identity from '../identity/Identity'
-import AttestedClaim, { optimiseAttestedClaim } from './AttestedClaim'
+import AttestedClaim, {
+  compressAttestedClaim,
+  decompressAttestedClaim,
+} from './AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
@@ -72,9 +75,10 @@ describe('RequestForAttestation', () => {
     []
   )
 
-  it('optimise attested claims', () => {
-    const optimsedResult = legitimation.toOptimised()
-    expect(optimiseAttestedClaim(legitimation)).toEqual(optimsedResult)
+  it('compress attested claims', () => {
+    const optimsedResult = legitimation.toCompress()
+    expect(compressAttestedClaim(legitimation)).toEqual(optimsedResult)
+    expect(decompressAttestedClaim(optimsedResult)).toEqual(legitimation)
   })
 
   it('verify attested claims', async () => {

@@ -109,33 +109,33 @@ export function createAgreedQuote(
   }
 }
 
-export function optimiseCost(quote: IQuote): any {
+export function compressCost(quote: IQuote): any {
   return Object.values(quote.cost)
 }
 
-export function optimiseQuote(quote: IQuote): any {
+export function compressQuote(quote: IQuote): any {
   return [
     quote.attesterAddress,
     quote.cTypeHash,
-    optimiseCost(quote),
+    compressCost(quote),
     quote.currency,
     quote.termsAndConditions,
     quote.timeframe,
   ]
 }
 
-export function optimiseAttesterSignedQuote(
+export function compressAttesterSignedQuote(
   attesterSignedQuote: IQuoteAttesterSigned
 ): any {
   return [
-    ...optimiseQuote(attesterSignedQuote),
+    ...compressQuote(attesterSignedQuote),
     attesterSignedQuote.attesterSignature,
   ]
 }
 
-export function optimiseAgreedQuote(agreedQuote: IQuoteAgreement): any {
+export function compressAgreedQuote(agreedQuote: IQuoteAgreement): any {
   return [
-    ...optimiseAttesterSignedQuote(agreedQuote),
+    ...compressAttesterSignedQuote(agreedQuote),
     agreedQuote.rootHash,
     agreedQuote.claimerSignature,
   ]

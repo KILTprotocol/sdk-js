@@ -91,10 +91,10 @@ describe('Claim', () => {
   )
   const invalidPropertiesQuote = invalidPropertiesQuoteData
   const invalidCostQuote = invalidCostQuoteData
-  it('optimise quote objects', () => {
-    expect(Quote.optimiseQuote(validQuoteData))
-    expect(Quote.optimiseAttesterSignedQuote(validAttesterSignedQuote))
-    expect(Quote.optimiseAgreedQuote(quoteBothAgreed))
+  it('compress quote objects', () => {
+    expect(Quote.compressQuote(validQuoteData))
+    expect(Quote.compressAttesterSignedQuote(validAttesterSignedQuote))
+    expect(Quote.compressAgreedQuote(quoteBothAgreed))
 
     // Need to add test
   })

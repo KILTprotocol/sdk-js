@@ -1,8 +1,9 @@
 import Identity from '../identity/Identity'
 import RequestForAttestation, {
-  optimiseRequestForAttestation,
-  optimiseClaimHashTree,
-  optimiseClaimContents,
+  compressRequestForAttestation,
+  compressClaimHashTree,
+  compressClaimContents,
+  decompressRequestForAttestation,
 } from './RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
@@ -130,10 +131,11 @@ describe('RequestForAttestation', () => {
       },
       [legitimation]
     )
-    const optimsedResult = request.toOptimised()
-    expect(optimiseRequestForAttestation(request)).toEqual(optimsedResult)
-    expect(optimiseClaimHashTree(request)).toEqual(optimsedResult[4])
-    expect(optimiseClaimContents(request)).toEqual(optimsedResult[0])
+    const optimsedResult = request.toCompress()
+    expect(compressRequestForAttestation(request)).toEqual(optimsedResult)
+    expect(compressClaimHashTree(request)).toEqual(optimsedResult[4])
+    expect(compressClaimContents(request)).toEqual(optimsedResult[0])
+    expect(decompressRequestForAttestation(optimsedResult)).toEqual(request)
   })
 
   it('hides claim properties', () => {

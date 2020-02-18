@@ -21,8 +21,18 @@ import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
 
-export function optimiseAttestation(attestation: IAttestation): any {
+export function compressAttestation(attestation: IAttestation): any {
   return Object.values(attestation)
+}
+
+export function decompressAttestation(attestation: any): IAttestation {
+  return {
+    owner: attestation[0],
+    claimHash: attestation[1],
+    cTypeHash: attestation[2],
+    delegationId: attestation[3],
+    revoked: attestation[4],
+  }
 }
 
 export default class Attestation implements IAttestation {
@@ -190,8 +200,8 @@ export default class Attestation implements IAttestation {
     return Promise.resolve(isValid)
   }
 
-  public toOptimise(): any {
-    return optimiseAttestation(this)
+  public toCompress(): any {
+    return compressAttestation(this)
   }
 
   /**

@@ -8,19 +8,30 @@
  * @preferred
  */
 
-import Attestation, { optimiseAttestation } from '../attestation/Attestation'
+import Attestation, {
+  compressAttestation,
+  decompressAttestation,
+} from '../attestation/Attestation'
 import RequestForAttestation, {
-  optimiseRequestForAttestation,
+  compressRequestForAttestation,
+  decompressRequestForAttestation,
 } from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
 
-export function optimiseAttestedClaim(attestedClaim: IAttestedClaim): any {
+export function compressAttestedClaim(attestedClaim: IAttestedClaim): any {
   return [
-    optimiseRequestForAttestation(attestedClaim.request),
-    optimiseAttestation(attestedClaim.attestation),
+    compressRequestForAttestation(attestedClaim.request),
+    compressAttestation(attestedClaim.attestation),
   ]
+}
+
+export function decompressAttestedClaim(attestedClaim: any): any {
+  return {
+    request: decompressRequestForAttestation(attestedClaim[0]),
+    attestation: decompressAttestation(attestedClaim[1]),
+  }
 }
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -164,7 +175,7 @@ export default class AttestedClaim implements IAttestedClaim {
     return result
   }
 
-  public toOptimised(): IAttestedClaim[] {
-    return optimiseAttestedClaim(this)
+  public toCompress(): IAttestedClaim[] {
+    return compressAttestedClaim(this)
   }
 }
