@@ -1,5 +1,9 @@
 import Identity from '../identity/Identity'
-import RequestForAttestation from './RequestForAttestation'
+import RequestForAttestation, {
+  optimiseRequestForAttestation,
+  optimiseClaimHashTree,
+  optimiseClaimContents,
+} from './RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
@@ -80,6 +84,7 @@ describe('RequestForAttestation', () => {
       },
       [legitimation]
     )
+
     // check proof on complete data
     expect(request.verifyData()).toBeTruthy()
 
@@ -113,6 +118,22 @@ describe('RequestForAttestation', () => {
     request.removeClaimOwner()
     expect(request.claimOwner.nonce).toBeUndefined()
     expect(request.claim.owner).toBeUndefined()
+  })
+  it('optimsise the request for attestation object', () => {
+    const request: RequestForAttestation = buildRequestForAttestation(
+      identityBob,
+      'ctype',
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+    const optimsedResult = request.toOptimised()
+    expect(optimiseRequestForAttestation(request)).toEqual(optimsedResult)
+    expect(optimiseClaimHashTree(request)).toEqual(optimsedResult[4])
+    expect(optimiseClaimContents(request)).toEqual(optimsedResult[0])
   })
 
   it('hides claim properties', () => {

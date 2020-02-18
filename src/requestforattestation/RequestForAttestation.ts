@@ -61,6 +61,41 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   return hash(result)
 }
 
+export function optimiseClaimHashTree(
+  rfa: IRequestForAttestation
+): IRequestForAttestation['claimHashTree'] {
+  const result = {}
+  const claimTree = rfa.claimHashTree
+
+  Object.keys(claimTree).forEach(entryKey => {
+    result[entryKey] = Object.values(claimTree[entryKey])
+  })
+  return result
+}
+
+export function optimiseClaimContents(rfa: IRequestForAttestation): any {
+  return Object.values(rfa.claim)
+}
+
+// function optimiseLegitimaition(leg) {]
+//   return leg.toOptimised()
+// }
+
+export function optimiseRequestForAttestation(
+  reqForAttest: IRequestForAttestation
+): any {
+  return [
+    optimiseClaimContents(reqForAttest),
+    Object.values(reqForAttest.claimOwner),
+    Object.values(reqForAttest.cTypeHash),
+    // reqForAttest.legitimations.map(optimiseLegitimaition),
+    reqForAttest.legitimations,
+    optimiseClaimHashTree(reqForAttest),
+    reqForAttest.rootHash,
+    reqForAttest.claimerSignature,
+  ]
+}
+
 export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
@@ -371,6 +406,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
     }
 
     return result
+  }
+
+  public toOptimised(): IRequestForAttestation[] {
+    return optimiseRequestForAttestation(this)
   }
 
   private static calculateRootHash(
