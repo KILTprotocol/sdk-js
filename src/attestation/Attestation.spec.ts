@@ -11,7 +11,6 @@ import RequestForAttestation from '../requestforattestation/RequestForAttestatio
 import Claim from '../claim/Claim'
 import { CompressedAttestation } from '../types/Attestation'
 
-
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Attestation', () => {
@@ -167,6 +166,7 @@ describe('Attestation', () => {
     expect(() => {
       AttestationUtils.compress(attestation)
     }).toThrow()
+  })
   it('should throw error on faulty constructor input', () => {
     const { cTypeHash, claimHash } = {
       cTypeHash:
