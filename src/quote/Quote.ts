@@ -115,7 +115,6 @@ export function compressCost(quote: IQuote): any {
 
 export function decompressCost(quoteArray: IQuote['cost']): any {
   const quote = quoteArray
-
   return { gross: quote[0], net: quote[1], tax: quote[2] }
 }
 
@@ -144,9 +143,6 @@ export function decompressQuote(quoteArray: any): IQuote {
 export function compressAttesterSignedQuote(
   attesterSignedQuote: IQuoteAttesterSigned
 ): any {
-  if (!attesterSignedQuote) {
-    console.log(attesterSignedQuote)
-  }
   return [
     ...compressQuote(attesterSignedQuote),
     attesterSignedQuote.attesterSignature,
@@ -169,9 +165,6 @@ export function decompressAttesterSignedQuote(
 }
 
 export function compressAgreedQuote(agreedQuote: IQuoteAgreement): any {
-  if (!agreedQuote) {
-    console.log(agreedQuote)
-  }
   return [
     ...compressAttesterSignedQuote(agreedQuote),
     agreedQuote.rootHash,
