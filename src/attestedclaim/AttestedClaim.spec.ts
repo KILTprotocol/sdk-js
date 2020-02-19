@@ -1,4 +1,4 @@
-import * as crypto from '@polkadot/util-crypto';
+import * as crypto from '@polkadot/util-crypto'
 import Identity from '../identity/Identity'
 import AttesterIdentity from '../attesteridentity/AttesterIdentity'
 import AttestedClaim from './AttestedClaim'
