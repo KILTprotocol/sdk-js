@@ -170,6 +170,8 @@ describe('RequestForAttestation', () => {
     expect(() => {
       legitimation.compress()
     }).toThrow()
+  it('should throw error on faulty constructor input', () => {
+    expect( () => )
   })
   it('should throw error on faulty constructor input', () => {
     const [boolean] = crypto.checkAddress(
