@@ -1,4 +1,4 @@
-import { Text } from '@polkadot/types'
+import { Text, Data } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
@@ -64,7 +64,7 @@ describe('Attestation', () => {
       new Option(
         Tuple,
         new Tuple(
-          [Text, AccountId, Text, Bool],
+          [Data, AccountId, Text, Bool],
           [testCType.hash, identityAlice.getAddress(), undefined, false]
         )
       )
@@ -98,8 +98,8 @@ describe('Attestation', () => {
         Tuple,
         new Tuple(
           // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
-          [Text, AccountId, Text, Bool],
-          [testCType.hash, identityAlice.getAddress(), undefined, true]
+          [Data, AccountId, Text, Bool],
+          [testCType.hash, identityAlice.signKeyringPair.address, undefined, true]
         )
       )
     )
@@ -168,27 +168,34 @@ describe('Attestation', () => {
       AttestationUtils.compress(attestation)
     }).toThrow()
   it('should throw error on faulty constructor input', () => {
+    const { cTypeHash, claimHash } = {
+      cTypeHash:
+        '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
+      claimHash:
+        '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557',
+    }
+
     const everything = {
-      claimHash: '1',
-      cTypeHash: '1',
-      owner: '5GoNkf6WdbxCFnPdAnYYQyCjAKPJgLNxXwPjwTh6DGg6gN3E',
+      claimHash,
+      cTypeHash,
+      owner: identityAlice.address,
     } as IAttestation
 
     const noClaimHash = {
       claimHash: '',
-      cTypeHash: '1',
-      owner: '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
+      cTypeHash,
+      owner: identityAlice.address,
     } as IAttestation
 
     const noCTypeHash = {
-      claimHash: '1',
+      claimHash,
       cTypeHash: '',
-      owner: '5GoNkf6WdbxCFnPdAnYYQyCjAKPJgLNxXwPjwTh6DGg6gN3E',
+      owner: identityAlice.address,
     } as IAttestation
 
     const noOwner = {
-      claimHash: '1',
-      cTypeHash: '1',
+      claimHash,
+      cTypeHash,
       owner: '',
     } as IAttestation
 
@@ -198,10 +205,26 @@ describe('Attestation', () => {
       owner: '',
     } as IAttestation
 
-    const everythingExcept = {
+    const everythingExceptRequired = {
       claimHash: '',
       cTypeHash: '',
       owner: '',
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const malformedClaimHash = {
+      claimHash: claimHash.slice(0, 20) + claimHash.slice(21),
+      cTypeHash,
+      owner: identityAlice.address,
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const malformedCTypeHash = {
+      claimHash,
+      cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
+      owner: identityAlice.address,
       revoked: false,
       delegationId: null,
     } as IAttestation
@@ -228,12 +251,22 @@ describe('Attestation', () => {
 
     expect(() =>
       // eslint-disable-next-line dot-notation
-      Attestation['constructorInputCheck'](everythingExcept)
+      Attestation['constructorInputCheck'](everythingExceptRequired)
     ).toThrow()
 
     expect(() =>
       // eslint-disable-next-line dot-notation
       Attestation['constructorInputCheck'](everything)
     ).not.toThrow()
+
+    expect(() =>
+      // eslint-disable-next-line dot-notation
+      Attestation['constructorInputCheck'](malformedClaimHash)
+    ).toThrow()
+
+    expect(() =>
+      // eslint-disable-next-line dot-notation
+      Attestation['constructorInputCheck'](malformedCTypeHash)
+    ).toThrow()
   })
 })

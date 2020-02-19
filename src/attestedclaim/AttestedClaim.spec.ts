@@ -163,5 +163,7 @@ describe('RequestForAttestation', () => {
     expect(() => {
       legitimation.compress()
     }).toThrow()
+  it('should throw error on faulty constructor input', () => {
+    expect( () => )
   })
 })

@@ -123,6 +123,7 @@ async function buildRequestForAttestation(
 }
 
 describe('RequestForAttestation', () => {
+<<<<<<< HEAD
   let identityAlice: Identity
   let identityBob: Identity
   let identityCharlie: Identity
@@ -163,6 +164,27 @@ describe('RequestForAttestation', () => {
       attestation: legitimationAttestationCharlie,
     })
   })
+=======
+  const identityAlice = Identity.buildFromURI('//Alice')
+  const identityBob = Identity.buildFromURI('//Bob')
+  const identityCharlie = Identity.buildFromURI('//Charlie')
+
+  const legitimationRequest: RequestForAttestation = buildRequestForAttestation(
+    identityAlice,
+    {},
+    []
+  )
+  // build attestation
+  const legitimationAttestationCharlie: Attestation = Attestation.fromRequestAndPublicIdentity(
+    legitimationRequest,
+    identityCharlie
+  )
+  // combine to attested claim
+  const legitimationCharlie: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
+    legitimationRequest,
+    legitimationAttestationCharlie
+  )
+>>>>>>> feat: outsource constructor input checks
 
   it('verify request for attestation', async () => {
     const request = await buildRequestForAttestation(
@@ -230,8 +252,13 @@ describe('RequestForAttestation', () => {
     }).toThrow()
   })
 
+<<<<<<< HEAD
   it('hides the claim owner', async () => {
     const request = await buildRequestForAttestation(identityBob, {}, [])
+=======
+  it('hides the claim owner', () => {
+    const request = buildRequestForAttestation(identityBob, {}, [])
+>>>>>>> feat: outsource constructor input checks
     request.removeClaimOwner()
     expect(request.claimOwner.nonce).toBeUndefined()
     expect(request.claim.owner).toBeUndefined()
