@@ -113,8 +113,10 @@ export function compressCost(quote: IQuote): any {
   return Object.values(quote.cost)
 }
 
-export function decompressCost(quote: IQuote['cost']): any {
-  return { gross: quote[0], net: quote[1], vat: quote[2] }
+export function decompressCost(quoteArray: IQuote['cost']): any {
+  const quote = quoteArray
+
+  return { gross: quote[0], net: quote[1], tax: quote[2] }
 }
 
 export function compressQuote(quote: IQuote): any {
@@ -127,7 +129,8 @@ export function compressQuote(quote: IQuote): any {
     quote.timeframe,
   ]
 }
-export function decompressQuote(quote: any): any {
+export function decompressQuote(quoteArray: any): IQuote {
+  const quote = quoteArray
   return {
     attesterAddress: quote[0],
     cTypeHash: quote[1],
@@ -141,13 +144,19 @@ export function decompressQuote(quote: any): any {
 export function compressAttesterSignedQuote(
   attesterSignedQuote: IQuoteAttesterSigned
 ): any {
+  if (!attesterSignedQuote) {
+    console.log(attesterSignedQuote)
+  }
   return [
     ...compressQuote(attesterSignedQuote),
     attesterSignedQuote.attesterSignature,
   ]
 }
 
-export function decompressAttesterSignedQuote(attesterSignedQuote: any): any {
+export function decompressAttesterSignedQuote(
+  attesterSignedQuoteArray: any
+): IQuoteAttesterSigned {
+  const attesterSignedQuote = attesterSignedQuoteArray
   return {
     attesterAddress: attesterSignedQuote[0],
     cTypeHash: attesterSignedQuote[1],
@@ -160,6 +169,9 @@ export function decompressAttesterSignedQuote(attesterSignedQuote: any): any {
 }
 
 export function compressAgreedQuote(agreedQuote: IQuoteAgreement): any {
+  if (!agreedQuote) {
+    console.log(agreedQuote)
+  }
   return [
     ...compressAttesterSignedQuote(agreedQuote),
     agreedQuote.rootHash,
@@ -167,7 +179,8 @@ export function compressAgreedQuote(agreedQuote: IQuoteAgreement): any {
   ]
 }
 
-export function decompressAgreedQuote(agreedQuote: any): any {
+export function decompressAgreedQuote(agreedQuoteArray: any): IQuoteAgreement {
+  const agreedQuote = agreedQuoteArray
   return {
     attesterAddress: agreedQuote[0],
     cTypeHash: agreedQuote[1],

@@ -97,9 +97,15 @@ describe('Claim', () => {
       validAttesterSignedQuote
     )
     const resultCompressAgreedQuote = Quote.compressAgreedQuote(quoteBothAgreed)
-    expect(resultCompressQuote)
-    expect(resultCompressAttesterSignedQuote)
-    expect(resultCompressAgreedQuote)
+    expect(Quote.decompressQuote(resultCompressQuote)).toEqual(validQuoteData)
+
+    expect(
+      Quote.decompressAttesterSignedQuote(resultCompressAttesterSignedQuote)
+    ).toEqual(validAttesterSignedQuote)
+
+    expect(Quote.decompressAgreedQuote(resultCompressAgreedQuote)).toEqual(
+      quoteBothAgreed
+    )
     // Need to add test
   })
   it('tests created quote data against given data', () => {
