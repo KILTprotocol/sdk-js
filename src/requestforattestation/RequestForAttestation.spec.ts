@@ -64,14 +64,14 @@ describe('RequestForAttestation', () => {
     []
   )
   // build attestation
-  const legitimationAttestation: Attestation = Attestation.fromRequestAndPublicIdentity(
+  const legitimationAttestationCharlie: Attestation = Attestation.fromRequestAndPublicIdentity(
     legitimationRequest,
     identityCharlie
   )
   // combine to attested claim
-  const legitimation: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
+  const legitimationCharlie: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
     legitimationRequest,
-    legitimationAttestation
+    legitimationAttestationCharlie
   )
 
   it('verify request for attestation', async () => {
@@ -83,7 +83,7 @@ describe('RequestForAttestation', () => {
         b: 'b',
         c: 'c',
       },
-      [legitimation]
+      [legitimationCharlie]
     )
 
     // check proof on complete data
@@ -121,6 +121,14 @@ describe('RequestForAttestation', () => {
     expect(request.claim.owner).toBeUndefined()
   })
   it('compresses and decompresses the request for attestation object', () => {
+    const legitimationAttestationBob: Attestation = Attestation.fromRequestAndPublicIdentity(
+      legitimationRequest,
+      identityBob
+    )
+    const legitimationBob: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
+      legitimationRequest,
+      legitimationAttestationBob
+    )
     const reqForAtt: RequestForAttestation = buildRequestForAttestation(
       identityBob,
       'ctype',
@@ -129,7 +137,7 @@ describe('RequestForAttestation', () => {
         b: 'b',
         c: 'c',
       },
-      [legitimation]
+      [legitimationCharlie, legitimationBob]
     )
     const compressedReqForAtt = reqForAtt.compress()
     expect(compressRequestForAttestation(reqForAtt)).toEqual(

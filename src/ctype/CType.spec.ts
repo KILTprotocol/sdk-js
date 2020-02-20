@@ -63,7 +63,7 @@ describe('CType', () => {
     const compressedCType = cType.compress()
 
     expect(compressCType(cType)).toEqual(compressedCType)
-    expect(compressCTypeSchema(cType.schema)).toEqual(compressedCType[0])
+    expect(compressCTypeSchema(cType.schema)).toEqual(compressedCType[2])
     expect(decompressCType(compressedCType)).toEqual(cType)
   })
 

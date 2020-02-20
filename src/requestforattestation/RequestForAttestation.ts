@@ -126,7 +126,7 @@ export function decompressLegitimation(leg: any[]): any[] {
   if (!leg[0]) {
     return []
   }
-  return [decompressAttestedClaim(leg[0])] // need to test for multiple leg
+  return leg.map(val => decompressAttestedClaim(val))
 }
 
 export function compressRequestForAttestation(

@@ -16,6 +16,7 @@ import ICType from '../types/CType'
 import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
+
 import IClaim from '../types/Claim'
 
 export function compressCTypeSchema(cTypeSchema: ICType['schema']): any[] {
@@ -28,7 +29,7 @@ export function compressCTypeSchema(cTypeSchema: ICType['schema']): any[] {
 }
 
 export function compressCType(cType: ICType): any[] {
-  return [compressCTypeSchema(cType.schema), cType.owner || null, cType.hash]
+  return [cType.hash, cType.owner || null, compressCTypeSchema(cType.schema)]
 }
 
 export function decompressCTypeSchema(cTypeSchema: any): ICType['schema'] {
@@ -42,9 +43,9 @@ export function decompressCTypeSchema(cTypeSchema: any): ICType['schema'] {
 
 export function decompressCType(cType: any[]): ICType {
   return {
-    schema: decompressCTypeSchema(cType[0]),
+    hash: cType[0],
     owner: cType[1],
-    hash: cType[2],
+    schema: decompressCTypeSchema(cType[2]),
   }
 }
 
