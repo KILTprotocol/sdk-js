@@ -54,8 +54,12 @@ function generateHashTree(contents: object): object {
   return result
 }
 
-function verifyClaimerSignature(rfa: RequestForAttestation): boolean {
-  return verify(rfa.rootHash, rfa.claimerSignature, rfa.claim.owner)
+function verifyClaimerSignature(reqForAtt: RequestForAttestation): boolean {
+  return verify(
+    reqForAtt.rootHash,
+    reqForAtt.claimerSignature,
+    reqForAtt.claim.owner
+  )
 }
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
@@ -76,10 +80,10 @@ function compressNonceAndHash(nonceHash: any[]): any {
 }
 
 export function compressClaimHashTree(
-  rfa: IRequestForAttestation
+  reqForAtt: IRequestForAttestation
 ): IRequestForAttestation['claimHashTree'] {
   const result = {}
-  const claimTree = rfa.claimHashTree
+  const claimTree = reqForAtt.claimHashTree
 
   Object.keys(claimTree).forEach(entryKey => {
     result[entryKey] = Object.values(claimTree[entryKey])
@@ -88,35 +92,37 @@ export function compressClaimHashTree(
 }
 
 export function decompressClaimHashTree(
-  rfa: IRequestForAttestation[]
+  reqForAtt: any[]
 ): IRequestForAttestation['claimHashTree'] {
   const result = {}
 
-  Object.keys(rfa).forEach(entryKey => {
-    result[entryKey] = compressNonceAndHash(Object.values(rfa[entryKey]))
+  Object.keys(reqForAtt).forEach(entryKey => {
+    result[entryKey] = compressNonceAndHash(Object.values(reqForAtt[entryKey]))
   })
   return result
 }
 
-export function compressClaimContents(rfa: IRequestForAttestation): any {
+export function compressClaimContents(
+  contents: IRequestForAttestation['claim']
+): any[] {
   // should go into the claim module.
-  return Object.values(rfa.claim)
+  return Object.values(contents)
 }
 
-export function decompressClaimContents(rfa: any): any {
+export function decompressClaimContents(contents: any[]): IClaim {
   // should go into the claim module.
   return {
-    cTypeHash: rfa[0],
-    contents: rfa[1],
-    owner: rfa[2],
+    cTypeHash: contents[0],
+    contents: contents[1],
+    owner: contents[2],
   }
 }
 
-function compressLegitimaition(leg: AttestedClaim): any {
+function compressLegitimation(leg: AttestedClaim): any[] {
   return leg.compress()
 }
 
-export function decompressLegitimaition(leg: any): any {
+export function decompressLegitimation(leg: any[]): any[] {
   if (!leg[0]) {
     return []
   }
@@ -127,10 +133,10 @@ export function compressRequestForAttestation(
   reqForAttest: IRequestForAttestation
 ): any {
   return [
-    compressClaimContents(reqForAttest),
+    compressClaimContents(reqForAttest.claim),
     Object.values(reqForAttest.claimOwner),
     Object.values(reqForAttest.cTypeHash),
-    reqForAttest.legitimations.map(compressLegitimaition),
+    reqForAttest.legitimations.map(compressLegitimation),
     compressClaimHashTree(reqForAttest),
     reqForAttest.rootHash,
     reqForAttest.claimerSignature,
@@ -144,7 +150,7 @@ export function decompressRequestForAttestation(
     claim: decompressClaimContents(reqForAtt[0]),
     claimOwner: compressNonceAndHash(reqForAtt[1]),
     cTypeHash: compressNonceAndHash(reqForAtt[2]),
-    legitimations: decompressLegitimaition(reqForAtt[3]),
+    legitimations: decompressLegitimation(reqForAtt[3]),
     claimHashTree: decompressClaimHashTree(reqForAtt[4]),
     rootHash: reqForAtt[5],
     claimerSignature: reqForAtt[6],
@@ -241,7 +247,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param requestForAttestationInput - The base object from which to create the requestForAttestation.
    * @example ```javascript
    * // create a new request for attestation
-   * const rfa = new RequestForAttestation(requestForAttestationInput);
+   * const reqForAtt = new RequestForAttestation(requestForAttestationInput);
    * ```
    */
   public constructor(requestForAttestationInput: IRequestForAttestation) {
@@ -466,6 +472,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
   public compress(): IRequestForAttestation[] {
     return compressRequestForAttestation(this)
+  }
+
+  public static decompress(reqForAtt: any[]): RequestForAttestation {
+    const decompressedReqForAtt = decompressRequestForAttestation(reqForAtt)
+    return RequestForAttestation.fromRequest(decompressedReqForAtt)
   }
 
   private static calculateRootHash(

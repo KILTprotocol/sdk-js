@@ -21,11 +21,11 @@ import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
 
-export function compressAttestation(attestation: IAttestation): any {
+export function compressAttestation(attestation: IAttestation): any[] {
   return Object.values(attestation)
 }
 
-export function decompressAttestation(attestation: any): IAttestation {
+export function decompressAttestation(attestation: any[]): IAttestation {
   return {
     owner: attestation[0],
     claimHash: attestation[1],
@@ -49,11 +49,6 @@ export default class Attestation implements IAttestation {
    */
   public static async query(claimHash: string): Promise<Attestation | null> {
     return query(claimHash)
-  }
-
-  public static decompress(attestation: any): Attestation {
-    const raw = decompressAttestation(attestation)
-    return Attestation.fromAttestation(raw)
   }
 
   /**
@@ -205,8 +200,13 @@ export default class Attestation implements IAttestation {
     return Promise.resolve(isValid)
   }
 
-  public compress(): any {
+  public compress(): any[] {
     return compressAttestation(this)
+  }
+
+  public static decompress(attestation: any[]): Attestation {
+    const decompressedAttestation = decompressAttestation(attestation)
+    return Attestation.fromAttestation(decompressedAttestation)
   }
 
   /**

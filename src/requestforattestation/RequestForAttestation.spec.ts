@@ -120,8 +120,8 @@ describe('RequestForAttestation', () => {
     expect(request.claimOwner.nonce).toBeUndefined()
     expect(request.claim.owner).toBeUndefined()
   })
-  it('optimsise the request for attestation object', () => {
-    const request: RequestForAttestation = buildRequestForAttestation(
+  it('compresses and decompresses the request for attestation object', () => {
+    const reqForAtt: RequestForAttestation = buildRequestForAttestation(
       identityBob,
       'ctype',
       {
@@ -131,11 +131,17 @@ describe('RequestForAttestation', () => {
       },
       [legitimation]
     )
-    const optimsedResult = request.compress()
-    expect(compressRequestForAttestation(request)).toEqual(optimsedResult)
-    expect(compressClaimHashTree(request)).toEqual(optimsedResult[4])
-    expect(compressClaimContents(request)).toEqual(optimsedResult[0])
-    expect(decompressRequestForAttestation(optimsedResult)).toEqual(request)
+    const compressedReqForAtt = reqForAtt.compress()
+    expect(compressRequestForAttestation(reqForAtt)).toEqual(
+      compressedReqForAtt
+    )
+    expect(compressClaimHashTree(reqForAtt)).toEqual(compressedReqForAtt[4])
+    expect(compressClaimContents(reqForAtt.claim)).toEqual(
+      compressedReqForAtt[0]
+    )
+    expect(decompressRequestForAttestation(compressedReqForAtt)).toEqual(
+      reqForAtt
+    )
   })
 
   it('hides claim properties', () => {

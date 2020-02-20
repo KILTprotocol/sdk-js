@@ -91,21 +91,23 @@ describe('Claim', () => {
   )
   const invalidPropertiesQuote = invalidPropertiesQuoteData
   const invalidCostQuote = invalidCostQuoteData
-  it('compress and decompress quote objects', () => {
-    const resultCompressQuote = Quote.compressQuote(validQuoteData)
-    const resultCompressAttesterSignedQuote = Quote.compressAttesterSignedQuote(
+  it('compresses and decompresses the quote object', () => {
+    const compressResultQuote = Quote.compressQuote(validQuoteData)
+    const compressResultAttesterSignedQuote = Quote.compressAttesterSignedQuote(
       validAttesterSignedQuote
     )
-    const resultCompressAgreedQuote = Quote.compressAgreedQuote(quoteBothAgreed)
-    expect(Quote.decompressQuote(resultCompressQuote)).toEqual(validQuoteData)
-
-    expect(
-      Quote.decompressAttesterSignedQuote(resultCompressAttesterSignedQuote)
-    ).toEqual(validAttesterSignedQuote)
-
-    expect(Quote.decompressAgreedQuote(resultCompressAgreedQuote)).toEqual(
+    const compressResultQuoteAgreement = Quote.compressQuoteAgreement(
       quoteBothAgreed
     )
+    expect(Quote.decompressQuote(compressResultQuote)).toEqual(validQuoteData)
+
+    expect(
+      Quote.decompressAttesterSignedQuote(compressResultAttesterSignedQuote)
+    ).toEqual(validAttesterSignedQuote)
+
+    expect(
+      Quote.decompressQuoteAgreement(compressResultQuoteAgreement)
+    ).toEqual(quoteBothAgreed)
     // Need to add test
   })
   it('tests created quote data against given data', () => {

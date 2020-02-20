@@ -13,7 +13,12 @@
 import Ajv from 'ajv'
 import QuoteSchema from './QuoteSchema'
 import Identity from '../identity/Identity'
-import { IQuote, IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
+import {
+  IQuote,
+  IQuoteAgreement,
+  IQuoteAttesterSigned,
+  ICostBreakdown,
+} from '../types/Quote'
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
 
 export function validateQuoteSchema(
@@ -109,27 +114,25 @@ export function createAgreedQuote(
   }
 }
 
-export function compressCost(quote: IQuote): any {
-  return Object.values(quote.cost)
+export function compressCost(cost: ICostBreakdown): any[] {
+  return Object.values(cost)
 }
 
-export function decompressCost(quoteArray: IQuote['cost']): any {
-  const quote = quoteArray
-  return { gross: quote[0], net: quote[1], tax: quote[2] }
+export function decompressCost(cost: ICostBreakdown): ICostBreakdown {
+  return { gross: cost[0], net: cost[1], tax: cost[2] }
 }
 
-export function compressQuote(quote: IQuote): any {
+export function compressQuote(quote: IQuote): any[] {
   return [
     quote.attesterAddress,
     quote.cTypeHash,
-    compressCost(quote),
+    compressCost(quote.cost),
     quote.currency,
     quote.termsAndConditions,
     quote.timeframe,
   ]
 }
-export function decompressQuote(quoteArray: any): IQuote {
-  const quote = quoteArray
+export function decompressQuote(quote: any[]): IQuote {
   return {
     attesterAddress: quote[0],
     cTypeHash: quote[1],
@@ -142,7 +145,7 @@ export function decompressQuote(quoteArray: any): IQuote {
 
 export function compressAttesterSignedQuote(
   attesterSignedQuote: IQuoteAttesterSigned
-): any {
+): any[] {
   return [
     ...compressQuote(attesterSignedQuote),
     attesterSignedQuote.attesterSignature,
@@ -150,9 +153,8 @@ export function compressAttesterSignedQuote(
 }
 
 export function decompressAttesterSignedQuote(
-  attesterSignedQuoteArray: any
+  attesterSignedQuote: any[]
 ): IQuoteAttesterSigned {
-  const attesterSignedQuote = attesterSignedQuoteArray
   return {
     attesterAddress: attesterSignedQuote[0],
     cTypeHash: attesterSignedQuote[1],
@@ -164,25 +166,26 @@ export function decompressAttesterSignedQuote(
   }
 }
 
-export function compressAgreedQuote(agreedQuote: IQuoteAgreement): any {
+export function compressQuoteAgreement(quoteAgreement: IQuoteAgreement): any[] {
   return [
-    ...compressAttesterSignedQuote(agreedQuote),
-    agreedQuote.rootHash,
-    agreedQuote.claimerSignature,
+    ...compressAttesterSignedQuote(quoteAgreement),
+    quoteAgreement.rootHash,
+    quoteAgreement.claimerSignature,
   ]
 }
 
-export function decompressAgreedQuote(agreedQuoteArray: any): IQuoteAgreement {
-  const agreedQuote = agreedQuoteArray
+export function decompressQuoteAgreement(
+  quoteAgreement: any[]
+): IQuoteAgreement {
   return {
-    attesterAddress: agreedQuote[0],
-    cTypeHash: agreedQuote[1],
-    cost: decompressCost(agreedQuote[2]),
-    currency: agreedQuote[3],
-    termsAndConditions: agreedQuote[4],
-    timeframe: agreedQuote[5],
-    attesterSignature: agreedQuote[6],
-    rootHash: agreedQuote[7],
-    claimerSignature: agreedQuote[8],
+    attesterAddress: quoteAgreement[0],
+    cTypeHash: quoteAgreement[1],
+    cost: decompressCost(quoteAgreement[2]),
+    currency: quoteAgreement[3],
+    termsAndConditions: quoteAgreement[4],
+    timeframe: quoteAgreement[5],
+    attesterSignature: quoteAgreement[6],
+    rootHash: quoteAgreement[7],
+    claimerSignature: quoteAgreement[8],
   }
 }

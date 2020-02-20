@@ -1,4 +1,8 @@
-import CType, { compressCType, compressCTypeSchema } from './CType'
+import CType, {
+  compressCType,
+  compressCTypeSchema,
+  decompressCType,
+} from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
 import ICType from '../types/CType'
@@ -53,12 +57,14 @@ describe('CType', () => {
     identityAlice.address
   )
 
-  it('compress the ctype', () => {
-    const ctype = CType.fromCType(fromCTypeModel)
+  it('compresses and decompresses the ctype object', () => {
+    const cType = CType.fromCType(fromCTypeModel)
 
-    const optimsedResult = ctype.compress()
-    expect(compressCType(ctype)).toEqual(optimsedResult)
-    expect(compressCTypeSchema(ctype)).toEqual(optimsedResult[0])
+    const compressedCType = cType.compress()
+
+    expect(compressCType(cType)).toEqual(compressedCType)
+    expect(compressCTypeSchema(cType.schema)).toEqual(compressedCType[0])
+    expect(decompressCType(compressedCType)).toEqual(cType)
   })
 
   it('stores ctypes', async () => {

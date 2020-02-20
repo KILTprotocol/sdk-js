@@ -80,14 +80,14 @@ describe('Attestation', () => {
     expect(await attestation.verify()).toBeFalsy()
   })
 
-  it('compress attestation', () => {
+  it('compresses and decompresses the attestation object', () => {
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
       identityAlice
     )
-    const optimsedResult = attestation.compress()
-    expect(compressAttestation(attestation)).toEqual(optimsedResult)
-    expect(decompressAttestation(optimsedResult)).toEqual(attestation)
+    const compressedAttestation = attestation.compress()
+    expect(compressAttestation(attestation)).toEqual(compressedAttestation)
+    expect(decompressAttestation(compressedAttestation)).toEqual(attestation)
   })
 
   it('verify attestation revoked', async () => {

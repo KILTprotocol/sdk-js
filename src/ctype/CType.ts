@@ -18,16 +18,34 @@ import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
 import IClaim from '../types/Claim'
 
-export function compressCTypeSchema(cTypeSchema: ICType): any {
-  const { schema } = cTypeSchema
-  return [schema.$id, schema.$schema, schema.properties, schema.type]
+export function compressCTypeSchema(cTypeSchema: ICType['schema']): any[] {
+  return [
+    cTypeSchema.$id,
+    cTypeSchema.$schema,
+    cTypeSchema.properties,
+    cTypeSchema.type,
+  ]
 }
 
-export function compressCType(cType: ICType): any {
-  if (cType.owner) {
-    return [compressCTypeSchema(cType), cType.owner, cType.hash]
+export function compressCType(cType: ICType): any[] {
+  return [compressCTypeSchema(cType.schema), cType.owner || null, cType.hash]
+}
+
+export function decompressCTypeSchema(cTypeSchema: any): ICType['schema'] {
+  return {
+    $id: cTypeSchema[0],
+    $schema: cTypeSchema[1],
+    properties: cTypeSchema[2],
+    type: cTypeSchema[3],
   }
-  return [compressCTypeSchema(cType), null, cType.hash]
+}
+
+export function decompressCType(cType: any[]): ICType {
+  return {
+    schema: decompressCTypeSchema(cType[0]),
+    owner: cType[1],
+    hash: cType[2],
+  }
 }
 
 export default class CType implements ICType {
@@ -71,7 +89,12 @@ export default class CType implements ICType {
     return this.owner ? actualOwner === this.owner : actualOwner !== null
   }
 
-  public compress(): any {
+  public compress(): any[] {
     return compressCType(this)
+  }
+
+  public static decompress(cType: any[]): CType {
+    const decompressedCType = decompressCType(cType)
+    return CType.fromCType(decompressedCType)
   }
 }
