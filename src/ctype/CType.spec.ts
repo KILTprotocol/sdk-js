@@ -10,9 +10,9 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('CType', () => {
   const ctypeModel: ICType['schema'] = {
-    $id: 'kilt:ctype:0x123',
+    $id: 'kilt:ctype:0x1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'title',
+    title: 'Test CType',
     properties: {
       'first-property': { type: 'integer' },
       'second-property': { type: 'string' },
@@ -21,9 +21,9 @@ describe('CType', () => {
   }
 
   const rawCType: ICType['schema'] = {
-    $id: 'kilt:ctype:0x123',
+    $id: 'kilt:ctype:0x2',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'title',
+    title: 'Name CType',
     properties: {
       name: { type: 'string' },
     },

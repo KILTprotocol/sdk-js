@@ -40,20 +40,28 @@ export function verifyClaimStructure(claim: any, schema: any): boolean {
 }
 
 export function getHashForSchema(schema: ICType['schema']): string {
-  const { ...schemaWithoutID } = schema
+  const schemaWithoutID = { ...schema }
   delete schemaWithoutID.$id
   return Crypto.hashObjectAsStr(schemaWithoutID)
 }
 
-export function compileSchema(
+export function validateNestedSchemas(
   cType: ICType['schema'],
   nestedCTypes: Array<ICType['schema']>,
-  claimContents: object
+  claimContents: object,
+  messages?: string[]
 ): boolean {
   const ajv = new Ajv()
   ajv.addMetaSchema(CTypeModel)
   const validate = ajv.addSchema(nestedCTypes).compile(cType)
   const result = validate(claimContents)
+  if (!result && ajv.errors) {
+    if (messages) {
+      ajv.errors.forEach((error: any) => {
+        messages.push(error.message)
+      })
+    }
+  }
   return !!result
 }
 
@@ -62,5 +70,5 @@ export default {
   verifySchemaWithErrors,
   verifyClaimStructure,
   getHashForSchema,
-  compileSchema,
+  validateNestedSchemas,
 }

@@ -17,7 +17,7 @@ function buildRequestForAttestation(
   const identityAlice = Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
+    $id: 'kilt:ctype:0x1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     properties: {
       name: { type: 'string' },

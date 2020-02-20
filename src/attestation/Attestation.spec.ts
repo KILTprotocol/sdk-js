@@ -18,9 +18,9 @@ describe('Attestation', () => {
   const Blockchain = require('../blockchain/Blockchain').default
 
   const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
+    $id: 'kilt:ctype:0x1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'title',
+    title: 'Attestation',
     properties: {
       name: { type: 'string' },
     },

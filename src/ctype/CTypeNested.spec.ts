@@ -153,7 +153,7 @@ describe('Nested CTypes', () => {
 
   it('verify ajv compiler', () => {
     expect(
-      CTypeUtils.compileSchema(
+      CTypeUtils.validateNestedSchemas(
         nestedCType.schema,
         [passport.schema, kyc.schema],
         claimContents
@@ -169,9 +169,11 @@ describe('Nested CTypes', () => {
         claimContents,
         identityAlice.address
       )
-    ).toThrowError(new Error('Claim contents do not match the nested ctype'))
+    ).toThrowError(
+      new Error('Nested claim data does not validate against CType')
+    )
     expect(
-      CTypeUtils.compileSchema(
+      CTypeUtils.validateNestedSchemas(
         deeplyNestedCType.schema,
         [passport.schema, kyc.schema],
         claimDeepContents
@@ -180,7 +182,7 @@ describe('Nested CTypes', () => {
     // @ts-ignore
     claimDeepContents.passport.fullName = {}
     expect(
-      CTypeUtils.compileSchema(
+      CTypeUtils.validateNestedSchemas(
         deeplyNestedCType.schema,
         [passport.schema, kyc.schema],
         claimDeepContents
@@ -197,6 +199,8 @@ describe('Nested CTypes', () => {
         claimDeepContents,
         identityAlice.address
       )
-    ).toThrowError(new Error('Claim contents do not match the nested ctype'))
+    ).toThrowError(
+      new Error('Nested claim data does not validate against CType')
+    )
   })
 })

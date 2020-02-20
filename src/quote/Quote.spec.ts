@@ -20,8 +20,9 @@ describe('Claim', () => {
   const date = new Date(2019, 11, 10)
 
   const cType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
+    $id: 'kilt:ctype:0x1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'Quote',
     properties: {
       name: { type: 'string' },
     },

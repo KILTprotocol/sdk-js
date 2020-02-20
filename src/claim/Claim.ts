@@ -46,9 +46,13 @@ export default class Claim implements IClaim {
     claimOwner: IPublicIdentity['address']
   ): Claim {
     if (
-      !CTypeUtils.compileSchema(cTypeInput.schema, nestedCType, claimContents)
+      !CTypeUtils.validateNestedSchemas(
+        cTypeInput.schema,
+        nestedCType,
+        claimContents
+      )
     ) {
-      throw Error('Claim contents do not match the nested ctype')
+      throw Error('Nested claim data does not validate against CType')
     }
     return new Claim({
       cTypeHash: cTypeInput.hash,
