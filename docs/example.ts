@@ -6,6 +6,7 @@ import Kilt, {
   Message,
   // IRequestForAttestation,
   ISubmitAttestationForClaim,
+  // ICTypeMetadata,
 } from '../src'
 
 // How to generate an Identity
@@ -35,30 +36,32 @@ const ctypeSchema: ICType['schema'] = {
 // Generate the Hash for it
 const ctypeHash = CTypeUtils.getHashForSchema(ctypeSchema)
 // Build metadata for schema
-const ctypeMetadata: ICType['metadata'] = {
-  title: {
-    default: 'DriversLicense',
-  },
-  description: {
-    default: '',
-  },
-  properties: {
-    name: {
-      title: {
-        default: 'name',
-      },
-    },
-    age: {
-      title: {
-        default: 'age',
-      },
-    },
-  },
-}
-// Put everyhting together
+// const ctypeMetadata: ICTypeMetadata = {
+//   metadata: {
+//     title: {
+//       default: 'DriversLicense',
+//     },
+//     description: {
+//       default: '',
+//     },
+//     properties: {
+//       name: {
+//         title: {
+//           default: 'name',
+//         },
+//       },
+//       age: {
+//         title: {
+//           default: 'age',
+//         },
+//       },
+//     },
+//   },
+//   ctypeHash,
+// }
+// Put everything together
 const rawCtype: ICType = {
   schema: ctypeSchema,
-  metadata: ctypeMetadata,
   hash: ctypeHash,
   owner: claimer.address,
 }
@@ -72,7 +75,7 @@ const ctype = new Kilt.CType(rawCtype)
 
 // Store ctype on blockchain
 // ! This costs tokens !
-// Also note, that the completly same ctype can only be stored once on the blockchain.
+// Also note, that the completely same ctype can only be stored once on the blockchain.
 // ctype.store(claimer)
 
 // How to build a Claim
@@ -82,7 +85,11 @@ const rawClaim = {
   age: 29,
 }
 
-const claim = new Kilt.Claim(ctype, rawClaim, claimer)
+const claim = new Kilt.Claim({
+  cTypeHash: ctypeHash,
+  contents: rawClaim,
+  owner: claimer.address,
+})
 
 // How to get an Attestation
 
@@ -91,12 +98,17 @@ const mnemonicForAttester = Kilt.Identity.generateMnemonic()
 const attester = Kilt.Identity.buildFromMnemonic(mnemonicForAttester)
 
 // And we need to build a request for an attestation
-const requestForAttestation = new Kilt.RequestForAttestation(claim, [], claimer)
+const requestForAttestation = Kilt.RequestForAttestation.fromClaimAndIdentity(
+  claim,
+  claimer
+)
 
 // Excourse to the messaging system
 // If the Attester doesn't live on the same machine, we need to send her a message
 const messageBody: IRequestAttestationForClaim = {
-  content: requestForAttestation,
+  content: {
+    requestForAttestation,
+  },
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
 }
 const message = new Kilt.Message(messageBody, claimer, attester)
@@ -104,13 +116,9 @@ const message = new Kilt.Message(messageBody, claimer, attester)
 const encrypted = message.getEncryptedMessage()
 
 // Check the validity of the message
-Message.ensureHashAndSignature(encrypted, claimer)
+Message.ensureHashAndSignature(encrypted, claimer.address)
 // When the Attester receives the message, she can decrypt it
-const decrypted = Message.createFromEncryptedMessage(
-  encrypted,
-  claimer,
-  attester
-)
+const decrypted = Message.createFromEncryptedMessage(encrypted, attester)
 
 // And make sure, that the sender is the owner of the identity
 Message.ensureOwnerIsSender(decrypted)
@@ -121,13 +129,19 @@ if (decrypted.body.type === MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
 }
 
 // Lets continue with the original object
-const attestation = new Kilt.Attestation(requestForAttestation, attester)
+const attestation = Kilt.Attestation.fromRequestAndPublicIdentity(
+  requestForAttestation,
+  attester
+)
 // Store it on the blockchain
 // ! This costs tokens !
 // attestation.store(attester)
 
 // Build the AttestedClaim object, which the claimer can store and use
-const attestedClaim = new Kilt.AttestedClaim(requestForAttestation, attestation)
+const attestedClaim = Kilt.AttestedClaim.fromRequestAndAttestation(
+  requestForAttestation,
+  attestation
+)
 
 // And send a message back
 const messageBodyBack: ISubmitAttestationForClaim = {
