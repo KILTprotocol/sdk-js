@@ -24,7 +24,7 @@ import { hashObjectAsStr, verify } from '../crypto/Crypto'
  *
  * @param schema A [[Quote]] schema object.
  * @param validate [[Quote]] data to be validated against the provided schema.
- * @param messages Errors provide an array of errors, in the case of validation failures.
+ * @param messages The errors messages are listed in an array.
  *
  * @returns Whether the quote schema is valid.
  */
@@ -51,9 +51,9 @@ export function validateQuoteSchema(
 }
 
 /**
- * Validates a [[Quote]] object.
+ * Builds a [[Quote]] object, from a simple object with the same properties.
  *
- * @param deserializedQuote A Deserialized [[Quote]] object.
+ * @param deserializedQuote The bae object which is used to create the attester signed [[Quote]] object.
  *
  * @returns A [[Quote]] object signed by an Attester.
  */
