@@ -6,6 +6,7 @@ import Kilt, {
   MessageBodyType,
   Message,
   ISubmitAttestationForClaim,
+  // ICTypeMetadata,
 } from '../src'
 
 // How to generate an Identity
@@ -33,7 +34,6 @@ const ctypeSchema: ICType['schema'] = {
 }
 // Generate the Hash for it
 const ctypeHash = CTypeUtils.getHashForSchema(ctypeSchema)
-
 // Put everything together
 const rawCtype: ICType = {
   schema: ctypeSchema,
