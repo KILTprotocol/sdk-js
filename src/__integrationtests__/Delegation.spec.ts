@@ -109,8 +109,7 @@ describe('when there is an account hierarchy', async () => {
 
       const attestation = Attestation.fromRequestAndPublicIdentity(
         request,
-        attester.getPublicIdentity(),
-        delegatedNode.id
+        attester.getPublicIdentity()
       )
       const status = await attestation.store(attester)
       expect(status.type).toBe('Finalized')
