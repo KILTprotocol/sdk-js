@@ -11,6 +11,7 @@
  * @preferred
  */
 
+import * as jsonabc from 'jsonabc'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
@@ -21,16 +22,18 @@ import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
 
-export function compressAttestation(attestation: IAttestation): any[] {
-  return Object.values(attestation)
+export function compressAttestation(
+  attestation: IAttestation
+): Array<IAttestation[keyof IAttestation]> {
+  return Object.values(jsonabc.sortObj(attestation))
 }
 
 export function decompressAttestation(attestation: any[]): IAttestation {
   return {
-    owner: attestation[0],
-    claimHash: attestation[1],
-    cTypeHash: attestation[2],
-    delegationId: attestation[3],
+    claimHash: attestation[0],
+    cTypeHash: attestation[1],
+    delegationId: attestation[2],
+    owner: attestation[3],
     revoked: attestation[4],
   }
 }
@@ -200,11 +203,13 @@ export default class Attestation implements IAttestation {
     return Promise.resolve(isValid)
   }
 
-  public compress(): any[] {
+  public compress(): Array<IAttestation[keyof IAttestation]> {
     return compressAttestation(this)
   }
 
-  public static decompress(attestation: any[]): Attestation {
+  public static decompress(
+    attestation: Array<IAttestation[keyof IAttestation]>
+  ): Attestation {
     const decompressedAttestation = decompressAttestation(attestation)
     return Attestation.fromAttestation(decompressedAttestation)
   }

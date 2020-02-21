@@ -9,8 +9,8 @@ import AttestedClaim from '../attestedclaim/AttestedClaim'
 export type Hash = string
 
 export type NonceHash = {
-  nonce: string
   hash: Hash
+  nonce: string
 }
 
 export default interface IRequestForAttestation {

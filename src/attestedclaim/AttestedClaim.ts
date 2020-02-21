@@ -20,14 +20,14 @@ import IAttestedClaim from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
 
-export function compressAttestedClaim(attestedClaim: IAttestedClaim): any {
+export function compressAttestedClaim(attestedClaim: AttestedClaim): any[] {
   return [
     compressRequestForAttestation(attestedClaim.request),
     compressAttestation(attestedClaim.attestation),
   ]
 }
 
-export function decompressAttestedClaim(attestedClaim: any): any {
+export function decompressAttestedClaim(attestedClaim: any[]): IAttestedClaim {
   return {
     request: decompressRequestForAttestation(attestedClaim[0]),
     attestation: decompressAttestation(attestedClaim[1]),
@@ -175,7 +175,7 @@ export default class AttestedClaim implements IAttestedClaim {
     return result
   }
 
-  public compress(): IAttestedClaim[] {
+  public compress(): AttestedClaim[] {
     return compressAttestedClaim(this)
   }
 

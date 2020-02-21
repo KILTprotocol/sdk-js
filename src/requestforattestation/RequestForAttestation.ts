@@ -10,7 +10,7 @@
  * @module RequestForAttestation
  * @preferred
  */
-
+import * as jsonabc from 'jsonabc'
 import { v4 as uuid } from 'uuid'
 import {
   verify,
@@ -25,6 +25,7 @@ import Identity from '../identity/Identity'
 import IClaim from '../claim/Claim'
 import AttestedClaim, {
   decompressAttestedClaim,
+  compressAttestedClaim,
 } from '../attestedclaim/AttestedClaim'
 import IRequestForAttestation, {
   Hash,
@@ -67,23 +68,25 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   return hash(result)
 }
 
-function compressNonceAndHash(nonceHash: any[]): any {
-  if (nonceHash.length === 0) {
+function compressNonceAndHash(nonceHash: NonceHash[]): any {
+  const sortedNonceHash = jsonabc.sortObj(nonceHash)
+  if (sortedNonceHash.length === 0) {
     return {
-      hash: nonceHash[0],
+      hash: sortedNonceHash[0],
     }
   }
   return {
-    nonce: nonceHash[0],
-    hash: nonceHash[1],
+    hash: sortedNonceHash[0],
+    nonce: sortedNonceHash[1],
   }
 }
 
 export function compressClaimHashTree(
-  reqForAtt: IRequestForAttestation
+  reqForAttest: IRequestForAttestation
 ): IRequestForAttestation['claimHashTree'] {
+  const sortedReqForAttest = jsonabc.sortObj(reqForAttest)
   const result = {}
-  const claimTree = reqForAtt.claimHashTree
+  const claimTree = sortedReqForAttest.claimHashTree
 
   Object.keys(claimTree).forEach(entryKey => {
     result[entryKey] = Object.values(claimTree[entryKey])
@@ -92,34 +95,32 @@ export function compressClaimHashTree(
 }
 
 export function decompressClaimHashTree(
-  reqForAtt: any[]
+  reqForAttest: any[]
 ): IRequestForAttestation['claimHashTree'] {
   const result = {}
 
-  Object.keys(reqForAtt).forEach(entryKey => {
-    result[entryKey] = compressNonceAndHash(Object.values(reqForAtt[entryKey]))
+  Object.keys(reqForAttest).forEach(entryKey => {
+    result[entryKey] = compressNonceAndHash(
+      Object.values(reqForAttest[entryKey])
+    )
   })
   return result
 }
 
 export function compressClaimContents(
   contents: IRequestForAttestation['claim']
-): any[] {
-  // should go into the claim module.
-  return Object.values(contents)
+): Array<IClaim[keyof IClaim]> {
+  const sortedContents = jsonabc.sortObj(contents)
+  return Object.values(sortedContents)
 }
 
 export function decompressClaimContents(contents: any[]): IClaim {
   // should go into the claim module.
   return {
-    cTypeHash: contents[0],
-    contents: contents[1],
+    contents: contents[0],
+    cTypeHash: contents[1],
     owner: contents[2],
   }
-}
-
-function compressLegitimation(leg: AttestedClaim): any[] {
-  return leg.compress()
 }
 
 export function decompressLegitimation(leg: any[]): any[] {
@@ -130,16 +131,17 @@ export function decompressLegitimation(leg: any[]): any[] {
 }
 
 export function compressRequestForAttestation(
-  reqForAttest: IRequestForAttestation
-): any {
+  reqForAtt: IRequestForAttestation
+): Array<IRequestForAttestation[keyof IRequestForAttestation]> {
+  const sortedReqForAtt = jsonabc.sortObj(reqForAtt)
   return [
-    compressClaimContents(reqForAttest.claim),
-    Object.values(reqForAttest.claimOwner),
-    Object.values(reqForAttest.cTypeHash),
-    reqForAttest.legitimations.map(compressLegitimation),
-    compressClaimHashTree(reqForAttest),
-    reqForAttest.rootHash,
-    reqForAttest.claimerSignature,
+    compressClaimContents(sortedReqForAtt.claim),
+    Object.values(sortedReqForAtt.claimOwner),
+    Object.values(sortedReqForAtt.cTypeHash),
+    sortedReqForAtt.legitimations.map(compressAttestedClaim),
+    compressClaimHashTree(sortedReqForAtt),
+    sortedReqForAtt.rootHash,
+    sortedReqForAtt.claimerSignature,
   ]
 }
 
@@ -470,11 +472,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return result
   }
 
-  public compress(): IRequestForAttestation[] {
+  public compress(): Array<RequestForAttestation[keyof RequestForAttestation]> {
     return compressRequestForAttestation(this)
   }
 
-  public static decompress(reqForAtt: any[]): RequestForAttestation {
+  public static decompress(
+    reqForAtt: Array<IRequestForAttestation[keyof IRequestForAttestation]>
+  ): RequestForAttestation {
     const decompressedReqForAtt = decompressRequestForAttestation(reqForAtt)
     return RequestForAttestation.fromRequest(decompressedReqForAtt)
   }
