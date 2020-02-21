@@ -218,6 +218,7 @@ export default class Blockchain implements IBlockchainApi {
       }
     } else {
       this.pending.set(accountAddress, false)
+      this.accountNonces.delete(accountAddress)
     }
   }
 
