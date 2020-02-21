@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import Kilt, {
   ICType,
   CTypeUtils,
@@ -35,30 +36,7 @@ const ctypeSchema: ICType['schema'] = {
 }
 // Generate the Hash for it
 const ctypeHash = CTypeUtils.getHashForSchema(ctypeSchema)
-// Build metadata for schema
-// const ctypeMetadata: ICTypeMetadata = {
-//   metadata: {
-//     title: {
-//       default: 'DriversLicense',
-//     },
-//     description: {
-//       default: '',
-//     },
-//     properties: {
-//       name: {
-//         title: {
-//           default: 'name',
-//         },
-//       },
-//       age: {
-//         title: {
-//           default: 'age',
-//         },
-//       },
-//     },
-//   },
-//   ctypeHash,
-// }
+
 // Put everything together
 const rawCtype: ICType = {
   schema: ctypeSchema,
@@ -75,7 +53,7 @@ const ctype = new Kilt.CType(rawCtype)
 
 // Store ctype on blockchain
 // ! This costs tokens !
-// Also note, that the completely same ctype can only be stored once on the blockchain.
+// Also note, that an identical ctype can only be stored once on the blockchain.
 // ctype.store(claimer)
 
 // How to build a Claim
@@ -120,7 +98,8 @@ Message.ensureHashAndSignature(encrypted, claimer.address)
 // When the Attester receives the message, she can decrypt it
 const decrypted = Message.createFromEncryptedMessage(encrypted, attester)
 
-// And make sure, that the sender is the owner of the identity
+// And make sure, that the sender is the owner of the identity.
+// This prevents claimers to use attested claims of another claimer.
 Message.ensureOwnerIsSender(decrypted)
 
 if (decrypted.body.type === MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
