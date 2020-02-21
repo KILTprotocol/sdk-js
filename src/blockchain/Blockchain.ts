@@ -106,12 +106,10 @@ export default class Blockchain implements IBlockchainApi {
       } else {
         const signed = identity.signSubmittableExtrinsic(tx, nonce.toHex())
         log.info(`Submitting ${tx.method} with Nonce ${nonce}`)
-
         return new Promise<TxStatus>((resolve, reject) => {
           signed
             .send(result => {
               log.info(`Got tx status '${result.status.type}'`)
-
               const { status } = result
               if (ErrorHandler.extrinsicFailed(result)) {
                 log.warn(`Extrinsic execution failed`)
@@ -187,6 +185,7 @@ export default class Blockchain implements IBlockchainApi {
       }
     } else {
       this.pending.set(accountAddress, false)
+      this.accountNonces.delete(accountAddress)
     }
   }
 

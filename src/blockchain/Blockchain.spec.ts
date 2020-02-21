@@ -87,4 +87,16 @@ describe('Blockchain', async () => {
       expect(value.toNumber()).toEqual(new UInt(index).toNumber())
     })
   })
+
+  it('should delete map entry after queue is done', async () => {
+    const alice = Identity.buildFromURI('//Alice')
+    const alicePromisedNonces: Array<Promise<Index>> = []
+    const chain = new Blockchain(mockedApi)
+    for (let i = 0; i < 12; i += 1) {
+      alicePromisedNonces.push(chain.getNonce(alice.address))
+    }
+    Promise.all(alicePromisedNonces).then(v => {
+      expect(!chain.accountNonces.has(alice.address)).toBeTruthy()
+    })
+  })
 })
