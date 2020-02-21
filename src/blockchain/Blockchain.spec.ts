@@ -47,6 +47,7 @@ describe('Blockchain', async () => {
     const chain = new Blockchain(mockedApi)
     // eslint-disable-next-line dot-notation
     const initialNonce = await chain['retrieveNonce'](alice.address)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(chain.accountNonces.get(alice.address)!.toNumber()).toEqual(
       initialNonce.toNumber() + 1
     )
@@ -89,7 +90,7 @@ describe('Blockchain', async () => {
     })
   })
 
-  it('should delete map entry after queue is done', async () => {
+  it('should delete map entry after completion of queue', async () => {
     const alice = Identity.buildFromURI('//Alice')
     const alicePromisedNonces: Array<Promise<Index>> = []
     const chain = new Blockchain(mockedApi)
