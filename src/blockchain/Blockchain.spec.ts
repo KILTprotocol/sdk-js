@@ -96,7 +96,7 @@ describe('Blockchain', async () => {
     for (let i = 0; i < 12; i += 1) {
       alicePromisedNonces.push(chain.getNonce(alice.address))
     }
-    Promise.all(alicePromisedNonces).then(v => {
+    Promise.all(alicePromisedNonces).then(() => {
       expect(!chain.accountNonces.has(alice.address)).toBeTruthy()
     })
   })
