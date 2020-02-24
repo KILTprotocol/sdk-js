@@ -53,7 +53,7 @@ export function validateQuoteSchema(
 /**
  * Builds a [[Quote]] object, from a simple object with the same properties.
  *
- * @param deserializedQuote The bae object which is used to create the attester signed [[Quote]] object.
+ * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
  *
  * @returns A [[Quote]] object signed by an Attester.
  */
@@ -108,7 +108,7 @@ export function createAttesterSignature(
  * Creates a [[Quote]] object signed by the given [[Identity]].
  *
  * @param quoteInput A [[Quote]] object.
- * @param identity [[Identity]] to add the public address of the Attester.
+ * @param identity [[Identity]] used to sign the object.
  *
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
  */
