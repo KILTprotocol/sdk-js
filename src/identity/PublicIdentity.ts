@@ -167,6 +167,8 @@ export default class PublicIdentity implements IPublicIdentity {
   public readonly address: IPublicIdentity['address']
   public readonly boxPublicKeyAsHex: IPublicIdentity['boxPublicKeyAsHex']
   public readonly serviceAddress?: IPublicIdentity['serviceAddress']
+  public publicGabiKey?: IPublicIdentity['publicGabiKey']
+  public accumulator?: IPublicIdentity['accumulator']
 
   /**
    * Builds a new [[PublicIdentity]] instance.

@@ -25,6 +25,16 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair } from 'tweetnacl'
+import {
+  AttesterPrivateKey,
+  GabiAttester,
+  AttesterPublicKey,
+  AttesterAttestationSession,
+  Witness,
+  Attestation as GabiAttestation,
+  Accumulator,
+} from '@kiltprotocol/portablegabi'
+import IRequestForAttestation from '../types/RequestForAttestation'
 import Crypto from '../crypto'
 import {
   CryptoInput,
@@ -142,7 +152,11 @@ export default class Identity extends PublicIdentity {
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
 
-  private constructor(seed: Uint8Array, signKeyringPair: KeyringPair) {
+  private constructor(
+    seed: Uint8Array,
+    signKeyringPair: KeyringPair,
+    privateGabiKey?: AttesterPrivateKey
+  ) {
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public
     // Maybe use BIP32 and BIP44
@@ -161,10 +175,12 @@ export default class Identity extends PublicIdentity {
     this.signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyringPair.publicKey)
 
     this.boxKeyPair = boxKeyPair
+    this.privateGabiKey = privateGabiKey
   }
 
   private readonly signKeyringPair: KeyringPair
   private readonly boxKeyPair: BoxKeyPair
+  private privateGabiKey?: AttesterPrivateKey
 
   /**
    * Returns the [[PublicIdentity]] (identity's address and public key) of the Identity.
@@ -364,5 +380,69 @@ export default class Identity extends PublicIdentity {
 
     const hash = Crypto.hash(paddedSeed)
     return nacl.box.keyPair.fromSecretKey(hash)
+  }
+
+  /**
+   * Returns the private key used to create privacy enhanced attestations.
+   *
+   * @returns The private key used for attesting.
+   */
+  public getPrivateGabiKey(): AttesterPrivateKey | undefined {
+    return this.privateGabiKey
+  }
+
+  public async generateGabiKeys(
+    validityDuration: number,
+    maxAttributes: number
+  ): Promise<void> {
+    if (typeof this.privateGabiKey !== 'undefined') {
+      throw new Error('Keys already present.')
+    }
+    const attester = await GabiAttester.create(validityDuration, maxAttributes)
+    this.privateGabiKey = attester.privateKey
+    this.publicGabiKey = attester.publicKey
+  }
+
+  public async loadGabiKeys(
+    rawPublicKey: string,
+    rawPrivateKey: string,
+    accumulator?: string
+  ): Promise<void> {
+    this.privateGabiKey = new AttesterPrivateKey(rawPrivateKey)
+    this.publicGabiKey = new AttesterPublicKey(rawPublicKey)
+    if (typeof accumulator !== 'undefined') {
+      this.accumulator = new Accumulator(accumulator)
+    } else {
+      this.accumulator = await new GabiAttester(
+        this.publicGabiKey,
+        this.privateGabiKey
+      ).createAccumulator()
+    }
+  }
+
+  public async issueAttestationPE(
+    session: AttesterAttestationSession,
+    reqForAttestation: IRequestForAttestation
+  ): Promise<[Witness, GabiAttestation]> {
+    if (
+      typeof this.publicGabiKey !== 'undefined' &&
+      typeof this.privateGabiKey !== 'undefined' &&
+      typeof this.accumulator !== 'undefined' &&
+      reqForAttestation.privacyEnhanced !== null
+    ) {
+      const attester = new GabiAttester(this.publicGabiKey, this.privateGabiKey)
+      const { witness, attestation } = await attester.issueAttestation({
+        attestationSession: session,
+        attestationRequest: reqForAttestation.privacyEnhanced,
+        accumulator: this.accumulator,
+      })
+
+      return [witness, attestation]
+    }
+    throw new Error(`This identity does not support privacy enhanced signing. \n
+      publicGabiKey: ${this.publicGabiKey}\n
+      privateGabiKey: ${this.privateGabiKey}\n
+      acc: ${this.accumulator}\n
+      pe request: ${reqForAttestation.privacyEnhanced}`)
   }
 }
