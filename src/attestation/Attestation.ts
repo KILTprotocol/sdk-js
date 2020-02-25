@@ -22,13 +22,30 @@ import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
 
+/**
+ *  Compresses an [[Attestation]] object into an array for storage and/or messaging.
+ *
+ * @param attestation An [[Attestation]] object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of an [[Attestation]].
+ */
+
 export function compressAttestation(
   attestation: IAttestation
 ): Array<IAttestation[keyof IAttestation]> {
-  return Object.values(jsonabc.sortObj(attestation))
+  const sortedAttestation = jsonabc.sortObj(attestation)
+  return Object.values(sortedAttestation)
 }
 
-export function decompressAttestation(attestation: any[]): IAttestation {
+/**
+ *  Decompresses an [[Attestation]] from storage and/or message into an object.
+ *
+ * @param attestation A compressesd [[Attestation]] array that is reverted back into an object.
+ *
+ * @returns An object that has the same properties as an [[Attestation]].
+ */
+
+export function decompressAttestation(attestation: IAttestation[]): any {
   return {
     claimHash: attestation[0],
     cTypeHash: attestation[1],
@@ -207,11 +224,8 @@ export default class Attestation implements IAttestation {
     return compressAttestation(this)
   }
 
-  public static decompress(
-    attestation: Array<IAttestation[keyof IAttestation]>
-  ): Attestation {
-    const decompressedAttestation = decompressAttestation(attestation)
-    return Attestation.fromAttestation(decompressedAttestation)
+  public static decompress(attestation: IAttestation): Attestation {
+    return Attestation.fromAttestation(attestation)
   }
 
   /**

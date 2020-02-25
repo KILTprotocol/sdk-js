@@ -8,6 +8,7 @@
  * @preferred
  */
 
+import * as jsonabc from 'jsonabc'
 import Attestation, {
   compressAttestation,
   decompressAttestation,
@@ -20,17 +21,34 @@ import IAttestedClaim from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
 
+/**
+ *  Compresses an [[AttestedClaim]] object into an array for storage and/or messaging.
+ *
+ * @param attestedClaim An [[AttestedClaim]] that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of an [[AttestedClaim]] that comprises of [[Attestation]] and [[RequestForAttestation]] arrays.
+ */
+
 export function compressAttestedClaim(attestedClaim: AttestedClaim): any[] {
+  const sortedAttestedClaim = jsonabc.sortObj(attestedClaim)
   return [
-    compressRequestForAttestation(attestedClaim.request),
-    compressAttestation(attestedClaim.attestation),
+    compressAttestation(sortedAttestedClaim.attestation),
+    compressRequestForAttestation(sortedAttestedClaim.request),
   ]
 }
 
+/**
+ *  Decompresses an [[AttestedClaim]] array from storage and/or message into an object.
+ *
+ * @param attestedClaim A compressesd [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
+ *
+ * @returns An object that has the same properties as an [[AttestedClaim]].
+ */
+
 export function decompressAttestedClaim(attestedClaim: any[]): IAttestedClaim {
   return {
-    request: decompressRequestForAttestation(attestedClaim[0]),
-    attestation: decompressAttestation(attestedClaim[1]),
+    attestation: decompressAttestation(attestedClaim[0]),
+    request: decompressRequestForAttestation(attestedClaim[1]),
   }
 }
 export default class AttestedClaim implements IAttestedClaim {

@@ -68,18 +68,33 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   return hash(result)
 }
 
-function compressNonceAndHash(nonceHash: NonceHash[]): any {
-  const sortedNonceHash = jsonabc.sortObj(nonceHash)
-  if (sortedNonceHash.length === 0) {
+/**
+ *  Decompresses an nonce and hash from a [[ClaimHashTree]] or [[RequestForAttestation]].
+ *
+ * @param nonceHash A compressesd a hash or a hash and nonce array that is reverted back into an object.
+ *
+ * @returns An object compressing of a hash or a hash and nonce.
+ */
+
+function decompressNonceAndHash(nonceHash: NonceHash[]): any {
+  if (nonceHash.length === 0) {
     return {
-      hash: sortedNonceHash[0],
+      hash: nonceHash[0],
     }
   }
   return {
-    hash: sortedNonceHash[0],
-    nonce: sortedNonceHash[1],
+    hash: nonceHash[0],
+    nonce: nonceHash[1],
   }
 }
+
+/**
+ *  Compresses a [[claimHashTree]] within a [[RequestForAttestation]] object.
+ *
+ * @param reqForAttest A [[ClaimHashTree]] object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of an [[ClaimHashTree]].
+ */
 
 export function compressClaimHashTree(
   reqForAttest: IRequestForAttestation
@@ -94,18 +109,34 @@ export function compressClaimHashTree(
   return result
 }
 
+/**
+ *  Decompresses a claim hash tree from storage and/or message.
+ *
+ * @param reqForAttest A compressesd claim hash tree array that is reverted back into an object.
+ *
+ * @returns An object that has the same properties as an claim hash tree.
+ */
+
 export function decompressClaimHashTree(
   reqForAttest: any[]
 ): IRequestForAttestation['claimHashTree'] {
   const result = {}
 
   Object.keys(reqForAttest).forEach(entryKey => {
-    result[entryKey] = compressNonceAndHash(
+    result[entryKey] = decompressNonceAndHash(
       Object.values(reqForAttest[entryKey])
     )
   })
   return result
 }
+
+/**
+ *  Compresses the claim contents for storage and/or messaging.
+ *
+ * @param contents The claim contents that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of claim contents.
+ */
 
 export function compressClaimContents(
   contents: IRequestForAttestation['claim']
@@ -113,6 +144,14 @@ export function compressClaimContents(
   const sortedContents = jsonabc.sortObj(contents)
   return Object.values(sortedContents)
 }
+
+/**
+ *  Decompresses the claim contents from storage and/or message.
+ *
+ * @param contents A compressesd claim contents array that is reverted back into an object.
+ *
+ * @returns An object that has the same properties as the claim contents.
+ */
 
 export function decompressClaimContents(contents: any[]): IClaim {
   // should go into the claim module.
@@ -123,12 +162,28 @@ export function decompressClaimContents(contents: any[]): IClaim {
   }
 }
 
+/**
+ *  Decompresses [[AttestedClaim]]s which are an [[Attestation]] and [[RequestForAttestation]] from storage and/or message.
+ *
+ * @param leg A compressesd [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
+ *
+ * @returns An object that has the same properties as an [[AttestedClaim]].
+ */
+
 export function decompressLegitimation(leg: any[]): any[] {
   if (!leg[0]) {
     return []
   }
   return leg.map(val => decompressAttestedClaim(val))
 }
+
+/**
+ *  Compresses a [[RequestForAttestation]] for storage and/or messaging.
+ *
+ * @param reqForAtt A [[RequestForAttestation]] object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of a [[RequestForAttestation]].
+ */
 
 export function compressRequestForAttestation(
   reqForAtt: IRequestForAttestation
@@ -145,13 +200,21 @@ export function compressRequestForAttestation(
   ]
 }
 
+/**
+ *  Decompresses a [[RequestForAttestation]] from storage and/or message.
+ *
+ * @param reqForAtt A compressesd [[RequestForAttestation]] array that is reverted back into an object.
+ *
+ * @returns An object that has the same properties as a [[RequestForAttestation]].
+ */
+
 export function decompressRequestForAttestation(
   reqForAtt: any
 ): IRequestForAttestation {
   return {
     claim: decompressClaimContents(reqForAtt[0]),
-    claimOwner: compressNonceAndHash(reqForAtt[1]),
-    cTypeHash: compressNonceAndHash(reqForAtt[2]),
+    claimOwner: decompressNonceAndHash(reqForAtt[1]),
+    cTypeHash: decompressNonceAndHash(reqForAtt[2]),
     legitimations: decompressLegitimation(reqForAtt[3]),
     claimHashTree: decompressClaimHashTree(reqForAtt[4]),
     rootHash: reqForAtt[5],

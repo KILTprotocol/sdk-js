@@ -10,6 +10,7 @@
  * @preferred
  */
 
+import * as jsonabc from 'jsonabc'
 import { CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
 import ICType from '../types/CType'
@@ -19,18 +20,31 @@ import TxStatus from '../blockchain/TxStatus'
 
 import IClaim from '../types/Claim'
 
+/**
+ *  Compresses a [[CType]] schema for storage and/or messaging.
+ *
+ * @param cTypeSchema A [[CType]] schema object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of a [[CType]] schema.
+ */
+
 export function compressCTypeSchema(cTypeSchema: ICType['schema']): any[] {
+  const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
   return [
-    cTypeSchema.$id,
-    cTypeSchema.$schema,
-    cTypeSchema.properties,
-    cTypeSchema.type,
+    sortedCTypeSchema.$id,
+    sortedCTypeSchema.$schema,
+    sortedCTypeSchema.properties,
+    sortedCTypeSchema.type,
   ]
 }
 
-export function compressCType(cType: ICType): any[] {
-  return [cType.hash, cType.owner || null, compressCTypeSchema(cType.schema)]
-}
+/**
+ *  Decompresses a schema of a [[CType]] from storage and/or message.
+ *
+ * @param cTypeSchema A compressesd [[CType]] schema array that is reverted back into an object.
+ *
+ * @returns An object that has the same properties as a [[CType]] schema.
+ */
 
 export function decompressCTypeSchema(cTypeSchema: any): ICType['schema'] {
   return {
@@ -40,6 +54,33 @@ export function decompressCTypeSchema(cTypeSchema: any): ICType['schema'] {
     type: cTypeSchema[3],
   }
 }
+
+/**
+ *  Compresses a [[CType]] for storage and/or messaging.
+ *
+ *
+ * @param cType A [[CType]] object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of a [[CType]].
+ */
+
+export function compressCType(cType: ICType): any[] {
+  const sortedCType = jsonabc.sortObj(cType)
+  return [
+    sortedCType.hash,
+    sortedCType.owner || null,
+    compressCTypeSchema(sortedCType.schema),
+  ]
+}
+
+/**
+ *  Decompresses a [[CType]] from storage and/or message.
+ *
+ *
+ * @param cType A compressesd [[CType]] array that is reverted back into an object.
+ *
+ * @returns An object that has the same properties as a [[CType]].
+ */
 
 export function decompressCType(cType: any[]): ICType {
   return {
