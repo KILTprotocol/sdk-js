@@ -39,6 +39,17 @@ export default class Claim implements IClaim {
     return new Claim(claimInput)
   }
 
+  /**
+   * [STATIC] Builds a [[Claim]] from a [[CType]] which has nested [[CType]]s within the schema.
+   *
+   * @param cTypeInput A [[CType]] object that has nested [[CType]]s.
+   * @param nestedCType The array of [[CType]]s, which are used inside the main [[CType]].
+   * @param claimContents The data inside the [[Claim]].
+   * @param claimOwner The [[PublicIdentity]] of the owner of the [[Claim]].
+   *
+   * @returns A [[Claim]] the owner can use.
+   */
+
   public static fromNestedCTypeClaim(
     cTypeInput: ICType,
     nestedCType: Array<ICType['schema']>,

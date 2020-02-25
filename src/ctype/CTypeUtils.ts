@@ -45,6 +45,15 @@ export function getHashForSchema(schema: ICType['schema']): string {
   return Crypto.hashObjectAsStr(schemaWithoutID)
 }
 
+/**
+ * Validates an array of [[CType]]s against a [[Claim]].
+ *
+ * @param cType A [[CType]] that has nested [[CType]]s inside.
+ * @param nestedCTypes An array of [[CTypes]].
+ * @param claimContents The contents of a [[Claim]], that need to be validated.
+ * @param messages
+ */
+
 export function validateNestedSchemas(
   cType: ICType['schema'],
   nestedCTypes: Array<ICType['schema']>,
