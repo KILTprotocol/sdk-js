@@ -47,10 +47,12 @@ export function getHashForSchema(schema: ICType['schema']): string {
 /**
  * Validates an array of [[CType]]s against a [[Claim]].
  *
- * @param cType A [[CType]] that has nested [[CType]]s inside.
- * @param nestedCTypes An array of [[CTypes]].
- * @param claimContents The contents of a [[Claim]], that need to be validated.
+ * @param cType - A [[CType]] that has nested [[CType]]s inside.
+ * @param nestedCTypes - An array of [[CType]] schemas.
+ * @param claimContents - The contents of a [[Claim]] to be validated.
  * @param messages
+ *
+ * @returns Whether the contents is valid.
  */
 
 export function validateNestedSchemas(
