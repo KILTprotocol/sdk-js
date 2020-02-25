@@ -1,15 +1,14 @@
 /**
  * KILT's core functionalities are exposed via connecting to its blockchain.
- * ***
+ *
  * To connect to the blockchain:
  * ```Kilt.connect('ws://localhost:9944');```.
  *
+ * @packageDocumentation
  * @module Kilt
+ * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { getCached, clearCache } from '../blockchainApiConnection'
 import { IBlockchainApi } from '../blockchain/Blockchain'
 

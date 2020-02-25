@@ -59,8 +59,7 @@ describe('Attestation', () => {
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice,
-      null
+      identityAlice
     )
     expect(await attestation.verify()).toBeTruthy()
   })
@@ -92,8 +91,7 @@ describe('Attestation', () => {
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice,
-      null
+      identityAlice
     )
     expect(await attestation.verify()).toBeFalsy()
   })

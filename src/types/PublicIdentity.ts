@@ -1,8 +1,6 @@
 /**
- * @module TypeInterfaces/PublicIdentity
- */
-/**
- * Dummy comment needed for correct doc display, do not remove.
+ * @packageDocumentation
+ * @module IPublicIdentity
  */
 export default interface IPublicIdentity {
   address: string

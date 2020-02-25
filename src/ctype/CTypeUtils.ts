@@ -1,10 +1,9 @@
 /**
- * @module CType
+ * @packageDocumentation
+ * @module CTypeUtils
+ * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import Ajv from 'ajv'
 import { CTypeModel } from './CTypeSchema'
 import ICType from '../types/CType'

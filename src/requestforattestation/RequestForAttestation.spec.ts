@@ -62,8 +62,7 @@ describe('RequestForAttestation', () => {
   // build attestation
   const legitimationAttestation: Attestation = Attestation.fromRequestAndPublicIdentity(
     legitimationRequest,
-    identityCharlie,
-    null
+    identityCharlie
   )
   // combine to attested claim
   const legitimation: AttestedClaim = AttestedClaim.fromRequestAndAttestation(

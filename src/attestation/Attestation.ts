@@ -6,20 +6,17 @@
  * * the key is the hash of the corresponding claim;
  * * the value is a tuple ([[CType]] hash, account, id of the [[Delegation]], and revoked flag).
  *
+ * @packageDocumentation
  * @module Attestation
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import IRequestForAttestation from '../types/RequestForAttestation'
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import IAttestation from '../types/Attestation'
 import { revoke, query, store } from './Attestation.chain'
-import { IDelegationBaseNode } from '../types/Delegation'
 import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
@@ -79,23 +76,21 @@ export default class Attestation implements IAttestation {
    *
    * @param request - The base request for attestation.
    * @param attesterPublicIdentity - The attesters public identity, used to attest the underlying claim.
-   * @param [delegationIdInput] - Optional delegationId for which the attester attests the claim.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create a complete new attestation from the RequestForAttestation and all other needed properties
-   * Attestation.fromRequestAndPublicIdentity(request, attesterPublicIdentity, delegationId);
+   * Attestation.fromRequestAndPublicIdentity(request, attesterPublicIdentity);
    * ```
    */
   public static fromRequestAndPublicIdentity(
     request: IRequestForAttestation,
-    attesterPublicIdentity: IPublicIdentity,
-    delegationIdInput: IDelegationBaseNode['id'] | null
+    attesterPublicIdentity: IPublicIdentity
   ): Attestation {
     return new Attestation({
       claimHash: request.rootHash,
       cTypeHash: request.claim.cTypeHash,
       owner: attesterPublicIdentity.address,
-      delegationId: delegationIdInput,
+      delegationId: request.delegationId,
       revoked: false,
     })
   }
@@ -112,7 +107,7 @@ export default class Attestation implements IAttestation {
    * @param attestationInput - The base object from which to create the attestation.
    * @example ```javascript
    * // create an attestation, e.g. to store it on-chain
-   * new Attestation(attestationInput);
+   * const attestation = new Attestation(attestationInput);
    * ```
    */
   public constructor(attestationInput: IAttestation) {

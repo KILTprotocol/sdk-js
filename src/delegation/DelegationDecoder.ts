@@ -1,11 +1,11 @@
 /**
  * When [[DelegationNode]]s or [[DelegationRootNode]]s are written on the blockchain, they're encoded.
  * DelegationDecoder helps to decode them when they're queried from the chain.
- * ***
+ *
  * The DelegationDecoder methods transform a [[QueryResult]] into an object of a KILT type.
  *
- * @module Delegation/DelegationDecoder
- * @preferred
+ * @packageDocumentation
+ * @ignore
  */
 
 /**
@@ -41,6 +41,7 @@ export function decodeRootDelegation(
  * We use bitwise `AND` to check if a permission bit flag is set.
  *
  * @param bitset The u32 number used as the bitset to encode permissions.
+ * @returns The permission set.
  */
 function decodePermissions(bitset: number): Permission[] {
   const permissions: Permission[] = []
@@ -59,6 +60,7 @@ function decodePermissions(bitset: number): Permission[] {
  * Checks if `rootId` is set (to something different than `0`).
  *
  * @param rootId The root id part of the query result for delegation nodes.
+ * @returns Whether the root is set.
  */
 function verifyRoot(rootId: string): boolean {
   const rootU8: Uint8Array = coToUInt8(rootId)
