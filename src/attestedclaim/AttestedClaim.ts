@@ -8,6 +8,7 @@
  * @preferred
  */
 
+import { Attestation as GabiAttestation } from '@kiltprotocol/portablegabi'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim from '../types/AttestedClaim'
@@ -45,16 +46,19 @@ export default class AttestedClaim implements IAttestedClaim {
    */
   public static fromRequestAndAttestation(
     request: IRequestForAttestation,
-    attestation: IAttestation
+    attestation: IAttestation,
+    attestationPE: GabiAttestation | null = null
   ): AttestedClaim {
     return new AttestedClaim({
       request,
       attestation,
+      attestationPE,
     })
   }
 
   public request: RequestForAttestation
   public attestation: Attestation
+  public attestationPE: GabiAttestation | null
 
   /**
    * Builds a new [[AttestedClaim]] instance.
@@ -79,6 +83,7 @@ export default class AttestedClaim implements IAttestedClaim {
     this.attestation = Attestation.fromAttestation(
       attestedClaimInput.attestation
     )
+    this.attestationPE = attestedClaimInput.attestationPE
   }
 
   /**

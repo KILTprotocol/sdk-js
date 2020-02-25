@@ -14,6 +14,7 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 import * as Quote from '../quote/Quote'
 import IClaim from '../types/Claim'
 import { IQuote } from '../types/Quote'
+import { IAttestedClaim } from '..'
 
 describe('Messaging', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
@@ -21,7 +22,10 @@ describe('Messaging', () => {
   const date = new Date(2019, 11, 10)
   it('verify message encryption and signing', () => {
     const messageBody: IRequestClaimsForCTypes = {
-      content: ['0x12345678'],
+      content: {
+        ctypes: ['0x12345678'],
+        // privacyEnhanced: undefined,
+      },
       type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
     }
     const message: Message = new Message(
@@ -171,7 +175,6 @@ describe('Messaging', () => {
 
     const submitAttestationBody: ISubmitAttestationForClaim = {
       content: {
-        request: requestAttestationBody.content.requestForAttestation,
         attestation: {
           delegationId: null,
           claimHash:
@@ -200,8 +203,13 @@ describe('Messaging', () => {
       )
     )
 
+    const attestedClaim: IAttestedClaim = {
+      request: content,
+      attestation: submitAttestationBody.content.attestation,
+    }
+
     const submitClaimsForCTypeBody: ISubmitClaimsForCTypes = {
-      content: [submitAttestationBody.content],
+      content: [attestedClaim],
       type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
     }
 

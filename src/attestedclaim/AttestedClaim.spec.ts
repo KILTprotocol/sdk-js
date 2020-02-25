@@ -6,13 +6,13 @@ import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
 
-function buildAttestedClaim(
+async function buildAttestedClaim(
   claimer: Identity,
   attester: Identity,
   ctype: string,
   contents: object,
   legitimations: AttestedClaim[]
-): AttestedClaim {
+): Promise<AttestedClaim> {
   // create claim
   const identityAlice = Identity.buildFromURI('//Alice')
 
@@ -38,13 +38,15 @@ function buildAttestedClaim(
     contents,
     claimer.address
   )
-  // build request for attestation with legimitations
-  const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
+  // build request for attestation with legitimations
+  const [
+    requestForAttestation,
+  ] = await RequestForAttestation.fromClaimAndIdentity(
     claim,
     claimer,
     legitimations,
     null,
-    true
+    false
   )
   // build attestation
   const testAttestation: Attestation = Attestation.fromRequestAndPublicIdentity(
@@ -60,21 +62,28 @@ function buildAttestedClaim(
 }
 
 describe('RequestForAttestation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
+  let identityAlice: Identity
+  let identityBob: Identity
+  let identityCharlie: Identity
+  let legitimation: AttestedClaim
 
-  const identityBob = Identity.buildFromURI('//Bob')
-  const identityCharlie = Identity.buildFromURI('//Charlie')
+  beforeAll(async () => {
+    identityAlice = Identity.buildFromURI('//Alice')
 
-  const legitimation: AttestedClaim = buildAttestedClaim(
-    identityAlice,
-    identityBob,
-    'legitimationCtype',
-    {},
-    []
-  )
+    identityBob = Identity.buildFromURI('//Bob')
+    identityCharlie = Identity.buildFromURI('//Charlie')
+
+    legitimation = await buildAttestedClaim(
+      identityAlice,
+      identityBob,
+      'legitimationCtype',
+      {},
+      []
+    )
+  })
 
   it('verify attested claims', async () => {
-    const attestedClaim: AttestedClaim = buildAttestedClaim(
+    const attestedClaim: AttestedClaim = await buildAttestedClaim(
       identityCharlie,
       identityAlice,
       'ctype',

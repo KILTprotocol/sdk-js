@@ -2,6 +2,7 @@
  * @packageDocumentation
  * @module IRequestForAttestation
  */
+import { AttestationRequest } from '@kiltprotocol/portablegabi'
 import IClaim from './Claim'
 import { IDelegationBaseNode } from './Delegation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
@@ -22,5 +23,5 @@ export default interface IRequestForAttestation {
   rootHash: Hash
   claimerSignature: string
   delegationId: IDelegationBaseNode['id'] | null
-  privacyEnhanced: boolean
+  privacyEnhanced: AttestationRequest | null
 }

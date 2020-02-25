@@ -12,42 +12,54 @@ import Claim from '../claim/Claim'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
-describe('Attestation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
-  const identityBob = Identity.buildFromURI('//Bob')
+describe('Attestation', async () => {
+  let identityAlice: Identity
+  let identityBob: Identity
+  let Blockchain: any
+  let rawCType: ICType['schema']
+  let fromRawCType: ICType
+  let testCType: CType
+  let testcontents: any
+  let testClaim: Claim
+  let requestForAttestation: RequestForAttestation
 
-  const Blockchain = require('../blockchain/Blockchain').default
+  beforeAll(async () => {
+    identityAlice = Identity.buildFromURI('//Alice')
+    identityBob = Identity.buildFromURI('//Bob')
 
-  const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      name: { type: 'string' },
-    },
-    type: 'object',
-  }
+    Blockchain = require('../blockchain/Blockchain').default
 
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.address,
-    hash: '',
-  }
+    rawCType = {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
 
-  const testCType: CType = CType.fromCType(fromRawCType)
+    fromRawCType = {
+      schema: rawCType,
+      owner: identityAlice.address,
+      hash: '',
+    }
 
-  const testcontents = {}
-  const testClaim = Claim.fromCTypeAndClaimContents(
-    testCType,
-    testcontents,
-    identityBob.address
-  )
-  const requestForAttestation: RequestForAttestation = RequestForAttestation.fromClaimAndIdentity(
-    testClaim,
-    identityBob,
-    [],
-    null,
-    true
-  )
+    testCType = CType.fromCType(fromRawCType)
+
+    testcontents = {}
+    testClaim = Claim.fromCTypeAndClaimContents(
+      testCType,
+      testcontents,
+      identityBob.address
+    )
+    ;[requestForAttestation] = await RequestForAttestation.fromClaimAndIdentity(
+      testClaim,
+      identityBob,
+      [],
+      null,
+      false
+    )
+  })
 
   it('stores attestation', async () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {

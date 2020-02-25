@@ -13,6 +13,13 @@
 
 import { v4 as uuid } from 'uuid'
 import {
+  GabiClaimer,
+  AttesterPublicKey,
+  AttestationRequest,
+  ClaimerAttestationSession,
+} from '@kiltprotocol/portablegabi'
+import { IInitiateAttestation } from '../messaging/Message'
+import {
   verify,
   hash,
   coToUInt8,
@@ -91,15 +98,39 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param privacyEnhanced - If true a privacy enhanced attestation is requested in addition to a normal attestation.
    * @returns  A new [[RequestForAttestation]] object.
    */
-  public static fromClaimAndIdentity(
+  public static async fromClaimAndIdentity(
     claimInput: IClaim,
     identity: Identity,
     legitimationsInput: AttestedClaim[] = [],
     delegationIdInput: IDelegationBaseNode['id'] | null = null,
-    privacyEnhanced: boolean
-  ): RequestForAttestation {
+    privacyEnhanced = true,
+    initiateAttestationMsg: IInitiateAttestation | null = null,
+    attesterPubKey: AttesterPublicKey | null = null
+  ): Promise<[RequestForAttestation, ClaimerAttestationSession | null]> {
     if (claimInput.owner !== identity.address) {
       throw Error('Claim owner is not Identity')
+    }
+
+    let peRequest: AttestationRequest | null = null
+    let session: ClaimerAttestationSession | null = null
+    if (
+      privacyEnhanced &&
+      initiateAttestationMsg !== null &&
+      attesterPubKey !== null
+    ) {
+      // TODO: FIXME: how to generate keys?
+      // FIXME: Check message type!?
+      const claimer = await GabiClaimer.create()
+      const peSessionMessage = await claimer.requestAttestation({
+        claim: claimInput,
+        startAttestationMsg: initiateAttestationMsg.content,
+        attesterPubKey,
+      })
+      peRequest = peSessionMessage.message
+      session = peSessionMessage.session
+    } else if (privacyEnhanced) {
+      throw new Error(`Required InitiateAttestationRequest (was ${initiateAttestationMsg}) 
+      and public key (was ${attesterPubKey}) for privacy enhanced attestation`)
     }
     const claimOwnerGenerated = generateHash(claimInput.owner)
     const cTypeHashGenerated = generateHash(claimInput.cTypeHash)
@@ -115,20 +146,24 @@ export default class RequestForAttestation implements IRequestForAttestation {
     if (Array.isArray(legitimationsInput)) {
       legitimations = legitimationsInput
     }
-    return new RequestForAttestation({
-      claim: claimInput,
-      legitimations,
-      claimOwner: claimOwnerGenerated,
-      claimHashTree: claimHashTreeGenerated,
-      cTypeHash: cTypeHashGenerated,
-      rootHash: calculatedRootHash,
-      claimerSignature: RequestForAttestation.sign(
-        identity,
-        calculatedRootHash
-      ),
-      delegationId: delegationIdInput,
-      privacyEnhanced,
-    })
+
+    return [
+      new RequestForAttestation({
+        claim: claimInput,
+        legitimations,
+        claimOwner: claimOwnerGenerated,
+        claimHashTree: claimHashTreeGenerated,
+        cTypeHash: cTypeHashGenerated,
+        rootHash: calculatedRootHash,
+        claimerSignature: RequestForAttestation.sign(
+          identity,
+          calculatedRootHash
+        ),
+        delegationId: delegationIdInput,
+        privacyEnhanced: peRequest,
+      }),
+      session,
+    ]
   }
 
   public claim: IClaim
@@ -138,7 +173,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public claimHashTree: object
   public cTypeHash: NonceHash
   public rootHash: Hash
-  public privacyEnhanced: boolean
+  public privacyEnhanced: AttestationRequest | null
   public delegationId: IDelegationBaseNode['id'] | null
 
   /**

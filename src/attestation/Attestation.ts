@@ -86,6 +86,7 @@ export default class Attestation implements IAttestation {
     request: IRequestForAttestation,
     attesterPublicIdentity: IPublicIdentity
   ): Attestation {
+    
     return new Attestation({
       claimHash: request.rootHash,
       cTypeHash: request.claim.cTypeHash,

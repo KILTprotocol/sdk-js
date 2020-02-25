@@ -14,6 +14,9 @@ import {
   Attestation as AttestationPE,
   CombinedPresentation,
   CombinedPresentationRequest,
+  InitiateAttestationRequest,
+  GabiAttester,
+  AttesterAttestationSession,
 } from '@kiltprotocol/portablegabi'
 import {
   Claim,
@@ -65,6 +68,8 @@ export enum MessageBodyType {
   REQUEST_TERMS = 'request-terms',
   SUBMIT_TERMS = 'submit-terms',
   REJECT_TERMS = 'reject-terms',
+
+  INITIATE_ATTESTATION = 'initiate-attestation',
 
   REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
   SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
@@ -244,6 +249,33 @@ export interface IRejectTerms extends IMessageBodyBase {
   type: MessageBodyType.REJECT_TERMS
 }
 
+export interface IInitiateAttestation extends IMessageBodyBase {
+  content: InitiateAttestationRequest
+  type: MessageBodyType.INITIATE_ATTESTATION
+}
+
+export async function newInitiateAttestationMessage(
+  identity: Identity
+): Promise<{
+  message: IInitiateAttestation
+  session: AttesterAttestationSession
+}> {
+  const privKey = identity.getPrivateGabiKey()
+  const pubKey = identity.publicGabiKey
+  if (typeof privKey !== 'undefined' && typeof pubKey !== 'undefined') {
+    const attester = new GabiAttester(pubKey, privKey)
+    const { message, session } = await attester.startAttestation()
+    return {
+      message: {
+        content: message,
+        type: MessageBodyType.INITIATE_ATTESTATION,
+      },
+      session,
+    }
+  }
+  throw new Error('Identity cannot be used for attestation')
+}
+
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
   content: {
     requestForAttestation: IRequestForAttestation
@@ -255,7 +287,7 @@ export interface IRequestAttestationForClaim extends IMessageBodyBase {
 export interface ISubmitAttestationForClaim extends IMessageBodyBase {
   content: {
     attestation: IAttestation
-    attestationPE: AttestationPE
+    attestationPE?: AttestationPE
   }
   type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
 }
@@ -343,6 +375,7 @@ export type MessageBody =
   //
   | IRequestClaimsForCTypes
   | ISubmitClaimsForCTypes
+  | ISubmitClaimsForCTypesPE
   | IAcceptClaimsForCTypes
   | IRejectClaimsForCTypes
   //
