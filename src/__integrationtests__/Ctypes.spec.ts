@@ -13,7 +13,7 @@ describe('When there is an CtypeCreator and a verifier', async () => {
 
   const ctype = CType.fromCType({
     schema: {
-      $id: 'http://example.com/ctype-1',
+      $id: 'http://example.com/ctype-10',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       properties: {
         name: { type: 'string' },
