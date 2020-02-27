@@ -13,7 +13,6 @@
 
 import { v4 as uuid } from 'uuid'
 import {
-  GabiClaimer,
   AttesterPublicKey,
   AttestationRequest,
   ClaimerAttestationSession,
@@ -118,9 +117,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
       initiateAttestationMsg !== null &&
       attesterPubKey !== null
     ) {
-      // TODO: FIXME: how to generate keys?
-      // FIXME: Check message type!?
-      const claimer = await GabiClaimer.create()
+      const { claimer } = identity
+      if (typeof claimer === 'undefined') {
+        throw new Error('invalid identity')
+      }
       const peSessionMessage = await claimer.requestAttestation({
         claim: claimInput,
         startAttestationMsg: initiateAttestationMsg.content,

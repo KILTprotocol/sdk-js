@@ -23,6 +23,7 @@ import Did, { IDid } from './did/Did'
 import * as Quote from './quote/Quote'
 import Message from './messaging/Message'
 import * as Constants from './const'
+import PresentationRequestBuilder from './presentationrequestbuilder/PresentationRequestBuilder'
 
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
@@ -78,6 +79,7 @@ export {
   Message,
   Constants,
   Quote,
+  PresentationRequestBuilder,
 }
 
 // ---- Default export for ease of use ----
@@ -97,4 +99,5 @@ export default {
   DelegationRootNode,
   Did,
   Message,
+  PresentationRequestBuilder,
 }

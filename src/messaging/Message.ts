@@ -17,19 +17,21 @@ import {
   InitiateAttestationRequest,
   GabiAttester,
   AttesterAttestationSession,
+  AttesterPublicKey,
 } from '@kiltprotocol/portablegabi'
 import {
   Claim,
   DelegationNode,
   IAttestedClaim,
   IClaim,
-  ICType,
   IDelegationBaseNode,
   IDelegationNode,
   Identity,
   IPublicIdentity,
   IRequestForAttestation,
   IAttestation,
+  ICType,
+  AttestedClaim,
 } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
 import ITerms from '../types/Terms'
@@ -276,6 +278,33 @@ export async function newInitiateAttestationMessage(
   throw new Error('Identity cannot be used for attestation')
 }
 
+export async function submitPresentations(
+  identity: Identity,
+  request: IRequestClaimsForCTypes,
+  attestedClaims: AttestedClaim[],
+  attesterPubKeys: AttesterPublicKey[]
+): Promise<ISubmitClaimsForCTypesPE | ISubmitClaimsForCTypes> {
+  const { claimer } = identity
+  if (typeof claimer === 'undefined') {
+    throw new Error('Invalid identity')
+  }
+  const credentials = attestedClaims.map(ac => {
+    if (ac.credential === null) {
+      throw new Error('Missing PE credential')
+    }
+    return ac.credential
+  })
+  const presentation = await claimer.buildCombinedPresentation({
+    credentials,
+    combinedPresentationReq: request.content.peRequest,
+    attesterPubKeys,
+  })
+  return {
+    type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE,
+    content: presentation,
+  }
+}
+
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
   content: {
     requestForAttestation: IRequestForAttestation
@@ -299,7 +328,8 @@ export interface IRejectAttestationForClaim extends IMessageBodyBase {
 export interface IRequestClaimsForCTypes extends IMessageBodyBase {
   content: {
     ctypes: Array<ICType['hash']>
-    privacyEnhanced?: CombinedPresentationRequest
+    peRequest: CombinedPresentationRequest
+    allowPE: boolean
   }
   type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
 }

@@ -1,4 +1,10 @@
 /* eslint-disable no-console */
+import {
+  AttesterPublicKey,
+  GabiVerifier,
+  Accumulator,
+  CombinedPresentation,
+} from '@kiltprotocol/portablegabi'
 import Kilt, {
   ICType,
   CTypeUtils,
@@ -10,7 +16,8 @@ import Kilt, {
   AttestedClaim,
   Identity,
   Claim,
-  // ICTypeMetadata,
+  PresentationRequestBuilder,
+  submitPresentations,
 } from '../src'
 
 const privKey =
@@ -23,10 +30,11 @@ async function doAttestation(): Promise<{
   attester: Identity
   claim: Claim
   attestedClaim: AttestedClaim
+  accumulator: Accumulator
 }> {
   // How to generate an Identity
   // const mnemonic = Kilt.Identity.generateMnemonic()
-  const claimer = Kilt.Identity.buildFromMnemonic(
+  const claimer = await Kilt.Identity.buildFromMnemonic(
     'wish rather clinic rather connect culture frown like quote effort cart faculty'
   )
   // const address = claimer.address
@@ -99,7 +107,7 @@ async function doAttestation(): Promise<{
 
   // To get an attestation, we need an Attester
   // const mnemonicForAttester = Kilt.Identity.generateMnemonic()
-  const attester = Kilt.Identity.buildFromMnemonic(
+  const attester = await Kilt.Identity.buildFromMnemonic(
     'feel hazard trip seven traffic make hero kingdom speed transfer rug success'
   )
 
@@ -129,7 +137,7 @@ async function doAttestation(): Promise<{
 
   const [
     requestForAttestation,
-    // claimerSession,
+    claimerSession,
   ] = await Kilt.RequestForAttestation.fromClaimAndIdentity(
     claim,
     claimer,
@@ -202,9 +210,11 @@ async function doAttestation(): Promise<{
     throw new Error('Should be SUBMIT_ATTESTATION_FOR_CLAIM')
   }
   const { content } = messageBack.body
-  const attestedClaim = AttestedClaim.fromRequestAndAttestation(
+  const attestedClaim = await AttestedClaim.fromRequestAndAttestation(
+    claimer,
     requestForAttestation,
     content.attestation,
+    claimerSession,
     content.attestationPE
   )
   console.log('Claimer', claimer.address, '\n')
@@ -219,35 +229,66 @@ async function doAttestation(): Promise<{
   console.log('Attestation', attestation, '\n')
   console.log('AttestedClaim', attestedClaim, '\n')
   console.log('AttestedClaim message', messageBack, '\n')
-
+  const acc = attester.accumulator
+  if (typeof acc === 'undefined') {
+    throw new Error('No no this is not possible!')
+  }
   return {
     claimer,
     attester,
     claim,
     attestedClaim,
+    accumulator: acc,
   }
 }
 
 async function doVerification(
   claimer: Identity,
   attester: Identity,
-  attestedClaim: AttestedClaim
+  attestedClaim: AttestedClaim,
+  accumulator: Accumulator
 ): Promise<void> {
-  await attestedClaim.verify().then(
-    isValid => {
-      console.log('isValid: ', isValid)
-    },
-    error => {
-      console.log('Error while verifying: ', error)
-    }
+  // ------------------------- Verifier ----------------------------------------
+  const [
+    session,
+    request,
+  ] = await new PresentationRequestBuilder()
+    .requestPresentationForCtype(attestedClaim.attestation.cTypeHash, ['age'])
+    .finalize(true)
+
+  // ------------------------- Claimer -----------------------------------------
+  const presentation = await submitPresentations(
+    claimer,
+    request,
+    [attestedClaim],
+    [new AttesterPublicKey(pubKey)]
   )
+
+  // ------------------------- Verifier ----------------------------------------
+  if (presentation.content instanceof CombinedPresentation){
+    const { verified, claims } = await GabiVerifier.verifyCombinedPresentation({
+      proof: presentation.content,
+      verifierSession: session,
+      attesterPubKeys: [new AttesterPublicKey(pubKey)],
+      latestAccumulators: [accumulator],
+    })
+    console.log('Received claims: ', claims)
+    console.log('All valid? ', verified)
+  }
 }
 
+// do an attestation and a verification
 async function example(): Promise<void> {
-  const { claimer, attester, attestedClaim } = await doAttestation()
-  await doVerification(claimer, attester, attestedClaim)
+  const {
+    claimer,
+    attester,
+    attestedClaim,
+    accumulator,
+  } = await doAttestation()
+  await doVerification(claimer, attester, attestedClaim, accumulator)
 }
 
+// connect to the blockchain, execute the examples and then disconnect
 Kilt.connect('wss://full-nodes.kilt.io:9944')
   .then(example)
   .finally(() => Kilt.disconnect('wss://full-nodes.kilt.io:9944'))

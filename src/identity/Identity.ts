@@ -33,6 +33,7 @@ import {
   Witness,
   Attestation as GabiAttestation,
   Accumulator,
+  GabiClaimer,
 } from '@kiltprotocol/portablegabi'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import Crypto from '../crypto'
@@ -76,7 +77,7 @@ export default class Identity extends PublicIdentity {
    * Identity.buildFromMnemonic(mnemonic);
    * ```
    */
-  public static buildFromMnemonic(phraseArg?: string): Identity {
+  public static async buildFromMnemonic(phraseArg?: string): Promise<Identity> {
     let phrase = phraseArg
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
@@ -92,7 +93,11 @@ export default class Identity extends PublicIdentity {
     }
 
     const seed = toSeed(phrase)
-    return Identity.buildFromSeed(seed)
+    const id = Identity.buildFromSeed(
+      seed,
+      await GabiClaimer.buildFromMnemonic(phrase)
+    )
+    return id
   }
 
   /**
@@ -126,10 +131,13 @@ export default class Identity extends PublicIdentity {
    * Identity.buildFromSeed(seed);
    * ```
    */
-  public static buildFromSeed(seed: Uint8Array): Identity {
+  public static buildFromSeed(
+    seed: Uint8Array,
+    claimer?: GabiClaimer
+  ): Identity {
     const keyring = new Keyring({ type: 'ed25519' })
     const keyringPair = keyring.addFromSeed(seed)
-    return new Identity(seed, keyringPair)
+    return new Identity(seed, keyringPair, undefined, claimer)
   }
 
   /**
@@ -151,11 +159,13 @@ export default class Identity extends PublicIdentity {
   public readonly seed: Uint8Array
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
+  public readonly claimer?: GabiClaimer
 
   private constructor(
     seed: Uint8Array,
     signKeyringPair: KeyringPair,
-    privateGabiKey?: AttesterPrivateKey
+    privateGabiKey?: AttesterPrivateKey,
+    claimer?: GabiClaimer
   ) {
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public
@@ -176,6 +186,7 @@ export default class Identity extends PublicIdentity {
 
     this.boxKeyPair = boxKeyPair
     this.privateGabiKey = privateGabiKey
+    this.claimer = claimer
   }
 
   private readonly signKeyringPair: KeyringPair

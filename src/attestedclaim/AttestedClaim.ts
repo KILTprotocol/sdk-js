@@ -8,7 +8,12 @@
  * @preferred
  */
 
-import { Attestation as GabiAttestation } from '@kiltprotocol/portablegabi'
+import {
+  Attestation as AttestationPE,
+  Credential,
+  ClaimerAttestationSession,
+} from '@kiltprotocol/portablegabi'
+import Identity from '../identity/Identity'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim from '../types/AttestedClaim'
@@ -44,21 +49,42 @@ export default class AttestedClaim implements IAttestedClaim {
    * AttestedClaim.fromRequestAndAttestation(request, attestation);
    * ```
    */
-  public static fromRequestAndAttestation(
+  public static async fromRequestAndAttestation(
+    identity: Identity,
     request: IRequestForAttestation,
     attestation: IAttestation,
-    attestationPE: GabiAttestation | null = null
-  ): AttestedClaim {
+    session: ClaimerAttestationSession | null = null,
+    attestationPE: AttestationPE | null = null
+  ): Promise<AttestedClaim> {
+    const { claimer } = identity
+    if (
+      session !== null &&
+      attestationPE !== null &&
+      typeof claimer !== 'undefined'
+    ) {
+      return new AttestedClaim({
+        request,
+        attestation,
+        credential: await claimer.buildCredential({
+          claimerSession: session,
+          attestation: attestationPE,
+        }),
+      })
+    }
+    if (session !== null && attestationPE !== null) {
+      // FIXME: ensure every identity can be a claimer
+      throw new Error('Claimer not defined')
+    }
     return new AttestedClaim({
       request,
       attestation,
-      attestationPE,
+      credential: null,
     })
   }
 
   public request: RequestForAttestation
   public attestation: Attestation
-  public attestationPE: GabiAttestation | null
+  public credential: Credential | null
 
   /**
    * Builds a new [[AttestedClaim]] instance.
@@ -83,7 +109,7 @@ export default class AttestedClaim implements IAttestedClaim {
     this.attestation = Attestation.fromAttestation(
       attestedClaimInput.attestation
     )
-    this.attestationPE = attestedClaimInput.attestationPE
+    this.credential = attestedClaimInput.credential
   }
 
   /**
