@@ -67,7 +67,7 @@ export interface IDidDocumentPublicKey {
 export interface IDidDocumentPpties {
   authentication: object
   publicKey: IDidDocumentPublicKey[]
-  service: any
+  service: any // can this possibly be narrowed down to something other than any?
 }
 
 export interface IDidDocument

@@ -5,9 +5,9 @@
 
 export default class TxStatus {
   public type: string
-  public payload: any
+  public payload: object | undefined
 
-  public constructor(type: string, payload?: any) {
+  public constructor(type: string, payload?: object) {
     this.type = type
     this.payload = payload
   }

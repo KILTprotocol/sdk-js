@@ -216,7 +216,7 @@ export default class Message implements IMessage {
 }
 
 interface IMessageBodyBase {
-  content: any
+  content: object
   type: MessageBodyType
 }
 
@@ -281,7 +281,7 @@ export interface IRequestAcceptDelegation extends IMessageBodyBase {
       isPCR: boolean
     }
     metaData?: {
-      [key: string]: any
+      [key: string]: any // can this possibly be narrowed down to something other than any?
     }
     signatures: {
       inviter: string

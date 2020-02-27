@@ -11,7 +11,7 @@
 import { ApiPromise } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
-import { Codec } from '@polkadot/types/types'
+import { Codec, AnyJson } from '@polkadot/types/types'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
@@ -42,8 +42,7 @@ export interface IBlockchainApi {
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
 
 export default class Blockchain implements IBlockchainApi {
-  public static asArray(queryResult: QueryResult): any[] {
-    // I think this can be changed. Was originally any may need help with this
+  public static asArray(queryResult: QueryResult): AnyJson[] {
     const json =
       queryResult && queryResult.encodedLength ? queryResult.toJSON() : null
     if (json instanceof Array) {

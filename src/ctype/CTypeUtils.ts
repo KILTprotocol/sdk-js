@@ -15,14 +15,16 @@ export function verifySchemaWithErrors(
   schema: object,
   messages?: string[]
 ): boolean {
-  // would like to change these to something more meaningful other then object
+  // would like to change these to something more meaningful other then object // don't think we can - verifySchema is called with very different structures
   const ajv = new Ajv()
   ajv.addMetaSchema(CTypeModel)
   const result = ajv.validate(schema, object)
   if (!result && ajv.errors) {
     if (messages) {
-      ajv.errors.forEach((error: any) => {
-        messages.push(error.message)
+      ajv.errors.forEach((error: Ajv.ErrorObject) => {
+        if (typeof error.message === 'string') {
+          messages.push(error.message)
+        }
       })
     }
   }
