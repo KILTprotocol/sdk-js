@@ -16,7 +16,7 @@
     "style:fix": "yarn style --write",
     "build": "tsc --declaration",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
-    "buildAndPublish": "yarn build && npm publish --access public"
+    "buildAndPublish": "yarn build && npm publish --access=public"
   },
   "husky": {
     "hooks": {
