@@ -1,12 +1,9 @@
 /**
- * @module SDK
+ * @packageDocumentation
  * @ignore
  */
 
-/**
- * Dummy comment, so that typedoc ignores this file
- */
-import { connect } from './kilt/Kilt'
+import { connect, disconnect } from './kilt/Kilt'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import * as Balance from './balance/Balance.chain'
 import Identity from './identity/Identity'
@@ -14,6 +11,7 @@ import PublicIdentity, { IURLResolver } from './identity/PublicIdentity'
 import CType from './ctype/CType'
 import CTypeMetadata from './ctype/CTypeMetadata'
 import * as CTypeUtils from './ctype/CTypeUtils'
+import * as CTypeSchema from './ctype/CTypeSchema'
 import Claim from './claim/Claim'
 import RequestForAttestation from './requestforattestation/RequestForAttestation'
 import Attestation from './attestation/Attestation'
@@ -22,13 +20,17 @@ import DelegationBaseNode from './delegation/Delegation'
 import DelegationNode from './delegation/DelegationNode'
 import DelegationRootNode from './delegation/DelegationRootNode'
 import Did, { IDid } from './did/Did'
+import * as Quote from './quote/Quote'
 import Message from './messaging/Message'
+import * as Constants from './const'
 
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
 export { default as Crypto } from './crypto'
 export { default as UUID } from './util/UUID'
+export { default as QuoteSchema } from './quote/QuoteSchema'
 export * from './errorhandling/ExtrinsicError'
+export * from './messaging/Message'
 
 // ---- Types, which define the most basic KILT objects ----
 export { default as IPublicIdentity } from './types/PublicIdentity'
@@ -37,6 +39,13 @@ export { default as ICTypeMetadata } from './types/CTypeMetadata'
 export { default as IClaim } from './types/Claim'
 export { default as IAttestedClaim } from './types/AttestedClaim'
 export { default as IAttestation } from './types/Attestation'
+export {
+  IQuote,
+  ICostBreakdown,
+  IQuoteAttesterSigned,
+  IQuoteAgreement,
+} from './types/Quote'
+export { default as ITerms } from './types/Terms'
 export {
   default as IRequestForAttestation,
 } from './types/RequestForAttestation'
@@ -56,6 +65,7 @@ export {
   CType,
   CTypeMetadata,
   CTypeUtils,
+  CTypeSchema,
   Claim,
   RequestForAttestation,
   Attestation,
@@ -66,18 +76,14 @@ export {
   Did,
   IDid,
   Message,
+  Constants,
+  Quote,
 }
-
-export {
-  CTypeModel,
-  CTypeInputModel,
-  CTypeWrapperModel,
-} from './ctype/CTypeSchema'
-export * from './messaging/Message'
 
 // ---- Default export for ease of use ----
 export default {
   connect,
+  disconnect,
   Balance,
   Identity,
   PublicIdentity,

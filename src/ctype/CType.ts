@@ -1,16 +1,15 @@
 /**
  * CTypes are the way the KILT protocol enables a Claimer or Attester or Verifier to create a [[Claim]] schema for creating specific credentials.
- *  ***
+ *
  * * A CTYPE is a description of the [[Claim]] data structure, based on [JSON Schema](http://json-schema.org/).
  * * CTYPEs are published and stored by the creator and/or in an open storage registry.
  * * Anyone can use a CTYPE to create a new [[Claim]].
+ *
+ * @packageDocumentation
  * @module CType
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
 import { CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
 import ICType from '../types/CType'
@@ -56,6 +55,7 @@ export default class CType implements ICType {
   }
 
   public async verifyStored(): Promise<boolean> {
-    return (await getOwner(this.hash)) === this.owner
+    const actualOwner = await getOwner(this.hash)
+    return this.owner ? actualOwner === this.owner : actualOwner !== null
   }
 }

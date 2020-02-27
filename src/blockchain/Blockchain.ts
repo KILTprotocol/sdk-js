@@ -1,14 +1,13 @@
 /**
- *  Blockchain bridges that connects the SDK and the KILT Blockchain.
- *  ***
- *  Communicates with the chain via WebSockets and can [[listenToBlocks]]. It exposes the [[submitTx]] function that performs a transaction.
+ * Blockchain bridges that connects the SDK and the KILT Blockchain.
+ *
+ * Communicates with the chain via WebSockets and can [[listenToBlocks]]. It exposes the [[submitTx]] function that performs a transaction.
+ *
+ * @packageDocumentation
  * @module Blockchain
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
 import { ApiPromise } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
@@ -18,6 +17,7 @@ import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 import TxStatus from './TxStatus'
+import { FINALIZED, DROPPED, INVALID } from '../const/TxStatus'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -105,9 +105,9 @@ export default class Blockchain implements IBlockchainApi {
             log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
             reject(extrinsicError)
           }
-          if (status.type === 'Finalized') {
+          if (status.type === FINALIZED) {
             resolve(new TxStatus(status.type))
-          } else if (status.type === 'Invalid' || status.type === 'Dropped') {
+          } else if (status.type === INVALID || status.type === DROPPED) {
             reject(new Error(`Transaction failed with status '${status.type}'`))
           }
         })

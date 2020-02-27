@@ -1,14 +1,13 @@
 /**
  * Delegation nodes are used within the KILT protocol to construct the trust hierarchy.
- * ***
- *  Starting from the root node, entities can delegate the right to issue attestations to Claimers for a certain CTYPE and also delegate the right to attest and to delegate further nodes.
- * @module Delegation/DelegationNode
+ *
+ * Starting from the root node, entities can delegate the right to issue attestations to Claimers for a certain CTYPE and also delegate the right to attest and to delegate further nodes.
+ *
+ * @packageDocumentation
+ * @module DelegationNode
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
 import Crypto from '../crypto'
 import { QueryResult } from '../blockchain/Blockchain'
 import TxStatus from '../blockchain/TxStatus'
@@ -19,7 +18,7 @@ import DelegationBaseNode from './Delegation'
 import { decodeDelegationNode } from './DelegationDecoder'
 import DelegationRootNode from './DelegationRootNode'
 import { IDelegationNode } from '../types/Delegation'
-import { permissionsAsBitset } from './DelegationNode.utils'
+import permissionsAsBitset from './DelegationNode.utils'
 import { query, store, revoke } from './DelegationNode.chain'
 import { query as queryRoot } from './DelegationRootNode.chain'
 
@@ -28,10 +27,10 @@ const log = factory.getLogger('DelegationNode')
 export default class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
   /**
-   * @description Queries the delegation node with [delegationId].
+   * Queries the delegation node with [delegationId].
    *
-   * @param delegationId the unique identifier of the desired delegation
-   * @returns promise containing the [[DelegationNode]] or [null]
+   * @param delegationId The unique identifier of the desired delegation.
+   * @returns Promise containing the [[DelegationNode]] or [null].
    */
   public static async query(
     delegationId: string
@@ -47,13 +46,13 @@ export default class DelegationNode extends DelegationBaseNode
   public permissions: IDelegationNode['permissions']
 
   /**
-   * @description Creates a new [DelegationNode].
+   * Creates a new [DelegationNode].
    *
-   * @param id a unique identifier
-   * @param rootId identifier of the root delegation node that is already stored on-chain
-   * @param account address of the account that will be the owner of the delegation
-   * @param permissions list of [[Permission]]s
-   * @param parentId identifier of the parent delegation node already stored on-chain. Not required when the parent is the root node.
+   * @param id A unique identifier.
+   * @param rootId Identifier of the root delegation node that is already stored on-chain.
+   * @param account Address of the account that will be the owner of the delegation.
+   * @param permissions List of [[Permission]]s.
+   * @param parentId Identifier of the parent delegation node already stored on-chain. Not required when the parent is the root node.
    */
   public constructor(
     id: IDelegationNode['id'],
@@ -69,14 +68,13 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * @description Generates the delegation hash from the delegations' property values.
    *
-   * <BR>
+   * Generates the delegation hash from the delegations' property values.
+   *
    * This hash is signed by the delegate and later stored along with the delegation to
    * make sure delegation data (such as permissions) is not tampered.
    *
    * @example
-   * <BR>
    * ```
    * const delegate: Identity = ...
    * const signature:string = delegate.signStr(newDelegationNode.generateHash())
@@ -85,7 +83,7 @@ export default class DelegationNode extends DelegationBaseNode
    * newDelegationNode.store(myIdentity, signature)
    * ```
    *
-   * @returns the hash representation of this delegation as a hex string
+   * @returns The hash representation of this delegation as a hex string.
    */
   public generateHash(): string {
     const propsToHash: Array<Uint8Array | string> = [this.id, this.rootId]
@@ -104,8 +102,9 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * @description Fetches the root of this delegation node.
-   * @returns promise containing the [[DelegationRootNode]] of this delegation node
+   * Fetches the root of this delegation node.
+   *
+   * @returns Promise containing the [[DelegationRootNode]] of this delegation node.
    */
   public async getRoot(): Promise<DelegationRootNode> {
     const rootNode = await queryRoot(this.rootId)
@@ -116,8 +115,9 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * @description Fetches the parent node of this delegation node.
-   * @returns promise containing the parent as [[DelegationBaseNode]] or [null]
+   * Fetches the parent node of this delegation node.
+   *
+   * @returns Promise containing the parent as [[DelegationBaseNode]] or [null].
    */
 
   public async getParent(): Promise<DelegationBaseNode | null> {
@@ -129,11 +129,11 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * @description Stores the delegation node on chain.
+   * Stores the delegation node on chain.
    *
-   * @param identity account used to store the delegation node
-   * @param signature signature of the delegate to ensure it's done under his permission
-   * @returns promise containing the [[TxStatus]]
+   * @param identity Account used to store the delegation node.
+   * @param signature Signature of the delegate to ensure it's done under his permission.
+   * @returns Promise containing the [[TxStatus]].
    */
   public async store(identity: Identity, signature: string): Promise<TxStatus> {
     log.info(`:: store(${this.id})`)
@@ -141,8 +141,9 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * @description Verifies the delegation node by querying it from chain and checking its revoke status.
-   * @returns promise containing a boolean flag
+   * Verifies the delegation node by querying it from chain and checking its revoke status.
+   *
+   * @returns Promise containing a boolean flag.
    */
   public async verify(): Promise<boolean> {
     const node = await query(this.id)
@@ -150,9 +151,10 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * @description Revokes the delegation node on chain.
-   * @param identity the identity used to revoke the delegation
-   * @returns promise containing the [[TxStatus]]
+   * Revokes the delegation node on chain.
+   *
+   * @param identity The identity used to revoke the delegation.
+   * @returns Promise containing the [[TxStatus]].
    */
   public async revoke(identity: Identity): Promise<TxStatus> {
     log.debug(`:: revoke(${this.id})`)

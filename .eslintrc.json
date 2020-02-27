@@ -46,11 +46,15 @@
         "jsdoc/check-examples": ["warn", {
             "exampleCodeRegex": "^```(?:js|javascript|typescript)\\n([\\s\\S]*)```\\s*$",
             "configFile": ".eslintrc-jsdoc.json"
-        }]
+        }],
+        "jsdoc/check-tag-names": ["warn", {
+            "definedTags": ["preferred", "packageDocumentation"]
+        }],
+        "jsdoc/check-alignment": "off"
     },
     "overrides": [
         {
-            "files": ["**/*.spec.ts"],
+            "files": ["**/*.spec.ts", "**/*.intspec.ts"],
             "env": {
                 "jest": true
             },
@@ -58,7 +62,11 @@
                 "@typescript-eslint/no-object-literal-type-assertion": "off",
                 "@typescript-eslint/no-explicit-any": "off",
                 "no-underscore-dangle": "off",
-                "global-require": "off"
+                "global-require": "off",
+                "@typescript-eslint/ban-ts-ignore": "off",
+                "jsdoc/check-tag-names": ["warn", {
+                    "definedTags": ["group"]
+                }]
             }
         }
     ],

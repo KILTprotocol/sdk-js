@@ -1,11 +1,11 @@
 /**
  * ExtrinsicErrors are KILT-specific errors, with associated codes and descriptions.
- * @module ErrorHandling/ExtrinsicErrors
+ *
+ * @packageDocumentation
+ * @module ExtrinsicErrors
+ * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
 export enum ErrorCode {
   ERROR_CTYPE_NOT_FOUND = 1001,
   ERROR_CTYPE_ALREADY_EXISTS = 1002,

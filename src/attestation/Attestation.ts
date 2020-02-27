@@ -6,13 +6,11 @@
  * * the key is the hash of the corresponding claim;
  * * the value is a tuple ([[CType]] hash, account, id of the [[Delegation]], and revoked flag).
  *
+ * @packageDocumentation
  * @module Attestation
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import IRequestForAttestation from '../types/RequestForAttestation'
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
@@ -31,7 +29,7 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[Attestation]] or null.
    * @example ```javascript
    * Attestation.query('0xd8024cdc147c4fa9221cd177').then(attestation => {
-   *    // now we can for example revoke `attestation`
+   *   // now we can for example revoke `attestation`
    * });
    * ```
    */
@@ -78,11 +76,10 @@ export default class Attestation implements IAttestation {
    *
    * @param request - The base request for attestation.
    * @param attesterPublicIdentity - The attesters public identity, used to attest the underlying claim.
-   * @param [delegationIdInput] - optional delegationId for which the attester attests the claim.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create a complete new attestation from the RequestForAttestation and all other needed properties
-   * Attestation.fromRequestAndPublicIdentity(request, attesterPublicIdentity, delegationId);
+   * Attestation.fromRequestAndPublicIdentity(request, attesterPublicIdentity);
    * ```
    */
   public static fromRequestAndPublicIdentity(
@@ -110,7 +107,7 @@ export default class Attestation implements IAttestation {
    * @param attestationInput - The base object from which to create the attestation.
    * @example ```javascript
    * // create an attestation, e.g. to store it on-chain
-   * new Attestation(attestationInput);
+   * const attestation = new Attestation(attestationInput);
    * ```
    */
   public constructor(attestationInput: IAttestation) {
@@ -144,7 +141,7 @@ export default class Attestation implements IAttestation {
    * @example ```javascript
    * // Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * attestation.store(attester).then(() => {
-   * // the attestation was successfully stored, so now we can for example create an AttestedClaim
+   *   // the attestation was successfully stored, so now we can for example create an AttestedClaim
    * });
    * ```
    */
@@ -159,7 +156,7 @@ export default class Attestation implements IAttestation {
    * @returns A promise containing the [[TxStatus]] (transaction status).
    * @example ```javascript
    * attestation.revoke(identity).then(() => {
-   *    // the attestation was successfully revoked
+   *   // the attestation was successfully revoked
    * });
    * ```
    */

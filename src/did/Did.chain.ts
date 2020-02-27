@@ -1,10 +1,8 @@
 /**
- * @module DID
+ * @packageDocumentation
+ * @ignore
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
 
@@ -26,7 +24,7 @@ export async function queryByIdentifier(
   const address = getAddressFromIdentifier(identifier)
   const decoded = decodeDid(
     identifier,
-    await blockchain.api.query.dID.dIDs(address)
+    await blockchain.api.query.did.dIDs(address)
   )
   return decoded
 }
@@ -38,7 +36,7 @@ export async function queryByAddress(
   const identifier = getIdentifierFromAddress(address)
   const decoded = decodeDid(
     identifier,
-    await blockchain.api.query.dID.dIDs(address)
+    await blockchain.api.query.did.dIDs(address)
   )
   return decoded
 }

@@ -1,17 +1,15 @@
 /**
- * @module Delegation/DelegationNode
+ * @packageDocumentation
+ * @ignore
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
 
 import { getCached } from '../blockchainApiConnection'
 import { decodeDelegationNode } from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
-import { permissionsAsBitset } from './DelegationNode.utils'
+import permissionsAsBitset from './DelegationNode.utils'
 import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import { IDelegationNode } from '../types/Delegation'
