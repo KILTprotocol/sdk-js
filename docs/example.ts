@@ -5,15 +5,12 @@ import Kilt, {
   IRequestAttestationForClaim,
   MessageBodyType,
   Message,
-  // IRequestForAttestation,
   ISubmitAttestationForClaim,
-  // ICTypeMetadata,
 } from '../src'
 
 // How to generate an Identity
 const mnemonic = Kilt.Identity.generateMnemonic()
 const claimer = Kilt.Identity.buildFromMnemonic(mnemonic)
-// const address = claimer.address
 
 // At this point the generated Identity has no tokens.
 // If you want to interact with the blockchain, you will have to get some.
@@ -63,11 +60,11 @@ const rawClaim = {
   age: 29,
 }
 
-const claim = new Kilt.Claim({
-  cTypeHash: ctypeHash,
-  contents: rawClaim,
-  owner: claimer.address,
-})
+const claim = Kilt.Claim.fromCTypeAndClaimContents(
+  ctype,
+  rawClaim,
+  claimer.address
+)
 
 // How to get an Attestation
 
@@ -81,7 +78,7 @@ const requestForAttestation = Kilt.RequestForAttestation.fromClaimAndIdentity(
   claimer
 )
 
-// Excourse to the messaging system
+// Excursion to the messaging system
 // If the Attester doesn't live on the same machine, we need to send her a message
 const messageBody: IRequestAttestationForClaim = {
   content: {
