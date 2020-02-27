@@ -5,9 +5,9 @@
 import IPublicIdentity from './PublicIdentity'
 
 export interface ICTypeSchema {
-  $id: any
-  $schema: any
-  properties: any
+  $id: string
+  $schema: string
+  properties: object // TO DO: need to refine what properties are
   type: 'object'
 }
 

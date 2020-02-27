@@ -30,11 +30,11 @@ import IRequestForAttestation, {
 } from '../types/RequestForAttestation'
 import { IDelegationBaseNode } from '../types/Delegation'
 
-function hashNonceValue(nonce: string, value: any): string {
+function hashNonceValue(nonce: string, value: string): string {
   return hashObjectAsStr(value, nonce)
 }
 
-function generateHash(value: any): NonceHash {
+function generateHash(value: string): NonceHash {
   const nonce: string = uuid()
   return {
     nonce,
