@@ -86,8 +86,8 @@ describe('When there are haves and have-nots', async () => {
       getBalance(RichieRich.address),
       getBalance(BobbyBroke.address),
     ])
-    expect(zeroBalance.toNumber()).toBe(0)
-    expect(newBalance.toNumber()).toBe(RichieBalance.sub(GAS).toNumber())
+    expect(zeroBalance.toString()).toEqual('0')
+    expect(newBalance.toString()).toEqual(RichieBalance.sub(GAS).toString())
   }, 15000)
 
   xit('should be able to make multiple transactions at once', async () => {

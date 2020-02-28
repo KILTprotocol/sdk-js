@@ -106,8 +106,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     expect(request.verifySignature()).toBeTruthy()
     const attestation = Attestation.fromRequestAndPublicIdentity(
       request,
-      attester.getPublicIdentity(),
-      null
+      attester.getPublicIdentity()
     )
 
     const BobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
