@@ -281,7 +281,7 @@ export interface IRequestAcceptDelegation extends IMessageBodyBase {
       isPCR: boolean
     }
     metaData?: {
-      [key: string]: any // can this possibly be narrowed down to something other than any?
+      [key: string]: string | object // can this possibly be narrowed down to something other than any?
     }
     signatures: {
       inviter: string
