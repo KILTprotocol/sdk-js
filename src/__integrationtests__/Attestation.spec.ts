@@ -7,7 +7,6 @@ import {
   alice,
   bob,
   DriversLicense,
-  endow,
   CtypeOnChain,
   IsOfficialLicenseAuthority,
 } from './utils'
@@ -21,8 +20,8 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { Identity } from '..'
 
-const attester = faucet
-const UncleSam = alice
+const UncleSam = faucet
+const attester = alice
 const claimer = bob
 
 describe('handling attestations that do not exist', () => {
@@ -88,6 +87,33 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
     expect(aClaim.verifyData()).toBeTruthy()
     await expect(aClaim.verify()).resolves.toBeTruthy()
+  }, 60_000)
+
+  it('should not be possible to attest a claim w/o tokens', async () => {
+    const content = { name: 'Ralfi', age: 10 }
+    const claim = Claim.fromCTypeAndClaimContents(
+      DriversLicense,
+      content,
+      claimer.address
+    )
+    const request = RequestForAttestation.fromClaimAndIdentity(
+      claim,
+      claimer,
+      [],
+      null
+    )
+    expect(request.verifyData()).toBeTruthy()
+    expect(request.verifySignature()).toBeTruthy()
+    const attestation = Attestation.fromRequestAndPublicIdentity(
+      request,
+      attester.getPublicIdentity()
+    )
+
+    const BobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
+
+    await expect(attestation.store(BobbyBroke)).rejects.toThrow()
+    const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
+    await expect(aClaim.verify()).resolves.toBeFalsy()
   }, 60_000)
 
   it('should not be possible to attest a claim on a Ctype that is not on chain', async () => {
@@ -161,7 +187,6 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     }, 15000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
-      await endow(claimer)
       await expect(revoke(AttClaim.getHash(), claimer)).rejects.toThrowError(
         'not permitted'
       )
@@ -178,9 +203,8 @@ describe('When there is an attester, claimer and ctype drivers license', async (
 
   describe('when there is another Ctype that works as a legitimation', async () => {
     beforeAll(async () => {
-      await endow(UncleSam)
       if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
-        await IsOfficialLicenseAuthority.store(attester)
+        await IsOfficialLicenseAuthority.store(UncleSam)
       }
       await expect(
         CtypeOnChain(IsOfficialLicenseAuthority)
