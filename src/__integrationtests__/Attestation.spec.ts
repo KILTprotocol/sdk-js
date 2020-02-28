@@ -26,11 +26,11 @@ const UncleSam = alice
 const claimer = bob
 
 describe('handling attestations that do not exist', () => {
-  xtest('Attestation.query', async () => {
+  it('Attestation.query', async () => {
     return expect(Attestation.query('0x012012012')).resolves.toBeNull()
   }, 30_000)
 
-  test('Attestation.revoke', async () => {
+  it('Attestation.revoke', async () => {
     return expect(
       Attestation.revoke('0x012012012', Identity.buildFromURI('//Alice'))
     ).rejects.toThrow()
