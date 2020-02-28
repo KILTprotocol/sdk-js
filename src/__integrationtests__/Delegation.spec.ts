@@ -127,7 +127,7 @@ describe('handling queries to data not on chain', () => {
     return expect(DelegationNode.query('0x012012012')).resolves.toBeNull()
   })
 
-  xit('DelegationRootNode.query on empty', async () => {
+  it('DelegationRootNode.query on empty', async () => {
     return expect(DelegationRootNode.query('0x012012012')).resolves.toBeNull()
   })
 

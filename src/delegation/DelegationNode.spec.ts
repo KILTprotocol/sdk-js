@@ -42,17 +42,23 @@ describe('Delegation', () => {
     require('../blockchain/Blockchain').default.__mockQueryDelegationDelegations = jest.fn(
       id => {
         if (id === 'success') {
-          const tuple = new Tuple(
-            // (root-id, parent-id?, account, permissions, revoked)
-            [Text, Option, Text, U32, Bool],
-            ['myRootId', null, 'myAccount', 1, false]
+          const tuple = new Option(
+            Tuple,
+            new Tuple(
+              // (root-id, parent-id?, account, permissions, revoked)
+              [Text, Option, Text, U32, Bool],
+              ['myRootId', null, 'myAccount', 1, false]
+            )
           )
           return Promise.resolve(tuple)
         }
-        const tuple = new Tuple(
-          // (root-id, parent-id?, account, permissions, revoked)
-          [Text, Option, Text, U32, Bool],
-          ['myRootId', null, 'myAccount', 1, true]
+        const tuple = new Option(
+          Tuple,
+          new Tuple(
+            // (root-id, parent-id?, account, permissions, revoked)
+            [Text, Option, Text, U32, Bool],
+            ['myRootId', null, 'myAccount', 1, true]
+          )
         )
         return Promise.resolve(tuple)
       }
@@ -82,14 +88,17 @@ describe('Delegation', () => {
 
     require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
       () => {
-        const tuple = new Tuple(
-          // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          [H256, Text, Bool],
-          [
-            '0x1234000000000000000000000000000000000000000000000000000000000000',
-            identityAlice.address,
-            false,
-          ]
+        const tuple = new Option(
+          Tuple,
+          new Tuple(
+            // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+            [H256, Text, Bool],
+            [
+              '0x1234000000000000000000000000000000000000000000000000000000000000',
+              identityAlice.address,
+              false,
+            ]
+          )
         )
         return Promise.resolve(tuple)
       }
