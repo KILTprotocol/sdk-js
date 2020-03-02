@@ -31,6 +31,7 @@ import IRequestForAttestation, {
   Hash,
   NonceHash,
 } from '../types/RequestForAttestation'
+import IAttestedClaim from '../types/AttestedClaim'
 import { IDelegationBaseNode } from '../types/Delegation'
 
 function hashNonceValue(nonce: string, value: any): string {
@@ -91,17 +92,17 @@ function decompressNonceAndHash(nonceHash: NonceHash[]): any {
 /**
  *  Compresses a [[claimHashTree]] within a [[RequestForAttestation]] object.
  *
- * @param reqForAttest A [[ClaimHashTree]] object that will be sorted and stripped for messaging or storage.
+ * @param reqForAtt A [[ClaimHashTree]] object that will be sorted and stripped for messaging or storage.
  *
  * @returns An ordered array of an [[ClaimHashTree]].
  */
 
 export function compressClaimHashTree(
-  reqForAttest: IRequestForAttestation
+  reqForAtt: IRequestForAttestation
 ): IRequestForAttestation['claimHashTree'] {
-  const sortedReqForAttest = jsonabc.sortObj(reqForAttest)
+  const sortedreqForAtt = jsonabc.sortObj(reqForAtt)
   const result = {}
-  const claimTree = sortedReqForAttest.claimHashTree
+  const claimTree = sortedreqForAtt.claimHashTree
 
   Object.keys(claimTree).forEach(entryKey => {
     result[entryKey] = Object.values(claimTree[entryKey])
@@ -112,19 +113,19 @@ export function compressClaimHashTree(
 /**
  *  Decompresses a claim hash tree from storage and/or message.
  *
- * @param reqForAttest A compressesd claim hash tree array that is reverted back into an object.
+ * @param reqForAtt A compressesd claim hash tree array that is reverted back into an object.
  *
  * @returns An object that has the same properties as an claim hash tree.
  */
 
 export function decompressClaimHashTree(
-  reqForAttest: any[]
+  reqForAtt: Array<IRequestForAttestation[keyof IRequestForAttestation]>
 ): IRequestForAttestation['claimHashTree'] {
   const result = {}
 
-  Object.keys(reqForAttest).forEach(entryKey => {
+  Object.keys(reqForAtt).forEach(entryKey => {
     result[entryKey] = decompressNonceAndHash(
-      Object.values(reqForAttest[entryKey])
+      Object.values(reqForAtt[entryKey])
     )
   })
   return result
@@ -153,7 +154,9 @@ export function compressClaimContents(
  * @returns An object that has the same properties as the claim contents.
  */
 
-export function decompressClaimContents(contents: any[]): IClaim {
+export function decompressClaimContents(
+  contents: IClaim[keyof IClaim]
+): IClaim {
   // should go into the claim module.
   return {
     contents: contents[0],
@@ -170,7 +173,9 @@ export function decompressClaimContents(contents: any[]): IClaim {
  * @returns An object that has the same properties as an [[AttestedClaim]].
  */
 
-export function decompressLegitimation(leg: any[]): any[] {
+export function decompressLegitimation(
+  leg: Array<IAttestedClaim[keyof IAttestedClaim]>
+): any[] {
   if (!leg[0]) {
     return []
   }
@@ -209,7 +214,7 @@ export function compressRequestForAttestation(
  */
 
 export function decompressRequestForAttestation(
-  reqForAtt: any
+  reqForAtt: any[]
 ): IRequestForAttestation {
   return {
     claim: decompressClaimContents(reqForAtt[0]),

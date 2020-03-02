@@ -140,6 +140,7 @@ describe('RequestForAttestation', () => {
       [legitimationCharlie, legitimationBob]
     )
     const compressedReqForAtt = reqForAtt.compress()
+
     expect(compressRequestForAttestation(reqForAtt)).toEqual(
       compressedReqForAtt
     )

@@ -45,7 +45,9 @@ export function compressAttestedClaim(attestedClaim: AttestedClaim): any[] {
  * @returns An object that has the same properties as an [[AttestedClaim]].
  */
 
-export function decompressAttestedClaim(attestedClaim: any[]): IAttestedClaim {
+export function decompressAttestedClaim(
+  attestedClaim: IAttestedClaim[keyof IAttestedClaim]
+): IAttestedClaim {
   return {
     attestation: decompressAttestation(attestedClaim[0]),
     request: decompressRequestForAttestation(attestedClaim[1]),
@@ -209,7 +211,9 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns A new [[AttestedClaim]] object.
    */
 
-  public static decompress(attestedClaim: any[]): AttestedClaim {
+  public static decompress(
+    attestedClaim: IAttestedClaim[keyof IAttestedClaim]
+  ): AttestedClaim {
     const decompressedAttestedClaim = decompressAttestedClaim(attestedClaim)
     return AttestedClaim.fromAttestedClaim(decompressedAttestedClaim)
   }
