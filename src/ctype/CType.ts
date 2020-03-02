@@ -28,7 +28,9 @@ import IClaim from '../types/Claim'
  * @returns An ordered array of a [[CType]] schema.
  */
 
-export function compressCTypeSchema(cTypeSchema: ICType['schema']): any[] {
+export function compressCTypeSchema(
+  cTypeSchema: ICType['schema']
+): Array<ICType['schema'][keyof ICType['schema']]> {
   const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
   return [
     sortedCTypeSchema.$id,
@@ -46,7 +48,9 @@ export function compressCTypeSchema(cTypeSchema: ICType['schema']): any[] {
  * @returns An object that has the same properties as a [[CType]] schema.
  */
 
-export function decompressCTypeSchema(cTypeSchema: any): ICType['schema'] {
+export function decompressCTypeSchema(
+  cTypeSchema: ICType['schema']
+): ICType['schema'] {
   return {
     $id: cTypeSchema[0],
     $schema: cTypeSchema[1],

@@ -121,7 +121,7 @@ export function createAgreedQuote(
  * @returns An ordered array of a cost.
  */
 
-export function compressCost(cost: ICostBreakdown): any[] {
+export function compressCost(cost: ICostBreakdown): ICostBreakdown[] {
   return Object.values(cost)
 }
 

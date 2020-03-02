@@ -45,7 +45,7 @@ export function compressAttestation(
  * @returns An object that has the same properties as an [[Attestation]].
  */
 
-export function decompressAttestation(attestation: any[]): any {
+export function decompressAttestation(attestation: any[]): IAttestation {
   return {
     claimHash: attestation[0],
     cTypeHash: attestation[1],
