@@ -193,9 +193,21 @@ export default class AttestedClaim implements IAttestedClaim {
     return result
   }
 
+  /**
+   * Compresses an [[AttestedClaim]] object from the [[compressAttestedCliam]] function.
+   *
+   * @returns An array that contains the same properties of an [[AttestedClaim]].
+   */
+
   public compress(): AttestedClaim[] {
     return compressAttestedClaim(this)
   }
+
+  /**
+   * [STATIC] Builds an [[AttestedClaim]] from the decompressed array.
+   *
+   * @returns A new [[AttestedClaim]] object.
+   */
 
   public static decompress(attestedClaim: any[]): AttestedClaim {
     const decompressedAttestedClaim = decompressAttestedClaim(attestedClaim)

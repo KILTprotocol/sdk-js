@@ -220,9 +220,21 @@ export default class Attestation implements IAttestation {
     return Promise.resolve(isValid)
   }
 
+  /**
+   * Compresses an [[Attestation]] object from the [[Attestation]] function.
+   *
+   * @returns An array that contains the same properties of an [[Attestation]].
+   */
+
   public compress(): Array<IAttestation[keyof IAttestation]> {
     return compressAttestation(this)
   }
+
+  /**
+   * [STATIC] Builds an [[Attestation]] from the decompressed array.
+   *
+   * @returns A new [[Attestation]] object.
+   */
 
   public static decompress(attestation: IAttestation): Attestation {
     return Attestation.fromAttestation(attestation)

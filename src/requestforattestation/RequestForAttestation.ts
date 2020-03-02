@@ -535,9 +535,21 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return result
   }
 
+  /**
+   * Compresses an [[RequestForAttestation]] object from the [[compressRequestForAttestation]] function.
+   *
+   * @returns An array that contains the same properties of an [[RequestForAttestation]].
+   */
+
   public compress(): Array<RequestForAttestation[keyof RequestForAttestation]> {
     return compressRequestForAttestation(this)
   }
+
+  /**
+   * [STATIC] Builds an [[RequestForAttestation]] from the decompressed array.
+   *
+   * @returns A new [[RequestForAttestation]] object.
+   */
 
   public static decompress(
     reqForAtt: Array<IRequestForAttestation[keyof IRequestForAttestation]>

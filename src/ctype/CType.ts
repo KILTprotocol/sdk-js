@@ -135,11 +135,23 @@ export default class CType implements ICType {
     return this.owner ? actualOwner === this.owner : actualOwner !== null
   }
 
-  public compress(): any[] {
+  /**
+   * Compresses an [[CType]] object from the [[CType]] function.
+   *
+   * @returns An array that contains the same properties of an [[CType]].
+   */
+
+  public compress(): ICType[] {
     return compressCType(this)
   }
 
-  public static decompress(cType: any[]): CType {
+  /**
+   * [STATIC] Builds an [[CType]] from the decompressed array.
+   *
+   * @returns A new [[CType]] object.
+   */
+
+  public static decompress(cType: ICType[]): CType {
     const decompressedCType = decompressCType(cType)
     return CType.fromCType(decompressedCType)
   }
