@@ -1,22 +1,15 @@
 /* eslint-disable no-console */
-import {
-  Verifier,
-  Accumulator,
-  CombinedPresentation,
-} from '@kiltprotocol/portablegabi'
 import Kilt, {
   ICType,
   CTypeUtils,
   IRequestAttestationForClaim,
   MessageBodyType,
-  Message,
   ISubmitAttestationForClaim,
-  newInitiateAttestationMessage,
   AttestedClaim,
   Identity,
   Claim,
-  PresentationRequestBuilder,
-  submitPresentations,
+  Accumulator,
+  CombinedPresentation,
 } from '../src'
 
 const privKey =
@@ -59,30 +52,7 @@ async function doAttestation(): Promise<{
   }
   // Generate the Hash for it
   const ctypeHash = CTypeUtils.getHashForSchema(ctypeSchema)
-  // Build metadata for schema
-  // const ctypeMetadata: ICTypeMetadata = {
-  //   metadata: {
-  //     title: {
-  //       default: 'DriversLicense',
-  //     },
-  //     description: {
-  //       default: '',
-  //     },
-  //     properties: {
-  //       name: {
-  //         title: {
-  //           default: 'name',
-  //         },
-  //       },
-  //       age: {
-  //         title: {
-  //           default: 'age',
-  //         },
-  //       },
-  //     },
-  //   },
-  //   ctypeHash,
-  // }
+
   // Put everything together
   const rawCtype: ICType = {
     schema: ctypeSchema,
@@ -119,7 +89,7 @@ async function doAttestation(): Promise<{
   const {
     message: initiateAttestationMessage,
     session: attestersSession,
-  } = await newInitiateAttestationMessage(attester)
+  } = await attester.initiateAttestation()
 
   // ------------------------- CLAIMER -----------------------------------------
   // And we need to build a request for an attestation
@@ -252,16 +222,12 @@ async function doVerification(
     throw new Error('Attester needs a key pair')
   }
   // ------------------------- Verifier ----------------------------------------
-  const [
-    session,
-    request,
-  ] = await new PresentationRequestBuilder()
+  const [session, request] = await Kilt.Verifier.newRequest()
     .requestPresentationForCtype(attestedClaim.attestation.cTypeHash, ['age'])
     .finalize(true)
 
   // ------------------------- Claimer -----------------------------------------
-  const presentation = await submitPresentations(
-    claimer,
+  const presentation = await claimer.submitPresentations(
     request,
     [attestedClaim],
     [attesterPubKey]
@@ -269,12 +235,12 @@ async function doVerification(
 
   // ------------------------- Verifier ----------------------------------------
   if (presentation.content instanceof CombinedPresentation) {
-    const { verified, claims } = await Verifier.verifyCombinedPresentation({
-      proof: presentation.content,
-      verifierSession: session,
-      attesterPubKeys: [attesterPubKey],
-      latestAccumulators: [accumulator],
-    })
+    const [verified, claims] = await Kilt.Verifier.verifyPresentation(
+      presentation,
+      session,
+      [accumulator],
+      [attesterPubKey]
+    )
     console.log('Received claims: ', claims)
     console.log('All valid? ', verified)
   }

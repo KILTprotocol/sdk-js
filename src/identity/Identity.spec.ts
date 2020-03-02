@@ -74,13 +74,13 @@ describe('Identity', () => {
   it('should fail creating identity based on invalid phrase', async () => {
     const phraseWithUnknownWord =
       'taxi toddler rally tonight certain tired program settle topple what execute stew' // stew instead of few
-    await expect(() =>
+    await expect(
       Identity.buildFromMnemonic(phraseWithUnknownWord)
     ).rejects.toThrowError()
 
     const phraseTooLong =
       'taxi toddler rally tonight certain tired program settle topple what execute' // stew instead of few
-    await expect(() =>
+    await expect(
       Identity.buildFromMnemonic(phraseTooLong)
     ).rejects.toThrowError()
   })

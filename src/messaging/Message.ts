@@ -15,9 +15,6 @@ import {
   CombinedPresentation,
   CombinedPresentationRequest,
   InitiateAttestationRequest,
-  Attester,
-  AttesterAttestationSession,
-  AttesterPublicKey,
 } from '@kiltprotocol/portablegabi'
 import {
   Claim,
@@ -31,7 +28,6 @@ import {
   IRequestForAttestation,
   IAttestation,
   ICType,
-  AttestedClaim,
 } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
 import ITerms from '../types/Terms'
@@ -254,55 +250,6 @@ export interface IRejectTerms extends IMessageBodyBase {
 export interface IInitiateAttestation extends IMessageBodyBase {
   content: InitiateAttestationRequest
   type: MessageBodyType.INITIATE_ATTESTATION
-}
-
-export async function newInitiateAttestationMessage(
-  identity: Identity
-): Promise<{
-  message: IInitiateAttestation
-  session: AttesterAttestationSession
-}> {
-  const privKey = identity.getPrivateGabiKey()
-  const pubKey = identity.publicGabiKey
-  if (typeof privKey !== 'undefined' && typeof pubKey !== 'undefined') {
-    const attester = new Attester(pubKey, privKey)
-    const { message, session } = await attester.startAttestation()
-    return {
-      message: {
-        content: message,
-        type: MessageBodyType.INITIATE_ATTESTATION,
-      },
-      session,
-    }
-  }
-  throw new Error('Identity cannot be used for attestation')
-}
-
-export async function submitPresentations(
-  identity: Identity,
-  request: IRequestClaimsForCTypes,
-  attestedClaims: AttestedClaim[],
-  attesterPubKeys: AttesterPublicKey[]
-): Promise<ISubmitClaimsForCTypesPE | ISubmitClaimsForCTypes> {
-  const { claimer } = identity
-  if (typeof claimer === 'undefined') {
-    throw new Error('Invalid identity')
-  }
-  const credentials = attestedClaims.map(ac => {
-    if (ac.credential === null) {
-      throw new Error('Missing PE credential')
-    }
-    return ac.credential
-  })
-  const presentation = await claimer.buildCombinedPresentation({
-    credentials,
-    combinedPresentationReq: request.content.peRequest,
-    attesterPubKeys,
-  })
-  return {
-    type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE,
-    content: presentation,
-  }
 }
 
 export interface IRequestAttestationForClaim extends IMessageBodyBase {

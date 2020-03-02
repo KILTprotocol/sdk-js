@@ -3,6 +3,7 @@
  * @ignore
  */
 
+import { Accumulator, CombinedPresentation } from '@kiltprotocol/portablegabi'
 import { connect, disconnect } from './kilt/Kilt'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import * as Balance from './balance/Balance.chain'
@@ -23,7 +24,7 @@ import Did, { IDid } from './did/Did'
 import * as Quote from './quote/Quote'
 import Message from './messaging/Message'
 import * as Constants from './const'
-import PresentationRequestBuilder from './presentationrequestbuilder/PresentationRequestBuilder'
+import * as Verifier from './verifier/Verifier'
 
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
@@ -79,7 +80,9 @@ export {
   Message,
   Constants,
   Quote,
-  PresentationRequestBuilder,
+  Verifier,
+  Accumulator,
+  CombinedPresentation,
 }
 
 // ---- Default export for ease of use ----
@@ -99,5 +102,7 @@ export default {
   DelegationRootNode,
   Did,
   Message,
-  PresentationRequestBuilder,
+  Verifier,
+  Accumulator,
+  CombinedPresentation,
 }

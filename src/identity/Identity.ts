@@ -43,6 +43,14 @@ import {
   EncryptedAsymmetricString,
 } from '../crypto/Crypto'
 import PublicIdentity from './PublicIdentity'
+import {
+  IInitiateAttestation,
+  MessageBodyType,
+  IRequestClaimsForCTypes,
+  ISubmitClaimsForCTypesPE,
+  ISubmitClaimsForCTypes,
+} from '../messaging/Message'
+import AttestedClaim from '../attestedclaim/AttestedClaim'
 
 type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
@@ -457,5 +465,51 @@ export default class Identity extends PublicIdentity {
       privateGabiKey: ${this.privateGabiKey}\n
       acc: ${this.accumulator}\n
       pe request: ${reqForAttestation.privacyEnhanced}`)
+  }
+
+  public async initiateAttestation(): Promise<{
+    message: IInitiateAttestation
+    session: AttesterAttestationSession
+  }> {
+    if (
+      typeof this.privateGabiKey !== 'undefined' &&
+      typeof this.publicGabiKey !== 'undefined'
+    ) {
+      const attester = new Attester(this.publicGabiKey, this.privateGabiKey)
+      const { message, session } = await attester.startAttestation()
+      return {
+        message: {
+          content: message,
+          type: MessageBodyType.INITIATE_ATTESTATION,
+        },
+        session,
+      }
+    }
+    throw new Error('Identity cannot be used for attestation')
+  }
+
+  public async submitPresentations(
+    request: IRequestClaimsForCTypes,
+    attestedClaims: AttestedClaim[],
+    attesterPubKeys: AttesterPublicKey[]
+  ): Promise<ISubmitClaimsForCTypesPE | ISubmitClaimsForCTypes> {
+    if (typeof this.claimer === 'undefined') {
+      throw new Error('Invalid identity')
+    }
+    const credentials = attestedClaims.map(ac => {
+      if (ac.credential === null) {
+        throw new Error('Missing PE credential')
+      }
+      return ac.credential
+    })
+    const presentation = await this.claimer.buildCombinedPresentation({
+      credentials,
+      combinedPresentationReq: request.content.peRequest,
+      attesterPubKeys,
+    })
+    return {
+      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE,
+      content: presentation,
+    }
   }
 }

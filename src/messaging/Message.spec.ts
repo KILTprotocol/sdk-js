@@ -2,7 +2,6 @@ import Identity from '../identity/Identity'
 import Message, {
   MessageBodyType,
   IEncryptedMessage,
-  IMessage,
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
   ISubmitClaimsForCTypes,
@@ -13,7 +12,7 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 import * as Quote from '../quote/Quote'
 import IClaim from '../types/Claim'
 import { IQuote } from '../types/Quote'
-import { IAttestedClaim, PresentationRequestBuilder } from '..'
+import { IAttestedClaim, Verifier } from '..'
 
 describe('Messaging', () => {
   let identityAlice: Identity
@@ -27,18 +26,19 @@ describe('Messaging', () => {
   })
 
   it('verify message encryption and signing', async () => {
-    const messageBody = await new PresentationRequestBuilder()
+    const messageBody = (await Verifier.newRequest()
       .requestPresentationForCtype('0x12345678', ['age'])
-      .finalize(false)[1]
+      .finalize(false))[1]
 
-    const message: Message = new Message(
+    const message = new Message(
       messageBody,
       identityAlice,
       identityBob.getPublicIdentity()
     )
-    const encryptedMessage: IEncryptedMessage = message.getEncryptedMessage()
 
-    const decryptedMessage: IMessage = Message.createFromEncryptedMessage(
+    const encryptedMessage = message.getEncryptedMessage()
+
+    const decryptedMessage = Message.createFromEncryptedMessage(
       encryptedMessage,
       identityBob
     )
