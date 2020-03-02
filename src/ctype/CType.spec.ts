@@ -10,49 +10,60 @@ import requestForAttestation from '../requestforattestation/RequestForAttestatio
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('CType', () => {
-  const ctypeModel: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      'first-property': { type: 'integer' },
-      'second-property': { type: 'string' },
-    },
-    type: 'object',
-  }
+  let ctypeModel: ICType['schema']
+  let rawCType: ICType['schema']
+  let identityAlice: Identity
+  let fromRawCType: ICType
+  let fromCTypeModel: ICType
+  let claimCtype: CType
+  let claimContents: any
+  let claim: Claim
 
-  const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      name: { type: 'string' },
-    },
-    type: 'object',
-  }
+  beforeAll(async () => {
+    ctypeModel = {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        'first-property': { type: 'integer' },
+        'second-property': { type: 'string' },
+      },
+      type: 'object',
+    }
 
-  const identityAlice = Identity.buildFromURI('//Alice')
+    rawCType = {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
 
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.address,
-    hash: '',
-  }
+    identityAlice = await Identity.buildFromURI('//Alice')
 
-  const fromCTypeModel: ICType = {
-    schema: ctypeModel,
-    owner: identityAlice.address,
-    hash: '',
-  }
-  const claimCtype = CType.fromCType(fromRawCType)
+    fromRawCType = {
+      schema: rawCType,
+      owner: identityAlice.address,
+      hash: '',
+    }
 
-  const claimContents = {
-    name: 'Bob',
-  }
+    fromCTypeModel = {
+      schema: ctypeModel,
+      owner: identityAlice.address,
+      hash: '',
+    }
+    claimCtype = CType.fromCType(fromRawCType)
 
-  const claim = Claim.fromCTypeAndClaimContents(
-    claimCtype,
-    claimContents,
-    identityAlice.address
-  )
+    claimContents = {
+      name: 'Bob',
+    }
+
+    claim = Claim.fromCTypeAndClaimContents(
+      claimCtype,
+      claimContents,
+      identityAlice.address
+    )
+  })
 
   it('stores ctypes', async () => {
     const testHash = Crypto.hashStr('1234')

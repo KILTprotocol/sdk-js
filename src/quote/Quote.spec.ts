@@ -32,8 +32,8 @@ describe('Claim', () => {
   let invalidCostQuote: IQuote
 
   beforeAll(async () => {
-    claimerIdentity = Identity.buildFromURI('//Alice')
-    attesterIdentity = Identity.buildFromURI('//Bob')
+    claimerIdentity = await Identity.buildFromURI('//Alice')
+    attesterIdentity = await Identity.buildFromURI('//Bob')
     invalidCost = { gross: 233, tax: { vat: 3.3 } } as ICostBreakdown
     date = new Date(2019, 11, 10)
 

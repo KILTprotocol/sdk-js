@@ -1,6 +1,5 @@
 import Identity from '../identity/Identity'
 import Message, {
-  IRequestClaimsForCTypes,
   MessageBodyType,
   IEncryptedMessage,
   IMessage,
@@ -14,20 +13,24 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 import * as Quote from '../quote/Quote'
 import IClaim from '../types/Claim'
 import { IQuote } from '../types/Quote'
-import { IAttestedClaim } from '..'
+import { IAttestedClaim, PresentationRequestBuilder } from '..'
 
 describe('Messaging', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
-  const identityBob = Identity.buildFromURI('//Bob')
-  const date = new Date(2019, 11, 10)
-  it('verify message encryption and signing', () => {
-    const messageBody: IRequestClaimsForCTypes = {
-      content: {
-        ctypes: ['0x12345678'],
-        // privacyEnhanced: undefined,
-      },
-      type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
-    }
+  let identityAlice: Identity
+  let identityBob: Identity
+  let date: Date
+
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
+    identityBob = await Identity.buildFromURI('//Bob')
+    date = new Date(2019, 11, 10)
+  })
+
+  it('verify message encryption and signing', async () => {
+    const messageBody = await new PresentationRequestBuilder()
+      .requestPresentationForCtype('0x12345678', ['age'])
+      .finalize(false)[1]
+
     const message: Message = new Message(
       messageBody,
       identityAlice,
@@ -123,7 +126,7 @@ describe('Messaging', () => {
       cTypeHash: { nonce: '0x12345678', hash: '0x12345678' },
       rootHash: '0x12345678',
       claimerSignature: '0x12345678',
-      privacyEnhanced: false,
+      privacyEnhanced: null,
     } as IRequestForAttestation
 
     const quoteData: IQuote = {
@@ -204,6 +207,7 @@ describe('Messaging', () => {
     )
 
     const attestedClaim: IAttestedClaim = {
+      credential: null,
       request: content,
       attestation: submitAttestationBody.content.attestation,
     }

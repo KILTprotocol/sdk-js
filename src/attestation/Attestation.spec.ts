@@ -24,8 +24,8 @@ describe('Attestation', async () => {
   let requestForAttestation: RequestForAttestation
 
   beforeAll(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
-    identityBob = Identity.buildFromURI('//Bob')
+    identityAlice = await Identity.buildFromURI('//Alice')
+    identityBob = await Identity.buildFromURI('//Bob')
 
     Blockchain = require('../blockchain/Blockchain').default
 

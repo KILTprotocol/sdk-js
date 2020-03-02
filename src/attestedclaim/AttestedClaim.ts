@@ -50,13 +50,13 @@ export default class AttestedClaim implements IAttestedClaim {
    * ```
    */
   public static async fromRequestAndAttestation(
-    identity: Identity,
+    claimer: Identity,
     request: IRequestForAttestation,
     attestation: IAttestation,
     session: ClaimerAttestationSession | null = null,
     attestationPE: AttestationPE | null = null
   ): Promise<AttestedClaim> {
-    const { claimer } = identity
+    const { claimer: gabiClaimer } = claimer
     if (
       session !== null &&
       attestationPE !== null &&
@@ -65,7 +65,7 @@ export default class AttestedClaim implements IAttestedClaim {
       return new AttestedClaim({
         request,
         attestation,
-        credential: await claimer.buildCredential({
+        credential: await gabiClaimer.buildCredential({
           claimerSession: session,
           attestation: attestationPE,
         }),

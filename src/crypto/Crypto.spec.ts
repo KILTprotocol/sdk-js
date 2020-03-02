@@ -5,11 +5,18 @@ import Crypto from './index'
 
 describe('Crypto', () => {
   // TODO: create static objects for testing
-  const alice = Identity.buildFromMnemonic()
-  const bob = Identity.buildFromMnemonic()
+  let alice: Identity
+  let bob: Identity
+  let messageStr: string
+  let message: Uint8Array
 
-  const messageStr = 'This is a test'
-  const message = new Uint8Array(string.stringToU8a(messageStr))
+  beforeAll(async () => {
+    alice = await Identity.buildFromMnemonic()
+    bob = await Identity.buildFromMnemonic()
+
+    messageStr = 'This is a test'
+    message = new Uint8Array(string.stringToU8a(messageStr))
+  })
 
   it('should sign and verify (UInt8Array)', () => {
     // @ts-ignore

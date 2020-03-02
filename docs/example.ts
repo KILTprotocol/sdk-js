@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import {
-  AttesterPublicKey,
-  GabiVerifier,
+  Verifier,
   Accumulator,
   CombinedPresentation,
 } from '@kiltprotocol/portablegabi'
@@ -248,6 +247,10 @@ async function doVerification(
   attestedClaim: AttestedClaim,
   accumulator: Accumulator
 ): Promise<void> {
+  const attesterPubKey = attester.publicGabiKey
+  if (typeof attesterPubKey === 'undefined') {
+    throw new Error('Attester needs a key pair')
+  }
   // ------------------------- Verifier ----------------------------------------
   const [
     session,
@@ -261,15 +264,15 @@ async function doVerification(
     claimer,
     request,
     [attestedClaim],
-    [new AttesterPublicKey(pubKey)]
+    [attesterPubKey]
   )
 
   // ------------------------- Verifier ----------------------------------------
-  if (presentation.content instanceof CombinedPresentation){
-    const { verified, claims } = await GabiVerifier.verifyCombinedPresentation({
+  if (presentation.content instanceof CombinedPresentation) {
+    const { verified, claims } = await Verifier.verifyCombinedPresentation({
       proof: presentation.content,
       verifierSession: session,
-      attesterPubKeys: [new AttesterPublicKey(pubKey)],
+      attesterPubKeys: [attesterPubKey],
       latestAccumulators: [accumulator],
     })
     console.log('Received claims: ', claims)

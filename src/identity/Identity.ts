@@ -27,13 +27,13 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import nacl, { BoxKeyPair } from 'tweetnacl'
 import {
   AttesterPrivateKey,
-  GabiAttester,
+  Attester,
   AttesterPublicKey,
   AttesterAttestationSession,
   Witness,
   Attestation as GabiAttestation,
   Accumulator,
-  GabiClaimer,
+  Claimer,
 } from '@kiltprotocol/portablegabi'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import Crypto from '../crypto'
@@ -48,6 +48,11 @@ type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
   | Identity['boxKeyPair']['publicKey']
 
+/**
+ * The minimal required length of the seed.
+ */
+const MinSeedLength = 32
+
 export default class Identity extends PublicIdentity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
 
@@ -56,7 +61,7 @@ export default class Identity extends PublicIdentity {
    *
    * @returns Randomly generated [[BIP39]](https://www.npmjs.com/package/bip39) mnemonic phrase (Secret phrase).
    * @example ```javascript
-   * Identity.generateMnemonic();
+   * ´Identity.generateMnemonic();
    * // returns: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    * ```
    */
@@ -74,7 +79,7 @@ export default class Identity extends PublicIdentity {
    * const mnemonic = Identity.generateMnemonic();
    * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    *
-   * Identity.buildFromMnemonic(mnemonic);
+   * await Identity.buildFromMnemonic(mnemonic);
    * ```
    */
   public static async buildFromMnemonic(phraseArg?: string): Promise<Identity> {
@@ -93,11 +98,7 @@ export default class Identity extends PublicIdentity {
     }
 
     const seed = toSeed(phrase)
-    const id = Identity.buildFromSeed(
-      seed,
-      await GabiClaimer.buildFromMnemonic(phrase)
-    )
-    return id
+    return Identity.buildFromSeed(seed)
   }
 
   /**
@@ -108,10 +109,10 @@ export default class Identity extends PublicIdentity {
    * @example ```javascript
    * const seed =
    *   '0x6ce9fd060c70165c0fc8da25810d249106d5df100aa980e0d9a11409d6b35261';
-   * Identity.buildFromSeedString(seed);
+   * await Identity.buildFromSeedString(seed);
    * ```
    */
-  public static buildFromSeedString(seedArg: string): Identity {
+  public static async buildFromSeedString(seedArg: string): Promise<Identity> {
     const asU8a = hexToU8a(seedArg)
     return Identity.buildFromSeed(asU8a)
   }
@@ -128,16 +129,14 @@ export default class Identity extends PublicIdentity {
    *                                6, 213, 223, 16,  10, 169, 128, 224,
    *                              217, 161,  20,  9, 214, 179,  82,  97
    *                            ]);
-   * Identity.buildFromSeed(seed);
+   * await Identity.buildFromSeed(seed);
    * ```
    */
-  public static buildFromSeed(
-    seed: Uint8Array,
-    claimer?: GabiClaimer
-  ): Identity {
+  public static async buildFromSeed(seed: Uint8Array): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
     const keyringPair = keyring.addFromSeed(seed)
-    return new Identity(seed, keyringPair, undefined, claimer)
+    const claimer = await Claimer.buildFromSeed(seed)
+    return new Identity(seed, keyringPair, claimer)
   }
 
   /**
@@ -149,23 +148,26 @@ export default class Identity extends PublicIdentity {
    * Identity.buildFromURI('//Bob');
    * ```
    */
-  public static buildFromURI(uri: string): Identity {
+  public static async buildFromURI(uri: string): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
-    const derived = keyring.createFromUri(uri)
+    const paddedUri = uri.padEnd(MinSeedLength, ' ')
+    const derived = keyring.createFromUri(paddedUri)
+    const seed = u8aUtil.u8aToU8a(paddedUri)
+    const claimer = await Claimer.buildFromSeed(seed)
     // TODO: heck to create identity from //Alice
-    return new Identity(u8aUtil.u8aToU8a(uri), derived)
+    return new Identity(seed, derived, claimer)
   }
 
   public readonly seed: Uint8Array
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
-  public readonly claimer?: GabiClaimer
+  public readonly claimer: Claimer
 
   private constructor(
     seed: Uint8Array,
     signKeyringPair: KeyringPair,
-    privateGabiKey?: AttesterPrivateKey,
-    claimer?: GabiClaimer
+    claimer: Claimer,
+    privateGabiKey?: AttesterPrivateKey
   ) {
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public
@@ -199,7 +201,7 @@ export default class Identity extends PublicIdentity {
    *
    * @returns The [[PublicIdentity]], corresponding to the [[Identity]].
    * @example ```javascript
-   * const alice = Kilt.Identity.buildFromMnemonic();
+   * const alice = await Kilt.Identity.buildFromMnemonic();
    * alice.getPublicIdentity();
    * ```
    */
@@ -214,7 +216,7 @@ export default class Identity extends PublicIdentity {
    * @param cryptoInput - The data to be signed.
    * @returns The signed data.
    * @example  ```javascript
-   * const alice = Identity.buildFromMnemonic();
+   * const alice = await Identity.buildFromMnemonic();
    * const data = 'This is a test';
    * alice.sign(data);
    * // (output) Uint8Array [
@@ -409,7 +411,7 @@ export default class Identity extends PublicIdentity {
     if (typeof this.privateGabiKey !== 'undefined') {
       throw new Error('Keys already present.')
     }
-    const attester = await GabiAttester.create(validityDuration, maxAttributes)
+    const attester = await Attester.create(validityDuration, maxAttributes)
     this.privateGabiKey = attester.privateKey
     this.publicGabiKey = attester.publicKey
   }
@@ -424,7 +426,7 @@ export default class Identity extends PublicIdentity {
     if (typeof accumulator !== 'undefined') {
       this.accumulator = new Accumulator(accumulator)
     } else {
-      this.accumulator = await new GabiAttester(
+      this.accumulator = await new Attester(
         this.publicGabiKey,
         this.privateGabiKey
       ).createAccumulator()
@@ -441,7 +443,7 @@ export default class Identity extends PublicIdentity {
       typeof this.accumulator !== 'undefined' &&
       reqForAttestation.privacyEnhanced !== null
     ) {
-      const attester = new GabiAttester(this.publicGabiKey, this.privateGabiKey)
+      const attester = new Attester(this.publicGabiKey, this.privateGabiKey)
       const { witness, attestation } = await attester.issueAttestation({
         attestationSession: session,
         attestationRequest: reqForAttestation.privacyEnhanced,

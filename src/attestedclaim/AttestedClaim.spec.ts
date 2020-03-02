@@ -14,7 +14,7 @@ async function buildAttestedClaim(
   legitimations: AttestedClaim[]
 ): Promise<AttestedClaim> {
   // create claim
-  const identityAlice = Identity.buildFromURI('//Alice')
+  const identityAlice = await Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
     $id: 'http://example.com/ctype-1',
@@ -54,7 +54,8 @@ async function buildAttestedClaim(
     attester
   )
   // combine to attested claim
-  const attestedClaim: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
+  const attestedClaim: AttestedClaim = await AttestedClaim.fromRequestAndAttestation(
+    claimer,
     requestForAttestation,
     testAttestation
   )
@@ -68,10 +69,10 @@ describe('RequestForAttestation', () => {
   let legitimation: AttestedClaim
 
   beforeAll(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
+    identityAlice = await Identity.buildFromURI('//Alice')
 
-    identityBob = Identity.buildFromURI('//Bob')
-    identityCharlie = Identity.buildFromURI('//Charlie')
+    identityBob = await Identity.buildFromURI('//Bob')
+    identityCharlie = await Identity.buildFromURI('//Charlie')
 
     legitimation = await buildAttestedClaim(
       identityAlice,
@@ -98,7 +99,7 @@ describe('RequestForAttestation', () => {
     // check proof on complete data
     expect(attestedClaim.verifyData()).toBeTruthy()
 
-    // build a repesentation excluding claim properties and verify proof
+    // build a representation excluding claim properties and verify proof
     const correctPresentation = attestedClaim.createPresentation(['a'])
     expect(correctPresentation.verifyData()).toBeTruthy()
 

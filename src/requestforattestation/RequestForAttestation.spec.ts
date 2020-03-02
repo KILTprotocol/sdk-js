@@ -7,7 +7,7 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
 
-function buildRequestForAttestation(
+async function buildRequestForAttestation(
   claimer: Identity,
   ctype: string,
   contents: object,
@@ -15,7 +15,7 @@ function buildRequestForAttestation(
 ): Promise<[RequestForAttestation, ClaimerAttestationSession | null]> {
   // create claim
 
-  const identityAlice = Identity.buildFromURI('//Alice')
+  const identityAlice = await Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
     $id: 'http://example.com/ctype-1',
@@ -58,9 +58,9 @@ describe('RequestForAttestation', () => {
   let legitimation: AttestedClaim
 
   beforeEach(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
-    identityBob = Identity.buildFromURI('//Bob')
-    identityCharlie = Identity.buildFromURI('//Charlie')
+    identityAlice = await Identity.buildFromURI('//Alice')
+    identityBob = await Identity.buildFromURI('//Bob')
+    identityCharlie = await Identity.buildFromURI('//Charlie')
     ;[legitimationRequest] = await buildRequestForAttestation(
       identityAlice,
       'legitimationCtype',
@@ -73,7 +73,8 @@ describe('RequestForAttestation', () => {
       identityCharlie
     )
     // combine to attested claim
-    legitimation = AttestedClaim.fromRequestAndAttestation(
+    legitimation = await AttestedClaim.fromRequestAndAttestation(
+      identityBob,
       legitimationRequest,
       legitimationAttestation
     )

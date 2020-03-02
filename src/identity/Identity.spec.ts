@@ -5,24 +5,26 @@ import { coToUInt8 } from '../crypto/Crypto'
 describe('Identity', () => {
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
-  it('should create known identities', () => {
-    const alice = Identity.buildFromURI('//Alice')
+  it('should create known identities', async () => {
+    const alice = await Identity.buildFromURI('//Alice')
 
-    expect(alice.seedAsHex).toEqual('0x2f2f416c696365')
+    expect(alice.seedAsHex).toEqual(
+      '0x2f2f416c69636520202020202020202020202020202020202020202020202020'
+    )
 
     expect(alice.address).toEqual(
-      '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu'
+      '5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M'
     )
 
     // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.signKeyringPair.publicKey)).toEqual(
-      '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee'
+      '0x4acb9bc1db9af5512d91da6461e362ebf0e6500f5ee36d39adc476e2558f9477'
     )
   })
 
-  it('should create different identities with random phrases', () => {
-    const alice = Identity.buildFromMnemonic()
-    const bob = Identity.buildFromMnemonic()
+  it('should create different identities with random phrases', async () => {
+    const alice = await Identity.buildFromMnemonic()
+    const bob = await Identity.buildFromMnemonic()
 
     expect(alice.signPublicKeyAsHex).not.toBeFalsy()
     // @ts-ignore
@@ -41,10 +43,10 @@ describe('Identity', () => {
     expect(alice.seedAsHex).not.toEqual(bob.seedAsHex)
   })
 
-  it('should restore identity based on phrase', () => {
+  it('should restore identity based on phrase', async () => {
     const expectedPhrase =
       'taxi toddler rally tonight certain tired program settle topple what execute few'
-    const alice = Identity.buildFromMnemonic(expectedPhrase)
+    const alice = await Identity.buildFromMnemonic(expectedPhrase)
 
     // @ts-ignore
     expect(alice.signPublicKeyAsHex).toEqual(
@@ -61,23 +63,25 @@ describe('Identity', () => {
     )
   })
 
-  it('should have different keys for signing and boxing', () => {
-    const alice = Identity.buildFromMnemonic()
+  it('should have different keys for signing and boxing', async () => {
+    const alice = await Identity.buildFromMnemonic()
     expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
       // @ts-ignore
       alice.boxKeyPair.publicKey
     )
   })
 
-  it('should fail creating identity based on invalid phrase', () => {
+  it('should fail creating identity based on invalid phrase', async () => {
     const phraseWithUnknownWord =
       'taxi toddler rally tonight certain tired program settle topple what execute stew' // stew instead of few
-    expect(() =>
+    await expect(() =>
       Identity.buildFromMnemonic(phraseWithUnknownWord)
-    ).toThrowError()
+    ).rejects.toThrowError()
 
     const phraseTooLong =
       'taxi toddler rally tonight certain tired program settle topple what execute' // stew instead of few
-    expect(() => Identity.buildFromMnemonic(phraseTooLong)).toThrowError()
+    await expect(() =>
+      Identity.buildFromMnemonic(phraseTooLong)
+    ).rejects.toThrowError()
   })
 })

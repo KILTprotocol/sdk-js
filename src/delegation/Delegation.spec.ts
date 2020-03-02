@@ -10,7 +10,11 @@ import { Permission } from '../types/Delegation'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Delegation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
+  let identityAlice: Identity
+
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
+  })
 
   const ctypeHash = Crypto.hashStr('testCtype')
   const blockchain = require('../blockchain/Blockchain').default

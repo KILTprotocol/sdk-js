@@ -15,7 +15,7 @@ import {
   CombinedPresentation,
   CombinedPresentationRequest,
   InitiateAttestationRequest,
-  GabiAttester,
+  Attester,
   AttesterAttestationSession,
   AttesterPublicKey,
 } from '@kiltprotocol/portablegabi'
@@ -265,7 +265,7 @@ export async function newInitiateAttestationMessage(
   const privKey = identity.getPrivateGabiKey()
   const pubKey = identity.publicGabiKey
   if (typeof privKey !== 'undefined' && typeof pubKey !== 'undefined') {
-    const attester = new GabiAttester(pubKey, privKey)
+    const attester = new Attester(pubKey, privKey)
     const { message, session } = await attester.startAttestation()
     return {
       message: {
@@ -342,11 +342,11 @@ export interface ISubmitClaimsForCTypesPE extends IMessageBodyBase {
   type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
 }
 export interface IAcceptClaimsForCTypes extends IMessageBodyBase {
-  content: true
+  content: Array<ICType['hash']>
   type: MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES
 }
 export interface IRejectClaimsForCTypes extends IMessageBodyBase {
-  content: false
+  content: Array<ICType['hash']>
   type: MessageBodyType.REJECT_CLAIMS_FOR_CTYPES
 }
 

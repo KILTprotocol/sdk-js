@@ -18,7 +18,7 @@ describe('Balance', () => {
   })
 
   it('should listen to balance changes', async done => {
-    const bob = Identity.buildFromURI('//Bob')
+    const bob = await Identity.buildFromURI('//Bob')
     const listener = (account: string, balance: BN, change: BN): void => {
       expect(account).toBe(bob.address)
       expect(balance.toNumber()).toBe(42)
@@ -35,8 +35,8 @@ describe('Balance', () => {
   blockchain.__mockResultHash = '123'
 
   it('should make transfer', async () => {
-    const alice = Identity.buildFromURI('//Alice')
-    const bob = Identity.buildFromURI('//Bob')
+    const alice = await Identity.buildFromURI('//Alice')
+    const bob = await Identity.buildFromURI('//Bob')
 
     const hash = await makeTransfer(alice, bob.address, new BN(100))
     expect(hash).toBe('123')

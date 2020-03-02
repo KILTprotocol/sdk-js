@@ -1,5 +1,5 @@
 /**
- * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revokable**.
+ * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
  * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as an [[AttestedClaim]] ("Credential").
  *
  * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
@@ -86,7 +86,6 @@ export default class Attestation implements IAttestation {
     request: IRequestForAttestation,
     attesterPublicIdentity: IPublicIdentity
   ): Attestation {
-    
     return new Attestation({
       claimHash: request.rootHash,
       cTypeHash: request.claim.cTypeHash,

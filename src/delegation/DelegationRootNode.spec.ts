@@ -7,36 +7,42 @@ import DelegationRootNode from './DelegationRootNode'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Delegation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
-  const ctypeHash = Crypto.hashStr('testCtype')
-  require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
-    () => {
-      const tuple = new Option(
-        Tuple,
-        new Tuple(
-          // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          [H256, AccountId, Bool],
-          [ctypeHash, identityAlice.address, false]
-        )
-      )
-      return Promise.resolve(tuple)
-    }
-  )
-  require('../blockchain/Blockchain').default.__mockQueryDelegationDelegation = jest.fn(
-    () => {
-      const tuple = new Option(
-        Tuple,
-        new Tuple(
-          // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-          [H256, AccountId, Bool],
-          [ctypeHash, identityAlice.address, false]
-        )
-      )
-      return Promise.resolve(tuple)
-    }
-  )
+  let identityAlice: Identity
+  let ctypeHash: string
+  let ROOT_IDENTIFIER: string
 
-  const ROOT_IDENTIFIER = 'abc123'
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
+    ctypeHash = Crypto.hashStr('testCtype')
+    require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
+      () => {
+        const tuple = new Option(
+          Tuple,
+          new Tuple(
+            // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+            [H256, AccountId, Bool],
+            [ctypeHash, identityAlice.address, false]
+          )
+        )
+        return Promise.resolve(tuple)
+      }
+    )
+    require('../blockchain/Blockchain').default.__mockQueryDelegationDelegation = jest.fn(
+      () => {
+        const tuple = new Option(
+          Tuple,
+          new Tuple(
+            // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+            [H256, AccountId, Bool],
+            [ctypeHash, identityAlice.address, false]
+          )
+        )
+        return Promise.resolve(tuple)
+      }
+    )
+
+    ROOT_IDENTIFIER = 'abc123'
+  })
   it('stores root delegation', async () => {
     const rootDelegation = new DelegationRootNode(
       ROOT_IDENTIFIER,
