@@ -227,7 +227,9 @@ async function doVerification(
     .finalize(true)
 
   // ------------------------- Claimer -----------------------------------------
-  const presentation = await claimer.submitPresentations(
+  // use createPresentation if you don't want to use the privacy enhanced method
+  const presentation = await Kilt.AttestedClaim.createPresentationPE(
+    claimer,
     request,
     [attestedClaim],
     [attesterPubKey]

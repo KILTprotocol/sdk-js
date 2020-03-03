@@ -1,6 +1,7 @@
 import * as u8aUtil from '@polkadot/util/u8a'
 import Identity from './Identity'
 import { coToUInt8 } from '../crypto/Crypto'
+import constants from '../test/constants'
 
 describe('Identity', () => {
   // https://polkadot.js.org/api/examples/promise/
@@ -83,5 +84,26 @@ describe('Identity', () => {
     await expect(
       Identity.buildFromMnemonic(phraseTooLong)
     ).rejects.toThrowError()
+  })
+
+  it('should have different keys for signing and boxing', async () => {
+    const alice = await Identity.buildFromMnemonic()
+    expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
+      // @ts-ignore
+      alice.boxKeyPair.publicKey
+    )
+  })
+
+  it('should initiate attestation with gabi keys (PE)', async () => {
+    const alice = await Identity.buildFromMnemonic()
+    alice.loadGabiKeys(constants.pubKey, constants.privKey)
+    const msgSession = await alice.initiateAttestation()
+    expect(msgSession.session).toBeDefined()
+    expect(msgSession.message).toBeDefined()
+  })
+
+  it('should raise error without gabi keys (PE)', async () => {
+    const alice = await Identity.buildFromMnemonic()
+    expect(alice.initiateAttestation()).rejects.toThrowError()
   })
 })

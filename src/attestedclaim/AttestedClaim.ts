@@ -12,6 +12,7 @@ import {
   Attestation as AttestationPE,
   Credential,
   ClaimerAttestationSession,
+  AttesterPublicKey,
 } from '@kiltprotocol/portablegabi'
 import Identity from '../identity/Identity'
 import Attestation from '../attestation/Attestation'
@@ -19,6 +20,12 @@ import RequestForAttestation from '../requestforattestation/RequestForAttestatio
 import IAttestedClaim from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
+import {
+  IRequestClaimsForCTypes,
+  ISubmitClaimsForCTypesPE,
+  ISubmitClaimsForCTypes,
+  MessageBodyType,
+} from '../messaging/Message'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -180,10 +187,37 @@ export default class AttestedClaim implements IAttestedClaim {
     excludeIdentity = false
   ): AttestedClaim {
     const result: AttestedClaim = AttestedClaim.fromAttestedClaim(this)
+    delete result.credential
     result.request.removeClaimProperties(excludedClaimProperties)
     if (excludeIdentity) {
       result.request.removeClaimOwner()
     }
     return result
+  }
+
+  public static async createPresentationPE(
+    claimer: Identity,
+    request: IRequestClaimsForCTypes,
+    attestedClaims: AttestedClaim[],
+    attesterPubKeys: AttesterPublicKey[]
+  ): Promise<ISubmitClaimsForCTypesPE | ISubmitClaimsForCTypes> {
+    if (typeof claimer.claimer === 'undefined') {
+      throw new Error('Invalid identity')
+    }
+    const credentials = attestedClaims.map(ac => {
+      if (ac.credential === null) {
+        throw new Error('Missing PE credential')
+      }
+      return ac.credential
+    })
+    const presentation = await claimer.claimer.buildCombinedPresentation({
+      credentials,
+      combinedPresentationReq: request.content.peRequest,
+      attesterPubKeys,
+    })
+    return {
+      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE,
+      content: presentation,
+    }
   }
 }
