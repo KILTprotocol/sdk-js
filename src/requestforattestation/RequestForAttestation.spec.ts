@@ -1,8 +1,10 @@
 import Identity from '../identity/Identity'
 import RequestForAttestation, {
   compressRequestForAttestation,
+  CompressedRequestForAttestation,
   compressClaimHashTree,
-  compressClaimContents,
+  compressNonceAndHash,
+  compressLegitimation,
   decompressRequestForAttestation,
 } from './RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
@@ -10,6 +12,7 @@ import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
+import { compressClaim } from '../claim/Claim'
 
 function buildRequestForAttestation(
   claimer: Identity,
@@ -120,6 +123,7 @@ describe('RequestForAttestation', () => {
     expect(request.claimOwner.nonce).toBeUndefined()
     expect(request.claim.owner).toBeUndefined()
   })
+
   it('compresses and decompresses the request for attestation object', () => {
     const legitimationAttestationBob: Attestation = Attestation.fromRequestAndPublicIdentity(
       legitimationRequest,
@@ -139,18 +143,33 @@ describe('RequestForAttestation', () => {
       },
       [legitimationCharlie, legitimationBob]
     )
-    const compressedReqForAtt = reqForAtt.compress()
+
+    const sortedCompressedReqForAtt: CompressedRequestForAttestation = [
+      compressClaim(reqForAtt.claim),
+      compressClaimHashTree(reqForAtt.claimHashTree),
+      compressNonceAndHash(reqForAtt.claimOwner),
+      reqForAtt.claimerSignature,
+      compressNonceAndHash(reqForAtt.cTypeHash),
+      reqForAtt.rootHash,
+      compressLegitimation(reqForAtt.legitimations),
+      reqForAtt.delegationId,
+    ]
 
     expect(compressRequestForAttestation(reqForAtt)).toEqual(
-      compressedReqForAtt
+      sortedCompressedReqForAtt
     )
-    expect(compressClaimHashTree(reqForAtt)).toEqual(compressedReqForAtt[4])
-    expect(compressClaimContents(reqForAtt.claim)).toEqual(
-      compressedReqForAtt[0]
-    )
-    expect(decompressRequestForAttestation(compressedReqForAtt)).toEqual(
+
+    expect(decompressRequestForAttestation(sortedCompressedReqForAtt)).toEqual(
       reqForAtt
     )
+
+    const decompressedRequestForAttestationObj = decompressRequestForAttestation(
+      sortedCompressedReqForAtt
+    )
+
+    expect(
+      RequestForAttestation.decompress(decompressedRequestForAttestationObj)
+    ).toEqual(reqForAtt)
   })
 
   it('hides claim properties', () => {

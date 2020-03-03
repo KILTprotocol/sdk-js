@@ -12,10 +12,47 @@
  * @preferred
  */
 
+import * as jsonabc from 'jsonabc'
+
 import ICType from '../ctype/CType'
 import { verifyClaimStructure } from '../ctype/CTypeUtils'
 import IClaim from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
+
+type CompressedClaimContents = object
+
+export type CompressedClaim = [
+  CompressedClaimContents,
+  IClaim['cTypeHash'],
+  IClaim['owner']
+]
+
+/**
+ *  Compresses the claim for storage and/or messaging.
+ *
+ * @param claim The claim that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of claim.
+ */
+export function compressClaim(claim: IClaim): CompressedClaim {
+  const sortedContents = jsonabc.sortObj(claim.contents)
+  return [sortedContents, claim.cTypeHash, claim.owner]
+}
+
+/**
+ *  Decompresses the claim from storage and/or message.
+ *
+ * @param claim A compressesd claim array that is reverted back into an object.
+ *
+ * @returns An object that has the same properties as the claim.
+ */
+export function decompressClaim(claim: CompressedClaim): IClaim {
+  return {
+    contents: claim[0],
+    cTypeHash: claim[1],
+    owner: claim[2],
+  }
+}
 
 function verifyClaim(
   claimContents: object,
@@ -73,5 +110,13 @@ export default class Claim implements IClaim {
     this.cTypeHash = claimInput.cTypeHash
     this.contents = claimInput.contents
     this.owner = claimInput.owner
+  }
+
+  public compress(): CompressedClaim {
+    return compressClaim(this)
+  }
+
+  public static decompress(compressedClaim: IClaim): Claim {
+    return new Claim(compressedClaim)
   }
 }

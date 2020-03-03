@@ -21,6 +21,42 @@ import {
 } from '../types/Quote'
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
 
+type CompressedCostBreakdown = [
+  ICostBreakdown['gross'],
+  ICostBreakdown['net'],
+  ICostBreakdown['tax']
+]
+
+export type CompressedQuote = [
+  IQuote['attesterAddress'],
+  IQuote['cTypeHash'],
+  CompressedCostBreakdown,
+  IQuote['currency'],
+  IQuote['termsAndConditions'],
+  IQuote['timeframe']
+]
+
+export type CompressedQuoteAttesterSigned = [
+  IQuote['attesterAddress'],
+  IQuote['cTypeHash'],
+  CompressedCostBreakdown,
+  IQuote['currency'],
+  IQuote['termsAndConditions'],
+  IQuote['timeframe'],
+  IQuoteAttesterSigned['attesterSignature']
+]
+
+export type CompressedQuoteAgreed = [
+  IQuote['attesterAddress'],
+  IQuote['cTypeHash'],
+  CompressedCostBreakdown,
+  IQuote['currency'],
+  IQuote['termsAndConditions'],
+  IQuote['timeframe'],
+  IQuoteAttesterSigned['attesterSignature'],
+  IQuoteAgreement['claimerSignature'],
+  IQuoteAgreement['rootHash']
+]
 export function validateQuoteSchema(
   schema: object,
   validate: object,
@@ -121,8 +157,8 @@ export function createAgreedQuote(
  * @returns An ordered array of a cost.
  */
 
-export function compressCost(cost: ICostBreakdown): ICostBreakdown[] {
-  return Object.values(cost)
+export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
+  return [cost.gross, cost.net, cost.tax]
 }
 
 /**
@@ -133,7 +169,7 @@ export function compressCost(cost: ICostBreakdown): ICostBreakdown[] {
  * @returns An object that has the same properties as a cost.
  */
 
-export function decompressCost(cost: ICostBreakdown): ICostBreakdown {
+export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
   return { gross: cost[0], net: cost[1], tax: cost[2] }
 }
 
@@ -145,7 +181,7 @@ export function decompressCost(cost: ICostBreakdown): ICostBreakdown {
  * @returns An ordered array of an [[Quote]].
  */
 
-export function compressQuote(quote: IQuote): any[] {
+export function compressQuote(quote: IQuote): CompressedQuote {
   return [
     quote.attesterAddress,
     quote.cTypeHash,
@@ -164,7 +200,7 @@ export function compressQuote(quote: IQuote): any[] {
  * @returns An object that has the same properties as an [[Quote]].
  */
 
-export function decompressQuote(quote: any[]): IQuote {
+export function decompressQuote(quote: CompressedQuote): IQuote {
   return {
     attesterAddress: quote[0],
     cTypeHash: quote[1],
@@ -185,9 +221,14 @@ export function decompressQuote(quote: any[]): IQuote {
 
 export function compressAttesterSignedQuote(
   attesterSignedQuote: IQuoteAttesterSigned
-): any[] {
+): CompressedQuoteAttesterSigned {
   return [
-    ...compressQuote(attesterSignedQuote),
+    attesterSignedQuote.attesterAddress,
+    attesterSignedQuote.cTypeHash,
+    compressCost(attesterSignedQuote.cost),
+    attesterSignedQuote.currency,
+    attesterSignedQuote.termsAndConditions,
+    attesterSignedQuote.timeframe,
     attesterSignedQuote.attesterSignature,
   ]
 }
@@ -201,7 +242,7 @@ export function compressAttesterSignedQuote(
  */
 
 export function decompressAttesterSignedQuote(
-  attesterSignedQuote: any[]
+  attesterSignedQuote: CompressedQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   return {
     attesterAddress: attesterSignedQuote[0],
@@ -222,11 +263,19 @@ export function decompressAttesterSignedQuote(
  * @returns An ordered array of a [[Quote]] Agreement.
  */
 
-export function compressQuoteAgreement(quoteAgreement: IQuoteAgreement): any[] {
+export function compressQuoteAgreement(
+  quoteAgreement: IQuoteAgreement
+): CompressedQuoteAgreed {
   return [
-    ...compressAttesterSignedQuote(quoteAgreement),
-    quoteAgreement.rootHash,
+    quoteAgreement.attesterAddress,
+    quoteAgreement.cTypeHash,
+    compressCost(quoteAgreement.cost),
+    quoteAgreement.currency,
+    quoteAgreement.termsAndConditions,
+    quoteAgreement.timeframe,
+    quoteAgreement.attesterSignature,
     quoteAgreement.claimerSignature,
+    quoteAgreement.rootHash,
   ]
 }
 
@@ -239,7 +288,7 @@ export function compressQuoteAgreement(quoteAgreement: IQuoteAgreement): any[] {
  */
 
 export function decompressQuoteAgreement(
-  quoteAgreement: any[]
+  quoteAgreement: CompressedQuoteAgreed
 ): IQuoteAgreement {
   return {
     attesterAddress: quoteAgreement[0],
@@ -249,7 +298,7 @@ export function decompressQuoteAgreement(
     termsAndConditions: quoteAgreement[4],
     timeframe: quoteAgreement[5],
     attesterSignature: quoteAgreement[6],
-    rootHash: quoteAgreement[7],
-    claimerSignature: quoteAgreement[8],
+    claimerSignature: quoteAgreement[7],
+    rootHash: quoteAgreement[8],
   }
 }

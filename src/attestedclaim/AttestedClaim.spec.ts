@@ -2,12 +2,17 @@ import Identity from '../identity/Identity'
 import AttestedClaim, {
   compressAttestedClaim,
   decompressAttestedClaim,
+  CompressedAttestedClaim,
 } from './AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import Claim from '../claim/Claim'
+import RequestForAttestation, {
+  compressClaimHashTree,
+  compressNonceAndHash,
+  compressLegitimation,
+} from '../requestforattestation/RequestForAttestation'
+import Claim, { compressClaim } from '../claim/Claim'
 
 function buildAttestedClaim(
   claimer: Identity,
@@ -76,9 +81,39 @@ describe('RequestForAttestation', () => {
   )
 
   it('compresses and decompresses the attested claims object', () => {
-    const compressedLegitimation = legitimation.compress()
-    expect(compressAttestedClaim(legitimation)).toEqual(compressedLegitimation)
-    expect(decompressAttestedClaim(compressedLegitimation)).toEqual(
+    const sortedCompressedLegitimation: CompressedAttestedClaim = [
+      [
+        compressClaim(legitimation.request.claim),
+        compressClaimHashTree(legitimation.request.claimHashTree),
+        compressNonceAndHash(legitimation.request.claimOwner),
+        legitimation.request.claimerSignature,
+        compressNonceAndHash(legitimation.request.cTypeHash),
+        legitimation.request.rootHash,
+        compressLegitimation(legitimation.request.legitimations),
+        legitimation.request.delegationId,
+      ],
+      [
+        legitimation.attestation.claimHash,
+        legitimation.attestation.cTypeHash,
+        legitimation.attestation.owner,
+        legitimation.attestation.revoked,
+        legitimation.attestation.delegationId,
+      ],
+    ]
+
+    expect(compressAttestedClaim(legitimation)).toEqual(
+      sortedCompressedLegitimation
+    )
+
+    expect(decompressAttestedClaim(sortedCompressedLegitimation)).toEqual(
+      legitimation
+    )
+
+    const decompressedAttestedClaimObj = decompressAttestedClaim(
+      sortedCompressedLegitimation
+    )
+
+    expect(AttestedClaim.decompress(decompressedAttestedClaimObj)).toEqual(
       legitimation
     )
   })

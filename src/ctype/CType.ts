@@ -13,12 +13,25 @@
 import * as jsonabc from 'jsonabc'
 import { CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
-import ICType from '../types/CType'
+import ICType, { ICTypeSchema } from '../types/CType'
 import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
 
 import IClaim from '../types/Claim'
+
+type CompressedCTypeSchema = [
+  ICTypeSchema['$id'],
+  ICTypeSchema['$schema'],
+  ICTypeSchema['properties'],
+  ICTypeSchema['type']
+]
+
+export type CompressedCType = [
+  CType['hash'],
+  CType['owner'],
+  CompressedCTypeSchema
+]
 
 /**
  *  Compresses a [[CType]] schema for storage and/or messaging.
@@ -30,7 +43,7 @@ import IClaim from '../types/Claim'
 
 export function compressCTypeSchema(
   cTypeSchema: ICType['schema']
-): Array<ICType['schema'][keyof ICType['schema']]> {
+): CompressedCTypeSchema {
   const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
   return [
     sortedCTypeSchema.$id,
@@ -49,7 +62,7 @@ export function compressCTypeSchema(
  */
 
 export function decompressCTypeSchema(
-  cTypeSchema: ICType['schema']
+  cTypeSchema: CompressedCTypeSchema
 ): ICType['schema'] {
   return {
     $id: cTypeSchema[0],
@@ -68,13 +81,8 @@ export function decompressCTypeSchema(
  * @returns An ordered array of a [[CType]].
  */
 
-export function compressCType(cType: ICType): any[] {
-  const sortedCType = jsonabc.sortObj(cType)
-  return [
-    sortedCType.hash,
-    sortedCType.owner || null,
-    compressCTypeSchema(sortedCType.schema),
-  ]
+export function compressCType(cType: ICType): CompressedCType {
+  return [cType.hash, cType.owner, compressCTypeSchema(cType.schema)]
 }
 
 /**
@@ -86,7 +94,7 @@ export function compressCType(cType: ICType): any[] {
  * @returns An object that has the same properties as a [[CType]].
  */
 
-export function decompressCType(cType: any[]): ICType {
+export function decompressCType(cType: CompressedCType): ICType {
   return {
     hash: cType[0],
     owner: cType[1],
@@ -141,7 +149,7 @@ export default class CType implements ICType {
    * @returns An array that contains the same properties of an [[CType]].
    */
 
-  public compress(): ICType[] {
+  public compress(): CompressedCType {
     return compressCType(this)
   }
 
@@ -151,8 +159,7 @@ export default class CType implements ICType {
    * @returns A new [[CType]] object.
    */
 
-  public static decompress(cType: ICType[]): CType {
-    const decompressedCType = decompressCType(cType)
-    return CType.fromCType(decompressedCType)
+  public static decompress(cType: ICType): CType {
+    return CType.fromCType(cType)
   }
 }

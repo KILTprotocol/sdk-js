@@ -5,9 +5,9 @@ import Identity from '../identity/Identity'
 import Attestation, {
   compressAttestation,
   decompressAttestation,
+  CompressedAttestation,
 } from './Attestation'
 import CType from '../ctype/CType'
-import IAttestation from '../types/Attestation'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
@@ -74,20 +74,42 @@ describe('Attestation', () => {
     const attestation: Attestation = Attestation.fromAttestation({
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
+      delegationId: null,
       owner: identityAlice.address,
       revoked: false,
-    } as IAttestation)
+    })
     expect(await attestation.verify()).toBeFalsy()
   })
 
   it('compresses and decompresses the attestation object', () => {
-    const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
+    const attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
       identityAlice
     )
-    const compressedAttestation = attestation.compress()
-    expect(compressAttestation(attestation)).toEqual(compressedAttestation)
-    expect(decompressAttestation(compressedAttestation)).toEqual(attestation)
+
+    const sortedCompressedAttestation: CompressedAttestation = [
+      attestation.claimHash,
+      attestation.cTypeHash,
+      attestation.owner,
+      attestation.revoked,
+      attestation.delegationId,
+    ]
+
+    expect(compressAttestation(attestation)).toEqual(
+      sortedCompressedAttestation
+    )
+
+    expect(decompressAttestation(sortedCompressedAttestation)).toEqual(
+      attestation
+    )
+
+    const decompressedAttestationObj = decompressAttestation(
+      sortedCompressedAttestation
+    )
+
+    expect(Attestation.decompress(decompressedAttestationObj)).toEqual(
+      attestation
+    )
   })
 
   it('verify attestation revoked', async () => {

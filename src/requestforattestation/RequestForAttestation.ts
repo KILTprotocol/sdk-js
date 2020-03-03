@@ -22,17 +22,42 @@ import {
 } from '../crypto/Crypto'
 
 import Identity from '../identity/Identity'
-import IClaim from '../claim/Claim'
 import AttestedClaim, {
   decompressAttestedClaim,
   compressAttestedClaim,
+  CompressedAttestedClaim,
 } from '../attestedclaim/AttestedClaim'
+import { CompressedClaim, compressClaim, decompressClaim } from '../claim/Claim'
 import IRequestForAttestation, {
   Hash,
   NonceHash,
+  ClaimHashTree,
 } from '../types/RequestForAttestation'
-import IAttestedClaim from '../types/AttestedClaim'
 import { IDelegationBaseNode } from '../types/Delegation'
+import IClaim from '../types/Claim'
+import IAttestedClaim from '../types/AttestedClaim'
+
+// export type CompressedRequestForAttestation = Array<
+//   string | object | AttestedClaim[] | IClaim | NonceHash
+// >
+
+type CompressedNonceHash = [string, string?]
+
+type CompressedClaimHashTree = object
+
+type CompressedClaimOwner = CompressedNonceHash
+type CompressedCTypeHash = CompressedNonceHash
+
+export type CompressedRequestForAttestation = [
+  CompressedClaim,
+  CompressedClaimHashTree,
+  CompressedClaimOwner,
+  RequestForAttestation['claimerSignature'],
+  CompressedCTypeHash,
+  RequestForAttestation['rootHash'],
+  CompressedAttestedClaim[],
+  RequestForAttestation['delegationId']
+]
 
 function hashNonceValue(nonce: string, value: any): string {
   return hashObjectAsStr(value, nonce)
@@ -46,8 +71,8 @@ function generateHash(value: any): NonceHash {
   }
 }
 
-function generateHashTree(contents: object): object {
-  const result = {}
+function generateHashTree(contents: object): ClaimHashTree {
+  const result: ClaimHashTree = {}
 
   Object.keys(contents).forEach(key => {
     result[key] = generateHash(contents[key])
@@ -69,6 +94,12 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   return hash(result)
 }
 
+export function compressNonceAndHash(
+  nonceHash: NonceHash
+): CompressedNonceHash {
+  return [nonceHash.hash, nonceHash.nonce]
+}
+
 /**
  *  Decompresses an nonce and hash from a [[ClaimHashTree]] or [[RequestForAttestation]].
  *
@@ -77,8 +108,9 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
  * @returns An object compressing of a hash or a hash and nonce.
  */
 
-function decompressNonceAndHash(nonceHash: NonceHash[]): any {
-  if (nonceHash.length === 0) {
+function decompressNonceAndHash(nonceHash: CompressedNonceHash): NonceHash {
+  // Need to fix
+  if (nonceHash.length === 1) {
     return {
       hash: nonceHash[0],
     }
@@ -98,14 +130,13 @@ function decompressNonceAndHash(nonceHash: NonceHash[]): any {
  */
 
 export function compressClaimHashTree(
-  reqForAtt: IRequestForAttestation
-): IRequestForAttestation['claimHashTree'] {
-  const sortedreqForAtt = jsonabc.sortObj(reqForAtt)
+  claimHashTree: ClaimHashTree
+): CompressedClaimHashTree {
+  const sortedClaimHashTree = jsonabc.sortObj(claimHashTree)
   const result = {}
-  const claimTree = sortedreqForAtt.claimHashTree
 
-  Object.keys(claimTree).forEach(entryKey => {
-    result[entryKey] = Object.values(claimTree[entryKey])
+  Object.keys(sortedClaimHashTree).forEach(entryKey => {
+    result[entryKey] = compressNonceAndHash(sortedClaimHashTree[entryKey])
   })
   return result
 }
@@ -119,50 +150,20 @@ export function compressClaimHashTree(
  */
 
 export function decompressClaimHashTree(
-  reqForAtt: Array<IRequestForAttestation[keyof IRequestForAttestation]>
-): IRequestForAttestation['claimHashTree'] {
+  compressedClaimHashTree: CompressedClaimHashTree
+): ClaimHashTree {
   const result = {}
 
-  Object.keys(reqForAtt).forEach(entryKey => {
-    result[entryKey] = decompressNonceAndHash(
-      Object.values(reqForAtt[entryKey])
-    )
+  Object.keys(compressedClaimHashTree).forEach(entryKey => {
+    result[entryKey] = decompressNonceAndHash(compressedClaimHashTree[entryKey])
   })
   return result
 }
 
-/**
- *  Compresses the claim contents for storage and/or messaging.
- *
- * @param contents The claim contents that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of claim contents.
- */
-
-export function compressClaimContents(
-  contents: IRequestForAttestation['claim']
-): Array<IClaim[keyof IClaim]> {
-  const sortedContents = jsonabc.sortObj(contents)
-  return Object.values(sortedContents)
-}
-
-/**
- *  Decompresses the claim contents from storage and/or message.
- *
- * @param contents A compressesd claim contents array that is reverted back into an object.
- *
- * @returns An object that has the same properties as the claim contents.
- */
-
-export function decompressClaimContents(
-  contents: IClaim[keyof IClaim]
-): IClaim {
-  // should go into the claim module.
-  return {
-    contents: contents[0],
-    cTypeHash: contents[1],
-    owner: contents[2],
-  }
+export function compressLegitimation(
+  leg: IAttestedClaim[]
+): CompressedAttestedClaim[] {
+  return leg.map(compressAttestedClaim)
 }
 
 /**
@@ -173,13 +174,10 @@ export function decompressClaimContents(
  * @returns An object that has the same properties as an [[AttestedClaim]].
  */
 
-export function decompressLegitimation(
-  leg: Array<IAttestedClaim[keyof IAttestedClaim]>
-): any[] {
-  if (!leg[0]) {
-    return []
-  }
-  return leg.map(val => decompressAttestedClaim(val))
+function decompressLegitimation(
+  leg: CompressedAttestedClaim[]
+): IAttestedClaim[] {
+  return leg.map(decompressAttestedClaim)
 }
 
 /**
@@ -192,16 +190,16 @@ export function decompressLegitimation(
 
 export function compressRequestForAttestation(
   reqForAtt: IRequestForAttestation
-): Array<IRequestForAttestation[keyof IRequestForAttestation]> {
-  const sortedReqForAtt = jsonabc.sortObj(reqForAtt)
+): CompressedRequestForAttestation {
   return [
-    compressClaimContents(sortedReqForAtt.claim),
-    Object.values(sortedReqForAtt.claimOwner),
-    Object.values(sortedReqForAtt.cTypeHash),
-    sortedReqForAtt.legitimations.map(compressAttestedClaim),
-    compressClaimHashTree(sortedReqForAtt),
-    sortedReqForAtt.rootHash,
-    sortedReqForAtt.claimerSignature,
+    compressClaim(reqForAtt.claim),
+    compressClaimHashTree(reqForAtt.claimHashTree),
+    compressNonceAndHash(reqForAtt.claimOwner),
+    reqForAtt.claimerSignature,
+    compressNonceAndHash(reqForAtt.cTypeHash),
+    reqForAtt.rootHash,
+    compressLegitimation(reqForAtt.legitimations),
+    reqForAtt.delegationId,
   ]
 }
 
@@ -214,17 +212,17 @@ export function compressRequestForAttestation(
  */
 
 export function decompressRequestForAttestation(
-  reqForAtt: any[]
+  reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
   return {
-    claim: decompressClaimContents(reqForAtt[0]),
-    claimOwner: decompressNonceAndHash(reqForAtt[1]),
-    cTypeHash: decompressNonceAndHash(reqForAtt[2]),
-    legitimations: decompressLegitimation(reqForAtt[3]),
-    claimHashTree: decompressClaimHashTree(reqForAtt[4]),
+    claim: decompressClaim(reqForAtt[0]),
+    claimHashTree: decompressClaimHashTree(reqForAtt[1]),
+    claimOwner: decompressNonceAndHash(reqForAtt[2]),
+    claimerSignature: reqForAtt[3],
+    cTypeHash: decompressNonceAndHash(reqForAtt[4]),
     rootHash: reqForAtt[5],
-    claimerSignature: reqForAtt[6],
-    delegationId: reqForAtt[7] || null,
+    legitimations: decompressLegitimation(reqForAtt[6]),
+    delegationId: reqForAtt[7],
   }
 }
 
@@ -305,7 +303,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public legitimations: AttestedClaim[]
   public claimOwner: NonceHash
   public claimerSignature: string
-  public claimHashTree: object
+  public claimHashTree: ClaimHashTree
   public cTypeHash: NonceHash
   public rootHash: Hash
 
@@ -451,19 +449,23 @@ export default class RequestForAttestation implements IRequestForAttestation {
     // check claim owner hash
     if (this.claim.owner) {
       if (
+        !this.claimOwner.nonce ||
         this.claimOwner.hash !==
-        hashNonceValue(this.claimOwner.nonce, this.claim.owner)
+          hashNonceValue(this.claimOwner.nonce, this.claim.owner)
       ) {
         throw Error('Invalid hash for claim owner')
       }
     }
 
     // check cType hash
-    if (
-      this.cTypeHash.hash !==
-      hashNonceValue(this.cTypeHash.nonce, this.claim.cTypeHash)
-    ) {
-      throw Error('Invalid hash for CTYPE')
+    if (this.claim.cTypeHash) {
+      if (
+        !this.cTypeHash.nonce ||
+        this.cTypeHash.hash !==
+          hashNonceValue(this.cTypeHash.nonce, this.claim.cTypeHash)
+      ) {
+        throw Error('Invalid hash for CTYPE')
+      }
     }
 
     // check all hashes for provided claim properties
@@ -473,7 +475,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
         throw Error(`Property '${key}' not in claim hash tree`)
       }
       const hashed: NonceHash = this.claimHashTree[key]
-      if (hashed.hash !== hashNonceValue(hashed.nonce, value)) {
+      if (
+        !hashed.nonce ||
+        hashed.hash !== hashNonceValue(hashed.nonce, value)
+      ) {
         throw Error(`Invalid hash for property '${key}' in claim hash tree`)
       }
     })
@@ -546,7 +551,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns An array that contains the same properties of an [[RequestForAttestation]].
    */
 
-  public compress(): Array<RequestForAttestation[keyof RequestForAttestation]> {
+  public compress(): CompressedRequestForAttestation {
     return compressRequestForAttestation(this)
   }
 
@@ -557,10 +562,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
 
   public static decompress(
-    reqForAtt: Array<IRequestForAttestation[keyof IRequestForAttestation]>
+    reqForAtt: IRequestForAttestation
   ): RequestForAttestation {
-    const decompressedReqForAtt = decompressRequestForAttestation(reqForAtt)
-    return RequestForAttestation.fromRequest(decompressedReqForAtt)
+    return RequestForAttestation.fromRequest(reqForAtt)
   }
 
   private static calculateRootHash(

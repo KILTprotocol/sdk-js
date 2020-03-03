@@ -8,19 +8,24 @@
  * @preferred
  */
 
-import * as jsonabc from 'jsonabc'
 import Attestation, {
   compressAttestation,
   decompressAttestation,
+  CompressedAttestation,
 } from '../attestation/Attestation'
 import RequestForAttestation, {
   compressRequestForAttestation,
   decompressRequestForAttestation,
+  CompressedRequestForAttestation,
 } from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
 
+export type CompressedAttestedClaim = [
+  CompressedRequestForAttestation,
+  CompressedAttestation
+]
 /**
  *  Compresses an [[AttestedClaim]] object into an array for storage and/or messaging.
  *
@@ -29,11 +34,12 @@ import IRequestForAttestation from '../types/RequestForAttestation'
  * @returns An ordered array of an [[AttestedClaim]] that comprises of [[Attestation]] and [[RequestForAttestation]] arrays.
  */
 
-export function compressAttestedClaim(attestedClaim: AttestedClaim): any[] {
-  const sortedAttestedClaim = jsonabc.sortObj(attestedClaim)
+export function compressAttestedClaim(
+  attestedClaim: IAttestedClaim
+): CompressedAttestedClaim {
   return [
-    compressAttestation(sortedAttestedClaim.attestation),
-    compressRequestForAttestation(sortedAttestedClaim.request),
+    compressRequestForAttestation(attestedClaim.request),
+    compressAttestation(attestedClaim.attestation),
   ]
 }
 
@@ -46,13 +52,14 @@ export function compressAttestedClaim(attestedClaim: AttestedClaim): any[] {
  */
 
 export function decompressAttestedClaim(
-  attestedClaim: IAttestedClaim[keyof IAttestedClaim]
+  attestedClaim: CompressedAttestedClaim
 ): IAttestedClaim {
   return {
-    attestation: decompressAttestation(attestedClaim[0]),
-    request: decompressRequestForAttestation(attestedClaim[1]),
+    request: decompressRequestForAttestation(attestedClaim[0]),
+    attestation: decompressAttestation(attestedClaim[1]),
   }
 }
+
 export default class AttestedClaim implements IAttestedClaim {
   /**
    * [STATIC] Builds an instance of [[AttestedClaim]], from a simple object with the same properties.
@@ -201,7 +208,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns An array that contains the same properties of an [[AttestedClaim]].
    */
 
-  public compress(): AttestedClaim[] {
+  public compress(): CompressedAttestedClaim {
     return compressAttestedClaim(this)
   }
 
@@ -211,10 +218,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns A new [[AttestedClaim]] object.
    */
 
-  public static decompress(
-    attestedClaim: IAttestedClaim[keyof IAttestedClaim]
-  ): AttestedClaim {
-    const decompressedAttestedClaim = decompressAttestedClaim(attestedClaim)
-    return AttestedClaim.fromAttestedClaim(decompressedAttestedClaim)
+  public static decompress(attestedClaim: IAttestedClaim): AttestedClaim {
+    return AttestedClaim.fromAttestedClaim(attestedClaim)
   }
 }

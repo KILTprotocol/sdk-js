@@ -11,7 +11,6 @@
  * @preferred
  */
 
-import * as jsonabc from 'jsonabc'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
@@ -21,6 +20,14 @@ import { revoke, query, store } from './Attestation.chain'
 import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
+
+export type CompressedAttestation = [
+  Attestation['claimHash'],
+  Attestation['cTypeHash'],
+  Attestation['owner'],
+  Attestation['revoked'],
+  Attestation['delegationId']
+]
 
 /**
  *  Compresses an [[Attestation]] object into an array for storage and/or messaging.
@@ -32,9 +39,14 @@ const log = factory.getLogger('Attestation')
 
 export function compressAttestation(
   attestation: IAttestation
-): Array<IAttestation[keyof IAttestation]> {
-  const sortedAttestation = jsonabc.sortObj(attestation)
-  return Object.values(sortedAttestation)
+): CompressedAttestation {
+  return [
+    attestation.claimHash,
+    attestation.cTypeHash,
+    attestation.owner,
+    attestation.revoked,
+    attestation.delegationId,
+  ]
 }
 
 /**
@@ -45,13 +57,15 @@ export function compressAttestation(
  * @returns An object that has the same properties as an [[Attestation]].
  */
 
-export function decompressAttestation(attestation: any[]): IAttestation {
+export function decompressAttestation(
+  attestation: CompressedAttestation
+): IAttestation {
   return {
     claimHash: attestation[0],
     cTypeHash: attestation[1],
-    delegationId: attestation[2],
-    owner: attestation[3],
-    revoked: attestation[4],
+    owner: attestation[2],
+    revoked: attestation[3],
+    delegationId: attestation[4],
   }
 }
 
@@ -123,17 +137,17 @@ export default class Attestation implements IAttestation {
     return new Attestation({
       claimHash: request.rootHash,
       cTypeHash: request.claim.cTypeHash,
-      owner: attesterPublicIdentity.address,
       delegationId: request.delegationId,
+      owner: attesterPublicIdentity.address,
       revoked: false,
     })
   }
 
   public claimHash: IAttestation['claimHash']
   public cTypeHash: IAttestation['cTypeHash']
+  public delegationId: IAttestation['delegationId'] | null
   public owner: IAttestation['owner']
   public revoked: IAttestation['revoked']
-  public delegationId: IAttestation['delegationId'] | null
 
   /**
    * Builds a new [[Attestation]] instance.
@@ -160,10 +174,10 @@ export default class Attestation implements IAttestation {
         ${attestationInput.owner}`
       )
     }
-    this.owner = attestationInput.owner
     this.claimHash = attestationInput.claimHash
     this.cTypeHash = attestationInput.cTypeHash
     this.delegationId = attestationInput.delegationId
+    this.owner = attestationInput.owner
     this.revoked = attestationInput.revoked
   }
 
@@ -226,7 +240,7 @@ export default class Attestation implements IAttestation {
    * @returns An array that contains the same properties of an [[Attestation]].
    */
 
-  public compress(): Array<IAttestation[keyof IAttestation]> {
+  public compress(): CompressedAttestation {
     return compressAttestation(this)
   }
 

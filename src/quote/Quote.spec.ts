@@ -92,21 +92,46 @@ describe('Claim', () => {
   const invalidPropertiesQuote = invalidPropertiesQuoteData
   const invalidCostQuote = invalidCostQuoteData
   it('compresses and decompresses the quote object', () => {
-    const compressResultQuote = Quote.compressQuote(validQuoteData)
-    const compressResultAttesterSignedQuote = Quote.compressAttesterSignedQuote(
-      validAttesterSignedQuote
-    )
-    const compressResultQuoteAgreement = Quote.compressQuoteAgreement(
-      quoteBothAgreed
-    )
-    expect(Quote.decompressQuote(compressResultQuote)).toEqual(validQuoteData)
+    const sortedCompressedQuote: Quote.CompressedQuote = [
+      validQuoteData.attesterAddress,
+      validQuoteData.cTypeHash,
+      Quote.compressCost(validQuoteData.cost),
+      validQuoteData.currency,
+      validQuoteData.termsAndConditions,
+      validQuoteData.timeframe,
+    ]
+
+    const sortedCompressedResultAttesterSignedQuote: Quote.CompressedQuoteAttesterSigned = [
+      validQuoteData.attesterAddress,
+      validQuoteData.cTypeHash,
+      Quote.compressCost(validQuoteData.cost),
+      validQuoteData.currency,
+      validQuoteData.termsAndConditions,
+      validQuoteData.timeframe,
+      validAttesterSignedQuote.attesterSignature,
+    ]
+
+    const sortedCompressedResultQuoteAgreement: Quote.CompressedQuoteAgreed = [
+      validQuoteData.attesterAddress,
+      validQuoteData.cTypeHash,
+      Quote.compressCost(validQuoteData.cost),
+      validQuoteData.currency,
+      validQuoteData.termsAndConditions,
+      validQuoteData.timeframe,
+      validAttesterSignedQuote.attesterSignature,
+      quoteBothAgreed.claimerSignature,
+      quoteBothAgreed.rootHash,
+    ]
+    expect(Quote.decompressQuote(sortedCompressedQuote)).toEqual(validQuoteData)
 
     expect(
-      Quote.decompressAttesterSignedQuote(compressResultAttesterSignedQuote)
+      Quote.decompressAttesterSignedQuote(
+        sortedCompressedResultAttesterSignedQuote
+      )
     ).toEqual(validAttesterSignedQuote)
 
     expect(
-      Quote.decompressQuoteAgreement(compressResultQuoteAgreement)
+      Quote.decompressQuoteAgreement(sortedCompressedResultQuoteAgreement)
     ).toEqual(quoteBothAgreed)
     // Need to add test
   })

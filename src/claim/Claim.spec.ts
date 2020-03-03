@@ -1,5 +1,10 @@
 import Claim from './Claim'
-import CType from '../ctype/CType'
+import CType, {
+  decompressCType,
+  compressCType,
+  CompressedCType,
+  compressCTypeSchema,
+} from '../ctype/CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
 
@@ -36,5 +41,21 @@ describe('Claim', () => {
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))
     expect(Claim.fromClaim(claimObj, testCType.schema)).toEqual(claim)
+  })
+
+  it('compresses and decompresses the CType object', () => {
+    const sortedCompressedCType: CompressedCType = [
+      testCType.hash,
+      testCType.owner,
+      compressCTypeSchema(testCType.schema),
+    ]
+
+    expect(compressCType(testCType)).toEqual(sortedCompressedCType)
+
+    expect(decompressCType(sortedCompressedCType)).toEqual(testCType)
+
+    const decompressedCTypeObj = decompressCType(sortedCompressedCType)
+
+    expect(CType.decompress(decompressedCTypeObj)).toEqual(testCType)
   })
 })
