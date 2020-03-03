@@ -220,7 +220,10 @@ async function doVerification(
   }
   // ------------------------- Verifier ----------------------------------------
   const [session, request] = await Kilt.Verifier.newRequest()
-    .requestPresentationForCtype(attestedClaim.attestation.cTypeHash, ['age'])
+    .requestPresentationForCtype({
+      ctypeHash: attestedClaim.attestation.cTypeHash,
+      attributes: ['age'],
+    })
     .finalize(true)
 
   // ------------------------- Claimer -----------------------------------------

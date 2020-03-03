@@ -22,15 +22,29 @@ export class PresentationRequestBuilder {
     this.ctypes = []
   }
 
-  public requestPresentationForCtype(
-    ctypeHash: CType['hash'],
-    attributes: string[],
+  public requestPresentationForCtype({
+    ctypeHash,
+    attributes,
+    legitimations,
+    delegationId,
+    reqUpdatedAfter,
+  }: {
+    attributes: string[]
+    ctypeHash: CType['hash']
+    legitimations?: boolean
+    delegationId?: boolean
     reqUpdatedAfter?: Date
-  ): PresentationRequestBuilder {
+  }): PresentationRequestBuilder {
+    const rawAttribute = attributes.map(attr => `claim.contents.${attr}`)
+    rawAttribute.push('claim.cTypeHash')
+    if (typeof legitimations !== 'undefined' && legitimations) {
+      rawAttribute.push('legitimation')
+    }
+    if (typeof delegationId !== 'undefined' && delegationId) {
+      rawAttribute.push('delegationId')
+    }
     this.builder.requestPresentation({
-      // FIXME: The gabi credential should contain the ctype
-      // requestedAttributes: ['ctype', ...attributes.map(v => `contents.${v}`)],
-      requestedAttributes: attributes.map(v => `contents.${v}`),
+      requestedAttributes: rawAttribute,
       reqUpdatedAfter,
     })
     this.ctypes.push(ctypeHash)

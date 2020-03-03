@@ -102,17 +102,17 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public static async fromClaimAndIdentity({
     claim,
     identity,
-    legitimations = [],
-    delegationId = null,
-    initiateAttestationMsg = null,
-    attesterPubKey = null,
+    legitimations,
+    delegationId,
+    initiateAttestationMsg,
+    attesterPubKey,
   }: {
     claim: IClaim
     identity: Identity
     legitimations?: AttestedClaim[]
-    delegationId?: IDelegationBaseNode['id'] | null
-    initiateAttestationMsg?: IInitiateAttestation | null
-    attesterPubKey?: AttesterPublicKey | null
+    delegationId?: IDelegationBaseNode['id']
+    initiateAttestationMsg?: IInitiateAttestation
+    attesterPubKey?: AttesterPublicKey
   }): Promise<[RequestForAttestation, ClaimerAttestationSession | null]> {
     if (claim.owner !== identity.address) {
       throw Error('Claim owner is not Identity')
@@ -120,19 +120,28 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
     let peRequest: AttestationRequest | null = null
     let session: ClaimerAttestationSession | null = null
-    if (initiateAttestationMsg !== null && attesterPubKey !== null) {
-      const { claimer } = identity
-      if (typeof claimer === 'undefined') {
-        throw new Error('invalid identity')
-      }
-      const peSessionMessage = await claimer.requestAttestation({
+    if (
+      typeof initiateAttestationMsg !== 'undefined' &&
+      typeof attesterPubKey !== 'undefined'
+    ) {
+      const rawClaim: { [id: string]: any } = {
         claim,
+      }
+      if (typeof legitimations !== 'undefined') {
+        rawClaim.legitimations = legitimations
+      }
+      if (typeof delegationId !== 'undefined') {
+        rawClaim.delegationId = delegationId
+      }
+      const peSessionMessage = await identity.claimer.requestAttestation({
+        claim: rawClaim,
         startAttestationMsg: initiateAttestationMsg.content,
         attesterPubKey,
       })
       peRequest = peSessionMessage.message
       session = peSessionMessage.session
     }
+
     const claimOwnerGenerated = generateHash(claim.owner)
     const cTypeHashGenerated = generateHash(claim.cTypeHash)
     const claimHashTreeGenerated = generateHashTree(claim.contents)
@@ -140,14 +149,14 @@ export default class RequestForAttestation implements IRequestForAttestation {
       claimOwnerGenerated,
       cTypeHashGenerated,
       claimHashTreeGenerated,
-      legitimations,
-      delegationId
+      legitimations || [],
+      delegationId || null
     )
 
     return [
       new RequestForAttestation({
         claim,
-        legitimations,
+        legitimations: legitimations || [],
         claimOwner: claimOwnerGenerated,
         claimHashTree: claimHashTreeGenerated,
         cTypeHash: cTypeHashGenerated,
@@ -156,7 +165,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
           identity,
           calculatedRootHash
         ),
-        delegationId,
+        delegationId: delegationId || null,
         privacyEnhanced: peRequest,
       }),
       session,

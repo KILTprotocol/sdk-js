@@ -27,7 +27,10 @@ describe('Messaging', () => {
 
   it('verify message encryption and signing', async () => {
     const messageBody = (await Verifier.newRequest()
-      .requestPresentationForCtype('0x12345678', ['age'])
+      .requestPresentationForCtype({
+        ctypeHash: '0x12345678',
+        attributes: ['age'],
+      })
       .finalize(false))[1]
 
     const message = new Message(
