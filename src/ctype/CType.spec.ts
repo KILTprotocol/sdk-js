@@ -160,21 +160,15 @@ describe('blank ctypes', () => {
     )
 
     expect(
-      (await requestForAttestation.fromClaimAndIdentity(
-        claimA1,
-        identityAlice,
-        undefined,
-        undefined,
-        false
-      ))[0].rootHash
+      (await requestForAttestation.fromClaimAndIdentity({
+        claim: claimA1,
+        identity: identityAlice,
+      }))[0].rootHash
     ).not.toEqual(
-      (await requestForAttestation.fromClaimAndIdentity(
-        claimA2,
-        identityAlice,
-        undefined,
-        undefined,
-        false
-      ))[0].rootHash
+      (await requestForAttestation.fromClaimAndIdentity({
+        claim: claimA2,
+        identity: identityAlice,
+      }))[0].rootHash
     )
   })
 })

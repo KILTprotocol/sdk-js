@@ -41,13 +41,11 @@ async function buildAttestedClaim(
   // build request for attestation with legitimations
   const [
     requestForAttestation,
-  ] = await RequestForAttestation.fromClaimAndIdentity(
+  ] = await RequestForAttestation.fromClaimAndIdentity({
     claim,
-    claimer,
+    identity: claimer,
     legitimations,
-    null,
-    false
-  )
+  })
   // build attestation
   const testAttestation: Attestation = Attestation.fromRequestAndPublicIdentity(
     requestForAttestation,

@@ -90,66 +90,63 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
    *
-   * @param claimInput - An `IClaim` object the request for attestation is built for.
-   * @param identity - The Claimer's [Identity].
-   * @param legitimationsInput - Array of [AttestedClaim] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
-   * @param delegationIdInput - The id of the DelegationNode of the Attester, which should be used in the attestation.
-   * @param privacyEnhanced - If true a privacy enhanced attestation is requested in addition to a normal attestation.
-   * @returns  A new [[RequestForAttestation]] object.
+   * @param p - Parameter object.
+   * @param p.claim - An `IClaim` object the request for attestation is built for.
+   * @param p.identity - The Claimer's [Identity].
+   * @param p.legitimations - Array of [AttestedClaim] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
+   * @param p.delegationId - The id of the DelegationNode of the Attester, which should be used in the attestation.
+   * @param p.privacyEnhanced -
+   * @param p.privacyEnhanced -
+   * @returns A new [[RequestForAttestation]] object.
    */
-  public static async fromClaimAndIdentity(
-    claimInput: IClaim,
-    identity: Identity,
-    legitimationsInput: AttestedClaim[] = [],
-    delegationIdInput: IDelegationBaseNode['id'] | null = null,
-    privacyEnhanced = true,
-    initiateAttestationMsg: IInitiateAttestation | null = null,
-    attesterPubKey: AttesterPublicKey | null = null
-  ): Promise<[RequestForAttestation, ClaimerAttestationSession | null]> {
-    if (claimInput.owner !== identity.address) {
+  public static async fromClaimAndIdentity({
+    claim,
+    identity,
+    legitimations = [],
+    delegationId = null,
+    initiateAttestationMsg = null,
+    attesterPubKey = null,
+  }: {
+    claim: IClaim
+    identity: Identity
+    legitimations?: AttestedClaim[]
+    delegationId?: IDelegationBaseNode['id'] | null
+    initiateAttestationMsg?: IInitiateAttestation | null
+    attesterPubKey?: AttesterPublicKey | null
+  }): Promise<[RequestForAttestation, ClaimerAttestationSession | null]> {
+    if (claim.owner !== identity.address) {
       throw Error('Claim owner is not Identity')
     }
 
     let peRequest: AttestationRequest | null = null
     let session: ClaimerAttestationSession | null = null
-    if (
-      privacyEnhanced &&
-      initiateAttestationMsg !== null &&
-      attesterPubKey !== null
-    ) {
+    if (initiateAttestationMsg !== null && attesterPubKey !== null) {
       const { claimer } = identity
       if (typeof claimer === 'undefined') {
         throw new Error('invalid identity')
       }
       const peSessionMessage = await claimer.requestAttestation({
-        claim: claimInput,
+        claim,
         startAttestationMsg: initiateAttestationMsg.content,
         attesterPubKey,
       })
       peRequest = peSessionMessage.message
       session = peSessionMessage.session
-    } else if (privacyEnhanced) {
-      throw new Error(`Required InitiateAttestationRequest (was ${initiateAttestationMsg}) 
-      and public key (was ${attesterPubKey}) for privacy enhanced attestation`)
     }
-    const claimOwnerGenerated = generateHash(claimInput.owner)
-    const cTypeHashGenerated = generateHash(claimInput.cTypeHash)
-    const claimHashTreeGenerated = generateHashTree(claimInput.contents)
+    const claimOwnerGenerated = generateHash(claim.owner)
+    const cTypeHashGenerated = generateHash(claim.cTypeHash)
+    const claimHashTreeGenerated = generateHashTree(claim.contents)
     const calculatedRootHash = RequestForAttestation.calculateRootHash(
       claimOwnerGenerated,
       cTypeHashGenerated,
       claimHashTreeGenerated,
-      legitimationsInput,
-      delegationIdInput
+      legitimations,
+      delegationId
     )
-    let legitimations: AttestedClaim[] = []
-    if (Array.isArray(legitimationsInput)) {
-      legitimations = legitimationsInput
-    }
 
     return [
       new RequestForAttestation({
-        claim: claimInput,
+        claim,
         legitimations,
         claimOwner: claimOwnerGenerated,
         claimHashTree: claimHashTreeGenerated,
@@ -159,7 +156,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
           identity,
           calculatedRootHash
         ),
-        delegationId: delegationIdInput,
+        delegationId,
         privacyEnhanced: peRequest,
       }),
       session,
@@ -250,12 +247,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *   age: 29,
    * };
    * const claim = Claim.fromCTypeAndClaimContents(ctype, rawClaim, alice);
-   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(
+   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity({
    *   claim,
-   *   alice,
-   *   [],
-   *   null
-   * );
+   *   identity: alice,
+   * });
    * reqForAtt.removeClaimProperties(['name']);
    * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
    * ```
@@ -274,12 +269,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Removes the [[Claim]] owner from the [[RequestForAttestation]] object.
    *
    * @example ```javascript
-   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(
+   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity({
    *   claim,
-   *   alice,
-   *   [],
-   *   null
-   * );
+   *   identity: alice,
+   * });
    * reqForAtt.removeClaimOwner();
    * // `requestForAttestation` does not contain the claim `owner` or the `claimOwner`'s nonce anymore.
    * ```
@@ -294,12 +287,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @returns Whether the data is valid.
    * @example ```javascript
-   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(
+   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity({
    *   claim,
-   *   alice,
-   *   [],
-   *   null
-   * );
+   *   identity: alice,
+   * });
    * reqForAtt.verifyData(); // returns true if the data is correct
    * ```
    */
@@ -367,12 +358,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @returns Whether the signature is correct.
    * @example ```javascript
-   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(
+   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity({
    *   claim,
-   *   alice,
-   *   [],
-   *   null
-   * );
+   *   identity: alice,
+   * });
    * reqForAtt.verifySignature(); // returns `true` if the signature is correct
    * ```
    */

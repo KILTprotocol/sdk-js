@@ -107,15 +107,12 @@ async function doAttestation(): Promise<{
   const [
     requestForAttestation,
     claimerSession,
-  ] = await Kilt.RequestForAttestation.fromClaimAndIdentity(
+  ] = await Kilt.RequestForAttestation.fromClaimAndIdentity({
     claim,
-    claimer,
-    [],
-    null,
-    true,
-    initiateAttestationMessage,
-    attester.publicGabiKey
-  )
+    identity: claimer,
+    initiateAttestationMsg: initiateAttestationMessage,
+    attesterPubKey: attester.publicGabiKey,
+  })
 
   // Excourse to the messaging system
   // If the Attester doesn't live on the same machine, we need to send her a message

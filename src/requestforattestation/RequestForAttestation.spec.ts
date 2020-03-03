@@ -40,13 +40,11 @@ async function buildRequestForAttestation(
     owner: claimer.address,
   }
   // build request for attestation with legitimations
-  return RequestForAttestation.fromClaimAndIdentity(
+  return RequestForAttestation.fromClaimAndIdentity({
     claim,
-    claimer,
+    identity: claimer,
     legitimations,
-    null,
-    false
-  )
+  })
 }
 
 describe('RequestForAttestation', () => {

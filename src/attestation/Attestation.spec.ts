@@ -53,11 +53,10 @@ describe('Attestation', async () => {
       identityBob.address
     )
     ;[requestForAttestation] = await RequestForAttestation.fromClaimAndIdentity(
-      testClaim,
-      identityBob,
-      [],
-      null,
-      false
+      {
+        claim: testClaim,
+        identity: identityBob,
+      }
     )
   })
 
