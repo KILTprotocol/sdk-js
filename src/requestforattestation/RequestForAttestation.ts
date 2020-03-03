@@ -37,10 +37,6 @@ import { IDelegationBaseNode } from '../types/Delegation'
 import IClaim from '../types/Claim'
 import IAttestedClaim from '../types/AttestedClaim'
 
-// export type CompressedRequestForAttestation = Array<
-//   string | object | AttestedClaim[] | IClaim | NonceHash
-// >
-
 type CompressedNonceHash = [string, string?]
 
 type CompressedClaimHashTree = object
