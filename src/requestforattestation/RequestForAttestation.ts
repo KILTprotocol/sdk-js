@@ -90,6 +90,14 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   return hash(result)
 }
 
+/**
+ *  Compresses an nonce and hash from a [[ClaimHashTree]] or [[RequestForAttestation]] properties.
+ *
+ * @param nonceHash A hash or a hash and nonce object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An object compressing of a hash or a hash and nonce.
+ */
+
 export function compressNonceAndHash(
   nonceHash: NonceHash
 ): CompressedNonceHash {
@@ -97,7 +105,7 @@ export function compressNonceAndHash(
 }
 
 /**
- *  Decompresses an nonce and hash from a [[ClaimHashTree]] or [[RequestForAttestation]].
+ *  Decompresses an nonce and hash from a [[ClaimHashTree]] or [[RequestForAttestation]] properties.
  *
  * @param nonceHash A compressesd a hash or a hash and nonce array that is reverted back into an object.
  *
@@ -120,9 +128,9 @@ function decompressNonceAndHash(nonceHash: CompressedNonceHash): NonceHash {
 /**
  *  Compresses a [[claimHashTree]] within a [[RequestForAttestation]] object.
  *
- * @param reqForAtt A [[ClaimHashTree]] object that will be sorted and stripped for messaging or storage.
+ * @param reqForAtt A [[claimHashTree]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of an [[ClaimHashTree]].
+ * @returns An ordered array of an [[claimHashTree]].
  */
 
 export function compressClaimHashTree(
@@ -155,6 +163,14 @@ export function decompressClaimHashTree(
   })
   return result
 }
+
+/**
+ *  Compresses [[AttestedClaim]]s which are made up from an [[Attestation]] and [[RequestForAttestation]] for storage and/or message.
+ *
+ * @param leg An array of [[Attestation]] and [[RequestForAttestation]] objects.
+ *
+ * @returns An ordered array of [[AttestedClaim]]s.
+ */
 
 export function compressLegitimation(
   leg: IAttestedClaim[]
@@ -542,7 +558,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * Compresses an [[RequestForAttestation]] object from the [[compressRequestForAttestation]] function.
+   * Compresses an [[RequestForAttestation]] object from the [[compressRequestForAttestation]].
    *
    * @returns An array that contains the same properties of an [[RequestForAttestation]].
    */

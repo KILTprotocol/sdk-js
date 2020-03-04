@@ -31,7 +31,7 @@ export type CompressedAttestedClaim = [
  *
  * @param attestedClaim An [[AttestedClaim]] that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of an [[AttestedClaim]] that comprises of [[Attestation]] and [[RequestForAttestation]] arrays.
+ * @returns An ordered array of an [[AttestedClaim]] that comprises of an [[Attestation]] and [[RequestForAttestation]] arrays.
  */
 
 export function compressAttestedClaim(
@@ -203,7 +203,7 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * Compresses an [[AttestedClaim]] object from the [[compressAttestedCliam]] function.
+   * Compresses an [[AttestedClaim]] object from the [[compressAttestedCliam]].
    *
    * @returns An array that contains the same properties of an [[AttestedClaim]].
    */

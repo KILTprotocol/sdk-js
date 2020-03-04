@@ -75,7 +75,6 @@ export function decompressCTypeSchema(
 /**
  *  Compresses a [[CType]] for storage and/or messaging.
  *
- *
  * @param cType A [[CType]] object that will be sorted and stripped for messaging or storage.
  *
  * @returns An ordered array of a [[CType]].
@@ -87,7 +86,6 @@ export function compressCType(cType: ICType): CompressedCType {
 
 /**
  *  Decompresses a [[CType]] from storage and/or message.
- *
  *
  * @param cType A compressesd [[CType]] array that is reverted back into an object.
  *
@@ -144,7 +142,7 @@ export default class CType implements ICType {
   }
 
   /**
-   * Compresses an [[CType]] object from the [[CType]] function.
+   * Compresses an [[CType]] object from the [[compressCType]].
    *
    * @returns An array that contains the same properties of an [[CType]].
    */

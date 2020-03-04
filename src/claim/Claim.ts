@@ -28,11 +28,11 @@ export type CompressedClaim = [
 ]
 
 /**
- *  Compresses the claim for storage and/or messaging.
+ *  Compresses the [[Claim]] for storage and/or messaging.
  *
- * @param claim The claim that will be sorted and stripped for messaging or storage.
+ * @param claim A [[Claim]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of claim.
+ * @returns An ordered array of a [[Claim]].
  */
 export function compressClaim(claim: IClaim): CompressedClaim {
   const sortedContents = jsonabc.sortObj(claim.contents)
@@ -40,11 +40,11 @@ export function compressClaim(claim: IClaim): CompressedClaim {
 }
 
 /**
- *  Decompresses the claim from storage and/or message.
+ *  Decompresses the [[Claim]] from storage and/or message.
  *
- * @param claim A compressesd claim array that is reverted back into an object.
+ * @param claim A compressesd [[Claim]] array that is reverted back into an object.
  *
- * @returns An object that has the same properties as the claim.
+ * @returns An object that has the same properties as the [[Claim]].
  */
 export function decompressClaim(claim: CompressedClaim): IClaim {
   return {
@@ -112,9 +112,21 @@ export default class Claim implements IClaim {
     this.owner = claimInput.owner
   }
 
+  /**
+   * Compresses an [[Claim]] object from the [[CompressedClaim]].
+   *
+   * @returns An array that contains the same properties of an [[Claim]].
+   */
+
   public compress(): CompressedClaim {
     return compressClaim(this)
   }
+
+  /**
+   * [STATIC] Builds an [[Claim]] from the decompressed array.
+   *
+   * @returns A new [[Claim]] object.
+   */
 
   public static decompress(compressedClaim: IClaim): Claim {
     return new Claim(compressedClaim)

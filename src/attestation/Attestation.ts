@@ -235,7 +235,7 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * Compresses an [[Attestation]] object from the [[Attestation]] function.
+   * Compresses an [[Attestation]] object from the [[compressAttestation]].
    *
    * @returns An array that contains the same properties of an [[Attestation]].
    */
