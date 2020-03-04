@@ -113,7 +113,6 @@ export function compressNonceAndHash(
  */
 
 function decompressNonceAndHash(nonceHash: CompressedNonceHash): NonceHash {
-  // Need to fix
   if (nonceHash.length === 1) {
     return {
       hash: nonceHash[0],

@@ -157,7 +157,8 @@ export default class CType implements ICType {
    * @returns A new [[CType]] object.
    */
 
-  public static decompress(cType: ICType): CType {
-    return CType.fromCType(cType)
+  public static decompress(cType: CompressedCType): CType {
+    const decompressedCType = decompressCType(cType)
+    return CType.fromCType(decompressedCType)
   }
 }

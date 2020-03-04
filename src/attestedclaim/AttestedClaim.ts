@@ -218,7 +218,10 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns A new [[AttestedClaim]] object.
    */
 
-  public static decompress(attestedClaim: IAttestedClaim): AttestedClaim {
-    return AttestedClaim.fromAttestedClaim(attestedClaim)
+  public static decompress(
+    attestedClaim: CompressedAttestedClaim
+  ): AttestedClaim {
+    const decompressedAttestedClaim = decompressAttestedClaim(attestedClaim)
+    return AttestedClaim.fromAttestedClaim(decompressedAttestedClaim)
   }
 }

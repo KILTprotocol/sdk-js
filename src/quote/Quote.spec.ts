@@ -92,7 +92,7 @@ describe('Claim', () => {
   const invalidPropertiesQuote = invalidPropertiesQuoteData
   const invalidCostQuote = invalidCostQuoteData
   it('compresses and decompresses the quote object', () => {
-    const sortedCompressedQuote: Quote.CompressedQuote = [
+    const compressedQuote: Quote.CompressedQuote = [
       validQuoteData.attesterAddress,
       validQuoteData.cTypeHash,
       Quote.compressCost(validQuoteData.cost),
@@ -101,7 +101,7 @@ describe('Claim', () => {
       validQuoteData.timeframe,
     ]
 
-    const sortedCompressedResultAttesterSignedQuote: Quote.CompressedQuoteAttesterSigned = [
+    const compressedResultAttesterSignedQuote: Quote.CompressedQuoteAttesterSigned = [
       validQuoteData.attesterAddress,
       validQuoteData.cTypeHash,
       Quote.compressCost(validQuoteData.cost),
@@ -111,7 +111,7 @@ describe('Claim', () => {
       validAttesterSignedQuote.attesterSignature,
     ]
 
-    const sortedCompressedResultQuoteAgreement: Quote.CompressedQuoteAgreed = [
+    const compressedResultQuoteAgreement: Quote.CompressedQuoteAgreed = [
       validQuoteData.attesterAddress,
       validQuoteData.cTypeHash,
       Quote.compressCost(validQuoteData.cost),
@@ -122,18 +122,15 @@ describe('Claim', () => {
       quoteBothAgreed.claimerSignature,
       quoteBothAgreed.rootHash,
     ]
-    expect(Quote.decompressQuote(sortedCompressedQuote)).toEqual(validQuoteData)
+    expect(Quote.decompressQuote(compressedQuote)).toEqual(validQuoteData)
 
     expect(
-      Quote.decompressAttesterSignedQuote(
-        sortedCompressedResultAttesterSignedQuote
-      )
+      Quote.decompressAttesterSignedQuote(compressedResultAttesterSignedQuote)
     ).toEqual(validAttesterSignedQuote)
 
     expect(
-      Quote.decompressQuoteAgreement(sortedCompressedResultQuoteAgreement)
+      Quote.decompressQuoteAgreement(compressedResultQuoteAgreement)
     ).toEqual(quoteBothAgreed)
-    // Need to add test
   })
   it('tests created quote data against given data', () => {
     expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)

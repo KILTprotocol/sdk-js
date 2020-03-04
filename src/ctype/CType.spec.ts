@@ -2,6 +2,7 @@ import CType, {
   compressCType,
   compressCTypeSchema,
   decompressCType,
+  CompressedCType,
 } from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
@@ -58,13 +59,39 @@ describe('CType', () => {
   )
 
   it('compresses and decompresses the ctype object', () => {
-    const cType = CType.fromCType(fromCTypeModel)
+    const compressedCType: CompressedCType = [
+      claimCtype.hash,
+      claimCtype.owner,
+      [
+        'http://example.com/ctype-1',
+        'http://kilt-protocol.org/draft-01/ctype#',
+        {
+          name: {
+            type: 'string',
+          },
+        },
+        'object',
+      ],
+    ]
+    expect(compressCTypeSchema(rawCType)).toEqual(compressedCType[2])
 
-    const compressedCType = cType.compress()
+    expect(compressCType(claimCtype)).toEqual(compressedCType)
 
-    expect(compressCType(cType)).toEqual(compressedCType)
-    expect(compressCTypeSchema(cType.schema)).toEqual(compressedCType[2])
-    expect(decompressCType(compressedCType)).toEqual(cType)
+    expect(decompressCType(compressedCType)).toEqual(claimCtype)
+
+    expect(CType.decompress(compressedCType)).toEqual(claimCtype)
+
+    expect(claimCtype.compress()).toEqual(compressedCType)
+
+    expect(compressCTypeSchema(rawCType)).not.toEqual(compressedCType[1])
+
+    expect(compressCType(claimCtype)).not.toEqual(compressedCType[1])
+
+    expect(decompressCType(compressedCType)).not.toEqual(claimCtype.schema)
+
+    expect(CType.decompress(compressedCType)).not.toEqual(claimCtype.schema)
+
+    expect(claimCtype.compress()).not.toEqual(compressedCType[2])
   })
 
   it('stores ctypes', async () => {

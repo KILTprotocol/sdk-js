@@ -2,10 +2,10 @@ import Identity from '../identity/Identity'
 import RequestForAttestation, {
   compressRequestForAttestation,
   CompressedRequestForAttestation,
+  decompressRequestForAttestation,
   compressClaimHashTree,
   compressNonceAndHash,
   compressLegitimation,
-  decompressRequestForAttestation,
 } from './RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
@@ -144,7 +144,7 @@ describe('RequestForAttestation', () => {
       [legitimationCharlie, legitimationBob]
     )
 
-    const sortedCompressedReqForAtt: CompressedRequestForAttestation = [
+    const compressedReqForAtt: CompressedRequestForAttestation = [
       compressClaim(reqForAtt.claim),
       compressClaimHashTree(reqForAtt.claimHashTree),
       compressNonceAndHash(reqForAtt.claimOwner),
@@ -156,15 +156,15 @@ describe('RequestForAttestation', () => {
     ]
 
     expect(compressRequestForAttestation(reqForAtt)).toEqual(
-      sortedCompressedReqForAtt
+      compressedReqForAtt
     )
 
-    expect(decompressRequestForAttestation(sortedCompressedReqForAtt)).toEqual(
+    expect(decompressRequestForAttestation(compressedReqForAtt)).toEqual(
       reqForAtt
     )
 
     const decompressedRequestForAttestationObj = decompressRequestForAttestation(
-      sortedCompressedReqForAtt
+      compressedReqForAtt
     )
 
     expect(

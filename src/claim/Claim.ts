@@ -128,7 +128,8 @@ export default class Claim implements IClaim {
    * @returns A new [[Claim]] object.
    */
 
-  public static decompress(compressedClaim: IClaim): Claim {
-    return new Claim(compressedClaim)
+  public static decompress(compressedClaim: CompressedClaim): Claim {
+    const decompressedClaim = decompressClaim(compressedClaim)
+    return new Claim(decompressedClaim)
   }
 }

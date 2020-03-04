@@ -250,8 +250,9 @@ export default class Attestation implements IAttestation {
    * @returns A new [[Attestation]] object.
    */
 
-  public static decompress(attestation: IAttestation): Attestation {
-    return Attestation.fromAttestation(attestation)
+  public static decompress(attestation: CompressedAttestation): Attestation {
+    const decompressedAttestation = decompressAttestation(attestation)
+    return Attestation.fromAttestation(decompressedAttestation)
   }
 
   /**

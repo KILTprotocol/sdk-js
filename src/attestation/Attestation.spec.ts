@@ -87,7 +87,7 @@ describe('Attestation', () => {
       identityAlice
     )
 
-    const sortedCompressedAttestation: CompressedAttestation = [
+    const compressedAttestation: CompressedAttestation = [
       attestation.claimHash,
       attestation.cTypeHash,
       attestation.owner,
@@ -95,21 +95,25 @@ describe('Attestation', () => {
       attestation.delegationId,
     ]
 
-    expect(compressAttestation(attestation)).toEqual(
-      sortedCompressedAttestation
-    )
+    expect(compressAttestation(attestation)).toEqual(compressedAttestation)
 
-    expect(decompressAttestation(sortedCompressedAttestation)).toEqual(
+    expect(decompressAttestation(compressedAttestation)).toEqual(attestation)
+
+    expect(Attestation.decompress(compressedAttestation)).toEqual(attestation)
+
+    expect(attestation.compress()).toEqual(compressedAttestation)
+
+    // @ts-ignore
+    compressedAttestation[2] = 2
+
+    expect(decompressAttestation(compressedAttestation)).not.toEqual(
       attestation
     )
 
-    const decompressedAttestationObj = decompressAttestation(
-      sortedCompressedAttestation
-    )
-
-    expect(Attestation.decompress(decompressedAttestationObj)).toEqual(
+    expect(Attestation.decompress(compressedAttestation)).not.toEqual(
       attestation
     )
+    expect(attestation.compress()).not.toEqual(compressedAttestation)
   })
 
   it('verify attestation revoked', async () => {

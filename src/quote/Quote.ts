@@ -37,23 +37,23 @@ export type CompressedQuote = [
 ]
 
 export type CompressedQuoteAttesterSigned = [
-  IQuote['attesterAddress'],
-  IQuote['cTypeHash'],
-  CompressedCostBreakdown,
-  IQuote['currency'],
-  IQuote['termsAndConditions'],
-  IQuote['timeframe'],
+  CompressedQuote[0],
+  CompressedQuote[1],
+  CompressedQuote[2],
+  CompressedQuote[3],
+  CompressedQuote[4],
+  CompressedQuote[5],
   IQuoteAttesterSigned['attesterSignature']
 ]
 
 export type CompressedQuoteAgreed = [
-  IQuote['attesterAddress'],
-  IQuote['cTypeHash'],
-  CompressedCostBreakdown,
-  IQuote['currency'],
-  IQuote['termsAndConditions'],
-  IQuote['timeframe'],
-  IQuoteAttesterSigned['attesterSignature'],
+  CompressedQuote[0],
+  CompressedQuote[1],
+  CompressedQuote[2],
+  CompressedQuote[3],
+  CompressedQuote[4],
+  CompressedQuote[5],
+  CompressedQuoteAttesterSigned[6],
   IQuoteAgreement['claimerSignature'],
   IQuoteAgreement['rootHash']
 ]
