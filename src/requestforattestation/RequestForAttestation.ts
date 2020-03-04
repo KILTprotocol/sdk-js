@@ -573,9 +573,12 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
 
   public static decompress(
-    reqForAtt: IRequestForAttestation
+    reqForAtt: CompressedRequestForAttestation
   ): RequestForAttestation {
-    return RequestForAttestation.fromRequest(reqForAtt)
+    const CompressedRequestForAttestation = decompressRequestForAttestation(
+      reqForAtt
+    )
+    return RequestForAttestation.fromRequest(CompressedRequestForAttestation)
   }
 
   private static calculateRootHash(

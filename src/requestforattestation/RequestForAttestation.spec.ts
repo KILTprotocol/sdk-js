@@ -162,14 +162,21 @@ describe('RequestForAttestation', () => {
     expect(decompressRequestForAttestation(compressedReqForAtt)).toEqual(
       reqForAtt
     )
-
-    const decompressedRequestForAttestationObj = decompressRequestForAttestation(
-      compressedReqForAtt
+    expect(reqForAtt.compress()).toEqual(compressedReqForAtt)
+    expect(RequestForAttestation.decompress(compressedReqForAtt)).toEqual(
+      reqForAtt
+    )
+    expect(compressRequestForAttestation(reqForAtt)).not.toEqual(
+      compressedReqForAtt[3]
     )
 
-    expect(
-      RequestForAttestation.decompress(decompressedRequestForAttestationObj)
-    ).toEqual(reqForAtt)
+    expect(decompressRequestForAttestation(compressedReqForAtt)).not.toEqual(
+      reqForAtt.cTypeHash
+    )
+    expect(reqForAtt.compress()).not.toEqual(compressedReqForAtt[4])
+    expect(RequestForAttestation.decompress(compressedReqForAtt)).not.toEqual(
+      reqForAtt.claimOwner
+    )
   })
 
   it('hides claim properties', () => {

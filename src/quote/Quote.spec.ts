@@ -122,15 +122,48 @@ describe('Claim', () => {
       quoteBothAgreed.claimerSignature,
       quoteBothAgreed.rootHash,
     ]
+
+    expect(Quote.compressQuote(validQuoteData)).toEqual(compressedQuote)
+
     expect(Quote.decompressQuote(compressedQuote)).toEqual(validQuoteData)
+
+    expect(Quote.compressAttesterSignedQuote(validAttesterSignedQuote)).toEqual(
+      compressedResultAttesterSignedQuote
+    )
 
     expect(
       Quote.decompressAttesterSignedQuote(compressedResultAttesterSignedQuote)
     ).toEqual(validAttesterSignedQuote)
 
+    expect(Quote.compressQuoteAgreement(quoteBothAgreed)).toEqual(
+      compressedResultQuoteAgreement
+    )
+
     expect(
       Quote.decompressQuoteAgreement(compressedResultQuoteAgreement)
     ).toEqual(quoteBothAgreed)
+
+    expect(Quote.compressQuote(validQuoteData)).not.toEqual(compressedQuote[3])
+
+    expect(Quote.decompressQuote(compressedQuote)).not.toEqual(
+      validQuoteData.termsAndConditions
+    )
+
+    expect(
+      Quote.compressAttesterSignedQuote(validAttesterSignedQuote)
+    ).not.toEqual(compressedResultAttesterSignedQuote[3])
+
+    expect(
+      Quote.decompressAttesterSignedQuote(compressedResultAttesterSignedQuote)
+    ).not.toEqual(validAttesterSignedQuote.currency)
+
+    expect(Quote.compressQuoteAgreement(quoteBothAgreed)).not.toEqual(
+      compressedResultQuoteAgreement[2]
+    )
+
+    expect(
+      Quote.decompressQuoteAgreement(compressedResultQuoteAgreement)
+    ).not.toEqual(quoteBothAgreed.claimerSignature)
   })
   it('tests created quote data against given data', () => {
     expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
