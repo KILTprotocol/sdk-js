@@ -35,7 +35,7 @@ describe('Delegation', () => {
       new Tuple(
         // Root-Delegation: root-id -> (ctype-hash, account, revoked)
         [Text, AccountId, Bool],
-        [[ctypeHash, identityAlice.address, false]]
+        [[ctypeHash, identityAlice.getAddress(), false]]
       )
     )
     return Promise.resolve(tuple)
@@ -48,13 +48,7 @@ describe('Delegation', () => {
         new Tuple(
           // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
           [Text, Text, AccountId, U32, Bool],
-          [
-            'rootId',
-            'myNodeId',
-            identityAlice.getPublicIdentity().address,
-            2,
-            false,
-          ]
+          ['rootId', 'myNodeId', identityAlice.getAddress(), 2, false]
         )
       )
     } else if (delegationId === 'secondChild') {
@@ -63,13 +57,7 @@ describe('Delegation', () => {
         new Tuple(
           // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
           [Text, Text, AccountId, U32, Bool],
-          [
-            'rootId',
-            'myNodeId',
-            identityAlice.getPublicIdentity().address,
-            1,
-            false,
-          ]
+          ['rootId', 'myNodeId', identityAlice.getAddress(), 1, false]
         )
       )
     } else if (delegationId === 'thirdChild') {
@@ -78,13 +66,7 @@ describe('Delegation', () => {
         new Tuple(
           // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
           [Text, Text, AccountId, U32, Bool],
-          [
-            'rootId',
-            'myNodeId',
-            identityAlice.getPublicIdentity().address,
-            0,
-            false,
-          ]
+          ['rootId', 'myNodeId', identityAlice.getAddress(), 0, false]
         )
       )
     }
@@ -103,7 +85,7 @@ describe('Delegation', () => {
     const myDelegation = new DelegationNode(
       'myNodeId',
       'rootId',
-      identityAlice.getPublicIdentity().address,
+      identityAlice.getAddress(),
       [Permission.ATTEST],
       undefined
     )
@@ -113,7 +95,7 @@ describe('Delegation', () => {
       id: 'firstChild',
       rootId: 'rootId',
       parentId: 'myNodeId',
-      account: identityAlice.getPublicIdentity().address,
+      account: identityAlice.getAddress(),
       permissions: [Permission.DELEGATE],
       revoked: false,
     })
@@ -121,7 +103,7 @@ describe('Delegation', () => {
       id: 'secondChild',
       rootId: 'rootId',
       parentId: 'myNodeId',
-      account: identityAlice.getPublicIdentity().address,
+      account: identityAlice.getAddress(),
       permissions: [Permission.ATTEST],
       revoked: false,
     })
@@ -129,7 +111,7 @@ describe('Delegation', () => {
       id: 'thirdChild',
       rootId: 'rootId',
       parentId: 'myNodeId',
-      account: identityAlice.getPublicIdentity().address,
+      account: identityAlice.getAddress(),
       permissions: [],
       revoked: false,
     })

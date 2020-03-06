@@ -170,21 +170,13 @@ export default class AttesterIdentity extends Identity {
     )
   }
 
-  /**
-   * Returns the [[PublicIdentity]] (identity's address and public key) of the Identity.
-   * Can be given to third-parties to communicate and process signatures.
-   *
-   * @returns The [[PublicIdentity]], corresponding to the [[Identity]].
-   * @example ```javascript
-   * const alice = await Kilt.Identity.buildFromMnemonic();
-   * alice.getPublicIdentity();
-   * ```
-   */
   public getPublicIdentity(): PublicAttesterIdentity {
     return new PublicAttesterIdentity(
       this.signKeyringPair.address,
       u8aUtil.u8aToHex(this.boxKeyPair.publicKey),
-      this.attester.publicKey
+      this.attester.publicKey,
+      this.accumulator,
+      this.serviceAddress
     )
   }
 

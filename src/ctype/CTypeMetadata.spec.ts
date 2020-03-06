@@ -29,7 +29,7 @@ describe('CType', () => {
 
     fromRawCType = {
       schema: rawCType,
-      owner: identityAlice.address,
+      owner: identityAlice.getAddress(),
       hash: '',
     }
     ctype = CType.fromCType(fromRawCType)

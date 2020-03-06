@@ -95,7 +95,7 @@ describe('Delegation', () => {
             [H256, Text, Bool],
             [
               '0x1234000000000000000000000000000000000000000000000000000000000000',
-              identityAlice.address,
+              identityAlice.getAddress(),
               false,
             ]
           )
@@ -107,7 +107,7 @@ describe('Delegation', () => {
     const node: DelegationNode = new DelegationNode(
       'nodeId',
       'rootNodeId',
-      identityAlice.address,
+      identityAlice.getAddress(),
       []
     )
     const rootNode = await node.getRoot()
