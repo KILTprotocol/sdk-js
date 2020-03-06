@@ -128,8 +128,8 @@ describe('DID', () => {
     const alice = await Identity.buildFromURI('//Alice')
     expect(
       Did.createDefaultDidDocument(
-        Did.getIdentifierFromAddress(alice.address),
-        alice.boxPublicKeyAsHex,
+        Did.getIdentifierFromAddress(alice.getAddress()),
+        alice.getBoxPublicKey(),
         alice.signPublicKeyAsHex,
         'http://myDID.kilt.io/service'
       )
@@ -182,7 +182,7 @@ describe('DID', () => {
     expect(
       Did.verifyDidDocumentSignature(
         signedDidDocument,
-        getIdentifierFromAddress(identity.address)
+        getIdentifierFromAddress(identity.getAddress())
       )
     ).toBeTruthy()
   })
@@ -204,12 +204,12 @@ describe('DID', () => {
     expect(
       Did.verifyDidDocumentSignature(
         tamperedSignedDidDocument,
-        getIdentifierFromAddress(identity.address)
+        getIdentifierFromAddress(identity.getAddress())
       )
     ).toBeFalsy()
   })
 
-  it("throws when verifying the did document signature if identitifiers don't match", async () => {
+  it("throws when verifying the did document signature if identifiers don't match", async () => {
     const identityAlice = await Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(identityAlice, 'http://myDID.kilt.io')
     const didDocument = did.createDefaultDidDocument(
@@ -217,7 +217,7 @@ describe('DID', () => {
     )
     const signedDidDocument = Did.signDidDocument(didDocument, identityAlice)
     const identityBob = await Identity.buildFromURI('//Bob')
-    const id = getIdentifierFromAddress(identityBob.address)
+    const id = getIdentifierFromAddress(identityBob.getAddress())
 
     expect(() => {
       Did.verifyDidDocumentSignature(signedDidDocument, id)

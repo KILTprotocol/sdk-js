@@ -22,11 +22,11 @@ describe('Crypto', () => {
     // @ts-ignore
     const signature = Crypto.sign(message, alice.signKeyringPair)
     expect(signature).not.toBeFalsy()
-    expect(Crypto.verify(message, signature, alice.address)).toBe(true)
+    expect(Crypto.verify(message, signature, alice.getAddress())).toBe(true)
 
-    expect(Crypto.verify(message, signature, bob.address)).toBe(false)
+    expect(Crypto.verify(message, signature, bob.getAddress())).toBe(false)
     expect(
-      Crypto.verify(new Uint8Array([0, 0, 0]), signature, alice.address)
+      Crypto.verify(new Uint8Array([0, 0, 0]), signature, alice.getAddress())
     ).toBe(false)
   })
 
@@ -128,7 +128,7 @@ describe('Crypto', () => {
   it('should encrypt and decrypt asymmetrical (string)', () => {
     const encrypted = Crypto.encryptAsymmetricAsStr(
       messageStr,
-      alice.boxPublicKeyAsHex,
+      alice.getBoxPublicKey(),
       // @ts-ignore
       bob.boxKeyPair.secretKey
     )
@@ -136,14 +136,14 @@ describe('Crypto', () => {
 
     const decrypted = Crypto.decryptAsymmetricAsStr(
       encrypted,
-      bob.boxPublicKeyAsHex,
+      bob.getBoxPublicKey(),
       // @ts-ignore
       alice.boxKeyPair.secretKey
     )
     expect(decrypted).toEqual(messageStr)
     const decryptedFalse = Crypto.decryptAsymmetricAsStr(
       encrypted,
-      bob.boxPublicKeyAsHex,
+      bob.getBoxPublicKey(),
       // @ts-ignore
       bob.boxKeyPair.secretKey
     )

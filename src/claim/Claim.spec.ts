@@ -29,7 +29,7 @@ describe('Claim', () => {
 
     fromRawCType = {
       schema: rawCType,
-      owner: identityAlice.address,
+      owner: identityAlice.getAddress(),
       hash: '',
     }
 
@@ -38,7 +38,7 @@ describe('Claim', () => {
     claim = Claim.fromCTypeAndClaimContents(
       testCType,
       claimContents,
-      identityAlice.address
+      identityAlice.getAddress()
     )
   })
   it('can be made from object', () => {

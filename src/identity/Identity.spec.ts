@@ -2,6 +2,7 @@ import * as u8aUtil from '@polkadot/util/u8a'
 import Identity from './Identity'
 import { coToUInt8 } from '../crypto/Crypto'
 import constants from '../test/constants'
+import AttesterIdentity from './AttesterIdentity'
 
 describe('Identity', () => {
   // https://polkadot.js.org/api/examples/promise/
@@ -13,7 +14,7 @@ describe('Identity', () => {
       '0x2f2f416c69636520202020202020202020202020202020202020202020202020'
     )
 
-    expect(alice.address).toEqual(
+    expect(alice.getAddress()).toEqual(
       '5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M'
     )
 
@@ -37,7 +38,7 @@ describe('Identity', () => {
 
     expect(alice.signPublicKeyAsHex).not.toEqual(bob.signPublicKeyAsHex)
     // @ts-ignore
-    expect(alice.boxPublicKeyAsHex).not.toEqual(bob.boxPublicKeyAsHex)
+    expect(alice.getBoxPublicKey()).not.toEqual(bob.getBoxPublicKey())
     // @ts-ignore
     expect(alice.boxKeyPair.secretKey).not.toEqual(bob.boxKeyPair.secretKey)
     expect(alice.seed).not.toEqual(bob.seed)
@@ -95,15 +96,21 @@ describe('Identity', () => {
   })
 
   it('should initiate attestation with gabi keys (PE)', async () => {
-    const alice = await Identity.buildFromMnemonic()
-    alice.loadGabiKeys(constants.pubKey, constants.privKey)
+    const alice = await AttesterIdentity.buildFromMnemonicAndKey(
+      constants.PUBLIC_KEY.valueOf(),
+      constants.PRIVATE_KEY.valueOf()
+    )
+
     const msgSession = await alice.initiateAttestation()
     expect(msgSession.session).toBeDefined()
     expect(msgSession.message).toBeDefined()
   })
 
   it('should raise error without gabi keys (PE)', async () => {
-    const alice = await Identity.buildFromMnemonic()
+    const alice = await AttesterIdentity.buildFromMnemonicAndKey(
+      constants.PUBLIC_KEY.valueOf(),
+      constants.PRIVATE_KEY.valueOf()
+    )
     expect(alice.initiateAttestation()).rejects.toThrowError()
   })
 })

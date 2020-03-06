@@ -114,7 +114,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     initiateAttestationMsg?: IInitiateAttestation
     attesterPubKey?: AttesterPublicKey
   }): Promise<[RequestForAttestation, ClaimerAttestationSession | null]> {
-    if (claim.owner !== identity.address) {
+    if (claim.owner !== identity.getAddress()) {
       throw Error('Claim owner is not Identity')
     }
 

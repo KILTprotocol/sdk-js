@@ -43,13 +43,13 @@ describe('CType', () => {
 
     fromRawCType = {
       schema: rawCType,
-      owner: identityAlice.address,
+      owner: identityAlice.getAddress(),
       hash: '',
     }
 
     fromCTypeModel = {
       schema: ctypeModel,
-      owner: identityAlice.address,
+      owner: identityAlice.getAddress(),
       hash: '',
     }
     claimCtype = CType.fromCType(fromRawCType)
@@ -61,7 +61,7 @@ describe('CType', () => {
     claim = Claim.fromCTypeAndClaimContents(
       claimCtype,
       claimContents,
-      identityAlice.address
+      identityAlice.getAddress()
     )
   })
 
@@ -72,7 +72,7 @@ describe('CType', () => {
     ctype.hash = testHash
     const resultCtype = {
       ...ctype,
-      owner: identityAlice.address,
+      owner: identityAlice.getAddress(),
     }
 
     const resultTxStatus = new TxStatus(FINALIZED, Crypto.hashStr('987654'))
@@ -120,7 +120,7 @@ describe('blank ctypes', () => {
 
     icytype1 = {
       schema: ctypeSchema1,
-      owner: identityAlice.address,
+      owner: identityAlice.getAddress(),
       hash: '',
     }
 
@@ -133,7 +133,7 @@ describe('blank ctypes', () => {
 
     icytype2 = {
       schema: ctypeSchema2,
-      owner: identityAlice.address,
+      owner: identityAlice.getAddress(),
       hash: '',
     }
 
@@ -151,12 +151,12 @@ describe('blank ctypes', () => {
     const claimA1 = Claim.fromCTypeAndClaimContents(
       ctype1,
       {},
-      identityAlice.address
+      identityAlice.getAddress()
     )
     const claimA2 = Claim.fromCTypeAndClaimContents(
       ctype2,
       {},
-      identityAlice.address
+      identityAlice.getAddress()
     )
 
     expect(

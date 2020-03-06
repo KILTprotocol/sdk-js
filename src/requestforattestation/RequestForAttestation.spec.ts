@@ -3,6 +3,7 @@ import {
   AttesterAttestationSession,
 } from '@kiltprotocol/portablegabi'
 import Identity from '../identity/Identity'
+import AttesterIdentity from '../identity/AttesterIdentity'
 import RequestForAttestation from './RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
@@ -25,8 +26,11 @@ async function buildRequestForAttestationPE(
 > {
   // create claim
 
-  const identityAlice = await Identity.buildFromURI('//Alice')
-  identityAlice.loadGabiKeys(constants.pubKey, constants.privKey)
+  const identityAlice = await AttesterIdentity.buildFromURIAndKey(
+    '//Alice',
+    constants.PUBLIC_KEY.valueOf(),
+    constants.PRIVATE_KEY.valueOf()
+  )
 
   const { message, session } = await identityAlice.initiateAttestation()
 
@@ -41,7 +45,7 @@ async function buildRequestForAttestationPE(
 
   const fromRawCType: ICType = {
     schema: rawCType,
-    owner: identityAlice.address,
+    owner: identityAlice.getAddress(),
     hash: '',
   }
 
@@ -50,7 +54,7 @@ async function buildRequestForAttestationPE(
   const claim: IClaim = {
     cTypeHash: testCType.hash,
     contents,
-    owner: claimer.address,
+    owner: claimer.getAddress(),
   }
   // build request for attestation with legitimations
   const [
@@ -61,7 +65,7 @@ async function buildRequestForAttestationPE(
     identity: claimer,
     legitimations,
     initiateAttestationMsg: message,
-    attesterPubKey: identityAlice.publicGabiKey,
+    attesterPubKey: identityAlice.getPublicGabiKey(),
   })
   return [request, claimerSession, identityAlice, session]
 }
@@ -73,8 +77,11 @@ async function buildRequestForAttestation(
 ): Promise<RequestForAttestation> {
   // create claim
 
-  const identityAlice = await Identity.buildFromURI('//Alice')
-  identityAlice.loadGabiKeys(constants.pubKey, constants.privKey)
+  const identityAlice = await AttesterIdentity.buildFromURIAndKey(
+    '//Alice',
+    constants.PUBLIC_KEY.valueOf(),
+    constants.PRIVATE_KEY.valueOf()
+  )
 
   const rawCType: ICType['schema'] = {
     $id: 'http://example.com/ctype-1',
@@ -87,7 +94,7 @@ async function buildRequestForAttestation(
 
   const fromRawCType: ICType = {
     schema: rawCType,
-    owner: identityAlice.address,
+    owner: identityAlice.getAddress(),
     hash: '',
   }
 
@@ -96,7 +103,7 @@ async function buildRequestForAttestation(
   const claim: IClaim = {
     cTypeHash: testCType.hash,
     contents,
-    owner: claimer.address,
+    owner: claimer.getAddress(),
   }
   // build request for attestation with legitimations
   const request = (await RequestForAttestation.fromClaimAndIdentity({
@@ -127,7 +134,7 @@ describe('RequestForAttestation', () => {
     // build attestation
     legitimationAttestation = Attestation.fromRequestAndPublicIdentity(
       legitimationRequest,
-      identityCharlie
+      identityCharlie.getPublicIdentity()
     )
     // combine to attested claim
     legitimation = await AttestedClaim.fromRequestAndAttestation(

@@ -82,7 +82,7 @@ export default class Blockchain implements IBlockchainApi {
     identity: Identity,
     tx: SubmittableExtrinsic
   ): Promise<TxStatus> {
-    const accountAddress = identity.address
+    const accountAddress = identity.getAddress()
     const nonce = await this.getNonce(accountAddress)
     const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
       tx,

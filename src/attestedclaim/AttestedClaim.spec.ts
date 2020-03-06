@@ -1,12 +1,13 @@
 import Identity from '../identity/Identity'
+import AttesterIdentity from '../identity/AttesterIdentity'
 import AttestedClaim from './AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
-import constants from '../test/constants'
 import { Verifier } from '..'
+import constants from '../test/constants'
 
 async function buildAttestedClaim(
   claimer: Identity,
@@ -28,7 +29,7 @@ async function buildAttestedClaim(
 
   const fromRawCType: ICType = {
     schema: rawCType,
-    owner: identityAlice.address,
+    owner: identityAlice.getAddress(),
     hash: '',
   }
 
@@ -37,7 +38,7 @@ async function buildAttestedClaim(
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
     contents,
-    claimer.address
+    claimer.getAddress()
   )
   // build request for attestation with legitimations
   const [
@@ -50,7 +51,7 @@ async function buildAttestedClaim(
   // build attestation
   const testAttestation = Attestation.fromRequestAndPublicIdentity(
     requestForAttestation,
-    attester
+    attester.getPublicIdentity()
   )
   // combine to attested claim
   const attestedClaim = await AttestedClaim.fromRequestAndAttestation(
@@ -63,13 +64,13 @@ async function buildAttestedClaim(
 
 async function buildAttestedClaimPE(
   claimer: Identity,
-  attester: Identity,
+  attester: AttesterIdentity,
   contents: object,
   legitimations: AttestedClaim[]
 ): Promise<AttestedClaim> {
   // create claim
   const identityAlice = await Identity.buildFromURI('//Alice')
-  attester.loadGabiKeys(constants.pubKey, constants.privKey)
+
   const {
     session: attestersSession,
     message,
@@ -86,7 +87,7 @@ async function buildAttestedClaimPE(
 
   const fromRawCType: ICType = {
     schema: rawCType,
-    owner: identityAlice.address,
+    owner: identityAlice.getAddress(),
     hash: '',
   }
 
@@ -95,7 +96,7 @@ async function buildAttestedClaimPE(
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
     contents,
-    claimer.address
+    claimer.getAddress()
   )
   // build request for attestation with legitimations
   const [
@@ -106,9 +107,9 @@ async function buildAttestedClaimPE(
     identity: claimer,
     legitimations,
     initiateAttestationMsg: message,
-    attesterPubKey: attester.publicGabiKey,
+    attesterPubKey: attester.getPublicGabiKey(),
   })
-  const attestationPE = (await attester.issueAttestationPE(
+  const attestationPE = (await attester.issuePrivacyEnhancedAttestation(
     attestersSession,
     requestForAttestation
   ))[1]
@@ -116,7 +117,7 @@ async function buildAttestedClaimPE(
   // build attestation
   const testAttestation = Attestation.fromRequestAndPublicIdentity(
     requestForAttestation,
-    attester
+    attester.getPublicIdentity()
   )
   // combine to attested claim
   const attestedClaim = await AttestedClaim.fromRequestAndAttestation(
@@ -130,13 +131,17 @@ async function buildAttestedClaimPE(
 }
 
 describe('RequestForAttestation', () => {
-  let identityAlice: Identity
+  let identityAlice: AttesterIdentity
   let identityBob: Identity
   let identityCharlie: Identity
   let legitimation: AttestedClaim
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = await AttesterIdentity.buildFromURIAndKey(
+      '//Alice',
+      constants.PUBLIC_KEY.valueOf(),
+      constants.PRIVATE_KEY.valueOf()
+    )
 
     identityBob = await Identity.buildFromURI('//Bob')
     identityCharlie = await Identity.buildFromURI('//Charlie')
@@ -174,7 +179,6 @@ describe('RequestForAttestation', () => {
   })
 
   it('verify attested claim with PE in a non PE way', async () => {
-    identityAlice.loadGabiKeys(constants.pubKey, constants.privKey)
     const attestedClaim = await buildAttestedClaimPE(
       identityCharlie,
       identityAlice,
@@ -202,7 +206,6 @@ describe('RequestForAttestation', () => {
   })
 
   it('verify attested claim with PE', async () => {
-    identityAlice.loadGabiKeys(constants.pubKey, constants.privKey)
     const attestedClaim = await buildAttestedClaimPE(
       identityCharlie,
       identityAlice,
@@ -229,20 +232,14 @@ describe('RequestForAttestation', () => {
       identityCharlie,
       request,
       [attestedClaim],
-      typeof identityAlice.publicGabiKey !== 'undefined'
-        ? [identityAlice.publicGabiKey]
-        : []
+      [identityAlice.getPublicGabiKey()]
     )
 
     Verifier.verifyPresentation(
       correctPresentation,
       session,
-      typeof identityAlice.accumulator !== 'undefined'
-        ? [identityAlice.accumulator]
-        : [],
-      typeof identityAlice.publicGabiKey !== 'undefined'
-        ? [identityAlice.publicGabiKey]
-        : []
+      [identityAlice.getAccumulator()],
+      [identityAlice.getPublicGabiKey()]
     )
   })
 })

@@ -48,7 +48,7 @@ describe('Claim', () => {
 
     fromRawCType = {
       schema: cType,
-      owner: claimerIdentity.address,
+      owner: claimerIdentity.getAddress(),
       hash: '',
     }
 
@@ -57,7 +57,7 @@ describe('Claim', () => {
     claim = {
       cTypeHash: testCType.hash,
       contents: {},
-      owner: claimerIdentity.address,
+      owner: claimerIdentity.getAddress(),
     }
 
     // build request for attestation with legitimations
@@ -87,7 +87,7 @@ describe('Claim', () => {
     } as IQuote
 
     validQuoteData = {
-      attesterAddress: attesterIdentity.address,
+      attesterAddress: attesterIdentity.getAddress(),
       cTypeHash: '0x12345678',
       cost: {
         gross: 233,
@@ -112,7 +112,9 @@ describe('Claim', () => {
   })
 
   it('tests created quote data against given data', () => {
-    expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
+    expect(validQuoteData.attesterAddress).toEqual(
+      attesterIdentity.getAddress()
+    )
     expect(quoteBothAgreed.claimerSignature).toEqual(
       claimerIdentity.signStr(hashObjectAsStr(validAttesterSignedQuote))
     )

@@ -21,7 +21,7 @@ describe('Delegation', () => {
           new Tuple(
             // Root-Delegation: root-id -> (ctype-hash, account, revoked)
             [H256, AccountId, Bool],
-            [ctypeHash, identityAlice.address, false]
+            [ctypeHash, identityAlice.getAddress(), false]
           )
         )
         return Promise.resolve(tuple)
@@ -34,7 +34,7 @@ describe('Delegation', () => {
           new Tuple(
             // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
             [H256, AccountId, Bool],
-            [ctypeHash, identityAlice.address, false]
+            [ctypeHash, identityAlice.getAddress(), false]
           )
         )
         return Promise.resolve(tuple)
@@ -47,7 +47,7 @@ describe('Delegation', () => {
     const rootDelegation = new DelegationRootNode(
       ROOT_IDENTIFIER,
       ctypeHash,
-      identityAlice.getPublicIdentity().address
+      identityAlice.getAddress()
     )
     rootDelegation.store(identityAlice)
     const rootNode = await DelegationRootNode.query(ROOT_IDENTIFIER)
@@ -61,7 +61,7 @@ describe('Delegation', () => {
     const queriedDelegation = await DelegationRootNode.query(ROOT_IDENTIFIER)
     expect(queriedDelegation).not.toBe(undefined)
     if (queriedDelegation) {
-      expect(queriedDelegation.account).toBe(identityAlice.address)
+      expect(queriedDelegation.account).toBe(identityAlice.getAddress())
       expect(queriedDelegation.cTypeHash).toBe(ctypeHash)
       expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
     }

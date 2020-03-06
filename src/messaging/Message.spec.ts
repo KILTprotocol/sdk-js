@@ -94,7 +94,7 @@ describe('Messaging', () => {
 
     const encryptedWrongBody: EncryptedAsymmetricString = identityAlice.encryptAsymmetricAsStr(
       '{ wrong JSON',
-      identityBob.boxPublicKeyAsHex
+      identityBob.getBoxPublicKey()
     )
     const ts: number = Date.now()
     const hashStrBadContent: string = Crypto.hashStr(
@@ -119,7 +119,7 @@ describe('Messaging', () => {
     const content = {
       claim: {
         cTypeHash: '0x12345678',
-        owner: identityAlice.getPublicIdentity().address,
+        owner: identityAlice.getAddress(),
         contents: {},
       },
       delegationId: null,
@@ -133,7 +133,7 @@ describe('Messaging', () => {
     } as IRequestForAttestation
 
     const quoteData: IQuote = {
-      attesterAddress: identityAlice.address,
+      attesterAddress: identityAlice.getAddress(),
       cTypeHash: '0x12345678',
       cost: {
         tax: { vat: 3.3 },

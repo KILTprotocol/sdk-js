@@ -26,7 +26,7 @@ export async function store(
   if (txStatus.type === FINALIZED) {
     txStatus.payload = {
       ...ctype,
-      owner: identity.address,
+      owner: identity.getAddress(),
     }
   }
   return txStatus

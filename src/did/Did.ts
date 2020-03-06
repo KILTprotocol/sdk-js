@@ -104,10 +104,10 @@ export default class Did implements IDid {
    * @returns The [[Did]] object.
    */
   public static fromIdentity(identity: Identity, documentStore?: string): Did {
-    const identifier = getIdentifierFromAddress(identity.address)
+    const identifier = getIdentifierFromAddress(identity.getAddress())
     return new Did(
       identifier,
-      identity.boxPublicKeyAsHex,
+      identity.getBoxPublicKey(),
       identity.signPublicKeyAsHex,
       documentStore
     )

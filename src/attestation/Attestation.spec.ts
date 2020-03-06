@@ -12,7 +12,7 @@ import Claim from '../claim/Claim'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
-describe('Attestation', async () => {
+describe('Attestation', () => {
   let identityAlice: Identity
   let identityBob: Identity
   let Blockchain: any
@@ -40,7 +40,7 @@ describe('Attestation', async () => {
 
     fromRawCType = {
       schema: rawCType,
-      owner: identityAlice.address,
+      owner: identityAlice.getAddress(),
       hash: '',
     }
 
@@ -50,7 +50,7 @@ describe('Attestation', async () => {
     testClaim = Claim.fromCTypeAndClaimContents(
       testCType,
       testcontents,
-      identityBob.address
+      identityBob.getAddress()
     )
     ;[requestForAttestation] = await RequestForAttestation.fromClaimAndIdentity(
       {
@@ -66,7 +66,7 @@ describe('Attestation', async () => {
         Tuple,
         new Tuple(
           [Text, AccountId, Text, Bool],
-          [testCType.hash, identityAlice.address, undefined, false]
+          [testCType.hash, identityAlice.getAddress(), undefined, false]
         )
       )
       return Promise.resolve(tuple)
@@ -74,7 +74,7 @@ describe('Attestation', async () => {
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice.getPublicIdentity()
     )
     expect(await attestation.verify()).toBeTruthy()
   })
@@ -87,7 +87,7 @@ describe('Attestation', async () => {
     const attestation: Attestation = Attestation.fromAttestation({
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
-      owner: identityAlice.address,
+      owner: identityAlice.getAddress(),
       revoked: false,
     } as IAttestation)
     expect(await attestation.verify()).toBeFalsy()
@@ -101,7 +101,7 @@ describe('Attestation', async () => {
           new Tuple(
             // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
             [Text, AccountId, Text, Bool],
-            [testCType.hash, identityAlice.address, undefined, true]
+            [testCType.hash, identityAlice.getAddress(), undefined, true]
           )
         )
       )
@@ -109,7 +109,7 @@ describe('Attestation', async () => {
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice.getPublicIdentity()
     )
     expect(await attestation.verify()).toBeFalsy()
   })

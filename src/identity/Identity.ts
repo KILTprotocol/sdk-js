@@ -25,17 +25,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair } from 'tweetnacl'
-import {
-  AttesterPrivateKey,
-  Attester,
-  AttesterPublicKey,
-  AttesterAttestationSession,
-  Witness,
-  Attestation as GabiAttestation,
-  Accumulator,
-  Claimer,
-} from '@kiltprotocol/portablegabi'
-import IRequestForAttestation from '../types/RequestForAttestation'
+import { Claimer } from '@kiltprotocol/portablegabi'
 import Crypto from '../crypto'
 import {
   CryptoInput,
@@ -43,7 +33,6 @@ import {
   EncryptedAsymmetricString,
 } from '../crypto/Crypto'
 import PublicIdentity from './PublicIdentity'
-import { IInitiateAttestation, MessageBodyType } from '../messaging/Message'
 
 type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
@@ -54,7 +43,7 @@ type BoxPublicKey =
  */
 const MinSeedLength = 32
 
-export default class Identity extends PublicIdentity {
+export default class Identity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
 
   /**
@@ -68,6 +57,28 @@ export default class Identity extends PublicIdentity {
    */
   public static generateMnemonic(): string {
     return generate()
+  }
+
+  /**
+   * [STATIC] Builds a new [[Identity]], generated from a seed (Secret Seed).
+   *
+   * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
+   * @returns An [[Identity]].
+   * @example ```javascript
+   * // prettier-ignore
+   * const seed = new Uint8Array([108, 233, 253,  6,  12, 112,  22,  92,
+   *                               15, 200, 218, 37, 129,  13,  36, 145,
+   *                                6, 213, 223, 16,  10, 169, 128, 224,
+   *                              217, 161,  20,  9, 214, 179,  82,  97
+   *                            ]);
+   * await Identity.buildFromSeed(seed);
+   * ```
+   */
+  public static async buildFromSeed(seed: Uint8Array): Promise<Identity> {
+    const keyring = new Keyring({ type: 'ed25519' })
+    const keyringPair = keyring.addFromSeed(seed)
+    const claimer = await Claimer.buildFromSeed(seed)
+    return new Identity(seed, keyringPair, claimer)
   }
 
   /**
@@ -119,28 +130,6 @@ export default class Identity extends PublicIdentity {
   }
 
   /**
-   * [STATIC] Builds a new [[Identity]], generated from a seed (Secret Seed).
-   *
-   * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
-   * @returns An [[Identity]].
-   * @example ```javascript
-   * // prettier-ignore
-   * const seed = new Uint8Array([108, 233, 253,  6,  12, 112,  22,  92,
-   *                               15, 200, 218, 37, 129,  13,  36, 145,
-   *                                6, 213, 223, 16,  10, 169, 128, 224,
-   *                              217, 161,  20,  9, 214, 179,  82,  97
-   *                            ]);
-   * await Identity.buildFromSeed(seed);
-   * ```
-   */
-  public static async buildFromSeed(seed: Uint8Array): Promise<Identity> {
-    const keyring = new Keyring({ type: 'ed25519' })
-    const keyringPair = keyring.addFromSeed(seed)
-    const claimer = await Claimer.buildFromSeed(seed)
-    return new Identity(seed, keyringPair, claimer)
-  }
-
-  /**
    * [STATIC] Builds a new [[Identity]], generated from a uniform resource identifier (URIs).
    *
    * @param uri - Standard identifiers.
@@ -163,23 +152,20 @@ export default class Identity extends PublicIdentity {
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
   public readonly claimer: Claimer
+  public readonly signKeyringPair: KeyringPair
+  public readonly boxKeyPair: BoxKeyPair
 
-  private constructor(
+  constructor(
     seed: Uint8Array,
     signKeyringPair: KeyringPair,
-    claimer: Claimer,
-    privateGabiKey?: AttesterPrivateKey
+    claimer: Claimer
   ) {
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public
     // Maybe use BIP32 and BIP44
     const seedAsHex = u8aUtil.u8aToHex(seed)
-    const { address } = signKeyringPair
 
     const boxKeyPair = Identity.createBoxKeyPair(seed)
-    const boxPublicKeyAsHex = u8aUtil.u8aToHex(boxKeyPair.publicKey)
-
-    super(address, boxPublicKeyAsHex)
 
     this.seed = seed
     this.seedAsHex = seedAsHex
@@ -188,13 +174,8 @@ export default class Identity extends PublicIdentity {
     this.signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyringPair.publicKey)
 
     this.boxKeyPair = boxKeyPair
-    this.privateGabiKey = privateGabiKey
     this.claimer = claimer
   }
-
-  private readonly signKeyringPair: KeyringPair
-  private readonly boxKeyPair: BoxKeyPair
-  private privateGabiKey?: AttesterPrivateKey
 
   /**
    * Returns the [[PublicIdentity]] (identity's address and public key) of the Identity.
@@ -207,8 +188,18 @@ export default class Identity extends PublicIdentity {
    * ```
    */
   public getPublicIdentity(): PublicIdentity {
-    const { address, boxPublicKeyAsHex } = this
-    return { address, boxPublicKeyAsHex }
+    return new PublicIdentity(
+      this.signKeyringPair.address,
+      u8aUtil.u8aToHex(this.boxKeyPair.publicKey)
+    )
+  }
+
+  public getAddress(): string {
+    return this.signKeyringPair.address
+  }
+
+  public getBoxPublicKey(): string {
+    return u8aUtil.u8aToHex(this.boxKeyPair.publicKey)
   }
 
   /**
@@ -394,90 +385,5 @@ export default class Identity extends PublicIdentity {
 
     const hash = Crypto.hash(paddedSeed)
     return nacl.box.keyPair.fromSecretKey(hash)
-  }
-
-  /**
-   * Returns the private key used to create privacy enhanced attestations.
-   *
-   * @returns The private key used for attesting.
-   */
-  public getPrivateGabiKey(): AttesterPrivateKey | undefined {
-    return this.privateGabiKey
-  }
-
-  public async generateGabiKeys(
-    validityDuration: number,
-    maxAttributes: number
-  ): Promise<void> {
-    if (typeof this.privateGabiKey !== 'undefined') {
-      throw new Error('Keys already present.')
-    }
-    const attester = await Attester.create(validityDuration, maxAttributes)
-    this.privateGabiKey = attester.privateKey
-    this.publicGabiKey = attester.publicKey
-  }
-
-  public async loadGabiKeys(
-    rawPublicKey: string,
-    rawPrivateKey: string,
-    accumulator?: string
-  ): Promise<void> {
-    this.privateGabiKey = new AttesterPrivateKey(rawPrivateKey)
-    this.publicGabiKey = new AttesterPublicKey(rawPublicKey)
-    if (typeof accumulator !== 'undefined') {
-      this.accumulator = new Accumulator(accumulator)
-    } else {
-      this.accumulator = await new Attester(
-        this.publicGabiKey,
-        this.privateGabiKey
-      ).createAccumulator()
-    }
-  }
-
-  public async issueAttestationPE(
-    session: AttesterAttestationSession,
-    reqForAttestation: IRequestForAttestation
-  ): Promise<[Witness, GabiAttestation]> {
-    if (
-      typeof this.publicGabiKey !== 'undefined' &&
-      typeof this.privateGabiKey !== 'undefined' &&
-      typeof this.accumulator !== 'undefined' &&
-      reqForAttestation.privacyEnhanced !== null
-    ) {
-      const attester = new Attester(this.publicGabiKey, this.privateGabiKey)
-      const { witness, attestation } = await attester.issueAttestation({
-        attestationSession: session,
-        attestationRequest: reqForAttestation.privacyEnhanced,
-        accumulator: this.accumulator,
-      })
-
-      return [witness, attestation]
-    }
-    throw new Error(`This identity does not support privacy enhanced signing. \n
-      publicGabiKey: ${this.publicGabiKey}\n
-      privateGabiKey: ${this.privateGabiKey}\n
-      acc: ${this.accumulator}\n
-      pe request: ${reqForAttestation.privacyEnhanced}`)
-  }
-
-  public async initiateAttestation(): Promise<{
-    message: IInitiateAttestation
-    session: AttesterAttestationSession
-  }> {
-    if (
-      typeof this.privateGabiKey !== 'undefined' &&
-      typeof this.publicGabiKey !== 'undefined'
-    ) {
-      const attester = new Attester(this.publicGabiKey, this.privateGabiKey)
-      const { message, session } = await attester.startAttestation()
-      return {
-        message: {
-          content: message,
-          type: MessageBodyType.INITIATE_ATTESTATION,
-        },
-        session,
-      }
-    }
-    throw new Error('Identity cannot be used for attestation')
   }
 }
