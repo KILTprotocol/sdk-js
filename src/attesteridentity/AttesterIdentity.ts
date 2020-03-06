@@ -10,7 +10,7 @@ import {
   Attestation,
 } from '@kiltprotocol/portablegabi'
 import { KeyringPair } from '@polkadot/keyring/types'
-import Identity from './Identity'
+import Identity from '../identity/Identity'
 import { MessageBodyType, IInitiateAttestation } from '../messaging/Message'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import PublicAttesterIdentity from './PublicAttesterIdentity'

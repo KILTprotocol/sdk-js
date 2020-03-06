@@ -51,7 +51,7 @@ export default class Identity {
    *
    * @returns Randomly generated [[BIP39]](https://www.npmjs.com/package/bip39) mnemonic phrase (Secret phrase).
    * @example ```javascript
-   * ´Identity.generateMnemonic();
+   * Identity.generateMnemonic();
    * // returns: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    * ```
    */
@@ -154,6 +154,7 @@ export default class Identity {
   public readonly claimer: Claimer
   public readonly signKeyringPair: KeyringPair
   public readonly boxKeyPair: BoxKeyPair
+  public serviceAddress?: string
 
   constructor(
     seed: Uint8Array,
@@ -190,7 +191,8 @@ export default class Identity {
   public getPublicIdentity(): PublicIdentity {
     return new PublicIdentity(
       this.signKeyringPair.address,
-      u8aUtil.u8aToHex(this.boxKeyPair.publicKey)
+      u8aUtil.u8aToHex(this.boxKeyPair.publicKey),
+      this.serviceAddress
     )
   }
 

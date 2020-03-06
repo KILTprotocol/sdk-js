@@ -2,7 +2,7 @@ import * as u8aUtil from '@polkadot/util/u8a'
 import Identity from './Identity'
 import { coToUInt8 } from '../crypto/Crypto'
 import constants from '../test/constants'
-import AttesterIdentity from './AttesterIdentity'
+import AttesterIdentity from '../attesteridentity/AttesterIdentity'
 
 describe('Identity', () => {
   // https://polkadot.js.org/api/examples/promise/

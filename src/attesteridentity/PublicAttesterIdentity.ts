@@ -1,5 +1,5 @@
 import { AttesterPublicKey } from '@kiltprotocol/portablegabi'
-import PublicIdentity from './PublicIdentity'
+import PublicIdentity from '../identity/PublicIdentity'
 
 export default class PublicAttesterIdentity extends PublicIdentity {
   public readonly publicGabiKey: AttesterPublicKey
