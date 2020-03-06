@@ -10,6 +10,7 @@ import Kilt, {
   Claim,
   Accumulator,
   CombinedPresentation,
+  AttesterIdentity,
 } from '../src'
 
 const privKey =
@@ -19,7 +20,7 @@ const pubKey =
 
 async function doAttestation(): Promise<{
   claimer: Identity
-  attester: Identity
+  attester: AttesterIdentity
   claim: Claim
   attestedClaim: AttestedClaim
   accumulator: Accumulator
@@ -29,7 +30,7 @@ async function doAttestation(): Promise<{
   const claimer = await Kilt.Identity.buildFromMnemonic(
     'wish rather clinic rather connect culture frown like quote effort cart faculty'
   )
-  // const address = claimer.address
+  // const address = claimer.getAddress()
 
   // At this point the generated Identity has no tokens.
   // If you want to interact with the blockchain, you will have to get some.
@@ -57,7 +58,7 @@ async function doAttestation(): Promise<{
   const rawCtype: ICType = {
     schema: ctypeSchema,
     hash: ctypeHash,
-    owner: claimer.address,
+    owner: claimer.getAddress(),
   }
 
   // Build the CType object
@@ -75,15 +76,14 @@ async function doAttestation(): Promise<{
   // ------------------------- Attester ----------------------------------------
 
   // To get an attestation, we need an Attester
-  // const mnemonicForAttester = Kilt.Identity.generateMnemonic()
-  const attester = await Kilt.Identity.buildFromMnemonic(
+  // we can generate a new keypair, which will take about 20 minutes:
+  // const attester = await Kilt.AttesterIdentity.buildFromMnemonic("...")
+  // or we just use unsafe precalculated keys (just for demo purposes!):
+  const attester = await Kilt.AttesterIdentity.buildFromMnemonicAndKey(
+    pubKey,
+    privKey,
     'feel hazard trip seven traffic make hero kingdom speed transfer rug success'
   )
-
-  // wait ~15 minutes... :)
-  // await attester.generateGabiKeys(365 * 24 * 60 * 60 * 1000, 70)
-  // for speed and no security use those example keys
-  attester.loadGabiKeys(pubKey, privKey)
 
   // for privacy enhanced attestations the attester has to initiate the attestation process
   const {
@@ -101,7 +101,7 @@ async function doAttestation(): Promise<{
   const claim = new Kilt.Claim({
     cTypeHash: ctypeHash,
     contents: rawClaim,
-    owner: claimer.address,
+    owner: claimer.getAddress(),
   })
 
   const [
@@ -111,7 +111,7 @@ async function doAttestation(): Promise<{
     claim,
     identity: claimer,
     initiateAttestationMsg: initiateAttestationMessage,
-    attesterPubKey: attester.publicGabiKey,
+    attesterPubKey: attester.getPublicGabiKey(),
   })
 
   // Excourse to the messaging system
@@ -122,7 +122,11 @@ async function doAttestation(): Promise<{
     },
     type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
   }
-  const message = new Kilt.Message(messageBody, claimer, attester)
+  const message = new Kilt.Message(
+    messageBody,
+    claimer,
+    attester.getPublicIdentity()
+  )
   // The message can be encrypted as follows
   const encrypted = message.getEncryptedMessage()
 
@@ -130,7 +134,7 @@ async function doAttestation(): Promise<{
 
   // ------------------------- Attester ----------------------------------------
   // Check the validity of the message
-  Kilt.Message.ensureHashAndSignature(encrypted, claimer.address)
+  Kilt.Message.ensureHashAndSignature(encrypted, claimer.getAddress())
   // When the Attester receives the message, she can decrypt it
   const decrypted = Kilt.Message.createFromEncryptedMessage(encrypted, attester)
 
@@ -140,9 +144,12 @@ async function doAttestation(): Promise<{
   // Lets continue with the original object
   const attestation = Kilt.Attestation.fromRequestAndPublicIdentity(
     requestForAttestation,
-    attester
+    attester.getPublicIdentity()
   )
-  const [witness, attestationPE] = await attester.issueAttestationPE(
+  const [
+    witness,
+    attestationPE,
+  ] = await attester.issuePrivacyEnhancedAttestation(
     attestersSession,
     requestForAttestation
   )
@@ -161,11 +168,15 @@ async function doAttestation(): Promise<{
     },
     type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
   }
-  const messageBack = new Kilt.Message(messageBodyBack, attester, claimer)
+  const messageBack = new Kilt.Message(
+    messageBodyBack,
+    attester,
+    claimer.getPublicIdentity()
+  )
   const encryptedBack = messageBack.getEncryptedMessage()
 
   // ------------------------- CLAIMER -----------------------------------------
-  Kilt.Message.ensureHashAndSignature(encryptedBack, attester.address)
+  Kilt.Message.ensureHashAndSignature(encryptedBack, attester.getAddress())
   // FIXME: Why no work! :_(
   // const decryptedBack = Kilt.Message.createFromEncryptedMessage(
   //   encrypted,
@@ -183,8 +194,8 @@ async function doAttestation(): Promise<{
     claimerSession,
     content.attestationPE
   )
-  console.log('Claimer', claimer.address, '\n')
-  console.log('Attester', attester.address, '\n')
+  console.log('Claimer', claimer.getAddress(), '\n')
+  console.log('Attester', attester.getAddress(), '\n')
 
   console.log('Ctype', ctype, '\n')
   console.log('Claim', claim, '\n')
@@ -210,14 +221,11 @@ async function doAttestation(): Promise<{
 
 async function doVerification(
   claimer: Identity,
-  attester: Identity,
+  attester: AttesterIdentity,
   attestedClaim: AttestedClaim,
   accumulator: Accumulator
 ): Promise<void> {
-  const attesterPubKey = attester.publicGabiKey
-  if (typeof attesterPubKey === 'undefined') {
-    throw new Error('Attester needs a key pair')
-  }
+  const attesterPubKey = attester.getPublicGabiKey()
   // ------------------------- Verifier ----------------------------------------
   const [session, request] = await Kilt.Verifier.newRequest()
     .requestPresentationForCtype({
