@@ -109,8 +109,8 @@ export default class AttesterIdentity extends Identity {
   public static async buildFromMnemonicAndKey(
     publicGabiKey: string,
     privateGabiKey: string,
-    accumulator?: string,
-    phraseArg?: string
+    phraseArg?: string,
+    accumulator?: string
   ): Promise<AttesterIdentity> {
     return this.buildFromIdentityAndKeys(
       await Identity.buildFromMnemonic(phraseArg),

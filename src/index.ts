@@ -7,6 +7,7 @@ import { Accumulator, CombinedPresentation } from '@kiltprotocol/portablegabi'
 import { connect, disconnect } from './kilt/Kilt'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import * as Balance from './balance/Balance.chain'
+import AttesterIdentity from './attesteridentity/AttesterIdentity'
 import Identity from './identity/Identity'
 import PublicIdentity, { IURLResolver } from './identity/PublicIdentity'
 import CType from './ctype/CType'
@@ -59,6 +60,7 @@ export {
 } from './types/Delegation'
 
 export {
+  AttesterIdentity,
   BlockchainApiConnection,
   Balance,
   Identity,
@@ -87,6 +89,7 @@ export {
 
 // ---- Default export for ease of use ----
 export default {
+  AttesterIdentity,
   connect,
   disconnect,
   Balance,

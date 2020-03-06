@@ -105,12 +105,4 @@ describe('Identity', () => {
     expect(msgSession.session).toBeDefined()
     expect(msgSession.message).toBeDefined()
   })
-
-  it('should raise error without gabi keys (PE)', async () => {
-    const alice = await AttesterIdentity.buildFromMnemonicAndKey(
-      constants.PUBLIC_KEY.valueOf(),
-      constants.PRIVATE_KEY.valueOf()
-    )
-    expect(alice.initiateAttestation()).rejects.toThrowError()
-  })
 })
