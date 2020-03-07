@@ -27,7 +27,6 @@ import Did, { IDid } from './did/Did'
 import * as Quote from './quote/Quote'
 import QuoteUtils from './quote/Quote.utils'
 import Message from './messaging/Message'
-import * as Constants from './const'
 
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
@@ -85,7 +84,6 @@ export {
   Did,
   IDid,
   Message,
-  Constants,
   Quote,
   QuoteUtils,
 }
