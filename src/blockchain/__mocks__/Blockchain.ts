@@ -1,3 +1,5 @@
+import TxStatus from '../TxStatus'
+
 /**
  * @module Blockchain
  * @ignore
@@ -8,6 +10,7 @@
  */
 const blockchain: any = {
   __mockResultHash: '',
+  __mockTxStatus: {payload: undefined, type: 'Finalized', isFinalized: true, isError: false, isDropped: false, isInvalid: false, isUsurped: false},
   __mockTxDelegationRoot: jest.fn(),
   __mockQueryDelegationRoot: jest.fn(),
   __mockQueryDelegationDelegation: jest.fn(),
@@ -88,7 +91,7 @@ const blockchain: any = {
   listenToBalanceChanges: jest.fn(),
   makeTransfer: jest.fn(),
   submitTx: jest.fn((identity, tx) => {
-    return Promise.resolve(blockchain.__mockResultHash)
+    return Promise.resolve(new TxStatus(blockchain.__mockTxStatus))
   }),
   getNonce: jest.fn(),
 }

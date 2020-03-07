@@ -2,9 +2,7 @@ import CType from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
 import ICType from '../types/CType'
-import TxStatus from '../blockchain/TxStatus'
 import Claim from '../claim/Claim'
-import { FINALIZED } from '../const/TxStatus'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
@@ -64,11 +62,9 @@ describe('CType', () => {
       owner: identityAlice.address,
     }
 
-    const resultTxStatus = new TxStatus(FINALIZED, Crypto.hashStr('987654'))
-    require('../blockchain/Blockchain').default.__mockResultHash = resultTxStatus
-
     const result = await ctype.store(identityAlice)
-    expect(result.type).toEqual(resultTxStatus.type)
+    expect(result.isFinalized).toBeTruthy()
+    expect(result.isCompleted).toBeTruthy()
     expect(result.payload).toMatchObject(resultCtype)
   })
   it('verifies the claim structure', () => {
