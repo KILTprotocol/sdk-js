@@ -14,11 +14,13 @@ export type NonceHash = {
   hash: Hash
 }
 
+export type NonceHashTree = NonceHash | { [key: string]: NonceHashTree }
+
 export default interface IRequestForAttestation {
   claim: IClaim
   legitimations: AttestedClaim[]
   claimOwner: NonceHash
-  claimHashTree: object
+  claimHashTree: NonceHashTree
   cTypeHash: NonceHash
   rootHash: Hash
   claimerSignature: string

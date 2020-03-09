@@ -33,6 +33,7 @@ import AttestedClaim from '../attestedclaim/AttestedClaim'
 import IRequestForAttestation, {
   Hash,
   NonceHash,
+  NonceHashTree,
 } from '../types/RequestForAttestation'
 import { IDelegationBaseNode } from '../types/Delegation'
 
@@ -48,7 +49,7 @@ function generateHash(value: any): NonceHash {
   }
 }
 
-function generateHashTree(contents: object): object {
+function generateHashTree(contents: object): NonceHashTree {
   const result = {}
 
   Object.keys(contents).forEach(key => {
@@ -176,7 +177,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public legitimations: AttestedClaim[]
   public claimOwner: NonceHash
   public claimerSignature: string
-  public claimHashTree: object
+  public claimHashTree: NonceHashTree
   public cTypeHash: NonceHash
   public rootHash: Hash
   public privacyEnhanced: AttestationRequest | null
