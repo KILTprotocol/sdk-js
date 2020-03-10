@@ -95,7 +95,11 @@ describe('Claim', () => {
     const compressedQuote: Quote.CompressedQuote = [
       validQuoteData.attesterAddress,
       validQuoteData.cTypeHash,
-      Quote.compressCost(validQuoteData.cost),
+      [
+        validQuoteData.cost.gross,
+        validQuoteData.cost.net,
+        validQuoteData.cost.tax,
+      ],
       validQuoteData.currency,
       validQuoteData.termsAndConditions,
       validQuoteData.timeframe,
@@ -104,7 +108,11 @@ describe('Claim', () => {
     const compressedResultAttesterSignedQuote: Quote.CompressedQuoteAttesterSigned = [
       validQuoteData.attesterAddress,
       validQuoteData.cTypeHash,
-      Quote.compressCost(validQuoteData.cost),
+      [
+        validQuoteData.cost.gross,
+        validQuoteData.cost.net,
+        validQuoteData.cost.tax,
+      ],
       validQuoteData.currency,
       validQuoteData.termsAndConditions,
       validQuoteData.timeframe,
@@ -114,7 +122,11 @@ describe('Claim', () => {
     const compressedResultQuoteAgreement: Quote.CompressedQuoteAgreed = [
       validQuoteData.attesterAddress,
       validQuoteData.cTypeHash,
-      Quote.compressCost(validQuoteData.cost),
+      [
+        validQuoteData.cost.gross,
+        validQuoteData.cost.net,
+        validQuoteData.cost.tax,
+      ],
       validQuoteData.currency,
       validQuoteData.termsAndConditions,
       validQuoteData.timeframe,

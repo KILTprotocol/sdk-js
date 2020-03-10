@@ -3,16 +3,12 @@ import RequestForAttestation, {
   compressRequestForAttestation,
   CompressedRequestForAttestation,
   decompressRequestForAttestation,
-  compressClaimHashTree,
-  compressNonceAndHash,
-  compressLegitimation,
 } from './RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
-import { compressClaim } from '../claim/Claim'
 
 function buildRequestForAttestation(
   claimer: Identity,
@@ -145,13 +141,80 @@ describe('RequestForAttestation', () => {
     )
 
     const compressedReqForAtt: CompressedRequestForAttestation = [
-      compressClaim(reqForAtt.claim),
-      compressClaimHashTree(reqForAtt.claimHashTree),
-      compressNonceAndHash(reqForAtt.claimOwner),
+      [
+        reqForAtt.claim.contents,
+        reqForAtt.claim.cTypeHash,
+        reqForAtt.claim.owner,
+      ],
+      {
+        a: [reqForAtt.claimHashTree.a.hash, reqForAtt.claimHashTree.a.nonce],
+        b: [reqForAtt.claimHashTree.b.hash, reqForAtt.claimHashTree.b.nonce],
+        c: [reqForAtt.claimHashTree.c.hash, reqForAtt.claimHashTree.c.nonce],
+      },
+      [reqForAtt.claimOwner.hash, reqForAtt.claimOwner.nonce],
       reqForAtt.claimerSignature,
-      compressNonceAndHash(reqForAtt.cTypeHash),
+      [reqForAtt.cTypeHash.hash, reqForAtt.cTypeHash.nonce],
       reqForAtt.rootHash,
-      compressLegitimation(reqForAtt.legitimations),
+      [
+        [
+          [
+            [
+              legitimationCharlie.request.claim.contents,
+              legitimationCharlie.request.claim.cTypeHash,
+              legitimationCharlie.request.claim.owner,
+            ],
+            {},
+            [
+              legitimationCharlie.request.claimOwner.hash,
+              legitimationCharlie.request.claimOwner.nonce,
+            ],
+            legitimationCharlie.request.claimerSignature,
+            [
+              legitimationCharlie.request.cTypeHash.hash,
+              legitimationCharlie.request.cTypeHash.nonce,
+            ],
+            legitimationCharlie.request.rootHash,
+            [],
+            legitimationCharlie.request.delegationId,
+          ],
+          [
+            legitimationCharlie.attestation.claimHash,
+            legitimationCharlie.attestation.cTypeHash,
+            legitimationCharlie.attestation.owner,
+            legitimationCharlie.attestation.revoked,
+            legitimationCharlie.attestation.delegationId,
+          ],
+        ],
+        [
+          [
+            [
+              legitimationBob.request.claim.contents,
+              legitimationBob.request.claim.cTypeHash,
+              legitimationBob.request.claim.owner,
+            ],
+            {},
+            [
+              legitimationBob.request.claimOwner.hash,
+              legitimationBob.request.claimOwner.nonce,
+            ],
+            legitimationBob.request.claimerSignature,
+            [
+              legitimationBob.request.cTypeHash.hash,
+              legitimationBob.request.cTypeHash.nonce,
+            ],
+            legitimationBob.request.rootHash,
+            [],
+            legitimationBob.request.delegationId,
+          ],
+          [
+            legitimationBob.attestation.claimHash,
+            legitimationBob.attestation.cTypeHash,
+            legitimationBob.attestation.owner,
+            legitimationBob.attestation.revoked,
+            legitimationBob.attestation.delegationId,
+          ],
+        ],
+      ],
       reqForAtt.delegationId,
     ]
 
@@ -162,10 +225,13 @@ describe('RequestForAttestation', () => {
     expect(decompressRequestForAttestation(compressedReqForAtt)).toEqual(
       reqForAtt
     )
+
     expect(reqForAtt.compress()).toEqual(compressedReqForAtt)
+
     expect(RequestForAttestation.decompress(compressedReqForAtt)).toEqual(
       reqForAtt
     )
+
     expect(compressRequestForAttestation(reqForAtt)).not.toEqual(
       compressedReqForAtt[3]
     )
@@ -173,7 +239,9 @@ describe('RequestForAttestation', () => {
     expect(decompressRequestForAttestation(compressedReqForAtt)).not.toEqual(
       reqForAtt.cTypeHash
     )
+
     expect(reqForAtt.compress()).not.toEqual(compressedReqForAtt[4])
+
     expect(RequestForAttestation.decompress(compressedReqForAtt)).not.toEqual(
       reqForAtt.claimOwner
     )
