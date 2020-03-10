@@ -352,7 +352,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   private static getHashLeaves(
     claimOwner: NonceHash,
     cTypeHash: NonceHash,
-    claimHashTree: object,
+    claimHashTree: NonceHashTree,
     legitimations: AttestedClaim[],
     delegationId: IDelegationBaseNode['id'] | null
   ): Uint8Array[] {
@@ -377,7 +377,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   private static calculateRootHash(
     claimOwner: NonceHash,
     cTypeHash: NonceHash,
-    claimHashTree: object,
+    claimHashTree: NonceHashTree,
     legitimations: AttestedClaim[],
     delegationId: IDelegationBaseNode['id'] | null
   ): Hash {
