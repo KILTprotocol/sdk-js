@@ -66,7 +66,7 @@ export interface IDidDocumentPublicKey {
 }
 
 export interface IDidDocumentPpties {
-  authentication: object
+  authentication: Array<string | IDidDocumentPublicKey | AnyJsonObject>
   publicKey: IDidDocumentPublicKey[]
   service: IDidService[]
 }
