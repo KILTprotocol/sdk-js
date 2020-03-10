@@ -17,7 +17,7 @@ export async function store(
   identity: Identity
 ): Promise<TxStatus> {
   const blockchain = await getCached()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.createRoot(
+  const tx: SubmittableExtrinsic = await blockchain.api.tx.delegation.createRoot(
     delegation.id,
     delegation.cTypeHash
   )
@@ -43,7 +43,7 @@ export async function revoke(
   identity: Identity
 ): Promise<TxStatus> {
   const blockchain = await getCached()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.revokeRoot(
+  const tx: SubmittableExtrinsic = await blockchain.api.tx.delegation.revokeRoot(
     delegation.id
   )
   return blockchain.submitTx(identity, tx)

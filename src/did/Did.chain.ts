@@ -43,13 +43,13 @@ export async function queryByAddress(
 
 export async function remove(identity: Identity): Promise<TxStatus> {
   const blockchain = await getCached()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.did.remove()
+  const tx: SubmittableExtrinsic = await blockchain.api.tx.did.remove()
   return blockchain.submitTx(identity, tx)
 }
 
 export async function store(did: IDid, identity: Identity): Promise<TxStatus> {
   const blockchain = await getCached()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.did.add(
+  const tx: SubmittableExtrinsic = await blockchain.api.tx.did.add(
     did.publicBoxKey,
     did.publicSigningKey,
     new Option(Text, did.documentStore)
