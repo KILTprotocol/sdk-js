@@ -43,11 +43,11 @@ function generateHash(value: string): NonceHash {
   }
 }
 
-function generateHashTree(contents: object): NonceHashTree {
+function generateHashTree(contents: IClaim['contents']): NonceHashTree {
   const result: NonceHashTree = {}
 
   Object.keys(contents).forEach(key => {
-    result[key] = generateHash(contents[key])
+    result[key] = generateHash(contents[key].toString())
   })
 
   return result
