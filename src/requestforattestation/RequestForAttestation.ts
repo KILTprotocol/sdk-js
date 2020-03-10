@@ -307,7 +307,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
         throw Error(`Property '${key}' not in claim hash tree`)
       }
       const hashed: NonceHash = this.claimHashTree[key]
-      if (hashed.hash !== hashNonceValue(hashed.nonce, value)) {
+      if (hashed.hash !== hashNonceValue(hashed.nonce, value.toString())) {
         throw Error(`Invalid hash for property '${key}' in claim hash tree`)
       }
     })
