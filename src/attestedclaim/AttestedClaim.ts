@@ -11,21 +11,15 @@
 import Attestation, {
   compressAttestation,
   decompressAttestation,
-  CompressedAttestation,
 } from '../attestation/Attestation'
 import RequestForAttestation, {
   compressRequestForAttestation,
   decompressRequestForAttestation,
-  CompressedRequestForAttestation,
 } from '../requestforattestation/RequestForAttestation'
-import IAttestedClaim from '../types/AttestedClaim'
+import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
 
-export type CompressedAttestedClaim = [
-  CompressedRequestForAttestation,
-  CompressedAttestation
-]
 /**
  *  Compresses an [[AttestedClaim]] object into an array for storage and/or messaging.
  *

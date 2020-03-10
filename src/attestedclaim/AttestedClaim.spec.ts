@@ -2,13 +2,13 @@ import Identity from '../identity/Identity'
 import AttestedClaim, {
   compressAttestedClaim,
   decompressAttestedClaim,
-  CompressedAttestedClaim,
 } from './AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
+import { CompressedAttestedClaim } from '../types/AttestedClaim'
 
 function buildAttestedClaim(
   claimer: Identity,

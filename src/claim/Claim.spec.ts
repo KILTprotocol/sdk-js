@@ -1,7 +1,8 @@
-import Claim, { CompressedClaim, decompressClaim, compressClaim } from './Claim'
+import Claim, { decompressClaim, compressClaim } from './Claim'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
+import { CompressedClaim } from '../types/Claim'
 
 describe('Claim', () => {
   const identityAlice = Identity.buildFromURI('//Alice')

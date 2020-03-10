@@ -2,9 +2,11 @@
  * @packageDocumentation
  * @module IRequestForAttestation
  */
-import IClaim from './Claim'
+import { CompressedAttestedClaim } from '../attestedclaim/AttestedClaim'
+import IClaim, { CompressedClaim } from './Claim'
 import { IDelegationBaseNode } from './Delegation'
 import IAttestedClaim from './AttestedClaim'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 
 export type Hash = string
 
@@ -27,3 +29,21 @@ export default interface IRequestForAttestation {
   legitimations: IAttestedClaim[]
   rootHash: Hash
 }
+
+export type CompressedNonceHash = [string, string?]
+
+export type CompressedClaimHashTree = object
+
+export type CompressedClaimOwner = CompressedNonceHash
+export type CompressedCTypeHash = CompressedNonceHash
+
+export type CompressedRequestForAttestation = [
+  CompressedClaim,
+  CompressedClaimHashTree,
+  CompressedClaimOwner,
+  RequestForAttestation['claimerSignature'],
+  CompressedCTypeHash,
+  RequestForAttestation['rootHash'],
+  CompressedAttestedClaim[],
+  RequestForAttestation['delegationId']
+]

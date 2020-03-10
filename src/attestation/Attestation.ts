@@ -15,19 +15,11 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
-import IAttestation from '../types/Attestation'
+import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { revoke, query, store } from './Attestation.chain'
 import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
-
-export type CompressedAttestation = [
-  Attestation['claimHash'],
-  Attestation['cTypeHash'],
-  Attestation['owner'],
-  Attestation['revoked'],
-  Attestation['delegationId']
-]
 
 /**
  *  Compresses an [[Attestation]] object into an array for storage and/or messaging.

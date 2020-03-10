@@ -5,12 +5,12 @@ import Identity from '../identity/Identity'
 import Attestation, {
   compressAttestation,
   decompressAttestation,
-  CompressedAttestation,
 } from './Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
+import { CompressedAttestation } from '../types/Attestation'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 

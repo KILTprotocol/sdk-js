@@ -16,16 +16,8 @@ import * as jsonabc from 'jsonabc'
 
 import ICType from '../ctype/CType'
 import { verifyClaimStructure } from '../ctype/CTypeUtils'
-import IClaim from '../types/Claim'
+import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
-
-type CompressedClaimContents = object
-
-export type CompressedClaim = [
-  CompressedClaimContents,
-  IClaim['cTypeHash'],
-  IClaim['owner']
-]
 
 /**
  *  Compresses the [[Claim]] for storage and/or messaging.

@@ -25,35 +25,19 @@ import Identity from '../identity/Identity'
 import AttestedClaim, {
   decompressAttestedClaim,
   compressAttestedClaim,
-  CompressedAttestedClaim,
 } from '../attestedclaim/AttestedClaim'
-import { CompressedClaim, compressClaim, decompressClaim } from '../claim/Claim'
+import { compressClaim, decompressClaim } from '../claim/Claim'
 import IRequestForAttestation, {
   Hash,
   NonceHash,
   ClaimHashTree,
+  CompressedNonceHash,
+  CompressedClaimHashTree,
+  CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
 import { IDelegationBaseNode } from '../types/Delegation'
 import IClaim from '../types/Claim'
-import IAttestedClaim from '../types/AttestedClaim'
-
-type CompressedNonceHash = [string, string?]
-
-type CompressedClaimHashTree = object
-
-type CompressedClaimOwner = CompressedNonceHash
-type CompressedCTypeHash = CompressedNonceHash
-
-export type CompressedRequestForAttestation = [
-  CompressedClaim,
-  CompressedClaimHashTree,
-  CompressedClaimOwner,
-  RequestForAttestation['claimerSignature'],
-  CompressedCTypeHash,
-  RequestForAttestation['rootHash'],
-  CompressedAttestedClaim[],
-  RequestForAttestation['delegationId']
-]
+import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 
 function hashNonceValue(nonce: string, value: any): string {
   return hashObjectAsStr(value, nonce)
@@ -575,10 +559,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public static decompress(
     reqForAtt: CompressedRequestForAttestation
   ): RequestForAttestation {
-    const CompressedRequestForAttestation = decompressRequestForAttestation(
+    const decompressedRequestForAttestation = decompressRequestForAttestation(
       reqForAtt
     )
-    return RequestForAttestation.fromRequest(CompressedRequestForAttestation)
+    return RequestForAttestation.fromRequest(decompressedRequestForAttestation)
   }
 
   private static calculateRootHash(

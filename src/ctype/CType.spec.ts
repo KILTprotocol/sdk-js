@@ -2,11 +2,10 @@ import CType, {
   compressCType,
   compressCTypeSchema,
   decompressCType,
-  CompressedCType,
 } from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
-import ICType from '../types/CType'
+import ICType, { CompressedCType } from '../types/CType'
 import TxStatus from '../blockchain/TxStatus'
 import Claim from '../claim/Claim'
 import { FINALIZED } from '../const/TxStatus'

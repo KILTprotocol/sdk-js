@@ -18,45 +18,13 @@ import {
   IQuoteAgreement,
   IQuoteAttesterSigned,
   ICostBreakdown,
+  CompressedQuote,
+  CompressedQuoteAgreed,
+  CompressedQuoteAttesterSigned,
+  CompressedCostBreakdown,
 } from '../types/Quote'
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
 
-type CompressedCostBreakdown = [
-  ICostBreakdown['gross'],
-  ICostBreakdown['net'],
-  ICostBreakdown['tax']
-]
-
-export type CompressedQuote = [
-  IQuote['attesterAddress'],
-  IQuote['cTypeHash'],
-  CompressedCostBreakdown,
-  IQuote['currency'],
-  IQuote['termsAndConditions'],
-  IQuote['timeframe']
-]
-
-export type CompressedQuoteAttesterSigned = [
-  CompressedQuote[0],
-  CompressedQuote[1],
-  CompressedQuote[2],
-  CompressedQuote[3],
-  CompressedQuote[4],
-  CompressedQuote[5],
-  IQuoteAttesterSigned['attesterSignature']
-]
-
-export type CompressedQuoteAgreed = [
-  CompressedQuote[0],
-  CompressedQuote[1],
-  CompressedQuote[2],
-  CompressedQuote[3],
-  CompressedQuote[4],
-  CompressedQuote[5],
-  CompressedQuoteAttesterSigned[6],
-  IQuoteAgreement['claimerSignature'],
-  IQuoteAgreement['rootHash']
-]
 export function validateQuoteSchema(
   schema: object,
   validate: object,

@@ -13,25 +13,12 @@
 import * as jsonabc from 'jsonabc'
 import { CTypeWrapperModel } from './CTypeSchema'
 import * as CTypeUtils from './CTypeUtils'
-import ICType, { ICTypeSchema } from '../types/CType'
+import ICType, { CompressedCType, CompressedCTypeSchema } from '../types/CType'
 import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
 
 import IClaim from '../types/Claim'
-
-type CompressedCTypeSchema = [
-  ICTypeSchema['$id'],
-  ICTypeSchema['$schema'],
-  ICTypeSchema['properties'],
-  ICTypeSchema['type']
-]
-
-export type CompressedCType = [
-  CType['hash'],
-  CType['owner'],
-  CompressedCTypeSchema
-]
 
 /**
  *  Compresses a [[CType]] schema for storage and/or messaging.
