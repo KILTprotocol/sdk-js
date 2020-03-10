@@ -5,12 +5,13 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
+import IClaim from '../types/Claim'
 
 function buildAttestedClaim(
   claimer: Identity,
   attester: Identity,
-  ctype: string,
-  contents: object,
+  ctype: string, // TODO: this parameter is never used, can we remove it?
+  contents: IClaim['contents'],
   legitimations: AttestedClaim[]
 ): AttestedClaim {
   // create claim

@@ -8,8 +8,8 @@ import IClaim from '../types/Claim'
 
 function buildRequestForAttestation(
   claimer: Identity,
-  ctype: string,
-  contents: object,
+  ctype: string, // TODO: this parameter is never used, can we remove it?
+  contents: IClaim['contents'],
   legitimations: AttestedClaim[]
 ): RequestForAttestation {
   // create claim
