@@ -15,7 +15,6 @@ export function verifySchemaWithErrors(
   schema: object,
   messages?: string[]
 ): boolean {
-  // would like to change these to something more meaningful other then object // don't think we can - verifySchema is called with very different structures
   const ajv = new Ajv()
   ajv.addMetaSchema(CTypeModel)
   const result = ajv.validate(schema, object)
@@ -36,7 +35,7 @@ export function verifySchema(object: object, schema: object): boolean {
 }
 
 export function verifyClaimStructure(
-  claimContents: IClaim['contents'], // Checking the SDK and demo-client I feel this should be named claimContents
+  claimContents: IClaim['contents'],
   schema: ICType['schema']
 ): boolean {
   if (!verifySchema(schema, CTypeModel)) {

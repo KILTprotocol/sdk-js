@@ -10,6 +10,7 @@
  * @preferred
  */
 
+import { AnyJsonObject } from '@polkadot/types/types'
 import {
   Claim,
   DelegationNode,
@@ -280,9 +281,7 @@ export interface IRequestAcceptDelegation extends IMessageBodyBase {
       permissions: IDelegationNode['permissions']
       isPCR: boolean
     }
-    metaData?: {
-      [key: string]: string | object // can this possibly be narrowed down to something other than any?
-    }
+    metaData?: AnyJsonObject
     signatures: {
       inviter: string
     }

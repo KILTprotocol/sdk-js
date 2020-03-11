@@ -63,7 +63,7 @@ describe('CType', () => {
       owner: identityAlice.address,
     }
 
-    const resultTxStatus = new TxStatus(FINALIZED)
+    const resultTxStatus = new TxStatus(FINALIZED, Crypto.hashStr('987654'))
     require('../blockchain/Blockchain').default.__mockResultHash = resultTxStatus
 
     const result = await ctype.store(identityAlice)
