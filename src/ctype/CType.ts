@@ -17,7 +17,6 @@ import ICType, { CompressedCType, CompressedCTypeSchema } from '../types/CType'
 import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
-
 import IClaim from '../types/Claim'
 
 /**
@@ -31,6 +30,24 @@ import IClaim from '../types/Claim'
 export function compressCTypeSchema(
   cTypeSchema: ICType['schema']
 ): CompressedCTypeSchema {
+  if (
+    !cTypeSchema.$id ||
+    !cTypeSchema.$schema ||
+    !cTypeSchema.properties ||
+    !cTypeSchema.type
+  ) {
+    throw new Error(
+      `Property Not Provided while building cTypeSchema!\n
+      cTypeSchema.$id:\n
+      ${cTypeSchema.$id}\n
+      cTypeSchema.$schema:\n
+      ${cTypeSchema.$schema}\n
+      cTypeSchema.properties:\n
+      ${cTypeSchema.properties}\n
+      cTypeSchema.type:\n
+      ${cTypeSchema.type}`
+    )
+  }
   const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
   return [
     sortedCTypeSchema.$id,
@@ -51,6 +68,11 @@ export function compressCTypeSchema(
 export function decompressCTypeSchema(
   cTypeSchema: CompressedCTypeSchema
 ): ICType['schema'] {
+  if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 4) {
+    throw new Error(
+      'Compressed cTypeSchema isnt an Array or has all the required data types'
+    )
+  }
   return {
     $id: cTypeSchema[0],
     $schema: cTypeSchema[1],
@@ -68,6 +90,17 @@ export function decompressCTypeSchema(
  */
 
 export function compressCType(cType: ICType): CompressedCType {
+  if (!cType.hash || !cType.owner || !cType.schema) {
+    throw new Error(
+      `Property Not Provided while building cType!\n
+      cType.hash:\n
+      ${cType.hash}\n
+      cType.owner:\n
+      ${cType.owner}\n
+      cType.schema:\n
+      ${cType.schema}`
+    )
+  }
   return [cType.hash, cType.owner, compressCTypeSchema(cType.schema)]
 }
 
@@ -80,6 +113,11 @@ export function compressCType(cType: ICType): CompressedCType {
  */
 
 export function decompressCType(cType: CompressedCType): ICType {
+  if (!Array.isArray(cType) || cType.length !== 3) {
+    throw new Error(
+      'Compressed cType isnt an Array or has all the required data types'
+    )
+  }
   return {
     hash: cType[0],
     owner: cType[1],

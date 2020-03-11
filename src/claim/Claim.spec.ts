@@ -34,20 +34,20 @@ describe('Claim', () => {
     identityAlice.address
   )
 
+  const compressedClaim: CompressedClaim = [
+    {
+      name: 'Bob',
+    },
+    '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
+    '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
+  ]
+
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))
     expect(Claim.fromClaim(claimObj, testCType.schema)).toEqual(claim)
   })
 
   it('compresses and decompresses the Claim object', () => {
-    const compressedClaim: CompressedClaim = [
-      {
-        name: 'Bob',
-      },
-      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
-      '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
-    ]
-
     expect(compressClaim(claim)).toEqual(compressedClaim)
 
     expect(decompressClaim(compressedClaim)).toEqual(claim)
@@ -55,13 +55,26 @@ describe('Claim', () => {
     expect(Claim.decompress(compressedClaim)).toEqual(claim)
 
     expect(claim.compress()).toEqual(compressedClaim)
+  })
 
-    expect(compressClaim(claim)).not.toEqual(compressedClaim[1])
+  it('Negative test for compresses and decompresses the Claim object', () => {
+    compressedClaim.pop()
+    delete claim.owner
 
-    expect(decompressClaim(compressedClaim)).not.toEqual(claim.owner)
+    expect(() => {
+      compressClaim(claim)
+    }).toThrow()
 
-    expect(Claim.decompress(compressedClaim)).not.toEqual(claim.contents)
+    expect(() => {
+      decompressClaim(compressedClaim)
+    }).toThrow()
 
-    expect(claim.compress()).not.toEqual(compressedClaim[2])
+    expect(() => {
+      Claim.decompress(compressedClaim)
+    }).toThrow()
+
+    expect(() => {
+      claim.compress()
+    }).toThrow()
   })
 })

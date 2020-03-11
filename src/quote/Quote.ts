@@ -126,6 +126,17 @@ export function createAgreedQuote(
  */
 
 export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
+  if (!cost.gross || !cost.net || !cost.tax) {
+    throw new Error(
+      `Property Not Provided while building cost!\n
+      cost.net:\n
+      ${cost.net}\n
+      cost.net:\n
+      ${cost.net}\n
+      cost.tax:\n
+      ${cost.tax}`
+    )
+  }
   return [cost.gross, cost.net, cost.tax]
 }
 
@@ -138,6 +149,11 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
  */
 
 export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
+  if (!Array.isArray(cost) || cost.length !== 3) {
+    throw new Error(
+      'Compressed cost isnt an Array or has all the required data types'
+    )
+  }
   return { gross: cost[0], net: cost[1], tax: cost[2] }
 }
 
@@ -150,6 +166,30 @@ export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
  */
 
 export function compressQuote(quote: IQuote): CompressedQuote {
+  if (
+    !quote.attesterAddress ||
+    !quote.cTypeHash ||
+    !quote.cost ||
+    !quote.currency ||
+    !quote.termsAndConditions ||
+    !quote.timeframe
+  ) {
+    throw new Error(
+      `Property Not Provided while building quote!\n
+      quote.attesterAddress:\n
+      ${quote.attesterAddress}\n
+      quote.cTypeHash:\n
+      ${quote.cTypeHash}\n
+      quote.cost:\n
+      ${quote.cost}\n
+      quote.currency:\n
+      ${quote.currency}\n
+      quote.termsAndConditions:\n
+      ${quote.termsAndConditions}\n
+      quote.timeframe:\n
+      ${quote.timeframe}\n`
+    )
+  }
   return [
     quote.attesterAddress,
     quote.cTypeHash,
@@ -169,6 +209,11 @@ export function compressQuote(quote: IQuote): CompressedQuote {
  */
 
 export function decompressQuote(quote: CompressedQuote): IQuote {
+  if (!Array.isArray(quote) || quote.length !== 6) {
+    throw new Error(
+      'Compressed quote isnt an Array or has all the required data types'
+    )
+  }
   return {
     attesterAddress: quote[0],
     cTypeHash: quote[1],
@@ -190,6 +235,33 @@ export function decompressQuote(quote: CompressedQuote): IQuote {
 export function compressAttesterSignedQuote(
   attesterSignedQuote: IQuoteAttesterSigned
 ): CompressedQuoteAttesterSigned {
+  if (
+    !attesterSignedQuote.attesterAddress ||
+    !attesterSignedQuote.cTypeHash ||
+    !attesterSignedQuote.cost ||
+    !attesterSignedQuote.currency ||
+    !attesterSignedQuote.termsAndConditions ||
+    !attesterSignedQuote.timeframe ||
+    !attesterSignedQuote.attesterSignature
+  ) {
+    throw new Error(
+      `Property Not Provided while building attesterSignedQuote!\n
+      attesterSignedQuote.attesterAddress:\n
+      ${attesterSignedQuote.attesterAddress}\n
+      attesterSignedQuote.cTypeHash:\n
+      ${attesterSignedQuote.cTypeHash}\n
+      attesterSignedQuote.cost:\n
+      ${attesterSignedQuote.cost}\n
+      attesterSignedQuote.currency:\n
+      ${attesterSignedQuote.currency}\n
+      attesterSignedQuote.termsAndConditions:\n
+      ${attesterSignedQuote.termsAndConditions}\n
+      attesterSignedQuote.timeframe:\n
+      ${attesterSignedQuote.timeframe}\n
+      attesterSignedQuote.attesterSignature\n
+      ${attesterSignedQuote.attesterSignature}`
+    )
+  }
   return [
     attesterSignedQuote.attesterAddress,
     attesterSignedQuote.cTypeHash,
@@ -212,6 +284,11 @@ export function compressAttesterSignedQuote(
 export function decompressAttesterSignedQuote(
   attesterSignedQuote: CompressedQuoteAttesterSigned
 ): IQuoteAttesterSigned {
+  if (!Array.isArray(attesterSignedQuote) || attesterSignedQuote.length !== 7) {
+    throw new Error(
+      'Compressed attesterSignedQuote isnt an Array or has all the required data types'
+    )
+  }
   return {
     attesterAddress: attesterSignedQuote[0],
     cTypeHash: attesterSignedQuote[1],
@@ -234,6 +311,37 @@ export function decompressAttesterSignedQuote(
 export function compressQuoteAgreement(
   quoteAgreement: IQuoteAgreement
 ): CompressedQuoteAgreed {
+  if (
+    !quoteAgreement.attesterAddress ||
+    !quoteAgreement.cTypeHash ||
+    !quoteAgreement.cost ||
+    !quoteAgreement.currency ||
+    !quoteAgreement.termsAndConditions ||
+    !quoteAgreement.timeframe ||
+    !quoteAgreement.attesterSignature
+  ) {
+    throw new Error(
+      `Property Not Provided while building quoteAgreement!\n
+      quoteAgreement.attesterAddress:\n
+      ${quoteAgreement.attesterAddress}\n
+      quoteAgreement.cTypeHash:\n
+      ${quoteAgreement.cTypeHash}\n
+      quoteAgreement.cost:\n
+      ${quoteAgreement.cost}\n
+      quoteAgreement.currency:\n
+      ${quoteAgreement.currency}\n
+      quoteAgreement.termsAndConditions:\n
+      ${quoteAgreement.termsAndConditions}\n
+      quoteAgreement.timeframe:\n
+      ${quoteAgreement.timeframe}\n
+      quoteAgreement.attesterSignature\n
+      ${quoteAgreement.attesterSignature}\n
+      quoteAgreement.claimerSignature\n
+      ${quoteAgreement.claimerSignature}\n
+      quoteAgreement.rootHash\n
+      ${quoteAgreement.rootHash}`
+    )
+  }
   return [
     quoteAgreement.attesterAddress,
     quoteAgreement.cTypeHash,
@@ -258,6 +366,11 @@ export function compressQuoteAgreement(
 export function decompressQuoteAgreement(
   quoteAgreement: CompressedQuoteAgreed
 ): IQuoteAgreement {
+  if (!Array.isArray(quoteAgreement) || quoteAgreement.length !== 9) {
+    throw new Error(
+      'Compressed quoteAgreement isnt an Array or has all the required data types'
+    )
+  }
   return {
     attesterAddress: quoteAgreement[0],
     cTypeHash: quoteAgreement[1],

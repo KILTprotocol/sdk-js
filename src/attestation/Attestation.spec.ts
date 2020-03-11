@@ -81,6 +81,24 @@ describe('Attestation', () => {
     expect(await attestation.verify()).toBeFalsy()
   })
 
+  it('verify attestation revoked', async () => {
+    Blockchain.api.query.attestation.attestations = jest.fn(() => {
+      return Promise.resolve(
+        new Tuple(
+          // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
+          [Text, Text, Text, Bool],
+          [testCType.hash, identityAlice, undefined, true]
+        )
+      )
+    })
+
+    const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
+      requestForAttestation,
+      identityAlice
+    )
+    expect(await attestation.verify()).toBeFalsy()
+  })
+
   it('compresses and decompresses the attestation object', () => {
     const attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
@@ -102,35 +120,36 @@ describe('Attestation', () => {
     expect(Attestation.decompress(compressedAttestation)).toEqual(attestation)
 
     expect(attestation.compress()).toEqual(compressedAttestation)
-
-    // @ts-ignore
-    compressedAttestation[2] = 2
-
-    expect(decompressAttestation(compressedAttestation)).not.toEqual(
-      attestation
-    )
-
-    expect(Attestation.decompress(compressedAttestation)).not.toEqual(
-      attestation
-    )
-    expect(attestation.compress()).not.toEqual(compressedAttestation)
   })
 
-  it('verify attestation revoked', async () => {
-    Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      return Promise.resolve(
-        new Tuple(
-          // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
-          [Text, Text, Text, Bool],
-          [testCType.hash, identityAlice, undefined, true]
-        )
-      )
-    })
-
-    const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
+  it('Negative test for compresses and decompresses the attestation object', () => {
+    const attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
       identityAlice
     )
-    expect(await attestation.verify()).toBeFalsy()
+
+    const compressedAttestation: CompressedAttestation = [
+      attestation.claimHash,
+      attestation.cTypeHash,
+      attestation.owner,
+      attestation.revoked,
+      attestation.delegationId,
+    ]
+    compressedAttestation.pop()
+    delete attestation.claimHash
+
+    expect(() => {
+      decompressAttestation(compressedAttestation)
+    }).toThrow()
+
+    expect(() => {
+      Attestation.decompress(compressedAttestation)
+    }).toThrow()
+    expect(() => {
+      attestation.compress()
+    }).toThrow()
+    expect(() => {
+      compressAttestation(attestation)
+    }).toThrow()
   })
 })

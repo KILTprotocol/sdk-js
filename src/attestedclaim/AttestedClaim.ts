@@ -20,6 +20,18 @@ import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
 
+function attestedClaimErrorCheck(attestedClaim: IAttestedClaim): void {
+  if (!attestedClaim.request || !attestedClaim.attestation) {
+    throw new Error(
+      `Property Not Provided while building AttestedClaim!\n
+    attestedClaim.request: \n
+    ${attestedClaim.request} \n
+    attestedClaim.attestation: \n
+    ${attestedClaim.attestation}`
+    )
+  }
+}
+
 /**
  *  Compresses an [[AttestedClaim]] object into an array for storage and/or messaging.
  *
@@ -31,6 +43,8 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 export function compressAttestedClaim(
   attestedClaim: IAttestedClaim
 ): CompressedAttestedClaim {
+  attestedClaimErrorCheck(attestedClaim)
+
   return [
     compressRequestForAttestation(attestedClaim.request),
     compressAttestation(attestedClaim.attestation),
@@ -48,6 +62,11 @@ export function compressAttestedClaim(
 export function decompressAttestedClaim(
   attestedClaim: CompressedAttestedClaim
 ): IAttestedClaim {
+  if (!Array.isArray(attestedClaim) || attestedClaim.length !== 2) {
+    throw new Error(
+      'Compressed Attested Claim isnt an Array or has all the required data types'
+    )
+  }
   return {
     request: decompressRequestForAttestation(attestedClaim[0]),
     attestation: decompressAttestation(attestedClaim[1]),
@@ -106,15 +125,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * ```
    */
   public constructor(attestedClaimInput: IAttestedClaim) {
-    if (!attestedClaimInput.request || !attestedClaimInput.attestation) {
-      throw new Error(
-        `Property Not Provided while building AttestedClaim!\n
-        attestedClaimInput.request: \n
-        ${attestedClaimInput.request} \n
-        attestedClaimInput.attestation: \n
-        ${attestedClaimInput.attestation}`
-      )
-    }
+    attestedClaimErrorCheck(attestedClaimInput)
     this.request = RequestForAttestation.fromRequest(attestedClaimInput.request)
     this.attestation = Attestation.fromAttestation(
       attestedClaimInput.attestation

@@ -9,6 +9,7 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
 import { CompressedRequestForAttestation } from '../types/RequestForAttestation'
+import { CompressedAttestedClaim } from '../types/AttestedClaim'
 
 function buildRequestForAttestation(
   claimer: Identity,
@@ -140,6 +141,66 @@ describe('RequestForAttestation', () => {
       [legitimationCharlie, legitimationBob]
     )
 
+    const compressedLegitimationCharlie: CompressedAttestedClaim = [
+      [
+        [
+          legitimationCharlie.request.claim.contents,
+          legitimationCharlie.request.claim.cTypeHash,
+          legitimationCharlie.request.claim.owner,
+        ],
+        {},
+        [
+          legitimationCharlie.request.claimOwner.hash,
+          legitimationCharlie.request.claimOwner.nonce,
+        ],
+        legitimationCharlie.request.claimerSignature,
+        [
+          legitimationCharlie.request.cTypeHash.hash,
+          legitimationCharlie.request.cTypeHash.nonce,
+        ],
+        legitimationCharlie.request.rootHash,
+        [],
+        legitimationCharlie.request.delegationId,
+      ],
+      [
+        legitimationCharlie.attestation.claimHash,
+        legitimationCharlie.attestation.cTypeHash,
+        legitimationCharlie.attestation.owner,
+        legitimationCharlie.attestation.revoked,
+        legitimationCharlie.attestation.delegationId,
+      ],
+    ]
+
+    const compressedLegitimationBob: CompressedAttestedClaim = [
+      [
+        [
+          legitimationBob.request.claim.contents,
+          legitimationBob.request.claim.cTypeHash,
+          legitimationBob.request.claim.owner,
+        ],
+        {},
+        [
+          legitimationBob.request.claimOwner.hash,
+          legitimationBob.request.claimOwner.nonce,
+        ],
+        legitimationBob.request.claimerSignature,
+        [
+          legitimationBob.request.cTypeHash.hash,
+          legitimationBob.request.cTypeHash.nonce,
+        ],
+        legitimationBob.request.rootHash,
+        [],
+        legitimationBob.request.delegationId,
+      ],
+      [
+        legitimationBob.attestation.claimHash,
+        legitimationBob.attestation.cTypeHash,
+        legitimationBob.attestation.owner,
+        legitimationBob.attestation.revoked,
+        legitimationBob.attestation.delegationId,
+      ],
+    ]
+
     const compressedReqForAtt: CompressedRequestForAttestation = [
       [
         reqForAtt.claim.contents,
@@ -155,66 +216,7 @@ describe('RequestForAttestation', () => {
       reqForAtt.claimerSignature,
       [reqForAtt.cTypeHash.hash, reqForAtt.cTypeHash.nonce],
       reqForAtt.rootHash,
-      [
-        [
-          [
-            [
-              legitimationCharlie.request.claim.contents,
-              legitimationCharlie.request.claim.cTypeHash,
-              legitimationCharlie.request.claim.owner,
-            ],
-            {},
-            [
-              legitimationCharlie.request.claimOwner.hash,
-              legitimationCharlie.request.claimOwner.nonce,
-            ],
-            legitimationCharlie.request.claimerSignature,
-            [
-              legitimationCharlie.request.cTypeHash.hash,
-              legitimationCharlie.request.cTypeHash.nonce,
-            ],
-            legitimationCharlie.request.rootHash,
-            [],
-            legitimationCharlie.request.delegationId,
-          ],
-          [
-            legitimationCharlie.attestation.claimHash,
-            legitimationCharlie.attestation.cTypeHash,
-            legitimationCharlie.attestation.owner,
-            legitimationCharlie.attestation.revoked,
-            legitimationCharlie.attestation.delegationId,
-          ],
-        ],
-        [
-          [
-            [
-              legitimationBob.request.claim.contents,
-              legitimationBob.request.claim.cTypeHash,
-              legitimationBob.request.claim.owner,
-            ],
-            {},
-            [
-              legitimationBob.request.claimOwner.hash,
-              legitimationBob.request.claimOwner.nonce,
-            ],
-            legitimationBob.request.claimerSignature,
-            [
-              legitimationBob.request.cTypeHash.hash,
-              legitimationBob.request.cTypeHash.nonce,
-            ],
-            legitimationBob.request.rootHash,
-            [],
-            legitimationBob.request.delegationId,
-          ],
-          [
-            legitimationBob.attestation.claimHash,
-            legitimationBob.attestation.cTypeHash,
-            legitimationBob.attestation.owner,
-            legitimationBob.attestation.revoked,
-            legitimationBob.attestation.delegationId,
-          ],
-        ],
-      ],
+      [compressedLegitimationCharlie, compressedLegitimationBob],
       reqForAtt.delegationId,
     ]
 
@@ -231,20 +233,24 @@ describe('RequestForAttestation', () => {
     expect(RequestForAttestation.decompress(compressedReqForAtt)).toEqual(
       reqForAtt
     )
+    compressedReqForAtt.pop()
+    delete reqForAtt.claimOwner
 
-    expect(compressRequestForAttestation(reqForAtt)).not.toEqual(
-      compressedReqForAtt[3]
-    )
+    expect(() => {
+      compressRequestForAttestation(reqForAtt)
+    }).toThrow()
 
-    expect(decompressRequestForAttestation(compressedReqForAtt)).not.toEqual(
-      reqForAtt.cTypeHash
-    )
+    expect(() => {
+      decompressRequestForAttestation(compressedReqForAtt)
+    }).toThrow()
 
-    expect(reqForAtt.compress()).not.toEqual(compressedReqForAtt[4])
+    expect(() => {
+      reqForAtt.compress()
+    }).toThrow()
 
-    expect(RequestForAttestation.decompress(compressedReqForAtt)).not.toEqual(
-      reqForAtt.claimOwner
-    )
+    expect(() => {
+      RequestForAttestation.decompress(compressedReqForAtt)
+    }).toThrow()
   })
 
   it('hides claim properties', () => {

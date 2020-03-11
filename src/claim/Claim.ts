@@ -19,6 +19,20 @@ import { verifyClaimStructure } from '../ctype/CTypeUtils'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
 
+function claimErrorCheck(claim: IClaim): void {
+  if (!claim.cTypeHash || !claim.contents || !claim.owner) {
+    throw new Error(
+      `Property Not Provided while building Claim:\n
+    claim.cTypeHash:\n
+      ${claim.cTypeHash}\n
+      claim.contents:\n
+      ${claim.contents}\n
+      claim.owner:\n'
+      ${claim.owner}`
+    )
+  }
+}
+
 /**
  *  Compresses the [[Claim]] for storage and/or messaging.
  *
@@ -27,6 +41,7 @@ import IPublicIdentity from '../types/PublicIdentity'
  * @returns An ordered array of a [[Claim]].
  */
 export function compressClaim(claim: IClaim): CompressedClaim {
+  claimErrorCheck(claim)
   const sortedContents = jsonabc.sortObj(claim.contents)
   return [sortedContents, claim.cTypeHash, claim.owner]
 }
@@ -39,6 +54,11 @@ export function compressClaim(claim: IClaim): CompressedClaim {
  * @returns An object that has the same properties as the [[Claim]].
  */
 export function decompressClaim(claim: CompressedClaim): IClaim {
+  if (!Array.isArray(claim) || claim.length !== 3) {
+    throw new Error(
+      'Compressed Claim isnt an Array or has all the required data types'
+    )
+  }
   return {
     contents: claim[0],
     cTypeHash: claim[1],
@@ -88,17 +108,7 @@ export default class Claim implements IClaim {
   public owner: IClaim['owner']
 
   public constructor(claimInput: IClaim) {
-    if (!claimInput.cTypeHash || !claimInput.contents || !claimInput.owner) {
-      throw new Error(
-        `Property Not Provided while building Claim:\n
-        claimInput.cTypeHash:\n
-          ${claimInput.cTypeHash}\n
-          claimInput.contents:\n
-          ${claimInput.contents}\n
-          claimInput.owner:\n'
-          ${claimInput.owner}`
-      )
-    }
+    claimErrorCheck(claimInput)
     this.cTypeHash = claimInput.cTypeHash
     this.contents = claimInput.contents
     this.owner = claimInput.owner

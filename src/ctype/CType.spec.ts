@@ -57,41 +57,20 @@ describe('CType', () => {
     identityAlice.address
   )
 
-  it('compresses and decompresses the ctype object', () => {
-    const compressedCType: CompressedCType = [
-      claimCtype.hash,
-      claimCtype.owner,
-      [
-        'http://example.com/ctype-1',
-        'http://kilt-protocol.org/draft-01/ctype#',
-        {
-          name: {
-            type: 'string',
-          },
+  const compressedCType: CompressedCType = [
+    claimCtype.hash,
+    claimCtype.owner,
+    [
+      'http://example.com/ctype-1',
+      'http://kilt-protocol.org/draft-01/ctype#',
+      {
+        name: {
+          type: 'string',
         },
-        'object',
-      ],
-    ]
-    expect(compressCTypeSchema(rawCType)).toEqual(compressedCType[2])
-
-    expect(compressCType(claimCtype)).toEqual(compressedCType)
-
-    expect(decompressCType(compressedCType)).toEqual(claimCtype)
-
-    expect(CType.decompress(compressedCType)).toEqual(claimCtype)
-
-    expect(claimCtype.compress()).toEqual(compressedCType)
-
-    expect(compressCTypeSchema(rawCType)).not.toEqual(compressedCType[1])
-
-    expect(compressCType(claimCtype)).not.toEqual(compressedCType[1])
-
-    expect(decompressCType(compressedCType)).not.toEqual(claimCtype.schema)
-
-    expect(CType.decompress(compressedCType)).not.toEqual(claimCtype.schema)
-
-    expect(claimCtype.compress()).not.toEqual(compressedCType[2])
-  })
+      },
+      'object',
+    ],
+  ]
 
   it('stores ctypes', async () => {
     const testHash = Crypto.hashStr('1234')
@@ -124,5 +103,32 @@ describe('CType', () => {
     expect(() => {
       return CType.fromCType(wrongRawCtype)
     }).toThrow()
+  })
+  it('compresses and decompresses the ctype object', () => {
+    expect(compressCTypeSchema(rawCType)).toEqual(compressedCType[2])
+
+    expect(compressCType(claimCtype)).toEqual(compressedCType)
+
+    expect(decompressCType(compressedCType)).toEqual(claimCtype)
+
+    expect(CType.decompress(compressedCType)).toEqual(claimCtype)
+
+    expect(claimCtype.compress()).toEqual(compressedCType)
+  })
+
+  it('Negative test for compresses and decompresses the ctype object', () => {
+    compressedCType.pop()
+    delete rawCType.$id
+    delete claimCtype.hash
+
+    expect(() => compressCTypeSchema(rawCType)).toThrow()
+
+    expect(() => compressCType(claimCtype)).toThrow()
+
+    expect(() => decompressCType(compressedCType)).toThrow()
+
+    expect(() => CType.decompress(compressedCType)).toThrow()
+
+    expect(() => claimCtype.compress()).toThrow()
   })
 })

@@ -2,10 +2,10 @@
  * @packageDocumentation
  * @module IRequestForAttestation
  */
-import { CompressedAttestedClaim } from '../attestedclaim/AttestedClaim'
+
 import IClaim, { CompressedClaim } from './Claim'
 import { IDelegationBaseNode } from './Delegation'
-import IAttestedClaim from './AttestedClaim'
+import IAttestedClaim, { CompressedAttestedClaim } from './AttestedClaim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 
 export type Hash = string

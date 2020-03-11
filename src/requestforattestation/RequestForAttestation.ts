@@ -39,6 +39,38 @@ import { IDelegationBaseNode } from '../types/Delegation'
 import IClaim from '../types/Claim'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 
+function requestForAttestationErrorCheck(
+  requestForAttestation: IRequestForAttestation
+): void {
+  if (
+    !requestForAttestation.claim ||
+    !requestForAttestation.legitimations ||
+    !requestForAttestation.claimOwner ||
+    !requestForAttestation.claimerSignature ||
+    !requestForAttestation.claimHashTree ||
+    !requestForAttestation.cTypeHash ||
+    !requestForAttestation.rootHash
+  ) {
+    throw new Error(
+      `Property Not Provided while building RequestForAttestation:\n
+        requestInput.claim:\n
+        ${requestForAttestation.claim}\n
+        requestInput.legitimations:\n
+        ${requestForAttestation.legitimations}\n
+        requestInput.claimOwner:\n
+        ${requestForAttestation.claimOwner}\n
+        requestInput.claimerSignature:\n
+        ${requestForAttestation.claimerSignature}
+        requestInput.claimHashTree:\n
+        ${requestForAttestation.claimHashTree}\n
+        requestInput.rootHash:\n
+        ${requestForAttestation.rootHash}\n
+        requestInput.cTypeHash:\n
+        ${requestForAttestation.cTypeHash}\n`
+    )
+  }
+}
+
 function hashNonceValue(nonce: string, value: any): string {
   return hashObjectAsStr(value, nonce)
 }
@@ -186,6 +218,7 @@ function decompressLegitimation(
 export function compressRequestForAttestation(
   reqForAtt: IRequestForAttestation
 ): CompressedRequestForAttestation {
+  requestForAttestationErrorCheck(reqForAtt)
   return [
     compressClaim(reqForAtt.claim),
     compressClaimHashTree(reqForAtt.claimHashTree),
@@ -209,6 +242,11 @@ export function compressRequestForAttestation(
 export function decompressRequestForAttestation(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
+  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 8) {
+    throw new Error(
+      'Compressed Request For Attestation isnt an Array or has all the required data types'
+    )
+  }
   return {
     claim: decompressClaim(reqForAtt[0]),
     claimHashTree: decompressClaimHashTree(reqForAtt[1]),
@@ -314,33 +352,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public constructor(requestForAttestationInput: IRequestForAttestation) {
-    if (
-      !requestForAttestationInput.claim ||
-      !requestForAttestationInput.legitimations ||
-      !requestForAttestationInput.claimOwner ||
-      !requestForAttestationInput.claimerSignature ||
-      !requestForAttestationInput.claimHashTree ||
-      !requestForAttestationInput.cTypeHash ||
-      !requestForAttestationInput.rootHash
-    ) {
-      throw new Error(
-        `Property Not Provided while building RequestForAttestation:\n
-          requestInput.claim:\n
-          ${requestForAttestationInput.claim}\n
-          requestInput.legitimations:\n
-          ${requestForAttestationInput.legitimations}\n
-          requestInput.claimOwner:\n
-          ${requestForAttestationInput.claimOwner}\n
-          requestInput.claimerSignature:\n
-          ${requestForAttestationInput.claimerSignature}
-          requestInput.claimHashTree:\n
-          ${requestForAttestationInput.claimHashTree}\n
-          requestInput.rootHash:\n
-          ${requestForAttestationInput.rootHash}\n
-          requestInput.cTypeHash:\n
-          ${requestForAttestationInput.cTypeHash}\n`
-      )
-    }
+    requestForAttestationErrorCheck(requestForAttestationInput)
     this.claim = requestForAttestationInput.claim
     this.claimOwner = requestForAttestationInput.claimOwner
     this.cTypeHash = requestForAttestationInput.cTypeHash

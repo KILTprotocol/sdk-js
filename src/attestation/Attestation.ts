@@ -21,6 +21,19 @@ import IPublicIdentity from '../types/PublicIdentity'
 
 const log = factory.getLogger('Attestation')
 
+function attestationErrorCheck(attestation: IAttestation): void {
+  if (!attestation.cTypeHash || !attestation.claimHash || !attestation.owner) {
+    throw new Error(
+      `Property Not Provided while building Attestation!\n
+      attestation.cTypeHash:\n
+      ${attestation.cTypeHash}\n
+      attestation.claimHash:\n
+      ${attestation.claimHash}\n
+      attestation.owner:\n
+      ${attestation.owner}`
+    )
+  }
+}
 /**
  *  Compresses an [[Attestation]] object into an array for storage and/or messaging.
  *
@@ -32,6 +45,7 @@ const log = factory.getLogger('Attestation')
 export function compressAttestation(
   attestation: IAttestation
 ): CompressedAttestation {
+  attestationErrorCheck(attestation)
   return [
     attestation.claimHash,
     attestation.cTypeHash,
@@ -52,6 +66,11 @@ export function compressAttestation(
 export function decompressAttestation(
   attestation: CompressedAttestation
 ): IAttestation {
+  if (!Array.isArray(attestation) || attestation.length !== 5) {
+    throw new Error(
+      'Compressed Attestation isnt an Array or has all the required data types'
+    )
+  }
   return {
     claimHash: attestation[0],
     cTypeHash: attestation[1],
@@ -151,21 +170,7 @@ export default class Attestation implements IAttestation {
    * ```
    */
   public constructor(attestationInput: IAttestation) {
-    if (
-      !attestationInput.cTypeHash ||
-      !attestationInput.claimHash ||
-      !attestationInput.owner
-    ) {
-      throw new Error(
-        `Property Not Provided while building Attestation!\n
-        attestationInput.cTypeHash:\n
-        ${attestationInput.cTypeHash}\n
-        attestationInput.claimHash:\n
-        ${attestationInput.claimHash}\n
-        attestationInput.owner:\n
-        ${attestationInput.owner}`
-      )
-    }
+    attestationErrorCheck(attestationInput)
     this.claimHash = attestationInput.claimHash
     this.cTypeHash = attestationInput.cTypeHash
     this.delegationId = attestationInput.delegationId

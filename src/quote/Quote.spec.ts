@@ -4,6 +4,9 @@ import {
   ICostBreakdown,
   IQuoteAttesterSigned,
   IQuoteAgreement,
+  CompressedQuote,
+  CompressedQuoteAgreed,
+  CompressedQuoteAttesterSigned,
 } from '../types/Quote'
 import Identity from '../identity/Identity'
 import * as Quote from './Quote'
@@ -91,92 +94,49 @@ describe('Claim', () => {
   )
   const invalidPropertiesQuote = invalidPropertiesQuoteData
   const invalidCostQuote = invalidCostQuoteData
-  it('compresses and decompresses the quote object', () => {
-    const compressedQuote: Quote.CompressedQuote = [
-      validQuoteData.attesterAddress,
-      validQuoteData.cTypeHash,
-      [
-        validQuoteData.cost.gross,
-        validQuoteData.cost.net,
-        validQuoteData.cost.tax,
-      ],
-      validQuoteData.currency,
-      validQuoteData.termsAndConditions,
-      validQuoteData.timeframe,
-    ]
+  const compressedQuote: CompressedQuote = [
+    validQuoteData.attesterAddress,
+    validQuoteData.cTypeHash,
+    [
+      validQuoteData.cost.gross,
+      validQuoteData.cost.net,
+      validQuoteData.cost.tax,
+    ],
+    validQuoteData.currency,
+    validQuoteData.termsAndConditions,
+    validQuoteData.timeframe,
+  ]
 
-    const compressedResultAttesterSignedQuote: Quote.CompressedQuoteAttesterSigned = [
-      validQuoteData.attesterAddress,
-      validQuoteData.cTypeHash,
-      [
-        validQuoteData.cost.gross,
-        validQuoteData.cost.net,
-        validQuoteData.cost.tax,
-      ],
-      validQuoteData.currency,
-      validQuoteData.termsAndConditions,
-      validQuoteData.timeframe,
-      validAttesterSignedQuote.attesterSignature,
-    ]
+  const compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned = [
+    validQuoteData.attesterAddress,
+    validQuoteData.cTypeHash,
+    [
+      validQuoteData.cost.gross,
+      validQuoteData.cost.net,
+      validQuoteData.cost.tax,
+    ],
+    validQuoteData.currency,
+    validQuoteData.termsAndConditions,
+    validQuoteData.timeframe,
+    validAttesterSignedQuote.attesterSignature,
+  ]
 
-    const compressedResultQuoteAgreement: Quote.CompressedQuoteAgreed = [
-      validQuoteData.attesterAddress,
-      validQuoteData.cTypeHash,
-      [
-        validQuoteData.cost.gross,
-        validQuoteData.cost.net,
-        validQuoteData.cost.tax,
-      ],
-      validQuoteData.currency,
-      validQuoteData.termsAndConditions,
-      validQuoteData.timeframe,
-      validAttesterSignedQuote.attesterSignature,
-      quoteBothAgreed.claimerSignature,
-      quoteBothAgreed.rootHash,
-    ]
+  const compressedResultQuoteAgreement: CompressedQuoteAgreed = [
+    validQuoteData.attesterAddress,
+    validQuoteData.cTypeHash,
+    [
+      validQuoteData.cost.gross,
+      validQuoteData.cost.net,
+      validQuoteData.cost.tax,
+    ],
+    validQuoteData.currency,
+    validQuoteData.termsAndConditions,
+    validQuoteData.timeframe,
+    validAttesterSignedQuote.attesterSignature,
+    quoteBothAgreed.claimerSignature,
+    quoteBothAgreed.rootHash,
+  ]
 
-    expect(Quote.compressQuote(validQuoteData)).toEqual(compressedQuote)
-
-    expect(Quote.decompressQuote(compressedQuote)).toEqual(validQuoteData)
-
-    expect(Quote.compressAttesterSignedQuote(validAttesterSignedQuote)).toEqual(
-      compressedResultAttesterSignedQuote
-    )
-
-    expect(
-      Quote.decompressAttesterSignedQuote(compressedResultAttesterSignedQuote)
-    ).toEqual(validAttesterSignedQuote)
-
-    expect(Quote.compressQuoteAgreement(quoteBothAgreed)).toEqual(
-      compressedResultQuoteAgreement
-    )
-
-    expect(
-      Quote.decompressQuoteAgreement(compressedResultQuoteAgreement)
-    ).toEqual(quoteBothAgreed)
-
-    expect(Quote.compressQuote(validQuoteData)).not.toEqual(compressedQuote[3])
-
-    expect(Quote.decompressQuote(compressedQuote)).not.toEqual(
-      validQuoteData.termsAndConditions
-    )
-
-    expect(
-      Quote.compressAttesterSignedQuote(validAttesterSignedQuote)
-    ).not.toEqual(compressedResultAttesterSignedQuote[3])
-
-    expect(
-      Quote.decompressAttesterSignedQuote(compressedResultAttesterSignedQuote)
-    ).not.toEqual(validAttesterSignedQuote.currency)
-
-    expect(Quote.compressQuoteAgreement(quoteBothAgreed)).not.toEqual(
-      compressedResultQuoteAgreement[2]
-    )
-
-    expect(
-      Quote.decompressQuoteAgreement(compressedResultQuoteAgreement)
-    ).not.toEqual(quoteBothAgreed.claimerSignature)
-  })
   it('tests created quote data against given data', () => {
     expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
     expect(quoteBothAgreed.claimerSignature).toEqual(
@@ -209,5 +169,59 @@ describe('Claim', () => {
     expect(
       Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)
     ).toBeFalsy()
+  })
+
+  it('compresses and decompresses the quote object', () => {
+    expect(Quote.compressQuote(validQuoteData)).toEqual(compressedQuote)
+
+    expect(Quote.decompressQuote(compressedQuote)).toEqual(validQuoteData)
+
+    expect(Quote.compressAttesterSignedQuote(validAttesterSignedQuote)).toEqual(
+      compressedResultAttesterSignedQuote
+    )
+
+    expect(
+      Quote.decompressAttesterSignedQuote(compressedResultAttesterSignedQuote)
+    ).toEqual(validAttesterSignedQuote)
+
+    expect(Quote.compressQuoteAgreement(quoteBothAgreed)).toEqual(
+      compressedResultQuoteAgreement
+    )
+
+    expect(
+      Quote.decompressQuoteAgreement(compressedResultQuoteAgreement)
+    ).toEqual(quoteBothAgreed)
+  })
+  it('Negative test for compresses and decompresses the quote object', () => {
+    delete validQuoteData.cTypeHash
+    compressedQuote.pop()
+    delete validAttesterSignedQuote.currency
+    compressedResultAttesterSignedQuote.pop()
+    delete quoteBothAgreed.currency
+    compressedResultQuoteAgreement.pop()
+
+    expect(() => {
+      Quote.compressQuote(validQuoteData)
+    }).toThrow()
+
+    expect(() => {
+      Quote.decompressQuote(compressedQuote)
+    }).toThrow()
+
+    expect(() => {
+      Quote.compressAttesterSignedQuote(validAttesterSignedQuote)
+    }).toThrow()
+
+    expect(() => {
+      Quote.decompressAttesterSignedQuote(compressedResultAttesterSignedQuote)
+    }).toThrow()
+
+    expect(() => {
+      Quote.compressQuoteAgreement(quoteBothAgreed)
+    }).toThrow()
+
+    expect(() => {
+      Quote.decompressQuoteAgreement(compressedResultQuoteAgreement)
+    }).toThrow()
   })
 })
