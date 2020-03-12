@@ -128,13 +128,11 @@ export function createAgreedQuote(
 export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
   if (!cost.gross || !cost.net || !cost.tax) {
     throw new Error(
-      `Property Not Provided while building cost!\n
-      cost.net:\n
-      ${cost.net}\n
-      cost.net:\n
-      ${cost.net}\n
-      cost.tax:\n
-      ${cost.tax}`
+      `Property Not Provided while building cost : ${JSON.stringify(
+        cost,
+        null,
+        2
+      )}`
     )
   }
   return [cost.gross, cost.net, cost.tax]
@@ -175,19 +173,11 @@ export function compressQuote(quote: IQuote): CompressedQuote {
     !quote.timeframe
   ) {
     throw new Error(
-      `Property Not Provided while building quote!\n
-      quote.attesterAddress:\n
-      ${quote.attesterAddress}\n
-      quote.cTypeHash:\n
-      ${quote.cTypeHash}\n
-      quote.cost:\n
-      ${quote.cost}\n
-      quote.currency:\n
-      ${quote.currency}\n
-      quote.termsAndConditions:\n
-      ${quote.termsAndConditions}\n
-      quote.timeframe:\n
-      ${quote.timeframe}\n`
+      `Property Not Provided while building quote: ${JSON.stringify(
+        quote,
+        null,
+        2
+      )}`
     )
   }
   return [
@@ -245,21 +235,11 @@ export function compressAttesterSignedQuote(
     !attesterSignedQuote.attesterSignature
   ) {
     throw new Error(
-      `Property Not Provided while building attesterSignedQuote!\n
-      attesterSignedQuote.attesterAddress:\n
-      ${attesterSignedQuote.attesterAddress}\n
-      attesterSignedQuote.cTypeHash:\n
-      ${attesterSignedQuote.cTypeHash}\n
-      attesterSignedQuote.cost:\n
-      ${attesterSignedQuote.cost}\n
-      attesterSignedQuote.currency:\n
-      ${attesterSignedQuote.currency}\n
-      attesterSignedQuote.termsAndConditions:\n
-      ${attesterSignedQuote.termsAndConditions}\n
-      attesterSignedQuote.timeframe:\n
-      ${attesterSignedQuote.timeframe}\n
-      attesterSignedQuote.attesterSignature\n
-      ${attesterSignedQuote.attesterSignature}`
+      `Property Not Provided while building attesterSignedQuote: ${JSON.stringify(
+        attesterSignedQuote,
+        null,
+        2
+      )}`
     )
   }
   return [
@@ -321,25 +301,11 @@ export function compressQuoteAgreement(
     !quoteAgreement.attesterSignature
   ) {
     throw new Error(
-      `Property Not Provided while building quoteAgreement!\n
-      quoteAgreement.attesterAddress:\n
-      ${quoteAgreement.attesterAddress}\n
-      quoteAgreement.cTypeHash:\n
-      ${quoteAgreement.cTypeHash}\n
-      quoteAgreement.cost:\n
-      ${quoteAgreement.cost}\n
-      quoteAgreement.currency:\n
-      ${quoteAgreement.currency}\n
-      quoteAgreement.termsAndConditions:\n
-      ${quoteAgreement.termsAndConditions}\n
-      quoteAgreement.timeframe:\n
-      ${quoteAgreement.timeframe}\n
-      quoteAgreement.attesterSignature\n
-      ${quoteAgreement.attesterSignature}\n
-      quoteAgreement.claimerSignature\n
-      ${quoteAgreement.claimerSignature}\n
-      quoteAgreement.rootHash\n
-      ${quoteAgreement.rootHash}`
+      `Property Not Provided while building quoteAgreement: ${JSON.stringify(
+        quoteAgreement,
+        null,
+        2
+      )}`
     )
   }
   return [

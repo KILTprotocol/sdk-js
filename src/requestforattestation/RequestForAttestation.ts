@@ -52,21 +52,11 @@ function requestForAttestationErrorCheck(
     !requestForAttestation.rootHash
   ) {
     throw new Error(
-      `Property Not Provided while building RequestForAttestation:\n
-        requestInput.claim:\n
-        ${requestForAttestation.claim}\n
-        requestInput.legitimations:\n
-        ${requestForAttestation.legitimations}\n
-        requestInput.claimOwner:\n
-        ${requestForAttestation.claimOwner}\n
-        requestInput.claimerSignature:\n
-        ${requestForAttestation.claimerSignature}
-        requestInput.claimHashTree:\n
-        ${requestForAttestation.claimHashTree}\n
-        requestInput.rootHash:\n
-        ${requestForAttestation.rootHash}\n
-        requestInput.cTypeHash:\n
-        ${requestForAttestation.cTypeHash}\n`
+      `Property Not Provided while building RequestForAttestation: ${JSON.stringify(
+        requestForAttestation,
+        null,
+        2
+      )}`
     )
   }
 }
@@ -117,6 +107,15 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 export function compressNonceAndHash(
   nonceHash: NonceHash
 ): CompressedNonceHash {
+  if (!nonceHash.nonce || !nonceHash.hash) {
+    throw new Error(
+      `Property Not Provided while building RequestForAttestation: ${JSON.stringify(
+        nonceHash,
+        null,
+        2
+      )}`
+    )
+  }
   return [nonceHash.hash, nonceHash.nonce]
 }
 

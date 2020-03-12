@@ -37,15 +37,8 @@ export function compressCTypeSchema(
     !cTypeSchema.type
   ) {
     throw new Error(
-      `Property Not Provided while building cTypeSchema!\n
-      cTypeSchema.$id:\n
-      ${cTypeSchema.$id}\n
-      cTypeSchema.$schema:\n
-      ${cTypeSchema.$schema}\n
-      cTypeSchema.properties:\n
-      ${cTypeSchema.properties}\n
-      cTypeSchema.type:\n
-      ${cTypeSchema.type}`
+      `Property Not Provided while building cTypeSchema: 
+      ${JSON.stringify(cTypeSchema, null, 2)}`
     )
   }
   const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
@@ -92,13 +85,11 @@ export function decompressCTypeSchema(
 export function compressCType(cType: ICType): CompressedCType {
   if (!cType.hash || !cType.owner || !cType.schema) {
     throw new Error(
-      `Property Not Provided while building cType!\n
-      cType.hash:\n
-      ${cType.hash}\n
-      cType.owner:\n
-      ${cType.owner}\n
-      cType.schema:\n
-      ${cType.schema}`
+      `Property Not Provided while building cType: ${JSON.stringify(
+        cType,
+        null,
+        2
+      )}`
     )
   }
   return [cType.hash, cType.owner, compressCTypeSchema(cType.schema)]

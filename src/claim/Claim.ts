@@ -22,13 +22,8 @@ import IPublicIdentity from '../types/PublicIdentity'
 function claimErrorCheck(claim: IClaim): void {
   if (!claim.cTypeHash || !claim.contents || !claim.owner) {
     throw new Error(
-      `Property Not Provided while building Claim:\n
-    claim.cTypeHash:\n
-      ${claim.cTypeHash}\n
-      claim.contents:\n
-      ${claim.contents}\n
-      claim.owner:\n'
-      ${claim.owner}`
+      `Property Not Provided while building Claim: 
+      ${JSON.stringify(claim, null, 2)}`
     )
   }
 }

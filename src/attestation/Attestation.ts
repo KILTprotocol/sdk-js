@@ -24,13 +24,11 @@ const log = factory.getLogger('Attestation')
 function attestationErrorCheck(attestation: IAttestation): void {
   if (!attestation.cTypeHash || !attestation.claimHash || !attestation.owner) {
     throw new Error(
-      `Property Not Provided while building Attestation!\n
-      attestation.cTypeHash:\n
-      ${attestation.cTypeHash}\n
-      attestation.claimHash:\n
-      ${attestation.claimHash}\n
-      attestation.owner:\n
-      ${attestation.owner}`
+      `Property Not Provided while building Attestation: ${JSON.stringify(
+        attestation,
+        null,
+        2
+      )}`
     )
   }
 }

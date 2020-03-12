@@ -23,11 +23,11 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 function attestedClaimErrorCheck(attestedClaim: IAttestedClaim): void {
   if (!attestedClaim.request || !attestedClaim.attestation) {
     throw new Error(
-      `Property Not Provided while building AttestedClaim!\n
-    attestedClaim.request: \n
-    ${attestedClaim.request} \n
-    attestedClaim.attestation: \n
-    ${attestedClaim.attestation}`
+      `Property Not Provided while building AttestedClaim: ${JSON.stringify(
+        attestedClaim,
+        null,
+        2
+      )}`
     )
   }
 }
