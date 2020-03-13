@@ -13,7 +13,7 @@ import RequestForAttestation from '../requestforattestation/RequestForAttestatio
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import AttestedClaimUtil from './AttestedClaim.utils'
+import AttestedClaimUtils from './AttestedClaim.utils'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -67,7 +67,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * ```
    */
   public constructor(attestedClaimInput: IAttestedClaim) {
-    AttestedClaimUtil.errorCheck(attestedClaimInput)
+    AttestedClaimUtils.errorCheck(attestedClaimInput)
     this.request = RequestForAttestation.fromRequest(attestedClaimInput.request)
     this.attestation = Attestation.fromAttestation(
       attestedClaimInput.attestation
@@ -156,7 +156,7 @@ export default class AttestedClaim implements IAttestedClaim {
    */
 
   public compress(): CompressedAttestedClaim {
-    return AttestedClaimUtil.compress(this)
+    return AttestedClaimUtils.compress(this)
   }
 
   /**
@@ -168,7 +168,7 @@ export default class AttestedClaim implements IAttestedClaim {
   public static decompress(
     attestedClaim: CompressedAttestedClaim
   ): AttestedClaim {
-    const decompressedAttestedClaim = AttestedClaimUtil.decompress(
+    const decompressedAttestedClaim = AttestedClaimUtils.decompress(
       attestedClaim
     )
     return AttestedClaim.fromAttestedClaim(decompressedAttestedClaim)
