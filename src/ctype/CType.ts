@@ -11,8 +11,8 @@
  */
 
 import { CTypeWrapperModel } from './CTypeSchema'
-import * as CTypeUtils from './CTypeUtils'
-import ICType from '../types/CType'
+import CTypeUtils from './CType.utils'
+import ICType, { CompressedCType } from '../types/CType'
 import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
@@ -57,5 +57,26 @@ export default class CType implements ICType {
   public async verifyStored(): Promise<boolean> {
     const actualOwner = await getOwner(this.hash)
     return this.owner ? actualOwner === this.owner : actualOwner !== null
+  }
+
+  /**
+   * Compresses an [[CType]] object from the [[compressCType]].
+   *
+   * @returns An array that contains the same properties of an [[CType]].
+   */
+
+  public compress(): CompressedCType {
+    return CTypeUtils.compress(this)
+  }
+
+  /**
+   * [STATIC] Builds an [[CType]] from the decompressed array.
+   *
+   * @returns A new [[CType]] object.
+   */
+
+  public static decompress(cType: CompressedCType): CType {
+    const decompressedCType = CTypeUtils.decompress(cType)
+    return CType.fromCType(decompressedCType)
   }
 }

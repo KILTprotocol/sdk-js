@@ -1,4 +1,4 @@
-import { Text, Tuple, U8a } from '@polkadot/types'
+import { Text, Tuple, U8a, Option } from '@polkadot/types'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
 import IPublicIdentity from '../types/PublicIdentity'
 
@@ -13,17 +13,23 @@ describe('PublicIdentity', () => {
       let tuple
       switch (id) {
         case '1':
-          tuple = new Tuple(
-            // (public-signing-key, public-encryption-key, did-reference?)
-            [Text, Text, U8a],
-            ['pub-key', 'box-key', [14, 75, 23, 14, 55]]
+          tuple = new Option(
+            Tuple,
+            new Tuple(
+              // (public-signing-key, public-encryption-key, did-reference?)
+              [Text, Text, U8a],
+              ['pub-key', 'box-key', [14, 75, 23, 14, 55]]
+            )
           )
           break
         case '2':
-          tuple = new Tuple(
-            // (public-signing-key, public-encryption-key, did-reference?)
-            [Text, Text, Text],
-            ['pub-key', 'box-key', undefined]
+          tuple = new Option(
+            Tuple,
+            new Tuple(
+              // (public-signing-key, public-encryption-key, did-reference?)
+              [Text, Text, Text],
+              ['pub-key', 'box-key', undefined]
+            )
           )
           break
         default:

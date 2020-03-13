@@ -15,9 +15,10 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
-import IAttestation from '../types/Attestation'
+import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { revoke, query, store } from './Attestation.chain'
 import IPublicIdentity from '../types/PublicIdentity'
+import AttestationUtils from './Attestation.utils'
 
 const log = factory.getLogger('Attestation')
 
@@ -89,17 +90,17 @@ export default class Attestation implements IAttestation {
     return new Attestation({
       claimHash: request.rootHash,
       cTypeHash: request.claim.cTypeHash,
-      owner: attesterPublicIdentity.address,
       delegationId: request.delegationId,
+      owner: attesterPublicIdentity.address,
       revoked: false,
     })
   }
 
   public claimHash: IAttestation['claimHash']
   public cTypeHash: IAttestation['cTypeHash']
+  public delegationId: IAttestation['delegationId'] | null
   public owner: IAttestation['owner']
   public revoked: IAttestation['revoked']
-  public delegationId: IAttestation['delegationId'] | null
 
   /**
    * Builds a new [[Attestation]] instance.
@@ -111,25 +112,11 @@ export default class Attestation implements IAttestation {
    * ```
    */
   public constructor(attestationInput: IAttestation) {
-    if (
-      !attestationInput.cTypeHash ||
-      !attestationInput.claimHash ||
-      !attestationInput.owner
-    ) {
-      throw new Error(
-        `Property Not Provided while building Attestation!\n
-        attestationInput.cTypeHash:\n
-        ${attestationInput.cTypeHash}\n
-        attestationInput.claimHash:\n
-        ${attestationInput.claimHash}\n
-        attestationInput.owner:\n
-        ${attestationInput.owner}`
-      )
-    }
-    this.owner = attestationInput.owner
+    AttestationUtils.errorCheck(attestationInput)
     this.claimHash = attestationInput.claimHash
     this.cTypeHash = attestationInput.cTypeHash
     this.delegationId = attestationInput.delegationId
+    this.owner = attestationInput.owner
     this.revoked = attestationInput.revoked
   }
 
@@ -184,6 +171,27 @@ export default class Attestation implements IAttestation {
       log.debug(() => 'No valid attestation found')
     }
     return Promise.resolve(isValid)
+  }
+
+  /**
+   * Compresses an [[Attestation]] object from the [[compressAttestation]].
+   *
+   * @returns An array that contains the same properties of an [[Attestation]].
+   */
+
+  public compress(): CompressedAttestation {
+    return AttestationUtils.compress(this)
+  }
+
+  /**
+   * [STATIC] Builds an [[Attestation]] from the decompressed array.
+   *
+   * @returns A new [[Attestation]] object.
+   */
+
+  public static decompress(attestation: CompressedAttestation): Attestation {
+    const decompressedAttestation = AttestationUtils.decompress(attestation)
+    return Attestation.fromAttestation(decompressedAttestation)
   }
 
   /**

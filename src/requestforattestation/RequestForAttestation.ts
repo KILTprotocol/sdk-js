@@ -10,7 +10,6 @@
  * @module RequestForAttestation
  * @preferred
  */
-
 import { v4 as uuid } from 'uuid'
 import {
   verify,
@@ -22,14 +21,16 @@ import {
 } from '../crypto/Crypto'
 
 import Identity from '../identity/Identity'
-import IClaim from '../claim/Claim'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
+import RequestForAttestationUtils from './RequestForAttestation.utils'
 import IRequestForAttestation, {
   Hash,
   NonceHash,
   NonceHashTree,
+  CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
 import { IDelegationBaseNode } from '../types/Delegation'
+import IClaim from '../types/Claim'
 
 function hashNonceValue(nonce: string, value: string): string {
   return hashObjectAsStr(value, nonce)
@@ -53,8 +54,12 @@ function generateHashTree(contents: IClaim['contents']): NonceHashTree {
   return result
 }
 
-function verifyClaimerSignature(rfa: RequestForAttestation): boolean {
-  return verify(rfa.rootHash, rfa.claimerSignature, rfa.claim.owner)
+function verifyClaimerSignature(reqForAtt: RequestForAttestation): boolean {
+  return verify(
+    reqForAtt.rootHash,
+    reqForAtt.claimerSignature,
+    reqForAtt.claim.owner
+  )
 }
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
@@ -151,37 +156,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param requestForAttestationInput - The base object from which to create the requestForAttestation.
    * @example ```javascript
    * // create a new request for attestation
-   * const rfa = new RequestForAttestation(requestForAttestationInput);
+   * const reqForAtt = new RequestForAttestation(requestForAttestationInput);
    * ```
    */
   public constructor(requestForAttestationInput: IRequestForAttestation) {
-    if (
-      !requestForAttestationInput.claim ||
-      !requestForAttestationInput.legitimations ||
-      !requestForAttestationInput.claimOwner ||
-      !requestForAttestationInput.claimerSignature ||
-      !requestForAttestationInput.claimHashTree ||
-      !requestForAttestationInput.cTypeHash ||
-      !requestForAttestationInput.rootHash
-    ) {
-      throw new Error(
-        `Property Not Provided while building RequestForAttestation:\n
-          requestInput.claim:\n
-          ${requestForAttestationInput.claim}\n
-          requestInput.legitimations:\n
-          ${requestForAttestationInput.legitimations}\n
-          requestInput.claimOwner:\n
-          ${requestForAttestationInput.claimOwner}\n
-          requestInput.claimerSignature:\n
-          ${requestForAttestationInput.claimerSignature}
-          requestInput.claimHashTree:\n
-          ${requestForAttestationInput.claimHashTree}\n
-          requestInput.rootHash:\n
-          ${requestForAttestationInput.rootHash}\n
-          requestInput.cTypeHash:\n
-          ${requestForAttestationInput.cTypeHash}\n`
-      )
-    }
+    RequestForAttestationUtils.errorCheck(requestForAttestationInput)
     this.claim = requestForAttestationInput.claim
     this.claimOwner = requestForAttestationInput.claimOwner
     this.cTypeHash = requestForAttestationInput.cTypeHash
@@ -285,19 +264,23 @@ export default class RequestForAttestation implements IRequestForAttestation {
     // check claim owner hash
     if (this.claim.owner) {
       if (
+        !this.claimOwner.nonce ||
         this.claimOwner.hash !==
-        hashNonceValue(this.claimOwner.nonce, this.claim.owner)
+          hashNonceValue(this.claimOwner.nonce, this.claim.owner)
       ) {
         throw Error('Invalid hash for claim owner')
       }
     }
 
     // check cType hash
-    if (
-      this.cTypeHash.hash !==
-      hashNonceValue(this.cTypeHash.nonce, this.claim.cTypeHash)
-    ) {
-      throw Error('Invalid hash for CTYPE')
+    if (this.claim.cTypeHash) {
+      if (
+        !this.cTypeHash.nonce ||
+        this.cTypeHash.hash !==
+          hashNonceValue(this.cTypeHash.nonce, this.claim.cTypeHash)
+      ) {
+        throw Error('Invalid hash for CTYPE')
+      }
     }
 
     // check all hashes for provided claim properties
@@ -307,7 +290,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
         throw Error(`Property '${key}' not in claim hash tree`)
       }
       const hashed: NonceHash = this.claimHashTree[key]
-      if (hashed.hash !== hashNonceValue(hashed.nonce, value.toString())) {
+      if (
+        !hashed.nonce ||
+        hashed.hash !== hashNonceValue(hashed.nonce, value.toString())
+      ) {
         throw Error(`Invalid hash for property '${key}' in claim hash tree`)
       }
     })
@@ -372,6 +358,31 @@ export default class RequestForAttestation implements IRequestForAttestation {
     }
 
     return result
+  }
+
+  /**
+   * Compresses an [[RequestForAttestation]] object from the [[compressRequestForAttestation]].
+   *
+   * @returns An array that contains the same properties of an [[RequestForAttestation]].
+   */
+
+  public compress(): CompressedRequestForAttestation {
+    return RequestForAttestationUtils.compress(this)
+  }
+
+  /**
+   * [STATIC] Builds an [[RequestForAttestation]] from the decompressed array.
+   *
+   * @returns A new [[RequestForAttestation]] object.
+   */
+
+  public static decompress(
+    reqForAtt: CompressedRequestForAttestation
+  ): RequestForAttestation {
+    const decompressedRequestForAttestation = RequestForAttestationUtils.decompress(
+      reqForAtt
+    )
+    return RequestForAttestation.fromRequest(decompressedRequestForAttestation)
   }
 
   private static calculateRootHash(

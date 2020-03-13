@@ -88,8 +88,7 @@ export class ErrorHandler {
   private static async getErrorModuleIndex(
     apiPromise: ApiPromise
   ): Promise<number> {
-    const modules: ModuleMetadataV4[] = await apiPromise.runtimeMetadata.asV4
-      .modules
+    const { modules } = apiPromise.runtimeMetadata.asV4
     const filtered: ModuleMetadataV4[] = modules.filter(
       (mod: ModuleMetadataV4) => {
         return !mod.events.isEmpty

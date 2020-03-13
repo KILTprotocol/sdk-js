@@ -3,6 +3,7 @@
  * @module ICType
  */
 import IPublicIdentity from './PublicIdentity'
+import CType from '../ctype/CType'
 
 export interface ICTypeSchema {
   $id: string
@@ -16,3 +17,16 @@ export default interface ICType {
   owner: IPublicIdentity['address'] | null
   schema: ICTypeSchema
 }
+
+export type CompressedCTypeSchema = [
+  ICTypeSchema['$id'],
+  ICTypeSchema['$schema'],
+  ICTypeSchema['properties'],
+  ICTypeSchema['type']
+]
+
+export type CompressedCType = [
+  CType['hash'],
+  CType['owner'],
+  CompressedCTypeSchema
+]
