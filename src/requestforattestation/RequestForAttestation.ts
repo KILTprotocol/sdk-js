@@ -160,9 +160,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public constructor(requestForAttestationInput: IRequestForAttestation) {
-    RequestForAttestationUtils.requestForAttestationErrorCheck(
-      requestForAttestationInput
-    )
+    RequestForAttestationUtils.errorCheck(requestForAttestationInput)
     this.claim = requestForAttestationInput.claim
     this.claimOwner = requestForAttestationInput.claimOwner
     this.cTypeHash = requestForAttestationInput.cTypeHash
@@ -369,7 +367,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
 
   public compress(): CompressedRequestForAttestation {
-    return RequestForAttestationUtils.compressRequestForAttestation(this)
+    return RequestForAttestationUtils.compress(this)
   }
 
   /**
@@ -381,7 +379,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public static decompress(
     reqForAtt: CompressedRequestForAttestation
   ): RequestForAttestation {
-    const decompressedRequestForAttestation = RequestForAttestationUtils.decompressRequestForAttestation(
+    const decompressedRequestForAttestation = RequestForAttestationUtils.decompress(
       reqForAtt
     )
     return RequestForAttestation.fromRequest(decompressedRequestForAttestation)

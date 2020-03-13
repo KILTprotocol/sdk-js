@@ -67,7 +67,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * ```
    */
   public constructor(attestedClaimInput: IAttestedClaim) {
-    AttestedClaimUtil.attestedClaimErrorCheck(attestedClaimInput)
+    AttestedClaimUtil.errorCheck(attestedClaimInput)
     this.request = RequestForAttestation.fromRequest(attestedClaimInput.request)
     this.attestation = Attestation.fromAttestation(
       attestedClaimInput.attestation
@@ -156,7 +156,7 @@ export default class AttestedClaim implements IAttestedClaim {
    */
 
   public compress(): CompressedAttestedClaim {
-    return AttestedClaimUtil.compressAttestedClaim(this)
+    return AttestedClaimUtil.compress(this)
   }
 
   /**
@@ -168,7 +168,7 @@ export default class AttestedClaim implements IAttestedClaim {
   public static decompress(
     attestedClaim: CompressedAttestedClaim
   ): AttestedClaim {
-    const decompressedAttestedClaim = AttestedClaimUtil.decompressAttestedClaim(
+    const decompressedAttestedClaim = AttestedClaimUtil.decompress(
       attestedClaim
     )
     return AttestedClaim.fromAttestedClaim(decompressedAttestedClaim)

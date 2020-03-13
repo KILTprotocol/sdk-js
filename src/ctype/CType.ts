@@ -66,7 +66,7 @@ export default class CType implements ICType {
    */
 
   public compress(): CompressedCType {
-    return CTypeUtils.compressCType(this)
+    return CTypeUtils.compress(this)
   }
 
   /**
@@ -76,7 +76,7 @@ export default class CType implements ICType {
    */
 
   public static decompress(cType: CompressedCType): CType {
-    const decompressedCType = CTypeUtils.decompressCType(cType)
+    const decompressedCType = CTypeUtils.decompress(cType)
     return CType.fromCType(decompressedCType)
   }
 }

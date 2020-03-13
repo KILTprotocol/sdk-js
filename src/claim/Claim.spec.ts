@@ -50,9 +50,9 @@ describe('Claim', () => {
   })
 
   it('compresses and decompresses the Claim object', () => {
-    expect(ClaimUtils.compressClaim(claim)).toEqual(compressedClaim)
+    expect(ClaimUtils.compress(claim)).toEqual(compressedClaim)
 
-    expect(ClaimUtils.decompressClaim(compressedClaim)).toEqual(claim)
+    expect(ClaimUtils.decompress(compressedClaim)).toEqual(claim)
 
     expect(Claim.decompress(compressedClaim)).toEqual(claim)
 
@@ -64,11 +64,11 @@ describe('Claim', () => {
     delete claim.owner
 
     expect(() => {
-      ClaimUtils.compressClaim(claim)
+      ClaimUtils.compress(claim)
     }).toThrow()
 
     expect(() => {
-      ClaimUtils.decompressClaim(compressedClaim)
+      ClaimUtils.decompress(compressedClaim)
     }).toThrow()
 
     expect(() => {

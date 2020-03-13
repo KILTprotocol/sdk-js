@@ -112,7 +112,7 @@ export default class Attestation implements IAttestation {
    * ```
    */
   public constructor(attestationInput: IAttestation) {
-    AttestationUtils.attestationErrorCheck(attestationInput)
+    AttestationUtils.errorCheck(attestationInput)
     this.claimHash = attestationInput.claimHash
     this.cTypeHash = attestationInput.cTypeHash
     this.delegationId = attestationInput.delegationId
@@ -180,7 +180,7 @@ export default class Attestation implements IAttestation {
    */
 
   public compress(): CompressedAttestation {
-    return AttestationUtils.compressAttestation(this)
+    return AttestationUtils.compress(this)
   }
 
   /**
@@ -190,9 +190,7 @@ export default class Attestation implements IAttestation {
    */
 
   public static decompress(attestation: CompressedAttestation): Attestation {
-    const decompressedAttestation = AttestationUtils.decompressAttestation(
-      attestation
-    )
+    const decompressedAttestation = AttestationUtils.decompress(attestation)
     return Attestation.fromAttestation(decompressedAttestation)
   }
 

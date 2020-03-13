@@ -51,7 +51,7 @@ export function getHashForSchema(schema: ICType['schema']): string {
  * @returns An ordered array of a [[CType]] schema.
  */
 
-export function compressCTypeSchema(
+export function compressSchema(
   cTypeSchema: ICType['schema']
 ): CompressedCTypeSchema {
   if (
@@ -82,7 +82,7 @@ export function compressCTypeSchema(
  * @returns An object that has the same properties as a [[CType]] schema.
  */
 
-export function decompressCTypeSchema(
+export function decompressSchema(
   cTypeSchema: CompressedCTypeSchema
 ): ICType['schema'] {
   if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 4) {
@@ -106,7 +106,7 @@ export function decompressCTypeSchema(
  * @returns An ordered array of a [[CType]].
  */
 
-export function compressCType(cType: ICType): CompressedCType {
+export function compress(cType: ICType): CompressedCType {
   if (!cType.hash || !cType.owner || !cType.schema) {
     throw new Error(
       `Property Not Provided while building cType: ${JSON.stringify(
@@ -116,7 +116,7 @@ export function compressCType(cType: ICType): CompressedCType {
       )}`
     )
   }
-  return [cType.hash, cType.owner, compressCTypeSchema(cType.schema)]
+  return [cType.hash, cType.owner, compressSchema(cType.schema)]
 }
 
 /**
@@ -127,7 +127,7 @@ export function compressCType(cType: ICType): CompressedCType {
  * @returns An object that has the same properties as a [[CType]].
  */
 
-export function decompressCType(cType: CompressedCType): ICType {
+export function decompress(cType: CompressedCType): ICType {
   if (!Array.isArray(cType) || cType.length !== 3) {
     throw new Error(
       'Compressed cType isnt an Array or has all the required data types'
@@ -136,16 +136,16 @@ export function decompressCType(cType: CompressedCType): ICType {
   return {
     hash: cType[0],
     owner: cType[1],
-    schema: decompressCTypeSchema(cType[2]),
+    schema: decompressSchema(cType[2]),
   }
 }
 
 export default {
   verifySchema,
-  compressCTypeSchema,
-  decompressCTypeSchema,
-  decompressCType,
-  compressCType,
+  compressSchema,
+  decompressSchema,
+  decompress,
+  compress,
   verifySchemaWithErrors,
   verifyClaimStructure,
   getHashForSchema,

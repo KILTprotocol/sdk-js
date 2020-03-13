@@ -1,6 +1,6 @@
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
 
-export function attestationErrorCheck(attestation: IAttestation): void {
+export function errorCheck(attestation: IAttestation): void {
   if (!attestation.cTypeHash || !attestation.claimHash || !attestation.owner) {
     throw new Error(
       `Property Not Provided while building Attestation: ${JSON.stringify(
@@ -19,10 +19,8 @@ export function attestationErrorCheck(attestation: IAttestation): void {
  * @returns An ordered array of an [[Attestation]].
  */
 
-export function compressAttestation(
-  attestation: IAttestation
-): CompressedAttestation {
-  attestationErrorCheck(attestation)
+export function compress(attestation: IAttestation): CompressedAttestation {
+  errorCheck(attestation)
   return [
     attestation.claimHash,
     attestation.cTypeHash,
@@ -40,9 +38,7 @@ export function compressAttestation(
  * @returns An object that has the same properties as an [[Attestation]].
  */
 
-export function decompressAttestation(
-  attestation: CompressedAttestation
-): IAttestation {
+export function decompress(attestation: CompressedAttestation): IAttestation {
   if (!Array.isArray(attestation) || attestation.length !== 5) {
     throw new Error(
       'Compressed Attestation isnt an Array or has all the required data types'
@@ -58,7 +54,7 @@ export function decompressAttestation(
 }
 
 export default {
-  decompressAttestation,
-  compressAttestation,
-  attestationErrorCheck,
+  decompress,
+  compress,
+  errorCheck,
 }

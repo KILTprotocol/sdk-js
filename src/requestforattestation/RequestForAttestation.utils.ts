@@ -11,7 +11,7 @@ import IRequestForAttestation, {
   CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
 
-export function requestForAttestationErrorCheck(
+export function errorCheck(
   requestForAttestation: IRequestForAttestation
 ): void {
   if (
@@ -126,7 +126,7 @@ export function decompressClaimHashTree(
 export function compressLegitimation(
   leg: IAttestedClaim[]
 ): CompressedAttestedClaim[] {
-  return leg.map(AttestedClaimUtils.compressAttestedClaim)
+  return leg.map(AttestedClaimUtils.compress)
 }
 
 /**
@@ -140,7 +140,7 @@ export function compressLegitimation(
 function decompressLegitimation(
   leg: CompressedAttestedClaim[]
 ): IAttestedClaim[] {
-  return leg.map(AttestedClaimUtils.decompressAttestedClaim)
+  return leg.map(AttestedClaimUtils.decompress)
 }
 
 /**
@@ -151,12 +151,12 @@ function decompressLegitimation(
  * @returns An ordered array of a [[RequestForAttestation]].
  */
 
-export function compressRequestForAttestation(
+export function compress(
   reqForAtt: IRequestForAttestation
 ): CompressedRequestForAttestation {
-  requestForAttestationErrorCheck(reqForAtt)
+  errorCheck(reqForAtt)
   return [
-    ClaimUtils.compressClaim(reqForAtt.claim),
+    ClaimUtils.compress(reqForAtt.claim),
     compressClaimHashTree(reqForAtt.claimHashTree),
     compressNonceAndHash(reqForAtt.claimOwner),
     reqForAtt.claimerSignature,
@@ -175,7 +175,7 @@ export function compressRequestForAttestation(
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */
 
-export function decompressRequestForAttestation(
+export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
   if (!Array.isArray(reqForAtt) || reqForAtt.length !== 8) {
@@ -184,7 +184,7 @@ export function decompressRequestForAttestation(
     )
   }
   return {
-    claim: ClaimUtils.decompressClaim(reqForAtt[0]),
+    claim: ClaimUtils.decompress(reqForAtt[0]),
     claimHashTree: decompressClaimHashTree(reqForAtt[1]),
     claimOwner: decompressNonceAndHash(reqForAtt[2]),
     claimerSignature: reqForAtt[3],
@@ -196,12 +196,12 @@ export function decompressRequestForAttestation(
 }
 
 export default {
-  requestForAttestationErrorCheck,
-  decompressRequestForAttestation,
+  errorCheck,
+  decompress,
   decompressNonceAndHash,
   decompressLegitimation,
   decompressClaimHashTree,
-  compressRequestForAttestation,
+  compress,
   compressClaimHashTree,
   compressLegitimation,
   compressNonceAndHash,

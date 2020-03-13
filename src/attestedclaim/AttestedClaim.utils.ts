@@ -2,7 +2,7 @@ import AttestationUtils from '../attestation/Attestation.utils'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
 
-export function attestedClaimErrorCheck(attestedClaim: IAttestedClaim): void {
+export function errorCheck(attestedClaim: IAttestedClaim): void {
   if (!attestedClaim.request || !attestedClaim.attestation) {
     throw new Error(
       `Property Not Provided while building AttestedClaim: ${JSON.stringify(
@@ -22,16 +22,14 @@ export function attestedClaimErrorCheck(attestedClaim: IAttestedClaim): void {
  * @returns An ordered array of an [[AttestedClaim]] that comprises of an [[Attestation]] and [[RequestForAttestation]] arrays.
  */
 
-export function compressAttestedClaim(
+export function compress(
   attestedClaim: IAttestedClaim
 ): CompressedAttestedClaim {
-  attestedClaimErrorCheck(attestedClaim)
+  errorCheck(attestedClaim)
 
   return [
-    RequestForAttestationUtils.compressRequestForAttestation(
-      attestedClaim.request
-    ),
-    AttestationUtils.compressAttestation(attestedClaim.attestation),
+    RequestForAttestationUtils.compress(attestedClaim.request),
+    AttestationUtils.compress(attestedClaim.attestation),
   ]
 }
 
@@ -43,7 +41,7 @@ export function compressAttestedClaim(
  * @returns An object that has the same properties as an [[AttestedClaim]].
  */
 
-export function decompressAttestedClaim(
+export function decompress(
   attestedClaim: CompressedAttestedClaim
 ): IAttestedClaim {
   if (!Array.isArray(attestedClaim) || attestedClaim.length !== 2) {
@@ -52,15 +50,13 @@ export function decompressAttestedClaim(
     )
   }
   return {
-    request: RequestForAttestationUtils.decompressRequestForAttestation(
-      attestedClaim[0]
-    ),
-    attestation: AttestationUtils.decompressAttestation(attestedClaim[1]),
+    request: RequestForAttestationUtils.decompress(attestedClaim[0]),
+    attestation: AttestationUtils.decompress(attestedClaim[1]),
   }
 }
 
 export default {
-  decompressAttestedClaim,
-  compressAttestedClaim,
-  attestedClaimErrorCheck,
+  decompress,
+  compress,
+  errorCheck,
 }

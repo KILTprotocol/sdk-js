@@ -218,15 +218,13 @@ describe('RequestForAttestation', () => {
       reqForAtt.delegationId,
     ]
 
-    expect(
-      RequestForAttestationUtils.compressRequestForAttestation(reqForAtt)
-    ).toEqual(compressedReqForAtt)
+    expect(RequestForAttestationUtils.compress(reqForAtt)).toEqual(
+      compressedReqForAtt
+    )
 
-    expect(
-      RequestForAttestationUtils.decompressRequestForAttestation(
-        compressedReqForAtt
-      )
-    ).toEqual(reqForAtt)
+    expect(RequestForAttestationUtils.decompress(compressedReqForAtt)).toEqual(
+      reqForAtt
+    )
 
     expect(reqForAtt.compress()).toEqual(compressedReqForAtt)
 
@@ -237,13 +235,11 @@ describe('RequestForAttestation', () => {
     delete reqForAtt.claimOwner
 
     expect(() => {
-      RequestForAttestationUtils.compressRequestForAttestation(reqForAtt)
+      RequestForAttestationUtils.compress(reqForAtt)
     }).toThrow()
 
     expect(() => {
-      RequestForAttestationUtils.decompressRequestForAttestation(
-        compressedReqForAtt
-      )
+      RequestForAttestationUtils.decompress(compressedReqForAtt)
     }).toThrow()
 
     expect(() => {

@@ -118,13 +118,13 @@ describe('Attestation', () => {
       attestation.delegationId,
     ]
 
-    expect(AttestationUtils.compressAttestation(attestation)).toEqual(
+    expect(AttestationUtils.compress(attestation)).toEqual(
       compressedAttestation
     )
 
-    expect(
-      AttestationUtils.decompressAttestation(compressedAttestation)
-    ).toEqual(attestation)
+    expect(AttestationUtils.decompress(compressedAttestation)).toEqual(
+      attestation
+    )
 
     expect(Attestation.decompress(compressedAttestation)).toEqual(attestation)
 
@@ -148,7 +148,7 @@ describe('Attestation', () => {
     delete attestation.claimHash
 
     expect(() => {
-      AttestationUtils.decompressAttestation(compressedAttestation)
+      AttestationUtils.decompress(compressedAttestation)
     }).toThrow()
 
     expect(() => {
@@ -158,7 +158,7 @@ describe('Attestation', () => {
       attestation.compress()
     }).toThrow()
     expect(() => {
-      AttestationUtils.compressAttestation(attestation)
+      AttestationUtils.compress(attestation)
     }).toThrow()
   })
 })

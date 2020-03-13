@@ -60,7 +60,7 @@ export default class Claim implements IClaim {
   public owner: IClaim['owner']
 
   public constructor(claimInput: IClaim) {
-    ClaimUtils.claimErrorCheck(claimInput)
+    ClaimUtils.errorCheck(claimInput)
     this.cTypeHash = claimInput.cTypeHash
     this.contents = claimInput.contents
     this.owner = claimInput.owner
@@ -73,7 +73,7 @@ export default class Claim implements IClaim {
    */
 
   public compress(): CompressedClaim {
-    return ClaimUtils.compressClaim(this)
+    return ClaimUtils.compress(this)
   }
 
   /**
@@ -83,7 +83,7 @@ export default class Claim implements IClaim {
    */
 
   public static decompress(compressedClaim: CompressedClaim): Claim {
-    const decompressedClaim = ClaimUtils.decompressClaim(compressedClaim)
+    const decompressedClaim = ClaimUtils.decompress(compressedClaim)
     return new Claim(decompressedClaim)
   }
 }

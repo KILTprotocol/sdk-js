@@ -132,16 +132,16 @@ describe('RequestForAttestation', () => {
   })
 
   it('compresses and decompresses the attested claims object', () => {
-    expect(AttestedClaimUtils.compressAttestedClaim(legitimation)).toEqual(
+    expect(AttestedClaimUtils.compress(legitimation)).toEqual(
       compressedLegitimation
     )
 
-    expect(
-      AttestedClaimUtils.decompressAttestedClaim(compressedLegitimation)
-    ).toEqual(legitimation)
+    expect(AttestedClaimUtils.decompress(compressedLegitimation)).toEqual(
+      legitimation
+    )
 
     expect(legitimation.compress()).toEqual(
-      AttestedClaimUtils.compressAttestedClaim(legitimation)
+      AttestedClaimUtils.compress(legitimation)
     )
 
     expect(AttestedClaim.decompress(compressedLegitimation)).toEqual(
@@ -154,11 +154,11 @@ describe('RequestForAttestation', () => {
     delete legitimation.attestation
 
     expect(() => {
-      AttestedClaimUtils.compressAttestedClaim(legitimation)
+      AttestedClaimUtils.compress(legitimation)
     }).toThrow()
 
     expect(() => {
-      AttestedClaimUtils.decompressAttestedClaim(compressedLegitimation)
+      AttestedClaimUtils.decompress(compressedLegitimation)
     }).toThrow()
     expect(() => {
       AttestedClaim.decompress(compressedLegitimation)

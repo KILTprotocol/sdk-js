@@ -103,11 +103,11 @@ describe('CType', () => {
     }).toThrow()
   })
   it('compresses and decompresses the ctype object', () => {
-    expect(CTypeUtils.compressCTypeSchema(rawCType)).toEqual(compressedCType[2])
+    expect(CTypeUtils.compressSchema(rawCType)).toEqual(compressedCType[2])
 
-    expect(CTypeUtils.compressCType(claimCtype)).toEqual(compressedCType)
+    expect(CTypeUtils.compress(claimCtype)).toEqual(compressedCType)
 
-    expect(CTypeUtils.decompressCType(compressedCType)).toEqual(claimCtype)
+    expect(CTypeUtils.decompress(compressedCType)).toEqual(claimCtype)
 
     expect(CType.decompress(compressedCType)).toEqual(claimCtype)
 
@@ -119,11 +119,11 @@ describe('CType', () => {
     delete rawCType.$id
     delete claimCtype.hash
 
-    expect(() => CTypeUtils.compressCTypeSchema(rawCType)).toThrow()
+    expect(() => CTypeUtils.compressSchema(rawCType)).toThrow()
 
-    expect(() => CTypeUtils.compressCType(claimCtype)).toThrow()
+    expect(() => CTypeUtils.compress(claimCtype)).toThrow()
 
-    expect(() => CTypeUtils.decompressCType(compressedCType)).toThrow()
+    expect(() => CTypeUtils.decompress(compressedCType)).toThrow()
 
     expect(() => CType.decompress(compressedCType)).toThrow()
 
