@@ -1,4 +1,5 @@
-import { Text, Tuple, H256 } from '@polkadot/types'
+import { Text, Tuple, H256, Option } from '@polkadot/types'
+import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
 import { Crypto, Identity } from '..'
 import DelegationRootNode from './DelegationRootNode'
@@ -7,24 +8,29 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Delegation', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
-
   const ctypeHash = Crypto.hashStr('testCtype')
   require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
     () => {
-      const tuple = new Tuple(
-        // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-        [H256, Text, Bool],
-        [ctypeHash, identityAlice.address, false]
+      const tuple = new Option(
+        Tuple,
+        new Tuple(
+          // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+          [H256, AccountId, Bool],
+          [ctypeHash, identityAlice.address, false]
+        )
       )
       return Promise.resolve(tuple)
     }
   )
   require('../blockchain/Blockchain').default.__mockQueryDelegationDelegation = jest.fn(
     () => {
-      const tuple = new Tuple(
-        // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-        [H256, Text, Bool],
-        [ctypeHash, identityAlice.address, false]
+      const tuple = new Option(
+        Tuple,
+        new Tuple(
+          // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+          [H256, AccountId, Bool],
+          [ctypeHash, identityAlice.address, false]
+        )
       )
       return Promise.resolve(tuple)
     }
@@ -59,17 +65,23 @@ describe('Delegation', () => {
     require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
       rootId => {
         if (rootId === 'success') {
-          const tuple = new Tuple(
-            // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-            [Text, Text, Bool],
-            ['myCtypeHash', 'myAccount', false]
+          const tuple = new Option(
+            Tuple,
+            new Tuple(
+              // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+              [Text, Text, Bool],
+              ['myCtypeHash', 'myAccount', false]
+            )
           )
           return Promise.resolve(tuple)
         }
-        const tuple = new Tuple(
-          // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          [Text, Text, Bool],
-          ['myCtypeHash', 'myAccount', true]
+        const tuple = new Option(
+          Tuple,
+          new Tuple(
+            // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+            [Text, Text, Bool],
+            ['myCtypeHash', 'myAccount', true]
+          )
         )
         return Promise.resolve(tuple)
       }

@@ -1,6 +1,7 @@
 import { Text } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
-import { Tuple } from '@polkadot/types/codec'
+import AccountId from '@polkadot/types/primitive/Generic/AccountId'
+import { Tuple, Option } from '@polkadot/types/codec'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
 import AttestationUtils from './Attestation.util'
@@ -50,9 +51,12 @@ describe('Attestation', () => {
 
   it('stores attestation', async () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      const tuple = new Tuple(
-        [Text, Text, Text, Bool],
-        [testCType.hash, identityAlice.address, undefined, false]
+      const tuple = new Option(
+        Tuple,
+        new Tuple(
+          [Text, AccountId, Text, Bool],
+          [testCType.hash, identityAlice.address, undefined, false]
+        )
       )
       return Promise.resolve(tuple)
     })
@@ -66,7 +70,7 @@ describe('Attestation', () => {
 
   it('verify attestations not on chain', async () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      return Promise.resolve(new Tuple([], []))
+      return Promise.resolve(new Option(Tuple))
     })
 
     const attestation: Attestation = Attestation.fromAttestation({
@@ -82,10 +86,13 @@ describe('Attestation', () => {
   it('verify attestation revoked', async () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
       return Promise.resolve(
-        new Tuple(
-          // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
-          [Text, Text, Text, Bool],
-          [testCType.hash, identityAlice, undefined, true]
+        new Option(
+          Tuple,
+          new Tuple(
+            // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
+            [Text, AccountId, Text, Bool],
+            [testCType.hash, identityAlice.address, undefined, true]
+          )
         )
       )
     })
