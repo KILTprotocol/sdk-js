@@ -1,5 +1,10 @@
-import * as jsonabc from 'jsonabc'
+/**
+ * @packageDocumentation
+ * @module RequestForAttestationUtils
+ * @preferred
+ */
 
+import * as jsonabc from 'jsonabc'
 import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'

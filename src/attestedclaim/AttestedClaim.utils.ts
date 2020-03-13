@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @module AttestedClaimUtils
+ * @preferred
+ */
+
 import AttestationUtils from '../attestation/Attestation.utils'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'

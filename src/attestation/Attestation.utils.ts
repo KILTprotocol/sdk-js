@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @module AttestationUtils
+ * @preferred
+ */
+
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
 
 export function errorCheck(attestation: IAttestation): void {

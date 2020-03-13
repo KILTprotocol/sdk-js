@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @module QuoteUtils
+ * @preferred
+ */
+
 import {
   CompressedQuoteAgreed,
   ICostBreakdown,

@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @module ClaimUtils
+ * @preferred
+ */
+
 import * as jsonabc from 'jsonabc'
 import IClaim, { CompressedClaim } from '../types/Claim'
 
