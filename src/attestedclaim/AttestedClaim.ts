@@ -8,70 +8,12 @@
  * @preferred
  */
 
-import Attestation, {
-  compressAttestation,
-  decompressAttestation,
-} from '../attestation/Attestation'
-import RequestForAttestation, {
-  compressRequestForAttestation,
-  decompressRequestForAttestation,
-} from '../requestforattestation/RequestForAttestation'
+import Attestation from '../attestation/Attestation'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
-
-function attestedClaimErrorCheck(attestedClaim: IAttestedClaim): void {
-  if (!attestedClaim.request || !attestedClaim.attestation) {
-    throw new Error(
-      `Property Not Provided while building AttestedClaim: ${JSON.stringify(
-        attestedClaim,
-        null,
-        2
-      )}`
-    )
-  }
-}
-
-/**
- *  Compresses an [[AttestedClaim]] object into an array for storage and/or messaging.
- *
- * @param attestedClaim An [[AttestedClaim]] that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of an [[AttestedClaim]] that comprises of an [[Attestation]] and [[RequestForAttestation]] arrays.
- */
-
-export function compressAttestedClaim(
-  attestedClaim: IAttestedClaim
-): CompressedAttestedClaim {
-  attestedClaimErrorCheck(attestedClaim)
-
-  return [
-    compressRequestForAttestation(attestedClaim.request),
-    compressAttestation(attestedClaim.attestation),
-  ]
-}
-
-/**
- *  Decompresses an [[AttestedClaim]] array from storage and/or message into an object.
- *
- * @param attestedClaim A compressesd [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
- *
- * @returns An object that has the same properties as an [[AttestedClaim]].
- */
-
-export function decompressAttestedClaim(
-  attestedClaim: CompressedAttestedClaim
-): IAttestedClaim {
-  if (!Array.isArray(attestedClaim) || attestedClaim.length !== 2) {
-    throw new Error(
-      'Compressed Attested Claim isnt an Array or has all the required data types'
-    )
-  }
-  return {
-    request: decompressRequestForAttestation(attestedClaim[0]),
-    attestation: decompressAttestation(attestedClaim[1]),
-  }
-}
+import AttestedClaimUtil from './AttestedClaim.util'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -125,7 +67,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * ```
    */
   public constructor(attestedClaimInput: IAttestedClaim) {
-    attestedClaimErrorCheck(attestedClaimInput)
+    AttestedClaimUtil.attestedClaimErrorCheck(attestedClaimInput)
     this.request = RequestForAttestation.fromRequest(attestedClaimInput.request)
     this.attestation = Attestation.fromAttestation(
       attestedClaimInput.attestation
@@ -214,7 +156,7 @@ export default class AttestedClaim implements IAttestedClaim {
    */
 
   public compress(): CompressedAttestedClaim {
-    return compressAttestedClaim(this)
+    return AttestedClaimUtil.compressAttestedClaim(this)
   }
 
   /**
@@ -226,7 +168,9 @@ export default class AttestedClaim implements IAttestedClaim {
   public static decompress(
     attestedClaim: CompressedAttestedClaim
   ): AttestedClaim {
-    const decompressedAttestedClaim = decompressAttestedClaim(attestedClaim)
+    const decompressedAttestedClaim = AttestedClaimUtil.decompressAttestedClaim(
+      attestedClaim
+    )
     return AttestedClaim.fromAttestedClaim(decompressedAttestedClaim)
   }
 }

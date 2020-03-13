@@ -1,4 +1,6 @@
-import Claim, { decompressClaim, compressClaim } from './Claim'
+import Claim from './Claim'
+import ClaimUtils from './Claim.util'
+
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
@@ -48,9 +50,9 @@ describe('Claim', () => {
   })
 
   it('compresses and decompresses the Claim object', () => {
-    expect(compressClaim(claim)).toEqual(compressedClaim)
+    expect(ClaimUtils.compressClaim(claim)).toEqual(compressedClaim)
 
-    expect(decompressClaim(compressedClaim)).toEqual(claim)
+    expect(ClaimUtils.decompressClaim(compressedClaim)).toEqual(claim)
 
     expect(Claim.decompress(compressedClaim)).toEqual(claim)
 
@@ -62,11 +64,11 @@ describe('Claim', () => {
     delete claim.owner
 
     expect(() => {
-      compressClaim(claim)
+      ClaimUtils.compressClaim(claim)
     }).toThrow()
 
     expect(() => {
-      decompressClaim(compressedClaim)
+      ClaimUtils.decompressClaim(compressedClaim)
     }).toThrow()
 
     expect(() => {

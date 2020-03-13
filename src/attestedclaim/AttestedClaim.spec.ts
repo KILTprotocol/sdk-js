@@ -1,8 +1,6 @@
 import Identity from '../identity/Identity'
-import AttestedClaim, {
-  compressAttestedClaim,
-  decompressAttestedClaim,
-} from './AttestedClaim'
+import AttestedClaim from './AttestedClaim'
+import AttestedClaimUtils from './AttestedClaim.util'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
@@ -134,13 +132,17 @@ describe('RequestForAttestation', () => {
   })
 
   it('compresses and decompresses the attested claims object', () => {
-    expect(compressAttestedClaim(legitimation)).toEqual(compressedLegitimation)
-
-    expect(decompressAttestedClaim(compressedLegitimation)).toEqual(
-      legitimation
+    expect(AttestedClaimUtils.compressAttestedClaim(legitimation)).toEqual(
+      compressedLegitimation
     )
 
-    expect(legitimation.compress()).toEqual(compressAttestedClaim(legitimation))
+    expect(
+      AttestedClaimUtils.decompressAttestedClaim(compressedLegitimation)
+    ).toEqual(legitimation)
+
+    expect(legitimation.compress()).toEqual(
+      AttestedClaimUtils.compressAttestedClaim(legitimation)
+    )
 
     expect(AttestedClaim.decompress(compressedLegitimation)).toEqual(
       legitimation
@@ -152,11 +154,11 @@ describe('RequestForAttestation', () => {
     delete legitimation.attestation
 
     expect(() => {
-      compressAttestedClaim(legitimation)
+      AttestedClaimUtils.compressAttestedClaim(legitimation)
     }).toThrow()
 
     expect(() => {
-      decompressAttestedClaim(compressedLegitimation)
+      AttestedClaimUtils.decompressAttestedClaim(compressedLegitimation)
     }).toThrow()
     expect(() => {
       AttestedClaim.decompress(compressedLegitimation)

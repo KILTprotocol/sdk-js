@@ -10,6 +10,7 @@ import {
 } from '../types/Quote'
 import Identity from '../identity/Identity'
 import * as Quote from './Quote'
+import QuoteUtils from './Quote.util'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
@@ -172,24 +173,26 @@ describe('Claim', () => {
   })
 
   it('compresses and decompresses the quote object', () => {
-    expect(Quote.compressQuote(validQuoteData)).toEqual(compressedQuote)
+    expect(QuoteUtils.compressQuote(validQuoteData)).toEqual(compressedQuote)
 
-    expect(Quote.decompressQuote(compressedQuote)).toEqual(validQuoteData)
-
-    expect(Quote.compressAttesterSignedQuote(validAttesterSignedQuote)).toEqual(
-      compressedResultAttesterSignedQuote
-    )
+    expect(QuoteUtils.decompressQuote(compressedQuote)).toEqual(validQuoteData)
 
     expect(
-      Quote.decompressAttesterSignedQuote(compressedResultAttesterSignedQuote)
+      QuoteUtils.compressAttesterSignedQuote(validAttesterSignedQuote)
+    ).toEqual(compressedResultAttesterSignedQuote)
+
+    expect(
+      QuoteUtils.decompressAttesterSignedQuote(
+        compressedResultAttesterSignedQuote
+      )
     ).toEqual(validAttesterSignedQuote)
 
-    expect(Quote.compressQuoteAgreement(quoteBothAgreed)).toEqual(
+    expect(QuoteUtils.compressQuoteAgreement(quoteBothAgreed)).toEqual(
       compressedResultQuoteAgreement
     )
 
     expect(
-      Quote.decompressQuoteAgreement(compressedResultQuoteAgreement)
+      QuoteUtils.decompressQuoteAgreement(compressedResultQuoteAgreement)
     ).toEqual(quoteBothAgreed)
   })
   it('Negative test for compresses and decompresses the quote object', () => {
@@ -201,27 +204,29 @@ describe('Claim', () => {
     compressedResultQuoteAgreement.pop()
 
     expect(() => {
-      Quote.compressQuote(validQuoteData)
+      QuoteUtils.compressQuote(validQuoteData)
     }).toThrow()
 
     expect(() => {
-      Quote.decompressQuote(compressedQuote)
+      QuoteUtils.decompressQuote(compressedQuote)
     }).toThrow()
 
     expect(() => {
-      Quote.compressAttesterSignedQuote(validAttesterSignedQuote)
+      QuoteUtils.compressAttesterSignedQuote(validAttesterSignedQuote)
     }).toThrow()
 
     expect(() => {
-      Quote.decompressAttesterSignedQuote(compressedResultAttesterSignedQuote)
+      QuoteUtils.decompressAttesterSignedQuote(
+        compressedResultAttesterSignedQuote
+      )
     }).toThrow()
 
     expect(() => {
-      Quote.compressQuoteAgreement(quoteBothAgreed)
+      QuoteUtils.compressQuoteAgreement(quoteBothAgreed)
     }).toThrow()
 
     expect(() => {
-      Quote.decompressQuoteAgreement(compressedResultQuoteAgreement)
+      QuoteUtils.decompressQuoteAgreement(compressedResultQuoteAgreement)
     }).toThrow()
   })
 })

@@ -1,8 +1,6 @@
 import Identity from '../identity/Identity'
-import RequestForAttestation, {
-  compressRequestForAttestation,
-  decompressRequestForAttestation,
-} from './RequestForAttestation'
+import RequestForAttestation from './RequestForAttestation'
+import RequestForAttestationUtils from './RequestForAttestation.util'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
@@ -220,13 +218,15 @@ describe('RequestForAttestation', () => {
       reqForAtt.delegationId,
     ]
 
-    expect(compressRequestForAttestation(reqForAtt)).toEqual(
-      compressedReqForAtt
-    )
+    expect(
+      RequestForAttestationUtils.compressRequestForAttestation(reqForAtt)
+    ).toEqual(compressedReqForAtt)
 
-    expect(decompressRequestForAttestation(compressedReqForAtt)).toEqual(
-      reqForAtt
-    )
+    expect(
+      RequestForAttestationUtils.decompressRequestForAttestation(
+        compressedReqForAtt
+      )
+    ).toEqual(reqForAtt)
 
     expect(reqForAtt.compress()).toEqual(compressedReqForAtt)
 
@@ -237,11 +237,13 @@ describe('RequestForAttestation', () => {
     delete reqForAtt.claimOwner
 
     expect(() => {
-      compressRequestForAttestation(reqForAtt)
+      RequestForAttestationUtils.compressRequestForAttestation(reqForAtt)
     }).toThrow()
 
     expect(() => {
-      decompressRequestForAttestation(compressedReqForAtt)
+      RequestForAttestationUtils.decompressRequestForAttestation(
+        compressedReqForAtt
+      )
     }).toThrow()
 
     expect(() => {

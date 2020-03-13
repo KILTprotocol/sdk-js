@@ -10,17 +10,22 @@ import Identity from './identity/Identity'
 import PublicIdentity, { IURLResolver } from './identity/PublicIdentity'
 import CType from './ctype/CType'
 import CTypeMetadata from './ctype/CTypeMetadata'
-import * as CTypeUtils from './ctype/CTypeUtils'
+import * as CTypeUtils from './ctype/CType.util'
 import * as CTypeSchema from './ctype/CTypeSchema'
 import Claim from './claim/Claim'
+import * as ClaimUtils from './claim/Claim.util'
 import RequestForAttestation from './requestforattestation/RequestForAttestation'
+import * as RequestForAttestationUtils from './requestforattestation/RequestForAttestation.util'
 import Attestation from './attestation/Attestation'
+import * as AttestationUtils from './attestation/Attestation.util'
 import AttestedClaim from './attestedclaim/AttestedClaim'
+import * as AttestedClaimUtils from './attestedclaim/AttestedClaim.util'
 import DelegationBaseNode from './delegation/Delegation'
 import DelegationNode from './delegation/DelegationNode'
 import DelegationRootNode from './delegation/DelegationRootNode'
 import Did, { IDid } from './did/Did'
 import * as Quote from './quote/Quote'
+import * as QuoteUtils from './quote/Quote.util'
 import Message from './messaging/Message'
 import * as Constants from './const'
 
@@ -67,9 +72,13 @@ export {
   CTypeUtils,
   CTypeSchema,
   Claim,
+  ClaimUtils,
   RequestForAttestation,
+  RequestForAttestationUtils,
   Attestation,
+  AttestationUtils,
   AttestedClaim,
+  AttestedClaimUtils,
   DelegationBaseNode,
   DelegationNode,
   DelegationRootNode,
@@ -78,6 +87,7 @@ export {
   Message,
   Constants,
   Quote,
+  QuoteUtils,
 }
 
 // ---- Default export for ease of use ----

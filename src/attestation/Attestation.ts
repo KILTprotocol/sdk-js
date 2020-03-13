@@ -18,65 +18,9 @@ import Identity from '../identity/Identity'
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { revoke, query, store } from './Attestation.chain'
 import IPublicIdentity from '../types/PublicIdentity'
+import AttestationUtils from './Attestation.util'
 
 const log = factory.getLogger('Attestation')
-
-function attestationErrorCheck(attestation: IAttestation): void {
-  if (!attestation.cTypeHash || !attestation.claimHash || !attestation.owner) {
-    throw new Error(
-      `Property Not Provided while building Attestation: ${JSON.stringify(
-        attestation,
-        null,
-        2
-      )}`
-    )
-  }
-}
-/**
- *  Compresses an [[Attestation]] object into an array for storage and/or messaging.
- *
- * @param attestation An [[Attestation]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of an [[Attestation]].
- */
-
-export function compressAttestation(
-  attestation: IAttestation
-): CompressedAttestation {
-  attestationErrorCheck(attestation)
-  return [
-    attestation.claimHash,
-    attestation.cTypeHash,
-    attestation.owner,
-    attestation.revoked,
-    attestation.delegationId,
-  ]
-}
-
-/**
- *  Decompresses an [[Attestation]] from storage and/or message into an object.
- *
- * @param attestation A compressesd [[Attestation]] array that is reverted back into an object.
- *
- * @returns An object that has the same properties as an [[Attestation]].
- */
-
-export function decompressAttestation(
-  attestation: CompressedAttestation
-): IAttestation {
-  if (!Array.isArray(attestation) || attestation.length !== 5) {
-    throw new Error(
-      'Compressed Attestation isnt an Array or has all the required data types'
-    )
-  }
-  return {
-    claimHash: attestation[0],
-    cTypeHash: attestation[1],
-    owner: attestation[2],
-    revoked: attestation[3],
-    delegationId: attestation[4],
-  }
-}
 
 export default class Attestation implements IAttestation {
   /**
@@ -168,7 +112,7 @@ export default class Attestation implements IAttestation {
    * ```
    */
   public constructor(attestationInput: IAttestation) {
-    attestationErrorCheck(attestationInput)
+    AttestationUtils.attestationErrorCheck(attestationInput)
     this.claimHash = attestationInput.claimHash
     this.cTypeHash = attestationInput.cTypeHash
     this.delegationId = attestationInput.delegationId
@@ -236,7 +180,7 @@ export default class Attestation implements IAttestation {
    */
 
   public compress(): CompressedAttestation {
-    return compressAttestation(this)
+    return AttestationUtils.compressAttestation(this)
   }
 
   /**
@@ -246,7 +190,9 @@ export default class Attestation implements IAttestation {
    */
 
   public static decompress(attestation: CompressedAttestation): Attestation {
-    const decompressedAttestation = decompressAttestation(attestation)
+    const decompressedAttestation = AttestationUtils.decompressAttestation(
+      attestation
+    )
     return Attestation.fromAttestation(decompressedAttestation)
   }
 

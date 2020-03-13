@@ -6,7 +6,7 @@
 
 import ICTypeMetadata from '../types/CTypeMetadata'
 import { MetadataModel } from './CTypeSchema'
-import CTypeUtils from './CTypeUtils'
+import CTypeUtils from './CType.util'
 
 export default class CTypeMetadata implements ICTypeMetadata {
   public ctypeHash: ICTypeMetadata['ctypeHash']

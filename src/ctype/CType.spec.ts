@@ -1,11 +1,8 @@
-import CType, {
-  compressCType,
-  compressCTypeSchema,
-  decompressCType,
-} from './CType'
+import CType from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
 import ICType, { CompressedCType } from '../types/CType'
+import CTypeUtils from './CType.util'
 import TxStatus from '../blockchain/TxStatus'
 import Claim from '../claim/Claim'
 import { FINALIZED } from '../const/TxStatus'
@@ -105,11 +102,11 @@ describe('CType', () => {
     }).toThrow()
   })
   it('compresses and decompresses the ctype object', () => {
-    expect(compressCTypeSchema(rawCType)).toEqual(compressedCType[2])
+    expect(CTypeUtils.compressCTypeSchema(rawCType)).toEqual(compressedCType[2])
 
-    expect(compressCType(claimCtype)).toEqual(compressedCType)
+    expect(CTypeUtils.compressCType(claimCtype)).toEqual(compressedCType)
 
-    expect(decompressCType(compressedCType)).toEqual(claimCtype)
+    expect(CTypeUtils.decompressCType(compressedCType)).toEqual(claimCtype)
 
     expect(CType.decompress(compressedCType)).toEqual(claimCtype)
 
@@ -121,11 +118,11 @@ describe('CType', () => {
     delete rawCType.$id
     delete claimCtype.hash
 
-    expect(() => compressCTypeSchema(rawCType)).toThrow()
+    expect(() => CTypeUtils.compressCTypeSchema(rawCType)).toThrow()
 
-    expect(() => compressCType(claimCtype)).toThrow()
+    expect(() => CTypeUtils.compressCType(claimCtype)).toThrow()
 
-    expect(() => decompressCType(compressedCType)).toThrow()
+    expect(() => CTypeUtils.decompressCType(compressedCType)).toThrow()
 
     expect(() => CType.decompress(compressedCType)).toThrow()
 

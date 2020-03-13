@@ -2,10 +2,8 @@ import { Text } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import { Tuple } from '@polkadot/types/codec'
 import Identity from '../identity/Identity'
-import Attestation, {
-  compressAttestation,
-  decompressAttestation,
-} from './Attestation'
+import Attestation from './Attestation'
+import AttestationUtils from './Attestation.util'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
@@ -113,9 +111,13 @@ describe('Attestation', () => {
       attestation.delegationId,
     ]
 
-    expect(compressAttestation(attestation)).toEqual(compressedAttestation)
+    expect(AttestationUtils.compressAttestation(attestation)).toEqual(
+      compressedAttestation
+    )
 
-    expect(decompressAttestation(compressedAttestation)).toEqual(attestation)
+    expect(
+      AttestationUtils.decompressAttestation(compressedAttestation)
+    ).toEqual(attestation)
 
     expect(Attestation.decompress(compressedAttestation)).toEqual(attestation)
 
@@ -139,7 +141,7 @@ describe('Attestation', () => {
     delete attestation.claimHash
 
     expect(() => {
-      decompressAttestation(compressedAttestation)
+      AttestationUtils.decompressAttestation(compressedAttestation)
     }).toThrow()
 
     expect(() => {
@@ -149,7 +151,7 @@ describe('Attestation', () => {
       attestation.compress()
     }).toThrow()
     expect(() => {
-      compressAttestation(attestation)
+      AttestationUtils.compressAttestation(attestation)
     }).toThrow()
   })
 })

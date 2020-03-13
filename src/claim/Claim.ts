@@ -12,60 +12,17 @@
  * @preferred
  */
 
-import * as jsonabc from 'jsonabc'
-
 import ICType from '../ctype/CType'
-import { verifyClaimStructure } from '../ctype/CTypeUtils'
+import CTypeUtils from '../ctype/CType.util'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
-
-function claimErrorCheck(claim: IClaim): void {
-  if (!claim.cTypeHash || !claim.contents || !claim.owner) {
-    throw new Error(
-      `Property Not Provided while building Claim: 
-      ${JSON.stringify(claim, null, 2)}`
-    )
-  }
-}
-
-/**
- *  Compresses the [[Claim]] for storage and/or messaging.
- *
- * @param claim A [[Claim]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of a [[Claim]].
- */
-export function compressClaim(claim: IClaim): CompressedClaim {
-  claimErrorCheck(claim)
-  const sortedContents = jsonabc.sortObj(claim.contents)
-  return [sortedContents, claim.cTypeHash, claim.owner]
-}
-
-/**
- *  Decompresses the [[Claim]] from storage and/or message.
- *
- * @param claim A compressesd [[Claim]] array that is reverted back into an object.
- *
- * @returns An object that has the same properties as the [[Claim]].
- */
-export function decompressClaim(claim: CompressedClaim): IClaim {
-  if (!Array.isArray(claim) || claim.length !== 3) {
-    throw new Error(
-      'Compressed Claim isnt an Array or has all the required data types'
-    )
-  }
-  return {
-    contents: claim[0],
-    cTypeHash: claim[1],
-    owner: claim[2],
-  }
-}
+import ClaimUtils from './Claim.util'
 
 function verifyClaim(
   claimContents: object,
   cTypeSchema: ICType['schema']
 ): boolean {
-  return verifyClaimStructure(claimContents, cTypeSchema)
+  return CTypeUtils.verifyClaimStructure(claimContents, cTypeSchema)
 }
 
 export default class Claim implements IClaim {
@@ -103,7 +60,7 @@ export default class Claim implements IClaim {
   public owner: IClaim['owner']
 
   public constructor(claimInput: IClaim) {
-    claimErrorCheck(claimInput)
+    ClaimUtils.claimErrorCheck(claimInput)
     this.cTypeHash = claimInput.cTypeHash
     this.contents = claimInput.contents
     this.owner = claimInput.owner
@@ -116,7 +73,7 @@ export default class Claim implements IClaim {
    */
 
   public compress(): CompressedClaim {
-    return compressClaim(this)
+    return ClaimUtils.compressClaim(this)
   }
 
   /**
@@ -126,7 +83,7 @@ export default class Claim implements IClaim {
    */
 
   public static decompress(compressedClaim: CompressedClaim): Claim {
-    const decompressedClaim = decompressClaim(compressedClaim)
+    const decompressedClaim = ClaimUtils.decompressClaim(compressedClaim)
     return new Claim(decompressedClaim)
   }
 }
