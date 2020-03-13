@@ -4,11 +4,12 @@ import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
+import AttestationUtils from './Attestation.utils'
 import CType from '../ctype/CType'
-import IAttestation from '../types/Attestation'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
+import { CompressedAttestation } from '../types/Attestation'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -75,9 +76,10 @@ describe('Attestation', () => {
     const attestation: Attestation = Attestation.fromAttestation({
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
+      delegationId: null,
       owner: identityAlice.address,
       revoked: false,
-    } as IAttestation)
+    })
     expect(await attestation.verify()).toBeFalsy()
   })
 
@@ -100,5 +102,63 @@ describe('Attestation', () => {
       identityAlice
     )
     expect(await attestation.verify()).toBeFalsy()
+  })
+
+  it('compresses and decompresses the attestation object', () => {
+    const attestation = Attestation.fromRequestAndPublicIdentity(
+      requestForAttestation,
+      identityAlice
+    )
+
+    const compressedAttestation: CompressedAttestation = [
+      attestation.claimHash,
+      attestation.cTypeHash,
+      attestation.owner,
+      attestation.revoked,
+      attestation.delegationId,
+    ]
+
+    expect(AttestationUtils.compress(attestation)).toEqual(
+      compressedAttestation
+    )
+
+    expect(AttestationUtils.decompress(compressedAttestation)).toEqual(
+      attestation
+    )
+
+    expect(Attestation.decompress(compressedAttestation)).toEqual(attestation)
+
+    expect(attestation.compress()).toEqual(compressedAttestation)
+  })
+
+  it('Negative test for compresses and decompresses the attestation object', () => {
+    const attestation = Attestation.fromRequestAndPublicIdentity(
+      requestForAttestation,
+      identityAlice
+    )
+
+    const compressedAttestation: CompressedAttestation = [
+      attestation.claimHash,
+      attestation.cTypeHash,
+      attestation.owner,
+      attestation.revoked,
+      attestation.delegationId,
+    ]
+    compressedAttestation.pop()
+    delete attestation.claimHash
+
+    expect(() => {
+      AttestationUtils.decompress(compressedAttestation)
+    }).toThrow()
+
+    expect(() => {
+      Attestation.decompress(compressedAttestation)
+    }).toThrow()
+    expect(() => {
+      attestation.compress()
+    }).toThrow()
+    expect(() => {
+      AttestationUtils.compress(attestation)
+    }).toThrow()
   })
 })

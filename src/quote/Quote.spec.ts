@@ -4,9 +4,13 @@ import {
   ICostBreakdown,
   IQuoteAttesterSigned,
   IQuoteAgreement,
+  CompressedQuote,
+  CompressedQuoteAgreed,
+  CompressedQuoteAttesterSigned,
 } from '../types/Quote'
 import Identity from '../identity/Identity'
 import * as Quote from './Quote'
+import QuoteUtils from './Quote.utils'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
@@ -91,6 +95,48 @@ describe('Claim', () => {
   )
   const invalidPropertiesQuote = invalidPropertiesQuoteData
   const invalidCostQuote = invalidCostQuoteData
+  const compressedQuote: CompressedQuote = [
+    validQuoteData.attesterAddress,
+    validQuoteData.cTypeHash,
+    [
+      validQuoteData.cost.gross,
+      validQuoteData.cost.net,
+      validQuoteData.cost.tax,
+    ],
+    validQuoteData.currency,
+    validQuoteData.termsAndConditions,
+    validQuoteData.timeframe,
+  ]
+
+  const compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned = [
+    validQuoteData.attesterAddress,
+    validQuoteData.cTypeHash,
+    [
+      validQuoteData.cost.gross,
+      validQuoteData.cost.net,
+      validQuoteData.cost.tax,
+    ],
+    validQuoteData.currency,
+    validQuoteData.termsAndConditions,
+    validQuoteData.timeframe,
+    validAttesterSignedQuote.attesterSignature,
+  ]
+
+  const compressedResultQuoteAgreement: CompressedQuoteAgreed = [
+    validQuoteData.attesterAddress,
+    validQuoteData.cTypeHash,
+    [
+      validQuoteData.cost.gross,
+      validQuoteData.cost.net,
+      validQuoteData.cost.tax,
+    ],
+    validQuoteData.currency,
+    validQuoteData.termsAndConditions,
+    validQuoteData.timeframe,
+    validAttesterSignedQuote.attesterSignature,
+    quoteBothAgreed.claimerSignature,
+    quoteBothAgreed.rootHash,
+  ]
 
   it('tests created quote data against given data', () => {
     expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
@@ -124,5 +170,63 @@ describe('Claim', () => {
     expect(
       Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)
     ).toBeFalsy()
+  })
+
+  it('compresses and decompresses the quote object', () => {
+    expect(QuoteUtils.compressQuote(validQuoteData)).toEqual(compressedQuote)
+
+    expect(QuoteUtils.decompressQuote(compressedQuote)).toEqual(validQuoteData)
+
+    expect(
+      QuoteUtils.compressAttesterSignedQuote(validAttesterSignedQuote)
+    ).toEqual(compressedResultAttesterSignedQuote)
+
+    expect(
+      QuoteUtils.decompressAttesterSignedQuote(
+        compressedResultAttesterSignedQuote
+      )
+    ).toEqual(validAttesterSignedQuote)
+
+    expect(QuoteUtils.compressQuoteAgreement(quoteBothAgreed)).toEqual(
+      compressedResultQuoteAgreement
+    )
+
+    expect(
+      QuoteUtils.decompressQuoteAgreement(compressedResultQuoteAgreement)
+    ).toEqual(quoteBothAgreed)
+  })
+  it('Negative test for compresses and decompresses the quote object', () => {
+    delete validQuoteData.cTypeHash
+    compressedQuote.pop()
+    delete validAttesterSignedQuote.currency
+    compressedResultAttesterSignedQuote.pop()
+    delete quoteBothAgreed.currency
+    compressedResultQuoteAgreement.pop()
+
+    expect(() => {
+      QuoteUtils.compressQuote(validQuoteData)
+    }).toThrow()
+
+    expect(() => {
+      QuoteUtils.decompressQuote(compressedQuote)
+    }).toThrow()
+
+    expect(() => {
+      QuoteUtils.compressAttesterSignedQuote(validAttesterSignedQuote)
+    }).toThrow()
+
+    expect(() => {
+      QuoteUtils.decompressAttesterSignedQuote(
+        compressedResultAttesterSignedQuote
+      )
+    }).toThrow()
+
+    expect(() => {
+      QuoteUtils.compressQuoteAgreement(quoteBothAgreed)
+    }).toThrow()
+
+    expect(() => {
+      QuoteUtils.decompressQuoteAgreement(compressedResultQuoteAgreement)
+    }).toThrow()
   })
 })
