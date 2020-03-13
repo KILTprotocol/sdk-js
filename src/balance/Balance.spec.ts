@@ -5,7 +5,7 @@ import { listenToBalanceChanges, makeTransfer } from './Balance.chain'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
-describe('Balance', async () => {
+describe('Balance', () => {
   const blockchain = require('../blockchain/Blockchain').default
 
   blockchain.api.query.balances.freeBalance = jest.fn((accountAddress, cb) => {

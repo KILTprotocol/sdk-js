@@ -9,7 +9,7 @@ import getCached from '../blockchainApiConnection'
 
 const ident = NewIdentity()
 
-xdescribe('querying DIDs that do not exist', () => {
+describe('querying DIDs that do not exist', () => {
   it('queryByAddress', async () => {
     return expect(queryByAddress(ident.address)).resolves.toBeNull()
   })

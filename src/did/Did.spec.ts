@@ -11,17 +11,23 @@ describe('DID', () => {
   require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
     address => {
       if (address === 'withDocumentStore') {
-        const tuple = new Tuple(
-          // (publicBoxKey, publicSigningKey, documentStore?)
-          [Text, Text, U8a],
-          ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
+        const tuple = new Option(
+          Tuple,
+          new Tuple(
+            // (publicBoxKey, publicSigningKey, documentStore?)
+            [Text, Text, U8a],
+            ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
+          )
         )
         return Promise.resolve(tuple)
       }
-      const tuple = new Tuple(
-        // (publicBoxKey, publicSigningKey, documentStore?)
-        [Text, Text, Option],
-        ['0x987', '0x123', null]
+      const tuple = new Option(
+        Tuple,
+        new Tuple(
+          // (publicBoxKey, publicSigningKey, documentStore?)
+          [Text, Text, Option],
+          ['0x987', '0x123', null]
+        )
       )
       return Promise.resolve(tuple)
     }

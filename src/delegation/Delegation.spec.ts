@@ -1,6 +1,7 @@
-import { Text, Tuple } from '@polkadot/types'
+import { Text, Tuple, Vec, Option } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
+import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Crypto, Identity } from '..'
 import DelegationNode from './DelegationNode'
 import { getAttestationHashes } from './Delegation.chain'
@@ -17,69 +18,81 @@ describe('Delegation', () => {
     return Promise.resolve()
   })
   blockchain.api.query.attestation.delegatedAttestations = jest.fn(() => {
-    const tuple = new Tuple(
+    const vector = new Vec(
       //  (claim-hash)
-      [Text, Text, Text],
+      Text,
       ['0x123', '0x456', '0x789']
     )
-    return Promise.resolve(tuple)
+    return Promise.resolve(vector)
   })
   blockchain.api.query.delegation.root = jest.fn(() => {
-    const tuple = new Tuple(
-      // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-      [Tuple.with([Text, Text, Bool])],
-      [[ctypeHash, identityAlice.address, false]]
+    const tuple = new Option(
+      Tuple,
+      new Tuple(
+        // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+        [Text, AccountId, Bool],
+        [[ctypeHash, identityAlice.address, false]]
+      )
     )
     return Promise.resolve(tuple)
   })
   blockchain.api.query.delegation.delegations = jest.fn(delegationId => {
     let result = null
     if (delegationId === 'firstChild') {
-      result = new Tuple(
-        // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-        [Text, Text, Text, U32, Bool],
-        [
-          'rootId',
-          'myNodeId',
-          identityAlice.getPublicIdentity().address,
-          2,
-          false,
-        ]
+      result = new Option(
+        Tuple,
+        new Tuple(
+          // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+          [Text, Text, AccountId, U32, Bool],
+          [
+            'rootId',
+            'myNodeId',
+            identityAlice.getPublicIdentity().address,
+            2,
+            false,
+          ]
+        )
       )
     } else if (delegationId === 'secondChild') {
-      result = new Tuple(
-        // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-        [Text, Text, Text, U32, Bool],
-        [
-          'rootId',
-          'myNodeId',
-          identityAlice.getPublicIdentity().address,
-          1,
-          false,
-        ]
+      result = new Option(
+        Tuple,
+        new Tuple(
+          // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+          [Text, Text, AccountId, U32, Bool],
+          [
+            'rootId',
+            'myNodeId',
+            identityAlice.getPublicIdentity().address,
+            1,
+            false,
+          ]
+        )
       )
     } else if (delegationId === 'thirdChild') {
-      result = new Tuple(
-        // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-        [Text, Text, Text, U32, Bool],
-        [
-          'rootId',
-          'myNodeId',
-          identityAlice.getPublicIdentity().address,
-          0,
-          false,
-        ]
+      result = new Option(
+        Tuple,
+        new Tuple(
+          // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+          [Text, Text, AccountId, U32, Bool],
+          [
+            'rootId',
+            'myNodeId',
+            identityAlice.getPublicIdentity().address,
+            0,
+            false,
+          ]
+        )
       )
     }
     return Promise.resolve(result)
   })
   blockchain.api.query.delegation.children = jest.fn(() => {
-    const tuple = new Tuple(
+    const vector = new Vec(
       // Children: delegation-id -> [delegation-ids]
-      [Text, Text, Text],
+      Text,
       ['firstChild', 'secondChild', 'thirdChild']
     )
-    return Promise.resolve(tuple)
+    return Promise.resolve(vector)
   })
 
   it('get children', async () => {
