@@ -22,7 +22,7 @@ import {
 
 import Identity from '../identity/Identity'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import RequestForAttestationUtils from './RequestForAttestation.util'
+import RequestForAttestationUtils from './RequestForAttestation.utils'
 import IRequestForAttestation, {
   Hash,
   NonceHash,

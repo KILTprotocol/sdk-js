@@ -1,6 +1,6 @@
-import AttestationUtils from '../attestation/Attestation.util'
+import AttestationUtils from '../attestation/Attestation.utils'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
-import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.util'
+import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
 
 export function attestedClaimErrorCheck(attestedClaim: IAttestedClaim): void {
   if (!attestedClaim.request || !attestedClaim.attestation) {

@@ -1,7 +1,7 @@
 import CType from './CType'
 import ICType from '../types/CType'
 import CTypeMetadata from './CTypeMetadata'
-import CTypeUtils from './CType.util'
+import CTypeUtils from './CType.utils'
 import { MetadataModel } from './CTypeSchema'
 import ICTypeMetadata from '../types/CTypeMetadata'
 import Identity from '../identity/Identity'

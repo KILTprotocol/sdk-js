@@ -1,6 +1,6 @@
 import Identity from '../identity/Identity'
 import RequestForAttestation from './RequestForAttestation'
-import RequestForAttestationUtils from './RequestForAttestation.util'
+import RequestForAttestationUtils from './RequestForAttestation.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'

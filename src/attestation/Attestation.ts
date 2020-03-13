@@ -18,7 +18,7 @@ import Identity from '../identity/Identity'
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { revoke, query, store } from './Attestation.chain'
 import IPublicIdentity from '../types/PublicIdentity'
-import AttestationUtils from './Attestation.util'
+import AttestationUtils from './Attestation.utils'
 
 const log = factory.getLogger('Attestation')
 

@@ -13,7 +13,7 @@ import RequestForAttestation from '../requestforattestation/RequestForAttestatio
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import AttestedClaimUtil from './AttestedClaim.util'
+import AttestedClaimUtil from './AttestedClaim.utils'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**

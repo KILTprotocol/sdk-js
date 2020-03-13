@@ -11,7 +11,7 @@
  */
 
 import { CTypeWrapperModel } from './CTypeSchema'
-import CTypeUtils from './CType.util'
+import CTypeUtils from './CType.utils'
 import ICType, { CompressedCType } from '../types/CType'
 import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'

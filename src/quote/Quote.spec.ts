@@ -10,7 +10,7 @@ import {
 } from '../types/Quote'
 import Identity from '../identity/Identity'
 import * as Quote from './Quote'
-import QuoteUtils from './Quote.util'
+import QuoteUtils from './Quote.utils'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'

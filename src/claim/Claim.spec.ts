@@ -1,5 +1,5 @@
 import Claim from './Claim'
-import ClaimUtils from './Claim.util'
+import ClaimUtils from './Claim.utils'
 
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'

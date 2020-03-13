@@ -13,10 +13,10 @@
  */
 
 import ICType from '../ctype/CType'
-import CTypeUtils from '../ctype/CType.util'
+import CTypeUtils from '../ctype/CType.utils'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
-import ClaimUtils from './Claim.util'
+import ClaimUtils from './Claim.utils'
 
 function verifyClaim(
   claimContents: object,
