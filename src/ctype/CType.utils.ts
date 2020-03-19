@@ -111,8 +111,8 @@ export function compress(cType: ICType): CompressedCType {
   if (
     !cType.hash ||
     (typeof cType.owner === 'string'
-      ? checkAddress(cType.owner, 42)[0]
-      : cType.owner === null) ||
+      ? !checkAddress(cType.owner, 42)[0]
+      : !(cType.owner === null)) ||
     !cType.schema
   ) {
     throw new Error(
