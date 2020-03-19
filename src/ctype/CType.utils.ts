@@ -107,7 +107,11 @@ export function decompressSchema(
  */
 
 export function compress(cType: ICType): CompressedCType {
-  if (!cType.hash || !cType.owner || !cType.schema) {
+  if (
+    !cType.hash || typeof cType.owner === 'string'
+      ? true
+      : cType.owner === null || !cType.schema
+  ) {
     throw new Error(
       `Property Not Provided while building cType: ${JSON.stringify(
         cType,
