@@ -104,8 +104,6 @@ describe('CType', () => {
     }).toThrow()
   })
   it('compresses and decompresses the ctype object', () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    console.log(checkAddress(claimCtype.owner!, 42)[0])
     expect(CTypeUtils.compressSchema(rawCType)).toEqual(compressedCType[2])
 
     expect(CTypeUtils.compress(claimCtype)).toEqual(compressedCType)
