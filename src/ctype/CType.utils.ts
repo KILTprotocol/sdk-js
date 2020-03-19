@@ -6,6 +6,7 @@
 
 import Ajv from 'ajv'
 import * as jsonabc from 'jsonabc'
+import { checkAddress } from '@polkadot/util-crypto'
 import { CTypeModel } from './CTypeSchema'
 import ICType, { CompressedCTypeSchema, CompressedCType } from '../types/CType'
 import Crypto from '../crypto'
@@ -108,9 +109,11 @@ export function decompressSchema(
 
 export function compress(cType: ICType): CompressedCType {
   if (
-    !cType.hash || typeof cType.owner === 'string'
-      ? true
-      : cType.owner === null || !cType.schema
+    !cType.hash ||
+    (typeof cType.owner === 'string'
+      ? checkAddress(cType.owner, 42)[0]
+      : cType.owner === null) ||
+    !cType.schema
   ) {
     throw new Error(
       `Property Not Provided while building cType: ${JSON.stringify(
