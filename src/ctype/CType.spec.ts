@@ -1,4 +1,3 @@
-import { checkAddress } from '@polkadot/util-crypto'
 import CType from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
