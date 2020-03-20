@@ -1,6 +1,6 @@
+import { SubmittableResult } from '@polkadot/api'
 import CType from './CType'
 import Identity from '../identity/Identity'
-import Crypto from '../crypto'
 import ICType, { CompressedCType } from '../types/CType'
 import CTypeUtils from './CType.utils'
 import Claim from '../claim/Claim'
@@ -69,19 +69,12 @@ describe('CType', () => {
   ]
 
   it('stores ctypes', async () => {
-    const testHash = Crypto.hashStr('1234')
-
     const ctype = CType.fromCType(fromCTypeModel)
-    ctype.hash = testHash
-    const resultCtype = {
-      ...ctype,
-      owner: identityAlice.address,
-    }
 
     const result = await ctype.store(identityAlice)
+    expect(result).toBeInstanceOf(SubmittableResult)
     expect(result.isFinalized).toBeTruthy()
     expect(result.isCompleted).toBeTruthy()
-    expect(result.payload).toMatchObject(resultCtype)
   })
   it('verifies the claim structure', () => {
     expect(claimCtype.verifyClaimStructure(claim)).toBeTruthy()

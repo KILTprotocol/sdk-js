@@ -8,7 +8,7 @@
  * @preferred
  */
 
-import { ApiPromise } from '@polkadot/api'
+import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
 import { Codec } from '@polkadot/types/types'
@@ -16,7 +16,6 @@ import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
-import TxStatus from './TxStatus'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -33,7 +32,10 @@ export interface IBlockchainApi {
 
   getStats(): Promise<Stats>
   listenToBlocks(listener: (header: Header) => void): Promise<any> // TODO: change any to something meaningful
-  submitTx(identity: Identity, tx: SubmittableExtrinsic): Promise<TxStatus>
+  submitTx(
+    identity: Identity,
+    tx: SubmittableExtrinsic
+  ): Promise<SubmittableResult>
   getNonce(accountAddress: string): Promise<Codec>
 }
 
@@ -80,7 +82,7 @@ export default class Blockchain implements IBlockchainApi {
   public async submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic
-  ): Promise<TxStatus> {
+  ): Promise<SubmittableResult> {
     const accountAddress = identity.address
     const nonce = await this.getNonce(accountAddress)
     const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
@@ -89,7 +91,7 @@ export default class Blockchain implements IBlockchainApi {
     )
     log.info(`Submitting ${tx.method}`)
 
-    return new Promise<TxStatus>((resolve, reject) => {
+    return new Promise<SubmittableResult>((resolve, reject) => {
       signed
         .send(result => {
           log.info(`Got tx status '${result.status.type}'`)
@@ -104,7 +106,7 @@ export default class Blockchain implements IBlockchainApi {
             reject(extrinsicError)
           }
           if (result.isFinalized) {
-            resolve(new TxStatus(result.status))
+            resolve(result)
           } else if (result.isError) {
             reject(
               new Error(

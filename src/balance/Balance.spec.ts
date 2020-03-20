@@ -1,8 +1,8 @@
 import BN from 'bn.js/'
+import { SubmittableResult } from '@polkadot/api'
 import Identity from '../identity/Identity'
 // import partial from 'lodash/partial'
 import { listenToBalanceChanges, makeTransfer } from './Balance.chain'
-import TxStatus from '../blockchain/TxStatus'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -40,7 +40,7 @@ describe('Balance', () => {
     const bob = Identity.buildFromURI('//Bob')
 
     const status = await makeTransfer(alice, bob.address, new BN(100))
-    expect(status).toBeInstanceOf(TxStatus)
+    expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
 })

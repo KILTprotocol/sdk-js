@@ -6,11 +6,11 @@
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
 
+import { SubmittableResult } from '@polkadot/api'
 import { getCached } from '../blockchainApiConnection'
 import { decodeDelegationNode } from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
-import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import { IDelegationNode } from '../types/Delegation'
 
@@ -18,7 +18,7 @@ export async function store(
   delegation: IDelegationNode,
   identity: Identity,
   signature: string
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const blockchain = await getCached()
   const includeParentId: boolean = delegation.parentId
     ? delegation.parentId !== delegation.rootId
@@ -50,7 +50,7 @@ export async function query(
 export async function revoke(
   delegationId: IDelegationNode['id'],
   identity: Identity
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const blockchain = await getCached()
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.revokeDelegation(
     delegationId
