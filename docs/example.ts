@@ -236,7 +236,7 @@ async function doVerification(
 
   // ------------------------- Claimer -----------------------------------------
   // use createPresentation if you don't want to use the privacy enhanced method
-  const presentation = await Kilt.AttestedClaim.createPresentationPE(
+  const presentation = await Kilt.Claimer.createPresentation(
     claimer,
     request,
     [attestedClaim],

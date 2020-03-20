@@ -25,7 +25,8 @@ import Did, { IDid } from './did/Did'
 import * as Quote from './quote/Quote'
 import Message from './messaging/Message'
 import * as Constants from './const'
-import * as Verifier from './verifier/Verifier'
+import * as Verifier from './actor/Verifier'
+import * as Claimer from './actor/Claimer'
 
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
@@ -83,6 +84,7 @@ export {
   Constants,
   Quote,
   Verifier,
+  Claimer,
   Accumulator,
   CombinedPresentation,
 }
@@ -106,6 +108,7 @@ export default {
   Did,
   Message,
   Verifier,
+  Claimer,
   Accumulator,
   CombinedPresentation,
 }

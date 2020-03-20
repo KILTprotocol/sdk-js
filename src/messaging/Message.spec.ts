@@ -217,7 +217,7 @@ describe('Messaging', () => {
 
     const submitClaimsForCTypeBody: ISubmitClaimsForCTypes = {
       content: [attestedClaim],
-      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
     }
 
     Message.ensureOwnerIsSender(

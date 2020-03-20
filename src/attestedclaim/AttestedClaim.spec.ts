@@ -6,7 +6,6 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
-import { Verifier } from '..'
 import constants from '../test/constants'
 
 async function buildAttestedClaim(
@@ -203,43 +202,5 @@ describe('RequestForAttestation', () => {
     delete falsePresentation.request.claim.contents[propertyName]
     delete falsePresentation.request.claimHashTree[propertyName]
     expect(falsePresentation.verifyData()).toBeFalsy()
-  })
-
-  it('verify attested claim with PE', async () => {
-    const attestedClaim = await buildAttestedClaimPE(
-      identityCharlie,
-      identityAlice,
-      {
-        a: 'a',
-        b: 'b',
-        c: 'c',
-      },
-      [legitimation]
-    )
-
-    // check proof on complete data
-    expect(attestedClaim.verifyData()).toBeTruthy()
-
-    const [session, request] = await Verifier.newRequest()
-      .requestPresentationForCtype({
-        ctypeHash: '',
-        attributes: ['a'],
-      })
-      .finalize(true)
-
-    // build a representation excluding claim properties and verify proof
-    const correctPresentation = await AttestedClaim.createPresentationPE(
-      identityCharlie,
-      request,
-      [attestedClaim],
-      [identityAlice.getPublicGabiKey()]
-    )
-
-    Verifier.verifyPresentation(
-      correctPresentation,
-      session,
-      [identityAlice.getAccumulator()],
-      [identityAlice.getPublicGabiKey()]
-    )
   })
 })

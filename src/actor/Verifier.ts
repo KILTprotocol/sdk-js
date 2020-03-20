@@ -1,24 +1,17 @@
-import {
-  CombinedRequestBuilder,
-  CombinedVerificationSession,
-  Verifier,
-  Accumulator,
-  AttesterPublicKey,
-} from '@kiltprotocol/portablegabi'
+import * as gabi from '@kiltprotocol/portablegabi'
 import CType from '../ctype/CType'
 import {
   IRequestClaimsForCTypes,
   MessageBodyType,
-  ISubmitClaimsForCTypesPE,
   ISubmitClaimsForCTypes,
 } from '../messaging/Message'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 
 export class PresentationRequestBuilder {
-  private builder: CombinedRequestBuilder
+  private builder: gabi.CombinedRequestBuilder
   private ctypes: Array<CType['hash']>
   constructor() {
-    this.builder = new CombinedRequestBuilder()
+    this.builder = new gabi.CombinedRequestBuilder()
     this.ctypes = []
   }
 
@@ -53,7 +46,7 @@ export class PresentationRequestBuilder {
 
   public async finalize(
     allowPE: boolean
-  ): Promise<[CombinedVerificationSession, IRequestClaimsForCTypes]> {
+  ): Promise<[gabi.CombinedVerificationSession, IRequestClaimsForCTypes]> {
     const { session, message } = await this.builder.finalise()
     return [
       session,
@@ -74,12 +67,12 @@ export function newRequest(): PresentationRequestBuilder {
 }
 
 export async function verifyPresentation(
-  presentation: ISubmitClaimsForCTypesPE | ISubmitClaimsForCTypes,
-  session?: CombinedVerificationSession,
-  latestAccumulators?: Accumulator[],
-  attesterPubKeys?: AttesterPublicKey[]
+  presentation: ISubmitClaimsForCTypes,
+  session?: gabi.CombinedVerificationSession,
+  latestAccumulators?: gabi.Accumulator[],
+  attesterPubKeys?: gabi.AttesterPublicKey[]
 ): Promise<[boolean, any[]]> {
-  if (presentation.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES) {
+  if (presentation.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC) {
     const attestedClaims = presentation.content.map(
       AttestedClaim.fromAttestedClaim
     )
@@ -97,12 +90,14 @@ export async function verifyPresentation(
       accumulators: ${latestAccumulators}
       public keys: ${attesterPubKeys}`)
     }
-    const { verified, claims } = await Verifier.verifyCombinedPresentation({
-      proof: presentation.content,
-      verifierSession: session,
-      latestAccumulators,
-      attesterPubKeys,
-    })
+    const { verified, claims } = await gabi.Verifier.verifyCombinedPresentation(
+      {
+        proof: presentation.content,
+        verifierSession: session,
+        latestAccumulators,
+        attesterPubKeys,
+      }
+    )
     return [verified, claims]
   }
   return [false, []]

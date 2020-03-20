@@ -74,7 +74,7 @@ export enum MessageBodyType {
   REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
 
   REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
-  SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes',
+  SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC = 'submit-claims-for-ctypes-public',
   SUBMIT_CLAIMS_FOR_CTYPES_PE = 'submit-claims-for-ctypes-pe',
   ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
   REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
@@ -110,7 +110,7 @@ export default class Message implements IMessage {
           }
         }
         break
-      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES:
+      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC:
         {
           const submitClaimsForCtype = message.body
           submitClaimsForCtype.content.forEach(claim => {
@@ -280,14 +280,21 @@ export interface IRequestClaimsForCTypes extends IMessageBodyBase {
   }
   type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
 }
-export interface ISubmitClaimsForCTypes extends IMessageBodyBase {
+
+export type ISubmitClaimsForCTypes =
+  | ISubmitClaimsForCTypesPublic
+  | ISubmitClaimsForCTypesPE
+
+export interface ISubmitClaimsForCTypesPublic extends IMessageBodyBase {
   content: IAttestedClaim[]
-  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
+  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
 }
+
 export interface ISubmitClaimsForCTypesPE extends IMessageBodyBase {
   content: CombinedPresentation
   type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
 }
+
 export interface IAcceptClaimsForCTypes extends IMessageBodyBase {
   content: Array<ICType['hash']>
   type: MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES
@@ -351,7 +358,7 @@ export type MessageBody =
   | IRejectAttestationForClaim
   //
   | IRequestClaimsForCTypes
-  | ISubmitClaimsForCTypes
+  | ISubmitClaimsForCTypesPublic
   | ISubmitClaimsForCTypesPE
   | IAcceptClaimsForCTypes
   | IRejectClaimsForCTypes
