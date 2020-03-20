@@ -2,9 +2,7 @@
 import Kilt, {
   ICType,
   CTypeUtils,
-  IRequestAttestationForClaim,
   MessageBodyType,
-  ISubmitAttestationForClaim,
   AttestedClaim,
   Identity,
   Claim,
@@ -89,7 +87,7 @@ async function doAttestation(): Promise<{
   const {
     message: initiateAttestationMessage,
     session: attestersSession,
-  } = await attester.initiateAttestation()
+  } = await Kilt.Attester.initiateAttestation(attester)
 
   // ------------------------- CLAIMER -----------------------------------------
   // And we need to build a request for an attestation
@@ -104,10 +102,10 @@ async function doAttestation(): Promise<{
     owner: claimer.getAddress(),
   })
 
-  const [
-    requestForAttestation,
-    claimerSession,
-  ] = await Kilt.RequestForAttestation.fromClaimAndIdentity({
+  const {
+    message: messageBody,
+    session: claimerSession,
+  } = await Kilt.Claimer.requestAttestation({
     claim,
     identity: claimer,
     initiateAttestationMsg: initiateAttestationMessage,
@@ -116,12 +114,6 @@ async function doAttestation(): Promise<{
 
   // Excourse to the messaging system
   // If the Attester doesn't live on the same machine, we need to send her a message
-  const messageBody: IRequestAttestationForClaim = {
-    content: {
-      requestForAttestation,
-    },
-    type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
-  }
   const message = new Kilt.Message(
     messageBody,
     claimer,
@@ -141,35 +133,25 @@ async function doAttestation(): Promise<{
   // And make sure, that the sender is the owner of the identity
   Kilt.Message.ensureOwnerIsSender(decrypted)
 
-  // Lets continue with the original object
-  const attestation = Kilt.Attestation.fromRequestAndPublicIdentity(
-    requestForAttestation,
-    attester.getPublicIdentity()
-  )
-  const [
+  if (decrypted.body.type !== MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
+    throw new Error('Unexpected message type')
+  }
+  const {
     witness,
-    attestationPE,
-  ] = await attester.issuePrivacyEnhancedAttestation(
-    attestersSession,
-    requestForAttestation
+    message: submitAttestation,
+  } = await Kilt.Attester.issueAttestation(
+    attester,
+    decrypted.body,
+    attestersSession
   )
-  console.log('Witness should be stored for revocation: ', witness.valueOf())
-
-  // Store it on the blockchain
-  // ! This costs tokens !
-  // attestation.store(attester)
-  await attestation.store(attester)
+  console.log(
+    'Witness should be stored for revocation: ',
+    (witness || 'there is no witness').valueOf()
+  )
 
   // And send a message back
-  const messageBodyBack: ISubmitAttestationForClaim = {
-    content: {
-      attestation,
-      attestationPE,
-    },
-    type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
-  }
   const messageBack = new Kilt.Message(
-    messageBodyBack,
+    submitAttestation,
     attester,
     claimer.getPublicIdentity()
   )
@@ -186,13 +168,10 @@ async function doAttestation(): Promise<{
   if (messageBack.body.type !== MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
     throw new Error('Should be SUBMIT_ATTESTATION_FOR_CLAIM')
   }
-  const { content } = messageBack.body
-  const attestedClaim = await AttestedClaim.fromRequestAndAttestation(
+  const attestedClaim = await Kilt.Claimer.buildAttestedClaim(
     claimer,
-    requestForAttestation,
-    content.attestation,
-    claimerSession,
-    content.attestationPE
+    messageBack.body,
+    claimerSession
   )
   console.log('Claimer', claimer.getAddress(), '\n')
   console.log('Attester', attester.getAddress(), '\n')
@@ -200,10 +179,8 @@ async function doAttestation(): Promise<{
   console.log('Ctype', ctype, '\n')
   console.log('Claim', claim, '\n')
 
-  console.log('RequestForAttestation', requestForAttestation, '\n')
   console.log('RFO Message', message, '\n')
-
-  console.log('Attestation', attestation, '\n')
+  console.log('Submit attestation:', submitAttestation, '\n')
   console.log('AttestedClaim', attestedClaim, '\n')
   console.log('AttestedClaim message', messageBack, '\n')
   const acc = attester.accumulator

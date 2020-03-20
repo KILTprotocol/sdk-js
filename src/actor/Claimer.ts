@@ -1,11 +1,18 @@
 import * as gabi from '@kiltprotocol/portablegabi'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import IClaim from '../types/Claim'
+import { IDelegationBaseNode } from '../types/Delegation'
 import {
   ISubmitClaimsForCTypes,
   IRequestClaimsForCTypes,
   MessageBodyType,
+  IInitiateAttestation,
+  IRequestAttestationForClaim,
+  ISubmitAttestationForClaim,
 } from '../messaging/Message'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Identity from '../identity/Identity'
+import IRequestForAttestation from '../types/RequestForAttestation'
 
 function noNulls<T>(array: Array<T | null>): array is T[] {
   return array.every(c => c !== null)
@@ -49,10 +56,51 @@ export async function createPresentation(
   }
 }
 
-export function requestAttestation(): void {
-  // TODO: implement
+type ClaimerAttestationSession = {
+  peSession: gabi.ClaimerAttestationSession | null
+  requestForAttestation: IRequestForAttestation
 }
 
-export function buildAttestedClaim(): void {
-  // TODO: implement
+export async function requestAttestation(parameter: {
+  claim: IClaim
+  identity: Identity
+  legitimations?: AttestedClaim[]
+  delegationId?: IDelegationBaseNode['id']
+  initiateAttestationMsg?: IInitiateAttestation
+  attesterPubKey?: gabi.AttesterPublicKey
+}): Promise<{
+  message: IRequestAttestationForClaim
+  session: ClaimerAttestationSession
+}> {
+  const [request, session] = await RequestForAttestation.fromClaimAndIdentity(
+    parameter
+  )
+  const message: IRequestAttestationForClaim = {
+    content: {
+      requestForAttestation: request,
+    },
+    type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+  }
+
+  return {
+    message,
+    session: {
+      peSession: session,
+      requestForAttestation: request,
+    },
+  }
+}
+
+export function buildAttestedClaim(
+  identity: Identity,
+  message: ISubmitAttestationForClaim,
+  session: ClaimerAttestationSession
+): Promise<AttestedClaim> {
+  return AttestedClaim.fromRequestAndAttestation(
+    identity,
+    session.requestForAttestation,
+    message.content.attestation,
+    session.peSession,
+    message.content.attestationPE
+  )
 }

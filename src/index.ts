@@ -27,6 +27,7 @@ import Message from './messaging/Message'
 import * as Constants from './const'
 import * as Verifier from './actor/Verifier'
 import * as Claimer from './actor/Claimer'
+import * as Attester from './actor/Attester'
 
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { default as TxStatus } from './blockchain/TxStatus'
@@ -87,6 +88,7 @@ export {
   Claimer,
   Accumulator,
   CombinedPresentation,
+  Attester,
 }
 
 // ---- Default export for ease of use ----
@@ -111,4 +113,5 @@ export default {
   Claimer,
   Accumulator,
   CombinedPresentation,
+  Attester,
 }
