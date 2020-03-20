@@ -202,39 +202,39 @@ export default class Attestation implements IAttestation {
     return Attestation.verify(this)
   }
 
-  private static constructorInputCheck(attestationInput: IAttestation): void {
-    const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
-    if (
-      !attestationInput.cTypeHash ||
-      !attestationInput.claimHash ||
-      !attestationInput.owner
-    ) {
-      throw new Error(
-        `Property not provided while building Attestation!\n
-        attestationInput.cTypeHash:\n
-        ${attestationInput.cTypeHash}\n
-        attestationInput.claimHash:\n
-        ${attestationInput.claimHash}\n
-        attestationInput.owner:\n
-        ${attestationInput.owner}`
-      )
-    }
-    if (!attestationInput.claimHash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided claimHash malformed:\n
-        ${attestationInput.claimHash}`
-      )
-    }
-    if (!attestationInput.cTypeHash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided cTypeHash malformed:\n
-        ${attestationInput.cTypeHash}`
-      )
-    }
-    if (!checkAddress(attestationInput.owner, 42)[0]) {
-      throw new Error(`Owner address provided invalid`)
-    }
-  }
+  // private static constructorInputCheck(attestationInput: IAttestation): void {
+  //   const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
+  //   if (
+  //     !attestationInput.cTypeHash ||
+  //     !attestationInput.claimHash ||
+  //     !attestationInput.owner
+  //   ) {
+  //     throw new Error(
+  //       `Property not provided while building Attestation!\n
+  //       attestationInput.cTypeHash:\n
+  //       ${attestationInput.cTypeHash}\n
+  //       attestationInput.claimHash:\n
+  //       ${attestationInput.claimHash}\n
+  //       attestationInput.owner:\n
+  //       ${attestationInput.owner}`
+  //     )
+  //   }
+  //   if (!attestationInput.claimHash.match(blake2bPattern)) {
+  //     throw new Error(
+  //       `Provided claimHash malformed:\n
+  //       ${attestationInput.claimHash}`
+  //     )
+  //   }
+  //   if (!attestationInput.cTypeHash.match(blake2bPattern)) {
+  //     throw new Error(
+  //       `Provided cTypeHash malformed:\n
+  //       ${attestationInput.cTypeHash}`
+  //     )
+  //   }
+  //   if (!checkAddress(attestationInput.owner, 42)[0]) {
+  //     throw new Error(`Owner address provided invalid`)
+  //   }
+  // }
 
   /**
    * Compresses an [[Attestation]] object.
@@ -266,6 +266,6 @@ export default class Attestation implements IAttestation {
    * @returns Whether the attestation is valid.
    */
   private isAttestationValid(attestation: IAttestation): boolean {
-    return this.owner === attestation.owner && !this.revoked
+    return this && this.owner === attestation.owner && !this.revoked
   }
 }

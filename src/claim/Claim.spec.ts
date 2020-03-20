@@ -152,4 +152,66 @@ describe('Claim', () => {
 
     expect(() => Claim.isIClaim(malformedAddress)).toThrow()
   })
+
+  it('should throw an error on faulty constructor input', () => {
+    const cTypeHash = testCType.hash
+    const ownerAddress = identityAlice.address
+
+    const everything = {
+      cTypeHash,
+      contents: claimContents,
+      owner: ownerAddress,
+    } as IClaim
+
+    const noCTypeHash = {
+      cTypeHash: '',
+      contents: claimContents,
+      owner: ownerAddress,
+    } as IClaim
+
+    // Currently emtpy contents object passes input checks
+    // const noContents = {
+    //   cTypeHash,
+    //   contents: {},
+    //   owner: ownerAddress,
+    // } as IClaim
+
+    const noOwner = {
+      cTypeHash,
+      contents: claimContents,
+      owner: '',
+    } as IClaim
+
+    const nothing = {
+      cTypeHash: '',
+      contents: {},
+      owner: '',
+    } as IClaim
+
+    const malformedCTypeHash = {
+      cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
+      contents: claimContents,
+      owner: ownerAddress,
+    } as IClaim
+
+    const malformedAddress = {
+      cTypeHash,
+      contents: claimContents,
+      owner: ownerAddress.replace('7', 'D'),
+    } as IClaim
+
+    expect(() => Claim.isIClaim(everything)).not.toThrow()
+
+    expect(() => Claim.isIClaim(noCTypeHash)).toThrow()
+
+    // expect(() => Claim.isIClaim(noContents)).toThrow()
+
+    expect(() => Claim.isIClaim(noOwner)).toThrow()
+
+    expect(() => Claim.isIClaim(nothing)).toThrow()
+
+    expect(() => Claim.isIClaim(malformedCTypeHash)).toThrow()
+
+    expect(() => Claim.isIClaim(malformedAddress)).toThrow()
+  })
 })

@@ -10,7 +10,6 @@
  * @module RequestForAttestation
  * @preferred
  */
-import { checkAddress } from '@polkadot/util-crypto'
 import { v4 as uuid } from 'uuid'
 import { validateLegitimations, validateNonceHash } from '../util/DataUtils'
 import {
@@ -89,7 +88,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param requestForAttestationInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
+   * @param rfaInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
    * @returns  A new [[RequestForAttestation]] `object`.
    * @example ```javascript
    * const serializedRequest =
@@ -99,9 +98,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public static fromRequest(
-    requestForAttestationInput: IRequestForAttestation
+    rfaInput: IRequestForAttestation
   ): RequestForAttestation {
-    return new RequestForAttestation(requestForAttestationInput)
+    return new RequestForAttestation(rfaInput)
   }
 
   /**
@@ -118,10 +117,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns A new [[RequestForAttestation]] object.
    * @example ```javascript
    * const input = RequestForAttestation.fromClaimAndIdentity(claim, alice);
-   * const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
-   *   claim,
-   *   alice
-   * );
    * ```
    */
   public static async fromClaimAndIdentity(
@@ -473,97 +468,5 @@ export default class RequestForAttestation implements IRequestForAttestation {
     const root: Uint8Array =
       hashes.length === 1 ? hashes[0] : getHashRoot(hashes)
     return u8aToHex(root)
-  }
-
-  private static constructorInputCheck(
-    requestForAttestationInput: IRequestForAttestation
-  ): void {
-    const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
-    if (
-      !requestForAttestationInput.claim ||
-      !requestForAttestationInput.legitimations ||
-      !requestForAttestationInput.claimOwner ||
-      !requestForAttestationInput.claimerSignature ||
-      !requestForAttestationInput.claimHashTree ||
-      !requestForAttestationInput.cTypeHash ||
-      !requestForAttestationInput.rootHash
-    ) {
-      throw new Error(
-        `Property Not Provided while building RequestForAttestation:\n
-          requestInput.claim:\n
-          ${requestForAttestationInput.claim}\n
-          requestInput.legitimations:\n
-          ${requestForAttestationInput.legitimations}\n
-          requestInput.claimOwner:\n
-          ${requestForAttestationInput.claimOwner}\n
-          requestInput.claimerSignature:\n
-          ${requestForAttestationInput.claimerSignature}
-          requestInput.claimHashTree:\n
-          ${requestForAttestationInput.claimHashTree}\n
-          requestInput.rootHash:\n
-          ${requestForAttestationInput.rootHash}\n
-          requestInput.cTypeHash:\n
-          ${requestForAttestationInput.cTypeHash}\n`
-      )
-    }
-    if (!requestForAttestationInput.cTypeHash.hash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided cTypeHash malformed:\n
-        ${requestForAttestationInput.cTypeHash.hash}\n
-        with Nonce: ${requestForAttestationInput.cTypeHash.nonce}\n`
-      )
-    }
-    if (!requestForAttestationInput.rootHash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided cTypeHash malformed:\n
-        ${requestForAttestationInput.rootHash}\n`
-      )
-    }
-    if (!requestForAttestationInput.claimOwner.hash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided cTypeHash malformed:\n
-        ${requestForAttestationInput.rootHash}\n`
-      )
-    }
-    if (
-      !verify(
-        requestForAttestationInput.rootHash,
-        requestForAttestationInput.claimerSignature,
-        requestForAttestationInput.claim.owner
-      )
-    ) {
-      throw new Error(`Provided claimer signature invalid`)
-    }
-    if (
-      !requestForAttestationInput.claim.cTypeHash ||
-      !requestForAttestationInput.claim.contents ||
-      !requestForAttestationInput.claim.owner
-    ) {
-      throw new Error(
-        `Property Not Provided while building Claim:\n
-          claimInput.cTypeHash:\n
-            ${requestForAttestationInput.claim.cTypeHash}\n
-            claimInput.contents:\n
-            ${requestForAttestationInput.claim.contents}\n
-            claimInput.owner:\n'
-            ${requestForAttestationInput.claim.owner}`
-      )
-    }
-    if (!requestForAttestationInput.claim.cTypeHash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided claimHash malformed:\n
-          ${requestForAttestationInput.claim.cTypeHash}`
-      )
-    }
-    if (!checkAddress(requestForAttestationInput.claim.owner, 42)[0]) {
-      throw new Error(`Owner address provided invalid`)
-    }
-    requestForAttestationInput.legitimations.forEach(
-      (legitimation: AttestedClaim) => {
-        if (!legitimation.verify()) {
-          throw new Error(`Provided legitimation not verifiable`)
-        }
-      }
-    )
   }
 }

@@ -98,30 +98,6 @@ export default class Claim implements IClaim {
     this.owner = claimInput.owner
   }
 
-  private static constructorInputCheck(claimInput: IClaim): void {
-    const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
-    if (!claimInput.cTypeHash || !claimInput.contents || !claimInput.owner) {
-      throw new Error(
-        `Property Not Provided while building Claim:\n
-        claimInput.cTypeHash:\n
-          ${claimInput.cTypeHash}\n
-          claimInput.contents:\n
-          ${claimInput.contents}\n
-          claimInput.owner:\n'
-          ${claimInput.owner}`
-      )
-    }
-    if (!claimInput.cTypeHash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided claimHash malformed:\n
-        ${claimInput.cTypeHash}`
-      )
-    }
-    if (!checkAddress(claimInput.owner, 42)[0]) {
-      throw new Error(`Owner address provided invalid`)
-    }
-  }
-
   /**
    * Compresses an [[Claim]] object from the [[CompressedClaim]].
    *
