@@ -10,7 +10,6 @@
  * @module RequestForAttestation
  * @preferred
  */
-import { checkAddress } from '@polkadot/util-crypto'
 import { v4 as uuid } from 'uuid'
 import {
   AttesterPublicKey,
@@ -38,12 +37,14 @@ import IRequestForAttestation, {
 } from '../types/RequestForAttestation'
 import { IDelegationBaseNode } from '../types/Delegation'
 import IClaim from '../types/Claim'
+import Claim from '../claim/Claim'
+import IAttestedClaim from '../types/AttestedClaim'
 
-function hashNonceValue(nonce: string, value: string): string {
+function hashNonceValue(nonce: string, value: string | object): string {
   return hashObjectAsStr(value, nonce)
 }
 
-function generateHash(value: string): NonceHash {
+function generateHash(value: string | object): NonceHash {
   const nonce: string = uuid()
   return {
     nonce,
@@ -61,7 +62,7 @@ function generateHashTree(contents: IClaim['contents']): NonceHashTree {
   return result
 }
 
-function verifyClaimerSignature(reqForAtt: RequestForAttestation): boolean {
+function verifyClaimerSignature(reqForAtt: IRequestForAttestation): boolean {
   return verify(
     reqForAtt.rootHash,
     reqForAtt.claimerSignature,
@@ -86,7 +87,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param requestForAttestationInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
+   * @param rfaInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
    * @returns  A new [[RequestForAttestation]] `object`.
    * @example ```javascript
    * const serializedRequest =
@@ -96,9 +97,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public static fromRequest(
-    requestForAttestationInput: IRequestForAttestation
+    rfaInput: IRequestForAttestation
   ): RequestForAttestation {
-    return new RequestForAttestation(requestForAttestationInput)
+    return new RequestForAttestation(rfaInput)
   }
 
   /**
@@ -114,10 +115,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @throws When claimInput's owner address does not match the supplied identity's address.
    * @returns A new [[RequestForAttestation]] object.
    * @example ```javascript
-   * const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
-   *   claim,
-   *   alice
-   * );
+   * const input = RequestForAttestation.fromClaimAndIdentity(claim, alice);
    * ```
    */
   public static async fromClaimAndIdentity(
@@ -191,6 +189,49 @@ export default class RequestForAttestation implements IRequestForAttestation {
     }
   }
 
+  public static isIRequestForAttestation(
+    input: IRequestForAttestation
+  ): input is IRequestForAttestation {
+    if (!input.claim || !Claim.isIClaim(input.claim)) {
+      throw new Error('Claim not provided')
+    }
+    if (!input.legitimations || !Array.isArray(input.legitimations)) {
+      throw new Error('Legitimations not provided')
+    }
+    if (
+      !input.claimOwner ||
+      !input.claimOwner.hash ||
+      !input.claimOwner.nonce
+    ) {
+      throw new Error()
+    }
+    if (!input.claimHashTree) {
+      throw new Error()
+    } else {
+      Object.keys(input.claimHashTree).forEach(key => {
+        if (!input.claimHashTree[key].nonce || !input.claimHashTree[key].hash) {
+          throw new Error()
+        }
+      })
+    }
+    if (!input.cTypeHash || !input.cTypeHash.hash || !input.cTypeHash.nonce) {
+      throw new Error()
+    }
+    if (!input.rootHash) {
+      throw new Error()
+    }
+    if (!input.claimerSignature) {
+      throw new Error()
+    }
+    if (
+      !input.delegationId === null ||
+      typeof input.delegationId !== 'string'
+    ) {
+      throw new Error()
+    }
+    return true
+  }
+
   public claim: IClaim
   public legitimations: AttestedClaim[]
   public claimOwner: NonceHash
@@ -204,7 +245,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * Builds a new [[RequestForAttestation]] instance.
    *
-   * @param requestForAttestationInput - The base object from which to create the requestForAttestation.
+   * @param requestForAttestationInput - The base object from which to create the input.
    * @example ```javascript
    * // create a new request for attestation
    * const reqForAtt = new RequestForAttestation(requestForAttestationInput);
@@ -273,7 +314,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *   identity: alice,
    * });
    * reqForAtt.removeClaimOwner();
-   * // `requestForAttestation` does not contain the claim `owner` or the `claimOwner`'s nonce anymore.
+   * // `input` does not contain the claim `owner` or the `claimOwner`'s nonce anymore.
    * ```
    */
   public removeClaimOwner(): void {
@@ -284,6 +325,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * Verifies the data of the [[RequestForAttestation]] object; used to check that the data was not tampered with, by checking the data against hashes.
    *
+   * @param input - The [[RequestForAttestation]] for which to verify data.
    * @returns Whether the data is valid.
    * @throws When any key of the claim contents could not be found in the claimHashTree.
    * @throws When either the rootHash or the signature are not verifiable.
@@ -292,49 +334,49 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * reqForAtt.verifyData(); // returns true if the data is correct
    * ```
    */
-  public verifyData(): boolean {
+  public static verifyData(input: IRequestForAttestation): boolean {
     // check claim hash
     if (
-      this.rootHash !==
+      input.rootHash !==
       RequestForAttestation.calculateRootHash(
-        this.claimOwner,
-        this.cTypeHash,
-        this.claimHashTree,
-        this.legitimations,
-        this.delegationId
+        input.claimOwner,
+        input.cTypeHash,
+        input.claimHashTree,
+        input.legitimations,
+        input.delegationId
       )
     ) {
       return false
     }
     // check claim owner hash
-    if (this.claim.owner) {
+    if (input.claim.owner) {
       if (
-        !this.claimOwner.nonce ||
-        this.claimOwner.hash !==
-          hashNonceValue(this.claimOwner.nonce, this.claim.owner)
+        !input.claimOwner.nonce ||
+        input.claimOwner.hash !==
+          hashNonceValue(input.claimOwner.nonce, input.claim.owner)
       ) {
         throw Error('Invalid hash for claim owner')
       }
     }
 
     // check cType hash
-    if (this.claim.cTypeHash) {
+    if (input.claim.cTypeHash) {
       if (
-        !this.cTypeHash.nonce ||
-        this.cTypeHash.hash !==
-          hashNonceValue(this.cTypeHash.nonce, this.claim.cTypeHash)
+        !input.cTypeHash.nonce ||
+        input.cTypeHash.hash !==
+          hashNonceValue(input.cTypeHash.nonce, input.claim.cTypeHash)
       ) {
         throw Error('Invalid hash for CTYPE')
       }
     }
 
     // check all hashes for provided claim properties
-    Object.keys(this.claim.contents).forEach(key => {
-      const value = this.claim.contents[key]
-      if (!this.claimHashTree[key]) {
+    Object.keys(input.claim.contents).forEach(key => {
+      const value = input.claim.contents[key]
+      if (!input.claimHashTree[key]) {
         throw Error(`Property '${key}' not in claim hash tree`)
       }
-      const hashed: NonceHash = this.claimHashTree[key]
+      const hashed: NonceHash = input.claimHashTree[key]
       if (
         !hashed.nonce ||
         hashed.hash !== hashNonceValue(hashed.nonce, value.toString())
@@ -345,9 +387,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
     // check legitimations
     let valid = true
-    if (this.legitimations) {
-      this.legitimations.forEach(legitimation => {
-        valid = valid && legitimation.verifyData()
+    if (input.legitimations) {
+      input.legitimations.forEach(legitimation => {
+        valid = valid && AttestedClaim.verifyData(legitimation)
       })
     }
     if (!valid) {
@@ -355,12 +397,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
     }
 
     // check signature
-    return this.verifySignature()
+    return RequestForAttestation.verifySignature(input)
   }
 
   /**
    * Verifies the signature of the [[RequestForAttestation]] object.
    *
+   * @param input - [[RequestForAttestation]] .
    * @returns Whether the signature is correct.
    * @example ```javascript
    * const reqForAtt = RequestForAttestation.fromClaimAndIdentity({
@@ -370,8 +413,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * reqForAtt.verifySignature(); // returns `true` if the signature is correct
    * ```
    */
-  public verifySignature(): boolean {
-    return verifyClaimerSignature(this)
+  public static verifySignature(input: IRequestForAttestation): boolean {
+    return verifyClaimerSignature(input)
   }
 
   private static sign(identity: Identity, rootHash: Hash): string {
@@ -382,7 +425,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     claimOwner: NonceHash,
     cTypeHash: NonceHash,
     claimHashTree: NonceHashTree,
-    legitimations: AttestedClaim[],
+    legitimations: IAttestedClaim[],
     delegationId: IDelegationBaseNode['id'] | null
   ): Uint8Array[] {
     const result: Uint8Array[] = []
@@ -393,7 +436,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     })
     if (legitimations) {
       legitimations.forEach(legitimation => {
-        result.push(coToUInt8(legitimation.getHash()))
+        result.push(coToUInt8(legitimation.attestation.claimHash))
       })
     }
     if (delegationId) {
@@ -431,7 +474,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     claimOwner: NonceHash,
     cTypeHash: NonceHash,
     claimHashTree: NonceHashTree,
-    legitimations: AttestedClaim[],
+    legitimations: IAttestedClaim[],
     delegationId: IDelegationBaseNode['id'] | null
   ): Hash {
     const hashes: Uint8Array[] = RequestForAttestation.getHashLeaves(
@@ -444,97 +487,5 @@ export default class RequestForAttestation implements IRequestForAttestation {
     const root: Uint8Array =
       hashes.length === 1 ? hashes[0] : getHashRoot(hashes)
     return u8aToHex(root)
-  }
-
-  private static constructorInputCheck(
-    requestForAttestationInput: IRequestForAttestation
-  ): void {
-    const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
-    if (
-      !requestForAttestationInput.claim ||
-      !requestForAttestationInput.legitimations ||
-      !requestForAttestationInput.claimOwner ||
-      !requestForAttestationInput.claimerSignature ||
-      !requestForAttestationInput.claimHashTree ||
-      !requestForAttestationInput.cTypeHash ||
-      !requestForAttestationInput.rootHash
-    ) {
-      throw new Error(
-        `Property Not Provided while building RequestForAttestation:\n
-          requestInput.claim:\n
-          ${requestForAttestationInput.claim}\n
-          requestInput.legitimations:\n
-          ${requestForAttestationInput.legitimations}\n
-          requestInput.claimOwner:\n
-          ${requestForAttestationInput.claimOwner}\n
-          requestInput.claimerSignature:\n
-          ${requestForAttestationInput.claimerSignature}
-          requestInput.claimHashTree:\n
-          ${requestForAttestationInput.claimHashTree}\n
-          requestInput.rootHash:\n
-          ${requestForAttestationInput.rootHash}\n
-          requestInput.cTypeHash:\n
-          ${requestForAttestationInput.cTypeHash}\n`
-      )
-    }
-    if (!requestForAttestationInput.cTypeHash.hash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided cTypeHash malformed:\n
-        ${requestForAttestationInput.cTypeHash.hash}\n
-        with Nonce: ${requestForAttestationInput.cTypeHash.nonce}\n`
-      )
-    }
-    if (!requestForAttestationInput.rootHash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided cTypeHash malformed:\n
-        ${requestForAttestationInput.rootHash}\n`
-      )
-    }
-    if (!requestForAttestationInput.claimOwner.hash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided cTypeHash malformed:\n
-        ${requestForAttestationInput.rootHash}\n`
-      )
-    }
-    if (
-      !verify(
-        requestForAttestationInput.rootHash,
-        requestForAttestationInput.claimerSignature,
-        requestForAttestationInput.claim.owner
-      )
-    ) {
-      throw new Error(`Provided claimer signature invalid`)
-    }
-    if (
-      !requestForAttestationInput.claim.cTypeHash ||
-      !requestForAttestationInput.claim.contents ||
-      !requestForAttestationInput.claim.owner
-    ) {
-      throw new Error(
-        `Property Not Provided while building Claim:\n
-          claimInput.cTypeHash:\n
-            ${requestForAttestationInput.claim.cTypeHash}\n
-            claimInput.contents:\n
-            ${requestForAttestationInput.claim.contents}\n
-            claimInput.owner:\n'
-            ${requestForAttestationInput.claim.owner}`
-      )
-    }
-    if (!requestForAttestationInput.claim.cTypeHash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided claimHash malformed:\n
-          ${requestForAttestationInput.claim.cTypeHash}`
-      )
-    }
-    if (!checkAddress(requestForAttestationInput.claim.owner, 42)[0]) {
-      throw new Error(`Owner address provided invalid`)
-    }
-    requestForAttestationInput.legitimations.forEach(
-      (legitimation: AttestedClaim) => {
-        if (!legitimation.verify()) {
-          throw new Error(`Provided legitimation not verifiable`)
-        }
-      }
-    )
   }
 }

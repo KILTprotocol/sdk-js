@@ -6,15 +6,7 @@
 
 import * as jsonabc from 'jsonabc'
 import IClaim, { CompressedClaim } from '../types/Claim'
-
-function errorCheck(claim: IClaim): void {
-  if (!claim.cTypeHash || !claim.contents || !claim.owner) {
-    throw new Error(
-      `Property Not Provided while building Claim: 
-        ${JSON.stringify(claim, null, 2)}`
-    )
-  }
-}
+import Claim from './Claim'
 
 /**
  *  Compresses the [[Claim]] for storage and/or messaging.
@@ -24,7 +16,7 @@ function errorCheck(claim: IClaim): void {
  * @returns An ordered array of a [[Claim]].
  */
 export function compress(claim: IClaim): CompressedClaim {
-  errorCheck(claim)
+  Claim.isIClaim(claim)
   const sortedContents = jsonabc.sortObj(claim.contents)
   return [sortedContents, claim.cTypeHash, claim.owner]
 }
@@ -49,4 +41,4 @@ export function decompress(claim: CompressedClaim): IClaim {
   }
 }
 
-export default { decompress, compress, errorCheck }
+export default { decompress, compress }

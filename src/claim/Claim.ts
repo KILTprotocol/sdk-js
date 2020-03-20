@@ -12,7 +12,7 @@
  * @preferred
  */
 
-import { checkAddress } from '@polkadot/util-crypto'
+import { validateAddress, validateHash } from '../util/DataUtils'
 import ICType from '../ctype/CType'
 import CTypeUtils from '../ctype/CType.utils'
 import IClaim, { CompressedClaim } from '../types/Claim'
@@ -40,11 +40,10 @@ export default class Claim implements IClaim {
     claimInput: IClaim,
     cTypeSchema: ICType['schema']
   ): Claim {
-    if (cTypeSchema) {
-      if (!verifyClaim(claimInput.contents, cTypeSchema)) {
-        throw Error('Claim not valid')
-      }
+    if (!verifyClaim(claimInput.contents, cTypeSchema)) {
+      throw Error('Claim not valid')
     }
+
     return new Claim(claimInput)
   }
 
@@ -75,39 +74,25 @@ export default class Claim implements IClaim {
     })
   }
 
+  static isIClaim(input: IClaim): input is IClaim {
+    if (!input.cTypeHash || !input.contents || !input.owner) {
+      throw new Error('property of provided Claim not set')
+    }
+    validateAddress(input.owner, 'Claim Owner')
+    validateHash(input.cTypeHash, 'Claim CType')
+    // TODO: check whether ctype hash is on chain, access schema and verify Claim Structure
+    return true
+  }
+
   public cTypeHash: IClaim['cTypeHash']
   public contents: IClaim['contents']
   public owner: IClaim['owner']
 
   public constructor(claimInput: IClaim) {
-    ClaimUtils.errorCheck(claimInput)
+    Claim.isIClaim(claimInput)
     this.cTypeHash = claimInput.cTypeHash
     this.contents = claimInput.contents
     this.owner = claimInput.owner
-  }
-
-  private static constructorInputCheck(claimInput: IClaim): void {
-    const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
-    if (!claimInput.cTypeHash || !claimInput.contents || !claimInput.owner) {
-      throw new Error(
-        `Property Not Provided while building Claim:\n
-        claimInput.cTypeHash:\n
-          ${claimInput.cTypeHash}\n
-          claimInput.contents:\n
-          ${claimInput.contents}\n
-          claimInput.owner:\n'
-          ${claimInput.owner}`
-      )
-    }
-    if (!claimInput.cTypeHash.match(blake2bPattern)) {
-      throw new Error(
-        `Provided claimHash malformed:\n
-        ${claimInput.cTypeHash}`
-      )
-    }
-    if (!checkAddress(claimInput.owner, 42)[0]) {
-      throw new Error(`Owner address provided invalid`)
-    }
   }
 
   /**

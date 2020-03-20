@@ -6,7 +6,7 @@
 
 import Ajv from 'ajv'
 import * as jsonabc from 'jsonabc'
-import { checkAddress } from '@polkadot/util-crypto'
+import { getOwner } from './CType.chain'
 import { CTypeModel } from './CTypeSchema'
 import ICType, { CompressedCTypeSchema, CompressedCType } from '../types/CType'
 import Crypto from '../crypto'
@@ -53,6 +53,11 @@ export function verifyClaimStructure(
     throw new Error('CType does not correspond to schema')
   }
   return verifySchema(claimContents, schema)
+}
+
+export async function verifyStored(ctype: ICType): Promise<boolean> {
+  const actualOwner = await getOwner(ctype.hash)
+  return ctype.owner ? actualOwner === ctype.owner : actualOwner !== null
 }
 
 export function getHashForSchema(schema: ICType['schema']): string {
@@ -140,6 +145,7 @@ export function compress(cType: ICType): CompressedCType {
       )}`
     )
   }
+  CType.isICType(cType)
   return [cType.hash, cType.owner, compressSchema(cType.schema)]
 }
 
@@ -166,12 +172,13 @@ export function decompress(cType: CompressedCType): ICType {
 }
 
 export default {
-  verifySchema,
+  compress,
   compressSchema,
   decompressSchema,
   decompress,
-  compress,
-  verifySchemaWithErrors,
   verifyClaimStructure,
+  verifySchema,
+  verifySchemaWithErrors,
+  verifyStored,
   getHashForSchema,
 }

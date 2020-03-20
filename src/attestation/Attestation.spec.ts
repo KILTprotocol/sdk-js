@@ -9,7 +9,8 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
-import { CompressedAttestation } from '../types/Attestation'
+import IAttestation, { CompressedAttestation } from '../types/Attestation'
+import CTypeUtils from '../ctype/CType.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -229,6 +230,14 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
+    const malformedAddress = {
+      claimHash,
+      cTypeHash,
+      owner: identityAlice.address.replace('7', 'D'),
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
     expect(() =>
       // eslint-disable-next-line dot-notation
       Attestation['constructorInputCheck'](noClaimHash)
@@ -266,6 +275,11 @@ describe('Attestation', () => {
     expect(() =>
       // eslint-disable-next-line dot-notation
       Attestation['constructorInputCheck'](malformedCTypeHash)
+    ).toThrow()
+
+    expect(() =>
+      // eslint-disable-next-line dot-notation
+      Attestation['constructorInputCheck'](malformedAddress)
     ).toThrow()
   })
 })

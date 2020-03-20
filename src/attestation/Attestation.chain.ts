@@ -68,7 +68,6 @@ async function queryRaw(claimHash: string): Promise<Codec | null> {
   const result: QueryResult = await blockchain.api.query.attestation.attestations(
     claimHash
   )
-  console.log(result.toString())
   return result
 }
 
