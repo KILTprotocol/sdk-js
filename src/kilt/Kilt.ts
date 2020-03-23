@@ -18,7 +18,7 @@ export function connect(host: string): Promise<IBlockchainApi> {
 
 export async function disconnect(host: string): Promise<void> {
   const cached = await getCached(host)
-  await cached.api.disconnect()
+  cached.api.disconnect()
   clearCache()
 }
 

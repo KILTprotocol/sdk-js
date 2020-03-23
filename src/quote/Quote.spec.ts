@@ -4,9 +4,13 @@ import {
   ICostBreakdown,
   IQuoteAttesterSigned,
   IQuoteAgreement,
+  CompressedQuote,
+  CompressedQuoteAgreed,
+  CompressedQuoteAttesterSigned,
 } from '../types/Quote'
 import Identity from '../identity/Identity'
 import * as Quote from './Quote'
+import QuoteUtils from './Quote.utils'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
@@ -30,6 +34,9 @@ describe('Claim', () => {
   let quoteBothAgreed: IQuoteAgreement
   let invalidPropertiesQuote: IQuote
   let invalidCostQuote: IQuote
+  let compressedQuote: CompressedQuote
+  let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
+  let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
   beforeAll(async () => {
     claimerIdentity = await Identity.buildFromURI('//Alice')
@@ -109,6 +116,49 @@ describe('Claim', () => {
     )
     invalidPropertiesQuote = invalidPropertiesQuoteData
     invalidCostQuote = invalidCostQuoteData
+
+    compressedQuote = [
+      validQuoteData.attesterAddress,
+      validQuoteData.cTypeHash,
+      [
+        validQuoteData.cost.gross,
+        validQuoteData.cost.net,
+        validQuoteData.cost.tax,
+      ],
+      validQuoteData.currency,
+      validQuoteData.termsAndConditions,
+      validQuoteData.timeframe,
+    ]
+
+    compressedResultAttesterSignedQuote = [
+      validQuoteData.attesterAddress,
+      validQuoteData.cTypeHash,
+      [
+        validQuoteData.cost.gross,
+        validQuoteData.cost.net,
+        validQuoteData.cost.tax,
+      ],
+      validQuoteData.currency,
+      validQuoteData.termsAndConditions,
+      validQuoteData.timeframe,
+      validAttesterSignedQuote.attesterSignature,
+    ]
+
+    compressedResultQuoteAgreement = [
+      validQuoteData.attesterAddress,
+      validQuoteData.cTypeHash,
+      [
+        validQuoteData.cost.gross,
+        validQuoteData.cost.net,
+        validQuoteData.cost.tax,
+      ],
+      validQuoteData.currency,
+      validQuoteData.termsAndConditions,
+      validQuoteData.timeframe,
+      validAttesterSignedQuote.attesterSignature,
+      quoteBothAgreed.claimerSignature,
+      quoteBothAgreed.rootHash,
+    ]
   })
 
   it('tests created quote data against given data', () => {
@@ -145,5 +195,63 @@ describe('Claim', () => {
     expect(
       Quote.validateQuoteSchema(QuoteSchema, invalidPropertiesQuote)
     ).toBeFalsy()
+  })
+
+  it('compresses and decompresses the quote object', () => {
+    expect(QuoteUtils.compressQuote(validQuoteData)).toEqual(compressedQuote)
+
+    expect(QuoteUtils.decompressQuote(compressedQuote)).toEqual(validQuoteData)
+
+    expect(
+      QuoteUtils.compressAttesterSignedQuote(validAttesterSignedQuote)
+    ).toEqual(compressedResultAttesterSignedQuote)
+
+    expect(
+      QuoteUtils.decompressAttesterSignedQuote(
+        compressedResultAttesterSignedQuote
+      )
+    ).toEqual(validAttesterSignedQuote)
+
+    expect(QuoteUtils.compressQuoteAgreement(quoteBothAgreed)).toEqual(
+      compressedResultQuoteAgreement
+    )
+
+    expect(
+      QuoteUtils.decompressQuoteAgreement(compressedResultQuoteAgreement)
+    ).toEqual(quoteBothAgreed)
+  })
+  it('Negative test for compresses and decompresses the quote object', () => {
+    delete validQuoteData.cTypeHash
+    compressedQuote.pop()
+    delete validAttesterSignedQuote.currency
+    compressedResultAttesterSignedQuote.pop()
+    delete quoteBothAgreed.currency
+    compressedResultQuoteAgreement.pop()
+
+    expect(() => {
+      QuoteUtils.compressQuote(validQuoteData)
+    }).toThrow()
+
+    expect(() => {
+      QuoteUtils.decompressQuote(compressedQuote)
+    }).toThrow()
+
+    expect(() => {
+      QuoteUtils.compressAttesterSignedQuote(validAttesterSignedQuote)
+    }).toThrow()
+
+    expect(() => {
+      QuoteUtils.decompressAttesterSignedQuote(
+        compressedResultAttesterSignedQuote
+      )
+    }).toThrow()
+
+    expect(() => {
+      QuoteUtils.compressQuoteAgreement(quoteBothAgreed)
+    }).toThrow()
+
+    expect(() => {
+      QuoteUtils.decompressQuoteAgreement(compressedResultQuoteAgreement)
+    }).toThrow()
   })
 })

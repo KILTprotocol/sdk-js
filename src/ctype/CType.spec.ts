@@ -1,7 +1,8 @@
 import CType from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
-import ICType from '../types/CType'
+import ICType, { CompressedCType } from '../types/CType'
+import CTypeUtils from './CType.utils'
 import TxStatus from '../blockchain/TxStatus'
 import Claim from '../claim/Claim'
 import { FINALIZED } from '../const/TxStatus'
@@ -18,7 +19,7 @@ describe('CType', () => {
   let claimCtype: CType
   let claimContents: any
   let claim: Claim
-
+  let compressedCType: CompressedCType
   beforeAll(async () => {
     ctypeModel = {
       $id: 'http://example.com/ctype-1',
@@ -63,6 +64,20 @@ describe('CType', () => {
       claimContents,
       identityAlice.getAddress()
     )
+    compressedCType = [
+      claimCtype.hash,
+      claimCtype.owner,
+      [
+        'http://example.com/ctype-1',
+        'http://kilt-protocol.org/draft-01/ctype#',
+        {
+          name: {
+            type: 'string',
+          },
+        },
+        'object',
+      ],
+    ]
   })
 
   it('stores ctypes', async () => {
@@ -96,6 +111,33 @@ describe('CType', () => {
     expect(() => {
       return CType.fromCType(wrongRawCtype)
     }).toThrow()
+  })
+  it('compresses and decompresses the ctype object', () => {
+    expect(CTypeUtils.compressSchema(rawCType)).toEqual(compressedCType[2])
+
+    expect(CTypeUtils.compress(claimCtype)).toEqual(compressedCType)
+
+    expect(CTypeUtils.decompress(compressedCType)).toEqual(claimCtype)
+
+    expect(CType.decompress(compressedCType)).toEqual(claimCtype)
+
+    expect(claimCtype.compress()).toEqual(compressedCType)
+  })
+
+  it('Negative test for compresses and decompresses the ctype object', () => {
+    compressedCType.pop()
+    delete rawCType.$id
+    delete claimCtype.hash
+
+    expect(() => CTypeUtils.compressSchema(rawCType)).toThrow()
+
+    expect(() => CTypeUtils.compress(claimCtype)).toThrow()
+
+    expect(() => CTypeUtils.decompress(compressedCType)).toThrow()
+
+    expect(() => CType.decompress(compressedCType)).toThrow()
+
+    expect(() => claimCtype.compress()).toThrow()
   })
 })
 

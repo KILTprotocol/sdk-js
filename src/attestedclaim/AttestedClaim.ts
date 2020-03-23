@@ -12,9 +12,10 @@ import * as gabi from '@kiltprotocol/portablegabi'
 import Identity from '../identity/Identity'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import IAttestedClaim from '../types/AttestedClaim'
+import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
+import AttestedClaimUtils from './AttestedClaim.utils'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -92,15 +93,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * ```
    */
   public constructor(attestedClaimInput: IAttestedClaim) {
-    if (!attestedClaimInput.request || !attestedClaimInput.attestation) {
-      throw new Error(
-        `Property Not Provided while building AttestedClaim!\n
-        attestedClaimInput.request: \n
-        ${attestedClaimInput.request} \n
-        attestedClaimInput.attestation: \n
-        ${attestedClaimInput.attestation}`
-      )
-    }
+    AttestedClaimUtils.errorCheck(attestedClaimInput)
     this.request = RequestForAttestation.fromRequest(attestedClaimInput.request)
     this.attestation = Attestation.fromAttestation(
       attestedClaimInput.attestation
@@ -182,5 +175,30 @@ export default class AttestedClaim implements IAttestedClaim {
       result.request.removeClaimOwner()
     }
     return result
+  }
+
+  /**
+   * Compresses an [[AttestedClaim]] object from the [[compressAttestedCliam]].
+   *
+   * @returns An array that contains the same properties of an [[AttestedClaim]].
+   */
+
+  public compress(): CompressedAttestedClaim {
+    return AttestedClaimUtils.compress(this)
+  }
+
+  /**
+   * [STATIC] Builds an [[AttestedClaim]] from the decompressed array.
+   *
+   * @returns A new [[AttestedClaim]] object.
+   */
+
+  public static decompress(
+    attestedClaim: CompressedAttestedClaim
+  ): AttestedClaim {
+    const decompressedAttestedClaim = AttestedClaimUtils.decompress(
+      attestedClaim
+    )
+    return AttestedClaim.fromAttestedClaim(decompressedAttestedClaim)
   }
 }
