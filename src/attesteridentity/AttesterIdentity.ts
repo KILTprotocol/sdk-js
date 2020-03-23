@@ -1,32 +1,25 @@
 import * as u8aUtil from '@polkadot/util/u8a'
-import {
-  AttesterPrivateKey,
-  Attester,
-  AttesterPublicKey,
-  Claimer,
-  Accumulator,
-  AttesterAttestationSession,
-  Witness,
-  Attestation,
-} from '@kiltprotocol/portablegabi'
+import * as gabi from '@kiltprotocol/portablegabi'
 import { KeyringPair } from '@polkadot/keyring/types'
+import { IRevocableAttestation } from '../types/Attestation'
 import Identity from '../identity/Identity'
 import { MessageBodyType, IInitiateAttestation } from '../messaging/Message'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import PublicAttesterIdentity from './PublicAttesterIdentity'
+import Attestation from '../attestation/Attestation'
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
 
 export default class AttesterIdentity extends Identity {
-  protected attester: Attester
-  public accumulator: Accumulator
+  protected attester: gabi.Attester
+  public accumulator: gabi.Accumulator
 
   constructor(
     seed: Uint8Array,
     signKeyringPair: KeyringPair,
-    claimer: Claimer,
-    attester: Attester,
-    accumulator: Accumulator
+    claimer: gabi.Claimer,
+    attester: gabi.Attester,
+    accumulator: gabi.Accumulator
   ) {
     super(seed, signKeyringPair, claimer)
     this.attester = attester
@@ -38,7 +31,7 @@ export default class AttesterIdentity extends Identity {
    *
    * @returns The private key used for attesting.
    */
-  public getPrivateGabiKey(): AttesterPrivateKey {
+  public getPrivateGabiKey(): gabi.AttesterPrivateKey {
     return this.attester.privateKey
   }
 
@@ -47,7 +40,7 @@ export default class AttesterIdentity extends Identity {
    *
    * @returns The private key used for attesting.
    */
-  public getPublicGabiKey(): AttesterPublicKey {
+  public getPublicGabiKey(): gabi.AttesterPublicKey {
     return this.attester.publicKey
   }
 
@@ -56,7 +49,7 @@ export default class AttesterIdentity extends Identity {
     validityDuration: number,
     maxAttributes: number
   ): Promise<AttesterIdentity> {
-    const attester = await Attester.create(validityDuration, maxAttributes)
+    const attester = await gabi.Attester.create(validityDuration, maxAttributes)
     const acc = await attester.createAccumulator()
 
     return new AttesterIdentity(
@@ -74,12 +67,12 @@ export default class AttesterIdentity extends Identity {
     rawPrivateKey: string,
     accumulator?: string
   ): Promise<AttesterIdentity> {
-    const privateGabiKey = new AttesterPrivateKey(rawPrivateKey)
-    const publicGabiKey = new AttesterPublicKey(rawPublicKey)
-    const attester = new Attester(publicGabiKey, privateGabiKey)
-    let acc: Accumulator
+    const privateGabiKey = new gabi.AttesterPrivateKey(rawPrivateKey)
+    const publicGabiKey = new gabi.AttesterPublicKey(rawPublicKey)
+    const attester = new gabi.Attester(publicGabiKey, privateGabiKey)
+    let acc: gabi.Accumulator
     if (typeof accumulator !== 'undefined') {
-      acc = new Accumulator(accumulator)
+      acc = new gabi.Accumulator(accumulator)
     } else {
       acc = await attester.createAccumulator()
     }
@@ -180,14 +173,14 @@ export default class AttesterIdentity extends Identity {
     )
   }
 
-  public getAccumulator(): Accumulator {
+  public getAccumulator(): gabi.Accumulator {
     return this.accumulator
   }
 
   public async issuePrivacyEnhancedAttestation(
-    session: AttesterAttestationSession,
+    session: gabi.AttesterAttestationSession,
     reqForAttestation: IRequestForAttestation
-  ): Promise<[Witness, Attestation]> {
+  ): Promise<[gabi.Witness, gabi.Attestation]> {
     if (reqForAttestation.privacyEnhanced != null) {
       const { witness, attestation } = await this.attester.issueAttestation({
         attestationSession: session,
@@ -203,7 +196,7 @@ export default class AttesterIdentity extends Identity {
 
   public async initiateAttestation(): Promise<{
     message: IInitiateAttestation
-    session: AttesterAttestationSession
+    session: gabi.AttesterAttestationSession
   }> {
     const { message, session } = await this.attester.startAttestation()
     return {
@@ -213,5 +206,17 @@ export default class AttesterIdentity extends Identity {
       },
       session,
     }
+  }
+
+  public async revokeAttestation(
+    attestation: IRevocableAttestation
+  ): Promise<void> {
+    if (attestation.witness !== null) {
+      this.accumulator = await this.attester.revokeAttestation({
+        witnesses: [attestation.witness],
+        accumulator: this.accumulator,
+      })
+    }
+    await new Attestation(attestation).revoke(this)
   }
 }
