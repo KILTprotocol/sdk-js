@@ -98,13 +98,10 @@ async function buildRequestForAttestation(
     type: 'object',
   }
 
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.getAddress(),
-    hash: '',
-  }
-
-  const testCType: CType = CType.fromCType(fromRawCType)
+  const testCType: CType = CType.fromSchema(
+    rawCType,
+    identityAlice.signKeyringPair.address
+  )
 
   const claim: IClaim = {
     cTypeHash: testCType.hash,
@@ -384,28 +381,145 @@ describe('RequestForAttestation', () => {
     expect((request.claim.contents as any).b).toBe('b')
     expect((request.claimHashTree as any).b.nonce).toBeDefined()
   })
-  // it('should throw error on faulty constructor input', () => {
-  //   const builtRequest = buildRequestForAttestation(
-  //     identityBob,
-  //     {
-  //       a: 'a',
-  //       b: 'b',
-  //       c: 'c',
-  //     },
-  //     []
-  //   )
+  fit('should throw error on faulty constructor input', () => {
+    const builtRequest = buildRequestForAttestation(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      []
+    )
+    const builtRequestWithLegitimation = buildRequestForAttestation(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimationCharlie]
+    )
 
-  //   const builtRequestWithLegitimation = buildRequestForAttestation(
-  //     identityBob,
-  //     {
-  //       a: 'a',
-  //       b: 'b',
-  //       c: 'c',
-  //     },
-  //     [legitimation]
-  //   )
-  // })
-  fit('checks Object iteration', () => {
+    const builtRequestNoLegitimations = {
+      ...buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    }
+    delete builtRequestNoLegitimations.legitimations
+
+    const builtRequestMalformedRootHash = {
+      ...builtRequest,
+    }
+    delete builtRequestMalformedRootHash.rootHash
+    builtRequestMalformedRootHash.rootHash = builtRequest.rootHash.replace(
+      'c',
+      'd'
+    )
+    const builtRequestMalformedClaimOwner = {
+      ...buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    }
+    builtRequestMalformedClaimOwner.claimOwner = {
+      hash: builtRequest.claimOwner.hash.replace('D', '7'),
+      nonce: builtRequest.claimOwner.nonce,
+    }
+
+    const builtRequestIncompleteClaimHashTree = {
+      ...buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    }
+    delete builtRequestIncompleteClaimHashTree.claimHashTree.a
+    const builtRequestMalformedSiganture = {
+      ...buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    }
+    builtRequestMalformedSiganture.claimerSignature = builtRequestMalformedSiganture.claimerSignature.replace(
+      'd',
+      'c'
+    )
+    const builtRequestMalformedCtypeHash = {
+      ...buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
+    }
+    builtRequestMalformedCtypeHash.cTypeHash = {
+      hash: builtRequest.cTypeHash.hash.replace('D', '7'),
+      nonce: builtRequest.cTypeHash.nonce,
+    }
+    expect(() => {
+      return RequestForAttestation.isIRequestForAttestation(
+        builtRequestNoLegitimations
+      )
+    }).toThrow()
+    expect(() => {
+      return RequestForAttestation.isIRequestForAttestation(
+        builtRequestMalformedRootHash
+      )
+    }).toThrow()
+    expect(() => {
+      return RequestForAttestation.isIRequestForAttestation(
+        builtRequestMalformedClaimOwner
+      )
+    }).toThrow()
+    expect(() => {
+      return RequestForAttestation.isIRequestForAttestation(
+        builtRequestIncompleteClaimHashTree
+      )
+    }).toThrow()
+    expect(() => {
+      return RequestForAttestation.isIRequestForAttestation(
+        builtRequestMalformedSiganture
+      )
+    }).toThrow()
+    expect(() => {
+      return RequestForAttestation.isIRequestForAttestation(
+        builtRequestMalformedCtypeHash
+      )
+    }).toThrow()
+    expect(() => {
+      return RequestForAttestation.isIRequestForAttestation(builtRequest)
+    }).not.toThrow()
+    expect(() => {
+      return RequestForAttestation.isIRequestForAttestation(
+        builtRequestWithLegitimation
+      )
+    }).not.toThrow()
+  })
+  it('checks Object instanciation', () => {
     const builtRequest = buildRequestForAttestation(
       identityBob,
       {

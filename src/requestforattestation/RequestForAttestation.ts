@@ -11,6 +11,7 @@
  * @preferred
  */
 import { v4 as uuid } from 'uuid'
+import { validateLegitimations, validateNoncedHash } from '../util/DataUtils'
 import {
   AttesterPublicKey,
   AttestationRequest,
@@ -190,6 +191,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   public static isIRequestForAttestation(
+    // ughh that function name... how do we want to call these typeguards?
     input: IRequestForAttestation
   ): input is IRequestForAttestation {
     if (!input.claim || !Claim.isIClaim(input.claim)) {
@@ -198,38 +200,22 @@ export default class RequestForAttestation implements IRequestForAttestation {
     if (!input.legitimations || !Array.isArray(input.legitimations)) {
       throw new Error('Legitimations not provided')
     }
-    if (
-      !input.claimOwner ||
-      !input.claimOwner.hash ||
-      !input.claimOwner.nonce
-    ) {
-      throw new Error()
-    }
     if (!input.claimHashTree) {
-      throw new Error()
+      throw new Error('Claim Hash Tree not provided')
     } else {
       Object.keys(input.claimHashTree).forEach(key => {
-        if (!input.claimHashTree[key].nonce || !input.claimHashTree[key].hash) {
-          throw new Error()
+        if (!input.claimHashTree[key].hash) {
+          throw new Error('incomplete claim Hash Tree')
         }
       })
     }
-    if (!input.cTypeHash || !input.cTypeHash.hash || !input.cTypeHash.nonce) {
-      throw new Error()
-    }
-    if (!input.rootHash) {
-      throw new Error()
-    }
-    if (!input.claimerSignature) {
-      throw new Error()
-    }
     if (
-      !input.delegationId === null ||
-      typeof input.delegationId !== 'string'
+      typeof input.delegationId !== 'string' &&
+      !input.delegationId === null
     ) {
-      throw new Error()
+      throw new Error('DelegationId not provided')
     }
-    return true
+    return RequestForAttestation.verifyData(input)
   }
 
   public claim: IClaim
@@ -335,6 +321,29 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public static verifyData(input: IRequestForAttestation): boolean {
+    // check claim owner hash
+    validateNoncedHash(input.claimOwner, input.claim.owner, 'Claim Owner')
+
+    // check cType hash
+    validateNoncedHash(
+      input.cTypeHash,
+      input.claim.cTypeHash,
+      'Claim CType Hash'
+    )
+
+    // check all hashes for provided claim properties
+    Object.keys(input.claim.contents).forEach(key => {
+      const value = input.claim.contents[key]
+      if (!input.claimHashTree[key]) {
+        throw Error(`Property '${key}' not in claim hash tree`)
+      }
+      const hashed: NonceHash = input.claimHashTree[key]
+      validateNoncedHash(hashed, value, `hash tree property ${key}`)
+    })
+
+    // check legitimations
+    validateLegitimations(input.legitimations)
+
     // check claim hash
     if (
       input.rootHash !==
@@ -346,58 +355,14 @@ export default class RequestForAttestation implements IRequestForAttestation {
         input.delegationId
       )
     ) {
-      return false
+      throw new Error('Provided rootHash does not correspond to data')
     }
-    // check claim owner hash
-    if (input.claim.owner) {
-      if (
-        !input.claimOwner.nonce ||
-        input.claimOwner.hash !==
-          hashNonceValue(input.claimOwner.nonce, input.claim.owner)
-      ) {
-        throw Error('Invalid hash for claim owner')
-      }
-    }
-
-    // check cType hash
-    if (input.claim.cTypeHash) {
-      if (
-        !input.cTypeHash.nonce ||
-        input.cTypeHash.hash !==
-          hashNonceValue(input.cTypeHash.nonce, input.claim.cTypeHash)
-      ) {
-        throw Error('Invalid hash for CTYPE')
-      }
-    }
-
-    // check all hashes for provided claim properties
-    Object.keys(input.claim.contents).forEach(key => {
-      const value = input.claim.contents[key]
-      if (!input.claimHashTree[key]) {
-        throw Error(`Property '${key}' not in claim hash tree`)
-      }
-      const hashed: NonceHash = input.claimHashTree[key]
-      if (
-        !hashed.nonce ||
-        hashed.hash !== hashNonceValue(hashed.nonce, value.toString())
-      ) {
-        throw Error(`Invalid hash for property '${key}' in claim hash tree`)
-      }
-    })
-
-    // check legitimations
-    let valid = true
-    if (input.legitimations) {
-      input.legitimations.forEach(legitimation => {
-        valid = valid && AttestedClaim.verifyData(legitimation)
-      })
-    }
-    if (!valid) {
-      return false
-    }
-
     // check signature
-    return RequestForAttestation.verifySignature(input)
+    if (!RequestForAttestation.verifySignature(input)) {
+      throw new Error('Provided Signature not verifiable')
+    }
+
+    return true
   }
 
   /**

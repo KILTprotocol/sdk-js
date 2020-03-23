@@ -95,19 +95,27 @@ describe('CType', () => {
   })
 
   it('throws error on faulty input', () => {
-    const wrongHashCtype = {
+    const wrongHashCtype: ICType = {
       ...fromRawCType,
       hash: '0x1234',
     }
-    const faultySchemaCtype = {
+    const faultySchemaCtype: ICType = {
       ...fromRawCType,
       schema: { ...rawCType, properties: null },
     }
+    const invalidAddressCtype: ICType = {
+      ...fromRawCType,
+      owner: fromRawCType.owner ? fromRawCType.owner.replace('7', 'D') : null,
+    }
+
     expect(() => {
       return CType.fromCType(wrongHashCtype)
     }).toThrow()
     expect(() => {
       return CType.fromCType(faultySchemaCtype)
+    }).toThrow()
+    expect(() => {
+      return CType.fromCType(invalidAddressCtype)
     }).toThrow()
   })
 

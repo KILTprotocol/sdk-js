@@ -7,6 +7,7 @@
  * Dummy comment needed for correct doc display, do not remove.
  */
 import { checkAddress } from '@polkadot/util-crypto'
+import IAttestedClaim from '../types/AttestedClaim'
 import { NonceHash } from '../types/RequestForAttestation'
 import Identity from '../identity/Identity'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
@@ -37,6 +38,9 @@ export function validateNoncedHash(
   data: string | object,
   name: string
 ): boolean {
+  if (!nonceHash || !nonceHash.hash) {
+    throw new Error('Nonce Hash incomplete')
+  }
   const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
   if (!nonceHash.hash.match(blake2bPattern)) {
     throw new Error(`Provided ${name} hash malformed \n
@@ -51,9 +55,12 @@ export function validateNoncedHash(
   return true
 }
 
-export function validateLegitimations(legitimations: AttestedClaim[]): boolean {
-  legitimations.forEach(async (legitimation: AttestedClaim) => {
-    if (AttestedClaim.verify(legitimation)) {
+export function validateLegitimations(
+  legitimations: IAttestedClaim[]
+): boolean {
+  legitimations.forEach((legitimation: IAttestedClaim) => {
+    // Use AttestedClaim.verify which requires quirying the chain or only verifyData?
+    if (!AttestedClaim.verifyData(legitimation)) {
       throw new Error(`Provided Legitimations not verifiable`)
     }
   })
