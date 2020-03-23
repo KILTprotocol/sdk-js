@@ -210,7 +210,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
         }
       })
     }
-    // TODO: implement verification of delegationId once chain connection is established
     if (
       typeof input.delegationId !== 'string' &&
       !input.delegationId === null
