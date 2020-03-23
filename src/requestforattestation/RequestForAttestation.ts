@@ -238,7 +238,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public constructor(requestForAttestationInput: IRequestForAttestation) {
-    RequestForAttestationUtils.errorCheck(requestForAttestationInput)
+    RequestForAttestation.isIRequestForAttestation(requestForAttestationInput)
     this.claim = requestForAttestationInput.claim
     this.claimOwner = requestForAttestationInput.claimOwner
     this.cTypeHash = requestForAttestationInput.cTypeHash
