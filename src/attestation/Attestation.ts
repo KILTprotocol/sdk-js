@@ -141,6 +141,7 @@ export default class Attestation implements IAttestation {
     this.claimHash = attestationInput.claimHash
     this.cTypeHash = attestationInput.cTypeHash
     this.delegationId = attestationInput.delegationId
+    this.owner = attestationInput.owner
     this.revoked = attestationInput.revoked
   }
 

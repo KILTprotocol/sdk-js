@@ -210,6 +210,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
         }
       })
     }
+    // implement verification of delegationId once chain connection is established
     if (
       typeof input.delegationId !== 'string' &&
       !input.delegationId === null
@@ -306,7 +307,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
   public removeClaimOwner(): void {
     // should the resulting object pass isClaim and isRequestForAttestation?
-    // This function should probably not exist.
     delete this.claim.owner
     delete this.claimOwner.nonce
   }
