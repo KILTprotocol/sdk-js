@@ -38,7 +38,7 @@ export class PresentationRequestBuilder {
     }
     this.builder.requestPresentation({
       requestedAttributes: rawAttribute,
-      reqUpdatedAfter,
+      reqUpdatedAfter: reqUpdatedAfter || new Date(),
     })
     this.ctypes.push(ctypeHash)
     return this
