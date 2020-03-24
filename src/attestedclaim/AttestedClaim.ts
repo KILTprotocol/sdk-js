@@ -177,8 +177,12 @@ export default class AttestedClaim implements IAttestedClaim {
     return result
   }
 
+  public getAttributes(): Set<string> {
+    return new Set(Object.keys(this.request.claim.contents))
+  }
+
   /**
-   * Compresses an [[AttestedClaim]] object from the [[compressAttestedCliam]].
+   * Compresses an [[AttestedClaim]] object from the [[compressAttestedClaim]].
    *
    * @returns An array that contains the same properties of an [[AttestedClaim]].
    */

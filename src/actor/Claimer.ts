@@ -13,9 +13,24 @@ import {
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Identity from '../identity/Identity'
 import IRequestForAttestation from '../types/RequestForAttestation'
+import { factory as LoggerFactory } from '../config/ConfigLog'
+
+const log = LoggerFactory.getLogger('Claimer')
 
 function noNulls<T>(array: Array<T | null>): array is T[] {
   return array.every(c => c !== null)
+}
+
+function parseArgsForKilt(args: string[]): string[] {
+  return args
+    .map(arg => arg.replace('claim.contents.', ''))
+    .filter((arg: string) => {
+      if (arg.match(/claim\.cTypeHash/)) {
+        log.warn('Cannot remove cTypeHash from claim.')
+        return false
+      }
+      return true
+    })
 }
 
 export async function createPresentation(
@@ -47,12 +62,20 @@ export async function createPresentation(
     }
   }
 
-  const requestedAttributes = request.content.peRequest.getRequestedProperties()
+  const requestedAttributes = request.content.peRequest
+    .getRequestedProperties()
+    .map(propsPerClaim => parseArgsForKilt(propsPerClaim))
+
   return {
     type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
-    content: attestedClaims.map((ac, i) =>
-      ac.createPresentation(requestedAttributes[i])
-    ),
+    content: attestedClaims.map((ac, i) => {
+      const allAttrs = ac.getAttributes()
+      requestedAttributes[i].forEach(attr => allAttrs.delete(attr))
+      const p = ac.createPresentation(Array.from(allAttrs))
+      delete p.credential
+      delete p.request.privacyEnhanced
+      return p
+    }),
   }
 }
 

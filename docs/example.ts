@@ -7,7 +7,6 @@ import Kilt, {
   Identity,
   Claim,
   Accumulator,
-  CombinedPresentation,
   AttesterIdentity,
 } from '../src'
 import constants from '../src/test/constants'
@@ -196,7 +195,8 @@ async function doVerification(
   claimer: Identity,
   attester: AttesterIdentity,
   attestedClaim: AttestedClaim,
-  accumulator: Accumulator
+  accumulator: Accumulator,
+  pe: boolean
 ): Promise<void> {
   const attesterPubKey = attester.getPublicGabiKey()
   // ------------------------- Verifier ----------------------------------------
@@ -205,7 +205,7 @@ async function doVerification(
       ctypeHash: attestedClaim.attestation.cTypeHash,
       attributes: ['age'],
     })
-    .finalize(true)
+    .finalize(pe)
 
   // ------------------------- Claimer -----------------------------------------
   // use createPresentation if you don't want to use the privacy enhanced method
@@ -213,20 +213,19 @@ async function doVerification(
     claimer,
     request,
     [attestedClaim],
-    [attesterPubKey]
+    [attesterPubKey],
+    pe
   )
 
   // ------------------------- Verifier ----------------------------------------
-  if (presentation.content instanceof CombinedPresentation) {
-    const [verified, claims] = await Kilt.Verifier.verifyPresentation(
-      presentation,
-      session,
-      [accumulator],
-      [attesterPubKey]
-    )
-    console.log('Received claims: ', claims)
-    console.log('All valid? ', verified)
-  }
+  const [verified, claims] = await Kilt.Verifier.verifyPresentation(
+    presentation,
+    session,
+    [accumulator],
+    [attesterPubKey]
+  )
+  console.log('Received claims: ', JSON.stringify(claims))
+  console.log('All valid? ', verified)
 }
 
 // do an attestation and a verification
@@ -238,10 +237,36 @@ async function example(): Promise<void> {
     attestation,
   } = await doAttestation()
   // should succeed
-  await doVerification(claimer, attester, attestedClaim, attester.accumulator)
+  await doVerification(
+    claimer,
+    attester,
+    attestedClaim,
+    attester.accumulator,
+    true
+  )
+  await doVerification(
+    claimer,
+    attester,
+    attestedClaim,
+    attester.accumulator,
+    false
+  )
   await Kilt.Attester.revokeAttestation(attester, attestation)
   // should fail
-  await doVerification(claimer, attester, attestedClaim, attester.accumulator)
+  await doVerification(
+    claimer,
+    attester,
+    attestedClaim,
+    attester.accumulator,
+    true
+  )
+  await doVerification(
+    claimer,
+    attester,
+    attestedClaim,
+    attester.accumulator,
+    false
+  )
 }
 
 // connect to the blockchain, execute the examples and then disconnect
