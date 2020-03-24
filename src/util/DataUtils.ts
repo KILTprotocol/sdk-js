@@ -17,6 +17,9 @@ export function validateAddress(
   address: Identity['address'],
   name: string
 ): boolean {
+  if (typeof address !== 'string') {
+    throw new Error('Address not of type string')
+  }
   if (!checkAddress(address, 42)[0]) {
     throw new Error(`Provided ${name} address invalid \n
     Address: ${address}`)
@@ -25,6 +28,9 @@ export function validateAddress(
 }
 
 export function validateHash(input: string, name: string): boolean {
+  if (typeof input !== 'string') {
+    throw new Error('Hash not of type string')
+  }
   const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
   if (!input.match(blake2bPattern)) {
     throw new Error(`Provided ${name} hash invalid or malformed \n
@@ -38,7 +44,7 @@ export function validateNoncedHash(
   data: string | object,
   name: string
 ): boolean {
-  if (!nonceHash || !nonceHash.hash) {
+  if (!nonceHash || !nonceHash.hash || typeof nonceHash.hash !== 'string') {
     throw new Error('Nonce Hash incomplete')
   }
   const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
@@ -72,6 +78,13 @@ export function validateSignature(
   signature: string,
   signer: Identity['address']
 ): boolean {
+  if (
+    typeof data !== 'string' ||
+    typeof signature !== 'string' ||
+    typeof signer !== 'string'
+  ) {
+    throw new Error('data, signature or signer not of type string')
+  }
   if (!verify(data, signature, signer)) {
     throw new Error(`Provided signature invalid`)
   }

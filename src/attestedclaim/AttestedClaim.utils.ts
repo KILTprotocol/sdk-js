@@ -7,18 +7,7 @@
 import AttestationUtils from '../attestation/Attestation.utils'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
-
-export function errorCheck(attestedClaim: IAttestedClaim): void {
-  if (!attestedClaim.request || !attestedClaim.attestation) {
-    throw new Error(
-      `Property Not Provided while building AttestedClaim: ${JSON.stringify(
-        attestedClaim,
-        null,
-        2
-      )}`
-    )
-  }
-}
+import AttestedClaim from './AttestedClaim'
 
 /**
  *  Compresses an [[AttestedClaim]] object into an array for storage and/or messaging.
@@ -31,7 +20,7 @@ export function errorCheck(attestedClaim: IAttestedClaim): void {
 export function compress(
   attestedClaim: IAttestedClaim
 ): CompressedAttestedClaim {
-  errorCheck(attestedClaim)
+  AttestedClaim.isAttestedClaim(attestedClaim)
 
   return [
     RequestForAttestationUtils.compress(attestedClaim.request),
@@ -65,5 +54,4 @@ export function decompress(
 export default {
   decompress,
   compress,
-  errorCheck,
 }

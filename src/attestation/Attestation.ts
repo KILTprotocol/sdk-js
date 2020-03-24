@@ -12,6 +12,7 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
+import { validateHash, validateAddress } from '../util/DataUtils'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import Identity from '../identity/Identity'
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
@@ -93,6 +94,30 @@ export default class Attestation implements IAttestation {
     })
   }
 
+  public static isAttestation(input: IAttestation): input is IAttestation {
+    // TODO implement querying the chain when available
+    // implement verification of delegationId once chain connection is established
+    if (!input.cTypeHash || !validateHash(input.cTypeHash, 'CType')) {
+      throw new Error('CType Hash not provided')
+    }
+    if (!input.claimHash || !validateHash(input.claimHash, 'Claim')) {
+      throw new Error('Claim Hash not provided')
+    }
+    if (
+      typeof input.delegationId !== 'string' &&
+      !input.delegationId === null
+    ) {
+      throw new Error('DelegationId not provided')
+    }
+    if (!input.owner || !validateAddress(input.owner, 'Owner')) {
+      throw new Error('Owner not provided')
+    }
+    if (typeof input.revoked !== 'boolean') {
+      throw new Error('revokation bit not provided')
+    }
+    return true
+  }
+
   public claimHash: IAttestation['claimHash']
   public cTypeHash: IAttestation['cTypeHash']
   public delegationId: IAttestation['delegationId'] | null
@@ -109,11 +134,11 @@ export default class Attestation implements IAttestation {
    * ```
    */
   public constructor(attestationInput: IAttestation) {
-    Attestation.constructorInputCheck(attestationInput)
-    this.owner = attestationInput.owner
+    Attestation.isAttestation(attestationInput)
     this.claimHash = attestationInput.claimHash
     this.cTypeHash = attestationInput.cTypeHash
     this.delegationId = attestationInput.delegationId
+    this.owner = attestationInput.owner
     this.revoked = attestationInput.revoked
   }
 
@@ -170,40 +195,6 @@ export default class Attestation implements IAttestation {
       !!(chainAttestation && chainAttestation.isAttestationValid(attestation))
     )
   }
-
-  // private static constructorInputCheck(attestationInput: IAttestation): void {
-  //   const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
-  //   if (
-  //     !attestationInput.cTypeHash ||
-  //     !attestationInput.claimHash ||
-  //     !attestationInput.owner
-  //   ) {
-  //     throw new Error(
-  //       `Property not provided while building Attestation!\n
-  //       attestationInput.cTypeHash:\n
-  //       ${attestationInput.cTypeHash}\n
-  //       attestationInput.claimHash:\n
-  //       ${attestationInput.claimHash}\n
-  //       attestationInput.owner:\n
-  //       ${attestationInput.owner}`
-  //     )
-  //   }
-  //   if (!attestationInput.claimHash.match(blake2bPattern)) {
-  //     throw new Error(
-  //       `Provided claimHash malformed:\n
-  //       ${attestationInput.claimHash}`
-  //     )
-  //   }
-  //   if (!attestationInput.cTypeHash.match(blake2bPattern)) {
-  //     throw new Error(
-  //       `Provided cTypeHash malformed:\n
-  //       ${attestationInput.cTypeHash}`
-  //     )
-  //   }
-  //   if (!checkAddress(attestationInput.owner, 42)[0]) {
-  //     throw new Error(`Owner address provided invalid`)
-  //   }
-  // }
 
   /**
    * Compresses an [[Attestation]] object.

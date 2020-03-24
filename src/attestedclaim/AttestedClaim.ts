@@ -14,6 +14,8 @@ import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import AttestedClaimUtils from './AttestedClaim.utils'
+import IRequestForAttestation from '../types/RequestForAttestation'
+import { IAttestation } from '..'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -33,6 +35,38 @@ export default class AttestedClaim implements IAttestedClaim {
     return new AttestedClaim(attestedClaimInput)
   }
 
+  /**
+   * [STATIC] Builds a new instance of [[AttestedClaim]], from all required properties.
+   *
+   * @param request - The request for attestation for the claim that was attested.
+   * @param attestation - The attestation for the claim by the attester.
+   * @returns A new [[AttestedClaim]] object.
+   * @example ```javascript
+   * // create an AttestedClaim object after receiving the attestation from the attester
+   * AttestedClaim.fromRequestAndAttestation(request, attestation);
+   * ```
+   */
+  public static fromRequestAndAttestation(
+    request: IRequestForAttestation,
+    attestation: IAttestation
+  ): AttestedClaim {
+    return new AttestedClaim({
+      request,
+      attestation,
+    })
+  }
+
+  public static isAttestedClaim(
+    input: IAttestedClaim
+  ): input is IAttestedClaim {
+    Attestation.isAttestation(input.attestation)
+    RequestForAttestation.isIRequestForAttestation(input.request)
+    if (!AttestedClaim.verifyData(input)) {
+      throw new Error('could not verify Data of attested claim')
+    }
+    return true
+  }
+
   public request: RequestForAttestation
   public attestation: Attestation
 
@@ -46,7 +80,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * ```
    */
   public constructor(attestedClaimInput: IAttestedClaim) {
-    AttestedClaimUtils.errorCheck(attestedClaimInput)
+    AttestedClaim.isAttestedClaim(attestedClaimInput)
     this.request = RequestForAttestation.fromRequest(attestedClaimInput.request)
     this.attestation = Attestation.fromAttestation(
       attestedClaimInput.attestation
@@ -144,135 +178,4 @@ export default class AttestedClaim implements IAttestedClaim {
     )
     return AttestedClaim.fromAttestedClaim(decompressedAttestedClaim)
   }
-
-  // private static constructorInputCheck(
-  //   attestedClaimInput: IAttestedClaim
-  // ): void {
-  //   const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
-  //   if (!attestedClaimInput.request || !attestedClaimInput.attestation) {
-  //     throw new Error(
-  //       `Property Not Provided while building AttestedClaim!\n
-  //       attestedClaimInput.request: \n
-  //       ${attestedClaimInput.request} \n
-  //       attestedClaimInput.attestation: \n
-  //       ${attestedClaimInput.attestation}`
-  //     )
-  //   }
-  //   if (
-  //     !attestedClaimInput.attestation.cTypeHash ||
-  //     !attestedClaimInput.attestation.claimHash ||
-  //     !attestedClaimInput.attestation.owner
-  //   ) {
-  //     throw new Error(
-  //       `Property Not Provided while building Attestation!\n
-  //       attestationInput.cTypeHash:\n
-  //       ${attestedClaimInput.attestation.cTypeHash}\n
-  //       attestationInput.claimHash:\n
-  //       ${attestedClaimInput.attestation.claimHash}\n
-  //       attestationInput.owner:\n
-  //       ${attestedClaimInput.attestation.owner}`
-  //     )
-  //   }
-  //   if (!attestedClaimInput.attestation.claimHash.match(blake2bPattern)) {
-  //     throw new Error(
-  //       `Provided claimHash malformed:\n
-  //       ${attestedClaimInput.attestation.claimHash}`
-  //     )
-  //   }
-  //   if (!attestedClaimInput.attestation.cTypeHash.match(blake2bPattern)) {
-  //     throw new Error(
-  //       `Provided claimHash malformed:\n
-  //       ${attestedClaimInput.attestation.cTypeHash}`
-  //     )
-  //   }
-  //   if (!checkAddress(attestedClaimInput.attestation.owner, 42)[0]) {
-  //     throw new Error(`Owner address provided invalid`)
-  //   }
-  //   if (
-  //     !attestedClaimInput.request.claim ||
-  //     !attestedClaimInput.request.legitimations ||
-  //     !attestedClaimInput.request.claimOwner ||
-  //     !attestedClaimInput.request.claimerSignature ||
-  //     !attestedClaimInput.request.claimHashTree ||
-  //     !attestedClaimInput.request.cTypeHash ||
-  //     !attestedClaimInput.request.rootHash
-  //   ) {
-  //     throw new Error(
-  //       `Property Not Provided while building RequestForAttestation:\n
-  //         requestInput.claim:\n
-  //         ${attestedClaimInput.request.claim}\n
-  //         requestInput.legitimations:\n
-  //         ${attestedClaimInput.request.legitimations}\n
-  //         requestInput.claimOwner:\n
-  //         ${attestedClaimInput.request.claimOwner}\n
-  //         requestInput.claimerSignature:\n
-  //         ${attestedClaimInput.request.claimerSignature}
-  //         requestInput.claimHashTree:\n
-  //         ${attestedClaimInput.request.claimHashTree}\n
-  //         requestInput.rootHash:\n
-  //         ${attestedClaimInput.request.rootHash}\n
-  //         requestInput.cTypeHash:\n
-  //         ${attestedClaimInput.request.cTypeHash}\n`
-  //     )
-  //   }
-  //   if (!attestedClaimInput.request.cTypeHash.hash.match(blake2bPattern)) {
-  //     throw new Error(
-  //       `Provided cTypeHash malformed:\n
-  //       ${attestedClaimInput.request.cTypeHash.hash}\n
-  //       with Nonce: ${attestedClaimInput.request.cTypeHash.nonce}\n`
-  //     )
-  //   }
-  //   if (!attestedClaimInput.request.rootHash.match(blake2bPattern)) {
-  //     throw new Error(
-  //       `Provided cTypeHash malformed:\n
-  //       ${attestedClaimInput.request.rootHash}\n`
-  //     )
-  //   }
-  //   if (!attestedClaimInput.request.claimOwner.hash.match(blake2bPattern)) {
-  //     throw new Error(
-  //       `Provided cTypeHash malformed:\n
-  //       ${attestedClaimInput.request.rootHash}\n`
-  //     )
-  //   }
-  //   if (
-  //     !verify(
-  //       attestedClaimInput.request.rootHash,
-  //       attestedClaimInput.request.claimerSignature,
-  //       attestedClaimInput.request.claim.owner
-  //     )
-  //   ) {
-  //     throw new Error(`Provided claimer signature invalid`)
-  //   }
-  //   if (
-  //     !attestedClaimInput.request.claim.cTypeHash ||
-  //     !attestedClaimInput.request.claim.contents ||
-  //     !attestedClaimInput.request.claim.owner
-  //   ) {
-  //     throw new Error(
-  //       `Property Not Provided while building Claim:\n
-  //         claimInput.cTypeHash:\n
-  //           ${attestedClaimInput.request.claim.cTypeHash}\n
-  //           claimInput.contents:\n
-  //           ${attestedClaimInput.request.claim.contents}\n
-  //           claimInput.owner:\n'
-  //           ${attestedClaimInput.request.claim.owner}`
-  //     )
-  //   }
-  //   if (!attestedClaimInput.request.claim.cTypeHash.match(blake2bPattern)) {
-  //     throw new Error(
-  //       `Provided claimHash malformed:\n
-  //         ${attestedClaimInput.request.claim.cTypeHash}`
-  //     )
-  //   }
-  //   if (!checkAddress(attestedClaimInput.request.claim.owner, 42)[0]) {
-  //     throw new Error(`Owner address provided invalid`)
-  //   }
-  //   attestedClaimInput.request.legitimations.forEach(
-  //     (legitimation: IAttestedClaim) => {
-  //       if (!AttestedClaim.verify(legitimation)) {
-  //         throw new Error('')
-  //       }
-  //     }
-  //   )
-  // }
 }

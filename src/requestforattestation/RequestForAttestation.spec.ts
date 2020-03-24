@@ -381,7 +381,7 @@ describe('RequestForAttestation', () => {
     expect((request.claim.contents as any).b).toBe('b')
     expect((request.claimHashTree as any).b.nonce).toBeDefined()
   })
-  fit('should throw error on faulty constructor input', () => {
+  it('should throw error on faulty constructor input', () => {
     const builtRequest = buildRequestForAttestation(
       identityBob,
       {

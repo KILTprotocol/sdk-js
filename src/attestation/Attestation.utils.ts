@@ -5,18 +5,8 @@
  */
 
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
+import Attestation from './Attestation'
 
-export function errorCheck(attestation: IAttestation): void {
-  if (!attestation.cTypeHash || !attestation.claimHash || !attestation.owner) {
-    throw new Error(
-      `Property Not Provided while building Attestation: ${JSON.stringify(
-        attestation,
-        null,
-        2
-      )}`
-    )
-  }
-}
 /**
  *  Compresses an [[Attestation]] object into an array for storage and/or messaging.
  *
@@ -26,7 +16,7 @@ export function errorCheck(attestation: IAttestation): void {
  */
 
 export function compress(attestation: IAttestation): CompressedAttestation {
-  errorCheck(attestation)
+  Attestation.isAttestation(attestation)
   return [
     attestation.claimHash,
     attestation.cTypeHash,
@@ -63,5 +53,4 @@ export function decompress(attestation: CompressedAttestation): IAttestation {
 export default {
   decompress,
   compress,
-  errorCheck,
 }

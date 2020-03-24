@@ -29,13 +29,7 @@ async function buildAttestedClaim(
     type: 'object',
   }
 
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.getAddress(),
-    hash: '',
-  }
-
-  const testCType = CType.fromCType(fromRawCType)
+  const testCType: CType = CType.fromSchema(rawCType, identityAlice.address)
 
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
@@ -136,7 +130,9 @@ describe('RequestForAttestation', () => {
     const propertyName = 'a'
     delete falsePresentation.request.claim.contents[propertyName]
     delete falsePresentation.request.claimHashTree[propertyName]
-    expect(AttestedClaim.verifyData(falsePresentation)).toBeFalsy()
+    expect(() => {
+      return AttestedClaim.verifyData(falsePresentation)
+    }).toThrow()
   })
 
   it('compresses and decompresses the attested claims object', () => {
