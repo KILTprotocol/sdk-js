@@ -153,5 +153,39 @@ describe('Attester', () => {
     expect(oldAcc.valueOf()).not.toEqual(alice.accumulator.valueOf())
   })
 
-  it.todo('Revoke public only attestation')
+  it('Revoke public only attestation', async () => {
+    Blockchain.api.tx.attestation.revoke = jest.fn(() => {
+      return Promise.resolve()
+    })
+
+    const { message: initAttestation } = await Attester.initiateAttestation(
+      alice
+    )
+
+    const claim: IClaim = {
+      cTypeHash: '0xdead',
+      contents: {
+        name: 'bob',
+        and: 1,
+        other: '0xbeef',
+        attributes: true,
+      },
+      owner: bob.getPublicIdentity().address,
+    }
+    const { message: requestAttestation } = await Claimer.requestAttestation({
+      claim,
+      identity: bob,
+      initiateAttestationMsg: initAttestation,
+      attesterPubKey: alice.getPublicGabiKey(),
+    })
+
+    const { attestation } = await Attester.issueAttestation(
+      alice,
+      requestAttestation
+    )
+    const oldAcc = alice.accumulator
+    await Attester.revokeAttestation(alice, attestation)
+    // accumulator should not change!
+    expect(alice.accumulator.valueOf()).toEqual(oldAcc.valueOf())
+  })
 })
