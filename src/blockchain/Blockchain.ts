@@ -122,12 +122,9 @@ export default class Blockchain implements IBlockchainApi {
                 log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
                 reject(extrinsicError)
               }
-              if (status.type === 'Finalized') {
+              if (status.type === FINALIZED) {
                 resolve(new TxStatus(status.type))
-              } else if (
-                status.type === 'Invalid' ||
-                status.type === 'Dropped'
-              ) {
+              } else if (status.type === INVALID || status.type === DROPPED) {
                 reject(
                   new Error(`Transaction failed with status '${status.type}'`)
                 )
