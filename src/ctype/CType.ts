@@ -16,7 +16,7 @@ import { CTypeWrapperModel } from './CTypeSchema'
 import CTypeUtils from './CType.utils'
 import ICType, { CompressedCType } from '../types/CType'
 import Identity from '../identity/Identity'
-import { store } from './CType.chain'
+import { getOwner, store } from './CType.chain'
 import IClaim from '../types/Claim'
 
 export default class CType implements ICType {
@@ -69,6 +69,11 @@ export default class CType implements ICType {
 
   public verifyClaimStructure(claim: IClaim): boolean {
     return CTypeUtils.verifySchema(claim.contents, this.schema)
+  }
+
+  public async verifyStored(): Promise<boolean> {
+    const actualOwner = await getOwner(this.hash)
+    return this.owner ? actualOwner === this.owner : actualOwner !== null
   }
 
   /**
