@@ -18,7 +18,7 @@ const mockedApi = ({
   },
 } as any) as ApiPromise
 
-describe('Blockchain', async () => {
+describe('Blockchain', () => {
   xit('should get stats', async () => {
     const blockchainSingleton = await getCached()
     const stats = await blockchainSingleton.getStats()
