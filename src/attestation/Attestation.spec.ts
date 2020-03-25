@@ -74,7 +74,7 @@ describe('Attestation', () => {
       requestForAttestation,
       identityAlice.getPublicIdentity()
     )
-    expect(await attestation.verify()).toBeTruthy()
+    expect(await Attestation.verify(attestation)).toBeTruthy()
   })
 
   it('verify attestations not on chain', async () => {
@@ -89,7 +89,7 @@ describe('Attestation', () => {
       owner: identityAlice.getAddress(),
       revoked: false,
     })
-    expect(await attestation.verify()).toBeFalsy()
+    expect(await Attestation.verify(attestation)).toBeFalsy()
   })
 
   it('verify attestation revoked', async () => {
@@ -108,7 +108,7 @@ describe('Attestation', () => {
       requestForAttestation,
       identityAlice.getPublicIdentity()
     )
-    expect(await attestation.verify()).toBeFalsy()
+    expect(await Attestation.verify(attestation)).toBeFalsy()
   })
 
   it('compresses and decompresses the attestation object', () => {
