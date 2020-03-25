@@ -4,7 +4,6 @@
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text } from '@polkadot/types'
 
 import { getCached } from '../blockchainApiConnection'
 import { IDid } from './Did'
@@ -52,7 +51,7 @@ export async function store(did: IDid, identity: Identity): Promise<TxStatus> {
   const tx: SubmittableExtrinsic = blockchain.api.tx.did.add(
     did.publicBoxKey,
     did.publicSigningKey,
-    new Option(Text, did.documentStore)
+    did.documentStore
   )
   return blockchain.submitTx(identity, tx)
 }

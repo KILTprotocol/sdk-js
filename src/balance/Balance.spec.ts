@@ -17,7 +17,7 @@ describe('Balance', () => {
     return new BN(12)
   })
 
-  it('should listen to balance changes', async done => {
+  it('should listen to balance changes', async (done) => {
     const bob = Identity.buildFromURI('//Bob')
     const listener = (account: string, balance: BN, change: BN): void => {
       expect(account).toBe(bob.address)

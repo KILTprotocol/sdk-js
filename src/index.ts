@@ -51,9 +51,7 @@ export {
   IQuoteAgreement,
 } from './types/Quote'
 export { default as ITerms } from './types/Terms'
-export {
-  default as IRequestForAttestation,
-} from './types/RequestForAttestation'
+export { default as IRequestForAttestation } from './types/RequestForAttestation'
 export {
   IDelegationRootNode,
   IDelegationBaseNode,

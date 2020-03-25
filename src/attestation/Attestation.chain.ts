@@ -2,7 +2,6 @@
  * @packageDocumentation
  * @ignore
  */
-import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
@@ -23,7 +22,7 @@ export async function store(
   const txParams = {
     claimHash: attestation.claimHash,
     ctypeHash: attestation.cTypeHash,
-    delegationId: new Option(Text, attestation.delegationId),
+    delegationId: attestation.delegationId,
   }
   log.debug(() => `Create tx for 'attestation.add'`)
 

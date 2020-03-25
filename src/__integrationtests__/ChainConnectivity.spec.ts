@@ -3,16 +3,18 @@
  */
 
 import { Header } from '@polkadot/types/interfaces/types'
-import { Struct, Text } from '@polkadot/types'
+import { Struct, Text, TypeRegistry } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
 
 describe('Blockchain', async () => {
+  const registry = new TypeRegistry()
   it('should get stats', async () => {
     const blockchainSingleton = await getCached()
     const stats = await blockchainSingleton.getStats()
 
     expect(
       new Struct(
+        registry,
         { chain: Text, nodeName: Text, nodeVersion: Text },
         stats
       ).toJSON()
@@ -23,7 +25,7 @@ describe('Blockchain', async () => {
     })
   })
 
-  it('should listen to blocks', async done => {
+  it('should listen to blocks', async (done) => {
     const listener = (header: Header): void => {
       // console.log(`Best block number ${header.number}`)
       expect(Number(header.number)).toBeGreaterThanOrEqual(0)
@@ -37,5 +39,5 @@ describe('Blockchain', async () => {
 })
 
 afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+  await getCached().then((bc) => bc.api.disconnect())
 })

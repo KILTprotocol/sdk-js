@@ -6,8 +6,7 @@
  */
 
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { EventRecord } from '@polkadot/types/interfaces'
-import { ModuleMetadataV4 } from '@polkadot/types/Metadata/v4'
+import { EventRecord, ModuleMetadataV4 } from '@polkadot/types/interfaces'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ExtrinsicError, errorForCode } from './ExtrinsicError'
 
@@ -95,7 +94,7 @@ export class ErrorHandler {
       }
     )
     return filtered
-      .map(m => m.name.toString())
+      .map((m) => m.name.toString())
       .indexOf(ErrorHandler.ERROR_MODULE_NAME)
   }
 }

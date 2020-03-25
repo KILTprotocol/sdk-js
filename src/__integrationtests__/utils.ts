@@ -23,7 +23,7 @@ export const bob = Identity.buildFromURI('//Bob')
 
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)
-    .then(ownerAddress => {
+    .then((ownerAddress) => {
       console.log(ownerAddress)
       return ownerAddress !== null
     })

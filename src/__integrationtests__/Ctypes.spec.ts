@@ -81,5 +81,5 @@ describe('When there is an CtypeCreator and a verifier', async () => {
 })
 
 afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+  await getCached().then((bc) => bc.api.disconnect())
 })

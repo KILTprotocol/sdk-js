@@ -90,7 +90,7 @@ export default class DelegationNode extends DelegationBaseNode
     if (this.parentId && this.parentId !== this.rootId) {
       propsToHash.push(this.parentId)
     }
-    const uint8Props: Uint8Array[] = propsToHash.map(value => {
+    const uint8Props: Uint8Array[] = propsToHash.map((value) => {
       return coToUInt8(value)
     })
     uint8Props.push(permissionsAsBitset(this))

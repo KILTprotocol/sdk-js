@@ -31,7 +31,7 @@ describe('when there is a dev chain with a faucet', async () => {
 
   it('getBalance should return 0 for new identity', async () => {
     return expect(
-      getBalance(NewIdentity().address).then(n => n.toNumber())
+      getBalance(NewIdentity().address).then((n) => n.toNumber())
     ).resolves.toEqual(0)
   })
 
@@ -102,5 +102,5 @@ describe('When there are haves and have-nots', async () => {
 })
 
 afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+  await getCached().then((bc) => bc.api.disconnect())
 })

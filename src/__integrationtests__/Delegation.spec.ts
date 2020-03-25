@@ -137,8 +137,8 @@ describe('handling queries to data not on chain', () => {
 
   it('fetchChildren on empty', async () => {
     return expect(
-      fetchChildren(['0x012012012']).then(res =>
-        res.map(el => {
+      fetchChildren(['0x012012012']).then((res) =>
+        res.map((el) => {
           return { id: el.id, codec: decodeDelegationNode(el.codec) }
         })
       )
@@ -147,5 +147,5 @@ describe('handling queries to data not on chain', () => {
 })
 
 afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+  await getCached().then((bc) => bc.api.disconnect())
 })

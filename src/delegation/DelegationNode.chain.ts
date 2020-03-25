@@ -4,7 +4,6 @@
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text } from '@polkadot/types'
 
 import { getCached } from '../blockchainApiConnection'
 import { decodeDelegationNode } from './DelegationDecoder'
@@ -26,7 +25,7 @@ export async function store(
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.addDelegation(
     delegation.id,
     delegation.rootId,
-    new Option(Text, includeParentId ? delegation.parentId : undefined),
+    includeParentId ? delegation.parentId : undefined,
     delegation.account,
     permissionsAsBitset(delegation),
     signature

@@ -95,7 +95,7 @@ export function compressClaimHashTree(
   const sortedClaimHashTree = jsonabc.sortObj(claimHashTree)
   const result = {}
 
-  Object.keys(sortedClaimHashTree).forEach(entryKey => {
+  Object.keys(sortedClaimHashTree).forEach((entryKey) => {
     result[entryKey] = compressNonceAndHash(sortedClaimHashTree[entryKey])
   })
   return result
@@ -114,7 +114,7 @@ export function decompressClaimHashTree(
 ): ClaimHashTree {
   const result = {}
 
-  Object.keys(compressedClaimHashTree).forEach(entryKey => {
+  Object.keys(compressedClaimHashTree).forEach((entryKey) => {
     result[entryKey] = decompressNonceAndHash(compressedClaimHashTree[entryKey])
   })
   return result

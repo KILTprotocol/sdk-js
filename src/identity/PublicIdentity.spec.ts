@@ -1,4 +1,4 @@
-import { Text, Tuple, U8a, Option } from '@polkadot/types'
+import { Text, Tuple, Option, TypeRegistry, Raw } from '@polkadot/types'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
 import IPublicIdentity from '../types/PublicIdentity'
 
@@ -7,25 +7,29 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 describe('PublicIdentity', () => {
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
-
+  const registry = new TypeRegistry()
   require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
-    id => {
+    (id) => {
       let tuple
       switch (id) {
         case '1':
           tuple = new Option(
+            registry,
             Tuple,
             new Tuple(
+              registry,
               // (public-signing-key, public-encryption-key, did-reference?)
-              [Text, Text, U8a],
+              [Text, Text, Raw],
               ['pub-key', 'box-key', [14, 75, 23, 14, 55]]
             )
           )
           break
         case '2':
           tuple = new Option(
+            registry,
             Tuple,
             new Tuple(
+              registry,
               // (public-signing-key, public-encryption-key, did-reference?)
               [Text, Text, Text],
               ['pub-key', 'box-key', undefined]

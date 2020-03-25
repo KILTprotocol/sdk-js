@@ -50,7 +50,14 @@
         "jsdoc/check-tag-names": ["warn", {
             "definedTags": ["preferred", "packageDocumentation"]
         }],
-        "jsdoc/check-alignment": "off"
+        "jsdoc/check-alignment": "off",
+        "import/extensions": ["error", "ignorePackages", {
+            "js": "never",
+            "jsx": "never",
+            "ts": "never",
+            "tsx": "never",
+            "mjs": "never"
+          }]
     },
     "overrides": [
         {

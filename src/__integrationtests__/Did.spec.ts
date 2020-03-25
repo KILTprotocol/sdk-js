@@ -22,5 +22,5 @@ describe('querying DIDs that do not exist', () => {
 })
 
 afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+  await getCached().then((bc) => bc.api.disconnect())
 })

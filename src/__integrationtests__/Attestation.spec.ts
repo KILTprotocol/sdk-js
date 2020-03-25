@@ -267,5 +267,5 @@ describe('When there is an attester, claimer and ctype drivers license', async (
 })
 
 afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+  await getCached().then((bc) => bc.api.disconnect())
 })

@@ -47,7 +47,7 @@ function generateHash(value: any): NonceHash {
 function generateHashTree(contents: object): ClaimHashTree {
   const result: ClaimHashTree = {}
 
-  Object.keys(contents).forEach(key => {
+  Object.keys(contents).forEach((key) => {
     result[key] = generateHash(contents[key])
   })
 
@@ -170,7 +170,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       requestForAttestationInput.legitimations.length
     ) {
       this.legitimations = requestForAttestationInput.legitimations.map(
-        legitimation => AttestedClaim.fromAttestedClaim(legitimation)
+        (legitimation) => AttestedClaim.fromAttestedClaim(legitimation)
       )
     } else {
       this.legitimations = []
@@ -205,7 +205,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public removeClaimProperties(properties: string[]): void {
-    properties.forEach(key => {
+    properties.forEach((key) => {
       if (!this.claimHashTree[key]) {
         throw Error(`Property '${key}' not found in claim`)
       }
@@ -284,7 +284,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     }
 
     // check all hashes for provided claim properties
-    Object.keys(this.claim.contents).forEach(key => {
+    Object.keys(this.claim.contents).forEach((key) => {
       const value = this.claim.contents[key]
       if (!this.claimHashTree[key]) {
         throw Error(`Property '${key}' not in claim hash tree`)
@@ -301,7 +301,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     // check legitimations
     let valid = true
     if (this.legitimations) {
-      this.legitimations.forEach(legitimation => {
+      this.legitimations.forEach((legitimation) => {
         valid = valid && legitimation.verifyData()
       })
     }
@@ -345,11 +345,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
     const result: Uint8Array[] = []
     result.push(coToUInt8(claimOwner.hash))
     result.push(coToUInt8(cTypeHash.hash))
-    Object.keys(claimHashTree).forEach(key => {
+    Object.keys(claimHashTree).forEach((key) => {
       result.push(coToUInt8(claimHashTree[key].hash))
     })
     if (legitimations) {
-      legitimations.forEach(legitimation => {
+      legitimations.forEach((legitimation) => {
         result.push(coToUInt8(legitimation.getHash()))
       })
     }

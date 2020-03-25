@@ -1,4 +1,4 @@
-import { Text, Tuple, Option, U8a } from '@polkadot/types'
+import { Text, Tuple, Option, TypeRegistry, Raw } from '@polkadot/types'
 import { Did } from '..'
 import { IDid } from './Did'
 import Identity from '../identity/Identity'
@@ -8,22 +8,27 @@ import { OK } from '../const/TxStatus'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('DID', () => {
+  const registry = new TypeRegistry()
   require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
-    address => {
+    (address) => {
       if (address === 'withDocumentStore') {
         const tuple = new Option(
+          registry,
           Tuple,
           new Tuple(
+            registry,
             // (publicBoxKey, publicSigningKey, documentStore?)
-            [Text, Text, U8a],
+            [Text, Text, Raw],
             ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
           )
         )
         return Promise.resolve(tuple)
       }
       const tuple = new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           // (publicBoxKey, publicSigningKey, documentStore?)
           [Text, Text, Option],
           ['0x987', '0x123', null]
@@ -66,7 +71,7 @@ describe('DID', () => {
     } as IDid)
   })
 
-  it('query by identifier invalid identifier', async done => {
+  it('query by identifier invalid identifier', async (done) => {
     try {
       await Did.queryByIdentifier('invalidIdentifier')
       done.fail('should have detected an invalid DID')

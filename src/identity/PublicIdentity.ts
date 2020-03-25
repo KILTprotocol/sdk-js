@@ -200,7 +200,7 @@ export default class PublicIdentity implements IPublicIdentity {
     }
     const listOfObjects: object[] = did[listProperty]
 
-    const correctObj = listOfObjects.find(object => {
+    const correctObj = listOfObjects.find((object) => {
       return object[filterKey] && object[filterKey] === filterValue
     })
 

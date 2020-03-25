@@ -103,7 +103,7 @@ export default class Message implements IMessage {
       case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES:
         {
           const submitClaimsForCtype = message.body
-          submitClaimsForCtype.content.forEach(claim => {
+          submitClaimsForCtype.content.forEach((claim) => {
             if (claim.request.claim.owner !== message.senderAddress) {
               throw new Error('Sender is not owner of the claims')
             }

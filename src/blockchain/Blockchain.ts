@@ -92,7 +92,7 @@ export default class Blockchain implements IBlockchainApi {
 
     return new Promise<TxStatus>((resolve, reject) => {
       signed
-        .send(result => {
+        .send((result) => {
           log.info(`Got tx status '${result.status.type}'`)
 
           const { status } = result
