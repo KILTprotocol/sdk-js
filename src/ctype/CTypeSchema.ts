@@ -55,7 +55,7 @@ export const CTypeWrapperModel = {
       type: 'object',
       properties: CTypeModel.properties,
     },
-    owner: { type: 'string' },
+    owner: { type: ['string', 'null'] },
     hash: {
       type: 'string',
     },
