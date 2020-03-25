@@ -173,13 +173,6 @@ describe('RequestForAttestation', () => {
   })
   it('should throw error on faulty constructor input', () => {
     const [boolean] = crypto.checkAddress(
-      identityAlice.address.replace('D', 'D'),
-      42
-    )
-    console.log(boolean)
-  })
-  it('should throw error on faulty constructor input', () => {
-    const [boolean] = crypto.checkAddress(
       identityAlice.signKeyringPair.address.replace('D', 'D'),
       42
     )
