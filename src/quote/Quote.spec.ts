@@ -45,7 +45,7 @@ describe('Claim', () => {
     contents: {},
     owner: claimerIdentity.address,
   }
-  // build request for attestation with legimitations
+  // build request for attestation with legitimations
   const request = RequestForAttestation.fromClaimAndIdentity(
     claim,
     claimerIdentity,

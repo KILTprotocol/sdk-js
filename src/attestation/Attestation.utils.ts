@@ -39,7 +39,7 @@ export function compress(attestation: IAttestation): CompressedAttestation {
 /**
  *  Decompresses an [[Attestation]] from storage and/or message into an object.
  *
- * @param attestation A compressesd [[Attestation]] array that is reverted back into an object.
+ * @param attestation A compressed [[Attestation]] array that is reverted back into an object.
  *
  * @returns An object that has the same properties as an [[Attestation]].
  */
@@ -47,7 +47,7 @@ export function compress(attestation: IAttestation): CompressedAttestation {
 export function decompress(attestation: CompressedAttestation): IAttestation {
   if (!Array.isArray(attestation) || attestation.length !== 5) {
     throw new Error(
-      'Compressed Attestation isnt an Array or has all the required data types'
+      "Compressed Attestation isn't an Array or has all the required data types"
     )
   }
   return {

@@ -66,7 +66,7 @@ describe('Blockchain', () => {
     })
   })
 
-  it('should return seperate incrementing nonces per account', async () => {
+  it('should return separate incrementing nonces per account', async () => {
     const alice = Identity.buildFromURI('//Alice')
     const bob = Identity.buildFromURI('//Bob')
     const alicePromisedNonces: Array<Promise<Index>> = []

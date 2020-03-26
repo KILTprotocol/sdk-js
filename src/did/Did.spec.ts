@@ -209,7 +209,7 @@ describe('DID', () => {
     ).toBeFalsy()
   })
 
-  it("throws when verifying the did document signature if identitifiers don't match", () => {
+  it("throws when verifying the did document signature if identifiers don't match", () => {
     const identityAlice = Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(identityAlice, 'http://myDID.kilt.io')
     const didDocument = did.createDefaultDidDocument(

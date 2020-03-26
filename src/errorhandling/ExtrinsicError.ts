@@ -50,7 +50,7 @@ export const ERROR_CTYPE_ALREADY_EXISTS: ExtrinsicError = new ExtrinsicError(
   ErrorCode.ERROR_CTYPE_ALREADY_EXISTS,
   'CTYPE already exists'
 )
-export const ERROR_ALEADY_ATTESTED: ExtrinsicError = new ExtrinsicError(
+export const ERROR_ALREADY_ATTESTED: ExtrinsicError = new ExtrinsicError(
   ErrorCode.ERROR_ALREADY_ATTESTED,
   'already attested'
 )
@@ -133,7 +133,7 @@ const errorsByCode: ExtrinsicError[] = []
   ERROR_CTYPE_NOT_FOUND,
   ERROR_CTYPE_ALREADY_EXISTS,
 
-  ERROR_ALEADY_ATTESTED,
+  ERROR_ALREADY_ATTESTED,
   ERROR_ERROR_ALREADY_REVOKED,
   ERROR_ATTESTATION_NOT_FOUND,
   ERROR_DELEGATION_REVOKED,

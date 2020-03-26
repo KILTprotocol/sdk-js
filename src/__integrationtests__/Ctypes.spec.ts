@@ -59,7 +59,7 @@ describe('When there is an CtypeCreator and a verifier', async () => {
       } as ICType['schema'],
     } as ICType)
 
-    const iAmNotThereWowner = CType.fromCType({
+    const iAmNotThereOwner = CType.fromCType({
       schema: {
         $id: 'http://example.com/ctype-2',
         $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -75,7 +75,7 @@ describe('When there is an CtypeCreator and a verifier', async () => {
       expect(iAmNotThere.verifyStored()).resolves.toBeFalsy(),
       expect(getOwner(iAmNotThere.hash)).resolves.toBeNull(),
       expect(getOwner('0x012012012')).resolves.toBeNull(),
-      expect(iAmNotThereWowner.verifyStored()).resolves.toBeFalsy(),
+      expect(iAmNotThereOwner.verifyStored()).resolves.toBeFalsy(),
     ])
   })
 })
