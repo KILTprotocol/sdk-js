@@ -41,7 +41,7 @@ function buildAttestedClaim(
     contents,
     claimer.address
   )
-  // build request for attestation with legimitations
+  // build request for attestation with legitimations
   const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
     claim,
     claimer,
@@ -120,7 +120,7 @@ describe('RequestForAttestation', () => {
     // check proof on complete data
     expect(attestedClaim.verifyData()).toBeTruthy()
 
-    // build a repesentation excluding claim properties and verify proof
+    // build a representation excluding claim properties and verify proof
     const correctPresentation = attestedClaim.createPresentation(['a'])
     expect(correctPresentation.verifyData()).toBeTruthy()
 

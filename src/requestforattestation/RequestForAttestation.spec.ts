@@ -41,7 +41,7 @@ function buildRequestForAttestation(
     contents,
     owner: claimer.address,
   }
-  // build request for attestation with legimitations
+  // build request for attestation with legitimations
   return RequestForAttestation.fromClaimAndIdentity(
     claim,
     claimer,

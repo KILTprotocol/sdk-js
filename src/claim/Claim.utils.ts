@@ -32,14 +32,14 @@ export function compress(claim: IClaim): CompressedClaim {
 /**
  *  Decompresses the [[Claim]] from storage and/or message.
  *
- * @param claim A compressesd [[Claim]] array that is reverted back into an object.
+ * @param claim A compressed [[Claim]] array that is reverted back into an object.
  *
  * @returns An object that has the same properties as the [[Claim]].
  */
 export function decompress(claim: CompressedClaim): IClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw new Error(
-      'Compressed Claim isnt an Array or has all the required data types'
+      "Compressed Claim isn't an Array or has all the required data types"
     )
   }
   return {
