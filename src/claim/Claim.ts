@@ -19,7 +19,7 @@ import IPublicIdentity from '../types/PublicIdentity'
 import ClaimUtils from './Claim.utils'
 
 function verifyClaim(
-  claimContents: object,
+  claimContents: IClaim['contents'],
   cTypeSchema: ICType['schema']
 ): boolean {
   return CTypeUtils.verifyClaimStructure(claimContents, cTypeSchema)
@@ -40,7 +40,7 @@ export default class Claim implements IClaim {
 
   public static fromCTypeAndClaimContents(
     ctypeInput: ICType,
-    claimContents: object,
+    claimContents: IClaim['contents'],
     claimOwner: IPublicIdentity['address']
   ): Claim {
     if (ctypeInput.schema) {
