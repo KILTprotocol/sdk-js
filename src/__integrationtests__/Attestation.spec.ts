@@ -47,7 +47,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
   }, 60_000)
 
   it('should be possible to make a claim', () => {
-    const content = { name: 'Ralph', age: 12 }
+    const content = { name: 'Raph', age: 12 }
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
@@ -64,7 +64,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
   })
 
   it('should be possible to attest a claim', async () => {
-    const content = { name: 'Ralph', age: 12 }
+    const content = { name: 'Raph', age: 12 }
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
@@ -90,7 +90,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
   }, 60_000)
 
   it('should not be possible to attest a claim w/o tokens', async () => {
-    const content = { name: 'Ralph', age: 10 }
+    const content = { name: 'Raph', age: 10 }
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
@@ -133,7 +133,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
       } as ICType['schema'],
     } as ICType)
 
-    const content = { name: 'Ralph', weight: 120 }
+    const content = { name: 'Raph', weight: 120 }
     const claim = Claim.fromCTypeAndClaimContents(
       badCtype,
       content,
@@ -158,7 +158,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     let AttClaim: AttestedClaim
 
     beforeAll(async () => {
-      const content = { name: 'Rolfi', age: 18 }
+      const content = { name: 'Raph', age: 18 }
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,

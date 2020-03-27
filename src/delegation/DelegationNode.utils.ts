@@ -20,10 +20,10 @@ import { IDelegationNode } from '../types/Delegation'
 export default function permissionsAsBitset(
   delegation: IDelegationNode
 ): Uint8Array {
-  const permissionsBitset: number = delegation.permissions.reduce(
+  const permissionsAsBitsetData: number = delegation.permissions.reduce(
     (accumulator, currentValue) => accumulator + currentValue
   )
   const uint8: Uint8Array = new Uint8Array(4)
-  uint8[0] = permissionsBitset
+  uint8[0] = permissionsAsBitsetData
   return uint8
 }
