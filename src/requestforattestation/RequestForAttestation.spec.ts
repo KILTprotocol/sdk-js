@@ -450,7 +450,7 @@ describe('RequestForAttestation', () => {
       ),
     }
     delete builtRequestIncompleteClaimHashTree.claimHashTree.a
-    const builtRequestMalformedSiganture = {
+    const builtRequestMalformedSignature = {
       ...buildRequestForAttestation(
         identityBob,
         {
@@ -461,7 +461,7 @@ describe('RequestForAttestation', () => {
         []
       ),
     }
-    builtRequestMalformedSiganture.claimerSignature = builtRequestMalformedSiganture.claimerSignature.replace(
+    builtRequestMalformedSignature.claimerSignature = builtRequestMalformedSignature.claimerSignature.replace(
       'd',
       'c'
     )
@@ -502,7 +502,7 @@ describe('RequestForAttestation', () => {
     }).toThrow()
     expect(() => {
       return RequestForAttestation.isIRequestForAttestation(
-        builtRequestMalformedSiganture
+        builtRequestMalformedSignature
       )
     }).toThrow()
     expect(() => {
@@ -519,7 +519,7 @@ describe('RequestForAttestation', () => {
       )
     }).not.toThrow()
   })
-  it('checks Object instanciation', () => {
+  it('checks Object instantiation', () => {
     const builtRequest = buildRequestForAttestation(
       identityBob,
       {

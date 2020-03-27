@@ -94,7 +94,9 @@ export default class Attestation implements IAttestation {
     })
   }
 
-  public static isAttestation(input: IAttestation): input is IAttestation {
+  public static isAttestation(
+    input: Partial<IAttestation>
+  ): input is IAttestation {
     // TODO implement querying the chain when available
     // implement verification of delegationId once chain connection is established
     if (!input.cTypeHash || !validateHash(input.cTypeHash, 'CType')) {
@@ -107,7 +109,7 @@ export default class Attestation implements IAttestation {
       typeof input.delegationId !== 'string' &&
       !input.delegationId === null
     ) {
-      throw new Error('DelegationId not provided')
+      throw new Error(`Not a valid DelegationId: ${typeof input.delegationId}`)
     }
     if (!input.owner || !validateAddress(input.owner, 'Owner')) {
       throw new Error('Owner not provided')
@@ -196,6 +198,10 @@ export default class Attestation implements IAttestation {
     )
   }
 
+  public async verify(): Promise<boolean> {
+    return Attestation.verify(this)
+  }
+
   /**
    * Compresses an [[Attestation]] object.
    *
@@ -226,6 +232,6 @@ export default class Attestation implements IAttestation {
    * @returns Whether the attestation is valid.
    */
   private isAttestationValid(attestation: IAttestation): boolean {
-    return this && this.owner === attestation.owner && !this.revoked
+    return this.owner === attestation.owner && !this.revoked
   }
 }

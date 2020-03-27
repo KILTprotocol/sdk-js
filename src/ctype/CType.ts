@@ -16,7 +16,7 @@ import { CTypeWrapperModel } from './CTypeSchema'
 import CTypeUtils from './CType.utils'
 import ICType, { CompressedCType } from '../types/CType'
 import Identity from '../identity/Identity'
-import { getOwner, store } from './CType.chain'
+import { store } from './CType.chain'
 import IClaim from '../types/Claim'
 
 export default class CType implements ICType {
@@ -35,11 +35,14 @@ export default class CType implements ICType {
     })
   }
 
-  static isICType(input: ICType): input is ICType {
+  static isICType(input: Partial<ICType>): input is ICType {
     if (!CTypeUtils.verifySchema(input, CTypeWrapperModel)) {
       throw new Error('CType does not correspond to schema')
     }
-    if (CTypeUtils.getHashForSchema(input.schema) !== input.hash) {
+    if (
+      !input.schema ||
+      CTypeUtils.getHashForSchema(input.schema) !== input.hash
+    ) {
       throw new Error('provided CType hash not matching calculated hash')
     }
     if (
@@ -72,8 +75,7 @@ export default class CType implements ICType {
   }
 
   public async verifyStored(): Promise<boolean> {
-    const actualOwner = await getOwner(this.hash)
-    return this.owner ? actualOwner === this.owner : actualOwner !== null
+    return CTypeUtils.verifyStored(this)
   }
 
   /**

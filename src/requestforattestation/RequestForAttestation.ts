@@ -11,7 +11,7 @@
  * @preferred
  */
 import { v4 as uuid } from 'uuid'
-import { validateLegitimations, validateNoncedHash } from '../util/DataUtils'
+import { validateLegitimations, validateNonceHash } from '../util/DataUtils'
 import {
   AttesterPublicKey,
   AttestationRequest,
@@ -191,8 +191,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   public static isIRequestForAttestation(
-    // ughh that function name... how do we want to call these typeguards?
-    input: IRequestForAttestation
+    // ugh that function name... how do we want to call these typeguards?
+    input: Partial<IRequestForAttestation>
   ): input is IRequestForAttestation {
     if (!input.claim || !Claim.isIClaim(input.claim)) {
       throw new Error('Claim not provided')
@@ -204,19 +204,20 @@ export default class RequestForAttestation implements IRequestForAttestation {
       throw new Error('Claim Hash Tree not provided')
     } else {
       Object.keys(input.claimHashTree).forEach(key => {
-        if (!input.claimHashTree[key].hash) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (!input.claimHashTree![key].hash) {
           throw new Error('incomplete claim Hash Tree')
         }
       })
     }
-    // implement verification of delegationId once chain connection is established
+    // TODO: implement verification of delegationId once chain connection is established
     if (
       typeof input.delegationId !== 'string' &&
       !input.delegationId === null
     ) {
       throw new Error('DelegationId not provided')
     }
-    return RequestForAttestation.verifyData(input)
+    return RequestForAttestation.verifyData(input as IRequestForAttestation)
   }
 
   public claim: IClaim
@@ -306,6 +307,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
   public removeClaimOwner(): void {
     // should the resulting object pass isClaim and isRequestForAttestation?
+    // This function should probably not exist.
     delete this.claim.owner
     delete this.claimOwner.nonce
   }
@@ -324,10 +326,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
   public static verifyData(input: IRequestForAttestation): boolean {
     // check claim owner hash
-    validateNoncedHash(input.claimOwner, input.claim.owner, 'Claim Owner')
+    validateNonceHash(input.claimOwner, input.claim.owner, 'Claim Owner')
 
     // check cType hash
-    validateNoncedHash(
+    validateNonceHash(
       input.cTypeHash,
       input.claim.cTypeHash,
       'Claim CType Hash'
@@ -340,7 +342,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
         throw Error(`Property '${key}' not in claim hash tree`)
       }
       const hashed: NonceHash = input.claimHashTree[key]
-      validateNoncedHash(hashed, value, `hash tree property ${key}`)
+      validateNonceHash(hashed, value, `hash tree property ${key}`)
     })
 
     // check legitimations
@@ -367,6 +369,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return true
   }
 
+  public verifyData(): boolean {
+    return RequestForAttestation.verifyData(this)
+  }
+
   /**
    * Verifies the signature of the [[RequestForAttestation]] object.
    *
@@ -382,6 +388,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
   public static verifySignature(input: IRequestForAttestation): boolean {
     return verifyClaimerSignature(input)
+  }
+
+  public verifySignature(): boolean {
+    return RequestForAttestation.verifySignature(this)
   }
 
   private static sign(identity: Identity, rootHash: Hash): string {

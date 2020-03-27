@@ -29,7 +29,7 @@ import IRequestForAttestation, {
 export function compressNonceAndHash(
   nonceHash: NonceHash
 ): CompressedNonceHash {
-  if (!nonceHash.nonce || !nonceHash.hash) {
+  if (!nonceHash.hash) {
     throw new Error(
       `Property Not Provided while building RequestForAttestation: ${JSON.stringify(
         nonceHash,

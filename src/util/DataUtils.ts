@@ -39,7 +39,7 @@ export function validateHash(input: string, name: string): boolean {
   return true
 }
 
-export function validateNoncedHash(
+export function validateNonceHash(
   nonceHash: NonceHash,
   data: string | object,
   name: string
@@ -53,7 +53,10 @@ export function validateNoncedHash(
     Hash: ${nonceHash.hash} \n
     Nonce: ${nonceHash.nonce}`)
   }
-  if (nonceHash.hash !== hashObjectAsStr(data, nonceHash.nonce)) {
+  if (
+    nonceHash.nonce &&
+    nonceHash.hash !== hashObjectAsStr(data, nonceHash.nonce)
+  ) {
     throw new Error(`Provided ${name} hash not corresponding to data \n
     Hash: ${nonceHash.hash} \n
     Nonce: ${nonceHash.nonce}`)
@@ -65,7 +68,7 @@ export function validateLegitimations(
   legitimations: IAttestedClaim[]
 ): boolean {
   legitimations.forEach((legitimation: IAttestedClaim) => {
-    // Use AttestedClaim.verify which requires quirying the chain or only verifyData?
+    // TODO : Use AttestedClaim.verify which requires querying the chain or only verifyData?
     if (!AttestedClaim.verifyData(legitimation)) {
       throw new Error(`Provided Legitimations not verifiable`)
     }

@@ -74,11 +74,14 @@ export default class Claim implements IClaim {
     })
   }
 
-  static isIClaim(input: IClaim): input is IClaim {
-    if (!input.cTypeHash || !input.contents || !input.owner) {
+  static isIClaim(input: Partial<IClaim>): input is IClaim {
+    // This accepts deleted owner property, until we remove removeClaimOwner
+    if (!input.cTypeHash || !input.contents) {
       throw new Error('property of provided Claim not set')
     }
-    validateAddress(input.owner, 'Claim Owner')
+    if (input.owner) {
+      validateAddress(input.owner, 'Claim Owner')
+    }
     validateHash(input.cTypeHash, 'Claim CType')
     // TODO: check whether ctype hash is on chain, access schema and verify Claim Structure
     return true

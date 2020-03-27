@@ -60,7 +60,7 @@ export const CTypeWrapperModel = {
       type: 'string',
     },
   },
-  required: ['schema'],
+  required: ['schema', 'hash'],
 }
 
 export const MetadataModel = {
