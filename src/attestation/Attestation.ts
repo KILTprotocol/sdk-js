@@ -113,7 +113,7 @@ export default class Attestation implements IAttestation {
       throw new Error('Owner not provided')
     }
     if (typeof input.revoked !== 'boolean') {
-      throw new Error('revokation bit not provided')
+      throw new Error('revocation bit not provided')
     }
     return true
   }
