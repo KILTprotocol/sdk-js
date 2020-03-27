@@ -432,10 +432,10 @@ describe('RequestForAttestation', () => {
         },
         []
       ),
-    }
-    builtRequestMalformedClaimOwner.claimOwner = {
-      hash: builtRequest.claimOwner.hash.replace('D', '7'),
-      nonce: builtRequest.claimOwner.nonce,
+      claimOwner: {
+        hash: builtRequest.claimOwner.hash.replace('1', '0'),
+        nonce: builtRequest.claimOwner.nonce,
+      },
     }
 
     const builtRequestIncompleteClaimHashTree = {
@@ -475,46 +475,50 @@ describe('RequestForAttestation', () => {
         },
         []
       ),
-    }
-    builtRequestMalformedCtypeHash.cTypeHash = {
-      hash: builtRequest.cTypeHash.hash.replace('D', '7'),
-      nonce: builtRequest.cTypeHash.nonce,
+      cTypeHash: {
+        hash: builtRequest.cTypeHash.hash.replace('1', '0'),
+        nonce: builtRequest.cTypeHash.nonce,
+      },
     }
     expect(() => {
-      return RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isIRequestForAttestation(
         builtRequestNoLegitimations
       )
-    }).toThrow()
+    }).toThrowError('Legitimations not provided')
     expect(() => {
-      return RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isIRequestForAttestation(
         builtRequestMalformedRootHash
       )
-    }).toThrow()
+    }).toThrow('Provided rootHash does not correspond to data')
     expect(() => {
-      return RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isIRequestForAttestation(
         builtRequestMalformedClaimOwner
       )
-    }).toThrow()
+    }).toThrow(`Provided Claim Owner hash not corresponding to data \n
+    Hash: ${builtRequestMalformedClaimOwner.claimOwner.hash} \n
+    Nonce: ${builtRequestMalformedClaimOwner.claimOwner.nonce}`)
     expect(() => {
-      return RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isIRequestForAttestation(
         builtRequestIncompleteClaimHashTree
       )
-    }).toThrow()
+    }).toThrow(`Property 'a' not in claim hash tree`)
     expect(() => {
-      return RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isIRequestForAttestation(
         builtRequestMalformedSignature
       )
-    }).toThrow()
+    }).toThrow('Provided Signature not verifiable')
     expect(() => {
-      return RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isIRequestForAttestation(
         builtRequestMalformedCtypeHash
       )
-    }).toThrow()
+    }).toThrow(`Provided Claim CType hash not corresponding to data \n
+    Hash: ${builtRequestMalformedCtypeHash.cTypeHash.hash} \n
+    Nonce: ${builtRequestMalformedCtypeHash.cTypeHash.nonce}`)
     expect(() => {
-      return RequestForAttestation.isIRequestForAttestation(builtRequest)
+      RequestForAttestation.isIRequestForAttestation(builtRequest)
     }).not.toThrow()
     expect(() => {
-      return RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isIRequestForAttestation(
         builtRequestWithLegitimation
       )
     }).not.toThrow()

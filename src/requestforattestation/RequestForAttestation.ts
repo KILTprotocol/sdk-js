@@ -329,11 +329,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     validateNonceHash(input.claimOwner, input.claim.owner, 'Claim Owner')
 
     // check cType hash
-    validateNonceHash(
-      input.cTypeHash,
-      input.claim.cTypeHash,
-      'Claim CType Hash'
-    )
+    validateNonceHash(input.cTypeHash, input.claim.cTypeHash, 'Claim CType')
 
     // check all hashes for provided claim properties
     Object.keys(input.claim.contents).forEach(key => {
@@ -349,16 +345,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     validateLegitimations(input.legitimations)
 
     // check claim hash
-    if (
-      input.rootHash !==
-      RequestForAttestation.calculateRootHash(
-        input.claimOwner,
-        input.cTypeHash,
-        input.claimHashTree,
-        input.legitimations,
-        input.delegationId
-      )
-    ) {
+    if (!RequestForAttestation.verifyRootHash(input)) {
       throw new Error('Provided rootHash does not correspond to data')
     }
     // check signature
@@ -392,6 +379,23 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
   public verifySignature(): boolean {
     return RequestForAttestation.verifySignature(this)
+  }
+
+  public static verifyRootHash(input: IRequestForAttestation): boolean {
+    return (
+      input.rootHash ===
+      RequestForAttestation.calculateRootHash(
+        input.claimOwner,
+        input.cTypeHash,
+        input.claimHashTree,
+        input.legitimations,
+        input.delegationId
+      )
+    )
+  }
+
+  public verifyRootHash(): boolean {
+    return RequestForAttestation.verifyRootHash(this)
   }
 
   private static sign(identity: Identity, rootHash: Hash): string {
