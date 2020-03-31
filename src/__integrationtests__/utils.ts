@@ -32,8 +32,9 @@ export async function CtypeOnChain(ctype: CType): Promise<boolean> {
 
 export const DriversLicense = CType.fromCType({
   schema: {
-    $id: 'DriversLicense',
+    $id: 'kilt:ctype:0x1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'Drivers License',
     properties: {
       name: {
         type: 'string',
@@ -48,8 +49,9 @@ export const DriversLicense = CType.fromCType({
 
 export const IsOfficialLicenseAuthority = CType.fromCType({
   schema: {
-    $id: 'LicenseAuthority',
+    $id: 'kilt:ctype:0x2',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'License Authority',
     properties: {
       LicenseType: {
         type: 'string',

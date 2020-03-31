@@ -14,8 +14,9 @@ describe('When there is an CtypeCreator and a verifier', async () => {
 
   const ctype = CType.fromCType({
     schema: {
-      $id: 'http://example.com/ctype-10',
+      $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'ctype10',
       properties: {
         name: { type: 'string' },
       },
@@ -50,8 +51,9 @@ describe('When there is an CtypeCreator and a verifier', async () => {
   it('should tell when a ctype is not on chain', async () => {
     const iAmNotThere = CType.fromCType({
       schema: {
-        $id: 'http://example.com/ctype-2',
+        $id: 'kilt:ctype:0x2',
         $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+        title: 'ctype2',
         properties: {
           game: { type: 'string' },
         },
@@ -61,8 +63,9 @@ describe('When there is an CtypeCreator and a verifier', async () => {
 
     const iAmNotThereWowner = CType.fromCType({
       schema: {
-        $id: 'http://example.com/ctype-2',
+        $id: 'kilt:ctype:0x2',
         $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+        title: 'ctype2',
         properties: {
           game: { type: 'string' },
         },

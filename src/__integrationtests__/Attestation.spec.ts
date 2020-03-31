@@ -119,8 +119,9 @@ describe('When there is an attester, claimer and ctype drivers license', async (
   it('should not be possible to attest a claim on a Ctype that is not on chain', async () => {
     const badCtype = CType.fromCType({
       schema: {
-        $id: 'badDriversLicense',
+        $id: 'kilt:ctype:0x1',
         $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+        title: 'badDriversLicense',
         properties: {
           name: {
             type: 'string',
