@@ -119,11 +119,11 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public async getNonce(accountAddress: string): Promise<Codec> {
-    const nonce = await this.api.query.system.accountNonce(accountAddress)
-    if (!nonce) {
+    const info = await this.api.query.system.account(accountAddress)
+    if (!info || !info.nonce) {
       throw Error(`Nonce not found for account ${accountAddress}`)
     }
 
-    return nonce
+    return info.nonce
   }
 }
