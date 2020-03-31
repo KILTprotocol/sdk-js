@@ -36,7 +36,7 @@ describe('handling attestations that do not exist', () => {
   }, 30_000)
 })
 
-describe('When there is an attester, claimer and ctype drivers license', async () => {
+describe('When there is an attester, claimer and ctype drivers license', () => {
   beforeAll(async () => {
     const ctypeExists = await CtypeOnChain(DriversLicense)
     // console.log(`ctype exists: ${ctypeExists}`)
@@ -154,7 +154,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     )
   }, 60_000)
 
-  describe('when there is an attested claim on-chain', async () => {
+  describe('when there is an attested claim on-chain', () => {
     let attClaim: AttestedClaim
 
     beforeAll(async () => {
@@ -201,7 +201,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     }, 15000)
   })
 
-  describe('when there is another Ctype that works as a legitimation', async () => {
+  describe('when there is another Ctype that works as a legitimation', () => {
     beforeAll(async () => {
       if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
         await IsOfficialLicenseAuthority.store(UncleSam)

@@ -23,6 +23,12 @@ const CUSTOM_TYPES: RegistryTypes = {
   PublicBoxKey: 'Hash',
   Permissions: 'u32',
   ErrorCode: 'u16',
+  StoredAttestation: {
+    0: 'Hash',
+    1: 'AccountId',
+    2: 'Option<DelegationNodeId>',
+    3: 'bool',
+  },
 }
 
 export async function buildConnection(

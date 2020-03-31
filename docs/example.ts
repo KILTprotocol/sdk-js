@@ -69,8 +69,8 @@ const claim = Kilt.Claim.fromCTypeAndClaimContents(
 // How to get an Attestation
 
 // To get an attestation, we need an Attester
-const mnemonicForAttester = Kilt.Identity.generateMnemonic()
-const attester = Kilt.Identity.buildFromMnemonic(mnemonicForAttester)
+// const attester = Kilt.Identity.buildFromMnemonic()
+const attester = Kilt.Identity.buildFromURI('//Alice')
 
 // And we need to build a request for an attestation
 const requestForAttestation = Kilt.RequestForAttestation.fromClaimAndIdentity(
@@ -111,7 +111,7 @@ const attestation = Kilt.Attestation.fromRequestAndPublicIdentity(
 )
 // Store it on the blockchain
 // ! This costs tokens !
-// attestation.store(attester)
+attestation.store(attester)
 
 // Build the AttestedClaim object, which the claimer can store and use
 const attestedClaim = Kilt.AttestedClaim.fromRequestAndAttestation(
