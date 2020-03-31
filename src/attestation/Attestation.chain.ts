@@ -1,9 +1,6 @@
 /**
- * @module Attestation
- */
-
-/**
- * Dummy comment needed for correct doc display, do not remove
+ * @packageDocumentation
+ * @ignore
  */
 import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
@@ -32,7 +29,7 @@ export async function store(
 
   const blockchain = await getCached()
 
-  const tx = await blockchain.api.tx.attestation.add(
+  const tx = blockchain.api.tx.attestation.add(
     txParams.claimHash,
     txParams.ctypeHash,
     txParams.delegationId

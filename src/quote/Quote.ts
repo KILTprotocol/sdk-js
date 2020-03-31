@@ -5,12 +5,9 @@
  *
  * A [[Quote]] comes with a versionable spec, allowing different [[Quote]] specs to exist over time and tracks under which [[Quote]] a contract was closed.
  *
+ * @packageDocumentation
  * @module Quote
  * @preferred
- */
-
-/**
- * Dummy comment needed for correct doc display, do not remove.
  */
 
 import Ajv from 'ajv'
@@ -42,8 +39,10 @@ export function validateQuoteSchema(
   )
   if (!result && ajv.errors) {
     if (messages) {
-      ajv.errors.forEach((error: any) => {
-        messages.push(error.message)
+      ajv.errors.forEach((error: Ajv.ErrorObject) => {
+        if (typeof error.message === 'string') {
+          messages.push(error.message)
+        }
       })
     }
   }

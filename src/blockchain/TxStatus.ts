@@ -1,15 +1,13 @@
 /**
- * @module Blockchain
+ * @packageDocumentation
+ * @module TxStatus
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
 export default class TxStatus {
   public type: string
-  public payload: any
+  public payload: string | object | undefined
 
-  public constructor(type: string, payload?: any) {
+  public constructor(type: string, payload?: string | object) {
     this.type = type
     this.payload = payload
   }

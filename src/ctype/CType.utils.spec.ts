@@ -3,12 +3,12 @@ import {
   verifyClaimStructure,
   verifySchema,
   verifySchemaWithErrors,
-} from './CTypeUtils'
+} from './CType.utils'
 import ICType from '../types/CType'
 
 jest.mock('../blockchain/Blockchain')
 
-const ctypeInput = {
+const ctypeInput = ({
   $id: 'http://example.com/ctype-1',
   $schema: 'http://kilt-protocol.org/draft-01/ctype-input#',
   properties: [
@@ -26,7 +26,7 @@ const ctypeInput = {
   type: 'object',
   title: 'CType Title',
   required: ['first-property', 'second-property'],
-}
+} as any) as ICType['schema']
 
 const ctypeWrapperModel: ICType['schema'] = {
   $id: 'http://example.com/ctype-1',

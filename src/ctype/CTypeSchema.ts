@@ -1,12 +1,8 @@
 /**
- * @module CType
+ * @packageDocumentation
+ * @module CTypeSchema
+ * @preferred
  */
-
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
-// TODO: Generate from actual CTypeModel
-// TODO: The SDK is not really responsible for this, since it is editor specific
 
 export const CTypeModel = {
   $id: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -124,6 +120,20 @@ export const MetadataModel = {
                   },
                   required: ['default'],
                 },
+                description: {
+                  type: 'object',
+                  properties: {
+                    default: {
+                      type: 'string',
+                    },
+                  },
+                  patternProperties: {
+                    '^.*$': {
+                      type: 'string',
+                    },
+                  },
+                  required: ['default'],
+                },
               },
               required: ['title'],
               additionalProperties: false,
@@ -131,7 +141,7 @@ export const MetadataModel = {
           },
         },
       },
-      required: ['title', 'description'],
+      required: ['title', 'properties'],
       additionalProperties: false,
     },
     ctypeHash: { type: 'string', minLength: 1 },

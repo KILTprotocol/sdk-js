@@ -1,10 +1,11 @@
 /**
- * @module Identity
+ * A [[PublicIdentity]] object exposes only public information such as the public address, but doesn't expose any secrets such as private keys.
+ *
+ * @packageDocumentation
+ * @module PublicIdentity
+ * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import Did, {
   KEY_TYPE_ENCRYPTION,
   SERVICE_KILT_MESSAGING,
@@ -57,10 +58,12 @@ export default class PublicIdentity implements IPublicIdentity {
    * @example ```javascript
    * const didDocument = {
    *   id: 'did:kilt:1234567',
-   *   authentication: {
-   *     type: 'Ed25519SignatureAuthentication2018',
-   *     publicKey: ['did:kilt:1234567#key-1'],
-   *   },
+   *   authentication: [
+   *     {
+   *       type: 'Ed25519SignatureAuthentication2018',
+   *       publicKey: ['did:kilt:1234567#key-1'],
+   *     },
+   *   ],
    *   publicKey: [
    *     {
    *       id: 'did:kilt:1234567#key-1',
@@ -124,8 +127,7 @@ export default class PublicIdentity implements IPublicIdentity {
    * @example ```javascript
    * const urlResolver = {
    *   resolve: (url: string) => {
-   *     return fetch(url)
-   *       .then(response => response.json());
+   *     return fetch(url).then(response => response.json());
    *   },
    * };
    * const identifier = 'did:kilt:1234567';
@@ -175,7 +177,7 @@ export default class PublicIdentity implements IPublicIdentity {
    * @param boxPublicKeyAsHex - The public encryption key.
    * @param serviceAddress - The address of the service used to retreive the DID.
    * @example ```javascript
-   * new PublicIdentity(address, boxPublicKeyAsHex, serviceAddress);
+   * const identity = new PublicIdentity(address, boxPublicKeyAsHex, serviceAddress);
    * ```
    */
   public constructor(

@@ -1,15 +1,9 @@
 {
   "defaultSeverity": "error",
-  "extends": [
-    "tslint:recommended",
-    "tslint-config-prettier"
-  ],
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
   "jsRules": {},
   "rules": {
-    "semicolon": [
-      true,
-      "never"
-    ],
+    "semicolon": [true, "never"],
     "no-bitwise": false,
     "interface-over-type-literal": false,
     "no-console": false,
@@ -17,18 +11,12 @@
     "ordered-imports": false,
     "variable-name": false,
     "max-classes-per-file": [true, 1],
-    "quotemark": [
-      true,
-      "single"
-    ],
+    "quotemark": [true, "single"],
     "object-literal-sort-keys": false,
     "prefer-function-over-method": [true, "allow-protected"],
     "no-unnecessary-type-assertion": true,
     "no-unnecessary-class": true,
-    "prettier": [
-      true,
-      ".prettierrc"
-    ],
+    "prettier": [true, ".prettierrc"],
     "member-ordering": [
       true,
       {
@@ -49,7 +37,5 @@
       }
     ]
   },
-  "rulesDirectory": [
-    "tslint-plugin-prettier"
-  ]
+  "rulesDirectory": ["tslint-plugin-prettier"]
 }

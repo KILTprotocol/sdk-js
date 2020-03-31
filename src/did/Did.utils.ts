@@ -1,10 +1,8 @@
 /**
- * @module DID
+ * @packageDocumentation
+ * @ignore
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { isHex, hexToString } from '@polkadot/util'
 
 import IPublicIdentity from '../types/PublicIdentity'
@@ -67,10 +65,12 @@ export function createDefaultDidDocument(
   return {
     id: identifier,
     '@context': CONTEXT,
-    authentication: {
-      type: KEY_TYPE_AUTHENTICATION,
-      publicKey: [`${identifier}#key-1`],
-    },
+    authentication: [
+      {
+        type: KEY_TYPE_AUTHENTICATION,
+        publicKey: [`${identifier}#key-1`],
+      },
+    ],
     publicKey: [
       {
         id: `${identifier}#key-1`,

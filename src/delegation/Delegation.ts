@@ -1,22 +1,19 @@
 /**
  * Delegations are the building blocks of top-down trust structures in KILT. An Attester can inherit trust through delegation from another attester ("top-down").
  * In order to model these trust hierarchies, a delegation is represented as a **node** in a **delegation tree**.
- * ***
- * A delegation object is stored on-chain, and can be revoked. A base node is created, a ID which may be used in a [[RequestForAttestation]].
  *
+ * A delegation object is stored on-chain, and can be revoked. A base node is created, a ID which may be used in a [[RequestForAttestation]].
  * A delegation can and may restrict permissions.
  *
  * Permissions:
+ *   * Delegate.
+ *   * Attest.
  *
- *  * Delegate
- *  * Attest
- * @module Delegation
+ * @packageDocumentation
+ * @module DelegationBaseNode
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'
@@ -42,9 +39,10 @@ export default abstract class DelegationBaseNode
   public revoked: IDelegationBaseNode['revoked'] = false
 
   /**
-   * @description Builds a new [DelegationBaseNode] instance.
-   * @param id the unique identifier of the delegation node
-   * @param account the owner address of the delegation node
+   * Builds a new [DelegationBaseNode] instance.
+   *
+   * @param id The unique identifier of the delegation node.
+   * @param account The owner address of the delegation node.
    */
   public constructor(
     id: IDelegationBaseNode['id'],
@@ -55,20 +53,23 @@ export default abstract class DelegationBaseNode
   }
 
   /**
-   * @description Fetches the root of the delegation tree.
-   * @returns promise containing [[DelegationRootNode]]
+   * Fetches the root of the delegation tree.
+   *
+   * @returns Promise containing [[DelegationRootNode]].
    */
   public abstract getRoot(): Promise<DelegationRootNode>
 
   /**
-   * @description Fetches the parent delegation node. If the parent node is [null] this node is a direct child of the root node.
-   * @returns promise containing the parent node or [null]
+   * Fetches the parent delegation node. If the parent node is [null] this node is a direct child of the root node.
+   *
+   * @returns Promise containing the parent node or [null].
    */
   public abstract getParent(): Promise<DelegationBaseNode | null>
 
   /**
-   * @description Fetches the children nodes of the current node.
-   * @returns promise containing the resolved children nodes
+   * Fetches the children nodes of the current node.
+   *
+   * @returns Promise containing the resolved children nodes.
    */
   public async getChildren(): Promise<DelegationNode[]> {
     log.info(` :: getChildren('${this.id}')`)
@@ -90,8 +91,9 @@ export default abstract class DelegationBaseNode
   }
 
   /**
-   * @description Fetches and resolves all attestations attested with this delegation node.
-   * @returns promise containing all resolved attestations attested with this node
+   * Fetches and resolves all attestations attested with this delegation node.
+   *
+   * @returns Promise containing all resolved attestations attested with this node.
    */
   public async getAttestations(): Promise<Attestation[]> {
     const attestationHashes = await this.getAttestationHashes()
@@ -105,22 +107,25 @@ export default abstract class DelegationBaseNode
   }
 
   /**
-   * @description Fetches all hashes of attestations attested with this delegation node.
-   * @returns promise containing all attestation hashes attested with this node
+   * Fetches all hashes of attestations attested with this delegation node.
+   *
+   * @returns Promise containing all attestation hashes attested with this node.
    */
   public async getAttestationHashes(): Promise<string[]> {
     return getAttestationHashes(this.id)
   }
 
   /**
-   * @description Verifies this delegation node by querying it from chain and checking its [revoked] status.
-   * @returns promise containing a boolean flag indicating if the verification succeeded
+   * Verifies this delegation node by querying it from chain and checking its [revoked] status.
+   *
+   * @returns Promise containing a boolean flag indicating if the verification succeeded.
    */
   public abstract verify(): Promise<boolean>
 
   /**
-   * @description Revokes this delegation node on chain.
-   * @returns promise containing the transaction status
+   * Revokes this delegation node on chain.
+   *
+   * @returns Promise containing the transaction status.
    */
   public abstract revoke(identity: Identity): Promise<TxStatus>
 

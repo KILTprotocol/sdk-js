@@ -1,16 +1,16 @@
 /**
  * KILT participants can communicate via a 1:1 messaging system.
- * ***
+ *
  * All messages are **encrypted** with the encryption keys of the involved identities. Every time an actor sends data about an [[Identity]], they have to sign the message to prove access to the corresponding private key.
- * <br>
+ *
  * The [[Message]] class exposes methods to construct and verify messages.
  *
+ * @packageDocumentation
  * @module Messaging
+ * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
+import { AnyJsonObject } from '@polkadot/types/types'
 import {
   Claim,
   DelegationNode,
@@ -217,7 +217,7 @@ export default class Message implements IMessage {
 }
 
 interface IMessageBodyBase {
-  content: any
+  content: object
   type: MessageBodyType
 }
 
@@ -281,9 +281,7 @@ export interface IRequestAcceptDelegation extends IMessageBodyBase {
       permissions: IDelegationNode['permissions']
       isPCR: boolean
     }
-    metaData?: {
-      [key: string]: any
-    }
+    metaData?: AnyJsonObject
     signatures: {
       inviter: string
     }

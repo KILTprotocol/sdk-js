@@ -1,6 +1,12 @@
+/**
+ * @packageDocumentation
+ * @module CTypeMetadata
+ * @preferred
+ */
+
 import ICTypeMetadata from '../types/CTypeMetadata'
 import { MetadataModel } from './CTypeSchema'
-import CTypeUtils from './CTypeUtils'
+import CTypeUtils from './CType.utils'
 
 export default class CTypeMetadata implements ICTypeMetadata {
   public ctypeHash: ICTypeMetadata['ctypeHash']

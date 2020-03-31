@@ -1,19 +1,18 @@
 /**
  * CTypes are the way the KILT protocol enables a Claimer or Attester or Verifier to create a [[Claim]] schema for creating specific credentials.
- *  ***
+ *
  * * A CTYPE is a description of the [[Claim]] data structure, based on [JSON Schema](http://json-schema.org/).
  * * CTYPEs are published and stored by the creator and/or in an open storage registry.
  * * Anyone can use a CTYPE to create a new [[Claim]].
+ *
+ * @packageDocumentation
  * @module CType
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
 import { CTypeWrapperModel } from './CTypeSchema'
-import * as CTypeUtils from './CTypeUtils'
-import ICType from '../types/CType'
+import CTypeUtils from './CType.utils'
+import ICType, { CompressedCType } from '../types/CType'
 import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
 import TxStatus from '../blockchain/TxStatus'
@@ -56,6 +55,28 @@ export default class CType implements ICType {
   }
 
   public async verifyStored(): Promise<boolean> {
-    return (await getOwner(this.hash)) === this.owner
+    const actualOwner = await getOwner(this.hash)
+    return this.owner ? actualOwner === this.owner : actualOwner !== null
+  }
+
+  /**
+   * Compresses an [[CType]] object from the [[compressCType]].
+   *
+   * @returns An array that contains the same properties of an [[CType]].
+   */
+
+  public compress(): CompressedCType {
+    return CTypeUtils.compress(this)
+  }
+
+  /**
+   * [STATIC] Builds an [[CType]] from the decompressed array.
+   *
+   * @returns A new [[CType]] object.
+   */
+
+  public static decompress(cType: CompressedCType): CType {
+    const decompressedCType = CTypeUtils.decompress(cType)
+    return CType.fromCType(decompressedCType)
   }
 }
