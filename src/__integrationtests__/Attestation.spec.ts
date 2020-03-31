@@ -155,7 +155,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
   }, 60_000)
 
   describe('when there is an attested claim on-chain', async () => {
-    let AttClaim: AttestedClaim
+    let attClaim: AttestedClaim
 
     beforeAll(async () => {
       const content = { name: 'Rolfi', age: 18 }
@@ -176,28 +176,28 @@ describe('When there is an attester, claimer and ctype drivers license', async (
       )
       const status = await attestation.store(attester)
       expect(status.type).toBe('Finalized')
-      AttClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
-      await expect(AttClaim.verify()).resolves.toBeTruthy()
+      attClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
+      await expect(attClaim.verify()).resolves.toBeTruthy()
     }, 60_000)
 
     it('should not be possible to attest the same claim twice', async () => {
-      await expect(AttClaim.attestation.store(attester)).rejects.toThrowError(
+      await expect(attClaim.attestation.store(attester)).rejects.toThrowError(
         'already attested'
       )
     }, 15000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
-      await expect(revoke(AttClaim.getHash(), claimer)).rejects.toThrowError(
+      await expect(revoke(attClaim.getHash(), claimer)).rejects.toThrowError(
         'not permitted'
       )
-      await expect(AttClaim.verify()).resolves.toBeTruthy()
+      await expect(attClaim.verify()).resolves.toBeTruthy()
     }, 30000)
 
     it('should be possible for the attester to revoke an attestation', async () => {
-      await expect(AttClaim.verify()).resolves.toBeTruthy()
-      const status = await revoke(AttClaim.getHash(), attester)
+      await expect(attClaim.verify()).resolves.toBeTruthy()
+      const status = await revoke(attClaim.getHash(), attester)
       expect(status.type).toBe('Finalized')
-      await expect(AttClaim.verify()).resolves.toBeFalsy()
+      await expect(attClaim.verify()).resolves.toBeFalsy()
     }, 15000)
   })
 
