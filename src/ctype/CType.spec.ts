@@ -1,10 +1,12 @@
 import CType from './CType'
 import Identity from '../identity/Identity'
 import Crypto from '../crypto'
-import ICType from '../types/CType'
+import ICType, { CompressedCType } from '../types/CType'
+import CTypeUtils from './CType.utils'
 import TxStatus from '../blockchain/TxStatus'
 import Claim from '../claim/Claim'
 import { FINALIZED } from '../const/TxStatus'
+import requestForAttestation from '../requestforattestation/RequestForAttestation'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -56,6 +58,22 @@ describe('CType', () => {
     identityAlice.address
   )
 
+  const compressedCType: CompressedCType = [
+    claimCtype.hash,
+    claimCtype.owner,
+    [
+      claimCtype.schema.$id,
+      claimCtype.schema.$schema,
+      claimCtype.schema.title,
+      {
+        name: {
+          type: 'string',
+        },
+      },
+      'object',
+    ],
+  ]
+
   it('stores ctypes', async () => {
     const testHash = Crypto.hashStr('1234')
 
@@ -87,5 +105,94 @@ describe('CType', () => {
     expect(() => {
       return CType.fromCType(wrongRawCtype)
     }).toThrow()
+  })
+  it('compresses and decompresses the ctype object', () => {
+    expect(CTypeUtils.compressSchema(rawCType)).toEqual(compressedCType[2])
+
+    expect(CTypeUtils.compress(claimCtype)).toEqual(compressedCType)
+
+    expect(CTypeUtils.decompress(compressedCType)).toEqual(claimCtype)
+
+    expect(CType.decompress(compressedCType)).toEqual(claimCtype)
+
+    expect(claimCtype.compress()).toEqual(compressedCType)
+  })
+
+  it('Negative test for compresses and decompresses the ctype object', () => {
+    compressedCType.pop()
+    delete rawCType.$id
+    delete claimCtype.hash
+
+    expect(() => CTypeUtils.compressSchema(rawCType)).toThrow()
+
+    expect(() => CTypeUtils.compress(claimCtype)).toThrow()
+
+    expect(() => CTypeUtils.decompress(compressedCType)).toThrow()
+
+    expect(() => CType.decompress(compressedCType)).toThrow()
+
+    expect(() => claimCtype.compress()).toThrow()
+  })
+})
+
+describe('blank ctypes', () => {
+  const identityAlice = Identity.buildFromURI('//Alice')
+
+  const ctypeSchema1: ICType['schema'] = {
+    $id: 'kilt:ctype:0x1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'Drivers License',
+    properties: {},
+    type: 'object',
+  }
+
+  const icytype1: ICType = {
+    schema: ctypeSchema1,
+    owner: identityAlice.address,
+    hash: '',
+  }
+
+  const ctypeSchema2: ICType['schema'] = {
+    $id: 'kilt:ctype:0x2',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'Claimed Something',
+    properties: {},
+    type: 'object',
+  }
+
+  const icytype2: ICType = {
+    schema: ctypeSchema2,
+    owner: identityAlice.address,
+    hash: '',
+  }
+
+  const ctype1 = CType.fromCType(icytype1)
+  const ctype2 = CType.fromCType(icytype2)
+
+  it('two ctypes with no properties have different hashes if id is different', () => {
+    expect(ctype1.owner).toEqual(ctype2.owner)
+    expect(ctype1.schema).not.toEqual(ctype2.schema)
+    expect(ctype1.hash).not.toEqual(ctype2.hash)
+  })
+
+  it('two claims on an empty ctypes will have different root hash', () => {
+    const claimA1 = Claim.fromCTypeAndClaimContents(
+      ctype1,
+      {},
+      identityAlice.address
+    )
+    const claimA2 = Claim.fromCTypeAndClaimContents(
+      ctype2,
+      {},
+      identityAlice.address
+    )
+
+    expect(
+      requestForAttestation.fromClaimAndIdentity(claimA1, identityAlice)
+        .rootHash
+    ).not.toEqual(
+      requestForAttestation.fromClaimAndIdentity(claimA2, identityAlice)
+        .rootHash
+    )
   })
 })

@@ -7,6 +7,14 @@ import IPublicIdentity from './PublicIdentity'
 
 export default interface IClaim {
   cTypeHash: ICType['hash']
-  contents: object
+  contents: IClaimContents
   owner: IPublicIdentity['address']
 }
+
+export type IClaimContents = { [key: string]: string | number | boolean }
+
+export type CompressedClaim = [
+  IClaimContents,
+  IClaim['cTypeHash'],
+  IClaim['owner']
+]

@@ -1,13 +1,15 @@
 import { Text } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
-import { Tuple } from '@polkadot/types/codec'
+import AccountId from '@polkadot/types/primitive/Generic/AccountId'
+import { Tuple, Option } from '@polkadot/types/codec'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
+import AttestationUtils from './Attestation.utils'
 import CType from '../ctype/CType'
-import IAttestation from '../types/Attestation'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
+import { CompressedAttestation } from '../types/Attestation'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -50,9 +52,12 @@ describe('Attestation', () => {
 
   it('stores attestation', async () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      const tuple = new Tuple(
-        [Text, Text, Text, Bool],
-        [testCType.hash, identityAlice.address, undefined, false]
+      const tuple = new Option(
+        Tuple,
+        new Tuple(
+          [Text, AccountId, Text, Bool],
+          [testCType.hash, identityAlice.address, undefined, false]
+        )
       )
       return Promise.resolve(tuple)
     })
@@ -66,25 +71,29 @@ describe('Attestation', () => {
 
   it('verify attestations not on chain', async () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      return Promise.resolve(new Tuple([], []))
+      return Promise.resolve(new Option(Tuple))
     })
 
     const attestation: Attestation = Attestation.fromAttestation({
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
+      delegationId: null,
       owner: identityAlice.address,
       revoked: false,
-    } as IAttestation)
+    })
     expect(await attestation.verify()).toBeFalsy()
   })
 
   it('verify attestation revoked', async () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
       return Promise.resolve(
-        new Tuple(
-          // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
-          [Text, Text, Text, Bool],
-          [testCType.hash, identityAlice, undefined, true]
+        new Option(
+          Tuple,
+          new Tuple(
+            // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
+            [Text, AccountId, Text, Bool],
+            [testCType.hash, identityAlice.address, undefined, true]
+          )
         )
       )
     })
@@ -94,5 +103,63 @@ describe('Attestation', () => {
       identityAlice
     )
     expect(await attestation.verify()).toBeFalsy()
+  })
+
+  it('compresses and decompresses the attestation object', () => {
+    const attestation = Attestation.fromRequestAndPublicIdentity(
+      requestForAttestation,
+      identityAlice
+    )
+
+    const compressedAttestation: CompressedAttestation = [
+      attestation.claimHash,
+      attestation.cTypeHash,
+      attestation.owner,
+      attestation.revoked,
+      attestation.delegationId,
+    ]
+
+    expect(AttestationUtils.compress(attestation)).toEqual(
+      compressedAttestation
+    )
+
+    expect(AttestationUtils.decompress(compressedAttestation)).toEqual(
+      attestation
+    )
+
+    expect(Attestation.decompress(compressedAttestation)).toEqual(attestation)
+
+    expect(attestation.compress()).toEqual(compressedAttestation)
+  })
+
+  it('Negative test for compresses and decompresses the attestation object', () => {
+    const attestation = Attestation.fromRequestAndPublicIdentity(
+      requestForAttestation,
+      identityAlice
+    )
+
+    const compressedAttestation: CompressedAttestation = [
+      attestation.claimHash,
+      attestation.cTypeHash,
+      attestation.owner,
+      attestation.revoked,
+      attestation.delegationId,
+    ]
+    compressedAttestation.pop()
+    delete attestation.claimHash
+
+    expect(() => {
+      AttestationUtils.decompress(compressedAttestation)
+    }).toThrow()
+
+    expect(() => {
+      Attestation.decompress(compressedAttestation)
+    }).toThrow()
+    expect(() => {
+      attestation.compress()
+    }).toThrow()
+    expect(() => {
+      AttestationUtils.compress(attestation)
+    }).toThrow()
   })
 })

@@ -10,6 +10,7 @@
  * @preferred
  */
 
+import { AnyJson, AnyJsonObject } from '@polkadot/types/types'
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import TxStatus from '../blockchain/TxStatus'
@@ -65,9 +66,16 @@ export interface IDidDocumentPublicKey {
 }
 
 export interface IDidDocumentPpties {
-  authentication: object
+  authentication: Array<string | IDidDocumentPublicKey | AnyJsonObject>
   publicKey: IDidDocumentPublicKey[]
-  service: any
+  service: IDidService[]
+}
+
+export interface IDidService {
+  type: string
+  serviceEndpoint: string | AnyJsonObject
+  id?: string
+  [key: string]: AnyJson
 }
 
 export interface IDidDocument

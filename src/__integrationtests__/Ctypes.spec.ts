@@ -7,13 +7,14 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
 import getCached from '../blockchainApiConnection'
+import { Identity } from '..'
 
 describe('When there is an CtypeCreator and a verifier', async () => {
   const CtypeCreator = faucet
 
   const ctype = CType.fromCType({
     schema: {
-      $id: 'http://example.com/ctype-1',
+      $id: 'http://example.com/ctype-10',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       properties: {
         name: { type: 'string' },
@@ -21,6 +22,12 @@ describe('When there is an CtypeCreator and a verifier', async () => {
       type: 'object',
     } as ICType['schema'],
   } as ICType)
+
+  it('should not be possible to create a claim type w/o tokens', async () => {
+    const BobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    await expect(ctype.store(BobbyBroke)).rejects.toThrowError()
+    await expect(ctype.verifyStored()).resolves.toBeFalsy()
+  }, 20000)
 
   it('should be possible to create a claim type', async () => {
     await ctype.store(CtypeCreator)

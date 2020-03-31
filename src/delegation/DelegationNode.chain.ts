@@ -23,7 +23,7 @@ export async function store(
   const includeParentId: boolean = delegation.parentId
     ? delegation.parentId !== delegation.rootId
     : false
-  const tx: SubmittableExtrinsic = await blockchain.api.tx.delegation.addDelegation(
+  const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.addDelegation(
     delegation.id,
     delegation.rootId,
     new Option(Text, includeParentId ? delegation.parentId : undefined),
@@ -52,7 +52,7 @@ export async function revoke(
   identity: Identity
 ): Promise<TxStatus> {
   const blockchain = await getCached()
-  const tx: SubmittableExtrinsic = await blockchain.api.tx.delegation.revokeDelegation(
+  const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.revokeDelegation(
     delegationId
   )
   return blockchain.submitTx(identity, tx)

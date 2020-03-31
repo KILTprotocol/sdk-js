@@ -13,12 +13,13 @@
  */
 
 import ICType from '../ctype/CType'
-import CTypeUtils from '../ctype/CTypeUtils'
-import IClaim from '../types/Claim'
+import CTypeUtils from '../ctype/CType.utils'
+import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
+import ClaimUtils from './Claim.utils'
 
 function verifyClaim(
-  claimContents: object,
+  claimContents: IClaim['contents'],
   cTypeSchema: ICType['schema']
 ): boolean {
   return CTypeUtils.verifyClaimStructure(claimContents, cTypeSchema)
@@ -51,7 +52,7 @@ export default class Claim implements IClaim {
   public static fromNestedCTypeClaim(
     cTypeInput: ICType,
     nestedCType: Array<ICType['schema']>,
-    claimContents: object,
+    claimContents: IClaim['contents'],
     claimOwner: IPublicIdentity['address']
   ): Claim {
     if (
@@ -72,7 +73,7 @@ export default class Claim implements IClaim {
 
   public static fromCTypeAndClaimContents(
     ctypeInput: ICType,
-    claimContents: object,
+    claimContents: IClaim['contents'],
     claimOwner: IPublicIdentity['address']
   ): Claim {
     if (ctypeInput.schema) {
@@ -92,19 +93,30 @@ export default class Claim implements IClaim {
   public owner: IClaim['owner']
 
   public constructor(claimInput: IClaim) {
-    if (!claimInput.cTypeHash || !claimInput.contents || !claimInput.owner) {
-      throw new Error(
-        `Property Not Provided while building Claim:\n
-        claimInput.cTypeHash:\n
-          ${claimInput.cTypeHash}\n
-          claimInput.contents:\n
-          ${claimInput.contents}\n
-          claimInput.owner:\n'
-          ${claimInput.owner}`
-      )
-    }
+    ClaimUtils.errorCheck(claimInput)
     this.cTypeHash = claimInput.cTypeHash
     this.contents = claimInput.contents
     this.owner = claimInput.owner
+  }
+
+  /**
+   * Compresses an [[Claim]] object from the [[CompressedClaim]].
+   *
+   * @returns An array that contains the same properties of an [[Claim]].
+   */
+
+  public compress(): CompressedClaim {
+    return ClaimUtils.compress(this)
+  }
+
+  /**
+   * [STATIC] Builds an [[Claim]] from the decompressed array.
+   *
+   * @returns A new [[Claim]] object.
+   */
+
+  public static decompress(compressedClaim: CompressedClaim): Claim {
+    const decompressedClaim = ClaimUtils.decompress(compressedClaim)
+    return new Claim(decompressedClaim)
   }
 }

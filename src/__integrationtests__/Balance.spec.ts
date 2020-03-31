@@ -9,13 +9,7 @@ import {
   makeTransfer,
   listenToBalanceChanges,
 } from '../balance/Balance.chain'
-import {
-  GAS,
-  MIN_TRANSACTION,
-  faucet,
-  transferTokens,
-  NewIdentity,
-} from './utils'
+import { GAS, MIN_TRANSACTION, faucet, bob, alice, NewIdentity } from './utils'
 import getCached from '../blockchainApiConnection'
 
 describe('when there is a dev chain with a faucet', async () => {
@@ -23,6 +17,16 @@ describe('when there is a dev chain with a faucet', async () => {
     const balance = await getBalance(faucet.address)
     expect(balance.gt(new BN(100000000))).toBeTruthy()
     // console.log(`Faucet has ${Number(balance)} micro Kilt`)
+  })
+
+  it('Bob has tokens', async () => {
+    const balance = await getBalance(bob.address)
+    expect(balance.gt(new BN(100_000_000))).toBeTruthy()
+  })
+
+  it('Alice has tokens', async () => {
+    const balance = await getBalance(alice.address)
+    expect(balance.gt(new BN(100_000_000))).toBeTruthy()
   })
 
   it('getBalance should return 0 for new identity', async () => {
@@ -35,8 +39,15 @@ describe('when there is a dev chain with a faucet', async () => {
     const ident = NewIdentity()
     const funny = jest.fn()
     listenToBalanceChanges(ident.address, funny)
-    await transferTokens(faucet, ident, MIN_TRANSACTION)
-    const balanceIdent = await getBalance(ident.address)
+    const balanceBefore = await getBalance(faucet.address)
+    await makeTransfer(faucet, ident.address, MIN_TRANSACTION)
+    const [balanceAfter, balanceIdent] = await Promise.all([
+      getBalance(faucet.address),
+      getBalance(ident.address),
+    ])
+    expect(
+      balanceBefore.sub(balanceAfter).eq(MIN_TRANSACTION.add(GAS))
+    ).toBeTruthy()
     expect(balanceIdent.toNumber()).toBe(MIN_TRANSACTION.toNumber())
     expect(funny).toBeCalled()
   }, 15000)
@@ -44,17 +55,11 @@ describe('when there is a dev chain with a faucet', async () => {
 
 describe('When there are haves and have-nots', async () => {
   const BobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
-  const RichieRich = Identity.buildFromMnemonic(Identity.generateMnemonic())
+  const RichieRich = alice
   const StormyD = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
-  beforeAll(async () => {
-    await Promise.all([
-      transferTokens(faucet, RichieRich, MIN_TRANSACTION.mul(new BN(1000))),
-    ])
-  }, 30000)
-
   it('can transfer tokens from the rich to the poor', async () => {
-    await transferTokens(RichieRich, StormyD, MIN_TRANSACTION)
+    await makeTransfer(RichieRich, StormyD.address, MIN_TRANSACTION)
     const balanceTo = await getBalance(StormyD.address)
     expect(balanceTo.toNumber()).toBe(MIN_TRANSACTION.toNumber())
   }, 15000)
@@ -81,8 +86,8 @@ describe('When there are haves and have-nots', async () => {
       getBalance(RichieRich.address),
       getBalance(BobbyBroke.address),
     ])
-    expect(zeroBalance.toNumber()).toBe(0)
-    expect(newBalance.toNumber()).toBe(RichieBalance.sub(GAS).toNumber())
+    expect(zeroBalance.toString()).toEqual('0')
+    expect(newBalance.toString()).toEqual(RichieBalance.sub(GAS).toString())
   }, 15000)
 
   xit('should be able to make multiple transactions at once', async () => {
