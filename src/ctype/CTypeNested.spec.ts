@@ -2,7 +2,7 @@ import CType from './CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
 import Claim from '../claim/Claim'
-import CTypeUtils from './CTypeUtils'
+import CTypeUtils from './CType.utils'
 
 describe('Nested CTypes', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
