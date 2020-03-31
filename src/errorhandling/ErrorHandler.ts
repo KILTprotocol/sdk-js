@@ -6,7 +6,7 @@
  */
 
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { EventRecord, ModuleMetadataV4 } from '@polkadot/types/interfaces'
+import { EventRecord, ModuleMetadataV11 } from '@polkadot/types/interfaces'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ExtrinsicError, errorForCode } from './ExtrinsicError'
 
@@ -87,9 +87,9 @@ export class ErrorHandler {
   private static async getErrorModuleIndex(
     apiPromise: ApiPromise
   ): Promise<number> {
-    const { modules } = apiPromise.runtimeMetadata.asV4
-    const filtered: ModuleMetadataV4[] = modules.filter(
-      (mod: ModuleMetadataV4) => {
+    const { modules } = apiPromise.runtimeMetadata.asV11
+    const filtered: ModuleMetadataV11[] = modules.filter(
+      (mod: ModuleMetadataV11) => {
         return !mod.events.isEmpty
       }
     )
