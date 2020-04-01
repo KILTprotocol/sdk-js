@@ -88,7 +88,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param rfaInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
+   * @param requestForAttestationInput - An object built from simple [[Claim]], [[Identity]] and legitimation objects.
    * @returns  A new [[RequestForAttestation]] `object`.
    * @example ```javascript
    * const serializedRequest =
@@ -98,9 +98,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public static fromRequest(
-    rfaInput: IRequestForAttestation
+    requestForAttestationInput: IRequestForAttestation
   ): RequestForAttestation {
-    return new RequestForAttestation(rfaInput)
+    return new RequestForAttestation(requestForAttestationInput)
   }
 
   /**
@@ -245,7 +245,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.claimOwner = requestForAttestationInput.claimOwner
     this.cTypeHash = requestForAttestationInput.cTypeHash
     if (
-      typeof requestForAttestationInput.legitimations !== 'undefined' &&
+      requestForAttestationInput.legitimations &&
       Array.isArray(requestForAttestationInput.legitimations) &&
       requestForAttestationInput.legitimations.length
     ) {

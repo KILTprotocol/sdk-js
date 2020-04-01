@@ -14,6 +14,7 @@ import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import AttestedClaimUtils from './AttestedClaim.utils'
+import { IRequestForAttestation, IAttestation } from '..'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -31,6 +32,46 @@ export default class AttestedClaim implements IAttestedClaim {
     attestedClaimInput: IAttestedClaim
   ): AttestedClaim {
     return new AttestedClaim(attestedClaimInput)
+  }
+
+  /**
+   * [STATIC] Builds a new instance of [[AttestedClaim]], from all required properties.
+   *
+   * @param request - The request for attestation for the claim that was attested.
+   * @param attestation - The attestation for the claim by the attester.
+   * @returns A new [[AttestedClaim]] object.
+   * @example ```javascript
+   * // create an AttestedClaim object after receiving the attestation from the attester
+   * AttestedClaim.fromRequestAndAttestation(request, attestation);
+   * ```
+   */
+  public static fromRequestAndAttestation(
+    request: IRequestForAttestation,
+    attestation: IAttestation
+  ): AttestedClaim {
+    return new AttestedClaim({
+      request,
+      attestation,
+    })
+  }
+
+  public static isAttestedClaim(
+    input: Partial<IAttestedClaim>
+  ): input is IAttestedClaim {
+    if (input.attestation) {
+      Attestation.isAttestation(input.attestation)
+    } else {
+      throw new Error('Attestation not provided!')
+    }
+    if (input.request) {
+      RequestForAttestation.isIRequestForAttestation(input.request)
+    } else {
+      throw new Error('RequestForAttestation not provided')
+    }
+    if (!AttestedClaim.verifyData(input as IAttestedClaim)) {
+      throw new Error('could not verify Data of attested claim')
+    }
+    return true
   }
 
   public request: RequestForAttestation

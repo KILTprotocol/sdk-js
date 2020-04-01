@@ -107,7 +107,7 @@ describe('Claim', () => {
       owner: ownerAddress,
     } as IClaim
 
-    // Currently emtpy contents object passes input checks
+    // Currently empty contents object passes input checks
     // const noContents = {
     //   cTypeHash,
     //   contents: {},
@@ -124,19 +124,19 @@ describe('Claim', () => {
       cTypeHash: '',
       contents: {},
       owner: '',
-    } as IClaim
+    }
 
     const malformedCTypeHash = {
       cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
       contents: claimContents,
       owner: ownerAddress,
-    } as IClaim
+    }
 
     const malformedAddress = {
       cTypeHash,
       contents: claimContents,
       owner: ownerAddress.replace('7', 'D'),
-    } as IClaim
+    }
 
     expect(() => Claim.isIClaim(everything)).not.toThrow()
 
