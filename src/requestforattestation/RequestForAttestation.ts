@@ -41,7 +41,10 @@ import IClaim from '../types/Claim'
 import Claim from '../claim/Claim'
 import IAttestedClaim from '../types/AttestedClaim'
 
-function hashNonceValue(nonce: string, value: string | object): string {
+function hashNonceValue(
+  nonce: string,
+  value: string | object | number | boolean
+): string {
   return hashObjectAsStr(value, nonce)
 }
 

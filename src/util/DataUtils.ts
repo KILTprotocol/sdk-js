@@ -41,7 +41,7 @@ export function validateHash(input: string, name: string): boolean {
 
 export function validateNonceHash(
   nonceHash: NonceHash,
-  data: string | object,
+  data: string | object | number | boolean,
   name: string
 ): boolean {
   if (!nonceHash || !nonceHash.hash || typeof nonceHash.hash !== 'string') {
