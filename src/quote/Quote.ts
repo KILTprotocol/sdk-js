@@ -132,7 +132,7 @@ export function fromQuoteDataAndIdentity(
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
 
-export function createAgreedQuote(
+export function createQuoteAgreement(
   claimerIdentity: Identity,
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: string
