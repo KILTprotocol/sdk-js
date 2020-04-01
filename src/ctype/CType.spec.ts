@@ -101,7 +101,7 @@ describe('CType', () => {
     }
     const faultySchemaCtype: ICType = {
       ...fromRawCType,
-      schema: { ...rawCType, properties: null } as ICTypeSchema,
+      schema: ({ ...rawCType, properties: null } as unknown) as ICTypeSchema,
     }
     const invalidAddressCtype: ICType = {
       ...fromRawCType,
