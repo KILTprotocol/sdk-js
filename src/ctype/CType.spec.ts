@@ -1,7 +1,7 @@
 import { SubmittableResult } from '@polkadot/api'
 import CType from './CType'
 import Identity from '../identity/Identity'
-import ICType, { CompressedCType } from '../types/CType'
+import ICType, { CompressedCType, ICTypeSchema } from '../types/CType'
 import CTypeUtils from './CType.utils'
 import Claim from '../claim/Claim'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
@@ -101,7 +101,7 @@ describe('CType', () => {
     }
     const faultySchemaCtype: ICType = {
       ...fromRawCType,
-      schema: { ...rawCType, properties: null },
+      schema: { ...rawCType, properties: null } as ICTypeSchema,
     }
     const invalidAddressCtype: ICType = {
       ...fromRawCType,
