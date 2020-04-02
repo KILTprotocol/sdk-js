@@ -11,8 +11,8 @@ import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import IRequestForAttestation, {
   NonceHash,
   CompressedNonceHash,
-  ClaimHashTree,
-  CompressedClaimHashTree,
+  NonceHashTree,
+  CompressedNonceHashTree,
   CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
 
@@ -39,7 +39,7 @@ export function errorCheck(
 }
 
 /**
- *  Compresses an nonce and hash from a [[ClaimHashTree]] or [[RequestForAttestation]] properties.
+ *  Compresses an nonce and hash from a [[NonceHashTree]] or [[RequestForAttestation]] properties.
  *
  * @param nonceHash A hash or a hash and nonce object that will be sorted and stripped for messaging or storage.
  *
@@ -62,7 +62,7 @@ export function compressNonceAndHash(
 }
 
 /**
- *  Decompresses an nonce and hash from a [[ClaimHashTree]] or [[RequestForAttestation]] properties.
+ *  Decompresses an nonce and hash from a [[NonceHashTree]] or [[RequestForAttestation]] properties.
  *
  * @param nonceHash A compressesd a hash or a hash and nonce array that is reverted back into an object.
  *
@@ -90,8 +90,8 @@ function decompressNonceAndHash(nonceHash: CompressedNonceHash): NonceHash {
  */
 
 export function compressClaimHashTree(
-  claimHashTree: ClaimHashTree
-): CompressedClaimHashTree {
+  claimHashTree: NonceHashTree
+): CompressedNonceHashTree {
   const sortedClaimHashTree = jsonabc.sortObj(claimHashTree)
   const result = {}
 
@@ -110,8 +110,8 @@ export function compressClaimHashTree(
  */
 
 export function decompressClaimHashTree(
-  compressedClaimHashTree: CompressedClaimHashTree
-): ClaimHashTree {
+  compressedClaimHashTree: CompressedNonceHashTree
+): NonceHashTree {
   const result = {}
 
   Object.keys(compressedClaimHashTree).forEach(entryKey => {

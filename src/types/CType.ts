@@ -6,9 +6,9 @@ import IPublicIdentity from './PublicIdentity'
 import CType from '../ctype/CType'
 
 export interface ICTypeSchema {
-  $id: any
-  $schema: any
-  properties: any
+  $id: string
+  $schema: string
+  properties: { [key: string]: { type: string; format?: string } }
   type: 'object'
 }
 

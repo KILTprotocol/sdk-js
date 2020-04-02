@@ -88,7 +88,7 @@ describe('Claim', () => {
     validQuoteData,
     attesterIdentity
   )
-  const quoteBothAgreed: IQuoteAgreement = Quote.createAgreedQuote(
+  const quoteBothAgreed: IQuoteAgreement = Quote.createQuoteAgreement(
     claimerIdentity,
     validAttesterSignedQuote,
     request.rootHash
