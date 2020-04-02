@@ -11,7 +11,9 @@ export default interface IClaim {
   owner: IPublicIdentity['address']
 }
 
-export type IClaimContents = { [key: string]: string | number | boolean }
+export type IClaimContents = {
+  [key: string]: string | number | boolean | object
+}
 
 export type CompressedClaim = [
   IClaimContents,
