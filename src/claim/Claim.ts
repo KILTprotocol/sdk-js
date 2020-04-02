@@ -52,7 +52,7 @@ export default class Claim implements IClaim {
   public static fromNestedCTypeClaim(
     cTypeInput: ICType,
     nestedCType: Array<ICType['schema']>,
-    claimContents: object,
+    claimContents: IClaim['contents'],
     claimOwner: IPublicIdentity['address']
   ): Claim {
     if (
@@ -66,7 +66,7 @@ export default class Claim implements IClaim {
     }
     return new Claim({
       cTypeHash: cTypeInput.hash,
-      contents: claimContents as IClaim['contents'],
+      contents: claimContents,
       owner: claimOwner,
     })
   }
