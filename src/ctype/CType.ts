@@ -10,12 +10,12 @@
  * @preferred
  */
 
+import { SubmittableResult } from '@polkadot/api'
 import { CTypeWrapperModel } from './CTypeSchema'
 import CTypeUtils from './CType.utils'
 import ICType, { CompressedCType } from '../types/CType'
 import Identity from '../identity/Identity'
 import { getOwner, store } from './CType.chain'
-import TxStatus from '../blockchain/TxStatus'
 import IClaim from '../types/Claim'
 
 export default class CType implements ICType {
@@ -46,7 +46,7 @@ export default class CType implements ICType {
     }
   }
 
-  public async store(identity: Identity): Promise<TxStatus> {
+  public async store(identity: Identity): Promise<SubmittableResult> {
     return store(this, identity)
   }
 

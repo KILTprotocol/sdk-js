@@ -8,7 +8,7 @@
  * @preferred
  */
 
-import { ApiPromise } from '@polkadot/api'
+import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
 import { Codec, AnyJson } from '@polkadot/types/types'
@@ -16,8 +16,6 @@ import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
-import TxStatus from './TxStatus'
-import { FINALIZED, DROPPED, INVALID } from '../const/TxStatus'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -34,7 +32,10 @@ export interface IBlockchainApi {
 
   getStats(): Promise<Stats>
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
-  submitTx(identity: Identity, tx: SubmittableExtrinsic): Promise<TxStatus>
+  submitTx(
+    identity: Identity,
+    tx: SubmittableExtrinsic
+  ): Promise<SubmittableResult>
   getNonce(accountAddress: string): Promise<Codec>
 }
 
@@ -80,7 +81,7 @@ export default class Blockchain implements IBlockchainApi {
   public async submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic
-  ): Promise<TxStatus> {
+  ): Promise<SubmittableResult> {
     const accountAddress = identity.address
     const nonce = await this.getNonce(accountAddress)
     const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
@@ -89,12 +90,11 @@ export default class Blockchain implements IBlockchainApi {
     )
     log.info(`Submitting ${tx.method}`)
 
-    return new Promise<TxStatus>((resolve, reject) => {
+    return new Promise<SubmittableResult>((resolve, reject) => {
       signed
         .send(result => {
           log.info(`Got tx status '${result.status.type}'`)
 
-          const { status } = result
           if (ErrorHandler.extrinsicFailed(result)) {
             log.warn(`Extrinsic execution failed`)
             log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
@@ -104,10 +104,14 @@ export default class Blockchain implements IBlockchainApi {
             log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
             reject(extrinsicError)
           }
-          if (status.type === FINALIZED) {
-            resolve(new TxStatus(status.type))
-          } else if (status.type === INVALID || status.type === DROPPED) {
-            reject(new Error(`Transaction failed with status '${status.type}'`))
+          if (result.isFinalized) {
+            resolve(result)
+          } else if (result.isError) {
+            reject(
+              new Error(
+                `Transaction failed with status '${result.status.type}'`
+              )
+            )
           }
         })
         .catch((err: Error) => {
