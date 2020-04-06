@@ -84,39 +84,31 @@ export default class Blockchain implements IBlockchainApi {
     identity: Identity,
     tx: SubmittableExtrinsic
   ): Promise<TxStatus> {
-    const accountAddress = identity.address
-    const nonce = await this.getNonce(accountAddress)
-    const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
-      tx,
-      nonce.toHex()
-    )
     log.info(`Submitting ${tx.method}`)
 
     return new Promise<TxStatus>((resolve, reject) => {
-      signed
-        .send((result) => {
-          log.info(`Got tx status '${result.status.type}'`)
+      tx.signAndSend(identity.signKeyringPair, (result) => {
+        log.info(`Got tx status '${result.status.type}'`)
 
-          const { status } = result
-          if (ErrorHandler.extrinsicFailed(result)) {
-            log.warn(`Extrinsic execution failed`)
-            log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
-            const extrinsicError: ExtrinsicError =
-              this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
+        const { status } = result
+        if (ErrorHandler.extrinsicFailed(result)) {
+          log.warn(`Extrinsic execution failed`)
+          log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
+          const extrinsicError: ExtrinsicError =
+            this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
 
-            log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
-            reject(extrinsicError)
-          }
-          if (status.type === FINALIZED) {
-            resolve(new TxStatus(status.type))
-          } else if (status.type === INVALID || status.type === DROPPED) {
-            reject(new Error(`Transaction failed with status '${status.type}'`))
-          }
-        })
-        .catch((err: Error) => {
-          // just reject with the original tx error from the chain
-          reject(err)
-        })
+          log.warn(`Extrinsic error occurred: ${extrinsicError}`)
+          reject(extrinsicError)
+        }
+        if (status.type === FINALIZED) {
+          resolve(new TxStatus(status.type))
+        } else if (status.type === INVALID || status.type === DROPPED) {
+          reject(new Error(`Transaction failed with status '${status.type}'`))
+        }
+      }).catch((err: Error) => {
+        // just reject with the original tx error from the chain
+        reject(err)
+      })
     })
   }
 

@@ -10,7 +10,7 @@
  */
 
 import BN from 'bn.js'
-import { Balance } from '@polkadot/types/interfaces'
+import { AccountData } from '@polkadot/types/interfaces'
 import TxStatus from '../blockchain/TxStatus'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
@@ -46,14 +46,16 @@ export async function listenToBalanceChanges(
   ) => void
 ): Promise<BN> {
   const blockchain = await getCached()
-  let previous = await blockchain.api.query.balances.freeBalance<Balance>(
+  const accountInfo: AccountData = await blockchain.api.query.balances.account(
     accountAddress
   )
+  let previous = accountInfo.free
 
   if (listener) {
-    blockchain.api.query.balances.freeBalance<Balance>(
+    blockchain.api.query.balances.account(
       accountAddress,
-      (current: Balance) => {
+      (currentData: AccountData) => {
+        const current = currentData.free
         const change = current.sub(previous)
         previous = current
         listener(accountAddress, current, change)
