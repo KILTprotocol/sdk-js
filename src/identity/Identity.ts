@@ -161,7 +161,7 @@ export default class Identity extends PublicIdentity {
     this.boxKeyPair = boxKeyPair
   }
 
-  private readonly signKeyringPair: KeyringPair
+  public readonly signKeyringPair: KeyringPair
   private readonly boxKeyPair: BoxKeyPair
 
   /**
