@@ -52,10 +52,12 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public api: ApiPromise
+  public readonly ready: Promise<boolean>
 
   public constructor(api: ApiPromise) {
     this.api = api
     this.errorHandler = new ErrorHandler(api)
+    this.ready = this.errorHandler.ready
   }
 
   private errorHandler: ErrorHandler
