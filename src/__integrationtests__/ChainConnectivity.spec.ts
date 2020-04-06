@@ -20,7 +20,7 @@ describe('Blockchain', async () => {
       ).toJSON()
     ).toMatchObject({
       chain: 'Development',
-      nodeName: 'substrate-node',
+      nodeName: 'KILT Node',
       nodeVersion: expect.stringMatching(/.+\..+\..+/),
     })
   })
