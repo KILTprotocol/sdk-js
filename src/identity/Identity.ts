@@ -16,7 +16,6 @@
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
-import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
 import * as u8aUtil from '@polkadot/util/u8a'
 import { hexToU8a } from '@polkadot/util/hex'
@@ -81,8 +80,7 @@ export default class Identity extends PublicIdentity {
       throw Error(`Invalid phrase '${phrase}'`)
     }
 
-    const seed = toSeed(phrase)
-    return Identity.buildFromSeed(seed)
+    return Identity.buildFromURI(phrase)
   }
 
   /**
