@@ -23,18 +23,10 @@ const CUSTOM_TYPES: RegistryTypes = {
   PublicBoxKey: 'Hash',
   Permissions: 'u32',
   ErrorCode: 'u16',
+  Signature: 'MultiSignature',
+
   Address: 'AccountId',
   LookupSource: 'AccountId',
-  BlockNumber: 'u64',
-  Nonce: 'u64',
-  // StoredAttestation: {
-  //   0: 'Hash',
-  //   1: 'AccountId',
-  //   2: 'Option<DelegationNodeId>',
-  //   3: 'bool',
-  // },
-  // Delegation:
-  //   '(DelegationNodeId,Option<DelegationNodeId>,AccountId,Permissions,bool)',
 }
 
 export async function buildConnection(

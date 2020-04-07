@@ -65,7 +65,7 @@ export function sign(
   message: CryptoInput,
   signKeyPair: KeyringPair
 ): Uint8Array {
-  return signKeyPair.sign(coToUInt8(message))
+  return signKeyPair.sign(coToUInt8(message), { withType: true })
 }
 
 export function signStr(
@@ -192,7 +192,7 @@ export function decryptAsymmetric(
     coToUInt8(publicKeyB),
     coToUInt8(secretKeyA)
   )
-  return decrypted
+  return decrypted || false
 }
 
 export function decryptAsymmetricAsStr(
