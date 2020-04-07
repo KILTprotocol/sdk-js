@@ -11,7 +11,6 @@ import {
   IsOfficialLicenseAuthority,
 } from './utils'
 import Claim from '../claim/Claim'
-import getCached from '../blockchainApiConnection'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
@@ -264,8 +263,4 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       ])
     }, 60_000)
   })
-})
-
-afterAll(async () => {
-  await getCached().then((bc) => bc.api.disconnect())
 })

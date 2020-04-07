@@ -6,7 +6,6 @@ import DelegationRootNode from '../delegation/DelegationRootNode'
 import UUID from '../util/UUID'
 import DelegationNode from '../delegation/DelegationNode'
 import { Permission } from '../types/Delegation'
-import getCached from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
@@ -50,7 +49,7 @@ describe('when there is an account hierarchy', () => {
       expect(rootNode.verify()).resolves.toBeTruthy(),
       expect(delegatedNode.verify()).resolves.toBeTruthy(),
     ])
-  }, 30000)
+  }, 40000)
 
   describe('and attestation rights have been delegated', () => {
     let rootNode: DelegationRootNode
@@ -81,7 +80,8 @@ describe('when there is an account hierarchy', () => {
       ])
     }, 30000)
 
-    it("should be possible to attest a claim in the root's name and revoke it by the root", async () => {
+    // FIXME: Test needs ~36000ms but jest timeout seems to be limited by 30000
+    it("should be possible to attest a claim in the root's name and revoke it by the root", async (done) => {
       const content = { name: 'Ralfi', age: 12 }
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
@@ -102,6 +102,7 @@ describe('when there is an account hierarchy', () => {
         attester.getPublicIdentity()
       )
       const status = await attestation.store(attester)
+
       expect(status.type).toBe('Finalized')
 
       const attClaim = AttestedClaim.fromRequestAndAttestation(
@@ -114,7 +115,8 @@ describe('when there is an account hierarchy', () => {
       // revoke attestation through root
       const result = await attClaim.attestation.revoke(UncleSam)
       expect(result.type).toBe('Finalized')
-    }, 30000)
+      done()
+    }, 40000)
   })
 })
 
@@ -144,8 +146,4 @@ describe('handling queries to data not on chain', () => {
       )
     ).resolves.toEqual([{ id: '0x012012012', codec: null }])
   })
-})
-
-afterAll(async () => {
-  await getCached().then((bc) => bc.api.disconnect())
 })

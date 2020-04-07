@@ -37,7 +37,3 @@ describe('Blockchain', () => {
     // console.log(`Subscription Id: ${subscriptionId}`)
   }, 5000)
 })
-
-afterAll(async () => {
-  await getCached().then((bc) => bc.api.disconnect())
-})
