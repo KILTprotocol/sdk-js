@@ -9,7 +9,7 @@ import { getOwner } from '../ctype/CType.chain'
 import getCached from '../blockchainApiConnection'
 import { Identity } from '..'
 
-describe('When there is an CtypeCreator and a verifier', async () => {
+describe('When there is an CtypeCreator and a verifier', () => {
   const CtypeCreator = faucet
 
   const ctype = CType.fromCType({
@@ -24,7 +24,7 @@ describe('When there is an CtypeCreator and a verifier', async () => {
   } as ICType)
 
   it('should not be possible to create a claim type w/o tokens', async () => {
-    const BobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    const BobbyBroke = Identity.buildFromMnemonic()
     await expect(ctype.store(BobbyBroke)).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
   }, 20000)

@@ -23,7 +23,7 @@ const UncleSam = faucet
 const attester = alice
 const claimer = bob
 
-describe('when there is an account hierarchy', async () => {
+describe('when there is an account hierarchy', () => {
   beforeAll(async () => {
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester)
@@ -52,7 +52,7 @@ describe('when there is an account hierarchy', async () => {
     ])
   }, 30000)
 
-  describe('and attestation rights have been delegated', async () => {
+  describe('and attestation rights have been delegated', () => {
     let rootNode: DelegationRootNode
     let delegatedNode: DelegationNode
 

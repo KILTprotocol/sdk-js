@@ -6,7 +6,7 @@ import { Header } from '@polkadot/types/interfaces/types'
 import { Struct, Text, TypeRegistry } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
 
-describe('Blockchain', async () => {
+describe('Blockchain', () => {
   const registry = new TypeRegistry()
   it('should get stats', async () => {
     const blockchainSingleton = await getCached()
