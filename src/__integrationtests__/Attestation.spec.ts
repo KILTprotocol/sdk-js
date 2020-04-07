@@ -184,21 +184,21 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       await expect(attClaim.attestation.store(attester)).rejects.toThrowError(
         'already attested'
       )
-    }, 15000)
+    }, 30_000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(revoke(attClaim.getHash(), claimer)).rejects.toThrowError(
         'not permitted'
       )
       await expect(attClaim.verify()).resolves.toBeTruthy()
-    }, 30000)
+    }, 30_000)
 
     it('should be possible for the attester to revoke an attestation', async () => {
       await expect(attClaim.verify()).resolves.toBeTruthy()
       const status = await revoke(attClaim.getHash(), attester)
       expect(status.type).toBe('Finalized')
       await expect(attClaim.verify()).resolves.toBeFalsy()
-    }, 15000)
+    }, 30_000)
   })
 
   describe('when there is another Ctype that works as a legitimation', () => {
