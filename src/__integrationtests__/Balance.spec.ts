@@ -44,10 +44,10 @@ describe('when there is a dev chain with a faucet', () => {
       getBalance(faucet.address),
       getBalance(ident.address),
     ])
-    expect(
-      balanceBefore.sub(balanceAfter).eq(MIN_TRANSACTION.add(GAS))
-    ).toBeTruthy()
-    expect(balanceIdent.toNumber()).toBe(MIN_TRANSACTION.toNumber())
+    expect(balanceBefore.sub(balanceAfter).toString()).toEqual(
+      MIN_TRANSACTION.add(GAS).toString()
+    )
+    expect(balanceIdent.toString()).toBe(MIN_TRANSACTION.toString())
     expect(funny).toBeCalled()
   }, 15000)
 })
@@ -60,7 +60,7 @@ describe('When there are haves and have-nots', () => {
   it('can transfer tokens from the rich to the poor', async () => {
     await makeTransfer(RichieRich, StormyD.address, MIN_TRANSACTION)
     const balanceTo = await getBalance(StormyD.address)
-    expect(balanceTo.toNumber()).toBe(MIN_TRANSACTION.toNumber())
+    expect(balanceTo.toString()).toBe(MIN_TRANSACTION.toString())
   }, 30_000)
 
   it('should not accept transactions from identity with zero balance', async () => {
@@ -72,8 +72,8 @@ describe('When there are haves and have-nots', () => {
       getBalance(StormyD.address),
       getBalance(BobbyBroke.address),
     ])
-    expect(newBalance.toNumber()).toBe(originalBalance.toNumber())
-    expect(zeroBalance.toNumber()).toBe(0)
+    expect(newBalance.toString()).toBe(originalBalance.toString())
+    expect(zeroBalance.toString()).toBe('0')
   }, 30_000)
 
   it('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
