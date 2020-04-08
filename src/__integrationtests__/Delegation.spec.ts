@@ -52,24 +52,37 @@ describe('when there is an account hierarchy', () => {
   }, 40000)
 
   describe('and attestation rights have been delegated', () => {
-    let rootNode: DelegationRootNode
-    let delegatedNode: DelegationNode
+    const rootNode: DelegationRootNode = new DelegationRootNode(
+      UUID.generate(),
+      DriversLicense.hash,
+      UncleSam.address
+    )
+    const delegatedNode: DelegationNode = new DelegationNode(
+      UUID.generate(),
+      rootNode.id,
+      attester.address,
+      [Permission.ATTEST],
+      rootNode.id
+    )
+    const content = { name: 'Ralfi', age: 12 }
+    const claim = Claim.fromCTypeAndClaimContents(
+      DriversLicense,
+      content,
+      claimer.address
+    )
+    const request = RequestForAttestation.fromClaimAndIdentity(
+      claim,
+      claimer,
+      [],
+      delegatedNode.id
+    )
+    const attestation = Attestation.fromRequestAndPublicIdentity(
+      request,
+      attester.getPublicIdentity()
+    )
 
     beforeAll(async () => {
-      rootNode = new DelegationRootNode(
-        UUID.generate(),
-        DriversLicense.hash,
-        UncleSam.address
-      )
       await rootNode.store(UncleSam)
-
-      delegatedNode = new DelegationNode(
-        UUID.generate(),
-        rootNode.id,
-        attester.address,
-        [Permission.ATTEST],
-        rootNode.id
-      )
       const HashSignedByDelegate = attester.signStr(
         delegatedNode.generateHash()
       )
@@ -78,33 +91,14 @@ describe('when there is an account hierarchy', () => {
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
       ])
-    }, 30000)
-
-    // FIXME: Test needs ~36000ms but jest timeout seems to be limited by 30000
-    it("should be possible to attest a claim in the root's name and revoke it by the root", async (done) => {
-      const content = { name: 'Ralfi', age: 12 }
-      const claim = Claim.fromCTypeAndClaimContents(
-        DriversLicense,
-        content,
-        claimer.address
-      )
-      const request = RequestForAttestation.fromClaimAndIdentity(
-        claim,
-        claimer,
-        [],
-        delegatedNode.id
-      )
+    }, 40000)
+    it('should be possible to store an attestation on the chain', async () => {
+      const status = await attestation.store(attester)
       expect(request.verifyData()).toBeTruthy()
       expect(request.verifySignature()).toBeTruthy()
-
-      const attestation = Attestation.fromRequestAndPublicIdentity(
-        request,
-        attester.getPublicIdentity()
-      )
-      const status = await attestation.store(attester)
-
-      expect(status.type).toBe('Finalized')
-
+      expect(status).toHaveProperty('type', 'Finalized')
+    }, 30000)
+    it('should be possible to revoke it by the root', async () => {
       const attClaim = AttestedClaim.fromRequestAndAttestation(
         request,
         attestation
@@ -114,9 +108,8 @@ describe('when there is an account hierarchy', () => {
 
       // revoke attestation through root
       const result = await attClaim.attestation.revoke(UncleSam)
-      expect(result.type).toBe('Finalized')
-      done()
-    }, 40000)
+      expect(result).toHaveProperty('type', 'Finalized')
+    }, 30000)
   })
 })
 
