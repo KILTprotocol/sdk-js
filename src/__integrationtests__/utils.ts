@@ -6,8 +6,8 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
 
-export const GAS = new BN(1_000_000)
-export const MIN_TRANSACTION = new BN(100_000_000)
+export const GAS = new BN(1_000_000).shln(8 * 4)
+export const MIN_TRANSACTION = new BN(100_000_000).shln(8 * 4)
 export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 
 export function NewIdentity(): Identity {

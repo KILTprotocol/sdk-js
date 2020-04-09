@@ -39,17 +39,20 @@ describe('when there is a dev chain with a faucet', () => {
     const funny = jest.fn()
     listenToBalanceChanges(ident.address, funny)
     const balanceBefore = await getBalance(faucet.address)
-    await makeTransfer(faucet, ident.address, MIN_TRANSACTION)
+    await makeTransfer(faucet, ident.address, MIN_TRANSACTION.shrn(8 * 4))
     const [balanceAfter, balanceIdent] = await Promise.all([
       getBalance(faucet.address),
       getBalance(ident.address),
     ])
+    console.log(balanceBefore.toString())
+    console.log(balanceAfter.toString())
+
     expect(balanceBefore.sub(balanceAfter).toString()).toEqual(
       MIN_TRANSACTION.add(GAS).toString()
     )
     expect(balanceIdent.toString()).toBe(MIN_TRANSACTION.toString())
     expect(funny).toBeCalled()
-  }, 15000)
+  }, 30_000)
 })
 
 describe('When there are haves and have-nots', () => {
@@ -58,7 +61,7 @@ describe('When there are haves and have-nots', () => {
   const StormyD = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
   it('can transfer tokens from the rich to the poor', async () => {
-    await makeTransfer(RichieRich, StormyD.address, MIN_TRANSACTION)
+    await makeTransfer(RichieRich, StormyD.address, MIN_TRANSACTION.shrn(8 * 4))
     const balanceTo = await getBalance(StormyD.address)
     expect(balanceTo.toString()).toBe(MIN_TRANSACTION.toString())
   }, 30_000)
@@ -66,7 +69,7 @@ describe('When there are haves and have-nots', () => {
   it('should not accept transactions from identity with zero balance', async () => {
     const originalBalance = await getBalance(StormyD.address)
     await expect(
-      makeTransfer(BobbyBroke, StormyD.address, MIN_TRANSACTION)
+      makeTransfer(BobbyBroke, StormyD.address, MIN_TRANSACTION.shrn(8 * 4))
     ).rejects.toThrowError('1010: Invalid Transaction')
     const [newBalance, zeroBalance] = await Promise.all([
       getBalance(StormyD.address),
@@ -79,7 +82,7 @@ describe('When there are haves and have-nots', () => {
   it('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalance(RichieRich.address)
     await expect(
-      makeTransfer(RichieRich, BobbyBroke.address, RichieBalance)
+      makeTransfer(RichieRich, BobbyBroke.address, RichieBalance.shrn(8 * 4))
     ).rejects.toThrowError()
     const [newBalance, zeroBalance] = await Promise.all([
       getBalance(RichieRich.address),
