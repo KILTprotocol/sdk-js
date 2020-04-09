@@ -195,7 +195,11 @@ export default class Attestation implements IAttestation {
     // Query attestation by claimHash. null if no attestation is found on-chain for this hash
     const chainAttestation: Attestation | null = await query(claimHash)
     return Promise.resolve(
-      !!(chainAttestation && chainAttestation.isAttestationValid(attestation))
+      !!(
+        chainAttestation &&
+        chainAttestation.owner === attestation.owner &&
+        !chainAttestation.revoked
+      )
     )
   }
 
@@ -221,18 +225,5 @@ export default class Attestation implements IAttestation {
   public static decompress(attestation: CompressedAttestation): Attestation {
     const decompressedAttestation = AttestationUtils.decompress(attestation)
     return Attestation.fromAttestation(decompressedAttestation)
-  }
-
-  /**
-   * Checks if the attestation is valid. An attestation is valid if it:
-   * * exists;
-   * * and has the correct owner;
-   * * and is not revoked.
-   *
-   * @param attestation - The attestation to check.
-   * @returns Whether the attestation is valid.
-   */
-  private isAttestationValid(attestation: IAttestation): boolean {
-    return this.owner === attestation.owner && !this.revoked
   }
 }
