@@ -10,6 +10,7 @@ import {
   listenToBalanceChanges,
 } from '../balance/Balance.chain'
 import { GAS, MIN_TRANSACTION, faucet, bob, alice, NewIdentity } from './utils'
+import getCached from '../blockchainApiConnection'
 
 describe('when there is a dev chain with a faucet', () => {
   it('should have enough coins available on the faucet', async () => {
@@ -101,4 +102,8 @@ describe('When there are haves and have-nots', () => {
     ])
     expect(listener).toBeCalledWith(faucet.address)
   }, 30_000)
+})
+
+afterAll(() => {
+  return getCached().then((bc) => bc.api.disconnect())
 })

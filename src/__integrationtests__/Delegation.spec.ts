@@ -17,6 +17,7 @@ import {
   fetchChildren,
 } from '../delegation/Delegation.chain'
 import { decodeDelegationNode } from '../delegation/DelegationDecoder'
+import getCached from '../blockchainApiConnection'
 
 const UncleSam = faucet
 const attester = alice
@@ -139,4 +140,8 @@ describe('handling queries to data not on chain', () => {
       )
     ).resolves.toEqual([{ id: '0x012012012', codec: null }])
   })
+})
+
+afterAll(() => {
+  return getCached().then((bc) => bc.api.disconnect())
 })

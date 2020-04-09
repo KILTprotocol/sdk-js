@@ -7,6 +7,7 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { Identity } from '..'
+import getCached from '../blockchainApiConnection'
 
 describe('When there is an CtypeCreator and a verifier', () => {
   const CtypeCreator = faucet
@@ -77,4 +78,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
       expect(iAmNotThereWowner.verifyStored()).resolves.toBeFalsy(),
     ])
   })
+})
+
+afterAll(() => {
+  return getCached().then((bc) => bc.api.disconnect())
 })

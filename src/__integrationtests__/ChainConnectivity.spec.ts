@@ -37,3 +37,7 @@ describe('Blockchain', () => {
     // console.log(`Subscription Id: ${subscriptionId}`)
   }, 5000)
 })
+
+afterAll(() => {
+  return getCached().then((bc) => bc.api.disconnect())
+})

@@ -18,6 +18,7 @@ import { revoke } from '../attestation/Attestation.chain'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { Identity } from '..'
+import getCached from '../blockchainApiConnection'
 
 const UncleSam = faucet
 const attester = alice
@@ -263,4 +264,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       ])
     }, 60_000)
   })
+})
+
+afterAll(() => {
+  return getCached().then((bc) => bc.api.disconnect())
 })
