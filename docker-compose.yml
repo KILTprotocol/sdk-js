@@ -8,10 +8,11 @@ services:
     command: './target/release/mashnet-node --dev --ws-port 9944 --ws-external'
   sdk:
     build: .
-    volumes: 
-        - ./src:/app/src
-    environment: 
-        WS_HOST: ws://dev-node:9944
+    image: local/sdk-js
+    volumes:
+      - ./src:/app/src
+    environment:
+      WS_HOST: ws://dev-node:9944
     command: 'yarn test:integration'
     links:
       - dev-node
