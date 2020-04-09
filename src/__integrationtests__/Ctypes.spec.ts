@@ -2,12 +2,18 @@
  * @group integration/ctype
  */
 
-import { faucet } from './utils'
+import { faucet, WS_HOST } from './utils'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
 import getCached from '../blockchainApiConnection'
 import { Identity } from '..'
+import { IBlockchainApi } from '../blockchain/Blockchain'
+
+let blockchain: IBlockchainApi
+beforeAll(async () => {
+  blockchain = await getCached(WS_HOST)
+})
 
 describe('When there is an CtypeCreator and a verifier', async () => {
   const CtypeCreator = faucet
@@ -80,6 +86,6 @@ describe('When there is an CtypeCreator and a verifier', async () => {
   })
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  blockchain.api.disconnect()
 })

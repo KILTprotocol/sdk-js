@@ -5,6 +5,9 @@ import Identity from '../identity/Identity'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
+import { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
+
+export const WS_HOST = process.env.WS_HOST || DEFAULT_WS_ADDRESS
 
 export const GAS = new BN(1000000)
 export const MIN_TRANSACTION = new BN(100000000)

@@ -11,17 +11,30 @@ import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { faucet, alice, bob, DriversLicense, CtypeOnChain } from './utils'
+import {
+  WS_HOST,
+  faucet,
+  alice,
+  bob,
+  DriversLicense,
+  CtypeOnChain,
+} from './utils'
 import {
   getChildIds,
   getAttestationHashes,
   fetchChildren,
 } from '../delegation/Delegation.chain'
 import { decodeDelegationNode } from '../delegation/DelegationDecoder'
+import { IBlockchainApi } from '../blockchain/Blockchain'
 
 const UncleSam = faucet
 const attester = alice
 const claimer = bob
+
+let blockchain: IBlockchainApi
+beforeAll(async () => {
+  blockchain = await getCached(WS_HOST)
+})
 
 describe('when there is an account hierarchy', async () => {
   beforeAll(async () => {
@@ -146,6 +159,6 @@ describe('handling queries to data not on chain', () => {
   })
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  blockchain.api.disconnect()
 })

@@ -9,6 +9,7 @@ import {
   DriversLicense,
   CtypeOnChain,
   IsOfficialLicenseAuthority,
+  WS_HOST,
 } from './utils'
 import Claim from '../claim/Claim'
 import getCached from '../blockchainApiConnection'
@@ -19,10 +20,16 @@ import { revoke } from '../attestation/Attestation.chain'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { Identity } from '..'
+import { IBlockchainApi } from '../blockchain/Blockchain'
 
 const UncleSam = faucet
 const attester = alice
 const claimer = bob
+
+let blockchain: IBlockchainApi
+beforeAll(async () => {
+  blockchain = await getCached(WS_HOST)
+})
 
 describe('handling attestations that do not exist', () => {
   it('Attestation.query', async () => {
@@ -267,6 +274,6 @@ describe('When there is an attester, claimer and ctype drivers license', async (
   })
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  blockchain.api.disconnect()
 })

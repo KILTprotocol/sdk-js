@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  dev-node:
+    image: kiltprotocol/mashnet-node
+    ports:
+      - 9944:9944
+    command: './target/release/mashnet-node --dev --ws-port 9944 --ws-external'
+  sdk:
+    build: .
+    volumes: 
+        - ./src:/app/src
+    environment: 
+        WS_HOST: ws://dev-node:9944
+    command: 'yarn test:integration'
+    links:
+      - dev-node

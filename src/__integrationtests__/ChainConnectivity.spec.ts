@@ -5,11 +5,17 @@
 import { Header } from '@polkadot/types/interfaces/types'
 import { Struct, Text } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
+import { WS_HOST } from './utils'
+import { IBlockchainApi } from '../blockchain/Blockchain'
+
+let blockchain: IBlockchainApi
+beforeAll(async () => {
+  blockchain = await getCached(WS_HOST)
+})
 
 describe('Blockchain', async () => {
   it('should get stats', async () => {
-    const blockchainSingleton = await getCached()
-    const stats = await blockchainSingleton.getStats()
+    const stats = await blockchain.getStats()
 
     expect(
       new Struct(
@@ -29,13 +35,12 @@ describe('Blockchain', async () => {
       expect(Number(header.number)).toBeGreaterThanOrEqual(0)
       done()
     }
-    const blockchainSingleton = await getCached()
-    await blockchainSingleton.listenToBlocks(listener)
+    await blockchain.listenToBlocks(listener)
     // const subscriptionId = await blockchainSingleton.listenToBlocks(listener)
     // console.log(`Subscription Id: ${subscriptionId}`)
   }, 5000)
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  blockchain.api.disconnect()
 })
