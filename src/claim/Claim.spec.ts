@@ -140,16 +140,30 @@ describe('Claim', () => {
 
     expect(() => Claim.isIClaim(everything)).not.toThrow()
 
-    expect(() => Claim.isIClaim(noCTypeHash)).toThrow()
+    expect(() =>
+      Claim.isIClaim(noCTypeHash)
+    ).toThrowErrorMatchingInlineSnapshot(`"property of provided Claim not set"`)
 
-    // expect(() => Claim.isIClaim(noContents)).toThrow()
+    // expect(Claim.isIClaim(noContents)).toThrowErrorMatchingInlineSnapshot()
 
-    // expect(() => Claim.isIClaim(noOwner)).toThrow()
+    // expect(Claim.isIClaim(noOwner)).toThrowErrorMatchingInlineSnapshot()
 
-    expect(() => Claim.isIClaim(nothing)).toThrow()
+    expect(() => Claim.isIClaim(nothing)).toThrowErrorMatchingInlineSnapshot(
+      `"property of provided Claim not set"`
+    )
 
-    expect(() => Claim.isIClaim(malformedCTypeHash)).toThrow()
+    expect(() => Claim.isIClaim(malformedCTypeHash))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided Claim CType hash invalid or malformed 
 
-    expect(() => Claim.isIClaim(malformedAddress)).toThrow()
+    Hash: 0xa8c5bdb22aaea3fceb467d37169cbe49c71f226233037537e70a32a032304ff"
+`)
+    // TODO : catch Errors and string/regex match the Error
+    expect(() => Claim.isIClaim(malformedAddress))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided Claim Owner address invalid 
+
+    Address: 5FA9nQDVg26DDEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+`)
   })
 })

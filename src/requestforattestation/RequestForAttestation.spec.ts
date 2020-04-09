@@ -480,43 +480,65 @@ describe('RequestForAttestation', () => {
         nonce: builtRequest.cTypeHash.nonce,
       },
     }
-    expect(() => {
+    expect(() =>
       RequestForAttestation.isIRequestForAttestation(
         builtRequestNoLegitimations
       )
-    }).toThrowError('Legitimations not provided')
-    expect(() => {
+    ).toThrowErrorMatchingInlineSnapshot(`"Legitimations not provided"`)
+    expect(() =>
       RequestForAttestation.isIRequestForAttestation(
         builtRequestMalformedRootHash
       )
-    }).toThrow('Provided rootHash does not correspond to data')
-    expect(() => {
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"Provided rootHash does not correspond to data"`
+    )
+    expect(() =>
       RequestForAttestation.isIRequestForAttestation(
         builtRequestMalformedClaimOwner
       )
-    }).toThrow(`Provided Claim Owner hash not corresponding to data \n
-    Hash: ${builtRequestMalformedClaimOwner.claimOwner.hash} \n
-    Nonce: ${builtRequestMalformedClaimOwner.claimOwner.nonce}`)
-    expect(() => {
+    ).toThrowErrorMatchingInlineSnapshot(`
+"Provided Claim Owner hash not corresponding to data 
+
+    Hash: ${builtRequestMalformedClaimOwner.claimOwner.hash} 
+
+    Nonce: ${builtRequestMalformedClaimOwner.claimOwner.nonce}"
+`)
+    // `"Provided Claim Owner hash not corresponding to data
+
+    // Hash: ${builtRequestMalformedClaimOwner.claimOwner.hash}
+
+    // Nonce: ${builtRequestMalformedClaimOwner.claimOwner.nonce}"`
+    expect(() =>
       RequestForAttestation.isIRequestForAttestation(
         builtRequestIncompleteClaimHashTree
       )
-    }).toThrow(`Property 'a' not in claim hash tree`)
-    expect(() => {
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"Property 'a' not in claim hash tree"`
+    )
+    expect(() =>
       RequestForAttestation.isIRequestForAttestation(
         builtRequestMalformedSignature
       )
-    }).toThrow('Provided Signature not verifiable')
-    expect(() => {
+    ).toThrowErrorMatchingInlineSnapshot(`"Provided Signature not verifiable"`)
+    expect(() =>
       RequestForAttestation.isIRequestForAttestation(
         builtRequestMalformedCtypeHash
       )
-    }).toThrow(`Provided Claim CType hash not corresponding to data \n
-    Hash: ${builtRequestMalformedCtypeHash.cTypeHash.hash} \n
-    Nonce: ${builtRequestMalformedCtypeHash.cTypeHash.nonce}`)
-    expect(() => {
+    ).toThrowErrorMatchingInlineSnapshot(`
+"Provided Claim CType hash not corresponding to data 
+
+    Hash: ${builtRequestMalformedCtypeHash.cTypeHash.hash} 
+
+    Nonce: ${builtRequestMalformedCtypeHash.cTypeHash.nonce}"
+`)
+    // `"Provided Claim CType hash not corresponding to data
+
+    // Hash: ${builtRequestMalformedCtypeHash.cTypeHash.hash}
+
+    // Nonce: ${builtRequestMalformedCtypeHash.cTypeHash.nonce}"`
+    expect(() =>
       RequestForAttestation.isIRequestForAttestation(builtRequest)
-    }).not.toThrow()
+    ).not.toThrow()
     expect(() => {
       RequestForAttestation.isIRequestForAttestation(
         builtRequestWithLegitimation

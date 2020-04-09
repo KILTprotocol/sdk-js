@@ -229,7 +229,7 @@ describe('Attestation', () => {
       delegationId: null,
     } as any) as IAttestation
 
-    const noRevokationBit = ({
+    const noRevocationBit = ({
       claimHash,
       cTypeHash,
       owner: identityAlice.address,
@@ -261,34 +261,51 @@ describe('Attestation', () => {
       delegationId: null,
     }
 
-    expect(() => {
-      return Attestation.isAttestation(noClaimHash)
-    }).toThrow()
+    expect(() =>
+      Attestation.isAttestation(noClaimHash)
+    ).toThrowErrorMatchingInlineSnapshot(`"Claim Hash not provided"`)
 
-    expect(() => {
-      return Attestation.isAttestation(noCTypeHash)
-    }).toThrow()
+    expect(() =>
+      Attestation.isAttestation(noCTypeHash)
+    ).toThrowErrorMatchingInlineSnapshot(`"CType Hash not provided"`)
 
-    expect(() => {
-      return Attestation.isAttestation(noOwner)
-    }).toThrow()
+    expect(() =>
+      Attestation.isAttestation(noOwner)
+    ).toThrowErrorMatchingInlineSnapshot(`"Owner not provided"`)
 
-    expect(() => {
-      return Attestation.isAttestation(nothing)
-    }).toThrow()
+    expect(() =>
+      Attestation.isAttestation(nothing)
+    ).toThrowErrorMatchingInlineSnapshot(`"CType Hash not provided"`)
 
-    expect(() => {
-      return Attestation.isAttestation(everythingExceptRequired)
-    }).toThrow()
+    expect(() =>
+      Attestation.isAttestation(everythingExceptRequired)
+    ).toThrowErrorMatchingInlineSnapshot(`"CType Hash not provided"`)
 
-    expect(() => Attestation.isAttestation(noRevokationBit)).toThrow()
+    expect(() =>
+      Attestation.isAttestation(noRevocationBit)
+    ).toThrowErrorMatchingInlineSnapshot(`"revocation bit not provided"`)
 
     expect(() => Attestation.isAttestation(everything)).not.toThrow()
 
-    expect(() => Attestation.isAttestation(malformedClaimHash)).toThrow()
+    expect(() => Attestation.isAttestation(malformedClaimHash))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided Claim hash invalid or malformed 
 
-    expect(() => Attestation.isAttestation(malformedCTypeHash)).toThrow()
+    Hash: 0x21a3448ccf10f6568dcd9a08af689c220d842b893a40344d010e398ab74e557"
+`)
 
-    expect(() => Attestation.isAttestation(malformedAddress)).toThrow()
+    expect(() => Attestation.isAttestation(malformedCTypeHash))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided CType hash invalid or malformed 
+
+    Hash: 0xa8c5bdb22aaea3fceb467d37169cbe49c71f226233037537e70a32a032304ff"
+`)
+
+    expect(() => Attestation.isAttestation(malformedAddress))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided Owner address invalid 
+
+    Address: 5FA9nQDVg26DDEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+`)
   })
 })

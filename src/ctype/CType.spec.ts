@@ -108,15 +108,22 @@ describe('CType', () => {
       owner: fromRawCType.owner ? fromRawCType.owner.replace('7', 'D') : null,
     }
 
-    expect(() => {
-      return CType.fromCType(wrongHashCtype)
-    }).toThrow()
-    expect(() => {
-      return CType.fromCType(faultySchemaCtype)
-    }).toThrow()
-    expect(() => {
-      return CType.fromCType(invalidAddressCtype)
-    }).toThrow()
+    expect(() =>
+      CType.fromCType(wrongHashCtype)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"provided CType hash not matching calculated hash"`
+    )
+    expect(() =>
+      CType.fromCType(faultySchemaCtype)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"CType does not correspond to schema"`
+    )
+    expect(() => CType.fromCType(invalidAddressCtype))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided CType Owner address invalid 
+
+    Address: 5FA9nQDVg26DDEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+`)
   })
 
   it('compresses and decompresses the ctype object', () => {
