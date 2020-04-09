@@ -12,24 +12,28 @@ import getCached from '../blockchainApiConnection'
 describe('When there is an CtypeCreator and a verifier', () => {
   const CtypeCreator = faucet
 
-  const ctype = CType.fromCType({
-    schema: {
-      $id: 'http://example.com/ctype-10',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      properties: {
-        name: { type: 'string' },
-      },
-      type: 'object',
-    } as ICType['schema'],
-  } as ICType)
+  function newCType(identifier: string): CType {
+    return CType.fromCType({
+      schema: {
+        $id: `http://example.com/ctype-10-${identifier}`,
+        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+        properties: {
+          name: { type: 'string' },
+        },
+        type: 'object',
+      } as ICType['schema'],
+    } as ICType)
+  }
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const BobbyBroke = Identity.buildFromMnemonic()
+    const ctype = newCType('1')
     await expect(ctype.store(BobbyBroke)).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
   }, 20000)
 
   it('should be possible to create a claim type', async () => {
+    const ctype = newCType('2')
     await ctype.store(CtypeCreator)
     await Promise.all([
       expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.address),
@@ -40,6 +44,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }, 20000)
 
   it('should not be possible to create a claim type that exists', async () => {
+    const ctype = newCType('3')
+    await expect(ctype.store(CtypeCreator)).resolves.toBeTruthy()
     await expect(ctype.store(CtypeCreator)).rejects.toThrowError(
       'CTYPE already exists'
     )
