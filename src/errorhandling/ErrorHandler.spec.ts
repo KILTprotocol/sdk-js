@@ -85,7 +85,7 @@ describe('ErrorHandler', () => {
       // @ts-ignore
       name: {
         toString: jest.fn(() => {
-          return 'error'
+          return 'Error'
         }),
       },
     },
