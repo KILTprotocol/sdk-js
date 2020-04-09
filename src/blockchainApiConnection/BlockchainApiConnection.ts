@@ -27,6 +27,8 @@ const CUSTOM_TYPES: RegistryTypes = {
 
   Address: 'AccountId',
   LookupSource: 'AccountId',
+  BlockNumber: 'u64',
+  Index: 'u64',
 }
 
 export async function buildConnection(
