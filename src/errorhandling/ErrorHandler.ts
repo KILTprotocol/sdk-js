@@ -18,7 +18,7 @@ export enum SystemEvent {
 }
 
 export class ErrorHandler {
-  private static readonly ERROR_MODULE_NAME = 'Error'
+  private static readonly ERROR_MODULE_NAME = 'error'
 
   /**
    * Checks if there is `SystemEvent.ExtrinsicFailed` in the list of

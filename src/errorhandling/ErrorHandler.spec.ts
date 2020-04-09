@@ -94,7 +94,7 @@ describe('ErrorHandler', () => {
   const apiPromise: ApiPromise = {
     // @ts-ignore
     runtimeMetadata: {
-      asV4: {
+      asV11: {
         // @ts-ignore
         modules,
       },
