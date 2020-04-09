@@ -13,7 +13,7 @@ const blockchain: any = {
   __mockQueryDelegationDelegation: jest.fn(),
   __mockQueryDelegationDelegations: jest.fn(),
   __mockQueryDidDids: jest.fn(),
-  asArray: jest.fn(result => {
+  asArray: jest.fn((result) => {
     return result.toJSON()
   }),
   api: {
@@ -35,10 +35,10 @@ const blockchain: any = {
         createRoot: jest.fn((rootId, _ctypeHash) => {
           return Promise.resolve()
         }),
-        revokeRoot: jest.fn(rootId => {
+        revokeRoot: jest.fn((rootId) => {
           return blockchain.__mockTxDelegationRoot(rootId)
         }),
-        revokeDelegation: jest.fn(delegationId => {
+        revokeDelegation: jest.fn((delegationId) => {
           return Promise.resolve()
         }),
       },
@@ -56,28 +56,28 @@ const blockchain: any = {
         delegatedAttestations: jest.fn(),
         attestations: jest.fn(),
       },
-      balances: {
-        freeBalance: jest.fn(),
+      system: {
+        account: jest.fn(),
       },
       ctype: {
-        cTYPEs: jest.fn(hash => {
+        cTYPEs: jest.fn((hash) => {
           return true
         }),
       },
       delegation: {
-        root: jest.fn(rootId => {
+        root: jest.fn((rootId) => {
           return blockchain.__mockQueryDelegationRoot(rootId)
         }),
-        delegation: jest.fn(delegationId => {
+        delegation: jest.fn((delegationId) => {
           return blockchain.__mockQueryDelegationDelegation(delegationId)
         }),
-        delegations: jest.fn(id => {
+        delegations: jest.fn((id) => {
           return blockchain.__mockQueryDelegationDelegations(id)
         }),
         children: jest.fn(),
       },
       did: {
-        dIDs: jest.fn(id => {
+        dIDs: jest.fn((id) => {
           return blockchain.__mockQueryDidDids(id)
         }),
       },
