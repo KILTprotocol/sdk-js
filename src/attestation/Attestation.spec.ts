@@ -205,29 +205,13 @@ describe('Attestation', () => {
       delegationId: null,
     }
 
-    const noOwner = {
+    const malformedOwner = {
       claimHash,
       cTypeHash,
       owner: '',
       revoked: false,
       delegationId: null,
     }
-
-    const nothing = ({
-      claimHash: '',
-      cTypeHash: '',
-      owner: '',
-      revoked: null,
-      delegation: false,
-    } as any) as IAttestation
-
-    const everythingExceptRequired = ({
-      claimHash: '',
-      cTypeHash: '',
-      owner: '',
-      revoked: null,
-      delegationId: null,
-    } as any) as IAttestation
 
     const noRevocationBit = ({
       claimHash,
@@ -270,16 +254,8 @@ describe('Attestation', () => {
     ).toThrowErrorMatchingInlineSnapshot(`"CType Hash not provided"`)
 
     expect(() =>
-      Attestation.isAttestation(noOwner)
+      Attestation.isAttestation(malformedOwner)
     ).toThrowErrorMatchingInlineSnapshot(`"Owner not provided"`)
-
-    expect(() =>
-      Attestation.isAttestation(nothing)
-    ).toThrowErrorMatchingInlineSnapshot(`"CType Hash not provided"`)
-
-    expect(() =>
-      Attestation.isAttestation(everythingExceptRequired)
-    ).toThrowErrorMatchingInlineSnapshot(`"CType Hash not provided"`)
 
     expect(() =>
       Attestation.isAttestation(noRevocationBit)

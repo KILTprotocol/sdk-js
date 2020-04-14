@@ -75,12 +75,19 @@ export default class Claim implements IClaim {
   }
 
   static isIClaim(input: Partial<IClaim>): input is IClaim {
-    // This accepts deleted owner property, until we remove removeClaimOwner
-    if (!input.cTypeHash || !input.contents) {
-      throw new Error('property of provided Claim not set')
+    if (!input.cTypeHash) {
+      throw new Error('cTypeHash of provided Claim not set')
     }
     if (input.owner) {
       validateAddress(input.owner, 'Claim Owner')
+    }
+    if (input.contents !== undefined) {
+      Object.keys(input.contents).forEach(key => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (typeof input.contents![key] !== 'string' && 'number' && 'boolean') {
+          throw new Error('Claim contents malformed')
+        }
+      })
     }
     validateHash(input.cTypeHash, 'Claim CType')
     // TODO: check whether ctype hash is on chain, access schema and verify Claim Structure

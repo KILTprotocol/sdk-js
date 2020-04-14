@@ -415,11 +415,18 @@ describe('RequestForAttestation', () => {
     delete builtRequestNoLegitimations.legitimations
 
     const builtRequestMalformedRootHash = {
-      ...builtRequest,
+      ...buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      ),
     }
-    delete builtRequestMalformedRootHash.rootHash
-    builtRequestMalformedRootHash.rootHash = builtRequest.rootHash.replace(
-      'c',
+    builtRequestMalformedRootHash.rootHash = builtRequestMalformedRootHash.rootHash.replace(
+      '1',
       'd'
     )
     const builtRequestMalformedClaimOwner = {
@@ -432,12 +439,20 @@ describe('RequestForAttestation', () => {
         },
         []
       ),
-      claimOwner: {
-        hash: builtRequest.claimOwner.hash.replace('1', '0'),
-        nonce: builtRequest.claimOwner.nonce,
-      },
     }
-
+    builtRequestMalformedClaimOwner.claimOwner = {
+      hash: builtRequestMalformedClaimOwner.claimOwner.hash.replace('1', '4'),
+      nonce: builtRequestMalformedClaimOwner.claimOwner.nonce,
+    }
+    builtRequestMalformedClaimOwner.rootHash = RequestForAttestation[
+      'calculateRootHash'
+    ](
+      builtRequestMalformedClaimOwner.claimOwner,
+      builtRequestMalformedClaimOwner.cTypeHash,
+      builtRequestMalformedClaimOwner.claimHashTree,
+      builtRequestMalformedClaimOwner.legitimations,
+      builtRequestMalformedClaimOwner.delegationId
+    )
     const builtRequestIncompleteClaimHashTree = {
       ...buildRequestForAttestation(
         identityBob,
@@ -450,6 +465,15 @@ describe('RequestForAttestation', () => {
       ),
     }
     delete builtRequestIncompleteClaimHashTree.claimHashTree.a
+    builtRequestIncompleteClaimHashTree.rootHash = RequestForAttestation[
+      'calculateRootHash'
+    ](
+      builtRequestIncompleteClaimHashTree.claimOwner,
+      builtRequestIncompleteClaimHashTree.cTypeHash,
+      builtRequestIncompleteClaimHashTree.claimHashTree,
+      builtRequestIncompleteClaimHashTree.legitimations,
+      builtRequestIncompleteClaimHashTree.delegationId
+    )
     const builtRequestMalformedSignature = {
       ...buildRequestForAttestation(
         identityBob,
@@ -465,6 +489,15 @@ describe('RequestForAttestation', () => {
       'd',
       'c'
     )
+    builtRequestMalformedSignature.rootHash = RequestForAttestation[
+      'calculateRootHash'
+    ](
+      builtRequestMalformedSignature.claimOwner,
+      builtRequestMalformedSignature.cTypeHash,
+      builtRequestMalformedSignature.claimHashTree,
+      builtRequestMalformedSignature.legitimations,
+      builtRequestMalformedSignature.delegationId
+    )
     const builtRequestMalformedCtypeHash = {
       ...buildRequestForAttestation(
         identityBob,
@@ -475,11 +508,20 @@ describe('RequestForAttestation', () => {
         },
         []
       ),
-      cTypeHash: {
-        hash: builtRequest.cTypeHash.hash.replace('1', '0'),
-        nonce: builtRequest.cTypeHash.nonce,
-      },
     }
+    builtRequestMalformedCtypeHash.cTypeHash = {
+      hash: builtRequestMalformedCtypeHash.cTypeHash.hash.replace('1', '0'),
+      nonce: builtRequestMalformedCtypeHash.cTypeHash.nonce,
+    }
+    builtRequestMalformedCtypeHash.rootHash = RequestForAttestation[
+      'calculateRootHash'
+    ](
+      builtRequestMalformedCtypeHash.claimOwner,
+      builtRequestMalformedCtypeHash.cTypeHash,
+      builtRequestMalformedCtypeHash.claimHashTree,
+      builtRequestMalformedCtypeHash.legitimations,
+      builtRequestMalformedCtypeHash.delegationId
+    )
     expect(() =>
       RequestForAttestation.isIRequestForAttestation(
         builtRequestNoLegitimations
@@ -503,11 +545,6 @@ describe('RequestForAttestation', () => {
 
     Nonce: ${builtRequestMalformedClaimOwner.claimOwner.nonce}"
 `)
-    // `"Provided Claim Owner hash not corresponding to data
-
-    // Hash: ${builtRequestMalformedClaimOwner.claimOwner.hash}
-
-    // Nonce: ${builtRequestMalformedClaimOwner.claimOwner.nonce}"`
     expect(() =>
       RequestForAttestation.isIRequestForAttestation(
         builtRequestIncompleteClaimHashTree
@@ -531,11 +568,6 @@ describe('RequestForAttestation', () => {
 
     Nonce: ${builtRequestMalformedCtypeHash.cTypeHash.nonce}"
 `)
-    // `"Provided Claim CType hash not corresponding to data
-
-    // Hash: ${builtRequestMalformedCtypeHash.cTypeHash.hash}
-
-    // Nonce: ${builtRequestMalformedCtypeHash.cTypeHash.nonce}"`
     expect(() =>
       RequestForAttestation.isIRequestForAttestation(builtRequest)
     ).not.toThrow()

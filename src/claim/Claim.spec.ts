@@ -4,7 +4,7 @@ import ClaimUtils from './Claim.utils'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
-import IClaim, { CompressedClaim } from '../types/Claim'
+import IClaim, { CompressedClaim, IClaimContents } from '../types/Claim'
 import CTypeUtils from '../ctype/CType.utils'
 
 describe('Claim', () => {
@@ -107,25 +107,6 @@ describe('Claim', () => {
       owner: ownerAddress,
     } as IClaim
 
-    // Currently empty contents object passes input checks
-    // const noContents = {
-    //   cTypeHash,
-    //   contents: {},
-    //   owner: ownerAddress,
-    // } as IClaim
-
-    // const noOwner = {
-    //   cTypeHash,
-    //   contents: claimContents,
-    //   owner: '',
-    // } as IClaim
-
-    const nothing = {
-      cTypeHash: '',
-      contents: {},
-      owner: '',
-    }
-
     const malformedCTypeHash = {
       cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
       contents: claimContents,
@@ -142,14 +123,8 @@ describe('Claim', () => {
 
     expect(() =>
       Claim.isIClaim(noCTypeHash)
-    ).toThrowErrorMatchingInlineSnapshot(`"property of provided Claim not set"`)
-
-    // expect(Claim.isIClaim(noContents)).toThrowErrorMatchingInlineSnapshot()
-
-    // expect(Claim.isIClaim(noOwner)).toThrowErrorMatchingInlineSnapshot()
-
-    expect(() => Claim.isIClaim(nothing)).toThrowErrorMatchingInlineSnapshot(
-      `"property of provided Claim not set"`
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"cTypeHash of provided Claim not set"`
     )
 
     expect(() => Claim.isIClaim(malformedCTypeHash))
@@ -158,7 +133,6 @@ describe('Claim', () => {
 
     Hash: 0xa8c5bdb22aaea3fceb467d37169cbe49c71f226233037537e70a32a032304ff"
 `)
-    // TODO : catch Errors and string/regex match the Error
     expect(() => Claim.isIClaim(malformedAddress))
       .toThrowErrorMatchingInlineSnapshot(`
 "Provided Claim Owner address invalid 
