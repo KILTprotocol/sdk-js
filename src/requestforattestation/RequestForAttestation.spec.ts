@@ -425,10 +425,14 @@ describe('RequestForAttestation', () => {
         []
       ),
     }
-    builtRequestMalformedRootHash.rootHash = builtRequestMalformedRootHash.rootHash.replace(
-      '1',
-      'd'
-    )
+    builtRequestMalformedRootHash.rootHash = [
+      builtRequestMalformedRootHash.rootHash.slice(0, 15),
+      (
+        (parseInt(builtRequestMalformedRootHash.rootHash.charAt(15), 16) + 1) %
+        16
+      ).toString(16),
+      builtRequestMalformedRootHash.rootHash.slice(16),
+    ].join('')
     const builtRequestMalformedClaimOwner = {
       ...buildRequestForAttestation(
         identityBob,
@@ -441,7 +445,18 @@ describe('RequestForAttestation', () => {
       ),
     }
     builtRequestMalformedClaimOwner.claimOwner = {
-      hash: builtRequestMalformedClaimOwner.claimOwner.hash.replace('1', '4'),
+      hash: [
+        builtRequestMalformedClaimOwner.claimOwner.hash.slice(0, 15),
+        (
+          (parseInt(
+            builtRequestMalformedClaimOwner.claimOwner.hash.charAt(15),
+            16
+          ) +
+            1) %
+          16
+        ).toString(16),
+        builtRequestMalformedClaimOwner.claimOwner.hash.slice(16),
+      ].join(''),
       nonce: builtRequestMalformedClaimOwner.claimOwner.nonce,
     }
     builtRequestMalformedClaimOwner.rootHash = RequestForAttestation[
@@ -486,8 +501,10 @@ describe('RequestForAttestation', () => {
       ),
     }
     builtRequestMalformedSignature.claimerSignature = builtRequestMalformedSignature.claimerSignature.replace(
-      'd',
-      'c'
+      builtRequestMalformedSignature.claimerSignature.charAt(5),
+      builtRequestMalformedSignature.claimerSignature.charAt(5) === 'd'
+        ? 'e'
+        : 'd'
     )
     builtRequestMalformedSignature.rootHash = RequestForAttestation[
       'calculateRootHash'
@@ -510,7 +527,18 @@ describe('RequestForAttestation', () => {
       ),
     }
     builtRequestMalformedCtypeHash.cTypeHash = {
-      hash: builtRequestMalformedCtypeHash.cTypeHash.hash.replace('1', '0'),
+      hash: [
+        builtRequestMalformedCtypeHash.cTypeHash.hash.slice(0, 15),
+        (
+          (parseInt(
+            builtRequestMalformedCtypeHash.cTypeHash.hash.charAt(15),
+            16
+          ) +
+            1) %
+          16
+        ).toString(16),
+        builtRequestMalformedCtypeHash.cTypeHash.hash.slice(16),
+      ].join(''),
       nonce: builtRequestMalformedCtypeHash.cTypeHash.nonce,
     }
     builtRequestMalformedCtypeHash.rootHash = RequestForAttestation[
