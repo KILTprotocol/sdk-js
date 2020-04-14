@@ -28,7 +28,7 @@ describe('when there is an account hierarchy', () => {
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester)
     }
-  }, 30000)
+  }, 30_000)
 
   it('should be possible to delegate attestation rights', async () => {
     const rootNode = new DelegationRootNode(
@@ -50,7 +50,7 @@ describe('when there is an account hierarchy', () => {
       expect(rootNode.verify()).resolves.toBeTruthy(),
       expect(delegatedNode.verify()).resolves.toBeTruthy(),
     ])
-  }, 40000)
+  }, 40_000)
 
   describe('and attestation rights have been delegated', () => {
     const rootNode: DelegationRootNode = new DelegationRootNode(
@@ -92,13 +92,13 @@ describe('when there is an account hierarchy', () => {
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
       ])
-    }, 40000)
+    }, 40_000)
     it('should be possible to store an attestation on the chain', async () => {
       const status = await attestation.store(attester)
       expect(request.verifyData()).toBeTruthy()
       expect(request.verifySignature()).toBeTruthy()
-      expect(status).toHaveProperty('type', 'Finalized')
-    }, 30000)
+      expect(status.isFinalized).toBeTruthy()
+    }, 30_000)
     it('should be possible to revoke it by the root', async () => {
       const attClaim = AttestedClaim.fromRequestAndAttestation(
         request,
@@ -109,8 +109,8 @@ describe('when there is an account hierarchy', () => {
 
       // revoke attestation through root
       const result = await attClaim.attestation.revoke(UncleSam)
-      expect(result).toHaveProperty('type', 'Finalized')
-    }, 30000)
+      expect(result.isFinalized).toBeTruthy()
+    }, 30_000)
   })
 })
 

@@ -35,7 +35,7 @@ describe('Blockchain', () => {
     await blockchainSingleton.listenToBlocks(listener)
     // const subscriptionId = await blockchainSingleton.listenToBlocks(listener)
     // console.log(`Subscription Id: ${subscriptionId}`)
-  }, 5000)
+  }, 5_000)
 })
 
 afterAll(() => {

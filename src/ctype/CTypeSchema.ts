@@ -120,6 +120,20 @@ export const MetadataModel = {
                   },
                   required: ['default'],
                 },
+                description: {
+                  type: 'object',
+                  properties: {
+                    default: {
+                      type: 'string',
+                    },
+                  },
+                  patternProperties: {
+                    '^.*$': {
+                      type: 'string',
+                    },
+                  },
+                  required: ['default'],
+                },
               },
               required: ['title'],
               additionalProperties: false,
@@ -127,7 +141,7 @@ export const MetadataModel = {
           },
         },
       },
-      required: ['title', 'description'],
+      required: ['title', 'properties'],
       additionalProperties: false,
     },
     ctypeHash: { type: 'string', minLength: 1 },

@@ -82,8 +82,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       request,
       attester.getPublicIdentity()
     )
-    const status = await attestation.store(attester)
-    expect(status.type).toBe('Finalized')
+    const result = await attestation.store(attester)
+    expect(result.isFinalized).toBeTruthy()
     const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
     expect(aClaim.verifyData()).toBeTruthy()
     await expect(aClaim.verify()).resolves.toBeTruthy()
@@ -174,8 +174,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         request,
         attester.getPublicIdentity()
       )
-      const status = await attestation.store(attester)
-      expect(status.type).toBe('Finalized')
+      const result = await attestation.store(attester)
+      expect(result.isFinalized).toBeTruthy()
       attClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
       await expect(attClaim.verify()).resolves.toBeTruthy()
     }, 60_000)
@@ -195,8 +195,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should be possible for the attester to revoke an attestation', async () => {
       await expect(attClaim.verify()).resolves.toBeTruthy()
-      const status = await revoke(attClaim.getHash(), attester)
-      expect(status.type).toBe('Finalized')
+      const result = await revoke(attClaim.getHash(), attester)
+      expect(result.isFinalized).toBeTruthy()
       await expect(attClaim.verify()).resolves.toBeFalsy()
     }, 30_000)
   })

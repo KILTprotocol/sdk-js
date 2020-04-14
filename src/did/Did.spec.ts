@@ -3,7 +3,6 @@ import { Did } from '..'
 import { IDid } from './Did'
 import Identity from '../identity/Identity'
 import { getIdentifierFromAddress } from './Did.utils'
-import { OK } from '../const/TxStatus'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -37,9 +36,6 @@ describe('DID', () => {
       return Promise.resolve(tuple)
     }
   )
-  require('../blockchain/Blockchain').default.submitTx = jest.fn(() => {
-    return Promise.resolve({ status: OK })
-  })
 
   it('query by address with documentStore', async () => {
     const did = await Did.queryByAddress('withDocumentStore')
@@ -83,7 +79,7 @@ describe('DID', () => {
   it('store did', async () => {
     const alice = Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(alice, 'http://myDID.kilt.io')
-    expect(await did.store(alice)).toEqual({ status: OK })
+    await expect(did.store(alice)).resolves.toHaveProperty('isFinalized', true)
   })
 
   it('creates default did document', async () => {
@@ -95,12 +91,14 @@ describe('DID', () => {
       did.createDefaultDidDocument('http://myDID.kilt.io/service')
     ).toEqual({
       '@context': 'https://w3id.org/did/v1',
-      authentication: {
-        publicKey: [
-          'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-1',
-        ],
-        type: 'Ed25519SignatureAuthentication2018',
-      },
+      authentication: [
+        {
+          publicKey: [
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-1',
+          ],
+          type: 'Ed25519SignatureAuthentication2018',
+        },
+      ],
       id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
       publicKey: [
         {
@@ -140,12 +138,14 @@ describe('DID', () => {
       )
     ).toEqual({
       '@context': 'https://w3id.org/did/v1',
-      authentication: {
-        publicKey: [
-          'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-1',
-        ],
-        type: 'Ed25519SignatureAuthentication2018',
-      },
+      authentication: [
+        {
+          publicKey: [
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-1',
+          ],
+          type: 'Ed25519SignatureAuthentication2018',
+        },
+      ],
       id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
       publicKey: [
         {
@@ -201,10 +201,12 @@ describe('DID', () => {
     const signedDidDocument = Did.signDidDocument(didDocument, identity)
     const tamperedSignedDidDocument = {
       ...signedDidDocument,
-      authentication: {
-        type: 'Ed25519SignatureAuthentication2018',
-        publicKey: ['did:kilt:123'],
-      },
+      authentication: [
+        {
+          type: 'Ed25519SignatureAuthentication2018',
+          publicKey: ['did:kilt:123'],
+        },
+      ],
     }
     expect(
       Did.verifyDidDocumentSignature(

@@ -1,6 +1,6 @@
 import BN from 'bn.js/'
-// import { AccountData, Balance } from '@polkadot/types/interfaces'
 import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
+import { SubmittableResult } from '@polkadot/api'
 import Identity from '../identity/Identity'
 import { listenToBalanceChanges, makeTransfer } from './Balance.chain'
 
@@ -53,7 +53,8 @@ describe('Balance', () => {
     const alice = Identity.buildFromURI('//Alice')
     const bob = Identity.buildFromURI('//Bob')
 
-    const hash = await makeTransfer(alice, bob.address, new BN(100))
-    expect(hash).toBe('123')
+    const status = await makeTransfer(alice, bob.address, new BN(100))
+    expect(status).toBeInstanceOf(SubmittableResult)
+    expect(status.isFinalized).toBeTruthy()
   })
 })

@@ -5,9 +5,9 @@
 import { Codec } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
+import { SubmittableResult } from '@polkadot/api'
 import { getCached } from '../blockchainApiConnection'
 import { QueryResult } from '../blockchain/Blockchain'
-import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import IAttestation from '../types/Attestation'
@@ -18,7 +18,7 @@ const log = factory.getLogger('Attestation')
 export async function store(
   attestation: IAttestation,
   identity: Identity
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const txParams = {
     claimHash: attestation.claimHash,
     ctypeHash: attestation.cTypeHash,
@@ -83,7 +83,7 @@ export async function query(claimHash: string): Promise<Attestation | null> {
 export async function revoke(
   claimHash: string,
   identity: Identity
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const blockchain = await getCached()
   log.debug(`Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
