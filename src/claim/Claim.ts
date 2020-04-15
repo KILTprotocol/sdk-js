@@ -84,7 +84,12 @@ export default class Claim implements IClaim {
     if (input.contents !== undefined) {
       Object.keys(input.contents).forEach(key => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (typeof input.contents![key] !== 'string' && 'number' && 'boolean') {
+        const temp = input.contents![key]
+        if (
+          typeof temp !== 'number' &&
+          typeof temp !== 'boolean' &&
+          typeof temp !== 'string'
+        ) {
           throw new Error('Claim contents malformed')
         }
       })
