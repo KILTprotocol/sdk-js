@@ -154,7 +154,7 @@ describe('When there are haves and have-nots', () => {
     expect(listener).toBeCalledTimes(2)
   }, 30_000)
 
-  xit('should be able to make multiple transactions at once', async () => {
+  it('should be able to make multiple transactions at once', async () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
     await Promise.all([
