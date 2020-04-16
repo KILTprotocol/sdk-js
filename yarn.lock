@@ -655,18 +655,17 @@
     "@types/yargs" "^15.0.0"
     chalk "^3.0.0"
 
-"@kiltprotocol/portablegabi@^0.1.0":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@kiltprotocol/portablegabi/-/portablegabi-0.1.2.tgz#b179cadfea649dfec5b5b5a64b12594b0f1cd8f6"
-  integrity sha512-yz0zVXTxCgaDQq6LJpem3z7MHSFShjzyjE8+1ToJpl0areAnJ/1SetnxupegO8IPGms6cpOKGuka3KQBNdaWhQ==
+"@kiltprotocol/portablegabi@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@kiltprotocol/portablegabi/-/portablegabi-0.1.4.tgz#f2a56b8adac71defe7e0c305d2c77d7e11a8169c"
+  integrity sha512-d34QRsswe0GDW3RfWKlXQujrcj6+v7I4QLzDVVskUlgAuIYB7wynS3pwmFOdYdyIKYCW8vVRMgYMIU+op9lAWg==
   dependencies:
-    "@polkadot/api" "^1.9.1"
-    "@polkadot/keyring" "^2.7.1"
-    "@polkadot/rpc-provider" "^1.9.1"
-    "@polkadot/types" "^1.1.1"
-    "@polkadot/util" "^2.7.1"
-    "@polkadot/util-crypto" "^2.7.1"
-    jest-runner-groups "^1.1.1"
+    "@polkadot/api" "^1.10.1"
+    "@polkadot/keyring" "^2.8.1"
+    "@polkadot/rpc-provider" "^1.10.1"
+    "@polkadot/types" "^1.10.1"
+    "@polkadot/util" "^2.8.1"
+    "@polkadot/util-crypto" "^2.8.1"
 
 "@marionebl/sander@^0.6.0":
   version "0.6.1"
@@ -693,7 +692,7 @@
     memoizee "^0.4.14"
     rxjs "^6.5.5"
 
-"@polkadot/api@1.10.1", "@polkadot/api@^1.10.1", "@polkadot/api@^1.9.1":
+"@polkadot/api@1.10.1", "@polkadot/api@^1.10.1":
   version "1.10.1"
   resolved "https://registry.yarnpkg.com/@polkadot/api/-/api-1.10.1.tgz#c96dd504ec1f7d75a64d1d89d50847ca1435823e"
   integrity sha512-NBzVrQV07y5UTfXk2BAthpZrA5jLRblgKVSEHiTssQ9ix9onKCCqhR2JnUCiULnzLc+lRAlGoTtae0KKM3elGw==
@@ -712,7 +711,7 @@
     eventemitter3 "^4.0.0"
     rxjs "^6.5.5"
 
-"@polkadot/keyring@^2.7.1", "@polkadot/keyring@^2.8.1":
+"@polkadot/keyring@^2.8.1":
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/@polkadot/keyring/-/keyring-2.8.1.tgz#befc87d262a3c00a70e9b9bde7ed9c89e88ebc46"
   integrity sha512-VYuFucacGqOB6ZmSN/3/vUvEMFaOg7NmGcWLnjiGY7T5W3Qv8Up/3zGbnt9UspDcQckoQsIumQyfkeLAjcRjoA==
@@ -746,7 +745,7 @@
     memoizee "^0.4.14"
     rxjs "^6.5.5"
 
-"@polkadot/rpc-provider@1.10.1", "@polkadot/rpc-provider@^1.9.1":
+"@polkadot/rpc-provider@1.10.1", "@polkadot/rpc-provider@^1.10.1":
   version "1.10.1"
   resolved "https://registry.yarnpkg.com/@polkadot/rpc-provider/-/rpc-provider-1.10.1.tgz#4d340d6f9ca5b128c4da6913190aac574b601945"
   integrity sha512-WWXZBgM0z9jsLRlZAxxS1BfQAOp9Nz1MtO2i6SBAMHbkBGFH53RSXf9XmHTZR5iA597gld8bKKFc9PgmGwhFtQ==
@@ -771,7 +770,7 @@
     "@polkadot/util" "^2.8.1"
     bn.js "^5.1.1"
 
-"@polkadot/types@1.10.1", "@polkadot/types@^1.1.1", "@polkadot/types@^1.10.1":
+"@polkadot/types@1.10.1", "@polkadot/types@^1.10.1":
   version "1.10.1"
   resolved "https://registry.yarnpkg.com/@polkadot/types/-/types-1.10.1.tgz#d50de3baaa4129d7fd7d4210da22f89decee632b"
   integrity sha512-GgtfOvWUQh9hLAPBqpJHiWtbSSqwEey+NN/4+zgcK/1lrkS0zC49nh3u53a/AtCAcS+jNJFQP9KdiN7UtcWB9A==
@@ -785,7 +784,7 @@
     memoizee "^0.4.14"
     rxjs "^6.5.5"
 
-"@polkadot/util-crypto@2.8.1", "@polkadot/util-crypto@^2.7.1", "@polkadot/util-crypto@^2.8.1":
+"@polkadot/util-crypto@2.8.1", "@polkadot/util-crypto@^2.8.1":
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/@polkadot/util-crypto/-/util-crypto-2.8.1.tgz#ae49d5efa79d7f234f7caf57d33bb91993097d72"
   integrity sha512-vakpc/2PVGvQ3rEaCS3QnZlf74WA5U45MBNqK0Q6Yj4fGAYzTcKPKFGeoxxSenrVr/nKp2N1osXqcIOYsuCzHw==
@@ -804,7 +803,7 @@
     tweetnacl "^1.0.3"
     xxhashjs "^0.2.2"
 
-"@polkadot/util@2.8.1", "@polkadot/util@^2.7.1", "@polkadot/util@^2.8.1":
+"@polkadot/util@2.8.1", "@polkadot/util@^2.8.1":
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/@polkadot/util/-/util-2.8.1.tgz#bc625df27c34193627da9f0db37b757b297858fb"
   integrity sha512-OUc/Jn41wd1G9D36J8mqjxAr3LBoxenuylQGXxQyf48/9fMVeUMb5i3wrWiVu2bO21OOXh85HhbUyLvX4V6nLw==
