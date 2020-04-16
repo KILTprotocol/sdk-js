@@ -5,7 +5,6 @@ import Identity from '../identity/Identity'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
-import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 
 export const GAS = new BN(1_000_000)
 export const MIN_TRANSACTION = new BN(100_000_000)
@@ -18,10 +17,22 @@ export async function NewIdentity(): Promise<Identity> {
 // Dev Faucet account seed phrase
 const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-// FIXME: need to do this. await not possible here!
-export const faucet = Identity.buildFromSeed(toSeed(FaucetSeed))
-export const alice = Identity.buildFromURI('//Alice')
-export const bob = Identity.buildFromURI('//Bob')
+
+export async function buildIdentities(): Promise<{
+  faucet: Identity
+  alice: Identity
+  bob: Identity
+}> {
+  const faucet = await Identity.buildFromURI(FaucetSeed)
+  const alice = await Identity.buildFromURI('//Alice')
+  const bob = await Identity.buildFromURI('//Bob')
+
+  return {
+    faucet,
+    alice,
+    bob,
+  }
+}
 
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)

@@ -138,8 +138,8 @@ export default class Identity {
    */
   public static async buildFromURI(uri: string): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
+    const derived = keyring.createFromUri(uri)
     const paddedUri = uri.padEnd(MinSeedLength, ' ')
-    const derived = keyring.createFromUri(paddedUri)
     const seed = u8aUtil.u8aToU8a(paddedUri)
     const claimer = await Claimer.buildFromSeed(seed)
     // TODO: heck to create identity from //Alice

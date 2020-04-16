@@ -7,14 +7,14 @@ import { Did } from '..'
 import { NewIdentity } from './utils'
 import getCached from '../blockchainApiConnection'
 
-const ident = NewIdentity()
-
 describe('querying DIDs that do not exist', () => {
   it('queryByAddress', async () => {
-    return expect(queryByAddress(ident.address)).resolves.toBeNull()
+    const ident = await NewIdentity()
+    return expect(queryByAddress(ident.getAddress())).resolves.toBeNull()
   })
 
   it('queryByIdentifier', async () => {
+    const ident = await NewIdentity()
     return expect(
       queryByIdentifier(Did.fromIdentity(ident).identifier)
     ).resolves.toBeNull()

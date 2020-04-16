@@ -10,7 +10,7 @@ import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { faucet, alice, bob, DriversLicense, CtypeOnChain } from './utils'
+import { buildIdentities, DriversLicense, CtypeOnChain } from './utils'
 import {
   getChildIds,
   getAttestationHashes,
@@ -18,13 +18,23 @@ import {
 } from '../delegation/Delegation.chain'
 import { decodeDelegationNode } from '../delegation/DelegationDecoder'
 import getCached from '../blockchainApiConnection'
+import Identity from '../identity/Identity'
 
-const UncleSam = faucet
-const attester = alice
-const claimer = bob
+// const UncleSam = faucet
+// const attester = alice
+// const claimer = bob
 
 describe('when there is an account hierarchy', () => {
+  let UncleSam: Identity
+  let attester: Identity
+  let claimer: Identity
+
   beforeAll(async () => {
+    const { faucet, alice, bob } = await buildIdentities()
+    UncleSam = faucet
+    claimer = alice
+    attester = bob
+
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester)
     }
@@ -34,13 +44,13 @@ describe('when there is an account hierarchy', () => {
     const rootNode = new DelegationRootNode(
       UUID.generate(),
       DriversLicense.hash,
-      UncleSam.address
+      UncleSam.getAddress()
     )
     await rootNode.store(UncleSam)
     const delegatedNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
-      attester.address,
+      attester.getAddress(),
       [Permission.ATTEST],
       rootNode.id
     )
@@ -52,16 +62,16 @@ describe('when there is an account hierarchy', () => {
     ])
   }, 40_000)
 
-  describe('and attestation rights have been delegated', () => {
+  describe('and attestation rights have been delegated', async () => {
     const rootNode: DelegationRootNode = new DelegationRootNode(
       UUID.generate(),
       DriversLicense.hash,
-      UncleSam.address
+      UncleSam.getAddress()
     )
     const delegatedNode: DelegationNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
-      attester.address,
+      attester.getAddress(),
       [Permission.ATTEST],
       rootNode.id
     )
@@ -69,18 +79,10 @@ describe('when there is an account hierarchy', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
-      claimer.address
+      claimer.getAddress()
     )
-    const request = RequestForAttestation.fromClaimAndIdentity(
-      claim,
-      claimer,
-      [],
-      delegatedNode.id
-    )
-    const attestation = Attestation.fromRequestAndPublicIdentity(
-      request,
-      attester.getPublicIdentity()
-    )
+    let request: RequestForAttestation
+    let attestation: Attestation
 
     beforeAll(async () => {
       await rootNode.store(UncleSam)
@@ -92,6 +94,16 @@ describe('when there is an account hierarchy', () => {
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
       ])
+      ;[request] = await RequestForAttestation.fromClaimAndIdentity({
+        claim,
+        identity: claimer,
+        delegationId: delegatedNode.id,
+      })
+
+      attestation = Attestation.fromRequestAndPublicIdentity(
+        request,
+        attester.getPublicIdentity()
+      )
     }, 40_000)
     it('should be possible to store an attestation on the chain', async () => {
       const status = await attestation.store(attester)
@@ -100,7 +112,8 @@ describe('when there is an account hierarchy', () => {
       expect(status.isFinalized).toBeTruthy()
     }, 30_000)
     it('should be possible to revoke it by the root', async () => {
-      const attClaim = AttestedClaim.fromRequestAndAttestation(
+      const attClaim = await AttestedClaim.fromRequestAndAttestation(
+        claimer,
         request,
         attestation
       )

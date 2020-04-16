@@ -2,7 +2,7 @@
  * @group integration/ctype
  */
 
-import { faucet } from './utils'
+import { buildIdentities } from './utils'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
@@ -11,7 +11,14 @@ import getCached from '../blockchainApiConnection'
 import { generate } from '../util/UUID'
 
 describe('When there is an CtypeCreator and a verifier', () => {
-  const CtypeCreator = faucet
+  let CtypeCreator: Identity
+  let bobbyBroke: Identity
+
+  beforeAll(async () => {
+    const { faucet: faucett } = await buildIdentities()
+    CtypeCreator = faucett
+    bobbyBroke = await Identity.buildFromMnemonic()
+  })
 
   function newCType(identifier: string): CType {
     return CType.fromCType({
@@ -27,16 +34,15 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }
 
   it('should not be possible to create a claim type w/o tokens', async () => {
-    const BobbyBroke = Identity.buildFromMnemonic()
     const ctype = newCType(generate())
-    await expect(ctype.store(BobbyBroke)).rejects.toThrowError()
+    await expect(ctype.store(bobbyBroke)).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
     const ctype = newCType(generate())
     await ctype.store(CtypeCreator)
-    await expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.address)
+    await expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.getAddress())
     await expect(ctype.verifyStored()).resolves.toBeTruthy()
   }, 20_000)
 
@@ -47,7 +53,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
       'CTYPE already exists'
     )
     // console.log('Triggered error on re-submit')
-    await expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.address)
+    await expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.getAddress())
   }, 30_000)
 
   it('should tell when a ctype is not on chain', async () => {
@@ -71,7 +77,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
         },
         type: 'object',
       } as ICType['schema'],
-      owner: CtypeCreator.address,
+      owner: CtypeCreator.getAddress(),
     } as ICType)
 
     await Promise.all([
