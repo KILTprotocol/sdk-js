@@ -41,9 +41,9 @@ describe('queries', () => {
     expect(unsubscribe()).toBeUndefined()
   })
 })
-describe('Blockchain', async () => {
+describe('Blockchain', () => {
+  const alice = Identity.buildFromURI('//Alice')
   it('should increment nonce for account', async () => {
-    const alice = Identity.buildFromURI('//Alice')
     const chain = new Blockchain(mockedApi)
     // eslint-disable-next-line dot-notation
     const initialNonce = await chain['retrieveNonce'](alice.address)
@@ -54,7 +54,6 @@ describe('Blockchain', async () => {
   })
 
   it('should return incrementing nonces', async () => {
-    const alice = Identity.buildFromURI('//Alice')
     const promisedNonces: Array<Promise<Index>> = []
     const chain = new Blockchain(mockedApi)
     for (let i = 0; i < 25; i += 1) {
@@ -68,7 +67,6 @@ describe('Blockchain', async () => {
   })
 
   it('should return separate incrementing nonces per account', async () => {
-    const alice = Identity.buildFromURI('//Alice')
     const bob = Identity.buildFromURI('//Bob')
     const alicePromisedNonces: Array<Promise<Index>> = []
     const bobPromisedNonces: Array<Promise<Index>> = []
