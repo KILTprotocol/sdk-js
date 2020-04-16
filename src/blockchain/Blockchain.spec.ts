@@ -20,6 +20,8 @@ const mockedApi = ({
 } as any) as ApiPromise
 
 describe('queries', () => {
+  const alice = Identity.buildFromURI('//Alice')
+
   beforeAll(() => {
     const api = require('../blockchainApiConnection/BlockchainApiConnection')
       .__mocked_api
@@ -52,7 +54,6 @@ describe('queries', () => {
   })
 
   it('should increment nonce for account', async () => {
-    const alice = Identity.buildFromURI('//Alice')
     const chain = new Blockchain(mockedApi)
     // eslint-disable-next-line dot-notation
     const initialNonce = await chain['retrieveNonce'](alice.address)
@@ -63,7 +64,6 @@ describe('queries', () => {
   })
 
   it('should return incrementing nonces', async () => {
-    const alice = Identity.buildFromURI('//Alice')
     const promisedNonces: Array<Promise<Index>> = []
     const chain = new Blockchain(mockedApi)
     for (let i = 0; i < 25; i += 1) {
@@ -77,7 +77,6 @@ describe('queries', () => {
   })
 
   it('should return separate incrementing nonces per account', async () => {
-    const alice = Identity.buildFromURI('//Alice')
     const bob = Identity.buildFromURI('//Bob')
     const alicePromisedNonces: Array<Promise<Index>> = []
     const bobPromisedNonces: Array<Promise<Index>> = []
