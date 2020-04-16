@@ -7,8 +7,8 @@ import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
 import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 
-export const GAS = new BN(1000000)
-export const MIN_TRANSACTION = new BN(100000000)
+export const GAS = new BN(1_000_000)
+export const MIN_TRANSACTION = new BN(100_000_000)
 export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 
 export async function NewIdentity(): Promise<Identity> {
@@ -25,7 +25,7 @@ export const bob = Identity.buildFromURI('//Bob')
 
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)
-    .then(ownerAddress => {
+    .then((ownerAddress) => {
       console.log(ownerAddress)
       return ownerAddress !== null
     })

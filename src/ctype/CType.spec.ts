@@ -1,11 +1,9 @@
+import { SubmittableResult } from '@polkadot/api'
 import CType from './CType'
 import Identity from '../identity/Identity'
-import Crypto from '../crypto'
 import ICType, { CompressedCType } from '../types/CType'
 import CTypeUtils from './CType.utils'
-import TxStatus from '../blockchain/TxStatus'
 import Claim from '../claim/Claim'
-import { FINALIZED } from '../const/TxStatus'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
@@ -81,21 +79,12 @@ describe('CType', () => {
   })
 
   it('stores ctypes', async () => {
-    const testHash = Crypto.hashStr('1234')
-
     const ctype = CType.fromCType(fromCTypeModel)
-    ctype.hash = testHash
-    const resultCtype = {
-      ...ctype,
-      owner: identityAlice.getAddress(),
-    }
-
-    const resultTxStatus = new TxStatus(FINALIZED, Crypto.hashStr('987654'))
-    require('../blockchain/Blockchain').default.__mockResultHash = resultTxStatus
 
     const result = await ctype.store(identityAlice)
-    expect(result.type).toEqual(resultTxStatus.type)
-    expect(result.payload).toMatchObject(resultCtype)
+    expect(result).toBeInstanceOf(SubmittableResult)
+    expect(result.isFinalized).toBeTruthy()
+    expect(result.isCompleted).toBeTruthy()
   })
   it('verifies the claim structure', () => {
     expect(claimCtype.verifyClaimStructure(claim)).toBeTruthy()
@@ -202,15 +191,19 @@ describe('blank ctypes', () => {
     )
 
     expect(
-      (await requestForAttestation.fromClaimAndIdentity({
-        claim: claimA1,
-        identity: identityAlice,
-      }))[0].rootHash
+      (
+        await requestForAttestation.fromClaimAndIdentity({
+          claim: claimA1,
+          identity: identityAlice,
+        })
+      )[0].rootHash
     ).not.toEqual(
-      (await requestForAttestation.fromClaimAndIdentity({
-        claim: claimA2,
-        identity: identityAlice,
-      }))[0].rootHash
+      (
+        await requestForAttestation.fromClaimAndIdentity({
+          claim: claimA2,
+          identity: identityAlice,
+        })
+      )[0].rootHash
     )
   })
 })

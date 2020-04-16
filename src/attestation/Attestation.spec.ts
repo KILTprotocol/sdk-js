@@ -1,6 +1,6 @@
-import { Text } from '@polkadot/types'
+import { Text, TypeRegistry } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
+import AccountId from '@polkadot/types/generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
@@ -14,6 +14,7 @@ import { CompressedAttestation } from '../types/Attestation'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Attestation', () => {
+  const registry = new TypeRegistry()
   let identityAlice: Identity
   let identityBob: Identity
   let Blockchain: any
@@ -64,8 +65,10 @@ describe('Attestation', () => {
   it('stores attestation', async () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
       const tuple = new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           [Text, AccountId, Text, Bool],
           [testCType.hash, identityAlice.getAddress(), undefined, false]
         )
@@ -82,7 +85,7 @@ describe('Attestation', () => {
 
   it('verify attestations not on chain', async () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      return Promise.resolve(new Option(Tuple))
+      return Promise.resolve(new Option(registry, Tuple))
     })
 
     const attestation: Attestation = Attestation.fromAttestation({
@@ -99,8 +102,10 @@ describe('Attestation', () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
       return Promise.resolve(
         new Option(
+          registry,
           Tuple,
           new Tuple(
+            registry,
             // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
             [Text, AccountId, Text, Bool],
             [testCType.hash, identityAlice.getAddress(), undefined, true]

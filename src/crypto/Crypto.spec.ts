@@ -19,7 +19,6 @@ describe('Crypto', () => {
   })
 
   it('should sign and verify (UInt8Array)', () => {
-    // @ts-ignore
     const signature = Crypto.sign(message, alice.signKeyringPair)
     expect(signature).not.toBeFalsy()
     expect(Crypto.verify(message, signature, alice.getAddress())).toBe(true)

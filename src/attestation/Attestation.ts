@@ -11,8 +11,8 @@
  * @preferred
  */
 
+import { SubmittableResult } from '@polkadot/api'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
@@ -29,7 +29,7 @@ export default class Attestation implements IAttestation {
    * @param claimHash - The hash of the claim that corresponds to the attestation to query.
    * @returns A promise containing the [[Attestation]] or null.
    * @example ```javascript
-   * Attestation.query('0xd8024cdc147c4fa9221cd177').then(attestation => {
+   * Attestation.query('0xd8024cdc147c4fa9221cd177').then((attestation) => {
    *   // now we can for example revoke `attestation`
    * });
    * ```
@@ -43,7 +43,7 @@ export default class Attestation implements IAttestation {
    *
    * @param claimHash - The hash of the claim that corresponds to the attestation to revoke.
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
-   * @returns A promise containing the [[TxStatus]] (transaction status).
+   * @returns A promise containing the [[SubmittableResult]] (transaction status).
    * @example ```javascript
    * Attestation.revoke('0xd8024cdc147c4fa9221cd177').then(() => {
    *   // the attestation was successfully revoked
@@ -53,7 +53,7 @@ export default class Attestation implements IAttestation {
   public static async revoke(
     claimHash: string,
     identity: Identity
-  ): Promise<TxStatus> {
+  ): Promise<SubmittableResult> {
     return revoke(claimHash, identity)
   }
 
@@ -124,7 +124,7 @@ export default class Attestation implements IAttestation {
    * [ASYNC] Stores the attestation on chain.
    *
    * @param identity - The identity used to store the attestation.
-   * @returns A promise containing the [[TxStatus]] (transaction status).
+   * @returns A promise containing the [[SubmittableResult]] (transaction status).
    * @example ```javascript
    * // Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * attestation.store(attester).then(() => {
@@ -132,7 +132,7 @@ export default class Attestation implements IAttestation {
    * });
    * ```
    */
-  public async store(identity: Identity): Promise<TxStatus> {
+  public async store(identity: Identity): Promise<SubmittableResult> {
     return store(this, identity)
   }
 
@@ -140,14 +140,14 @@ export default class Attestation implements IAttestation {
    * [ASYNC] Revokes the attestation. Also available as a static method.
    *
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
-   * @returns A promise containing the [[TxStatus]] (transaction status).
+   * @returns A promise containing the [[SubmittableResult]] (transaction status).
    * @example ```javascript
    * attestation.revoke(identity).then(() => {
    *   // the attestation was successfully revoked
    * });
    * ```
    */
-  public async revoke(identity: Identity): Promise<TxStatus> {
+  public async revoke(identity: Identity): Promise<SubmittableResult> {
     return revoke(this.claimHash, identity)
   }
 
@@ -157,7 +157,7 @@ export default class Attestation implements IAttestation {
    * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
    * @returns A promise containing whether the attestation is valid.
    * @example ```javascript
-   * attestation.verify().then(isVerified => {
+   * attestation.verify().then((isVerified) => {
    *   // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```
@@ -168,7 +168,7 @@ export default class Attestation implements IAttestation {
     // Check if attestation is valid
     const isValid: boolean = this.isAttestationValid(attestation)
     if (!isValid) {
-      log.debug(() => 'No valid attestation found')
+      log.debug(`No valid attestation found ${JSON.stringify(attestation)}`)
     }
     return Promise.resolve(isValid)
   }

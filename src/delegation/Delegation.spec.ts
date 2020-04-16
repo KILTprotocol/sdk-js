@@ -1,7 +1,7 @@
-import { Text, Tuple, Vec, Option } from '@polkadot/types'
+import { Text, Tuple, Vec, Option, TypeRegistry } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
+import AccountId from '@polkadot/types/generic/AccountId'
 import { Crypto, Identity } from '..'
 import DelegationNode from './DelegationNode'
 import { getAttestationHashes } from './Delegation.chain'
@@ -10,6 +10,7 @@ import { Permission } from '../types/Delegation'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Delegation', () => {
+  const registry = new TypeRegistry()
   let identityAlice: Identity
 
   beforeAll(async () => {
@@ -23,6 +24,7 @@ describe('Delegation', () => {
   })
   blockchain.api.query.attestation.delegatedAttestations = jest.fn(() => {
     const vector = new Vec(
+      registry,
       //  (claim-hash)
       Text,
       ['0x123', '0x456', '0x789']
@@ -31,8 +33,10 @@ describe('Delegation', () => {
   })
   blockchain.api.query.delegation.root = jest.fn(() => {
     const tuple = new Option(
+      registry,
       Tuple,
       new Tuple(
+        registry,
         // Root-Delegation: root-id -> (ctype-hash, account, revoked)
         [Text, AccountId, Bool],
         [[ctypeHash, identityAlice.getAddress(), false]]
@@ -40,12 +44,14 @@ describe('Delegation', () => {
     )
     return Promise.resolve(tuple)
   })
-  blockchain.api.query.delegation.delegations = jest.fn(delegationId => {
+  blockchain.api.query.delegation.delegations = jest.fn((delegationId) => {
     let result = null
     if (delegationId === 'firstChild') {
       result = new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
           [Text, Text, AccountId, U32, Bool],
           ['rootId', 'myNodeId', identityAlice.getAddress(), 2, false]
@@ -53,8 +59,10 @@ describe('Delegation', () => {
       )
     } else if (delegationId === 'secondChild') {
       result = new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
           [Text, Text, AccountId, U32, Bool],
           ['rootId', 'myNodeId', identityAlice.getAddress(), 1, false]
@@ -62,8 +70,10 @@ describe('Delegation', () => {
       )
     } else if (delegationId === 'thirdChild') {
       result = new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
           [Text, Text, AccountId, U32, Bool],
           ['rootId', 'myNodeId', identityAlice.getAddress(), 0, false]
@@ -74,6 +84,7 @@ describe('Delegation', () => {
   })
   blockchain.api.query.delegation.children = jest.fn(() => {
     const vector = new Vec(
+      registry,
       // Children: delegation-id -> [delegation-ids]
       Text,
       ['firstChild', 'secondChild', 'thirdChild']

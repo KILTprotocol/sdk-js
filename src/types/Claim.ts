@@ -6,15 +6,15 @@ import ICType from './CType'
 import IPublicIdentity from './PublicIdentity'
 
 export default interface IClaim {
-  contents: object
   cTypeHash: ICType['hash']
+  contents: IClaimContents
   owner: IPublicIdentity['address']
 }
 
-export type CompressedClaimContents = object
+export type IClaimContents = { [key: string]: string | number | boolean }
 
 export type CompressedClaim = [
-  CompressedClaimContents,
+  IClaimContents,
   IClaim['cTypeHash'],
   IClaim['owner']
 ]

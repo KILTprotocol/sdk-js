@@ -15,6 +15,7 @@ import { IDelegationNode } from '../types/Delegation'
  * Adding the enum values results in a decimal representation of the bitset.
  *
  * @returns The bitset as single value uint8 array.
+ * @param delegation The [[DelegationNode]] which holds the permissions.
  */
 // eslint-disable-next-line import/prefer-default-export
 export default function permissionsAsBitset(

@@ -16,15 +16,11 @@ export type NonceHash = {
   nonce?: string
 }
 
-export type ClaimHashTree = {
-  [key: string]: NonceHash
-}
-
-export type NonceHashTree = NonceHash | { [key: string]: NonceHashTree }
+export type NonceHashTree = { [key: string]: NonceHash }
 
 export default interface IRequestForAttestation {
   claim: IClaim
-  claimHashTree: ClaimHashTree
+  claimHashTree: NonceHashTree
   claimOwner: NonceHash
   claimerSignature: string
   cTypeHash: NonceHash
@@ -36,14 +32,14 @@ export default interface IRequestForAttestation {
 
 export type CompressedNonceHash = [string, string?]
 
-export type CompressedClaimHashTree = object
+export type CompressedNonceHashTree = object
 
 export type CompressedClaimOwner = CompressedNonceHash
 export type CompressedCTypeHash = CompressedNonceHash
 
 export type CompressedRequestForAttestation = [
   CompressedClaim,
-  CompressedClaimHashTree,
+  CompressedNonceHashTree,
   CompressedClaimOwner,
   RequestForAttestation['claimerSignature'],
   CompressedCTypeHash,

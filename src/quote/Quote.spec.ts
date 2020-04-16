@@ -109,7 +109,7 @@ describe('Claim', () => {
       validQuoteData,
       attesterIdentity
     )
-    quoteBothAgreed = Quote.createAgreedQuote(
+    quoteBothAgreed = Quote.createQuoteAgreement(
       claimerIdentity,
       validAttesterSignedQuote,
       request.rootHash

@@ -37,7 +37,10 @@ export async function getChildIds(
   id: IDelegationBaseNode['id']
 ): Promise<string[]> {
   const blockchain = await getCached()
-  return Blockchain.asArray(await blockchain.api.query.delegation.children(id))
+  const childIds = Blockchain.asArray(
+    await blockchain.api.query.delegation.children(id)
+  )
+  return childIds.filter((e): e is string => typeof e === 'string')
 }
 
 export async function fetchChildren(

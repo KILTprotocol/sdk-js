@@ -154,7 +154,7 @@ const errorsByCode: ExtrinsicError[] = []
   ERROR_ROOT_NOT_FOUND,
 
   ERROR_UNKNOWN,
-].forEach(value => {
+].forEach((value) => {
   errorsByCode[value.errorCode] = value
 })
 

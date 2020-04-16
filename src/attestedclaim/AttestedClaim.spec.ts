@@ -7,13 +7,14 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
-import constants from '../test/constants'
+import IClaim, { IClaimContents } from '../types/Claim'
 import { CompressedAttestedClaim } from '../types/AttestedClaim'
+import constants from '../test/constants'
 
 async function buildAttestedClaim(
   claimer: Identity,
   attester: Identity,
-  contents: object,
+  contents: IClaim['contents'],
   legitimations: AttestedClaim[]
 ): Promise<AttestedClaim> {
   // create claim
@@ -66,7 +67,7 @@ async function buildAttestedClaim(
 async function buildAttestedClaimPE(
   claimer: Identity,
   attester: AttesterIdentity,
-  contents: object,
+  contents: IClaimContents,
   legitimations: AttestedClaim[]
 ): Promise<AttestedClaim> {
   // create claim
@@ -110,10 +111,12 @@ async function buildAttestedClaimPE(
     initiateAttestationMsg: message,
     attesterPubKey: attester.getPublicGabiKey(),
   })
-  const attestationPE = (await attester.issuePrivacyEnhancedAttestation(
-    attestersSession,
-    requestForAttestation
-  ))[1]
+  const attestationPE = (
+    await attester.issuePrivacyEnhancedAttestation(
+      attestersSession,
+      requestForAttestation
+    )
+  )[1]
 
   // build attestation
   const testAttestation = Attestation.fromRequestAndPublicIdentity(

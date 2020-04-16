@@ -28,7 +28,7 @@ export class PresentationRequestBuilder {
     delegationId?: boolean
     reqUpdatedAfter?: Date
   }): PresentationRequestBuilder {
-    const rawAttribute = attributes.map(attr => `claim.contents.${attr}`)
+    const rawAttribute = attributes.map((attr) => `claim.contents.${attr}`)
     rawAttribute.push('claim.cTypeHash')
     if (typeof legitimations !== 'undefined' && legitimations) {
       rawAttribute.push('legitimation')
@@ -76,8 +76,10 @@ export async function verifyPresentation(
     const attestedClaims = presentation.content.map(
       AttestedClaim.fromAttestedClaim
     )
-    const allVerified = await Promise.all(attestedClaims.map(ac => ac.verify()))
-    return [allVerified.every(b => b), attestedClaims]
+    const allVerified = await Promise.all(
+      attestedClaims.map((ac) => ac.verify())
+    )
+    return [allVerified.every((b) => b), attestedClaims]
   }
   if (presentation.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE) {
     if (

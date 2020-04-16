@@ -10,8 +10,7 @@
  */
 
 import BN from 'bn.js'
-import { Balance } from '@polkadot/types/interfaces'
-import TxStatus from '../blockchain/TxStatus'
+import { SubmittableResult } from '@polkadot/api'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
@@ -46,14 +45,16 @@ export async function listenToBalanceChanges(
   ) => void
 ): Promise<BN> {
   const blockchain = await getCached()
-  let previous = await blockchain.api.query.balances.freeBalance<Balance>(
+  const { data: accountInfo } = await blockchain.api.query.system.account(
     accountAddress
   )
+  let previous = accountInfo.free
 
   if (listener) {
-    blockchain.api.query.balances.freeBalance<Balance>(
+    blockchain.api.query.system.account(
       accountAddress,
-      (current: Balance) => {
+      ({ data: currentData }) => {
+        const current = currentData.free
         const change = current.sub(previous)
         previous = current
         listener(accountAddress, current, change)
@@ -108,7 +109,7 @@ export async function getBalance(
  * const address = ...
  * const amount: BN = new BN(42)
  * sdk.Balance.makeTransfer(identity, address, amount)
- *   .then((status: TxStatus) => {
+ *   .then((status: SubmittableResult) => {
  *     console.log('Successfully transferred ${amount.toNumber()} tokens')
  *   })
  *   .catch(err => {
@@ -120,7 +121,7 @@ export async function makeTransfer(
   identity: Identity,
   accountAddressTo: IPublicIdentity['address'],
   amount: BN
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const blockchain = await getCached()
   const transfer = blockchain.api.tx.balances.transfer(accountAddressTo, amount)
   return blockchain.submitTx(identity, transfer)

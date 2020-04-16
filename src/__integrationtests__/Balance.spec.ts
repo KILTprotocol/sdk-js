@@ -12,10 +12,10 @@ import {
 import { GAS, MIN_TRANSACTION, faucet, bob, alice, NewIdentity } from './utils'
 import getCached from '../blockchainApiConnection'
 
-describe('when there is a dev chain with a faucet', async () => {
+describe('when there is a dev chain with a faucet', () => {
   it('should have enough coins available on the faucet', async () => {
     const balance = await getBalance(faucet.address)
-    expect(balance.gt(new BN(100000000))).toBeTruthy()
+    expect(balance.gt(new BN(100_000_000))).toBeTruthy()
     // console.log(`Faucet has ${Number(balance)} micro Kilt`)
   })
 
@@ -31,7 +31,7 @@ describe('when there is a dev chain with a faucet', async () => {
 
   it('getBalance should return 0 for new identity', async () => {
     return expect(
-      getBalance(NewIdentity().address).then(n => n.toNumber())
+      getBalance(NewIdentity().address).then((n) => n.toNumber())
     ).resolves.toEqual(0)
   })
 
@@ -45,15 +45,15 @@ describe('when there is a dev chain with a faucet', async () => {
       getBalance(faucet.address),
       getBalance(ident.address),
     ])
-    expect(
-      balanceBefore.sub(balanceAfter).eq(MIN_TRANSACTION.add(GAS))
-    ).toBeTruthy()
-    expect(balanceIdent.toNumber()).toBe(MIN_TRANSACTION.toNumber())
+    expect(balanceBefore.sub(balanceAfter).toString()).toEqual(
+      MIN_TRANSACTION.add(GAS).toString()
+    )
+    expect(balanceIdent.toString()).toBe(MIN_TRANSACTION.toString())
     expect(funny).toBeCalled()
   }, 15000)
 })
 
-describe('When there are haves and have-nots', async () => {
+describe('When there are haves and have-nots', () => {
   const BobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
   const RichieRich = alice
   const StormyD = Identity.buildFromMnemonic(Identity.generateMnemonic())
@@ -61,8 +61,8 @@ describe('When there are haves and have-nots', async () => {
   it('can transfer tokens from the rich to the poor', async () => {
     await makeTransfer(RichieRich, StormyD.address, MIN_TRANSACTION)
     const balanceTo = await getBalance(StormyD.address)
-    expect(balanceTo.toNumber()).toBe(MIN_TRANSACTION.toNumber())
-  }, 15000)
+    expect(balanceTo.toString()).toBe(MIN_TRANSACTION.toString())
+  }, 30_000)
 
   it('should not accept transactions from identity with zero balance', async () => {
     const originalBalance = await getBalance(StormyD.address)
@@ -73,9 +73,9 @@ describe('When there are haves and have-nots', async () => {
       getBalance(StormyD.address),
       getBalance(BobbyBroke.address),
     ])
-    expect(newBalance.toNumber()).toBe(originalBalance.toNumber())
-    expect(zeroBalance.toNumber()).toBe(0)
-  }, 15000)
+    expect(newBalance.toString()).toBe(originalBalance.toString())
+    expect(zeroBalance.toString()).toBe('0')
+  }, 30_000)
 
   it('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalance(RichieRich.address)
@@ -88,7 +88,7 @@ describe('When there are haves and have-nots', async () => {
     ])
     expect(zeroBalance.toString()).toEqual('0')
     expect(newBalance.toString()).toEqual(RichieBalance.sub(GAS).toString())
-  }, 15000)
+  }, 30_000)
 
   xit('should be able to make multiple transactions at once', async () => {
     const listener = jest.fn()
@@ -98,9 +98,9 @@ describe('When there are haves and have-nots', async () => {
       makeTransfer(faucet, StormyD.address, MIN_TRANSACTION),
     ])
     expect(listener).toBeCalledWith(faucet.address)
-  }, 30000)
+  }, 30_000)
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  return getCached().then((bc) => bc.api.disconnect())
 })

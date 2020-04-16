@@ -18,12 +18,12 @@ import { factory as LoggerFactory } from '../config/ConfigLog'
 const log = LoggerFactory.getLogger('Claimer')
 
 function noNulls<T>(array: Array<T | null>): array is T[] {
-  return array.every(c => c !== null)
+  return array.every((c) => c !== null)
 }
 
 function parseArgsForKilt(args: string[]): string[] {
   return args
-    .map(arg => arg.replace('claim.contents.', ''))
+    .map((arg) => arg.replace('claim.contents.', ''))
     .filter((arg: string) => {
       if (arg.match(/claim\.cTypeHash/)) {
         log.warn('Cannot remove cTypeHash from claim.')
@@ -47,7 +47,7 @@ export async function createPresentation(
   }
 
   if (request.content.allowPE) {
-    const credentials = attestedClaims.map(c => c.credential)
+    const credentials = attestedClaims.map((c) => c.credential)
     if (!noNulls(credentials)) {
       throw new Error('Missing credential for privacy enhanced presentation.')
     }
@@ -64,13 +64,13 @@ export async function createPresentation(
 
   const requestedAttributes = request.content.peRequest
     .getRequestedProperties()
-    .map(propsPerClaim => parseArgsForKilt(propsPerClaim))
+    .map((propsPerClaim) => parseArgsForKilt(propsPerClaim))
 
   return {
     type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
     content: attestedClaims.map((ac, i) => {
       const allAttrs = ac.getAttributes()
-      requestedAttributes[i].forEach(attr => allAttrs.delete(attr))
+      requestedAttributes[i].forEach((attr) => allAttrs.delete(attr))
       const p = ac.createPresentation(Array.from(allAttrs))
       delete p.credential
       delete p.request.privacyEnhanced

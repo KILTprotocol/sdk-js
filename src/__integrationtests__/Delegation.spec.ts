@@ -6,7 +6,6 @@ import DelegationRootNode from '../delegation/DelegationRootNode'
 import UUID from '../util/UUID'
 import DelegationNode from '../delegation/DelegationNode'
 import { Permission } from '../types/Delegation'
-import getCached from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
@@ -18,17 +17,18 @@ import {
   fetchChildren,
 } from '../delegation/Delegation.chain'
 import { decodeDelegationNode } from '../delegation/DelegationDecoder'
+import getCached from '../blockchainApiConnection'
 
 const UncleSam = faucet
 const attester = alice
 const claimer = bob
 
-describe('when there is an account hierarchy', async () => {
+describe('when there is an account hierarchy', () => {
   beforeAll(async () => {
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester)
     }
-  }, 30000)
+  }, 30_000)
 
   it('should be possible to delegate attestation rights', async () => {
     const rootNode = new DelegationRootNode(
@@ -50,27 +50,40 @@ describe('when there is an account hierarchy', async () => {
       expect(rootNode.verify()).resolves.toBeTruthy(),
       expect(delegatedNode.verify()).resolves.toBeTruthy(),
     ])
-  }, 30000)
+  }, 40_000)
 
-  describe('and attestation rights have been delegated', async () => {
-    let rootNode: DelegationRootNode
-    let delegatedNode: DelegationNode
+  describe('and attestation rights have been delegated', () => {
+    const rootNode: DelegationRootNode = new DelegationRootNode(
+      UUID.generate(),
+      DriversLicense.hash,
+      UncleSam.address
+    )
+    const delegatedNode: DelegationNode = new DelegationNode(
+      UUID.generate(),
+      rootNode.id,
+      attester.address,
+      [Permission.ATTEST],
+      rootNode.id
+    )
+    const content = { name: 'Ralfi', age: 12 }
+    const claim = Claim.fromCTypeAndClaimContents(
+      DriversLicense,
+      content,
+      claimer.address
+    )
+    const request = RequestForAttestation.fromClaimAndIdentity(
+      claim,
+      claimer,
+      [],
+      delegatedNode.id
+    )
+    const attestation = Attestation.fromRequestAndPublicIdentity(
+      request,
+      attester.getPublicIdentity()
+    )
 
     beforeAll(async () => {
-      rootNode = new DelegationRootNode(
-        UUID.generate(),
-        DriversLicense.hash,
-        UncleSam.address
-      )
       await rootNode.store(UncleSam)
-
-      delegatedNode = new DelegationNode(
-        UUID.generate(),
-        rootNode.id,
-        attester.address,
-        [Permission.ATTEST],
-        rootNode.id
-      )
       const HashSignedByDelegate = attester.signStr(
         delegatedNode.generateHash()
       )
@@ -79,31 +92,14 @@ describe('when there is an account hierarchy', async () => {
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
       ])
-    }, 30000)
-
-    it("should be possible to attest a claim in the root's name and revoke it by the root", async () => {
-      const content = { name: 'Ralfi', age: 12 }
-      const claim = Claim.fromCTypeAndClaimContents(
-        DriversLicense,
-        content,
-        claimer.address
-      )
-      const request = RequestForAttestation.fromClaimAndIdentity(
-        claim,
-        claimer,
-        [],
-        delegatedNode.id
-      )
+    }, 40_000)
+    it('should be possible to store an attestation on the chain', async () => {
+      const status = await attestation.store(attester)
       expect(request.verifyData()).toBeTruthy()
       expect(request.verifySignature()).toBeTruthy()
-
-      const attestation = Attestation.fromRequestAndPublicIdentity(
-        request,
-        attester.getPublicIdentity()
-      )
-      const status = await attestation.store(attester)
-      expect(status.type).toBe('Finalized')
-
+      expect(status.isFinalized).toBeTruthy()
+    }, 30_000)
+    it('should be possible to revoke it by the root', async () => {
       const attClaim = AttestedClaim.fromRequestAndAttestation(
         request,
         attestation
@@ -113,8 +109,8 @@ describe('when there is an account hierarchy', async () => {
 
       // revoke attestation through root
       const result = await attClaim.attestation.revoke(UncleSam)
-      expect(result.type).toBe('Finalized')
-    }, 30000)
+      expect(result.isFinalized).toBeTruthy()
+    }, 30_000)
   })
 })
 
@@ -137,8 +133,8 @@ describe('handling queries to data not on chain', () => {
 
   it('fetchChildren on empty', async () => {
     return expect(
-      fetchChildren(['0x012012012']).then(res =>
-        res.map(el => {
+      fetchChildren(['0x012012012']).then((res) =>
+        res.map((el) => {
           return { id: el.id, codec: decodeDelegationNode(el.codec) }
         })
       )
@@ -146,6 +142,6 @@ describe('handling queries to data not on chain', () => {
   })
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  return getCached().then((bc) => bc.api.disconnect())
 })

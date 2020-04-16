@@ -1,12 +1,13 @@
-import { Text, Tuple, H256, Option } from '@polkadot/types'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
+import { Text, Tuple, Option, TypeRegistry } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
+import AccountId from '@polkadot/types/generic/AccountId'
 import { Crypto, Identity } from '..'
 import DelegationRootNode from './DelegationRootNode'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Delegation', () => {
+  const registry = new TypeRegistry()
   let identityAlice: Identity
   let ctypeHash: string
   let ROOT_IDENTIFIER: string
@@ -17,10 +18,12 @@ describe('Delegation', () => {
     require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
       () => {
         const tuple = new Option(
+          registry,
           Tuple,
           new Tuple(
+            registry,
             // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-            [H256, AccountId, Bool],
+            ['H256', AccountId, Bool],
             [ctypeHash, identityAlice.getAddress(), false]
           )
         )
@@ -30,10 +33,12 @@ describe('Delegation', () => {
     require('../blockchain/Blockchain').default.__mockQueryDelegationDelegation = jest.fn(
       () => {
         const tuple = new Option(
+          registry,
           Tuple,
           new Tuple(
+            registry,
             // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-            [H256, AccountId, Bool],
+            ['H256', AccountId, Bool],
             [ctypeHash, identityAlice.getAddress(), false]
           )
         )
@@ -69,11 +74,13 @@ describe('Delegation', () => {
 
   it('root delegation verify', async () => {
     require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
-      rootId => {
+      (rootId) => {
         if (rootId === 'success') {
           const tuple = new Option(
+            registry,
             Tuple,
             new Tuple(
+              registry,
               // Root-Delegation: root-id -> (ctype-hash, account, revoked)
               [Text, Text, Bool],
               ['myCtypeHash', 'myAccount', false]
@@ -82,8 +89,10 @@ describe('Delegation', () => {
           return Promise.resolve(tuple)
         }
         const tuple = new Option(
+          registry,
           Tuple,
           new Tuple(
+            registry,
             // Root-Delegation: root-id -> (ctype-hash, account, revoked)
             [Text, Text, Bool],
             ['myCtypeHash', 'myAccount', true]
@@ -114,7 +123,7 @@ describe('Delegation', () => {
     let calledRootId = ''
 
     require('../blockchain/Blockchain').default.__mockTxDelegationRoot = jest.fn(
-      rootId => {
+      (rootId) => {
         calledRootId = rootId
       }
     )

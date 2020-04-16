@@ -14,11 +14,11 @@
  * @preferred
  */
 
+import { SubmittableResult } from '@polkadot/api'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'
 import Attestation from '../attestation/Attestation'
-import TxStatus from '../blockchain/TxStatus'
 import { IDelegationBaseNode } from '../types/Delegation'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
@@ -127,7 +127,7 @@ export default abstract class DelegationBaseNode
    *
    * @returns Promise containing the transaction status.
    */
-  public abstract revoke(identity: Identity): Promise<TxStatus>
+  public abstract revoke(identity: Identity): Promise<SubmittableResult>
 
   /**
    * Required to avoid cyclic dependencies btw. DelegationBaseNode and DelegationNode implementations.

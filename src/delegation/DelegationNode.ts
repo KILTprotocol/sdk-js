@@ -8,9 +8,9 @@
  * @preferred
  */
 
+import { SubmittableResult } from '@polkadot/api'
 import Crypto from '../crypto'
 import { QueryResult } from '../blockchain/Blockchain'
-import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
@@ -90,7 +90,7 @@ export default class DelegationNode extends DelegationBaseNode
     if (this.parentId && this.parentId !== this.rootId) {
       propsToHash.push(this.parentId)
     }
-    const uint8Props: Uint8Array[] = propsToHash.map(value => {
+    const uint8Props: Uint8Array[] = propsToHash.map((value) => {
       return coToUInt8(value)
     })
     uint8Props.push(permissionsAsBitset(this))
@@ -133,9 +133,12 @@ export default class DelegationNode extends DelegationBaseNode
    *
    * @param identity Account used to store the delegation node.
    * @param signature Signature of the delegate to ensure it's done under his permission.
-   * @returns Promise containing the [[TxStatus]].
+   * @returns Promise containing the [[SubmittableResult]].
    */
-  public async store(identity: Identity, signature: string): Promise<TxStatus> {
+  public async store(
+    identity: Identity,
+    signature: string
+  ): Promise<SubmittableResult> {
     log.info(`:: store(${this.id})`)
     return store(this, identity, signature)
   }
@@ -154,9 +157,9 @@ export default class DelegationNode extends DelegationBaseNode
    * Revokes the delegation node on chain.
    *
    * @param identity The identity used to revoke the delegation.
-   * @returns Promise containing the [[TxStatus]].
+   * @returns Promise containing the [[SubmittableResult]].
    */
-  public async revoke(identity: Identity): Promise<TxStatus> {
+  public async revoke(identity: Identity): Promise<SubmittableResult> {
     log.debug(`:: revoke(${this.id})`)
     return revoke(this.id, identity)
   }

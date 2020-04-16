@@ -111,7 +111,7 @@ export default class AttestedClaim implements IAttestedClaim {
    *
    * @returns A promise containing whether this attested claim is valid.
    * @example ```javascript
-   * attestedClaim.verify().then(isVerified => {
+   * attestedClaim.verify().then((isVerified) => {
    *   // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```
@@ -127,7 +127,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * Verifies whether the data of this attested claim is valid. It is valid if:
    * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[RequestForAttestation.verifyData]]);
    * and
-   * * the hash of the [[RequestForAttestation]] object for this attested claim, and the hash of the [[Claim]] for this attestated claim are the same.
+   * * the hash of the [[RequestForAttestation]] object for this attested claim, and the hash of the [[Claim]] for this attested claim are the same.
    *
    * @returns Whether the attested claim's data is valid.
    * @example ```javascript

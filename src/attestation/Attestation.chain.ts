@@ -2,13 +2,12 @@
  * @packageDocumentation
  * @ignore
  */
-import { Option, Text } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
+import { SubmittableResult } from '@polkadot/api'
 import { getCached } from '../blockchainApiConnection'
 import { QueryResult } from '../blockchain/Blockchain'
-import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import IAttestation from '../types/Attestation'
@@ -19,11 +18,11 @@ const log = factory.getLogger('Attestation')
 export async function store(
   attestation: IAttestation,
   identity: Identity
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const txParams = {
     claimHash: attestation.claimHash,
     ctypeHash: attestation.cTypeHash,
-    delegationId: new Option(Text, attestation.delegationId),
+    delegationId: attestation.delegationId,
   }
   log.debug(() => `Create tx for 'attestation.add'`)
 
@@ -38,6 +37,7 @@ export async function store(
 }
 
 function decode(encoded: QueryResult, claimHash: string): Attestation | null {
+  let attestation: Attestation | null = null
   if (encoded && encoded.encodedLength) {
     const attestationTuple = encoded.toJSON()
     if (
@@ -48,22 +48,26 @@ function decode(encoded: QueryResult, claimHash: string): Attestation | null {
         attestationTuple[2] === null) &&
       typeof attestationTuple[3] === 'boolean'
     ) {
-      const attestation: IAttestation = {
+      const rawAttestation: IAttestation = {
         claimHash,
         cTypeHash: attestationTuple[0],
         owner: attestationTuple[1],
         delegationId: attestationTuple[2],
         revoked: attestationTuple[3],
       }
-      log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
-      return Attestation.fromAttestation(attestation)
+      log.info(`Decoded attestation: ${JSON.stringify(rawAttestation)}`)
+      attestation = Attestation.fromAttestation(rawAttestation)
+    } else {
+      log.warn(`malformed attestation: ${JSON.stringify(attestationTuple)}`)
     }
+  } else {
+    log.warn(`malformed query result: ${JSON.stringify(encoded)}`)
   }
-  return null
+  return attestation
 }
 
 async function queryRaw(claimHash: string): Promise<Codec | null> {
-  log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
+  log.debug(`Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await getCached()
   const result: QueryResult = await blockchain.api.query.attestation.attestations(
     claimHash
@@ -79,9 +83,9 @@ export async function query(claimHash: string): Promise<Attestation | null> {
 export async function revoke(
   claimHash: string,
   identity: Identity
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const blockchain = await getCached()
-  log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
+  log.debug(`Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash
   )

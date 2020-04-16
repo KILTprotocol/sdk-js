@@ -11,7 +11,6 @@ import {
   IsOfficialLicenseAuthority,
 } from './utils'
 import Claim from '../claim/Claim'
-import getCached from '../blockchainApiConnection'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
@@ -19,6 +18,7 @@ import { revoke } from '../attestation/Attestation.chain'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { Identity } from '..'
+import getCached from '../blockchainApiConnection'
 
 const UncleSam = faucet
 const attester = alice
@@ -36,7 +36,7 @@ describe('handling attestations that do not exist', () => {
   }, 30_000)
 })
 
-describe('When there is an attester, claimer and ctype drivers license', async () => {
+describe('When there is an attester, claimer and ctype drivers license', () => {
   beforeAll(async () => {
     const ctypeExists = await CtypeOnChain(DriversLicense)
     // console.log(`ctype exists: ${ctypeExists}`)
@@ -82,8 +82,8 @@ describe('When there is an attester, claimer and ctype drivers license', async (
       request,
       attester.getPublicIdentity()
     )
-    const status = await attestation.store(attester)
-    expect(status.type).toBe('Finalized')
+    const result = await attestation.store(attester)
+    expect(result.isFinalized).toBeTruthy()
     const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
     expect(aClaim.verifyData()).toBeTruthy()
     await expect(aClaim.verify()).resolves.toBeTruthy()
@@ -154,8 +154,8 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     )
   }, 60_000)
 
-  describe('when there is an attested claim on-chain', async () => {
-    let AttClaim: AttestedClaim
+  describe('when there is an attested claim on-chain', () => {
+    let attClaim: AttestedClaim
 
     beforeAll(async () => {
       const content = { name: 'Rolfi', age: 18 }
@@ -174,34 +174,34 @@ describe('When there is an attester, claimer and ctype drivers license', async (
         request,
         attester.getPublicIdentity()
       )
-      const status = await attestation.store(attester)
-      expect(status.type).toBe('Finalized')
-      AttClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
-      await expect(AttClaim.verify()).resolves.toBeTruthy()
+      const result = await attestation.store(attester)
+      expect(result.isFinalized).toBeTruthy()
+      attClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
+      await expect(attClaim.verify()).resolves.toBeTruthy()
     }, 60_000)
 
     it('should not be possible to attest the same claim twice', async () => {
-      await expect(AttClaim.attestation.store(attester)).rejects.toThrowError(
+      await expect(attClaim.attestation.store(attester)).rejects.toThrowError(
         'already attested'
       )
-    }, 15000)
+    }, 30_000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
-      await expect(revoke(AttClaim.getHash(), claimer)).rejects.toThrowError(
+      await expect(revoke(attClaim.getHash(), claimer)).rejects.toThrowError(
         'not permitted'
       )
-      await expect(AttClaim.verify()).resolves.toBeTruthy()
-    }, 30000)
+      await expect(attClaim.verify()).resolves.toBeTruthy()
+    }, 30_000)
 
     it('should be possible for the attester to revoke an attestation', async () => {
-      await expect(AttClaim.verify()).resolves.toBeTruthy()
-      const status = await revoke(AttClaim.getHash(), attester)
-      expect(status.type).toBe('Finalized')
-      await expect(AttClaim.verify()).resolves.toBeFalsy()
-    }, 15000)
+      await expect(attClaim.verify()).resolves.toBeTruthy()
+      const result = await revoke(attClaim.getHash(), attester)
+      expect(result.isFinalized).toBeTruthy()
+      await expect(attClaim.verify()).resolves.toBeFalsy()
+    }, 30_000)
   })
 
-  describe('when there is another Ctype that works as a legitimation', async () => {
+  describe('when there is another Ctype that works as a legitimation', () => {
     beforeAll(async () => {
       if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
         await IsOfficialLicenseAuthority.store(UncleSam)
@@ -266,6 +266,6 @@ describe('When there is an attester, claimer and ctype drivers license', async (
   })
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  return getCached().then((bc) => bc.api.disconnect())
 })

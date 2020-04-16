@@ -10,6 +10,7 @@
  * @preferred
  */
 
+import { AnyJson } from '@polkadot/types/types'
 import {
   Attestation as AttestationPE,
   CombinedPresentation,
@@ -113,7 +114,7 @@ export default class Message implements IMessage {
       case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC:
         {
           const submitClaimsForCtype = message.body
-          submitClaimsForCtype.content.forEach(claim => {
+          submitClaimsForCtype.content.forEach((claim) => {
             if (claim.request.claim.owner !== message.senderAddress) {
               throw new Error('Sender is not owner of the claims')
             }
@@ -226,7 +227,7 @@ export default class Message implements IMessage {
 }
 
 interface IMessageBodyBase {
-  content: any
+  content: object | boolean | number | string
   type: MessageBodyType
 }
 
@@ -313,9 +314,7 @@ export interface IRequestAcceptDelegation extends IMessageBodyBase {
       permissions: IDelegationNode['permissions']
       isPCR: boolean
     }
-    metaData?: {
-      [key: string]: any
-    }
+    metaData?: AnyJson
     signatures: {
       inviter: string
     }

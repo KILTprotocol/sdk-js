@@ -16,6 +16,16 @@ import Identity from '../identity/Identity'
 import { IQuote, IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
 
+/**
+ * Validates the quote against the meta schema and quote data against the provided schema.
+ *
+ * @param schema A [[Quote]] schema object.
+ * @param validate [[Quote]] data to be validated against the provided schema.
+ * @param messages The errors messages are listed in an array.
+ *
+ * @returns Whether the quote schema is valid.
+ */
+
 export function validateQuoteSchema(
   schema: object,
   validate: object,
@@ -29,13 +39,23 @@ export function validateQuoteSchema(
   )
   if (!result && ajv.errors) {
     if (messages) {
-      ajv.errors.forEach((error: any) => {
-        messages.push(error.message)
+      ajv.errors.forEach((error: Ajv.ErrorObject) => {
+        if (typeof error.message === 'string') {
+          messages.push(error.message)
+        }
       })
     }
   }
   return !!result
 }
+
+/**
+ * Builds a [[Quote]] object, from a simple object with the same properties.
+ *
+ * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
+ *
+ * @returns A [[Quote]] object signed by an Attester.
+ */
 
 export function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned
@@ -63,6 +83,15 @@ export function fromAttesterSignedInput(
   }
 }
 
+/**
+ * Signs a [[Quote]] object as an Attester, created via [[fromQuoteDataAndIdentity]].
+ *
+ * @param quoteInput A [[Quote]] object.
+ * @param attesterIdentity [[Identity]] used to sign the object.
+ *
+ * @returns A signed [[Quote]] object.
+ */
+
 export function createAttesterSignature(
   quoteInput: IQuote,
   attesterIdentity: Identity
@@ -74,6 +103,15 @@ export function createAttesterSignature(
   }
 }
 
+/**
+ * Creates a [[Quote]] object signed by the given [[Identity]].
+ *
+ * @param quoteInput A [[Quote]] object.
+ * @param identity [[Identity]] used to sign the object.
+ *
+ * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
+ */
+
 export function fromQuoteDataAndIdentity(
   quoteInput: IQuote,
   identity: Identity
@@ -84,7 +122,17 @@ export function fromQuoteDataAndIdentity(
   return createAttesterSignature(quoteInput, identity)
 }
 
-export function createAgreedQuote(
+/**
+ * Creates a [[Quote]] signed by the Attester and the Claimer.
+ *
+ * @param claimerIdentity [[Identity]] of the Claimer in order to sign.
+ * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
+ * @param requestRootHash A root hash of the entire object.
+ *
+ * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
+ */
+
+export function createQuoteAgreement(
   claimerIdentity: Identity,
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: string

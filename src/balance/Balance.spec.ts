@@ -1,28 +1,43 @@
 import BN from 'bn.js/'
+import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
+import { SubmittableResult } from '@polkadot/api'
 import Identity from '../identity/Identity'
-// import partial from 'lodash/partial'
 import { listenToBalanceChanges, makeTransfer } from './Balance.chain'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+const BALANCE = 42
+const FEE = 30
 
 describe('Balance', () => {
   const blockchain = require('../blockchain/Blockchain').default
+  const accountInfo = (balance: number): AccountInfo => {
+    return {
+      data: {
+        free: new BN(balance),
+        reserved: new BN(balance),
+        miscFrozen: new BN(balance),
+        feeFrozen: new BN(balance),
+      } as AccountData,
+    } as AccountInfo
+  }
 
-  blockchain.api.query.balances.freeBalance = jest.fn((accountAddress, cb) => {
-    if (cb) {
-      setTimeout(() => {
-        cb(new BN(42))
-      }, 1)
+  blockchain.api.query.system.account = jest.fn(
+    (accountAddress, cb): AccountInfo => {
+      if (cb) {
+        setTimeout(() => {
+          cb(accountInfo(BALANCE))
+        }, 1)
+      }
+      return accountInfo(BALANCE - FEE)
     }
-    return new BN(12)
-  })
+  )
 
-  it('should listen to balance changes', async done => {
+  it('should listen to balance changes', async (done) => {
     const bob = await Identity.buildFromURI('//Bob')
     const listener = (account: string, balance: BN, change: BN): void => {
       expect(account).toBe(bob.getAddress())
-      expect(balance.toNumber()).toBe(42)
-      expect(change.toNumber()).toBe(30)
+      expect(balance.toNumber()).toBe(BALANCE)
+      expect(change.toNumber()).toBe(FEE)
       done()
     }
 
@@ -32,7 +47,7 @@ describe('Balance', () => {
     )
 
     expect(currentBalance.toString()).toBeTruthy()
-    expect(currentBalance.toString()).toEqual('12')
+    expect(currentBalance.toNumber()).toEqual(BALANCE - FEE)
   })
 
   blockchain.__mockResultHash = '123'
@@ -41,7 +56,8 @@ describe('Balance', () => {
     const alice = await Identity.buildFromURI('//Alice')
     const bob = await Identity.buildFromURI('//Bob')
 
-    const hash = await makeTransfer(alice, bob.getAddress(), new BN(100))
-    expect(hash).toBe('123')
+    const status = await makeTransfer(alice, bob.getAddress(), new BN(100))
+    expect(status).toBeInstanceOf(SubmittableResult)
+    expect(status.isFinalized).toBeTruthy()
   })
 })

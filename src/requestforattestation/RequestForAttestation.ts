@@ -32,17 +32,17 @@ import RequestForAttestationUtils from './RequestForAttestation.utils'
 import IRequestForAttestation, {
   Hash,
   NonceHash,
-  ClaimHashTree,
+  NonceHashTree,
   CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
 import { IDelegationBaseNode } from '../types/Delegation'
 import IClaim from '../types/Claim'
 
-function hashNonceValue(nonce: string, value: any): string {
+function hashNonceValue(nonce: string, value: string): string {
   return hashObjectAsStr(value, nonce)
 }
 
-function generateHash(value: any): NonceHash {
+function generateHash(value: string): NonceHash {
   const nonce: string = uuid()
   return {
     nonce,
@@ -50,11 +50,11 @@ function generateHash(value: any): NonceHash {
   }
 }
 
-function generateHashTree(contents: object): ClaimHashTree {
-  const result: ClaimHashTree = {}
+function generateHashTree(contents: IClaim['contents']): NonceHashTree {
+  const result: NonceHashTree = {}
 
-  Object.keys(contents).forEach(key => {
-    result[key] = generateHash(contents[key])
+  Object.keys(contents).forEach((key) => {
+    result[key] = generateHash(contents[key].toString())
   })
 
   return result
@@ -182,7 +182,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public legitimations: AttestedClaim[]
   public claimOwner: NonceHash
   public claimerSignature: string
-  public claimHashTree: ClaimHashTree
+  public claimHashTree: NonceHashTree
   public cTypeHash: NonceHash
   public rootHash: Hash
   public privacyEnhanced: AttestationRequest | null
@@ -208,7 +208,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       requestForAttestationInput.legitimations.length
     ) {
       this.legitimations = requestForAttestationInput.legitimations.map(
-        legitimation => AttestedClaim.fromAttestedClaim(legitimation)
+        (legitimation) => AttestedClaim.fromAttestedClaim(legitimation)
       )
     } else {
       this.legitimations = []
@@ -242,7 +242,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public removeClaimProperties(properties: string[]): void {
-    properties.forEach(key => {
+    properties.forEach((key) => {
       if (!this.claimHashTree[key]) {
         throw Error(`Property '${key}' not found in claim`)
       }
@@ -317,7 +317,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     }
 
     // check all hashes for provided claim properties
-    Object.keys(this.claim.contents).forEach(key => {
+    Object.keys(this.claim.contents).forEach((key) => {
       const value = this.claim.contents[key]
       if (!this.claimHashTree[key]) {
         throw Error(`Property '${key}' not in claim hash tree`)
@@ -325,7 +325,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       const hashed: NonceHash = this.claimHashTree[key]
       if (
         !hashed.nonce ||
-        hashed.hash !== hashNonceValue(hashed.nonce, value)
+        hashed.hash !== hashNonceValue(hashed.nonce, value.toString())
       ) {
         throw Error(`Invalid hash for property '${key}' in claim hash tree`)
       }
@@ -334,7 +334,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     // check legitimations
     let valid = true
     if (this.legitimations) {
-      this.legitimations.forEach(legitimation => {
+      this.legitimations.forEach((legitimation) => {
         valid = valid && legitimation.verifyData()
       })
     }
@@ -369,18 +369,18 @@ export default class RequestForAttestation implements IRequestForAttestation {
   private static getHashLeaves(
     claimOwner: NonceHash,
     cTypeHash: NonceHash,
-    claimHashTree: object,
+    claimHashTree: NonceHashTree,
     legitimations: AttestedClaim[],
     delegationId: IDelegationBaseNode['id'] | null
   ): Uint8Array[] {
     const result: Uint8Array[] = []
     result.push(coToUInt8(claimOwner.hash))
     result.push(coToUInt8(cTypeHash.hash))
-    Object.keys(claimHashTree).forEach(key => {
+    Object.keys(claimHashTree).forEach((key) => {
       result.push(coToUInt8(claimHashTree[key].hash))
     })
     if (legitimations) {
-      legitimations.forEach(legitimation => {
+      legitimations.forEach((legitimation) => {
         result.push(coToUInt8(legitimation.getHash()))
       })
     }
@@ -419,7 +419,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   private static calculateRootHash(
     claimOwner: NonceHash,
     cTypeHash: NonceHash,
-    claimHashTree: object,
+    claimHashTree: NonceHashTree,
     legitimations: AttestedClaim[],
     delegationId: IDelegationBaseNode['id'] | null
   ): Hash {

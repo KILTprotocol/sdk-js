@@ -23,6 +23,12 @@ const CUSTOM_TYPES: RegistryTypes = {
   PublicBoxKey: 'Hash',
   Permissions: 'u32',
   ErrorCode: 'u16',
+  Signature: 'MultiSignature',
+
+  Address: 'AccountId',
+  LookupSource: 'AccountId',
+  BlockNumber: 'u64',
+  Index: 'u64',
 }
 
 export async function buildConnection(
@@ -33,7 +39,9 @@ export async function buildConnection(
     provider,
     types: CUSTOM_TYPES,
   })
-  return new Blockchain(api)
+  const bc = new Blockchain(api)
+  await bc.ready
+  return bc
 }
 
 export async function getCached(

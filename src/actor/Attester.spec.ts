@@ -1,7 +1,7 @@
 import Bool from '@polkadot/types/primitive/Bool'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
+import AccountId from '@polkadot/types/generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
-import { Text } from '@polkadot/types'
+import { Text, TypeRegistry } from '@polkadot/types'
 import {
   AttesterIdentity,
   Identity,
@@ -15,6 +15,7 @@ import constants from '../test/constants'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Attester', () => {
+  const registry = new TypeRegistry()
   let alice: AttesterIdentity
   let bob: Identity
   let Blockchain: any
@@ -34,8 +35,10 @@ describe('Attester', () => {
   it('Issue privacy enhanced attestation', async () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
       const tuple = new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           [Text, AccountId, Text, Bool],
           ['0xdead', alice.getAddress(), undefined, false]
         )
@@ -81,8 +84,10 @@ describe('Attester', () => {
   it('Issue only public attestation', async () => {
     Blockchain.api.query.attestation.attestations = jest.fn(() => {
       const tuple = new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           [Text, AccountId, Text, Bool],
           ['0xdead', alice.getAddress(), undefined, false]
         )

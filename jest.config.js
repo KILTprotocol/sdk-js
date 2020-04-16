@@ -19,4 +19,5 @@ module.exports = {
   ],
   rootDir: 'src',
   coverageDirectory: '../coverage',
+  globalTeardown: './__integrationtests__/jest.teardown.js',
 }
