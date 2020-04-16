@@ -200,11 +200,11 @@ export default class Blockchain implements IBlockchainApi {
                   this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
 
                 log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
-                this.resetQueue(identity.address)
+                this.resetAccountQueue(identity.address)
                 reject(extrinsicError)
               }
               if (result.isFinalized) {
-                this.resetQueue(identity.address)
+                this.resetAccountQueue(identity.address)
                 resolve(new SubmittableResult(result))
               } else if (result.isError) {
                 reject(
@@ -219,7 +219,7 @@ export default class Blockchain implements IBlockchainApi {
         })
       }
     } catch (err) {
-      this.resetQueue(identity.address)
+      this.resetAccountQueue(identity.address)
       return new Promise<SubmittableResult>((resolve, reject) => reject(err))
     }
 >>>>>>> feat: reset q on new block (chain response)
@@ -294,7 +294,7 @@ export default class Blockchain implements IBlockchainApi {
     return nonce
   }
 
-  private resetQueue(accountAddress: Identity['address']): void {
+  private resetAccountQueue(accountAddress: Identity['address']): void {
     if (this.pending.has(accountAddress) && !this.pending.get(accountAddress)) {
       this.accountNonces.delete(accountAddress)
     }
