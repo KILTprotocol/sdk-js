@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * Blockchain bridges that connects the SDK and the KILT Blockchain.
  *
@@ -159,6 +160,7 @@ export default class Blockchain implements IBlockchainApi {
   public async signTx(
     identity: Identity,
     tx: SubmittableExtrinsic
+<<<<<<< HEAD
   ): Promise<SubmittableExtrinsic> {
     const nonce = await this.getNonce(identity.address)
     const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
@@ -175,6 +177,52 @@ export default class Blockchain implements IBlockchainApi {
   ): Promise<SubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
     return Blockchain.submitSignedTx(signedTx, opts)
+=======
+  ): Promise<SubmittableResult> {
+    try {
+      const nonce: Index = await this.getNonce(identity.address)
+      if (nonce.toNumber() === -1) {
+        throw new Error('Error while retrieving Nonce')
+      } else {
+        const signed = identity.signSubmittableExtrinsic(tx, nonce.toHex())
+        log.info(`Submitting ${tx.method} with Nonce ${nonce}`)
+        return new Promise<SubmittableResult>((resolve, reject) => {
+          signed
+            .send(result => {
+              log.info(`Got tx status '${result.status.type}'`)
+              const { status } = result
+              if (ErrorHandler.extrinsicFailed(result)) {
+                log.warn(`Extrinsic execution failed`)
+                log.debug(
+                  `Transaction detail: ${JSON.stringify(result, null, 2)}`
+                )
+                const extrinsicError: ExtrinsicError =
+                  this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
+
+                log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
+                this.resetQueue(identity.address)
+                reject(extrinsicError)
+              }
+              if (result.isFinalized) {
+                this.resetQueue(identity.address)
+                resolve(new SubmittableResult(result))
+              } else if (result.isError) {
+                reject(
+                  new Error(`Transaction failed with status '${status.type}'`)
+                )
+              }
+            })
+            .catch((err: Error) => {
+              // just reject with the original tx error from the chain
+              reject(err)
+            })
+        })
+      }
+    } catch (err) {
+      this.resetQueue(identity.address)
+      return new Promise<SubmittableResult>((resolve, reject) => reject(err))
+    }
+>>>>>>> feat: reset q on new block (chain response)
   }
 
   public async getNonce(accountAddress: string): Promise<Index> {
@@ -244,5 +292,11 @@ export default class Blockchain implements IBlockchainApi {
       nonce = new UInt(-1)
     }
     return nonce
+  }
+
+  private resetQueue(accountAddress: Identity['address']): void {
+    if (this.pending.has(accountAddress) && !this.pending.get(accountAddress)) {
+      this.accountNonces.delete(accountAddress)
+    }
   }
 }
