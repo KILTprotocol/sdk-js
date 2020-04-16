@@ -95,25 +95,25 @@ describe('DID', () => {
       authentication: [
         {
           publicKey: [
-            'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M#key-1',
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-1',
           ],
           type: 'Ed25519SignatureAuthentication2018',
         },
       ],
-      id: 'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M',
+      id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
       publicKey: [
         {
           controller:
-            'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M',
-          id: 'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M#key-1',
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
+          id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-1',
           publicKeyHex:
-            '0x4acb9bc1db9af5512d91da6461e362ebf0e6500f5ee36d39adc476e2558f9477',
+            '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee',
           type: 'Ed25519VerificationKey2018',
         },
         {
           controller:
-            'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M',
-          id: 'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M#key-2',
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
+          id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-2',
           publicKeyHex:
             '0xbd0f0e4b81ecf1644026498ff657ce7aa0101511e913464f22ea415961a32c34',
           type: 'X25519Salsa20Poly1305Key2018',
@@ -142,25 +142,25 @@ describe('DID', () => {
       authentication: [
         {
           publicKey: [
-            'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M#key-1',
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-1',
           ],
           type: 'Ed25519SignatureAuthentication2018',
         },
       ],
-      id: 'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M',
+      id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
       publicKey: [
         {
           controller:
-            'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M',
-          id: 'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M#key-1',
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
+          id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-1',
           publicKeyHex:
-            '0x4acb9bc1db9af5512d91da6461e362ebf0e6500f5ee36d39adc476e2558f9477',
+            '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee',
           type: 'Ed25519VerificationKey2018',
         },
         {
           controller:
-            'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M',
-          id: 'did:kilt:5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M#key-2',
+            'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
+          id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-2',
           publicKeyHex:
             '0xbd0f0e4b81ecf1644026498ff657ce7aa0101511e913464f22ea415961a32c34',
           type: 'X25519Salsa20Poly1305Key2018',
