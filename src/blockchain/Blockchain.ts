@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * Blockchain bridges that connects the SDK and the KILT Blockchain.
  *
@@ -193,6 +192,7 @@ export default class Blockchain implements IBlockchainApi {
       if (!this.nonceQueue.has(accountAddress)) {
         this.nonceQueue.set(accountAddress, [resolve])
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.nonceQueue.get(accountAddress)!.push(resolve)
       }
     })
@@ -203,11 +203,9 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   private handleQueue(accountAddress: Identity['address']): void {
-    if (
-      this.nonceQueue.has(accountAddress) &&
-      this.nonceQueue.get(accountAddress)!.length > 0
-    ) {
+    if ((this.nonceQueue.get(accountAddress) || []).length > 0) {
       this.pending.set(accountAddress, true)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const resolve = this.nonceQueue.get(accountAddress)!.shift()
       if (resolve) {
         resolve(async () => {
