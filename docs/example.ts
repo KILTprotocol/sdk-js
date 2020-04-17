@@ -5,19 +5,18 @@ import Kilt, {
   MessageBodyType,
   Identity,
   Claim,
-  Accumulator,
   AttesterIdentity,
   Credential,
 } from '../src'
 import constants from '../src/test/constants'
 import { IRevocationHandle } from '../src/types/Attestation'
+import { getBalance } from '../src/balance/Balance.chain'
 
 async function doAttestation(): Promise<{
   claimer: Identity
   attester: AttesterIdentity
   claim: Claim
   credential: Credential
-  accumulator: Accumulator
   revocationHandle: IRevocationHandle
 }> {
   // How to generate an Identity
@@ -59,14 +58,17 @@ async function doAttestation(): Promise<{
   // Build the CType object
   const ctype = new Kilt.CType(rawCtype)
 
-  // Before you can store the ctype on the blockchain, you have to connect to it.
-  // Setup your local node and start it, using the dev chain
-  // Kilt.connect('ws://localhost:9944')
-
   // Store ctype on blockchain
   // ! This costs tokens !
   // Also note, that the completely same ctype can only be stored once on the blockchain.
-  // ctype.store(claimer)
+  try {
+    await ctype.store(claimer)
+  } catch (e) {
+    console.log(
+      'Error while storing CType. Probably either insufficient funds or ctype does already exist.',
+      e
+    )
+  }
 
   // ------------------------- Attester ----------------------------------------
 
@@ -79,7 +81,9 @@ async function doAttestation(): Promise<{
     constants.PRIVATE_KEY.valueOf(),
     'feel hazard trip seven traffic make hero kingdom speed transfer rug success'
   )
-
+  console.log('Attester balance is:', await getBalance(attester.getAddress()))
+  // TODO: how to handle instantiation? We cannot always upload the accumulator...
+  await attester.updateAccumulator(attester.getAccumulator())
   // for privacy enhanced attestations the attester has to initiate the attestation process
   const {
     message: initiateAttestationMessage,
@@ -178,18 +182,14 @@ async function doAttestation(): Promise<{
 
   console.log('RFO Message', message, '\n')
   console.log('Submit attestation:', submitAttestation, '\n')
-  console.log('Credential', credential, '\n')
-  console.log('Credential message', messageBack, '\n')
-  const acc = attester.accumulator
-  if (typeof acc === 'undefined') {
-    throw new Error('No no this is not possible!')
-  }
+  console.log('AttestedClaim', credential, '\n')
+  console.log('AttestedClaim message', messageBack, '\n')
+
   return {
     claimer,
     attester,
     claim,
     credential,
-    accumulator: acc,
     revocationHandle,
   }
 }
@@ -198,14 +198,14 @@ async function doVerification(
   claimer: Identity,
   attester: AttesterIdentity,
   credential: Credential,
-  accumulator: Accumulator,
   pe: boolean
 ): Promise<void> {
-  const attesterPubKey = attester.getPublicGabiKey()
+  const attesterPub = attester.getPublicIdentity()
   // ------------------------- Verifier ----------------------------------------
   const [session, request] = await Kilt.Verifier.newRequest()
     .requestPresentationForCtype({
       ctypeHash: credential.attestation.cTypeHash,
+      reqUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available
       attributes: ['age'],
     })
     .finalize(pe)
@@ -216,16 +216,17 @@ async function doVerification(
     claimer,
     request,
     [credential],
-    [attesterPubKey],
+    [attesterPub.publicGabiKey],
     pe
   )
 
   // ------------------------- Verifier ----------------------------------------
+  // TODO: where das the verifier get the public identity from?
   const [verified, claims] = await Kilt.Verifier.verifyPresentation(
     presentation,
     session,
-    [accumulator],
-    [attesterPubKey]
+    [await Kilt.Attester.getLatestAccumulator(attesterPub)],
+    [attesterPub.publicGabiKey]
   )
   console.log('Received claims: ', JSON.stringify(claims))
   console.log('All valid? ', verified)
@@ -240,36 +241,12 @@ async function example(): Promise<void> {
     revocationHandle,
   } = await doAttestation()
   // should succeed
-  await doVerification(
-    claimer,
-    attester,
-    credential,
-    attester.accumulator,
-    true
-  )
-  await doVerification(
-    claimer,
-    attester,
-    credential,
-    attester.accumulator,
-    false
-  )
+  await doVerification(claimer, attester, credential, true)
+  await doVerification(claimer, attester, credential, false)
   await Kilt.Attester.revokeAttestation(attester, revocationHandle)
   // should fail
-  await doVerification(
-    claimer,
-    attester,
-    credential,
-    attester.accumulator,
-    true
-  )
-  await doVerification(
-    claimer,
-    attester,
-    credential,
-    attester.accumulator,
-    false
-  )
+  await doVerification(claimer, attester, credential, true)
+  await doVerification(claimer, attester, credential, false)
 }
 
 // connect to the blockchain, execute the examples and then disconnect

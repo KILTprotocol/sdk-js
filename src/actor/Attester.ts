@@ -1,4 +1,6 @@
 import * as gabi from '@kiltprotocol/portablegabi'
+import { getCached } from '../blockchainApiConnection'
+import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
 import AttesterIdentity from '../attesteridentity/AttesterIdentity'
 import {
   IInitiateAttestation,
@@ -14,7 +16,7 @@ import { IRevocationHandle } from '../types/Attestation'
  *
  * @param identity The [[Identity]] representing the entity which is eligible to attest and sign the [[Claim]].
  * @returns A session and a message object.
- * The **message** should be sent over to the Claimer to be used in [[requestAttestion]].
+ * The **message** should be sent over to the Claimer to be used in [[requestAttestation]].
  * The **session** should be kept private and used in [[issueAttestation]].
  */
 export async function initiateAttestation(
@@ -92,4 +94,45 @@ export async function revokeAttestation(
   attestation: IRevocationHandle
 ): Promise<void> {
   return identity.revokeAttestation(attestation)
+}
+
+export async function updateAccumulator(
+  identity: AttesterIdentity,
+  accumulator: gabi.Accumulator
+): Promise<void> {
+  identity.updateAccumulator(accumulator)
+}
+
+export async function getAccumulator(
+  identity: PublicAttesterIdentity,
+  index: number
+): Promise<gabi.Accumulator> {
+  const bc = await getCached()
+  return bc.portablegabi.getAccumulator(identity.address, index)
+}
+
+export async function getLatestAccumulator(
+  identity: PublicAttesterIdentity
+): Promise<gabi.Accumulator> {
+  const bc = await getCached()
+  return bc.portablegabi.getLatestAccumulator(identity.address)
+}
+
+export async function getAccumulatorArray(
+  identity: PublicAttesterIdentity,
+  startIndex: number,
+  _endIndex: number | undefined
+): Promise<gabi.Accumulator[]> {
+  const bc = await getCached()
+  return bc.portablegabi.getAccumulatorArray(
+    identity.address,
+    startIndex,
+    _endIndex
+  )
+}
+
+export async function buildAccumulator(
+  identity: AttesterIdentity
+): Promise<gabi.Accumulator> {
+  return identity.buildAccumulator()
 }

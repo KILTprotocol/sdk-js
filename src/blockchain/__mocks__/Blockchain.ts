@@ -92,6 +92,9 @@ const blockchain: any = {
           return blockchain.__mockQueryDidDids(id)
         }),
       },
+      portablegabi: {
+        accumulator: jest.fn()
+      }
     },
   },
   getStats: jest.fn(),
@@ -102,6 +105,11 @@ const blockchain: any = {
     return Promise.resolve(new SubmittableResult({status: blockchain.__mockTxStatus}))
   }),
   getNonce: jest.fn(),
+}
+
+blockchain.portablegabi = {
+  updateAccumulator: jest.fn(),
+  waitForNextBlock: jest.fn(),
 }
 
 export default blockchain

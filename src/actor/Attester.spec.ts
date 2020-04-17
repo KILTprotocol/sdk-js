@@ -1,7 +1,7 @@
 import Bool from '@polkadot/types/primitive/Bool'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
-import { Text } from '@polkadot/types'
+import { Text, Vec } from '@polkadot/types'
 import {
   AttesterIdentity,
   Identity,
@@ -119,7 +119,13 @@ describe('Attester', () => {
     Blockchain.api.tx.attestation.revoke = jest.fn(() => {
       return Promise.resolve()
     })
-
+    Blockchain.api.query.portablegabi.accumulator = jest.fn(() => {
+      const tuple = new Option(
+        'Vec<Bytes>',
+        new Vec('Bytes', '0xDEADBEEF')
+      )
+      return Promise.resolve(tuple)
+    })
     const {
       message: initAttestation,
       session: attersterSession,
@@ -148,9 +154,9 @@ describe('Attester', () => {
       attersterSession,
       true
     )
-    const oldAcc = alice.accumulator
+    const oldAcc = alice.getAccumulator()
     await Attester.revokeAttestation(alice, revocationHandle)
-    expect(oldAcc.valueOf()).not.toEqual(alice.accumulator.valueOf())
+    expect(oldAcc.valueOf()).not.toEqual(alice.getAccumulator().valueOf())
   })
 
   it('Revoke public only attestation', async () => {
@@ -183,9 +189,9 @@ describe('Attester', () => {
       alice,
       requestAttestation
     )
-    const oldAcc = alice.accumulator
+    const oldAcc = alice.getAccumulator()
     await Attester.revokeAttestation(alice, revocationHandle)
     // accumulator should not change!
-    expect(alice.accumulator.valueOf()).toEqual(oldAcc.valueOf())
+    expect(alice.getAccumulator().valueOf()).toEqual(oldAcc.valueOf())
   })
 })

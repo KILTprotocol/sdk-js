@@ -44,9 +44,15 @@ export class ErrorHandler {
     ErrorHandler.getErrorModuleIndex(apiPromise).then((moduleIndex: number) => {
       this.moduleIndex = moduleIndex
     })
+    this.ready = ErrorHandler.getErrorModuleIndex(apiPromise)
+      .then((moduleIndex: number) => {
+        this.moduleIndex = moduleIndex
+      })
+      .then(() => true, () => false)
   }
 
   private moduleIndex = -1
+  public readonly ready: Promise<boolean>
 
   /**
    * Get the extrinsic error from the transaction result.
