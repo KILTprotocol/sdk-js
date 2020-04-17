@@ -25,7 +25,7 @@ async function getCached(
   return BlockchainApiConnection.instance
 }
 
-const TxresultsQueue: SubmittableResult[] = []
+const TxResultsQueue: SubmittableResult[] = []
 let defaultTxResult: SubmittableResult = __makeSubmittableResult(true)
 
 class MockSubmittableExtrinsic {
@@ -48,7 +48,7 @@ class MockSubmittableExtrinsic {
 }
 
 function __getMockSubmittableExtrinsic(): SubmittableExtrinsic {
-  const result: SubmittableResult = TxresultsQueue.shift() || defaultTxResult
+  const result: SubmittableResult = TxResultsQueue.shift() || defaultTxResult
   return (new MockSubmittableExtrinsic(result) as any) as SubmittableExtrinsic
 }
 
@@ -70,7 +70,7 @@ function __makeSubmittableResult(success: boolean): SubmittableResult {
 
 function __queueResults(results: boolean[]) {
   results.forEach(success => {
-    TxresultsQueue.push(__makeSubmittableResult(success))
+    TxResultsQueue.push(__makeSubmittableResult(success))
   })
 }
 
