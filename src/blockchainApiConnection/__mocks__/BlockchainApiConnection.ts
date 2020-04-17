@@ -7,10 +7,12 @@
  */
 import Blockchain, { IBlockchainApi } from '../../blockchain/Blockchain'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { Option, Tuple, Vec, Text } from '@polkadot/types'
+import { Option, Tuple, Vec, Text, U8a } from '@polkadot/types'
 import BN from 'bn.js'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { ExtrinsicStatus } from '@polkadot/types/interfaces'
+import { Codec } from '@polkadot/types/types'
+import { stringToHex } from '@polkadot/util'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
 
@@ -131,7 +133,20 @@ const __mocked_api: any = {
       children: jest.fn((id: string) => new Vec(Text, [])),
     },
     did: {
-      dIDs: jest.fn(id => new Option(Tuple)),
+      dIDs: jest.fn(
+        (address: string): Option<Codec> =>
+          new Option(
+            Tuple,
+            new Tuple(
+              [Text, Text, U8a],
+              [
+                'publicSigningKey', // publicSigningKey
+                'publicBoxKey', // publicBoxKey
+                stringToHex('http://myDID.kilt.io'), // document store
+              ]
+            )
+          )
+      ),
     },
   },
   runtimeMetadata: {
