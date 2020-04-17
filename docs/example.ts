@@ -11,6 +11,7 @@ import Kilt, {
 } from '../src'
 import constants from '../src/test/constants'
 import { IRevocableAttestation } from '../src/types/Attestation'
+import { getBalance } from '../src/balance/Balance.chain'
 
 async function doAttestation(): Promise<{
   claimer: Identity
@@ -23,9 +24,10 @@ async function doAttestation(): Promise<{
   // How to generate an Identity
   // const mnemonic = Kilt.Identity.generateMnemonic()
   const claimer = await Kilt.Identity.buildFromMnemonic(
-    'wish rather clinic rather connect culture frown like quote effort cart faculty'
+    'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   )
   // const address = claimer.getAddress()
+  console.log('Claimer balance is:', await getBalance(claimer.getAddress()))
 
   // At this point the generated Identity has no tokens.
   // If you want to interact with the blockchain, you will have to get some.
@@ -74,11 +76,12 @@ async function doAttestation(): Promise<{
   // we can generate a new keypair, which will take about 20 minutes:
   // const attester = await Kilt.AttesterIdentity.buildFromMnemonic("...")
   // or we just use unsafe precalculated keys (just for demo purposes!):
-  const attester = await Kilt.AttesterIdentity.buildFromMnemonicAndKey(
+  const attester = await Kilt.AttesterIdentity.buildFromURIAndKey(
+    '//Alice',
     constants.PUBLIC_KEY.valueOf(),
-    constants.PRIVATE_KEY.valueOf(),
-    'feel hazard trip seven traffic make hero kingdom speed transfer rug success'
+    constants.PRIVATE_KEY.valueOf()
   )
+  console.log('Attester balance is:', await getBalance(attester.getAddress()))
 
   // for privacy enhanced attestations the attester has to initiate the attestation process
   const {
@@ -154,17 +157,19 @@ async function doAttestation(): Promise<{
   // ------------------------- CLAIMER -----------------------------------------
   Kilt.Message.ensureHashAndSignature(encryptedBack, attester.getAddress())
   // FIXME: Why no work! :_(
-  // const decryptedBack = Kilt.Message.createFromEncryptedMessage(
-  //   encrypted,
-  //   claimer
-  // )
+  const decryptedBack = Kilt.Message.createFromEncryptedMessage(
+    encryptedBack,
+    claimer
+  )
 
-  if (messageBack.body.type !== MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
+  if (
+    decryptedBack.body.type !== MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+  ) {
     throw new Error('Should be SUBMIT_ATTESTATION_FOR_CLAIM')
   }
   const attestedClaim = await Kilt.Claimer.buildAttestedClaim(
     claimer,
-    messageBack.body,
+    decryptedBack.body,
     claimerSession
   )
   console.log('Claimer', claimer.getAddress(), '\n')
@@ -270,12 +275,12 @@ async function example(): Promise<void> {
 }
 
 // connect to the blockchain, execute the examples and then disconnect
-Kilt.connect('wss://full-nodes.kilt.io:9944')
+Kilt.connect('ws://127.0.0.1:9944')
   .then(example)
-  .finally(() => Kilt.disconnect('wss://full-nodes.kilt.io:9944'))
+  .finally(() => Kilt.disconnect('ws://127.0.0.1:9944'))
   .then(
     () => process.exit(),
-    e => {
+    (e) => {
       console.log('Error Error Error!', e)
       process.exit(1)
     }
