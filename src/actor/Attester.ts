@@ -1,4 +1,5 @@
 import * as gabi from '@kiltprotocol/portablegabi'
+import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
 import AttesterIdentity from '../attesteridentity/AttesterIdentity'
 import {
   IInitiateAttestation,
@@ -8,6 +9,7 @@ import {
 } from '../messaging/Message'
 import Attestation from '../attestation/Attestation'
 import { IRevocableAttestation } from '../types/Attestation'
+import getCached from '../blockchainApiConnection'
 
 export async function initiateAttestation(
   identity: AttesterIdentity
@@ -66,4 +68,45 @@ export async function revokeAttestation(
   attestation: IRevocableAttestation
 ): Promise<void> {
   return identity.revokeAttestation(attestation)
+}
+
+export async function updateAccumulator(
+  identity: AttesterIdentity,
+  accumulator: gabi.Accumulator
+): Promise<void> {
+  identity.updateAccumulator(accumulator)
+}
+
+export async function getAccumulator(
+  identity: PublicAttesterIdentity,
+  index: number
+): Promise<gabi.Accumulator> {
+  const bc = await getCached()
+  return bc.portablegabi.getAccumulator(identity.address, index)
+}
+
+export async function getLatestAccumulator(
+  identity: PublicAttesterIdentity
+): Promise<gabi.Accumulator> {
+  const bc = await getCached()
+  return bc.portablegabi.getLatestAccumulator(identity.address)
+}
+
+export async function getAccumulatorArray(
+  identity: PublicAttesterIdentity,
+  startIndex: number,
+  _endIndex: number | undefined
+): Promise<gabi.Accumulator[]> {
+  const bc = await getCached()
+  return bc.portablegabi.getAccumulatorArray(
+    identity.address,
+    startIndex,
+    _endIndex
+  )
+}
+
+export async function buildAccumulator(
+  identity: AttesterIdentity
+): Promise<gabi.Accumulator> {
+  return identity.buildAccumulator()
 }

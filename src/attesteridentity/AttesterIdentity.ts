@@ -7,12 +7,13 @@ import { MessageBodyType, IInitiateAttestation } from '../messaging/Message'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import PublicAttesterIdentity from './PublicAttesterIdentity'
 import Attestation from '../attestation/Attestation'
+import getCached from '../blockchainApiConnection'
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
 
 export default class AttesterIdentity extends Identity {
   protected attester: gabi.Attester
-  public accumulator: gabi.Accumulator
+  private accumulator: gabi.Accumulator
 
   constructor(
     seed: Uint8Array,
@@ -47,10 +48,14 @@ export default class AttesterIdentity extends Identity {
   public static async buildFromIdentity(
     identity: Identity,
     validityDuration: number,
-    maxAttributes: number
+    maxAttributes: number,
+    accumulator: gabi.Accumulator | null = null
   ): Promise<AttesterIdentity> {
     const attester = await gabi.Attester.create(validityDuration, maxAttributes)
-    const acc = await attester.createAccumulator()
+    let acc = accumulator
+    if (acc === null) {
+      acc = await attester.createAccumulator()
+    }
 
     return new AttesterIdentity(
       identity.seed,
@@ -177,6 +182,10 @@ export default class AttesterIdentity extends Identity {
     return this.accumulator
   }
 
+  public async buildAccumulator(): Promise<gabi.Accumulator> {
+    return this.attester.createAccumulator()
+  }
+
   public async issuePrivacyEnhancedAttestation(
     session: gabi.AttesterAttestationSession,
     reqForAttestation: IRequestForAttestation
@@ -208,14 +217,22 @@ export default class AttesterIdentity extends Identity {
     }
   }
 
+  public async updateAccumulator(acc: gabi.Accumulator): Promise<void> {
+    const bc = await getCached()
+    await bc.portablegabi.updateAccumulator(this.signKeyringPair, acc)
+    await bc.portablegabi.waitForNextBlock()
+    this.accumulator = acc
+  }
+
   public async revokeAttestation(
     attestation: IRevocableAttestation
   ): Promise<void> {
     if (attestation.witness !== null) {
-      this.accumulator = await this.attester.revokeAttestation({
+      const newAcc = await this.attester.revokeAttestation({
         witnesses: [attestation.witness],
         accumulator: this.accumulator,
       })
+      await this.updateAccumulator(newAcc)
     }
     await new Attestation(attestation).revoke(this)
   }
