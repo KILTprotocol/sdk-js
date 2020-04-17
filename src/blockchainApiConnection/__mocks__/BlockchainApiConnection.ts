@@ -14,19 +14,12 @@ import { ExtrinsicStatus } from '@polkadot/types/interfaces'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
 
-BlockchainApiConnection.getCached = getCached
-BlockchainApiConnection.__queueResults = __queueResults
-BlockchainApiConnection.__setDefaultResult = __setDefaultResult
-
-module.exports = BlockchainApiConnection
-module.exports.default = BlockchainApiConnection.getCached
-
 async function getCached(
   _: string = BlockchainApiConnection.DEFAULT_WS_ADDRESS
 ): Promise<IBlockchainApi> {
   if (!BlockchainApiConnection.instance) {
     BlockchainApiConnection.instance = Promise.resolve(
-      new Blockchain(mocked_api as ApiPromise)
+      new Blockchain(__mocked_api as ApiPromise)
     )
   }
   return BlockchainApiConnection.instance
@@ -85,7 +78,7 @@ function __setDefaultResult(success: boolean) {
   defaultTxResult = __makeSubmittableResult(success)
 }
 
-const mocked_api: any = {
+const __mocked_api: any = {
   tx: {
     attestation: {
       add: jest.fn((claimHash, _cTypeHash) => {
@@ -133,12 +126,20 @@ const mocked_api: any = {
       cTYPEs: jest.fn(hash => true),
     },
     delegation: {
-      root: jest.fn((rootId: string) => new Option(Tuple, null)),
-      delegations: jest.fn((delegationId: string) => new Option(Tuple, null)),
+      root: jest.fn((rootId: string) => new Option(Tuple)),
+      delegations: jest.fn((delegationId: string) => new Option(Tuple)),
       children: jest.fn((id: string) => new Vec(Text, [])),
     },
     did: {
-      dIDs: jest.fn(id => new Option(Tuple, null)),
+      dIDs: jest.fn(id => new Option(Tuple)),
     },
   },
 }
+
+BlockchainApiConnection.getCached = getCached
+BlockchainApiConnection.__queueResults = __queueResults
+BlockchainApiConnection.__setDefaultResult = __setDefaultResult
+BlockchainApiConnection.__mocked_api = __mocked_api
+
+module.exports = BlockchainApiConnection
+module.exports.default = BlockchainApiConnection.getCached
