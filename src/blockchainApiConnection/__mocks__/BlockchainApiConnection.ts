@@ -134,6 +134,11 @@ const __mocked_api: any = {
       dIDs: jest.fn(id => new Option(Tuple)),
     },
   },
+  runtimeMetadata: {
+    asV4: {
+      modules: [],
+    },
+  },
 }
 
 BlockchainApiConnection.getCached = getCached
