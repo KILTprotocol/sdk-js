@@ -1,5 +1,7 @@
-/* eslint-disable */
-
+/**
+ * @hidden
+ * @packageDocumentation
+ */
 import BN from 'bn.js/'
 import Identity from '../identity/Identity'
 import CType from '../ctype/CType'
