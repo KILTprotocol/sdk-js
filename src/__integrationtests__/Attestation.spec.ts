@@ -71,12 +71,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.getAddress()
     )
-    const request = (
-      await RequestForAttestation.fromClaimAndIdentity({
-        claim,
-        identity: claimer,
-      })
-    )[0]
+    const [request] = await RequestForAttestation.fromClaimAndIdentity({
+      claim,
+      identity: claimer,
+    })
     expect(request.verifyData()).toBeTruthy()
     expect(request.verifySignature()).toBeTruthy()
     const attestation = Attestation.fromRequestAndPublicIdentity(
@@ -146,12 +144,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.getAddress()
     )
-    const request = (
-      await RequestForAttestation.fromClaimAndIdentity({
-        claim,
-        identity: claimer,
-      })
-    )[0]
+    const [request] = await RequestForAttestation.fromClaimAndIdentity({
+      claim,
+      identity: claimer,
+    })
     const attestation = Attestation.fromRequestAndPublicIdentity(
       request,
       attester.getPublicIdentity()
@@ -230,12 +226,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         },
         attester.getAddress()
       )
-      const request1 = (
-        await RequestForAttestation.fromClaimAndIdentity({
-          claim: LicenseAuthorization,
-          identity: attester,
-        })
-      )[0]
+      const [request1] = await RequestForAttestation.fromClaimAndIdentity({
+        claim: LicenseAuthorization,
+        identity: attester,
+      })
       const LicenseAuthorizationGranted = Attestation.fromRequestAndPublicIdentity(
         request1,
         uncleSam.getPublicIdentity()

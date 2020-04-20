@@ -101,8 +101,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param p.identity - The Claimer's [Identity].
    * @param p.legitimations - Array of [AttestedClaim] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param p.delegationId - The id of the DelegationNode of the Attester, which should be used in the attestation.
-   * @param p.privacyEnhanced -
-   * @param p.privacyEnhanced -
    * @returns A new [[RequestForAttestation]] object.
    */
   public static async fromClaimAndIdentity({

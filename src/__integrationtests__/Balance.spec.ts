@@ -65,7 +65,7 @@ describe('when there is a dev chain with a faucet', () => {
     )
     expect(balanceIdent.toString()).toBe(MIN_TRANSACTION.toString())
     expect(funny).toBeCalled()
-  }, 15000)
+  }, 30000)
 })
 
 describe('When there are haves and have-nots', () => {
