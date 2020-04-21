@@ -1,5 +1,7 @@
 /**
  * @group integration/ctype
+ * @ignore
+ * @packageDocumentation
  */
 
 import { faucet } from './utils'

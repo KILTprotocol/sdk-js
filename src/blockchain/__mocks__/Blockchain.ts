@@ -1,13 +1,11 @@
-import { SubmittableResult } from '@polkadot/api'
-
 /**
  * @module Blockchain
  * @ignore
+ * @packageDocumentation
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
+import { SubmittableResult } from '@polkadot/api'
+
 const blockchain: any = {
   __mockResultHash: '',
   __mockTxStatus: {

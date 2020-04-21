@@ -1,10 +1,9 @@
 /**
  * @module BlockchainApiConnection
+ * @ignore
+ * @packageDocumentation
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
 import Blockchain from '../../blockchain/Blockchain'
 
 jest.mock('../../blockchain/Blockchain')
