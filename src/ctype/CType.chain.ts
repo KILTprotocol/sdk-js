@@ -1,15 +1,12 @@
 /**
- * @module CType
+ * @packageDocumentation
+ * @ignore
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-
+import { SubmittableResult } from '@polkadot/api'
 import { QueryResult } from '../blockchain/Blockchain'
 import { getCached } from '../blockchainApiConnection'
-import TxStatus from '../blockchain/TxStatus'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
 import { factory } from '../config/ConfigLog'
@@ -20,22 +17,17 @@ const log = factory.getLogger('CType')
 export async function store(
   ctype: ICType,
   identity: Identity
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const blockchain = await getCached()
   log.debug(() => `Create tx for 'ctype.add'`)
-  const tx: SubmittableExtrinsic = await blockchain.api.tx.ctype.add(ctype.hash)
-  const txStatus: TxStatus = await blockchain.submitTx(identity, tx)
-  if (txStatus.type === 'Finalised') {
-    txStatus.payload = {
-      ...ctype,
-      owner: identity.address,
-    }
-  }
-  return txStatus
+  const tx: SubmittableExtrinsic = blockchain.api.tx.ctype.add(ctype.hash)
+  return blockchain.submitTx(identity, tx)
 }
 
 function decode(encoded: QueryResult): IPublicIdentity['address'] | null {
-  return encoded && encoded.encodedLength ? encoded.toString() : null
+  return encoded && encoded.encodedLength && !encoded.isEmpty
+    ? encoded.toString()
+    : null
 }
 
 export async function getOwner(

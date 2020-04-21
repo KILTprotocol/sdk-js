@@ -1,28 +1,28 @@
 /**
  * Claims are a core building block of the KILT SDK. A claim represents **something an entity claims about itself**. Once created, a claim can be used to create a [[RequestForAttestation]].
- * ***
+ *
  * A claim object has:
  * * contents - among others, the pure content of a claim, for example `"isOver18": yes`;
  * * a [[CType]] that represents its data structure.
- * <br><br>
+ *
  * A claim object's owner is (should be) the same entity as the claimer.
+ *
+ * @packageDocumentation
  * @module Claim
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
 import ICType from '../ctype/CType'
-import { verifyClaimStructure } from '../ctype/CTypeUtils'
-import IClaim from '../types/Claim'
+import CTypeUtils from '../ctype/CType.utils'
+import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
+import ClaimUtils from './Claim.utils'
 
 function verifyClaim(
-  claimContents: object,
+  claimContents: IClaim['contents'],
   cTypeSchema: ICType['schema']
 ): boolean {
-  return verifyClaimStructure(claimContents, cTypeSchema)
+  return CTypeUtils.verifyClaimStructure(claimContents, cTypeSchema)
 }
 
 export default class Claim implements IClaim {
@@ -40,7 +40,7 @@ export default class Claim implements IClaim {
 
   public static fromCTypeAndClaimContents(
     ctypeInput: ICType,
-    claimContents: object,
+    claimContents: IClaim['contents'],
     claimOwner: IPublicIdentity['address']
   ): Claim {
     if (ctypeInput.schema) {
@@ -60,19 +60,30 @@ export default class Claim implements IClaim {
   public owner: IClaim['owner']
 
   public constructor(claimInput: IClaim) {
-    if (!claimInput.cTypeHash || !claimInput.contents || !claimInput.owner) {
-      throw new Error(
-        `Property Not Provided while building Claim:\n
-        claimInput.cTypeHash:\n
-          ${claimInput.cTypeHash}\n
-          claimInput.contents:\n
-          ${claimInput.contents}\n
-          claimInput.owner:\n'
-          ${claimInput.owner}`
-      )
-    }
+    ClaimUtils.errorCheck(claimInput)
     this.cTypeHash = claimInput.cTypeHash
     this.contents = claimInput.contents
     this.owner = claimInput.owner
+  }
+
+  /**
+   * Compresses an [[Claim]] object from the [[CompressedClaim]].
+   *
+   * @returns An array that contains the same properties of an [[Claim]].
+   */
+
+  public compress(): CompressedClaim {
+    return ClaimUtils.compress(this)
+  }
+
+  /**
+   * [STATIC] Builds an [[Claim]] from the decompressed array.
+   *
+   * @returns A new [[Claim]] object.
+   */
+
+  public static decompress(compressedClaim: CompressedClaim): Claim {
+    const decompressedClaim = ClaimUtils.decompress(compressedClaim)
+    return new Claim(decompressedClaim)
   }
 }

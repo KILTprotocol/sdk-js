@@ -1,13 +1,19 @@
 /**
- * @module TypeInterfaces/AttestedClaim
+ * @packageDocumentation
+ * @module IAttestedClaim
  */
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
-import IRequestForAttestation from './RequestForAttestation'
-import IAttestation from './Attestation'
+
+import IRequestForAttestation, {
+  CompressedRequestForAttestation,
+} from './RequestForAttestation'
+import IAttestation, { CompressedAttestation } from './Attestation'
 
 export default interface IAttestedClaim {
-  request: IRequestForAttestation
   attestation: IAttestation
+  request: IRequestForAttestation
 }
+
+export type CompressedAttestedClaim = [
+  CompressedRequestForAttestation,
+  CompressedAttestation
+]

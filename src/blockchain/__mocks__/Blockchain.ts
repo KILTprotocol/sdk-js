@@ -1,3 +1,5 @@
+import { SubmittableResult } from '@polkadot/api'
+
 /**
  * @module Blockchain
  * @ignore
@@ -8,6 +10,15 @@
  */
 const blockchain: any = {
   __mockResultHash: '',
+  __mockTxStatus: {
+    payload: undefined,
+    type: 'Finalized',
+    isFinalized: true,
+    isError: false,
+    isDropped: false,
+    isInvalid: false,
+    isUsurped: false,
+  },
   __mockTxDelegationRoot: jest.fn(),
   __mockQueryDelegationRoot: jest.fn(),
   __mockQueryDelegationDelegation: jest.fn(),
@@ -76,7 +87,7 @@ const blockchain: any = {
         }),
         children: jest.fn(),
       },
-      dID: {
+      did: {
         dIDs: jest.fn(id => {
           return blockchain.__mockQueryDidDids(id)
         }),
@@ -88,7 +99,7 @@ const blockchain: any = {
   listenToBalanceChanges: jest.fn(),
   makeTransfer: jest.fn(),
   submitTx: jest.fn((identity, tx) => {
-    return Promise.resolve(blockchain.__mockResultHash)
+    return Promise.resolve(new SubmittableResult({status: blockchain.__mockTxStatus}))
   }),
   getNonce: jest.fn(),
 }

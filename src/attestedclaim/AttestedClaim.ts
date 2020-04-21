@@ -3,18 +3,17 @@
  *
  * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[AttestedClaim]] object. This [[AttestedClaim]] also contains the original request for attestation. RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
  *
+ * @packageDocumentation
  * @module AttestedClaim
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import IAttestedClaim from '../types/AttestedClaim'
+import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import IAttestation from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
+import AttestedClaimUtils from './AttestedClaim.utils'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -41,7 +40,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param attestation - The attestation for the claim by the attester.
    * @returns A new [[AttestedClaim]] object.
    * @example ```javascript
-   * //create an AttestedClaim object after receiving the attestation from the attester
+   * // create an AttestedClaim object after receiving the attestation from the attester
    * AttestedClaim.fromRequestAndAttestation(request, attestation);
    * ```
    */
@@ -64,19 +63,11 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param attestedClaimInput - The base object with all required input, from which to create the attested claim.
    * @example ```javascript
    * // Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
-   * new AttestedClaim(attestedClaimInput);
+   * const credential = new AttestedClaim(attestedClaimInput);
    * ```
    */
   public constructor(attestedClaimInput: IAttestedClaim) {
-    if (!attestedClaimInput.request || !attestedClaimInput.attestation) {
-      throw new Error(
-        `Property Not Provided while building AttestedClaim!\n
-        attestedClaimInput.request: \n
-        ${attestedClaimInput.request} \n
-        attestedClaimInput.attestation: \n
-        ${attestedClaimInput.attestation}`
-      )
-    }
+    AttestedClaimUtils.errorCheck(attestedClaimInput)
     this.request = RequestForAttestation.fromRequest(attestedClaimInput.request)
     this.attestation = Attestation.fromAttestation(
       attestedClaimInput.attestation
@@ -156,5 +147,30 @@ export default class AttestedClaim implements IAttestedClaim {
       result.request.removeClaimOwner()
     }
     return result
+  }
+
+  /**
+   * Compresses an [[AttestedClaim]] object from the [[compressAttestedCliam]].
+   *
+   * @returns An array that contains the same properties of an [[AttestedClaim]].
+   */
+
+  public compress(): CompressedAttestedClaim {
+    return AttestedClaimUtils.compress(this)
+  }
+
+  /**
+   * [STATIC] Builds an [[AttestedClaim]] from the decompressed array.
+   *
+   * @returns A new [[AttestedClaim]] object.
+   */
+
+  public static decompress(
+    attestedClaim: CompressedAttestedClaim
+  ): AttestedClaim {
+    const decompressedAttestedClaim = AttestedClaimUtils.decompress(
+      attestedClaim
+    )
+    return AttestedClaim.fromAttestedClaim(decompressedAttestedClaim)
   }
 }

@@ -1,13 +1,12 @@
 /**
- * @module DID
+ * @packageDocumentation
+ * @ignore
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Text } from '@polkadot/types'
 
+import { SubmittableResult } from '@polkadot/api'
 import { getCached } from '../blockchainApiConnection'
 import { IDid } from './Did'
 import {
@@ -16,7 +15,6 @@ import {
   decodeDid,
 } from './Did.utils'
 import Identity from '../identity/Identity'
-import TxStatus from '../blockchain/TxStatus'
 import IPublicIdentity from '../types/PublicIdentity'
 
 export async function queryByIdentifier(
@@ -26,7 +24,7 @@ export async function queryByIdentifier(
   const address = getAddressFromIdentifier(identifier)
   const decoded = decodeDid(
     identifier,
-    await blockchain.api.query.dID.dIDs(address)
+    await blockchain.api.query.did.dIDs(address)
   )
   return decoded
 }
@@ -38,20 +36,23 @@ export async function queryByAddress(
   const identifier = getIdentifierFromAddress(address)
   const decoded = decodeDid(
     identifier,
-    await blockchain.api.query.dID.dIDs(address)
+    await blockchain.api.query.did.dIDs(address)
   )
   return decoded
 }
 
-export async function remove(identity: Identity): Promise<TxStatus> {
+export async function remove(identity: Identity): Promise<SubmittableResult> {
   const blockchain = await getCached()
-  const tx: SubmittableExtrinsic = await blockchain.api.tx.did.remove()
+  const tx: SubmittableExtrinsic = blockchain.api.tx.did.remove()
   return blockchain.submitTx(identity, tx)
 }
 
-export async function store(did: IDid, identity: Identity): Promise<TxStatus> {
+export async function store(
+  did: IDid,
+  identity: Identity
+): Promise<SubmittableResult> {
   const blockchain = await getCached()
-  const tx: SubmittableExtrinsic = await blockchain.api.tx.did.add(
+  const tx: SubmittableExtrinsic = blockchain.api.tx.did.add(
     did.publicBoxKey,
     did.publicSigningKey,
     new Option(Text, did.documentStore)

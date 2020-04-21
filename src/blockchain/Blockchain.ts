@@ -1,23 +1,21 @@
 /**
- *  Blockchain bridges that connects the SDK and the KILT Blockchain.
- *  ***
- *  Communicates with the chain via WebSockets and can [[listenToBlocks]]. It exposes the [[submitTx]] function that performs a transaction.
+ * Blockchain bridges that connects the SDK and the KILT Blockchain.
+ *
+ * Communicates with the chain via WebSockets and can [[listenToBlocks]]. It exposes the [[submitTx]] function that performs a transaction.
+ *
+ * @packageDocumentation
  * @module Blockchain
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove
- */
-import { ApiPromise } from '@polkadot/api'
+import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
-import { Codec } from '@polkadot/types/types'
+import { Codec, AnyJson } from '@polkadot/types/types'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
-import TxStatus from './TxStatus'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -33,8 +31,11 @@ export interface IBlockchainApi {
   api: ApiPromise
 
   getStats(): Promise<Stats>
-  listenToBlocks(listener: (header: Header) => void): Promise<any> // TODO: change any to something meaningful
-  submitTx(identity: Identity, tx: SubmittableExtrinsic): Promise<TxStatus>
+  listenToBlocks(listener: (header: Header) => void): Promise<() => void>
+  submitTx(
+    identity: Identity,
+    tx: SubmittableExtrinsic
+  ): Promise<SubmittableResult>
   getNonce(accountAddress: string): Promise<Codec>
 }
 
@@ -42,7 +43,7 @@ export interface IBlockchainApi {
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
 
 export default class Blockchain implements IBlockchainApi {
-  public static asArray(queryResult: QueryResult): any[] {
+  public static asArray(queryResult: QueryResult): AnyJson[] {
     const json =
       queryResult && queryResult.encodedLength ? queryResult.toJSON() : null
     if (json instanceof Array) {
@@ -74,14 +75,13 @@ export default class Blockchain implements IBlockchainApi {
   public async listenToBlocks(
     listener: (header: Header) => void
   ): Promise<() => void> {
-    const subscriptionId = await this.api.rpc.chain.subscribeNewHeads(listener)
-    return subscriptionId
+    return this.api.rpc.chain.subscribeNewHeads(listener)
   }
 
   public async submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic
-  ): Promise<TxStatus> {
+  ): Promise<SubmittableResult> {
     const accountAddress = identity.address
     const nonce = await this.getNonce(accountAddress)
     const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
@@ -90,12 +90,11 @@ export default class Blockchain implements IBlockchainApi {
     )
     log.info(`Submitting ${tx.method}`)
 
-    return new Promise<TxStatus>((resolve, reject) => {
+    return new Promise<SubmittableResult>((resolve, reject) => {
       signed
         .send(result => {
           log.info(`Got tx status '${result.status.type}'`)
 
-          const { status } = result
           if (ErrorHandler.extrinsicFailed(result)) {
             log.warn(`Extrinsic execution failed`)
             log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
@@ -105,10 +104,14 @@ export default class Blockchain implements IBlockchainApi {
             log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
             reject(extrinsicError)
           }
-          if (status.type === 'Finalized') {
-            resolve(new TxStatus(status.type))
-          } else if (status.type === 'Invalid' || status.type === 'Dropped') {
-            reject(new Error(`Transaction failed with status '${status.type}'`))
+          if (result.isFinalized) {
+            resolve(result)
+          } else if (result.isError) {
+            reject(
+              new Error(
+                `Transaction failed with status '${result.status.type}'`
+              )
+            )
           }
         })
         .catch((err: Error) => {

@@ -11,11 +11,14 @@ import Message, {
 import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import Crypto from '../crypto'
 import IRequestForAttestation from '../types/RequestForAttestation'
+import * as Quote from '../quote/Quote'
+import IClaim from '../types/Claim'
+import { IQuote } from '../types/Quote'
 
 describe('Messaging', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
   const identityBob = Identity.buildFromURI('//Bob')
-
+  const date = new Date(2019, 11, 10)
   it('verify message encryption and signing', () => {
     const messageBody: IRequestClaimsForCTypes = {
       content: ['0x12345678'],
@@ -118,8 +121,33 @@ describe('Messaging', () => {
       claimerSignature: '0x12345678',
     } as IRequestForAttestation
 
+    const quoteData: IQuote = {
+      attesterAddress: identityAlice.address,
+      cTypeHash: '0x12345678',
+      cost: {
+        tax: { vat: 3.3 },
+        net: 23.4,
+        gross: 23.5,
+      },
+      currency: 'Euro',
+      termsAndConditions: 'https://coolcompany.io/terms.pdf',
+      timeframe: date,
+    }
+    const quoteAttesterSigned = Quote.createAttesterSignature(
+      quoteData,
+      identityAlice
+    )
+    const bothSigned = Quote.createQuoteAgreement(
+      identityAlice,
+      quoteAttesterSigned,
+      content.rootHash
+    )
     const requestAttestationBody: IRequestAttestationForClaim = {
-      content,
+      content: {
+        requestForAttestation: content,
+        quote: bothSigned,
+        prerequisiteClaims: [] as IClaim[],
+      },
       type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
     }
 
@@ -142,12 +170,13 @@ describe('Messaging', () => {
 
     const submitAttestationBody: ISubmitAttestationForClaim = {
       content: {
-        request: requestAttestationBody.content,
+        request: requestAttestationBody.content.requestForAttestation,
         attestation: {
-          claimHash: requestAttestationBody.content.rootHash,
+          delegationId: null,
+          claimHash:
+            requestAttestationBody.content.requestForAttestation.rootHash,
           cTypeHash: '0x12345678',
           owner: identityBob.getPublicIdentity().address,
-          delegationId: null,
           revoked: false,
         },
       },

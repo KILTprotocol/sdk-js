@@ -1,11 +1,12 @@
 import BN from 'bn.js/'
+import { SubmittableResult } from '@polkadot/api'
 import Identity from '../identity/Identity'
 // import partial from 'lodash/partial'
 import { listenToBalanceChanges, makeTransfer } from './Balance.chain'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
-describe('Balance', async () => {
+describe('Balance', () => {
   const blockchain = require('../blockchain/Blockchain').default
 
   blockchain.api.query.balances.freeBalance = jest.fn((accountAddress, cb) => {
@@ -38,7 +39,8 @@ describe('Balance', async () => {
     const alice = Identity.buildFromURI('//Alice')
     const bob = Identity.buildFromURI('//Bob')
 
-    const hash = await makeTransfer(alice, bob.address, new BN(100))
-    expect(hash).toBe('123')
+    const status = await makeTransfer(alice, bob.address, new BN(100))
+    expect(status).toBeInstanceOf(SubmittableResult)
+    expect(status.isFinalized).toBeTruthy()
   })
 })

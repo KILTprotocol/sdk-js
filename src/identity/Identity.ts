@@ -8,13 +8,11 @@
  *
  * Note: A [[PublicIdentity]] object exposes only public information such as the public address, but doesn't expose any secrets such as private keys.
  *
+ * @packageDocumentation
  * @module Identity
  * @preferred
  */
 
-/**
- * Dummy comment needed for correct doc display, do not remove.
- */
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
