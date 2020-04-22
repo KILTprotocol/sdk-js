@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { Tuple, Option, U8a, Text } from '@polkadot/types'
+import { Tuple, Option, Text } from '@polkadot/types'
 import { stringToHex } from '@polkadot/util'
 import { Identity } from '..'
 import { makeTransfer } from '../balance/Balance.chain'
@@ -11,6 +11,7 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 describe('tx mocks', () => {
   const alice = Identity.buildFromURI('//Alice')
   const amount = new BN(1000)
+
   it('tx succeeds', async () => {
     require('../blockchainApiConnection/BlockchainApiConnection').__setDefaultResult(
       true
@@ -20,6 +21,7 @@ describe('tx mocks', () => {
     const result = await blockchain.submitTx(alice, transfer)
     expect(result).toMatchObject({ isFinalized: true })
   })
+
   it('tx fails', async () => {
     require('../blockchainApiConnection/BlockchainApiConnection').__setDefaultResult(
       false
@@ -50,18 +52,10 @@ describe('mock query result', () => {
     const identifier = 'did:kilt:0xwertzui'
 
     it('works for default DID mock', async () => {
-      const [publicBoxKey, publicSigningKey] = [
-        'publicBoxKey',
-        'publicSigningKey',
-      ]
       await getCached()
-      await expect(queryByAddress('0xwertzui')).resolves.toMatchObject({
-        documentStore,
-        identifier,
-        publicBoxKey,
-        publicSigningKey,
-      })
+      await expect(queryByAddress('0xwertzui')).resolves.toBeNull()
     })
+
     it('works for custom DID mock', async () => {
       const [publicBoxKey, publicSigningKey] = ['0x123', '0x321']
       require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs.mockReturnValue(
@@ -69,7 +63,7 @@ describe('mock query result', () => {
           Tuple,
           new Tuple(
             // (publicSigningKey, publicBoxKey, documentStore?)
-            [Text, Text, U8a],
+            [Text, Text, 'Option<Bytes>'],
             [publicSigningKey, publicBoxKey, stringToHex(documentStore)]
           )
         )
