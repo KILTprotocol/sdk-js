@@ -41,6 +41,18 @@ describe('queries', () => {
     expect(unsubscribe()).toBeUndefined()
   })
 })
+const errorSetupApi = ({
+  query: {
+    system: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      accountNonce: () => {
+        return new Promise((res, rej) => {
+          rej(new Error('Test Nonce Retrieval Error handling'))
+        })
+      },
+    },
+  },
+} as any) as ApiPromise
 describe('Blockchain', () => {
   const alice = Identity.buildFromURI('//Alice')
   it('should increment nonce for account', async () => {
@@ -88,17 +100,21 @@ describe('Blockchain', () => {
     })
   })
 
-  // this tests logic that was changed to have chain connectivity
-  // as the map entry is only deleted after chain response
-  xit('should delete map entry after completion of queue', async () => {
-    const alice = Identity.buildFromURI('//Alice')
-    const alicePromisedNonces: Array<Promise<Index>> = []
-    const chain = new Blockchain(mockedApi)
-    for (let i = 0; i < 12; i += 1) {
-      alicePromisedNonces.push(chain.getNonce(alice.address))
-    }
-    Promise.all(alicePromisedNonces).then(() => {
-      expect(chain.accountNonces.has(alice.address)).toBeFalsy()
-    })
+  it('should handle error when chain returns error', async () => {
+    const chain = new Blockchain(errorSetupApi)
+    // eslint-disable-next-line dot-notation
+    await expect(chain['retrieveNonce'](alice.address)).rejects.toThrow(
+      'Test Nonce Retrieval Error handling'
+    )
   })
+
+  // it('should handle errors when accessing account nonces', async () => {
+  //   // For this test to run, TS diagnostics have to be disabled in [jest-config].globals.ts-jest.diagnostics
+  //   const chain = new Blockchain(mockedApi)
+  //   chain.accountNonces.set(alice.address, undefined)
+  //   // eslint-disable-next-line dot-notation
+  //   await expect(chain['retrieveNonce'](alice.address)).rejects.toThrow(
+  //     `Nonce Retrieval Failed for : ${alice.address}`
+  //   )
+  // })
 })
