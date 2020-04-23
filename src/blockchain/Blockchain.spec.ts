@@ -19,6 +19,19 @@ const mockedApi = ({
   },
 } as any) as ApiPromise
 
+const errorSetupApi = ({
+  query: {
+    system: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      accountNonce: () => {
+        return new Promise((res, rej) => {
+          rej(new Error('Test Nonce Retrieval Error handling'))
+        })
+      },
+    },
+  },
+} as any) as ApiPromise
+
 describe('queries', () => {
   const alice = Identity.buildFromURI('//Alice')
 
@@ -97,6 +110,24 @@ describe('queries', () => {
       expect(value.toNumber()).toEqual(new UInt(index).toNumber())
     })
   })
+
+  it('should handle error when chain returns error', async () => {
+    const chain = new Blockchain(errorSetupApi)
+    // eslint-disable-next-line dot-notation
+    await expect(chain['retrieveNonce'](alice.address)).rejects.toThrow(
+      'Test Nonce Retrieval Error handling'
+    )
+  })
+
+  // it('should handle errors when accessing account nonces', async () => {
+  //   // For this test to run, TS diagnostics have to be disabled in [jest-config].globals.ts-jest.diagnostics
+  //   const chain = new Blockchain(mockedApi)
+  //   chain.accountNonces.set(alice.address, undefined)
+  //   // eslint-disable-next-line dot-notation
+  //   await expect(chain['retrieveNonce'](alice.address)).rejects.toThrow(
+  //     `Nonce Retrieval Failed for : ${alice.address}`
+  //   )
+  // })
 })
 const errorSetupApi = ({
   query: {
