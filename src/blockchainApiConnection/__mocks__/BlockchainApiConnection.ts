@@ -48,7 +48,7 @@
 
 import Blockchain, { IBlockchainApi } from '../../blockchain/Blockchain'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { Option, Tuple, Vec, H256, u64 } from '@polkadot/types'
+import { Option, Tuple, Vec, H256, u64, u128 } from '@polkadot/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { ExtrinsicStatus } from '@polkadot/types/interfaces'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
@@ -157,11 +157,11 @@ const __mocked_api: any = {
   query: {
     system: {
       // default return value decodes to BN(0)
-      accountNonce: jest.fn(() => new u64()),
+      accountNonce: jest.fn(async () => new u64()),
     },
     attestation: {
       // default return value decodes to [], represents no delegated attestations
-      delegatedAttestations: jest.fn((id: string) => new Vec(H256)),
+      delegatedAttestations: jest.fn(async (id: string) => new Vec(H256)),
       /* example return value:
       new Vec(
         H256,
@@ -170,7 +170,7 @@ const __mocked_api: any = {
       */
 
       // default return value decodes to null, represents attestation not found
-      attestations: jest.fn((claim_hash: string) => new Option(Tuple)),
+      attestations: jest.fn(async (claim_hash: string) => new Option(Tuple)),
       /* example return value:
       new Option(
         Tuple,
@@ -187,15 +187,15 @@ const __mocked_api: any = {
     },
     balances: {
       // default return value decodes to BN(0), represents unknown and broke accounts
-      freeBalance: jest.fn((account: string) => new u64()),
+      freeBalance: jest.fn(async (account: string) => new u128()),
     },
     ctype: {
       // default return value decodes to null, represents CTYPE not found
-      cTYPEs: jest.fn((hash: string) => new Option(AccountId)),
+      cTYPEs: jest.fn(async (hash: string) => new Option(AccountId)),
     },
     delegation: {
       // default return value decodes to null, represents delegation not found
-      root: jest.fn((rootId: string) => new Option(Tuple)),
+      root: jest.fn(async (rootId: string) => new Option(Tuple)),
       /* example return value:
       new Option(
         Tuple,
@@ -210,7 +210,7 @@ const __mocked_api: any = {
       ) */
 
       // default return value decodes to null, represents delegation not found
-      delegations: jest.fn((delegationId: string) => new Option(Tuple)),
+      delegations: jest.fn(async (delegationId: string) => new Option(Tuple)),
       /* example return value:
       new Option(
       Tuple,
@@ -227,7 +227,7 @@ const __mocked_api: any = {
     ) */
 
       // default return value decodes to [], represents: no children found
-      children: jest.fn((id: string) => new Vec(H256, [])),
+      children: jest.fn(async (id: string) => new Vec(H256, [])),
       /* example return value:
       new Vec(
         H256,
@@ -237,7 +237,7 @@ const __mocked_api: any = {
     },
     did: {
       // default return value decodes to null, represents dID not found
-      dIDs: jest.fn((address: string) => new Option(Tuple)),
+      dIDs: jest.fn(async (address: string) => new Option(Tuple)),
       /* example return value:
       new Option(
         Tuple,
