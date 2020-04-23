@@ -33,7 +33,7 @@ describe('PublicIdentity', () => {
           )
           break
         default:
-          tuple = undefined
+          tuple = new Option(Tuple)
       }
       return Promise.resolve(tuple)
     }

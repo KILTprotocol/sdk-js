@@ -90,8 +90,8 @@ describe('Attestation', () => {
           Tuple,
           new Tuple(
             // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
-            [Text, AccountId, Text, Bool],
-            [testCType.hash, identityAlice.address, undefined, true]
+            [Text, AccountId, 'Option<H256>', Bool],
+            [testCType.hash, identityAlice.address, null, true]
           )
         )
       )

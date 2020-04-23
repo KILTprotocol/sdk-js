@@ -5,7 +5,8 @@
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { SubmittableResult } from '@polkadot/api'
-import { QueryResult } from '../blockchain/Blockchain'
+import { AccountId } from '@polkadot/types/interfaces'
+import { Option } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
@@ -24,17 +25,17 @@ export async function store(
   return blockchain.submitTx(identity, tx)
 }
 
-function decode(encoded: QueryResult): IPublicIdentity['address'] | null {
-  return encoded && encoded.encodedLength && !encoded.isEmpty
-    ? encoded.toString()
-    : null
+export function decode(
+  encoded: Option<AccountId>
+): IPublicIdentity['address'] | null {
+  return !encoded.isEmpty ? encoded.toString() : null
 }
 
 export async function getOwner(
   ctypeHash: ICType['hash']
 ): Promise<IPublicIdentity['address'] | null> {
   const blockchain = await getCached()
-  const encoded: QueryResult = await blockchain.api.query.ctype.cTYPEs(
+  const encoded = await blockchain.api.query.ctype.cTYPEs<Option<AccountId>>(
     ctypeHash
   )
   const queriedCTypeAccount = decode(encoded)

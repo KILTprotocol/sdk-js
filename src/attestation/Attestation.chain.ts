@@ -2,13 +2,11 @@
  * @packageDocumentation
  * @ignore
  */
-import { Option, Text } from '@polkadot/types'
-import { Codec } from '@polkadot/types/types'
+import { Option, Text, Tuple } from '@polkadot/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 import { SubmittableResult } from '@polkadot/api'
 import { getCached } from '../blockchainApiConnection'
-import { QueryResult } from '../blockchain/Blockchain'
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import IAttestation from '../types/Attestation'
@@ -37,11 +35,11 @@ export async function store(
   return blockchain.submitTx(identity, tx)
 }
 
-function decode(encoded: QueryResult, claimHash: string): Attestation | null {
-  if (encoded && encoded.encodedLength) {
-    const attestationTuple = encoded.toJSON()
+function decode(encoded: Option<Tuple>, claimHash: string): Attestation | null {
+  if (encoded.isSome) {
+    const attestationTuple = encoded.unwrap().toJSON()
+    // TODO: use Leon's type guards here once merged
     if (
-      attestationTuple instanceof Array &&
       typeof attestationTuple[0] === 'string' &&
       typeof attestationTuple[1] === 'string' &&
       (typeof attestationTuple[2] === 'string' ||
@@ -62,17 +60,17 @@ function decode(encoded: QueryResult, claimHash: string): Attestation | null {
   return null
 }
 
-async function queryRaw(claimHash: string): Promise<Codec | null> {
+async function queryRaw(claimHash: string): Promise<Option<Tuple>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await getCached()
-  const result: QueryResult = await blockchain.api.query.attestation.attestations(
-    claimHash
-  )
+  const result = await blockchain.api.query.attestation.attestations<
+    Option<Tuple>
+  >(claimHash)
   return result
 }
 
 export async function query(claimHash: string): Promise<Attestation | null> {
-  const encoded: QueryResult = await queryRaw(claimHash)
+  const encoded = await queryRaw(claimHash)
   return decode(encoded, claimHash)
 }
 

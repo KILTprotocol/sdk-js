@@ -6,6 +6,7 @@
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 import { SubmittableResult } from '@polkadot/api'
+import { Option, Tuple } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
 import { decodeRootDelegation } from './DelegationDecoder'
 import DelegationRootNode from './DelegationRootNode'
@@ -29,7 +30,7 @@ export async function query(
 ): Promise<DelegationRootNode | null> {
   const blockchain = await getCached()
   const root = decodeRootDelegation(
-    await blockchain.api.query.delegation.root(delegationId)
+    await blockchain.api.query.delegation.root<Option<Tuple>>(delegationId)
   )
   if (root) {
     root.id = delegationId

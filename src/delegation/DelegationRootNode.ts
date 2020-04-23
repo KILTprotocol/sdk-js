@@ -9,7 +9,7 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import { QueryResult } from '../blockchain/Blockchain'
+import { Option, Tuple } from '@polkadot/types'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { IDelegationRootNode } from '../types/Delegation'
@@ -85,7 +85,7 @@ export default class DelegationRootNode extends DelegationBaseNode
   }
 
   /* eslint-disable class-methods-use-this */
-  protected decodeChildNode(queryResult: QueryResult): DelegationNode | null {
+  protected decodeChildNode(queryResult: Option<Tuple>): DelegationNode | null {
     return decodeDelegationNode(queryResult)
   }
   /* eslint-enable class-methods-use-this */

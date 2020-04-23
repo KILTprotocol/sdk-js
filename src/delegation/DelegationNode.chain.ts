@@ -4,7 +4,7 @@
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text } from '@polkadot/types'
+import { Option, Text, Tuple } from '@polkadot/types'
 
 import { SubmittableResult } from '@polkadot/api'
 import { getCached } from '../blockchainApiConnection'
@@ -39,7 +39,9 @@ export async function query(
 ): Promise<DelegationNode | null> {
   const blockchain = await getCached()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegations(delegationId)
+    await blockchain.api.query.delegation.delegations<Option<Tuple>>(
+      delegationId
+    )
   )
   if (decoded) {
     decoded.id = delegationId

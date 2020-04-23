@@ -5,10 +5,10 @@
 
 import { isHex, hexToString } from '@polkadot/util'
 
+import { Tuple, Option } from '@polkadot/types'
 import IPublicIdentity from '../types/PublicIdentity'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
-import { QueryResult } from '../blockchain/Blockchain'
 import Did, {
   IDid,
   IDidDocument,
@@ -23,22 +23,20 @@ import Did, {
 
 export function decodeDid(
   identifier: string,
-  encoded: QueryResult
+  encoded: Option<Tuple>
 ): IDid | null {
-  const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-  if (json instanceof Array) {
-    let documentStore = null
-    if (isHex(json[2])) {
-      documentStore = hexToString(json[2])
-    }
-    return Object.assign(Object.create(Did.prototype), {
-      identifier,
-      publicSigningKey: json[0],
-      publicBoxKey: json[1],
-      documentStore,
-    })
+  if (!encoded.isSome) return null
+  const json = encoded.unwrap().toJSON()
+  let documentStore = null
+  if (isHex(json[2])) {
+    documentStore = hexToString(json[2])
   }
-  return null
+  return Object.assign(Object.create(Did.prototype), {
+    identifier,
+    publicSigningKey: json[0],
+    publicBoxKey: json[1],
+    documentStore,
+  })
 }
 
 export function getIdentifierFromAddress(

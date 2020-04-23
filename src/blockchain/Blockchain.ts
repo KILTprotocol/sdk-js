@@ -12,6 +12,7 @@ import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
 import { Codec, AnyJson } from '@polkadot/types/types'
+import { u64 } from '@polkadot/types'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
@@ -121,12 +122,8 @@ export default class Blockchain implements IBlockchainApi {
     })
   }
 
-  public async getNonce(accountAddress: string): Promise<Codec> {
-    const nonce = await this.api.query.system.accountNonce(accountAddress)
-    if (!nonce) {
-      throw Error(`Nonce not found for account ${accountAddress}`)
-    }
-
+  public async getNonce(accountAddress: string): Promise<u64> {
+    const nonce = await this.api.query.system.accountNonce<u64>(accountAddress)
     return nonce
   }
 }

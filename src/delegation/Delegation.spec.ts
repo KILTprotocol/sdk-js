@@ -31,7 +31,7 @@ describe('Delegation', () => {
       new Tuple(
         // Root-Delegation: root-id -> (ctype-hash, account, revoked)
         [Text, AccountId, Bool],
-        [[ctypeHash, identityAlice.address, false]]
+        [ctypeHash, identityAlice.address, false]
       )
     )
     return Promise.resolve(tuple)

@@ -15,6 +15,7 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
+import { Option, Tuple } from '@polkadot/types'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { CodecWithId } from './DelegationDecoder'
@@ -28,7 +29,6 @@ import {
   getChildIds,
 } from './Delegation.chain'
 import { query } from '../attestation/Attestation.chain'
-import { QueryResult } from '../blockchain/Blockchain'
 
 const log = factory.getLogger('DelegationBaseNode')
 
@@ -133,6 +133,6 @@ export default abstract class DelegationBaseNode
    * Required to avoid cyclic dependencies btw. DelegationBaseNode and DelegationNode implementations.
    */
   protected abstract decodeChildNode(
-    queryResult: QueryResult
+    queryResult: Option<Tuple>
   ): DelegationNode | null
 }
