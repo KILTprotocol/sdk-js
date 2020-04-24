@@ -49,7 +49,10 @@ export default class AttesterIdentity extends Identity {
     validityDuration: number,
     maxAttributes: number
   ): Promise<AttesterIdentity> {
-    const attester = await gabi.Attester.create(validityDuration, maxAttributes)
+    const attester = await gabi.Attester.create({
+      validityDuration,
+      maxAttributes,
+    })
     const acc = await attester.createAccumulator()
 
     return new AttesterIdentity(
