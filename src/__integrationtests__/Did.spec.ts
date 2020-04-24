@@ -3,15 +3,18 @@
  */
 
 import { queryByAddress, queryByIdentifier } from '../did/Did.chain'
-import { Did } from '..'
-import { NewIdentity } from './utils'
+import { Did, Identity } from '..'
 import getCached from '../blockchainApiConnection'
 
-const ident = NewIdentity()
-
 describe('querying DIDs that do not exist', () => {
+  let ident: Identity
+
+  beforeAll(async () => {
+    ident = await Identity.buildFromMnemonic()
+  })
+
   it('queryByAddress', async () => {
-    return expect(queryByAddress(ident.address)).resolves.toBeNull()
+    return expect(queryByAddress(ident.getAddress())).resolves.toBeNull()
   })
 
   it('queryByIdentifier', async () => {

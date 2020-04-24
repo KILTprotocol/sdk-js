@@ -11,20 +11,31 @@ import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { faucet, alice, bob, DriversLicense, CtypeOnChain } from './utils'
+import {
+  wannabeFaucet,
+  wannabeAlice,
+  wannabeBob,
+  DriversLicense,
+  CtypeOnChain,
+} from './utils'
 import {
   getChildIds,
   getAttestationHashes,
   fetchChildren,
 } from '../delegation/Delegation.chain'
 import { decodeDelegationNode } from '../delegation/DelegationDecoder'
+import { Identity } from '..'
 
-const UncleSam = faucet
-const attester = alice
-const claimer = bob
+describe('when there is an account hierarchy', () => {
+  let UncleSam: Identity
+  let claimer: Identity
+  let attester: Identity
 
-describe('when there is an account hierarchy', async () => {
   beforeAll(async () => {
+    UncleSam = await wannabeFaucet
+    claimer = await wannabeBob
+    attester = await wannabeAlice
+
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester)
     }
@@ -34,13 +45,13 @@ describe('when there is an account hierarchy', async () => {
     const rootNode = new DelegationRootNode(
       UUID.generate(),
       DriversLicense.hash,
-      UncleSam.address
+      UncleSam.getAddress()
     )
     await rootNode.store(UncleSam)
     const delegatedNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
-      attester.address,
+      attester.getAddress(),
       [Permission.ATTEST],
       rootNode.id
     )
@@ -60,14 +71,14 @@ describe('when there is an account hierarchy', async () => {
       rootNode = new DelegationRootNode(
         UUID.generate(),
         DriversLicense.hash,
-        UncleSam.address
+        UncleSam.getAddress()
       )
       await rootNode.store(UncleSam)
 
       delegatedNode = new DelegationNode(
         UUID.generate(),
         rootNode.id,
-        attester.address,
+        attester.getAddress(),
         [Permission.ATTEST],
         rootNode.id
       )
@@ -86,14 +97,13 @@ describe('when there is an account hierarchy', async () => {
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,
-        claimer.address
+        claimer.getAddress()
       )
-      const request = RequestForAttestation.fromClaimAndIdentity(
+      const [request] = await RequestForAttestation.fromClaimAndIdentity({
         claim,
-        claimer,
-        [],
-        delegatedNode.id
-      )
+        identity: claimer,
+        delegationId: delegatedNode.id,
+      })
       expect(request.verifyData()).toBeTruthy()
       expect(request.verifySignature()).toBeTruthy()
 
@@ -104,7 +114,8 @@ describe('when there is an account hierarchy', async () => {
       const status = await attestation.store(attester)
       expect(status.type).toBe('Finalized')
 
-      const attClaim = AttestedClaim.fromRequestAndAttestation(
+      const attClaim = await AttestedClaim.fromRequestAndAttestation(
+        claimer,
         request,
         attestation
       )

@@ -5,23 +5,18 @@ import Identity from '../identity/Identity'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
-import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 
 export const GAS = new BN(1000000)
 export const MIN_TRANSACTION = new BN(100000000)
 export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 
-export async function NewIdentity(): Promise<Identity> {
-  return Identity.buildFromMnemonic(Identity.generateMnemonic())
-}
-
 // Dev Faucet account seed phrase
 const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-// FIXME: need to do this. await not possible here!
-export const faucet = Identity.buildFromSeed(toSeed(FaucetSeed))
-export const alice = Identity.buildFromURI('//Alice')
-export const bob = Identity.buildFromURI('//Bob')
+
+export const wannabeFaucet = Identity.buildFromURI(FaucetSeed)
+export const wannabeAlice = Identity.buildFromURI('//Alice')
+export const wannabeBob = Identity.buildFromURI('//Bob')
 
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)
@@ -48,7 +43,7 @@ export const DriversLicense = CType.fromCType({
   } as ICType['schema'],
 } as ICType)
 
-export const IsOfficialLicenseAuthority = CType.fromCType({
+export const isOfficialLicenseAuthority = CType.fromCType({
   schema: {
     $id: 'LicenseAuthority',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
