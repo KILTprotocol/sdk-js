@@ -6,6 +6,7 @@
 import { isHex, hexToString } from '@polkadot/util'
 
 import { Tuple, Option } from '@polkadot/types'
+import { hasNonNullByte } from '../util/Decode'
 import IPublicIdentity from '../types/PublicIdentity'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
@@ -23,20 +24,28 @@ import Did, {
 
 export function decodeDid(
   identifier: string,
-  encoded: Option<Tuple>
+  encoded: Option<Tuple> | Tuple
 ): IDid | null {
-  if (!encoded.isSome) return null
-  const json = encoded.unwrap().toJSON()
-  let documentStore = null
-  if (isHex(json[2])) {
-    documentStore = hexToString(json[2])
+  if (
+    encoded instanceof Option ||
+    hasNonNullByte(encoded) ||
+    !(encoded[0].isEmpty || encoded[1].isEmpty)
+  ) {
+    const json = encoded.toJSON()
+    if (json instanceof Array) {
+      let documentStore = null
+      if (isHex(json[2])) {
+        documentStore = hexToString(json[2])
+      }
+      return Object.assign(Object.create(Did.prototype), {
+        identifier,
+        publicSigningKey: json[0],
+        publicBoxKey: json[1],
+        documentStore,
+      })
+    }
   }
-  return Object.assign(Object.create(Did.prototype), {
-    identifier,
-    publicSigningKey: json[0],
-    publicBoxKey: json[1],
-    documentStore,
-  })
+  return null
 }
 
 export function getIdentifierFromAddress(

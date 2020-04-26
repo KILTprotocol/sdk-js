@@ -133,6 +133,6 @@ export default abstract class DelegationBaseNode
    * Required to avoid cyclic dependencies btw. DelegationBaseNode and DelegationNode implementations.
    */
   protected abstract decodeChildNode(
-    queryResult: Option<Tuple>
+    queryResult: Option<Tuple> | Tuple
   ): DelegationNode | null
 }

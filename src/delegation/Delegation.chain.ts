@@ -37,7 +37,7 @@ export async function fetchChildren(
   const val: CodecWithId[] = await Promise.all(
     childIds.map(async (childId: string) => {
       const queryResult = await blockchain.api.query.delegation.delegations<
-        Option<Tuple>
+        Option<Tuple> | Tuple
       >(childId)
       return {
         id: childId,

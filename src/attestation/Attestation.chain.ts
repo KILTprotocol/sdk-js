@@ -6,6 +6,7 @@ import { Option, Text, Tuple } from '@polkadot/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 import { SubmittableResult } from '@polkadot/api'
+import { hasNonNullByte } from '../util/Decode'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
@@ -35,11 +36,19 @@ export async function store(
   return blockchain.submitTx(identity, tx)
 }
 
-function decode(encoded: Option<Tuple>, claimHash: string): Attestation | null {
-  if (encoded.isSome) {
-    const attestationTuple = encoded.unwrap().toJSON()
+function decode(
+  encoded: Option<Tuple> | Tuple,
+  claimHash: string
+): Attestation | null {
+  if (
+    encoded instanceof Option ||
+    hasNonNullByte(encoded) ||
+    !(encoded[0].isEmpty || encoded[1].isEmpty)
+  ) {
+    const attestationTuple = encoded.toJSON()
     // TODO: use Leon's type guards here once merged
     if (
+      attestationTuple instanceof Array &&
       typeof attestationTuple[0] === 'string' &&
       typeof attestationTuple[1] === 'string' &&
       (typeof attestationTuple[2] === 'string' ||
@@ -60,11 +69,12 @@ function decode(encoded: Option<Tuple>, claimHash: string): Attestation | null {
   return null
 }
 
-async function queryRaw(claimHash: string): Promise<Option<Tuple>> {
+// return types reflect backwards compatibility with mashnet-node v 0.22
+async function queryRaw(claimHash: string): Promise<Option<Tuple> | Tuple> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await getCached()
   const result = await blockchain.api.query.attestation.attestations<
-    Option<Tuple>
+    Option<Tuple> | Tuple
   >(claimHash)
   return result
 }

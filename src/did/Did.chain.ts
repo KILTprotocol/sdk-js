@@ -24,7 +24,7 @@ export async function queryByIdentifier(
   const address = getAddressFromIdentifier(identifier)
   const decoded = decodeDid(
     identifier,
-    await blockchain.api.query.did.dIDs<Option<Tuple>>(address)
+    await blockchain.api.query.did.dIDs<Option<Tuple> | Tuple>(address)
   )
   return decoded
 }
@@ -36,7 +36,7 @@ export async function queryByAddress(
   const identifier = getIdentifierFromAddress(address)
   const decoded = decodeDid(
     identifier,
-    await blockchain.api.query.did.dIDs<Option<Tuple>>(address)
+    await blockchain.api.query.did.dIDs<Option<Tuple> | Tuple>(address)
   )
   return decoded
 }

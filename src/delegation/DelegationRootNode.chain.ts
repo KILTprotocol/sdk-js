@@ -30,7 +30,9 @@ export async function query(
 ): Promise<DelegationRootNode | null> {
   const blockchain = await getCached()
   const root = decodeRootDelegation(
-    await blockchain.api.query.delegation.root<Option<Tuple>>(delegationId)
+    await blockchain.api.query.delegation.root<Option<Tuple> | Tuple>(
+      delegationId
+    )
   )
   if (root) {
     root.id = delegationId

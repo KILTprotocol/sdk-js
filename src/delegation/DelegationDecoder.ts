@@ -12,6 +12,7 @@
  * Dummy comment needed for correct doc display, do not remove.
  */
 import { Option, Tuple } from '@polkadot/types'
+import { hasNonNullByte } from '../util/Decode'
 import { coToUInt8 } from '../crypto/Crypto'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
@@ -19,21 +20,27 @@ import { Permission } from '../types/Delegation'
 
 export type CodecWithId = {
   id: string
-  codec: Option<Tuple>
+  codec: Option<Tuple> | Tuple
 }
 
 export function decodeRootDelegation(
-  encoded: Option<Tuple>
+  encoded: Option<Tuple> | Tuple
 ): DelegationRootNode | null {
-  if (!encoded.isSome) {
-    return null
+  if (
+    encoded instanceof Option ||
+    hasNonNullByte(encoded) ||
+    !(encoded[0].isEmpty || encoded[1].isEmpty)
+  ) {
+    const json = encoded.toJSON()
+    if (json instanceof Array) {
+      return Object.assign(Object.create(DelegationRootNode.prototype), {
+        cTypeHash: json[0],
+        account: json[1],
+        revoked: json[2],
+      })
+    }
   }
-  const json = encoded.unwrap().toJSON()
-  return Object.assign(Object.create(DelegationRootNode.prototype), {
-    cTypeHash: json[0],
-    account: json[1],
-    revoked: json[2],
-  })
+  return null
 }
 
 /**
@@ -70,23 +77,30 @@ function verifyRoot(rootId: string): boolean {
 }
 
 export function decodeDelegationNode(
-  encoded: Option<Tuple>
+  encoded: Option<Tuple> | Tuple
 ): DelegationNode | null {
-  if (!encoded.isSome) {
-    return null
+  if (
+    encoded instanceof Option ||
+    hasNonNullByte(encoded) ||
+    !(encoded[0].isEmpty || encoded[2].isEmpty)
+  ) {
+    const json = encoded.toJSON()
+    if (json instanceof Array) {
+      if (typeof json[0] !== 'string' || typeof json[3] !== 'number')
+        return null
+      if (!verifyRoot(json[0])) {
+        // Query returns 0x0 for rootId if queried for a root id instead of a node id.
+        // A node without a root node is therefore interpreted as invalid.
+        return null
+      }
+      return Object.assign(Object.create(DelegationNode.prototype), {
+        rootId: json[0],
+        parentId: json[1], // optional
+        account: json[2],
+        permissions: decodePermissions(json[3]),
+        revoked: json[4],
+      })
+    }
   }
-  const json = encoded.unwrap().toJSON()
-  if (typeof json[0] !== 'string' || typeof json[3] !== 'number') return null
-  if (!verifyRoot(json[0])) {
-    // Query returns 0x0 for rootId if queried for a root id instead of a node id.
-    // A node without a root node is therefore interpreted as invalid.
-    return null
-  }
-  return Object.assign(Object.create(DelegationNode.prototype), {
-    rootId: json[0],
-    parentId: json[1], // optional
-    account: json[2],
-    permissions: decodePermissions(json[3]),
-    revoked: json[4],
-  })
+  return null
 }

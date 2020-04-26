@@ -25,8 +25,9 @@ export async function store(
   return blockchain.submitTx(identity, tx)
 }
 
+// decoding is backwards compatible with mashnet-node 0.22
 export function decode(
-  encoded: Option<AccountId>
+  encoded: Option<AccountId> | AccountId
 ): IPublicIdentity['address'] | null {
   return !encoded.isEmpty ? encoded.toString() : null
 }
@@ -35,9 +36,9 @@ export async function getOwner(
   ctypeHash: ICType['hash']
 ): Promise<IPublicIdentity['address'] | null> {
   const blockchain = await getCached()
-  const encoded = await blockchain.api.query.ctype.cTYPEs<Option<AccountId>>(
-    ctypeHash
-  )
+  const encoded = await blockchain.api.query.ctype.cTYPEs<
+    Option<AccountId> | AccountId
+  >(ctypeHash)
   const queriedCTypeAccount = decode(encoded)
   return queriedCTypeAccount
 }
