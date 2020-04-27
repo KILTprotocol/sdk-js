@@ -8,13 +8,9 @@
  * @preferred
  */
 
-import * as gabi from '@kiltprotocol/portablegabi'
-import Identity from '../identity/Identity'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
-import IAttestation from '../types/Attestation'
-import IRequestForAttestation from '../types/RequestForAttestation'
 import AttestedClaimUtils from './AttestedClaim.utils'
 
 export default class AttestedClaim implements IAttestedClaim {
@@ -35,53 +31,8 @@ export default class AttestedClaim implements IAttestedClaim {
     return new AttestedClaim(attestedClaimInput)
   }
 
-  /**
-   * [STATIC] Builds a new instance of [[AttestedClaim]], from all required properties.
-   *
-   * @param request - The request for attestation for the claim that was attested.
-   * @param attestation - The attestation for the claim by the attester.
-   * @returns A new [[AttestedClaim]] object.
-   * @example ```javascript
-   * // create an AttestedClaim object after receiving the attestation from the attester
-   * AttestedClaim.fromRequestAndAttestation(request, attestation);
-   * ```
-   */
-  public static async fromRequestAndAttestation(
-    claimer: Identity,
-    request: IRequestForAttestation,
-    attestation: IAttestation,
-    session: gabi.ClaimerAttestationSession | null = null,
-    attestationPE: gabi.Attestation | null = null
-  ): Promise<AttestedClaim> {
-    const { claimer: gabiClaimer } = claimer
-    if (
-      session !== null &&
-      attestationPE !== null &&
-      typeof claimer !== 'undefined'
-    ) {
-      return new AttestedClaim({
-        request,
-        attestation,
-        credential: await gabiClaimer.buildCredential({
-          claimerSession: session,
-          attestation: attestationPE,
-        }),
-      })
-    }
-    if (session !== null && attestationPE !== null) {
-      // FIXME: ensure every identity can be a claimer
-      throw new Error('Claimer not defined')
-    }
-    return new AttestedClaim({
-      request,
-      attestation,
-      credential: null,
-    })
-  }
-
   public request: RequestForAttestation
   public attestation: Attestation
-  public credential: gabi.Credential | null
 
   /**
    * Builds a new [[AttestedClaim]] instance.
@@ -98,7 +49,6 @@ export default class AttestedClaim implements IAttestedClaim {
     this.attestation = Attestation.fromAttestation(
       attestedClaimInput.attestation
     )
-    this.credential = attestedClaimInput.credential
   }
 
   /**
@@ -153,31 +103,8 @@ export default class AttestedClaim implements IAttestedClaim {
     return this.attestation.claimHash
   }
 
-  /**
-   * Builds a presentation. A presentation is a custom view of the [[AttestedClaim]], in which the claimer controls what information should be shown.
-   *
-   * @param excludedClaimProperties - An array of [[Claim]] properties to **exclude**.
-   * @param excludeIdentity - Whether the claimer's identity should be **excluded** from the presentation. By default, the claimer's identity is included (`excludeIdentity` is `false`).
-   * @returns The newly created presentation.
-   * @example ```javascript
-   * // create a presentation that keeps `birthYear` and `identity` private
-   * createPresentation(['birthYear'], true);
-   * ```
-   */
-  public createPresentation(
-    excludedClaimProperties: string[],
-    excludeIdentity = false
-  ): AttestedClaim {
-    const result: AttestedClaim = AttestedClaim.fromAttestedClaim(this)
-    delete result.credential
-    result.request.removeClaimProperties(excludedClaimProperties)
-    if (excludeIdentity) {
-      result.request.removeClaimOwner()
-    }
-    return result
-  }
-
   public getAttributes(): Set<string> {
+    // TODO: move this to claim or contents
     return new Set(Object.keys(this.request.claim.contents))
   }
 

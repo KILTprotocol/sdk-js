@@ -93,12 +93,12 @@ describe('Claimer', () => {
     )
     expect(attestation.witness).not.toBeNull()
 
-    const attestedClaim = await Claimer.buildAttestedClaim(
+    const attestedClaim = await Claimer.buildCredential(
       bob,
       attestationMessage,
       claimerSession
     )
-    expect(attestedClaim.credential).toBeDefined()
+    expect(attestedClaim.privacyCredential).toBeDefined()
   })
 
   it('request only public attestation', async () => {
@@ -134,12 +134,12 @@ describe('Claimer', () => {
     } = await Attester.issueAttestation(alice, requestAttestation)
     expect(attestation.witness).toBeNull()
 
-    const attestedClaim = await Claimer.buildAttestedClaim(
+    const attestedClaim = await Claimer.buildCredential(
       bob,
       attestationMessage,
       claimerSession
     )
-    expect(attestedClaim.credential).toBeNull()
+    expect(attestedClaim.privacyCredential).toBeNull()
   })
 
   it.todo('Verify privacy enhanced presentation')

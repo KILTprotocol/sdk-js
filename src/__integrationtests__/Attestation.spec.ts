@@ -18,7 +18,8 @@ import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { revoke } from '../attestation/Attestation.chain'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
-import { Identity } from '..'
+import Identity from '../identity/Identity'
+import Credential from '../credential/Credential'
 
 describe('handling attestations that do not exist', () => {
   it('Attestation.query', () => {
@@ -84,11 +85,12 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     )
     const result = await attestation.store(alice)
     expect(result.status.type).toBe('Finalized')
-    const aClaim = await AttestedClaim.fromRequestAndAttestation(
+    const cred = await Credential.fromRequestAndAttestation(
       claimer,
       request,
       attestation
     )
+    const aClaim = cred.createPresentation([], false)
     expect(aClaim.verifyData()).toBeTruthy()
     await expect(aClaim.verify()).resolves.toBeTruthy()
   }, 60_000)
@@ -114,11 +116,13 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     const bobbyBroke = await Identity.buildFromMnemonic()
 
     await expect(attestation.store(bobbyBroke)).rejects.toThrow()
-    const aClaim = await AttestedClaim.fromRequestAndAttestation(
+    const cred = await Credential.fromRequestAndAttestation(
       bobbyBroke,
       request,
       attestation
     )
+    const aClaim = cred.createPresentation([], false)
+
     await expect(aClaim.verify()).resolves.toBeFalsy()
   }, 60_000)
 
@@ -178,11 +182,12 @@ describe('When there is an attester, claimer and ctype drivers license', async (
       )
       const result = await attestation.store(alice)
       expect(result.status.type).toBe('Finalized')
-      attClaim = await AttestedClaim.fromRequestAndAttestation(
+      const cred = await Credential.fromRequestAndAttestation(
         claimer,
         request,
         attestation
       )
+      attClaim = cred.createPresentation([], false)
       await expect(attClaim.verify()).resolves.toBeTruthy()
     }, 60_000)
 
@@ -248,11 +253,11 @@ describe('When there is an attester, claimer and ctype drivers license', async (
         claim: iBelieveIcanDrive,
         identity: claimer,
         legitimations: [
-          await AttestedClaim.fromRequestAndAttestation(
+          await Credential.fromRequestAndAttestation(
             alice,
             request1,
             licenseAuthorizationGranted
-          ),
+          ).then(e => e.createPresentation([], false)),
         ],
       })
       const LicenseGranted = Attestation.fromRequestAndPublicIdentity(
@@ -261,11 +266,11 @@ describe('When there is an attester, claimer and ctype drivers license', async (
       )
       const tx2 = await LicenseGranted.store(alice)
       expect(tx2.status.isFinalized).toBeTruthy()
-      const license = await AttestedClaim.fromRequestAndAttestation(
+      const license = await Credential.fromRequestAndAttestation(
         claimer,
         request2,
         LicenseGranted
-      )
+      ).then(e => e.createPresentation([], false))
       await Promise.all([
         expect(license.verify()).resolves.toBeTruthy(),
         expect(licenseAuthorizationGranted.verify()).resolves.toBeTruthy(),

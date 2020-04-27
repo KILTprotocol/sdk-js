@@ -7,23 +7,17 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
 import getCached from '../blockchainApiConnection'
-import { Identity, Balance } from '..'
+import { Identity } from '..'
 
 describe('When there is an CtypeCreator and a verifier', () => {
   let ctypeCreator: Identity
-  let ctype: CType
+  let ctypeCounter = 0
 
-  beforeAll(async () => {
-    ctypeCreator = await wannabeFaucet
-
-    console.log(
-      'BALANCE XXX',
-      (await Balance.getBalance(ctypeCreator.getAddress())).toString()
-    )
-
-    ctype = CType.fromCType({
+  function makeCType(): CType {
+    ctypeCounter += 1
+    return CType.fromCType({
       schema: {
-        $id: 'http://example.com/ctype-10',
+        $id: `http://example.com/ctype-${ctypeCounter}`,
         $schema: 'http://kilt-protocol.org/draft-01/ctype#',
         properties: {
           name: { type: 'string' },
@@ -31,15 +25,21 @@ describe('When there is an CtypeCreator and a verifier', () => {
         type: 'object',
       } as ICType['schema'],
     } as ICType)
+  }
+
+  beforeAll(async () => {
+    ctypeCreator = await wannabeFaucet
   })
 
   it('should not be possible to create a claim type w/o tokens', async () => {
+    const ctype = makeCType()
     const bobbyBroke = await Identity.buildFromMnemonic()
     await expect(ctype.store(bobbyBroke)).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
   }, 20000)
 
   it('should be possible to create a claim type', async () => {
+    const ctype = makeCType()
     await ctype.store(ctypeCreator)
     await Promise.all([
       expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.getAddress()),
@@ -50,6 +50,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }, 20000)
 
   it('should not be possible to create a claim type that exists', async () => {
+    const ctype = makeCType()
+    await ctype.store(ctypeCreator)
     await expect(ctype.store(ctypeCreator)).rejects.toThrowError(
       'CTYPE already exists'
     )

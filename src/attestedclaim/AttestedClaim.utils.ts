@@ -36,7 +36,6 @@ export function compress(
   return [
     RequestForAttestationUtils.compress(attestedClaim.request),
     AttestationUtils.compress(attestedClaim.attestation),
-    attestedClaim.credential,
   ]
 }
 
@@ -51,7 +50,7 @@ export function compress(
 export function decompress(
   attestedClaim: CompressedAttestedClaim
 ): IAttestedClaim {
-  if (!Array.isArray(attestedClaim) || attestedClaim.length !== 3) {
+  if (!Array.isArray(attestedClaim) || attestedClaim.length !== 2) {
     throw new Error(
       'Compressed Attested Claim isnt an Array or has all the required data types'
     )
@@ -59,7 +58,6 @@ export function decompress(
   return {
     request: RequestForAttestationUtils.decompress(attestedClaim[0]),
     attestation: AttestationUtils.decompress(attestedClaim[1]),
-    credential: attestedClaim[2],
   }
 }
 

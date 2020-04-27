@@ -32,6 +32,7 @@ import Message from './messaging/Message'
 import * as Verifier from './actor/Verifier'
 import * as Claimer from './actor/Claimer'
 import * as Attester from './actor/Attester'
+import Credential from './credential/Credential'
 
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { SubmittableResult } from '@polkadot/api'
@@ -97,6 +98,7 @@ export {
   CombinedPresentation,
   Attester,
   QuoteUtils,
+  Credential,
 }
 
 // ---- Default export for ease of use ----
@@ -122,4 +124,5 @@ export default {
   Accumulator,
   CombinedPresentation,
   Attester,
+  Credential,
 }

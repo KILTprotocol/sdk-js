@@ -3,11 +3,11 @@ import Kilt, {
   ICType,
   CTypeUtils,
   MessageBodyType,
-  AttestedClaim,
   Identity,
   Claim,
   Accumulator,
   AttesterIdentity,
+  Credential,
 } from '../src'
 import constants from '../src/test/constants'
 import { IRevocableAttestation } from '../src/types/Attestation'
@@ -16,7 +16,7 @@ async function doAttestation(): Promise<{
   claimer: Identity
   attester: AttesterIdentity
   claim: Claim
-  attestedClaim: AttestedClaim
+  credential: Credential
   accumulator: Accumulator
   attestation: IRevocableAttestation
 }> {
@@ -162,7 +162,7 @@ async function doAttestation(): Promise<{
   if (messageBack.body.type !== MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
     throw new Error('Should be SUBMIT_ATTESTATION_FOR_CLAIM')
   }
-  const attestedClaim = await Kilt.Claimer.buildAttestedClaim(
+  const credential = await Kilt.Claimer.buildCredential(
     claimer,
     messageBack.body,
     claimerSession
@@ -175,8 +175,8 @@ async function doAttestation(): Promise<{
 
   console.log('RFO Message', message, '\n')
   console.log('Submit attestation:', submitAttestation, '\n')
-  console.log('AttestedClaim', attestedClaim, '\n')
-  console.log('AttestedClaim message', messageBack, '\n')
+  console.log('Credential', credential, '\n')
+  console.log('Credential message', messageBack, '\n')
   const acc = attester.accumulator
   if (typeof acc === 'undefined') {
     throw new Error('No no this is not possible!')
@@ -185,7 +185,7 @@ async function doAttestation(): Promise<{
     claimer,
     attester,
     claim,
-    attestedClaim,
+    credential,
     accumulator: acc,
     attestation,
   }
@@ -194,7 +194,7 @@ async function doAttestation(): Promise<{
 async function doVerification(
   claimer: Identity,
   attester: AttesterIdentity,
-  attestedClaim: AttestedClaim,
+  credential: Credential,
   accumulator: Accumulator,
   pe: boolean
 ): Promise<void> {
@@ -202,7 +202,7 @@ async function doVerification(
   // ------------------------- Verifier ----------------------------------------
   const [session, request] = await Kilt.Verifier.newRequest()
     .requestPresentationForCtype({
-      ctypeHash: attestedClaim.attestation.cTypeHash,
+      ctypeHash: credential.attestation.cTypeHash,
       attributes: ['age'],
     })
     .finalize(pe)
@@ -212,7 +212,7 @@ async function doVerification(
   const presentation = await Kilt.Claimer.createPresentation(
     claimer,
     request,
-    [attestedClaim],
+    [credential],
     [attesterPubKey],
     pe
   )
@@ -230,24 +230,19 @@ async function doVerification(
 
 // do an attestation and a verification
 async function example(): Promise<void> {
-  const {
-    claimer,
-    attester,
-    attestedClaim,
-    attestation,
-  } = await doAttestation()
+  const { claimer, attester, credential, attestation } = await doAttestation()
   // should succeed
   await doVerification(
     claimer,
     attester,
-    attestedClaim,
+    credential,
     attester.accumulator,
     true
   )
   await doVerification(
     claimer,
     attester,
-    attestedClaim,
+    credential,
     attester.accumulator,
     false
   )
@@ -256,14 +251,14 @@ async function example(): Promise<void> {
   await doVerification(
     claimer,
     attester,
-    attestedClaim,
+    credential,
     attester.accumulator,
     true
   )
   await doVerification(
     claimer,
     attester,
-    attestedClaim,
+    credential,
     attester.accumulator,
     false
   )

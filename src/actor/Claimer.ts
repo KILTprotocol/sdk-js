@@ -14,6 +14,7 @@ import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Identity from '../identity/Identity'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import { factory as LoggerFactory } from '../config/ConfigLog'
+import Credential from '../credential/Credential'
 
 const log = LoggerFactory.getLogger('Claimer')
 
@@ -36,7 +37,7 @@ function parseArgsForKilt(args: string[]): string[] {
 export async function createPresentation(
   identity: Identity,
   request: IRequestClaimsForCTypes,
-  attestedClaims: AttestedClaim[],
+  credentials: Credential[],
   attesterPubKeys: gabi.AttesterPublicKey[],
   forcePE = true
 ): Promise<ISubmitClaimsForCTypes> {
@@ -47,12 +48,12 @@ export async function createPresentation(
   }
 
   if (request.content.allowPE) {
-    const credentials = attestedClaims.map(c => c.credential)
-    if (!noNulls(credentials)) {
-      throw new Error('Missing credential for privacy enhanced presentation.')
+    const peCreds = credentials.map(c => c.privacyCredential)
+    if (!noNulls(peCreds)) {
+      throw new Error('Missing privacy enhanced credential')
     }
     const gabiPresentation = await identity.claimer.buildCombinedPresentation({
-      credentials,
+      credentials: peCreds,
       combinedPresentationReq: request.content.peRequest,
       attesterPubKeys,
     })
@@ -68,11 +69,10 @@ export async function createPresentation(
 
   return {
     type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
-    content: attestedClaims.map((ac, i) => {
-      const allAttrs = ac.getAttributes()
+    content: credentials.map((cred, i) => {
+      const allAttrs = cred.getAttributes()
       requestedAttributes[i].forEach(attr => allAttrs.delete(attr))
-      const p = ac.createPresentation(Array.from(allAttrs))
-      delete p.credential
+      const p = cred.createPresentation(Array.from(allAttrs))
       delete p.request.privacyEnhanced
       return p
     }),
@@ -114,12 +114,12 @@ export async function requestAttestation(parameter: {
   }
 }
 
-export function buildAttestedClaim(
+export function buildCredential(
   identity: Identity,
   message: ISubmitAttestationForClaim,
   session: ClaimerAttestationSession
-): Promise<AttestedClaim> {
-  return AttestedClaim.fromRequestAndAttestation(
+): Promise<Credential> {
+  return Credential.fromRequestAndAttestation(
     identity,
     session.requestForAttestation,
     message.content.attestation,

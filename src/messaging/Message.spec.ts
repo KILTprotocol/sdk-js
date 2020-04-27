@@ -210,7 +210,6 @@ describe('Messaging', () => {
     )
 
     const attestedClaim: IAttestedClaim = {
-      credential: null,
       request: content,
       attestation: submitAttestationBody.content.attestation,
     }

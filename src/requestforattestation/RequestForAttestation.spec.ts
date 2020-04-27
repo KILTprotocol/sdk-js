@@ -142,11 +142,10 @@ describe('RequestForAttestation', () => {
       identityCharlie.getPublicIdentity()
     )
     // combine to attested claim
-    legitimation = await AttestedClaim.fromRequestAndAttestation(
-      identityBob,
-      legitimationRequest,
-      legitimationAttestation
-    )
+    legitimation = new AttestedClaim({
+      request: legitimationRequest,
+      attestation: legitimationAttestation,
+    })
 
     // build attestation
     legitimationAttestationCharlie = Attestation.fromRequestAndPublicIdentity(
@@ -154,11 +153,10 @@ describe('RequestForAttestation', () => {
       identityCharlie.getPublicIdentity()
     )
     // combine to attested claim
-    legitimationCharlie = await AttestedClaim.fromRequestAndAttestation(
-      identityCharlie,
-      legitimationRequest,
-      legitimationAttestationCharlie
-    )
+    legitimationCharlie = new AttestedClaim({
+      request: legitimationRequest,
+      attestation: legitimationAttestationCharlie,
+    })
   })
 
   it('verify request for attestation', async () => {
@@ -239,11 +237,10 @@ describe('RequestForAttestation', () => {
       legitimationRequest,
       identityBob.getPublicIdentity()
     )
-    const legitimationBob = await AttestedClaim.fromRequestAndAttestation(
-      identityBob,
-      legitimationRequest,
-      legitimationAttestationBob
-    )
+    const legitimationBob = new AttestedClaim({
+      request: legitimationRequest,
+      attestation: legitimationAttestationBob,
+    })
     const reqForAtt = await buildRequestForAttestation(
       identityBob,
       {
@@ -283,7 +280,6 @@ describe('RequestForAttestation', () => {
         legitimationCharlie.attestation.revoked,
         legitimationCharlie.attestation.delegationId,
       ],
-      null,
     ]
 
     const compressedLegitimationBob: CompressedAttestedClaim = [
@@ -315,7 +311,6 @@ describe('RequestForAttestation', () => {
         legitimationBob.attestation.revoked,
         legitimationBob.attestation.delegationId,
       ],
-      null,
     ]
 
     const compressedReqForAtt: CompressedRequestForAttestation = [

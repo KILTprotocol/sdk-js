@@ -10,7 +10,7 @@ import getCached from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
+import Credential from '../credential/Credential'
 import {
   wannabeFaucet,
   wannabeAlice,
@@ -114,11 +114,11 @@ describe('when there is an account hierarchy', () => {
       const result1 = await attestation.store(attester)
       expect(result1.status.type).toBe('Finalized')
 
-      const attClaim = await AttestedClaim.fromRequestAndAttestation(
+      const attClaim = await Credential.fromRequestAndAttestation(
         claimer,
         request,
         attestation
-      )
+      ).then(c => c.createPresentation([]))
       expect(attClaim.verifyData()).toBeTruthy()
       await expect(attClaim.verify()).resolves.toBeTruthy()
 
