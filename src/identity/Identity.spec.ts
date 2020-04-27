@@ -15,12 +15,12 @@ describe('Identity', () => {
     )
 
     expect(alice.getAddress()).toEqual(
-      '5DkmtHGyAWY3kNvfYv4xGfyb3NLpJF6ZTKkHv76w1m6cEy1M'
+      '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu'
     )
 
     // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.signKeyringPair.publicKey)).toEqual(
-      '0x4acb9bc1db9af5512d91da6461e362ebf0e6500f5ee36d39adc476e2558f9477'
+      '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee'
     )
   })
 

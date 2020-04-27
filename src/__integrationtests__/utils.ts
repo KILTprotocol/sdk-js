@@ -14,7 +14,7 @@ export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 
-export const wannabeFaucet = Identity.buildFromURI(FaucetSeed)
+export const wannabeFaucet = Identity.buildFromMnemonic(FaucetSeed)
 export const wannabeAlice = Identity.buildFromURI('//Alice')
 export const wannabeBob = Identity.buildFromURI('//Bob')
 
