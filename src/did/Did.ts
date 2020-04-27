@@ -10,9 +10,10 @@
  * @preferred
  */
 
+import { SubmittableResult } from '@polkadot/api'
+import { AnyJson, AnyJsonObject } from '@polkadot/types/types'
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
-import TxStatus from '../blockchain/TxStatus'
 import IPublicIdentity from '../types/PublicIdentity'
 import {
   getIdentifierFromAddress,
@@ -65,9 +66,16 @@ export interface IDidDocumentPublicKey {
 }
 
 export interface IDidDocumentPpties {
-  authentication: object
+  authentication: Array<string | IDidDocumentPublicKey | AnyJsonObject>
   publicKey: IDidDocumentPublicKey[]
-  service: any
+  service: IDidService[]
+}
+
+export interface IDidService {
+  type: string
+  serviceEndpoint: string | AnyJsonObject
+  id?: string
+  [key: string]: AnyJson
 }
 
 export interface IDidDocument
@@ -117,9 +125,9 @@ export default class Did implements IDid {
    * Stores the [[Did]] object on-chain.
    *
    * @param identity The identity used to store the [[Did]] object on-chain.
-   * @returns A promise containing the [[TxStatus]] (transaction status).
+   * @returns A promise containing the [[SubmittableResult]] (transaction status).
    */
-  public async store(identity: Identity): Promise<TxStatus> {
+  public async store(identity: Identity): Promise<SubmittableResult> {
     log.debug(`Create tx for 'did.add'`)
     return store(this, identity)
   }
@@ -148,9 +156,9 @@ export default class Did implements IDid {
    * Removes the [[Did]] object attached to a given [[Identity]] from the chain.
    *
    * @param identity The identity for which to delete the [[Did]].
-   * @returns A promise containing the [[TxStatus]] (transaction status).
+   * @returns A promise containing the [[SubmittableResult]] (transaction status).
    */
-  public static async remove(identity: Identity): Promise<TxStatus> {
+  public static async remove(identity: Identity): Promise<SubmittableResult> {
     log.debug(`Create tx for 'did.remove'`)
     return remove(identity)
   }

@@ -111,8 +111,8 @@ describe('when there is an account hierarchy', () => {
         request,
         attester.getPublicIdentity()
       )
-      const status = await attestation.store(attester)
-      expect(status.type).toBe('Finalized')
+      const result1 = await attestation.store(attester)
+      expect(result1.status.type).toBe('Finalized')
 
       const attClaim = await AttestedClaim.fromRequestAndAttestation(
         claimer,
@@ -123,8 +123,8 @@ describe('when there is an account hierarchy', () => {
       await expect(attClaim.verify()).resolves.toBeTruthy()
 
       // revoke attestation through root
-      const result = await attClaim.attestation.revoke(UncleSam)
-      expect(result.type).toBe('Finalized')
+      const result2 = await attClaim.attestation.revoke(UncleSam)
+      expect(result2.status.type).toBe('Finalized')
     }, 30000)
   })
 })

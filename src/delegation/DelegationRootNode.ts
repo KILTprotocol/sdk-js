@@ -8,8 +8,8 @@
  * @preferred
  */
 
+import { SubmittableResult } from '@polkadot/api'
 import { QueryResult } from '../blockchain/Blockchain'
-import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { IDelegationRootNode } from '../types/Delegation'
@@ -67,9 +67,9 @@ export default class DelegationRootNode extends DelegationBaseNode
    * Stores the delegation root node on chain.
    *
    * @param identity The account used to store the delegation root node.
-   * @returns Promise containing the [[TxStatus]].
+   * @returns Promise containing the [[SubmittableResult]].
    */
-  public async store(identity: Identity): Promise<TxStatus> {
+  public async store(identity: Identity): Promise<SubmittableResult> {
     log.debug(`:: store(${this.id})`)
     return store(this, identity)
   }
@@ -79,7 +79,7 @@ export default class DelegationRootNode extends DelegationBaseNode
     return node !== null && !node.revoked
   }
 
-  public async revoke(identity: Identity): Promise<TxStatus> {
+  public async revoke(identity: Identity): Promise<SubmittableResult> {
     log.debug(`:: revoke(${this.id})`)
     return revoke(this, identity)
   }

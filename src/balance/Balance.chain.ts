@@ -11,7 +11,7 @@
 
 import BN from 'bn.js'
 import { Balance } from '@polkadot/types/interfaces'
-import TxStatus from '../blockchain/TxStatus'
+import { SubmittableResult } from '@polkadot/api'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
@@ -108,7 +108,7 @@ export async function getBalance(
  * const address = ...
  * const amount: BN = new BN(42)
  * sdk.Balance.makeTransfer(identity, address, amount)
- *   .then((status: TxStatus) => {
+ *   .then((status: SubmittableResult) => {
  *     console.log('Successfully transferred ${amount.toNumber()} tokens')
  *   })
  *   .catch(err => {
@@ -120,7 +120,7 @@ export async function makeTransfer(
   identity: Identity,
   accountAddressTo: IPublicIdentity['address'],
   amount: BN
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const blockchain = await getCached()
   const transfer = blockchain.api.tx.balances.transfer(accountAddressTo, amount)
   return blockchain.submitTx(identity, transfer)

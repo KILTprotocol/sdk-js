@@ -65,10 +65,12 @@ export function createDefaultDidDocument(
   return {
     id: identifier,
     '@context': CONTEXT,
-    authentication: {
-      type: KEY_TYPE_AUTHENTICATION,
-      publicKey: [`${identifier}#key-1`],
-    },
+    authentication: [
+      {
+        type: KEY_TYPE_AUTHENTICATION,
+        publicKey: [`${identifier}#key-1`],
+      },
+    ],
     publicKey: [
       {
         id: `${identifier}#key-1`,

@@ -32,17 +32,17 @@ import RequestForAttestationUtils from './RequestForAttestation.utils'
 import IRequestForAttestation, {
   Hash,
   NonceHash,
-  ClaimHashTree,
+  NonceHashTree,
   CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
 import { IDelegationBaseNode } from '../types/Delegation'
 import IClaim from '../types/Claim'
 
-function hashNonceValue(nonce: string, value: any): string {
+function hashNonceValue(nonce: string, value: string): string {
   return hashObjectAsStr(value, nonce)
 }
 
-function generateHash(value: any): NonceHash {
+function generateHash(value: string): NonceHash {
   const nonce: string = uuid()
   return {
     nonce,
@@ -50,11 +50,11 @@ function generateHash(value: any): NonceHash {
   }
 }
 
-function generateHashTree(contents: object): ClaimHashTree {
-  const result: ClaimHashTree = {}
+function generateHashTree(contents: IClaim['contents']): NonceHashTree {
+  const result: NonceHashTree = {}
 
   Object.keys(contents).forEach(key => {
-    result[key] = generateHash(contents[key])
+    result[key] = generateHash(contents[key].toString())
   })
 
   return result
@@ -182,7 +182,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public legitimations: AttestedClaim[]
   public claimOwner: NonceHash
   public claimerSignature: string
-  public claimHashTree: ClaimHashTree
+  public claimHashTree: NonceHashTree
   public cTypeHash: NonceHash
   public rootHash: Hash
   public privacyEnhanced: AttestationRequest | null
@@ -325,7 +325,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       const hashed: NonceHash = this.claimHashTree[key]
       if (
         !hashed.nonce ||
-        hashed.hash !== hashNonceValue(hashed.nonce, value)
+        hashed.hash !== hashNonceValue(hashed.nonce, value.toString())
       ) {
         throw Error(`Invalid hash for property '${key}' in claim hash tree`)
       }
@@ -369,7 +369,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   private static getHashLeaves(
     claimOwner: NonceHash,
     cTypeHash: NonceHash,
-    claimHashTree: object,
+    claimHashTree: NonceHashTree,
     legitimations: AttestedClaim[],
     delegationId: IDelegationBaseNode['id'] | null
   ): Uint8Array[] {
@@ -419,7 +419,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   private static calculateRootHash(
     claimOwner: NonceHash,
     cTypeHash: NonceHash,
-    claimHashTree: object,
+    claimHashTree: NonceHashTree,
     legitimations: AttestedClaim[],
     delegationId: IDelegationBaseNode['id'] | null
   ): Hash {

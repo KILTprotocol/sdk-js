@@ -10,14 +10,14 @@ import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
-import IClaim from '../types/Claim'
+import IClaim, { IClaimContents } from '../types/Claim'
 import constants from '../test/constants'
 import { CompressedRequestForAttestation } from '../types/RequestForAttestation'
 import { CompressedAttestedClaim } from '../types/AttestedClaim'
 
 async function buildRequestForAttestationPE(
   claimer: Identity,
-  contents: object,
+  contents: IClaim['contents'],
   legitimations: AttestedClaim[]
 ): Promise<
   [
@@ -75,7 +75,7 @@ async function buildRequestForAttestationPE(
 
 async function buildRequestForAttestation(
   claimer: Identity,
-  contents: object,
+  contents: IClaimContents,
   legitimations: AttestedClaim[]
 ): Promise<RequestForAttestation> {
   // create claim

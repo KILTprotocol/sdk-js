@@ -148,7 +148,7 @@ describe('Messaging', () => {
       quoteData,
       identityAlice
     )
-    const bothSigned = Quote.createAgreedQuote(
+    const bothSigned = Quote.createQuoteAgreement(
       identityAlice,
       quoteAttesterSigned,
       content.rootHash

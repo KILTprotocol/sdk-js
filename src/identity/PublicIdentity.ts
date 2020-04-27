@@ -58,10 +58,12 @@ export default class PublicIdentity implements IPublicIdentity {
    * @example ```javascript
    * const didDocument = {
    *   id: 'did:kilt:1234567',
-   *   authentication: {
-   *     type: 'Ed25519SignatureAuthentication2018',
-   *     publicKey: ['did:kilt:1234567#key-1'],
-   *   },
+   *   authentication: [
+   *     {
+   *       type: 'Ed25519SignatureAuthentication2018',
+   *       publicKey: ['did:kilt:1234567#key-1'],
+   *     },
+   *   ],
    *   publicKey: [
    *     {
    *       id: 'did:kilt:1234567#key-1',
