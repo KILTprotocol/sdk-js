@@ -33,7 +33,7 @@ describe('handling attestations that do not exist', () => {
   }, 30_000)
 })
 
-describe('When there is an attester, claimer and ctype drivers license', async () => {
+describe('When there is an attester, claimer and ctype drivers license', () => {
   let faucet: Identity
   let alice: Identity
   let claimer: Identity
@@ -162,7 +162,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     )
   }, 60_000)
 
-  describe('when there is an attested claim on-chain', async () => {
+  describe('when there is an attested claim on-chain', () => {
     let attClaim: AttestedClaim
 
     beforeAll(async () => {
@@ -231,7 +231,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     }, 15000)
   })
 
-  describe('when there is another Ctype that works as a legitimation', async () => {
+  describe('when there is another Ctype that works as a legitimation', () => {
     beforeAll(async () => {
       if (!(await CtypeOnChain(isOfficialLicenseAuthority))) {
         await isOfficialLicenseAuthority.store(faucet)

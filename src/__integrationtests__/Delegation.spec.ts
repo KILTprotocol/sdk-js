@@ -63,7 +63,7 @@ describe('when there is an account hierarchy', () => {
     ])
   }, 30000)
 
-  describe('and attestation rights have been delegated', async () => {
+  describe('and attestation rights have been delegated', () => {
     let rootNode: DelegationRootNode
     let delegatedNode: DelegationNode
 

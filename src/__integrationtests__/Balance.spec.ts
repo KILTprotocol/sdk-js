@@ -18,7 +18,7 @@ import {
 } from './utils'
 import getCached from '../blockchainApiConnection'
 
-describe('when there is a dev chain with a faucet', async () => {
+describe('when there is a dev chain with a faucet', () => {
   let faucet: Identity
   let bob: Identity
   let alice: Identity
@@ -71,7 +71,7 @@ describe('when there is a dev chain with a faucet', async () => {
   }, 15000)
 })
 
-describe('When there are haves and have-nots', async () => {
+describe('When there are haves and have-nots', () => {
   let BobbyBroke: Identity
   let RichieRich: Identity
   let StormyD: Identity
