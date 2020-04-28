@@ -13,14 +13,13 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
 import { Codec, AnyJson } from '@polkadot/types/types'
 import { u64 } from '@polkadot/types'
+import { decodeArray } from '../util/Decode'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 
 const log = LoggerFactory.getLogger('Blockchain')
-
-export type QueryResult = Codec | undefined | null
 
 export type Stats = {
   chain: Codec
@@ -44,12 +43,11 @@ export interface IBlockchainApi {
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
 
 export default class Blockchain implements IBlockchainApi {
-  public static asArray(queryResult: QueryResult): AnyJson[] {
-    const json =
-      queryResult && queryResult.encodedLength ? queryResult.toJSON() : null
-    if (json instanceof Array) {
-      return json
-    }
+  public static asArray(queryResult: Codec): AnyJson[] {
+    if (queryResult instanceof Array) return decodeArray(queryResult)
+    // new but in the spirit of the method's name: Struct to Array (drops keys)
+    if (queryResult instanceof Map)
+      return decodeArray(Array.from(queryResult.values()))
     return []
   }
 

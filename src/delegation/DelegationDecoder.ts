@@ -2,7 +2,7 @@
  * When [[DelegationNode]]s or [[DelegationRootNode]]s are written on the blockchain, they're encoded.
  * DelegationDecoder helps to decode them when they're queried from the chain.
  *
- * The DelegationDecoder methods transform a [[QueryResult]] into an object of a KILT type.
+ * The DelegationDecoder methods transform a Codec type into an object of a KILT type.
  *
  * @packageDocumentation
  * @ignore
