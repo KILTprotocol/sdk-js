@@ -7,7 +7,7 @@ import {
   MessageBodyType,
 } from '../messaging/Message'
 import Attestation from '../attestation/Attestation'
-import { IRevocableAttestation } from '../types/Attestation'
+import { IAttestationPE } from '../types/Attestation'
 
 export async function initiateAttestation(
   identity: AttesterIdentity
@@ -24,7 +24,7 @@ export async function issueAttestation(
   session: gabi.AttesterAttestationSession | null = null,
   forcePE = false
 ): Promise<{
-  attestation: IRevocableAttestation
+  attestation: IAttestationPE
   message: ISubmitAttestationForClaim
 }> {
   // Lets continue with the original object
@@ -45,7 +45,7 @@ export async function issueAttestation(
     )
   }
   await attestation.store(identity)
-  const revocableAttestation: IRevocableAttestation = {
+  const revocableAttestation: IAttestationPE = {
     witness,
     ...attestation,
   }
@@ -63,7 +63,7 @@ export async function issueAttestation(
 
 export async function revokeAttestation(
   identity: AttesterIdentity,
-  attestation: IRevocableAttestation
+  attestation: IAttestationPE
 ): Promise<void> {
   return identity.revokeAttestation(attestation)
 }

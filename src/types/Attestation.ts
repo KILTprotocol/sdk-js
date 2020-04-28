@@ -16,7 +16,7 @@ export default interface IAttestation {
   revoked: boolean
 }
 
-export interface IRevocableAttestation extends IAttestation {
+export interface IAttestationPE extends IAttestation {
   witness: gabi.Witness | null
 }
 
