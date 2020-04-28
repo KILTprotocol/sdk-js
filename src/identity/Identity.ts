@@ -156,7 +156,7 @@ export default class Identity {
   public readonly boxKeyPair: BoxKeyPair
   public serviceAddress?: string
 
-  constructor(
+  protected constructor(
     seed: Uint8Array,
     signKeyringPair: KeyringPair,
     claimer: Claimer

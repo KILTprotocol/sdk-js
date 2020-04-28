@@ -40,7 +40,11 @@ export default class Credential {
     })
   }
 
-  constructor({ reqForAtt, attestation, privacyCredential }: ICredential) {
+  protected constructor({
+    reqForAtt,
+    attestation,
+    privacyCredential,
+  }: ICredential) {
     this.reqForAtt = reqForAtt
     this.attestation = attestation
     this.privacyCredential = privacyCredential
