@@ -67,10 +67,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * ```
    */
   public async verify(): Promise<boolean> {
-    if (!this.verifyData()) {
-      Promise.resolve(false)
-    }
-    return this.attestation.verify()
+    return this.verifyData() && this.attestation.verify()
   }
 
   /**

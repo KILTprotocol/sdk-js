@@ -197,6 +197,24 @@ describe('When there is an attester, claimer and ctype drivers license', async (
       )
     }, 15000)
 
+    it('should not be possible to use attestation for different claim', async () => {
+      const content = { name: 'Rolfi', age: 19 }
+      const claim = Claim.fromCTypeAndClaimContents(
+        DriversLicense,
+        content,
+        claimer.getAddress()
+      )
+      const [request] = await RequestForAttestation.fromClaimAndIdentity({
+        claim,
+        identity: claimer,
+      })
+      const fakeAttClaim = new AttestedClaim({
+        request,
+        attestation: attClaim.attestation,
+      })
+      await expect(fakeAttClaim.verify()).resolves.toBeFalsy()
+    }, 15000)
+
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(revoke(attClaim.getHash(), claimer)).rejects.toThrowError(
         'not permitted'
