@@ -309,8 +309,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public removeClaimOwner(): void {
-    // should the resulting object pass isClaim and isRequestForAttestation?
-    // This function should probably not exist.
     delete this.claim.owner
     delete this.claimOwner.nonce
   }

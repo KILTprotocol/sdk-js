@@ -82,13 +82,11 @@ export default class Claim implements IClaim {
       validateAddress(input.owner, 'Claim Owner')
     }
     if (input.contents !== undefined) {
-      Object.keys(input.contents).forEach(key => {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const temp = input.contents![key]
+      Object.entries(input.contents).forEach(entry => {
         if (
-          typeof temp !== 'number' &&
-          typeof temp !== 'boolean' &&
-          typeof temp !== 'string'
+          !entry[0] ||
+          !entry[1] ||
+          !['string', 'number', 'boolean'].includes(typeof entry[1])
         ) {
           throw new Error('Claim contents malformed')
         }
