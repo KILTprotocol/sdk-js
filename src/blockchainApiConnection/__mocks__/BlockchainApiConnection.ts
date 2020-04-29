@@ -56,7 +56,6 @@ import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
 
 async function getCached(
-  _: string = BlockchainApiConnection.DEFAULT_WS_ADDRESS
 ): Promise<IBlockchainApi> {
   if (!BlockchainApiConnection.instance) {
     BlockchainApiConnection.instance = Promise.resolve(
@@ -77,7 +76,7 @@ class MockSubmittableExtrinsic {
     this.result = result
   }
 
-  public sign(_a: any, _b: any, _c: any) {
+  public sign() {
     return this
   }
 
