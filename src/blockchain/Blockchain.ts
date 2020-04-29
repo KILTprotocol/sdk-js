@@ -22,9 +22,9 @@ const log = LoggerFactory.getLogger('Blockchain')
 export type QueryResult = Codec | undefined | null
 
 export type Stats = {
-  chain: Codec
-  nodeName: Codec
-  nodeVersion: Codec
+  chain: string
+  nodeName: string
+  nodeVersion: string
 }
 
 export interface IBlockchainApi {
@@ -62,12 +62,12 @@ export default class Blockchain implements IBlockchainApi {
   private errorHandler: ErrorHandler
 
   public async getStats(): Promise<Stats> {
-    const [chain, nodeName, nodeVersion] = await Promise.all([
+    const encoded = await Promise.all([
       this.api.rpc.system.chain(),
       this.api.rpc.system.name(),
       this.api.rpc.system.version(),
     ])
-
+    const [chain, nodeName, nodeVersion] = encoded.map(el => el.toString())
     return { chain, nodeName, nodeVersion }
   }
 
