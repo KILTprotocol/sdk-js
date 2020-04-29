@@ -216,7 +216,7 @@ export default class Blockchain implements IBlockchainApi {
       })
     } catch (error) {
       this.resetAccountQueue(identity.address)
-      return new Promise<SubmittableResult>((resolve, reject) => reject(error))
+      throw error
     }
 >>>>>>> feat: reset q on new block (chain response)
   }
@@ -270,22 +270,17 @@ export default class Blockchain implements IBlockchainApi {
     accountAddress: Identity['address']
   ): Promise<Index> {
     let nonce: Index
-    try {
-      if (!this.accountNonces.has(accountAddress)) {
-        nonce = await this.api.query.system.accountNonce<Index>(accountAddress)
-        this.accountNonces.set(accountAddress, new UInt(nonce.addn(1)))
+    if (!this.accountNonces.has(accountAddress)) {
+      nonce = await this.api.query.system.accountNonce<Index>(accountAddress)
+      this.accountNonces.set(accountAddress, new UInt(nonce.addn(1)))
+    } else {
+      const temp: Index | undefined = this.accountNonces.get(accountAddress)
+      if (!temp) {
+        throw new Error(`Nonce Retrieval Failed for : ${accountAddress}`)
       } else {
-        const temp: Index | undefined = this.accountNonces.get(accountAddress)
-        if (!temp) {
-          throw new Error(`Nonce Retrieval Failed for : ${accountAddress}`)
-        } else {
-          nonce = temp
-          this.accountNonces.set(accountAddress, new UInt(temp.addn(1)))
-        }
+        nonce = temp
+        this.accountNonces.set(accountAddress, new UInt(temp.addn(1)))
       }
-    } catch (error) {
-      log.error(error)
-      nonce = new UInt(-1)
     }
     return nonce
   }
