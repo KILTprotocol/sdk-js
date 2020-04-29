@@ -18,20 +18,12 @@ export default class Credential {
     attestationPE: gabi.Attestation | null = null
   ): Promise<Credential> {
     let privacyCredential: gabi.Credential | null = null
-    const { claimer: gabiClaimer } = claimer
 
-    if (
-      session !== null &&
-      attestationPE !== null &&
-      typeof claimer !== 'undefined'
-    ) {
-      privacyCredential = await gabiClaimer.buildCredential({
+    if (session !== null && attestationPE !== null) {
+      privacyCredential = await claimer.claimer.buildCredential({
         claimerSession: session,
         attestation: attestationPE,
       })
-    } else if (session !== null && attestationPE !== null) {
-      // FIXME: ensure every identity can be a claimer
-      throw new Error('Claimer not defined')
     }
     return new Credential({
       reqForAtt: request,
