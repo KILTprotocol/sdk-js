@@ -46,10 +46,16 @@ export default class Credential {
     excludedClaimProperties: string[],
     excludeIdentity = false
   ): AttestedClaim {
-    const attClaim = new AttestedClaim({
-      request: this.reqForAtt,
-      attestation: this.attestation,
-    })
+    const attClaim = new AttestedClaim(
+      // clone the attestation and request for attestation because properties will be deleted later.
+      // TODO: find a nice way to clone stuff
+      JSON.parse(
+        JSON.stringify({
+          request: this.reqForAtt,
+          attestation: this.attestation,
+        })
+      )
+    )
 
     // remove specific attributes
     attClaim.request.removeClaimProperties(excludedClaimProperties)
