@@ -41,7 +41,7 @@ type BoxPublicKey =
 /**
  * The minimal required length of the seed.
  */
-const MinSeedLength = 32
+const MIN_SEED_LENGTH = 32
 
 export default class Identity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
@@ -128,10 +128,10 @@ export default class Identity {
 
     // pad seed if needed for claimer
     let paddedSeed = u8aUtil.u8aToU8a([...seed])
-    if (paddedSeed.length < MinSeedLength) {
+    if (paddedSeed.length < MIN_SEED_LENGTH) {
       paddedSeed = u8aUtil.u8aToU8a([
         ...paddedSeed,
-        ...new Array<number>(MinSeedLength - paddedSeed.length).fill(0),
+        ...new Array<number>(MIN_SEED_LENGTH - paddedSeed.length).fill(0),
       ])
     }
     const claimer = await Claimer.buildFromSeed(paddedSeed)
@@ -155,10 +155,10 @@ export default class Identity {
 
     // pad seed if needed for claimer
     let paddedSeed = u8aUtil.u8aToU8a([...seed])
-    if (paddedSeed.length < MinSeedLength) {
+    if (paddedSeed.length < MIN_SEED_LENGTH) {
       paddedSeed = u8aUtil.u8aToU8a([
         ...paddedSeed,
-        ...new Array<number>(MinSeedLength - paddedSeed.length).fill(0),
+        ...new Array<number>(MIN_SEED_LENGTH - paddedSeed.length).fill(0),
       ])
     }
     const claimer = await Claimer.buildFromSeed(paddedSeed)
