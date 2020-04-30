@@ -10,7 +10,7 @@ import Kilt, {
   Credential,
 } from '../src'
 import constants from '../src/test/constants'
-import { IRevocableAttestation } from '../src/types/Attestation'
+import { IRevocationHandle } from '../src/types/Attestation'
 
 async function doAttestation(): Promise<{
   claimer: Identity
@@ -18,7 +18,7 @@ async function doAttestation(): Promise<{
   claim: Claim
   credential: Credential
   accumulator: Accumulator
-  attestation: IRevocableAttestation
+  revocationHandle: IRevocationHandle
 }> {
   // How to generate an Identity
   // const mnemonic = Kilt.Identity.generateMnemonic()
@@ -134,14 +134,17 @@ async function doAttestation(): Promise<{
     throw new Error('Unexpected message type')
   }
   const {
-    attestation,
+    revocationHandle,
     message: submitAttestation,
   } = await Kilt.Attester.issueAttestation(
     attester,
     decrypted.body,
     attestersSession
   )
-  console.log('Attestation should be stored for revocation: ', attestation)
+  console.log(
+    'revocationHandle should be stored for revocation: ',
+    revocationHandle
+  )
 
   // And send a message back
   const messageBack = new Kilt.Message(
@@ -187,7 +190,7 @@ async function doAttestation(): Promise<{
     claim,
     credential,
     accumulator: acc,
-    attestation,
+    revocationHandle,
   }
 }
 
@@ -230,7 +233,12 @@ async function doVerification(
 
 // do an attestation and a verification
 async function example(): Promise<void> {
-  const { claimer, attester, credential, attestation } = await doAttestation()
+  const {
+    claimer,
+    attester,
+    credential,
+    revocationHandle,
+  } = await doAttestation()
   // should succeed
   await doVerification(
     claimer,
@@ -246,7 +254,7 @@ async function example(): Promise<void> {
     attester.accumulator,
     false
   )
-  await Kilt.Attester.revokeAttestation(attester, attestation)
+  await Kilt.Attester.revokeAttestation(attester, revocationHandle)
   // should fail
   await doVerification(
     claimer,
