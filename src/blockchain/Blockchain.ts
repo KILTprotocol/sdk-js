@@ -12,6 +12,7 @@ import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
 import { Codec, AnyJson } from '@polkadot/types/types'
+import { Text } from '@polkadot/types'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
@@ -62,7 +63,7 @@ export default class Blockchain implements IBlockchainApi {
   private errorHandler: ErrorHandler
 
   public async getStats(): Promise<Stats> {
-    const encoded = await Promise.all([
+    const encoded: Text[] = await Promise.all([
       this.api.rpc.system.chain(),
       this.api.rpc.system.name(),
       this.api.rpc.system.version(),
