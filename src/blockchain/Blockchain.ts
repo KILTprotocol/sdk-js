@@ -13,7 +13,6 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
 import { Codec, AnyJson } from '@polkadot/types/types'
 import { u64 } from '@polkadot/types'
-import { decodeArray } from '../util/Decode'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
@@ -44,10 +43,8 @@ export interface IBlockchainApi {
 
 export default class Blockchain implements IBlockchainApi {
   public static asArray(queryResult: Codec): AnyJson[] {
-    if (queryResult instanceof Array) return decodeArray(queryResult)
-    // new but in the spirit of the method's name: Struct to Array (drops keys)
-    if (queryResult instanceof Map)
-      return decodeArray(Array.from(queryResult.values()))
+    const json = queryResult.toJSON()
+    if (json instanceof Array) return json
     return []
   }
 
@@ -121,7 +118,6 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public async getNonce(accountAddress: string): Promise<u64> {
-    const nonce = await this.api.query.system.accountNonce<u64>(accountAddress)
-    return nonce
+    return this.api.query.system.accountNonce<u64>(accountAddress)
   }
 }

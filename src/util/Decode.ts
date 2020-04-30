@@ -2,7 +2,7 @@
  * @module Decode
  */
 
-import { Codec, AnyJson } from '@polkadot/types/types'
+import { Codec } from '@polkadot/types/types'
 
 /**
  * Dummy comment needed for correct doc display, do not remove.
@@ -21,14 +21,4 @@ export function hasNonNullByte(codec: Codec): boolean {
   return !codec.toU8a().some(e => e !== 0)
 }
 
-export function decodeArray(codec: Codec[]): AnyJson[] {
-  return codec.map(el => {
-    if (el instanceof Array) {
-      return decodeArray(el)
-    }
-    if (el.isEmpty && el.toJSON) {
-      return null
-    }
-    return el.toJSON()
-  })
-}
+export default hasNonNullByte
