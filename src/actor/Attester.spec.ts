@@ -66,13 +66,13 @@ describe('Attester', () => {
       attesterPubKey: alice.getPublicGabiKey(),
     })
 
-    const { message, attestation } = await Attester.issueAttestation(
+    const { message, revocationHandle } = await Attester.issueAttestation(
       alice,
       requestAttestation,
       attersterSession,
       true
     )
-    expect(attestation.witness).not.toBeNull()
+    expect(revocationHandle.witness).not.toBeNull()
     expect(message.type).toEqual(MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM)
     expect(message.content.attestationPE).toBeDefined()
     expect(message.content.attestation).toBeDefined()
@@ -105,11 +105,11 @@ describe('Attester', () => {
       identity: bob,
     })
 
-    const { message, attestation } = await Attester.issueAttestation(
+    const { message, revocationHandle } = await Attester.issueAttestation(
       alice,
       requestAttestation
     )
-    expect(attestation.witness).toBeNull()
+    expect(revocationHandle.witness).toBeNull()
     expect(message.type).toEqual(MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM)
     expect(message.content.attestationPE).toBeUndefined()
     expect(message.content.attestation).toBeDefined()
@@ -142,14 +142,14 @@ describe('Attester', () => {
       attesterPubKey: alice.getPublicGabiKey(),
     })
 
-    const { attestation } = await Attester.issueAttestation(
+    const { revocationHandle } = await Attester.issueAttestation(
       alice,
       requestAttestation,
       attersterSession,
       true
     )
     const oldAcc = alice.accumulator
-    await Attester.revokeAttestation(alice, attestation)
+    await Attester.revokeAttestation(alice, revocationHandle)
     expect(oldAcc.valueOf()).not.toEqual(alice.accumulator.valueOf())
   })
 
@@ -179,12 +179,12 @@ describe('Attester', () => {
       attesterPubKey: alice.getPublicGabiKey(),
     })
 
-    const { attestation } = await Attester.issueAttestation(
+    const { revocationHandle } = await Attester.issueAttestation(
       alice,
       requestAttestation
     )
     const oldAcc = alice.accumulator
-    await Attester.revokeAttestation(alice, attestation)
+    await Attester.revokeAttestation(alice, revocationHandle)
     // accumulator should not change!
     expect(alice.accumulator.valueOf()).toEqual(oldAcc.valueOf())
   })

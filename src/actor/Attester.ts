@@ -43,7 +43,7 @@ export async function issueAttestation(
   session: gabi.AttesterAttestationSession | null = null,
   forcePE = false
 ): Promise<{
-  attestation: IRevocationHandle
+  revocationHandle: IRevocationHandle
   message: ISubmitAttestationForClaim
 }> {
   // Lets continue with the original object
@@ -64,12 +64,12 @@ export async function issueAttestation(
     )
   }
   await attestation.store(identity)
-  const revocableAttestation: IRevocationHandle = {
+  const revocationHandle: IRevocationHandle = {
     witness,
     attestation,
   }
   return {
-    attestation: revocableAttestation,
+    revocationHandle,
     message: {
       content: {
         attestation,

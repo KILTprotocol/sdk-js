@@ -84,14 +84,14 @@ describe('Claimer', () => {
     }
     const {
       message: attestationMessage,
-      attestation,
+      revocationHandle,
     } = await Attester.issueAttestation(
       alice,
       requestAttestation,
       attersterSession,
       true
     )
-    expect(attestation.witness).not.toBeNull()
+    expect(revocationHandle.witness).not.toBeNull()
 
     const attestedClaim = await Claimer.buildCredential(
       bob,
@@ -130,9 +130,9 @@ describe('Claimer', () => {
 
     const {
       message: attestationMessage,
-      attestation,
+      revocationHandle,
     } = await Attester.issueAttestation(alice, requestAttestation)
-    expect(attestation.witness).toBeNull()
+    expect(revocationHandle.witness).toBeNull()
 
     const attestedClaim = await Claimer.buildCredential(
       bob,
