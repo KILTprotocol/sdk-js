@@ -109,7 +109,7 @@ describe('DID', () => {
             'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
           id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-2',
           publicKeyHex:
-            '0xbd0f0e4b81ecf1644026498ff657ce7aa0101511e913464f22ea415961a32c34',
+            '0xe54bdd5e4f0929471fb333b17c0d865fc4f2cbc45364602bd1b85550328c3c62',
           type: 'X25519Salsa20Poly1305Key2018',
         },
       ],
@@ -156,7 +156,7 @@ describe('DID', () => {
             'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
           id: 'did:kilt:5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu#key-2',
           publicKeyHex:
-            '0xbd0f0e4b81ecf1644026498ff657ce7aa0101511e913464f22ea415961a32c34',
+            '0xe54bdd5e4f0929471fb333b17c0d865fc4f2cbc45364602bd1b85550328c3c62',
           type: 'X25519Salsa20Poly1305Key2018',
         },
       ],

@@ -10,9 +10,7 @@ describe('Identity', () => {
   it('should create known identities', async () => {
     const alice = await Identity.buildFromURI('//Alice')
 
-    expect(alice.seedAsHex).toEqual(
-      '0x2f2f416c69636520202020202020202020202020202020202020202020202020'
-    )
+    expect(alice.seedAsHex).toEqual('0x2f2f416c696365')
 
     expect(alice.getAddress()).toEqual(
       '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu'

@@ -60,28 +60,6 @@ export default class Identity {
   }
 
   /**
-   * [STATIC] Builds a new [[Identity]], generated from a seed (Secret Seed).
-   *
-   * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
-   * @returns An [[Identity]].
-   * @example ```javascript
-   * // prettier-ignore
-   * const seed = new Uint8Array([108, 233, 253,  6,  12, 112,  22,  92,
-   *                               15, 200, 218, 37, 129,  13,  36, 145,
-   *                                6, 213, 223, 16,  10, 169, 128, 224,
-   *                              217, 161,  20,  9, 214, 179,  82,  97
-   *                            ]);
-   * await Identity.buildFromSeed(seed);
-   * ```
-   */
-  public static async buildFromSeed(seed: Uint8Array): Promise<Identity> {
-    const keyring = new Keyring({ type: 'ed25519' })
-    const keyringPair = keyring.addFromSeed(seed)
-    const claimer = await Claimer.buildFromSeed(seed)
-    return new Identity(seed, keyringPair, claimer)
-  }
-
-  /**
    * [STATIC] Builds an identity object from a mnemonic string.
    *
    * @param phraseArg - [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
@@ -130,6 +108,38 @@ export default class Identity {
   }
 
   /**
+   * [STATIC] Builds a new [[Identity]], generated from a seed (Secret Seed).
+   *
+   * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
+   * @returns An [[Identity]].
+   * @example ```javascript
+   * // prettier-ignore
+   * const seed = new Uint8Array([108, 233, 253,  6,  12, 112,  22,  92,
+   *                               15, 200, 218, 37, 129,  13,  36, 145,
+   *                                6, 213, 223, 16,  10, 169, 128, 224,
+   *                              217, 161,  20,  9, 214, 179,  82,  97
+   *                            ]);
+   * await Identity.buildFromSeed(seed);
+   * ```
+   */
+  public static async buildFromSeed(seed: Uint8Array): Promise<Identity> {
+    const keyring = new Keyring({ type: 'ed25519' })
+    const keyringPair = keyring.addFromSeed(seed)
+
+    // pad seed if needed for claimer
+    let paddedSeed = u8aUtil.u8aToU8a([...seed])
+    if (paddedSeed.length < MinSeedLength) {
+      paddedSeed = u8aUtil.u8aToU8a([
+        ...paddedSeed,
+        ...new Array<number>(MinSeedLength - paddedSeed.length).fill(0),
+      ])
+    }
+    const claimer = await Claimer.buildFromSeed(paddedSeed)
+
+    return new Identity(seed, keyringPair, claimer)
+  }
+
+  /**
    * [STATIC] Builds a new [[Identity]], generated from a uniform resource identifier (URIs).
    *
    * @param uri - Standard identifiers.
@@ -141,10 +151,18 @@ export default class Identity {
   public static async buildFromURI(uri: string): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
     const derived = keyring.createFromUri(uri)
-    const paddedUri = uri.padEnd(MinSeedLength, ' ')
-    const seed = u8aUtil.u8aToU8a(paddedUri)
-    const claimer = await Claimer.buildFromSeed(seed)
-    // TODO: heck to create identity from //Alice
+    const seed = u8aUtil.u8aToU8a(uri)
+
+    // pad seed if needed for claimer
+    let paddedSeed = u8aUtil.u8aToU8a([...seed])
+    if (paddedSeed.length < MinSeedLength) {
+      paddedSeed = u8aUtil.u8aToU8a([
+        ...paddedSeed,
+        ...new Array<number>(MinSeedLength - paddedSeed.length).fill(0),
+      ])
+    }
+    const claimer = await Claimer.buildFromSeed(paddedSeed)
+
     return new Identity(seed, derived, claimer)
   }
 
