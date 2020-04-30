@@ -34,6 +34,18 @@ function parseArgsForKilt(args: string[]): string[] {
     })
 }
 
+/**
+ * [ASYNC] Creates a presentation for an arbitrary amount of [[Credential]]s which can be verified in [[verifyPresentation]].
+ *
+ * @param identity The Claimer [[Identity]] which owns the [[Çredential]]s.
+ * @param request The message which represents multiple [[CType]]s, [[CombinedPresentationRequest]]s and whether privacy
+ * enhancement is supported.
+ * @param credentials The [[Credential]]s which should be verified.
+ * @param attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
+ * @param forcePE A boolean to force privacy enhancement.
+ * @returns A message which represents either an array of [[AttestedClaim]]s if privacy enhancement is not supported
+ * or a [[CombinedPresentation]]. Both of these options can be verified.
+ */
 export async function createPresentation(
   identity: Identity,
   request: IRequestClaimsForCTypes,
@@ -65,13 +77,13 @@ export async function createPresentation(
 
   const requestedAttributes = request.content.peRequest
     .getRequestedProperties()
-    .map(propsPerClaim => parseArgsForKilt(propsPerClaim))
+    .map((propsPerClaim: any[]) => parseArgsForKilt(propsPerClaim))
 
   return {
     type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
     content: credentials.map((cred, i) => {
       const allAttrs = cred.getAttributes()
-      requestedAttributes[i].forEach(attr => allAttrs.delete(attr))
+      requestedAttributes[i].forEach((attr: any) => allAttrs.delete(attr))
       const p = cred.createPresentation(Array.from(allAttrs))
       delete p.request.privacyEnhanced
       return p
@@ -79,11 +91,37 @@ export async function createPresentation(
   }
 }
 
+/**
+ * The Claimer's [[Attestation]] session object which is returned in [[requestAttestion]] and required in [[buildCredential]].
+ *
+ * It includes all [[Claim]] data required for an [[Attestation]]: The [[Claim]], the Claimer's signature,
+ * the [[claimHashTree]], the [[cTypeHash]], the unique identifier for the delegation,
+ * an array of [[AttestedClaim]]s and the rootHash.
+ *
+ * In case of enabled privacy enhancement, both the Claimer's Attestation session
+ * and the Attester's message from [[initiateAttestation]] are included as well.
+ * Both of these objects are required for privacy enhancement to prevent replay attacks.
+ */
 type ClaimerAttestationSession = {
   peSession: gabi.ClaimerAttestationSession | null
   requestForAttestation: IRequestForAttestation
 }
 
+/**
+ * [ASYNC] Creates an [[AttestationRequest]] using the provided [[InitiateAttestationRequest]].
+ *
+ * @param parameter The parameter object.
+ * @param parameter.claim The [[Claim]] which should get attested.
+ * @param parameter.identity The Claimer's [[Identity]] which owns the [[Claim]].
+ * @param parameter.legitimations An Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to
+ * include into the [[Attestation]] as legitimations.
+ * @param parameter.delegationId The unique identifier of the desired delegation.
+ * @param parameter.initiateAttestationMsg The message which the Claimer received from the [[AttesterIdentity]]
+ *  after executing [[initiateAttestation]].
+ * @param parameter.attesterPubKey The privacy enhanced public key of the [[AttesterIdentity]] which should attest the [[Claim]].
+ * @returns An [[AttestationRequest]] and a [[ClaimerAttestationSession]] which together with an [[AttestationResponse]]
+ * can be used to create a [[Credential]].
+ */
 export async function requestAttestation(parameter: {
   claim: IClaim
   identity: Identity
@@ -114,7 +152,15 @@ export async function requestAttestation(parameter: {
   }
 }
 
-export function buildCredential(
+/**
+ * [ASYNC] Builds a [[Credential]] which can be verified when used in [[createPresentation]].
+ *
+ * @param identity The Claimer's [[Identity]] which owns the [[AttestedClaim]].
+ * @param message The session object corresponding to the [[AttestationRequest]].
+ * @param session The [[ClaimerAttestationSession]] which corresponds to the message and [[AttestedClaim]].
+ * @returns A signed and valid [[Credential]].
+ */
+export async function buildCredential(
   identity: Identity,
   message: ISubmitAttestationForClaim,
   session: ClaimerAttestationSession

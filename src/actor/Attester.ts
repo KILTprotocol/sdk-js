@@ -9,6 +9,14 @@ import {
 import Attestation from '../attestation/Attestation'
 import { IRevocationHandle } from '../types/Attestation'
 
+/**
+ * [ASYNC] Initiates the [[Attestation]] session.
+ *
+ * @param identity The [[Identity]] representing the entity which is eligible to attest and sign the [[Claim]].
+ * @returns A session and a message object.
+ * The **message** should be sent over to the Claimer to be used in [[requestAttestion]].
+ * The **session** should be kept private and used in [[issueAttestation]].
+ */
 export async function initiateAttestation(
   identity: AttesterIdentity
 ): Promise<{
@@ -18,6 +26,17 @@ export async function initiateAttestation(
   return identity.initiateAttestation()
 }
 
+/**
+ * [ASYNC] Creates an [[Attestation]] for the [[Claim]] inside the request.
+ *
+ * @param identity The [[AttesterIdentity]] representing the entity which should attest the [[Claim]] and initiated the [[Attestation]]
+ * in [[initiateAttestation]].
+ * @param request The message result of the Claimer's attestation request in [[requestAttestation]].
+ * @param session The [[AttesterIdentity]]'s session created in [[initiateAttestation]].
+ * @param forcePE A boolean to force privacy enhancement.
+ * @returns The [[Attestation]] object which should be sent to the Claimer and
+ * a witness which can be used to revoke the [[Attestation]] in [[revokeAttestation]].
+ */
 export async function issueAttestation(
   identity: AttesterIdentity,
   request: IRequestAttestationForClaim,
@@ -61,6 +80,13 @@ export async function issueAttestation(
   }
 }
 
+// eslint-disable-next-line jsdoc/require-returns
+/**
+ * [ASYNC] Revokes an [[Attestation]] created in [[issueAttestation]].
+ *
+ * @param identity The [[AttesterIdentity]] which signed the [[Attestation]] in [[issueAttestation]].
+ * @param attestation The unique witness for the [[Attestation]] which was created in [[issueAttestation]].
+ */
 export async function revokeAttestation(
   identity: AttesterIdentity,
   attestation: IRevocationHandle
