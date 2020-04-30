@@ -1,7 +1,7 @@
 import * as u8aUtil from '@polkadot/util/u8a'
 import * as gabi from '@kiltprotocol/portablegabi'
 import { KeyringPair } from '@polkadot/keyring/types'
-import { IAttestationPE } from '../types/Attestation'
+import { IRevocationHandle } from '../types/Attestation'
 import Identity from '../identity/Identity'
 import { MessageBodyType, IInitiateAttestation } from '../messaging/Message'
 import IRequestForAttestation from '../types/RequestForAttestation'
@@ -211,13 +211,13 @@ export default class AttesterIdentity extends Identity {
     }
   }
 
-  public async revokeAttestation(attestation: IAttestationPE): Promise<void> {
-    if (attestation.witness !== null) {
+  public async revokeAttestation(handle: IRevocationHandle): Promise<void> {
+    if (handle.witness !== null) {
       this.accumulator = await this.attester.revokeAttestation({
-        witnesses: [attestation.witness],
+        witnesses: [handle.witness],
         accumulator: this.accumulator,
       })
     }
-    await new Attestation(attestation).revoke(this)
+    await new Attestation(handle.attestation).revoke(this)
   }
 }
