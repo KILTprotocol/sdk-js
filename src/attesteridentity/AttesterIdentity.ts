@@ -14,36 +14,6 @@ export default class AttesterIdentity extends Identity {
   protected attester: gabi.Attester
   public accumulator: gabi.Accumulator
 
-  constructor(
-    seed: Uint8Array,
-    signKeyringPair: KeyringPair,
-    claimer: gabi.Claimer,
-    attester: gabi.Attester,
-    accumulator: gabi.Accumulator
-  ) {
-    super(seed, signKeyringPair, claimer)
-    this.attester = attester
-    this.accumulator = accumulator
-  }
-
-  /**
-   * Returns the private key used to create privacy enhanced attestations.
-   *
-   * @returns The private key used for attesting.
-   */
-  public getPrivateGabiKey(): gabi.AttesterPrivateKey {
-    return this.attester.privateKey
-  }
-
-  /**
-   * Returns the private key used to create privacy enhanced attestations.
-   *
-   * @returns The private key used for attesting.
-   */
-  public getPublicGabiKey(): gabi.AttesterPublicKey {
-    return this.attester.publicKey
-  }
-
   public static async buildFromIdentity(
     identity: Identity,
     validityDuration: number,
@@ -164,6 +134,36 @@ export default class AttesterIdentity extends Identity {
       privateGabiKey,
       accumulator
     )
+  }
+
+  protected constructor(
+    seed: Uint8Array,
+    signKeyringPair: KeyringPair,
+    claimer: gabi.Claimer,
+    attester: gabi.Attester,
+    accumulator: gabi.Accumulator
+  ) {
+    super(seed, signKeyringPair, claimer)
+    this.attester = attester
+    this.accumulator = accumulator
+  }
+
+  /**
+   * Returns the private key used to create privacy enhanced attestations.
+   *
+   * @returns The private key used for attesting.
+   */
+  public getPrivateGabiKey(): gabi.AttesterPrivateKey {
+    return this.attester.privateKey
+  }
+
+  /**
+   * Returns the private key used to create privacy enhanced attestations.
+   *
+   * @returns The private key used for attesting.
+   */
+  public getPublicGabiKey(): gabi.AttesterPublicKey {
+    return this.attester.publicKey
   }
 
   public getPublicIdentity(): PublicAttesterIdentity {
