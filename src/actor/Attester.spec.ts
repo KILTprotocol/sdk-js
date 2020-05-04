@@ -120,10 +120,7 @@ describe('Attester', () => {
       return Promise.resolve()
     })
     Blockchain.api.query.portablegabi.accumulator = jest.fn(() => {
-      const tuple = new Option(
-        'Vec<Bytes>',
-        new Vec('Bytes', '0xDEADBEEF')
-      )
+      const tuple = new Option('Vec<Bytes>', new Vec('Bytes', '0xDEADBEEF'))
       return Promise.resolve(tuple)
     })
     const {
