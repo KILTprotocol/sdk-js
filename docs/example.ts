@@ -216,7 +216,7 @@ async function doVerification(
     claimer,
     request,
     [credential],
-    [attesterPub.publicGabiKey],
+    [attesterPub],
     pe
   )
 
@@ -226,7 +226,7 @@ async function doVerification(
     presentation,
     session,
     [await Kilt.Attester.getLatestAccumulator(attesterPub)],
-    [attesterPub.publicGabiKey]
+    [attesterPub]
   )
   console.log('Received claims: ', JSON.stringify(claims))
   console.log('All valid? ', verified)

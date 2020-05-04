@@ -15,6 +15,7 @@ import Identity from '../identity/Identity'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import Credential from '../credential/Credential'
+import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
 
 const log = LoggerFactory.getLogger('Claimer')
 
@@ -50,7 +51,7 @@ export async function createPresentation(
   identity: Identity,
   request: IRequestClaimsForCTypes,
   credentials: Credential[],
-  attesterPubKeys: gabi.AttesterPublicKey[],
+  attesterPubKeys: PublicAttesterIdentity[],
   forcePE = true
 ): Promise<ISubmitClaimsForCTypes> {
   if (!request.content.allowPE && forcePE) {
@@ -67,7 +68,9 @@ export async function createPresentation(
     const gabiPresentation = await identity.claimer.buildCombinedPresentation({
       credentials: peCreds,
       combinedPresentationReq: request.content.peRequest,
-      attesterPubKeys,
+      attesterPubKeys: attesterPubKeys.map(
+        (ai: PublicAttesterIdentity) => ai.publicGabiKey
+      ),
     })
     return {
       type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE,
@@ -92,7 +95,7 @@ export async function createPresentation(
 }
 
 /**
- * The Claimer's [[Attestation]] session object which is returned in [[requestAttestion]] and required in [[buildCredential]].
+ * The Claimer's [[Attestation]] session object which is returned in [[requestAttestations]] and required in [[buildCredential]].
  *
  * It includes all [[Claim]] data required for an [[Attestation]]: The [[Claim]], the Claimer's signature,
  * the [[claimHashTree]], the [[cTypeHash]], the unique identifier for the delegation,

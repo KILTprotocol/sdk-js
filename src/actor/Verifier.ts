@@ -6,6 +6,7 @@ import {
   ISubmitClaimsForCTypes,
 } from '../messaging/Message'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
+import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
 
 export class PresentationRequestBuilder {
   private builder: gabi.CombinedRequestBuilder
@@ -70,7 +71,7 @@ export async function verifyPresentation(
   presentation: ISubmitClaimsForCTypes,
   session?: gabi.CombinedVerificationSession,
   latestAccumulators?: gabi.Accumulator[],
-  attesterPubKeys?: gabi.AttesterPublicKey[]
+  attesterPubKeys?: PublicAttesterIdentity[]
 ): Promise<[boolean, any[]]> {
   if (presentation.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC) {
     const attestedClaims = presentation.content.map(
@@ -95,7 +96,9 @@ export async function verifyPresentation(
         proof: presentation.content,
         verifierSession: session,
         latestAccumulators,
-        attesterPubKeys,
+        attesterPubKeys: attesterPubKeys.map(
+          (ai: PublicAttesterIdentity) => ai.publicGabiKey
+        ),
       }
     )
     return [verified, claims]
