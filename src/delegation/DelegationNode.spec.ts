@@ -39,10 +39,10 @@ describe('Delegation', () => {
   })
 
   it('delegation verify / revoke', async () => {
-    require('../blockchain/Blockchain').default.__mockQueryDelegationDelegations = jest.fn(
-      id => {
+    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations = jest.fn(
+      async id => {
         if (id === 'success') {
-          const tuple = new Option(
+          return new Option(
             Tuple,
             new Tuple(
               // (root-id, parent-id?, account, permissions, revoked)
@@ -50,9 +50,8 @@ describe('Delegation', () => {
               ['myRootId', null, 'myAccount', 1, false]
             )
           )
-          return Promise.resolve(tuple)
         }
-        const tuple = new Option(
+        return new Option(
           Tuple,
           new Tuple(
             // (root-id, parent-id?, account, permissions, revoked)
@@ -60,7 +59,6 @@ describe('Delegation', () => {
             ['myRootId', null, 'myAccount', 1, true]
           )
         )
-        return Promise.resolve(tuple)
       }
     )
 
@@ -86,22 +84,19 @@ describe('Delegation', () => {
   it('get delegation root', async () => {
     const identityAlice = await Identity.buildFromURI('//Alice')
 
-    require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
-      () => {
-        const tuple = new Option(
-          Tuple,
-          new Tuple(
-            // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-            [H256, Text, Bool],
-            [
-              '0x1234000000000000000000000000000000000000000000000000000000000000',
-              identityAlice.getAddress(),
-              false,
-            ]
-          )
+    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
+      new Option(
+        Tuple,
+        new Tuple(
+          // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+          [H256, Text, Bool],
+          [
+            '0x1234000000000000000000000000000000000000000000000000000000000000',
+            identityAlice.getAddress(),
+            false,
+          ]
         )
-        return Promise.resolve(tuple)
-      }
+      )
     )
 
     const node: DelegationNode = new DelegationNode(

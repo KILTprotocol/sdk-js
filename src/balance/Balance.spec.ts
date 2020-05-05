@@ -7,16 +7,19 @@ import { listenToBalanceChanges, makeTransfer } from './Balance.chain'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Balance', () => {
-  const blockchain = require('../blockchain/Blockchain').default
+  const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+    .__mocked_api
 
-  blockchain.api.query.balances.freeBalance = jest.fn((accountAddress, cb) => {
-    if (cb) {
-      setTimeout(() => {
-        cb(new BN(42))
-      }, 1)
+  blockchainApi.query.balances.freeBalance = jest.fn(
+    async (accountAddress, cb) => {
+      if (cb) {
+        setTimeout(() => {
+          cb(new BN(42))
+        }, 1)
+      }
+      return new BN(12)
     }
-    return new BN(12)
-  })
+  )
 
   it('should listen to balance changes', async done => {
     const bob = await Identity.buildFromURI('//Bob')
@@ -35,8 +38,6 @@ describe('Balance', () => {
     expect(currentBalance.toString()).toBeTruthy()
     expect(currentBalance.toString()).toEqual('12')
   })
-
-  blockchain.__mockResultHash = '123'
 
   it('should make transfer', async () => {
     const alice = await Identity.buildFromURI('//Alice')

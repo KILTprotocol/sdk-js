@@ -12,9 +12,11 @@ import Credential from '../credential/Credential'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Claimer', () => {
+  const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+    .__mocked_api
   let alice: AttesterIdentity
   let bob: Identity
-  let Blockchain: any
+
   let claim: IClaim
   let credentialPE: Credential
 
@@ -27,7 +29,6 @@ describe('Claimer', () => {
 
     bob = await Identity.buildFromURI('//bob')
 
-    Blockchain = require('../blockchain/Blockchain').default
     claim = {
       cTypeHash: '0xdead',
       contents: {
@@ -39,16 +40,15 @@ describe('Claimer', () => {
       owner: bob.getPublicIdentity().address,
     }
 
-    Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      const tuple = new Option(
+    blockchainApi.query.attestation.attestations.mockReturnValue(
+      new Option(
         Tuple,
         new Tuple(
           [Text, AccountId, Text, Bool],
           ['0xdead', alice.getAddress(), undefined, false]
         )
       )
-      return Promise.resolve(tuple)
-    })
+    )
 
     const {
       message: initAttestation,
@@ -102,16 +102,15 @@ describe('Claimer', () => {
   })
 
   it('request privacy enhanced attestation', async () => {
-    Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      const tuple = new Option(
+    blockchainApi.query.attestation.attestations.mockReturnValue(
+      new Option(
         Tuple,
         new Tuple(
           [Text, AccountId, Text, Bool],
           ['0xdead', alice.getAddress(), undefined, false]
         )
       )
-      return Promise.resolve(tuple)
-    })
+    )
 
     const {
       message: initAttestation,
@@ -166,16 +165,15 @@ describe('Claimer', () => {
   })
 
   it('request only public attestation', async () => {
-    Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      const tuple = new Option(
+    blockchainApi.query.attestation.attestations.mockReturnValue(
+      new Option(
         Tuple,
         new Tuple(
           [Text, AccountId, Text, Bool],
           ['0xdead', alice.getAddress(), undefined, false]
         )
       )
-      return Promise.resolve(tuple)
-    })
+    )
 
     const {
       message: requestAttestation,

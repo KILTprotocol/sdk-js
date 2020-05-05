@@ -16,19 +16,18 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 describe('Attestation', () => {
   let identityAlice: Identity
   let identityBob: Identity
-  let Blockchain: any
   let rawCType: ICType['schema']
   let fromRawCType: ICType
   let testCType: CType
   let testcontents: any
   let testClaim: Claim
   let requestForAttestation: RequestForAttestation
+  const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+    .__mocked_api
 
   beforeAll(async () => {
     identityAlice = await Identity.buildFromURI('//Alice')
     identityBob = await Identity.buildFromURI('//Bob')
-
-    Blockchain = require('../blockchain/Blockchain').default
 
     rawCType = {
       $id: 'http://example.com/ctype-1',
@@ -62,16 +61,15 @@ describe('Attestation', () => {
   })
 
   it('stores attestation', async () => {
-    Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      const tuple = new Option(
+    blockchainApi.query.attestation.attestations.mockReturnValue(
+      new Option(
         Tuple,
         new Tuple(
           [Text, AccountId, Text, Bool],
           [testCType.hash, identityAlice.getAddress(), undefined, false]
         )
       )
-      return Promise.resolve(tuple)
-    })
+    )
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
@@ -81,9 +79,9 @@ describe('Attestation', () => {
   })
 
   it('verify attestations not on chain', async () => {
-    Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      return Promise.resolve(new Option(Tuple))
-    })
+    blockchainApi.query.attestation.attestations.mockReturnValue(
+      new Option(Tuple)
+    )
 
     const attestation: Attestation = Attestation.fromAttestation({
       claimHash: requestForAttestation.rootHash,
@@ -96,18 +94,16 @@ describe('Attestation', () => {
   })
 
   it('verify attestation revoked', async () => {
-    Blockchain.api.query.attestation.attestations = jest.fn(() => {
-      return Promise.resolve(
-        new Option(
-          Tuple,
-          new Tuple(
-            // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
-            [Text, AccountId, Text, Bool],
-            [testCType.hash, identityAlice.getAddress(), undefined, true]
-          )
+    blockchainApi.query.attestation.attestations.mockReturnValue(
+      new Option(
+        Tuple,
+        new Tuple(
+          // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
+          [Text, AccountId, Text, Bool],
+          [testCType.hash, identityAlice.getAddress(), undefined, true]
         )
       )
-    })
+    )
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,

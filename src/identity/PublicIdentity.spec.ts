@@ -1,4 +1,4 @@
-import { Text, Tuple, U8a, Option } from '@polkadot/types'
+import { Tuple, Option, H256, Text } from '@polkadot/types'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
 import IPublicIdentity from '../types/PublicIdentity'
 
@@ -8,34 +8,30 @@ describe('PublicIdentity', () => {
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
 
-  require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
-    id => {
-      let tuple
+  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
+    async id => {
       switch (id) {
         case '1':
-          tuple = new Option(
+          return new Option(
             Tuple,
             new Tuple(
               // (public-signing-key, public-encryption-key, did-reference?)
-              [Text, Text, U8a],
+              [Text, Text, 'Option<Bytes>'],
               ['pub-key', 'box-key', [14, 75, 23, 14, 55]]
             )
           )
-          break
         case '2':
-          tuple = new Option(
+          return new Option(
             Tuple,
             new Tuple(
               // (public-signing-key, public-encryption-key, did-reference?)
-              [Text, Text, Text],
+              [Text, Text, 'Option<Bytes>'],
               ['pub-key', 'box-key', undefined]
             )
           )
-          break
         default:
-          tuple = undefined
+          return new Option(Tuple.with([H256, H256, 'Option<Bytes>']))
       }
-      return Promise.resolve(tuple)
     }
   )
 
