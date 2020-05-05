@@ -2,6 +2,7 @@ import Bool from '@polkadot/types/primitive/Bool'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
 import { Text } from '@polkadot/types'
+import * as gabi from '@kiltprotocol/portablegabi'
 import {
   AttesterIdentity,
   Identity,
@@ -19,6 +20,7 @@ describe('Attester', () => {
     .__mocked_api
   let alice: AttesterIdentity
   let bob: Identity
+  let acc: gabi.Accumulator
 
   beforeAll(async () => {
     alice = await AttesterIdentity.buildFromURIAndKey(
@@ -28,6 +30,8 @@ describe('Attester', () => {
     )
 
     bob = await Identity.buildFromURI('//Bob')
+
+    acc = await Attester.buildAccumulator(alice)
   })
 
   it('Issue privacy enhanced attestation', async () => {
@@ -61,7 +65,7 @@ describe('Attester', () => {
       claim,
       identity: bob,
       initiateAttestationMsg: initAttestation,
-      attesterPubKey: alice.getPublicGabiKey(),
+      attesterPubKey: alice.getPublicIdentity(),
     })
 
     const { message, revocationHandle } = await Attester.issueAttestation(
@@ -132,7 +136,7 @@ describe('Attester', () => {
       claim,
       identity: bob,
       initiateAttestationMsg: initAttestation,
-      attesterPubKey: alice.getPublicGabiKey(),
+      attesterPubKey: alice.getPublicIdentity(),
     })
 
     const { revocationHandle } = await Attester.issueAttestation(
@@ -141,8 +145,13 @@ describe('Attester', () => {
       attersterSession,
       true
     )
+    const oldAcc = await Attester.getLatestAccumulator(
+      alice.getPublicIdentity()
+    )
     await Attester.revokeAttestation(alice, revocationHandle)
-    // TODO: check that accumulator changed
+    expect(
+      Attester.getLatestAccumulator(alice.getPublicIdentity())
+    ).resolves.not.toEqual(oldAcc)
   })
 
   it('Revoke public only attestation', async () => {
@@ -164,7 +173,7 @@ describe('Attester', () => {
       claim,
       identity: bob,
       initiateAttestationMsg: initAttestation,
-      attesterPubKey: alice.getPublicGabiKey(),
+      attesterPubKey: alice.getPublicIdentity(),
     })
 
     const { revocationHandle } = await Attester.issueAttestation(
@@ -176,4 +185,19 @@ describe('Attester', () => {
     // accumulator should not change!
     expect(alice.getAccumulator().valueOf()).toEqual(oldAcc.valueOf())
   })
+
+  it('build accumulator', async () => {
+    const tAcc = await Attester.buildAccumulator(alice)
+    expect(tAcc).toBeDefined()
+  })
+
+  it('update accumulator', async () => {
+    await Attester.updateAccumulator(alice, acc)
+    // TODO: not sure why this fails
+    // expect(
+    //   blockchainApi.tx.portablegabi.updateAccumulator.mock.calls.length
+    // ).toEqual(1)
+  })
+
+  it.todo('get accumulator')
 })

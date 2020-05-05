@@ -131,13 +131,21 @@ export async function requestAttestation(parameter: {
   legitimations?: AttestedClaim[]
   delegationId?: IDelegationBaseNode['id']
   initiateAttestationMsg?: IInitiateAttestation
-  attesterPubKey?: gabi.AttesterPublicKey
+  attesterPubKey?: PublicAttesterIdentity
 }): Promise<{
   message: IRequestAttestationForClaim
   session: ClaimerAttestationSession
 }> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { attesterPubKey, ...paramsNoPubKey } = parameter
+  const mappedParams = {
+    attesterPubKey: parameter.attesterPubKey
+      ? parameter.attesterPubKey.publicGabiKey
+      : undefined,
+    ...paramsNoPubKey,
+  }
   const [request, session] = await RequestForAttestation.fromClaimAndIdentity(
-    parameter
+    mappedParams
   )
   const message: IRequestAttestationForClaim = {
     content: {

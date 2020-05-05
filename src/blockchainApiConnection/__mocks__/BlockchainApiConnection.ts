@@ -280,9 +280,10 @@ const __mocked_api: any = {
     ) */
     },
     portablegabi: {
-      accumulator: jest.fn((address: string) =>
-        new Option('Vec<Bytes>', new Vec('Bytes', '0xDEADBEEF'))
+      accumulatorList: jest.fn((address: string, index: number) =>
+        new Option('Vec<u8>', new Vec('Vec<u8>', '0xFF'))
       ),
+      accumulatorCount: jest.fn((address: string) => 1),
     }
   },
   runtimeMetadata: {

@@ -62,7 +62,7 @@ describe('Claimer', () => {
       claim,
       identity: bob,
       initiateAttestationMsg: initAttestation,
-      attesterPubKey: alice.getPublicGabiKey(),
+      attesterPubKey: alice.getPublicIdentity(),
     })
     expect(requestAttestation.type).toEqual(
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
@@ -124,7 +124,7 @@ describe('Claimer', () => {
       claim,
       identity: bob,
       initiateAttestationMsg: initAttestation,
-      attesterPubKey: alice.getPublicGabiKey(),
+      attesterPubKey: alice.getPublicIdentity(),
     })
     expect(requestAttestation.type).toEqual(
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
@@ -181,7 +181,7 @@ describe('Claimer', () => {
     } = await Claimer.requestAttestation({
       claim,
       identity: bob,
-      attesterPubKey: alice.getPublicGabiKey(),
+      attesterPubKey: alice.getPublicIdentity(),
     })
     expect(requestAttestation.type).toEqual(
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
