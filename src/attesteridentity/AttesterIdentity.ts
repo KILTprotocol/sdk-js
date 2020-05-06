@@ -1,3 +1,10 @@
+/**
+ * The identity of an attester has an additional key pair to issue privacy enhanced attestation.
+ *
+ * @packageDocumentation
+ * @module Identity
+ * @preferred
+ */
 import * as u8aUtil from '@polkadot/util/u8a'
 import * as gabi from '@kiltprotocol/portablegabi'
 import { KeyringPair } from '@polkadot/keyring/types'
@@ -13,8 +20,18 @@ const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
 
 export default class AttesterIdentity extends Identity {
   protected attester: gabi.Attester
-  private accumulator: gabi.Accumulator
+  protected accumulator: gabi.Accumulator
 
+  /**
+   * Creates an [[AttesterIdentity]] using an identity.
+   *
+   * @param identity The identity that should be extended to an [[AttesterIdentity]].
+   * @param validityDuration The duration for which the public key is valid.
+   * @param maxAttributes The number of properties in a claim that the attester can sign.
+   * @param accumulator The current accumulator of the attester.
+   *
+   * @returns A new [[AttesterIdentity]].
+   */
   public static async buildFromIdentity(
     identity: Identity,
     validityDuration: number,
@@ -39,15 +56,26 @@ export default class AttesterIdentity extends Identity {
     )
   }
 
+  /**
+   * Build a new [[AttesterIdentity]].
+   *
+   * @param identity The identity that should be extended to an [[AttesterIdentity]].
+   * @param publicGabiKey The public portablegabi key, which should be used for the identity.
+   * @param privateGabiKey The private portablegabi key that should be used for the identity.
+   * @param accumulator The current accumulator of the attester.
+   *
+   * @returns A new [[AttesterIdentity]].
+   */
   public static async buildFromIdentityAndKeys(
     identity: Identity,
-    rawPublicKey: string,
-    rawPrivateKey: string,
+    publicGabiKey: string,
+    privateGabiKey: string,
     accumulator?: string
   ): Promise<AttesterIdentity> {
-    const privateGabiKey = new gabi.AttesterPrivateKey(rawPrivateKey)
-    const publicGabiKey = new gabi.AttesterPublicKey(rawPublicKey)
-    const attester = new gabi.Attester(publicGabiKey, privateGabiKey)
+    const attester = new gabi.Attester(
+      new gabi.AttesterPublicKey(publicGabiKey),
+      new gabi.AttesterPrivateKey(privateGabiKey)
+    )
     let acc: gabi.Accumulator
     if (typeof accumulator !== 'undefined') {
       acc = new gabi.Accumulator(accumulator)
@@ -65,6 +93,15 @@ export default class AttesterIdentity extends Identity {
     return attesterId
   }
 
+  /**
+   * Build a new [[AttesterIdentity]].
+   *
+   * @param phraseArg The mnemonic for the blockchain identity.
+   * @param validityDuration The duration for which the public key is valid.
+   * @param maxAttributes The number of properties in a claim that the attester can sign.
+   *
+   * @returns A new [[AttesterIdentity]].
+   */
   public static async buildFromMnemonic(
     phraseArg?: string,
     validityDuration = ONE_YEAR_MS,
@@ -77,6 +114,16 @@ export default class AttesterIdentity extends Identity {
     )
   }
 
+  /**
+   * Build a new [[AttesterIdentity]].
+   *
+   * @param publicGabiKey The public portablegabi key, which should be used for the identity.
+   * @param privateGabiKey The private portablegabi key that should be used for the identity.
+   * @param phraseArg The mnemonic for the blockchain identity.
+   * @param accumulator The current accumulator of the attester.
+   *
+   * @returns A new [[AttesterIdentity]].
+   */
   public static async buildFromMnemonicAndKey(
     publicGabiKey: string,
     privateGabiKey: string,
@@ -91,6 +138,15 @@ export default class AttesterIdentity extends Identity {
     )
   }
 
+  /**
+   * Build a new [[AttesterIdentity]].
+   *
+   * @param seedArg The seed used to create the blockchain identity.
+   * @param validityDuration The duration for which the public key is valid.
+   * @param maxAttributes The number of properties in a claim that the attester can sign.
+   *
+   * @returns A new [[AttesterIdentity]].
+   */
   public static async buildFromSeedString(
     seedArg: string,
     validityDuration = ONE_YEAR_MS,
@@ -103,6 +159,15 @@ export default class AttesterIdentity extends Identity {
     )
   }
 
+  /**
+   * Build a new [[AttesterIdentity]].
+   *
+   * @param seed The seed used to create the blockchain identity.
+   * @param validityDuration The duration for which the public key is valid.
+   * @param maxAttributes The number of properties in a claim that the attester can sign.
+   *
+   * @returns A new [[AttesterIdentity]].
+   */
   public static async buildFromSeed(
     seed: Uint8Array,
     validityDuration = ONE_YEAR_MS,
@@ -115,6 +180,15 @@ export default class AttesterIdentity extends Identity {
     )
   }
 
+  /**
+   * Build a new [[AttesterIdentity]].
+   *
+   * @param uri The uri from which the blockchain identity will be created.
+   * @param validityDuration The duration for which the public key is valid.
+   * @param maxAttributes The number of properties in a claim that the attester can sign.
+   *
+   * @returns A new [[AttesterIdentity]].
+   */
   public static async buildFromURI(
     uri: string,
     validityDuration = ONE_YEAR_MS,
@@ -127,6 +201,16 @@ export default class AttesterIdentity extends Identity {
     )
   }
 
+  /**
+   * Build a new [[AttesterIdentity]].
+   *
+   * @param uri The uri from which the blockchain identity will be created.
+   * @param publicGabiKey The public portablegabi key, which should be used for the identity.
+   * @param privateGabiKey The private portablegabi key that should be used for the identity.
+   * @param accumulator The current accumulator of the attester.
+   *
+   * @returns A new [[AttesterIdentity]].
+   */
   public static async buildFromURIAndKey(
     uri: string,
     publicGabiKey: string,
@@ -171,6 +255,12 @@ export default class AttesterIdentity extends Identity {
     return this.attester.publicKey
   }
 
+  /**
+   * Builds a public identity out of the [[AttesterIdentity]].
+   * The public identity can safely shared.
+   *
+   * @returns A [[PublicAttesterIdentity]].
+   */
   public getPublicIdentity(): PublicAttesterIdentity {
     return new PublicAttesterIdentity(
       this.signKeyringPair.address,
@@ -181,14 +271,33 @@ export default class AttesterIdentity extends Identity {
     )
   }
 
+  /**
+   * Return the accumulator.
+   * The accumulator is stored locally and might not be up-to-date with the accumulator stored on the blockchain.
+   *
+   * @returns The stored [[Accumulator]].
+   */
   public getAccumulator(): gabi.Accumulator {
     return this.accumulator
   }
 
+  /**
+   * Creates a new [[Accumulator]]. All revoked attestations will be valid again, if this [[Accumulator]] is uploaded to the blockchain.
+   *
+   * @returns A new [[Accumulator]].
+   */
   public async buildAccumulator(): Promise<gabi.Accumulator> {
     return this.attester.createAccumulator()
   }
 
+  /**
+   * Issues a privacy enhanced attestation.
+   *
+   * @param session The session that was created when the attestation session was started.
+   * @param reqForAttestation The request for attestation which was created by the claimer.
+   *
+   * @returns A privacy enhanced attestation that can be used by a claimer to create a [[Credential]].
+   */
   public async issuePrivacyEnhancedAttestation(
     session: gabi.AttesterAttestationSession,
     reqForAttestation: IRequestForAttestation
@@ -206,6 +315,13 @@ export default class AttesterIdentity extends Identity {
     )
   }
 
+  /**
+   * Starts a new attestation session.
+   * The session object should be kept local and is needed to create an attestation later.
+   * The message object should be send to the claimer.
+   *
+   * @returns An object containing the message and session objects.
+   */
   public async initiateAttestation(): Promise<{
     message: IInitiateAttestation
     session: gabi.AttesterAttestationSession
@@ -220,12 +336,22 @@ export default class AttesterIdentity extends Identity {
     }
   }
 
+  /**
+   * Updates the [[Accumulator]] that is stored on the blockchain.
+   *
+   * @param acc The new [[Accumulator]] that should be stored on chain.
+   */
   public async updateAccumulator(acc: gabi.Accumulator): Promise<void> {
     const bc = await getCached()
     await bc.portablegabi.updateAccumulator(this.signKeyringPair, acc)
     this.accumulator = acc
   }
 
+  /**
+   * Revokes an attestation.
+   *
+   * @param handle The revocation handle that identifies the attestation that should be revoked.
+   */
   public async revokeAttestation(handle: IRevocationHandle): Promise<void> {
     if (handle.witness !== null) {
       const newAcc = await this.attester.revokeAttestation({

@@ -214,10 +214,20 @@ export default class Identity {
     )
   }
 
+  /**
+   * Get the address of the identity on the KILT blockchain.
+   *
+   * @returns The on chain address.
+   */
   public getAddress(): string {
     return this.signKeyringPair.address
   }
 
+  /**
+   * Get the public encryption key.
+   *
+   * @returns The public part of the encryption key.
+   */
   public getBoxPublicKey(): string {
     return u8aUtil.u8aToHex(this.boxKeyPair.publicKey)
   }
