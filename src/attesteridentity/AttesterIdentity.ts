@@ -23,13 +23,12 @@ export default class AttesterIdentity extends Identity {
   protected accumulator: gabi.Accumulator
 
   /**
-   * Creates an [[AttesterIdentity]] using an identity.
+   * [STATIC] [ASYNC] Builds an [[AttesterIdentity]] object from an [[Identity]] object.
    *
-   * @param identity The identity that should be extended to an [[AttesterIdentity]].
-   * @param validityDuration The duration for which the public key is valid.
-   * @param maxAttributes The number of properties in a claim that the attester can sign.
+   * @param identity The [[Identity]] object which should be extended to an [[AttesterIdentity]].
+   * @param validityDuration The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year.
+   * @param maxAttributes The maximum number of attributes of a [[Claim]] attributes which can be signed. The default value is 70.
    * @param accumulator The current accumulator of the attester.
-   *
    * @returns A new [[AttesterIdentity]].
    */
   public static async buildFromIdentity(
@@ -57,13 +56,12 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * Build a new [[AttesterIdentity]].
+   * [STATIC] [ASYNC] Builds an [[AttesterIdentity]] object from an [[Identity]] object and a privacy enhanced key pair.
    *
-   * @param identity The identity that should be extended to an [[AttesterIdentity]].
-   * @param publicGabiKey The public portablegabi key, which should be used for the identity.
-   * @param privateGabiKey The private portablegabi key that should be used for the identity.
-   * @param accumulator The current accumulator of the attester.
-   *
+   * @param identity The [[Identity]] object which should be extended to an [[AttesterIdentity]].
+   * @param publicGabiKey The privacy enhanced public key of the Attester.
+   * @param privateGabiKey The privacy enhanced private key of the Attester.
+   * @param accumulator The Attester's current accumulator.
    * @returns A new [[AttesterIdentity]].
    */
   public static async buildFromIdentityAndKeys(
@@ -94,13 +92,19 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * Build a new [[AttesterIdentity]].
+   * [STATIC] [ASYNC] Builds an [[AttesterIdentity]] object from a mnemonic string.
    *
    * @param phraseArg The mnemonic for the blockchain identity.
-   * @param validityDuration The duration for which the public key is valid.
-   * @param maxAttributes The number of properties in a claim that the attester can sign.
-   *
+   * @param validityDuration The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year.
+   * @param maxAttributes The maximum number of attributes of a [[Claim]] attributes which can be attested. The default value is 70.
    * @returns A new [[AttesterIdentity]].
+   *
+   * @example ```javascript
+   * const mnemonic = Identity.generateMnemonic();
+   * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
+   *
+   * await AttesterIdentity.buildFromMnemonic(mnemonic);
+   * ```
    */
   public static async buildFromMnemonic(
     phraseArg?: string,
@@ -115,13 +119,12 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * Build a new [[AttesterIdentity]].
+   * [STATIC] [ASYNC] Builds an [[AttesterIdentity]] object from a mnemonic string and a privacy enhanced key pair.
    *
-   * @param publicGabiKey The public portablegabi key, which should be used for the identity.
-   * @param privateGabiKey The private portablegabi key that should be used for the identity.
+   * @param publicGabiKey The privacy enhanced public key of the Attester.
+   * @param privateGabiKey The privacy enhanced private key of the Attester.
    * @param phraseArg The mnemonic for the blockchain identity.
-   * @param accumulator The current accumulator of the attester.
-   *
+   * @param accumulator The Attester's current accumulator.
    * @returns A new [[AttesterIdentity]].
    */
   public static async buildFromMnemonicAndKey(
@@ -139,13 +142,18 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * Build a new [[AttesterIdentity]].
+   * [STATIC] [ASYNC] Builds an [[AttesterIdentity]], generated from a seed hex string.
    *
-   * @param seedArg The seed used to create the blockchain identity.
-   * @param validityDuration The duration for which the public key is valid.
-   * @param maxAttributes The number of properties in a claim that the attester can sign.
-   *
+   * @param seedArg The seed used to create the blockchain identity (as string starting with 0x).
+   * @param validityDuration The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year.
+   * @param maxAttributes The maximum number of attributes of a [[Claim]] attributes which can be attested. The default value is 70.
    * @returns A new [[AttesterIdentity]].
+   *
+   * @example ```javascript
+   * const seed =
+   *   '0x6ce9fd060c70165c0fc8da25810d249106d5df100aa980e0d9a11409d6b35261';
+   * await AttesterIdentity.buildFromSeedString(seed);
+   * ```
    */
   public static async buildFromSeedString(
     seedArg: string,
@@ -160,13 +168,21 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * Build a new [[AttesterIdentity]].
+   * [STATIC] [ASYNC] Builds a new [[AttesterIdentity]], generated from a seed (Secret Seed).
    *
-   * @param seed The seed used to create the blockchain identity.
-   * @param validityDuration The duration for which the public key is valid.
-   * @param maxAttributes The number of properties in a claim that the attester can sign.
-   *
+   * @param seed The seed used to create the blockchain identity (as an Uint8Array with 24 arbitrary numbers).
+   * @param validityDuration The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year.
+   * @param maxAttributes The maximum number of attributes of a [[Claim]] attributes which can be attested. The default value is 70.
    * @returns A new [[AttesterIdentity]].
+   * @example ```javascript
+   * // prettier-ignore
+   * const seed = new Uint8Array([108, 233, 253,  6,  12, 112,  22,  92,
+   *                               15, 200, 218, 37, 129,  13,  36, 145,
+   *                                6, 213, 223, 16,  10, 169, 128, 224,
+   *                              217, 161,  20,  9, 214, 179,  82,  97
+   *                            ]);
+   * await AttesterIdentity.buildFromSeed(seed);
+   * ```
    */
   public static async buildFromSeed(
     seed: Uint8Array,
@@ -181,13 +197,15 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * Build a new [[AttesterIdentity]].
+   * [STATIC] [ASYNC] Builds a new [[AttesterIdentity]], generated from a uniform resource identifier (URIs).
    *
    * @param uri The uri from which the blockchain identity will be created.
-   * @param validityDuration The duration for which the public key is valid.
-   * @param maxAttributes The number of properties in a claim that the attester can sign.
-   *
+   * @param validityDuration The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year.
+   * @param maxAttributes The maximum number of attributes of a [[Claim]] attributes which can be attested. The default value is 70.
    * @returns A new [[AttesterIdentity]].
+   * @example ```javascript
+   * AttesterIdentity.buildFromURI('//Bob');
+   * ```
    */
   public static async buildFromURI(
     uri: string,
@@ -202,13 +220,12 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * Build a new [[AttesterIdentity]].
+   * [STATIC] [ASYNC] Builds a new [[AttesterIdentity]], generated from a uniform resource identifier (URIs).
    *
    * @param uri The uri from which the blockchain identity will be created.
-   * @param publicGabiKey The public portablegabi key, which should be used for the identity.
-   * @param privateGabiKey The private portablegabi key that should be used for the identity.
-   * @param accumulator The current accumulator of the attester.
-   *
+   * @param publicGabiKey The privacy enhanced public key of the Attester.
+   * @param privateGabiKey The privacy enhanced private key of the Attester.
+   * @param accumulator The Attester's current accumulator.
    * @returns A new [[AttesterIdentity]].
    */
   public static async buildFromURIAndKey(
@@ -259,7 +276,11 @@ export default class AttesterIdentity extends Identity {
    * Builds a public identity out of the [[AttesterIdentity]].
    * The public identity can safely shared.
    *
-   * @returns A [[PublicAttesterIdentity]].
+   * @returns The [[PublicAttesterIdentity]] consisting of
+   * the signing keyring pair address,
+   * the public address as hex,
+   * the privacy enhanced public key,
+   * the accumulator and the service address.
    */
   public getPublicIdentity(): PublicAttesterIdentity {
     return new PublicAttesterIdentity(
@@ -291,12 +312,17 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * Issues a privacy enhanced attestation.
+   * [ASYNC] Creates a privacy enhanced [[Attestation]] for a [[Claim]].
    *
-   * @param session The session that was created when the attestation session was started.
-   * @param reqForAttestation The request for attestation which was created by the claimer.
-   *
-   * @returns A privacy enhanced attestation that can be used by a claimer to create a [[Credential]].
+   * @param session The Attester's session which was generated in [[initiateAttestation]].
+   * @param reqForAttestation The Claimer's request for [[Attestation]] including all required data to attest the [[Claim]]:
+   * The [[Claim]] itself, the Claimer's signature,
+   * the [[claimHashTree]], the [[cTypeHash]], the unique identifier for the delegation,
+   * an array of [[AttestedClaim]]s and the rootHash.
+   * @returns A privacy enhanced attestation in array form which represents
+   * at **index 0** the revocation witness which can be used to revoke the [[Attestation]]
+   * and at **index 1** the [[Attestation]] object which should be sent to the Claimer.
+   * It can be used to create a [[Credential]].
    */
   public async issuePrivacyEnhancedAttestation(
     session: gabi.AttesterAttestationSession,
@@ -316,11 +342,11 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * Starts a new attestation session.
-   * The session object should be kept local and is needed to create an attestation later.
-   * The message object should be send to the claimer.
+   * [ASYNC] Starts a new [[Attestation]] session.
    *
-   * @returns An object containing the message and session objects.
+   * @returns A session and a message object.
+   * The **message** should be sent over to the Claimer to be used in [[requestAttestion]].
+   * The **session** should be kept private and used in [[issueAttestation]].
    */
   public async initiateAttestation(): Promise<{
     message: IInitiateAttestation
@@ -348,9 +374,9 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * Revokes an attestation.
+   * [ASYNC] Revokes an [[Attestation]] by removing the corresponding revocation witness from the Attester's accumulator.
    *
-   * @param handle The revocation handle that identifies the attestation that should be revoked.
+   * @param handle The revocation handle which holds the [[Attestation]] and the revocation witness created in [[issueAttestation]].
    */
   public async revokeAttestation(handle: IRevocationHandle): Promise<void> {
     if (handle.witness !== null) {

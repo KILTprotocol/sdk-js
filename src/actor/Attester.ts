@@ -96,6 +96,12 @@ export async function revokeAttestation(
   return identity.revokeAttestation(attestation)
 }
 
+/**
+ * [ASYNC] Updates the current [[Accumulator]].
+ *
+ * @param identity The [[AttesterIdentity]] who owns the [[Accumulator]].
+ * @param accumulator The current [[Accumulator]] of the [[AttesterIdentity]].
+ */
 export async function updateAccumulator(
   identity: AttesterIdentity,
   accumulator: gabi.Accumulator
@@ -103,6 +109,13 @@ export async function updateAccumulator(
   identity.updateAccumulator(accumulator)
 }
 
+/**
+ * [ASYNC] Returns an [[Accumulator]] for a given chain address.
+ *
+ * @param identity The [[PublicAttesterIdentity]] for which you can query an [[Accumulator]] on the chain.
+ * @param index The index of the [[Accumulator]] which you want to query from the on-chain array of accumulators.
+ * @returns An [[Accumulator]] for a chain address.
+ */
 export async function getAccumulator(
   identity: PublicAttesterIdentity,
   index: number
@@ -111,6 +124,12 @@ export async function getAccumulator(
   return bc.portablegabi.getAccumulator(identity.address, index)
 }
 
+/**
+ * [ASYNC] Returns the current [[Accumulator]] for a given chain address.
+ *
+ * @param identity The [[PublicAttesterIdentity]] for which you can query the [[Accumulator]] on the chain.
+ * @returns The current [[Accumulator]] for a chain address.
+ */
 export async function getLatestAccumulator(
   identity: PublicAttesterIdentity
 ): Promise<gabi.Accumulator> {
@@ -118,6 +137,15 @@ export async function getLatestAccumulator(
   return bc.portablegabi.getLatestAccumulator(identity.address)
 }
 
+/**
+ * [ASYNC] Returns an an array of [[Accumulator]] for a given chain address.
+ *
+ * @param identity The [[PublicAttesterIdentity]] for which you can query an the array of [[Accumulator]]s on the chain.
+ * @param startIndex The start index of the [[Accumulator]] array which you want to query.
+ * @param _endIndex The optional end index of the [[Accumulator]] array which you want to query.
+ * The default value is the maximum index which corresponds to the most recent [[Accumulator]].
+ * @returns An array of [[Accumulator]]s for a chain address.
+ */
 export async function getAccumulatorArray(
   identity: PublicAttesterIdentity,
   startIndex: number,
@@ -131,6 +159,12 @@ export async function getAccumulatorArray(
   )
 }
 
+/**
+ * [ASYNC] Creates an [[Accumulator]] for a given chain address.
+ *
+ * @param identity The [[AttesterIdentity]] which should own the [[Accumulator]].
+ * @returns An [[Accumulator]] tied to the supplied [[AttesterIdentity]].
+ */
 export async function buildAccumulator(
   identity: AttesterIdentity
 ): Promise<gabi.Accumulator> {
