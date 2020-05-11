@@ -392,11 +392,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * Compresses an [[RequestForAttestation]] object from the [[compressRequestForAttestation]].
+   * Compresses an [[RequestForAttestation]] object.
    *
    * @returns An array that contains the same properties of an [[RequestForAttestation]].
    */
-
   public compress(): CompressedRequestForAttestation {
     return RequestForAttestationUtils.compress(this)
   }
@@ -404,9 +403,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * [STATIC] Builds an [[RequestForAttestation]] from the decompressed array.
    *
+   * @param reqForAtt The [[CompressedRequestForAttestation]] that should get decompressed.
    * @returns A new [[RequestForAttestation]] object.
    */
-
   public static decompress(
     reqForAtt: CompressedRequestForAttestation
   ): RequestForAttestation {

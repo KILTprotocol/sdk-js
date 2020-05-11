@@ -49,7 +49,7 @@ export default class Identity {
   /**
    * [STATIC] Generates Mnemonic phrase used to create identities from phrase seed.
    *
-   * @returns Randomly generated [[BIP39]](https://www.npmjs.com/package/bip39) mnemonic phrase (Secret phrase).
+   * @returns Randomly generated [BIP39](https://www.npmjs.com/package/bip39) mnemonic phrase (Secret phrase).
    * @example ```javascript
    * Identity.generateMnemonic();
    * // returns: "coast ugly state lunch repeat step armed goose together pottery bind mention"
@@ -62,7 +62,7 @@ export default class Identity {
   /**
    * [STATIC] Builds an identity object from a mnemonic string.
    *
-   * @param phraseArg - [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
+   * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
    * @returns An [[Identity]].
    *
    * @example ```javascript

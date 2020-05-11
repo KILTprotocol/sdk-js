@@ -1,3 +1,10 @@
+/**
+ * The public identity of an attester that can be shared safely.
+ *
+ * @packageDocumentation
+ * @module Identity
+ * @preferred
+ */
 import { AttesterPublicKey, Accumulator } from '@kiltprotocol/portablegabi'
 import PublicIdentity from '../identity/PublicIdentity'
 import IPublicAttesterIdentity from '../types/PublicAttesterIdentity'

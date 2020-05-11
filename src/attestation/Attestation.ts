@@ -4,7 +4,7 @@
  *
  * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
  * * the key is the hash of the corresponding claim;
- * * the value is a tuple ([[CType]] hash, account, id of the [[Delegation]], and revoked flag).
+ * * the value is a tuple ([[CType]] hash, account, id of the Delegation, and revoked flag).
  *
  * @packageDocumentation
  * @module Attestation
@@ -43,7 +43,7 @@ export default class Attestation implements IAttestation {
    *
    * @param claimHash - The hash of the claim that corresponds to the attestation to revoke.
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
-   * @returns A promise containing the [[SubmittableResult]] (transaction status).
+   * @returns A promise containing the SubmittableResult (transaction status).
    * @example ```javascript
    * Attestation.revoke('0xd8024cdc147c4fa9221cd177').then(() => {
    *   // the attestation was successfully revoked
@@ -124,7 +124,7 @@ export default class Attestation implements IAttestation {
    * [ASYNC] Stores the attestation on chain.
    *
    * @param identity - The identity used to store the attestation.
-   * @returns A promise containing the [[SubmittableResult]] (transaction status).
+   * @returns A promise containing the SubmittableResult (transaction status).
    * @example ```javascript
    * // Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * attestation.store(attester).then(() => {
@@ -140,7 +140,7 @@ export default class Attestation implements IAttestation {
    * [ASYNC] Revokes the attestation. Also available as a static method.
    *
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
-   * @returns A promise containing the [[SubmittableResult]] (transaction status).
+   * @returns A promise containing the SubmittableResult (transaction status).
    * @example ```javascript
    * attestation.revoke(identity).then(() => {
    *   // the attestation was successfully revoked
@@ -174,11 +174,10 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * Compresses an [[Attestation]] object from the [[compressAttestation]].
+   * Compresses an [[Attestation]] object.
    *
    * @returns An array that contains the same properties of an [[Attestation]].
    */
-
   public compress(): CompressedAttestation {
     return AttestationUtils.compress(this)
   }
@@ -186,9 +185,9 @@ export default class Attestation implements IAttestation {
   /**
    * [STATIC] Builds an [[Attestation]] from the decompressed array.
    *
+   * @param attestation The [[CompressedAttestation]] that should get decompressed.
    * @returns A new [[Attestation]] object.
    */
-
   public static decompress(attestation: CompressedAttestation): Attestation {
     const decompressedAttestation = AttestationUtils.decompress(attestation)
     return Attestation.fromAttestation(decompressedAttestation)

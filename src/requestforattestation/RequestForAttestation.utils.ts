@@ -82,11 +82,11 @@ function decompressNonceAndHash(nonceHash: CompressedNonceHash): NonceHash {
 }
 
 /**
- *  Compresses a [[claimHashTree]] within a [[RequestForAttestation]] object.
+ *  Compresses a [[NonceHashTree]] within a [[RequestForAttestation]] object.
  *
- * @param reqForAtt A [[claimHashTree]] object that will be sorted and stripped for messaging or storage.
+ * @param reqForAtt A [[NonceHashTree]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of an [[claimHashTree]].
+ * @returns An ordered array of an [[NonceHashTree]].
  */
 
 export function compressClaimHashTree(

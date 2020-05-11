@@ -27,3 +27,5 @@ settings.json
 # misc
 /.idea
 
+# doc
+/docs/api

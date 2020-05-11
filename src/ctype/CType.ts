@@ -60,7 +60,7 @@ export default class CType implements ICType {
   }
 
   /**
-   * Compresses an [[CType]] object from the [[compressCType]].
+   * Compresses an [[CType]] object.
    *
    * @returns An array that contains the same properties of an [[CType]].
    */
@@ -72,9 +72,9 @@ export default class CType implements ICType {
   /**
    * [STATIC] Builds an [[CType]] from the decompressed array.
    *
+   * @param cType The [[CompressedCType]] that should get decompressed.
    * @returns A new [[CType]] object.
    */
-
   public static decompress(cType: CompressedCType): CType {
     const decompressedCType = CTypeUtils.decompress(cType)
     return CType.fromCType(decompressedCType)

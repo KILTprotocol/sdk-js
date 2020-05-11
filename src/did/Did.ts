@@ -1,5 +1,6 @@
 /**
- * A Decentralized Identifier (DID) is a new type of identifier that is globally unique, resolveable with high availability, and cryptographically verifiable. Although it's not mandatory in KILT, users can optionally create a DID and anchor it to the KILT blockchain.
+ * A Decentralized Identifier (DID) is a new type of identifier that is globally unique, resolvable with high availability, and cryptographically verifiable.
+ * Although it's not mandatory in KILT, users can optionally create a DID and anchor it to the KILT blockchain.
  *
  * Official DID specification: [[https://w3c-ccg.github.io/did-primer/]].
  *
@@ -125,7 +126,7 @@ export default class Did implements IDid {
    * Stores the [[Did]] object on-chain.
    *
    * @param identity The identity used to store the [[Did]] object on-chain.
-   * @returns A promise containing the [[SubmittableResult]] (transaction status).
+   * @returns A promise containing the SubmittableResult (transaction status).
    */
   public async store(identity: Identity): Promise<SubmittableResult> {
     log.debug(`Create tx for 'did.add'`)
@@ -156,7 +157,7 @@ export default class Did implements IDid {
    * Removes the [[Did]] object attached to a given [[Identity]] from the chain.
    *
    * @param identity The identity for which to delete the [[Did]].
-   * @returns A promise containing the [[SubmittableResult]] (transaction status).
+   * @returns A promise containing the SubmittableResult (transaction status).
    */
   public static async remove(identity: Identity): Promise<SubmittableResult> {
     log.debug(`Create tx for 'did.remove'`)

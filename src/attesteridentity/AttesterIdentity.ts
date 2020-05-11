@@ -296,16 +296,16 @@ export default class AttesterIdentity extends Identity {
    * Return the accumulator.
    * The accumulator is stored locally and might not be up-to-date with the accumulator stored on the blockchain.
    *
-   * @returns The stored [[Accumulator]].
+   * @returns The stored accumulator.
    */
   public getAccumulator(): gabi.Accumulator {
     return this.accumulator
   }
 
   /**
-   * Creates a new [[Accumulator]]. All revoked attestations will be valid again, if this [[Accumulator]] is uploaded to the blockchain.
+   * Creates a new accumulator. All revoked attestations will be valid again, if this accumulator is uploaded to the blockchain.
    *
-   * @returns A new [[Accumulator]].
+   * @returns A new accumulator.
    */
   public async buildAccumulator(): Promise<gabi.Accumulator> {
     return this.attester.createAccumulator()
@@ -363,9 +363,9 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * Updates the [[Accumulator]] that is stored on the blockchain.
+   * Updates the accumulator that is stored on the blockchain.
    *
-   * @param acc The new [[Accumulator]] that should be stored on chain.
+   * @param acc The new accumulator that should be stored on chain.
    */
   public async updateAccumulator(acc: gabi.Accumulator): Promise<void> {
     const bc = await getCached()

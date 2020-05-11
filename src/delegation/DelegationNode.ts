@@ -133,7 +133,7 @@ export default class DelegationNode extends DelegationBaseNode
    *
    * @param identity Account used to store the delegation node.
    * @param signature Signature of the delegate to ensure it's done under his permission.
-   * @returns Promise containing the [[SubmittableResult]].
+   * @returns Promise containing the SubmittableResult.
    */
   public async store(
     identity: Identity,
@@ -157,7 +157,7 @@ export default class DelegationNode extends DelegationBaseNode
    * Revokes the delegation node on chain.
    *
    * @param identity The identity used to revoke the delegation.
-   * @returns Promise containing the [[SubmittableResult]].
+   * @returns Promise containing the SubmittableResult.
    */
   public async revoke(identity: Identity): Promise<SubmittableResult> {
     log.debug(`:: revoke(${this.id})`)

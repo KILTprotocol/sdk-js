@@ -1,7 +1,9 @@
 /**
- * In KILT, the AttestedClaim is a **credential**, which a Claimer can store locally and share with Verifiers as they wish.
+ * In KILT, the [[AttestedClaim]] is a **credential**, which a Claimer can store locally and share with Verifiers as they wish.
  *
- * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[AttestedClaim]] object. This [[AttestedClaim]] also contains the original request for attestation. RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
+ * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[AttestedClaim]] object.
+ * This [[AttestedClaim]] also contains the original request for attestation.
+ * RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
  *
  * @packageDocumentation
  * @module AttestedClaim
@@ -74,7 +76,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * Verifies whether the data of this attested claim is valid. It is valid if:
    * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[RequestForAttestation.verifyData]]);
    * and
-   * * the hash of the [[RequestForAttestation]] object for this attested claim, and the hash of the [[Claim]] for this attestated claim are the same.
+   * * the hash of the [[RequestForAttestation]] object for this attested claim, and the hash of the [[Claim]] for this attested claim are the same.
    *
    * @returns Whether the attested claim's data is valid.
    * @example ```javascript
@@ -106,11 +108,10 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * Compresses an [[AttestedClaim]] object from the [[compressAttestedClaim]].
+   * Compresses an [[AttestedClaim]] object.
    *
    * @returns An array that contains the same properties of an [[AttestedClaim]].
    */
-
   public compress(): CompressedAttestedClaim {
     return AttestedClaimUtils.compress(this)
   }
@@ -118,9 +119,9 @@ export default class AttestedClaim implements IAttestedClaim {
   /**
    * [STATIC] Builds an [[AttestedClaim]] from the decompressed array.
    *
+   * @param attestedClaim The [[CompressedAttestedClaim]] that should get decompressed.
    * @returns A new [[AttestedClaim]] object.
    */
-
   public static decompress(
     attestedClaim: CompressedAttestedClaim
   ): AttestedClaim {
