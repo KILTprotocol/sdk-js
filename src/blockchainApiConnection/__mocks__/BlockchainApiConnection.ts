@@ -84,6 +84,10 @@ class MockSubmittableExtrinsic {
       callable(this.result)
     }
   }
+
+  public signAndSend(callable:Function) {
+    return this.send(callable)
+  }
 }
 
 function __getMockSubmittableExtrinsic(): SubmittableExtrinsic {
@@ -128,31 +132,31 @@ const __mocked_api: any = {
   },
   tx: {
     attestation: {
-      add: jest.fn((claimHash, _cTypeHash) => {
+      add: jest.fn((_claimHash, _cTypeHash) => {
         return __getMockSubmittableExtrinsic()
       }),
     },
     balances: {
-      transfer: jest.fn(() => __getMockSubmittableExtrinsic()),
+      transfer: jest.fn((_addressTo, _amount) => __getMockSubmittableExtrinsic()),
     },
     ctype: {
-      add: jest.fn((hash, signature) => {
+      add: jest.fn((_hash, _signature) => {
         return __getMockSubmittableExtrinsic()
       }),
     },
     delegation: {
-      createRoot: jest.fn((rootId, _ctypeHash) => {
+      createRoot: jest.fn((_rootId, _ctypeHash) => {
         return __getMockSubmittableExtrinsic()
       }),
-      revokeRoot: jest.fn(rootId => {
+      revokeRoot: jest.fn(_rootId => {
         return __getMockSubmittableExtrinsic()
       }),
-      revokeDelegation: jest.fn(delegationId => {
+      revokeDelegation: jest.fn(_delegationId => {
         return __getMockSubmittableExtrinsic()
       }),
     },
     did: {
-      add: jest.fn((sign_key, box_key, doc_ref) => {
+      add: jest.fn((_sign_key, _box_key, _doc_ref) => {
         return __getMockSubmittableExtrinsic()
       }),
       remove: jest.fn(() => {

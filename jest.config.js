@@ -13,7 +13,6 @@ module.exports = {
   },
   collectCoverageFrom: [
     '**/*.ts',
-    '!**/blockchain/**/*.ts',
     '!index.ts',
     '!**/__integrationtests__/*.ts',
   ],
