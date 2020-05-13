@@ -12,6 +12,7 @@ import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
 import { factory } from '../config/ConfigLog'
 import ICType from '../types/CType'
+import { assertCodecIsType } from '../util/Decode'
 
 const log = factory.getLogger('CType')
 
@@ -29,6 +30,7 @@ export async function store(
 export function decode(
   encoded: Option<AccountId> | AccountId
 ): IPublicIdentity['address'] | null {
+  assertCodecIsType(encoded, ['AccountId', 'Option<AccountId>'])
   return !encoded.isEmpty ? encoded.toString() : null
 }
 

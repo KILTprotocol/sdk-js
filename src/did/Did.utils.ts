@@ -6,7 +6,8 @@
 import { isHex, hexToString } from '@polkadot/util'
 
 import { Tuple, Option } from '@polkadot/types'
-import { hasNonNullByte } from '../util/Decode'
+import { Codec } from '@polkadot/types/types'
+import { hasNonNullByte, assertCodecIsType } from '../util/Decode'
 import IPublicIdentity from '../types/PublicIdentity'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
@@ -22,25 +23,28 @@ import Did, {
   SERVICE_KILT_MESSAGING,
 } from './Did'
 
+type decodedDid = [string, string, string | null]
+
+interface IEncodedDid extends Codec {
+  toJSON: () => decodedDid | null
+}
+
 export function decodeDid(
   identifier: string,
   encoded: Option<Tuple> | Tuple
 ): IDid | null {
-  if (
-    encoded instanceof Option ||
-    hasNonNullByte(encoded) ||
-    !(encoded[0].isEmpty || encoded[1].isEmpty)
-  ) {
-    const json = encoded.toJSON()
-    if (json instanceof Array) {
-      let documentStore = null
-      if (isHex(json[2])) {
-        documentStore = hexToString(json[2])
-      }
+  assertCodecIsType(encoded, [
+    'Option<(H256,H256,Option<Bytes>)>',
+    '(H256,H256,Option<Bytes>)',
+  ])
+  if (encoded instanceof Option || hasNonNullByte(encoded)) {
+    const decoded = (encoded as IEncodedDid).toJSON()
+    if (decoded) {
+      const documentStore = isHex(decoded[2]) ? hexToString(decoded[2]) : null
       return Object.assign(Object.create(Did.prototype), {
         identifier,
-        publicSigningKey: json[0],
-        publicBoxKey: json[1],
+        publicSigningKey: decoded[0],
+        publicBoxKey: decoded[1],
         documentStore,
       })
     }

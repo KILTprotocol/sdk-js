@@ -6,7 +6,7 @@ import { Option, Text, Tuple } from '@polkadot/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 import { SubmittableResult } from '@polkadot/api'
-import { hasNonNullByte } from '../util/Decode'
+import { hasNonNullByte, assertCodecIsType } from '../util/Decode'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
@@ -40,6 +40,10 @@ function decode(
   encoded: Option<Tuple> | Tuple,
   claimHash: string
 ): Attestation | null {
+  assertCodecIsType(encoded, [
+    'Option<(H256,AccountId,Option<H256>,bool)>',
+    '(H256,AccountId,Option<H256>,bool)',
+  ])
   if (
     encoded instanceof Option ||
     hasNonNullByte(encoded) ||

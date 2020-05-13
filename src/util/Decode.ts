@@ -21,4 +21,34 @@ export function hasNonNullByte(codec: Codec): boolean {
   return !codec.toU8a().some(e => e !== 0)
 }
 
+/**
+ * Checks nested codec types against a type description string. Uses `codec.toRawType()` internally.
+ *
+ * @param codec Codec to type check.
+ * @param types String or array of strings to check against.
+ * @returns `boolean` true if codec type is contained in types, false otherwise.
+ */
+export function codecIsType(codec: Codec, types: string[] | string): boolean {
+  return types instanceof Array
+    ? types.includes(codec.toRawType())
+    : types === codec.toRawType()
+}
+
+/**
+ * Checks nested codec types against a type description string. Uses `codec.toRawType()` internally.
+ *
+ * @param codec Codec to type check.
+ * @param types String or array of strings to check against.
+ * @throws `TypeError` If codec type is not contained in types.
+ */
+export function assertCodecIsType(
+  codec: Codec,
+  types: string[] | string
+): void {
+  if (!codecIsType(codec, types))
+    throw new TypeError(
+      `expected Codec type(s) ${types}, got ${codec.toRawType()}`
+    )
+}
+
 export default hasNonNullByte
