@@ -12,7 +12,7 @@ import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
 import { Codec, AnyJson } from '@polkadot/types/types'
-import { u64 } from '@polkadot/types'
+import { Text, u64 } from '@polkadot/types'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
@@ -21,9 +21,9 @@ import Identity from '../identity/Identity'
 const log = LoggerFactory.getLogger('Blockchain')
 
 export type Stats = {
-  chain: Codec
-  nodeName: Codec
-  nodeVersion: Codec
+  chain: string
+  nodeName: string
+  nodeVersion: string
 }
 
 export interface IBlockchainApi {
@@ -58,12 +58,12 @@ export default class Blockchain implements IBlockchainApi {
   private errorHandler: ErrorHandler
 
   public async getStats(): Promise<Stats> {
-    const [chain, nodeName, nodeVersion] = await Promise.all([
+    const encoded: Text[] = await Promise.all([
       this.api.rpc.system.chain(),
       this.api.rpc.system.name(),
       this.api.rpc.system.version(),
     ])
-
+    const [chain, nodeName, nodeVersion] = encoded.map(el => el.toString())
     return { chain, nodeName, nodeVersion }
   }
 
