@@ -45,7 +45,7 @@
  *
  */
 
-import Blockchain, { IBlockchainApi } from '../../blockchain/Blockchain'
+import Blockchain from '../../blockchain/Blockchain'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { Option, Tuple, Vec, H256, u64, u128 } from '@polkadot/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
@@ -54,7 +54,7 @@ import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
 
-async function getCached(): Promise<IBlockchainApi> {
+async function getCached(): Promise<Blockchain> {
   if (!BlockchainApiConnection.instance) {
     BlockchainApiConnection.instance = Promise.resolve(
       new Blockchain(__mocked_api as ApiPromise)
