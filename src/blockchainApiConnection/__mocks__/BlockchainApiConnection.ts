@@ -52,8 +52,7 @@ import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
 
-async function getCached(
-): Promise<IBlockchainApi> {
+async function getCached(): Promise<IBlockchainApi> {
   if (!BlockchainApiConnection.instance) {
     BlockchainApiConnection.instance = Promise.resolve(
       new Blockchain(__mocked_api as ApiPromise)
@@ -140,6 +139,14 @@ function __setDefaultResult(success: boolean) {
 }
 
 const __mocked_api: any = {
+  rpc: {
+    system: {
+      chain: jest.fn(),
+      name: jest.fn(),
+      version: jest.fn(),
+    },
+    chain: { subscribeNewHeads: jest.fn() },
+  },
   tx: {
     attestation: {
       add: jest.fn((claimHash, _cTypeHash) => {
