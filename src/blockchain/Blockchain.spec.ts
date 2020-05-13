@@ -9,22 +9,7 @@ import getCached from '../blockchainApiConnection'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
-const errorSetupApi = ({
-  query: {
-    system: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      accountNonce: () => {
-        return new Promise((res, rej) => {
-          rej(new Error('Test Nonce Retrieval Error handling'))
-        })
-      },
-    },
-  },
-} as any) as ApiPromise
-
 describe('queries', () => {
-  const alice = Identity.buildFromURI('//Alice')
-
   beforeAll(() => {
     const api = require('../blockchainApiConnection/BlockchainApiConnection')
       .__mocked_api
@@ -55,10 +40,26 @@ describe('queries', () => {
     expect(listener).toBeCalledWith('mockHead')
     expect(unsubscribe()).toBeUndefined()
   })
+})
+describe('nonce retrieval logic', () => {
+  const alice = Identity.buildFromURI('//Alice')
+
+  const errorSetupApi = ({
+    query: {
+      system: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        accountNonce: () => {
+          return new Promise((res, rej) => {
+            rej(new Error('Test Nonce Retrieval Error handling'))
+          })
+        },
+      },
+    },
+  } as any) as ApiPromise
 
   it('should increment nonce for account', async () => {
-    const blockchain = await getCached()
-    const chain = new Blockchain(blockchain.api)
+    const chain = new Blockchain((await getCached()).api)
+
     // eslint-disable-next-line dot-notation
     const initialNonce = await chain['retrieveNonce'](alice.address)
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -69,8 +70,7 @@ describe('queries', () => {
 
   it('should return incrementing nonces', async () => {
     const promisedNonces: Array<Promise<Index>> = []
-    const blockchain = await getCached()
-    const chain = new Blockchain(blockchain.api)
+    const chain = new Blockchain((await getCached()).api)
     for (let i = 0; i < 25; i += 1) {
       promisedNonces.push(chain.getNonce(alice.address))
     }
@@ -85,8 +85,7 @@ describe('queries', () => {
     const bob = Identity.buildFromURI('//Bob')
     const alicePromisedNonces: Array<Promise<Index>> = []
     const bobPromisedNonces: Array<Promise<Index>> = []
-    const blockchain = await getCached()
-    const chain = new Blockchain(blockchain.api)
+    const chain = new Blockchain((await getCached()).api)
     for (let i = 0; i < 50; i += 1) {
       if (i % 2 === 0) {
         alicePromisedNonces.push(chain.getNonce(alice.address))
