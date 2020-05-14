@@ -11,7 +11,7 @@ import { hasNonNullByte, assertCodecIsType } from '../util/Decode'
 import IPublicIdentity from '../types/PublicIdentity'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
-import Did, {
+import {
   IDid,
   IDidDocument,
   IDidDocumentSigned,
@@ -23,10 +23,8 @@ import Did, {
   SERVICE_KILT_MESSAGING,
 } from './Did'
 
-type decodedDid = [string, string, string | null]
-
 interface IEncodedDid extends Codec {
-  toJSON: () => decodedDid | null
+  toJSON: () => [string, string, string | null] | null
 }
 
 export function decodeDid(
@@ -41,12 +39,12 @@ export function decodeDid(
     const decoded = (encoded as IEncodedDid).toJSON()
     if (decoded) {
       const documentStore = isHex(decoded[2]) ? hexToString(decoded[2]) : null
-      return Object.assign(Object.create(Did.prototype), {
+      return {
         identifier,
         publicSigningKey: decoded[0],
         publicBoxKey: decoded[1],
         documentStore,
-      })
+      }
     }
   }
   return null

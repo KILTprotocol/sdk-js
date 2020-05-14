@@ -44,9 +44,17 @@ export async function query(
     )
   )
   if (decoded) {
-    decoded.id = delegationId
+    const root = new DelegationNode(
+      delegationId,
+      decoded.rootId,
+      decoded.account,
+      decoded.permissions,
+      decoded.parentId
+    )
+    root.revoked = decoded.revoked
+    return root
   }
-  return decoded
+  return null
 }
 
 export async function revoke(

@@ -12,32 +12,41 @@
  * Dummy comment needed for correct doc display, do not remove.
  */
 import { Option, Tuple } from '@polkadot/types'
-import { hasNonNullByte } from '../util/Decode'
+import { Codec } from '@polkadot/types/types'
+import { DelegationNode } from '..'
+import { hasNonNullByte, assertCodecIsType } from '../util/Decode'
 import { coToUInt8 } from '../crypto/Crypto'
-import DelegationNode from './DelegationNode'
-import DelegationRootNode from './DelegationRootNode'
-import { Permission } from '../types/Delegation'
+import { Permission, IDelegationRootNode } from '../types/Delegation'
 
 export type CodecWithId = {
   id: string
   codec: Option<Tuple> | Tuple
 }
 
+export type RootDelegationRecord = Pick<
+  IDelegationRootNode,
+  'cTypeHash' | 'account' | 'revoked'
+>
+
+interface IChainRootDelegation extends Codec {
+  toJSON: () => [string, string, boolean] | null
+}
+
 export function decodeRootDelegation(
   encoded: Option<Tuple> | Tuple
-): DelegationRootNode | null {
-  if (
-    encoded instanceof Option ||
-    hasNonNullByte(encoded) ||
-    !(encoded[0].isEmpty || encoded[1].isEmpty)
-  ) {
-    const json = encoded.toJSON()
+): RootDelegationRecord | null {
+  assertCodecIsType(encoded, [
+    'Option<(H256,AccountId,bool)>',
+    'H256,AccountId,bool',
+  ])
+  if (encoded instanceof Option || hasNonNullByte(encoded)) {
+    const json = (encoded as IChainRootDelegation).toJSON()
     if (json instanceof Array) {
-      return Object.assign(Object.create(DelegationRootNode.prototype), {
+      return {
         cTypeHash: json[0],
         account: json[1],
         revoked: json[2],
-      })
+      }
     }
   }
   return null
@@ -76,15 +85,24 @@ function verifyRoot(rootId: string): boolean {
   )
 }
 
+export type DelegationNodeRecord = Pick<
+  DelegationNode,
+  'rootId' | 'parentId' | 'account' | 'permissions' | 'revoked'
+>
+
+interface IChainDelegationNode extends Codec {
+  toJSON: () => [string, string | null, string, number, boolean] | null
+}
+
 export function decodeDelegationNode(
   encoded: Option<Tuple> | Tuple
-): DelegationNode | null {
-  if (
-    encoded instanceof Option ||
-    hasNonNullByte(encoded) ||
-    !(encoded[0].isEmpty || encoded[2].isEmpty)
-  ) {
-    const json = encoded.toJSON()
+): DelegationNodeRecord | null {
+  assertCodecIsType(encoded, [
+    'Option<(H256,Option<H256>,AccountId,u32,bool)>',
+    '(H256,Option<H256>,AccountId,u32,bool)',
+  ])
+  if (encoded instanceof Option || hasNonNullByte(encoded)) {
+    const json = (encoded as IChainDelegationNode).toJSON()
     if (json instanceof Array) {
       if (typeof json[0] !== 'string' || typeof json[3] !== 'number')
         return null
@@ -93,13 +111,13 @@ export function decodeDelegationNode(
         // A node without a root node is therefore interpreted as invalid.
         return null
       }
-      return Object.assign(Object.create(DelegationNode.prototype), {
+      return {
         rootId: json[0],
-        parentId: json[1], // optional
+        parentId: json[1] || undefined, // optional
         account: json[2],
         permissions: decodePermissions(json[3]),
         revoked: json[4],
-      })
+      }
     }
   }
   return null

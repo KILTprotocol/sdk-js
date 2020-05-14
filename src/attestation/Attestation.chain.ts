@@ -6,6 +6,7 @@ import { Option, Text, Tuple } from '@polkadot/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 import { SubmittableResult } from '@polkadot/api'
+import { Codec } from '@polkadot/types/types'
 import { hasNonNullByte, assertCodecIsType } from '../util/Decode'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
@@ -36,29 +37,21 @@ export async function store(
   return blockchain.submitTx(identity, tx)
 }
 
+interface IChainAttestation extends Codec {
+  toJSON: () => [string, string, string | null, boolean] | null
+}
+
 function decode(
   encoded: Option<Tuple> | Tuple,
-  claimHash: string
+  claimHash: string // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
   assertCodecIsType(encoded, [
     'Option<(H256,AccountId,Option<H256>,bool)>',
     '(H256,AccountId,Option<H256>,bool)',
   ])
-  if (
-    encoded instanceof Option ||
-    hasNonNullByte(encoded) ||
-    !(encoded[0].isEmpty || encoded[1].isEmpty)
-  ) {
-    const attestationTuple = encoded.toJSON()
-    // TODO: use Leon's type guards here once merged
-    if (
-      attestationTuple instanceof Array &&
-      typeof attestationTuple[0] === 'string' &&
-      typeof attestationTuple[1] === 'string' &&
-      (typeof attestationTuple[2] === 'string' ||
-        attestationTuple[2] === null) &&
-      typeof attestationTuple[3] === 'boolean'
-    ) {
+  if (encoded instanceof Option || hasNonNullByte(encoded)) {
+    const attestationTuple = (encoded as IChainAttestation).toJSON()
+    if (attestationTuple instanceof Array) {
       const attestation: IAttestation = {
         claimHash,
         cTypeHash: attestationTuple[0],
