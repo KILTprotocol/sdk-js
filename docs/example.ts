@@ -7,30 +7,37 @@ import Kilt, {
   Claim,
   AttesterIdentity,
   Credential,
+  CType,
 } from '../src'
 import constants from '../src/test/constants'
 import { IRevocationHandle } from '../src/types/Attestation'
 import { getBalance } from '../src/balance/Balance.chain'
 
-async function doAttestation(): Promise<{
+const NODE_URL = 'wss://full-nodes.kilt.io:9944'
+
+async function setup(): Promise<{
   claimer: Identity
   attester: AttesterIdentity
   claim: Claim
-  credential: Credential
-  revocationHandle: IRevocationHandle
+  ctype: CType
 }> {
-  // How to generate an Identity
-  // const mnemonic = Kilt.Identity.generateMnemonic()
-  const claimer = await Kilt.Identity.buildFromMnemonic(
-    'wish rather clinic rather connect culture frown like quote effort cart faculty'
+  // ------------------------- Attester ----------------------------------------
+
+  // To get an attestation, we need an Attester
+  // we can generate a new keypair, which will take about 20 minutes:
+  // const attester = await Kilt.AttesterIdentity.buildFromMnemonic("...")
+  // or we just use unsafe precalculated keys (just for demo purposes!):
+  const attester = await Kilt.AttesterIdentity.buildFromMnemonicAndKey(
+    constants.PUBLIC_KEY.valueOf(),
+    constants.PRIVATE_KEY.valueOf(),
+    'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   )
-  // const address = claimer.getAddress()
+  console.log('Attester balance is:', await getBalance(attester.getAddress()))
+  // TODO: how to handle instantiation? We cannot always upload the accumulator...
+  await attester.updateAccumulator(attester.getAccumulator())
+  // for privacy enhanced attestations the attester has to initiate the attestation process
 
-  // At this point the generated Identity has no tokens.
-  // If you want to interact with the blockchain, you will have to get some.
-  // Contact faucet@kilt.io and provide the address of the identity
-
-  // How to build a Ctype
+  // ------------------------- CType    ----------------------------------------
   // First build a schema
   const ctypeSchema: ICType['schema'] = {
     $id: 'DriversLicense',
@@ -52,7 +59,7 @@ async function doAttestation(): Promise<{
   const rawCtype: ICType = {
     schema: ctypeSchema,
     hash: ctypeHash,
-    owner: claimer.getAddress(),
+    owner: attester.getAddress(),
   }
 
   // Build the CType object
@@ -62,7 +69,7 @@ async function doAttestation(): Promise<{
   // ! This costs tokens !
   // Also note, that the completely same ctype can only be stored once on the blockchain.
   try {
-    await ctype.store(claimer)
+    await ctype.store(attester)
   } catch (e) {
     console.log(
       'Error while storing CType. Probably either insufficient funds or ctype does already exist.',
@@ -70,28 +77,18 @@ async function doAttestation(): Promise<{
     )
   }
 
-  // ------------------------- Attester ----------------------------------------
-
-  // To get an attestation, we need an Attester
-  // we can generate a new keypair, which will take about 20 minutes:
-  // const attester = await Kilt.AttesterIdentity.buildFromMnemonic("...")
-  // or we just use unsafe precalculated keys (just for demo purposes!):
-  const attester = await Kilt.AttesterIdentity.buildFromMnemonicAndKey(
-    constants.PUBLIC_KEY.valueOf(),
-    constants.PRIVATE_KEY.valueOf(),
-    'feel hazard trip seven traffic make hero kingdom speed transfer rug success'
+  // ------------------------- Claimer  ----------------------------------------
+  // How to generate an Identity
+  // const mnemonic = Kilt.Identity.generateMnemonic()
+  const claimer = await Kilt.Identity.buildFromMnemonic(
+    'wish rather clinic rather connect culture frown like quote effort cart faculty'
   )
-  console.log('Attester balance is:', await getBalance(attester.getAddress()))
-  // TODO: how to handle instantiation? We cannot always upload the accumulator...
-  await attester.updateAccumulator(attester.getAccumulator())
-  // for privacy enhanced attestations the attester has to initiate the attestation process
-  const {
-    message: initiateAttestationMessage,
-    session: attestersSession,
-  } = await Kilt.Attester.initiateAttestation(attester)
+  // const address = claimer.getAddress()
 
-  // ------------------------- CLAIMER -----------------------------------------
-  // And we need to build a request for an attestation
+  // At this point the generated Identity has no tokens.
+  // If you want to interact with the blockchain, you will have to get some.
+  // Contact faucet@kilt.io and provide the address of the identity
+
   const rawClaim = {
     name: 'Alice',
     age: 29,
@@ -103,6 +100,40 @@ async function doAttestation(): Promise<{
     owner: claimer.getAddress(),
   })
 
+  console.log(
+    (s => s.padEnd(40 + s.length / 2, '_').padStart(80, '_'))(' SETUP ')
+  )
+  console.log('Claimer', claimer.getAddress(), '\n')
+  console.log('Attester', attester.getAddress(), '\n')
+  console.log('Ctype', ctype, '\n')
+  console.log('Claim', claim, '\n')
+
+  return {
+    claimer,
+    attester,
+    ctype,
+    claim,
+  }
+}
+
+async function doAttestation(
+  claimer: Identity,
+  attester: AttesterIdentity,
+  claim: Claim
+): Promise<{
+  credential: Credential
+  revocationHandle: IRevocationHandle
+}> {
+  // ------------------------- Attester ----------------------------------------
+
+  const {
+    message: initiateAttestationMessage,
+    session: attestersSession,
+  } = await Kilt.Attester.initiateAttestation(attester)
+
+  // ------------------------- CLAIMER -----------------------------------------
+  // And we need to build a request for an attestation
+
   const {
     message: messageBody,
     session: claimerSession,
@@ -110,7 +141,7 @@ async function doAttestation(): Promise<{
     claim,
     identity: claimer,
     initiateAttestationMsg: initiateAttestationMessage,
-    attesterPubKey: attester.getPublicGabiKey(),
+    attesterPubKey: attester.getPublicIdentity(),
   })
 
   // Excursion to the messaging system
@@ -174,21 +205,16 @@ async function doAttestation(): Promise<{
     messageBack.body,
     claimerSession
   )
-  console.log('Claimer', claimer.getAddress(), '\n')
-  console.log('Attester', attester.getAddress(), '\n')
 
-  console.log('Ctype', ctype, '\n')
-  console.log('Claim', claim, '\n')
-
+  console.log(
+    (s => s.padEnd(40 + s.length / 2, '_').padStart(80, '_'))(' ATTESTATION ')
+  )
   console.log('RFO Message', message, '\n')
   console.log('Submit attestation:', submitAttestation, '\n')
   console.log('AttestedClaim', credential, '\n')
   console.log('AttestedClaim message', messageBack, '\n')
 
   return {
-    claimer,
-    attester,
-    claim,
     credential,
     revocationHandle,
   }
@@ -228,18 +254,22 @@ async function doVerification(
     [await Kilt.Attester.getLatestAccumulator(attesterPub)],
     [attesterPub]
   )
+  console.log(
+    (s => s.padEnd(40 + s.length / 2, '_').padStart(80, '_'))(' VERIFICATION ')
+  )
   console.log('Received claims: ', JSON.stringify(claims))
   console.log('All valid? ', verified)
 }
 
 // do an attestation and a verification
 async function example(): Promise<void> {
-  const {
+  const { claimer, attester, claim } = await setup()
+
+  const { credential, revocationHandle } = await doAttestation(
     claimer,
     attester,
-    credential,
-    revocationHandle,
-  } = await doAttestation()
+    claim
+  )
   // should succeed
   await doVerification(claimer, attester, credential, true)
   await doVerification(claimer, attester, credential, false)
@@ -250,9 +280,9 @@ async function example(): Promise<void> {
 }
 
 // connect to the blockchain, execute the examples and then disconnect
-Kilt.connect('wss://full-nodes.kilt.io:9944')
+Kilt.connect(NODE_URL)
   .then(example)
-  .finally(() => Kilt.disconnect('wss://full-nodes.kilt.io:9944'))
+  .finally(() => Kilt.disconnect(NODE_URL))
   .then(
     () => process.exit(),
     e => {
