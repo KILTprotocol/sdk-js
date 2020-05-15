@@ -21,11 +21,12 @@ describe('Verifier', () => {
     .__mocked_api
 
   beforeAll(async () => {
-    alice = await AttesterIdentity.buildFromURIAndKey(
-      '//Alice',
-      constants.PUBLIC_KEY.valueOf(),
-      constants.PRIVATE_KEY.valueOf()
-    )
+    alice = await AttesterIdentity.buildFromURI('//Alice', {
+      key: {
+        publicKey: constants.PUBLIC_KEY.valueOf(),
+        privateKey: constants.PRIVATE_KEY.valueOf(),
+      },
+    })
 
     bob = await Identity.buildFromURI('//bob')
 

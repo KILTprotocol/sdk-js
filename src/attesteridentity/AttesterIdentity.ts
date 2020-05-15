@@ -17,6 +17,26 @@ import Attestation from '../attestation/Attestation'
 import getCached from '../blockchainApiConnection'
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
+const DEFAULT_MAX_ATTRIBUTES = 70
+const DEFAULT_LIFETIME = ONE_YEAR_MS
+
+export type KeyOptions = {
+  /** The private gabi key. */
+  privateKey: string
+  /** The public gabi key. */
+  publicKey: string
+}
+
+export type Options = {
+  /** The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year. */
+  validityDuration?: number
+  /** The maximum number of attributes of a [[Claim]] attributes which can be signed. The default value is 70. */
+  maxAttributes?: number
+  /** The private and public key that should be used for the privacy enhanced attestation. */
+  key?: KeyOptions
+  /** The current accumulator of the attester. */
+  accumulator?: gabi.Accumulator
+}
 
 export default class AttesterIdentity extends Identity {
   protected attester: gabi.Attester
@@ -26,23 +46,28 @@ export default class AttesterIdentity extends Identity {
    * [STATIC] [ASYNC] Builds an [[AttesterIdentity]] object from an [[Identity]] object.
    *
    * @param identity The [[Identity]] object which should be extended to an [[AttesterIdentity]].
-   * @param validityDuration The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year.
-   * @param maxAttributes The maximum number of attributes of a [[Claim]] attributes which can be signed. The default value is 70.
-   * @param accumulator The current accumulator of the attester.
+   * @param options The options for the attester specific identity.
    * @returns A new [[AttesterIdentity]].
    */
   public static async buildFromIdentity(
     identity: Identity,
-    validityDuration: number,
-    maxAttributes: number,
-    accumulator: gabi.Accumulator | null = null
+    options: Options = {}
   ): Promise<AttesterIdentity> {
-    let acc = accumulator
-    const attester = await gabi.Attester.create({
-      validityDuration,
-      maxAttributes,
-    })
-    if (acc === null) {
+    let acc = options.accumulator
+    let attester: gabi.Attester
+    if (typeof options.key === 'undefined') {
+      attester = await gabi.Attester.create({
+        validityDuration: options.validityDuration || DEFAULT_LIFETIME,
+        maxAttributes: options.maxAttributes || DEFAULT_MAX_ATTRIBUTES,
+      })
+    } else {
+      attester = new gabi.Attester(
+        new gabi.AttesterPublicKey(options.key.publicKey),
+        new gabi.AttesterPrivateKey(options.key.privateKey)
+      )
+    }
+
+    if (typeof acc === 'undefined') {
       acc = await attester.createAccumulator()
     }
 
@@ -56,47 +81,10 @@ export default class AttesterIdentity extends Identity {
   }
 
   /**
-   * [STATIC] [ASYNC] Builds an [[AttesterIdentity]] object from an [[Identity]] object and a privacy enhanced key pair.
-   *
-   * @param identity The [[Identity]] object which should be extended to an [[AttesterIdentity]].
-   * @param publicGabiKey The privacy enhanced public key of the Attester.
-   * @param privateGabiKey The privacy enhanced private key of the Attester.
-   * @param accumulator The Attester's current accumulator.
-   * @returns A new [[AttesterIdentity]].
-   */
-  public static async buildFromIdentityAndKeys(
-    identity: Identity,
-    publicGabiKey: string,
-    privateGabiKey: string,
-    accumulator?: string
-  ): Promise<AttesterIdentity> {
-    const attester = new gabi.Attester(
-      new gabi.AttesterPublicKey(publicGabiKey),
-      new gabi.AttesterPrivateKey(privateGabiKey)
-    )
-    let acc: gabi.Accumulator
-    if (typeof accumulator !== 'undefined') {
-      acc = new gabi.Accumulator(accumulator)
-    } else {
-      acc = await attester.createAccumulator()
-    }
-    const attesterId = new AttesterIdentity(
-      identity.seed,
-      identity.signKeyringPair,
-      identity.claimer,
-      attester,
-      acc
-    )
-    attesterId.accumulator = acc
-    return attesterId
-  }
-
-  /**
    * [STATIC] [ASYNC] Builds an [[AttesterIdentity]] object from a mnemonic string.
    *
    * @param phraseArg The mnemonic for the blockchain identity.
-   * @param validityDuration The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year.
-   * @param maxAttributes The maximum number of attributes of a [[Claim]] attributes which can be attested. The default value is 70.
+   * @param options The options for the attester specific identity.
    * @returns A new [[AttesterIdentity]].
    *
    * @example ```javascript
@@ -108,36 +96,11 @@ export default class AttesterIdentity extends Identity {
    */
   public static async buildFromMnemonic(
     phraseArg?: string,
-    validityDuration = ONE_YEAR_MS,
-    maxAttributes = 70
+    options: Options = {}
   ): Promise<AttesterIdentity> {
     return this.buildFromIdentity(
       await Identity.buildFromMnemonic(phraseArg),
-      validityDuration,
-      maxAttributes
-    )
-  }
-
-  /**
-   * [STATIC] [ASYNC] Builds an [[AttesterIdentity]] object from a mnemonic string and a privacy enhanced key pair.
-   *
-   * @param publicGabiKey The privacy enhanced public key of the Attester.
-   * @param privateGabiKey The privacy enhanced private key of the Attester.
-   * @param phraseArg The mnemonic for the blockchain identity.
-   * @param accumulator The Attester's current accumulator.
-   * @returns A new [[AttesterIdentity]].
-   */
-  public static async buildFromMnemonicAndKey(
-    publicGabiKey: string,
-    privateGabiKey: string,
-    phraseArg?: string,
-    accumulator?: string
-  ): Promise<AttesterIdentity> {
-    return this.buildFromIdentityAndKeys(
-      await Identity.buildFromMnemonic(phraseArg),
-      publicGabiKey,
-      privateGabiKey,
-      accumulator
+      options
     )
   }
 
@@ -145,8 +108,7 @@ export default class AttesterIdentity extends Identity {
    * [STATIC] [ASYNC] Builds an [[AttesterIdentity]], generated from a seed hex string.
    *
    * @param seedArg The seed used to create the blockchain identity (as string starting with 0x).
-   * @param validityDuration The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year.
-   * @param maxAttributes The maximum number of attributes of a [[Claim]] attributes which can be attested. The default value is 70.
+   * @param options The options for the attester specific identity.
    * @returns A new [[AttesterIdentity]].
    *
    * @example ```javascript
@@ -157,13 +119,11 @@ export default class AttesterIdentity extends Identity {
    */
   public static async buildFromSeedString(
     seedArg: string,
-    validityDuration = ONE_YEAR_MS,
-    maxAttributes = 70
+    options: Options = {}
   ): Promise<AttesterIdentity> {
     return this.buildFromIdentity(
       await Identity.buildFromSeedString(seedArg),
-      validityDuration,
-      maxAttributes
+      options
     )
   }
 
@@ -171,8 +131,7 @@ export default class AttesterIdentity extends Identity {
    * [STATIC] [ASYNC] Builds a new [[AttesterIdentity]], generated from a seed (Secret Seed).
    *
    * @param seed The seed used to create the blockchain identity (as an Uint8Array with 24 arbitrary numbers).
-   * @param validityDuration The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year.
-   * @param maxAttributes The maximum number of attributes of a [[Claim]] attributes which can be attested. The default value is 70.
+   * @param options The options for the attester specific identity.
    * @returns A new [[AttesterIdentity]].
    * @example ```javascript
    * // prettier-ignore
@@ -186,22 +145,16 @@ export default class AttesterIdentity extends Identity {
    */
   public static async buildFromSeed(
     seed: Uint8Array,
-    validityDuration = ONE_YEAR_MS,
-    maxAttributes = 70
+    options: Options = {}
   ): Promise<AttesterIdentity> {
-    return this.buildFromIdentity(
-      await Identity.buildFromSeed(seed),
-      validityDuration,
-      maxAttributes
-    )
+    return this.buildFromIdentity(await Identity.buildFromSeed(seed), options)
   }
 
   /**
    * [STATIC] [ASYNC] Builds a new [[AttesterIdentity]], generated from a uniform resource identifier (URIs).
    *
    * @param uri The uri from which the blockchain identity will be created.
-   * @param validityDuration The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year.
-   * @param maxAttributes The maximum number of attributes of a [[Claim]] attributes which can be attested. The default value is 70.
+   * @param options The options for the attester specific identity.
    * @returns A new [[AttesterIdentity]].
    * @example ```javascript
    * AttesterIdentity.buildFromURI('//Bob');
@@ -209,37 +162,9 @@ export default class AttesterIdentity extends Identity {
    */
   public static async buildFromURI(
     uri: string,
-    validityDuration = ONE_YEAR_MS,
-    maxAttributes = 70
+    options: Options = {}
   ): Promise<AttesterIdentity> {
-    return this.buildFromIdentity(
-      await Identity.buildFromURI(uri),
-      validityDuration,
-      maxAttributes
-    )
-  }
-
-  /**
-   * [STATIC] [ASYNC] Builds a new [[AttesterIdentity]], generated from a uniform resource identifier (URIs).
-   *
-   * @param uri The uri from which the blockchain identity will be created.
-   * @param publicGabiKey The privacy enhanced public key of the Attester.
-   * @param privateGabiKey The privacy enhanced private key of the Attester.
-   * @param accumulator The Attester's current accumulator.
-   * @returns A new [[AttesterIdentity]].
-   */
-  public static async buildFromURIAndKey(
-    uri: string,
-    publicGabiKey: string,
-    privateGabiKey: string,
-    accumulator?: string
-  ): Promise<AttesterIdentity> {
-    return this.buildFromIdentityAndKeys(
-      await Identity.buildFromURI(uri),
-      publicGabiKey,
-      privateGabiKey,
-      accumulator
-    )
+    return this.buildFromIdentity(await Identity.buildFromURI(uri), options)
   }
 
   protected constructor(
@@ -345,7 +270,7 @@ export default class AttesterIdentity extends Identity {
    * [ASYNC] Starts a new [[Attestation]] session.
    *
    * @returns A session and a message object.
-   * The **message** should be sent over to the Claimer to be used in [[requestAttestion]].
+   * The **message** should be sent over to the Claimer to be used in [[requestAttestation]].
    * The **session** should be kept private and used in [[issueAttestation]].
    */
   public async initiateAttestation(): Promise<{

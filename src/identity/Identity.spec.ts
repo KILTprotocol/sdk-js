@@ -94,10 +94,12 @@ describe('Identity', () => {
   })
 
   it('should initiate attestation with gabi keys (PE)', async () => {
-    const alice = await AttesterIdentity.buildFromMnemonicAndKey(
-      constants.PUBLIC_KEY.valueOf(),
-      constants.PRIVATE_KEY.valueOf()
-    )
+    const alice = await AttesterIdentity.buildFromMnemonic(undefined, {
+      key: {
+        publicKey: constants.PUBLIC_KEY.valueOf(),
+        privateKey: constants.PRIVATE_KEY.valueOf(),
+      },
+    })
 
     const msgSession = await alice.initiateAttestation()
     expect(msgSession.session).toBeDefined()

@@ -13,7 +13,7 @@ import constants from '../src/test/constants'
 import { IRevocationHandle } from '../src/types/Attestation'
 import { getBalance } from '../src/balance/Balance.chain'
 
-const NODE_URL = 'wss://full-nodes.kilt.io:9944'
+const NODE_URL = 'ws://127.0.0.1:9944'
 
 async function setup(): Promise<{
   claimer: Identity
@@ -27,10 +27,14 @@ async function setup(): Promise<{
   // we can generate a new keypair, which will take about 20 minutes:
   // const attester = await Kilt.AttesterIdentity.buildFromMnemonic("...")
   // or we just use unsafe precalculated keys (just for demo purposes!):
-  const attester = await Kilt.AttesterIdentity.buildFromMnemonicAndKey(
-    constants.PUBLIC_KEY.valueOf(),
-    constants.PRIVATE_KEY.valueOf(),
-    'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
+  const attester = await Kilt.AttesterIdentity.buildFromMnemonic(
+    'receive clutch item involve chaos clutch furnace arrest claw isolate okay together',
+    {
+      key: {
+        publicKey: constants.PUBLIC_KEY.valueOf(),
+        privateKey: constants.PRIVATE_KEY.valueOf(),
+      },
+    }
   )
   console.log('Attester balance is:', await getBalance(attester.getAddress()))
   // TODO: how to handle instantiation? We cannot always upload the accumulator...

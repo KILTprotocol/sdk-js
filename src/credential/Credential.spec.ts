@@ -6,7 +6,7 @@ import ICType from '../types/CType'
 import Credential from './Credential'
 import Attestation from '../attestation/Attestation'
 import { AttesterIdentity } from '..'
-import TConst from '../test/constants'
+import constants from '../test/constants'
 
 describe('Credential', () => {
   let claimer: Identity
@@ -16,10 +16,12 @@ describe('Credential', () => {
   let attestation: Attestation
 
   beforeAll(async () => {
-    attester = await AttesterIdentity.buildFromMnemonicAndKey(
-      TConst.PUBLIC_KEY.toString(),
-      TConst.PRIVATE_KEY.toString()
-    )
+    attester = await AttesterIdentity.buildFromMnemonic(undefined, {
+      key: {
+        publicKey: constants.PUBLIC_KEY.valueOf(),
+        privateKey: constants.PRIVATE_KEY.valueOf(),
+      },
+    })
     claimer = await Identity.buildFromMnemonic()
 
     const rawCType: ICType['schema'] = {
