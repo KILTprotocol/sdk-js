@@ -1,5 +1,7 @@
 /**
  * @module BlockchainApiConnection
+ * @ignore
+ * @packageDocumentation
  */
 
 /**

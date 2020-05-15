@@ -1,5 +1,7 @@
 /**
  * @group integration/delegation
+ * @ignore
+ * @packageDocumentation
  */
 
 import DelegationRootNode from '../delegation/DelegationRootNode'

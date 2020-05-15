@@ -1,5 +1,7 @@
 /**
  * @group integration/balance
+ * @ignore
+ * @packageDocumentation
  */
 
 import BN from 'bn.js/'
