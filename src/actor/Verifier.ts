@@ -119,7 +119,7 @@ export async function verifyPresentation(
       AttestedClaim.fromAttestedClaim
     )
     const allVerified = await Promise.all(attestedClaims.map(ac => ac.verify()))
-    return [allVerified.every(b => b), attestedClaims]
+    return [!allVerified.includes(false), attestedClaims]
   }
   if (presentation.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE) {
     if (
