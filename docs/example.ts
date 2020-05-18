@@ -171,9 +171,6 @@ async function doAttestation(
   // And make sure, that the sender is the owner of the identity
   Kilt.Message.ensureOwnerIsSender(decrypted)
 
-  if (decrypted.body.type !== MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
-    throw new Error('Unexpected message type')
-  }
   const {
     revocationHandle,
     message: submitAttestation,

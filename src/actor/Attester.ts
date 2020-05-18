@@ -48,6 +48,11 @@ export async function issueAttestation(
   revocationHandle: IRevocationHandle
   message: ISubmitAttestationForClaim
 }> {
+  if (request.type !== MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
+    throw new TypeError(
+      `Unexpected message type. Received ${request.type}, expected ${MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM}`
+    )
+  }
   // Lets continue with the original object
   const attestation = Attestation.fromRequestAndPublicIdentity(
     request.content.requestForAttestation,
