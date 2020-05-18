@@ -35,35 +35,6 @@ function parseArgsForKilt(args: string[]): string[] {
 }
 
 /**
- * Creates presentations for a verifier which only reveals the requested attributes.
- *
- * @param credentials The [[Credential]]s you want to present to the verifier.
- * @param requestedAttributes The attributes you publicly show and which were requested by the verifier.
- *
- * @returns An array of [[AttestedClaim]]s which can be verified.
- */
-function whitelistAttributes(
-  credentials: Credential[],
-  requestedAttributes: string[][]
-): AttestedClaim[] {
-  return credentials.map((cred, i) => {
-    // get clone of all attributes inside the credential as set
-    const allAtts = cred.getAttributes()
-
-    // remove each requested attribute
-    requestedAttributes[i].forEach((attr: string) => allAtts.delete(attr))
-    const hiddenAtts = Array.from(allAtts)
-
-    // create presentation based on excluded attributes
-    const presentation = cred.createPresentation(hiddenAtts)
-
-    // remove to show as few as possible
-    delete presentation.request.privacyEnhanced
-    return presentation
-  })
-}
-
-/**
  * [ASYNC] Creates a presentation for an arbitrary amount of [[Credential]]s which can be verified in [[verifyPresentation]].
  *
  * @param identity The Claimer [[Identity]] which owns the [[Credential]]s.
@@ -118,11 +89,19 @@ export async function createPresentation(
     )
   }
 
+  // get attributes requested by the verifier
   const requestedAttributes = request.content.peRequest
     .getRequestedProperties()
-    .map((propsPerClaim: any[]) => parseArgsForKilt(propsPerClaim))
+    .map((propsPerClaim: string[]) => parseArgsForKilt(propsPerClaim))
 
-  const attestedClaims = whitelistAttributes(credentials, requestedAttributes)
+  // create presentation for each credential
+  const attestedClaims = credentials.map((cred, i) => {
+    const presentation = cred.createPresentation(requestedAttributes[i])
+
+    // remove to show as few as possible
+    delete presentation.request.privacyEnhanced
+    return presentation
+  })
 
   return new Message(
     {

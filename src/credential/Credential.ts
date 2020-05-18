@@ -80,13 +80,14 @@ export default class Credential {
   /**
    * Creates a public presentation which can be sent to a verifier.
    *
-   * @param excludedClaimProperties Properties that will not be sent to the attester, e.g. all properties will be sent if kept empty.
+   * @param publicAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
+   * If kept empty, we hide all attributes inside the claim for the presentation.
    * @param excludeIdentity Whether or not to include the identity.
    *
    * @returns A public presentation.
    */
   public createPresentation(
-    excludedClaimProperties: string[],
+    publicAttributes: string[],
     excludeIdentity = false
   ): AttestedClaim {
     const attClaim = new AttestedClaim(
@@ -99,6 +100,9 @@ export default class Credential {
         })
       )
     )
+
+    // remove requested from hidden attributes
+    const excludedClaimProperties = this.whitelistAttributes(publicAttributes)
 
     // remove specific attributes
     attClaim.request.removeClaimProperties(excludedClaimProperties)
@@ -116,5 +120,21 @@ export default class Credential {
   public getAttributes(): Set<string> {
     // TODO: move this to claim or contents
     return new Set(Object.keys(this.reqForAtt.claim.contents))
+  }
+
+  /**
+   * Removes all requested attributes from the [[Credential]]s attributes.
+   *
+   * @param requestedAttributes The attributes which were requested by the verifier and therefore are publicly shown.
+   *
+   * @returns All attributes which can be hidden from the presentation.
+   */
+  private whitelistAttributes(requestedAttributes: string[]): string[] {
+    // get clone of all attributes inside the credential as set
+    const allAtts = this.getAttributes()
+
+    // remove each requested attribute
+    requestedAttributes.forEach((removeMe: string) => allAtts.delete(removeMe))
+    return Array.from(allAtts)
   }
 }

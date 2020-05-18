@@ -82,7 +82,7 @@ describe('Credential', () => {
       attestation
     )
 
-    const att = cred.createPresentation(['age'])
+    const att = cred.createPresentation(['name'])
     expect(att.getAttributes()).toEqual(new Set(['name']))
   })
 
