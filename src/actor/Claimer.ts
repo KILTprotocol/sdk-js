@@ -144,9 +144,10 @@ export async function requestAttestation(parameter: {
       : undefined,
     ...paramsNoPubKey,
   }
-  const [request, session] = await RequestForAttestation.fromClaimAndIdentity(
-    mappedParams
-  )
+  const {
+    message: request,
+    session,
+  } = await RequestForAttestation.fromClaimAndIdentity(mappedParams)
   const message: IRequestAttestationForClaim = {
     content: {
       requestForAttestation: request,

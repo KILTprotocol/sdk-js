@@ -65,10 +65,12 @@ export async function issueAttestation(
       'Privacy enhancement was forced, but attestation session is missing.'
     )
   } else if (session !== null) {
-    ;[witness, peAttestation] = await identity.issuePrivacyEnhancedAttestation(
+    const attestationInfo = await identity.issuePrivacyEnhancedAttestation(
       session,
       request.content.requestForAttestation
     )
+    witness = attestationInfo.witness
+    peAttestation = attestationInfo.attestation
   }
   await attestation.store(identity)
   const revocationHandle: IRevocationHandle = {

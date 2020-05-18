@@ -232,11 +232,11 @@ async function doVerification(
 ): Promise<void> {
   const attesterPub = attester.getPublicIdentity()
   // ------------------------- Verifier ----------------------------------------
-  const [session, request] = await Kilt.Verifier.newRequest()
+  const { session, message: request } = await Kilt.Verifier.newRequestBuilder()
     .requestPresentationForCtype({
       ctypeHash: credential.attestation.cTypeHash,
-      reqUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available
-      attributes: ['age'],
+      requestUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available
+      properties: ['age'],
     })
     .finalize(pe)
 
@@ -252,7 +252,7 @@ async function doVerification(
 
   // ------------------------- Verifier ----------------------------------------
   // TODO: where das the verifier get the public identity from?
-  const [verified, claims] = await Kilt.Verifier.verifyPresentation(
+  const { verified, claims } = await Kilt.Verifier.verifyPresentation(
     presentation,
     session,
     [await Kilt.Attester.getLatestAccumulator(attesterPub)],

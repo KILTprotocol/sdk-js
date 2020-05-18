@@ -252,14 +252,17 @@ export default class AttesterIdentity extends Identity {
   public async issuePrivacyEnhancedAttestation(
     session: gabi.AttesterAttestationSession,
     reqForAttestation: IRequestForAttestation
-  ): Promise<[gabi.Witness, gabi.Attestation]> {
+  ): Promise<{
+    witness: gabi.Witness
+    attestation: gabi.Attestation
+  }> {
     if (reqForAttestation.privacyEnhanced != null) {
       const { witness, attestation } = await this.attester.issueAttestation({
         attestationSession: session,
         attestationRequest: reqForAttestation.privacyEnhanced,
         accumulator: this.accumulator,
       })
-      return [witness, attestation]
+      return { witness, attestation }
     }
     throw new Error(
       'Privacy enhancement was missing in request for attestation'

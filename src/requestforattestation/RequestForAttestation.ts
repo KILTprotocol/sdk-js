@@ -119,7 +119,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
     delegationId?: IDelegationBaseNode['id']
     initiateAttestationMsg?: IInitiateAttestation
     attesterPubKey?: AttesterPublicKey
-  }): Promise<[RequestForAttestation, ClaimerAttestationSession | null]> {
+  }): Promise<{
+    message: RequestForAttestation
+    session: ClaimerAttestationSession | null
+  }> {
     if (claim.owner !== identity.getAddress()) {
       throw Error('Claim owner is not Identity')
     }
@@ -159,8 +162,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
       delegationId || null
     )
 
-    return [
-      new RequestForAttestation({
+    return {
+      message: new RequestForAttestation({
         claim,
         legitimations: legitimations || [],
         claimOwner: claimOwnerGenerated,
@@ -175,7 +178,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
         privacyEnhanced: peRequest,
       }),
       session,
-    ]
+    }
   }
 
   public claim: IClaim

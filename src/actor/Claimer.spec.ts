@@ -206,12 +206,12 @@ describe('Claimer', () => {
   })
 
   it('create privacy enhanced presentation', async () => {
-    const request = (await Verifier.newRequest()
+    const request = (await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
-        attributes: ['name', 'and', 'other', 'attributes'],
+        properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(true))[1]
+      .finalize(true)).message
 
     const presentation = await Claimer.createPresentation(
       bob,
@@ -226,12 +226,12 @@ describe('Claimer', () => {
   })
 
   it('create public presentation', async () => {
-    const request = (await Verifier.newRequest()
+    const request = (await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
-        attributes: ['name', 'and', 'other', 'attributes'],
+        properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(false))[1]
+      .finalize(false)).message
 
     const presentation = await Claimer.createPresentation(
       bob,

@@ -43,9 +43,9 @@ async function buildAttestedClaim(
     claimer.getAddress()
   )
   // build request for attestation with legitimations
-  const [
-    requestForAttestation,
-  ] = await RequestForAttestation.fromClaimAndIdentity({
+  const {
+    message: requestForAttestation,
+  } = await RequestForAttestation.fromClaimAndIdentity({
     claim,
     identity: claimer,
     legitimations,

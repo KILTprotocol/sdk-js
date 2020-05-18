@@ -61,10 +61,10 @@ async function buildRequestForAttestationPE(
     owner: claimer.getAddress(),
   }
   // build request for attestation with legitimations
-  const [
-    request,
-    claimerSession,
-  ] = await RequestForAttestation.fromClaimAndIdentity({
+  const {
+    message: request,
+    session: claimerSession,
+  } = await RequestForAttestation.fromClaimAndIdentity({
     claim,
     identity: claimer,
     legitimations,
@@ -115,7 +115,7 @@ async function buildRequestForAttestation(
     claim,
     identity: claimer,
     legitimations,
-  }))[0]
+  })).message
   return request
 }
 

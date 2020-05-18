@@ -103,10 +103,10 @@ describe('Verifier', () => {
   })
 
   it('request privacy enhanced presentation', async () => {
-    const [session, request] = await Verifier.newRequest()
+    const { session, message: request } = await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
-        attributes: ['name', 'and', 'other', 'attributes'],
+        properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(true)
     expect(session).toBeDefined()
@@ -117,10 +117,10 @@ describe('Verifier', () => {
   })
 
   it('request public presentation', async () => {
-    const [session, request] = await Verifier.newRequest()
+    const { session, message: request } = await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
-        attributes: ['name', 'and', 'other', 'attributes'],
+        properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(false)
     expect(session).toBeDefined()
@@ -131,10 +131,10 @@ describe('Verifier', () => {
   })
 
   it('verify privacy enhanced presentation', async () => {
-    const [session, request] = await Verifier.newRequest()
+    const { session, message: request } = await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
-        attributes: ['name', 'and', 'other', 'attributes'],
+        properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(true)
 
@@ -149,7 +149,7 @@ describe('Verifier', () => {
     )
     expect(presentation.content).toBeInstanceOf(CombinedPresentation)
 
-    const [ok, claims] = await Verifier.verifyPresentation(
+    const { verified: ok, claims } = await Verifier.verifyPresentation(
       presentation,
       session,
       [await Attester.buildAccumulator(alice)],
@@ -163,10 +163,10 @@ describe('Verifier', () => {
   })
 
   it('verify forbidden privacy enhanced presentation', async () => {
-    const [session, request] = await Verifier.newRequest()
+    const { session, message: request } = await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
-        attributes: ['name', 'and', 'other', 'attributes'],
+        properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(false)
 
@@ -182,7 +182,7 @@ describe('Verifier', () => {
     )
     expect(presentation.content).toBeInstanceOf(CombinedPresentation)
 
-    const [ok, claims] = await Verifier.verifyPresentation(
+    const { verified: ok, claims } = await Verifier.verifyPresentation(
       presentation,
       session,
       [await Attester.buildAccumulator(alice)],
@@ -194,10 +194,10 @@ describe('Verifier', () => {
   })
 
   it('verify public-only presentation', async () => {
-    const [session, request] = await Verifier.newRequest()
+    const { session, message: request } = await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
-        attributes: ['name', 'and', 'other', 'attributes'],
+        properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(false)
 
@@ -213,7 +213,7 @@ describe('Verifier', () => {
     )
     expect(Array.isArray(presentation.content)).toBeTruthy()
 
-    const [ok, claims] = await Verifier.verifyPresentation(
+    const { verified: ok, claims } = await Verifier.verifyPresentation(
       presentation,
       session,
       [await Attester.buildAccumulator(alice)],

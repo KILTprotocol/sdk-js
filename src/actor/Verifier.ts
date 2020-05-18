@@ -31,37 +31,37 @@ export class PresentationRequestBuilder {
    *
    * @param p The parameter object.
    * @param p.ctypehash The SHA-256 hash of the [[CType]].
-   * @param p.attributes A list of attributes of the [[Credential]]s the Verifier has to see in order to verify it.
+   * @param p.properties A list of properties of the [[Credential]]s the Verifier has to see in order to verify it.
    * @param p.legitimations An optional boolean representing whether the Verifier requests to see the legitimations of the Attesters which signed the [[Credential]]s.
-   * @param p.delegationId An optional boolean representing whether the Verifier requests to see the Attesters' unique delegation identifiers.
-   * @param p.reqUpdatedAfter The optional minimum required timestamp on which the [[Credential]] needs to be updated.
+   * @param p.delegation An optional boolean representing whether the Verifier requests to see the Attesters' unique delegation identifiers.
+   * @param p.requestUpdatedAfter The optional minimum required timestamp on which the [[Credential]] needs to be updated.
    * The default value for this is the current date.
    * @returns A [[PresentationRequestBuilder]] on which you need to call [[finalize]] to complete the presentation request.
    */
   public requestPresentationForCtype({
     ctypeHash,
-    attributes,
+    properties,
     legitimations,
-    delegationId,
-    reqUpdatedAfter = new Date(),
+    delegation,
+    requestUpdatedAfter = new Date(),
   }: {
-    attributes: string[]
+    properties: string[]
     ctypeHash: CType['hash']
     legitimations?: boolean
-    delegationId?: boolean
-    reqUpdatedAfter?: Date
+    delegation?: boolean
+    requestUpdatedAfter?: Date
   }): PresentationRequestBuilder {
-    const rawAttribute = attributes.map(attr => `claim.contents.${attr}`)
+    const rawAttribute = properties.map(attr => `claim.contents.${attr}`)
     rawAttribute.push('claim.cTypeHash')
     if (typeof legitimations !== 'undefined' && legitimations) {
       rawAttribute.push('legitimation')
     }
-    if (typeof delegationId !== 'undefined' && delegationId) {
+    if (typeof delegation !== 'undefined' && delegation) {
       rawAttribute.push('delegationId')
     }
     this.builder.requestPresentation({
       requestedAttributes: rawAttribute,
-      reqUpdatedAfter,
+      reqUpdatedAfter: requestUpdatedAfter,
     })
     this.ctypes.push(ctypeHash)
     return this
@@ -77,14 +77,17 @@ export class PresentationRequestBuilder {
    */
   public async finalize(
     allowPE: boolean
-  ): Promise<[IVerifierSession, IRequestClaimsForCTypes]> {
+  ): Promise<{
+    session: IVerifierSession
+    message: IRequestClaimsForCTypes
+  }> {
     const { session, message } = await this.builder.finalise()
-    return [
-      {
+    return {
+      session: {
         privacyEnhancement: session,
         allowedPrivacyEnhancement: allowPE,
       },
-      {
+      message: {
         type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
         content: {
           ctypes: this.ctypes,
@@ -92,7 +95,7 @@ export class PresentationRequestBuilder {
           allowPE,
         },
       },
-    ]
+    }
   }
 }
 
@@ -101,7 +104,7 @@ export class PresentationRequestBuilder {
  *
  * @returns A [[PresentationRequestBuilder]] based on a [[CType]] and a list of required disclosed attributes of the [[Credential]]s.
  */
-export function newRequest(): PresentationRequestBuilder {
+export function newRequestBuilder(): PresentationRequestBuilder {
   return new PresentationRequestBuilder()
 }
 
@@ -121,14 +124,17 @@ export async function verifyPresentation(
   session?: IVerifierSession,
   latestAccumulators?: gabi.Accumulator[],
   attesterPubKeys?: PublicAttesterIdentity[]
-): Promise<[boolean, any[]]> {
+): Promise<{
+  verified: boolean
+  claims: any[]
+}> {
   // If we got a public presentation, check that the attestation is valid
   if (presentation.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC) {
     const attestedClaims = presentation.content.map(
       AttestedClaim.fromAttestedClaim
     )
     const allVerified = await Promise.all(attestedClaims.map(ac => ac.verify()))
-    return [!allVerified.includes(false), attestedClaims]
+    return { verified: !allVerified.includes(false), claims: attestedClaims }
   }
 
   // if we got a privacy enhanced attestation, check that this was allowed by the verifier and
@@ -156,8 +162,8 @@ export async function verifyPresentation(
           (ai: PublicAttesterIdentity) => ai.publicGabiKey
         ),
       })
-      return [verified, claims]
+      return { verified, claims }
     }
   }
-  return [false, []]
+  return { verified: false, claims: [] }
 }

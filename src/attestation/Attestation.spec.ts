@@ -52,12 +52,10 @@ describe('Attestation', () => {
       testcontents,
       identityBob.getAddress()
     )
-    ;[requestForAttestation] = await RequestForAttestation.fromClaimAndIdentity(
-      {
-        claim: testClaim,
-        identity: identityBob,
-      }
-    )
+    requestForAttestation = (await RequestForAttestation.fromClaimAndIdentity({
+      claim: testClaim,
+      identity: identityBob,
+    })).message
   })
 
   it('stores attestation', async () => {

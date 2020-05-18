@@ -51,7 +51,7 @@ describe('Credential', () => {
         claimer.getAddress()
       ),
       identity: claimer,
-    }))[0]
+    })).message
 
     attestation = Attestation.fromRequestAndPublicIdentity(
       reqForAtt,
