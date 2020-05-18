@@ -162,6 +162,37 @@ describe('Verifier', () => {
     expect(claims[0].claim).toEqual(unownedClaim)
   })
 
+  it('verify forbidden privacy enhanced presentation', async () => {
+    const [session, request] = await Verifier.newRequest()
+      .requestPresentationForCtype({
+        ctypeHash: 'this is a ctype hash',
+        attributes: ['name', 'and', 'other', 'attributes'],
+      })
+      .finalize(false)
+
+    request.content.allowPE = true
+    const presentation = await Claimer.createPresentation(
+      bob,
+      request,
+      [credentialPE],
+      [alice.getPublicIdentity()]
+    )
+    expect(presentation.type).toEqual(
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
+    )
+    expect(presentation.content).toBeInstanceOf(CombinedPresentation)
+
+    const [ok, claims] = await Verifier.verifyPresentation(
+      presentation,
+      session,
+      [await Attester.buildAccumulator(alice)],
+      [alice.getPublicIdentity()]
+    )
+    expect(ok).toBeFalsy()
+    expect(Array.isArray(claims)).toBeTruthy()
+    expect(claims.length).toEqual(0)
+  })
+
   it('verify public-only presentation', async () => {
     const [session, request] = await Verifier.newRequest()
       .requestPresentationForCtype({

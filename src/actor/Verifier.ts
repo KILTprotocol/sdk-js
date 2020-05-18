@@ -8,6 +8,11 @@ import {
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
 
+export interface IVerifierSession {
+  privacyEnhancement: gabi.CombinedVerificationSession
+  allowedPrivacyEnhancement: boolean
+}
+
 /**
  * A helper class to initiate a verification by creating a presentation request which is built
  * on a specific [[CType]] and attributes of the [[Claim]] the verifier requires to see.
@@ -72,10 +77,13 @@ export class PresentationRequestBuilder {
    */
   public async finalize(
     allowPE: boolean
-  ): Promise<[gabi.CombinedVerificationSession, IRequestClaimsForCTypes]> {
+  ): Promise<[IVerifierSession, IRequestClaimsForCTypes]> {
     const { session, message } = await this.builder.finalise()
     return [
-      session,
+      {
+        privacyEnhancement: session,
+        allowedPrivacyEnhancement: allowPE,
+      },
       {
         type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
         content: {
@@ -110,10 +118,11 @@ export function newRequest(): PresentationRequestBuilder {
  */
 export async function verifyPresentation(
   presentation: ISubmitClaimsForCTypes,
-  session?: gabi.CombinedVerificationSession,
+  session?: IVerifierSession,
   latestAccumulators?: gabi.Accumulator[],
   attesterPubKeys?: PublicAttesterIdentity[]
 ): Promise<[boolean, any[]]> {
+  // If we got a public presentation, check that the attestation is valid
   if (presentation.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC) {
     const attestedClaims = presentation.content.map(
       AttestedClaim.fromAttestedClaim
@@ -121,6 +130,9 @@ export async function verifyPresentation(
     const allVerified = await Promise.all(attestedClaims.map(ac => ac.verify()))
     return [!allVerified.includes(false), attestedClaims]
   }
+
+  // if we got a privacy enhanced attestation, check that this was allowed by the verifier and
+  // verify the attestation
   if (presentation.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE) {
     if (
       typeof session === 'undefined' ||
@@ -132,17 +144,20 @@ export async function verifyPresentation(
       accumulators: ${latestAccumulators}
       public keys: ${attesterPubKeys}`)
     }
-    const { verified, claims } = await gabi.Verifier.verifyCombinedPresentation(
-      {
+    if (session.allowedPrivacyEnhancement) {
+      const {
+        verified,
+        claims,
+      } = await gabi.Verifier.verifyCombinedPresentation({
         proof: presentation.content,
-        verifierSession: session,
+        verifierSession: session.privacyEnhancement,
         latestAccumulators,
         attesterPubKeys: attesterPubKeys.map(
           (ai: PublicAttesterIdentity) => ai.publicGabiKey
         ),
-      }
-    )
-    return [verified, claims]
+      })
+      return [verified, claims]
+    }
   }
   return [false, []]
 }
