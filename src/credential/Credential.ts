@@ -80,7 +80,7 @@ export default class Credential {
   /**
    * Creates a public presentation which can be sent to a verifier.
    *
-   * @param excludedClaimProperties Properties that will not be sent to the attester.
+   * @param excludedClaimProperties Properties that will not be sent to the attester, e.g. all properties will be sent if kept empty.
    * @param excludeIdentity Whether or not to include the identity.
    *
    * @returns A public presentation.
