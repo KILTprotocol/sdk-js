@@ -87,7 +87,6 @@ export async function issueAttestation(
   }
 }
 
-// eslint-disable-next-line jsdoc/require-returns
 /**
  * [ASYNC] Revokes an [[Attestation]] created in [[issueAttestation]].
  *
@@ -98,7 +97,7 @@ export async function revokeAttestation(
   identity: AttesterIdentity,
   attestation: IRevocationHandle
 ): Promise<void> {
-  return identity.revokeAttestation(attestation)
+  await identity.revokeAttestation(attestation)
 }
 
 /**
@@ -111,7 +110,7 @@ export async function updateAccumulator(
   identity: AttesterIdentity,
   accumulator: gabi.Accumulator
 ): Promise<void> {
-  identity.updateAccumulator(accumulator)
+  await identity.updateAccumulator(accumulator)
 }
 
 /**
