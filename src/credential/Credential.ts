@@ -20,7 +20,7 @@ import ICredential from '../types/Credential'
 
 export default class Credential {
   /**
-   * The request that was send to the attester.
+   * The request that was sent to the attester.
    */
   public readonly reqForAtt: IRequestForAttestation
 
@@ -38,7 +38,7 @@ export default class Credential {
    * Build a [[Credential]] using an attestation. The credential can be used to create privacy enhanced presentations if a session and a privacy enhanced attestation is passed.
    *
    * @param claimer The owner of the credential.
-   * @param request The request for attestation that was send over to the attester.
+   * @param request The request for attestation that was sent over to the attester.
    * @param attestation The attestation received from the attester.
    * @param session The session that was created while requesting the presentation.
    * @param attestationPE The privacy enhanced attestation which was created by the attester.
@@ -78,9 +78,9 @@ export default class Credential {
   }
 
   /**
-   * Creates a public presentation which can be send to a verifier.
+   * Creates a public presentation which can be sent to a verifier.
    *
-   * @param excludedClaimProperties Properties that will not be send to the attester.
+   * @param excludedClaimProperties Properties that will not be sent to the attester.
    * @param excludeIdentity Whether or not to include the identity.
    *
    * @returns A public presentation.
