@@ -58,10 +58,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.getAddress()
     )
-    const [request] = await RequestForAttestation.fromClaimAndIdentity({
+    const request = (await RequestForAttestation.fromClaimAndIdentity({
       claim,
       identity: claimer,
-    })
+    })).message
     expect(request.verifyData()).toBeTruthy()
     expect(request.claim.contents).toMatchObject(content)
   })
@@ -73,10 +73,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.getAddress()
     )
-    const [request] = await RequestForAttestation.fromClaimAndIdentity({
+    const request = (await RequestForAttestation.fromClaimAndIdentity({
       claim,
       identity: claimer,
-    })
+    })).message
     expect(request.verifyData()).toBeTruthy()
     expect(request.verifySignature()).toBeTruthy()
     const attestation = Attestation.fromRequestAndPublicIdentity(
@@ -102,10 +102,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.getAddress()
     )
-    const [request] = await RequestForAttestation.fromClaimAndIdentity({
+    const request = (await RequestForAttestation.fromClaimAndIdentity({
       claim,
       identity: claimer,
-    })
+    })).message
     expect(request.verifyData()).toBeTruthy()
     expect(request.verifySignature()).toBeTruthy()
     const attestation = Attestation.fromRequestAndPublicIdentity(
@@ -149,10 +149,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.getAddress()
     )
-    const [request] = await RequestForAttestation.fromClaimAndIdentity({
+    const request = (await RequestForAttestation.fromClaimAndIdentity({
       claim,
       identity: claimer,
-    })
+    })).message
     const attestation = await Attestation.fromRequestAndPublicIdentity(
       request,
       alice.getPublicIdentity()
@@ -172,10 +172,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         content,
         claimer.getAddress()
       )
-      const [request] = await RequestForAttestation.fromClaimAndIdentity({
+      const request = (await RequestForAttestation.fromClaimAndIdentity({
         claim,
         identity: claimer,
-      })
+      })).message
       const attestation = Attestation.fromRequestAndPublicIdentity(
         request,
         alice.getPublicIdentity()
@@ -204,10 +204,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         content,
         claimer.getAddress()
       )
-      const [request] = await RequestForAttestation.fromClaimAndIdentity({
+      const request = (await RequestForAttestation.fromClaimAndIdentity({
         claim,
         identity: claimer,
-      })
+      })).message
       const fakeAttClaim = new AttestedClaim({
         request,
         attestation: attClaim.attestation,
@@ -251,10 +251,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         },
         alice.getAddress()
       )
-      const [request1] = await RequestForAttestation.fromClaimAndIdentity({
+      const request1 = (await RequestForAttestation.fromClaimAndIdentity({
         claim: licenseAuthorization,
         identity: alice,
-      })
+      })).message
       const licenseAuthorizationGranted = Attestation.fromRequestAndPublicIdentity(
         request1,
         faucet.getPublicIdentity()
@@ -267,7 +267,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         { name: 'Dominic Toretto', age: 52 },
         claimer.getAddress()
       )
-      const [request2] = await RequestForAttestation.fromClaimAndIdentity({
+      const request2 = (await RequestForAttestation.fromClaimAndIdentity({
         claim: iBelieveIcanDrive,
         identity: claimer,
         legitimations: [
@@ -277,7 +277,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             licenseAuthorizationGranted
           ).then(e => e.createPresentation([], false)),
         ],
-      })
+      })).message
       const LicenseGranted = Attestation.fromRequestAndPublicIdentity(
         request2,
         alice.getPublicIdentity()
