@@ -64,7 +64,8 @@ export async function issueAttestation(
     throw new Error(
       'Privacy enhancement was forced, but attestation session is missing.'
     )
-  } else if (session !== null) {
+  }
+  if (session !== null) {
     const attestationInfo = await identity.issuePrivacyEnhancedAttestation(
       session,
       request.content.requestForAttestation
