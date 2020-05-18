@@ -49,9 +49,11 @@ describe('Attester', () => {
     const {
       message: initAttestation,
       session: attersterSession,
-    } = await Attester.initiateAttestation(alice)
-    expect(initAttestation.type).toEqual(MessageBodyType.INITIATE_ATTESTATION)
-    expect(initAttestation.content).toBeDefined()
+    } = await Attester.initiateAttestation(alice, bob.getPublicIdentity())
+    expect(initAttestation.body.type).toEqual(
+      MessageBodyType.INITIATE_ATTESTATION
+    )
+    expect(initAttestation.body.content).toBeDefined()
     const claim: IClaim = {
       cTypeHash: '0xdead',
       contents: {
@@ -72,13 +74,18 @@ describe('Attester', () => {
     const { message, revocationHandle } = await Attester.issueAttestation(
       alice,
       requestAttestation,
+      bob.getPublicIdentity(),
       attersterSession,
       true
     )
     expect(revocationHandle.witness).not.toBeNull()
-    expect(message.type).toEqual(MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM)
-    expect(message.content.attestationPE).toBeDefined()
-    expect(message.content.attestation).toBeDefined()
+    expect(message.body.type).toEqual(
+      MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+    )
+    if (message.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
+      expect(message.body.content.attestationPE).toBeDefined()
+      expect(message.body.content.attestation).toBeDefined()
+    }
   })
 
   it('Issue only public attestation', async () => {
@@ -105,23 +112,29 @@ describe('Attester', () => {
     const { message: requestAttestation } = await Claimer.requestAttestation({
       claim,
       identity: bob,
+      attesterPubKey: alice.getPublicIdentity(),
     })
 
     const { message, revocationHandle } = await Attester.issueAttestation(
       alice,
-      requestAttestation
+      requestAttestation,
+      bob.getPublicIdentity()
     )
     expect(revocationHandle.witness).toBeNull()
-    expect(message.type).toEqual(MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM)
-    expect(message.content.attestationPE).toBeUndefined()
-    expect(message.content.attestation).toBeDefined()
+    expect(message.body.type).toEqual(
+      MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+    )
+    if (message.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
+      expect(message.body.content.attestationPE).toBeUndefined()
+      expect(message.body.content.attestation).toBeDefined()
+    }
   })
 
   it('Revoke privacy enhanced attestation', async () => {
     const {
       message: initAttestation,
       session: attersterSession,
-    } = await Attester.initiateAttestation(alice)
+    } = await Attester.initiateAttestation(alice, bob.getPublicIdentity())
 
     const claim: IClaim = {
       cTypeHash: '0xdead',
@@ -143,6 +156,7 @@ describe('Attester', () => {
     const { revocationHandle } = await Attester.issueAttestation(
       alice,
       requestAttestation,
+      bob.getPublicIdentity(),
       attersterSession,
       true
     )
@@ -157,7 +171,8 @@ describe('Attester', () => {
 
   it('Revoke public only attestation', async () => {
     const { message: initAttestation } = await Attester.initiateAttestation(
-      alice
+      alice,
+      bob.getPublicIdentity()
     )
 
     const claim: IClaim = {
@@ -179,7 +194,8 @@ describe('Attester', () => {
 
     const { revocationHandle } = await Attester.issueAttestation(
       alice,
-      requestAttestation
+      requestAttestation,
+      bob.getPublicIdentity()
     )
     const oldAcc = alice.getAccumulator()
     await Attester.revokeAttestation(alice, revocationHandle)

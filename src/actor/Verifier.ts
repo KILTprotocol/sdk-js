@@ -1,12 +1,10 @@
 import * as gabi from '@kiltprotocol/portablegabi'
+import IPublicIdentity from '../types/PublicIdentity'
 import CType from '../ctype/CType'
-import {
-  IRequestClaimsForCTypes,
-  MessageBodyType,
-  ISubmitClaimsForCTypes,
-} from '../messaging/Message'
+import Message, { MessageBodyType, IMessage } from '../messaging/Message'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
+import Identity from '../identity/Identity'
 
 export interface IVerifierSession {
   privacyEnhancement: gabi.CombinedVerificationSession
@@ -71,15 +69,19 @@ export class PresentationRequestBuilder {
    * [ASYNC] Concludes the presentation request.
    *
    * @param allowPE A boolean representing whether the verifier accepts a privacy enhanced presentation.
+   * @param verifier The [[Identity]] of the verifier used to sign.
+   * @param claimer The [[IPublicIdentity]] for which the message should be encrypted (note: the message will be return unencrypted. Use Message.getEncryptedMessage to encrypt the message).
    * @returns A session and a message object.
    * The **session** object will be used in [[verifyPresentation]] and should be kept private by the verifier.
    * The **message** object should be sent to the Claimer and used in [[createPresentation]].
    */
   public async finalize(
-    allowPE: boolean
+    allowPE: boolean,
+    verifier: Identity,
+    claimer: IPublicIdentity
   ): Promise<{
     session: IVerifierSession
-    message: IRequestClaimsForCTypes
+    message: Message
   }> {
     const { session, message } = await this.builder.finalise()
     return {
@@ -87,14 +89,18 @@ export class PresentationRequestBuilder {
         privacyEnhancement: session,
         allowedPrivacyEnhancement: allowPE,
       },
-      message: {
-        type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: {
-          ctypes: this.ctypes,
-          peRequest: message,
-          allowPE,
+      message: new Message(
+        {
+          type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+          content: {
+            ctypes: this.ctypes,
+            peRequest: message,
+            allowPE,
+          },
         },
-      },
+        verifier,
+        claimer
+      ),
     }
   }
 }
@@ -111,7 +117,7 @@ export function newRequestBuilder(): PresentationRequestBuilder {
 /**
  * [ASYNC] Verifies the Claimer's presentation of [[Credential]]s.
  *
- * @param presentation The Claimer's presentation of the [[Credential]]s that should be verified, the result of [[createPresentation]].
+ * @param message The Claimer's presentation of the [[Credential]]s that should be verified, the result of [[createPresentation]].
  * @param session The Verifier's private verification session created in [[finalize]].
  * @param latestAccumulators The list of the latest accumulators for each [[Attester]] which signed a [[Credential]] of this presentation.
  * @param attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
@@ -120,7 +126,7 @@ export function newRequestBuilder(): PresentationRequestBuilder {
  * and **at index 1** an array of [[Claim]]s restricted on the disclosed attributes selected in [[requestPresentationForCtype]].
  */
 export async function verifyPresentation(
-  presentation: ISubmitClaimsForCTypes,
+  message: IMessage,
   session?: IVerifierSession,
   latestAccumulators?: gabi.Accumulator[],
   attesterPubKeys?: PublicAttesterIdentity[]
@@ -129,8 +135,8 @@ export async function verifyPresentation(
   claims: any[]
 }> {
   // If we got a public presentation, check that the attestation is valid
-  if (presentation.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC) {
-    const attestedClaims = presentation.content.map(
+  if (message.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC) {
+    const attestedClaims = message.body.content.map(
       AttestedClaim.fromAttestedClaim
     )
     const allVerified = await Promise.all(attestedClaims.map(ac => ac.verify()))
@@ -139,7 +145,7 @@ export async function verifyPresentation(
 
   // if we got a privacy enhanced attestation, check that this was allowed by the verifier and
   // verify the attestation
-  if (presentation.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE) {
+  if (message.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE) {
     if (
       typeof session === 'undefined' ||
       typeof latestAccumulators === 'undefined' ||
@@ -155,7 +161,7 @@ export async function verifyPresentation(
         verified,
         claims,
       } = await gabi.Verifier.verifyCombinedPresentation({
-        proof: presentation.content,
+        proof: message.body.content,
         verifierSession: session.privacyEnhancement,
         latestAccumulators,
         attesterPubKeys: attesterPubKeys.map(

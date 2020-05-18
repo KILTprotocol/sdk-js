@@ -352,6 +352,7 @@ export type MessageBody =
   | ISubmitTerms
   | IRejectTerms
   //
+  | IInitiateAttestation
   | IRequestAttestationForClaim
   | ISubmitAttestationForClaim
   | IRejectAttestationForClaim

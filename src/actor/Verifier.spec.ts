@@ -15,6 +15,7 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 describe('Verifier', () => {
   let alice: AttesterIdentity
   let bob: Identity
+  let verifier: Identity
   let claim: IClaim
   let credentialPE: Credential
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
@@ -29,6 +30,7 @@ describe('Verifier', () => {
     })
 
     bob = await Identity.buildFromURI('//bob')
+    verifier = await Identity.buildFromMnemonic()
 
     claim = {
       cTypeHash: '0xdead',
@@ -54,7 +56,7 @@ describe('Verifier', () => {
     const {
       message: initAttestation,
       session: attersterSession,
-    } = await Attester.initiateAttestation(alice)
+    } = await Attester.initiateAttestation(alice, bob.getPublicIdentity())
 
     const {
       message: requestAttestation,
@@ -65,31 +67,39 @@ describe('Verifier', () => {
       initiateAttestationMsg: initAttestation,
       attesterPubKey: alice.getPublicIdentity(),
     })
-    expect(requestAttestation.type).toEqual(
+    expect(requestAttestation.body.type).toEqual(
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
-    expect(
-      requestAttestation.content.requestForAttestation.privacyEnhanced
-    ).toBeDefined()
     if (
-      requestAttestation.content.requestForAttestation.privacyEnhanced !== null
+      requestAttestation.body.type ===
+      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
     ) {
       expect(
-        requestAttestation.content.requestForAttestation.privacyEnhanced.getClaim()
-      ).toEqual({
-        claim: {
-          cTypeHash: claim.cTypeHash,
-          contents: claim.contents,
-          owner: claim.owner,
-        },
-      })
+        requestAttestation.body.content.requestForAttestation.privacyEnhanced
+      ).toBeDefined()
+      if (
+        requestAttestation.body.content.requestForAttestation
+          .privacyEnhanced !== null
+      ) {
+        expect(
+          requestAttestation.body.content.requestForAttestation.privacyEnhanced.getClaim()
+        ).toEqual({
+          claim: {
+            cTypeHash: claim.cTypeHash,
+            contents: claim.contents,
+            owner: claim.owner,
+          },
+        })
+      }
     }
+
     const {
       message: attestationMessage,
       revocationHandle,
     } = await Attester.issueAttestation(
       alice,
       requestAttestation,
+      bob.getPublicIdentity(),
       attersterSession,
       true
     )
@@ -108,12 +118,14 @@ describe('Verifier', () => {
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(true)
+      .finalize(true, verifier, bob.getPublicIdentity())
     expect(session).toBeDefined()
-    expect(request.content.allowPE).toBeTruthy()
-    expect(request.content.peRequest).toBeDefined()
-    expect(request.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
-    expect(request.content.ctypes).toEqual(['this is a ctype hash'])
+    expect(request.body.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
+    if (request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
+      expect(request.body.content.allowPE).toBeTruthy()
+      expect(request.body.content.peRequest).toBeDefined()
+      expect(request.body.content.ctypes).toEqual(['this is a ctype hash'])
+    }
   })
 
   it('request public presentation', async () => {
@@ -122,12 +134,14 @@ describe('Verifier', () => {
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(false)
+      .finalize(false, verifier, bob.getPublicIdentity())
     expect(session).toBeDefined()
-    expect(request.content.allowPE).toBeFalsy()
-    expect(request.content.peRequest).toBeDefined()
-    expect(request.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
-    expect(request.content.ctypes).toEqual(['this is a ctype hash'])
+    expect(request.body.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
+    if (request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
+      expect(request.body.content.allowPE).toBeFalsy()
+      expect(request.body.content.peRequest).toBeDefined()
+      expect(request.body.content.ctypes).toEqual(['this is a ctype hash'])
+    }
   })
 
   it('verify privacy enhanced presentation', async () => {
@@ -136,18 +150,19 @@ describe('Verifier', () => {
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(true)
+      .finalize(true, verifier, bob.getPublicIdentity())
 
     const presentation = await Claimer.createPresentation(
       bob,
       request,
+      verifier.getPublicIdentity(),
       [credentialPE],
       [alice.getPublicIdentity()]
     )
-    expect(presentation.type).toEqual(
+    expect(presentation.body.type).toEqual(
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
     )
-    expect(presentation.content).toBeInstanceOf(CombinedPresentation)
+    expect(presentation.body.content).toBeInstanceOf(CombinedPresentation)
 
     const { verified: ok, claims } = await Verifier.verifyPresentation(
       presentation,
@@ -168,19 +183,22 @@ describe('Verifier', () => {
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(false)
-
-    request.content.allowPE = true
+      .finalize(false, verifier, bob.getPublicIdentity())
+    if (request.body.type !== MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
+      throw new Error('should never happen. Only a type check...')
+    }
+    request.body.content.allowPE = true
     const presentation = await Claimer.createPresentation(
       bob,
       request,
+      verifier.getPublicIdentity(),
       [credentialPE],
       [alice.getPublicIdentity()]
     )
-    expect(presentation.type).toEqual(
+    expect(presentation.body.type).toEqual(
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
     )
-    expect(presentation.content).toBeInstanceOf(CombinedPresentation)
+    expect(presentation.body.content).toBeInstanceOf(CombinedPresentation)
 
     const { verified: ok, claims } = await Verifier.verifyPresentation(
       presentation,
@@ -199,19 +217,20 @@ describe('Verifier', () => {
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(false)
+      .finalize(false, verifier, bob.getPublicIdentity())
 
     const presentation = await Claimer.createPresentation(
       bob,
       request,
+      verifier.getPublicIdentity(),
       [credentialPE],
       [alice.getPublicIdentity()],
       false
     )
-    expect(presentation.type).toEqual(
+    expect(presentation.body.type).toEqual(
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
     )
-    expect(Array.isArray(presentation.content)).toBeTruthy()
+    expect(Array.isArray(presentation.body.content)).toBeTruthy()
 
     const { verified: ok, claims } = await Verifier.verifyPresentation(
       presentation,

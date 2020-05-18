@@ -1,14 +1,13 @@
 import * as gabi from '@kiltprotocol/portablegabi'
+import IPublicIdentity from '../types/PublicIdentity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IClaim from '../types/Claim'
 import { IDelegationBaseNode } from '../types/Delegation'
-import {
-  ISubmitClaimsForCTypes,
-  IRequestClaimsForCTypes,
+import Message, {
   MessageBodyType,
   IInitiateAttestation,
   IRequestAttestationForClaim,
-  ISubmitAttestationForClaim,
+  IMessage,
 } from '../messaging/Message'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Identity from '../identity/Identity'
@@ -68,8 +67,9 @@ function whitelistAttributes(
  * [ASYNC] Creates a presentation for an arbitrary amount of [[Credential]]s which can be verified in [[verifyPresentation]].
  *
  * @param identity The Claimer [[Identity]] which owns the [[Credential]]s.
- * @param request The message which represents multiple [[CType]]s, [[IRequestClaimsForCTypes]]s and whether privacy
+ * @param message The message which represents multiple [[CType]]s, [[IRequestClaimsForCTypes]]s and whether privacy
  * enhancement is supported.
+ * @param verifier The [[IPublicIdentity]] of the verifier that requested the presentation.
  * @param credentials The [[Credential]]s which should be verified.
  * @param attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
  * @param forcePE A boolean to force privacy enhancement.
@@ -78,16 +78,23 @@ function whitelistAttributes(
  */
 export async function createPresentation(
   identity: Identity,
-  request: IRequestClaimsForCTypes,
+  message: IMessage,
+  verifier: IPublicIdentity,
   credentials: Credential[],
   attesterPubKeys: PublicAttesterIdentity[],
   forcePE = true
-): Promise<ISubmitClaimsForCTypes> {
-  if (!request.content.allowPE && forcePE) {
+): Promise<Message> {
+  if (message.body.type !== MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
+    throw new Error(
+      `Expected message type '${MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES}' but got type '${message.body.type}'`
+    )
+  }
+  if (!message.body.content.allowPE && forcePE) {
     throw new Error(
       'Verifier requested public presentation, but privacy enhancement was forced.'
     )
   }
+  const request = message.body
 
   if (request.content.allowPE) {
     const peCreds = credentials.map(c => c.privacyCredential)
@@ -101,10 +108,14 @@ export async function createPresentation(
         (ai: PublicAttesterIdentity) => ai.publicGabiKey
       ),
     })
-    return {
-      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE,
-      content: gabiPresentation,
-    }
+    return new Message(
+      {
+        type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE,
+        content: gabiPresentation,
+      },
+      identity,
+      verifier
+    )
   }
 
   const requestedAttributes = request.content.peRequest
@@ -113,10 +124,14 @@ export async function createPresentation(
 
   const attestedClaims = whitelistAttributes(credentials, requestedAttributes)
 
-  return {
-    type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
-    content: attestedClaims,
-  }
+  return new Message(
+    {
+      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+      content: attestedClaims,
+    },
+    identity,
+    verifier
+  )
 }
 
 /**
@@ -153,19 +168,32 @@ type ClaimerAttestationSession = {
 export async function requestAttestation(parameter: {
   claim: IClaim
   identity: Identity
+  attesterPubKey: PublicAttesterIdentity
   legitimations?: AttestedClaim[]
   delegationId?: IDelegationBaseNode['id']
-  initiateAttestationMsg?: IInitiateAttestation
-  attesterPubKey?: PublicAttesterIdentity
+  initiateAttestationMsg?: IMessage
 }): Promise<{
-  message: IRequestAttestationForClaim
+  message: Message
   session: ClaimerAttestationSession
 }> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { attesterPubKey, ...paramsNoPubKey } = parameter
+  const {
+    attesterPubKey,
+    initiateAttestationMsg,
+    ...paramsNoPubKey
+  } = parameter
+  if (
+    typeof initiateAttestationMsg !== 'undefined' &&
+    initiateAttestationMsg.body.type !== MessageBodyType.INITIATE_ATTESTATION
+  ) {
+    throw new Error(
+      `Expected message type '${MessageBodyType.INITIATE_ATTESTATION}' but got type '${initiateAttestationMsg.body.type}'`
+    )
+  }
   const mappedParams = {
-    attesterPubKey: parameter.attesterPubKey
-      ? parameter.attesterPubKey.publicGabiKey
+    attesterPubKey: attesterPubKey ? attesterPubKey.publicGabiKey : undefined,
+    initiateAttestationMsg: initiateAttestationMsg
+      ? (initiateAttestationMsg.body as IInitiateAttestation)
       : undefined,
     ...paramsNoPubKey,
   }
@@ -181,7 +209,7 @@ export async function requestAttestation(parameter: {
   }
 
   return {
-    message,
+    message: new Message(message, parameter.identity, parameter.attesterPubKey),
     session: {
       peSession: session,
       requestForAttestation: request,
@@ -199,14 +227,19 @@ export async function requestAttestation(parameter: {
  */
 export async function buildCredential(
   identity: Identity,
-  message: ISubmitAttestationForClaim,
+  message: IMessage,
   session: ClaimerAttestationSession
 ): Promise<Credential> {
+  if (message.body.type !== MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
+    throw new Error(
+      `Expected message type '${MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM}' but got type '${message.body.type}'`
+    )
+  }
   return Credential.fromRequestAndAttestation(
     identity,
     session.requestForAttestation,
-    message.content.attestation,
+    message.body.content.attestation,
     session.peSession,
-    message.content.attestationPE
+    message.body.content.attestationPE
   )
 }

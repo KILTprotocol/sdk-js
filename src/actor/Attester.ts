@@ -2,61 +2,71 @@ import * as gabi from '@kiltprotocol/portablegabi'
 import { getCached } from '../blockchainApiConnection'
 import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
 import AttesterIdentity from '../attesteridentity/AttesterIdentity'
-import {
-  IInitiateAttestation,
+import Message, {
   IRequestAttestationForClaim,
-  ISubmitAttestationForClaim,
   MessageBodyType,
+  IMessage,
 } from '../messaging/Message'
 import Attestation from '../attestation/Attestation'
 import { IRevocationHandle } from '../types/Attestation'
+import PublicIdentity from '../identity/PublicIdentity'
+import IPublicIdentity from '../types/PublicIdentity'
 
 /**
  * [ASYNC] Initiates the [[Attestation]] session.
  *
  * @param identity The [[Identity]] representing the entity which is eligible to attest and sign the [[Claim]].
+ * @param claimer The [[PublicIdentity]] representing the entity which is eligible to attest and sign the [[Claim]].
  * @returns A session and a message object.
  * The **message** should be sent over to the Claimer to be used in [[requestAttestation]].
  * The **session** should be kept private and used in [[issueAttestation]].
  */
 export async function initiateAttestation(
-  identity: AttesterIdentity
+  identity: AttesterIdentity,
+  claimer: IPublicIdentity
 ): Promise<{
-  message: IInitiateAttestation
+  message: Message
   session: gabi.AttesterAttestationSession
 }> {
-  return identity.initiateAttestation()
+  const { session, message: messageBody } = await identity.initiateAttestation()
+  return {
+    message: new Message(messageBody, identity, claimer),
+    session,
+  }
 }
 
 /**
  * [ASYNC] Creates an [[Attestation]] for the [[Claim]] inside the request.
  *
- * @param identity The [[AttesterIdentity]] representing the entity which should attest the [[Claim]] and initiated the [[Attestation]]
+ * @param attester The [[AttesterIdentity]] representing the entity which should attest the [[Claim]] and initiated the [[Attestation]]
  * in [[initiateAttestation]].
- * @param request The message result of the Claimer's attestation request in [[requestAttestation]].
+ * @param message The message result of the Claimer's attestation request in [[requestAttestation]].
+ * @param claimer The [[PublicIdentity]] of the claimer. This is also the receiver of the returned message.
  * @param session The [[AttesterIdentity]]'s session created in [[initiateAttestation]].
  * @param forcePE A boolean to force privacy enhancement.
  * @returns The [[Attestation]] object which should be sent to the Claimer and
  * a witness which can be used to revoke the [[Attestation]] in [[revokeAttestation]].
  */
 export async function issueAttestation(
-  identity: AttesterIdentity,
-  request: IRequestAttestationForClaim,
+  attester: AttesterIdentity,
+  message: IMessage,
+  claimer: PublicIdentity,
   session: gabi.AttesterAttestationSession | null = null,
   forcePE = false
 ): Promise<{
   revocationHandle: IRevocationHandle
-  message: ISubmitAttestationForClaim
+  message: Message
 }> {
-  if (request.type !== MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
+  if (message.body.type !== MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
     throw new TypeError(
-      `Unexpected message type. Received ${request.type}, expected ${MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM}`
+      `Unexpected message type. Received ${message.body.type}, expected ${MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM}`
     )
   }
+  const request: IRequestAttestationForClaim = message.body
   // Lets continue with the original object
   const attestation = Attestation.fromRequestAndPublicIdentity(
     request.content.requestForAttestation,
-    identity.getPublicIdentity()
+    attester.getPublicIdentity()
   )
   let witness: gabi.Witness | null = null
   let peAttestation: gabi.Attestation | null = null
@@ -66,27 +76,31 @@ export async function issueAttestation(
     )
   }
   if (session !== null) {
-    const attestationInfo = await identity.issuePrivacyEnhancedAttestation(
+    const attestationInfo = await attester.issuePrivacyEnhancedAttestation(
       session,
       request.content.requestForAttestation
     )
     witness = attestationInfo.witness
     peAttestation = attestationInfo.attestation
   }
-  await attestation.store(identity)
+  await attestation.store(attester)
   const revocationHandle: IRevocationHandle = {
     witness,
     attestation,
   }
   return {
     revocationHandle,
-    message: {
-      content: {
-        attestation,
-        attestationPE: peAttestation || undefined,
+    message: new Message(
+      {
+        content: {
+          attestation,
+          attestationPE: peAttestation || undefined,
+        },
+        type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
       },
-      type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
-    },
+      attester,
+      claimer
+    ),
   }
 }
 

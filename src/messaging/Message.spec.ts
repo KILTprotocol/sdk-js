@@ -26,18 +26,12 @@ describe('Messaging', () => {
   })
 
   it('verify message encryption and signing', async () => {
-    const messageBody = (await Verifier.newRequestBuilder()
+    const { message } = await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: '0x12345678',
         properties: ['age'],
       })
-      .finalize(false)).message
-
-    const message = new Message(
-      messageBody,
-      identityAlice,
-      identityBob.getPublicIdentity()
-    )
+      .finalize(false, identityAlice, identityBob.getPublicIdentity())
 
     const encryptedMessage = message.getEncryptedMessage()
 
@@ -45,7 +39,7 @@ describe('Messaging', () => {
       encryptedMessage,
       identityBob
     )
-    expect(JSON.stringify(messageBody)).toEqual(
+    expect(JSON.stringify(message.body)).toEqual(
       JSON.stringify(decryptedMessage.body)
     )
 
