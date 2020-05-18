@@ -8,6 +8,8 @@ import Kilt, {
   AttesterIdentity,
   Credential,
   CType,
+  IRequestAttestationForClaim,
+  ISubmitAttestationForClaim,
 } from '../src'
 import constants from '../src/test/constants'
 import { IRevocationHandle } from '../src/types/Attestation'
@@ -177,7 +179,7 @@ async function doAttestation(
     message: submitAttestation,
   } = await Kilt.Attester.issueAttestation(
     attester,
-    decrypted.body,
+    (decrypted.body as any) as IRequestAttestationForClaim,
     attestersSession
   )
   console.log(
@@ -195,18 +197,19 @@ async function doAttestation(
 
   // ------------------------- CLAIMER -----------------------------------------
   Kilt.Message.ensureHashAndSignature(encryptedBack, attester.getAddress())
-  // FIXME: Why no work! :_(
-  // const decryptedBack = Kilt.Message.createFromEncryptedMessage(
-  //   encrypted,
-  //   claimer
-  // )
+  const decryptedBack = Kilt.Message.createFromEncryptedMessage(
+    encryptedBack,
+    claimer
+  )
 
-  if (messageBack.body.type !== MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
+  if (
+    decryptedBack.body.type !== MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+  ) {
     throw new Error('Should be SUBMIT_ATTESTATION_FOR_CLAIM')
   }
   const credential = await Kilt.Claimer.buildCredential(
     claimer,
-    messageBack.body,
+    (decryptedBack.body as any) as ISubmitAttestationForClaim,
     claimerSession
   )
 
