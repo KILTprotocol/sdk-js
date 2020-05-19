@@ -22,16 +22,22 @@ function noNulls<T>(array: Array<T | null>): array is T[] {
   return array.every(c => c !== null)
 }
 
-function parseArgsForKilt(args: string[]): string[] {
-  return args
-    .map(arg => arg.replace('claim.contents.', ''))
-    .filter((arg: string) => {
-      if (arg.match(/claim\.cTypeHash/)) {
-        log.warn('Cannot remove cTypeHash from claim.')
-        return false
-      }
-      return true
-    })
+/**
+ * Prepares the requested properties of a [[Claim]] to have the final structure required in [[createPresentation]].
+ *
+ * @param props The properties of the [[Claim]] which where requested to be publicly shown by the verifier.
+ *
+ * @returns All properties which can be publicly shown in the correct format.
+ */
+function finalizeReqProps(props: string[]): string[] {
+  return props.reduce((finalProps: string[], prop: string) => {
+    const attribute = prop.replace('claim.contents.', '')
+    if (attribute.match(/claim\.cTypeHash/)) {
+      log.warn('Cannot remove cTypeHash from claim.')
+      return finalProps
+    }
+    return [...finalProps, attribute]
+  }, [])
 }
 
 /**
@@ -97,7 +103,7 @@ export async function createPresentation(
   // get attributes requested by the verifier
   const requestedAttributes = request.content.peRequest
     .getRequestedProperties()
-    .map((propsPerClaim: string[]) => parseArgsForKilt(propsPerClaim))
+    .map((propsPerClaim: string[]) => finalizeReqProps(propsPerClaim))
 
   // create presentation for each credential
   const attestedClaims = credentials.map((cred, i) => {
