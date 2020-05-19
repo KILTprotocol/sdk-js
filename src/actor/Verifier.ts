@@ -5,6 +5,7 @@ import Message, { MessageBodyType, IMessage } from '../messaging/Message'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
 import Identity from '../identity/Identity'
+import IPresentationReq from '../types/Verification'
 
 export interface IVerifierSession {
   privacyEnhancement: gabi.CombinedVerificationSession
@@ -42,13 +43,7 @@ export class PresentationRequestBuilder {
     legitimations,
     delegation,
     requestUpdatedAfter = new Date(),
-  }: {
-    properties: string[]
-    ctypeHash: CType['hash']
-    legitimations?: boolean
-    delegation?: boolean
-    requestUpdatedAfter?: Date
-  }): PresentationRequestBuilder {
+  }: IPresentationReq): PresentationRequestBuilder {
     const rawAttribute = properties.map(attr => `claim.contents.${attr}`)
     rawAttribute.push('claim.cTypeHash')
     if (typeof legitimations !== 'undefined' && legitimations) {

@@ -177,6 +177,7 @@ describe('Verifier', () => {
     expect(Array.isArray(claims)).toBeTruthy()
     expect(claims.length).toEqual(1)
     const { owner, ...unownedClaim } = claim
+    expect(owner).toBeDefined()
     expect(claims[0].claim).toEqual(unownedClaim)
   })
 
