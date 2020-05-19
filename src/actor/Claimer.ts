@@ -12,11 +12,8 @@ import Message, {
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Identity from '../identity/Identity'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import { factory as LoggerFactory } from '../config/ConfigLog'
 import Credential from '../credential/Credential'
 import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
-
-const log = LoggerFactory.getLogger('Claimer')
 
 function noNulls<T>(array: Array<T | null>): array is T[] {
   return array.every(c => c !== null)
