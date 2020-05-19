@@ -30,14 +30,7 @@ function noNulls<T>(array: Array<T | null>): array is T[] {
  * @returns All properties which can be publicly shown in the correct format.
  */
 function finalizeReqProps(props: string[]): string[] {
-  return props.reduce((finalProps: string[], prop: string) => {
-    const attribute = prop.replace('claim.contents.', '')
-    if (attribute.match(/claim\.cTypeHash/)) {
-      log.warn('Cannot remove cTypeHash from claim.')
-      return finalProps
-    }
-    return [...finalProps, attribute]
-  }, [])
+  return props.map(prop => prop.replace('claim.contents.', ''))
 }
 
 /**
