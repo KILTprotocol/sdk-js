@@ -275,7 +275,7 @@ export interface IRejectAttestationForClaim extends IMessageBodyBase {
 
 export interface IRequestClaimsForCTypes extends IMessageBodyBase {
   content: {
-    ctypes: Array<ICType['hash']>
+    ctypes: Array<ICType['hash'] | null>
     peRequest: CombinedPresentationRequest
     allowPE: boolean
   }

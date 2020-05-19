@@ -246,4 +246,40 @@ describe('Verifier', () => {
     expect(Array.isArray(claims)).toBeTruthy()
     expect(claims.length).toEqual(1)
   })
+
+  it('verify public-only presentation missing property', async () => {
+    const { session, message: request } = await Verifier.newRequestBuilder()
+      .requestPresentationForCtype({
+        ctypeHash: 'this is a ctype hash',
+        properties: ['name', 'and', 'other', 'attributes'],
+      })
+      .finalize(false, verifier, claimer.getPublicIdentity())
+
+    const presentation = await Claimer.createPresentation(
+      claimer,
+      request,
+      verifier.getPublicIdentity(),
+      [credentialPE],
+      [attester.getPublicIdentity()],
+      false
+    )
+    expect(presentation.body.type).toEqual(
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
+    )
+    expect(Array.isArray(presentation.body.content)).toBeTruthy()
+    if (
+      presentation.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
+    ) {
+      delete presentation.body.content[0].request.claim.contents.name
+      const { verified: ok, claims } = await Verifier.verifyPresentation(
+        presentation,
+        session,
+        [await Attester.buildAccumulator(attester)],
+        [attester.getPublicIdentity()]
+      )
+      expect(ok).toBeFalsy()
+      expect(Array.isArray(claims)).toBeTruthy()
+      expect(claims.length).toEqual(0)
+    }
+  })
 })
