@@ -27,12 +27,12 @@ import { decodeDelegationNode } from '../delegation/DelegationDecoder'
 import { Identity } from '..'
 
 describe('when there is an account hierarchy', () => {
-  let UncleSam: Identity
+  let uncleSam: Identity
   let claimer: Identity
   let attester: Identity
 
   beforeAll(async () => {
-    UncleSam = await wannabeFaucet
+    uncleSam = await wannabeFaucet
     claimer = await wannabeBob
     attester = await wannabeAlice
 
@@ -45,9 +45,9 @@ describe('when there is an account hierarchy', () => {
     const rootNode = new DelegationRootNode(
       UUID.generate(),
       DriversLicense.hash,
-      UncleSam.getAddress()
+      uncleSam.getAddress()
     )
-    await rootNode.store(UncleSam)
+    await rootNode.store(uncleSam)
     const delegatedNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
@@ -56,7 +56,7 @@ describe('when there is an account hierarchy', () => {
       rootNode.id
     )
     const HashSignedByDelegate = attester.signStr(delegatedNode.generateHash())
-    await delegatedNode.store(UncleSam, HashSignedByDelegate)
+    await delegatedNode.store(uncleSam, HashSignedByDelegate)
     await Promise.all([
       expect(rootNode.verify()).resolves.toBeTruthy(),
       expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -71,9 +71,9 @@ describe('when there is an account hierarchy', () => {
       rootNode = new DelegationRootNode(
         UUID.generate(),
         DriversLicense.hash,
-        UncleSam.getAddress()
+        uncleSam.getAddress()
       )
-      await rootNode.store(UncleSam)
+      await rootNode.store(uncleSam)
 
       delegatedNode = new DelegationNode(
         UUID.generate(),
@@ -85,7 +85,7 @@ describe('when there is an account hierarchy', () => {
       const HashSignedByDelegate = attester.signStr(
         delegatedNode.generateHash()
       )
-      await delegatedNode.store(UncleSam, HashSignedByDelegate)
+      await delegatedNode.store(uncleSam, HashSignedByDelegate)
       await Promise.all([
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -123,7 +123,7 @@ describe('when there is an account hierarchy', () => {
       await expect(attClaim.verify()).resolves.toBeTruthy()
 
       // revoke attestation through root
-      const result2 = await attClaim.attestation.revoke(UncleSam)
+      const result2 = await attClaim.attestation.revoke(uncleSam)
       expect(result2.status.type).toBe('Finalized')
     }, 30000)
   })

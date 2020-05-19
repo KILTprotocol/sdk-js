@@ -13,8 +13,8 @@ import Credential from '../credential/Credential'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Verifier', () => {
-  let alice: AttesterIdentity
-  let bob: Identity
+  let attester: AttesterIdentity
+  let claimer: Identity
   let verifier: Identity
   let claim: IClaim
   let credentialPE: Credential
@@ -22,14 +22,14 @@ describe('Verifier', () => {
     .__mocked_api
 
   beforeAll(async () => {
-    alice = await AttesterIdentity.buildFromURI('//Alice', {
+    attester = await AttesterIdentity.buildFromURI('//Alice', {
       key: {
         publicKey: constants.PUBLIC_KEY.valueOf(),
         privateKey: constants.PRIVATE_KEY.valueOf(),
       },
     })
 
-    bob = await Identity.buildFromURI('//bob')
+    claimer = await Identity.buildFromURI('//bob')
     verifier = await Identity.buildFromMnemonic()
 
     claim = {
@@ -40,7 +40,7 @@ describe('Verifier', () => {
         other: '0xbeef',
         attributes: true,
       },
-      owner: bob.getPublicIdentity().address,
+      owner: claimer.getPublicIdentity().address,
     }
 
     blockchainApi.query.attestation.attestations.mockReturnValue(
@@ -48,7 +48,7 @@ describe('Verifier', () => {
         Tuple,
         new Tuple(
           [Text, AccountId, Text, Bool],
-          ['0xdead', alice.getAddress(), undefined, false]
+          ['0xdead', attester.getAddress(), undefined, false]
         )
       )
     )
@@ -56,16 +56,19 @@ describe('Verifier', () => {
     const {
       message: initAttestation,
       session: attersterSession,
-    } = await Attester.initiateAttestation(alice, bob.getPublicIdentity())
+    } = await Attester.initiateAttestation(
+      attester,
+      claimer.getPublicIdentity()
+    )
 
     const {
       message: requestAttestation,
       session: claimerSession,
     } = await Claimer.requestAttestation({
       claim,
-      identity: bob,
+      identity: claimer,
       initiateAttestationMsg: initAttestation,
-      attesterPubKey: alice.getPublicIdentity(),
+      attesterPubKey: attester.getPublicIdentity(),
     })
     expect(requestAttestation.body.type).toEqual(
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
@@ -97,16 +100,16 @@ describe('Verifier', () => {
       message: attestationMessage,
       revocationHandle,
     } = await Attester.issueAttestation(
-      alice,
+      attester,
       requestAttestation,
-      bob.getPublicIdentity(),
+      claimer.getPublicIdentity(),
       attersterSession,
       true
     )
     expect(revocationHandle.witness).not.toBeNull()
 
     credentialPE = await Claimer.buildCredential(
-      bob,
+      claimer,
       attestationMessage,
       claimerSession
     )
@@ -118,7 +121,7 @@ describe('Verifier', () => {
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(true, verifier, bob.getPublicIdentity())
+      .finalize(true, verifier, claimer.getPublicIdentity())
     expect(session).toBeDefined()
     expect(request.body.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
     if (request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
@@ -134,7 +137,7 @@ describe('Verifier', () => {
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(false, verifier, bob.getPublicIdentity())
+      .finalize(false, verifier, claimer.getPublicIdentity())
     expect(session).toBeDefined()
     expect(request.body.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
     if (request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
@@ -150,14 +153,14 @@ describe('Verifier', () => {
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(true, verifier, bob.getPublicIdentity())
+      .finalize(true, verifier, claimer.getPublicIdentity())
 
     const presentation = await Claimer.createPresentation(
-      bob,
+      claimer,
       request,
       verifier.getPublicIdentity(),
       [credentialPE],
-      [alice.getPublicIdentity()]
+      [attester.getPublicIdentity()]
     )
     expect(presentation.body.type).toEqual(
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
@@ -167,8 +170,8 @@ describe('Verifier', () => {
     const { verified: ok, claims } = await Verifier.verifyPresentation(
       presentation,
       session,
-      [await Attester.buildAccumulator(alice)],
-      [alice.getPublicIdentity()]
+      [await Attester.buildAccumulator(attester)],
+      [attester.getPublicIdentity()]
     )
     expect(ok).toBeTruthy()
     expect(Array.isArray(claims)).toBeTruthy()
@@ -183,17 +186,17 @@ describe('Verifier', () => {
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(false, verifier, bob.getPublicIdentity())
+      .finalize(false, verifier, claimer.getPublicIdentity())
     if (request.body.type !== MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
       throw new Error('should never happen. Only a type check...')
     }
     request.body.content.allowPE = true
     const presentation = await Claimer.createPresentation(
-      bob,
+      claimer,
       request,
       verifier.getPublicIdentity(),
       [credentialPE],
-      [alice.getPublicIdentity()]
+      [attester.getPublicIdentity()]
     )
     expect(presentation.body.type).toEqual(
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
@@ -203,8 +206,8 @@ describe('Verifier', () => {
     const { verified: ok, claims } = await Verifier.verifyPresentation(
       presentation,
       session,
-      [await Attester.buildAccumulator(alice)],
-      [alice.getPublicIdentity()]
+      [await Attester.buildAccumulator(attester)],
+      [attester.getPublicIdentity()]
     )
     expect(ok).toBeFalsy()
     expect(Array.isArray(claims)).toBeTruthy()
@@ -217,14 +220,14 @@ describe('Verifier', () => {
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(false, verifier, bob.getPublicIdentity())
+      .finalize(false, verifier, claimer.getPublicIdentity())
 
     const presentation = await Claimer.createPresentation(
-      bob,
+      claimer,
       request,
       verifier.getPublicIdentity(),
       [credentialPE],
-      [alice.getPublicIdentity()],
+      [attester.getPublicIdentity()],
       false
     )
     expect(presentation.body.type).toEqual(
@@ -235,8 +238,8 @@ describe('Verifier', () => {
     const { verified: ok, claims } = await Verifier.verifyPresentation(
       presentation,
       session,
-      [await Attester.buildAccumulator(alice)],
-      [alice.getPublicIdentity()]
+      [await Attester.buildAccumulator(attester)],
+      [attester.getPublicIdentity()]
     )
     expect(ok).toBeTruthy()
     expect(Array.isArray(claims)).toBeTruthy()

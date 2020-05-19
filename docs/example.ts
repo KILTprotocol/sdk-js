@@ -11,6 +11,7 @@ import Kilt, {
 import constants from '../src/test/constants'
 import { IRevocationHandle } from '../src/types/Attestation'
 import { getBalance } from '../src/balance/Balance.chain'
+import PublicAttesterIdentity from '../src/attesteridentity/PublicAttesterIdentity'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
 
@@ -141,7 +142,7 @@ async function doAttestation(
   // And we need to build a request for an attestation
 
   const {
-    message,
+    message: reqAttestation,
     session: claimerSession,
   } = await Kilt.Claimer.requestAttestation({
     claim,
@@ -151,25 +152,28 @@ async function doAttestation(
   })
 
   // The message can be encrypted as follows
-  const encrypted = message.getEncryptedMessage()
+  const reqAttestationEnc = reqAttestation.getEncryptedMessage()
 
   // claimer sends [[encrypted]] to the attester
 
   // ------------------------- Attester ----------------------------------------
   // Check the validity of the message
-  Kilt.Message.ensureHashAndSignature(encrypted, claimer.getAddress())
+  Kilt.Message.ensureHashAndSignature(reqAttestationEnc, claimer.getAddress())
   // When the Attester receives the message, she can decrypt it
-  const decrypted = Kilt.Message.createFromEncryptedMessage(encrypted, attester)
+  const reqAttestationDec = Kilt.Message.createFromEncryptedMessage(
+    reqAttestationEnc,
+    attester
+  )
 
   // And make sure, that the sender is the owner of the identity
-  Kilt.Message.ensureOwnerIsSender(decrypted)
+  Kilt.Message.ensureOwnerIsSender(reqAttestationDec)
 
   const {
     revocationHandle,
-    message: messageBack,
+    message: submitAttestation,
   } = await Kilt.Attester.issueAttestation(
     attester,
-    decrypted,
+    reqAttestationDec,
     claimer.getPublicIdentity(),
     attestersSession
   )
@@ -179,28 +183,30 @@ async function doAttestation(
   )
 
   // And send a message back
-  const encryptedBack = messageBack.getEncryptedMessage()
+  const submitAttestationEnc = submitAttestation.getEncryptedMessage()
 
   // ------------------------- CLAIMER -----------------------------------------
-  Kilt.Message.ensureHashAndSignature(encryptedBack, attester.getAddress())
-  const decryptedBack = Kilt.Message.createFromEncryptedMessage(
-    encryptedBack,
+  Kilt.Message.ensureHashAndSignature(
+    submitAttestationEnc,
+    attester.getAddress()
+  )
+  const submitAttestationDec = Kilt.Message.createFromEncryptedMessage(
+    submitAttestationEnc,
     claimer
   )
 
   const credential = await Kilt.Claimer.buildCredential(
     claimer,
-    decryptedBack,
+    submitAttestationDec,
     claimerSession
   )
 
   console.log(
     (s => s.padEnd(40 + s.length / 2, '_').padStart(80, '_'))(' ATTESTATION ')
   )
-  console.log('RFO Message', message, '\n')
-  console.log('Submit attestation:', messageBack.body, '\n')
+  console.log('RFO Message', reqAttestation.body, '\n')
+  console.log('Submit attestation:', submitAttestation.body, '\n')
   console.log('AttestedClaim', credential, '\n')
-  console.log('AttestedClaim message', messageBack, '\n')
 
   return {
     credential,
@@ -210,12 +216,11 @@ async function doAttestation(
 
 async function doVerification(
   claimer: Identity,
-  attester: AttesterIdentity,
+  attesterPub: PublicAttesterIdentity,
   credential: Credential,
-  pe: boolean
+  privacyEnhanced: boolean
 ): Promise<void> {
   const verifier = await Kilt.Identity.buildFromMnemonic()
-  const attesterPub = attester.getPublicIdentity()
   // ------------------------- Verifier ----------------------------------------
   const { session, message: request } = await Kilt.Verifier.newRequestBuilder()
     .requestPresentationForCtype({
@@ -223,21 +228,22 @@ async function doVerification(
       requestUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available
       properties: ['age'],
     })
-    .finalize(pe, verifier, claimer.getPublicIdentity())
+    .finalize(privacyEnhanced, verifier, claimer.getPublicIdentity())
 
   // ------------------------- Claimer -----------------------------------------
-  // use createPresentation if you don't want to use the privacy enhanced method
   const presentation = await Kilt.Claimer.createPresentation(
     claimer,
     request,
     verifier.getPublicIdentity(),
     [credential],
     [attesterPub],
-    pe
+    privacyEnhanced
   )
 
   // ------------------------- Verifier ----------------------------------------
-  // TODO: where das the verifier get the public identity from?
+  // The verifier needs the public identity of the attester. Either he already has a list of trusted
+  // attesters or he needs to resolve them differently. A Decentralized Identity (DID) would be an
+  // option for that.
   const { verified, claims } = await Kilt.Verifier.verifyPresentation(
     presentation,
     session,
@@ -261,12 +267,12 @@ async function example(): Promise<void> {
     claim
   )
   // should succeed
-  await doVerification(claimer, attester, credential, true)
-  await doVerification(claimer, attester, credential, false)
+  await doVerification(claimer, attester.getPublicIdentity(), credential, true)
+  await doVerification(claimer, attester.getPublicIdentity(), credential, false)
   await Kilt.Attester.revokeAttestation(attester, revocationHandle)
   // should fail
-  await doVerification(claimer, attester, credential, true)
-  await doVerification(claimer, attester, credential, false)
+  await doVerification(claimer, attester.getPublicIdentity(), credential, true)
+  await doVerification(claimer, attester.getPublicIdentity(), credential, false)
 }
 
 // connect to the blockchain, execute the examples and then disconnect

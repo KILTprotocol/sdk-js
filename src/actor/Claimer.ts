@@ -43,7 +43,7 @@ function parseArgsForKilt(args: string[]): string[] {
  * @param verifier The [[IPublicIdentity]] of the verifier that requested the presentation.
  * @param credentials The [[Credential]]s which should be verified.
  * @param attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
- * @param forcePE A boolean to force privacy enhancement.
+ * @param requirePE A boolean to force privacy enhancement.
  * @returns A message which represents either an array of [[AttestedClaim]]s if privacy enhancement is not supported
  * or a CombinedPresentation. Both of these options can be verified.
  */
@@ -53,20 +53,24 @@ export async function createPresentation(
   verifier: IPublicIdentity,
   credentials: Credential[],
   attesterPubKeys: PublicAttesterIdentity[],
-  forcePE = true
+  requirePE = true
 ): Promise<Message> {
+  // did we get the right message type?
   if (message.body.type !== MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
     throw new Error(
       `Expected message type '${MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES}' but got type '${message.body.type}'`
     )
   }
-  if (!message.body.content.allowPE && forcePE) {
+
+  // If privacy enhancement was required, but is not allowed, we can't create a presentation.
+  if (!message.body.content.allowPE && requirePE) {
     throw new Error(
       'Verifier requested public presentation, but privacy enhancement was forced.'
     )
   }
   const request = message.body
 
+  // if privacy enhancement is allowed, we return a privacy enhanced presentation
   if (request.content.allowPE) {
     const peCreds = credentials.map(c => c.privacyCredential)
     if (!noNulls(peCreds)) {
@@ -88,6 +92,7 @@ export async function createPresentation(
       verifier
     )
   }
+  // otherwise we return a public presentation
 
   // get attributes requested by the verifier
   const requestedAttributes = request.content.peRequest
@@ -124,7 +129,7 @@ export async function createPresentation(
  * and the Attester's message from [[initiateAttestation]] are included as well.
  * Both of these objects are required for privacy enhancement to prevent replay attacks.
  */
-type ClaimerAttestationSession = {
+export type ClaimerAttestationSession = {
   peSession: gabi.ClaimerAttestationSession | null
   requestForAttestation: IRequestForAttestation
 }

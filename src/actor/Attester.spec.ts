@@ -18,21 +18,21 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 describe('Attester', () => {
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
-  let alice: AttesterIdentity
-  let bob: Identity
+  let attester: AttesterIdentity
+  let claimer: Identity
   let acc: gabi.Accumulator
 
   beforeAll(async () => {
-    alice = await AttesterIdentity.buildFromURI('//Alice', {
+    attester = await AttesterIdentity.buildFromURI('//Alice', {
       key: {
         publicKey: constants.PUBLIC_KEY.valueOf(),
         privateKey: constants.PRIVATE_KEY.valueOf(),
       },
     })
 
-    bob = await Identity.buildFromURI('//Bob')
+    claimer = await Identity.buildFromURI('//Bob')
 
-    acc = await Attester.buildAccumulator(alice)
+    acc = await Attester.buildAccumulator(attester)
   })
 
   it('Issue privacy enhanced attestation', async () => {
@@ -41,7 +41,7 @@ describe('Attester', () => {
         Tuple,
         new Tuple(
           [Text, AccountId, Text, Bool],
-          ['0xdead', alice.getAddress(), undefined, false]
+          ['0xdead', attester.getAddress(), undefined, false]
         )
       )
     )
@@ -49,7 +49,10 @@ describe('Attester', () => {
     const {
       message: initAttestation,
       session: attersterSession,
-    } = await Attester.initiateAttestation(alice, bob.getPublicIdentity())
+    } = await Attester.initiateAttestation(
+      attester,
+      claimer.getPublicIdentity()
+    )
     expect(initAttestation.body.type).toEqual(
       MessageBodyType.INITIATE_ATTESTATION
     )
@@ -62,19 +65,19 @@ describe('Attester', () => {
         other: '0xbeef',
         attributes: true,
       },
-      owner: bob.getPublicIdentity().address,
+      owner: claimer.getPublicIdentity().address,
     }
     const { message: requestAttestation } = await Claimer.requestAttestation({
       claim,
-      identity: bob,
+      identity: claimer,
       initiateAttestationMsg: initAttestation,
-      attesterPubKey: alice.getPublicIdentity(),
+      attesterPubKey: attester.getPublicIdentity(),
     })
 
     const { message, revocationHandle } = await Attester.issueAttestation(
-      alice,
+      attester,
       requestAttestation,
-      bob.getPublicIdentity(),
+      claimer.getPublicIdentity(),
       attersterSession,
       true
     )
@@ -94,7 +97,7 @@ describe('Attester', () => {
         Tuple,
         new Tuple(
           [Text, AccountId, Text, Bool],
-          ['0xdead', alice.getAddress(), undefined, false]
+          ['0xdead', attester.getAddress(), undefined, false]
         )
       )
     )
@@ -107,18 +110,18 @@ describe('Attester', () => {
         other: '0xbeef',
         attributes: true,
       },
-      owner: bob.getPublicIdentity().address,
+      owner: claimer.getPublicIdentity().address,
     }
     const { message: requestAttestation } = await Claimer.requestAttestation({
       claim,
-      identity: bob,
-      attesterPubKey: alice.getPublicIdentity(),
+      identity: claimer,
+      attesterPubKey: attester.getPublicIdentity(),
     })
 
     const { message, revocationHandle } = await Attester.issueAttestation(
-      alice,
+      attester,
       requestAttestation,
-      bob.getPublicIdentity()
+      claimer.getPublicIdentity()
     )
     expect(revocationHandle.witness).toBeNull()
     expect(message.body.type).toEqual(
@@ -134,7 +137,10 @@ describe('Attester', () => {
     const {
       message: initAttestation,
       session: attersterSession,
-    } = await Attester.initiateAttestation(alice, bob.getPublicIdentity())
+    } = await Attester.initiateAttestation(
+      attester,
+      claimer.getPublicIdentity()
+    )
 
     const claim: IClaim = {
       cTypeHash: '0xdead',
@@ -144,35 +150,35 @@ describe('Attester', () => {
         other: '0xbeef',
         attributes: true,
       },
-      owner: bob.getPublicIdentity().address,
+      owner: claimer.getPublicIdentity().address,
     }
     const { message: requestAttestation } = await Claimer.requestAttestation({
       claim,
-      identity: bob,
+      identity: claimer,
       initiateAttestationMsg: initAttestation,
-      attesterPubKey: alice.getPublicIdentity(),
+      attesterPubKey: attester.getPublicIdentity(),
     })
 
     const { revocationHandle } = await Attester.issueAttestation(
-      alice,
+      attester,
       requestAttestation,
-      bob.getPublicIdentity(),
+      claimer.getPublicIdentity(),
       attersterSession,
       true
     )
     const oldAcc = await Attester.getLatestAccumulator(
-      alice.getPublicIdentity()
+      attester.getPublicIdentity()
     )
-    await Attester.revokeAttestation(alice, revocationHandle)
+    await Attester.revokeAttestation(attester, revocationHandle)
     expect(
-      Attester.getLatestAccumulator(alice.getPublicIdentity())
+      Attester.getLatestAccumulator(attester.getPublicIdentity())
     ).resolves.not.toEqual(oldAcc)
   })
 
   it('Revoke public only attestation', async () => {
     const { message: initAttestation } = await Attester.initiateAttestation(
-      alice,
-      bob.getPublicIdentity()
+      attester,
+      claimer.getPublicIdentity()
     )
 
     const claim: IClaim = {
@@ -183,33 +189,33 @@ describe('Attester', () => {
         other: '0xbeef',
         attributes: true,
       },
-      owner: bob.getPublicIdentity().address,
+      owner: claimer.getPublicIdentity().address,
     }
     const { message: requestAttestation } = await Claimer.requestAttestation({
       claim,
-      identity: bob,
+      identity: claimer,
       initiateAttestationMsg: initAttestation,
-      attesterPubKey: alice.getPublicIdentity(),
+      attesterPubKey: attester.getPublicIdentity(),
     })
 
     const { revocationHandle } = await Attester.issueAttestation(
-      alice,
+      attester,
       requestAttestation,
-      bob.getPublicIdentity()
+      claimer.getPublicIdentity()
     )
-    const oldAcc = alice.getAccumulator()
-    await Attester.revokeAttestation(alice, revocationHandle)
+    const oldAcc = attester.getAccumulator()
+    await Attester.revokeAttestation(attester, revocationHandle)
     // accumulator should not change!
-    expect(alice.getAccumulator().valueOf()).toEqual(oldAcc.valueOf())
+    expect(attester.getAccumulator().valueOf()).toEqual(oldAcc.valueOf())
   })
 
   it('build accumulator', async () => {
-    const tAcc = await Attester.buildAccumulator(alice)
+    const tAcc = await Attester.buildAccumulator(attester)
     expect(tAcc).toBeDefined()
   })
 
   it('update accumulator', async () => {
-    await Attester.updateAccumulator(alice, acc)
+    await Attester.updateAccumulator(attester, acc)
     // TODO: not sure why this fails
     // expect(
     //   blockchainApi.tx.portablegabi.updateAccumulator.mock.calls.length

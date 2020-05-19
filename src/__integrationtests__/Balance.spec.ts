@@ -72,45 +72,45 @@ describe('when there is a dev chain with a faucet', () => {
 })
 
 describe('When there are haves and have-nots', () => {
-  let BobbyBroke: Identity
-  let RichieRich: Identity
-  let StormyD: Identity
+  let bobbyBroke: Identity
+  let richieRich: Identity
+  let stormyD: Identity
   let faucet: Identity
 
   beforeAll(async () => {
-    BobbyBroke = await Identity.buildFromMnemonic()
-    RichieRich = await wannabeAlice
+    bobbyBroke = await Identity.buildFromMnemonic()
+    richieRich = await wannabeAlice
     faucet = await wannabeFaucet
-    StormyD = await Identity.buildFromMnemonic()
+    stormyD = await Identity.buildFromMnemonic()
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    await makeTransfer(RichieRich, StormyD.getAddress(), MIN_TRANSACTION)
-    const balanceTo = await getBalance(StormyD.getAddress())
+    await makeTransfer(richieRich, stormyD.getAddress(), MIN_TRANSACTION)
+    const balanceTo = await getBalance(stormyD.getAddress())
     expect(balanceTo.toNumber()).toBe(MIN_TRANSACTION.toNumber())
   }, 15000)
 
   it('should not accept transactions from identity with zero balance', async () => {
-    const originalBalance = await getBalance(StormyD.getAddress())
+    const originalBalance = await getBalance(stormyD.getAddress())
     await expect(
-      makeTransfer(BobbyBroke, StormyD.getAddress(), MIN_TRANSACTION)
+      makeTransfer(bobbyBroke, stormyD.getAddress(), MIN_TRANSACTION)
     ).rejects.toThrowError('1010: Invalid Transaction')
     const [newBalance, zeroBalance] = await Promise.all([
-      getBalance(StormyD.getAddress()),
-      getBalance(BobbyBroke.getAddress()),
+      getBalance(stormyD.getAddress()),
+      getBalance(bobbyBroke.getAddress()),
     ])
     expect(newBalance.toNumber()).toBe(originalBalance.toNumber())
     expect(zeroBalance.toNumber()).toBe(0)
   }, 15000)
 
   it('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
-    const RichieBalance = await getBalance(RichieRich.getAddress())
+    const RichieBalance = await getBalance(richieRich.getAddress())
     await expect(
-      makeTransfer(RichieRich, BobbyBroke.getAddress(), RichieBalance)
+      makeTransfer(richieRich, bobbyBroke.getAddress(), RichieBalance)
     ).rejects.toThrowError()
     const [newBalance, zeroBalance] = await Promise.all([
-      getBalance(RichieRich.getAddress()),
-      getBalance(BobbyBroke.getAddress()),
+      getBalance(richieRich.getAddress()),
+      getBalance(bobbyBroke.getAddress()),
     ])
     expect(zeroBalance.toString()).toEqual('0')
     expect(newBalance.toString()).toEqual(RichieBalance.sub(GAS).toString())
@@ -120,8 +120,8 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.getAddress(), listener)
     await Promise.all([
-      makeTransfer(faucet, RichieRich.getAddress(), MIN_TRANSACTION),
-      makeTransfer(faucet, StormyD.getAddress(), MIN_TRANSACTION),
+      makeTransfer(faucet, richieRich.getAddress(), MIN_TRANSACTION),
+      makeTransfer(faucet, stormyD.getAddress(), MIN_TRANSACTION),
     ])
     expect(listener).toBeCalledWith(faucet.getAddress())
   }, 30000)
