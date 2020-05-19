@@ -1,5 +1,7 @@
 /**
  * @group integration/attestation
+ * @ignore
+ * @packageDocumentation
  */
 
 import {

@@ -1,5 +1,7 @@
 /**
  * @group integration/connectivity
+ * @ignore
+ * @packageDocumentation
  */
 
 import { Header } from '@polkadot/types/interfaces/types'

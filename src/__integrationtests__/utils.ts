@@ -1,3 +1,7 @@
+/**
+ * @ignore
+ * @packageDocumentation
+ */
 /* eslint-disable */
 
 import BN from 'bn.js/'

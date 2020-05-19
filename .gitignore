@@ -24,6 +24,9 @@ yarn-error.log*
 .env.production.local
 settings.json
 
+# doc 
+docs/api
+
 # misc
 /.idea
 
