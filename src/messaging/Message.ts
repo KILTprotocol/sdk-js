@@ -43,14 +43,16 @@ export interface IMessage {
   references?: Array<IMessage['messageId']>
 }
 
-export interface IEncryptedMessage {
+export type IEncryptedMessage = Pick<
+  IMessage,
+  | 'createdAt'
+  | 'receiverAddress'
+  | 'senderAddress'
+  | 'senderBoxPublicKey'
+  | 'messageId'
+  | 'receivedAt'
+> & {
   message: string
-  createdAt: number
-  receiverAddress: IPublicIdentity['address']
-  senderAddress: IPublicIdentity['address']
-  senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
-  messageId?: string
-  receivedAt?: number
   nonce: string
   hash: string
   signature: string
@@ -77,14 +79,14 @@ export enum MessageBodyType {
 }
 
 export default class Message implements IMessage {
-  public static ensureOwnerIsSender(message: IMessage): void {
-    switch (message.body.type) {
+  public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
+    switch (body.type) {
       case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM:
         {
-          const requestAttestation = message.body
+          const requestAttestation = body
           if (
             requestAttestation.content.requestForAttestation.claim.owner !==
-            message.senderAddress
+            senderAddress
           ) {
             throw new Error('Sender is not owner of the claim')
           }
@@ -92,20 +94,17 @@ export default class Message implements IMessage {
         break
       case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
         {
-          const submitAttestation = message.body
-          if (
-            submitAttestation.content.attestation.owner !==
-            message.senderAddress
-          ) {
+          const submitAttestation = body
+          if (submitAttestation.content.attestation.owner !== senderAddress) {
             throw new Error('Sender is not owner of the attestation')
           }
         }
         break
       case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES:
         {
-          const submitClaimsForCtype = message.body
+          const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach(claim => {
-            if (claim.request.claim.owner !== message.senderAddress) {
+            if (claim.request.claim.owner !== senderAddress) {
               throw new Error('Sender is not owner of the claims')
             }
           })
@@ -116,16 +115,13 @@ export default class Message implements IMessage {
   }
 
   public static ensureHashAndSignature(
-    encrypted: IEncryptedMessage,
-    senderAddress: IPublicIdentity['address']
+    { message, nonce, createdAt, hash, signature }: IEncryptedMessage,
+    senderAddress: IMessage['senderAddress']
   ): void {
-    const hashInput: string =
-      encrypted.message + encrypted.nonce + encrypted.createdAt
-    const hash = Crypto.hashStr(hashInput)
-    if (hash !== encrypted.hash) {
+    if (Crypto.hashStr(message + nonce + createdAt) !== hash) {
       throw new Error('Hash of message not correct')
     }
-    if (!Crypto.verify(hash, encrypted.signature, senderAddress)) {
+    if (!Crypto.verify(hash, signature, senderAddress)) {
       throw new Error('Signature of message not correct')
     }
   }
@@ -134,6 +130,7 @@ export default class Message implements IMessage {
     encrypted: IEncryptedMessage,
     receiver: Identity
   ): IMessage {
+    // check validity of the message
     Message.ensureHashAndSignature(encrypted, encrypted.senderAddress)
 
     const ea: EncryptedAsymmetricString = {
@@ -149,16 +146,15 @@ export default class Message implements IMessage {
     }
 
     try {
-      const messageBody = JSON.parse(decoded)
-      return {
-        messageId: encrypted.messageId,
-        receivedAt: encrypted.receivedAt,
+      const messageBody: MessageBody = JSON.parse(decoded)
+      const decrypted: IMessage = {
+        ...encrypted,
         body: messageBody,
-        createdAt: encrypted.createdAt,
-        receiverAddress: encrypted.receiverAddress,
-        senderAddress: encrypted.senderAddress,
-        senderBoxPublicKey: encrypted.senderBoxPublicKey,
       }
+      // make sure the sender is the owner of the identity
+      Message.ensureOwnerIsSender(decrypted)
+
+      return decrypted
     } catch (error) {
       throw new Error('Error parsing message body')
     }
@@ -168,9 +164,9 @@ export default class Message implements IMessage {
   public receivedAt?: number
   public body: MessageBody
   public createdAt: number
-  public receiverAddress: IPublicIdentity['address']
-  public senderAddress: IPublicIdentity['address']
-  public senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
+  public receiverAddress: IMessage['receiverAddress']
+  public senderAddress: IMessage['senderAddress']
+  public senderBoxPublicKey: IMessage['senderBoxPublicKey']
 
   public constructor(
     body: MessageBody,

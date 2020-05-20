@@ -90,14 +90,11 @@ const message = new Kilt.Message(messageBody, claimer, attester)
 // The message can be encrypted as follows
 const encrypted = message.encrypt()
 
-// Check the validity of the message
-Message.ensureHashAndSignature(encrypted, claimer.address)
-// When the Attester receives the message, she can decrypt it
+// When the Attester receives the message, she can decrypt it.
+// During decryption, both the validity (Message.ensureHashAndSignature(encrypted, claimer.address))
+// as well as the validity of the message (Message.ensureOwnerIsSender(decrypted))
+// are automatically checked.
 const decrypted = Message.decrypt(encrypted, attester)
-
-// And make sure, that the sender is the owner of the identity.
-// This prevents claimers to use attested claims of another claimer.
-Message.ensureOwnerIsSender(decrypted)
 
 if (decrypted.body.type === MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
   // const extractedRequestForAttestation: IRequestForAttestation =
