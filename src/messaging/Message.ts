@@ -44,16 +44,16 @@ export interface IMessage {
 }
 
 export interface IEncryptedMessage {
-  messageId?: string
-  receivedAt?: number
   message: string
-  nonce: string
   createdAt: number
-  hash: string
-  signature: string
   receiverAddress: IPublicIdentity['address']
   senderAddress: IPublicIdentity['address']
   senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
+  messageId?: string
+  receivedAt?: number
+  nonce: string
+  hash: string
+  signature: string
 }
 
 export enum MessageBodyType {
@@ -130,7 +130,7 @@ export default class Message implements IMessage {
     }
   }
 
-  public static createFromEncryptedMessage(
+  public static decrypt(
     encrypted: IEncryptedMessage,
     receiver: Identity
   ): IMessage {
@@ -200,7 +200,7 @@ export default class Message implements IMessage {
   private hash: string
   private signature: string
 
-  public getEncryptedMessage(): IEncryptedMessage {
+  public encrypt(): IEncryptedMessage {
     return {
       messageId: this.messageId,
       receivedAt: this.receivedAt,

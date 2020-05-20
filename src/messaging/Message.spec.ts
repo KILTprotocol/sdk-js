@@ -29,9 +29,9 @@ describe('Messaging', () => {
       identityAlice,
       identityBob.getPublicIdentity()
     )
-    const encryptedMessage: IEncryptedMessage = message.getEncryptedMessage()
+    const encryptedMessage: IEncryptedMessage = message.encrypt()
 
-    const decryptedMessage: IMessage = Message.createFromEncryptedMessage(
+    const decryptedMessage: IMessage = Message.decrypt(
       encryptedMessage,
       identityBob
     )
@@ -44,7 +44,7 @@ describe('Messaging', () => {
     ) as IEncryptedMessage
     encryptedMessageWrongHash.hash = '0x00000000'
     expect(() =>
-      Message.createFromEncryptedMessage(encryptedMessageWrongHash, identityBob)
+      Message.decrypt(encryptedMessageWrongHash, identityBob)
     ).toThrowError(new Error('Hash of message not correct'))
 
     const encryptedMessageWrongSignature: IEncryptedMessage = JSON.parse(
@@ -56,10 +56,7 @@ describe('Messaging', () => {
     )
     encryptedMessageWrongSignature.signature += '1234'
     expect(() =>
-      Message.createFromEncryptedMessage(
-        encryptedMessageWrongSignature,
-        identityBob
-      )
+      Message.decrypt(encryptedMessageWrongSignature, identityBob)
     ).toThrowError(new Error('Signature of message not correct'))
 
     const encryptedMessageWrongContent: IEncryptedMessage = JSON.parse(
@@ -76,10 +73,7 @@ describe('Messaging', () => {
       hashStrWrongContent
     )
     expect(() =>
-      Message.createFromEncryptedMessage(
-        encryptedMessageWrongContent,
-        identityBob
-      )
+      Message.decrypt(encryptedMessageWrongContent, identityBob)
     ).toThrowError(new Error('Error decoding message'))
 
     const encryptedWrongBody: EncryptedAsymmetricString = identityAlice.encryptAsymmetricAsStr(
@@ -101,7 +95,7 @@ describe('Messaging', () => {
       senderBoxPublicKey: encryptedMessage.senderBoxPublicKey,
     } as IEncryptedMessage
     expect(() =>
-      Message.createFromEncryptedMessage(encryptedMessageWrongBody, identityBob)
+      Message.decrypt(encryptedMessageWrongBody, identityBob)
     ).toThrowError(new Error('Error parsing message body'))
   })
 
