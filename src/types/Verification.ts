@@ -6,7 +6,7 @@
 import * as gabi from '@kiltprotocol/portablegabi'
 import CType from '../ctype/CType'
 
-export default interface IPresentationReq {
+export interface IPresentationReq {
   properties: string[]
   ctypeHash?: CType['hash']
   legitimations?: boolean
