@@ -178,7 +178,7 @@ export default class Identity extends PublicIdentity {
    */
   public getPublicIdentity(): PublicIdentity {
     const { address, boxPublicKeyAsHex } = this
-    return { address, boxPublicKeyAsHex }
+    return new PublicIdentity(address, boxPublicKeyAsHex)
   }
 
   /**
@@ -341,7 +341,7 @@ export default class Identity extends PublicIdentity {
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const tx = await blockchain.api.tx.ctype.add(ctype.hash);
    * const nonce = await blockchain.api.query.system.accountNonce(alice.address);
-   * alice.signSubmittableExtrinsic(tx, nonce.tohex());
+   * alice.signSubmittableExtrinsic(tx, nonce.toHex());
    * ```
    */
   public signSubmittableExtrinsic(
