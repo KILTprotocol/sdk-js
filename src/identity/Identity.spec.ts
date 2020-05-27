@@ -1,6 +1,7 @@
 import * as u8aUtil from '@polkadot/util/u8a'
 import Identity from './Identity'
 import { coToUInt8 } from '../crypto/Crypto'
+import { PublicIdentity } from '..'
 
 describe('Identity', () => {
   // https://polkadot.js.org/api/examples/promise/
@@ -19,7 +20,10 @@ describe('Identity', () => {
       '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee'
     )
   })
-
+  it('should return instanceof PublicIdentity', () => {
+    const alice = Identity.buildFromURI('//Alice')
+    expect(alice.getPublicIdentity()).toBeInstanceOf(PublicIdentity)
+  })
   it('should create different identities with random phrases', () => {
     const alice = Identity.buildFromMnemonic()
     const bob = Identity.buildFromMnemonic()

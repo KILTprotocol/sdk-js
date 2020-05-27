@@ -1,5 +1,7 @@
 /**
  * @group integration/delegation
+ * @ignore
+ * @packageDocumentation
  */
 
 import DelegationRootNode from '../delegation/DelegationRootNode'
@@ -29,7 +31,7 @@ beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
 
-describe('when there is an account hierarchy', async () => {
+describe('when there is an account hierarchy', () => {
   beforeAll(async () => {
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester)
@@ -58,7 +60,7 @@ describe('when there is an account hierarchy', async () => {
     ])
   }, 30000)
 
-  describe('and attestation rights have been delegated', async () => {
+  describe('and attestation rights have been delegated', () => {
     let rootNode: DelegationRootNode
     let delegatedNode: DelegationNode
 

@@ -1,5 +1,7 @@
 /**
  * @group integration/balance
+ * @ignore
+ * @packageDocumentation
  */
 
 import BN from 'bn.js/'
@@ -18,7 +20,7 @@ beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
 
-describe('when there is a dev chain with a faucet', async () => {
+describe('when there is a dev chain with a faucet', () => {
   it('should have enough coins available on the faucet', async () => {
     const balance = await getBalance(faucet.address)
     expect(balance.gt(new BN(100000000))).toBeTruthy()
@@ -59,7 +61,7 @@ describe('when there is a dev chain with a faucet', async () => {
   }, 15000)
 })
 
-describe('When there are haves and have-nots', async () => {
+describe('When there are haves and have-nots', () => {
   const BobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
   const RichieRich = alice
   const StormyD = Identity.buildFromMnemonic(Identity.generateMnemonic())

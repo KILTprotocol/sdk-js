@@ -1,5 +1,7 @@
 /**
  * @group integration/ctype
+ * @ignore
+ * @packageDocumentation
  */
 
 import { faucet } from './utils'
@@ -15,7 +17,7 @@ beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
 
-describe('When there is an CtypeCreator and a verifier', async () => {
+describe('When there is an CtypeCreator and a verifier', () => {
   const CtypeCreator = faucet
 
   const ctype = CType.fromCType({

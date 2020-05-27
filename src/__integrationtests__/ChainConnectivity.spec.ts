@@ -1,9 +1,10 @@
 /**
  * @group integration/connectivity
+ * @ignore
+ * @packageDocumentation
  */
 
 import { Header } from '@polkadot/types/interfaces/types'
-import { Struct, Text } from '@polkadot/types'
 import { getCached, DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import { IBlockchainApi } from '../blockchain/Blockchain'
 
@@ -12,16 +13,11 @@ beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
 
-describe('Blockchain', async () => {
+describe('Blockchain', () => {
   it('should get stats', async () => {
     const stats = await blockchain.getStats()
 
-    expect(
-      new Struct(
-        { chain: Text, nodeName: Text, nodeVersion: Text },
-        stats
-      ).toJSON()
-    ).toMatchObject({
+    expect(stats).toMatchObject({
       chain: 'Development',
       nodeName: 'substrate-node',
       nodeVersion: expect.stringMatching(/.+\..+\..+/),

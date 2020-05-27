@@ -1,4 +1,4 @@
-[apidoc]: https://kiltprotocol.github.io/sdk-js/api/index.html
+[apidoc]: https://kiltprotocol.github.io/sdk-js
 [eslint-plugin-jsdoc]: https://www.npmjs.com/package/eslint-plugin-jsdoc
 [typedoc]: https://github.com/TypeStrong/typedoc
 [TSDoc]: https://github.com/microsoft/tsdoc
