@@ -49,7 +49,7 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
 export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
   if (!Array.isArray(cost) || cost.length !== 3) {
     throw new Error(
-      "Compressed cost isn't an Array or has all the required data types"
+      `Compressed cost isn't an Array or has all the required data types`
     )
   }
   return { gross: cost[0], net: cost[1], tax: cost[2] }
@@ -96,14 +96,13 @@ export function compressQuote(quote: IQuote): CompressedQuote {
  *
  * @param quote A compressed [[Quote]] array that is reverted back into an object.
  * @throws When quote is not an Array and it's length does not equal the defined length of 6.
- *
  * @returns An object that has the same properties as an [[Quote]].
  */
 
 export function decompressQuote(quote: CompressedQuote): IQuote {
   if (!Array.isArray(quote) || quote.length !== 6) {
     throw new Error(
-      "Compressed quote isn't an Array or has all the required data types"
+      `Compressed quote isn't an Array or has all the required data types`
     )
   }
   return {
@@ -170,7 +169,7 @@ export function decompressAttesterSignedQuote(
 ): IQuoteAttesterSigned {
   if (!Array.isArray(attesterSignedQuote) || attesterSignedQuote.length !== 7) {
     throw new Error(
-      "Compressed quote isn't an Array or has all the required data types"
+      `Compressed attesterSignedQuote isn't an Array or has all the required data types`
     )
   }
   return {
@@ -240,7 +239,7 @@ export function decompressQuoteAgreement(
 ): IQuoteAgreement {
   if (!Array.isArray(quoteAgreement) || quoteAgreement.length !== 9) {
     throw new Error(
-      "Compressed quoteAgreement isn't an Array or has all the required data types"
+      `Compressed quoteAgreement isn't an Array or has all the required data types`
     )
   }
   return {
