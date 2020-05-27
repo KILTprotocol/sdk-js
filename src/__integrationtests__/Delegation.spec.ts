@@ -6,19 +6,12 @@ import DelegationRootNode from '../delegation/DelegationRootNode'
 import UUID from '../util/UUID'
 import DelegationNode from '../delegation/DelegationNode'
 import { Permission } from '../types/Delegation'
-import getCached from '../blockchainApiConnection'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import {
-  WS_HOST,
-  faucet,
-  alice,
-  bob,
-  DriversLicense,
-  CtypeOnChain,
-} from './utils'
+import { faucet, alice, bob, DriversLicense, CtypeOnChain } from './utils'
 import {
   getChildIds,
   getAttestationHashes,
@@ -33,7 +26,7 @@ const claimer = bob
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
-  blockchain = await getCached(WS_HOST)
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
 
 describe('when there is an account hierarchy', async () => {

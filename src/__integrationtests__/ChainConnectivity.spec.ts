@@ -4,13 +4,12 @@
 
 import { Header } from '@polkadot/types/interfaces/types'
 import { Struct, Text } from '@polkadot/types'
-import { getCached } from '../blockchainApiConnection'
-import { WS_HOST } from './utils'
+import { getCached, DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import { IBlockchainApi } from '../blockchain/Blockchain'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
-  blockchain = await getCached(WS_HOST)
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
 
 describe('Blockchain', async () => {

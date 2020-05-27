@@ -12,7 +12,7 @@ services:
     volumes:
       - ./src:/app/src
     environment:
-      WS_HOST: ws://dev-node:9944
+      DEFAULT_WS_ADDRESS: ws://dev-node:9944
     command: 'yarn test:integration'
     links:
       - dev-node

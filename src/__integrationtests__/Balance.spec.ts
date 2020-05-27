@@ -9,21 +9,13 @@ import {
   makeTransfer,
   listenToBalanceChanges,
 } from '../balance/Balance.chain'
-import {
-  GAS,
-  MIN_TRANSACTION,
-  faucet,
-  bob,
-  alice,
-  NewIdentity,
-  WS_HOST,
-} from './utils'
-import getCached from '../blockchainApiConnection'
+import { GAS, MIN_TRANSACTION, faucet, bob, alice, NewIdentity } from './utils'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import { IBlockchainApi } from '../blockchain/Blockchain'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
-  blockchain = await getCached(WS_HOST)
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
 
 describe('when there is a dev chain with a faucet', async () => {

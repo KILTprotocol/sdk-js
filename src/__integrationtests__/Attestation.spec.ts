@@ -9,10 +9,9 @@ import {
   DriversLicense,
   CtypeOnChain,
   IsOfficialLicenseAuthority,
-  WS_HOST,
 } from './utils'
 import Claim from '../claim/Claim'
-import getCached from '../blockchainApiConnection'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
@@ -28,7 +27,7 @@ const claimer = bob
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
-  blockchain = await getCached(WS_HOST)
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
 
 describe('handling attestations that do not exist', () => {
