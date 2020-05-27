@@ -19,6 +19,7 @@ import {
  *  Compresses the cost from a [[Quote]] object.
  *
  * @param cost A cost object that will be sorted and stripped into a [[Quote]].
+ * @throws When cost is missing any property defined in [[ICostBreakdown]].
  *
  * @returns An ordered array of a cost.
  */
@@ -40,6 +41,7 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
  *  Decompresses the cost from storage and/or message.
  *
  * @param cost A compressed cost array that is reverted back into an object.
+ * @throws When cost is not an Array and it's length does not equal the defined length of 3.
  *
  * @returns An object that has the same properties as a cost.
  */
@@ -57,6 +59,7 @@ export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
  *  Compresses a [[Quote]] for storage and/or messaging.
  *
  * @param quote An [[Quote]] object that will be sorted and stripped for messaging or storage.
+ * @throws When quote is missing any property defined in [[IQuote]].
  *
  * @returns An ordered array of an [[Quote]].
  */
@@ -92,6 +95,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
  *  Decompresses an [[Quote]] from storage and/or message.
  *
  * @param quote A compressed [[Quote]] array that is reverted back into an object.
+ * @throws When quote is not an Array and it's length does not equal the defined length of 6.
  *
  * @returns An object that has the same properties as an [[Quote]].
  */

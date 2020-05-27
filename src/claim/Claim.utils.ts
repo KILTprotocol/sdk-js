@@ -33,6 +33,7 @@ export function compress(claim: IClaim): CompressedClaim {
  *  Decompresses the [[Claim]] from storage and/or message.
  *
  * @param claim A compressed [[Claim]] array that is reverted back into an object.
+ * @throws When [[claim]] is not an Array or it's length is unequal 3.
  *
  * @returns An object that has the same properties as the [[Claim]].
  */

@@ -36,6 +36,15 @@ export function verifySchema(object: object, schema: object): boolean {
   return verifySchemaWithErrors(object, schema)
 }
 
+/**
+ *  Verifies the Structure of the provided IClaim['contents'] with ICType['schema'].
+ *
+ * @param claimContents IClaim['contents'] to be verified against the schema.
+ * @param schema ICType['schema'] to be verified against the [CTypeModel].
+ * @throws When schema does not correspond to the CTypeModel.
+ *
+ * @returns Boolean whether both claimContents and schema could be verified.
+ */
 export function verifyClaimStructure(
   claimContents: IClaim['contents'],
   schema: ICType['schema']
@@ -54,6 +63,7 @@ export function getHashForSchema(schema: ICType['schema']): string {
  *  Compresses a [[CType]] schema for storage and/or messaging.
  *
  * @param cTypeSchema A [[CType]] schema object that will be sorted and stripped for messaging or storage.
+ * @throws When any of the four properties of the cTypeSchema are missing.
  *
  * @returns An ordered array of a [[CType]] schema.
  */
@@ -85,6 +95,7 @@ export function compressSchema(
  *  Decompresses a schema of a [[CType]] from storage and/or message.
  *
  * @param cTypeSchema A compressed [[CType]] schema array that is reverted back into an object.
+ * @throws When either the cTypeSchema is not an Array or it's length is not equal to the defined length of 4.
  *
  * @returns An object that has the same properties as a [[CType]] schema.
  */
@@ -136,6 +147,7 @@ export function compress(cType: ICType): CompressedCType {
  *  Decompresses a [[CType]] from storage and/or message.
  *
  * @param cType A compressed [[CType]] array that is reverted back into an object.
+ * @throws When either the cType is not an Array or it's length is not equal to the defined length of 3.
  *
  * @returns An object that has the same properties as a [[CType]].
  */

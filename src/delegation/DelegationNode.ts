@@ -27,7 +27,7 @@ const log = factory.getLogger('DelegationNode')
 export default class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
   /**
-   * Queries the delegation node with [delegationId].
+   * [STATIC] Queries the delegation node with [delegationId].
    *
    * @param delegationId The unique identifier of the desired delegation.
    * @returns Promise containing the [[DelegationNode]] or [null].
@@ -104,6 +104,7 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * Fetches the root of this delegation node.
    *
+   * @throws When the rootId could not be queried.
    * @returns Promise containing the [[DelegationRootNode]] of this delegation node.
    */
   public async getRoot(): Promise<DelegationRootNode> {
