@@ -1,5 +1,7 @@
 /**
  * @group integration/ctype
+ * @ignore
+ * @packageDocumentation
  */
 
 import { faucet } from './utils'
@@ -9,7 +11,7 @@ import { getOwner } from '../ctype/CType.chain'
 import getCached from '../blockchainApiConnection'
 import { Identity } from '..'
 
-describe('When there is an CtypeCreator and a verifier', async () => {
+describe('When there is an CtypeCreator and a verifier', () => {
   const CtypeCreator = faucet
 
   const ctype = CType.fromCType({

@@ -1,5 +1,7 @@
 /**
  * @group integration/did
+ * @ignore
+ * @packageDocumentation
  */
 
 import { queryByAddress, queryByIdentifier } from '../did/Did.chain'

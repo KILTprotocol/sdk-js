@@ -3,37 +3,32 @@ import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
 import { Crypto, Identity } from '..'
 import DelegationRootNode from './DelegationRootNode'
+import getCached from '../blockchainApiConnection'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Delegation', () => {
   const identityAlice = Identity.buildFromURI('//Alice')
   const ctypeHash = Crypto.hashStr('testCtype')
-  require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
-    () => {
-      const tuple = new Option(
-        Tuple,
-        new Tuple(
-          // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          [H256, AccountId, Bool],
-          [ctypeHash, identityAlice.address, false]
-        )
+  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
+    new Option(
+      Tuple,
+      new Tuple(
+        // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+        [H256, AccountId, Bool],
+        [ctypeHash, identityAlice.address, false]
       )
-      return Promise.resolve(tuple)
-    }
+    )
   )
-  require('../blockchain/Blockchain').default.__mockQueryDelegationDelegation = jest.fn(
-    () => {
-      const tuple = new Option(
-        Tuple,
-        new Tuple(
-          // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-          [H256, AccountId, Bool],
-          [ctypeHash, identityAlice.address, false]
-        )
+  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations.mockReturnValue(
+    new Option(
+      Tuple,
+      new Tuple(
+        // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+        [H256, AccountId, Bool],
+        [ctypeHash, identityAlice.address, false]
       )
-      return Promise.resolve(tuple)
-    }
+    )
   )
 
   const ROOT_IDENTIFIER = 'abc123'
@@ -62,8 +57,8 @@ describe('Delegation', () => {
   })
 
   it('root delegation verify', async () => {
-    require('../blockchain/Blockchain').default.__mockQueryDelegationRoot = jest.fn(
-      rootId => {
+    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root = jest.fn(
+      async rootId => {
         if (rootId === 'success') {
           const tuple = new Option(
             Tuple,
@@ -105,13 +100,7 @@ describe('Delegation', () => {
   })
 
   it('root delegation verify', async () => {
-    let calledRootId = ''
-
-    require('../blockchain/Blockchain').default.__mockTxDelegationRoot = jest.fn(
-      rootId => {
-        calledRootId = rootId
-      }
-    )
+    const blockchain = await getCached()
 
     const aDelegationRootNode = new DelegationRootNode(
       'myRootId',
@@ -119,7 +108,7 @@ describe('Delegation', () => {
       'myAccount'
     )
     const revokeStatus = await aDelegationRootNode.revoke(identityAlice)
-    expect(calledRootId).toBe('myRootId')
+    expect(blockchain.api.tx.delegation.revokeRoot).toBeCalledWith('myRootId')
     expect(revokeStatus).toBeDefined()
   })
 })
