@@ -35,6 +35,16 @@ export default class CType implements ICType {
     })
   }
 
+  /**
+   *  Custom Type Guard to determine input being of type ICType.
+   *
+   * @param input The potentially only partial ICType.
+   * @throws When input does not correspond to either it's schema, or the CTypeWrapperModel.
+   * @throws When the input's hash does not match the hash calculated from ICType's schema.
+   * @throws When the input's owner is not of type string or null.
+   *
+   * @returns Boolean whether input is of type ICType.
+   */
   static isICType(input: Partial<ICType>): input is ICType {
     if (!CTypeUtils.verifySchema(input, CTypeWrapperModel)) {
       throw new Error('CType does not correspond to schema')

@@ -94,6 +94,16 @@ export default class Attestation implements IAttestation {
     })
   }
 
+  /**
+   *  [STATIC] Custom Type Guard to determine input being of type IAttestation.
+   *
+   * @param input The potentially only partial IAttestation.
+   * @throws When input's cTypeHash, claimHash and owner do not exist.
+   * @throws When the input's delegationId is not of type 'string' or 'null'.
+   * @throws When input.revoked is not of type 'boolean'.
+   *
+   * @returns Boolean whether input is of type IAttestation.
+   */
   public static isAttestation(
     input: Partial<IAttestation>
   ): input is IAttestation {

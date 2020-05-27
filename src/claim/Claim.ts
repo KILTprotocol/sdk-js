@@ -74,6 +74,15 @@ export default class Claim implements IClaim {
     })
   }
 
+  /**
+   * [STATIC] Custom Type Guard to determine input being of type IClaim.
+   *
+   * @param input The potentially only partial IClaim.
+   * @throws When input's cTypeHash do not exist.
+   * @throws When any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
+   *
+   * @returns Boolean whether input is of type IClaim.
+   */
   static isIClaim(input: Partial<IClaim>): input is IClaim {
     if (!input.cTypeHash) {
       throw new Error('cTypeHash of provided Claim not set')

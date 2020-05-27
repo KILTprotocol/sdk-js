@@ -193,6 +193,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
     }
   }
 
+  /**
+   * [STATIC] Custom Type Guard to determine input being of type IRequestForAttestation..
+   *
+   * @param input - A potentially only partial [[IRequestForAttestation]].
+   * @throws When either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type.
+   * @throws When any of the input's claimHashTree's keys missing their hash.
+   *
+   * @returns  Boolean whether input is of type IRequestForAttestation.
+   */
   public static isIRequestForAttestation(
     // ugh that function name... how do we want to call these typeguards?
     input: Partial<IRequestForAttestation>
