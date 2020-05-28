@@ -120,10 +120,10 @@ export async function revokeAttestation(
 }
 
 /**
- * [ASYNC] Updates the current [[Accumulator]].
+ * [ASYNC] Updates the current accumulator.
  *
- * @param identity The [[AttesterIdentity]] who owns the [[Accumulator]].
- * @param accumulator The current [[Accumulator]] of the [[AttesterIdentity]].
+ * @param identity The [[AttesterIdentity]] who owns the accumulator.
+ * @param accumulator The current accumulator of the [[AttesterIdentity]].
  */
 export async function updateAccumulator(
   identity: AttesterIdentity,
@@ -133,11 +133,11 @@ export async function updateAccumulator(
 }
 
 /**
- * [ASYNC] Returns an [[Accumulator]] for a given chain address.
+ * [ASYNC] Returns an accumulator for a given chain address.
  *
- * @param identity The [[PublicAttesterIdentity]] for which you can query an [[Accumulator]] on the chain.
- * @param index The index of the [[Accumulator]] which you want to query from the on-chain array of accumulators.
- * @returns An [[Accumulator]] for a chain address.
+ * @param identity The [[PublicAttesterIdentity]] for which you can query an accumulator on the chain.
+ * @param index The index of the accumulator which you want to query from the on-chain array of accumulators.
+ * @returns An accumulator for a chain address.
  */
 export async function getAccumulator(
   identity: PublicAttesterIdentity,
@@ -148,10 +148,10 @@ export async function getAccumulator(
 }
 
 /**
- * [ASYNC] Returns the current [[Accumulator]] for a given chain address.
+ * [ASYNC] Returns the current accumulator for a given chain address.
  *
- * @param identity The [[PublicAttesterIdentity]] for which you can query the [[Accumulator]] on the chain.
- * @returns The current [[Accumulator]] for a chain address.
+ * @param identity The [[PublicAttesterIdentity]] for which you can query the accumulator on the chain.
+ * @returns The current accumulator for a chain address.
  */
 export async function getLatestAccumulator(
   identity: PublicAttesterIdentity
@@ -161,13 +161,13 @@ export async function getLatestAccumulator(
 }
 
 /**
- * [ASYNC] Returns an an array of [[Accumulator]] for a given chain address.
+ * [ASYNC] Returns an an array of accumulator for a given chain address.
  *
- * @param identity The [[PublicAttesterIdentity]] for which you can query an the array of [[Accumulator]]s on the chain.
- * @param startIndex The start index of the [[Accumulator]] array which you want to query.
- * @param _endIndex The optional end index of the [[Accumulator]] array which you want to query.
- * The default value is the maximum index which corresponds to the most recent [[Accumulator]].
- * @returns An array of [[Accumulator]]s for a chain address.
+ * @param identity The [[PublicAttesterIdentity]] for which you can query an the array of accumulators on the chain.
+ * @param startIndex The start index of the accumulator array which you want to query.
+ * @param _endIndex The optional end index of the accumulator array which you want to query.
+ * The default value is the maximum index which corresponds to the most recent accumulator.
+ * @returns An array of accumulators for a chain address.
  */
 export async function getAccumulatorArray(
   identity: PublicAttesterIdentity,
@@ -183,10 +183,10 @@ export async function getAccumulatorArray(
 }
 
 /**
- * [ASYNC] Creates an [[Accumulator]] for a given chain address.
+ * [ASYNC] Creates an accumulator for a given chain address.
  *
- * @param identity The [[AttesterIdentity]] which should own the [[Accumulator]].
- * @returns An [[Accumulator]] tied to the supplied [[AttesterIdentity]].
+ * @param identity The [[AttesterIdentity]] which should own the accumulator.
+ * @returns An accumulator tied to the supplied [[AttesterIdentity]].
  */
 export async function buildAccumulator(
   identity: AttesterIdentity

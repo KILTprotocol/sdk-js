@@ -170,7 +170,7 @@ async function verifyPublicPresentation(
  *
  * @param message The Claimer's presentation of the [[Credential]]s that should be verified, the result of [[createPresentation]].
  * @param session The Verifier's private verification session created in [[finalize]].
- * @param latestAccumulators The list of the latest accumulators for each [[Attester]] which signed a [[Credential]] of this presentation.
+ * @param latestAccumulators The list of the latest accumulators for each Attester which signed a [[Credential]] of this presentation.
  * @param attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
  * @returns An object containing the keys
  * **verified** (which describes whether the [[Credential]]s could be verified)
