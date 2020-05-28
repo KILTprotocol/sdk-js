@@ -12,7 +12,13 @@ import {
   listenToBalanceChanges,
 } from '../balance/Balance.chain'
 import { GAS, MIN_TRANSACTION, faucet, bob, alice, NewIdentity } from './utils'
-import getCached from '../blockchainApiConnection'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
+import { IBlockchainApi } from '../blockchain/Blockchain'
+
+let blockchain: IBlockchainApi
+beforeAll(async () => {
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+})
 
 describe('when there is a dev chain with a faucet', () => {
   it('should have enough coins available on the faucet', async () => {
@@ -103,6 +109,6 @@ describe('When there are haves and have-nots', () => {
   }, 30000)
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  blockchain.api.disconnect()
 })
