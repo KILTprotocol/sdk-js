@@ -1,7 +1,8 @@
 /**
  * KILT participants can communicate via a 1:1 messaging system.
  *
- * All messages are **encrypted** with the encryption keys of the involved identities. Every time an actor sends data about an [[Identity]], they have to sign the message to prove access to the corresponding private key.
+ * All messages are **encrypted** with the encryption keys of the involved identities.
+ * Every time an actor sends data about an [[Identity]], they have to sign the message to prove access to the corresponding private key.
  *
  * The [[Message]] class exposes methods to construct and verify messages.
  *
@@ -28,8 +29,14 @@ import ITerms from '../types/Terms'
 import { IQuoteAgreement } from '../types/Quote'
 
 /**
- * InReplyTo - should store the id of the parent message
- * references - should store the references or the in-reply-to of the parent-message followed by the message-id of the parent-message.
+ * - `body` - The body of the message, see [[MessageBody]].
+ * - `createdAt` - The timestamp of the message construction.
+ * - `receiverAddress` - The public SS58 address of the receiver.
+ * - `senderAddress` - The public SS58 address of the sender.
+ * - `senderBoxPublicKex` - The public encryption key of the sender.
+ * - `messageId` - The message id.
+ * - `inReplyTo` - The id of the parent-message.
+ * - `references` - The references or the in-reply-to of the parent-message followed by the message-id of the parent-message.
  */
 export interface IMessage {
   body: MessageBody
@@ -43,17 +50,27 @@ export interface IMessage {
   references?: Array<IMessage['messageId']>
 }
 
-export interface IEncryptedMessage {
-  messageId?: string
-  receivedAt?: number
+/**
+ * Removes the [[MessageBody]], parent-id and references from the [[Message]] and adds
+ * four new fields: message, nonce, hash and signature.
+ * - `message` - The encrypted body of the message.
+ * - `nonce` - The encryption nonce.
+ * - `hash` - The hash of the concatenation of message + nonce + createdAt.
+ * - `signature` - The sender's signature on the hash.
+ */
+export type IEncryptedMessage = Pick<
+  IMessage,
+  | 'createdAt'
+  | 'receiverAddress'
+  | 'senderAddress'
+  | 'senderBoxPublicKey'
+  | 'messageId'
+  | 'receivedAt'
+> & {
   message: string
   nonce: string
-  createdAt: number
   hash: string
   signature: string
-  receiverAddress: IPublicIdentity['address']
-  senderAddress: IPublicIdentity['address']
-  senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
 }
 
 export enum MessageBodyType {
@@ -77,14 +94,22 @@ export enum MessageBodyType {
 }
 
 export default class Message implements IMessage {
-  public static ensureOwnerIsSender(message: IMessage): void {
-    switch (message.body.type) {
+  /**
+   * Verifies that the sender of a [[Message]] is also the owner of it, e.g. the owner's and sender's public keys match.
+   *
+   * @param message The [[Message]] object which needs to be decrypted.
+   * @param message.body The body of the [[Message]] which depends on the [[MessageBodyType]].
+   * @param message.senderAddress The sender's public SS58 address of the [[Message]].
+   *
+   */
+  public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
+    switch (body.type) {
       case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM:
         {
-          const requestAttestation = message.body
+          const requestAttestation = body
           if (
             requestAttestation.content.requestForAttestation.claim.owner !==
-            message.senderAddress
+            senderAddress
           ) {
             throw new Error('Sender is not owner of the claim')
           }
@@ -92,20 +117,17 @@ export default class Message implements IMessage {
         break
       case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
         {
-          const submitAttestation = message.body
-          if (
-            submitAttestation.content.attestation.owner !==
-            message.senderAddress
-          ) {
+          const submitAttestation = body
+          if (submitAttestation.content.attestation.owner !== senderAddress) {
             throw new Error('Sender is not owner of the attestation')
           }
         }
         break
       case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES:
         {
-          const submitClaimsForCtype = message.body
+          const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach(claim => {
-            if (claim.request.claim.owner !== message.senderAddress) {
+            if (claim.request.claim.owner !== senderAddress) {
               throw new Error('Sender is not owner of the claims')
             }
           })
@@ -115,25 +137,44 @@ export default class Message implements IMessage {
     }
   }
 
+  /**
+   * Verifies that neither the hash of [[Message]] nor the sender's signature on the hash have been tampered with.
+   *
+   * @param encrypted The encrypted [[Message]] object which needs to be decrypted.
+   * @param encrypted.message The encrypted body of the [[Message]] which depends on the [[MessageBodyType]].
+   * @param encrypted.nonce The encryption nonce.
+   * @param encrypted.createdAt The timestamp of the message construction.
+   * @param encrypted.hash The hash of the concatenation of message + nonce + createdAt.
+   * @param encrypted.signature The sender's signature on the hash.
+   * @param senderAddress The sender's public SS58 address of the [[Message]].
+   *
+   */
   public static ensureHashAndSignature(
-    encrypted: IEncryptedMessage,
-    senderAddress: IPublicIdentity['address']
+    { message, nonce, createdAt, hash, signature }: IEncryptedMessage,
+    senderAddress: IMessage['senderAddress']
   ): void {
-    const hashInput: string =
-      encrypted.message + encrypted.nonce + encrypted.createdAt
-    const hash = Crypto.hashStr(hashInput)
-    if (hash !== encrypted.hash) {
+    if (Crypto.hashStr(message + nonce + createdAt) !== hash) {
       throw new Error('Hash of message not correct')
     }
-    if (!Crypto.verify(hash, encrypted.signature, senderAddress)) {
+    if (!Crypto.verify(hash, signature, senderAddress)) {
       throw new Error('Signature of message not correct')
     }
   }
 
-  public static createFromEncryptedMessage(
+  /**
+   * Symmetrically decrypts the result of [[Message.encrypt]].
+   *
+   * Uses [[Message.ensureHashAndSignature]] and [[Message.ensureOwnerIsSender]] internally.
+   *
+   * @param encrypted The encrypted message.
+   * @param receiver The [[Identity]] of the receiver.
+   * @returns The original [[Message]].
+   */
+  public static decrypt(
     encrypted: IEncryptedMessage,
     receiver: Identity
   ): IMessage {
+    // check validity of the message
     Message.ensureHashAndSignature(encrypted, encrypted.senderAddress)
 
     const ea: EncryptedAsymmetricString = {
@@ -149,16 +190,15 @@ export default class Message implements IMessage {
     }
 
     try {
-      const messageBody = JSON.parse(decoded)
-      return {
-        messageId: encrypted.messageId,
-        receivedAt: encrypted.receivedAt,
+      const messageBody: MessageBody = JSON.parse(decoded)
+      const decrypted: IMessage = {
+        ...encrypted,
         body: messageBody,
-        createdAt: encrypted.createdAt,
-        receiverAddress: encrypted.receiverAddress,
-        senderAddress: encrypted.senderAddress,
-        senderBoxPublicKey: encrypted.senderBoxPublicKey,
       }
+      // make sure the sender is the owner of the identity
+      Message.ensureOwnerIsSender(decrypted)
+
+      return decrypted
     } catch (error) {
       throw new Error('Error parsing message body')
     }
@@ -168,10 +208,17 @@ export default class Message implements IMessage {
   public receivedAt?: number
   public body: MessageBody
   public createdAt: number
-  public receiverAddress: IPublicIdentity['address']
-  public senderAddress: IPublicIdentity['address']
-  public senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
+  public receiverAddress: IMessage['receiverAddress']
+  public senderAddress: IMessage['senderAddress']
+  public senderBoxPublicKey: IMessage['senderBoxPublicKey']
 
+  /**
+   * Constructs a message which should be encrypted with [[Message.encrypt]] before sending to the receiver.
+   *
+   * @param body The body of the message.
+   * @param sender The [[Identity]] of the sender.
+   * @param receiver The [[PublicIdentity]] of the receiver.
+   */
   public constructor(
     body: MessageBody,
     sender: Identity,
@@ -200,7 +247,12 @@ export default class Message implements IMessage {
   private hash: string
   private signature: string
 
-  public getEncryptedMessage(): IEncryptedMessage {
+  /**
+   * Encrypts the [[Message]] symmetrically as a string. This can be reversed with [[Message.decrypt]].
+   *
+   * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
+   */
+  public encrypt(): IEncryptedMessage {
     return {
       messageId: this.messageId,
       receivedAt: this.receivedAt,
