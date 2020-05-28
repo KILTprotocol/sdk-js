@@ -1,4 +1,4 @@
-version: '3'
+version: '3.2'
 
 services:
   dev-node:
@@ -6,6 +6,7 @@ services:
     ports:
       - 9944:9944
     command: './target/release/mashnet-node --dev --ws-port 9944 --ws-external'
+  
   sdk:
     build: .
     image: local/sdk-js
@@ -14,5 +15,5 @@ services:
     environment:
       DEFAULT_WS_ADDRESS: ws://dev-node:9944
     command: 'yarn test:integration'
-    links:
+    depends_on:
       - dev-node
