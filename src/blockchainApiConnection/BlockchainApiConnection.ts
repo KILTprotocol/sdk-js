@@ -13,7 +13,8 @@ import { RegistryTypes } from '@polkadot/types/types'
 
 import Blockchain, { IBlockchainApi } from '../blockchain/Blockchain'
 
-export const DEFAULT_WS_ADDRESS = 'ws://127.0.0.1:9944'
+export const DEFAULT_WS_ADDRESS =
+  process.env.DEFAULT_WS_ADDRESS || 'ws://127.0.0.1:9944'
 
 let instance: Promise<IBlockchainApi> | null
 
