@@ -40,7 +40,7 @@ export function compress(claim: IClaim): CompressedClaim {
 export function decompress(claim: CompressedClaim): IClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw new Error(
-      "Compressed Claim isn't an Array or has all the required data types"
+      `Compressed Claim isn't an Array or has all the required data types`
     )
   }
   return {

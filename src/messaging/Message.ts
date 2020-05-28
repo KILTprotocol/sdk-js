@@ -95,7 +95,7 @@ export enum MessageBodyType {
 
 export default class Message implements IMessage {
   /**
-   * [STATIC] Verifies that the sender of a [[Message]] is also the owner of it, e.g. the owner's and sender's public keys match.
+   * [STATIC] Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's public keys match.
    *
    * @param message The [[Message]] object which needs to be decrypted.
    * @param message.body The body of the [[Message]] which depends on the [[MessageBodyType]].

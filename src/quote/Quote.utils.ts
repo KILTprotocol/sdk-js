@@ -229,13 +229,8 @@ export function compressQuoteAgreement(
 /**
  *  Decompresses a [[Quote]] Agreement from storage and/or message.
  *
-<<<<<<< HEAD
  * @param quoteAgreement A compressed [[Quote]] Agreement array that is reverted back into an object.
-=======
- * @param quoteAgreement A compressed [[Quote]] Agreement array that is reverted back into object.
- * @param quoteAgreement A compressed [[Quote]] Agreement array that is reverted back into object.
  * @throws When quoteAgreement is not an Array and it's length does not equal the defined length of 9.
->>>>>>> docs: added throws
  *
  * @returns An object that has the same properties as a [[Quote]] Agreement.
  */
