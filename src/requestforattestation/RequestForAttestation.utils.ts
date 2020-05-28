@@ -169,7 +169,7 @@ export function compress(
     reqForAtt.rootHash,
     compressLegitimation(reqForAtt.legitimations),
     reqForAtt.delegationId,
-    reqForAtt.privacyEnhanced,
+    reqForAtt.privacyEnhancement,
   ]
 }
 
@@ -198,7 +198,7 @@ export function decompress(
     rootHash: reqForAtt[5],
     legitimations: decompressLegitimation(reqForAtt[6]),
     delegationId: reqForAtt[7],
-    privacyEnhanced: reqForAtt[8],
+    privacyEnhancement: reqForAtt[8],
   }
 }
 

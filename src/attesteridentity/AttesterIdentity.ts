@@ -242,7 +242,7 @@ export default class AttesterIdentity extends Identity {
    * @param session The Attester's session which was generated in [[initiateAttestation]].
    * @param reqForAttestation The Claimer's request for [[Attestation]] including all required data to attest the [[Claim]]:
    * The [[Claim]] itself, the Claimer's signature,
-   * the [[claimHashTree]], the [[cTypeHash]], the unique identifier for the delegation,
+   * the claimHashTree, the [[cTypeHash]], the unique identifier for the delegation,
    * an array of [[AttestedClaim]]s and the rootHash.
    * @returns A privacy enhanced attestation in array form which represents
    * at **index 0** the revocation witness which can be used to revoke the [[Attestation]]
@@ -256,10 +256,10 @@ export default class AttesterIdentity extends Identity {
     witness: gabi.Witness
     attestation: gabi.Attestation
   }> {
-    if (reqForAttestation.privacyEnhanced != null) {
+    if (reqForAttestation.privacyEnhancement != null) {
       const { witness, attestation } = await this.attester.issueAttestation({
         attestationSession: session,
-        attestationRequest: reqForAttestation.privacyEnhanced,
+        attestationRequest: reqForAttestation.privacyEnhancement,
         accumulator: this.accumulator,
       })
       return { witness, attestation }

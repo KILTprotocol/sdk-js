@@ -78,14 +78,14 @@ describe('Verifier', () => {
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
     ) {
       expect(
-        requestAttestation.body.content.requestForAttestation.privacyEnhanced
+        requestAttestation.body.content.requestForAttestation.privacyEnhancement
       ).toBeDefined()
       if (
         requestAttestation.body.content.requestForAttestation
-          .privacyEnhanced !== null
+          .privacyEnhancement !== null
       ) {
         expect(
-          requestAttestation.body.content.requestForAttestation.privacyEnhanced.getClaim()
+          requestAttestation.body.content.requestForAttestation.privacyEnhancement.getClaim()
         ).toEqual({
           claim: {
             cTypeHash: claim.cTypeHash,

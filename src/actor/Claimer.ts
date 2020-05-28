@@ -100,7 +100,7 @@ export async function createPresentation(
     const presentation = cred.createPresentation(requestedAttributes[i])
 
     // remove to show as few as possible
-    delete presentation.request.privacyEnhanced
+    delete presentation.request.privacyEnhancement
     return presentation
   })
 
@@ -115,10 +115,10 @@ export async function createPresentation(
 }
 
 /**
- * The Claimer's [[Attestation]] session object which is returned in [[requestAttestations]] and required in [[buildCredential]].
+ * The Claimer's [[Attestation]] session object which is returned in [[requestAttestation]] and required in [[buildCredential]].
  *
  * It includes all [[Claim]] data required for an [[Attestation]]: The [[Claim]], the Claimer's signature,
- * the [[claimHashTree]], the [[cTypeHash]], the unique identifier for the delegation,
+ * the claimHashTree, the [[cTypeHash]], the unique identifier for the delegation,
  * an array of [[AttestedClaim]]s and the rootHash.
  *
  * In case of enabled privacy enhancement, both the Claimer's Attestation session

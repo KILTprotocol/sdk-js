@@ -25,7 +25,7 @@ export default interface IRequestForAttestation {
   claimerSignature: string
   cTypeHash: NonceHash
   delegationId: IDelegationBaseNode['id'] | null
-  privacyEnhanced: AttestationRequest | null
+  privacyEnhancement: AttestationRequest | null
   legitimations: IAttestedClaim[]
   rootHash: Hash
 }
@@ -46,5 +46,5 @@ export type CompressedRequestForAttestation = [
   RequestForAttestation['rootHash'],
   CompressedAttestedClaim[],
   RequestForAttestation['delegationId'],
-  RequestForAttestation['privacyEnhanced']
+  RequestForAttestation['privacyEnhancement']
 ]

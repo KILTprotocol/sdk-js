@@ -96,13 +96,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
    *
-   * @param p - Parameter object.
-   * @param p.claim - An `IClaim` object the request for attestation is built for.
-   * @param p.identity - The Claimer's [Identity].
-   * @param p.legitimations - Array of [AttestedClaim] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
-   * @param p.delegationId - The id of the DelegationNode of the Attester, which should be used in the attestation.
-   * @param p.privacyEnhanced -
-   * @param p.privacyEnhanced -
+   * @param p The parameter object.
+   * @param p.claim An `IClaim` object the request for attestation is built for.
+   * @param p.identity The Claimer's [[Identity]].
+   * @param p.legitimations Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
+   * @param p.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
+   * @param initiateAttestationMsg The message object which was created during the initiation of the attestation in [[initiateAttestation]].
+   * @param attesterPubKey The privacy enhanced public key of the Attester.
    * @returns A new [[RequestForAttestation]] object.
    */
   public static async fromClaimAndIdentity({
@@ -175,7 +175,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
           calculatedRootHash
         ),
         delegationId: delegationId || null,
-        privacyEnhanced: peRequest,
+        privacyEnhancement: peRequest,
       }),
       session,
     }
@@ -188,7 +188,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public claimHashTree: NonceHashTree
   public cTypeHash: NonceHash
   public rootHash: Hash
-  public privacyEnhanced: AttestationRequest | null
+  public privacyEnhancement: AttestationRequest | null
   public delegationId: IDelegationBaseNode['id'] | null
 
   /**
@@ -222,7 +222,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.claimerSignature = requestForAttestationInput.claimerSignature
     this.verifySignature()
     this.verifyData()
-    this.privacyEnhanced = requestForAttestationInput.privacyEnhanced
+    this.privacyEnhancement = requestForAttestationInput.privacyEnhancement
   }
 
   /**
