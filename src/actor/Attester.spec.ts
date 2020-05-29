@@ -67,12 +67,14 @@ describe('Attester', () => {
       },
       owner: claimer.getPublicIdentity().address,
     }
-    const { message: requestAttestation } = await Claimer.requestAttestation({
+    const { message: requestAttestation } = await Claimer.requestAttestation(
       claim,
-      identity: claimer,
-      initiateAttestationMsg: initAttestation,
-      attesterPubKey: attester.getPublicIdentity(),
-    })
+      claimer,
+      attester.getPublicIdentity(),
+      {
+        initiateAttestationMsg: initAttestation,
+      }
+    )
 
     const { message, revocationHandle } = await Attester.issueAttestation(
       attester,
@@ -112,11 +114,11 @@ describe('Attester', () => {
       },
       owner: claimer.getPublicIdentity().address,
     }
-    const { message: requestAttestation } = await Claimer.requestAttestation({
+    const { message: requestAttestation } = await Claimer.requestAttestation(
       claim,
-      identity: claimer,
-      attesterPubKey: attester.getPublicIdentity(),
-    })
+      claimer,
+      attester.getPublicIdentity()
+    )
 
     const { message, revocationHandle } = await Attester.issueAttestation(
       attester,
@@ -152,12 +154,14 @@ describe('Attester', () => {
       },
       owner: claimer.getPublicIdentity().address,
     }
-    const { message: requestAttestation } = await Claimer.requestAttestation({
+    const { message: requestAttestation } = await Claimer.requestAttestation(
       claim,
-      identity: claimer,
-      initiateAttestationMsg: initAttestation,
-      attesterPubKey: attester.getPublicIdentity(),
-    })
+      claimer,
+      attester.getPublicIdentity(),
+      {
+        initiateAttestationMsg: initAttestation,
+      }
+    )
 
     const { revocationHandle } = await Attester.issueAttestation(
       attester,
@@ -191,12 +195,14 @@ describe('Attester', () => {
       },
       owner: claimer.getPublicIdentity().address,
     }
-    const { message: requestAttestation } = await Claimer.requestAttestation({
+    const { message: requestAttestation } = await Claimer.requestAttestation(
       claim,
-      identity: claimer,
-      initiateAttestationMsg: initAttestation,
-      attesterPubKey: attester.getPublicIdentity(),
-    })
+      claimer,
+      attester.getPublicIdentity(),
+      {
+        initiateAttestationMsg: initAttestation,
+      }
+    )
 
     const { revocationHandle } = await Attester.issueAttestation(
       attester,

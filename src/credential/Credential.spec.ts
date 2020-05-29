@@ -41,8 +41,8 @@ describe('Credential', () => {
 
     // cannot be used since the variable needs to be established in the outer scope
     // eslint-disable-next-line prefer-destructuring
-    reqForAtt = (await RequestForAttestation.fromClaimAndIdentity({
-      claim: Claim.fromCTypeAndClaimContents(
+    reqForAtt = (await RequestForAttestation.fromClaimAndIdentity(
+      Claim.fromCTypeAndClaimContents(
         ctype,
         {
           name: 'Peter',
@@ -50,8 +50,8 @@ describe('Credential', () => {
         },
         claimer.getAddress()
       ),
-      identity: claimer,
-    })).message
+      claimer
+    )).message
 
     attestation = Attestation.fromRequestAndPublicIdentity(
       reqForAtt,

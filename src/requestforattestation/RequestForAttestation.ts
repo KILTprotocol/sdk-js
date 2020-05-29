@@ -73,6 +73,13 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
   return hash(result)
 }
 
+export type Options = {
+  legitimations?: AttestedClaim[]
+  delegationId?: IDelegationBaseNode['id']
+  initiateAttestationMsg?: IInitiateAttestation
+  attesterPubKey?: AttesterPublicKey
+}
+
 export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
@@ -96,30 +103,25 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
    *
-   * @param p The parameter object.
-   * @param p.claim An `IClaim` object the request for attestation is built for.
-   * @param p.identity The Claimer's [[Identity]].
-   * @param p.legitimations Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
-   * @param p.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
-   * @param initiateAttestationMsg The message object which was created during the initiation of the attestation in [[initiateAttestation]].
-   * @param attesterPubKey The privacy enhanced public key of the Attester.
+   * @param claim An `IClaim` object the request for attestation is built for.
+   * @param identity The Claimer's [[Identity]].
+   * @param option Container for different options that can be passed to this method.
+   * @param option.legitimations Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
+   * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
+   * @param option.initiateAttestationMsg The message object which was created during the initiation of the attestation in [[initiateAttestation]].
+   * @param option.attesterPubKey The privacy enhanced public key of the Attester.
    * @returns A new [[RequestForAttestation]] object.
    */
-  public static async fromClaimAndIdentity({
-    claim,
-    identity,
-    legitimations,
-    delegationId,
-    initiateAttestationMsg,
-    attesterPubKey,
-  }: {
-    claim: IClaim
-    identity: Identity
-    legitimations?: AttestedClaim[]
-    delegationId?: IDelegationBaseNode['id']
-    initiateAttestationMsg?: IInitiateAttestation
-    attesterPubKey?: AttesterPublicKey
-  }): Promise<{
+  public static async fromClaimAndIdentity(
+    claim: IClaim,
+    identity: Identity,
+    {
+      legitimations,
+      delegationId,
+      initiateAttestationMsg,
+      attesterPubKey,
+    }: Options = {}
+  ): Promise<{
     message: RequestForAttestation
     session: ClaimerAttestationSession | null
   }> {

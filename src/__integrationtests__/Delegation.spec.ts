@@ -107,11 +107,13 @@ describe('when there is an account hierarchy', () => {
         content,
         claimer.getAddress()
       )
-      const request = (await RequestForAttestation.fromClaimAndIdentity({
+      const request = (await RequestForAttestation.fromClaimAndIdentity(
         claim,
-        identity: claimer,
-        delegationId: delegatedNode.id,
-      })).message
+        claimer,
+        {
+          delegationId: delegatedNode.id,
+        }
+      )).message
       expect(request.verifyData()).toBeTruthy()
       expect(request.verifySignature()).toBeTruthy()
 

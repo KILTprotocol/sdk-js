@@ -133,35 +133,33 @@ export type ClaimerAttestationSession = {
 /**
  * [ASYNC] Creates an [[IRequestAttestationForClaim]] using the provided [[IInitiateAttestation]].
  *
- * @param parameter The parameter object.
- * @param parameter.claim The [[Claim]] which should get attested.
- * @param parameter.identity The Claimer's [[Identity]] which owns the [[Claim]].
- * @param parameter.legitimations An Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to
+ * @param claim The [[Claim]] which should get attested.
+ * @param identity The Claimer's [[Identity]] which owns the [[Claim]].
+ * @param attesterPubKey The privacy enhanced public key of the [[AttesterIdentity]] which should attest the [[Claim]].
+ * @param option The option object.
+ * @param option.legitimations An Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to
  * include into the [[Attestation]] as legitimations.
- * @param parameter.delegationId The unique identifier of the desired delegation.
- * @param parameter.initiateAttestationMsg The message which the Claimer received from the [[AttesterIdentity]]
+ * @param option.delegationId The unique identifier of the desired delegation.
+ * @param option.initiateAttestationMsg The message which the Claimer received from the [[AttesterIdentity]]
  *  after executing [[initiateAttestation]].
- * @param parameter.attesterPubKey The privacy enhanced public key of the [[AttesterIdentity]] which should attest the [[Claim]].
  * @returns An [[IRequestAttestationForClaim]] and a ClaimerAttestationSession which together with an [[ISubmitAttestationForClaim]]
  * object can be used to create a [[Credential]].
  */
-export async function requestAttestation(parameter: {
-  claim: IClaim
-  identity: Identity
-  attesterPubKey: PublicAttesterIdentity
-  legitimations?: AttestedClaim[]
-  delegationId?: IDelegationBaseNode['id']
-  initiateAttestationMsg?: IMessage
-}): Promise<{
+export async function requestAttestation(
+  claim: IClaim,
+  identity: Identity,
+  attesterPubKey: PublicAttesterIdentity,
+  option: {
+    legitimations?: AttestedClaim[]
+    delegationId?: IDelegationBaseNode['id']
+    initiateAttestationMsg?: IMessage
+  } = {}
+): Promise<{
   message: Message
   session: ClaimerAttestationSession
 }> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const {
-    attesterPubKey,
-    initiateAttestationMsg,
-    ...paramsNoPubKey
-  } = parameter
+  const { initiateAttestationMsg, ...strippedOption } = option
   if (
     typeof initiateAttestationMsg !== 'undefined' &&
     initiateAttestationMsg.body.type !== MessageBodyType.INITIATE_ATTESTATION
@@ -170,17 +168,21 @@ export async function requestAttestation(parameter: {
       `Expected message type '${MessageBodyType.INITIATE_ATTESTATION}' but got type '${initiateAttestationMsg.body.type}'`
     )
   }
-  const mappedParams = {
+  const mappedOptions = {
     attesterPubKey: attesterPubKey ? attesterPubKey.publicGabiKey : undefined,
     initiateAttestationMsg: initiateAttestationMsg
       ? (initiateAttestationMsg.body as IInitiateAttestation)
       : undefined,
-    ...paramsNoPubKey,
+    ...strippedOption,
   }
   const {
     message: request,
     session,
-  } = await RequestForAttestation.fromClaimAndIdentity(mappedParams)
+  } = await RequestForAttestation.fromClaimAndIdentity(
+    claim,
+    identity,
+    mappedOptions
+  )
   const message: IRequestAttestationForClaim = {
     content: {
       requestForAttestation: request,
@@ -189,7 +191,7 @@ export async function requestAttestation(parameter: {
   }
 
   return {
-    message: new Message(message, parameter.identity, parameter.attesterPubKey),
+    message: new Message(message, identity, attesterPubKey),
     session: {
       peSession: session,
       requestForAttestation: request,

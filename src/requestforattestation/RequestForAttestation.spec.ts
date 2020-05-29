@@ -64,9 +64,7 @@ async function buildRequestForAttestationPE(
   const {
     message: request,
     session: claimerSession,
-  } = await RequestForAttestation.fromClaimAndIdentity({
-    claim,
-    identity: claimer,
+  } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
     legitimations,
     initiateAttestationMsg: message,
     attesterPubKey: identityAlice.getPublicGabiKey(),
@@ -111,11 +109,13 @@ async function buildRequestForAttestation(
     owner: claimer.getAddress(),
   }
   // build request for attestation with legitimations
-  const request = (await RequestForAttestation.fromClaimAndIdentity({
+  const request = (await RequestForAttestation.fromClaimAndIdentity(
     claim,
-    identity: claimer,
-    legitimations,
-  })).message
+    claimer,
+    {
+      legitimations,
+    }
+  )).message
   return request
 }
 

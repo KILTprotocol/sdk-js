@@ -64,12 +64,14 @@ describe('Claimer', () => {
     const {
       message: requestAttestation,
       session: claimerSession,
-    } = await Claimer.requestAttestation({
+    } = await Claimer.requestAttestation(
       claim,
-      identity: claimer,
-      initiateAttestationMsg: initAttestation,
-      attesterPubKey: attester.getPublicIdentity(),
-    })
+      claimer,
+      attester.getPublicIdentity(),
+      {
+        initiateAttestationMsg: initAttestation,
+      }
+    )
     expect(requestAttestation.body.type).toEqual(
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
@@ -136,12 +138,14 @@ describe('Claimer', () => {
     const {
       message: requestAttestation,
       session: claimerSession,
-    } = await Claimer.requestAttestation({
+    } = await Claimer.requestAttestation(
       claim,
-      identity: claimer,
-      initiateAttestationMsg: initAttestation,
-      attesterPubKey: attester.getPublicIdentity(),
-    })
+      claimer,
+      attester.getPublicIdentity(),
+      {
+        initiateAttestationMsg: initAttestation,
+      }
+    )
     expect(requestAttestation.body.type).toEqual(
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
@@ -201,11 +205,12 @@ describe('Claimer', () => {
     const {
       message: requestAttestation,
       session: claimerSession,
-    } = await Claimer.requestAttestation({
+    } = await Claimer.requestAttestation(
       claim,
-      identity: claimer,
-      attesterPubKey: attester.getPublicIdentity(),
-    })
+      claimer,
+      attester.getPublicIdentity()
+    )
+
     expect(requestAttestation.body.type).toEqual(
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
