@@ -5,6 +5,7 @@ import Message, {
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
   ISubmitClaimsForCTypes,
+  IRequestClaimsForCTypes,
 } from './Message'
 import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import Crypto from '../crypto'
@@ -33,12 +34,9 @@ describe('Messaging', () => {
       })
       .finalize(false, identityAlice, identityBob.getPublicIdentity())
 
-    const encryptedMessage = message.getEncryptedMessage()
+    const encryptedMessage = message.encrypt()
 
-    const decryptedMessage = Message.createFromEncryptedMessage(
-      encryptedMessage,
-      identityBob
-    )
+    const decryptedMessage = Message.decrypt(encryptedMessage, identityBob)
     expect(JSON.stringify(message.body)).toEqual(
       JSON.stringify(decryptedMessage.body)
     )
@@ -48,7 +46,7 @@ describe('Messaging', () => {
     ) as IEncryptedMessage
     encryptedMessageWrongHash.hash = '0x00000000'
     expect(() =>
-      Message.createFromEncryptedMessage(encryptedMessageWrongHash, identityBob)
+      Message.decrypt(encryptedMessageWrongHash, identityBob)
     ).toThrowError(new Error('Hash of message not correct'))
 
     const encryptedMessageWrongSignature: IEncryptedMessage = JSON.parse(
@@ -60,10 +58,7 @@ describe('Messaging', () => {
     )
     encryptedMessageWrongSignature.signature += '1234'
     expect(() =>
-      Message.createFromEncryptedMessage(
-        encryptedMessageWrongSignature,
-        identityBob
-      )
+      Message.decrypt(encryptedMessageWrongSignature, identityBob)
     ).toThrowError(new Error('Signature of message not correct'))
 
     const encryptedMessageWrongContent: IEncryptedMessage = JSON.parse(
@@ -80,10 +75,7 @@ describe('Messaging', () => {
       hashStrWrongContent
     )
     expect(() =>
-      Message.createFromEncryptedMessage(
-        encryptedMessageWrongContent,
-        identityBob
-      )
+      Message.decrypt(encryptedMessageWrongContent, identityBob)
     ).toThrowError(new Error('Error decoding message'))
 
     const encryptedWrongBody: EncryptedAsymmetricString = identityAlice.encryptAsymmetricAsStr(
@@ -105,11 +97,11 @@ describe('Messaging', () => {
       senderBoxPublicKey: encryptedMessage.senderBoxPublicKey,
     } as IEncryptedMessage
     expect(() =>
-      Message.createFromEncryptedMessage(encryptedMessageWrongBody, identityBob)
+      Message.decrypt(encryptedMessageWrongBody, identityBob)
     ).toThrowError(new Error('Error parsing message body'))
   })
 
-  it('verify message sender is owner', () => {
+  it('verifies the message sender is the owner', () => {
     const content = {
       claim: {
         cTypeHash: '0x12345678',
@@ -229,5 +221,81 @@ describe('Messaging', () => {
         )
       )
     ).toThrowError(new Error('Sender is not owner of the claims'))
+  })
+  describe('ensureHashAndSignature', () => {
+    let messageBody: IRequestClaimsForCTypes
+    let encrypted: IEncryptedMessage
+
+    beforeAll(async () => {
+      identityAlice = await Identity.buildFromURI('//Alice')
+      identityBob = await Identity.buildFromURI('//Bob')
+
+      messageBody = {
+        content: {
+          ctypes: ['0x12345678'],
+          peRequest: {} as any,
+          allowPE: false,
+        },
+        type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+      }
+      encrypted = new Message(
+        messageBody,
+        identityAlice,
+        identityBob.getPublicIdentity()
+      ).encrypt()
+    })
+
+    it('verifies no error is thrown when executed correctly', () => {
+      expect(() =>
+        Message.ensureHashAndSignature(encrypted, identityAlice.getAddress())
+      ).not.toThrowError()
+    })
+    it('expects hash error', () => {
+      // replicate the message but change the content
+      const encrypted2 = new Message(
+        {
+          ...messageBody,
+          content: {
+            ...messageBody.content,
+            ctypes: [`${messageBody.content.ctypes[0]}9`],
+          },
+        },
+        identityAlice,
+        identityBob.getPublicIdentity()
+      ).encrypt()
+      const { message: msg, nonce, createdAt } = encrypted2
+
+      // check correct encrypted but with message from encrypted2
+      expect(() =>
+        Message.ensureHashAndSignature(
+          {
+            ...encrypted,
+            message: msg,
+          },
+          identityBob.getAddress()
+        )
+      ).toThrowError(new Error('Hash of message not correct'))
+
+      // check correct encrypted but with nonce from encrypted2
+      expect(() =>
+        Message.ensureHashAndSignature(
+          { ...encrypted, nonce },
+          identityBob.getAddress()
+        )
+      ).toThrowError(new Error('Hash of message not correct'))
+
+      // check correct encrypted but with createdAt from encrypted2
+      expect(() =>
+        Message.ensureHashAndSignature(
+          { ...encrypted, createdAt },
+          identityBob.getAddress()
+        )
+      ).toThrowError(new Error('Hash of message not correct'))
+    })
+    it('expects signature error', async () => {
+      expect(() =>
+        Message.ensureHashAndSignature(encrypted, identityBob.getAddress())
+      ).toThrowError(new Error('Signature of message not correct'))
+    })
   })
 })

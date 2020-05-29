@@ -8,7 +8,7 @@ import DelegationRootNode from '../delegation/DelegationRootNode'
 import UUID from '../util/UUID'
 import DelegationNode from '../delegation/DelegationNode'
 import { Permission } from '../types/Delegation'
-import getCached from '../blockchainApiConnection'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
@@ -27,6 +27,12 @@ import {
 } from '../delegation/Delegation.chain'
 import { decodeDelegationNode } from '../delegation/DelegationDecoder'
 import { Identity } from '..'
+import { IBlockchainApi } from '../blockchain/Blockchain'
+
+let blockchain: IBlockchainApi
+beforeAll(async () => {
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+})
 
 describe('when there is an account hierarchy', () => {
   let uncleSam: Identity
@@ -159,6 +165,6 @@ describe('handling queries to data not on chain', () => {
   })
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  blockchain.api.disconnect()
 })

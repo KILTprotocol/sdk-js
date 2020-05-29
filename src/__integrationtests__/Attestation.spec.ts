@@ -13,7 +13,7 @@ import {
   isOfficialLicenseAuthority,
 } from './utils'
 import Claim from '../claim/Claim'
-import getCached from '../blockchainApiConnection'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
@@ -22,6 +22,12 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import Identity from '../identity/Identity'
 import Credential from '../credential/Credential'
+import { IBlockchainApi } from '../blockchain/Blockchain'
+
+let blockchain: IBlockchainApi
+beforeAll(async () => {
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+})
 
 describe('handling attestations that do not exist', () => {
   it('Attestation.query', () => {
@@ -299,6 +305,6 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   })
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  blockchain.api.disconnect()
 })

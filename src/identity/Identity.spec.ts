@@ -3,6 +3,7 @@ import Identity from './Identity'
 import { coToUInt8 } from '../crypto/Crypto'
 import constants from '../test/constants'
 import AttesterIdentity from '../attesteridentity/AttesterIdentity'
+import PublicIdentity from './PublicIdentity'
 
 describe('Identity', () => {
   // https://polkadot.js.org/api/examples/promise/
@@ -20,6 +21,10 @@ describe('Identity', () => {
     expect(u8aUtil.u8aToHex(alice.signKeyringPair.publicKey)).toEqual(
       '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee'
     )
+  })
+  it('should return instanceof PublicIdentity', async () => {
+    const alice = await Identity.buildFromURI('//Alice')
+    expect(alice.getPublicIdentity()).toBeInstanceOf(PublicIdentity)
   })
 
   it('should create different identities with random phrases', async () => {
