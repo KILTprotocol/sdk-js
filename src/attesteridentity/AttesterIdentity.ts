@@ -273,16 +273,16 @@ export default class AttesterIdentity extends Identity {
    * [ASYNC] Starts a new [[Attestation]] session.
    *
    * @returns A session and a message object.
-   * The **message** should be sent over to the Claimer to be used in [[requestAttestation]].
+   * The **messageBody** should be sent over to the Claimer to be used in [[requestAttestation]].
    * The **session** should be kept private and used in [[issueAttestation]].
    */
   public async initiateAttestation(): Promise<{
-    message: IInitiateAttestation
+    messageBody: IInitiateAttestation
     session: gabi.AttesterAttestationSession
   }> {
     const { message, session } = await this.attester.startAttestation()
     return {
-      message: {
+      messageBody: {
         content: message,
         type: MessageBodyType.INITIATE_ATTESTATION,
       },

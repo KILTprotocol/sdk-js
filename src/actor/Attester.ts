@@ -28,7 +28,7 @@ export async function initiateAttestation(
   message: Message
   session: gabi.AttesterAttestationSession
 }> {
-  const { session, message: messageBody } = await identity.initiateAttestation()
+  const { session, messageBody } = await identity.initiateAttestation()
   return {
     message: new Message(messageBody, identity, claimer),
     session,

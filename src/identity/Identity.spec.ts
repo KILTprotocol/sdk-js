@@ -108,6 +108,6 @@ describe('Identity', () => {
 
     const msgSession = await alice.initiateAttestation()
     expect(msgSession.session).toBeDefined()
-    expect(msgSession.message).toBeDefined()
+    expect(msgSession.messageBody).toBeDefined()
   })
 })
