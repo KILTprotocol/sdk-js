@@ -139,7 +139,7 @@ function decompressLegitimation(
 export function compress(
   reqForAtt: IRequestForAttestation
 ): CompressedRequestForAttestation {
-  RequestForAttestation.isIRequestForAttestation(reqForAtt)
+  RequestForAttestation.isRequestForAttestation(reqForAtt)
   return [
     ClaimUtils.compress(reqForAtt.claim),
     compressClaimHashTree(reqForAtt.claimHashTree),

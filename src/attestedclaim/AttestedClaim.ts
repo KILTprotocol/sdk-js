@@ -73,7 +73,7 @@ export default class AttestedClaim implements IAttestedClaim {
       throw new Error('Attestation not provided!')
     }
     if (input.request) {
-      RequestForAttestation.isIRequestForAttestation(input.request)
+      RequestForAttestation.isRequestForAttestation(input.request)
     } else {
       throw new Error('RequestForAttestation not provided')
     }

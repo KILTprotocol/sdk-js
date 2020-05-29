@@ -202,7 +202,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @returns  Boolean whether input is of type IRequestForAttestation.
    */
-  public static isIRequestForAttestation(
+  public static isRequestForAttestation(
     // ugh that function name... how do we want to call these typeguards?
     input: Partial<IRequestForAttestation>
   ): input is IRequestForAttestation {
@@ -252,7 +252,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public constructor(requestForAttestationInput: IRequestForAttestation) {
-    RequestForAttestation.isIRequestForAttestation(requestForAttestationInput)
+    RequestForAttestation.isRequestForAttestation(requestForAttestationInput)
     this.claim = requestForAttestationInput.claim
     this.claimOwner = requestForAttestationInput.claimOwner
     this.cTypeHash = requestForAttestationInput.cTypeHash
