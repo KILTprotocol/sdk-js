@@ -36,7 +36,10 @@ async function buildRequestForAttestationPE(
     },
   })
 
-  const { message, session } = await identityAlice.initiateAttestation()
+  const {
+    messageBody: message,
+    session,
+  } = await identityAlice.initiateAttestation()
 
   const rawCType: ICType['schema'] = {
     $id: 'http://example.com/ctype-1',
