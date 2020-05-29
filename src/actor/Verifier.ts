@@ -4,14 +4,29 @@ import Message, { MessageBodyType, IMessage } from '../messaging/Message'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
 import Identity from '../identity/Identity'
-import {
-  IPresentationReq,
-  IPartialRequest,
-  IVerifierSession,
-} from '../types/Verification'
 import { factory as LoggerFactory } from '../config/ConfigLog'
+import CType from '../ctype/CType'
 
 const log = LoggerFactory.getLogger('Verifier')
+
+export interface IPresentationReq {
+  properties: string[]
+  ctypeHash?: CType['hash']
+  legitimations?: boolean
+  delegation?: boolean
+  requestUpdatedAfter?: Date
+}
+
+export interface IPartialRequest {
+  ctype: CType['hash'] | null
+  properties: string[]
+}
+
+export interface IVerifierSession {
+  privacyEnhancement: gabi.CombinedVerificationSession
+  requestedProperties: IPartialRequest[]
+  allowedPrivacyEnhancement: boolean
+}
 
 /**
  * A helper class to initiate a verification by creating a presentation request which is built
