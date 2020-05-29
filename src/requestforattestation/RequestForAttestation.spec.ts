@@ -551,19 +551,17 @@ describe('RequestForAttestation', () => {
       builtRequestMalformedCtypeHash.delegationId
     )
     expect(() =>
-      RequestForAttestation.isIRequestForAttestation(
-        builtRequestNoLegitimations
-      )
+      RequestForAttestation.isRequestForAttestation(builtRequestNoLegitimations)
     ).toThrowErrorMatchingInlineSnapshot(`"Legitimations not provided"`)
     expect(() =>
-      RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isRequestForAttestation(
         builtRequestMalformedRootHash
       )
     ).toThrowErrorMatchingInlineSnapshot(
       `"Provided rootHash does not correspond to data"`
     )
     expect(() =>
-      RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isRequestForAttestation(
         builtRequestMalformedClaimOwner
       )
     ).toThrowErrorMatchingInlineSnapshot(`
@@ -574,19 +572,19 @@ describe('RequestForAttestation', () => {
     Nonce: ${builtRequestMalformedClaimOwner.claimOwner.nonce}"
 `)
     expect(() =>
-      RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isRequestForAttestation(
         builtRequestIncompleteClaimHashTree
       )
     ).toThrowErrorMatchingInlineSnapshot(
       `"Property 'a' not in claim hash tree"`
     )
     expect(() =>
-      RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isRequestForAttestation(
         builtRequestMalformedSignature
       )
     ).toThrowErrorMatchingInlineSnapshot(`"Provided Signature not verifiable"`)
     expect(() =>
-      RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isRequestForAttestation(
         builtRequestMalformedCtypeHash
       )
     ).toThrowErrorMatchingInlineSnapshot(`
@@ -597,10 +595,10 @@ describe('RequestForAttestation', () => {
     Nonce: ${builtRequestMalformedCtypeHash.cTypeHash.nonce}"
 `)
     expect(() =>
-      RequestForAttestation.isIRequestForAttestation(builtRequest)
+      RequestForAttestation.isRequestForAttestation(builtRequest)
     ).not.toThrow()
     expect(() => {
-      RequestForAttestation.isIRequestForAttestation(
+      RequestForAttestation.isRequestForAttestation(
         builtRequestWithLegitimation
       )
     }).not.toThrow()
