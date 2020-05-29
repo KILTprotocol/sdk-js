@@ -144,12 +144,14 @@ async function doAttestation(
   const {
     message: reqAttestation,
     session: claimerSession,
-  } = await Kilt.Claimer.requestAttestation({
+  } = await Kilt.Claimer.requestAttestation(
     claim,
-    identity: claimer,
-    initiateAttestationMsg: initiateAttestationMessage,
-    attesterPubKey: attester.getPublicIdentity(),
-  })
+    claimer,
+    attester.getPublicIdentity(),
+    {
+      initiateAttestationMsg: initiateAttestationMessage,
+    }
+  )
 
   // The message can be encrypted as follows
   const reqAttestationEnc = reqAttestation.encrypt()
