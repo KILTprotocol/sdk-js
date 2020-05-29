@@ -43,6 +43,22 @@ type BoxPublicKey =
  */
 const MIN_SEED_LENGTH = 32
 
+function fillRight(
+  data: Uint8Array,
+  value: number,
+  length: number
+): Uint8Array {
+  // pad seed if needed for claimer
+  let paddedSeed = u8aUtil.u8aToU8a([...data])
+  if (paddedSeed.length < length) {
+    paddedSeed = u8aUtil.u8aToU8a([
+      ...paddedSeed,
+      ...new Array<number>(length - paddedSeed.length).fill(value),
+    ])
+  }
+  return paddedSeed
+}
+
 export default class Identity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
 
@@ -127,13 +143,7 @@ export default class Identity {
     const keyringPair = keyring.addFromSeed(seed)
 
     // pad seed if needed for claimer
-    let paddedSeed = u8aUtil.u8aToU8a([...seed])
-    if (paddedSeed.length < MIN_SEED_LENGTH) {
-      paddedSeed = u8aUtil.u8aToU8a([
-        ...paddedSeed,
-        ...new Array<number>(MIN_SEED_LENGTH - paddedSeed.length).fill(0),
-      ])
-    }
+    const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
     const claimer = await Claimer.buildFromSeed(paddedSeed)
 
     return new Identity(seed, keyringPair, claimer)
@@ -153,14 +163,7 @@ export default class Identity {
     const derived = keyring.createFromUri(uri)
     const seed = u8aUtil.u8aToU8a(uri)
 
-    // pad seed if needed for claimer
-    let paddedSeed = u8aUtil.u8aToU8a([...seed])
-    if (paddedSeed.length < MIN_SEED_LENGTH) {
-      paddedSeed = u8aUtil.u8aToU8a([
-        ...paddedSeed,
-        ...new Array<number>(MIN_SEED_LENGTH - paddedSeed.length).fill(0),
-      ])
-    }
+    const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
     const claimer = await Claimer.buildFromSeed(paddedSeed)
 
     return new Identity(seed, derived, claimer)
