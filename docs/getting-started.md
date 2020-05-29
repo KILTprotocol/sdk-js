@@ -125,10 +125,10 @@ Kilt.connect('ws://localhost:9944')
 To store the CTYPE on the blockchain, you have to call:
 
 ```typescript
-ctype.store(claimer)
+ctype.store(identity)
 ```
 
-Be aware that this step costs tokens, so you have to have sufficient funds on your account of the identity. Also note, that the completely same CTYPE can only be stored once on the blockchain.
+**Be aware that this step costs tokens**, so you have to have sufficient funds on your account of the identity. Also note, that the completely same CTYPE can only be stored once on the blockchain.
 
 At the end of the process, the `CType` object should contain the following. This can be saved anywhere, for example on a CTYPE registry service:
 
