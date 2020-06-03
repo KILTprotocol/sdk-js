@@ -5,7 +5,35 @@
  */
 
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
-import Attestation from './Attestation'
+import { validateHash, validateAddress } from '../util/DataUtils'
+
+/**
+ *  Checks whether the input meets all the required criteria of an IAttestation object.
+ *  Throws on invalid input.
+ *
+ * @param input The potentially only partial IAttestation.
+ * @throws When input's cTypeHash, claimHash and owner do not exist.
+ * @throws When the input's delegationId is not of type 'string' or 'null'.
+ * @throws When input.revoked is not of type 'boolean'.
+ *
+ */
+export function errorCheck(input: Partial<IAttestation>): void {
+  if (!input.cTypeHash || !validateHash(input.cTypeHash, 'CType')) {
+    throw new Error('CType Hash not provided')
+  }
+  if (!input.claimHash || !validateHash(input.claimHash, 'Claim')) {
+    throw new Error('Claim Hash not provided')
+  }
+  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
+    throw new Error(`Not a valid DelegationId: ${typeof input.delegationId}`)
+  }
+  if (!input.owner || !validateAddress(input.owner, 'Owner')) {
+    throw new Error('Owner not provided')
+  }
+  if (typeof input.revoked !== 'boolean') {
+    throw new Error('revocation bit not provided')
+  }
+}
 
 /**
  *  Compresses an [[Attestation]] object into an array for storage and/or messaging.
@@ -16,7 +44,7 @@ import Attestation from './Attestation'
  */
 
 export function compress(attestation: IAttestation): CompressedAttestation {
-  Attestation.isAttestation(attestation)
+  errorCheck(attestation)
   return [
     attestation.claimHash,
     attestation.cTypeHash,
@@ -53,4 +81,5 @@ export function decompress(attestation: CompressedAttestation): IAttestation {
 export default {
   decompress,
   compress,
+  errorCheck,
 }

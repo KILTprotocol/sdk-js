@@ -246,38 +246,38 @@ describe('Attestation', () => {
     }
 
     expect(() =>
-      Attestation.isAttestation(noClaimHash)
+      AttestationUtils.errorCheck(noClaimHash)
     ).toThrowErrorMatchingInlineSnapshot(`"Claim Hash not provided"`)
 
     expect(() =>
-      Attestation.isAttestation(noCTypeHash)
+      AttestationUtils.errorCheck(noCTypeHash)
     ).toThrowErrorMatchingInlineSnapshot(`"CType Hash not provided"`)
 
     expect(() =>
-      Attestation.isAttestation(malformedOwner)
+      AttestationUtils.errorCheck(malformedOwner)
     ).toThrowErrorMatchingInlineSnapshot(`"Owner not provided"`)
 
     expect(() =>
-      Attestation.isAttestation(noRevocationBit)
+      AttestationUtils.errorCheck(noRevocationBit)
     ).toThrowErrorMatchingInlineSnapshot(`"revocation bit not provided"`)
 
-    expect(() => Attestation.isAttestation(everything)).not.toThrow()
+    expect(() => AttestationUtils.errorCheck(everything)).not.toThrow()
 
-    expect(() => Attestation.isAttestation(malformedClaimHash))
+    expect(() => AttestationUtils.errorCheck(malformedClaimHash))
       .toThrowErrorMatchingInlineSnapshot(`
 "Provided Claim hash invalid or malformed 
 
     Hash: 0x21a3448ccf10f6568dcd9a08af689c220d842b893a40344d010e398ab74e557"
 `)
 
-    expect(() => Attestation.isAttestation(malformedCTypeHash))
+    expect(() => AttestationUtils.errorCheck(malformedCTypeHash))
       .toThrowErrorMatchingInlineSnapshot(`
 "Provided CType hash invalid or malformed 
 
     Hash: 0xa8c5bdb22aaea3fceb467d37169cbe49c71f226233037537e70a32a032304ff"
 `)
 
-    expect(() => Attestation.isAttestation(malformedAddress))
+    expect(() => AttestationUtils.errorCheck(malformedAddress))
       .toThrowErrorMatchingInlineSnapshot(`
 "Provided Owner address invalid 
 

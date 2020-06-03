@@ -71,7 +71,7 @@ describe('Claim', () => {
 
   it('Negative test for compresses and decompresses the Claim object', () => {
     compressedClaim.pop()
-    // Claim typeguard won't throw on deleted claim.owner
+    // Claim type guard won't throw on deleted claim.owner
     // delete claim.owner
 
     // expect(() => {
@@ -119,21 +119,21 @@ describe('Claim', () => {
       owner: ownerAddress.replace('7', 'D'),
     }
 
-    expect(() => Claim.isIClaim(everything)).not.toThrow()
+    expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
 
     expect(() =>
-      Claim.isIClaim(noCTypeHash)
+      ClaimUtils.errorCheck(noCTypeHash)
     ).toThrowErrorMatchingInlineSnapshot(
       `"cTypeHash of provided Claim not set"`
     )
 
-    expect(() => Claim.isIClaim(malformedCTypeHash))
+    expect(() => ClaimUtils.errorCheck(malformedCTypeHash))
       .toThrowErrorMatchingInlineSnapshot(`
 "Provided Claim CType hash invalid or malformed 
 
     Hash: 0xa8c5bdb22aaea3fceb467d37169cbe49c71f226233037537e70a32a032304ff"
 `)
-    expect(() => Claim.isIClaim(malformedAddress))
+    expect(() => ClaimUtils.errorCheck(malformedAddress))
       .toThrowErrorMatchingInlineSnapshot(`
 "Provided Claim Owner address invalid 
 

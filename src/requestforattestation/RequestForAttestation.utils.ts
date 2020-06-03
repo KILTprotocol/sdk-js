@@ -18,6 +18,40 @@ import IRequestForAttestation, {
 } from '../types/RequestForAttestation'
 
 /**
+ *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
+ *  Throws on invalid input.
+ *
+ * @param input - A potentially only partial [[IRequestForAttestation]].
+ * @throws When either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type.
+ * @throws When any of the input's claimHashTree's keys missing their hash.
+ *
+ */
+export function errorCheck(input: Partial<IRequestForAttestation>): void {
+  if (!input.claim) {
+    throw new Error('Claim not provided')
+  } else {
+    ClaimUtils.errorCheck(input.claim)
+  }
+  if (!input.legitimations || !Array.isArray(input.legitimations)) {
+    throw new Error('Legitimations not provided')
+  }
+  if (!input.claimHashTree) {
+    throw new Error('Claim Hash Tree not provided')
+  } else {
+    Object.keys(input.claimHashTree).forEach(key => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      if (!input.claimHashTree![key].hash) {
+        throw new Error('incomplete claim Hash Tree')
+      }
+    })
+  }
+  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
+    throw new Error('DelegationId not provided')
+  }
+  RequestForAttestation.verifyData(input as IRequestForAttestation)
+}
+
+/**
  *  Compresses an nonce and hash from a [[NonceHashTree]] or [[RequestForAttestation]] properties.
  *
  * @param nonceHash A hash or a hash and nonce object that will be sorted and stripped for messaging or storage.
@@ -139,7 +173,7 @@ function decompressLegitimation(
 export function compress(
   reqForAtt: IRequestForAttestation
 ): CompressedRequestForAttestation {
-  RequestForAttestation.isRequestForAttestation(reqForAtt)
+  errorCheck(reqForAtt)
   return [
     ClaimUtils.compress(reqForAtt.claim),
     compressClaimHashTree(reqForAtt.claimHashTree),
@@ -184,6 +218,7 @@ export function decompress(
 }
 
 export default {
+  errorCheck,
   decompress,
   decompressNonceAndHash,
   decompressLegitimation,

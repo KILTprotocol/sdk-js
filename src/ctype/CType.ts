@@ -11,8 +11,6 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import { validateAddress } from '../util/DataUtils'
-import { CTypeWrapperModel } from './CTypeSchema'
 import CTypeUtils from './CType.utils'
 import ICType, { CompressedCType } from '../types/CType'
 import Identity from '../identity/Identity'
@@ -36,31 +34,17 @@ export default class CType implements ICType {
   }
 
   /**
-   *  Custom Type Guard to determine input being of type ICType.
+   *  [STATIC] Custom Type Guard to determine input being of type ICType using the CTypeUtils errorCheck.
    *
    * @param input The potentially only partial ICType.
-   * @throws When input does not correspond to either it's schema, or the CTypeWrapperModel.
-   * @throws When the input's hash does not match the hash calculated from ICType's schema.
-   * @throws When the input's owner is not of type string or null.
    *
    * @returns Boolean whether input is of type ICType.
    */
   static isICType(input: Partial<ICType>): input is ICType {
-    if (!CTypeUtils.verifySchema(input, CTypeWrapperModel)) {
-      throw new Error('CType does not correspond to schema')
-    }
-    if (
-      !input.schema ||
-      CTypeUtils.getHashForSchema(input.schema) !== input.hash
-    ) {
-      throw new Error('provided CType hash not matching calculated hash')
-    }
-    if (
-      typeof input.owner === 'string'
-        ? !validateAddress(input.owner, 'CType Owner')
-        : !(input.owner === null)
-    ) {
-      throw new Error('CType owner unknown data')
+    try {
+      CTypeUtils.errorCheck(input)
+    } catch (error) {
+      return false
     }
     return true
   }
@@ -70,7 +54,7 @@ export default class CType implements ICType {
   public schema: ICType['schema']
 
   public constructor(cTypeInput: ICType) {
-    CType.isICType(cTypeInput)
+    CTypeUtils.errorCheck(cTypeInput)
     this.schema = cTypeInput.schema
     this.owner = cTypeInput.owner
     this.hash = cTypeInput.hash

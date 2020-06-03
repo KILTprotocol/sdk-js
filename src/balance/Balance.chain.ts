@@ -60,12 +60,12 @@ export async function getBalance(
  * import * as sdk from '@kiltprotocol/prototype-sdk';
  *
  * const address = ...
- * const unsub = sdk.Balance.listenToBalanceChanges(address,
+ * const unsubscribe = sdk.Balance.listenToBalanceChanges(address,
  *   (account: IPublicIdentity['address'], balance: BN, change: BN) => {
  *     console.log(`Balance has changed by ${change.toNumber()} to ${balance.toNumber()}`)
  *   });
  * // later
- * unsub();
+ * unsubscribe();
  * ```
  */
 export async function listenToBalanceChanges(

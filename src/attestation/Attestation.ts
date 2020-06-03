@@ -12,7 +12,6 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import { validateHash, validateAddress } from '../util/DataUtils'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import Identity from '../identity/Identity'
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
@@ -95,37 +94,16 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   *  [STATIC] Custom Type Guard to determine input being of type IAttestation.
+   *  [STATIC] Custom Type Guard to determine input being of type IAttestation using the AttestationUtils errorCheck.
    *
    * @param input The potentially only partial IAttestation.
-   * @throws When input's cTypeHash, claimHash and owner do not exist.
-   * @throws When the input's delegationId is not of type 'string' or 'null'.
-   * @throws When input.revoked is not of type 'boolean'.
-   *
    * @returns Boolean whether input is of type IAttestation.
    */
-  public static isAttestation(
-    input: Partial<IAttestation>
-  ): input is IAttestation {
-    // TODO implement querying the chain when available
-    // implement verification of delegationId once chain connection is established
-    if (!input.cTypeHash || !validateHash(input.cTypeHash, 'CType')) {
-      throw new Error('CType Hash not provided')
-    }
-    if (!input.claimHash || !validateHash(input.claimHash, 'Claim')) {
-      throw new Error('Claim Hash not provided')
-    }
-    if (
-      typeof input.delegationId !== 'string' &&
-      !input.delegationId === null
-    ) {
-      throw new Error(`Not a valid DelegationId: ${typeof input.delegationId}`)
-    }
-    if (!input.owner || !validateAddress(input.owner, 'Owner')) {
-      throw new Error('Owner not provided')
-    }
-    if (typeof input.revoked !== 'boolean') {
-      throw new Error('revocation bit not provided')
+  public static isIAttestation(input: object): input is IAttestation {
+    try {
+      AttestationUtils.errorCheck(input)
+    } catch (error) {
+      return false
     }
     return true
   }
@@ -146,8 +124,7 @@ export default class Attestation implements IAttestation {
    * ```
    */
   public constructor(attestationInput: IAttestation) {
-    Attestation.isAttestation(attestationInput)
-    this.owner = attestationInput.owner
+    AttestationUtils.errorCheck(attestationInput)
     this.claimHash = attestationInput.claimHash
     this.cTypeHash = attestationInput.cTypeHash
     this.delegationId = attestationInput.delegationId

@@ -7,11 +7,10 @@
 import Ajv from 'ajv'
 import * as jsonabc from 'jsonabc'
 import { getOwner } from './CType.chain'
-import { CTypeModel } from './CTypeSchema'
+import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import ICType, { CompressedCTypeSchema, CompressedCType } from '../types/CType'
 import Crypto from '../crypto'
 import IClaim from '../types/Claim'
-import CType from './CType'
 import { validateAddress } from '../util/DataUtils'
 
 export function verifySchemaWithErrors(
@@ -64,6 +63,32 @@ export async function verifyStored(ctype: ICType): Promise<boolean> {
 
 export function getHashForSchema(schema: ICType['schema']): string {
   return Crypto.hashObjectAsStr(schema)
+}
+
+/**
+ *  Checks whether the input meets all the required criteria of an ICType object.
+ *  Throws on invalid input.
+ *
+ * @param input The potentially only partial ICType.
+ * @throws When input does not correspond to either it's schema, or the CTypeWrapperModel.
+ * @throws When the input's hash does not match the hash calculated from ICType's schema.
+ * @throws When the input's owner is not of type string or null.
+ *
+ */
+export function errorCheck(input: Partial<ICType>): void {
+  if (!verifySchema(input, CTypeWrapperModel)) {
+    throw new Error('CType does not correspond to schema')
+  }
+  if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
+    throw new Error('provided CType hash not matching calculated hash')
+  }
+  if (
+    typeof input.owner === 'string'
+      ? !validateAddress(input.owner, 'CType Owner')
+      : !(input.owner === null)
+  ) {
+    throw new Error('CType owner unknown data')
+  }
 }
 
 /**
@@ -147,7 +172,7 @@ export function compress(cType: ICType): CompressedCType {
       )}`
     )
   }
-  CType.isICType(cType)
+  errorCheck(cType)
   return [cType.hash, cType.owner, compressSchema(cType.schema)]
 }
 
@@ -178,6 +203,7 @@ export default {
   compressSchema,
   decompressSchema,
   decompress,
+  errorCheck,
   verifyClaimStructure,
   verifySchema,
   verifySchemaWithErrors,

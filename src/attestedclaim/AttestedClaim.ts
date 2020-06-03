@@ -56,29 +56,17 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * [STATIC] Custom Type Guard to determine input being of type IAttestedClaim.
+   *  [STATIC] Custom Type Guard to determine input being of type IAttestedClaim using the AttestedClaimUtils errorCheck.
    *
    * @param input The potentially only partial IAttestedClaim.
-   * @throws When input's attestation and request do not exist.
-   * @throws When input's Data could not be verified.
    *
    * @returns Boolean whether input is of type IAttestedClaim.
    */
-  public static isAttestedClaim(
-    input: Partial<IAttestedClaim>
-  ): input is IAttestedClaim {
-    if (input.attestation) {
-      Attestation.isAttestation(input.attestation)
-    } else {
-      throw new Error('Attestation not provided!')
-    }
-    if (input.request) {
-      RequestForAttestation.isRequestForAttestation(input.request)
-    } else {
-      throw new Error('RequestForAttestation not provided')
-    }
-    if (!AttestedClaim.verifyData(input as IAttestedClaim)) {
-      throw new Error('could not verify Data of attested claim')
+  public static isIAttestedClaim(input: object): input is IAttestedClaim {
+    try {
+      AttestedClaimUtils.errorCheck(input)
+    } catch (error) {
+      return false
     }
     return true
   }

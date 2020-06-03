@@ -6,7 +6,37 @@
 
 import * as jsonabc from 'jsonabc'
 import IClaim, { CompressedClaim } from '../types/Claim'
-import Claim from './Claim'
+import { validateHash, validateAddress } from '../util/DataUtils'
+
+/**
+ *  Checks whether the input meets all the required criteria of an IClaim object.
+ *  Throws on invalid input.
+ *
+ * @param input The potentially only partial IClaim.
+ * @throws When input's cTypeHash do not exist.
+ * @throws When any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
+ *
+ */
+export function errorCheck(input: Partial<IClaim>): void {
+  if (!input.cTypeHash) {
+    throw new Error('cTypeHash of provided Claim not set')
+  }
+  if (input.owner) {
+    validateAddress(input.owner, 'Claim Owner')
+  }
+  if (input.contents !== undefined) {
+    Object.entries(input.contents).forEach(entry => {
+      if (
+        !entry[0] ||
+        !entry[1] ||
+        !['string', 'number', 'boolean'].includes(typeof entry[1])
+      ) {
+        throw new Error('Claim contents malformed')
+      }
+    })
+  }
+  validateHash(input.cTypeHash, 'Claim CType')
+}
 
 /**
  *  Compresses the [[Claim]] for storage and/or messaging.
@@ -16,7 +46,7 @@ import Claim from './Claim'
  * @returns An ordered array of a [[Claim]].
  */
 export function compress(claim: IClaim): CompressedClaim {
-  Claim.isIClaim(claim)
+  errorCheck(claim)
   const sortedContents = jsonabc.sortObj(claim.contents)
   return [sortedContents, claim.cTypeHash, claim.owner]
 }
@@ -41,4 +71,4 @@ export function decompress(claim: CompressedClaim): IClaim {
   }
 }
 
-export default { decompress, compress }
+export default { decompress, compress, errorCheck }

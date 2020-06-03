@@ -12,7 +12,6 @@
  * @preferred
  */
 
-import { validateAddress, validateHash } from '../util/DataUtils'
 import ICType from '../ctype/CType'
 import CTypeUtils from '../ctype/CType.utils'
 import IClaim, { CompressedClaim } from '../types/Claim'
@@ -75,34 +74,18 @@ export default class Claim implements IClaim {
   }
 
   /**
-   * [STATIC] Custom Type Guard to determine input being of type IClaim.
+   *  [STATIC] Custom Type Guard to determine input being of type IClaim using the ClaimUtils errorCheck.
    *
    * @param input The potentially only partial IClaim.
-   * @throws When input's cTypeHash do not exist.
-   * @throws When any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
    *
    * @returns Boolean whether input is of type IClaim.
    */
-  static isIClaim(input: Partial<IClaim>): input is IClaim {
-    if (!input.cTypeHash) {
-      throw new Error('cTypeHash of provided Claim not set')
+  static isIClaim(input: object): input is IClaim {
+    try {
+      ClaimUtils.errorCheck(input)
+    } catch (error) {
+      return false
     }
-    if (input.owner) {
-      validateAddress(input.owner, 'Claim Owner')
-    }
-    if (input.contents !== undefined) {
-      Object.entries(input.contents).forEach(entry => {
-        if (
-          !entry[0] ||
-          !entry[1] ||
-          !['string', 'number', 'boolean'].includes(typeof entry[1])
-        ) {
-          throw new Error('Claim contents malformed')
-        }
-      })
-    }
-    validateHash(input.cTypeHash, 'Claim CType')
-    // TODO: check whether ctype hash is on chain, access schema and verify Claim Structure
     return true
   }
 
@@ -111,7 +94,7 @@ export default class Claim implements IClaim {
   public owner: IClaim['owner']
 
   public constructor(claimInput: IClaim) {
-    Claim.isIClaim(claimInput)
+    ClaimUtils.errorCheck(claimInput)
     this.cTypeHash = claimInput.cTypeHash
     this.contents = claimInput.contents
     this.owner = claimInput.owner

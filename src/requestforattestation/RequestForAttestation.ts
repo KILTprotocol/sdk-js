@@ -38,7 +38,6 @@ import IRequestForAttestation, {
 } from '../types/RequestForAttestation'
 import { IDelegationBaseNode } from '../types/Delegation'
 import IClaim from '../types/Claim'
-import Claim from '../claim/Claim'
 import IAttestedClaim from '../types/AttestedClaim'
 
 function hashNonceValue(
@@ -197,39 +196,18 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * [STATIC] Custom Type Guard to determine input being of type IRequestForAttestation..
    *
    * @param input - A potentially only partial [[IRequestForAttestation]].
-   * @throws When either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type.
-   * @throws When any of the input's claimHashTree's keys missing their hash.
    *
    * @returns  Boolean whether input is of type IRequestForAttestation.
    */
-  public static isRequestForAttestation(
-    // ugh that function name... how do we want to call these typeguards?
+  public static isIRequestForAttestation(
     input: Partial<IRequestForAttestation>
   ): input is IRequestForAttestation {
-    if (!input.claim || !Claim.isIClaim(input.claim)) {
-      throw new Error('Claim not provided')
+    try {
+      RequestForAttestationUtils.errorCheck(input)
+    } catch (error) {
+      return false
     }
-    if (!input.legitimations || !Array.isArray(input.legitimations)) {
-      throw new Error('Legitimations not provided')
-    }
-    if (!input.claimHashTree) {
-      throw new Error('Claim Hash Tree not provided')
-    } else {
-      Object.keys(input.claimHashTree).forEach(key => {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (!input.claimHashTree![key].hash) {
-          throw new Error('incomplete claim Hash Tree')
-        }
-      })
-    }
-    // TODO: implement verification of delegationId once chain connection is established
-    if (
-      typeof input.delegationId !== 'string' &&
-      !input.delegationId === null
-    ) {
-      throw new Error('DelegationId not provided')
-    }
-    return RequestForAttestation.verifyData(input as IRequestForAttestation)
+    return true
   }
 
   public claim: IClaim
@@ -252,7 +230,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public constructor(requestForAttestationInput: IRequestForAttestation) {
-    RequestForAttestation.isRequestForAttestation(requestForAttestationInput)
+    RequestForAttestationUtils.errorCheck(requestForAttestationInput)
     this.claim = requestForAttestationInput.claim
     this.claimOwner = requestForAttestationInput.claimOwner
     this.cTypeHash = requestForAttestationInput.cTypeHash

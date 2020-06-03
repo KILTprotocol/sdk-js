@@ -551,19 +551,15 @@ describe('RequestForAttestation', () => {
       builtRequestMalformedCtypeHash.delegationId
     )
     expect(() =>
-      RequestForAttestation.isRequestForAttestation(builtRequestNoLegitimations)
+      RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
     ).toThrowErrorMatchingInlineSnapshot(`"Legitimations not provided"`)
     expect(() =>
-      RequestForAttestation.isRequestForAttestation(
-        builtRequestMalformedRootHash
-      )
+      RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
     ).toThrowErrorMatchingInlineSnapshot(
       `"Provided rootHash does not correspond to data"`
     )
     expect(() =>
-      RequestForAttestation.isRequestForAttestation(
-        builtRequestMalformedClaimOwner
-      )
+      RequestForAttestationUtils.errorCheck(builtRequestMalformedClaimOwner)
     ).toThrowErrorMatchingInlineSnapshot(`
 "Provided Claim Owner hash not corresponding to data 
 
@@ -572,21 +568,15 @@ describe('RequestForAttestation', () => {
     Nonce: ${builtRequestMalformedClaimOwner.claimOwner.nonce}"
 `)
     expect(() =>
-      RequestForAttestation.isRequestForAttestation(
-        builtRequestIncompleteClaimHashTree
-      )
+      RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
     ).toThrowErrorMatchingInlineSnapshot(
       `"Property 'a' not in claim hash tree"`
     )
     expect(() =>
-      RequestForAttestation.isRequestForAttestation(
-        builtRequestMalformedSignature
-      )
+      RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
     ).toThrowErrorMatchingInlineSnapshot(`"Provided Signature not verifiable"`)
     expect(() =>
-      RequestForAttestation.isRequestForAttestation(
-        builtRequestMalformedCtypeHash
-      )
+      RequestForAttestationUtils.errorCheck(builtRequestMalformedCtypeHash)
     ).toThrowErrorMatchingInlineSnapshot(`
 "Provided Claim CType hash not corresponding to data 
 
@@ -595,12 +585,10 @@ describe('RequestForAttestation', () => {
     Nonce: ${builtRequestMalformedCtypeHash.cTypeHash.nonce}"
 `)
     expect(() =>
-      RequestForAttestation.isRequestForAttestation(builtRequest)
+      RequestForAttestationUtils.errorCheck(builtRequest)
     ).not.toThrow()
     expect(() => {
-      RequestForAttestation.isRequestForAttestation(
-        builtRequestWithLegitimation
-      )
+      RequestForAttestationUtils.errorCheck(builtRequestWithLegitimation)
     }).not.toThrow()
   })
   it('checks Object instantiation', () => {

@@ -10,6 +10,31 @@ import RequestForAttestationUtils from '../requestforattestation/RequestForAttes
 import AttestedClaim from './AttestedClaim'
 
 /**
+ *  Checks whether the input meets all the required criteria of an IAttestedClaim object.
+ *  Throws on invalid input.
+ *
+ * @param input The potentially only partial IAttestedClaim.
+ * @throws When input's attestation and request do not exist.
+ * @throws When input's Data could not be verified.
+ *
+ */
+export function errorCheck(input: Partial<IAttestedClaim>): void {
+  if (input.attestation) {
+    AttestationUtils.errorCheck(input.attestation)
+  } else {
+    throw new Error('Attestation not provided!')
+  }
+  if (input.request) {
+    RequestForAttestationUtils.errorCheck(input.request)
+  } else {
+    throw new Error('RequestForAttestation not provided')
+  }
+  if (!AttestedClaim.verifyData(input as IAttestedClaim)) {
+    throw new Error('could not verify Data of attested claim')
+  }
+}
+
+/**
  *  Compresses an [[AttestedClaim]] object into an array for storage and/or messaging.
  *
  * @param attestedClaim An [[AttestedClaim]] that will be sorted and stripped for messaging or storage.
@@ -20,7 +45,7 @@ import AttestedClaim from './AttestedClaim'
 export function compress(
   attestedClaim: IAttestedClaim
 ): CompressedAttestedClaim {
-  AttestedClaim.isAttestedClaim(attestedClaim)
+  errorCheck(attestedClaim)
 
   return [
     RequestForAttestationUtils.compress(attestedClaim.request),
@@ -54,4 +79,5 @@ export function decompress(
 export default {
   decompress,
   compress,
+  errorCheck,
 }
