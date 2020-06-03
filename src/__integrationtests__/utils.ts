@@ -25,7 +25,6 @@ export const wannabeBob = Identity.buildFromURI('//Bob')
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)
     .then(ownerAddress => {
-      // console.log(ownerAddress)
       return ownerAddress !== null
     })
     .catch(() => false)

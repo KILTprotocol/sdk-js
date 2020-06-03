@@ -134,7 +134,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * Verifies whether the data of the given attested claim is valid. It is valid if:
    * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[RequestForAttestation.verifyData]]);
    * and
-   * * the hash of the [[RequestForAttestation]] object for the attested claim, and the hash of the [[Claim]] for the attestated claim are the same.
+   * * the hash of the [[RequestForAttestation]] object for the attested claim, and the hash of the [[Claim]] for the attested claim are the same.
    *
    * @param attestedClaim - The attested claim to verify.
    * @returns Whether the attested claim's data is valid.
