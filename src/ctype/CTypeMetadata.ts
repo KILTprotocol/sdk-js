@@ -12,11 +12,11 @@ export default class CTypeMetadata implements ICTypeMetadata {
   public ctypeHash: ICTypeMetadata['ctypeHash']
   public metadata: ICTypeMetadata['metadata']
 
-  public constructor(metdata: ICTypeMetadata) {
-    if (!CTypeUtils.verifySchema(metdata, MetadataModel)) {
+  public constructor(metadata: ICTypeMetadata) {
+    if (!CTypeUtils.verifySchema(metadata, MetadataModel)) {
       throw new Error('CTypeMetadata does not correspond to schema')
     }
-    this.metadata = metdata.metadata
-    this.ctypeHash = metdata.ctypeHash
+    this.metadata = metadata.metadata
+    this.ctypeHash = metadata.ctypeHash
   }
 }

@@ -84,7 +84,7 @@ export function compressSchema(
 /**
  *  Decompresses a schema of a [[CType]] from storage and/or message.
  *
- * @param cTypeSchema A compressesd [[CType]] schema array that is reverted back into an object.
+ * @param cTypeSchema A compressed [[CType]] schema array that is reverted back into an object.
  *
  * @returns An object that has the same properties as a [[CType]] schema.
  */
@@ -94,7 +94,7 @@ export function decompressSchema(
 ): ICType['schema'] {
   if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 4) {
     throw new Error(
-      'Compressed cTypeSchema isnt an Array or has all the required data types'
+      "Compressed cTypeSchema isn't an Array or has all the required data types"
     )
   }
   return {
@@ -135,7 +135,7 @@ export function compress(cType: ICType): CompressedCType {
 /**
  *  Decompresses a [[CType]] from storage and/or message.
  *
- * @param cType A compressesd [[CType]] array that is reverted back into an object.
+ * @param cType A compressed [[CType]] array that is reverted back into an object.
  *
  * @returns An object that has the same properties as a [[CType]].
  */
@@ -143,7 +143,7 @@ export function compress(cType: ICType): CompressedCType {
 export function decompress(cType: CompressedCType): ICType {
   if (!Array.isArray(cType) || cType.length !== 3) {
     throw new Error(
-      'Compressed cType isnt an Array or has all the required data types'
+      "Compressed cType isn't an Array or has all the required data types"
     )
   }
   return {

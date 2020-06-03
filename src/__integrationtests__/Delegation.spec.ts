@@ -90,7 +90,7 @@ describe('when there is an account hierarchy', () => {
     }, 30000)
 
     it("should be possible to attest a claim in the root's name and revoke it by the root", async () => {
-      const content = { name: 'Ralfi', age: 12 }
+      const content = { name: 'Ralph', age: 12 }
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,

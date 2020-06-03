@@ -64,7 +64,7 @@ export function compressNonceAndHash(
 /**
  *  Decompresses an nonce and hash from a [[NonceHashTree]] or [[RequestForAttestation]] properties.
  *
- * @param nonceHash A compressesd a hash or a hash and nonce array that is reverted back into an object.
+ * @param nonceHash A compressed a hash or a hash and nonce array that is reverted back into an object.
  *
  * @returns An object compressing of a hash or a hash and nonce.
  */
@@ -104,7 +104,7 @@ export function compressClaimHashTree(
 /**
  *  Decompresses a claim hash tree from storage and/or message.
  *
- * @param reqForAtt A compressesd claim hash tree array that is reverted back into an object.
+ * @param reqForAtt A compressed claim hash tree array that is reverted back into an object.
  *
  * @returns An object that has the same properties as an claim hash tree.
  */
@@ -137,7 +137,7 @@ export function compressLegitimation(
 /**
  *  Decompresses [[AttestedClaim]]s which are an [[Attestation]] and [[RequestForAttestation]] from storage and/or message.
  *
- * @param leg A compressesd [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
+ * @param leg A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
  *
  * @returns An object that has the same properties as an [[AttestedClaim]].
  */
@@ -175,7 +175,7 @@ export function compress(
 /**
  *  Decompresses a [[RequestForAttestation]] from storage and/or message.
  *
- * @param reqForAtt A compressesd [[RequestForAttestation]] array that is reverted back into an object.
+ * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */
@@ -185,7 +185,7 @@ export function decompress(
 ): IRequestForAttestation {
   if (!Array.isArray(reqForAtt) || reqForAtt.length !== 8) {
     throw new Error(
-      'Compressed Request For Attestation isnt an Array or has all the required data types'
+      "Compressed Request For Attestation isn't an Array or has all the required data types"
     )
   }
   return {

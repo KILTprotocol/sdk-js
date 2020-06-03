@@ -37,10 +37,10 @@ describe('Attestation', () => {
 
   const testCType: CType = CType.fromCType(fromRawCType)
 
-  const testcontents = {}
+  const testContents = {}
   const testClaim = Claim.fromCTypeAndClaimContents(
     testCType,
-    testcontents,
+    testContents,
     identityBob.address
   )
   const requestForAttestation: RequestForAttestation = RequestForAttestation.fromClaimAndIdentity(

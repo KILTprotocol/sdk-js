@@ -1,5 +1,5 @@
 /**
- * A Decentralized Identifier (DID) is a new type of identifier that is globally unique, resolveable with high availability, and cryptographically verifiable. Although it's not mandatory in KILT, users can optionally create a DID and anchor it to the KILT blockchain.
+ * A Decentralized Identifier (DID) is a new type of identifier that is globally unique, resolvable with high availability, and cryptographically verifiable. Although it's not mandatory in KILT, users can optionally create a DID and anchor it to the KILT blockchain.
  *
  * Official DID specification: [[https://w3c-ccg.github.io/did-primer/]].
  *
@@ -53,7 +53,7 @@ export interface IDid {
 }
 
 export interface IDidDocumentCore {
-  // id and context are the only mandatory ppties, described as "MUST"s in the w3c spec https://w3c.github.io/did-core/
+  // id and context are the only mandatory properties, described as "MUST"s in the w3c spec https://w3c.github.io/did-core/
   id: string
   '@context': string
 }
@@ -65,7 +65,7 @@ export interface IDidDocumentPublicKey {
   publicKeyHex: string
 }
 
-export interface IDidDocumentPpties {
+export interface IDidDocumentProperties {
   authentication: Array<string | IDidDocumentPublicKey | AnyJsonObject>
   publicKey: IDidDocumentPublicKey[]
   service: IDidService[]
@@ -80,7 +80,7 @@ export interface IDidService {
 
 export interface IDidDocument
   extends IDidDocumentCore,
-    Partial<IDidDocumentPpties> {}
+    Partial<IDidDocumentProperties> {}
 
 export interface IDidDocumentSigned extends IDidDocument {
   signature: string
@@ -108,7 +108,7 @@ export default class Did implements IDid {
    * Builds a [[Did]] object from the given [[Identity]].
    *
    * @param identity The identity used to build the [[Did]] object.
-   * @param documentStore The storage location of the associated DID Document; usally a URL.
+   * @param documentStore The storage location of the associated DID Document; usually a URL.
    * @returns The [[Did]] object.
    */
   public static fromIdentity(identity: Identity, documentStore?: string): Did {

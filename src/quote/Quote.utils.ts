@@ -39,7 +39,7 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
 /**
  *  Decompresses the cost from storage and/or message.
  *
- * @param cost A compressesd cost array that is reverted back into an object.
+ * @param cost A compressed cost array that is reverted back into an object.
  *
  * @returns An object that has the same properties as a cost.
  */
@@ -47,7 +47,7 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
 export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
   if (!Array.isArray(cost) || cost.length !== 3) {
     throw new Error(
-      'Compressed cost isnt an Array or has all the required data types'
+      "Compressed cost isn't an Array or has all the required data types"
     )
   }
   return { gross: cost[0], net: cost[1], tax: cost[2] }
@@ -91,7 +91,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
 /**
  *  Decompresses an [[Quote]] from storage and/or message.
  *
- * @param quote A compressesd [[Quote]] array that is reverted back into an object.
+ * @param quote A compressed [[Quote]] array that is reverted back into an object.
  *
  * @returns An object that has the same properties as an [[Quote]].
  */
@@ -99,7 +99,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
 export function decompressQuote(quote: CompressedQuote): IQuote {
   if (!Array.isArray(quote) || quote.length !== 6) {
     throw new Error(
-      'Compressed quote isnt an Array or has all the required data types'
+      "Compressed quote isn't an Array or has all the required data types"
     )
   }
   return {
@@ -154,7 +154,7 @@ export function compressAttesterSignedQuote(
 /**
  *  Decompresses an attester signed [[Quote]] from storage and/or message.
  *
- * @param attesterSignedQuote A compressesd attester signed [[Quote]] array that is reverted back into an object.
+ * @param attesterSignedQuote A compressed attester signed [[Quote]] array that is reverted back into an object.
  *
  * @returns An object that has the same properties as an attester signed [[Quote]].
  */
@@ -164,7 +164,7 @@ export function decompressAttesterSignedQuote(
 ): IQuoteAttesterSigned {
   if (!Array.isArray(attesterSignedQuote) || attesterSignedQuote.length !== 7) {
     throw new Error(
-      'Compressed attesterSignedQuote isnt an Array or has all the required data types'
+      "Compressed quote isn't an Array or has all the required data types"
     )
   }
   return {
@@ -222,7 +222,7 @@ export function compressQuoteAgreement(
 /**
  *  Decompresses a [[Quote]] Agreement from storage and/or message.
  *
- * @param quoteAgreement A compressesd [[Quote]] Agreement array that is reverted back intobject.
+ * @param quoteAgreement A compressed [[Quote]] Agreement array that is reverted back into an object.
  *
  * @returns An object that has the same properties as a [[Quote]] Agreement.
  */
@@ -232,7 +232,7 @@ export function decompressQuoteAgreement(
 ): IQuoteAgreement {
   if (!Array.isArray(quoteAgreement) || quoteAgreement.length !== 9) {
     throw new Error(
-      'Compressed quoteAgreement isnt an Array or has all the required data types'
+      "Compressed quoteAgreement isn't an Array or has all the required data types"
     )
   }
   return {

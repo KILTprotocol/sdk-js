@@ -130,7 +130,7 @@ describe('blank ctypes', () => {
     type: 'object',
   }
 
-  const icytype1: ICType = {
+  const iCType1: ICType = {
     schema: ctypeSchema1,
     owner: identityAlice.address,
     hash: '',
@@ -143,14 +143,14 @@ describe('blank ctypes', () => {
     type: 'object',
   }
 
-  const icytype2: ICType = {
+  const iCType2: ICType = {
     schema: ctypeSchema2,
     owner: identityAlice.address,
     hash: '',
   }
 
-  const ctype1 = CType.fromCType(icytype1)
-  const ctype2 = CType.fromCType(icytype2)
+  const ctype1 = CType.fromCType(iCType1)
+  const ctype2 = CType.fromCType(iCType2)
 
   it('two ctypes with no properties have different hashes if id is different', () => {
     expect(ctype1.owner).toEqual(ctype2.owner)
