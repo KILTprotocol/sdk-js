@@ -42,6 +42,7 @@ export function errorCheck(
  *  Compresses an nonce and hash from a [[NonceHashTree]] or [[RequestForAttestation]] properties.
  *
  * @param nonceHash A hash or a hash and nonce object that will be sorted and stripped for messaging or storage.
+ * @throws When the nonceHash is missing it's hash (existence of nonce is ignored).
  *
  * @returns An object compressing of a hash or a hash and nonce.
  */
@@ -176,6 +177,7 @@ export function compress(
  *  Decompresses a [[RequestForAttestation]] from storage and/or message.
  *
  * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
+ * @throws When reqForAtt is not an Array and it's length is not equal to the defined length of 8.
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */

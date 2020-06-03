@@ -94,6 +94,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param identity - The Claimer's [Identity].
    * @param legitimationsInput - Array of [AttestedClaim] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param delegationIdInput - The id of the DelegationNode of the Attester, which should be used in the attestation.
+   * @throws When claimInput's owner address does not match the supplied identity's address.
    * @returns  A new [[RequestForAttestation]] object.
    * @example ```javascript
    * const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
@@ -237,6 +238,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Verifies the data of the [[RequestForAttestation]] object; used to check that the data was not tampered with, by checking the data against hashes.
    *
    * @returns Whether the data is valid.
+   * @throws When any key of the claim contents could not be found in the claimHashTree.
+   * @throws When either the rootHash or the signature are not verifiable.
    * @example ```javascript
    * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(
    *   claim,

@@ -57,6 +57,9 @@ export default class Identity extends PublicIdentity {
    * [STATIC] Builds an identity object from a mnemonic string.
    *
    * @param phraseArg - [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
+   * @throws When phraseArg contains fewer than 12 correctly separated mnemonic words.
+   * @throws When the phraseArg could not be validated.
+   *
    * @returns An [[Identity]].
    *
    * @example ```javascript
@@ -71,7 +74,7 @@ export default class Identity extends PublicIdentity {
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
         // https://www.npmjs.com/package/bip39
-        throw Error(`Phrase '${phrase}' too long or malformed`)
+        throw Error(`Phrase '${phrase}' too short or malformed`)
       }
     } else {
       phrase = generate()

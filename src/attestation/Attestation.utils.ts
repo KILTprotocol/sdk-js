@@ -40,6 +40,7 @@ export function compress(attestation: IAttestation): CompressedAttestation {
  *  Decompresses an [[Attestation]] from storage and/or message into an object.
  *
  * @param attestation A compressed [[Attestation]] array that is reverted back into an object.
+ * @throws When [[attestation]] is not an Array or it's length is unequal 5.
  *
  * @returns An object that has the same properties as an [[Attestation]].
  */

@@ -47,6 +47,14 @@ export function getIdentifierFromAddress(
   return IDENTIFIER_PREFIX + address
 }
 
+/**
+ * Fetches the root of this delegation node.
+ *
+ * @param identifier IDid identifier to derive it's address from.
+ * @throws When the identifier is not prefixed with the defined Kilt IDENTIFIER_PREFIX.
+ *
+ * @returns The Address derived from the IDid Identifier.
+ */
 export function getAddressFromIdentifier(
   identifier: IDid['identifier']
 ): IPublicIdentity['address'] {
@@ -96,9 +104,19 @@ export function createDefaultDidDocument(
   }
 }
 
+/**
+ * Verifies the signature of a [[IDidDocumentSigned]].
+ *
+ * @param didDocument [[IDidDocumentSigned]] to verify it's signature.
+ * @param identifier IDid identifier to match the IDidDocumentSigned id and to verify the signature with.
+ * @throws When didDocument and it's signature as well as the identifier are missing.
+ * @throws When identifier does not match didDocument's id.
+ *
+ * @returns The Address derived from the IDid Identifier.
+ */
 export function verifyDidDocumentSignature(
   didDocument: IDidDocumentSigned,
-  identifier: string
+  identifier: IDid['identifier']
 ): boolean {
   if (!didDocument || !didDocument.signature || !identifier) {
     throw new Error(

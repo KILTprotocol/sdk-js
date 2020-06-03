@@ -26,6 +26,15 @@ function verifyClaim(
 }
 
 export default class Claim implements IClaim {
+  /**
+   * Instantiates a new Claim from the given [[IClaim]] and [[schema]].
+   *
+   * @param claimInput IClaim to instantiate the new claim from.
+   * @param cTypeSchema ICType['schema'] to verify claimInput's contents.
+   * @throws When claimInput's contents could not be verified with the provided cTypeSchema.
+   *
+   * @returns An instantiated Claim.
+   */
   public static fromClaim(
     claimInput: IClaim,
     cTypeSchema: ICType['schema']
@@ -38,6 +47,16 @@ export default class Claim implements IClaim {
     return new Claim(claimInput)
   }
 
+  /**
+   * Instantiates a new Claim from the given [[ICType]], IClaim['contents'] and IPublicIdentity['address'].
+   *
+   * @param ctypeInput [[ICType]] for which the Claim will be built.
+   * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
+   * @param claimOwner IPublicIdentity['address'] to be used as the Claim owner.
+   * @throws When claimInput's contents could not be verified with the schema of the provided ctypeInput.
+   *
+   * @returns An instantiated Claim.
+   */
   public static fromCTypeAndClaimContents(
     ctypeInput: ICType,
     claimContents: IClaim['contents'],
