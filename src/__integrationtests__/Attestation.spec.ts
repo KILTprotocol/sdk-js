@@ -1,5 +1,7 @@
 /**
  * @group integration/attestation
+ * @ignore
+ * @packageDocumentation
  */
 
 import {
@@ -11,7 +13,7 @@ import {
   IsOfficialLicenseAuthority,
 } from './utils'
 import Claim from '../claim/Claim'
-import getCached from '../blockchainApiConnection'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
@@ -19,10 +21,16 @@ import { revoke } from '../attestation/Attestation.chain'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { Identity } from '..'
+import { IBlockchainApi } from '../blockchain/Blockchain'
 
 const UncleSam = faucet
 const attester = alice
 const claimer = bob
+
+let blockchain: IBlockchainApi
+beforeAll(async () => {
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+})
 
 describe('handling attestations that do not exist', () => {
   it('Attestation.query', async () => {
@@ -36,7 +44,7 @@ describe('handling attestations that do not exist', () => {
   }, 30_000)
 })
 
-describe('When there is an attester, claimer and ctype drivers license', async () => {
+describe('When there is an attester, claimer and ctype drivers license', () => {
   beforeAll(async () => {
     const ctypeExists = await CtypeOnChain(DriversLicense)
     // console.log(`ctype exists: ${ctypeExists}`)
@@ -154,7 +162,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     )
   }, 60_000)
 
-  describe('when there is an attested claim on-chain', async () => {
+  describe('when there is an attested claim on-chain', () => {
     let AttClaim: AttestedClaim
 
     beforeAll(async () => {
@@ -202,7 +210,7 @@ describe('When there is an attester, claimer and ctype drivers license', async (
     }, 15000)
   })
 
-  describe('when there is another Ctype that works as a legitimation', async () => {
+  describe('when there is another Ctype that works as a legitimation', () => {
     beforeAll(async () => {
       if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
         await IsOfficialLicenseAuthority.store(UncleSam)
@@ -267,6 +275,6 @@ describe('When there is an attester, claimer and ctype drivers license', async (
   })
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  blockchain.api.disconnect()
 })

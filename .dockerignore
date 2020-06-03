@@ -1,9 +1,4 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
-
-# dependencies
 /node_modules 
-
-# npm/yarn
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -25,8 +20,7 @@ yarn-error.log*
 settings.json
 
 # doc 
-docs/api
+docs/
 
 # misc
 /.idea
-

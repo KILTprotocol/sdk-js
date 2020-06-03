@@ -178,7 +178,7 @@ export default class Identity extends PublicIdentity {
    */
   public getPublicIdentity(): PublicIdentity {
     const { address, boxPublicKeyAsHex } = this
-    return { address, boxPublicKeyAsHex }
+    return new PublicIdentity(address, boxPublicKeyAsHex)
   }
 
   /**

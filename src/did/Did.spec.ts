@@ -7,10 +7,10 @@ import { getIdentifierFromAddress } from './Did.utils'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('DID', () => {
-  require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
-    address => {
+  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
+    async address => {
       if (address === 'withDocumentStore') {
-        const tuple = new Option(
+        return new Option(
           Tuple,
           new Tuple(
             // (publicBoxKey, publicSigningKey, documentStore?)
@@ -18,9 +18,8 @@ describe('DID', () => {
             ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
           )
         )
-        return Promise.resolve(tuple)
       }
-      const tuple = new Option(
+      return new Option(
         Tuple,
         new Tuple(
           // (publicBoxKey, publicSigningKey, documentStore?)
@@ -28,7 +27,6 @@ describe('DID', () => {
           ['0x987', '0x123', null]
         )
       )
-      return Promise.resolve(tuple)
     }
   )
 

@@ -21,7 +21,7 @@ To learn more, checkout the KILT [Whitepaper](https://kilt.io/wp-content/uploads
 
 - [KILT workshop](https://github.com/KILTprotocol/kilt-workshop-101) 👈 Start here to get familiar with the basics
 - [Getting started guide](https://github.com/KILTprotocol/sdk-js/blob/develop/docs/getting-started.md) 👈 Start here if you'd like to include KILT in your project
-- [API documentation](https://kiltprotocol.github.io/sdk-js/api)
+- [API documentation](https://kiltprotocol.github.io/sdk-js)
 - [Demo client](https://kilt.io/developers-sub/kilt-demo-client/)
 - [Demo client code](https://github.com/KILTprotocol/demo-client)
 

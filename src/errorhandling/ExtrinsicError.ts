@@ -128,7 +128,12 @@ export const ERROR_UNKNOWN: ExtrinsicError = new ExtrinsicError(
   'an unknown error ocurred'
 )
 
-const errorsByCode: ExtrinsicError[] = []
+/**
+ * A dictionary in which each key is an error code of an [[ExtrinsicError]] and the value the corresponding error.
+ */
+export const errorsByCode: { [code: number]: ExtrinsicError } = {}
+
+  // fill dictionary
 ;[
   ERROR_CTYPE_NOT_FOUND,
   ERROR_CTYPE_ALREADY_EXISTS,
@@ -158,6 +163,15 @@ const errorsByCode: ExtrinsicError[] = []
   errorsByCode[value.errorCode] = value
 })
 
-export function errorForCode(errorCode: number): ExtrinsicError {
+/**
+ * Maps an error code to its corresponding [[ExtrinsicError]].
+ *
+ * @param errorCode A number which can be mapped to an [[ExtrinsicError]].
+ *
+ * @returns The [[ExtrinsicError]] for the committed key.
+ */
+export function errorForCode(
+  errorCode: keyof typeof errorsByCode
+): ExtrinsicError {
   return errorsByCode[errorCode]
 }
