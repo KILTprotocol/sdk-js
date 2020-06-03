@@ -75,7 +75,7 @@ export default class Identity extends PublicIdentity {
       if (phrase.trim().split(/\s+/g).length < 12) {
         // https://www.npmjs.com/package/bip39
         // Actually only checks whether the phrase is too short.
-        throw Error(`Phrase '${phrase}' too long or malformed`)
+        throw Error(`Phrase '${phrase}' too short or malformed`)
       }
     } else {
       phrase = generate()

@@ -63,7 +63,7 @@ export function getHashForSchema(schema: ICType['schema']): string {
  *  Compresses a [[CType]] schema for storage and/or messaging.
  *
  * @param cTypeSchema A [[CType]] schema object that will be sorted and stripped for messaging or storage.
- * @throws When any of the four properties of the cTypeSchema are missing.
+ * @throws When any of the four required properties of the cTypeSchema are missing.
  *
  * @returns An ordered array of a [[CType]] schema.
  */

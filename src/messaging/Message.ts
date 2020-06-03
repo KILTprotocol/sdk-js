@@ -169,7 +169,7 @@ export default class Message implements IMessage {
    *
    * @param encrypted The encrypted message.
    * @param receiver The [[Identity]] of the receiver.
-   * @throws When decryption of the encrypted returns false.
+   * @throws When encrypted message couldn't be decrypted.
    * @throws When the decoded message could not be parsed.
    * @returns The original [[Message]].
    */
