@@ -166,8 +166,19 @@ export default class PublicIdentity implements IPublicIdentity {
     return null
   }
 
+  /**
+   * The SS58 account address of the identity on the KILT blockchain.
+   */
   public readonly address: IPublicIdentity['address']
+
+  /**
+   * The public encryption key, encoded as a hexadecimal string.
+   */
   public readonly boxPublicKeyAsHex: IPublicIdentity['boxPublicKeyAsHex']
+
+  /**
+   * The URL where the identity can be reached at.
+   */
   public readonly serviceAddress?: IPublicIdentity['serviceAddress']
 
   /**

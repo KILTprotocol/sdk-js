@@ -83,11 +83,11 @@ function decompressNonceAndHash(nonceHash: CompressedNonceHash): NonceHash {
 }
 
 /**
- *  Compresses a [[claimHashTree]] within a [[RequestForAttestation]] object.
+ *  Compresses a [[NonceHashTree]] within a [[RequestForAttestation]] object.
  *
- * @param reqForAtt A [[claimHashTree]] object that will be sorted and stripped for messaging or storage.
+ * @param reqForAtt A [[NonceHashTree]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of an [[claimHashTree]].
+ * @returns An ordered array of an [[NonceHashTree]].
  */
 
 export function compressClaimHashTree(
@@ -170,6 +170,7 @@ export function compress(
     reqForAtt.rootHash,
     compressLegitimation(reqForAtt.legitimations),
     reqForAtt.delegationId,
+    reqForAtt.privacyEnhancement,
   ]
 }
 
@@ -185,7 +186,7 @@ export function compress(
 export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
-  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 8) {
+  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 9) {
     throw new Error(
       "Compressed Request For Attestation isn't an Array or has all the required data types"
     )
@@ -199,6 +200,7 @@ export function decompress(
     rootHash: reqForAtt[5],
     legitimations: decompressLegitimation(reqForAtt[6]),
     delegationId: reqForAtt[7],
+    privacyEnhancement: reqForAtt[8],
   }
 }
 

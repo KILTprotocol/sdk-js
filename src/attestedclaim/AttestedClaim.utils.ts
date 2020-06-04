@@ -43,7 +43,7 @@ export function compress(
  *  Decompresses an [[AttestedClaim]] array from storage and/or message into an object.
  *
  * @param attestedClaim A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
- * @throws When [[attestedClaim]] is not an Array or it's length is unequal 2.
+ * @throws When attestedClaim is not an Array or it's length is unequal 2.
  *
  * @returns An object that has the same properties as an [[AttestedClaim]].
  */

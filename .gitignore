@@ -30,3 +30,5 @@ docs/api
 # misc
 /.idea
 
+# doc
+/docs/api

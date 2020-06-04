@@ -13,16 +13,23 @@
 
 import { AnyJsonObject } from '@polkadot/types/types'
 import {
+  Attestation as AttestationPE,
+  CombinedPresentation,
+  CombinedPresentationRequest,
+  InitiateAttestationRequest,
+} from '@kiltprotocol/portablegabi'
+import {
   Claim,
   DelegationNode,
   IAttestedClaim,
   IClaim,
-  ICType,
   IDelegationBaseNode,
   IDelegationNode,
   Identity,
   IPublicIdentity,
   IRequestForAttestation,
+  IAttestation,
+  ICType,
 } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
 import ITerms from '../types/Terms'
@@ -78,12 +85,15 @@ export enum MessageBodyType {
   SUBMIT_TERMS = 'submit-terms',
   REJECT_TERMS = 'reject-terms',
 
+  INITIATE_ATTESTATION = 'initiate-attestation',
+
   REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
   SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
   REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
 
   REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
-  SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes',
+  SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC = 'submit-claims-for-ctypes-public',
+  SUBMIT_CLAIMS_FOR_CTYPES_PE = 'submit-claims-for-ctypes-pe',
   ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
   REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
 
@@ -124,7 +134,7 @@ export default class Message implements IMessage {
           }
         }
         break
-      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES:
+      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC:
         {
           const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach(claim => {
@@ -230,8 +240,8 @@ export default class Message implements IMessage {
     this.body = body
     this.createdAt = Date.now()
     this.receiverAddress = receiver.address
-    this.senderAddress = sender.address
-    this.senderBoxPublicKey = sender.boxPublicKeyAsHex
+    this.senderAddress = sender.getAddress()
+    this.senderBoxPublicKey = sender.getBoxPublicKey()
 
     const encryptedMessage: EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(
       JSON.stringify(body),
@@ -272,7 +282,7 @@ export default class Message implements IMessage {
 }
 
 interface IMessageBodyBase {
-  content: object
+  content: any
   type: MessageBodyType
 }
 
@@ -293,6 +303,11 @@ export interface IRejectTerms extends IMessageBodyBase {
   type: MessageBodyType.REJECT_TERMS
 }
 
+export interface IInitiateAttestation extends IMessageBodyBase {
+  content: InitiateAttestationRequest
+  type: MessageBodyType.INITIATE_ATTESTATION
+}
+
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
   content: {
     requestForAttestation: IRequestForAttestation
@@ -302,28 +317,46 @@ export interface IRequestAttestationForClaim extends IMessageBodyBase {
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
 }
 export interface ISubmitAttestationForClaim extends IMessageBodyBase {
-  content: IAttestedClaim
+  content: {
+    attestation: IAttestation
+    attestationPE?: AttestationPE
+  }
   type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
 }
 export interface IRejectAttestationForClaim extends IMessageBodyBase {
-  content: IRequestForAttestation
+  content: false
   type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM
 }
 
 export interface IRequestClaimsForCTypes extends IMessageBodyBase {
-  content: Array<ICType['hash']>
+  content: {
+    ctypes: Array<ICType['hash'] | null>
+    peRequest: CombinedPresentationRequest
+    allowPE: boolean
+  }
   type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
 }
-export interface ISubmitClaimsForCTypes extends IMessageBodyBase {
+
+export type ISubmitClaimsForCTypes =
+  | ISubmitClaimsForCTypesPublic
+  | ISubmitClaimsForCTypesPE
+
+export interface ISubmitClaimsForCTypesPublic extends IMessageBodyBase {
   content: IAttestedClaim[]
-  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
+  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
 }
+
+export interface ISubmitClaimsForCTypesPE extends IMessageBodyBase {
+  content: CombinedPresentation
+  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
+}
+
 export interface IAcceptClaimsForCTypes extends IMessageBodyBase {
-  content: IAttestedClaim[]
+  content: Array<ICType['hash']>
   type: MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES
 }
 export interface IRejectClaimsForCTypes extends IMessageBodyBase {
-  content: IAttestedClaim[]
+  content: Array<ICType['hash']>
   type: MessageBodyType.REJECT_CLAIMS_FOR_CTYPES
 }
 
@@ -374,12 +407,14 @@ export type MessageBody =
   | ISubmitTerms
   | IRejectTerms
   //
+  | IInitiateAttestation
   | IRequestAttestationForClaim
   | ISubmitAttestationForClaim
   | IRejectAttestationForClaim
   //
   | IRequestClaimsForCTypes
-  | ISubmitClaimsForCTypes
+  | ISubmitClaimsForCTypesPublic
+  | ISubmitClaimsForCTypesPE
   | IAcceptClaimsForCTypes
   | IRejectClaimsForCTypes
   //

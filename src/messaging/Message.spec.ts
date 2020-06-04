@@ -1,12 +1,11 @@
 import Identity from '../identity/Identity'
 import Message, {
-  IRequestClaimsForCTypes,
   MessageBodyType,
   IEncryptedMessage,
-  IMessage,
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
   ISubmitClaimsForCTypes,
+  IRequestClaimsForCTypes,
 } from './Message'
 import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import Crypto from '../crypto'
@@ -14,28 +13,31 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 import * as Quote from '../quote/Quote'
 import IClaim from '../types/Claim'
 import { IQuote } from '../types/Quote'
+import { IAttestedClaim, Verifier } from '..'
 
 describe('Messaging', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
-  const identityBob = Identity.buildFromURI('//Bob')
-  const date = new Date(2019, 11, 10)
-  it('verifies message encryption and signing', () => {
-    const messageBody: IRequestClaimsForCTypes = {
-      content: ['0x12345678'],
-      type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
-    }
-    const message: Message = new Message(
-      messageBody,
-      identityAlice,
-      identityBob.getPublicIdentity()
-    )
-    const encryptedMessage: IEncryptedMessage = message.encrypt()
+  let identityAlice: Identity
+  let identityBob: Identity
+  let date: Date
 
-    const decryptedMessage: IMessage = Message.decrypt(
-      encryptedMessage,
-      identityBob
-    )
-    expect(JSON.stringify(messageBody)).toEqual(
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
+    identityBob = await Identity.buildFromURI('//Bob')
+    date = new Date(2019, 11, 10)
+  })
+
+  it('verify message encryption and signing', async () => {
+    const { message } = await Verifier.newRequestBuilder()
+      .requestPresentationForCtype({
+        ctypeHash: '0x12345678',
+        properties: ['age'],
+      })
+      .finalize(false, identityAlice, identityBob.getPublicIdentity())
+
+    const encryptedMessage = message.encrypt()
+
+    const decryptedMessage = Message.decrypt(encryptedMessage, identityBob)
+    expect(JSON.stringify(message.body)).toEqual(
       JSON.stringify(decryptedMessage.body)
     )
 
@@ -78,7 +80,7 @@ describe('Messaging', () => {
 
     const encryptedWrongBody: EncryptedAsymmetricString = identityAlice.encryptAsymmetricAsStr(
       '{ wrong JSON',
-      identityBob.boxPublicKeyAsHex
+      identityBob.getBoxPublicKey()
     )
     const ts: number = Date.now()
     const hashStrBadContent: string = Crypto.hashStr(
@@ -103,7 +105,7 @@ describe('Messaging', () => {
     const content = {
       claim: {
         cTypeHash: '0x12345678',
-        owner: identityAlice.getPublicIdentity().address,
+        owner: identityAlice.getAddress(),
         contents: {},
       },
       delegationId: null,
@@ -113,10 +115,11 @@ describe('Messaging', () => {
       cTypeHash: { nonce: '0x12345678', hash: '0x12345678' },
       rootHash: '0x12345678',
       claimerSignature: '0x12345678',
+      privacyEnhancement: null,
     } as IRequestForAttestation
 
     const quoteData: IQuote = {
-      attesterAddress: identityAlice.address,
+      attesterAddress: identityAlice.getAddress(),
       cTypeHash: '0x12345678',
       cost: {
         tax: { vat: 3.3 },
@@ -164,7 +167,6 @@ describe('Messaging', () => {
 
     const submitAttestationBody: ISubmitAttestationForClaim = {
       content: {
-        request: requestAttestationBody.content.requestForAttestation,
         attestation: {
           delegationId: null,
           claimHash:
@@ -193,9 +195,14 @@ describe('Messaging', () => {
       )
     )
 
+    const attestedClaim: IAttestedClaim = {
+      request: content,
+      attestation: submitAttestationBody.content.attestation,
+    }
+
     const submitClaimsForCTypeBody: ISubmitClaimsForCTypes = {
-      content: [submitAttestationBody.content],
-      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      content: [attestedClaim],
+      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
     }
 
     Message.ensureOwnerIsSender(
@@ -216,18 +223,31 @@ describe('Messaging', () => {
     ).toThrowError(new Error('Sender is not owner of the claims'))
   })
   describe('ensureHashAndSignature', () => {
-    const messageBody: IRequestClaimsForCTypes = {
-      content: ['0x12345678'],
-      type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
-    }
-    const encrypted = new Message(
-      messageBody,
-      identityAlice,
-      identityBob.getPublicIdentity()
-    ).encrypt()
+    let messageBody: IRequestClaimsForCTypes
+    let encrypted: IEncryptedMessage
+
+    beforeAll(async () => {
+      identityAlice = await Identity.buildFromURI('//Alice')
+      identityBob = await Identity.buildFromURI('//Bob')
+
+      messageBody = {
+        content: {
+          ctypes: ['0x12345678'],
+          peRequest: {} as any,
+          allowPE: false,
+        },
+        type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+      }
+      encrypted = new Message(
+        messageBody,
+        identityAlice,
+        identityBob.getPublicIdentity()
+      ).encrypt()
+    })
+
     it('verifies no error is thrown when executed correctly', () => {
       expect(() =>
-        Message.ensureHashAndSignature(encrypted, identityAlice.address)
+        Message.ensureHashAndSignature(encrypted, identityAlice.getAddress())
       ).not.toThrowError()
     })
     it('expects hash error', () => {
@@ -235,7 +255,10 @@ describe('Messaging', () => {
       const encrypted2 = new Message(
         {
           ...messageBody,
-          content: messageBody.content.map(c => `${c}9`),
+          content: {
+            ...messageBody.content,
+            ctypes: [`${messageBody.content.ctypes[0]}9`],
+          },
         },
         identityAlice,
         identityBob.getPublicIdentity()
@@ -249,7 +272,7 @@ describe('Messaging', () => {
             ...encrypted,
             message: msg,
           },
-          identityBob.address
+          identityBob.getAddress()
         )
       ).toThrowError(new Error('Hash of message not correct'))
 
@@ -257,7 +280,7 @@ describe('Messaging', () => {
       expect(() =>
         Message.ensureHashAndSignature(
           { ...encrypted, nonce },
-          identityBob.address
+          identityBob.getAddress()
         )
       ).toThrowError(new Error('Hash of message not correct'))
 
@@ -265,13 +288,13 @@ describe('Messaging', () => {
       expect(() =>
         Message.ensureHashAndSignature(
           { ...encrypted, createdAt },
-          identityBob.address
+          identityBob.getAddress()
         )
       ).toThrowError(new Error('Hash of message not correct'))
     })
     it('expects signature error', async () => {
       expect(() =>
-        Message.ensureHashAndSignature(encrypted, identityBob.address)
+        Message.ensureHashAndSignature(encrypted, identityBob.getAddress())
       ).toThrowError(new Error('Signature of message not correct'))
     })
   })

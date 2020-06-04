@@ -9,64 +9,74 @@ import requestForAttestation from '../requestforattestation/RequestForAttestatio
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('CType', () => {
-  const ctypeModel: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      'first-property': { type: 'integer' },
-      'second-property': { type: 'string' },
-    },
-    type: 'object',
-  }
-
-  const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      name: { type: 'string' },
-    },
-    type: 'object',
-  }
-
-  const identityAlice = Identity.buildFromURI('//Alice')
-
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.address,
-    hash: '',
-  }
-
-  const fromCTypeModel: ICType = {
-    schema: ctypeModel,
-    owner: identityAlice.address,
-    hash: '',
-  }
-  const claimCtype = CType.fromCType(fromRawCType)
-
-  const claimContents = {
-    name: 'Bob',
-  }
-
-  const claim = Claim.fromCTypeAndClaimContents(
-    claimCtype,
-    claimContents,
-    identityAlice.address
-  )
-
-  const compressedCType: CompressedCType = [
-    claimCtype.hash,
-    claimCtype.owner,
-    [
-      'http://example.com/ctype-1',
-      'http://kilt-protocol.org/draft-01/ctype#',
-      {
-        name: {
-          type: 'string',
-        },
+  let ctypeModel: ICType['schema']
+  let rawCType: ICType['schema']
+  let identityAlice: Identity
+  let fromRawCType: ICType
+  let fromCTypeModel: ICType
+  let claimCtype: CType
+  let claimContents: any
+  let claim: Claim
+  let compressedCType: CompressedCType
+  beforeAll(async () => {
+    ctypeModel = {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        'first-property': { type: 'integer' },
+        'second-property': { type: 'string' },
       },
-      'object',
-    ],
-  ]
+      type: 'object',
+    }
+
+    rawCType = {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+
+    identityAlice = await Identity.buildFromURI('//Alice')
+
+    fromRawCType = {
+      schema: rawCType,
+      owner: identityAlice.getAddress(),
+      hash: '',
+    }
+
+    fromCTypeModel = {
+      schema: ctypeModel,
+      owner: identityAlice.getAddress(),
+      hash: '',
+    }
+    claimCtype = CType.fromCType(fromRawCType)
+
+    claimContents = {
+      name: 'Bob',
+    }
+
+    claim = Claim.fromCTypeAndClaimContents(
+      claimCtype,
+      claimContents,
+      identityAlice.getAddress()
+    )
+    compressedCType = [
+      claimCtype.hash,
+      claimCtype.owner,
+      [
+        'http://example.com/ctype-1',
+        'http://kilt-protocol.org/draft-01/ctype#',
+        {
+          name: {
+            type: 'string',
+          },
+        },
+        'object',
+      ],
+    ]
+  })
 
   it('stores ctypes', async () => {
     const ctype = CType.fromCType(fromCTypeModel)
@@ -121,36 +131,46 @@ describe('CType', () => {
 })
 
 describe('blank ctypes', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
+  let identityAlice: Identity
+  let ctypeSchema1: ICType['schema']
+  let icytype1: ICType
+  let ctypeSchema2: ICType['schema']
+  let icytype2: ICType
+  let ctype1: CType
+  let ctype2: CType
 
-  const ctypeSchema1: ICType['schema'] = {
-    $id: 'http://example.com/hasDriversLicense',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {},
-    type: 'object',
-  }
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
 
-  const iCType1: ICType = {
-    schema: ctypeSchema1,
-    owner: identityAlice.address,
-    hash: '',
-  }
+    ctypeSchema1 = {
+      $id: 'http://example.com/hasDriversLicense',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {},
+      type: 'object',
+    }
 
-  const ctypeSchema2: ICType['schema'] = {
-    $id: 'http://example.com/claimedSomething',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {},
-    type: 'object',
-  }
+    icytype1 = {
+      schema: ctypeSchema1,
+      owner: identityAlice.getAddress(),
+      hash: '',
+    }
 
-  const iCType2: ICType = {
-    schema: ctypeSchema2,
-    owner: identityAlice.address,
-    hash: '',
-  }
+    ctypeSchema2 = {
+      $id: 'http://example.com/claimedSomething',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {},
+      type: 'object',
+    }
 
-  const ctype1 = CType.fromCType(iCType1)
-  const ctype2 = CType.fromCType(iCType2)
+    icytype2 = {
+      schema: ctypeSchema2,
+      owner: identityAlice.getAddress(),
+      hash: '',
+    }
+
+    ctype1 = CType.fromCType(icytype1)
+    ctype2 = CType.fromCType(icytype2)
+  })
 
   it('two ctypes with no properties have different hashes if id is different', () => {
     expect(ctype1.owner).toEqual(ctype2.owner)
@@ -158,24 +178,24 @@ describe('blank ctypes', () => {
     expect(ctype1.hash).not.toEqual(ctype2.hash)
   })
 
-  it('two claims on an empty ctypes will have different root hash', () => {
+  it('two claims on an empty ctypes will have different root hash', async () => {
     const claimA1 = Claim.fromCTypeAndClaimContents(
       ctype1,
       {},
-      identityAlice.address
+      identityAlice.getAddress()
     )
     const claimA2 = Claim.fromCTypeAndClaimContents(
       ctype2,
       {},
-      identityAlice.address
+      identityAlice.getAddress()
     )
 
     expect(
-      requestForAttestation.fromClaimAndIdentity(claimA1, identityAlice)
-        .rootHash
+      (await requestForAttestation.fromClaimAndIdentity(claimA1, identityAlice))
+        .message.rootHash
     ).not.toEqual(
-      requestForAttestation.fromClaimAndIdentity(claimA2, identityAlice)
-        .rootHash
+      (await requestForAttestation.fromClaimAndIdentity(claimA2, identityAlice))
+        .message.rootHash
     )
   })
 })

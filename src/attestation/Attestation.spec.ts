@@ -14,41 +14,49 @@ import { CompressedAttestation } from '../types/Attestation'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Attestation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
-  const identityBob = Identity.buildFromURI('//Bob')
-
+  let identityAlice: Identity
+  let identityBob: Identity
+  let rawCType: ICType['schema']
+  let fromRawCType: ICType
+  let testCType: CType
+  let testcontents: any
+  let testClaim: Claim
+  let requestForAttestation: RequestForAttestation
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
-  const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      name: { type: 'string' },
-    },
-    type: 'object',
-  }
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
+    identityBob = await Identity.buildFromURI('//Bob')
 
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.address,
-    hash: '',
-  }
+    rawCType = {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
 
-  const testCType: CType = CType.fromCType(fromRawCType)
+    fromRawCType = {
+      schema: rawCType,
+      owner: identityAlice.getAddress(),
+      hash: '',
+    }
 
-  const testContents = {}
-  const testClaim = Claim.fromCTypeAndClaimContents(
-    testCType,
-    testContents,
-    identityBob.address
-  )
-  const requestForAttestation: RequestForAttestation = RequestForAttestation.fromClaimAndIdentity(
-    testClaim,
-    identityBob,
-    [],
-    null
-  )
+    testCType = CType.fromCType(fromRawCType)
+
+    testcontents = {}
+    testClaim = Claim.fromCTypeAndClaimContents(
+      testCType,
+      testcontents,
+      identityBob.getAddress()
+    )
+    requestForAttestation = (await RequestForAttestation.fromClaimAndIdentity(
+      testClaim,
+      identityBob
+    )).message
+  })
 
   it('stores attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
@@ -56,14 +64,14 @@ describe('Attestation', () => {
         Tuple,
         new Tuple(
           [Text, AccountId, Text, Bool],
-          [testCType.hash, identityAlice.address, undefined, false]
+          [testCType.hash, identityAlice.getAddress(), undefined, false]
         )
       )
     )
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice.getPublicIdentity()
     )
     expect(await attestation.verify()).toBeTruthy()
   })
@@ -77,7 +85,7 @@ describe('Attestation', () => {
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
       delegationId: null,
-      owner: identityAlice.address,
+      owner: identityAlice.getAddress(),
       revoked: false,
     })
     expect(await attestation.verify()).toBeFalsy()
@@ -90,14 +98,14 @@ describe('Attestation', () => {
         new Tuple(
           // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
           [Text, AccountId, Text, Bool],
-          [testCType.hash, identityAlice.address, undefined, true]
+          [testCType.hash, identityAlice.getAddress(), undefined, true]
         )
       )
     )
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice.getPublicIdentity()
     )
     expect(await attestation.verify()).toBeFalsy()
   })
@@ -105,7 +113,7 @@ describe('Attestation', () => {
   it('compresses and decompresses the attestation object', () => {
     const attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice.getPublicIdentity()
     )
 
     const compressedAttestation: CompressedAttestation = [
@@ -132,7 +140,7 @@ describe('Attestation', () => {
   it('Negative test for compresses and decompresses the attestation object', () => {
     const attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice.getPublicIdentity()
     )
 
     const compressedAttestation: CompressedAttestation = [

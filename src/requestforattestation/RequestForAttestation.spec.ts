@@ -1,23 +1,45 @@
+import {
+  ClaimerAttestationSession,
+  AttesterAttestationSession,
+} from '@kiltprotocol/portablegabi'
 import Identity from '../identity/Identity'
+import AttesterIdentity from '../attesteridentity/AttesterIdentity'
 import RequestForAttestation from './RequestForAttestation'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
-import IClaim from '../types/Claim'
+import IClaim, { IClaimContents } from '../types/Claim'
+import constants from '../test/constants'
 import { CompressedRequestForAttestation } from '../types/RequestForAttestation'
 import { CompressedAttestedClaim } from '../types/AttestedClaim'
 
-function buildRequestForAttestation(
+async function buildRequestForAttestationPE(
   claimer: Identity,
-  ctype: string, // TODO: this parameter is never used, can we remove it?
   contents: IClaim['contents'],
   legitimations: AttestedClaim[]
-): RequestForAttestation {
+): Promise<
+  [
+    RequestForAttestation,
+    ClaimerAttestationSession | null,
+    Identity,
+    AttesterAttestationSession
+  ]
+> {
   // create claim
 
-  const identityAlice = Identity.buildFromURI('//Alice')
+  const identityAlice = await AttesterIdentity.buildFromURI('//Alice', {
+    key: {
+      publicKey: constants.PUBLIC_KEY.valueOf(),
+      privateKey: constants.PRIVATE_KEY.valueOf(),
+    },
+  })
+
+  const {
+    messageBody: message,
+    session,
+  } = await identityAlice.initiateAttestation()
 
   const rawCType: ICType['schema'] = {
     $id: 'http://example.com/ctype-1',
@@ -30,7 +52,7 @@ function buildRequestForAttestation(
 
   const fromRawCType: ICType = {
     schema: rawCType,
-    owner: identityAlice.address,
+    owner: identityAlice.getAddress(),
     hash: '',
   }
 
@@ -39,43 +61,137 @@ function buildRequestForAttestation(
   const claim: IClaim = {
     cTypeHash: testCType.hash,
     contents,
-    owner: claimer.address,
+    owner: claimer.getAddress(),
   }
   // build request for attestation with legitimations
-  return RequestForAttestation.fromClaimAndIdentity(
+  const {
+    message: request,
+    session: claimerSession,
+  } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
+    legitimations,
+    initiateAttestationMsg: message,
+    attesterPubKey: identityAlice.getPublicGabiKey(),
+  })
+  return [request, claimerSession, identityAlice, session]
+}
+
+async function buildRequestForAttestation(
+  claimer: Identity,
+  contents: IClaimContents,
+  legitimations: AttestedClaim[]
+): Promise<RequestForAttestation> {
+  // create claim
+
+  const identityAlice = await AttesterIdentity.buildFromURI('//Alice', {
+    key: {
+      publicKey: constants.PUBLIC_KEY.valueOf(),
+      privateKey: constants.PRIVATE_KEY.valueOf(),
+    },
+  })
+
+  const rawCType: ICType['schema'] = {
+    $id: 'http://example.com/ctype-1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    properties: {
+      name: { type: 'string' },
+    },
+    type: 'object',
+  }
+
+  const fromRawCType: ICType = {
+    schema: rawCType,
+    owner: identityAlice.getAddress(),
+    hash: '',
+  }
+
+  const testCType: CType = CType.fromCType(fromRawCType)
+
+  const claim: IClaim = {
+    cTypeHash: testCType.hash,
+    contents,
+    owner: claimer.getAddress(),
+  }
+  // build request for attestation with legitimations
+  const request = (await RequestForAttestation.fromClaimAndIdentity(
     claim,
     claimer,
-    legitimations,
-    null
-  )
+    {
+      legitimations,
+    }
+  )).message
+  return request
 }
 
 describe('RequestForAttestation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
-  const identityBob = Identity.buildFromURI('//Bob')
-  const identityCharlie = Identity.buildFromURI('//Charlie')
+  let identityAlice: Identity
+  let identityBob: Identity
+  let identityCharlie: Identity
+  let legitimationRequest: RequestForAttestation
+  let legitimationAttestation: Attestation
+  let legitimation: AttestedClaim
+  let legitimationAttestationCharlie: Attestation
+  let legitimationCharlie: AttestedClaim
 
-  const legitimationRequest: RequestForAttestation = buildRequestForAttestation(
-    identityAlice,
-    'legitimationCtype',
-    {},
-    []
-  )
-  // build attestation
-  const legitimationAttestationCharlie: Attestation = Attestation.fromRequestAndPublicIdentity(
-    legitimationRequest,
-    identityCharlie
-  )
-  // combine to attested claim
-  const legitimationCharlie: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
-    legitimationRequest,
-    legitimationAttestationCharlie
-  )
+  beforeEach(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
+    identityBob = await Identity.buildFromURI('//Bob')
+    identityCharlie = await Identity.buildFromURI('//Charlie')
+    legitimationRequest = await buildRequestForAttestation(
+      identityAlice,
+      {},
+      []
+    )
+    // build attestation
+    legitimationAttestation = Attestation.fromRequestAndPublicIdentity(
+      legitimationRequest,
+      identityCharlie.getPublicIdentity()
+    )
+    // combine to attested claim
+    legitimation = new AttestedClaim({
+      request: legitimationRequest,
+      attestation: legitimationAttestation,
+    })
+
+    // build attestation
+    legitimationAttestationCharlie = Attestation.fromRequestAndPublicIdentity(
+      legitimationRequest,
+      identityCharlie.getPublicIdentity()
+    )
+    // combine to attested claim
+    legitimationCharlie = new AttestedClaim({
+      request: legitimationRequest,
+      attestation: legitimationAttestationCharlie,
+    })
+  })
 
   it('verify request for attestation', async () => {
-    const request: RequestForAttestation = buildRequestForAttestation(
+    const request = await buildRequestForAttestation(
       identityBob,
-      'ctype',
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+    // check proof on complete data
+    expect(request.verifyData()).toBeTruthy()
+
+    // just deleting a field will result in a wrong proof
+    const propertyName = 'a'
+    delete request.claim.contents[propertyName]
+    delete request.claimHashTree[propertyName]
+    expect(request.verifyData()).toBeFalsy()
+  })
+
+  it('verify request for attestation (PE)', async () => {
+    const [
+      request,
+      claimerSession,
+      attester,
+      attesterSession,
+    ] = await buildRequestForAttestationPE(
+      identityBob,
       {
         a: 'a',
         b: 'b',
@@ -92,12 +208,14 @@ describe('RequestForAttestation', () => {
     delete request.claim.contents[propertyName]
     delete request.claimHashTree[propertyName]
     expect(request.verifyData()).toBeFalsy()
+    expect(claimerSession).toBeDefined()
+    expect(attester).toBeDefined()
+    expect(attesterSession).toBeDefined()
   })
 
-  it('throws on wrong hash in claim hash tree', () => {
-    const request: RequestForAttestation = buildRequestForAttestation(
+  it('throws on wrong hash in claim hash tree', async () => {
+    const request = await buildRequestForAttestation(
       identityBob,
-      'ctype',
       {
         a: 'a',
         b: 'b',
@@ -112,25 +230,24 @@ describe('RequestForAttestation', () => {
     }).toThrow()
   })
 
-  it('hides the claim owner', () => {
-    const request = buildRequestForAttestation(identityBob, 'ctype', {}, [])
+  it('hides the claim owner', async () => {
+    const request = await buildRequestForAttestation(identityBob, {}, [])
     request.removeClaimOwner()
     expect(request.claimOwner.nonce).toBeUndefined()
     expect(request.claim.owner).toBeUndefined()
   })
 
-  it('compresses and decompresses the request for attestation object', () => {
-    const legitimationAttestationBob: Attestation = Attestation.fromRequestAndPublicIdentity(
+  it('compresses and decompresses the request for attestation object', async () => {
+    const legitimationAttestationBob = Attestation.fromRequestAndPublicIdentity(
       legitimationRequest,
-      identityBob
+      identityBob.getPublicIdentity()
     )
-    const legitimationBob: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
-      legitimationRequest,
-      legitimationAttestationBob
-    )
-    const reqForAtt: RequestForAttestation = buildRequestForAttestation(
+    const legitimationBob = new AttestedClaim({
+      request: legitimationRequest,
+      attestation: legitimationAttestationBob,
+    })
+    const reqForAtt = await buildRequestForAttestation(
       identityBob,
-      'ctype',
       {
         a: 'a',
         b: 'b',
@@ -159,6 +276,7 @@ describe('RequestForAttestation', () => {
         legitimationCharlie.request.rootHash,
         [],
         legitimationCharlie.request.delegationId,
+        null,
       ],
       [
         legitimationCharlie.attestation.claimHash,
@@ -189,6 +307,7 @@ describe('RequestForAttestation', () => {
         legitimationBob.request.rootHash,
         [],
         legitimationBob.request.delegationId,
+        null,
       ],
       [
         legitimationBob.attestation.claimHash,
@@ -216,6 +335,7 @@ describe('RequestForAttestation', () => {
       reqForAtt.rootHash,
       [compressedLegitimationCharlie, compressedLegitimationBob],
       reqForAtt.delegationId,
+      null,
     ]
 
     expect(RequestForAttestationUtils.compress(reqForAtt)).toEqual(
@@ -251,10 +371,9 @@ describe('RequestForAttestation', () => {
     }).toThrow()
   })
 
-  it('hides claim properties', () => {
-    const request = buildRequestForAttestation(
+  it('hides claim properties', async () => {
+    const request = await buildRequestForAttestation(
       identityBob,
-      'ctype',
       { a: 'a', b: 'b' },
       []
     )

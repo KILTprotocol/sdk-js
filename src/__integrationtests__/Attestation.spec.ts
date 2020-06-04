@@ -5,12 +5,12 @@
  */
 
 import {
-  faucet,
-  alice,
-  bob,
+  wannabeFaucet,
+  wannabeAlice,
+  wannabeBob,
   DriversLicense,
   CtypeOnChain,
-  IsOfficialLicenseAuthority,
+  isOfficialLicenseAuthority,
 } from './utils'
 import Claim from '../claim/Claim'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
@@ -20,12 +20,9 @@ import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { revoke } from '../attestation/Attestation.chain'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
-import { Identity } from '..'
+import Identity from '../identity/Identity'
+import Credential from '../credential/Credential'
 import { IBlockchainApi } from '../blockchain/Blockchain'
-
-const UncleSam = faucet
-const attester = alice
-const claimer = bob
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
@@ -33,19 +30,27 @@ beforeAll(async () => {
 })
 
 describe('handling attestations that do not exist', () => {
-  it('Attestation.query', async () => {
+  it('Attestation.query', () => {
     return expect(Attestation.query('0x012012012')).resolves.toBeNull()
   }, 30_000)
 
   it('Attestation.revoke', async () => {
     return expect(
-      Attestation.revoke('0x012012012', Identity.buildFromURI('//Alice'))
+      Attestation.revoke('0x012012012', await Identity.buildFromURI('//Alice'))
     ).rejects.toThrow()
   }, 30_000)
 })
 
 describe('When there is an attester, claimer and ctype drivers license', () => {
+  let faucet: Identity
+  let attester: Identity
+  let claimer: Identity
+
   beforeAll(async () => {
+    faucet = await wannabeFaucet
+    attester = await wannabeAlice
+    claimer = await wannabeBob
+
     const ctypeExists = await CtypeOnChain(DriversLicense)
     // console.log(`ctype exists: ${ctypeExists}`)
     // console.log(`verify stored: ${await DriversLicense.verifyStored()}`)
@@ -54,19 +59,17 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     }
   }, 60_000)
 
-  it('should be possible to make a claim', () => {
-    const content = { name: 'Ralph', age: 12 }
+  it('should be possible to make a claim', async () => {
+    const content = { name: 'Ralfi', age: 12 }
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
-      claimer.address
+      claimer.getAddress()
     )
-    const request = RequestForAttestation.fromClaimAndIdentity(
+    const request = (await RequestForAttestation.fromClaimAndIdentity(
       claim,
-      claimer,
-      [],
-      null
-    )
+      claimer
+    )).message
     expect(request.verifyData()).toBeTruthy()
     expect(request.claim.contents).toMatchObject(content)
   })
@@ -76,14 +79,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
-      claimer.address
+      claimer.getAddress()
     )
-    const request = RequestForAttestation.fromClaimAndIdentity(
+    const request = (await RequestForAttestation.fromClaimAndIdentity(
       claim,
-      claimer,
-      [],
-      null
-    )
+      claimer
+    )).message
     expect(request.verifyData()).toBeTruthy()
     expect(request.verifySignature()).toBeTruthy()
     const attestation = Attestation.fromRequestAndPublicIdentity(
@@ -92,7 +93,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     )
     const result = await attestation.store(attester)
     expect(result.status.type).toBe('Finalized')
-    const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
+    const cred = await Credential.fromRequestAndAttestation(
+      claimer,
+      request,
+      attestation
+    )
+    const aClaim = cred.createPresentation([], false)
     expect(aClaim.verifyData()).toBeTruthy()
     await expect(aClaim.verify()).resolves.toBeTruthy()
   }, 60_000)
@@ -102,14 +108,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
-      claimer.address
+      claimer.getAddress()
     )
-    const request = RequestForAttestation.fromClaimAndIdentity(
+    const request = (await RequestForAttestation.fromClaimAndIdentity(
       claim,
-      claimer,
-      [],
-      null
-    )
+      claimer
+    )).message
     expect(request.verifyData()).toBeTruthy()
     expect(request.verifySignature()).toBeTruthy()
     const attestation = Attestation.fromRequestAndPublicIdentity(
@@ -117,10 +121,16 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attester.getPublicIdentity()
     )
 
-    const BobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    const bobbyBroke = await Identity.buildFromMnemonic()
 
-    await expect(attestation.store(BobbyBroke)).rejects.toThrow()
-    const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
+    await expect(attestation.store(bobbyBroke)).rejects.toThrow()
+    const cred = await Credential.fromRequestAndAttestation(
+      bobbyBroke,
+      request,
+      attestation
+    )
+    const aClaim = cred.createPresentation([], false)
+
     await expect(aClaim.verify()).resolves.toBeFalsy()
   }, 60_000)
 
@@ -145,15 +155,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       badCtype,
       content,
-      claimer.address
+      claimer.getAddress()
     )
-    const request = RequestForAttestation.fromClaimAndIdentity(
+    const request = (await RequestForAttestation.fromClaimAndIdentity(
       claim,
-      claimer,
-      [],
-      null
-    )
-    const attestation = Attestation.fromRequestAndPublicIdentity(
+      claimer
+    )).message
+    const attestation = await Attestation.fromRequestAndPublicIdentity(
       request,
       attester.getPublicIdentity()
     )
@@ -163,113 +171,137 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   describe('when there is an attested claim on-chain', () => {
-    let AttClaim: AttestedClaim
+    let attClaim: AttestedClaim
 
     beforeAll(async () => {
       const content = { name: 'Rolfi', age: 18 }
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,
-        claimer.address
+        claimer.getAddress()
       )
-      const request = RequestForAttestation.fromClaimAndIdentity(
+      const request = (await RequestForAttestation.fromClaimAndIdentity(
         claim,
-        claimer,
-        [],
-        null
-      )
+        claimer
+      )).message
       const attestation = Attestation.fromRequestAndPublicIdentity(
         request,
         attester.getPublicIdentity()
       )
       const result = await attestation.store(attester)
       expect(result.status.type).toBe('Finalized')
-      AttClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
-      await expect(AttClaim.verify()).resolves.toBeTruthy()
+      const cred = await Credential.fromRequestAndAttestation(
+        claimer,
+        request,
+        attestation
+      )
+      attClaim = cred.createPresentation([], false)
+      await expect(attClaim.verify()).resolves.toBeTruthy()
     }, 60_000)
 
     it('should not be possible to attest the same claim twice', async () => {
-      await expect(AttClaim.attestation.store(attester)).rejects.toThrowError(
+      await expect(attClaim.attestation.store(attester)).rejects.toThrowError(
         'already attested'
       )
     }, 15000)
 
+    it('should not be possible to use attestation for different claim', async () => {
+      const content = { name: 'Rolfi', age: 19 }
+      const claim = Claim.fromCTypeAndClaimContents(
+        DriversLicense,
+        content,
+        claimer.getAddress()
+      )
+      const request = (await RequestForAttestation.fromClaimAndIdentity(
+        claim,
+        claimer
+      )).message
+      const fakeAttClaim = new AttestedClaim({
+        request,
+        attestation: attClaim.attestation,
+      })
+      await expect(fakeAttClaim.verify()).resolves.toBeFalsy()
+    }, 15000)
+
     it('should not be possible for the claimer to revoke an attestation', async () => {
-      await expect(revoke(AttClaim.getHash(), claimer)).rejects.toThrowError(
+      await expect(revoke(attClaim.getHash(), claimer)).rejects.toThrowError(
         'not permitted'
       )
-      await expect(AttClaim.verify()).resolves.toBeTruthy()
+      await expect(attClaim.verify()).resolves.toBeTruthy()
     }, 30000)
 
     it('should be possible for the attester to revoke an attestation', async () => {
-      await expect(AttClaim.verify()).resolves.toBeTruthy()
-      const result = await revoke(AttClaim.getHash(), attester)
+      await expect(attClaim.verify()).resolves.toBeTruthy()
+      const result = await revoke(attClaim.getHash(), attester)
       expect(result.status.type).toBe('Finalized')
       expect(result.isFinalized).toBeTruthy()
-      await expect(AttClaim.verify()).resolves.toBeFalsy()
+      await expect(attClaim.verify()).resolves.toBeFalsy()
     }, 15000)
   })
 
   describe('when there is another Ctype that works as a legitimation', () => {
     beforeAll(async () => {
-      if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
-        await IsOfficialLicenseAuthority.store(UncleSam)
+      if (!(await CtypeOnChain(isOfficialLicenseAuthority))) {
+        await isOfficialLicenseAuthority.store(faucet)
       }
       await expect(
-        CtypeOnChain(IsOfficialLicenseAuthority)
+        CtypeOnChain(isOfficialLicenseAuthority)
       ).resolves.toBeTruthy()
     }, 30_000)
 
     it('can be included in a claim as a legitimation', async () => {
       // make credential to be used as legitimation
-      const LicenseAuthorization = Claim.fromCTypeAndClaimContents(
-        IsOfficialLicenseAuthority,
+      const licenseAuthorization = Claim.fromCTypeAndClaimContents(
+        isOfficialLicenseAuthority,
         {
           LicenseType: "Driver's License",
           LicenseSubtypes: 'sportscars, tanks',
         },
-        attester.address
+        attester.getAddress()
       )
-      const request1 = RequestForAttestation.fromClaimAndIdentity(
-        LicenseAuthorization,
-        attester,
-        [],
-        null
-      )
-      const LicenseAuthorizationGranted = Attestation.fromRequestAndPublicIdentity(
+      const request1 = (await RequestForAttestation.fromClaimAndIdentity(
+        licenseAuthorization,
+        attester
+      )).message
+      const licenseAuthorizationGranted = Attestation.fromRequestAndPublicIdentity(
         request1,
-        UncleSam.getPublicIdentity()
+        faucet.getPublicIdentity()
       )
-      await LicenseAuthorizationGranted.store(UncleSam)
+      const tx1 = await licenseAuthorizationGranted.store(faucet)
+      expect(tx1.status.isFinalized).toBeTruthy()
       // make request including legitimation
       const iBelieveICanDrive = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         { name: 'Dominic Toretto', age: 52 },
-        claimer.address
+        claimer.getAddress()
       )
-      const request2 = RequestForAttestation.fromClaimAndIdentity(
+      const request2 = (await RequestForAttestation.fromClaimAndIdentity(
         iBelieveICanDrive,
         claimer,
-        [
-          AttestedClaim.fromRequestAndAttestation(
-            request1,
-            LicenseAuthorizationGranted
-          ),
-        ],
-        null
-      )
+        {
+          legitimations: [
+            await Credential.fromRequestAndAttestation(
+              attester,
+              request1,
+              licenseAuthorizationGranted
+            ).then(e => e.createPresentation([], false)),
+          ],
+        }
+      )).message
       const LicenseGranted = Attestation.fromRequestAndPublicIdentity(
         request2,
         attester.getPublicIdentity()
       )
-      await LicenseGranted.store(attester)
-      const License = AttestedClaim.fromRequestAndAttestation(
+      const tx2 = await LicenseGranted.store(attester)
+      expect(tx2.status.isFinalized).toBeTruthy()
+      const license = await Credential.fromRequestAndAttestation(
+        claimer,
         request2,
         LicenseGranted
-      )
+      ).then(e => e.createPresentation([], false))
       await Promise.all([
-        expect(License.verify()).resolves.toBeTruthy(),
-        expect(LicenseAuthorizationGranted.verify()).resolves.toBeTruthy(),
+        expect(license.verify()).resolves.toBeTruthy(),
+        expect(licenseAuthorizationGranted.verify()).resolves.toBeTruthy(),
       ])
     }, 60_000)
   })

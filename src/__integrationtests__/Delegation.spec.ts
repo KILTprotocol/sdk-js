@@ -12,19 +12,22 @@ import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { faucet, alice, bob, DriversLicense, CtypeOnChain } from './utils'
+import Credential from '../credential/Credential'
+import {
+  wannabeFaucet,
+  wannabeAlice,
+  wannabeBob,
+  DriversLicense,
+  CtypeOnChain,
+} from './utils'
 import {
   getChildIds,
   getAttestationHashes,
   fetchChildren,
 } from '../delegation/Delegation.chain'
 import { decodeDelegationNode } from '../delegation/DelegationDecoder'
+import { Identity } from '..'
 import { IBlockchainApi } from '../blockchain/Blockchain'
-
-const UncleSam = faucet
-const attester = alice
-const claimer = bob
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
@@ -32,7 +35,15 @@ beforeAll(async () => {
 })
 
 describe('when there is an account hierarchy', () => {
+  let uncleSam: Identity
+  let claimer: Identity
+  let attester: Identity
+
   beforeAll(async () => {
+    uncleSam = await wannabeFaucet
+    claimer = await wannabeBob
+    attester = await wannabeAlice
+
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester)
     }
@@ -42,18 +53,18 @@ describe('when there is an account hierarchy', () => {
     const rootNode = new DelegationRootNode(
       UUID.generate(),
       DriversLicense.hash,
-      UncleSam.address
+      uncleSam.getAddress()
     )
-    await rootNode.store(UncleSam)
+    await rootNode.store(uncleSam)
     const delegatedNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
-      attester.address,
+      attester.getAddress(),
       [Permission.ATTEST],
       rootNode.id
     )
     const HashSignedByDelegate = attester.signStr(delegatedNode.generateHash())
-    await delegatedNode.store(UncleSam, HashSignedByDelegate)
+    await delegatedNode.store(uncleSam, HashSignedByDelegate)
     await Promise.all([
       expect(rootNode.verify()).resolves.toBeTruthy(),
       expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -68,21 +79,21 @@ describe('when there is an account hierarchy', () => {
       rootNode = new DelegationRootNode(
         UUID.generate(),
         DriversLicense.hash,
-        UncleSam.address
+        uncleSam.getAddress()
       )
-      await rootNode.store(UncleSam)
+      await rootNode.store(uncleSam)
 
       delegatedNode = new DelegationNode(
         UUID.generate(),
         rootNode.id,
-        attester.address,
+        attester.getAddress(),
         [Permission.ATTEST],
         rootNode.id
       )
       const HashSignedByDelegate = attester.signStr(
         delegatedNode.generateHash()
       )
-      await delegatedNode.store(UncleSam, HashSignedByDelegate)
+      await delegatedNode.store(uncleSam, HashSignedByDelegate)
       await Promise.all([
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -94,14 +105,15 @@ describe('when there is an account hierarchy', () => {
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,
-        claimer.address
+        claimer.getAddress()
       )
-      const request = RequestForAttestation.fromClaimAndIdentity(
+      const request = (await RequestForAttestation.fromClaimAndIdentity(
         claim,
         claimer,
-        [],
-        delegatedNode.id
-      )
+        {
+          delegationId: delegatedNode.id,
+        }
+      )).message
       expect(request.verifyData()).toBeTruthy()
       expect(request.verifySignature()).toBeTruthy()
 
@@ -112,15 +124,16 @@ describe('when there is an account hierarchy', () => {
       const result1 = await attestation.store(attester)
       expect(result1.status.type).toBe('Finalized')
 
-      const attClaim = AttestedClaim.fromRequestAndAttestation(
+      const attClaim = await Credential.fromRequestAndAttestation(
+        claimer,
         request,
         attestation
-      )
+      ).then(c => c.createPresentation([]))
       expect(attClaim.verifyData()).toBeTruthy()
       await expect(attClaim.verify()).resolves.toBeTruthy()
 
       // revoke attestation through root
-      const result2 = await attClaim.attestation.revoke(UncleSam)
+      const result2 = await attClaim.attestation.revoke(uncleSam)
       expect(result2.status.type).toBe('Finalized')
     }, 30000)
   })

@@ -1,17 +1,19 @@
 import * as u8aUtil from '@polkadot/util/u8a'
 import Identity from './Identity'
 import { coToUInt8 } from '../crypto/Crypto'
-import { PublicIdentity } from '..'
+import constants from '../test/constants'
+import AttesterIdentity from '../attesteridentity/AttesterIdentity'
+import PublicIdentity from './PublicIdentity'
 
 describe('Identity', () => {
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
-  it('should create known identities', () => {
-    const alice = Identity.buildFromURI('//Alice')
+  it('should create known identities', async () => {
+    const alice = await Identity.buildFromURI('//Alice')
 
     expect(alice.seedAsHex).toEqual('0x2f2f416c696365')
 
-    expect(alice.address).toEqual(
+    expect(alice.getAddress()).toEqual(
       '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu'
     )
 
@@ -20,13 +22,14 @@ describe('Identity', () => {
       '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee'
     )
   })
-  it('should return instanceof PublicIdentity', () => {
-    const alice = Identity.buildFromURI('//Alice')
+  it('should return instanceof PublicIdentity', async () => {
+    const alice = await Identity.buildFromURI('//Alice')
     expect(alice.getPublicIdentity()).toBeInstanceOf(PublicIdentity)
   })
-  it('should create different identities with random phrases', () => {
-    const alice = Identity.buildFromMnemonic()
-    const bob = Identity.buildFromMnemonic()
+
+  it('should create different identities with random phrases', async () => {
+    const alice = await Identity.buildFromMnemonic()
+    const bob = await Identity.buildFromMnemonic()
 
     expect(alice.signPublicKeyAsHex).not.toBeFalsy()
     // @ts-ignore
@@ -38,17 +41,17 @@ describe('Identity', () => {
 
     expect(alice.signPublicKeyAsHex).not.toEqual(bob.signPublicKeyAsHex)
     // @ts-ignore
-    expect(alice.boxPublicKeyAsHex).not.toEqual(bob.boxPublicKeyAsHex)
+    expect(alice.getBoxPublicKey()).not.toEqual(bob.getBoxPublicKey())
     // @ts-ignore
     expect(alice.boxKeyPair.secretKey).not.toEqual(bob.boxKeyPair.secretKey)
     expect(alice.seed).not.toEqual(bob.seed)
     expect(alice.seedAsHex).not.toEqual(bob.seedAsHex)
   })
 
-  it('should restore identity based on phrase', () => {
+  it('should restore identity based on phrase', async () => {
     const expectedPhrase =
       'taxi toddler rally tonight certain tired program settle topple what execute few'
-    const alice = Identity.buildFromMnemonic(expectedPhrase)
+    const alice = await Identity.buildFromMnemonic(expectedPhrase)
 
     // @ts-ignore
     expect(alice.signPublicKeyAsHex).toEqual(
@@ -65,23 +68,46 @@ describe('Identity', () => {
     )
   })
 
-  it('should have different keys for signing and boxing', () => {
-    const alice = Identity.buildFromMnemonic()
+  it('should have different keys for signing and boxing', async () => {
+    const alice = await Identity.buildFromMnemonic()
     expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
       // @ts-ignore
       alice.boxKeyPair.publicKey
     )
   })
 
-  it('should fail creating identity based on invalid phrase', () => {
+  it('should fail creating identity based on invalid phrase', async () => {
     const phraseWithUnknownWord =
       'taxi toddler rally tonight certain tired program settle topple what execute stew' // stew instead of few
-    expect(() =>
+    await expect(
       Identity.buildFromMnemonic(phraseWithUnknownWord)
-    ).toThrowError()
+    ).rejects.toThrowError()
 
     const phraseTooLong =
       'taxi toddler rally tonight certain tired program settle topple what execute' // stew instead of few
-    expect(() => Identity.buildFromMnemonic(phraseTooLong)).toThrowError()
+    await expect(
+      Identity.buildFromMnemonic(phraseTooLong)
+    ).rejects.toThrowError()
+  })
+
+  it('should have different keys for signing and boxing', async () => {
+    const alice = await Identity.buildFromMnemonic()
+    expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
+      // @ts-ignore
+      alice.boxKeyPair.publicKey
+    )
+  })
+
+  it('should initiate attestation with gabi keys (PE)', async () => {
+    const alice = await AttesterIdentity.buildFromMnemonic(undefined, {
+      key: {
+        publicKey: constants.PUBLIC_KEY.valueOf(),
+        privateKey: constants.PRIVATE_KEY.valueOf(),
+      },
+    })
+
+    const msgSession = await alice.initiateAttestation()
+    expect(msgSession.session).toBeDefined()
+    expect(msgSession.messageBody).toBeDefined()
   })
 })
