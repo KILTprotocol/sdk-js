@@ -152,7 +152,7 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * [ASYNC] Queries an attestation from the chain and checks its validity.
+   * [STATIC] [ASYNC] Queries an attestation from the chain and checks its validity.
    *
    * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
    * @returns A promise containing whether the attestation is valid.

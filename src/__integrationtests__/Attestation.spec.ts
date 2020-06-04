@@ -75,7 +75,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   })
 
   it('should be possible to attest a claim', async () => {
-    const content = { name: 'Ralfi', age: 12 }
+    const content = { name: 'Ralph', age: 12 }
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
@@ -104,7 +104,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   it('should not be possible to attest a claim w/o tokens', async () => {
-    const content = { name: 'Ralfi', age: 10 }
+    const content = { name: 'Ralph', age: 10 }
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
@@ -151,7 +151,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       } as ICType['schema'],
     } as ICType)
 
-    const content = { name: 'Ralfi', weight: 120 }
+    const content = { name: 'Ralph', weight: 120 }
     const claim = Claim.fromCTypeAndClaimContents(
       badCtype,
       content,
@@ -270,13 +270,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const tx1 = await licenseAuthorizationGranted.store(faucet)
       expect(tx1.status.isFinalized).toBeTruthy()
       // make request including legitimation
-      const iBelieveIcanDrive = Claim.fromCTypeAndClaimContents(
+      const iBelieveICanDrive = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         { name: 'Dominic Toretto', age: 52 },
         claimer.getAddress()
       )
       const request2 = (await RequestForAttestation.fromClaimAndIdentity(
-        iBelieveIcanDrive,
+        iBelieveICanDrive,
         claimer,
         {
           legitimations: [

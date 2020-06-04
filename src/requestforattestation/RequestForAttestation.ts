@@ -3,7 +3,7 @@
  * A RequestForAttestation represents a [[Claim]] which needs to be validated. In practice, the RequestForAttestation is sent from a claimer to an attester.
  *
  * A RequestForAttestation object contains the [[Claim]] and its hash, and legitimations/delegationId of the attester.
- * It's signed by the claimer, to make it tamperproof (`claimerSignature` is a property of [[Claim]]).
+ * It's signed by the claimer, to make it tamper-proof (`claimerSignature` is a property of [[Claim]]).
  * A RequestForAttestation also supports hiding of claim data during a credential presentation.
  *
  * @packageDocumentation
@@ -110,6 +110,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
    * @param option.initiateAttestationMsg The message object which was created during the initiation of the attestation in [[initiateAttestation]].
    * @param option.attesterPubKey The privacy enhanced public key of the Attester.
+   * @throws When claimInput's owner address does not match the supplied identity's address.
    * @returns A new [[RequestForAttestation]] object.
    */
   public static async fromClaimAndIdentity(
@@ -277,6 +278,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Verifies the data of the [[RequestForAttestation]] object; used to check that the data was not tampered with, by checking the data against hashes.
    *
    * @returns Whether the data is valid.
+   * @throws When any key of the claim contents could not be found in the claimHashTree.
+   * @throws When either the rootHash or the signature are not verifiable.
    * @example ```javascript
    * const reqForAtt = RequestForAttestation.fromClaimAndIdentity({
    *   claim,

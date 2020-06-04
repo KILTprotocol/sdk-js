@@ -105,11 +105,12 @@ export enum MessageBodyType {
 
 export default class Message implements IMessage {
   /**
-   * Verifies that the sender of a [[Message]] is also the owner of it, e.g. the owner's and sender's public keys match.
+   * [STATIC] Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's public keys match.
    *
    * @param message The [[Message]] object which needs to be decrypted.
    * @param message.body The body of the [[Message]] which depends on the [[MessageBodyType]].
    * @param message.senderAddress The sender's public SS58 address of the [[Message]].
+   * @throws When the sender does not match the owner of the in the Message supplied Object.
    *
    */
   public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
@@ -148,36 +149,38 @@ export default class Message implements IMessage {
   }
 
   /**
-   * Verifies that neither the hash of [[Message]] nor the sender's signature on the hash have been tampered with.
+   * [STATIC] Verifies that neither the hash of [[Message]] nor the sender's signature on the hash have been tampered with.
    *
    * @param encrypted The encrypted [[Message]] object which needs to be decrypted.
-   * @param encrypted.message The encrypted body of the [[Message]] which depends on the [[MessageBodyType]].
-   * @param encrypted.nonce The encryption nonce.
-   * @param encrypted.createdAt The timestamp of the message construction.
-   * @param encrypted.hash The hash of the concatenation of message + nonce + createdAt.
-   * @param encrypted.signature The sender's signature on the hash.
    * @param senderAddress The sender's public SS58 address of the [[Message]].
+   * @throws When either the hash or the signature could not be verified against the calculations.
    *
    */
   public static ensureHashAndSignature(
-    { message, nonce, createdAt, hash, signature }: IEncryptedMessage,
+    encrypted: IEncryptedMessage,
     senderAddress: IMessage['senderAddress']
   ): void {
-    if (Crypto.hashStr(message + nonce + createdAt) !== hash) {
+    if (
+      Crypto.hashStr(
+        encrypted.message + encrypted.nonce + encrypted.createdAt
+      ) !== encrypted.hash
+    ) {
       throw new Error('Hash of message not correct')
     }
-    if (!Crypto.verify(hash, signature, senderAddress)) {
+    if (!Crypto.verify(encrypted.hash, encrypted.signature, senderAddress)) {
       throw new Error('Signature of message not correct')
     }
   }
 
   /**
-   * Symmetrically decrypts the result of [[Message.encrypt]].
+   * [STATIC] Symmetrically decrypts the result of [[Message.encrypt]].
    *
    * Uses [[Message.ensureHashAndSignature]] and [[Message.ensureOwnerIsSender]] internally.
    *
    * @param encrypted The encrypted message.
    * @param receiver The [[Identity]] of the receiver.
+   * @throws When encrypted message couldn't be decrypted.
+   * @throws When the decoded message could not be parsed.
    * @returns The original [[Message]].
    */
   public static decrypt(

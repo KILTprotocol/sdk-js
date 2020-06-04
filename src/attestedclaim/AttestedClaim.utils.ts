@@ -42,7 +42,8 @@ export function compress(
 /**
  *  Decompresses an [[AttestedClaim]] array from storage and/or message into an object.
  *
- * @param attestedClaim A compressesd [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
+ * @param attestedClaim A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
+ * @throws When attestedClaim is not an Array or it's length is unequal 2.
  *
  * @returns An object that has the same properties as an [[AttestedClaim]].
  */
@@ -52,7 +53,7 @@ export function decompress(
 ): IAttestedClaim {
   if (!Array.isArray(attestedClaim) || attestedClaim.length !== 2) {
     throw new Error(
-      'Compressed Attested Claim isnt an Array or has all the required data types'
+      "Compressed Attested Claim isn't an Array or has all the required data types"
     )
   }
   return {
