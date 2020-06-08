@@ -1,4 +1,4 @@
-import { Text, Tuple, U8a, Option } from '@polkadot/types'
+import { Tuple, Option, H256, Text } from '@polkadot/types'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
 import IPublicIdentity from '../types/PublicIdentity'
 
@@ -8,34 +8,30 @@ describe('PublicIdentity', () => {
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
 
-  require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
-    id => {
-      let tuple
+  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
+    async id => {
       switch (id) {
         case '1':
-          tuple = new Option(
+          return new Option(
             Tuple,
             new Tuple(
               // (public-signing-key, public-encryption-key, did-reference?)
-              [Text, Text, U8a],
+              [Text, Text, 'Option<Bytes>'],
               ['pub-key', 'box-key', [14, 75, 23, 14, 55]]
             )
           )
-          break
         case '2':
-          tuple = new Option(
+          return new Option(
             Tuple,
             new Tuple(
               // (public-signing-key, public-encryption-key, did-reference?)
-              [Text, Text, Text],
+              [Text, Text, 'Option<Bytes>'],
               ['pub-key', 'box-key', undefined]
             )
           )
-          break
         default:
-          tuple = undefined
+          return new Option(Tuple.with([H256, H256, 'Option<Bytes>']))
       }
-      return Promise.resolve(tuple)
     }
   )
 
@@ -49,14 +45,14 @@ describe('PublicIdentity', () => {
               id: 'external-id',
               publicKey: [
                 {
-                  id: 'extenal-id#key-1',
+                  id: 'external-id#key-1',
                   type: 'X25519Salsa20Poly1305Key2018',
                   publicKeyHex: 'external-box-key',
                 },
               ],
               service: [
                 {
-                  id: 'extenal-id#service-1',
+                  id: 'external-id#service-1',
                   type: 'KiltMessagingService',
                   serviceEndpoint: 'external-service-address',
                 },
@@ -104,11 +100,11 @@ describe('PublicIdentity', () => {
       serviceAddress: 'internal-service-address',
     })
 
-    const bcOnleyubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
+    const bcOnlyPubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
       'did:kilt:2',
       {} as IURLResolver
     )
-    expect(bcOnleyubId).toEqual({
+    expect(bcOnlyPubId).toEqual({
       address: '2',
       boxPublicKeyAsHex: 'box-key',
       serviceAddress: undefined,

@@ -6,9 +6,7 @@ import {
 } from './CType.utils'
 import ICType from '../types/CType'
 
-jest.mock('../blockchain/Blockchain')
-
-const ctypeInput: ICType['schema'] = ({
+const ctypeInput = ({
   $id: 'kilt:ctype:0x1',
   $schema: 'http://kilt-protocol.org/draft-01/ctype-input#',
   title: 'Ctype Title',

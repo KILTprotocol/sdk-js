@@ -3,9 +3,11 @@
  * @ignore
  */
 
+import { Accumulator, CombinedPresentation } from '@kiltprotocol/portablegabi'
 import { connect, disconnect } from './kilt/Kilt'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import * as Balance from './balance/Balance.chain'
+import AttesterIdentity from './attesteridentity/AttesterIdentity'
 import Identity from './identity/Identity'
 import PublicIdentity, { IURLResolver } from './identity/PublicIdentity'
 import CType from './ctype/CType'
@@ -27,10 +29,13 @@ import Did, { IDid } from './did/Did'
 import * as Quote from './quote/Quote'
 import QuoteUtils from './quote/Quote.utils'
 import Message from './messaging/Message'
-import * as Constants from './const'
+import * as Verifier from './actor/Verifier'
+import * as Claimer from './actor/Claimer'
+import * as Attester from './actor/Attester'
+import Credential from './credential/Credential'
 
 export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
-export { default as TxStatus } from './blockchain/TxStatus'
+export { SubmittableResult } from '@polkadot/api'
 export { default as Crypto } from './crypto'
 export { default as UUID } from './util/UUID'
 export { default as QuoteSchema } from './quote/QuoteSchema'
@@ -62,6 +67,7 @@ export {
 } from './types/Delegation'
 
 export {
+  AttesterIdentity,
   BlockchainApiConnection,
   Balance,
   Identity,
@@ -85,13 +91,19 @@ export {
   Did,
   IDid,
   Message,
-  Constants,
   Quote,
+  Verifier,
+  Claimer,
+  Accumulator,
+  CombinedPresentation,
+  Attester,
   QuoteUtils,
+  Credential,
 }
 
 // ---- Default export for ease of use ----
 export default {
+  AttesterIdentity,
   connect,
   disconnect,
   Balance,
@@ -107,4 +119,10 @@ export default {
   DelegationRootNode,
   Did,
   Message,
+  Verifier,
+  Claimer,
+  Accumulator,
+  CombinedPresentation,
+  Attester,
+  Credential,
 }

@@ -1,30 +1,49 @@
 /**
  * @group integration/delegation
+ * @ignore
+ * @packageDocumentation
  */
 
 import DelegationRootNode from '../delegation/DelegationRootNode'
 import UUID from '../util/UUID'
 import DelegationNode from '../delegation/DelegationNode'
 import { Permission } from '../types/Delegation'
-import getCached from '../blockchainApiConnection'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from '../attestation/Attestation'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { faucet, alice, bob, DriversLicense, CtypeOnChain } from './utils'
+import Credential from '../credential/Credential'
+import {
+  wannabeFaucet,
+  wannabeAlice,
+  wannabeBob,
+  DriversLicense,
+  CtypeOnChain,
+} from './utils'
 import {
   getChildIds,
   getAttestationHashes,
   fetchChildren,
 } from '../delegation/Delegation.chain'
 import { decodeDelegationNode } from '../delegation/DelegationDecoder'
+import { Identity } from '..'
+import { IBlockchainApi } from '../blockchain/Blockchain'
 
-const UncleSam = faucet
-const attester = alice
-const claimer = bob
+let blockchain: IBlockchainApi
+beforeAll(async () => {
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+})
 
-describe('when there is an account hierarchy', async () => {
+describe('when there is an account hierarchy', () => {
+  let uncleSam: Identity
+  let claimer: Identity
+  let attester: Identity
+
   beforeAll(async () => {
+    uncleSam = await wannabeFaucet
+    claimer = await wannabeBob
+    attester = await wannabeAlice
+
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester)
     }
@@ -34,25 +53,25 @@ describe('when there is an account hierarchy', async () => {
     const rootNode = new DelegationRootNode(
       UUID.generate(),
       DriversLicense.hash,
-      UncleSam.address
+      uncleSam.getAddress()
     )
-    await rootNode.store(UncleSam)
+    await rootNode.store(uncleSam)
     const delegatedNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
-      attester.address,
+      attester.getAddress(),
       [Permission.ATTEST],
       rootNode.id
     )
     const HashSignedByDelegate = attester.signStr(delegatedNode.generateHash())
-    await delegatedNode.store(UncleSam, HashSignedByDelegate)
+    await delegatedNode.store(uncleSam, HashSignedByDelegate)
     await Promise.all([
       expect(rootNode.verify()).resolves.toBeTruthy(),
       expect(delegatedNode.verify()).resolves.toBeTruthy(),
     ])
   }, 30000)
 
-  describe('and attestation rights have been delegated', async () => {
+  describe('and attestation rights have been delegated', () => {
     let rootNode: DelegationRootNode
     let delegatedNode: DelegationNode
 
@@ -60,21 +79,21 @@ describe('when there is an account hierarchy', async () => {
       rootNode = new DelegationRootNode(
         UUID.generate(),
         DriversLicense.hash,
-        UncleSam.address
+        uncleSam.getAddress()
       )
-      await rootNode.store(UncleSam)
+      await rootNode.store(uncleSam)
 
       delegatedNode = new DelegationNode(
         UUID.generate(),
         rootNode.id,
-        attester.address,
+        attester.getAddress(),
         [Permission.ATTEST],
         rootNode.id
       )
       const HashSignedByDelegate = attester.signStr(
         delegatedNode.generateHash()
       )
-      await delegatedNode.store(UncleSam, HashSignedByDelegate)
+      await delegatedNode.store(uncleSam, HashSignedByDelegate)
       await Promise.all([
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -82,18 +101,19 @@ describe('when there is an account hierarchy', async () => {
     }, 30000)
 
     it("should be possible to attest a claim in the root's name and revoke it by the root", async () => {
-      const content = { name: 'Ralfi', age: 12 }
+      const content = { name: 'Ralph', age: 12 }
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,
-        claimer.address
+        claimer.getAddress()
       )
-      const request = RequestForAttestation.fromClaimAndIdentity(
+      const request = (await RequestForAttestation.fromClaimAndIdentity(
         claim,
         claimer,
-        [],
-        delegatedNode.id
-      )
+        {
+          delegationId: delegatedNode.id,
+        }
+      )).message
       expect(request.verifyData()).toBeTruthy()
       expect(request.verifySignature()).toBeTruthy()
 
@@ -101,19 +121,20 @@ describe('when there is an account hierarchy', async () => {
         request,
         attester.getPublicIdentity()
       )
-      const status = await attestation.store(attester)
-      expect(status.type).toBe('Finalized')
+      const result1 = await attestation.store(attester)
+      expect(result1.status.type).toBe('Finalized')
 
-      const attClaim = AttestedClaim.fromRequestAndAttestation(
+      const attClaim = await Credential.fromRequestAndAttestation(
+        claimer,
         request,
         attestation
-      )
+      ).then(c => c.createPresentation([]))
       expect(attClaim.verifyData()).toBeTruthy()
       await expect(attClaim.verify()).resolves.toBeTruthy()
 
       // revoke attestation through root
-      const result = await attClaim.attestation.revoke(UncleSam)
-      expect(result.type).toBe('Finalized')
+      const result2 = await attClaim.attestation.revoke(uncleSam)
+      expect(result2.status.type).toBe('Finalized')
     }, 30000)
   })
 })
@@ -146,6 +167,6 @@ describe('handling queries to data not on chain', () => {
   })
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  blockchain.api.disconnect()
 })

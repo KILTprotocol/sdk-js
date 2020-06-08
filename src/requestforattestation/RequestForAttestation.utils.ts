@@ -42,6 +42,7 @@ export function errorCheck(
  *  Compresses an nonce and hash from a [[NonceHashTree]] or [[RequestForAttestation]] properties.
  *
  * @param nonceHash A hash or a hash and nonce object that will be sorted and stripped for messaging or storage.
+ * @throws When the nonceHash is missing it's hash (existence of nonce is ignored).
  *
  * @returns An object compressing of a hash or a hash and nonce.
  */
@@ -64,7 +65,7 @@ export function compressNonceAndHash(
 /**
  *  Decompresses an nonce and hash from a [[NonceHashTree]] or [[RequestForAttestation]] properties.
  *
- * @param nonceHash A compressesd a hash or a hash and nonce array that is reverted back into an object.
+ * @param nonceHash A compressed a hash or a hash and nonce array that is reverted back into an object.
  *
  * @returns An object compressing of a hash or a hash and nonce.
  */
@@ -82,11 +83,11 @@ function decompressNonceAndHash(nonceHash: CompressedNonceHash): NonceHash {
 }
 
 /**
- *  Compresses a [[claimHashTree]] within a [[RequestForAttestation]] object.
+ *  Compresses a [[NonceHashTree]] within a [[RequestForAttestation]] object.
  *
- * @param reqForAtt A [[claimHashTree]] object that will be sorted and stripped for messaging or storage.
+ * @param reqForAtt A [[NonceHashTree]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of an [[claimHashTree]].
+ * @returns An ordered array of an [[NonceHashTree]].
  */
 
 export function compressClaimHashTree(
@@ -104,7 +105,7 @@ export function compressClaimHashTree(
 /**
  *  Decompresses a claim hash tree from storage and/or message.
  *
- * @param reqForAtt A compressesd claim hash tree array that is reverted back into an object.
+ * @param reqForAtt A compressed claim hash tree array that is reverted back into an object.
  *
  * @returns An object that has the same properties as an claim hash tree.
  */
@@ -137,7 +138,7 @@ export function compressLegitimation(
 /**
  *  Decompresses [[AttestedClaim]]s which are an [[Attestation]] and [[RequestForAttestation]] from storage and/or message.
  *
- * @param leg A compressesd [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
+ * @param leg A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
  *
  * @returns An object that has the same properties as an [[AttestedClaim]].
  */
@@ -169,13 +170,15 @@ export function compress(
     reqForAtt.rootHash,
     compressLegitimation(reqForAtt.legitimations),
     reqForAtt.delegationId,
+    reqForAtt.privacyEnhancement,
   ]
 }
 
 /**
  *  Decompresses a [[RequestForAttestation]] from storage and/or message.
  *
- * @param reqForAtt A compressesd [[RequestForAttestation]] array that is reverted back into an object.
+ * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
+ * @throws When reqForAtt is not an Array and it's length is not equal to the defined length of 8.
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */
@@ -183,9 +186,9 @@ export function compress(
 export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
-  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 8) {
+  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 9) {
     throw new Error(
-      'Compressed Request For Attestation isnt an Array or has all the required data types'
+      "Compressed Request For Attestation isn't an Array or has all the required data types"
     )
   }
   return {
@@ -197,6 +200,7 @@ export function decompress(
     rootHash: reqForAtt[5],
     legitimations: decompressLegitimation(reqForAtt[6]),
     delegationId: reqForAtt[7],
+    privacyEnhancement: reqForAtt[8],
   }
 }
 

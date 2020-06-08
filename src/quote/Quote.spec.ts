@@ -18,129 +18,154 @@ import RequestForAttestation from '../requestforattestation/RequestForAttestatio
 import { verify, hashObjectAsStr } from '../crypto/Crypto'
 
 describe('Claim', () => {
-  const claimerIdentity = Identity.buildFromURI('//Alice')
-  const attesterIdentity = Identity.buildFromURI('//Bob')
-  const invalidCost = { gross: 233, tax: { vat: 3.3 } } as ICostBreakdown
-  const date = new Date(2019, 11, 10)
+  let claimerIdentity: Identity
+  let attesterIdentity: Identity
+  let invalidCost: ICostBreakdown
+  let date: Date
+  let cType: ICType['schema']
+  let fromRawCType: ICType
+  let testCType: ICType
+  let claim: IClaim
+  let request: RequestForAttestation
+  let invalidCostQuoteData: IQuote
+  let invalidPropertiesQuoteData: IQuote
+  let validQuoteData: IQuote
+  let validAttesterSignedQuote: IQuoteAttesterSigned
+  let quoteBothAgreed: IQuoteAgreement
+  let invalidPropertiesQuote: IQuote
+  let invalidCostQuote: IQuote
+  let compressedQuote: CompressedQuote
+  let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
+  let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
-  const cType: ICType['schema'] = {
-    $id: 'kilt:ctype:0x1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'Quote',
-    properties: {
-      name: { type: 'string' },
-    },
-    type: 'object',
-  }
+  beforeAll(async () => {
+    claimerIdentity = await Identity.buildFromURI('//Alice')
+    attesterIdentity = await Identity.buildFromURI('//Bob')
+    invalidCost = { gross: 233, tax: { vat: 3.3 } } as ICostBreakdown
+    date = new Date(2019, 11, 10)
 
-  const fromRawCType: ICType = {
-    schema: cType,
-    owner: claimerIdentity.address,
-    hash: '',
-  }
+    cType = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Quote Information',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
 
-  const testCType = CType.fromCType(fromRawCType)
+    fromRawCType = {
+      schema: cType,
+      owner: claimerIdentity.getAddress(),
+      hash: '',
+    }
 
-  const claim: IClaim = {
-    cTypeHash: testCType.hash,
-    contents: {},
-    owner: claimerIdentity.address,
-  }
-  // build request for attestation with legimitations
-  const request = RequestForAttestation.fromClaimAndIdentity(
-    claim,
-    claimerIdentity,
-    [],
-    null
-  )
-  const invalidCostQuoteData = {
-    cTypeHash: '0x12345678',
-    cost: invalidCost,
-    currency: 'Euro',
-    timeframe: date,
-    termsAndConditions: 'Lots of these',
-  } as IQuote
+    testCType = CType.fromCType(fromRawCType)
 
-  const invalidPropertiesQuoteData = {
-    cTypeHash: '0x12345678',
-    cost: {
-      gross: 233,
-      net: 23.3,
-      tax: { vat: 3.3 },
-    },
-    timeframe: date,
-    currency: 'Euro',
-    termsAndConditions: 'Lots of these',
-  } as IQuote
+    claim = {
+      cTypeHash: testCType.hash,
+      contents: {},
+      owner: claimerIdentity.getAddress(),
+    }
 
-  const validQuoteData: IQuote = {
-    attesterAddress: attesterIdentity.address,
-    cTypeHash: '0x12345678',
-    cost: {
-      gross: 233,
-      net: 23.3,
-      tax: { vat: 3.3 },
-    },
-    currency: 'Euro',
-    timeframe: new Date('12-04-2020'),
-    termsAndConditions: 'Lots of these',
-  }
-  const validAttesterSignedQuote: IQuoteAttesterSigned = Quote.createAttesterSignature(
-    validQuoteData,
-    attesterIdentity
-  )
-  const quoteBothAgreed: IQuoteAgreement = Quote.createAgreedQuote(
-    claimerIdentity,
-    validAttesterSignedQuote,
-    request.rootHash
-  )
-  const invalidPropertiesQuote = invalidPropertiesQuoteData
-  const invalidCostQuote = invalidCostQuoteData
-  const compressedQuote: CompressedQuote = [
-    validQuoteData.attesterAddress,
-    validQuoteData.cTypeHash,
-    [
-      validQuoteData.cost.gross,
-      validQuoteData.cost.net,
-      validQuoteData.cost.tax,
-    ],
-    validQuoteData.currency,
-    validQuoteData.termsAndConditions,
-    validQuoteData.timeframe,
-  ]
+    // build request for attestation with legitimations
+    request = (await RequestForAttestation.fromClaimAndIdentity(
+      claim,
+      claimerIdentity
+    )).message
 
-  const compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned = [
-    validQuoteData.attesterAddress,
-    validQuoteData.cTypeHash,
-    [
-      validQuoteData.cost.gross,
-      validQuoteData.cost.net,
-      validQuoteData.cost.tax,
-    ],
-    validQuoteData.currency,
-    validQuoteData.termsAndConditions,
-    validQuoteData.timeframe,
-    validAttesterSignedQuote.attesterSignature,
-  ]
+    invalidCostQuoteData = {
+      cTypeHash: '0x12345678',
+      cost: invalidCost,
+      currency: 'Euro',
+      timeframe: date,
+      termsAndConditions: 'Lots of these',
+    } as IQuote
 
-  const compressedResultQuoteAgreement: CompressedQuoteAgreed = [
-    validQuoteData.attesterAddress,
-    validQuoteData.cTypeHash,
-    [
-      validQuoteData.cost.gross,
-      validQuoteData.cost.net,
-      validQuoteData.cost.tax,
-    ],
-    validQuoteData.currency,
-    validQuoteData.termsAndConditions,
-    validQuoteData.timeframe,
-    validAttesterSignedQuote.attesterSignature,
-    quoteBothAgreed.claimerSignature,
-    quoteBothAgreed.rootHash,
-  ]
+    invalidPropertiesQuoteData = {
+      cTypeHash: '0x12345678',
+      cost: {
+        gross: 233,
+        net: 23.3,
+        tax: { vat: 3.3 },
+      },
+      timeframe: date,
+      currency: 'Euro',
+      termsAndConditions: 'Lots of these',
+    } as IQuote
+
+    validQuoteData = {
+      attesterAddress: attesterIdentity.getAddress(),
+      cTypeHash: '0x12345678',
+      cost: {
+        gross: 233,
+        net: 23.3,
+        tax: { vat: 3.3 },
+      },
+      currency: 'Euro',
+      timeframe: new Date('12-04-2020'),
+      termsAndConditions: 'Lots of these',
+    }
+    validAttesterSignedQuote = Quote.createAttesterSignature(
+      validQuoteData,
+      attesterIdentity
+    )
+    quoteBothAgreed = Quote.createQuoteAgreement(
+      claimerIdentity,
+      validAttesterSignedQuote,
+      request.rootHash
+    )
+    invalidPropertiesQuote = invalidPropertiesQuoteData
+    invalidCostQuote = invalidCostQuoteData
+
+    compressedQuote = [
+      validQuoteData.attesterAddress,
+      validQuoteData.cTypeHash,
+      [
+        validQuoteData.cost.gross,
+        validQuoteData.cost.net,
+        validQuoteData.cost.tax,
+      ],
+      validQuoteData.currency,
+      validQuoteData.termsAndConditions,
+      validQuoteData.timeframe,
+    ]
+
+    compressedResultAttesterSignedQuote = [
+      validQuoteData.attesterAddress,
+      validQuoteData.cTypeHash,
+      [
+        validQuoteData.cost.gross,
+        validQuoteData.cost.net,
+        validQuoteData.cost.tax,
+      ],
+      validQuoteData.currency,
+      validQuoteData.termsAndConditions,
+      validQuoteData.timeframe,
+      validAttesterSignedQuote.attesterSignature,
+    ]
+
+    compressedResultQuoteAgreement = [
+      validQuoteData.attesterAddress,
+      validQuoteData.cTypeHash,
+      [
+        validQuoteData.cost.gross,
+        validQuoteData.cost.net,
+        validQuoteData.cost.tax,
+      ],
+      validQuoteData.currency,
+      validQuoteData.termsAndConditions,
+      validQuoteData.timeframe,
+      validAttesterSignedQuote.attesterSignature,
+      quoteBothAgreed.claimerSignature,
+      quoteBothAgreed.rootHash,
+    ]
+  })
 
   it('tests created quote data against given data', () => {
-    expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
+    expect(validQuoteData.attesterAddress).toEqual(
+      attesterIdentity.getAddress()
+    )
     expect(quoteBothAgreed.claimerSignature).toEqual(
       claimerIdentity.signStr(hashObjectAsStr(validAttesterSignedQuote))
     )

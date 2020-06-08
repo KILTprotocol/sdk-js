@@ -59,6 +59,7 @@ jobs:
             node-version: 10
 
         - name: yarn install and test
+          timeout-minutes: 60
           env:
             ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             ECR_REPOSITORY: kilt/prototype-chain

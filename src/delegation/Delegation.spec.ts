@@ -1,4 +1,4 @@
-import { Text, Tuple, Vec, Option } from '@polkadot/types'
+import { Text, Tuple, Vec, Option, H256 } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
@@ -10,96 +10,81 @@ import { Permission } from '../types/Delegation'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Delegation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
+  let identityAlice: Identity
 
-  const ctypeHash = Crypto.hashStr('testCtype')
-  const blockchain = require('../blockchain/Blockchain').default
-  blockchain.api.tx.delegation.createRoot = jest.fn(() => {
-    return Promise.resolve()
-  })
-  blockchain.api.query.attestation.delegatedAttestations = jest.fn(() => {
-    const vector = new Vec(
-      //  (claim-hash)
-      Text,
-      ['0x123', '0x456', '0x789']
-    )
-    return Promise.resolve(vector)
-  })
-  blockchain.api.query.delegation.root = jest.fn(() => {
-    const tuple = new Option(
-      Tuple,
-      new Tuple(
-        // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-        [Text, AccountId, Bool],
-        [[ctypeHash, identityAlice.address, false]]
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
+
+    const ctypeHash = Crypto.hashStr('testCtype')
+    const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+      .__mocked_api
+
+    blockchainApi.query.attestation.delegatedAttestations.mockReturnValue(
+      new Vec(
+        //  (claim-hash)
+        Text,
+        ['0x123', '0x456', '0x789']
       )
     )
-    return Promise.resolve(tuple)
-  })
-  blockchain.api.query.delegation.delegations = jest.fn(delegationId => {
-    let result = null
-    if (delegationId === 'firstChild') {
-      result = new Option(
+    blockchainApi.query.delegation.root.mockReturnValue(
+      new Option(
         Tuple,
         new Tuple(
-          // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-          [Text, Text, AccountId, U32, Bool],
-          [
-            'rootId',
-            'myNodeId',
-            identityAlice.getPublicIdentity().address,
-            2,
-            false,
-          ]
+          // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+          [Text, AccountId, Bool],
+          [[ctypeHash, identityAlice.getAddress(), false]]
         )
       )
-    } else if (delegationId === 'secondChild') {
-      result = new Option(
-        Tuple,
-        new Tuple(
-          // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-          [Text, Text, AccountId, U32, Bool],
-          [
-            'rootId',
-            'myNodeId',
-            identityAlice.getPublicIdentity().address,
-            1,
-            false,
-          ]
-        )
-      )
-    } else if (delegationId === 'thirdChild') {
-      result = new Option(
-        Tuple,
-        new Tuple(
-          // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-          [Text, Text, AccountId, U32, Bool],
-          [
-            'rootId',
-            'myNodeId',
-            identityAlice.getPublicIdentity().address,
-            0,
-            false,
-          ]
-        )
-      )
-    }
-    return Promise.resolve(result)
-  })
-  blockchain.api.query.delegation.children = jest.fn(() => {
-    const vector = new Vec(
-      // Children: delegation-id -> [delegation-ids]
-      Text,
-      ['firstChild', 'secondChild', 'thirdChild']
     )
-    return Promise.resolve(vector)
+    blockchainApi.query.delegation.delegations = jest.fn(async delegationId => {
+      if (delegationId === 'firstChild') {
+        return new Option(
+          Tuple,
+          new Tuple(
+            // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+            [Text, Text, AccountId, U32, Bool],
+            ['rootId', 'myNodeId', identityAlice.getAddress(), 2, false]
+          )
+        )
+      }
+      if (delegationId === 'secondChild') {
+        return new Option(
+          Tuple,
+          new Tuple(
+            // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+            [Text, Text, AccountId, U32, Bool],
+            ['rootId', 'myNodeId', identityAlice.getAddress(), 1, false]
+          )
+        )
+      }
+      if (delegationId === 'thirdChild') {
+        return new Option(
+          Tuple,
+          new Tuple(
+            // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+            [Text, Text, AccountId, U32, Bool],
+            ['rootId', 'myNodeId', identityAlice.getAddress(), 0, false]
+          )
+        )
+      }
+      return new Option(
+        Tuple.with([H256, 'Option<H256>', AccountId, U32, Bool])
+      )
+    })
+    blockchainApi.query.delegation.children.mockReturnValue(
+      new Vec(
+        // Children: delegation-id -> [delegation-ids]
+        Text,
+        ['firstChild', 'secondChild', 'thirdChild']
+      )
+    )
   })
 
   it('get children', async () => {
     const myDelegation = new DelegationNode(
       'myNodeId',
       'rootId',
-      identityAlice.getPublicIdentity().address,
+      identityAlice.getAddress(),
       [Permission.ATTEST],
       undefined
     )
@@ -109,7 +94,7 @@ describe('Delegation', () => {
       id: 'firstChild',
       rootId: 'rootId',
       parentId: 'myNodeId',
-      account: identityAlice.getPublicIdentity().address,
+      account: identityAlice.getAddress(),
       permissions: [Permission.DELEGATE],
       revoked: false,
     })
@@ -117,7 +102,7 @@ describe('Delegation', () => {
       id: 'secondChild',
       rootId: 'rootId',
       parentId: 'myNodeId',
-      account: identityAlice.getPublicIdentity().address,
+      account: identityAlice.getAddress(),
       permissions: [Permission.ATTEST],
       revoked: false,
     })
@@ -125,7 +110,7 @@ describe('Delegation', () => {
       id: 'thirdChild',
       rootId: 'rootId',
       parentId: 'myNodeId',
-      account: identityAlice.getPublicIdentity().address,
+      account: identityAlice.getAddress(),
       permissions: [],
       revoked: false,
     })

@@ -166,8 +166,19 @@ export default class PublicIdentity implements IPublicIdentity {
     return null
   }
 
+  /**
+   * The SS58 account address of the identity on the KILT blockchain.
+   */
   public readonly address: IPublicIdentity['address']
+
+  /**
+   * The public encryption key, encoded as a hexadecimal string.
+   */
   public readonly boxPublicKeyAsHex: IPublicIdentity['boxPublicKeyAsHex']
+
+  /**
+   * The URL where the identity can be reached at.
+   */
   public readonly serviceAddress?: IPublicIdentity['serviceAddress']
 
   /**
@@ -175,7 +186,7 @@ export default class PublicIdentity implements IPublicIdentity {
    *
    * @param address - A public address.
    * @param boxPublicKeyAsHex - The public encryption key.
-   * @param serviceAddress - The address of the service used to retreive the DID.
+   * @param serviceAddress - The address of the service used to retrieve the DID.
    * @example ```javascript
    * const identity = new PublicIdentity(address, boxPublicKeyAsHex, serviceAddress);
    * ```

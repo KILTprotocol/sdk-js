@@ -8,9 +8,9 @@
  * @preferred
  */
 
+import { SubmittableResult } from '@polkadot/api'
 import Crypto from '../crypto'
 import { QueryResult } from '../blockchain/Blockchain'
-import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
@@ -27,7 +27,7 @@ const log = factory.getLogger('DelegationNode')
 export default class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
   /**
-   * Queries the delegation node with [delegationId].
+   * [STATIC] Queries the delegation node with [delegationId].
    *
    * @param delegationId The unique identifier of the desired delegation.
    * @returns Promise containing the [[DelegationNode]] or [null].
@@ -104,6 +104,7 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * Fetches the root of this delegation node.
    *
+   * @throws When the rootId could not be queried.
    * @returns Promise containing the [[DelegationRootNode]] of this delegation node.
    */
   public async getRoot(): Promise<DelegationRootNode> {
@@ -133,9 +134,12 @@ export default class DelegationNode extends DelegationBaseNode
    *
    * @param identity Account used to store the delegation node.
    * @param signature Signature of the delegate to ensure it's done under his permission.
-   * @returns Promise containing the [[TxStatus]].
+   * @returns Promise containing the SubmittableResult.
    */
-  public async store(identity: Identity, signature: string): Promise<TxStatus> {
+  public async store(
+    identity: Identity,
+    signature: string
+  ): Promise<SubmittableResult> {
     log.info(`:: store(${this.id})`)
     return store(this, identity, signature)
   }
@@ -154,9 +158,9 @@ export default class DelegationNode extends DelegationBaseNode
    * Revokes the delegation node on chain.
    *
    * @param identity The identity used to revoke the delegation.
-   * @returns Promise containing the [[TxStatus]].
+   * @returns Promise containing the SubmittableResult.
    */
-  public async revoke(identity: Identity): Promise<TxStatus> {
+  public async revoke(identity: Identity): Promise<SubmittableResult> {
     log.debug(`:: revoke(${this.id})`)
     return revoke(this.id, identity)
   }

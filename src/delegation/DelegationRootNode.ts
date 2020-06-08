@@ -1,15 +1,18 @@
 /**
- * KILT enables top-down trust structures (see [[Delegation]]). On the lowest level, a delegation structure is always a **tree**. The root of this tree is DelegationRootNode.
+ * KILT enables top-down trust structures.
+ * On the lowest level, a delegation structure is always a **tree**.
+ * The root of this tree is DelegationRootNode.
  *
- * Apart from inheriting [[DelegationBaseNode]]'s structure, a DelegationRootNode has a [[cTypeHash]] property that refers to a specific [[CType]]. A DelegationRootNode is written on-chain, and can be queried by [[delegationId]] via the [[query]] method.
+ * Apart from inheriting [[DelegationBaseNode]]'s structure, a DelegationRootNode has a [[cTypeHash]] property that refers to a specific [[CType]].
+ * A DelegationRootNode is written on-chain, and can be queried by delegationId via the [[query]] method.
  *
  * @packageDocumentation
  * @module DelegationRootNode
  * @preferred
  */
 
+import { SubmittableResult } from '@polkadot/api'
 import { QueryResult } from '../blockchain/Blockchain'
-import TxStatus from '../blockchain/TxStatus'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { IDelegationRootNode } from '../types/Delegation'
@@ -23,7 +26,7 @@ const log = factory.getLogger('DelegationRootNode')
 export default class DelegationRootNode extends DelegationBaseNode
   implements IDelegationRootNode {
   /**
-   * Queries the delegation root with [delegationId].
+   * [STATIC] Queries the delegation root with ``delegationId``.
    *
    * @param delegationId Unique identifier of the delegation root.
    * @returns Promise containing [[DelegationRootNode]] or [null].
@@ -67,9 +70,9 @@ export default class DelegationRootNode extends DelegationBaseNode
    * Stores the delegation root node on chain.
    *
    * @param identity The account used to store the delegation root node.
-   * @returns Promise containing the [[TxStatus]].
+   * @returns Promise containing the SubmittableResult.
    */
-  public async store(identity: Identity): Promise<TxStatus> {
+  public async store(identity: Identity): Promise<SubmittableResult> {
     log.debug(`:: store(${this.id})`)
     return store(this, identity)
   }
@@ -79,7 +82,7 @@ export default class DelegationRootNode extends DelegationBaseNode
     return node !== null && !node.revoked
   }
 
-  public async revoke(identity: Identity): Promise<TxStatus> {
+  public async revoke(identity: Identity): Promise<SubmittableResult> {
     log.debug(`:: revoke(${this.id})`)
     return revoke(this, identity)
   }

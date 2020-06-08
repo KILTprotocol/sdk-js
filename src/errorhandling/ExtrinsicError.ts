@@ -50,7 +50,7 @@ export const ERROR_CTYPE_ALREADY_EXISTS: ExtrinsicError = new ExtrinsicError(
   ErrorCode.ERROR_CTYPE_ALREADY_EXISTS,
   'CTYPE already exists'
 )
-export const ERROR_ALEADY_ATTESTED: ExtrinsicError = new ExtrinsicError(
+export const ERROR_ALREADY_ATTESTED: ExtrinsicError = new ExtrinsicError(
   ErrorCode.ERROR_ALREADY_ATTESTED,
   'already attested'
 )
@@ -128,12 +128,17 @@ export const ERROR_UNKNOWN: ExtrinsicError = new ExtrinsicError(
   'an unknown error ocurred'
 )
 
-const errorsByCode: ExtrinsicError[] = []
+/**
+ * A dictionary in which each key is an error code of an [[ExtrinsicError]] and the value the corresponding error.
+ */
+export const errorsByCode: { [code: number]: ExtrinsicError } = {}
+
+  // fill dictionary
 ;[
   ERROR_CTYPE_NOT_FOUND,
   ERROR_CTYPE_ALREADY_EXISTS,
 
-  ERROR_ALEADY_ATTESTED,
+  ERROR_ALREADY_ATTESTED,
   ERROR_ERROR_ALREADY_REVOKED,
   ERROR_ATTESTATION_NOT_FOUND,
   ERROR_DELEGATION_REVOKED,
@@ -158,6 +163,15 @@ const errorsByCode: ExtrinsicError[] = []
   errorsByCode[value.errorCode] = value
 })
 
-export function errorForCode(errorCode: number): ExtrinsicError {
+/**
+ * Maps an error code to its corresponding [[ExtrinsicError]].
+ *
+ * @param errorCode A number which can be mapped to an [[ExtrinsicError]].
+ *
+ * @returns The [[ExtrinsicError]] for the committed key.
+ */
+export function errorForCode(
+  errorCode: keyof typeof errorsByCode
+): ExtrinsicError {
   return errorsByCode[errorCode]
 }

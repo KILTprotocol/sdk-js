@@ -3,15 +3,14 @@ import { Did } from '..'
 import { IDid } from './Did'
 import Identity from '../identity/Identity'
 import { getIdentifierFromAddress } from './Did.utils'
-import { OK } from '../const/TxStatus'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('DID', () => {
-  require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
-    address => {
+  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
+    async address => {
       if (address === 'withDocumentStore') {
-        const tuple = new Option(
+        return new Option(
           Tuple,
           new Tuple(
             // (publicBoxKey, publicSigningKey, documentStore?)
@@ -19,9 +18,8 @@ describe('DID', () => {
             ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
           )
         )
-        return Promise.resolve(tuple)
       }
-      const tuple = new Option(
+      return new Option(
         Tuple,
         new Tuple(
           // (publicBoxKey, publicSigningKey, documentStore?)
@@ -29,12 +27,8 @@ describe('DID', () => {
           ['0x987', '0x123', null]
         )
       )
-      return Promise.resolve(tuple)
     }
   )
-  require('../blockchain/Blockchain').default.submitTx = jest.fn(() => {
-    return Promise.resolve({ status: OK })
-  })
 
   it('query by address with documentStore', async () => {
     const did = await Did.queryByAddress('withDocumentStore')
@@ -76,14 +70,14 @@ describe('DID', () => {
   })
 
   it('store did', async () => {
-    const alice = Identity.buildFromURI('//Alice')
+    const alice = await Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(alice, 'http://myDID.kilt.io')
-    expect(await did.store(alice)).toEqual({ status: OK })
+    await expect(did.store(alice)).resolves.toHaveProperty('isFinalized', true)
   })
 
   it('creates default did document', async () => {
     const did = Did.fromIdentity(
-      Identity.buildFromURI('//Alice'),
+      await Identity.buildFromURI('//Alice'),
       'http://myDID.kilt.io'
     )
     expect(
@@ -127,11 +121,11 @@ describe('DID', () => {
   })
 
   it('creates default did document (static)', async () => {
-    const alice = Identity.buildFromURI('//Alice')
+    const alice = await Identity.buildFromURI('//Alice')
     expect(
       Did.createDefaultDidDocument(
-        Did.getIdentifierFromAddress(alice.address),
-        alice.boxPublicKeyAsHex,
+        Did.getIdentifierFromAddress(alice.getAddress()),
+        alice.getBoxPublicKey(),
         alice.signPublicKeyAsHex,
         'http://myDID.kilt.io/service'
       )
@@ -173,10 +167,10 @@ describe('DID', () => {
     })
   })
 
-  it('verifies the did document signature (untampered data)', () => {
-    const identity = Identity.buildFromURI('//Alice')
+  it('verifies the did document signature (untampered data)', async () => {
+    const identity = await Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(
-      Identity.buildFromURI('//Alice'),
+      await Identity.buildFromURI('//Alice'),
       'http://myDID.kilt.io'
     )
     const didDocument = did.createDefaultDidDocument(
@@ -186,13 +180,13 @@ describe('DID', () => {
     expect(
       Did.verifyDidDocumentSignature(
         signedDidDocument,
-        getIdentifierFromAddress(identity.address)
+        getIdentifierFromAddress(identity.getAddress())
       )
     ).toBeTruthy()
   })
 
-  it('verifies the did document signature (tampered data)', () => {
-    const identity = Identity.buildFromURI('//Alice')
+  it('verifies the did document signature (tampered data)', async () => {
+    const identity = await Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(identity, 'http://myDID.kilt.io')
     const didDocument = did.createDefaultDidDocument(
       'http://myDID.kilt.io/service'
@@ -210,20 +204,20 @@ describe('DID', () => {
     expect(
       Did.verifyDidDocumentSignature(
         tamperedSignedDidDocument,
-        getIdentifierFromAddress(identity.address)
+        getIdentifierFromAddress(identity.getAddress())
       )
     ).toBeFalsy()
   })
 
-  it("throws when verifying the did document signature if identitifiers don't match", () => {
-    const identityAlice = Identity.buildFromURI('//Alice')
+  it("throws when verifying the did document signature if identifiers don't match", async () => {
+    const identityAlice = await Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(identityAlice, 'http://myDID.kilt.io')
     const didDocument = did.createDefaultDidDocument(
       'http://myDID.kilt.io/service'
     )
     const signedDidDocument = Did.signDidDocument(didDocument, identityAlice)
-    const identityBob = Identity.buildFromURI('//Bob')
-    const id = getIdentifierFromAddress(identityBob.address)
+    const identityBob = await Identity.buildFromURI('//Bob')
+    const id = getIdentifierFromAddress(identityBob.getAddress())
 
     expect(() => {
       Did.verifyDidDocumentSignature(signedDidDocument, id)

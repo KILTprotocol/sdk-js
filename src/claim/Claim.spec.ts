@@ -7,43 +7,52 @@ import ICType from '../types/CType'
 import { CompressedClaim } from '../types/Claim'
 
 describe('Claim', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
+  let identityAlice: Identity
+  let claimContents: any
+  let rawCType: ICType['schema']
+  let fromRawCType: ICType
+  let testCType: CType
+  let claim: Claim
+  let compressedClaim: CompressedClaim
 
-  const claimContents = {
-    name: 'Bob',
-  }
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
 
-  const rawCType: ICType['schema'] = {
-    $id: 'kilt:ctype:0x1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'Claim',
-    properties: {
-      name: { type: 'string' },
-    },
-    type: 'object',
-  }
-
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.address,
-    hash: '',
-  }
-
-  const testCType: CType = CType.fromCType(fromRawCType)
-
-  const claim = Claim.fromCTypeAndClaimContents(
-    testCType,
-    claimContents,
-    identityAlice.address
-  )
-
-  const compressedClaim: CompressedClaim = [
-    {
+    claimContents = {
       name: 'Bob',
-    },
-    claim.cTypeHash,
-    claim.owner,
-  ]
+    }
+
+    rawCType = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'ClaimCtype',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+
+    fromRawCType = {
+      schema: rawCType,
+      owner: identityAlice.getAddress(),
+      hash: '',
+    }
+
+    testCType = CType.fromCType(fromRawCType)
+
+    claim = Claim.fromCTypeAndClaimContents(
+      testCType,
+      claimContents,
+      identityAlice.getAddress()
+    )
+    compressedClaim = [
+      {
+        name: 'Bob',
+      },
+      claim.cTypeHash,
+      claim.owner,
+    ]
+  })
 
   it('can be made from object', () => {
     const claimObj = JSON.parse(JSON.stringify(claim))

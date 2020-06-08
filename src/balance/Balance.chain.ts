@@ -11,57 +11,12 @@
 
 import BN from 'bn.js'
 import { Balance } from '@polkadot/types/interfaces'
-import TxStatus from '../blockchain/TxStatus'
+import { SubmittableResult } from '@polkadot/api'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
 
-/**
- * Attaches the given [listener] for balance changes on the account with [accountAddress].
- * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.
- *
- * @param accountAddress Address of the account on which to listen for balance changes.
- * @param listener Listener to receive balance change updates.
- * @returns A promise containing the current balance of the account.
- *
- * @example
- * <BR>
- *
- * ```javascript
- * import * as sdk from '@kiltprotocol/prototype-sdk';
- *
- * const address = ...
- * sdk.Balance.listenToBalanceChanges(address,
- *   (account: IPublicIdentity['address'], balance: BN, change: BN) => {
- *     console.log(`Balance has changed by ${change.toNumber()} to ${balance.toNumber()}`)
- *   });
- * ```
- */
-export async function listenToBalanceChanges(
-  accountAddress: IPublicIdentity['address'],
-  listener?: (
-    account: IPublicIdentity['address'],
-    balance: BN,
-    change: BN
-  ) => void
-): Promise<BN> {
-  const blockchain = await getCached()
-  let previous = await blockchain.api.query.balances.freeBalance<Balance>(
-    accountAddress
-  )
-
-  if (listener) {
-    blockchain.api.query.balances.freeBalance<Balance>(
-      accountAddress,
-      (current: Balance) => {
-        const change = current.sub(previous)
-        previous = current
-        listener(accountAddress, current, change)
-      }
-    )
-  }
-  return previous
-}
+export type UnsubscribeHandle = () => void
 
 /**
  * Fetches the current balance of the account with [accountAddress].
@@ -86,7 +41,51 @@ export async function listenToBalanceChanges(
 export async function getBalance(
   accountAddress: IPublicIdentity['address']
 ): Promise<BN> {
-  return listenToBalanceChanges(accountAddress)
+  const blockchain = await getCached()
+  return blockchain.api.query.balances.freeBalance<Balance>(accountAddress)
+}
+
+/**
+ * Attaches the given [listener] for balance changes on the account with [accountAddress].
+ * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.
+ *
+ * @param accountAddress Address of the account on which to listen for balance changes.
+ * @param listener Listener to receive balance change updates.
+ * @returns A promise containing a function that let's you unsubscribe from balance changes.
+ *
+ * @example
+ * <BR>
+ *
+ * ```javascript
+ * import * as sdk from '@kiltprotocol/prototype-sdk';
+ *
+ * const address = ...
+ * const unsub = sdk.Balance.listenToBalanceChanges(address,
+ *   (account: IPublicIdentity['address'], balance: BN, change: BN) => {
+ *     console.log(`Balance has changed by ${change.toNumber()} to ${balance.toNumber()}`)
+ *   });
+ * // later
+ * unsub();
+ * ```
+ */
+export async function listenToBalanceChanges(
+  accountAddress: IPublicIdentity['address'],
+  listener: (
+    account: IPublicIdentity['address'],
+    balance: BN,
+    change: BN
+  ) => void
+): Promise<UnsubscribeHandle> {
+  const blockchain = await getCached()
+  let previous = await getBalance(accountAddress)
+  return blockchain.api.query.balances.freeBalance<Balance>(
+    accountAddress,
+    (current: Balance) => {
+      const change = current.sub(previous)
+      previous = current
+      listener(accountAddress, current, change)
+    }
+  )
 }
 
 /**
@@ -108,7 +107,7 @@ export async function getBalance(
  * const address = ...
  * const amount: BN = new BN(42)
  * sdk.Balance.makeTransfer(identity, address, amount)
- *   .then((status: TxStatus) => {
+ *   .then((status: SubmittableResult) => {
  *     console.log('Successfully transferred ${amount.toNumber()} tokens')
  *   })
  *   .catch(err => {
@@ -120,7 +119,7 @@ export async function makeTransfer(
   identity: Identity,
   accountAddressTo: IPublicIdentity['address'],
   amount: BN
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const blockchain = await getCached()
   const transfer = blockchain.api.tx.balances.transfer(accountAddressTo, amount)
   return blockchain.submitTx(identity, transfer)
