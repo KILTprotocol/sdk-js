@@ -32,9 +32,12 @@ export function errorCheck(input: Partial<IRequestForAttestation>): void {
   } else {
     ClaimUtils.errorCheck(input.claim)
   }
-  if (!input.legitimations || !Array.isArray(input.legitimations)) {
+  if (!input.legitimations) {
     throw new Error('Legitimations not provided')
+  } else if (!Array.isArray(input.legitimations)) {
+    throw new Error('Legitimations not an Array')
   }
+
   if (!input.claimHashTree) {
     throw new Error('Claim Hash Tree not provided')
   } else {

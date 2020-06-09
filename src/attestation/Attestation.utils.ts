@@ -18,18 +18,21 @@ import { validateHash, validateAddress } from '../util/DataUtils'
  *
  */
 export function errorCheck(input: Partial<IAttestation>): void {
-  if (!input.cTypeHash || !validateHash(input.cTypeHash, 'CType')) {
+  if (!input.cTypeHash) {
     throw new Error('CType Hash not provided')
-  }
-  if (!input.claimHash || !validateHash(input.claimHash, 'Claim')) {
+  } else validateHash(input.cTypeHash, 'CType')
+
+  if (!input.claimHash) {
     throw new Error('Claim Hash not provided')
-  }
+  } else validateHash(input.claimHash, 'Claim')
+
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
     throw new Error(`Not a valid DelegationId: ${typeof input.delegationId}`)
   }
-  if (!input.owner || !validateAddress(input.owner, 'Owner')) {
+  if (!input.owner) {
     throw new Error('Owner not provided')
-  }
+  } else validateAddress(input.owner, 'Owner')
+
   if (typeof input.revoked !== 'boolean') {
     throw new Error('revocation bit not provided')
   }

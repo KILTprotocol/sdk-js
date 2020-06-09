@@ -173,7 +173,7 @@ describe('Attestation', () => {
       AttestationUtils.compress(attestation)
     }).toThrow()
   })
-  it('should throw error on faulty constructor input', () => {
+  it('error check should throw errors on faulty Attestations', () => {
     const { cTypeHash, claimHash } = {
       cTypeHash:
         '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',

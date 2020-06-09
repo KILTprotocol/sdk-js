@@ -157,21 +157,6 @@ export function decompressSchema(
  */
 
 export function compress(cType: ICType): CompressedCType {
-  if (
-    !cType.hash ||
-    (typeof cType.owner === 'string'
-      ? !validateAddress(cType.owner, 'CType Owner')
-      : !(cType.owner === null)) ||
-    !cType.schema
-  ) {
-    throw new Error(
-      `Property Not Provided while building cType: ${JSON.stringify(
-        cType,
-        null,
-        2
-      )}`
-    )
-  }
   errorCheck(cType)
   return [cType.hash, cType.owner, compressSchema(cType.schema)]
 }

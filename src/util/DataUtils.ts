@@ -73,15 +73,10 @@ export function validateNonceHash(
   data: string | object | number | boolean,
   name: string
 ): boolean {
-  if (!nonceHash || !nonceHash.hash || typeof nonceHash.hash !== 'string') {
+  if (!nonceHash || typeof nonceHash.hash !== 'string') {
     throw new Error('Nonce Hash incomplete')
   }
-  const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
-  if (!nonceHash.hash.match(blake2bPattern)) {
-    throw new Error(`Provided ${name} hash malformed \n
-    Hash: ${nonceHash.hash} \n
-    Nonce: ${nonceHash.nonce}`)
-  }
+  validateHash(nonceHash.hash, name)
   if (
     nonceHash.nonce &&
     nonceHash.hash !== hashObjectAsStr(data, nonceHash.nonce)
@@ -105,7 +100,6 @@ export function validateLegitimations(
   legitimations: IAttestedClaim[]
 ): boolean {
   legitimations.forEach((legitimation: IAttestedClaim) => {
-    // TODO : Use AttestedClaim.verify which requires querying the chain or only verifyData?
     if (!AttestedClaim.verifyData(legitimation)) {
       throw new Error(`Provided Legitimations not verifiable`)
     }

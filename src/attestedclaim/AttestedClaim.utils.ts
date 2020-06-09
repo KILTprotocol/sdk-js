@@ -21,14 +21,12 @@ import AttestedClaim from './AttestedClaim'
 export function errorCheck(input: Partial<IAttestedClaim>): void {
   if (input.attestation) {
     AttestationUtils.errorCheck(input.attestation)
-  } else {
-    throw new Error('Attestation not provided!')
-  }
+  } else throw new Error('Attestation not provided!')
+
   if (input.request) {
     RequestForAttestationUtils.errorCheck(input.request)
-  } else {
-    throw new Error('RequestForAttestation not provided')
-  }
+  } else throw new Error('RequestForAttestation not provided')
+
   if (!AttestedClaim.verifyData(input as IAttestedClaim)) {
     throw new Error('could not verify Data of attested claim')
   }
