@@ -35,6 +35,7 @@ import Crypto, { EncryptedAsymmetricString } from '../crypto'
 import ITerms from '../types/Terms'
 import { IQuoteAgreement } from '../types/Quote'
 import { validateSignature } from '../util/DataUtils'
+import * as ObjectErrors from '../errorhandling/ObjectErrors'
 
 /**
  * - `body` - The body of the message, see [[MessageBody]].
@@ -123,7 +124,7 @@ export default class Message implements IMessage {
             requestAttestation.content.requestForAttestation.claim.owner !==
             senderAddress
           ) {
-            throw new Error('Sender is not owner of the claim')
+            throw ObjectErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
           }
         }
         break
@@ -131,7 +132,7 @@ export default class Message implements IMessage {
         {
           const submitAttestation = body
           if (submitAttestation.content.attestation.owner !== senderAddress) {
-            throw new Error('Sender is not owner of the attestation')
+            throw ObjectErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
           }
         }
         break
@@ -140,7 +141,7 @@ export default class Message implements IMessage {
           const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach(claim => {
             if (claim.request.claim.owner !== senderAddress) {
-              throw new Error('Sender is not owner of the claims')
+              throw ObjectErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
           })
         }
@@ -166,7 +167,10 @@ export default class Message implements IMessage {
         encrypted.message + encrypted.nonce + encrypted.createdAt
       ) !== encrypted.hash
     ) {
-      throw new Error('Hash of message not correct')
+      throw ObjectErrors.ERROR_NONCE_HASH_INVALID(
+        { hash: encrypted.hash, nonce: encrypted.nonce },
+        'Message'
+      )
     }
     validateSignature(encrypted.hash, encrypted.signature, senderAddress)
   }
@@ -198,7 +202,7 @@ export default class Message implements IMessage {
       encrypted.senderBoxPublicKey
     )
     if (!decoded) {
-      throw new Error('Error decoding message')
+      throw ObjectErrors.ERROR_DECODING_MESSAGE
     }
 
     try {
@@ -212,7 +216,7 @@ export default class Message implements IMessage {
 
       return decrypted
     } catch (error) {
-      throw new Error('Error parsing message body')
+      throw ObjectErrors.ERROR_PARSING_MESSAGE
     }
   }
 

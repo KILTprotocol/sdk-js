@@ -39,6 +39,7 @@ import IRequestForAttestation, {
 import { IDelegationBaseNode } from '../types/Delegation'
 import IClaim from '../types/Claim'
 import IAttestedClaim from '../types/AttestedClaim'
+import * as ObjectErrors from '../errorhandling/ObjectErrors'
 
 function hashNonceValue(
   nonce: string,
@@ -135,7 +136,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     session: ClaimerAttestationSession | null
   }> {
     if (claim.owner !== identity.getAddress()) {
-      throw Error('Claim owner is not Identity')
+      throw ObjectErrors.ERROR_IDENTITY_MISMATCH
     }
 
     let peRequest: AttestationRequest | null = null
@@ -276,7 +277,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public removeClaimProperties(properties: string[]): void {
     properties.forEach(key => {
       if (!this.claimHashTree[key]) {
-        throw Error(`Property '${key}' not found in claim`)
+        throw ObjectErrors.ERROR_CLAIM_HASHTREE_MISMATCH(key)
       }
       delete this.claim.contents[key]
       delete this.claimHashTree[key].nonce
@@ -323,7 +324,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     Object.keys(input.claim.contents).forEach(key => {
       const value = input.claim.contents[key]
       if (!input.claimHashTree[key]) {
-        throw Error(`Property '${key}' not in claim hash tree`)
+        throw ObjectErrors.ERROR_CLAIM_HASHTREE_MISMATCH(key)
       }
       const hashed: NonceHash = input.claimHashTree[key]
       validateNonceHash(hashed, value, `hash tree property ${key}`)

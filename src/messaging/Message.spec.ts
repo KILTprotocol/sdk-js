@@ -14,6 +14,7 @@ import * as Quote from '../quote/Quote'
 import IClaim from '../types/Claim'
 import { IQuote } from '../types/Quote'
 import { IAttestedClaim, Verifier } from '..'
+import * as ObjectErrors from '../errorhandling/ObjectErrors'
 
 describe('Messaging', () => {
   let identityAlice: Identity
@@ -47,7 +48,15 @@ describe('Messaging', () => {
     encryptedMessageWrongHash.hash = '0x00000000'
     expect(() =>
       Message.decrypt(encryptedMessageWrongHash, identityBob)
-    ).toThrowError(new Error('Hash of message not correct'))
+    ).toThrowError(
+      ObjectErrors.ERROR_NONCE_HASH_INVALID(
+        {
+          hash: encryptedMessageWrongHash.hash,
+          nonce: encryptedMessageWrongHash.nonce,
+        },
+        'Message'
+      )
+    )
 
     const encryptedMessageWrongSignature: IEncryptedMessage = JSON.parse(
       JSON.stringify(encryptedMessage)
@@ -163,7 +172,7 @@ describe('Messaging', () => {
           identityAlice.getPublicIdentity()
         )
       )
-    ).toThrowError(new Error('Sender is not owner of the claim'))
+    ).toThrowError(ObjectErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender'))
 
     const submitAttestationBody: ISubmitAttestationForClaim = {
       content: {
@@ -186,7 +195,9 @@ describe('Messaging', () => {
           identityBob.getPublicIdentity()
         )
       )
-    ).toThrowError(new Error('Sender is not owner of the attestation'))
+    ).toThrowError(
+      ObjectErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
+    )
     Message.ensureOwnerIsSender(
       new Message(
         submitAttestationBody,
@@ -220,11 +231,12 @@ describe('Messaging', () => {
           identityAlice.getPublicIdentity()
         )
       )
-    ).toThrowError(new Error('Sender is not owner of the claims'))
+    ).toThrowError(ObjectErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender'))
   })
   describe('ensureHashAndSignature', () => {
     let messageBody: IRequestClaimsForCTypes
     let encrypted: IEncryptedMessage
+    let encryptedHash: string
 
     beforeAll(async () => {
       identityAlice = await Identity.buildFromURI('//Alice')
@@ -243,6 +255,7 @@ describe('Messaging', () => {
         identityAlice,
         identityBob.getPublicIdentity()
       ).encrypt()
+      encryptedHash = encrypted.hash
     })
 
     it('verifies no error is thrown when executed correctly', () => {
@@ -274,7 +287,12 @@ describe('Messaging', () => {
           },
           identityBob.getAddress()
         )
-      ).toThrowError(new Error('Hash of message not correct'))
+      ).toThrowError(
+        ObjectErrors.ERROR_NONCE_HASH_INVALID(
+          { hash: encryptedHash, nonce: encrypted.nonce },
+          'Message'
+        )
+      )
 
       // check correct encrypted but with nonce from encrypted2
       expect(() =>
@@ -282,7 +300,12 @@ describe('Messaging', () => {
           { ...encrypted, nonce },
           identityBob.getAddress()
         )
-      ).toThrowError(new Error('Hash of message not correct'))
+      ).toThrowError(
+        ObjectErrors.ERROR_NONCE_HASH_INVALID(
+          { hash: encryptedHash, nonce },
+          'Message'
+        )
+      )
 
       // check correct encrypted but with createdAt from encrypted2
       expect(() =>
@@ -290,7 +313,12 @@ describe('Messaging', () => {
           { ...encrypted, createdAt },
           identityBob.getAddress()
         )
-      ).toThrowError(new Error('Hash of message not correct'))
+      ).toThrowError(
+        ObjectErrors.ERROR_NONCE_HASH_INVALID(
+          { hash: encryptedHash, nonce: encrypted.nonce },
+          'Message'
+        )
+      )
     })
     it('expects signature error', async () => {
       expect(() =>

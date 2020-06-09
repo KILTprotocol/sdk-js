@@ -14,6 +14,7 @@ import {
   CompressedQuoteAttesterSigned,
   IQuoteAgreement,
 } from '../types/Quote'
+import * as ObjectErrors from '../errorhandling/ObjectErrors'
 
 /**
  *  Compresses the cost from a [[Quote]] object.
@@ -26,13 +27,7 @@ import {
 
 export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
   if (!cost.gross || !cost.net || !cost.tax) {
-    throw new Error(
-      `Property Not Provided while building cost : ${JSON.stringify(
-        cost,
-        null,
-        2
-      )}`
-    )
+    throw ObjectErrors.ERROR_COMPRESS_OBJECT(cost, 'Cost Breakdown')
   }
   return [cost.gross, cost.net, cost.tax]
 }
@@ -48,9 +43,7 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
 
 export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
   if (!Array.isArray(cost) || cost.length !== 3) {
-    throw new Error(
-      `Compressed cost isn't an Array or has all the required data types`
-    )
+    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('Cost Breakdown')
   }
   return { gross: cost[0], net: cost[1], tax: cost[2] }
 }
@@ -73,13 +66,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
     !quote.termsAndConditions ||
     !quote.timeframe
   ) {
-    throw new Error(
-      `Property Not Provided while building quote: ${JSON.stringify(
-        quote,
-        null,
-        2
-      )}`
-    )
+    throw ObjectErrors.ERROR_COMPRESS_OBJECT(quote, 'Quote')
   }
   return [
     quote.attesterAddress,
@@ -101,9 +88,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
 
 export function decompressQuote(quote: CompressedQuote): IQuote {
   if (!Array.isArray(quote) || quote.length !== 6) {
-    throw new Error(
-      `Compressed quote isn't an Array or has all the required data types`
-    )
+    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY
   }
   return {
     attesterAddress: quote[0],
@@ -136,12 +121,9 @@ export function compressAttesterSignedQuote(
     !attesterSignedQuote.timeframe ||
     !attesterSignedQuote.attesterSignature
   ) {
-    throw new Error(
-      `Property Not Provided while building attesterSignedQuote: ${JSON.stringify(
-        attesterSignedQuote,
-        null,
-        2
-      )}`
+    throw ObjectErrors.ERROR_COMPRESS_OBJECT(
+      attesterSignedQuote,
+      'Attester Signed Quote'
     )
   }
   return [
@@ -168,9 +150,7 @@ export function decompressAttesterSignedQuote(
   attesterSignedQuote: CompressedQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   if (!Array.isArray(attesterSignedQuote) || attesterSignedQuote.length !== 7) {
-    throw new Error(
-      `Compressed attesterSignedQuote isn't an Array or has all the required data types`
-    )
+    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY
   }
   return {
     attesterAddress: attesterSignedQuote[0],
@@ -204,13 +184,7 @@ export function compressQuoteAgreement(
     !quoteAgreement.timeframe ||
     !quoteAgreement.attesterSignature
   ) {
-    throw new Error(
-      `Property Not Provided while building quoteAgreement: ${JSON.stringify(
-        quoteAgreement,
-        null,
-        2
-      )}`
-    )
+    throw ObjectErrors.ERROR_COMPRESS_OBJECT(quoteAgreement, 'Quote Agreement')
   }
   return [
     quoteAgreement.attesterAddress,
@@ -238,9 +212,7 @@ export function decompressQuoteAgreement(
   quoteAgreement: CompressedQuoteAgreed
 ): IQuoteAgreement {
   if (!Array.isArray(quoteAgreement) || quoteAgreement.length !== 9) {
-    throw new Error(
-      `Compressed quoteAgreement isn't an Array or has all the required data types`
-    )
+    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY
   }
   return {
     attesterAddress: quoteAgreement[0],

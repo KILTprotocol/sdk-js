@@ -17,6 +17,7 @@ import CTypeUtils from '../ctype/CType.utils'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
 import ClaimUtils from './Claim.utils'
+import * as ObjectErrors from '../errorhandling/ObjectErrors'
 
 function verifyClaim(
   claimContents: IClaim['contents'],
@@ -40,9 +41,8 @@ export default class Claim implements IClaim {
     cTypeSchema: ICType['schema']
   ): Claim {
     if (!verifyClaim(claimInput.contents, cTypeSchema)) {
-      throw Error('Claim not valid')
+      throw ObjectErrors.ERROR_CLAIM_UNVERIFIABLE
     }
-
     return new Claim(claimInput)
   }
 
@@ -63,7 +63,7 @@ export default class Claim implements IClaim {
   ): Claim {
     if (ctypeInput.schema) {
       if (!verifyClaim(claimContents, ctypeInput.schema)) {
-        throw Error('Claim not valid')
+        throw ObjectErrors.ERROR_CLAIM_UNVERIFIABLE
       }
     }
     return new Claim({

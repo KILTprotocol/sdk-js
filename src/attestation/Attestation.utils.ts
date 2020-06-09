@@ -6,6 +6,7 @@
 
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { validateHash, validateAddress } from '../util/DataUtils'
+import * as ObjectErrors from '../errorhandling/ObjectErrors'
 
 /**
  *  Checks whether the input meets all the required criteria of an IAttestation object.
@@ -68,9 +69,7 @@ export function compress(attestation: IAttestation): CompressedAttestation {
 
 export function decompress(attestation: CompressedAttestation): IAttestation {
   if (!Array.isArray(attestation) || attestation.length !== 5) {
-    throw new Error(
-      "Compressed Attestation isn't an Array or has all the required data types"
-    )
+    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('Attestation')
   }
   return {
     claimHash: attestation[0],

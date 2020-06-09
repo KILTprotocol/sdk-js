@@ -7,6 +7,7 @@
 import ICTypeMetadata from '../types/CTypeMetadata'
 import { MetadataModel } from './CTypeSchema'
 import CTypeUtils from './CType.utils'
+import { ERROR_OBJECT_MALFORMED } from '../errorhandling/ObjectErrors'
 
 export default class CTypeMetadata implements ICTypeMetadata {
   public ctypeHash: ICTypeMetadata['ctypeHash']
@@ -21,7 +22,7 @@ export default class CTypeMetadata implements ICTypeMetadata {
    */
   public constructor(metadata: ICTypeMetadata) {
     if (!CTypeUtils.verifySchema(metadata, MetadataModel)) {
-      throw new Error('CTypeMetadata does not correspond to schema')
+      throw ERROR_OBJECT_MALFORMED
     }
     this.metadata = metadata.metadata
     this.ctypeHash = metadata.ctypeHash

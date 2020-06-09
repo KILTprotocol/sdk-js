@@ -16,6 +16,7 @@ import IRequestForAttestation, {
   CompressedNonceHashTree,
   CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
+import * as ObjectErrors from '../errorhandling/ObjectErrors'
 
 /**
  *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
@@ -67,13 +68,7 @@ export function compressNonceAndHash(
   nonceHash: NonceHash
 ): CompressedNonceHash {
   if (!nonceHash.hash) {
-    throw new Error(
-      `Property Not Provided while building RequestForAttestation: ${JSON.stringify(
-        nonceHash,
-        null,
-        2
-      )}`
-    )
+    throw ObjectErrors.ERROR_COMPRESS_OBJECT(nonceHash, 'Nonce Hash')
   }
   return [nonceHash.hash, nonceHash.nonce]
 }
@@ -203,9 +198,7 @@ export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
   if (!Array.isArray(reqForAtt) || reqForAtt.length !== 9) {
-    throw new Error(
-      "Compressed Request For Attestation isn't an Array or has all the required data types"
-    )
+    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }
   return {
     claim: ClaimUtils.decompress(reqForAtt[0]),

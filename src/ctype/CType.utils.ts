@@ -12,6 +12,7 @@ import ICType, { CompressedCTypeSchema, CompressedCType } from '../types/CType'
 import Crypto from '../crypto'
 import IClaim from '../types/Claim'
 import { validateAddress } from '../util/DataUtils'
+import * as ObjectErrors from '../errorhandling/ObjectErrors'
 
 export function verifySchemaWithErrors(
   object: object,
@@ -51,7 +52,7 @@ export function verifyClaimStructure(
   schema: ICType['schema']
 ): boolean {
   if (!verifySchema(schema, CTypeModel)) {
-    throw new Error('CType does not correspond to schema')
+    throw ObjectErrors.ERROR_OBJECT_MALFORMED
   }
   return verifySchema(claimContents, schema)
 }
@@ -109,10 +110,7 @@ export function compressSchema(
     !cTypeSchema.properties ||
     !cTypeSchema.type
   ) {
-    throw new Error(
-      `Property Not Provided while building cTypeSchema: 
-      ${JSON.stringify(cTypeSchema, null, 2)}`
-    )
+    throw ObjectErrors.ERROR_COMPRESS_OBJECT(cTypeSchema, 'cTypeSchema')
   }
   const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
   return [
@@ -136,9 +134,7 @@ export function decompressSchema(
   cTypeSchema: CompressedCTypeSchema
 ): ICType['schema'] {
   if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 4) {
-    throw new Error(
-      "Compressed cTypeSchema isn't an Array or has all the required data types"
-    )
+    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('cTypeSchema')
   }
   return {
     $id: cTypeSchema[0],
@@ -172,9 +168,7 @@ export function compress(cType: ICType): CompressedCType {
 
 export function decompress(cType: CompressedCType): ICType {
   if (!Array.isArray(cType) || cType.length !== 3) {
-    throw new Error(
-      "Compressed cType isn't an Array or has all the required data types"
-    )
+    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('ctype')
   }
   return {
     hash: cType[0],

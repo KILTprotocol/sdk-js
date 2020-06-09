@@ -7,6 +7,7 @@
 import * as jsonabc from 'jsonabc'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import { validateHash, validateAddress } from '../util/DataUtils'
+import * as ObjectErrors from '../errorhandling/ObjectErrors'
 
 /**
  *  Checks whether the input meets all the required criteria of an IClaim object.
@@ -60,9 +61,7 @@ export function compress(claim: IClaim): CompressedClaim {
  */
 export function decompress(claim: CompressedClaim): IClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
-    throw new Error(
-      `Compressed Claim isn't an Array or has all the required data types`
-    )
+    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }
   return {
     contents: claim[0],

@@ -8,6 +8,7 @@ import AttestationUtils from '../attestation/Attestation.utils'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
 import AttestedClaim from './AttestedClaim'
+import * as ObjectErrors from '../errorhandling/ObjectErrors'
 
 /**
  *  Checks whether the input meets all the required criteria of an IAttestedClaim object.
@@ -64,9 +65,7 @@ export function decompress(
   attestedClaim: CompressedAttestedClaim
 ): IAttestedClaim {
   if (!Array.isArray(attestedClaim) || attestedClaim.length !== 2) {
-    throw new Error(
-      "Compressed Attested Claim isn't an Array or has all the required data types"
-    )
+    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('Attested Claim')
   }
   return {
     request: RequestForAttestationUtils.decompress(attestedClaim[0]),

@@ -16,6 +16,7 @@ import Identity from '../identity/Identity'
 import { IQuote, IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
 import { hashObjectAsStr } from '../crypto/Crypto'
 import { validateSignature } from '../util/DataUtils'
+import { ERROR_OBJECT_MALFORMED } from '../errorhandling/ObjectErrors'
 
 /**
  * Validates the quote against the meta schema and quote data against the provided schema.
@@ -70,7 +71,7 @@ export function fromAttesterSignedInput(
     deserializedQuote.attesterAddress
   )
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
-    throw new Error('Quote does not correspond to schema')
+    throw ERROR_OBJECT_MALFORMED
   }
 
   return {
@@ -114,7 +115,7 @@ export function fromQuoteDataAndIdentity(
   identity: Identity
 ): IQuoteAttesterSigned {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
-    throw new Error('Quote does not correspond to schema')
+    throw ERROR_OBJECT_MALFORMED
   }
   return createAttesterSignature(quoteInput, identity)
 }
