@@ -5,7 +5,7 @@
 
 import CType from './CType'
 import CTypeMetadata from './CTypeMetadata'
-import * as CTypeUtils from './CTypeUtils'
+import CTypeUtils from './CType.utils'
 import * as CTypeSchema from './CTypeSchema'
 
 export { CType, CTypeMetadata, CTypeUtils, CTypeSchema }

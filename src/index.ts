@@ -11,22 +11,19 @@ import Crypto from './crypto'
 import { Identity, PublicIdentity, IURLResolver } from './identity'
 import AttesterIdentity from './attesteridentity/AttesterIdentity'
 import { CType, CTypeMetadata, CTypeUtils, CTypeSchema } from './ctype'
-import Claim from './claim'
-import ClaimUtils from './claim/Claim.utils'
-import RequestForAttestation from './requestforattestation'
-import RequestForAttestationUtils from './requestforattestation/RequestForAttestation.utils'
-import Attestation from './attestation'
-import AttestationUtils from './attestation/Attestation.utils'
-import AttestedClaim from './attestedclaim'
-import AttestedClaimUtils from './attestedclaim/AttestedClaim.utils'
+import Claim, { ClaimUtils } from './claim'
+import RequestForAttestation, {
+  RequestForAttestationUtils,
+} from './requestforattestation'
+import Attestation, { AttestationUtils } from './attestation'
+import AttestedClaim, { AttestedClaimUtils } from './attestedclaim'
 import {
   DelegationBaseNode,
   DelegationNode,
   DelegationRootNode,
 } from './delegation'
 import Did, { IDid } from './did'
-import Quote, { QuoteSchema } from './quote'
-import QuoteUtils from './quote/Quote.utils'
+import Quote, { QuoteUtils, QuoteSchema } from './quote'
 import Message from './messaging'
 import * as Verifier from './actor/Verifier'
 import * as Claimer from './actor/Claimer'
