@@ -11,7 +11,7 @@ import IAttestedClaim from '../types/AttestedClaim'
 import { NonceHash } from '../types/RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
-import { PublicIdentity } from '..'
+import PublicIdentity from '../identity/PublicIdentity'
 
 /**
  *  Validates an given address string against the External Address Format (SS58) with our Prefix of 42.
