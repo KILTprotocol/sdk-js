@@ -59,7 +59,7 @@ describe('Messaging', () => {
     encryptedMessageWrongSignature.signature += '1234'
     expect(() =>
       Message.decrypt(encryptedMessageWrongSignature, identityBob)
-    ).toThrowError(new Error('Signature of message not correct'))
+    ).toThrowError(new Error(`Provided signature invalid`))
 
     const encryptedMessageWrongContent: IEncryptedMessage = JSON.parse(
       JSON.stringify(encryptedMessage)
@@ -295,7 +295,7 @@ describe('Messaging', () => {
     it('expects signature error', async () => {
       expect(() =>
         Message.ensureHashAndSignature(encrypted, identityBob.getAddress())
-      ).toThrowError(new Error('Signature of message not correct'))
+      ).toThrowError(new Error(`Provided signature invalid`))
     })
   })
 })
