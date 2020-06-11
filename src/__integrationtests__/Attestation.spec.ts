@@ -222,7 +222,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         attestation: attClaim.attestation,
       }
 
-      await expect(() => AttestedClaim.verify(fakeAttClaim)).toThrowError()
+      expect(() => AttestedClaim.verify(fakeAttClaim)).toThrowError()
     }, 15000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
