@@ -160,29 +160,6 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * Builds a presentation. A presentation is a custom view of the [[AttestedClaim]], in which the claimer controls what information should be shown.
-   *
-   * @param excludedClaimProperties - An array of [[Claim]] properties to **exclude**.
-   * @param excludeIdentity - Whether the claimer's identity should be **excluded** from the presentation. By default, the claimer's identity is included (`excludeIdentity` is `false`).
-   * @returns The newly created presentation.
-   * @example ```javascript
-   * // create a presentation that keeps `birthYear` and `identity` private
-   * createPresentation(['birthYear'], true);
-   * ```
-   */
-  public createPresentation(
-    excludedClaimProperties: string[],
-    excludeIdentity = false
-  ): AttestedClaim {
-    const result: AttestedClaim = AttestedClaim.fromAttestedClaim(this)
-    result.request.removeClaimProperties(excludedClaimProperties)
-    if (excludeIdentity) {
-      result.request.removeClaimOwner()
-    }
-    return result
-  }
-
-  /**
    * Compresses an [[AttestedClaim]] object.
    *
    * @returns An array that contains the same properties of an [[AttestedClaim]].

@@ -123,19 +123,6 @@ describe('RequestForAttestation', () => {
 
     // check proof on complete data
     expect(AttestedClaim.verifyData(attestedClaim)).toBeTruthy()
-
-    // build a representation excluding claim properties and verify proof
-    const correctPresentation = attestedClaim.createPresentation(['a'])
-    expect(AttestedClaim.verifyData(correctPresentation)).toBeTruthy()
-
-    // just deleting a field will result in a wrong proof
-    const falsePresentation = attestedClaim.createPresentation([])
-    const propertyName = 'a'
-    delete falsePresentation.request.claim.contents[propertyName]
-    delete falsePresentation.request.claimHashTree[propertyName]
-    expect(() => {
-      return AttestedClaim.verifyData(falsePresentation)
-    }).toThrow()
   })
 
   it('compresses and decompresses the attested claims object', () => {
