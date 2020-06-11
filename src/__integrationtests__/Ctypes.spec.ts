@@ -19,13 +19,12 @@ beforeAll(async () => {
 
 describe('When there is an CtypeCreator and a verifier', () => {
   let ctypeCreator: Identity
-  // Can this be removed?
   let ctypeCounter = 0
 
   function makeCType(): CType {
     ctypeCounter += 1
     return CType.fromSchema({
-      $id: 'http://example.com/ctype-10',
+      $id: `http://example.com/ctype-${ctypeCounter}`,
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       properties: {
         name: { type: 'string' },
