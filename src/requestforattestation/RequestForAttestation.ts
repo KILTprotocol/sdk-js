@@ -200,10 +200,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns  Boolean whether input is of type IRequestForAttestation.
    */
   public static isIRequestForAttestation(
-    input: Partial<IRequestForAttestation>
+    input: object
   ): input is IRequestForAttestation {
     try {
-      RequestForAttestationUtils.errorCheck(input)
+      RequestForAttestationUtils.errorCheck(input as IRequestForAttestation)
     } catch (error) {
       return false
     }

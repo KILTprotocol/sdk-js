@@ -17,7 +17,7 @@ import { validateHash, validateAddress } from '../util/DataUtils'
  * @throws When any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
  *
  */
-export function errorCheck(input: Partial<IClaim>): void {
+export function errorCheck(input: IClaim): void {
   if (!input.cTypeHash) {
     throw new Error('cTypeHash of provided Claim not set')
   }

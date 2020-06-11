@@ -26,7 +26,7 @@ import IRequestForAttestation, {
  * @throws When any of the input's claimHashTree's keys missing their hash.
  *
  */
-export function errorCheck(input: Partial<IRequestForAttestation>): void {
+export function errorCheck(input: IRequestForAttestation): void {
   if (!input.claim) {
     throw new Error('Claim not provided')
   } else {

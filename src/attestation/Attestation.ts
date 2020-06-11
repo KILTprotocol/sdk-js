@@ -101,7 +101,7 @@ export default class Attestation implements IAttestation {
    */
   public static isIAttestation(input: object): input is IAttestation {
     try {
-      AttestationUtils.errorCheck(input)
+      AttestationUtils.errorCheck(input as IAttestation)
     } catch (error) {
       return false
     }

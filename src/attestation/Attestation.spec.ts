@@ -187,7 +187,7 @@ describe('Attestation', () => {
       owner: identityAlice.signKeyringPair.address,
       revoked: false,
       delegationId: null,
-    }
+    } as IAttestation
 
     const noCTypeHash = {
       claimHash,
@@ -195,7 +195,7 @@ describe('Attestation', () => {
       owner: identityAlice.signKeyringPair.address,
       revoked: false,
       delegationId: null,
-    }
+    } as IAttestation
 
     const malformedOwner = {
       claimHash,
@@ -203,23 +203,23 @@ describe('Attestation', () => {
       owner: '',
       revoked: false,
       delegationId: null,
-    }
+    } as IAttestation
 
-    const noRevocationBit = ({
+    const noRevocationBit = {
       claimHash,
       cTypeHash,
       owner: identityAlice.signKeyringPair.address,
-      revoked: null,
+      revoked: false,
       delegationId: null,
-    } as any) as IAttestation
-
+    } as IAttestation
+    delete noRevocationBit.revoked
     const malformedClaimHash = {
       claimHash: claimHash.slice(0, 20) + claimHash.slice(21),
       cTypeHash,
       owner: identityAlice.signKeyringPair.address,
       revoked: false,
       delegationId: null,
-    }
+    } as IAttestation
 
     const malformedCTypeHash = {
       claimHash,
@@ -227,7 +227,7 @@ describe('Attestation', () => {
       owner: identityAlice.signKeyringPair.address,
       revoked: false,
       delegationId: null,
-    }
+    } as IAttestation
 
     const malformedAddress = {
       claimHash,
@@ -235,7 +235,7 @@ describe('Attestation', () => {
       owner: identityAlice.signKeyringPair.address.replace('7', 'D'),
       revoked: false,
       delegationId: null,
-    }
+    } as IAttestation
 
     expect(() =>
       AttestationUtils.errorCheck(noClaimHash)

@@ -13,7 +13,9 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim, { IClaimContents } from '../types/Claim'
 import constants from '../test/constants'
-import { CompressedRequestForAttestation } from '../types/RequestForAttestation'
+import IRequestForAttestation, {
+  CompressedRequestForAttestation,
+} from '../types/RequestForAttestation'
 import { CompressedAttestedClaim } from '../types/AttestedClaim'
 
 async function buildRequestForAttestationPE(
@@ -394,7 +396,7 @@ describe('RequestForAttestation', () => {
       },
       []
     )
-    const builtRequestWithLegitimation = await buildRequestForAttestation(
+    const builtRequestWithLegitimation = (await buildRequestForAttestation(
       identityBob,
       {
         a: 'a',
@@ -402,7 +404,7 @@ describe('RequestForAttestation', () => {
         c: 'c',
       },
       [legitimationCharlie]
-    )
+    )) as IRequestForAttestation
     const builtRequestNoLegitimations = {
       ...(await buildRequestForAttestation(
         identityBob,
@@ -413,7 +415,7 @@ describe('RequestForAttestation', () => {
         },
         []
       )),
-    }
+    } as IRequestForAttestation
     delete builtRequestNoLegitimations.legitimations
 
     const builtRequestMalformedRootHash = {
@@ -426,7 +428,7 @@ describe('RequestForAttestation', () => {
         },
         []
       )),
-    }
+    } as IRequestForAttestation
     builtRequestMalformedRootHash.rootHash = [
       builtRequestMalformedRootHash.rootHash.slice(0, 15),
       (
@@ -445,7 +447,7 @@ describe('RequestForAttestation', () => {
         },
         []
       )),
-    }
+    } as IRequestForAttestation
     builtRequestMalformedClaimOwner.claimOwner = {
       hash: [
         builtRequestMalformedClaimOwner.claimOwner.hash.slice(0, 15),
@@ -480,7 +482,7 @@ describe('RequestForAttestation', () => {
         },
         []
       )),
-    }
+    } as IRequestForAttestation
     delete builtRequestIncompleteClaimHashTree.claimHashTree.a
     builtRequestIncompleteClaimHashTree.rootHash = RequestForAttestation[
       'calculateRootHash'
@@ -501,7 +503,7 @@ describe('RequestForAttestation', () => {
         },
         []
       )),
-    }
+    } as IRequestForAttestation
     builtRequestMalformedSignature.claimerSignature = builtRequestMalformedSignature.claimerSignature.replace(
       builtRequestMalformedSignature.claimerSignature.charAt(5),
       builtRequestMalformedSignature.claimerSignature.charAt(5) === 'd'
@@ -527,7 +529,7 @@ describe('RequestForAttestation', () => {
         },
         []
       )),
-    }
+    } as IRequestForAttestation
     builtRequestMalformedCtypeHash.cTypeHash = {
       hash: [
         builtRequestMalformedCtypeHash.cTypeHash.hash.slice(0, 15),

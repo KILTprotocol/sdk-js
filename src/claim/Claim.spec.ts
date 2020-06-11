@@ -103,13 +103,13 @@ describe('Claim', () => {
       cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
       contents: claimContents,
       owner: ownerAddress,
-    }
+    } as IClaim
 
     const malformedAddress = {
       cTypeHash,
       contents: claimContents,
       owner: ownerAddress.replace('7', 'D'),
-    }
+    } as IClaim
 
     expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
 

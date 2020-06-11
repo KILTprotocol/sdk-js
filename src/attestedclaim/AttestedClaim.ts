@@ -64,7 +64,7 @@ export default class AttestedClaim implements IAttestedClaim {
    */
   public static isIAttestedClaim(input: object): input is IAttestedClaim {
     try {
-      AttestedClaimUtils.errorCheck(input)
+      AttestedClaimUtils.errorCheck(input as IAttestedClaim)
     } catch (error) {
       return false
     }

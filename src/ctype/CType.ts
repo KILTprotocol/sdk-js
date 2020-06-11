@@ -40,9 +40,9 @@ export default class CType implements ICType {
    *
    * @returns Boolean whether input is of type ICType.
    */
-  static isICType(input: Partial<ICType>): input is ICType {
+  static isICType(input: object): input is ICType {
     try {
-      CTypeUtils.errorCheck(input)
+      CTypeUtils.errorCheck(input as ICType)
     } catch (error) {
       return false
     }

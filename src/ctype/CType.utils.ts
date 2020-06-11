@@ -75,7 +75,7 @@ export function getHashForSchema(schema: ICType['schema']): string {
  * @throws When the input's owner is not of type string or null.
  *
  */
-export function errorCheck(input: Partial<ICType>): void {
+export function errorCheck(input: ICType): void {
   if (!verifySchema(input, CTypeWrapperModel)) {
     throw new Error('CType does not correspond to schema')
   }

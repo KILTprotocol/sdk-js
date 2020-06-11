@@ -82,7 +82,7 @@ export default class Claim implements IClaim {
    */
   static isIClaim(input: object): input is IClaim {
     try {
-      ClaimUtils.errorCheck(input)
+      ClaimUtils.errorCheck(input as IClaim)
     } catch (error) {
       return false
     }

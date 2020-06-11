@@ -18,7 +18,7 @@ import AttestedClaim from './AttestedClaim'
  * @throws When input's Data could not be verified.
  *
  */
-export function errorCheck(input: Partial<IAttestedClaim>): void {
+export function errorCheck(input: IAttestedClaim): void {
   if (input.attestation) {
     AttestationUtils.errorCheck(input.attestation)
   } else throw new Error('Attestation not provided!')

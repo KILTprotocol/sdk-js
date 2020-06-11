@@ -17,7 +17,7 @@ import { validateHash, validateAddress } from '../util/DataUtils'
  * @throws When input.revoked is not of type 'boolean'.
  *
  */
-export function errorCheck(input: Partial<IAttestation>): void {
+export function errorCheck(input: IAttestation): void {
   if (!input.cTypeHash) {
     throw new Error('CType Hash not provided')
   } else validateHash(input.cTypeHash, 'CType')
