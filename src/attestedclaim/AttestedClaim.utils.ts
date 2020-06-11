@@ -7,16 +7,28 @@
 import AttestationUtils from '../attestation/Attestation.utils'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
+import AttestedClaim from './AttestedClaim'
 
-export function errorCheck(attestedClaim: IAttestedClaim): void {
-  if (!attestedClaim.request || !attestedClaim.attestation) {
-    throw new Error(
-      `Property Not Provided while building AttestedClaim: ${JSON.stringify(
-        attestedClaim,
-        null,
-        2
-      )}`
-    )
+/**
+ *  Checks whether the input meets all the required criteria of an IAttestedClaim object.
+ *  Throws on invalid input.
+ *
+ * @param input The potentially only partial IAttestedClaim.
+ * @throws When input's attestation and request do not exist.
+ * @throws When input's Data could not be verified.
+ *
+ */
+export function errorCheck(input: IAttestedClaim): void {
+  if (input.attestation) {
+    AttestationUtils.errorCheck(input.attestation)
+  } else throw new Error('Attestation not provided!')
+
+  if (input.request) {
+    RequestForAttestationUtils.errorCheck(input.request)
+  } else throw new Error('RequestForAttestation not provided')
+
+  if (!AttestedClaim.verifyData(input as IAttestedClaim)) {
+    throw new Error('could not verify Data of attested claim')
   }
 }
 

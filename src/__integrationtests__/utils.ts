@@ -25,40 +25,35 @@ export const wannabeBob = Identity.buildFromURI('//Bob')
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)
     .then(ownerAddress => {
-      console.log(ownerAddress)
       return ownerAddress !== null
     })
     .catch(() => false)
 }
 
-export const DriversLicense = CType.fromCType({
-  schema: {
-    $id: 'DriversLicense',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      name: {
-        type: 'string',
-      },
-      age: {
-        type: 'integer',
-      },
+export const DriversLicense = CType.fromSchema({
+  $id: 'DriversLicense',
+  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  properties: {
+    name: {
+      type: 'string',
     },
-    type: 'object',
-  } as ICType['schema'],
-} as ICType)
+    age: {
+      type: 'integer',
+    },
+  },
+  type: 'object',
+} as ICType['schema'])
 
-export const isOfficialLicenseAuthority = CType.fromCType({
-  schema: {
-    $id: 'LicenseAuthority',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      LicenseType: {
-        type: 'string',
-      },
-      LicenseSubtypes: {
-        type: 'string',
-      },
+export const IsOfficialLicenseAuthority = CType.fromSchema({
+  $id: 'LicenseAuthority',
+  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  properties: {
+    LicenseType: {
+      type: 'string',
     },
-    type: 'object',
-  } as ICType['schema'],
-} as ICType)
+    LicenseSubtypes: {
+      type: 'string',
+    },
+  },
+  type: 'object',
+} as ICType['schema'])

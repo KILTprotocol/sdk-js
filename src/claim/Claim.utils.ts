@@ -6,14 +6,36 @@
 
 import * as jsonabc from 'jsonabc'
 import IClaim, { CompressedClaim } from '../types/Claim'
+import { validateHash, validateAddress } from '../util/DataUtils'
 
-function errorCheck(claim: IClaim): void {
-  if (!claim.cTypeHash || !claim.contents || !claim.owner) {
-    throw new Error(
-      `Property Not Provided while building Claim: 
-        ${JSON.stringify(claim, null, 2)}`
-    )
+/**
+ *  Checks whether the input meets all the required criteria of an IClaim object.
+ *  Throws on invalid input.
+ *
+ * @param input The potentially only partial IClaim.
+ * @throws When input's cTypeHash do not exist.
+ * @throws When any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
+ *
+ */
+export function errorCheck(input: IClaim): void {
+  if (!input.cTypeHash) {
+    throw new Error('cTypeHash of provided Claim not set')
   }
+  if (input.owner) {
+    validateAddress(input.owner, 'Claim Owner')
+  }
+  if (input.contents !== undefined) {
+    Object.entries(input.contents).forEach(entry => {
+      if (
+        !entry[0] ||
+        !entry[1] ||
+        !['string', 'number', 'boolean'].includes(typeof entry[1])
+      ) {
+        throw new Error('Claim contents malformed')
+      }
+    })
+  }
+  validateHash(input.cTypeHash, 'Claim CType')
 }
 
 /**

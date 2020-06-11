@@ -5,6 +5,7 @@
  */
 
 import * as jsonabc from 'jsonabc'
+import RequestForAttestation from './RequestForAttestation'
 import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
@@ -16,26 +17,41 @@ import IRequestForAttestation, {
   CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
 
-export function errorCheck(
-  requestForAttestation: IRequestForAttestation
-): void {
-  if (
-    !requestForAttestation.claim ||
-    !requestForAttestation.legitimations ||
-    !requestForAttestation.claimOwner ||
-    !requestForAttestation.claimerSignature ||
-    !requestForAttestation.claimHashTree ||
-    !requestForAttestation.cTypeHash ||
-    !requestForAttestation.rootHash
-  ) {
-    throw new Error(
-      `Property Not Provided while building RequestForAttestation: ${JSON.stringify(
-        requestForAttestation,
-        null,
-        2
-      )}`
-    )
+/**
+ *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
+ *  Throws on invalid input.
+ *
+ * @param input - A potentially only partial [[IRequestForAttestation]].
+ * @throws When either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type.
+ * @throws When any of the input's claimHashTree's keys missing their hash.
+ *
+ */
+export function errorCheck(input: IRequestForAttestation): void {
+  if (!input.claim) {
+    throw new Error('Claim not provided')
+  } else {
+    ClaimUtils.errorCheck(input.claim)
   }
+  if (!input.legitimations) {
+    throw new Error('Legitimations not provided')
+  } else if (!Array.isArray(input.legitimations)) {
+    throw new Error('Legitimations not an Array')
+  }
+
+  if (!input.claimHashTree) {
+    throw new Error('Claim Hash Tree not provided')
+  } else {
+    Object.keys(input.claimHashTree).forEach(key => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      if (!input.claimHashTree![key].hash) {
+        throw new Error('incomplete claim Hash Tree')
+      }
+    })
+  }
+  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
+    throw new Error('DelegationId not provided')
+  }
+  RequestForAttestation.verifyData(input as IRequestForAttestation)
 }
 
 /**
@@ -50,7 +66,7 @@ export function errorCheck(
 export function compressNonceAndHash(
   nonceHash: NonceHash
 ): CompressedNonceHash {
-  if (!nonceHash.nonce || !nonceHash.hash) {
+  if (!nonceHash.hash) {
     throw new Error(
       `Property Not Provided while building RequestForAttestation: ${JSON.stringify(
         nonceHash,

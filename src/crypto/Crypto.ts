@@ -145,12 +145,18 @@ export function hashStr(value: CryptoInput): string {
 }
 
 export function hashObjectAsStr(
-  value: object | string,
+  value: object | string | number | boolean,
   nonce?: string
 ): string {
   let input =
+    // eslint-disable-next-line no-nested-ternary
     typeof value === 'object' && value !== null
       ? JSON.stringify(jsonabc.sortObj(value))
+      : // eslint-disable-next-line no-nested-ternary
+      typeof value === 'number' && value !== null
+      ? value.toString()
+      : typeof value === 'boolean' && value !== null
+      ? JSON.stringify(value)
       : value
   if (nonce) {
     input = nonce + input

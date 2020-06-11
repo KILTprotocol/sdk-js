@@ -1,4 +1,4 @@
-import { Text } from '@polkadot/types'
+import { Text, Data } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
@@ -9,15 +9,14 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
-import { CompressedAttestation } from '../types/Attestation'
+import IAttestation, { CompressedAttestation } from '../types/Attestation'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Attestation', () => {
   let identityAlice: Identity
   let identityBob: Identity
-  let rawCType: ICType['schema']
-  let fromRawCType: ICType
+  let rawCTypeSchema: ICType['schema']
   let testCType: CType
   let testcontents: any
   let testClaim: Claim
@@ -29,7 +28,7 @@ describe('Attestation', () => {
     identityAlice = await Identity.buildFromURI('//Alice')
     identityBob = await Identity.buildFromURI('//Bob')
 
-    rawCType = {
+    rawCTypeSchema = {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       properties: {
@@ -38,13 +37,7 @@ describe('Attestation', () => {
       type: 'object',
     }
 
-    fromRawCType = {
-      schema: rawCType,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-
-    testCType = CType.fromCType(fromRawCType)
+    testCType = CType.fromSchema(rawCTypeSchema, identityAlice.getAddress())
 
     testcontents = {}
     testClaim = Claim.fromCTypeAndClaimContents(
@@ -63,7 +56,7 @@ describe('Attestation', () => {
       new Option(
         Tuple,
         new Tuple(
-          [Text, AccountId, Text, Bool],
+          [Data, AccountId, Text, Bool],
           [testCType.hash, identityAlice.getAddress(), undefined, false]
         )
       )
@@ -73,7 +66,7 @@ describe('Attestation', () => {
       requestForAttestation,
       identityAlice.getPublicIdentity()
     )
-    expect(await attestation.verify()).toBeTruthy()
+    expect(await Attestation.verify(attestation)).toBeTruthy()
   })
 
   it('verify attestations not on chain', async () => {
@@ -88,7 +81,7 @@ describe('Attestation', () => {
       owner: identityAlice.getAddress(),
       revoked: false,
     })
-    expect(await attestation.verify()).toBeFalsy()
+    expect(await Attestation.verify(attestation)).toBeFalsy()
   })
 
   it('verify attestation revoked', async () => {
@@ -97,8 +90,13 @@ describe('Attestation', () => {
         Tuple,
         new Tuple(
           // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
-          [Text, AccountId, Text, Bool],
-          [testCType.hash, identityAlice.getAddress(), undefined, true]
+          [Data, AccountId, Text, Bool],
+          [
+            testCType.hash,
+            identityAlice.signKeyringPair.address,
+            undefined,
+            true,
+          ]
         )
       )
     )
@@ -107,7 +105,7 @@ describe('Attestation', () => {
       requestForAttestation,
       identityAlice.getPublicIdentity()
     )
-    expect(await attestation.verify()).toBeFalsy()
+    expect(await Attestation.verify(attestation)).toBeFalsy()
   })
 
   it('compresses and decompresses the attestation object', () => {
@@ -166,5 +164,116 @@ describe('Attestation', () => {
     expect(() => {
       AttestationUtils.compress(attestation)
     }).toThrow()
+  })
+  it('error check should throw errors on faulty Attestations', () => {
+    const { cTypeHash, claimHash } = {
+      cTypeHash:
+        '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
+      claimHash:
+        '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557',
+    }
+
+    const everything = {
+      claimHash,
+      cTypeHash,
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    }
+
+    const noClaimHash = {
+      claimHash: '',
+      cTypeHash,
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const noCTypeHash = {
+      claimHash,
+      cTypeHash: '',
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const malformedOwner = {
+      claimHash,
+      cTypeHash,
+      owner: '',
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const noRevocationBit = {
+      claimHash,
+      cTypeHash,
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+    delete noRevocationBit.revoked
+    const malformedClaimHash = {
+      claimHash: claimHash.slice(0, 20) + claimHash.slice(21),
+      cTypeHash,
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const malformedCTypeHash = {
+      claimHash,
+      cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const malformedAddress = {
+      claimHash,
+      cTypeHash,
+      owner: identityAlice.signKeyringPair.address.replace('7', 'D'),
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    expect(() =>
+      AttestationUtils.errorCheck(noClaimHash)
+    ).toThrowErrorMatchingInlineSnapshot(`"Claim Hash not provided"`)
+
+    expect(() =>
+      AttestationUtils.errorCheck(noCTypeHash)
+    ).toThrowErrorMatchingInlineSnapshot(`"CType Hash not provided"`)
+
+    expect(() =>
+      AttestationUtils.errorCheck(malformedOwner)
+    ).toThrowErrorMatchingInlineSnapshot(`"Owner not provided"`)
+
+    expect(() =>
+      AttestationUtils.errorCheck(noRevocationBit)
+    ).toThrowErrorMatchingInlineSnapshot(`"revocation bit not provided"`)
+
+    expect(() => AttestationUtils.errorCheck(everything)).not.toThrow()
+
+    expect(() => AttestationUtils.errorCheck(malformedClaimHash))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided Claim hash invalid or malformed 
+
+    Hash: 0x21a3448ccf10f6568dcd9a08af689c220d842b893a40344d010e398ab74e557"
+`)
+
+    expect(() => AttestationUtils.errorCheck(malformedCTypeHash))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided CType hash invalid or malformed 
+
+    Hash: 0xa8c5bdb22aaea3fceb467d37169cbe49c71f226233037537e70a32a032304ff"
+`)
+
+    expect(() => AttestationUtils.errorCheck(malformedAddress))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided Owner address invalid 
+
+    Address: 5FA9nQDVg26DDEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+`)
   })
 })

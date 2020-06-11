@@ -22,8 +22,7 @@ describe('Claim', () => {
   let attesterIdentity: Identity
   let invalidCost: ICostBreakdown
   let date: Date
-  let cType: ICType['schema']
-  let fromRawCType: ICType
+  let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
   let request: RequestForAttestation
@@ -44,7 +43,7 @@ describe('Claim', () => {
     invalidCost = { gross: 233, tax: { vat: 3.3 } } as ICostBreakdown
     date = new Date(2019, 11, 10)
 
-    cType = {
+    cTypeSchema = {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       properties: {
@@ -53,13 +52,7 @@ describe('Claim', () => {
       type: 'object',
     }
 
-    fromRawCType = {
-      schema: cType,
-      owner: claimerIdentity.getAddress(),
-      hash: '',
-    }
-
-    testCType = CType.fromCType(fromRawCType)
+    testCType = CType.fromSchema(cTypeSchema, claimerIdentity.getAddress())
 
     claim = {
       cTypeHash: testCType.hash,

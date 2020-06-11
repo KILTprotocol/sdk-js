@@ -1,3 +1,4 @@
+/* eslint-disable dot-notation */
 import {
   ClaimerAttestationSession,
   AttesterAttestationSession,
@@ -12,7 +13,9 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import IClaim, { IClaimContents } from '../types/Claim'
 import constants from '../test/constants'
-import { CompressedRequestForAttestation } from '../types/RequestForAttestation'
+import IRequestForAttestation, {
+  CompressedRequestForAttestation,
+} from '../types/RequestForAttestation'
 import { CompressedAttestedClaim } from '../types/AttestedClaim'
 
 async function buildRequestForAttestationPE(
@@ -50,13 +53,10 @@ async function buildRequestForAttestationPE(
     type: 'object',
   }
 
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.getAddress(),
-    hash: '',
-  }
-
-  const testCType: CType = CType.fromCType(fromRawCType)
+  const testCType: CType = CType.fromSchema(
+    rawCType,
+    identityAlice.getAddress()
+  )
 
   const claim: IClaim = {
     cTypeHash: testCType.hash,
@@ -98,13 +98,10 @@ async function buildRequestForAttestation(
     type: 'object',
   }
 
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.getAddress(),
-    hash: '',
-  }
-
-  const testCType: CType = CType.fromCType(fromRawCType)
+  const testCType: CType = CType.fromSchema(
+    rawCType,
+    identityAlice.signKeyringPair.address
+  )
 
   const claim: IClaim = {
     cTypeHash: testCType.hash,
@@ -181,7 +178,9 @@ describe('RequestForAttestation', () => {
     const propertyName = 'a'
     delete request.claim.contents[propertyName]
     delete request.claimHashTree[propertyName]
-    expect(request.verifyData()).toBeFalsy()
+    expect(() => request.verifyData()).toThrowErrorMatchingInlineSnapshot(
+      `"Provided rootHash does not correspond to data"`
+    )
   })
 
   it('verify request for attestation (PE)', async () => {
@@ -201,13 +200,15 @@ describe('RequestForAttestation', () => {
     )
 
     // check proof on complete data
-    expect(request.verifyData()).toBeTruthy()
+    expect(RequestForAttestation.verifyData(request)).toBeTruthy()
 
     // just deleting a field will result in a wrong proof
     const propertyName = 'a'
     delete request.claim.contents[propertyName]
     delete request.claimHashTree[propertyName]
-    expect(request.verifyData()).toBeFalsy()
+    expect(() => request.verifyData()).toThrowErrorMatchingInlineSnapshot(
+      `"Provided rootHash does not correspond to data"`
+    )
     expect(claimerSession).toBeDefined()
     expect(attester).toBeDefined()
     expect(attesterSession).toBeDefined()
@@ -223,10 +224,10 @@ describe('RequestForAttestation', () => {
       },
       []
     )
-    // @ts-ignore
+
     request.claimHashTree.a.nonce = '1234'
     expect(() => {
-      request.verifyData()
+      RequestForAttestation.verifyData(request)
     }).toThrow()
   })
 
@@ -383,5 +384,227 @@ describe('RequestForAttestation', () => {
     expect((request.claimHashTree as any).a.nonce).toBeUndefined()
     expect((request.claim.contents as any).b).toBe('b')
     expect((request.claimHashTree as any).b.nonce).toBeDefined()
+  })
+
+  it('should throw error on faulty constructor input', async () => {
+    const builtRequest = await buildRequestForAttestation(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      []
+    )
+    const builtRequestWithLegitimation = (await buildRequestForAttestation(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimationCharlie]
+    )) as IRequestForAttestation
+    const builtRequestNoLegitimations = {
+      ...(await buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      )),
+    } as IRequestForAttestation
+    delete builtRequestNoLegitimations.legitimations
+
+    const builtRequestMalformedRootHash = {
+      ...(await buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      )),
+    } as IRequestForAttestation
+    builtRequestMalformedRootHash.rootHash = [
+      builtRequestMalformedRootHash.rootHash.slice(0, 15),
+      (
+        (parseInt(builtRequestMalformedRootHash.rootHash.charAt(15), 16) + 1) %
+        16
+      ).toString(16),
+      builtRequestMalformedRootHash.rootHash.slice(16),
+    ].join('')
+    const builtRequestMalformedClaimOwner = {
+      ...(await buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      )),
+    } as IRequestForAttestation
+    builtRequestMalformedClaimOwner.claimOwner = {
+      hash: [
+        builtRequestMalformedClaimOwner.claimOwner.hash.slice(0, 15),
+        (
+          (parseInt(
+            builtRequestMalformedClaimOwner.claimOwner.hash.charAt(15),
+            16
+          ) +
+            1) %
+          16
+        ).toString(16),
+        builtRequestMalformedClaimOwner.claimOwner.hash.slice(16),
+      ].join(''),
+      nonce: builtRequestMalformedClaimOwner.claimOwner.nonce,
+    }
+    builtRequestMalformedClaimOwner.rootHash = RequestForAttestation[
+      'calculateRootHash'
+    ](
+      builtRequestMalformedClaimOwner.claimOwner,
+      builtRequestMalformedClaimOwner.cTypeHash,
+      builtRequestMalformedClaimOwner.claimHashTree,
+      builtRequestMalformedClaimOwner.legitimations,
+      builtRequestMalformedClaimOwner.delegationId
+    )
+    const builtRequestIncompleteClaimHashTree = {
+      ...(await buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      )),
+    } as IRequestForAttestation
+    delete builtRequestIncompleteClaimHashTree.claimHashTree.a
+    builtRequestIncompleteClaimHashTree.rootHash = RequestForAttestation[
+      'calculateRootHash'
+    ](
+      builtRequestIncompleteClaimHashTree.claimOwner,
+      builtRequestIncompleteClaimHashTree.cTypeHash,
+      builtRequestIncompleteClaimHashTree.claimHashTree,
+      builtRequestIncompleteClaimHashTree.legitimations,
+      builtRequestIncompleteClaimHashTree.delegationId
+    )
+    const builtRequestMalformedSignature = {
+      ...(await buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      )),
+    } as IRequestForAttestation
+    builtRequestMalformedSignature.claimerSignature = builtRequestMalformedSignature.claimerSignature.replace(
+      builtRequestMalformedSignature.claimerSignature.charAt(5),
+      builtRequestMalformedSignature.claimerSignature.charAt(5) === 'd'
+        ? 'e'
+        : 'd'
+    )
+    builtRequestMalformedSignature.rootHash = RequestForAttestation[
+      'calculateRootHash'
+    ](
+      builtRequestMalformedSignature.claimOwner,
+      builtRequestMalformedSignature.cTypeHash,
+      builtRequestMalformedSignature.claimHashTree,
+      builtRequestMalformedSignature.legitimations,
+      builtRequestMalformedSignature.delegationId
+    )
+    const builtRequestMalformedCtypeHash = {
+      ...(await buildRequestForAttestation(
+        identityBob,
+        {
+          a: 'a',
+          b: 'b',
+          c: 'c',
+        },
+        []
+      )),
+    } as IRequestForAttestation
+    builtRequestMalformedCtypeHash.cTypeHash = {
+      hash: [
+        builtRequestMalformedCtypeHash.cTypeHash.hash.slice(0, 15),
+        (
+          (parseInt(
+            builtRequestMalformedCtypeHash.cTypeHash.hash.charAt(15),
+            16
+          ) +
+            1) %
+          16
+        ).toString(16),
+        builtRequestMalformedCtypeHash.cTypeHash.hash.slice(16),
+      ].join(''),
+      nonce: builtRequestMalformedCtypeHash.cTypeHash.nonce,
+    }
+    builtRequestMalformedCtypeHash.rootHash = RequestForAttestation[
+      'calculateRootHash'
+    ](
+      builtRequestMalformedCtypeHash.claimOwner,
+      builtRequestMalformedCtypeHash.cTypeHash,
+      builtRequestMalformedCtypeHash.claimHashTree,
+      builtRequestMalformedCtypeHash.legitimations,
+      builtRequestMalformedCtypeHash.delegationId
+    )
+    expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
+    ).toThrowErrorMatchingInlineSnapshot(`"Legitimations not provided"`)
+    expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"Provided rootHash does not correspond to data"`
+    )
+    expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequestMalformedClaimOwner)
+    ).toThrowErrorMatchingInlineSnapshot(`
+"Provided Claim Owner hash not corresponding to data 
+
+    Hash: ${builtRequestMalformedClaimOwner.claimOwner.hash} 
+
+    Nonce: ${builtRequestMalformedClaimOwner.claimOwner.nonce}"
+`)
+    expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"Property 'a' not in claim hash tree"`
+    )
+    expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
+    ).toThrowErrorMatchingInlineSnapshot(`"Provided Signature not verifiable"`)
+    expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequestMalformedCtypeHash)
+    ).toThrowErrorMatchingInlineSnapshot(`
+"Provided Claim CType hash not corresponding to data 
+
+    Hash: ${builtRequestMalformedCtypeHash.cTypeHash.hash} 
+
+    Nonce: ${builtRequestMalformedCtypeHash.cTypeHash.nonce}"
+`)
+    expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequest)
+    ).not.toThrow()
+    expect(() => {
+      RequestForAttestationUtils.errorCheck(builtRequestWithLegitimation)
+    }).not.toThrow()
+  })
+  it('checks Object instantiation', async () => {
+    const builtRequest = await buildRequestForAttestation(
+      identityBob,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      []
+    )
+    expect(builtRequest instanceof RequestForAttestation).toEqual(true)
   })
 })
