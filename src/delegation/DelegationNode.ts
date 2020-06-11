@@ -9,13 +9,11 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import { Tuple, Option } from '@polkadot/types'
 import Crypto from '../crypto'
 import { factory } from '../config/ConfigLog'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
-import { decodeDelegationNode } from './DelegationDecoder'
 import DelegationRootNode from './DelegationRootNode'
 import { IDelegationNode } from '../types/Delegation'
 import permissionsAsBitset from './DelegationNode.utils'
@@ -163,10 +161,4 @@ export default class DelegationNode extends DelegationBaseNode
     log.debug(`:: revoke(${this.id})`)
     return revoke(this.id, identity)
   }
-
-  /* eslint-disable class-methods-use-this */
-  protected decodeChildNode(queryResult: Option<Tuple>): DelegationNode | null {
-    return decodeDelegationNode(queryResult)
-  }
-  /* eslint-enable class-methods-use-this */
 }

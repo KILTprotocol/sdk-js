@@ -15,10 +15,9 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import { Option, Tuple } from '@polkadot/types'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
-import { CodecWithId } from './DelegationDecoder'
+import { CodecWithId, decodeDelegationNode } from './DelegationDecoder'
 import Attestation from '../attestation/Attestation'
 import { IDelegationBaseNode } from '../types/Delegation'
 import DelegationNode from './DelegationNode'
@@ -77,11 +76,9 @@ export default abstract class DelegationBaseNode
     const queryResults: CodecWithId[] = await fetchChildren(childIds)
     const children: DelegationNode[] = queryResults
       .map((codec: CodecWithId) => {
-        const decoded = this.decodeChildNode(codec.codec)
-        if (decoded) {
-          decoded.id = codec.id
-        }
-        return decoded
+        const decoded = decodeDelegationNode(codec.codec)
+        if (decoded) return { ...decoded, id: codec.id } as DelegationNode
+        return null
       })
       .filter((value): value is DelegationNode => {
         return value !== null
@@ -128,11 +125,4 @@ export default abstract class DelegationBaseNode
    * @returns Promise containing the transaction status.
    */
   public abstract revoke(identity: Identity): Promise<SubmittableResult>
-
-  /**
-   * Required to avoid cyclic dependencies btw. DelegationBaseNode and DelegationNode implementations.
-   */
-  protected abstract decodeChildNode(
-    queryResult: Option<Tuple> | Tuple
-  ): DelegationNode | null
 }
