@@ -222,7 +222,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         attestation: attClaim.attestation,
       }
 
-      expect(() => AttestedClaim.verify(fakeAttClaim)).toThrowError()
+      expect(AttestedClaim.verify(fakeAttClaim)).resolves.toBeFalsy()
     }, 15000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
@@ -237,7 +237,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const result = await revoke(attClaim.getHash(), attester)
       expect(result.status.type).toBe('Finalized')
       expect(result.isFinalized).toBeTruthy()
-      await expect(() => attClaim.verify()).toThrowError()
+      await expect(attClaim.verify()).resolves.toBeFalsy()
     }, 15000)
   })
 
