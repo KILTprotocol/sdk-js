@@ -23,7 +23,7 @@ import ICType from '../types/CType'
 import Identity from '../identity/Identity'
 import Credential from '../credential/Credential'
 import { IBlockchainApi } from '../blockchain/Blockchain'
-import { IClaim } from '..'
+import { IClaim, IAttestedClaim } from '..'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
@@ -217,19 +217,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claim,
         claimer
       )).message
-      const fakeAttClaim = {
+      const fakeAttClaim: IAttestedClaim = {
         request,
         attestation: attClaim.attestation,
       }
 
-      await expect(async () => {
-        try {
-          await AttestedClaim.verify(fakeAttClaim)
-        } catch (error) {
-          return false
-        }
-        return true
-      }).toBeFalsy()
+      await expect(() => AttestedClaim.verify(fakeAttClaim)).toThrowError()
     }, 15000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
@@ -244,14 +237,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const result = await revoke(attClaim.getHash(), attester)
       expect(result.status.type).toBe('Finalized')
       expect(result.isFinalized).toBeTruthy()
-      await expect(async () => {
-        try {
-          await attClaim.verify()
-        } catch (error) {
-          return false
-        }
-        return true
-      }).toBeFalsy()
+      await expect(() => attClaim.verify()).toThrowError()
     }, 15000)
   })
 
