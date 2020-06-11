@@ -9,9 +9,9 @@
 import { checkAddress } from '@polkadot/util-crypto'
 import IAttestedClaim from '../types/AttestedClaim'
 import { NonceHash } from '../types/RequestForAttestation'
-import Identity from '../identity/Identity'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
+import { PublicIdentity } from '..'
 
 /**
  *  Validates an given address string against the External Address Format (SS58) with our Prefix of 42.
@@ -23,7 +23,7 @@ import { hashObjectAsStr, verify } from '../crypto/Crypto'
  * @returns Boolean whether the given address string checks out against the Format.
  */
 export function validateAddress(
-  address: Identity['address'],
+  address: PublicIdentity['address'],
   name: string
 ): boolean {
   if (typeof address !== 'string') {
@@ -121,7 +121,7 @@ export function validateLegitimations(
 export function validateSignature(
   data: string,
   signature: string,
-  signer: Identity['address']
+  signer: PublicIdentity['address']
 ): boolean {
   if (
     typeof data !== 'string' ||

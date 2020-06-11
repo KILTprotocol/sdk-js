@@ -107,15 +107,15 @@ export default class AttestedClaim implements IAttestedClaim {
    * });
    * ```
    */
-  public async verify(): Promise<boolean> {
-    return this.verifyData() && this.attestation.verify()
+  public static async verify(attestedClaim: IAttestedClaim): Promise<boolean> {
+    return (
+      AttestedClaim.verifyData(attestedClaim) &&
+      Attestation.verify(attestedClaim.attestation)
+    )
   }
 
-  public static async verify(attestedClaim: IAttestedClaim): Promise<boolean> {
-    if (!AttestedClaim.verifyData(attestedClaim)) {
-      Promise.resolve(false)
-    }
-    return Attestation.verify(attestedClaim.attestation)
+  public async verify(): Promise<boolean> {
+    return AttestedClaim.verify(this)
   }
 
   /**
@@ -135,6 +135,10 @@ export default class AttestedClaim implements IAttestedClaim {
       RequestForAttestation.verifyData(attestedClaim.request) &&
       attestedClaim.request.rootHash === attestedClaim.attestation.claimHash
     )
+  }
+
+  public verifyData(): boolean {
+    return AttestedClaim.verifyData(this)
   }
 
   /**

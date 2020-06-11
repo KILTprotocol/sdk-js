@@ -19,6 +19,7 @@ beforeAll(async () => {
 
 describe('When there is an CtypeCreator and a verifier', () => {
   let ctypeCreator: Identity
+  // Can this be removed?
   let ctypeCounter = 0
 
   function makeCType(): CType {

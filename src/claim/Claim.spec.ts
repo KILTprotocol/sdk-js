@@ -4,14 +4,12 @@ import ClaimUtils from './Claim.utils'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
-import IClaim, { CompressedClaim, IClaimContents } from '../types/Claim'
-import CTypeUtils from '../ctype/CType.utils'
+import IClaim, { CompressedClaim } from '../types/Claim'
 
 describe('Claim', () => {
   let identityAlice: Identity
   let claimContents: any
   let rawCType: ICType['schema']
-  let fromRawCType: ICType
   let testCType: CType
   let claim: Claim
   let compressedClaim: CompressedClaim
@@ -32,13 +30,7 @@ describe('Claim', () => {
       type: 'object',
     }
 
-    fromRawCType = {
-      schema: rawCType,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-
-    testCType = CType.fromCType(fromRawCType)
+    testCType = CType.fromSchema(rawCType, identityAlice.getAddress())
 
     claim = Claim.fromCTypeAndClaimContents(
       testCType,
@@ -93,7 +85,7 @@ describe('Claim', () => {
 
   it('should throw an error on faulty constructor input', () => {
     const cTypeHash = testCType.hash
-    const ownerAddress = identityAlice.address
+    const ownerAddress = identityAlice.signKeyringPair.address
 
     const everything = {
       cTypeHash,

@@ -1,4 +1,4 @@
-import { Text, Tuple, Vec, Option, H256 } from '@polkadot/types'
+import { Text, Tuple, Vec, Option, H256, Data } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
@@ -31,7 +31,7 @@ describe('Delegation', () => {
         Tuple,
         new Tuple(
           // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          [Text, AccountId, Bool],
+          [Data, AccountId, Bool],
           [[ctypeHash, identityAlice.getAddress(), false]]
         )
       )

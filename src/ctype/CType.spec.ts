@@ -12,8 +12,6 @@ describe('CType', () => {
   let ctypeModel: ICType['schema']
   let rawCType: ICType['schema']
   let identityAlice: Identity
-  let fromRawCType: ICType
-  let fromCTypeModel: ICType
   let claimCtype: CType
   let claimContents: any
   let claim: Claim
@@ -40,18 +38,7 @@ describe('CType', () => {
 
     identityAlice = await Identity.buildFromURI('//Alice')
 
-    fromRawCType = {
-      schema: rawCType,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-
-    fromCTypeModel = {
-      schema: ctypeModel,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-    claimCtype = CType.fromCType(fromRawCType)
+    claimCtype = CType.fromSchema(rawCType, identityAlice.getAddress())
 
     claimContents = {
       name: 'Bob',
@@ -79,7 +66,7 @@ describe('CType', () => {
   })
 
   it('stores ctypes', async () => {
-    const ctype = CType.fromCType(fromCTypeModel)
+    const ctype = CType.fromSchema(ctypeModel, identityAlice.getAddress())
 
     const result = await ctype.store(identityAlice)
     expect(result).toBeInstanceOf(SubmittableResult)
@@ -96,16 +83,16 @@ describe('CType', () => {
 
   it('throws error on faulty input', () => {
     const wrongHashCtype: ICType = {
-      ...fromRawCType,
+      ...claimCtype,
       hash: '0x1234',
     }
     const faultySchemaCtype: ICType = {
-      ...fromRawCType,
+      ...claimCtype,
       schema: ({ ...rawCType, properties: null } as unknown) as ICTypeSchema,
     }
     const invalidAddressCtype: ICType = {
-      ...fromRawCType,
-      owner: fromRawCType.owner ? fromRawCType.owner.replace('7', 'D') : null,
+      ...claimCtype,
+      owner: claimCtype.owner ? claimCtype.owner.replace('7', 'D') : null,
     }
 
     expect(() =>
@@ -158,9 +145,7 @@ describe('CType', () => {
 describe('blank ctypes', () => {
   let identityAlice: Identity
   let ctypeSchema1: ICType['schema']
-  let icytype1: ICType
   let ctypeSchema2: ICType['schema']
-  let icytype2: ICType
   let ctype1: CType
   let ctype2: CType
 
@@ -174,12 +159,6 @@ describe('blank ctypes', () => {
       type: 'object',
     }
 
-    icytype1 = {
-      schema: ctypeSchema1,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-
     ctypeSchema2 = {
       $id: 'http://example.com/claimedSomething',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -187,14 +166,14 @@ describe('blank ctypes', () => {
       type: 'object',
     }
 
-    icytype2 = {
-      schema: ctypeSchema2,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-
-    ctype1 = CType.fromCType(icytype1)
-    ctype2 = CType.fromCType(icytype2)
+    ctype1 = CType.fromSchema(
+      ctypeSchema1,
+      identityAlice.signKeyringPair.address
+    )
+    ctype2 = CType.fromSchema(
+      ctypeSchema2,
+      identityAlice.signKeyringPair.address
+    )
   })
 
   it('two ctypes with no properties have different hashes if id is different', () => {

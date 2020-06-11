@@ -29,7 +29,10 @@ async function buildAttestedClaim(
     type: 'object',
   }
 
-  const testCType: CType = CType.fromSchema(rawCType, identityAlice.address)
+  const testCType: CType = CType.fromSchema(
+    rawCType,
+    identityAlice.signKeyringPair.address
+  )
 
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
@@ -170,12 +173,5 @@ describe('RequestForAttestation', () => {
     expect(() => {
       legitimation.compress()
     }).toThrow()
-  })
-  it('should throw error on faulty constructor input', () => {
-    const [boolean] = crypto.checkAddress(
-      identityAlice.signKeyringPair.address.replace('D', 'D'),
-      42
-    )
-    console.log(boolean)
   })
 })

@@ -10,15 +10,13 @@ import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
-import CTypeUtils from '../ctype/CType.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Attestation', () => {
   let identityAlice: Identity
   let identityBob: Identity
-  let rawCType: ICType['schema']
-  let fromRawCType: ICType
+  let rawCTypeSchema: ICType['schema']
   let testCType: CType
   let testcontents: any
   let testClaim: Claim
@@ -30,7 +28,7 @@ describe('Attestation', () => {
     identityAlice = await Identity.buildFromURI('//Alice')
     identityBob = await Identity.buildFromURI('//Bob')
 
-    rawCType = {
+    rawCTypeSchema = {
       $id: 'http://example.com/ctype-1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       properties: {
@@ -39,13 +37,7 @@ describe('Attestation', () => {
       type: 'object',
     }
 
-    fromRawCType = {
-      schema: rawCType,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-
-    testCType = CType.fromCType(fromRawCType)
+    testCType = CType.fromSchema(rawCTypeSchema, identityAlice.getAddress())
 
     testcontents = {}
     testClaim = Claim.fromCTypeAndClaimContents(
@@ -184,7 +176,7 @@ describe('Attestation', () => {
     const everything = {
       claimHash,
       cTypeHash,
-      owner: identityAlice.address,
+      owner: identityAlice.signKeyringPair.address,
       revoked: false,
       delegationId: null,
     }
@@ -192,7 +184,7 @@ describe('Attestation', () => {
     const noClaimHash = {
       claimHash: '',
       cTypeHash,
-      owner: identityAlice.address,
+      owner: identityAlice.signKeyringPair.address,
       revoked: false,
       delegationId: null,
     }
@@ -200,7 +192,7 @@ describe('Attestation', () => {
     const noCTypeHash = {
       claimHash,
       cTypeHash: '',
-      owner: identityAlice.address,
+      owner: identityAlice.signKeyringPair.address,
       revoked: false,
       delegationId: null,
     }
@@ -216,7 +208,7 @@ describe('Attestation', () => {
     const noRevocationBit = ({
       claimHash,
       cTypeHash,
-      owner: identityAlice.address,
+      owner: identityAlice.signKeyringPair.address,
       revoked: null,
       delegationId: null,
     } as any) as IAttestation
@@ -224,7 +216,7 @@ describe('Attestation', () => {
     const malformedClaimHash = {
       claimHash: claimHash.slice(0, 20) + claimHash.slice(21),
       cTypeHash,
-      owner: identityAlice.address,
+      owner: identityAlice.signKeyringPair.address,
       revoked: false,
       delegationId: null,
     }
@@ -232,7 +224,7 @@ describe('Attestation', () => {
     const malformedCTypeHash = {
       claimHash,
       cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
-      owner: identityAlice.address,
+      owner: identityAlice.signKeyringPair.address,
       revoked: false,
       delegationId: null,
     }
@@ -240,7 +232,7 @@ describe('Attestation', () => {
     const malformedAddress = {
       claimHash,
       cTypeHash,
-      owner: identityAlice.address.replace('7', 'D'),
+      owner: identityAlice.signKeyringPair.address.replace('7', 'D'),
       revoked: false,
       delegationId: null,
     }

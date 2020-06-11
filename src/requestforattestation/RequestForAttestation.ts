@@ -11,12 +11,12 @@
  * @preferred
  */
 import { v4 as uuid } from 'uuid'
-import { validateLegitimations, validateNonceHash } from '../util/DataUtils'
 import {
   AttesterPublicKey,
   AttestationRequest,
   ClaimerAttestationSession,
 } from '@kiltprotocol/portablegabi'
+import { validateLegitimations, validateNonceHash } from '../util/DataUtils'
 import { IInitiateAttestation } from '../messaging/Message'
 import {
   verify,

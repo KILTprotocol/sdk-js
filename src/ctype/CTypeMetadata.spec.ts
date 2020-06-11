@@ -25,7 +25,7 @@ describe('CType', () => {
       },
       type: 'object',
     }
-    ctype = CType.fromSchema(rawCType, identityAlice.address)
+    ctype = CType.fromSchema(rawCType, identityAlice.signKeyringPair.address)
 
     ctypeMetadata = {
       title: { default: 'Title' },
