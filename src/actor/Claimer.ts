@@ -1,4 +1,5 @@
 import * as gabi from '@kiltprotocol/portablegabi'
+import { ERROR_MESSAGE_TYPE } from '../errorhandling/ObjectErrors'
 import IPublicIdentity from '../types/PublicIdentity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IClaim from '../types/Claim'
@@ -53,8 +54,9 @@ export async function createPresentation(
 ): Promise<Message> {
   // did we get the right message type?
   if (message.body.type !== MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
-    throw new Error(
-      `Expected message type '${MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES}' but got type '${message.body.type}'`
+    throw ERROR_MESSAGE_TYPE(
+      message.body.type,
+      MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
     )
   }
 
@@ -164,8 +166,9 @@ export async function requestAttestation(
     typeof initiateAttestationMsg !== 'undefined' &&
     initiateAttestationMsg.body.type !== MessageBodyType.INITIATE_ATTESTATION
   ) {
-    throw new Error(
-      `Expected message type '${MessageBodyType.INITIATE_ATTESTATION}' but got type '${initiateAttestationMsg.body.type}'`
+    throw ERROR_MESSAGE_TYPE(
+      initiateAttestationMsg.body.type,
+      MessageBodyType.INITIATE_ATTESTATION
     )
   }
   const mappedOptions = {
@@ -213,8 +216,9 @@ export async function buildCredential(
   session: ClaimerAttestationSession
 ): Promise<Credential> {
   if (message.body.type !== MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
-    throw new Error(
-      `Expected message type '${MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM}' but got type '${message.body.type}'`
+    throw ERROR_MESSAGE_TYPE(
+      message.body.type,
+      MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
     )
   }
   return Credential.fromRequestAndAttestation(

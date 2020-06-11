@@ -18,6 +18,7 @@ export enum ErrorCode {
   ERROR_ATTESTATION_NOT_PROVIDED = 10007,
   ERROR_REVOKE_BIT_NOT_PROVIDED = 10008,
   ERROR_LEGITIMATIONS_NOT_PROVIDED = 10009,
+  ERROR_ATTESTATION_SESSION_MISSING = 10010,
 
   ERROR_ADDRESS_TYPE = 20001,
   ERROR_HASH_TYPE = 20002,
@@ -49,6 +50,7 @@ export enum ErrorCode {
   ERROR_COMPRESS_OBJECT = 40002,
   ERROR_DECODING_MESSAGE = 40003,
   ERROR_PARSING_MESSAGE = 40004,
+  ERROR_MESSAGE_TYPE = 40005,
 
   ERROR_UNKNOWN = -1,
 }
@@ -89,6 +91,10 @@ export const ERROR_REQUESTFORATTESTATION_NOT_PROVIDED: ObjectsError = new Object
 export const ERROR_LEGITIMATIONS_NOT_PROVIDED: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_LEGITIMATIONS_NOT_PROVIDED,
   'Legitimations missing'
+)
+export const ERROR_ATTESTATION_SESSION_MISSING: ObjectsError = new ObjectsError(
+  ErrorCode.ERROR_ATTESTATION_SESSION_MISSING,
+  'Privacy enhancement was forced, but attestation session is missing.'
 )
 export const ERROR_CLAIM_HASHTREE_NOT_PROVIDED: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_CLAIM_HASHTREE_NOT_PROVIDED,
@@ -364,6 +370,27 @@ export const ERROR_PARSING_MESSAGE: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_PARSING_MESSAGE,
   'Error parsing message body'
 )
+
+export const ERROR_MESSAGE_TYPE: (
+  type: string,
+  expectedType: string,
+  alternativeType?: string
+) => ObjectsError = (
+  type: string,
+  expectedType: string,
+  alternativeType?: string
+) => {
+  if (alternativeType) {
+    return new ObjectsError(
+      ErrorCode.ERROR_MESSAGE_TYPE,
+      `Unexpected message type. Received ${type}, expected ${expectedType} or ${alternativeType}`
+    )
+  }
+  return new ObjectsError(
+    ErrorCode.ERROR_MESSAGE_TYPE,
+    `Unexpected message type. Received ${type}, expected ${expectedType}`
+  )
+}
 
 export const ERROR_UNKNOWN: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_UNKNOWN,

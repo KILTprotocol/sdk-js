@@ -1,4 +1,8 @@
 import * as gabi from '@kiltprotocol/portablegabi'
+import {
+  ERROR_MESSAGE_TYPE,
+  ERROR_ATTESTATION_SESSION_MISSING,
+} from '../errorhandling/ObjectErrors'
 import { getCached } from '../blockchainApiConnection'
 import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 import AttesterIdentity from '../identity/AttesterIdentity'
@@ -58,14 +62,13 @@ export async function issueAttestation(
   message: Message
 }> {
   if (message.body.type !== MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
-    throw new TypeError(
-      `Unexpected message type. Received ${message.body.type}, expected ${MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM}`
+    throw ERROR_MESSAGE_TYPE(
+      message.body.type,
+      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
   }
   if (requirePE && session === null) {
-    throw new Error(
-      'Privacy enhancement was forced, but attestation session is missing.'
-    )
+    throw ERROR_ATTESTATION_SESSION_MISSING
   }
 
   const request: IRequestAttestationForClaim = message.body

@@ -6,6 +6,7 @@ import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 import Identity from '../identity/Identity'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import CType from '../ctype/CType'
+import { ERROR_MESSAGE_TYPE } from '../errorhandling/ObjectErrors'
 
 const log = LoggerFactory.getLogger('Verifier')
 
@@ -235,8 +236,10 @@ export async function verifyPresentation(
       return { verified, claims }
     }
   } else {
-    throw new Error(
-      `Expected message type '${MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE}' or '${MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC}' but got type '${message.body.type}'`
+    throw ERROR_MESSAGE_TYPE(
+      message.body.type,
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
     )
   }
   return { verified: false, claims: [] }
