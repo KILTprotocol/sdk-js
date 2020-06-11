@@ -90,7 +90,7 @@ describe('Attestation', () => {
         Tuple,
         new Tuple(
           // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
-          [Text, AccountId, Text, Bool],
+          [Data, AccountId, Text, Bool],
           [
             testCType.hash,
             identityAlice.signKeyringPair.address,
