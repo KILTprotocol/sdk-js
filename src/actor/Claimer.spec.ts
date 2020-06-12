@@ -5,7 +5,15 @@ import { Text } from '@polkadot/types'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
 import constants from '../test/constants'
-import { Attester, Claimer, IClaim, Verifier, CombinedPresentation } from '..'
+import {
+  Attester,
+  Claimer,
+  IClaim,
+  Verifier,
+  CombinedPresentation,
+  ICType,
+  CType,
+} from '..'
 import { MessageBodyType } from '../messaging/Message'
 import Credential from '../credential/Credential'
 
@@ -32,8 +40,19 @@ describe('Claimer', () => {
     claimer = await Identity.buildFromURI('//bob')
     verifier = await Identity.buildFromMnemonic()
 
+    const rawCType: ICType['schema'] = {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+
+    const cType = CType.fromSchema(rawCType, claimer.getAddress())
+
     claim = {
-      cTypeHash: '0xdead',
+      cTypeHash: cType.hash,
       contents: {
         name: 'bob',
         and: 1,

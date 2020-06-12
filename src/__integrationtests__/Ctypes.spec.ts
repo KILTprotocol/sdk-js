@@ -23,16 +23,14 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   function makeCType(): CType {
     ctypeCounter += 1
-    return CType.fromCType({
-      schema: {
-        $id: `http://example.com/ctype-${ctypeCounter}`,
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-        properties: {
-          name: { type: 'string' },
-        },
-        type: 'object',
-      } as ICType['schema'],
-    } as ICType)
+    return CType.fromSchema({
+      $id: `http://example.com/ctype-${ctypeCounter}`,
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    } as ICType['schema'])
   }
 
   beforeAll(async () => {
@@ -68,19 +66,17 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }, 30000)
 
   it('should tell when a ctype is not on chain', async () => {
-    const iAmNotThere = CType.fromCType({
-      schema: {
-        $id: 'http://example.com/ctype-2',
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-        properties: {
-          game: { type: 'string' },
-        },
-        type: 'object',
-      } as ICType['schema'],
-    } as ICType)
+    const iAmNotThere = CType.fromSchema({
+      $id: 'http://example.com/ctype-2',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        game: { type: 'string' },
+      },
+      type: 'object',
+    } as ICType['schema'])
 
-    const iAmNotThereWithOwner = CType.fromCType({
-      schema: {
+    const iAmNotThereWithOwner = CType.fromSchema(
+      {
         $id: 'http://example.com/ctype-2',
         $schema: 'http://kilt-protocol.org/draft-01/ctype#',
         properties: {
@@ -88,8 +84,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
         },
         type: 'object',
       } as ICType['schema'],
-      owner: ctypeCreator.getAddress(),
-    } as ICType)
+      ctypeCreator.signKeyringPair.address
+    )
 
     await Promise.all([
       expect(iAmNotThere.verifyStored()).resolves.toBeFalsy(),

@@ -13,14 +13,11 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { revoke, query, store } from './Attestation.chain'
 import IPublicIdentity from '../types/PublicIdentity'
 import AttestationUtils from './Attestation.utils'
-
-const log = factory.getLogger('Attestation')
 
 export default class Attestation implements IAttestation {
   /**
@@ -96,6 +93,21 @@ export default class Attestation implements IAttestation {
     })
   }
 
+  /**
+   *  [STATIC] Custom Type Guard to determine input being of type IAttestation using the AttestationUtils errorCheck.
+   *
+   * @param input The potentially only partial IAttestation.
+   * @returns Boolean whether input is of type IAttestation.
+   */
+  public static isIAttestation(input: object): input is IAttestation {
+    try {
+      AttestationUtils.errorCheck(input as IAttestation)
+    } catch (error) {
+      return false
+    }
+    return true
+  }
+
   public claimHash: IAttestation['claimHash']
   public cTypeHash: IAttestation['cTypeHash']
   public delegationId: IAttestation['delegationId'] | null
@@ -154,6 +166,7 @@ export default class Attestation implements IAttestation {
   /**
    * [STATIC] [ASYNC] Queries an attestation from the chain and checks its validity.
    *
+   * @param attestation - The Attestation to verify.
    * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
    * @returns A promise containing whether the attestation is valid.
    * @example ```javascript
@@ -162,15 +175,23 @@ export default class Attestation implements IAttestation {
    * });
    * ```
    */
-  public async verify(claimHash: string = this.claimHash): Promise<boolean> {
+  public static async verify(
+    attestation: IAttestation,
+    claimHash: string = attestation.claimHash
+  ): Promise<boolean> {
     // Query attestation by claimHash. null if no attestation is found on-chain for this hash
-    const attestation: Attestation | null = await query(claimHash)
-    // Check if attestation is valid
-    const isValid: boolean = this.isAttestationValid(attestation)
-    if (!isValid) {
-      log.debug(() => 'No valid attestation found')
-    }
-    return Promise.resolve(isValid)
+    const chainAttestation: Attestation | null = await query(claimHash)
+    return Promise.resolve(
+      !!(
+        chainAttestation &&
+        chainAttestation.owner === attestation.owner &&
+        !chainAttestation.revoked
+      )
+    )
+  }
+
+  public async verify(): Promise<boolean> {
+    return Attestation.verify(this)
   }
 
   /**
@@ -191,22 +212,5 @@ export default class Attestation implements IAttestation {
   public static decompress(attestation: CompressedAttestation): Attestation {
     const decompressedAttestation = AttestationUtils.decompress(attestation)
     return Attestation.fromAttestation(decompressedAttestation)
-  }
-
-  /**
-   * Checks if the attestation is valid. An attestation is valid if it:
-   * * exists;
-   * * and has the correct owner;
-   * * and is not revoked.
-   *
-   * @param attestation - The attestation to check.
-   * @returns Whether the attestation is valid.
-   */
-  private isAttestationValid(attestation: Attestation | null): boolean {
-    return (
-      attestation !== null &&
-      attestation.owner === this.owner &&
-      !attestation.revoked
-    )
   }
 }

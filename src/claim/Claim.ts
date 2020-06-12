@@ -39,11 +39,10 @@ export default class Claim implements IClaim {
     claimInput: IClaim,
     cTypeSchema: ICType['schema']
   ): Claim {
-    if (cTypeSchema) {
-      if (!verifyClaim(claimInput.contents, cTypeSchema)) {
-        throw Error('Claim not valid')
-      }
+    if (!verifyClaim(claimInput.contents, cTypeSchema)) {
+      throw Error('Claim not valid')
     }
+
     return new Claim(claimInput)
   }
 
@@ -72,6 +71,22 @@ export default class Claim implements IClaim {
       contents: claimContents,
       owner: claimOwner,
     })
+  }
+
+  /**
+   *  [STATIC] Custom Type Guard to determine input being of type IClaim using the ClaimUtils errorCheck.
+   *
+   * @param input The potentially only partial IClaim.
+   *
+   * @returns Boolean whether input is of type IClaim.
+   */
+  static isIClaim(input: object): input is IClaim {
+    try {
+      ClaimUtils.errorCheck(input as IClaim)
+    } catch (error) {
+      return false
+    }
+    return true
   }
 
   public cTypeHash: IClaim['cTypeHash']

@@ -14,7 +14,8 @@ import Ajv from 'ajv'
 import QuoteSchema from './QuoteSchema'
 import Identity from '../identity/Identity'
 import { IQuote, IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
-import { hashObjectAsStr, verify } from '../crypto/Crypto'
+import { hashObjectAsStr } from '../crypto/Crypto'
+import { validateSignature } from '../util/DataUtils'
 
 /**
  * Validates the quote against the meta schema and quote data against the provided schema.
@@ -63,18 +64,11 @@ export function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   const { attesterSignature, ...basicQuote } = deserializedQuote
-  if (
-    !verify(
-      hashObjectAsStr(basicQuote),
-      attesterSignature,
-      deserializedQuote.attesterAddress
-    )
-  ) {
-    throw Error(
-      `attestersSignature ${deserializedQuote.attesterSignature}
-        does not check out with the supplied data`
-    )
-  }
+  validateSignature(
+    hashObjectAsStr(basicQuote),
+    attesterSignature,
+    deserializedQuote.attesterAddress
+  )
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
     throw new Error('Quote does not correspond to schema')
   }
@@ -142,15 +136,11 @@ export function createQuoteAgreement(
   requestRootHash: string
 ): IQuoteAgreement {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
-  if (
-    !verify(
-      hashObjectAsStr(basicQuote),
-      attesterSignature,
-      attesterSignedQuote.attesterAddress
-    )
-  ) {
-    throw Error(`Quote Signature is invalid`)
-  }
+  validateSignature(
+    hashObjectAsStr(basicQuote),
+    attesterSignature,
+    attesterSignedQuote.attesterAddress
+  )
   const signature = claimerIdentity.signStr(
     hashObjectAsStr(attesterSignedQuote)
   )
