@@ -30,9 +30,7 @@ import {
 import Did, { IDid } from './did'
 import Quote, { QuoteUtils, QuoteSchema } from './quote'
 import Message from './messaging'
-import * as Verifier from './actor/Verifier'
-import * as Claimer from './actor/Claimer'
-import * as Attester from './actor/Attester'
+import { Claimer, Attester, Verifier } from './actor'
 import Credential from './credential'
 
 export { SubmittableResult } from '@polkadot/api'
