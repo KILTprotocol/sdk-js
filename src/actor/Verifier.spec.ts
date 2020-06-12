@@ -11,7 +11,7 @@ import {
   ICType,
 } from '..'
 import { MessageBodyType } from '../messaging/Message'
-import AttesterIdentity from '../attesteridentity/AttesterIdentity'
+import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
 import IClaim from '../types/Claim'
 import constants from '../test/constants'

@@ -13,7 +13,7 @@ import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Identity from '../identity/Identity'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import Credential from '../credential/Credential'
-import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
+import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 
 function noNulls<T>(array: Array<T | null>): array is T[] {
   return array.every(c => c !== null)

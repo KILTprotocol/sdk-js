@@ -2,76 +2,80 @@
  * @packageDocumentation
  * @ignore
  */
-
 import { Accumulator, CombinedPresentation } from '@kiltprotocol/portablegabi'
-import { connect, disconnect } from './kilt/Kilt'
+import { connect, disconnect } from './kilt'
+import Blockchain, { IBlockchainApi } from './blockchain'
 import * as BlockchainApiConnection from './blockchainApiConnection'
-import * as Balance from './balance/Balance.chain'
-import AttesterIdentity from './attesteridentity/AttesterIdentity'
-import Identity from './identity/Identity'
-import PublicIdentity, { IURLResolver } from './identity/PublicIdentity'
-import CType from './ctype/CType'
-import CTypeMetadata from './ctype/CTypeMetadata'
-import CTypeUtils from './ctype/CType.utils'
-import * as CTypeSchema from './ctype/CTypeSchema'
-import Claim from './claim/Claim'
-import ClaimUtils from './claim/Claim.utils'
-import RequestForAttestation from './requestforattestation/RequestForAttestation'
-import RequestForAttestationUtils from './requestforattestation/RequestForAttestation.utils'
-import Attestation from './attestation/Attestation'
-import AttestationUtils from './attestation/Attestation.utils'
-import AttestedClaim from './attestedclaim/AttestedClaim'
-import AttestedClaimUtils from './attestedclaim/AttestedClaim.utils'
-import DelegationBaseNode from './delegation/Delegation'
-import DelegationNode from './delegation/DelegationNode'
-import DelegationRootNode from './delegation/DelegationRootNode'
-import Did, { IDid } from './did/Did'
-import * as Quote from './quote/Quote'
-import QuoteUtils from './quote/Quote.utils'
-import Message from './messaging/Message'
-import * as Verifier from './actor/Verifier'
-import * as Claimer from './actor/Claimer'
-import * as Attester from './actor/Attester'
-import Credential from './credential/Credential'
+import * as Balance from './balance'
+import Crypto from './crypto'
+import {
+  Identity,
+  AttesterIdentity,
+  PublicIdentity,
+  PublicAttesterIdentity,
+  IURLResolver,
+} from './identity'
+import { CType, CTypeMetadata, CTypeUtils, CTypeSchema } from './ctype'
+import Claim, { ClaimUtils } from './claim'
+import RequestForAttestation, {
+  RequestForAttestationUtils,
+} from './requestforattestation'
+import Attestation, { AttestationUtils } from './attestation'
+import AttestedClaim, { AttestedClaimUtils } from './attestedclaim'
+import {
+  DelegationBaseNode,
+  DelegationNode,
+  DelegationRootNode,
+} from './delegation'
+import Did, { IDid } from './did'
+import Quote, { QuoteUtils, QuoteSchema } from './quote'
+import Message from './messaging'
+import { Claimer, Attester, Verifier } from './actor'
+import Credential from './credential'
 
-export { default as Blockchain, IBlockchainApi } from './blockchain/Blockchain'
 export { SubmittableResult } from '@polkadot/api'
-export { default as Crypto } from './crypto'
-export { default as UUID } from './util/UUID'
-export { default as QuoteSchema } from './quote/QuoteSchema'
-export * from './errorhandling/ExtrinsicError'
-export * from './messaging/Message'
+export { UUID } from './util'
+export * from './errorhandling'
+export * from './messaging'
 
 // ---- Types, which define the most basic KILT objects ----
-export { default as IPublicIdentity } from './types/PublicIdentity'
+export { default as IAttestation } from './types/Attestation'
+export { default as IAttestedClaim } from './types/AttestedClaim'
+export { default as IClaim } from './types/Claim'
+export { default as ICredential } from './types/Credential'
 export { default as ICType } from './types/CType'
 export { default as ICTypeMetadata } from './types/CTypeMetadata'
-export { default as IClaim } from './types/Claim'
-export { default as IAttestedClaim } from './types/AttestedClaim'
-export { default as IAttestation } from './types/Attestation'
-export {
-  IQuote,
-  ICostBreakdown,
-  IQuoteAttesterSigned,
-  IQuoteAgreement,
-} from './types/Quote'
-export { default as ITerms } from './types/Terms'
-export {
-  default as IRequestForAttestation,
-} from './types/RequestForAttestation'
 export {
   IDelegationRootNode,
   IDelegationBaseNode,
   IDelegationNode,
   Permission,
 } from './types/Delegation'
+export {
+  default as IPublicAttesterIdentity,
+} from './types/PublicAttesterIdentity'
+export { default as IPublicIdentity } from './types/PublicIdentity'
+export {
+  IQuote,
+  ICostBreakdown,
+  IQuoteAttesterSigned,
+  IQuoteAgreement,
+} from './types/Quote'
+export {
+  default as IRequestForAttestation,
+} from './types/RequestForAttestation'
+export { default as ITerms } from './types/Terms'
 
 export {
-  AttesterIdentity,
+  Blockchain,
+  IBlockchainApi,
   BlockchainApiConnection,
   Balance,
+  Crypto,
   Identity,
+  AttesterIdentity,
   PublicIdentity,
+  PublicAttesterIdentity,
   IURLResolver,
   CType,
   CTypeMetadata,
@@ -92,23 +96,25 @@ export {
   IDid,
   Message,
   Quote,
-  Verifier,
+  Attester,
   Claimer,
+  Verifier,
   Accumulator,
   CombinedPresentation,
-  Attester,
-  QuoteUtils,
   Credential,
+  QuoteUtils,
+  QuoteSchema,
 }
 
 // ---- Default export for ease of use ----
 export default {
-  AttesterIdentity,
   connect,
   disconnect,
   Balance,
   Identity,
+  AttesterIdentity,
   PublicIdentity,
+  PublicAttesterIdentity,
   CType,
   CTypeMetadata,
   Claim,
