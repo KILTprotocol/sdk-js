@@ -19,8 +19,8 @@ export enum ErrorCode {
   ERROR_REVOCATION_BIT_MISSING = 10008,
   ERROR_LEGITIMATIONS_NOT_PROVIDED = 10009,
   ERROR_ATTESTATION_SESSION_MISSING = 10010,
-  ERROR_PRIVACY_ENHANCEMENT_MISSING = 10013,
-  ERROR_PRIVACY_CREDENTIAL_MISSING = 10012,
+  ERROR_PE_MISSING = 10013,
+  ERROR_PE_CREDENTIAL_MISSING = 10012,
 
   ERROR_ADDRESS_TYPE = 20001,
   ERROR_HASH_TYPE = 20002,
@@ -36,7 +36,7 @@ export enum ErrorCode {
   ERROR_MNEMONIC_PHRASE_MALFORMED = 20012,
   ERROR_QUOTE_MALFORMED = 20013,
   ERROR_CLAIM_HASHTREE_MISMATCH = 20014,
-  ERROR_PRIVACY_MISMATCH = 20015,
+  ERROR_PE_MISMATCH = 20015,
   ERROR_DID_IDENTIFIER_MISMATCH = 20016,
 
   ERROR_ADDRESS_INVALID = 30001,
@@ -100,13 +100,13 @@ export const ERROR_ATTESTATION_SESSION_MISSING: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_ATTESTATION_SESSION_MISSING,
   'Privacy enhancement was forced, but attestation session is missing.'
 )
-export const ERROR_PRIVACY_ENHANCEMENT_MISSING: ObjectsError = new ObjectsError(
-  ErrorCode.ERROR_PRIVACY_ENHANCEMENT_MISSING,
+export const ERROR_PE_MISSING: ObjectsError = new ObjectsError(
+  ErrorCode.ERROR_PE_MISSING,
   'Privacy enhancement is missing.'
 )
 
-export const ERROR_PRIVACY_CREDENTIAL_MISSING: ObjectsError = new ObjectsError(
-  ErrorCode.ERROR_PRIVACY_CREDENTIAL_MISSING,
+export const ERROR_PE_CREDENTIAL_MISSING: ObjectsError = new ObjectsError(
+  ErrorCode.ERROR_PE_CREDENTIAL_MISSING,
   'Missing privacy enhanced credential.'
 )
 export const ERROR_CLAIM_HASHTREE_NOT_PROVIDED: ObjectsError = new ObjectsError(
@@ -239,8 +239,8 @@ export const ERROR_DID_IDENTIFIER_MISMATCH: (
     `This identifier (${identifier}) doesn't match the DID Document's identifier (${id})`
   )
 }
-export const ERROR_PRIVACY_MISMATCH: ObjectsError = new ObjectsError(
-  ErrorCode.ERROR_PRIVACY_MISMATCH,
+export const ERROR_PE_MISMATCH: ObjectsError = new ObjectsError(
+  ErrorCode.ERROR_PE_MISMATCH,
   'Verifier requested public presentation, but privacy enhancement was forced.'
 )
 
