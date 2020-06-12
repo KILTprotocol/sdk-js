@@ -28,7 +28,7 @@ import Message from './messaging'
 import * as Verifier from './actor/Verifier'
 import * as Claimer from './actor/Claimer'
 import * as Attester from './actor/Attester'
-import Credential from './credential/Credential'
+import Credential from './credential'
 
 export { SubmittableResult } from '@polkadot/api'
 export { UUID } from './util'
