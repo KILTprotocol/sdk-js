@@ -41,28 +41,32 @@ export * from './errorhandling'
 export * from './messaging'
 
 // ---- Types, which define the most basic KILT objects ----
-export { default as IPublicIdentity } from './types/PublicIdentity'
+export { default as IAttestation } from './types/Attestation'
+export { default as IAttestedClaim } from './types/AttestedClaim'
+export { default as IClaim } from './types/Claim'
+export { default as ICredential } from './types/Credential'
 export { default as ICType } from './types/CType'
 export { default as ICTypeMetadata } from './types/CTypeMetadata'
-export { default as IClaim } from './types/Claim'
-export { default as IAttestedClaim } from './types/AttestedClaim'
-export { default as IAttestation } from './types/Attestation'
-export {
-  IQuote,
-  ICostBreakdown,
-  IQuoteAttesterSigned,
-  IQuoteAgreement,
-} from './types/Quote'
-export { default as ITerms } from './types/Terms'
-export {
-  default as IRequestForAttestation,
-} from './types/RequestForAttestation'
 export {
   IDelegationRootNode,
   IDelegationBaseNode,
   IDelegationNode,
   Permission,
 } from './types/Delegation'
+export {
+  default as IPublicAttesterIdentity,
+} from './types/PublicAttesterIdentity'
+export { default as IPublicIdentity } from './types/PublicIdentity'
+export {
+  IQuote,
+  ICostBreakdown,
+  IQuoteAttesterSigned,
+  IQuoteAgreement,
+} from './types/Quote'
+export {
+  default as IRequestForAttestation,
+} from './types/RequestForAttestation'
+export { default as ITerms } from './types/Terms'
 
 export {
   Blockchain,
