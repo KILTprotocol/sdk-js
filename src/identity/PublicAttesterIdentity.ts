@@ -6,7 +6,7 @@
  * @preferred
  */
 import { AttesterPublicKey, Accumulator } from '@kiltprotocol/portablegabi'
-import PublicIdentity from '../identity/PublicIdentity'
+import PublicIdentity from './PublicIdentity'
 import IPublicAttesterIdentity from '../types/PublicAttesterIdentity'
 
 export default class PublicAttesterIdentity extends PublicIdentity

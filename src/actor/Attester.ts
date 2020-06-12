@@ -1,7 +1,7 @@
 import * as gabi from '@kiltprotocol/portablegabi'
 import { getCached } from '../blockchainApiConnection'
-import PublicAttesterIdentity from '../attesteridentity/PublicAttesterIdentity'
-import AttesterIdentity from '../attesteridentity/AttesterIdentity'
+import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
+import AttesterIdentity from '../identity/AttesterIdentity'
 import Message, {
   IRequestAttestationForClaim,
   MessageBodyType,

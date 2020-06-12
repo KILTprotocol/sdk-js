@@ -8,8 +8,13 @@ import Blockchain, { IBlockchainApi } from './blockchain'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import * as Balance from './balance'
 import Crypto from './crypto'
-import { Identity, PublicIdentity, IURLResolver } from './identity'
-import AttesterIdentity from './attesteridentity/AttesterIdentity'
+import {
+  Identity,
+  AttesterIdentity,
+  PublicIdentity,
+  PublicAttesterIdentity,
+  IURLResolver,
+} from './identity'
 import { CType, CTypeMetadata, CTypeUtils, CTypeSchema } from './ctype'
 import Claim, { ClaimUtils } from './claim'
 import RequestForAttestation, {
@@ -60,14 +65,15 @@ export {
 } from './types/Delegation'
 
 export {
-  AttesterIdentity,
   Blockchain,
   IBlockchainApi,
   BlockchainApiConnection,
   Balance,
   Crypto,
   Identity,
+  AttesterIdentity,
   PublicIdentity,
+  PublicAttesterIdentity,
   IURLResolver,
   CType,
   CTypeMetadata,
@@ -100,12 +106,13 @@ export {
 
 // ---- Default export for ease of use ----
 export default {
-  AttesterIdentity,
   connect,
   disconnect,
   Balance,
   Identity,
+  AttesterIdentity,
   PublicIdentity,
+  PublicAttesterIdentity,
   CType,
   CTypeMetadata,
   Claim,

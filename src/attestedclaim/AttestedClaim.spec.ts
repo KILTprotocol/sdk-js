@@ -1,5 +1,5 @@
 import Identity from '../identity/Identity'
-import AttesterIdentity from '../attesteridentity/AttesterIdentity'
+import AttesterIdentity from '../identity/AttesterIdentity'
 import AttestedClaim from './AttestedClaim'
 import AttestedClaimUtils from './AttestedClaim.utils'
 import Attestation from '../attestation/Attestation'

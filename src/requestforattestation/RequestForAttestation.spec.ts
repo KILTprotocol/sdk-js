@@ -3,7 +3,7 @@ import {
   AttesterAttestationSession,
 } from '@kiltprotocol/portablegabi'
 import Identity from '../identity/Identity'
-import AttesterIdentity from '../attesteridentity/AttesterIdentity'
+import AttesterIdentity from '../identity/AttesterIdentity'
 import RequestForAttestation from './RequestForAttestation'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
