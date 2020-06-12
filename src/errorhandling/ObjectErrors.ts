@@ -14,26 +14,30 @@ export enum ErrorCode {
   ERROR_CLAIM_HASHTREE_NOT_PROVIDED = 10003,
   ERROR_CLAIM_NOT_PROVIDED = 10004,
   ERROR_OWNER_NOT_PROVIDED = 10005,
-  ERROR_REQUESTFORATTESTATION_NOT_PROVIDED = 10006,
+  ERROR_RFA_NOT_PROVIDED = 10006,
   ERROR_ATTESTATION_NOT_PROVIDED = 10007,
-  ERROR_REVOKE_BIT_NOT_PROVIDED = 10008,
+  ERROR_REVOCATION_BIT_MISSING = 10008,
   ERROR_LEGITIMATIONS_NOT_PROVIDED = 10009,
   ERROR_ATTESTATION_SESSION_MISSING = 10010,
+  ERROR_PRIVACY_ENHANCEMENT_MISSING = 10013,
+  ERROR_PRIVACY_CREDENTIAL_MISSING = 10012,
 
   ERROR_ADDRESS_TYPE = 20001,
   ERROR_HASH_TYPE = 20002,
   ERROR_HASH_MALFORMED = 20003,
   ERROR_NONCE_HASH_TYPE = 20004,
-  ERROR_NONCE_HASH_MALFORMED = 20005,
-  ERROR_DELEGATIONID_TYPE = 20006,
-  ERROR_CLAIM_CONTENTS_MALFORMED = 20007,
-  ERROR_OBJECT_MALFORMED = 20008,
-  ERROR_CTYPE_OWNER_TYPE = 20009,
-  ERROR_MNEMONIC_PHRASE_MALFORMED = 20010,
-  ERROR_QUOTE_MALFORMED = 20011,
-  ERROR_CLAIM_HASHTREE_MALFORMED = 20012,
-  ERROR_CLAIM_HASHTREE_MISMATCH = 20013,
-  ERROR_SIGNATURE_DATA_TYPE = 20014,
+  ERROR_SIGNATURE_DATA_TYPE = 20005,
+  ERROR_CTYPE_OWNER_TYPE = 20006,
+  ERROR_DELEGATION_ID_TYPE = 20007,
+  ERROR_NONCE_HASH_MALFORMED = 20008,
+  ERROR_CLAIM_CONTENTS_MALFORMED = 20009,
+  ERROR_CLAIM_HASHTREE_MALFORMED = 20010,
+  ERROR_OBJECT_MALFORMED = 20011,
+  ERROR_MNEMONIC_PHRASE_MALFORMED = 20012,
+  ERROR_QUOTE_MALFORMED = 20013,
+  ERROR_CLAIM_HASHTREE_MISMATCH = 20014,
+  ERROR_PRIVACY_MISMATCH = 20015,
+  ERROR_DID_IDENTIFIER_MISMATCH = 20016,
 
   ERROR_ADDRESS_INVALID = 30001,
   ERROR_NONCE_HASH_INVALID = 30002,
@@ -72,8 +76,8 @@ export const ERROR_CLAIM_HASH_NOT_PROVIDED: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_CLAIM_HASH_NOT_PROVIDED,
   'Claim hash missing'
 )
-export const ERROR_REVOKE_BIT_NOT_PROVIDED: ObjectsError = new ObjectsError(
-  ErrorCode.ERROR_REVOKE_BIT_NOT_PROVIDED,
+export const ERROR_REVOCATION_BIT_MISSING: ObjectsError = new ObjectsError(
+  ErrorCode.ERROR_REVOCATION_BIT_MISSING,
   'Revoked identifier missing'
 )
 export const ERROR_OWNER_NOT_PROVIDED: ObjectsError = new ObjectsError(
@@ -84,8 +88,8 @@ export const ERROR_ATTESTATION_NOT_PROVIDED: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_ATTESTATION_NOT_PROVIDED,
   'Attestation missing'
 )
-export const ERROR_REQUESTFORATTESTATION_NOT_PROVIDED: ObjectsError = new ObjectsError(
-  ErrorCode.ERROR_REQUESTFORATTESTATION_NOT_PROVIDED,
+export const ERROR_RFA_NOT_PROVIDED: ObjectsError = new ObjectsError(
+  ErrorCode.ERROR_RFA_NOT_PROVIDED,
   'RequestForAttestation missing'
 )
 export const ERROR_LEGITIMATIONS_NOT_PROVIDED: ObjectsError = new ObjectsError(
@@ -95,6 +99,15 @@ export const ERROR_LEGITIMATIONS_NOT_PROVIDED: ObjectsError = new ObjectsError(
 export const ERROR_ATTESTATION_SESSION_MISSING: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_ATTESTATION_SESSION_MISSING,
   'Privacy enhancement was forced, but attestation session is missing.'
+)
+export const ERROR_PRIVACY_ENHANCEMENT_MISSING: ObjectsError = new ObjectsError(
+  ErrorCode.ERROR_PRIVACY_ENHANCEMENT_MISSING,
+  'Privacy enhancement is missing.'
+)
+
+export const ERROR_PRIVACY_CREDENTIAL_MISSING: ObjectsError = new ObjectsError(
+  ErrorCode.ERROR_PRIVACY_CREDENTIAL_MISSING,
+  'Missing privacy enhanced credential.'
 )
 export const ERROR_CLAIM_HASHTREE_NOT_PROVIDED: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_CLAIM_HASHTREE_NOT_PROVIDED,
@@ -168,8 +181,8 @@ export const ERROR_NONCE_HASH_MALFORMED: (
     `Provided hash malformed`
   )
 }
-export const ERROR_DELEGATIONID_TYPE: ObjectsError = new ObjectsError(
-  ErrorCode.ERROR_DELEGATIONID_TYPE,
+export const ERROR_DELEGATION_ID_TYPE: ObjectsError = new ObjectsError(
+  ErrorCode.ERROR_DELEGATION_ID_TYPE,
   'DelegationId of wrong type'
 )
 export const ERROR_CLAIM_CONTENTS_MALFORMED: ObjectsError = new ObjectsError(
@@ -216,6 +229,19 @@ export const ERROR_CLAIM_HASHTREE_MISMATCH: (key?: string) => ObjectsError = (
 export const ERROR_SIGNATURE_DATA_TYPE: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_SIGNATURE_DATA_TYPE,
   'Property non existent'
+)
+export const ERROR_DID_IDENTIFIER_MISMATCH: (
+  identifier: string,
+  id: string
+) => ObjectsError = (identifier: string, id: string) => {
+  return new ObjectsError(
+    ErrorCode.ERROR_DID_IDENTIFIER_MISMATCH,
+    `This identifier (${identifier}) doesn't match the DID Document's identifier (${id})`
+  )
+}
+export const ERROR_PRIVACY_MISMATCH: ObjectsError = new ObjectsError(
+  ErrorCode.ERROR_PRIVACY_MISMATCH,
+  'Verifier requested public presentation, but privacy enhancement was forced.'
 )
 
 export const ERROR_ADDRESS_INVALID: (

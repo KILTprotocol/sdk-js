@@ -1,5 +1,9 @@
 import * as gabi from '@kiltprotocol/portablegabi'
-import { ERROR_MESSAGE_TYPE } from '../errorhandling/ObjectErrors'
+import {
+  ERROR_MESSAGE_TYPE,
+  ERROR_PRIVACY_MISMATCH,
+  ERROR_PRIVACY_CREDENTIAL_MISSING,
+} from '../errorhandling/ObjectErrors'
 import IPublicIdentity from '../types/PublicIdentity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IClaim from '../types/Claim'
@@ -62,9 +66,7 @@ export async function createPresentation(
 
   // If privacy enhancement was required, but is not allowed, we can't create a presentation.
   if (!message.body.content.allowPE && requirePE) {
-    throw new Error(
-      'Verifier requested public presentation, but privacy enhancement was forced.'
-    )
+    throw ERROR_PRIVACY_MISMATCH
   }
   const request = message.body
 
@@ -72,7 +74,7 @@ export async function createPresentation(
   if (request.content.allowPE) {
     const peCreds = credentials.map(c => c.privacyCredential)
     if (!noNulls(peCreds)) {
-      throw new Error('Missing privacy enhanced credential')
+      throw ERROR_PRIVACY_CREDENTIAL_MISSING
     }
     const gabiPresentation = await identity.claimer.buildCombinedPresentation({
       credentials: peCreds,

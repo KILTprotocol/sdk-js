@@ -78,17 +78,17 @@ export function getHashForSchema(schema: ICType['schema']): string {
  */
 export function errorCheck(input: ICType): void {
   if (!verifySchema(input, CTypeWrapperModel)) {
-    throw new Error('CType does not correspond to schema')
+    throw ObjectErrors.ERROR_OBJECT_MALFORMED
   }
   if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
-    throw new Error('provided CType hash not matching calculated hash')
+    throw ObjectErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
   }
   if (
     typeof input.owner === 'string'
       ? !validateAddress(input.owner, 'CType Owner')
       : !(input.owner === null)
   ) {
-    throw new Error('CType owner unknown data')
+    throw ObjectErrors.ERROR_CTYPE_OWNER_TYPE
   }
 }
 
@@ -168,7 +168,7 @@ export function compress(cType: ICType): CompressedCType {
 
 export function decompress(cType: CompressedCType): ICType {
   if (!Array.isArray(cType) || cType.length !== 3) {
-    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('ctype')
+    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('CType')
   }
   return {
     hash: cType[0],

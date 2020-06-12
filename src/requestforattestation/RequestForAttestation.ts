@@ -335,11 +335,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
     // check claim hash
     if (!RequestForAttestation.verifyRootHash(input)) {
-      throw new Error('Provided rootHash does not correspond to data')
+      throw ObjectErrors.ERROR_ROOTHASH_UNVERIFIABLE
     }
     // check signature
     if (!RequestForAttestation.verifySignature(input)) {
-      throw new Error('Provided Signature not verifiable')
+      throw ObjectErrors.ERROR_SIGNATURE_UNVERIFIABLE
     }
 
     return true

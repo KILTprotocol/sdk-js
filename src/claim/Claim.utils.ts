@@ -20,7 +20,7 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
  */
 export function errorCheck(input: IClaim): void {
   if (!input.cTypeHash) {
-    throw new Error('cTypeHash of provided Claim not set')
+    throw ObjectErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
   }
   if (input.owner) {
     validateAddress(input.owner, 'Claim Owner')
@@ -32,7 +32,7 @@ export function errorCheck(input: IClaim): void {
         !entry[1] ||
         !['string', 'number', 'boolean'].includes(typeof entry[1])
       ) {
-        throw new Error('Claim contents malformed')
+        throw ObjectErrors.ERROR_CLAIM_CONTENTS_MALFORMED
       }
     })
   }

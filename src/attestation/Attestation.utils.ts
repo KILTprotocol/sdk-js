@@ -20,22 +20,22 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
  */
 export function errorCheck(input: IAttestation): void {
   if (!input.cTypeHash) {
-    throw new Error('CType Hash not provided')
+    throw ObjectErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
   } else validateHash(input.cTypeHash, 'CType')
 
   if (!input.claimHash) {
-    throw new Error('Claim Hash not provided')
+    throw ObjectErrors.ERROR_CLAIM_HASH_NOT_PROVIDED
   } else validateHash(input.claimHash, 'Claim')
 
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw new Error(`Not a valid DelegationId: ${typeof input.delegationId}`)
+    throw ObjectErrors.ERROR_DELEGATION_ID_TYPE
   }
   if (!input.owner) {
-    throw new Error('Owner not provided')
+    throw ObjectErrors.ERROR_OWNER_NOT_PROVIDED
   } else validateAddress(input.owner, 'Owner')
 
   if (typeof input.revoked !== 'boolean') {
-    throw new Error('revocation bit not provided')
+    throw ObjectErrors.ERROR_REVOCATION_BIT_MISSING
   }
 }
 

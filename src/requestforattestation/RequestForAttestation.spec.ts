@@ -573,9 +573,7 @@ describe('RequestForAttestation', () => {
 `)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
-    ).toThrowErrorMatchingInlineSnapshot(
-      `"Property 'a' not in claim hash tree"`
-    )
+    ).toThrowErrorMatchingInlineSnapshot(`"Property 'a' not found in claim"`)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
     ).toThrowErrorMatchingInlineSnapshot(`"Provided Signature not verifiable"`)

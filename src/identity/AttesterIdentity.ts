@@ -15,6 +15,7 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 import PublicAttesterIdentity from './PublicAttesterIdentity'
 import Attestation from '../attestation/Attestation'
 import getCached from '../blockchainApiConnection'
+import { ERROR_PRIVACY_ENHANCEMENT_MISSING } from '../errorhandling/ObjectErrors'
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
 const DEFAULT_MAX_ATTRIBUTES = 70
@@ -264,9 +265,7 @@ export default class AttesterIdentity extends Identity {
       })
       return { witness, attestation }
     }
-    throw new Error(
-      'Privacy enhancement was missing in request for attestation'
-    )
+    throw ERROR_PRIVACY_ENHANCEMENT_MISSING
   }
 
   /**

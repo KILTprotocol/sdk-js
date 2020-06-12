@@ -29,28 +29,26 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
  */
 export function errorCheck(input: IRequestForAttestation): void {
   if (!input.claim) {
-    throw new Error('Claim not provided')
+    throw ObjectErrors.ERROR_CLAIM_NOT_PROVIDED
   } else {
     ClaimUtils.errorCheck(input.claim)
   }
-  if (!input.legitimations) {
-    throw new Error('Legitimations not provided')
-  } else if (!Array.isArray(input.legitimations)) {
-    throw new Error('Legitimations not an Array')
+  if (!input.legitimations && !Array.isArray(input.legitimations)) {
+    throw ObjectErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED
   }
 
   if (!input.claimHashTree) {
-    throw new Error('Claim Hash Tree not provided')
+    throw ObjectErrors.ERROR_CLAIM_HASHTREE_NOT_PROVIDED
   } else {
     Object.keys(input.claimHashTree).forEach(key => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (!input.claimHashTree![key].hash) {
-        throw new Error('incomplete claim Hash Tree')
+        throw ObjectErrors.ERROR_CLAIM_HASHTREE_MALFORMED
       }
     })
   }
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw new Error('DelegationId not provided')
+    throw ObjectErrors.ERROR_DELEGATION_ID_TYPE
   }
   RequestForAttestation.verifyData(input as IRequestForAttestation)
 }

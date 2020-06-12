@@ -22,14 +22,14 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
 export function errorCheck(input: IAttestedClaim): void {
   if (input.attestation) {
     AttestationUtils.errorCheck(input.attestation)
-  } else throw new Error('Attestation not provided!')
+  } else throw ObjectErrors.ERROR_ATTESTATION_NOT_PROVIDED
 
   if (input.request) {
     RequestForAttestationUtils.errorCheck(input.request)
-  } else throw new Error('RequestForAttestation not provided')
+  } else throw ObjectErrors.ERROR_RFA_NOT_PROVIDED
 
   if (!AttestedClaim.verifyData(input as IAttestedClaim)) {
-    throw new Error('could not verify Data of attested claim')
+    throw ObjectErrors.ERROR_ATTESTEDCLAIM_UNVERIFIABLE
   }
 }
 

@@ -232,19 +232,19 @@ describe('Attestation', () => {
 
     expect(() =>
       AttestationUtils.errorCheck(noClaimHash)
-    ).toThrowErrorMatchingInlineSnapshot(`"Claim Hash not provided"`)
+    ).toThrowErrorMatchingInlineSnapshot(`"Claim hash missing"`)
 
     expect(() =>
       AttestationUtils.errorCheck(noCTypeHash)
-    ).toThrowErrorMatchingInlineSnapshot(`"CType Hash not provided"`)
+    ).toThrowErrorMatchingInlineSnapshot(`"CType hash missing"`)
 
     expect(() =>
       AttestationUtils.errorCheck(malformedOwner)
-    ).toThrowErrorMatchingInlineSnapshot(`"Owner not provided"`)
+    ).toThrowErrorMatchingInlineSnapshot(`"Owner missing"`)
 
     expect(() =>
       AttestationUtils.errorCheck(noRevocationBit)
-    ).toThrowErrorMatchingInlineSnapshot(`"revocation bit not provided"`)
+    ).toThrowErrorMatchingInlineSnapshot(`"Revoked identifier missing"`)
 
     expect(() => AttestationUtils.errorCheck(everything)).not.toThrow()
 
