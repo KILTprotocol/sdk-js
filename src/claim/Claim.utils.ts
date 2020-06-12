@@ -23,7 +23,7 @@ export function errorCheck(input: IClaim): void {
     throw ObjectErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
   }
   if (input.owner) {
-    validateAddress(input.owner, 'Claim Owner')
+    validateAddress(input.owner, 'Claim owner')
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(entry => {

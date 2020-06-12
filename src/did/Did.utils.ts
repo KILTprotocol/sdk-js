@@ -22,6 +22,7 @@ import {
   KEY_TYPE_ENCRYPTION,
   SERVICE_KILT_MESSAGING,
 } from './Did'
+import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/ObjectErrors'
 
 interface IEncodedDid extends Codec {
   toJSON: () => [string, string, string | null] | null
@@ -141,9 +142,7 @@ export function verifyDidDocumentSignature(
   }
   const { id } = didDocument
   if (identifier !== id) {
-    throw new Error(
-      `This identifier (${identifier}) doesn't match the DID Document's identifier (${id})`
-    )
+    throw ERROR_DID_IDENTIFIER_MISMATCH(identifier, id)
   }
   const unsignedDidDocument = { ...didDocument }
   delete unsignedDidDocument.signature

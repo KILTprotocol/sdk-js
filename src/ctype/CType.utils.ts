@@ -85,7 +85,7 @@ export function errorCheck(input: ICType): void {
   }
   if (
     typeof input.owner === 'string'
-      ? !validateAddress(input.owner, 'CType Owner')
+      ? !validateAddress(input.owner, 'CType owner')
       : !(input.owner === null)
   ) {
     throw ObjectErrors.ERROR_CTYPE_OWNER_TYPE

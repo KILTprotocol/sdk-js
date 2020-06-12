@@ -68,7 +68,7 @@ describe('Messaging', () => {
     encryptedMessageWrongSignature.signature += '1234'
     expect(() =>
       Message.decrypt(encryptedMessageWrongSignature, identityBob)
-    ).toThrowError(new Error(`Provided signature invalid`))
+    ).toThrowError(ObjectErrors.ERROR_SIGNATURE_UNVERIFIABLE)
 
     const encryptedMessageWrongContent: IEncryptedMessage = JSON.parse(
       JSON.stringify(encryptedMessage)
@@ -85,7 +85,7 @@ describe('Messaging', () => {
     )
     expect(() =>
       Message.decrypt(encryptedMessageWrongContent, identityBob)
-    ).toThrowError(new Error('Error decoding message'))
+    ).toThrowError(ObjectErrors.ERROR_DECODING_MESSAGE)
 
     const encryptedWrongBody: EncryptedAsymmetricString = identityAlice.encryptAsymmetricAsStr(
       '{ wrong JSON',
@@ -107,7 +107,7 @@ describe('Messaging', () => {
     } as IEncryptedMessage
     expect(() =>
       Message.decrypt(encryptedMessageWrongBody, identityBob)
-    ).toThrowError(new Error('Error parsing message body'))
+    ).toThrowError(ObjectErrors.ERROR_PARSING_MESSAGE)
   })
 
   it('verifies the message sender is the owner', () => {
@@ -323,7 +323,7 @@ describe('Messaging', () => {
     it('expects signature error', async () => {
       expect(() =>
         Message.ensureHashAndSignature(encrypted, identityBob.getAddress())
-      ).toThrowError(new Error(`Provided signature invalid`))
+      ).toThrowError(ObjectErrors.ERROR_SIGNATURE_UNVERIFIABLE)
     })
   })
 })

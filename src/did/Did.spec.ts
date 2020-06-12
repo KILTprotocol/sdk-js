@@ -2,7 +2,11 @@ import { Tuple, Option, H256 } from '@polkadot/types'
 import { Did } from '..'
 import { IDid } from './Did'
 import Identity from '../identity/Identity'
-import { getIdentifierFromAddress } from './Did.utils'
+import {
+  getIdentifierFromAddress,
+  verifyDidDocumentSignature,
+} from './Did.utils'
+import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/ObjectErrors'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -220,13 +224,9 @@ describe('DID', () => {
     const identityBob = await Identity.buildFromURI('//Bob')
     const id = getIdentifierFromAddress(identityBob.getAddress())
 
-    expect(() => {
-      Did.verifyDidDocumentSignature(signedDidDocument, id)
-    }).toThrowError(
-      new Error(
-        `This identifier (${id}) doesn't match the DID Document's identifier (${signedDidDocument.id})`
-      )
-    )
+    expect(() =>
+      verifyDidDocumentSignature(signedDidDocument, id)
+    ).toThrowError(ERROR_DID_IDENTIFIER_MISMATCH(id, signedDidDocument.id))
   })
 
   it('gets identifier from address', () => {

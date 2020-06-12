@@ -315,10 +315,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
   public static verifyData(input: IRequestForAttestation): boolean {
     // check claim owner hash
-    validateNonceHash(input.claimOwner, input.claim.owner, 'Claim Owner')
+    validateNonceHash(input.claimOwner, input.claim.owner, 'Claim owner')
 
     // check cType hash
-    validateNonceHash(input.cTypeHash, input.claim.cTypeHash, 'Claim CType')
+    validateNonceHash(input.cTypeHash, input.claim.cTypeHash, 'CType')
 
     // check all hashes for provided claim properties
     Object.keys(input.claim.contents).forEach(key => {

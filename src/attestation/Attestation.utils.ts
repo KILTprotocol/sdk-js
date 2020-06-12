@@ -32,7 +32,7 @@ export function errorCheck(input: IAttestation): void {
   }
   if (!input.owner) {
     throw ObjectErrors.ERROR_OWNER_NOT_PROVIDED
-  } else validateAddress(input.owner, 'Owner')
+  } else validateAddress(input.owner, 'owner')
 
   if (typeof input.revoked !== 'boolean') {
     throw ObjectErrors.ERROR_REVOCATION_BIT_MISSING
