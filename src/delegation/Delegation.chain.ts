@@ -10,7 +10,7 @@ import { IDelegationBaseNode } from '../types/Delegation'
 import { assertCodecIsType } from '../util/Decode'
 
 function decodeDelegatedAttestations(queryResult: Vec<H256>): string[] {
-  assertCodecIsType(queryResult, 'Vec<H256>')
+  assertCodecIsType(queryResult, ['Vec<H256>'])
   return queryResult.map(hash => hash.toString())
 }
 
@@ -29,7 +29,7 @@ export async function getChildIds(
 ): Promise<string[]> {
   const blockchain = await getCached()
   const childIds = await blockchain.api.query.delegation.children<Vec<H256>>(id)
-  assertCodecIsType(childIds, 'Vec<H256>')
+  assertCodecIsType(childIds, ['Vec<H256>'])
   return childIds.map(hash => hash.toString())
 }
 
