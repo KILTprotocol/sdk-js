@@ -21,7 +21,7 @@ import {
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import { IBlockchainApi } from '../blockchain/Blockchain'
 
-let blockchain: IBlockchainApi
+let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
@@ -136,5 +136,5 @@ describe('When there are haves and have-nots', () => {
 })
 
 afterAll(() => {
-  blockchain.api.disconnect()
+  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
 })
