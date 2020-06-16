@@ -15,13 +15,17 @@ beforeAll(async () => {
 
 describe('Blockchain', () => {
   it('should get stats', async () => {
-    const stats = await blockchain.getStats()
+    if (typeof blockchain !== 'undefined') {
+      const stats = await blockchain.getStats()
 
-    expect(stats).toMatchObject({
-      chain: 'Development',
-      nodeName: 'substrate-node',
-      nodeVersion: expect.stringMatching(/.+\..+\..+/),
-    })
+      expect(stats).toMatchObject({
+        chain: 'Development',
+        nodeName: 'substrate-node',
+        nodeVersion: expect.stringMatching(/.+\..+\..+/),
+      })
+    } else {
+      expect(false).toBeTruthy()
+    }
   })
 
   it('should listen to blocks', async done => {
@@ -30,9 +34,14 @@ describe('Blockchain', () => {
       expect(Number(header.number)).toBeGreaterThanOrEqual(0)
       done()
     }
-    await blockchain.listenToBlocks(listener)
-    // const subscriptionId = await blockchainSingleton.listenToBlocks(listener)
-    // console.log(`Subscription Id: ${subscriptionId}`)
+    if (typeof blockchain !== 'undefined') {
+      await blockchain.listenToBlocks(listener)
+      // const subscriptionId = await blockchainSingleton.listenToBlocks(listener)
+      // console.log(`Subscription Id: ${subscriptionId}`)
+    } else {
+      expect(false).toBeTruthy()
+      done()
+    }
   }, 5000)
 })
 
