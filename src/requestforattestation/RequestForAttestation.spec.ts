@@ -18,11 +18,11 @@ import IRequestForAttestation, {
 } from '../types/RequestForAttestation'
 import { CompressedAttestedClaim } from '../types/AttestedClaim'
 import {
-  ERROR_ROOTHASH_UNVERIFIABLE,
+  ERROR_ROOT_HASH_UNVERIFIABLE,
   ERROR_LEGITIMATIONS_NOT_PROVIDED,
   ERROR_NONCE_HASH_INVALID,
   ERROR_SIGNATURE_UNVERIFIABLE,
-  ERROR_CLAIM_HASHTREE_MISMATCH,
+  ERROR_CLAIM_HASHTREE_MALFORMED,
 } from '../errorhandling/ObjectErrors'
 
 async function buildRequestForAttestationPE(
@@ -185,7 +185,9 @@ describe('RequestForAttestation', () => {
     const propertyName = 'a'
     delete request.claim.contents[propertyName]
     delete request.claimHashTree[propertyName]
-    expect(() => request.verifyData()).toThrowError(ERROR_ROOTHASH_UNVERIFIABLE)
+    expect(() => request.verifyData()).toThrowError(
+      ERROR_ROOT_HASH_UNVERIFIABLE
+    )
   })
 
   it('verify request for attestation (PE)', async () => {
@@ -211,7 +213,9 @@ describe('RequestForAttestation', () => {
     const propertyName = 'a'
     delete request.claim.contents[propertyName]
     delete request.claimHashTree[propertyName]
-    expect(() => request.verifyData()).toThrowError(ERROR_ROOTHASH_UNVERIFIABLE)
+    expect(() => request.verifyData()).toThrowError(
+      ERROR_ROOT_HASH_UNVERIFIABLE
+    )
     expect(claimerSession).toBeDefined()
     expect(attester).toBeDefined()
     expect(attesterSession).toBeDefined()
@@ -563,7 +567,7 @@ describe('RequestForAttestation', () => {
     ).toThrowError(ERROR_LEGITIMATIONS_NOT_PROVIDED)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
-    ).toThrowError(ERROR_ROOTHASH_UNVERIFIABLE)
+    ).toThrowError(ERROR_ROOT_HASH_UNVERIFIABLE)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedClaimOwner)
     ).toThrowError(
@@ -574,7 +578,7 @@ describe('RequestForAttestation', () => {
     )
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
-    ).toThrowError(ERROR_CLAIM_HASHTREE_MISMATCH(deletedKey))
+    ).toThrowError(ERROR_CLAIM_HASHTREE_MALFORMED)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
     ).toThrowError(ERROR_SIGNATURE_UNVERIFIABLE)

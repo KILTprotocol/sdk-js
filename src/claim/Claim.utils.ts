@@ -16,6 +16,7 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
  * @param input The potentially only partial IClaim.
  * @throws When input's cTypeHash do not exist.
  * @throws When any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
+ * @throws ERROR_CTYPE_HASH_NOT_PROVIDED, ERROR_CLAIM_CONTENTS_MALFORMED.
  *
  */
 export function errorCheck(input: IClaim): void {
@@ -57,6 +58,7 @@ export function compress(claim: IClaim): CompressedClaim {
  *
  * @param claim A compressed [[Claim]] array that is reverted back into an object.
  * @throws When [[Claim]] is not an Array or it's length is unequal 3.
+ * @throws ERROR_DECOMPRESSION_ARRAY.
  * @returns An object that has the same properties as the [[Claim]].
  */
 export function decompress(claim: CompressedClaim): IClaim {

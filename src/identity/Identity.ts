@@ -82,6 +82,7 @@ export default class Identity {
    * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
    * @throws When phraseArg contains fewer than 12 correctly separated mnemonic words.
    * @throws When the phraseArg could not be validated.
+   * @throws ERROR_MNEMONIC_PHRASE_MALFORMED, ERROR_MNEMONIC_PHRASE_INVALID.
    * @returns An [[Identity]].
    *
    * @example ```javascript

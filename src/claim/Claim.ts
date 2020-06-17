@@ -33,6 +33,7 @@ export default class Claim implements IClaim {
    * @param claimInput IClaim to instantiate the new claim from.
    * @param cTypeSchema ICType['schema'] to verify claimInput's contents.
    * @throws When claimInput's contents could not be verified with the provided cTypeSchema.
+   * @throws ERROR_CLAIM_UNVERIFIABLE.
    *
    * @returns An instantiated Claim.
    */
@@ -53,6 +54,7 @@ export default class Claim implements IClaim {
    * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
    * @param claimOwner IPublicIdentity['address'] to be used as the Claim owner.
    * @throws When claimInput's contents could not be verified with the schema of the provided ctypeInput.
+   * @throws ERROR_CLAIM_UNVERIFIABLE.
    *
    * @returns An instantiated Claim.
    */

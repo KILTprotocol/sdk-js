@@ -19,7 +19,7 @@ export enum ErrorCode {
   ERROR_REVOCATION_BIT_MISSING = 10008,
   ERROR_LEGITIMATIONS_NOT_PROVIDED = 10009,
   ERROR_ATTESTATION_SESSION_MISSING = 10010,
-  ERROR_PE_MISSING = 10013,
+  ERROR_PE_MISSING = 10011,
   ERROR_PE_CREDENTIAL_MISSING = 10012,
 
   ERROR_ADDRESS_TYPE = 20001,
@@ -38,6 +38,8 @@ export enum ErrorCode {
   ERROR_CLAIM_HASHTREE_MISMATCH = 20014,
   ERROR_PE_MISMATCH = 20015,
   ERROR_DID_IDENTIFIER_MISMATCH = 20016,
+  ERROR_ROOT_NODE_QUERY = 20017,
+  ERROR_INVALID_DID_PREFIX = 20018,
 
   ERROR_ADDRESS_INVALID = 30001,
   ERROR_NONCE_HASH_INVALID = 30002,
@@ -48,7 +50,7 @@ export enum ErrorCode {
   ERROR_CTYPE_HASH_INVALID = 30007,
   ERROR_MNEMONIC_PHRASE_INVALID = 30008,
   ERROR_IDENTITY_MISMATCH = 30009,
-  ERROR_ROOTHASH_UNVERIFIABLE = 30010,
+  ERROR_ROOT_HASH_UNVERIFIABLE = 30010,
 
   ERROR_DECOMPRESSION_ARRAY = 40001,
   ERROR_COMPRESS_OBJECT = 40002,
@@ -109,6 +111,7 @@ export const ERROR_PE_CREDENTIAL_MISSING: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_PE_CREDENTIAL_MISSING,
   'Missing privacy enhanced credential.'
 )
+
 export const ERROR_CLAIM_HASHTREE_NOT_PROVIDED: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_CLAIM_HASHTREE_NOT_PROVIDED,
   'Hashtree in Claim missing'
@@ -230,6 +233,7 @@ export const ERROR_SIGNATURE_DATA_TYPE: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_SIGNATURE_DATA_TYPE,
   'Property non existent'
 )
+
 export const ERROR_DID_IDENTIFIER_MISMATCH: (
   identifier: string,
   id: string
@@ -243,6 +247,22 @@ export const ERROR_PE_MISMATCH: ObjectsError = new ObjectsError(
   ErrorCode.ERROR_PE_MISMATCH,
   'Verifier requested public presentation, but privacy enhancement was forced.'
 )
+export const ERROR_ROOT_NODE_QUERY: (rootId: string) => ObjectsError = (
+  rootId: string
+) => {
+  return new ObjectsError(
+    ErrorCode.ERROR_ROOT_NODE_QUERY,
+    `Could not find root node with id ${rootId}`
+  )
+}
+export const ERROR_INVALID_DID_PREFIX: (identifier: string) => ObjectsError = (
+  identifier: string
+) => {
+  return new ObjectsError(
+    ErrorCode.ERROR_INVALID_DID_PREFIX,
+    `Not a KILT did: ${identifier}`
+  )
+}
 
 export const ERROR_ADDRESS_INVALID: (
   address?: string,
@@ -337,8 +357,8 @@ export const ERROR_IDENTITY_MISMATCH: (
     'Addresses expected to be equal mismatched'
   )
 }
-export const ERROR_ROOTHASH_UNVERIFIABLE: ObjectsError = new ObjectsError(
-  ErrorCode.ERROR_ROOTHASH_UNVERIFIABLE,
+export const ERROR_ROOT_HASH_UNVERIFIABLE: ObjectsError = new ObjectsError(
+  ErrorCode.ERROR_ROOT_HASH_UNVERIFIABLE,
   'RootHash could not be verified'
 )
 

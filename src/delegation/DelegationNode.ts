@@ -19,6 +19,7 @@ import { IDelegationNode } from '../types/Delegation'
 import permissionsAsBitset from './DelegationNode.utils'
 import { query, store, revoke, getChildren } from './DelegationNode.chain'
 import { query as queryRoot } from './DelegationRootNode.chain'
+import { ERROR_ROOT_NODE_QUERY } from '../errorhandling/ObjectErrors'
 
 const log = factory.getLogger('DelegationNode')
 
@@ -103,12 +104,13 @@ export default class DelegationNode extends DelegationBaseNode
    * Fetches the root of this delegation node.
    *
    * @throws When the rootId could not be queried.
+   * @throws ERROR_ROOT_NODE_QUERY.
    * @returns Promise containing the [[DelegationRootNode]] of this delegation node.
    */
   public async getRoot(): Promise<DelegationRootNode> {
     const rootNode = await queryRoot(this.rootId)
     if (!rootNode) {
-      throw new Error(`Could not find root node with id ${this.rootId}`)
+      throw ERROR_ROOT_NODE_QUERY(this.rootId)
     }
     return rootNode
   }

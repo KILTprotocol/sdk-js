@@ -17,6 +17,7 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
  * @param input The potentially only partial IAttestedClaim.
  * @throws When input's attestation and request do not exist.
  * @throws When input's Data could not be verified.
+ * @throws ERROR_ATTESTATION_NOT_PROVIDED, ERROR_RFA_NOT_PROVIDED, ERROR_ATTESTEDCLAIM_UNVERIFIABLE.
  *
  */
 export function errorCheck(input: IAttestedClaim): void {
@@ -57,6 +58,7 @@ export function compress(
  *
  * @param attestedClaim A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
  * @throws When attestedClaim is not an Array or it's length is unequal 2.
+ * @throws ERROR_DECOMPRESSION_ARRAY.
  *
  * @returns An object that has the same properties as an [[AttestedClaim]].
  */

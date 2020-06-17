@@ -25,6 +25,7 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
  * @param input - A potentially only partial [[IRequestForAttestation]].
  * @throws When either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type.
  * @throws When any of the input's claimHashTree's keys missing their hash.
+ * @throws ERROR_CLAIM_NOT_PROVIDED, ERROR_LEGITIMATIONS_NOT_PROVIDED, ERROR_CLAIM_HASHTREE_NOT_PROVIDED, ERROR_CLAIM_HASHTREE_MALFORMED, ERROR_DELEGATION_ID_TYPE.
  *
  */
 export function errorCheck(input: IRequestForAttestation): void {
@@ -58,6 +59,7 @@ export function errorCheck(input: IRequestForAttestation): void {
  *
  * @param nonceHash A hash or a hash and nonce object that will be sorted and stripped for messaging or storage.
  * @throws When the nonceHash is missing it's hash (existence of nonce is ignored).
+ * @throws ERROR_COMPRESS_OBJECT.
  *
  * @returns An object compressing of a hash or a hash and nonce.
  */
@@ -188,6 +190,7 @@ export function compress(
  *
  * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
  * @throws When reqForAtt is not an Array and it's length is not equal to the defined length of 8.
+ * @throws ERROR_DECOMPRESSION_ARRAY.
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */

@@ -30,6 +30,7 @@ import {
  * @param address Address string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
  * @throws When address not of type string or of invalid Format.
+ * @throws ERROR_ADDRESS_TYPE.
  *
  * @returns Boolean whether the given address string checks out against the Format.
  */
@@ -52,6 +53,7 @@ export function validateAddress(
  * @param hash Hash string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
  * @throws When hash not of type string or of invalid Format.
+ * @throws ERROR_HASH_TYPE.
  *
  * @returns Boolean whether the given hash string checks out against the Format.
  */
@@ -74,6 +76,7 @@ export function validateHash(hash: string, name: string): boolean {
  * @param name Contextual name of the address, e.g. "claim owner".
  * @throws When nonceHash is of wrong format or has incorrectly set properties.
  * @throws When the nonceHash does not validate against the given data.
+ * @throws ERROR_NONCE_HASH_MALFORMED, ERROR_NONCE_HASH_INVALID.
  *
  * @returns Boolean whether the given NonceHash checks out against the Format and it's hashed data.
  */
@@ -100,6 +103,7 @@ export function validateNonceHash(
  *
  * @param legitimations Array of IAttestedClaims to validate.
  * @throws When one of the IAttestedClaims data is unable to be verified.
+ * @throws ERROR_LEGITIMATIONS_UNVERIFIABLE.
  *
  * @returns Boolean whether each element of the given Array of IAttestedClaims is verifiable.
  */
@@ -122,6 +126,7 @@ export function validateLegitimations(
  * @param signer Address of the signer identity.
  * @throws When parameters are of invalid type.
  * @throws When the signature could not be validated against the data.
+ * @throws ERROR_SIGNATURE_DATA_TYPE, ERROR_SIGNATURE_UNVERIFIABLE.
  *
  * @returns Boolean whether the signature is valid for the given data.
  */

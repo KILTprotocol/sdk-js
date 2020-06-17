@@ -117,6 +117,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param option.initiateAttestationMsg The message object which was created during the initiation of the attestation in [[initiateAttestation]].
    * @param option.attesterPubKey The privacy enhanced public key of the Attester.
    * @throws When claimInput's owner address does not match the supplied identity's address.
+   * @throws ERROR_IDENTITY_MISMATCH.
    * @returns A new [[RequestForAttestation]] object.
    * @example ```javascript
    * const input = RequestForAttestation.fromClaimAndIdentity(claim, alice);
@@ -260,6 +261,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @param properties - Properties to remove from the [[Claim]] object.
    * @throws An error when a property which should be deleted wasn't found.
+   * @throws ERROR_CLAIM_HASHTREE_MISMATCH.
    * @example ```javascript
    * const rawClaim = {
    *   name: 'Alice',
@@ -308,6 +310,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns Whether the data is valid.
    * @throws When any key of the claim contents could not be found in the claimHashTree.
    * @throws When either the rootHash or the signature are not verifiable.
+   * @throws ERROR_CLAIM_HASHTREE_MALFORMED, ERROR_ROOT_HASH_UNVERIFIABLE, ERROR_SIGNATURE_UNVERIFIABLE.
    * @example ```javascript
    * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(claim, alice);
    * reqForAtt.verifyData(); // returns true if the data is correct
@@ -324,7 +327,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     Object.keys(input.claim.contents).forEach(key => {
       const value = input.claim.contents[key]
       if (!input.claimHashTree[key]) {
-        throw ObjectErrors.ERROR_CLAIM_HASHTREE_MISMATCH(key)
+        throw ObjectErrors.ERROR_CLAIM_HASHTREE_MALFORMED
       }
       const hashed: NonceHash = input.claimHashTree[key]
       validateNonceHash(hashed, value, `hash tree property ${key}`)
@@ -335,7 +338,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
     // check claim hash
     if (!RequestForAttestation.verifyRootHash(input)) {
-      throw ObjectErrors.ERROR_ROOTHASH_UNVERIFIABLE
+      throw ObjectErrors.ERROR_ROOT_HASH_UNVERIFIABLE
     }
     // check signature
     if (!RequestForAttestation.verifySignature(input)) {
