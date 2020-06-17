@@ -23,7 +23,7 @@ import ICType from '../types/CType'
 import Identity from '../identity/Identity'
 import Credential from '../credential/Credential'
 import { IBlockchainApi } from '../blockchain/Blockchain'
-import { IClaim, IAttestedClaim } from '..'
+import { IClaim, IAttestedClaim, ERROR_CTYPE_NOT_FOUND } from '..'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
@@ -167,7 +167,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attester.getPublicIdentity()
     )
     await expect(attestation.store(attester)).rejects.toThrowError(
-      'CTYPE not found'
+      ERROR_CTYPE_NOT_FOUND
     )
   }, 60_000)
 
