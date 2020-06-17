@@ -65,7 +65,7 @@ export function getIdentifierFromAddress(
  *
  * @param identifier IDid identifier to derive it's address from.
  * @throws When the identifier is not prefixed with the defined Kilt IDENTIFIER_PREFIX.
- * @thorws ERROR_INVALID_DID_PREFIX.
+ * @throws ERROR_INVALID_DID_PREFIX.
  *
  * @returns The Address derived from the IDid Identifier.
  */
