@@ -9,7 +9,11 @@ import permissionsAsBitset from './DelegationNode.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
-const identityAlice = Identity.buildFromURI('//Alice')
+let identityAlice: Identity
+
+beforeAll(async () => {
+  identityAlice = await Identity.buildFromURI('//Alice')
+})
 
 describe('Delegation', () => {
   it('delegation generate hash', () => {
@@ -50,7 +54,7 @@ describe('Delegation', () => {
               // (root-id, parent-id?, account, permissions, revoked)
               [H256, 'Option<H256>', AccountId, U32, Bool]
             ),
-            ['myRootId', null, identityAlice.address, 1, false]
+            ['myRootId', null, identityAlice.getAddress(), 1, false]
           )
         }
         return new Option(
@@ -58,7 +62,7 @@ describe('Delegation', () => {
             // (root-id, parent-id?, account, permissions, revoked)
             [H256, 'Option<H256>', AccountId, U32, Bool]
           ),
-          ['myRootId', null, identityAlice.address, 1, true]
+          ['myRootId', null, identityAlice.getAddress(), 1, true]
         )
       }
     )
@@ -67,7 +71,7 @@ describe('Delegation', () => {
       await new DelegationNode(
         'success',
         'myRootId',
-        identityAlice.address,
+        identityAlice.getAddress(),
         []
       ).verify()
     ).toBe(true)
@@ -76,7 +80,7 @@ describe('Delegation', () => {
       await new DelegationNode(
         'failure',
         'myRootId',
-        identityAlice.address,
+        identityAlice.getAddress(),
         []
       ).verify()
     ).toBe(false)
@@ -100,7 +104,7 @@ describe('Delegation', () => {
         ),
         [
           '0x1234000000000000000000000000000000000000000000000000000000000000',
-          identityAlice.address,
+          identityAlice.getAddress(),
           false,
         ]
       )
@@ -109,7 +113,7 @@ describe('Delegation', () => {
     const node: DelegationNode = new DelegationNode(
       'nodeId',
       'rootNodeId',
-      identityAlice.address,
+      identityAlice.getAddress(),
       []
     )
     const rootNode = await node.getRoot()

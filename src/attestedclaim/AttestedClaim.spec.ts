@@ -1,4 +1,5 @@
 import Identity from '../identity/Identity'
+import AttesterIdentity from '../identity/AttesterIdentity'
 import AttestedClaim from './AttestedClaim'
 import AttestedClaimUtils from './AttestedClaim.utils'
 import Attestation from '../attestation/Attestation'
@@ -6,18 +7,18 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
+import constants from '../test/constants'
 import IClaim from '../types/Claim'
 import { CompressedAttestedClaim } from '../types/AttestedClaim'
 
-function buildAttestedClaim(
+async function buildAttestedClaim(
   claimer: Identity,
   attester: Identity,
-  ctype: string, // TODO: this parameter is never used, can we remove it?
   contents: IClaim['contents'],
   legitimations: AttestedClaim[]
-): AttestedClaim {
+): Promise<AttestedClaim> {
   // create claim
-  const identityAlice = Identity.buildFromURI('//Alice')
+  const identityAlice = await Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
     $id: 'http://example.com/ctype-1',
@@ -28,87 +29,90 @@ function buildAttestedClaim(
     type: 'object',
   }
 
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.address,
-    hash: '',
-  }
-
-  const testCType: CType = CType.fromCType(fromRawCType)
+  const testCType: CType = CType.fromSchema(
+    rawCType,
+    identityAlice.signKeyringPair.address
+  )
 
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
     contents,
-    claimer.address
+    claimer.getAddress()
   )
-  // build request for attestation with legimitations
-  const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
-    claim,
-    claimer,
+  // build request for attestation with legitimations
+  const {
+    message: requestForAttestation,
+  } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
     legitimations,
-    null
-  )
+  })
   // build attestation
-  const testAttestation: Attestation = Attestation.fromRequestAndPublicIdentity(
+  const testAttestation = Attestation.fromRequestAndPublicIdentity(
     requestForAttestation,
-    attester
+    attester.getPublicIdentity()
   )
   // combine to attested claim
-  const attestedClaim: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
-    requestForAttestation,
-    testAttestation
-  )
+  const attestedClaim = new AttestedClaim({
+    request: requestForAttestation,
+    attestation: testAttestation,
+  })
   return attestedClaim
 }
 
 describe('RequestForAttestation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
+  let identityAlice: AttesterIdentity
+  let identityBob: Identity
+  let identityCharlie: Identity
+  let legitimation: AttestedClaim
+  let compressedLegitimation: CompressedAttestedClaim
 
-  const identityBob = Identity.buildFromURI('//Bob')
-  const identityCharlie = Identity.buildFromURI('//Charlie')
+  beforeAll(async () => {
+    identityAlice = await AttesterIdentity.buildFromURI('//Alice', {
+      key: {
+        publicKey: constants.PUBLIC_KEY.valueOf(),
+        privateKey: constants.PRIVATE_KEY.valueOf(),
+      },
+    })
 
-  const legitimation: AttestedClaim = buildAttestedClaim(
-    identityAlice,
-    identityBob,
-    'legitimationCtype',
-    {},
-    []
-  )
-  const compressedLegitimation: CompressedAttestedClaim = [
-    [
+    identityBob = await Identity.buildFromURI('//Bob')
+    identityCharlie = await Identity.buildFromURI('//Charlie')
+
+    legitimation = await buildAttestedClaim(identityAlice, identityBob, {}, [])
+    compressedLegitimation = [
       [
-        legitimation.request.claim.contents,
-        legitimation.request.claim.cTypeHash,
-        legitimation.request.claim.owner,
+        [
+          legitimation.request.claim.contents,
+          legitimation.request.claim.cTypeHash,
+          legitimation.request.claim.owner,
+        ],
+        {},
+        [
+          legitimation.request.claimOwner.hash,
+          legitimation.request.claimOwner.nonce,
+        ],
+        legitimation.request.claimerSignature,
+        [
+          legitimation.request.cTypeHash.hash,
+          legitimation.request.cTypeHash.nonce,
+        ],
+        legitimation.request.rootHash,
+        [],
+        legitimation.request.delegationId,
+        null,
       ],
-      {},
       [
-        legitimation.request.claimOwner.hash,
-        legitimation.request.claimOwner.nonce,
+        legitimation.attestation.claimHash,
+        legitimation.attestation.cTypeHash,
+        legitimation.attestation.owner,
+        legitimation.attestation.revoked,
+        legitimation.attestation.delegationId,
       ],
-      legitimation.request.claimerSignature,
-      [
-        legitimation.request.cTypeHash.hash,
-        legitimation.request.cTypeHash.nonce,
-      ],
-      legitimation.request.rootHash,
-      [],
-      legitimation.request.delegationId,
-    ],
-    [
-      legitimation.attestation.claimHash,
-      legitimation.attestation.cTypeHash,
-      legitimation.attestation.owner,
-      legitimation.attestation.revoked,
-      legitimation.attestation.delegationId,
-    ],
-  ]
+    ]
+  })
 
   it('verify attested claims', async () => {
-    const attestedClaim: AttestedClaim = buildAttestedClaim(
+    const attestedClaim = await buildAttestedClaim(
       identityCharlie,
       identityAlice,
-      'ctype',
       {
         a: 'a',
         b: 'b',
@@ -118,18 +122,7 @@ describe('RequestForAttestation', () => {
     )
 
     // check proof on complete data
-    expect(attestedClaim.verifyData()).toBeTruthy()
-
-    // build a repesentation excluding claim properties and verify proof
-    const correctPresentation = attestedClaim.createPresentation(['a'])
-    expect(correctPresentation.verifyData()).toBeTruthy()
-
-    // just deleting a field will result in a wrong proof
-    const falsePresentation = attestedClaim.createPresentation([])
-    const propertyName = 'a'
-    delete falsePresentation.request.claim.contents[propertyName]
-    delete falsePresentation.request.claimHashTree[propertyName]
-    expect(falsePresentation.verifyData()).toBeFalsy()
+    expect(AttestedClaim.verifyData(attestedClaim)).toBeTruthy()
   })
 
   it('compresses and decompresses the attested claims object', () => {

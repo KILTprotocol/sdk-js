@@ -1,7 +1,7 @@
 /**
- * [[Quote]] constructs a framework for Attesters to make an offer for building a [[Claim]] on a [[CTYPE]] in which it includes a price and other terms & conditions upon which a claimer can agree.
+ * [[Quote]] constructs a framework for Attesters to make an offer for building a [[Claim]] on a [[CType]] in which it includes a price and other terms & conditions upon which a claimer can agree.
  *
- * A [[Quote]] object represents a legal **offer** for the closure of a contract attesting a [[Claim]] from the [[CTYPE]] specified within the offer.
+ * A [[Quote]] object represents a legal **offer** for the closure of a contract attesting a [[Claim]] from the [[CType]] specified within the offer.
  *
  * A [[Quote]] comes with a versionable spec, allowing different [[Quote]] specs to exist over time and tracks under which [[Quote]] a contract was closed.
  *
@@ -14,7 +14,8 @@ import Ajv from 'ajv'
 import QuoteSchema from './QuoteSchema'
 import Identity from '../identity/Identity'
 import { IQuote, IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
-import { hashObjectAsStr, verify } from '../crypto/Crypto'
+import { hashObjectAsStr } from '../crypto/Crypto'
+import { validateSignature } from '../util/DataUtils'
 
 /**
  * Validates the quote against the meta schema and quote data against the provided schema.
@@ -53,6 +54,8 @@ export function validateQuoteSchema(
  * Builds a [[Quote]] object, from a simple object with the same properties.
  *
  * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
+ * @throws When the deserializedQuote's signature could not be verified.
+ * @throws When the derived basicQuote can not be validated with the QuoteSchema.
  *
  * @returns A [[Quote]] object signed by an Attester.
  */
@@ -61,18 +64,11 @@ export function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   const { attesterSignature, ...basicQuote } = deserializedQuote
-  if (
-    !verify(
-      hashObjectAsStr(basicQuote),
-      attesterSignature,
-      deserializedQuote.attesterAddress
-    )
-  ) {
-    throw Error(
-      `attestersSignature ${deserializedQuote.attesterSignature}
-        does not check out with the supplied data`
-    )
-  }
+  validateSignature(
+    hashObjectAsStr(basicQuote),
+    attesterSignature,
+    deserializedQuote.attesterAddress
+  )
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
     throw new Error('Quote does not correspond to schema')
   }
@@ -108,6 +104,7 @@ export function createAttesterSignature(
  *
  * @param quoteInput A [[Quote]] object.
  * @param identity [[Identity]] used to sign the object.
+ * @throws When the derived quoteInput can not be validated with the QuoteSchema.
  *
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
  */
@@ -128,6 +125,7 @@ export function fromQuoteDataAndIdentity(
  * @param claimerIdentity [[Identity]] of the Claimer in order to sign.
  * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
  * @param requestRootHash A root hash of the entire object.
+ * @throws When the attesterSignedQuote's signature could not be verified.
  *
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
@@ -138,15 +136,11 @@ export function createQuoteAgreement(
   requestRootHash: string
 ): IQuoteAgreement {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
-  if (
-    !verify(
-      hashObjectAsStr(basicQuote),
-      attesterSignature,
-      attesterSignedQuote.attesterAddress
-    )
-  ) {
-    throw Error(`Quote Signature is invalid`)
-  }
+  validateSignature(
+    hashObjectAsStr(basicQuote),
+    attesterSignature,
+    attesterSignedQuote.attesterAddress
+  )
   const signature = claimerIdentity.signStr(
     hashObjectAsStr(attesterSignedQuote)
   )

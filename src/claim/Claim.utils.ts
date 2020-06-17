@@ -6,14 +6,36 @@
 
 import * as jsonabc from 'jsonabc'
 import IClaim, { CompressedClaim } from '../types/Claim'
+import { validateHash, validateAddress } from '../util/DataUtils'
 
-function errorCheck(claim: IClaim): void {
-  if (!claim.cTypeHash || !claim.contents || !claim.owner) {
-    throw new Error(
-      `Property Not Provided while building Claim: 
-        ${JSON.stringify(claim, null, 2)}`
-    )
+/**
+ *  Checks whether the input meets all the required criteria of an IClaim object.
+ *  Throws on invalid input.
+ *
+ * @param input The potentially only partial IClaim.
+ * @throws When input's cTypeHash do not exist.
+ * @throws When any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
+ *
+ */
+export function errorCheck(input: IClaim): void {
+  if (!input.cTypeHash) {
+    throw new Error('cTypeHash of provided Claim not set')
   }
+  if (input.owner) {
+    validateAddress(input.owner, 'Claim Owner')
+  }
+  if (input.contents !== undefined) {
+    Object.entries(input.contents).forEach(entry => {
+      if (
+        !entry[0] ||
+        !entry[1] ||
+        !['string', 'number', 'boolean'].includes(typeof entry[1])
+      ) {
+        throw new Error('Claim contents malformed')
+      }
+    })
+  }
+  validateHash(input.cTypeHash, 'Claim CType')
 }
 
 /**
@@ -32,14 +54,14 @@ export function compress(claim: IClaim): CompressedClaim {
 /**
  *  Decompresses the [[Claim]] from storage and/or message.
  *
- * @param claim A compressesd [[Claim]] array that is reverted back into an object.
- *
+ * @param claim A compressed [[Claim]] array that is reverted back into an object.
+ * @throws When [[Claim]] is not an Array or it's length is unequal 3.
  * @returns An object that has the same properties as the [[Claim]].
  */
 export function decompress(claim: CompressedClaim): IClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw new Error(
-      'Compressed Claim isnt an Array or has all the required data types'
+      `Compressed Claim isn't an Array or has all the required data types`
     )
   }
   return {

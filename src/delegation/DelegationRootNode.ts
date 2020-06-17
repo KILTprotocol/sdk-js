@@ -1,7 +1,10 @@
 /**
- * KILT enables top-down trust structures (see [[Delegation]]). On the lowest level, a delegation structure is always a **tree**. The root of this tree is DelegationRootNode.
+ * KILT enables top-down trust structures.
+ * On the lowest level, a delegation structure is always a **tree**.
+ * The root of this tree is DelegationRootNode.
  *
- * Apart from inheriting [[DelegationBaseNode]]'s structure, a DelegationRootNode has a [[cTypeHash]] property that refers to a specific [[CType]]. A DelegationRootNode is written on-chain, and can be queried by [[delegationId]] via the [[query]] method.
+ * Apart from inheriting [[DelegationBaseNode]]'s structure, a DelegationRootNode has a [[cTypeHash]] property that refers to a specific [[CType]].
+ * A DelegationRootNode is written on-chain, and can be queried by delegationId via the [[query]] method.
  *
  * @packageDocumentation
  * @module DelegationRootNode
@@ -20,7 +23,7 @@ const log = factory.getLogger('DelegationRootNode')
 export default class DelegationRootNode extends DelegationBaseNode
   implements IDelegationRootNode {
   /**
-   * Queries the delegation root with [delegationId].
+   * [STATIC] Queries the delegation root with ``delegationId``.
    *
    * @param delegationId Unique identifier of the delegation root.
    * @returns Promise containing [[DelegationRootNode]] or [null].
@@ -64,7 +67,7 @@ export default class DelegationRootNode extends DelegationBaseNode
    * Stores the delegation root node on chain.
    *
    * @param identity The account used to store the delegation root node.
-   * @returns Promise containing the [[SubmittableResult]].
+   * @returns Promise containing the SubmittableResult.
    */
   public async store(identity: Identity): Promise<SubmittableResult> {
     log.debug(`:: store(${this.id})`)

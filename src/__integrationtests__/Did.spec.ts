@@ -1,17 +1,28 @@
 /**
  * @group integration/did
+ * @ignore
+ * @packageDocumentation
  */
 
 import { queryByAddress, queryByIdentifier } from '../did/Did.chain'
-import { Did } from '..'
-import { NewIdentity } from './utils'
-import getCached from '../blockchainApiConnection'
+import { Did, Identity } from '..'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
+import { IBlockchainApi } from '../blockchain/Blockchain'
 
-const ident = NewIdentity()
+let blockchain: IBlockchainApi
+beforeAll(async () => {
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+})
 
 describe('querying DIDs that do not exist', () => {
+  let ident: Identity
+
+  beforeAll(async () => {
+    ident = await Identity.buildFromMnemonic()
+  })
+
   it('queryByAddress', async () => {
-    return expect(queryByAddress(ident.address)).resolves.toBeNull()
+    return expect(queryByAddress(ident.getAddress())).resolves.toBeNull()
   })
 
   it('queryByIdentifier', async () => {
@@ -21,6 +32,6 @@ describe('querying DIDs that do not exist', () => {
   })
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  blockchain.api.disconnect()
 })

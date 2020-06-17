@@ -10,77 +10,80 @@ import { hashStr } from '../crypto'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
+const ctypeHash = Crypto.hashStr('testCtype')
+const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+  .__mocked_api
+
+const rootId = hashStr('rootId')
+const nodeId = hashStr('myNodeId')
+
 describe('Delegation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
+  let identityAlice: Identity
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
 
-  const ctypeHash = Crypto.hashStr('testCtype')
-  const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
-    .__mocked_api
-
-  const rootId = hashStr('rootId')
-  const nodeId = hashStr('myNodeId')
-
-  blockchainApi.query.attestation.delegatedAttestations.mockReturnValue(
-    new Vec(
-      //  (claim-hash)
-      H256,
-      ['0x123', '0x456', '0x789']
+    blockchainApi.query.attestation.delegatedAttestations.mockReturnValue(
+      new Vec(
+        //  (claim-hash)
+        H256,
+        ['0x123', '0x456', '0x789']
+      )
     )
-  )
-  blockchainApi.query.delegation.root.mockReturnValue(
-    new Option(
-      Tuple.with(
-        // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-        [H256, AccountId, Bool]
-      ),
-      [ctypeHash, identityAlice.address, false]
-    )
-  )
-
-  blockchainApi.query.delegation.delegations
-    // first call
-    .mockResolvedValueOnce(
-      new Option(Tuple.with([H256, 'Option<H256>', AccountId, U32, Bool]), [
-        rootId,
-        nodeId,
-        identityAlice.getPublicIdentity().address,
-        2,
-        false,
-      ])
-    )
-    // second call
-    .mockResolvedValueOnce(
-      new Option(Tuple.with([H256, 'Option<H256>', AccountId, U32, Bool]), [
-        rootId,
-        nodeId,
-        identityAlice.getPublicIdentity().address,
-        1,
-        false,
-      ])
-    )
-    // third call
-    .mockResolvedValueOnce(
-      new Option(Tuple.with([H256, 'Option<H256>', AccountId, U32, Bool]), [
-        rootId,
-        nodeId,
-        identityAlice.getPublicIdentity().address,
-        0,
-        false,
-      ])
-    )
-    // default (any further calls)
-    .mockResolvedValue(
-      // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-      new Option(Tuple.with([H256, 'Option<H256>', AccountId, U32, Bool]))
+    blockchainApi.query.delegation.root.mockReturnValue(
+      new Option(
+        Tuple.with(
+          // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+          [H256, AccountId, Bool]
+        ),
+        [ctypeHash, identityAlice.getAddress(), false]
+      )
     )
 
-  blockchainApi.query.delegation.children.mockResolvedValue(
-    new Vec(
-      // Children: delegation-id -> [delegation-ids]
-      H256,
-      [hashStr('firstChild'), hashStr('secondChild'), hashStr('thirdChild')]
+    blockchainApi.query.delegation.delegations
+      // first call
+      .mockResolvedValueOnce(
+        new Option(Tuple.with([H256, 'Option<H256>', AccountId, U32, Bool]), [
+          rootId,
+          nodeId,
+          identityAlice.getPublicIdentity().address,
+          2,
+          false,
+        ])
+      )
+      // second call
+      .mockResolvedValueOnce(
+        new Option(Tuple.with([H256, 'Option<H256>', AccountId, U32, Bool]), [
+          rootId,
+          nodeId,
+          identityAlice.getPublicIdentity().address,
+          1,
+          false,
+        ])
+      )
+      // third call
+      .mockResolvedValueOnce(
+        new Option(Tuple.with([H256, 'Option<H256>', AccountId, U32, Bool]), [
+          rootId,
+          nodeId,
+          identityAlice.getPublicIdentity().address,
+          0,
+          false,
+        ])
+      )
+      // default (any further calls)
+      .mockResolvedValue(
+        // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+        new Option(Tuple.with([H256, 'Option<H256>', AccountId, U32, Bool]))
+      )
+
+    blockchainApi.query.delegation.children.mockResolvedValue(
+      new Vec(
+        // Children: delegation-id -> [delegation-ids]
+        H256,
+        [hashStr('firstChild'), hashStr('secondChild'), hashStr('thirdChild')]
+      )
     )
-  )
+  })
 
   it('get children', async () => {
     const myDelegation = new DelegationNode(

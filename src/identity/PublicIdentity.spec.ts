@@ -47,14 +47,14 @@ describe('PublicIdentity', () => {
               id: 'external-id',
               publicKey: [
                 {
-                  id: 'extenal-id#key-1',
+                  id: 'external-id#key-1',
                   type: 'X25519Salsa20Poly1305Key2018',
                   publicKeyHex: 'external-box-key',
                 },
               ],
               service: [
                 {
-                  id: 'extenal-id#service-1',
+                  id: 'external-id#service-1',
                   type: 'KiltMessagingService',
                   serviceEndpoint: 'external-service-address',
                 },
@@ -102,11 +102,11 @@ describe('PublicIdentity', () => {
       serviceAddress: 'internal-service-address',
     })
 
-    const bcOnleyubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
+    const bcOnlyPubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
       'did:kilt:2',
       {} as IURLResolver
     )
-    expect(bcOnleyubId).toEqual({
+    expect(bcOnlyPubId).toEqual({
       address: '2',
       boxPublicKeyAsHex: boxKey.toString(),
       serviceAddress: undefined,

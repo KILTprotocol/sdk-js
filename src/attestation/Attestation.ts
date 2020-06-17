@@ -1,10 +1,10 @@
 /**
- * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revokable**.
+ * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
  * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as an [[AttestedClaim]] ("Credential").
  *
  * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
  * * the key is the hash of the corresponding claim;
- * * the value is a tuple ([[CType]] hash, account, id of the [[Delegation]], and revoked flag).
+ * * the value is a tuple ([[CType]] hash, account, id of the Delegation, and revoked flag).
  *
  * @packageDocumentation
  * @module Attestation
@@ -13,14 +13,11 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { revoke, query, store } from './Attestation.chain'
 import IPublicIdentity from '../types/PublicIdentity'
 import AttestationUtils from './Attestation.utils'
-
-const log = factory.getLogger('Attestation')
 
 export default class Attestation implements IAttestation {
   /**
@@ -43,7 +40,7 @@ export default class Attestation implements IAttestation {
    *
    * @param claimHash - The hash of the claim that corresponds to the attestation to revoke.
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
-   * @returns A promise containing the [[SubmittableResult]] (transaction status).
+   * @returns A promise containing the SubmittableResult (transaction status).
    * @example ```javascript
    * Attestation.revoke('0xd8024cdc147c4fa9221cd177').then(() => {
    *   // the attestation was successfully revoked
@@ -96,6 +93,21 @@ export default class Attestation implements IAttestation {
     })
   }
 
+  /**
+   *  [STATIC] Custom Type Guard to determine input being of type IAttestation using the AttestationUtils errorCheck.
+   *
+   * @param input The potentially only partial IAttestation.
+   * @returns Boolean whether input is of type IAttestation.
+   */
+  public static isIAttestation(input: object): input is IAttestation {
+    try {
+      AttestationUtils.errorCheck(input as IAttestation)
+    } catch (error) {
+      return false
+    }
+    return true
+  }
+
   public claimHash: IAttestation['claimHash']
   public cTypeHash: IAttestation['cTypeHash']
   public delegationId: IAttestation['delegationId'] | null
@@ -124,7 +136,7 @@ export default class Attestation implements IAttestation {
    * [ASYNC] Stores the attestation on chain.
    *
    * @param identity - The identity used to store the attestation.
-   * @returns A promise containing the [[SubmittableResult]] (transaction status).
+   * @returns A promise containing the SubmittableResult (transaction status).
    * @example ```javascript
    * // Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
    * attestation.store(attester).then(() => {
@@ -140,7 +152,7 @@ export default class Attestation implements IAttestation {
    * [ASYNC] Revokes the attestation. Also available as a static method.
    *
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
-   * @returns A promise containing the [[SubmittableResult]] (transaction status).
+   * @returns A promise containing the SubmittableResult (transaction status).
    * @example ```javascript
    * attestation.revoke(identity).then(() => {
    *   // the attestation was successfully revoked
@@ -152,8 +164,9 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * [ASYNC] Queries an attestation from the chain and checks its validity.
+   * [STATIC] [ASYNC] Queries an attestation from the chain and checks its validity.
    *
+   * @param attestation - The Attestation to verify.
    * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
    * @returns A promise containing whether the attestation is valid.
    * @example ```javascript
@@ -162,23 +175,30 @@ export default class Attestation implements IAttestation {
    * });
    * ```
    */
-  public async verify(claimHash: string = this.claimHash): Promise<boolean> {
+  public static async verify(
+    attestation: IAttestation,
+    claimHash: string = attestation.claimHash
+  ): Promise<boolean> {
     // Query attestation by claimHash. null if no attestation is found on-chain for this hash
-    const attestation: Attestation | null = await query(claimHash)
-    // Check if attestation is valid
-    const isValid: boolean = this.isAttestationValid(attestation)
-    if (!isValid) {
-      log.debug(() => 'No valid attestation found')
-    }
-    return Promise.resolve(isValid)
+    const chainAttestation: Attestation | null = await query(claimHash)
+    return Promise.resolve(
+      !!(
+        chainAttestation &&
+        chainAttestation.owner === attestation.owner &&
+        !chainAttestation.revoked
+      )
+    )
+  }
+
+  public async verify(): Promise<boolean> {
+    return Attestation.verify(this)
   }
 
   /**
-   * Compresses an [[Attestation]] object from the [[compressAttestation]].
+   * Compresses an [[Attestation]] object.
    *
    * @returns An array that contains the same properties of an [[Attestation]].
    */
-
   public compress(): CompressedAttestation {
     return AttestationUtils.compress(this)
   }
@@ -186,28 +206,11 @@ export default class Attestation implements IAttestation {
   /**
    * [STATIC] Builds an [[Attestation]] from the decompressed array.
    *
+   * @param attestation The [[CompressedAttestation]] that should get decompressed.
    * @returns A new [[Attestation]] object.
    */
-
   public static decompress(attestation: CompressedAttestation): Attestation {
     const decompressedAttestation = AttestationUtils.decompress(attestation)
     return Attestation.fromAttestation(decompressedAttestation)
-  }
-
-  /**
-   * Checks if the attestation is valid. An attestation is valid if it:
-   * * exists;
-   * * and has the correct owner;
-   * * and is not revoked.
-   *
-   * @param attestation - The attestation to check.
-   * @returns Whether the attestation is valid.
-   */
-  private isAttestationValid(attestation: Attestation | null): boolean {
-    return (
-      attestation !== null &&
-      attestation.owner === this.owner &&
-      !attestation.revoked
-    )
   }
 }

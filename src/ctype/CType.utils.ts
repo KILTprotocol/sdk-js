@@ -6,11 +6,12 @@
 
 import Ajv from 'ajv'
 import * as jsonabc from 'jsonabc'
-import { checkAddress } from '@polkadot/util-crypto'
-import { CTypeModel } from './CTypeSchema'
+import { getOwner } from './CType.chain'
+import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import ICType, { CompressedCTypeSchema, CompressedCType } from '../types/CType'
 import Crypto from '../crypto'
 import IClaim from '../types/Claim'
+import { validateAddress } from '../util/DataUtils'
 
 export function verifySchemaWithErrors(
   object: object,
@@ -36,6 +37,15 @@ export function verifySchema(object: object, schema: object): boolean {
   return verifySchemaWithErrors(object, schema)
 }
 
+/**
+ *  Verifies the Structure of the provided IClaim['contents'] with ICType['schema'].
+ *
+ * @param claimContents IClaim['contents'] to be verified against the schema.
+ * @param schema ICType['schema'] to be verified against the [CTypeModel].
+ * @throws When schema does not correspond to the CTypeModel.
+ *
+ * @returns Boolean whether both claimContents and schema could be verified.
+ */
 export function verifyClaimStructure(
   claimContents: IClaim['contents'],
   schema: ICType['schema']
@@ -46,14 +56,46 @@ export function verifyClaimStructure(
   return verifySchema(claimContents, schema)
 }
 
+export async function verifyStored(ctype: ICType): Promise<boolean> {
+  const actualOwner = await getOwner(ctype.hash)
+  return ctype.owner ? actualOwner === ctype.owner : actualOwner !== null
+}
+
 export function getHashForSchema(schema: ICType['schema']): string {
   return Crypto.hashObjectAsStr(schema)
+}
+
+/**
+ *  Checks whether the input meets all the required criteria of an ICType object.
+ *  Throws on invalid input.
+ *
+ * @param input The potentially only partial ICType.
+ * @throws When input does not correspond to either it's schema, or the CTypeWrapperModel.
+ * @throws When the input's hash does not match the hash calculated from ICType's schema.
+ * @throws When the input's owner is not of type string or null.
+ *
+ */
+export function errorCheck(input: ICType): void {
+  if (!verifySchema(input, CTypeWrapperModel)) {
+    throw new Error('CType does not correspond to schema')
+  }
+  if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
+    throw new Error('provided CType hash not matching calculated hash')
+  }
+  if (
+    typeof input.owner === 'string'
+      ? !validateAddress(input.owner, 'CType Owner')
+      : !(input.owner === null)
+  ) {
+    throw new Error('CType owner unknown data')
+  }
 }
 
 /**
  *  Compresses a [[CType]] schema for storage and/or messaging.
  *
  * @param cTypeSchema A [[CType]] schema object that will be sorted and stripped for messaging or storage.
+ * @throws When any of the four required properties of the cTypeSchema are missing.
  *
  * @returns An ordered array of a [[CType]] schema.
  */
@@ -84,7 +126,8 @@ export function compressSchema(
 /**
  *  Decompresses a schema of a [[CType]] from storage and/or message.
  *
- * @param cTypeSchema A compressesd [[CType]] schema array that is reverted back into an object.
+ * @param cTypeSchema A compressed [[CType]] schema array that is reverted back into an object.
+ * @throws When either the cTypeSchema is not an Array or it's length is not equal to the defined length of 4.
  *
  * @returns An object that has the same properties as a [[CType]] schema.
  */
@@ -94,7 +137,7 @@ export function decompressSchema(
 ): ICType['schema'] {
   if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 4) {
     throw new Error(
-      'Compressed cTypeSchema isnt an Array or has all the required data types'
+      "Compressed cTypeSchema isn't an Array or has all the required data types"
     )
   }
   return {
@@ -114,28 +157,15 @@ export function decompressSchema(
  */
 
 export function compress(cType: ICType): CompressedCType {
-  if (
-    !cType.hash ||
-    (typeof cType.owner === 'string'
-      ? !checkAddress(cType.owner, 42)[0]
-      : !(cType.owner === null)) ||
-    !cType.schema
-  ) {
-    throw new Error(
-      `Property Not Provided while building cType: ${JSON.stringify(
-        cType,
-        null,
-        2
-      )}`
-    )
-  }
+  errorCheck(cType)
   return [cType.hash, cType.owner, compressSchema(cType.schema)]
 }
 
 /**
  *  Decompresses a [[CType]] from storage and/or message.
  *
- * @param cType A compressesd [[CType]] array that is reverted back into an object.
+ * @param cType A compressed [[CType]] array that is reverted back into an object.
+ * @throws When either the cType is not an Array or it's length is not equal to the defined length of 3.
  *
  * @returns An object that has the same properties as a [[CType]].
  */
@@ -143,7 +173,7 @@ export function compress(cType: ICType): CompressedCType {
 export function decompress(cType: CompressedCType): ICType {
   if (!Array.isArray(cType) || cType.length !== 3) {
     throw new Error(
-      'Compressed cType isnt an Array or has all the required data types'
+      "Compressed cType isn't an Array or has all the required data types"
     )
   }
   return {
@@ -154,12 +184,14 @@ export function decompress(cType: CompressedCType): ICType {
 }
 
 export default {
-  verifySchema,
+  compress,
   compressSchema,
   decompressSchema,
   decompress,
-  compress,
-  verifySchemaWithErrors,
+  errorCheck,
   verifyClaimStructure,
+  verifySchema,
+  verifySchemaWithErrors,
+  verifyStored,
   getHashForSchema,
 }

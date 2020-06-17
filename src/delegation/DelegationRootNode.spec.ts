@@ -8,33 +8,41 @@ import getCached from '../blockchainApiConnection'
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Delegation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
-  const ctypeHash = Crypto.hashStr('testCtype')
-  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
-    new Option(
-      Tuple.with(
-        // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-        [H256, AccountId, Bool]
-      ),
-      [ctypeHash, identityAlice.address, false]
-    )
-  )
-  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations.mockReturnValue(
-    new Option(
-      Tuple.with(
-        // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-        [H256, AccountId, Bool]
-      ),
-      [ctypeHash, identityAlice.address, false]
-    )
-  )
+  let identityAlice: Identity
+  let ctypeHash: string
+  let ROOT_IDENTIFIER: string
 
-  const ROOT_IDENTIFIER = 'abc123'
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
+    ctypeHash = Crypto.hashStr('testCtype')
+    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
+      new Option(
+        Tuple.with(
+          // Root-Delegation: root-id -> (ctype-hash, account, revoked)
+          [H256, AccountId, Bool]
+        ),
+        [ctypeHash, identityAlice.getAddress(), false]
+      )
+    )
+    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations.mockReturnValue(
+      new Option(
+        Tuple.with(
+          // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+
+          [H256, AccountId, Bool]
+        ),
+        [ctypeHash, identityAlice.getAddress(), false]
+      )
+    )
+
+    ROOT_IDENTIFIER = 'abc123'
+  })
+
   it('stores root delegation', async () => {
     const rootDelegation = new DelegationRootNode(
       ROOT_IDENTIFIER,
       ctypeHash,
-      identityAlice.getPublicIdentity().address
+      identityAlice.getAddress()
     )
     rootDelegation.store(identityAlice)
     const rootNode = await DelegationRootNode.query(ROOT_IDENTIFIER)
@@ -48,7 +56,7 @@ describe('Delegation', () => {
     const queriedDelegation = await DelegationRootNode.query(ROOT_IDENTIFIER)
     expect(queriedDelegation).not.toBe(undefined)
     if (queriedDelegation) {
-      expect(queriedDelegation.account).toBe(identityAlice.address)
+      expect(queriedDelegation.account).toBe(identityAlice.getAddress())
       expect(queriedDelegation.cTypeHash).toBe(ctypeHash)
       expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
     }
@@ -63,7 +71,7 @@ describe('Delegation', () => {
               // Root-Delegation: root-id -> (ctype-hash, account, revoked)
               [H256, AccountId, Bool]
             ),
-            ['myCtypeHash', identityAlice.address, false]
+            ['myCtypeHash', identityAlice.getAddress(), false]
           )
 
           return Promise.resolve(tuple)
@@ -73,7 +81,7 @@ describe('Delegation', () => {
             // Root-Delegation: root-id -> (ctype-hash, account, revoked)
             [H256, AccountId, Bool]
           ),
-          ['myCtypeHash', identityAlice.address, true]
+          ['myCtypeHash', identityAlice.getAddress(), true]
         )
 
         return Promise.resolve(tuple)
@@ -84,7 +92,7 @@ describe('Delegation', () => {
       await new DelegationRootNode(
         'success',
         'myCtypeHash',
-        identityAlice.address
+        identityAlice.getAddress()
       ).verify()
     ).toBe(true)
 

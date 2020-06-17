@@ -9,52 +9,53 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
-import { CompressedAttestation } from '../types/Attestation'
+import IAttestation, { CompressedAttestation } from '../types/Attestation'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Attestation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
-  const identityBob = Identity.buildFromURI('//Bob')
-
+  let identityAlice: Identity
+  let identityBob: Identity
+  let rawCTypeSchema: ICType['schema']
+  let testCType: CType
+  let testcontents: any
+  let testClaim: Claim
+  let requestForAttestation: RequestForAttestation
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
-  const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      name: { type: 'string' },
-    },
-    type: 'object',
-  }
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
+    identityBob = await Identity.buildFromURI('//Bob')
 
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.address,
-    hash: '',
-  }
+    rawCTypeSchema = {
+      $id: 'http://example.com/ctype-1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
 
-  const testCType: CType = CType.fromCType(fromRawCType)
+    testCType = CType.fromSchema(rawCTypeSchema, identityAlice.getAddress())
 
-  const testcontents = {}
-  const testClaim = Claim.fromCTypeAndClaimContents(
-    testCType,
-    testcontents,
-    identityBob.address
-  )
-  const requestForAttestation: RequestForAttestation = RequestForAttestation.fromClaimAndIdentity(
-    testClaim,
-    identityBob,
-    [],
-    null
-  )
+    testcontents = {}
+    testClaim = Claim.fromCTypeAndClaimContents(
+      testCType,
+      testcontents,
+      identityBob.getAddress()
+    )
+    requestForAttestation = (await RequestForAttestation.fromClaimAndIdentity(
+      testClaim,
+      identityBob
+    )).message
+  })
 
   it('stores attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(Tuple.with([H256, AccountId, Option.with(H256), Bool]), [
         testCType.hash,
-        identityAlice.address,
+        identityAlice.getAddress(),
         null,
         false,
       ])
@@ -62,9 +63,9 @@ describe('Attestation', () => {
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice.getPublicIdentity()
     )
-    expect(await attestation.verify()).toBeTruthy()
+    expect(await Attestation.verify(attestation)).toBeTruthy()
   })
 
   it('verify attestations not on chain', async () => {
@@ -76,10 +77,10 @@ describe('Attestation', () => {
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
       delegationId: null,
-      owner: identityAlice.address,
+      owner: identityAlice.getAddress(),
       revoked: false,
     })
-    expect(await attestation.verify()).toBeFalsy()
+    expect(await Attestation.verify(attestation)).toBeFalsy()
   })
 
   it('verify attestation revoked', async () => {
@@ -89,21 +90,21 @@ describe('Attestation', () => {
           // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
           [H256, AccountId, 'Option<H256>', Bool]
         ),
-        [testCType.hash, identityAlice.address, null, true]
+        [testCType.hash, identityAlice.getAddress(), null, true]
       )
     )
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice.getPublicIdentity()
     )
-    expect(await attestation.verify()).toBeFalsy()
+    expect(await Attestation.verify(attestation)).toBeFalsy()
   })
 
   it('compresses and decompresses the attestation object', () => {
     const attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice.getPublicIdentity()
     )
 
     const compressedAttestation: CompressedAttestation = [
@@ -130,7 +131,7 @@ describe('Attestation', () => {
   it('Negative test for compresses and decompresses the attestation object', () => {
     const attestation = Attestation.fromRequestAndPublicIdentity(
       requestForAttestation,
-      identityAlice
+      identityAlice.getPublicIdentity()
     )
 
     const compressedAttestation: CompressedAttestation = [
@@ -156,5 +157,116 @@ describe('Attestation', () => {
     expect(() => {
       AttestationUtils.compress(attestation)
     }).toThrow()
+  })
+  it('error check should throw errors on faulty Attestations', () => {
+    const { cTypeHash, claimHash } = {
+      cTypeHash:
+        '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
+      claimHash:
+        '0x21a3448ccf10f6568d8cd9a08af689c220d842b893a40344d010e398ab74e557',
+    }
+
+    const everything = {
+      claimHash,
+      cTypeHash,
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    }
+
+    const noClaimHash = {
+      claimHash: '',
+      cTypeHash,
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const noCTypeHash = {
+      claimHash,
+      cTypeHash: '',
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const malformedOwner = {
+      claimHash,
+      cTypeHash,
+      owner: '',
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const noRevocationBit = {
+      claimHash,
+      cTypeHash,
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+    delete noRevocationBit.revoked
+    const malformedClaimHash = {
+      claimHash: claimHash.slice(0, 20) + claimHash.slice(21),
+      cTypeHash,
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const malformedCTypeHash = {
+      claimHash,
+      cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
+      owner: identityAlice.signKeyringPair.address,
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    const malformedAddress = {
+      claimHash,
+      cTypeHash,
+      owner: identityAlice.signKeyringPair.address.replace('7', 'D'),
+      revoked: false,
+      delegationId: null,
+    } as IAttestation
+
+    expect(() =>
+      AttestationUtils.errorCheck(noClaimHash)
+    ).toThrowErrorMatchingInlineSnapshot(`"Claim Hash not provided"`)
+
+    expect(() =>
+      AttestationUtils.errorCheck(noCTypeHash)
+    ).toThrowErrorMatchingInlineSnapshot(`"CType Hash not provided"`)
+
+    expect(() =>
+      AttestationUtils.errorCheck(malformedOwner)
+    ).toThrowErrorMatchingInlineSnapshot(`"Owner not provided"`)
+
+    expect(() =>
+      AttestationUtils.errorCheck(noRevocationBit)
+    ).toThrowErrorMatchingInlineSnapshot(`"revocation bit not provided"`)
+
+    expect(() => AttestationUtils.errorCheck(everything)).not.toThrow()
+
+    expect(() => AttestationUtils.errorCheck(malformedClaimHash))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided Claim hash invalid or malformed 
+
+    Hash: 0x21a3448ccf10f6568dcd9a08af689c220d842b893a40344d010e398ab74e557"
+`)
+
+    expect(() => AttestationUtils.errorCheck(malformedCTypeHash))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided CType hash invalid or malformed 
+
+    Hash: 0xa8c5bdb22aaea3fceb467d37169cbe49c71f226233037537e70a32a032304ff"
+`)
+
+    expect(() => AttestationUtils.errorCheck(malformedAddress))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided Owner address invalid 
+
+    Address: 5FA9nQDVg26DDEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+`)
   })
 })

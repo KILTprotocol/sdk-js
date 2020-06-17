@@ -13,6 +13,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
 import { Codec, AnyJson } from '@polkadot/types/types'
 import { Text, u64 } from '@polkadot/types'
+import * as gabi from '@kiltprotocol/portablegabi'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
@@ -28,6 +29,7 @@ export type Stats = {
 
 export interface IBlockchainApi {
   api: ApiPromise
+  portablegabi: gabi.Blockchain
 
   getStats(): Promise<Stats>
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
@@ -49,10 +51,14 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public api: ApiPromise
+  public readonly ready: Promise<boolean>
+  public readonly portablegabi: gabi.Blockchain
 
   public constructor(api: ApiPromise) {
     this.api = api
     this.errorHandler = new ErrorHandler(api)
+    this.ready = this.errorHandler.ready
+    this.portablegabi = new gabi.Blockchain('portablegabi', this.api as any)
   }
 
   private errorHandler: ErrorHandler
@@ -78,7 +84,7 @@ export default class Blockchain implements IBlockchainApi {
     identity: Identity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableResult> {
-    const accountAddress = identity.address
+    const accountAddress = identity.getAddress()
     const nonce = await this.getNonce(accountAddress)
     const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
       tx,

@@ -25,6 +25,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair } from 'tweetnacl'
+import { Claimer } from '@kiltprotocol/portablegabi'
 import Crypto from '../crypto'
 import {
   CryptoInput,
@@ -37,13 +38,34 @@ type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
   | Identity['boxKeyPair']['publicKey']
 
-export default class Identity extends PublicIdentity {
+/**
+ * The minimal required length of the seed.
+ */
+const MIN_SEED_LENGTH = 32
+
+function fillRight(
+  data: Uint8Array,
+  value: number,
+  length: number
+): Uint8Array {
+  // pad seed if needed for claimer
+  let paddedSeed = u8aUtil.u8aToU8a([...data])
+  if (paddedSeed.length < length) {
+    paddedSeed = u8aUtil.u8aToU8a([
+      ...paddedSeed,
+      ...new Array<number>(length - paddedSeed.length).fill(value),
+    ])
+  }
+  return paddedSeed
+}
+
+export default class Identity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
 
   /**
    * [STATIC] Generates Mnemonic phrase used to create identities from phrase seed.
    *
-   * @returns Randomly generated [[BIP39]](https://www.npmjs.com/package/bip39) mnemonic phrase (Secret phrase).
+   * @returns Randomly generated [BIP39](https://www.npmjs.com/package/bip39) mnemonic phrase (Secret phrase).
    * @example ```javascript
    * Identity.generateMnemonic();
    * // returns: "coast ugly state lunch repeat step armed goose together pottery bind mention"
@@ -56,22 +78,24 @@ export default class Identity extends PublicIdentity {
   /**
    * [STATIC] Builds an identity object from a mnemonic string.
    *
-   * @param phraseArg - [[BIP39]](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
+   * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
+   * @throws When phraseArg contains fewer than 12 correctly separated mnemonic words.
+   * @throws When the phraseArg could not be validated.
    * @returns An [[Identity]].
    *
    * @example ```javascript
    * const mnemonic = Identity.generateMnemonic();
    * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    *
-   * Identity.buildFromMnemonic(mnemonic);
+   * await Identity.buildFromMnemonic(mnemonic);
    * ```
    */
-  public static buildFromMnemonic(phraseArg?: string): Identity {
+  public static async buildFromMnemonic(phraseArg?: string): Promise<Identity> {
     let phrase = phraseArg
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
         // https://www.npmjs.com/package/bip39
-        throw Error(`Phrase '${phrase}' too long or malformed`)
+        throw Error(`Phrase '${phrase}' too short or malformed`)
       }
     } else {
       phrase = generate()
@@ -93,10 +117,10 @@ export default class Identity extends PublicIdentity {
    * @example ```javascript
    * const seed =
    *   '0x6ce9fd060c70165c0fc8da25810d249106d5df100aa980e0d9a11409d6b35261';
-   * Identity.buildFromSeedString(seed);
+   * await Identity.buildFromSeedString(seed);
    * ```
    */
-  public static buildFromSeedString(seedArg: string): Identity {
+  public static async buildFromSeedString(seedArg: string): Promise<Identity> {
     const asU8a = hexToU8a(seedArg)
     return Identity.buildFromSeed(asU8a)
   }
@@ -113,13 +137,18 @@ export default class Identity extends PublicIdentity {
    *                                6, 213, 223, 16,  10, 169, 128, 224,
    *                              217, 161,  20,  9, 214, 179,  82,  97
    *                            ]);
-   * Identity.buildFromSeed(seed);
+   * await Identity.buildFromSeed(seed);
    * ```
    */
-  public static buildFromSeed(seed: Uint8Array): Identity {
+  public static async buildFromSeed(seed: Uint8Array): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
     const keyringPair = keyring.addFromSeed(seed)
-    return new Identity(seed, keyringPair)
+
+    // pad seed if needed for claimer
+    const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
+    const claimer = await Claimer.buildFromSeed(paddedSeed)
+
+    return new Identity(seed, keyringPair, claimer)
   }
 
   /**
@@ -131,28 +160,36 @@ export default class Identity extends PublicIdentity {
    * Identity.buildFromURI('//Bob');
    * ```
    */
-  public static buildFromURI(uri: string): Identity {
+  public static async buildFromURI(uri: string): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
     const derived = keyring.createFromUri(uri)
-    // TODO: heck to create identity from //Alice
-    return new Identity(u8aUtil.u8aToU8a(uri), derived)
+    const seed = u8aUtil.u8aToU8a(uri)
+
+    const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
+    const claimer = await Claimer.buildFromSeed(paddedSeed)
+
+    return new Identity(seed, derived, claimer)
   }
 
   public readonly seed: Uint8Array
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
+  public readonly claimer: Claimer
+  public readonly signKeyringPair: KeyringPair
+  public readonly boxKeyPair: BoxKeyPair
+  public serviceAddress?: string
 
-  private constructor(seed: Uint8Array, signKeyringPair: KeyringPair) {
+  protected constructor(
+    seed: Uint8Array,
+    signKeyringPair: KeyringPair,
+    claimer: Claimer
+  ) {
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public
     // Maybe use BIP32 and BIP44
     const seedAsHex = u8aUtil.u8aToHex(seed)
-    const { address } = signKeyringPair
 
     const boxKeyPair = Identity.createBoxKeyPair(seed)
-    const boxPublicKeyAsHex = u8aUtil.u8aToHex(boxKeyPair.publicKey)
-
-    super(address, boxPublicKeyAsHex)
 
     this.seed = seed
     this.seedAsHex = seedAsHex
@@ -161,10 +198,8 @@ export default class Identity extends PublicIdentity {
     this.signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyringPair.publicKey)
 
     this.boxKeyPair = boxKeyPair
+    this.claimer = claimer
   }
-
-  private readonly signKeyringPair: KeyringPair
-  private readonly boxKeyPair: BoxKeyPair
 
   /**
    * Returns the [[PublicIdentity]] (identity's address and public key) of the Identity.
@@ -172,13 +207,34 @@ export default class Identity extends PublicIdentity {
    *
    * @returns The [[PublicIdentity]], corresponding to the [[Identity]].
    * @example ```javascript
-   * const alice = Kilt.Identity.buildFromMnemonic();
+   * const alice = await Kilt.Identity.buildFromMnemonic();
    * alice.getPublicIdentity();
    * ```
    */
   public getPublicIdentity(): PublicIdentity {
-    const { address, boxPublicKeyAsHex } = this
-    return { address, boxPublicKeyAsHex }
+    return new PublicIdentity(
+      this.signKeyringPair.address,
+      u8aUtil.u8aToHex(this.boxKeyPair.publicKey),
+      this.serviceAddress
+    )
+  }
+
+  /**
+   * Get the address of the identity on the KILT blockchain.
+   *
+   * @returns The on chain address.
+   */
+  public getAddress(): string {
+    return this.signKeyringPair.address
+  }
+
+  /**
+   * Get the public encryption key.
+   *
+   * @returns The public part of the encryption key.
+   */
+  public getBoxPublicKey(): string {
+    return u8aUtil.u8aToHex(this.boxKeyPair.publicKey)
   }
 
   /**
@@ -187,7 +243,7 @@ export default class Identity extends PublicIdentity {
    * @param cryptoInput - The data to be signed.
    * @returns The signed data.
    * @example  ```javascript
-   * const alice = Identity.buildFromMnemonic();
+   * const alice = await Identity.buildFromMnemonic();
    * const data = 'This is a test';
    * alice.sign(data);
    * // (output) Uint8Array [
@@ -341,7 +397,7 @@ export default class Identity extends PublicIdentity {
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const tx = await blockchain.api.tx.ctype.add(ctype.hash);
    * const nonce = await blockchain.api.query.system.accountNonce(alice.address);
-   * alice.signSubmittableExtrinsic(tx, nonce.tohex());
+   * alice.signSubmittableExtrinsic(tx, nonce.toHex());
    * ```
    */
   public signSubmittableExtrinsic(

@@ -5,18 +5,39 @@
  */
 
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
+import { validateHash, validateAddress } from '../util/DataUtils'
 
-export function errorCheck(attestation: IAttestation): void {
-  if (!attestation.cTypeHash || !attestation.claimHash || !attestation.owner) {
-    throw new Error(
-      `Property Not Provided while building Attestation: ${JSON.stringify(
-        attestation,
-        null,
-        2
-      )}`
-    )
+/**
+ *  Checks whether the input meets all the required criteria of an IAttestation object.
+ *  Throws on invalid input.
+ *
+ * @param input The potentially only partial IAttestation.
+ * @throws When input's cTypeHash, claimHash and owner do not exist.
+ * @throws When the input's delegationId is not of type 'string' or 'null'.
+ * @throws When input.revoked is not of type 'boolean'.
+ *
+ */
+export function errorCheck(input: IAttestation): void {
+  if (!input.cTypeHash) {
+    throw new Error('CType Hash not provided')
+  } else validateHash(input.cTypeHash, 'CType')
+
+  if (!input.claimHash) {
+    throw new Error('Claim Hash not provided')
+  } else validateHash(input.claimHash, 'Claim')
+
+  if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
+    throw new Error(`Not a valid DelegationId: ${typeof input.delegationId}`)
+  }
+  if (!input.owner) {
+    throw new Error('Owner not provided')
+  } else validateAddress(input.owner, 'Owner')
+
+  if (typeof input.revoked !== 'boolean') {
+    throw new Error('revocation bit not provided')
   }
 }
+
 /**
  *  Compresses an [[Attestation]] object into an array for storage and/or messaging.
  *
@@ -39,7 +60,8 @@ export function compress(attestation: IAttestation): CompressedAttestation {
 /**
  *  Decompresses an [[Attestation]] from storage and/or message into an object.
  *
- * @param attestation A compressesd [[Attestation]] array that is reverted back into an object.
+ * @param attestation A compressed [[Attestation]] array that is reverted back into an object.
+ * @throws When [[attestation]] is not an Array or it's length is unequal 5.
  *
  * @returns An object that has the same properties as an [[Attestation]].
  */
@@ -47,7 +69,7 @@ export function compress(attestation: IAttestation): CompressedAttestation {
 export function decompress(attestation: CompressedAttestation): IAttestation {
   if (!Array.isArray(attestation) || attestation.length !== 5) {
     throw new Error(
-      'Compressed Attestation isnt an Array or has all the required data types'
+      "Compressed Attestation isn't an Array or has all the required data types"
     )
   }
   return {

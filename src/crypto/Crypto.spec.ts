@@ -5,21 +5,28 @@ import Crypto from './index'
 
 describe('Crypto', () => {
   // TODO: create static objects for testing
-  const alice = Identity.buildFromMnemonic()
-  const bob = Identity.buildFromMnemonic()
+  let alice: Identity
+  let bob: Identity
+  let messageStr: string
+  let message: Uint8Array
 
-  const messageStr = 'This is a test'
-  const message = new Uint8Array(string.stringToU8a(messageStr))
+  beforeAll(async () => {
+    alice = await Identity.buildFromMnemonic()
+    bob = await Identity.buildFromMnemonic()
+
+    messageStr = 'This is a test'
+    message = new Uint8Array(string.stringToU8a(messageStr))
+  })
 
   it('should sign and verify (UInt8Array)', () => {
     // @ts-ignore
     const signature = Crypto.sign(message, alice.signKeyringPair)
     expect(signature).not.toBeFalsy()
-    expect(Crypto.verify(message, signature, alice.address)).toBe(true)
+    expect(Crypto.verify(message, signature, alice.getAddress())).toBe(true)
 
-    expect(Crypto.verify(message, signature, bob.address)).toBe(false)
+    expect(Crypto.verify(message, signature, bob.getAddress())).toBe(false)
     expect(
-      Crypto.verify(new Uint8Array([0, 0, 0]), signature, alice.address)
+      Crypto.verify(new Uint8Array([0, 0, 0]), signature, alice.getAddress())
     ).toBe(false)
   })
 
@@ -121,7 +128,7 @@ describe('Crypto', () => {
   it('should encrypt and decrypt asymmetrical (string)', () => {
     const encrypted = Crypto.encryptAsymmetricAsStr(
       messageStr,
-      alice.boxPublicKeyAsHex,
+      alice.getBoxPublicKey(),
       // @ts-ignore
       bob.boxKeyPair.secretKey
     )
@@ -129,14 +136,14 @@ describe('Crypto', () => {
 
     const decrypted = Crypto.decryptAsymmetricAsStr(
       encrypted,
-      bob.boxPublicKeyAsHex,
+      bob.getBoxPublicKey(),
       // @ts-ignore
       alice.boxKeyPair.secretKey
     )
     expect(decrypted).toEqual(messageStr)
     const decryptedFalse = Crypto.decryptAsymmetricAsStr(
       encrypted,
-      bob.boxPublicKeyAsHex,
+      bob.getBoxPublicKey(),
       // @ts-ignore
       bob.boxKeyPair.secretKey
     )

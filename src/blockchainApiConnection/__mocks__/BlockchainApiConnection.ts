@@ -1,9 +1,8 @@
 /**
+ * @packageDocumentation
  * @module BlockchainApiConnection
- */
-
-/**
- * Dummy comment needed for correct doc display, do not remove
+ * @ignore
+ * @packageDocumentation
  */
 
 /**
@@ -86,6 +85,12 @@ class MockSubmittableExtrinsic {
       callable(this.result)
     }
   }
+
+  public signAndSend(a: any, callable: Function) {
+    if (callable) {
+      callable(this.result)
+    }
+  }
 }
 
 function __getMockSubmittableExtrinsic(): SubmittableExtrinsic {
@@ -106,6 +111,24 @@ function __makeSubmittableResult(success: boolean): SubmittableResult {
 
   return new SubmittableResult({
     status,
+    events: [({
+
+      phase: {
+        asApplyExtrinsic: {
+          isEmpty: false,
+        },
+      },
+      event: {
+        section: 'system',
+        index: {
+          toHex: jest.fn(() => {
+            return '0x0000'
+          }),
+        },
+        // portablegabi checks if a transaction was successful
+        method: 'ExtrinsicSuccess'
+      }
+    } as any)]
   })
 }
 
@@ -133,6 +156,9 @@ const __mocked_api: any = {
       add: jest.fn((claimHash, _cTypeHash) => {
         return __getMockSubmittableExtrinsic()
       }),
+      revoke: jest.fn((claimHash: string) => {
+        return __getMockSubmittableExtrinsic()
+      }),
     },
     balances: {
       transfer: jest.fn(() => __getMockSubmittableExtrinsic()),
@@ -158,6 +184,11 @@ const __mocked_api: any = {
         return __getMockSubmittableExtrinsic()
       }),
       remove: jest.fn(() => {
+        return __getMockSubmittableExtrinsic()
+      }),
+    },
+    portablegabi: {
+      updateAccumulator: jest.fn((acc) => {
         return __getMockSubmittableExtrinsic()
       }),
     },
@@ -271,6 +302,12 @@ const __mocked_api: any = {
       )
     ) */
     },
+    portablegabi: {
+      accumulatorList: jest.fn((address: string, index: number) =>
+        new Option('Vec<u8>', new Vec('Vec<u8>', '0xFF'))
+      ),
+      accumulatorCount: jest.fn((address: string) => 1),
+    }
   },
   runtimeMetadata: {
     asV4: {

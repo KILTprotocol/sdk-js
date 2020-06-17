@@ -1,66 +1,82 @@
 /**
  * @group integration/ctype
+ * @ignore
+ * @packageDocumentation
  */
 
-import { faucet } from './utils'
+import { wannabeFaucet } from './utils'
 import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
-import getCached from '../blockchainApiConnection'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import { Identity } from '..'
+import { IBlockchainApi } from '../blockchain/Blockchain'
+
+let blockchain: IBlockchainApi
+beforeAll(async () => {
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+})
 
 describe('When there is an CtypeCreator and a verifier', () => {
-  const CtypeCreator = faucet
+  let ctypeCreator: Identity
+  let ctypeCounter = 0
 
-  const ctype = CType.fromCType({
-    schema: {
-      $id: 'http://example.com/ctype-10',
+  function makeCType(): CType {
+    ctypeCounter += 1
+    return CType.fromSchema({
+      $id: `http://example.com/ctype-${ctypeCounter}`,
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       properties: {
         name: { type: 'string' },
       },
       type: 'object',
-    } as ICType['schema'],
-  } as ICType)
+    } as ICType['schema'])
+  }
+
+  beforeAll(async () => {
+    ctypeCreator = await wannabeFaucet
+  })
 
   it('should not be possible to create a claim type w/o tokens', async () => {
-    const BobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
-    await expect(ctype.store(BobbyBroke)).rejects.toThrowError()
+    const ctype = makeCType()
+    const bobbyBroke = await Identity.buildFromMnemonic()
+    await expect(ctype.store(bobbyBroke)).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
   }, 20000)
 
   it('should be possible to create a claim type', async () => {
-    await ctype.store(CtypeCreator)
+    const ctype = makeCType()
+    await ctype.store(ctypeCreator)
     await Promise.all([
-      expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.address),
+      expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.getAddress()),
       expect(ctype.verifyStored()).resolves.toBeTruthy(),
     ])
-    ctype.owner = CtypeCreator.address
+    ctype.owner = ctypeCreator.getAddress()
     await expect(ctype.verifyStored()).resolves.toBeTruthy()
   }, 20000)
 
   it('should not be possible to create a claim type that exists', async () => {
-    await expect(ctype.store(CtypeCreator)).rejects.toThrowError(
+    const ctype = makeCType()
+    await ctype.store(ctypeCreator)
+    await expect(ctype.store(ctypeCreator)).rejects.toThrowError(
       'CTYPE already exists'
     )
     // console.log('Triggered error on re-submit')
-    await expect(getOwner(ctype.hash)).resolves.toBe(CtypeCreator.address)
+    await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.getAddress())
   }, 30000)
 
   it('should tell when a ctype is not on chain', async () => {
-    const iAmNotThere = CType.fromCType({
-      schema: {
-        $id: 'http://example.com/ctype-2',
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-        properties: {
-          game: { type: 'string' },
-        },
-        type: 'object',
-      } as ICType['schema'],
-    } as ICType)
+    const iAmNotThere = CType.fromSchema({
+      $id: 'http://example.com/ctype-2',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      properties: {
+        game: { type: 'string' },
+      },
+      type: 'object',
+    } as ICType['schema'])
 
-    const iAmNotThereWowner = CType.fromCType({
-      schema: {
+    const iAmNotThereWithOwner = CType.fromSchema(
+      {
         $id: 'http://example.com/ctype-2',
         $schema: 'http://kilt-protocol.org/draft-01/ctype#',
         properties: {
@@ -68,18 +84,18 @@ describe('When there is an CtypeCreator and a verifier', () => {
         },
         type: 'object',
       } as ICType['schema'],
-      owner: CtypeCreator.address,
-    } as ICType)
+      ctypeCreator.signKeyringPair.address
+    )
 
     await Promise.all([
       expect(iAmNotThere.verifyStored()).resolves.toBeFalsy(),
       expect(getOwner(iAmNotThere.hash)).resolves.toBeNull(),
       expect(getOwner('0x012012012')).resolves.toBeNull(),
-      expect(iAmNotThereWowner.verifyStored()).resolves.toBeFalsy(),
+      expect(iAmNotThereWithOwner.verifyStored()).resolves.toBeFalsy(),
     ])
   })
 })
 
-afterAll(async () => {
-  await getCached().then(bc => bc.api.disconnect())
+afterAll(() => {
+  blockchain.api.disconnect()
 })
