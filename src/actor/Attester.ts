@@ -47,6 +47,7 @@ export async function initiateAttestation(
  * @param message The message result of the Claimer's attestation request in [[requestAttestation]].
  * @param claimer The [[PublicIdentity]] of the claimer. This is also the receiver of the returned message.
  * @param session The [[AttesterIdentity]]'s session created in [[initiateAttestation]].
+ * @throws ERROR_MESSAGE_TYPE, ERROR_ATTESTATION_SESSION_MISSING.
  * @param requirePE A boolean to force privacy enhancement. The session is required for privacy enhanced attestations.
  * @returns The [[Attestation]] object which should be sent to the Claimer and
  * a witness which can be used to revoke the [[Attestation]] in [[revokeAttestation]].

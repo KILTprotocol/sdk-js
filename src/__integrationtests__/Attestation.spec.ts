@@ -23,12 +23,11 @@ import ICType from '../types/CType'
 import Identity from '../identity/Identity'
 import Credential from '../credential/Credential'
 import { IBlockchainApi } from '../blockchain/Blockchain'
+import { IClaim, IAttestedClaim } from '..'
 import {
-  IClaim,
-  IAttestedClaim,
   ERROR_CTYPE_NOT_FOUND,
   ERROR_ALREADY_ATTESTED,
-} from '..'
+} from '../errorhandling/ExtrinsicError'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
