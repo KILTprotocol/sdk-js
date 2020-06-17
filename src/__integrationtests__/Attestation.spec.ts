@@ -23,7 +23,12 @@ import ICType from '../types/CType'
 import Identity from '../identity/Identity'
 import Credential from '../credential/Credential'
 import { IBlockchainApi } from '../blockchain/Blockchain'
-import { IClaim, IAttestedClaim, ERROR_CTYPE_NOT_FOUND } from '..'
+import {
+  IClaim,
+  IAttestedClaim,
+  ERROR_CTYPE_NOT_FOUND,
+  ERROR_ALREADY_ATTESTED,
+} from '..'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
@@ -202,7 +207,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible to attest the same claim twice', async () => {
       await expect(attClaim.attestation.store(attester)).rejects.toThrowError(
-        'already attested'
+        ERROR_ALREADY_ATTESTED
       )
     }, 15000)
 
