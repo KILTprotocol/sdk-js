@@ -2,7 +2,7 @@ import { Tuple, Vec, Option, H256 } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
-import { Crypto, Identity } from '..'
+import { Identity } from '..'
 import DelegationNode from './DelegationNode'
 import { getAttestationHashes } from './Delegation.chain'
 import { Permission } from '../types/Delegation'
@@ -10,12 +10,12 @@ import { hashStr } from '../crypto'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
-const ctypeHash = Crypto.hashStr('testCtype')
 const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
   .__mocked_api
 
 const rootId = hashStr('rootId')
 const nodeId = hashStr('myNodeId')
+const ctypeHash = hashStr('testCtype')
 
 describe('Delegation', () => {
   let identityAlice: Identity
@@ -26,7 +26,7 @@ describe('Delegation', () => {
       new Vec(
         //  (claim-hash)
         H256,
-        ['0x123', '0x456', '0x789']
+        [ctypeHash, hashStr('secondTest'), hashStr('thirdTest')]
       )
     )
     blockchainApi.query.delegation.root.mockReturnValue(
@@ -123,6 +123,6 @@ describe('Delegation', () => {
   it('get attestation hashes', async () => {
     const attestationHashes = await getAttestationHashes('myDelegationId')
     expect(attestationHashes).toHaveLength(3)
-    expect(attestationHashes).toContain(new H256('0x123').toString())
+    expect(attestationHashes).toContain(ctypeHash)
   })
 })

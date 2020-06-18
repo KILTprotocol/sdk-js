@@ -97,11 +97,7 @@ describe('Delegation', () => {
     ).toBe(true)
 
     expect(
-      await new DelegationRootNode(
-        'failure',
-        'myCtypeHash',
-        'myAccount'
-      ).verify()
+      await new DelegationRootNode('failure', ctypeHash, 'myAccount').verify()
     ).toBe(false)
   })
 
@@ -110,7 +106,7 @@ describe('Delegation', () => {
 
     const aDelegationRootNode = new DelegationRootNode(
       'myRootId',
-      'myCtypeHash',
+      ctypeHash,
       'myAccount'
     )
     const revokeStatus = await aDelegationRootNode.revoke(identityAlice)
