@@ -13,6 +13,7 @@ import Kilt, {
 import constants from '../src/test/constants'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
+const SEP = '_'
 
 async function setup(): Promise<{
   claimer: Identity
@@ -21,7 +22,7 @@ async function setup(): Promise<{
   ctype: CType
 }> {
   console.log(
-    (s => s.padEnd(40 + s.length / 2, '_').padStart(80, '_'))(' SETUP ')
+    (s => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' SETUP ')
   )
   // ------------------------- Attester ----------------------------------------
   const attester = await Kilt.AttesterIdentity.buildFromMnemonic(
@@ -118,7 +119,7 @@ async function doAttestation(
   revocationHandle: IRevocationHandle
 }> {
   console.log(
-    (s => s.padEnd(40 + s.length / 2, '_').padStart(80, '_'))(' ATTESTATION ')
+    (s => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' ATTESTATION ')
   )
   // ------------------------- Attester ----------------------------------------
 
@@ -175,7 +176,7 @@ async function doVerification(
   privacyEnhanced: boolean
 ): Promise<void> {
   console.log(
-    (s => s.padEnd(40 + s.length / 2, '_').padStart(80, '_'))(' VERIFICATION ')
+    (s => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' VERIFICATION ')
   )
   const verifier = await Kilt.Identity.buildFromMnemonic()
   // ------------------------- Verifier ----------------------------------------
