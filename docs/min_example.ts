@@ -186,7 +186,7 @@ async function doVerification(
       properties: ['name'],
     })
     .finalize(privacyEnhanced, verifier, claimer.getPublicIdentity())
-  console.log('Presentation: ', request.body.content, '\n')
+  console.log('Request Attributes: ', request.body.content, '\n')
 
   // ------------------------- CLAIMER -----------------------------------------
   const presentation = await Kilt.Claimer.createPresentation(
@@ -221,6 +221,7 @@ async function example(): Promise<void> {
 
   const { credential } = await doAttestation(claimer, attester, claim)
   // should succeed
+  await doVerification(claimer, attester.getPublicIdentity(), credential, true)
   await doVerification(claimer, attester.getPublicIdentity(), credential, true)
 
   // await doVerification(claimer, attester.getPublicIdentity(), credential, false)
