@@ -22,6 +22,10 @@ import {
   KEY_TYPE_ENCRYPTION,
   SERVICE_KILT_MESSAGING,
 } from './Did'
+import {
+  ERROR_DID_IDENTIFIER_MISMATCH,
+  ERROR_INVALID_DID_PREFIX,
+} from '../errorhandling/SDKErrors'
 
 interface IEncodedDid extends Codec {
   toJSON: () => [string, string, string | null] | null
@@ -61,6 +65,7 @@ export function getIdentifierFromAddress(
  *
  * @param identifier IDid identifier to derive it's address from.
  * @throws When the identifier is not prefixed with the defined Kilt IDENTIFIER_PREFIX.
+ * @throws [[ERROR_INVALID_DID_PREFIX]].
  *
  * @returns The Address derived from the IDid Identifier.
  */
@@ -68,7 +73,7 @@ export function getAddressFromIdentifier(
   identifier: IDid['identifier']
 ): IPublicIdentity['address'] {
   if (!identifier.startsWith(IDENTIFIER_PREFIX)) {
-    throw new Error(`Not a KILT did: ${identifier}`)
+    throw ERROR_INVALID_DID_PREFIX(identifier)
   }
   return identifier.substr(IDENTIFIER_PREFIX.length)
 }
@@ -120,6 +125,7 @@ export function createDefaultDidDocument(
  * @param identifier IDid identifier to match the IDidDocumentSigned id and to verify the signature with.
  * @throws When didDocument and it's signature as well as the identifier are missing.
  * @throws When identifier does not match didDocument's id.
+ * @throws [[ERROR_DID_IDENTIFIER_MISMATCH]].
  *
  * @returns The Address derived from the IDid Identifier.
  */
@@ -141,9 +147,7 @@ export function verifyDidDocumentSignature(
   }
   const { id } = didDocument
   if (identifier !== id) {
-    throw new Error(
-      `This identifier (${identifier}) doesn't match the DID Document's identifier (${id})`
-    )
+    throw ERROR_DID_IDENTIFIER_MISMATCH(identifier, id)
   }
   const unsignedDidDocument = { ...didDocument }
   delete unsignedDidDocument.signature

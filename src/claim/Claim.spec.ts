@@ -5,6 +5,11 @@ import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
 import IClaim, { CompressedClaim } from '../types/Claim'
+import {
+  ERROR_CTYPE_HASH_NOT_PROVIDED,
+  ERROR_HASH_MALFORMED,
+  ERROR_ADDRESS_INVALID,
+} from '../errorhandling/SDKErrors'
 
 describe('Claim', () => {
   let identityAlice: Identity
@@ -113,23 +118,15 @@ describe('Claim', () => {
 
     expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
 
-    expect(() =>
-      ClaimUtils.errorCheck(noCTypeHash)
-    ).toThrowErrorMatchingInlineSnapshot(
-      `"cTypeHash of provided Claim not set"`
+    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowError(
+      ERROR_CTYPE_HASH_NOT_PROVIDED()
     )
 
-    expect(() => ClaimUtils.errorCheck(malformedCTypeHash))
-      .toThrowErrorMatchingInlineSnapshot(`
-"Provided Claim CType hash invalid or malformed 
-
-    Hash: 0xa8c5bdb22aaea3fceb467d37169cbe49c71f226233037537e70a32a032304ff"
-`)
-    expect(() => ClaimUtils.errorCheck(malformedAddress))
-      .toThrowErrorMatchingInlineSnapshot(`
-"Provided Claim Owner address invalid 
-
-    Address: 5FA9nQDVg26DDEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
-`)
+    expect(() => ClaimUtils.errorCheck(malformedCTypeHash)).toThrowError(
+      ERROR_HASH_MALFORMED(malformedCTypeHash.cTypeHash, 'Claim CType')
+    )
+    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowError(
+      ERROR_ADDRESS_INVALID(malformedAddress.owner, 'Claim owner')
+    )
   })
 })
