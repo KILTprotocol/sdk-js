@@ -55,6 +55,7 @@ import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
+const accumulator = [0,1,2,3,4,5,6,7,8,9,10]
 
 async function getCached(): Promise<Blockchain> {
   if (!BlockchainApiConnection.instance) {
@@ -189,6 +190,8 @@ const __mocked_api: any = {
     },
     portablegabi: {
       updateAccumulator: jest.fn((acc) => {
+        // change the accumulator for each update
+        accumulator.push(accumulator.length)
         return __getMockSubmittableExtrinsic()
       }),
     },
@@ -304,7 +307,7 @@ const __mocked_api: any = {
     },
     portablegabi: {
       accumulatorList: jest.fn((address: string, index: number) =>
-        new Option('Vec<u8>', new Vec('Vec<u8>', '0xFF'))
+        new Option('Vec<u8>', new Vec('u8', accumulator))
       ),
       accumulatorCount: jest.fn((address: string) => 1),
     }
