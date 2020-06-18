@@ -21,7 +21,7 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
  *
  * @param cost A cost object that will be sorted and stripped into a [[Quote]].
  * @throws When cost is missing any property defined in [[ICostBreakdown]].
- * @throws ERROR_COMPRESS_OBJECT.
+ * @throws [[ERROR_COMPRESS_OBJECT]].
  *
  * @returns An ordered array of a cost.
  */
@@ -38,7 +38,7 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
  *
  * @param cost A compressed cost array that is reverted back into an object.
  * @throws When cost is not an Array and it's length does not equal the defined length of 3.
- * @throws ERROR_DECOMPRESSION_ARRAY.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as a cost.
  */
@@ -55,7 +55,7 @@ export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
  *
  * @param quote An [[Quote]] object that will be sorted and stripped for messaging or storage.
  * @throws When quote is missing any property defined in [[IQuote]].
- * @throws ERROR_COMPRESS_OBJECT.
+ * @throws [[ERROR_COMPRESS_OBJECT]].
  *
  * @returns An ordered array of an [[Quote]].
  */
@@ -86,7 +86,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
  *
  * @param quote A compressed [[Quote]] array that is reverted back into an object.
  * @throws When quote is not an Array and it's length does not equal the defined length of 6.
- * @throws ERROR_DECOMPRESSION_ARRAY.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  * @returns An object that has the same properties as an [[Quote]].
  */
 
@@ -109,7 +109,7 @@ export function decompressQuote(quote: CompressedQuote): IQuote {
  *
  * @param attesterSignedQuote An attester signed [[Quote]] object that will be sorted and stripped for messaging or storage.
  * @throws When attesterSignedQuote is missing any property defined in [[IQuoteAttesterSigned]].
- * @throws ERROR_COMPRESS_OBJECT.
+ * @throws [[ERROR_COMPRESS_OBJECT]].
  *
  * @returns An ordered array of an attester signed [[Quote]].
  */
@@ -147,7 +147,7 @@ export function compressAttesterSignedQuote(
  *
  * @param attesterSignedQuote A compressed attester signed [[Quote]] array that is reverted back into an object.
  * @throws When attesterSignedQuote is not an Array and it's length does not equal the defined length of 7.
- * @throws ERROR_DECOMPRESSION_ARRAY.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as an attester signed [[Quote]].
  */
@@ -174,7 +174,7 @@ export function decompressAttesterSignedQuote(
  *
  * @param quoteAgreement A [[Quote]] Agreement object that will be sorted and stripped for messaging or storage.
  * @throws When quoteAgreement is missing any property defined in [[IQuoteAgreement]].
- * @throws ERROR_COMPRESS_OBJECT.
+ * @throws [[ERROR_COMPRESS_OBJECT]].
  *
  * @returns An ordered array of a [[Quote]] Agreement.
  */
@@ -211,7 +211,7 @@ export function compressQuoteAgreement(
  *
  * @param quoteAgreement A compressed [[Quote]] Agreement array that is reverted back into an object.
  * @throws When quoteAgreement is not an Array and it's length does not equal the defined length of 9.
- * @throws ERROR_DECOMPRESSION_ARRAY.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as a [[Quote]] Agreement.
  */

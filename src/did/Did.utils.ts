@@ -65,7 +65,7 @@ export function getIdentifierFromAddress(
  *
  * @param identifier IDid identifier to derive it's address from.
  * @throws When the identifier is not prefixed with the defined Kilt IDENTIFIER_PREFIX.
- * @throws ERROR_INVALID_DID_PREFIX.
+ * @throws [[ERROR_INVALID_DID_PREFIX]].
  *
  * @returns The Address derived from the IDid Identifier.
  */
@@ -125,7 +125,7 @@ export function createDefaultDidDocument(
  * @param identifier IDid identifier to match the IDidDocumentSigned id and to verify the signature with.
  * @throws When didDocument and it's signature as well as the identifier are missing.
  * @throws When identifier does not match didDocument's id.
- * @throws ERROR_DID_IDENTIFIER_MISMATCH.
+ * @throws [[ERROR_DID_IDENTIFIER_MISMATCH]].
  *
  * @returns The Address derived from the IDid Identifier.
  */

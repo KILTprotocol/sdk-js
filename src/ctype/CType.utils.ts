@@ -44,7 +44,7 @@ export function verifySchema(object: object, schema: object): boolean {
  * @param claimContents IClaim['contents'] to be verified against the schema.
  * @param schema ICType['schema'] to be verified against the [CTypeModel].
  * @throws When schema does not correspond to the CTypeModel.
- * @throws ERROR_OBJECT_MALFORMED.
+ * @throws [[ERROR_OBJECT_MALFORMED]].
  *
  * @returns Boolean whether both claimContents and schema could be verified.
  */
@@ -75,7 +75,7 @@ export function getHashForSchema(schema: ICType['schema']): string {
  * @throws When input does not correspond to either it's schema, or the CTypeWrapperModel.
  * @throws When the input's hash does not match the hash calculated from ICType's schema.
  * @throws When the input's owner is not of type string or null.
- * @throws ERROR_OBJECT_MALFORMED, ERROR_HASH_MALFORMED, ERROR_CTYPE_OWNER_TYPE.
+ * @throws [[ERROR_OBJECT_MALFORMED]], [[ERROR_HASH_MALFORMED]], [[ERROR_CTYPE_OWNER_TYPE]].
  *
  */
 export function errorCheck(input: ICType): void {
@@ -99,7 +99,7 @@ export function errorCheck(input: ICType): void {
  *
  * @param cTypeSchema A [[CType]] schema object that will be sorted and stripped for messaging or storage.
  * @throws When any of the four required properties of the cTypeSchema are missing.
- * @throws ERROR_COMPRESS_OBJECT.
+ * @throws [[ERROR_COMPRESS_OBJECT]].
  *
  * @returns An ordered array of a [[CType]] schema.
  */
@@ -129,7 +129,7 @@ export function compressSchema(
  *
  * @param cTypeSchema A compressed [[CType]] schema array that is reverted back into an object.
  * @throws When either the cTypeSchema is not an Array or it's length is not equal to the defined length of 4.
- * @throws ERROR_DECOMPRESSION_ARRAY.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as a [[CType]] schema.
  */
@@ -166,7 +166,7 @@ export function compress(cType: ICType): CompressedCType {
  *
  * @param cType A compressed [[CType]] array that is reverted back into an object.
  * @throws When either the cType is not an Array or it's length is not equal to the defined length of 3.
- * @throws ERROR_DECOMPRESSION_ARRAY.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as a [[CType]].
  */

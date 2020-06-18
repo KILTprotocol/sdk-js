@@ -104,7 +104,7 @@ export default class DelegationNode extends DelegationBaseNode
    * Fetches the root of this delegation node.
    *
    * @throws When the rootId could not be queried.
-   * @throws ERROR_ROOT_NODE_QUERY.
+   * @throws [[ERROR_ROOT_NODE_QUERY]].
    * @returns Promise containing the [[DelegationRootNode]] of this delegation node.
    */
   public async getRoot(): Promise<DelegationRootNode> {

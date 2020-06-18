@@ -45,7 +45,7 @@ function finalizeReqProps(props: string[]): string[] {
  * @param credentials The [[Credential]]s which should be verified.
  * @param attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
  * @param requirePE A boolean to force privacy enhancement.
- * @throws ERROR_PE_MISMATCH, ERROR_MESSAGE_TYPE, ERROR_PE_CREDENTIAL_MISSING.
+ * @throws [[ERROR_PE_MISMATCH]], [[ERROR_MESSAGE_TYPE]], [[ERROR_PE_CREDENTIAL_MISSING]].
  * @returns A message which represents either an array of [[AttestedClaim]]s if privacy enhancement is not supported
  * or a CombinedPresentation. Both of these options can be verified.
  */

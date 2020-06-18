@@ -189,7 +189,7 @@ async function verifyPublicPresentation(
  * @param latestAccumulators The list of the latest accumulators for each Attester which signed a [[Credential]] of this presentation.
  * @param attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
  * @throws When either latestAccumulators or attesterPubKeys are undefined.
- * @throws ERROR_MESSAGE_TYPE.
+ * @throws [[ERROR_MESSAGE_TYPE]].
  * @returns An object containing the keys
  * **verified** (which describes whether the [[Credential]]s could be verified)
  * and **claims** (an array of [[Claim]]s restricted on the disclosed attributes selected in [[requestPresentationForCtype]]).

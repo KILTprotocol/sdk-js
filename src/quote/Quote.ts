@@ -56,7 +56,7 @@ export function validateQuoteSchema(
  *
  * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
  * @throws When the derived basicQuote can not be validated with the QuoteSchema.
- * @throws ERROR_QUOTE_MALFORMED.
+ * @throws [[ERROR_QUOTE_MALFORMED]].
  *
  * @returns A [[Quote]] object signed by an Attester.
  */
@@ -106,7 +106,7 @@ export function createAttesterSignature(
  * @param quoteInput A [[Quote]] object.
  * @param identity [[Identity]] used to sign the object.
  * @throws When the derived quoteInput can not be validated with the QuoteSchema.
- * @throws ERROR_QUOTE_MALFORMED.
+ * @throws [[ERROR_QUOTE_MALFORMED]].
  *
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
  */

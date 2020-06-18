@@ -245,7 +245,7 @@ export default class AttesterIdentity extends Identity {
    * The [[Claim]] itself, the Claimer's signature,
    * the claimHashTree, the [[cTypeHash]], the unique identifier for the delegation,
    * an array of [[AttestedClaim]]s and the rootHash.
-   * @throws ERROR_PE_MISSING.
+   * @throws [[ERROR_PE_MISSING]].
    * @returns A privacy enhanced attestation in array form which represents
    * at **index 0** the revocation witness which can be used to revoke the [[Attestation]]
    * and at **index 1** the [[Attestation]] object which should be sent to the Claimer.

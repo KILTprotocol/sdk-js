@@ -16,7 +16,7 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
  * @throws When input's cTypeHash, claimHash and owner do not exist.
  * @throws When the input's delegationId is not of type 'string' or 'null'.
  * @throws When input.revoked is not of type 'boolean'.
- * @throws ERROR_CTYPE_HASH_NOT_PROVIDED, ERROR_CLAIM_HASH_NOT_PROVIDED, ERROR_DELEGATION_ID_TYPE, ERROR_OWNER_NOT_PROVIDED, ERROR_REVOCATION_BIT_MISSING.
+ * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_HASH_NOT_PROVIDED]], [[ERROR_DELEGATION_ID_TYPE]], [[ERROR_OWNER_NOT_PROVIDED]], [[ERROR_REVOCATION_BIT_MISSING]].
  *
  */
 export function errorCheck(input: IAttestation): void {
@@ -64,7 +64,7 @@ export function compress(attestation: IAttestation): CompressedAttestation {
  *
  * @param attestation A compressed [[Attestation]] array that is reverted back into an object.
  * @throws When [[attestation]] is not an Array or it's length is unequal 5.
- * @throws ERROR_DECOMPRESSION_ARRAY.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as an [[Attestation]].
  */
