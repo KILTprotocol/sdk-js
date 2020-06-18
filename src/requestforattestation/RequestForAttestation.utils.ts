@@ -16,7 +16,7 @@ import IRequestForAttestation, {
   CompressedNonceHashTree,
   CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
-import * as ObjectErrors from '../errorhandling/ObjectErrors'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
@@ -30,26 +30,26 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
  */
 export function errorCheck(input: IRequestForAttestation): void {
   if (!input.claim) {
-    throw ObjectErrors.ERROR_CLAIM_NOT_PROVIDED
+    throw SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
   } else {
     ClaimUtils.errorCheck(input.claim)
   }
   if (!input.legitimations && !Array.isArray(input.legitimations)) {
-    throw ObjectErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED
+    throw SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
   }
 
   if (!input.claimHashTree) {
-    throw ObjectErrors.ERROR_CLAIM_HASHTREE_NOT_PROVIDED
+    throw SDKErrors.ERROR_CLAIM_HASHTREE_NOT_PROVIDED()
   } else {
     Object.keys(input.claimHashTree).forEach(key => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (!input.claimHashTree![key].hash) {
-        throw ObjectErrors.ERROR_CLAIM_HASHTREE_MALFORMED
+        throw SDKErrors.ERROR_CLAIM_HASHTREE_MALFORMED()
       }
     })
   }
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw ObjectErrors.ERROR_DELEGATION_ID_TYPE
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE
   }
   RequestForAttestation.verifyData(input as IRequestForAttestation)
 }
@@ -68,7 +68,7 @@ export function compressNonceAndHash(
   nonceHash: NonceHash
 ): CompressedNonceHash {
   if (!nonceHash.hash) {
-    throw ObjectErrors.ERROR_COMPRESS_OBJECT(nonceHash, 'Nonce Hash')
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(nonceHash, 'Nonce Hash')
   }
   return [nonceHash.hash, nonceHash.nonce]
 }
@@ -199,7 +199,7 @@ export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
   if (!Array.isArray(reqForAtt) || reqForAtt.length !== 9) {
-    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }
   return {
     claim: ClaimUtils.decompress(reqForAtt[0]),

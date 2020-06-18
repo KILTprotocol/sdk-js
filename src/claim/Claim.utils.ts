@@ -7,7 +7,7 @@
 import * as jsonabc from 'jsonabc'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import { validateHash, validateAddress } from '../util/DataUtils'
-import * as ObjectErrors from '../errorhandling/ObjectErrors'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  *  Checks whether the input meets all the required criteria of an IClaim object.
@@ -21,7 +21,7 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
  */
 export function errorCheck(input: IClaim): void {
   if (!input.cTypeHash) {
-    throw ObjectErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
+    throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
   if (input.owner) {
     validateAddress(input.owner, 'Claim owner')
@@ -33,7 +33,7 @@ export function errorCheck(input: IClaim): void {
         !entry[1] ||
         !['string', 'number', 'boolean'].includes(typeof entry[1])
       ) {
-        throw ObjectErrors.ERROR_CLAIM_CONTENTS_MALFORMED
+        throw SDKErrors.ERROR_CLAIM_CONTENTS_MALFORMED()
       }
     })
   }
@@ -63,7 +63,7 @@ export function compress(claim: IClaim): CompressedClaim {
  */
 export function decompress(claim: CompressedClaim): IClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
-    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }
   return {
     contents: claim[0],

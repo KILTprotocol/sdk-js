@@ -12,7 +12,7 @@ import ICType, { CompressedCTypeSchema, CompressedCType } from '../types/CType'
 import Crypto from '../crypto'
 import IClaim from '../types/Claim'
 import { validateAddress } from '../util/DataUtils'
-import * as ObjectErrors from '../errorhandling/ObjectErrors'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 export function verifySchemaWithErrors(
   object: object,
@@ -53,7 +53,7 @@ export function verifyClaimStructure(
   schema: ICType['schema']
 ): boolean {
   if (!verifySchema(schema, CTypeModel)) {
-    throw ObjectErrors.ERROR_OBJECT_MALFORMED
+    throw SDKErrors.ERROR_OBJECT_MALFORMED()
   }
   return verifySchema(claimContents, schema)
 }
@@ -80,17 +80,17 @@ export function getHashForSchema(schema: ICType['schema']): string {
  */
 export function errorCheck(input: ICType): void {
   if (!verifySchema(input, CTypeWrapperModel)) {
-    throw ObjectErrors.ERROR_OBJECT_MALFORMED
+    throw SDKErrors.ERROR_OBJECT_MALFORMED()
   }
   if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
-    throw ObjectErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
+    throw SDKErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
   }
   if (
     typeof input.owner === 'string'
       ? !validateAddress(input.owner, 'CType owner')
       : !(input.owner === null)
   ) {
-    throw ObjectErrors.ERROR_CTYPE_OWNER_TYPE
+    throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
   }
 }
 
@@ -113,7 +113,7 @@ export function compressSchema(
     !cTypeSchema.properties ||
     !cTypeSchema.type
   ) {
-    throw ObjectErrors.ERROR_COMPRESS_OBJECT(cTypeSchema, 'cTypeSchema')
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(cTypeSchema, 'cTypeSchema')
   }
   const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
   return [
@@ -138,7 +138,7 @@ export function decompressSchema(
   cTypeSchema: CompressedCTypeSchema
 ): ICType['schema'] {
   if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 4) {
-    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('cTypeSchema')
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('cTypeSchema')
   }
   return {
     $id: cTypeSchema[0],
@@ -173,7 +173,7 @@ export function compress(cType: ICType): CompressedCType {
 
 export function decompress(cType: CompressedCType): ICType {
   if (!Array.isArray(cType) || cType.length !== 3) {
-    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('CType')
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('CType')
   }
   return {
     hash: cType[0],

@@ -22,7 +22,7 @@ import {
   ERROR_LEGITIMATIONS_UNVERIFIABLE,
   ERROR_SIGNATURE_DATA_TYPE,
   ERROR_SIGNATURE_UNVERIFIABLE,
-} from '../errorhandling/ObjectErrors'
+} from '../errorhandling/SDKErrors'
 
 /**
  *  Validates an given address string against the External Address Format (SS58) with our Prefix of 42.
@@ -39,7 +39,7 @@ export function validateAddress(
   name: string
 ): boolean {
   if (typeof address !== 'string') {
-    throw ERROR_ADDRESS_TYPE
+    throw ERROR_ADDRESS_TYPE()
   }
   if (!checkAddress(address, 42)[0]) {
     throw ERROR_ADDRESS_INVALID(address, name)
@@ -59,7 +59,7 @@ export function validateAddress(
  */
 export function validateHash(hash: string, name: string): boolean {
   if (typeof hash !== 'string') {
-    throw ERROR_HASH_TYPE
+    throw ERROR_HASH_TYPE()
   }
   const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
   if (!hash.match(blake2bPattern)) {
@@ -86,7 +86,7 @@ export function validateNonceHash(
   name: string
 ): boolean {
   if (!nonceHash || typeof nonceHash.hash !== 'string') {
-    throw ERROR_NONCE_HASH_MALFORMED
+    throw ERROR_NONCE_HASH_MALFORMED()
   }
   validateHash(nonceHash.hash, name)
   if (
@@ -112,7 +112,7 @@ export function validateLegitimations(
 ): boolean {
   legitimations.forEach((legitimation: IAttestedClaim) => {
     if (!AttestedClaim.verifyData(legitimation)) {
-      throw ERROR_LEGITIMATIONS_UNVERIFIABLE
+      throw ERROR_LEGITIMATIONS_UNVERIFIABLE()
     }
   })
   return true
@@ -140,10 +140,10 @@ export function validateSignature(
     typeof signature !== 'string' ||
     typeof signer !== 'string'
   ) {
-    throw ERROR_SIGNATURE_DATA_TYPE
+    throw ERROR_SIGNATURE_DATA_TYPE()
   }
   if (!verify(data, signature, signer)) {
-    throw ERROR_SIGNATURE_UNVERIFIABLE
+    throw ERROR_SIGNATURE_UNVERIFIABLE()
   }
   return true
 }

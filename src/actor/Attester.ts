@@ -2,7 +2,7 @@ import * as gabi from '@kiltprotocol/portablegabi'
 import {
   ERROR_MESSAGE_TYPE,
   ERROR_ATTESTATION_SESSION_MISSING,
-} from '../errorhandling/ObjectErrors'
+} from '../errorhandling/SDKErrors'
 import { getCached } from '../blockchainApiConnection'
 import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 import AttesterIdentity from '../identity/AttesterIdentity'
@@ -69,7 +69,7 @@ export async function issueAttestation(
     )
   }
   if (requirePE && session === null) {
-    throw ERROR_ATTESTATION_SESSION_MISSING
+    throw ERROR_ATTESTATION_SESSION_MISSING()
   }
 
   const request: IRequestAttestationForClaim = message.body

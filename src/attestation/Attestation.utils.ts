@@ -6,7 +6,7 @@
 
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { validateHash, validateAddress } from '../util/DataUtils'
-import * as ObjectErrors from '../errorhandling/ObjectErrors'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  *  Checks whether the input meets all the required criteria of an IAttestation object.
@@ -21,22 +21,22 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
  */
 export function errorCheck(input: IAttestation): void {
   if (!input.cTypeHash) {
-    throw ObjectErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
+    throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   } else validateHash(input.cTypeHash, 'CType')
 
   if (!input.claimHash) {
-    throw ObjectErrors.ERROR_CLAIM_HASH_NOT_PROVIDED
+    throw SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
   } else validateHash(input.claimHash, 'Claim')
 
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw ObjectErrors.ERROR_DELEGATION_ID_TYPE
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (!input.owner) {
-    throw ObjectErrors.ERROR_OWNER_NOT_PROVIDED
+    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
   } else validateAddress(input.owner, 'owner')
 
   if (typeof input.revoked !== 'boolean') {
-    throw ObjectErrors.ERROR_REVOCATION_BIT_MISSING
+    throw SDKErrors.ERROR_REVOCATION_BIT_MISSING()
   }
 }
 
@@ -71,7 +71,7 @@ export function compress(attestation: IAttestation): CompressedAttestation {
 
 export function decompress(attestation: CompressedAttestation): IAttestation {
   if (!Array.isArray(attestation) || attestation.length !== 5) {
-    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('Attestation')
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attestation')
   }
   return {
     claimHash: attestation[0],

@@ -33,7 +33,7 @@ import {
   EncryptedAsymmetricString,
 } from '../crypto/Crypto'
 import PublicIdentity from './PublicIdentity'
-import * as ObjectErrors from '../errorhandling/ObjectErrors'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
@@ -97,14 +97,14 @@ export default class Identity {
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
         // https://www.npmjs.com/package/bip39
-        throw ObjectErrors.ERROR_MNEMONIC_PHRASE_MALFORMED
+        throw SDKErrors.ERROR_MNEMONIC_PHRASE_MALFORMED()
       }
     } else {
       phrase = generate()
     }
 
     if (!validate(phrase)) {
-      throw ObjectErrors.ERROR_MNEMONIC_PHRASE_INVALID
+      throw SDKErrors.ERROR_MNEMONIC_PHRASE_INVALID()
     }
 
     const seed = toSeed(phrase)

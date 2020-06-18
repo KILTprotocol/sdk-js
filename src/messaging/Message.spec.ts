@@ -14,7 +14,7 @@ import * as Quote from '../quote/Quote'
 import IClaim from '../types/Claim'
 import { IQuote } from '../types/Quote'
 import { IAttestedClaim, Verifier } from '..'
-import * as ObjectErrors from '../errorhandling/ObjectErrors'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 describe('Messaging', () => {
   let identityAlice: Identity
@@ -49,7 +49,7 @@ describe('Messaging', () => {
     expect(() =>
       Message.decrypt(encryptedMessageWrongHash, identityBob)
     ).toThrowError(
-      ObjectErrors.ERROR_NONCE_HASH_INVALID(
+      SDKErrors.ERROR_NONCE_HASH_INVALID(
         {
           hash: encryptedMessageWrongHash.hash,
           nonce: encryptedMessageWrongHash.nonce,
@@ -68,7 +68,7 @@ describe('Messaging', () => {
     encryptedMessageWrongSignature.signature += '1234'
     expect(() =>
       Message.decrypt(encryptedMessageWrongSignature, identityBob)
-    ).toThrowError(ObjectErrors.ERROR_SIGNATURE_UNVERIFIABLE)
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE())
 
     const encryptedMessageWrongContent: IEncryptedMessage = JSON.parse(
       JSON.stringify(encryptedMessage)
@@ -85,7 +85,7 @@ describe('Messaging', () => {
     )
     expect(() =>
       Message.decrypt(encryptedMessageWrongContent, identityBob)
-    ).toThrowError(ObjectErrors.ERROR_DECODING_MESSAGE)
+    ).toThrowError(SDKErrors.ERROR_DECODING_MESSAGE())
 
     const encryptedWrongBody: EncryptedAsymmetricString = identityAlice.encryptAsymmetricAsStr(
       '{ wrong JSON',
@@ -107,7 +107,7 @@ describe('Messaging', () => {
     } as IEncryptedMessage
     expect(() =>
       Message.decrypt(encryptedMessageWrongBody, identityBob)
-    ).toThrowError(ObjectErrors.ERROR_PARSING_MESSAGE)
+    ).toThrowError(SDKErrors.ERROR_PARSING_MESSAGE())
   })
 
   it('verifies the message sender is the owner', () => {
@@ -172,7 +172,7 @@ describe('Messaging', () => {
           identityAlice.getPublicIdentity()
         )
       )
-    ).toThrowError(ObjectErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender'))
+    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender'))
 
     const submitAttestationBody: ISubmitAttestationForClaim = {
       content: {
@@ -195,9 +195,7 @@ describe('Messaging', () => {
           identityBob.getPublicIdentity()
         )
       )
-    ).toThrowError(
-      ObjectErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
-    )
+    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender'))
     Message.ensureOwnerIsSender(
       new Message(
         submitAttestationBody,
@@ -231,7 +229,7 @@ describe('Messaging', () => {
           identityAlice.getPublicIdentity()
         )
       )
-    ).toThrowError(ObjectErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender'))
+    ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender'))
   })
   describe('ensureHashAndSignature', () => {
     let messageBody: IRequestClaimsForCTypes
@@ -288,7 +286,7 @@ describe('Messaging', () => {
           identityBob.getAddress()
         )
       ).toThrowError(
-        ObjectErrors.ERROR_NONCE_HASH_INVALID(
+        SDKErrors.ERROR_NONCE_HASH_INVALID(
           { hash: encryptedHash, nonce: encrypted.nonce },
           'Message'
         )
@@ -301,7 +299,7 @@ describe('Messaging', () => {
           identityBob.getAddress()
         )
       ).toThrowError(
-        ObjectErrors.ERROR_NONCE_HASH_INVALID(
+        SDKErrors.ERROR_NONCE_HASH_INVALID(
           { hash: encryptedHash, nonce },
           'Message'
         )
@@ -314,7 +312,7 @@ describe('Messaging', () => {
           identityBob.getAddress()
         )
       ).toThrowError(
-        ObjectErrors.ERROR_NONCE_HASH_INVALID(
+        SDKErrors.ERROR_NONCE_HASH_INVALID(
           { hash: encryptedHash, nonce: encrypted.nonce },
           'Message'
         )
@@ -323,7 +321,7 @@ describe('Messaging', () => {
     it('expects signature error', async () => {
       expect(() =>
         Message.ensureHashAndSignature(encrypted, identityBob.getAddress())
-      ).toThrowError(ObjectErrors.ERROR_SIGNATURE_UNVERIFIABLE)
+      ).toThrowError(SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE())
     })
   })
 })

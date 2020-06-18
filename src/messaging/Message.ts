@@ -35,7 +35,7 @@ import Crypto, { EncryptedAsymmetricString } from '../crypto'
 import ITerms from '../types/Terms'
 import { IQuoteAgreement } from '../types/Quote'
 import { validateSignature } from '../util/DataUtils'
-import * as ObjectErrors from '../errorhandling/ObjectErrors'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  * - `body` - The body of the message, see [[MessageBody]].
@@ -113,7 +113,7 @@ export default class Message implements IMessage {
    * @param message.body The body of the [[Message]] which depends on the [[MessageBodyType]].
    * @param message.senderAddress The sender's public SS58 address of the [[Message]].
    * @throws When the sender does not match the owner of the in the Message supplied Object.
-   * @throws [[REQUEST_ATTESTATION_FOR_CLAIM]], [[SUBMIT_ATTESTATION_FOR_CLAIM]], [[SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC]], [[ERROR_IDENTITY_MISMATCH]].
+   * @throws [[SUBMIT_ATTESTATION_FOR_CLAIM]], [[SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC]], [[ERROR_IDENTITY_MISMATCH]].
    *
    */
   public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
@@ -125,7 +125,7 @@ export default class Message implements IMessage {
             requestAttestation.content.requestForAttestation.claim.owner !==
             senderAddress
           ) {
-            throw ObjectErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
+            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
           }
         }
         break
@@ -133,7 +133,7 @@ export default class Message implements IMessage {
         {
           const submitAttestation = body
           if (submitAttestation.content.attestation.owner !== senderAddress) {
-            throw ObjectErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
+            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
           }
         }
         break
@@ -142,7 +142,7 @@ export default class Message implements IMessage {
           const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach(claim => {
             if (claim.request.claim.owner !== senderAddress) {
-              throw ObjectErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
+              throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
           })
         }
@@ -169,7 +169,7 @@ export default class Message implements IMessage {
         encrypted.message + encrypted.nonce + encrypted.createdAt
       ) !== encrypted.hash
     ) {
-      throw ObjectErrors.ERROR_NONCE_HASH_INVALID(
+      throw SDKErrors.ERROR_NONCE_HASH_INVALID(
         { hash: encrypted.hash, nonce: encrypted.nonce },
         'Message'
       )
@@ -205,7 +205,7 @@ export default class Message implements IMessage {
       encrypted.senderBoxPublicKey
     )
     if (!decoded) {
-      throw ObjectErrors.ERROR_DECODING_MESSAGE
+      throw SDKErrors.ERROR_DECODING_MESSAGE()
     }
 
     try {
@@ -219,7 +219,7 @@ export default class Message implements IMessage {
 
       return decrypted
     } catch (error) {
-      throw ObjectErrors.ERROR_PARSING_MESSAGE
+      throw SDKErrors.ERROR_PARSING_MESSAGE()
     }
   }
 

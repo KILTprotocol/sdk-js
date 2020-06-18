@@ -8,7 +8,7 @@ import AttestationUtils from '../attestation/Attestation.utils'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
 import AttestedClaim from './AttestedClaim'
-import * as ObjectErrors from '../errorhandling/ObjectErrors'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  *  Checks whether the input meets all the required criteria of an IAttestedClaim object.
@@ -23,14 +23,14 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
 export function errorCheck(input: IAttestedClaim): void {
   if (input.attestation) {
     AttestationUtils.errorCheck(input.attestation)
-  } else throw ObjectErrors.ERROR_ATTESTATION_NOT_PROVIDED
+  } else throw SDKErrors.ERROR_ATTESTATION_NOT_PROVIDED()
 
   if (input.request) {
     RequestForAttestationUtils.errorCheck(input.request)
-  } else throw ObjectErrors.ERROR_RFA_NOT_PROVIDED
+  } else throw SDKErrors.ERROR_RFA_NOT_PROVIDED()
 
   if (!AttestedClaim.verifyData(input as IAttestedClaim)) {
-    throw ObjectErrors.ERROR_ATTESTEDCLAIM_UNVERIFIABLE
+    throw SDKErrors.ERROR_ATTESTEDCLAIM_UNVERIFIABLE()
   }
 }
 
@@ -67,7 +67,7 @@ export function decompress(
   attestedClaim: CompressedAttestedClaim
 ): IAttestedClaim {
   if (!Array.isArray(attestedClaim) || attestedClaim.length !== 2) {
-    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('Attested Claim')
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attested Claim')
   }
   return {
     request: RequestForAttestationUtils.decompress(attestedClaim[0]),

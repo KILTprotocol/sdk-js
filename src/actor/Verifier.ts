@@ -6,7 +6,7 @@ import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 import Identity from '../identity/Identity'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import CType from '../ctype/CType'
-import { ERROR_MESSAGE_TYPE } from '../errorhandling/ObjectErrors'
+import { ERROR_MESSAGE_TYPE } from '../errorhandling/SDKErrors'
 
 const log = LoggerFactory.getLogger('Verifier')
 

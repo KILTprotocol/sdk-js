@@ -14,7 +14,7 @@ import {
   CompressedQuoteAttesterSigned,
   IQuoteAgreement,
 } from '../types/Quote'
-import * as ObjectErrors from '../errorhandling/ObjectErrors'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  *  Compresses the cost from a [[Quote]] object.
@@ -28,7 +28,7 @@ import * as ObjectErrors from '../errorhandling/ObjectErrors'
 
 export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
   if (!cost.gross || !cost.net || !cost.tax) {
-    throw ObjectErrors.ERROR_COMPRESS_OBJECT(cost, 'Cost Breakdown')
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(cost, 'Cost Breakdown')
   }
   return [cost.gross, cost.net, cost.tax]
 }
@@ -45,7 +45,7 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
 
 export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
   if (!Array.isArray(cost) || cost.length !== 3) {
-    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY('Cost Breakdown')
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Cost Breakdown')
   }
   return { gross: cost[0], net: cost[1], tax: cost[2] }
 }
@@ -69,7 +69,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
     !quote.termsAndConditions ||
     !quote.timeframe
   ) {
-    throw ObjectErrors.ERROR_COMPRESS_OBJECT(quote, 'Quote')
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(quote, 'Quote')
   }
   return [
     quote.attesterAddress,
@@ -92,7 +92,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
 
 export function decompressQuote(quote: CompressedQuote): IQuote {
   if (!Array.isArray(quote) || quote.length !== 6) {
-    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterAddress: quote[0],
@@ -126,7 +126,7 @@ export function compressAttesterSignedQuote(
     !attesterSignedQuote.timeframe ||
     !attesterSignedQuote.attesterSignature
   ) {
-    throw ObjectErrors.ERROR_COMPRESS_OBJECT(
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(
       attesterSignedQuote,
       'Attester Signed Quote'
     )
@@ -156,7 +156,7 @@ export function decompressAttesterSignedQuote(
   attesterSignedQuote: CompressedQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   if (!Array.isArray(attesterSignedQuote) || attesterSignedQuote.length !== 7) {
-    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterAddress: attesterSignedQuote[0],
@@ -191,7 +191,7 @@ export function compressQuoteAgreement(
     !quoteAgreement.timeframe ||
     !quoteAgreement.attesterSignature
   ) {
-    throw ObjectErrors.ERROR_COMPRESS_OBJECT(quoteAgreement, 'Quote Agreement')
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(quoteAgreement, 'Quote Agreement')
   }
   return [
     quoteAgreement.attesterAddress,
@@ -220,7 +220,7 @@ export function decompressQuoteAgreement(
   quoteAgreement: CompressedQuoteAgreed
 ): IQuoteAgreement {
   if (!Array.isArray(quoteAgreement) || quoteAgreement.length !== 9) {
-    throw ObjectErrors.ERROR_DECOMPRESSION_ARRAY
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterAddress: quoteAgreement[0],

@@ -10,7 +10,7 @@ import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
-import * as ObjectErrors from '../errorhandling/ObjectErrors'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -232,33 +232,33 @@ describe('Attestation', () => {
     } as IAttestation
 
     expect(() => AttestationUtils.errorCheck(noClaimHash)).toThrow(
-      ObjectErrors.ERROR_CLAIM_HASH_NOT_PROVIDED
+      SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
     )
 
     expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowError(
-      ObjectErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
+      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
     )
 
     expect(() => AttestationUtils.errorCheck(malformedOwner)).toThrowError(
-      ObjectErrors.ERROR_OWNER_NOT_PROVIDED
+      SDKErrors.ERROR_OWNER_NOT_PROVIDED()
     )
 
     expect(() => AttestationUtils.errorCheck(noRevocationBit)).toThrowError(
-      ObjectErrors.ERROR_REVOCATION_BIT_MISSING
+      SDKErrors.ERROR_REVOCATION_BIT_MISSING()
     )
 
     expect(() => AttestationUtils.errorCheck(everything)).not.toThrow()
 
     expect(() => AttestationUtils.errorCheck(malformedClaimHash)).toThrowError(
-      ObjectErrors.ERROR_HASH_MALFORMED(malformedClaimHash.claimHash, 'Claim')
+      SDKErrors.ERROR_HASH_MALFORMED(malformedClaimHash.claimHash, 'Claim')
     )
 
     expect(() => AttestationUtils.errorCheck(malformedCTypeHash)).toThrowError(
-      ObjectErrors.ERROR_HASH_MALFORMED(malformedCTypeHash.cTypeHash, 'CType')
+      SDKErrors.ERROR_HASH_MALFORMED(malformedCTypeHash.cTypeHash, 'CType')
     )
 
     expect(() => AttestationUtils.errorCheck(malformedAddress)).toThrowError(
-      ObjectErrors.ERROR_ADDRESS_INVALID(malformedAddress.owner, 'owner')
+      SDKErrors.ERROR_ADDRESS_INVALID(malformedAddress.owner, 'owner')
     )
   })
 })

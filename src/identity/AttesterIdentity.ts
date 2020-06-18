@@ -15,7 +15,7 @@ import IRequestForAttestation from '../types/RequestForAttestation'
 import PublicAttesterIdentity from './PublicAttesterIdentity'
 import Attestation from '../attestation/Attestation'
 import getCached from '../blockchainApiConnection'
-import { ERROR_PE_MISSING } from '../errorhandling/ObjectErrors'
+import { ERROR_PE_MISSING } from '../errorhandling/SDKErrors'
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
 const DEFAULT_MAX_ATTRIBUTES = 70
@@ -266,7 +266,7 @@ export default class AttesterIdentity extends Identity {
       })
       return { witness, attestation }
     }
-    throw ERROR_PE_MISSING
+    throw ERROR_PE_MISSING()
   }
 
   /**

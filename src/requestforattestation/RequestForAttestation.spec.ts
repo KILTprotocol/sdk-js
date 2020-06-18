@@ -23,7 +23,7 @@ import {
   ERROR_NONCE_HASH_INVALID,
   ERROR_SIGNATURE_UNVERIFIABLE,
   ERROR_CLAIM_HASHTREE_MALFORMED,
-} from '../errorhandling/ObjectErrors'
+} from '../errorhandling/SDKErrors'
 
 async function buildRequestForAttestationPE(
   claimer: Identity,
@@ -186,7 +186,7 @@ describe('RequestForAttestation', () => {
     delete request.claim.contents[propertyName]
     delete request.claimHashTree[propertyName]
     expect(() => request.verifyData()).toThrowError(
-      ERROR_ROOT_HASH_UNVERIFIABLE
+      ERROR_ROOT_HASH_UNVERIFIABLE()
     )
   })
 
@@ -214,7 +214,7 @@ describe('RequestForAttestation', () => {
     delete request.claim.contents[propertyName]
     delete request.claimHashTree[propertyName]
     expect(() => request.verifyData()).toThrowError(
-      ERROR_ROOT_HASH_UNVERIFIABLE
+      ERROR_ROOT_HASH_UNVERIFIABLE()
     )
     expect(claimerSession).toBeDefined()
     expect(attester).toBeDefined()
@@ -564,10 +564,10 @@ describe('RequestForAttestation', () => {
     )
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
-    ).toThrowError(ERROR_LEGITIMATIONS_NOT_PROVIDED)
+    ).toThrowError(ERROR_LEGITIMATIONS_NOT_PROVIDED())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
-    ).toThrowError(ERROR_ROOT_HASH_UNVERIFIABLE)
+    ).toThrowError(ERROR_ROOT_HASH_UNVERIFIABLE())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedClaimOwner)
     ).toThrowError(
@@ -578,10 +578,10 @@ describe('RequestForAttestation', () => {
     )
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
-    ).toThrowError(ERROR_CLAIM_HASHTREE_MALFORMED)
+    ).toThrowError(ERROR_CLAIM_HASHTREE_MALFORMED())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
-    ).toThrowError(ERROR_SIGNATURE_UNVERIFIABLE)
+    ).toThrowError(ERROR_SIGNATURE_UNVERIFIABLE())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedCtypeHash)
     ).toThrowError(

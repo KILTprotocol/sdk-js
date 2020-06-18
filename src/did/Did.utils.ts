@@ -25,7 +25,7 @@ import {
 import {
   ERROR_DID_IDENTIFIER_MISMATCH,
   ERROR_INVALID_DID_PREFIX,
-} from '../errorhandling/ObjectErrors'
+} from '../errorhandling/SDKErrors'
 
 interface IEncodedDid extends Codec {
   toJSON: () => [string, string, string | null] | null

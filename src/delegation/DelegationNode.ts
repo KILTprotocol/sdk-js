@@ -19,7 +19,7 @@ import { IDelegationNode } from '../types/Delegation'
 import permissionsAsBitset from './DelegationNode.utils'
 import { query, store, revoke, getChildren } from './DelegationNode.chain'
 import { query as queryRoot } from './DelegationRootNode.chain'
-import { ERROR_ROOT_NODE_QUERY } from '../errorhandling/ObjectErrors'
+import { ERROR_ROOT_NODE_QUERY } from '../errorhandling/SDKErrors'
 
 const log = factory.getLogger('DelegationNode')
 

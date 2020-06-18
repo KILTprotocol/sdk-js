@@ -6,7 +6,7 @@ import {
   getIdentifierFromAddress,
   verifyDidDocumentSignature,
 } from './Did.utils'
-import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/ObjectErrors'
+import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/SDKErrors'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 

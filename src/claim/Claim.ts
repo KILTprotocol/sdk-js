@@ -17,7 +17,7 @@ import CTypeUtils from '../ctype/CType.utils'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
 import ClaimUtils from './Claim.utils'
-import * as ObjectErrors from '../errorhandling/ObjectErrors'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 function verifyClaim(
   claimContents: IClaim['contents'],
@@ -42,7 +42,7 @@ export default class Claim implements IClaim {
     cTypeSchema: ICType['schema']
   ): Claim {
     if (!verifyClaim(claimInput.contents, cTypeSchema)) {
-      throw ObjectErrors.ERROR_CLAIM_UNVERIFIABLE
+      throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
     }
     return new Claim(claimInput)
   }
@@ -65,7 +65,7 @@ export default class Claim implements IClaim {
   ): Claim {
     if (ctypeInput.schema) {
       if (!verifyClaim(claimContents, ctypeInput.schema)) {
-        throw ObjectErrors.ERROR_CLAIM_UNVERIFIABLE
+        throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
       }
     }
     return new Claim({

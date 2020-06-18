@@ -9,7 +9,7 @@ import {
   ERROR_HASH_MALFORMED,
   ERROR_OBJECT_MALFORMED,
   ERROR_ADDRESS_INVALID,
-} from '../errorhandling/ObjectErrors'
+} from '../errorhandling/SDKErrors'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -105,7 +105,7 @@ describe('CType', () => {
       ERROR_HASH_MALFORMED(wrongHashCtype.hash, 'CType')
     )
     expect(() => CType.fromCType(faultySchemaCtype)).toThrowError(
-      ERROR_OBJECT_MALFORMED
+      ERROR_OBJECT_MALFORMED()
     )
     expect(() => CType.fromCType(invalidAddressCtype)).toThrowError(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
