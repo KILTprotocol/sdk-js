@@ -71,8 +71,8 @@ describe('Delegation', () => {
             Tuple,
             new Tuple(
               // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-              [Text, Text, Bool],
-              ['myCtypeHash', 'myAccount', false]
+              [H256, Text, Bool],
+              [ctypeHash, 'myAccount', false]
             )
           )
           return Promise.resolve(tuple)
@@ -81,8 +81,8 @@ describe('Delegation', () => {
           Tuple,
           new Tuple(
             // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-            [Text, Text, Bool],
-            ['myCtypeHash', 'myAccount', true]
+            [H256, Text, Bool],
+            [ctypeHash, 'myAccount', true]
           )
         )
         return Promise.resolve(tuple)
@@ -90,19 +90,11 @@ describe('Delegation', () => {
     )
 
     expect(
-      await new DelegationRootNode(
-        'success',
-        'myCtypeHash',
-        'myAccount'
-      ).verify()
+      await new DelegationRootNode('success', ctypeHash, 'myAccount').verify()
     ).toBe(true)
 
     expect(
-      await new DelegationRootNode(
-        'failure',
-        'myCtypeHash',
-        'myAccount'
-      ).verify()
+      await new DelegationRootNode('failure', ctypeHash, 'myAccount').verify()
     ).toBe(false)
   })
 
@@ -111,7 +103,7 @@ describe('Delegation', () => {
 
     const aDelegationRootNode = new DelegationRootNode(
       'myRootId',
-      'myCtypeHash',
+      ctypeHash,
       'myAccount'
     )
     const revokeStatus = await aDelegationRootNode.revoke(identityAlice)
