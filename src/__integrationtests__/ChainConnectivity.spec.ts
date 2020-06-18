@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * @group integration/connectivity
  * @ignore
@@ -16,7 +17,7 @@ beforeAll(async () => {
 describe('Blockchain', () => {
   it('should get stats', async () => {
     expect(blockchain).not.toBeUndefined()
-    const stats = await blockchain.getStats()
+    const stats = await blockchain!.getStats()
 
     expect(stats).toMatchObject({
       chain: 'Development',
@@ -32,7 +33,7 @@ describe('Blockchain', () => {
       done()
     }
     expect(blockchain).not.toBeUndefined()
-    await blockchain.listenToBlocks(listener)
+    await blockchain!.listenToBlocks(listener)
     // const subscriptionId = await blockchainSingleton.listenToBlocks(listener)
     // console.log(`Subscription Id: ${subscriptionId}`)
   }, 5000)
