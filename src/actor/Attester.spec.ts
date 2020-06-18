@@ -149,7 +149,7 @@ describe('Attester', () => {
     }
   })
 
-  it('Revoke privacy enhanced attestation', async () => {
+  xit('Revoke privacy enhanced attestation', async () => {
     const {
       message: initAttestation,
       session: attersterSession,
@@ -188,7 +188,7 @@ describe('Attester', () => {
       attester.getPublicIdentity()
     )
     await Attester.revokeAttestation(attester, revocationHandle)
-    expect(
+    await expect(
       Attester.getLatestAccumulator(attester.getPublicIdentity())
     ).resolves.not.toEqual(oldAcc)
   })

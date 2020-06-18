@@ -1,4 +1,4 @@
-import { Text, H256 } from '@polkadot/types'
+import { H256 } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
@@ -53,13 +53,12 @@ describe('Attestation', () => {
 
   it('stores attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(
-        Tuple,
-        new Tuple(
-          [H256, AccountId, Text, Bool],
-          [testCType.hash, identityAlice.getAddress(), undefined, false]
-        )
-      )
+      new Option(Tuple.with([H256, AccountId, Option.with(H256), Bool]), [
+        testCType.hash,
+        identityAlice.getAddress(),
+        null,
+        false,
+      ])
     )
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
@@ -71,7 +70,7 @@ describe('Attestation', () => {
 
   it('verify attestations not on chain', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(Tuple)
+      new Option(Tuple.with([H256, AccountId, Option.with(H256), Bool]))
     )
 
     const attestation: Attestation = Attestation.fromAttestation({
@@ -87,17 +86,11 @@ describe('Attestation', () => {
   it('verify attestation revoked', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
-        Tuple,
-        new Tuple(
+        Tuple.with(
           // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
-          [H256, AccountId, Text, Bool],
-          [
-            testCType.hash,
-            identityAlice.signKeyringPair.address,
-            undefined,
-            true,
-          ]
-        )
+          [H256, AccountId, 'Option<H256>', Bool]
+        ),
+        [testCType.hash, identityAlice.getAddress(), null, true]
       )
     )
 

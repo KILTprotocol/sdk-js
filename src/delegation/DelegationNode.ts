@@ -10,16 +10,14 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import Crypto from '../crypto'
-import { QueryResult } from '../blockchain/Blockchain'
 import { factory } from '../config/ConfigLog'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
-import { decodeDelegationNode } from './DelegationDecoder'
 import DelegationRootNode from './DelegationRootNode'
 import { IDelegationNode } from '../types/Delegation'
 import permissionsAsBitset from './DelegationNode.utils'
-import { query, store, revoke } from './DelegationNode.chain'
+import { query, store, revoke, getChildren } from './DelegationNode.chain'
 import { query as queryRoot } from './DelegationRootNode.chain'
 
 const log = factory.getLogger('DelegationNode')
@@ -165,9 +163,7 @@ export default class DelegationNode extends DelegationBaseNode
     return revoke(this.id, identity)
   }
 
-  /* eslint-disable class-methods-use-this */
-  protected decodeChildNode(queryResult: QueryResult): DelegationNode | null {
-    return decodeDelegationNode(queryResult)
+  public async getChildren(): Promise<DelegationNode[]> {
+    return getChildren(this.id)
   }
-  /* eslint-enable class-methods-use-this */
 }

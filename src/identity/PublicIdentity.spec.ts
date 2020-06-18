@@ -1,8 +1,11 @@
-import { Tuple, Option, H256, Text } from '@polkadot/types'
+import { Tuple, Option, H256 } from '@polkadot/types'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
 import IPublicIdentity from '../types/PublicIdentity'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+
+const pubKey = new H256('pub-key')
+const boxKey = new H256('box-key')
 
 describe('PublicIdentity', () => {
   // https://polkadot.js.org/api/examples/promise/
@@ -13,22 +16,21 @@ describe('PublicIdentity', () => {
       switch (id) {
         case '1':
           return new Option(
-            Tuple,
-            new Tuple(
+            Tuple.with(
               // (public-signing-key, public-encryption-key, did-reference?)
-              [Text, Text, 'Option<Bytes>'],
-              ['pub-key', 'box-key', [14, 75, 23, 14, 55]]
-            )
+              [H256, H256, 'Option<Bytes>']
+            ),
+            [pubKey, boxKey, [14, 75, 23, 14, 55]]
           )
         case '2':
           return new Option(
-            Tuple,
-            new Tuple(
+            Tuple.with(
               // (public-signing-key, public-encryption-key, did-reference?)
-              [Text, Text, 'Option<Bytes>'],
-              ['pub-key', 'box-key', undefined]
-            )
+              [H256, H256, 'Option<Bytes>']
+            ),
+            [pubKey, boxKey, undefined]
           )
+
         default:
           return new Option(Tuple.with([H256, H256, 'Option<Bytes>']))
       }
@@ -106,7 +108,7 @@ describe('PublicIdentity', () => {
     )
     expect(bcOnlyPubId).toEqual({
       address: '2',
-      boxPublicKeyAsHex: 'box-key',
+      boxPublicKeyAsHex: boxKey.toString(),
       serviceAddress: undefined,
     })
 
