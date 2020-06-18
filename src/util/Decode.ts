@@ -26,7 +26,7 @@ export function hasNonNullByte(codec: Codec): boolean {
  *
  * @param codec The codec to type check.
  * @param types An array of strings denoting types to check against.
- * @returns Whether the codec of any of the allowed `types`.
+ * @returns Whether the codec type is any of the allowed `types`.
  */
 export function codecIsType(codec: Codec, types: string[]): boolean {
   return types.includes(codec.toRawType())
