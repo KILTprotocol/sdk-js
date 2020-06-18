@@ -4,15 +4,20 @@
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text } from '@polkadot/types'
+import { Option, Text, Tuple } from '@polkadot/types'
 
 import { SubmittableResult } from '@polkadot/api'
 import { getCached } from '../blockchainApiConnection'
-import { decodeDelegationNode } from './DelegationDecoder'
+import { decodeDelegationNode, CodecWithId } from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
 import Identity from '../identity/Identity'
 import { IDelegationNode } from '../types/Delegation'
+import { factory } from '../config/ConfigLog'
+import DelegationBaseNode from './Delegation'
+import { getChildIds, fetchChildren } from './Delegation.chain'
+
+const log = factory.getLogger('DelegationBaseNode')
 
 export async function store(
   delegation: IDelegationNode,
@@ -39,12 +44,22 @@ export async function query(
 ): Promise<DelegationNode | null> {
   const blockchain = await getCached()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegations(delegationId)
+    await blockchain.api.query.delegation.delegations<Option<Tuple> | Tuple>(
+      delegationId
+    )
   )
   if (decoded) {
-    decoded.id = delegationId
+    const root = new DelegationNode(
+      delegationId,
+      decoded.rootId,
+      decoded.account,
+      decoded.permissions,
+      decoded.parentId
+    )
+    root.revoked = decoded.revoked
+    return root
   }
-  return decoded
+  return null
 }
 
 export async function revoke(
@@ -56,4 +71,34 @@ export async function revoke(
     delegationId
   )
   return blockchain.submitTx(identity, tx)
+}
+
+// function lives here to avoid circular imports between DelegationBaseNode and DelegationNode
+export async function getChildren(
+  delegationNodeId: DelegationBaseNode['id']
+): Promise<DelegationNode[]> {
+  log.info(` :: getChildren('${delegationNodeId}')`)
+  const childIds: string[] = await getChildIds(delegationNodeId)
+  const queryResults: CodecWithId[] = await fetchChildren(childIds)
+  const children: DelegationNode[] = queryResults
+    .map((codec: CodecWithId) => {
+      const decoded = decodeDelegationNode(codec.codec)
+      if (decoded) {
+        const child = new DelegationNode(
+          codec.id,
+          decoded.rootId,
+          decoded.account,
+          decoded.permissions,
+          decoded.parentId
+        )
+        child.revoked = decoded.revoked
+        return child
+      }
+      return null
+    })
+    .filter((value): value is DelegationNode => {
+      return value !== null
+    })
+  log.info(`children: ${JSON.stringify(children)}`)
+  return children
 }

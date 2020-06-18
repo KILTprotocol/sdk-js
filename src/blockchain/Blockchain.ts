@@ -12,16 +12,14 @@ import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
 import { Codec, AnyJson } from '@polkadot/types/types'
+import { Text, u64 } from '@polkadot/types'
 import * as gabi from '@kiltprotocol/portablegabi'
-import { Text } from '@polkadot/types'
 import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 
 const log = LoggerFactory.getLogger('Blockchain')
-
-export type QueryResult = Codec | undefined | null
 
 export type Stats = {
   chain: string
@@ -46,12 +44,9 @@ export interface IBlockchainApi {
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
 
 export default class Blockchain implements IBlockchainApi {
-  public static asArray(queryResult: QueryResult): AnyJson[] {
-    const json =
-      queryResult && queryResult.encodedLength ? queryResult.toJSON() : null
-    if (json instanceof Array) {
-      return json
-    }
+  public static asArray(queryResult: Codec): AnyJson[] {
+    const json = queryResult.toJSON()
+    if (json instanceof Array) return json
     return []
   }
 
@@ -128,12 +123,7 @@ export default class Blockchain implements IBlockchainApi {
     })
   }
 
-  public async getNonce(accountAddress: string): Promise<Codec> {
-    const nonce = await this.api.query.system.accountNonce(accountAddress)
-    if (!nonce) {
-      throw Error(`Nonce not found for account ${accountAddress}`)
-    }
-
-    return nonce
+  public async getNonce(accountAddress: string): Promise<u64> {
+    return this.api.query.system.accountNonce<u64>(accountAddress)
   }
 }
