@@ -158,7 +158,7 @@ async function verifyPublicPresentation(
   }
 
   const allVerified = await Promise.all(
-    session.requestedProperties.map((requested, i) => {
+    session.requestedProperties.map(async (requested, i) => {
       const ac = attestedClaims[i]
       const providedProperties = ac.getAttributes()
       // map the KILT Style properties to Gabi style properties
@@ -169,10 +169,9 @@ async function verifyPublicPresentation(
       rawProperties.push('claim.cTypeHash')
       rawProperties.push('claim.owner')
       return (
-        ac.verify() &&
         requested.properties.every(p => {
           return rawProperties.includes(p)
-        })
+        }) && ac.verify()
       )
     })
   )
