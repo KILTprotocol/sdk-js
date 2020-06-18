@@ -45,14 +45,15 @@
  *
  */
 
-import Blockchain, { IBlockchainApi } from '../../blockchain/Blockchain'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { Option, Tuple, Vec, H256, u64, u128 } from '@polkadot/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import { Option, Tuple, u128, u64, Vec, TypeRegistry } from '@polkadot/types'
+import AccountId from '@polkadot/types/generic/AccountId'
 import { ExtrinsicStatus } from '@polkadot/types/interfaces'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
+import Blockchain, { IBlockchainApi } from '../../blockchain/Blockchain'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
+const registry = new TypeRegistry()
 
 async function getCached(): Promise<IBlockchainApi> {
   if (!BlockchainApiConnection.instance) {
@@ -109,24 +110,25 @@ function __makeSubmittableResult(success: boolean): SubmittableResult {
 
   return new SubmittableResult({
     status,
-    events: [({
-
-      phase: {
-        asApplyExtrinsic: {
-          isEmpty: false,
+    events: [
+      {
+        phase: {
+          asApplyExtrinsic: {
+            isEmpty: false,
+          },
         },
-      },
-      event: {
-        section: 'system',
-        index: {
-          toHex: jest.fn(() => {
-            return '0x0000'
-          }),
+        event: {
+          section: 'system',
+          index: {
+            toHex: jest.fn(() => {
+              return '0x0000'
+            }),
+          },
+          // portablegabi checks if a transaction was successful
+          method: 'ExtrinsicSuccess',
         },
-        // portablegabi checks if a transaction was successful
-        method: 'ExtrinsicSuccess'
-      }
-    } as any)]
+      } as any,
+    ],
   })
 }
 
@@ -186,7 +188,7 @@ const __mocked_api: any = {
       }),
     },
     portablegabi: {
-      updateAccumulator: jest.fn((acc) => {
+      updateAccumulator: jest.fn(acc => {
         return __getMockSubmittableExtrinsic()
       }),
     },
@@ -194,11 +196,13 @@ const __mocked_api: any = {
   query: {
     system: {
       // default return value decodes to BN(0)
-      accountNonce: jest.fn(async () => new u64()),
+      accountNonce: jest.fn(async () => new u64(registry)),
     },
     attestation: {
       // default return value decodes to [], represents no delegated attestations
-      delegatedAttestations: jest.fn(async (id: string) => new Vec(H256)),
+      delegatedAttestations: jest.fn(
+        async (id: string) => new Vec(registry, 'H256')
+      ),
       /* example return value:
       new Vec(
         H256,
@@ -207,7 +211,9 @@ const __mocked_api: any = {
       */
 
       // default return value decodes to null, represents attestation not found
-      attestations: jest.fn(async (claim_hash: string) => new Option(Tuple)),
+      attestations: jest.fn(
+        async (claim_hash: string) => new Option(registry, Tuple)
+      ),
       /* example return value:
       new Option(
         Tuple,
@@ -224,15 +230,15 @@ const __mocked_api: any = {
     },
     balances: {
       // default return value decodes to BN(0), represents unknown and broke accounts
-      freeBalance: jest.fn(async (account: string) => new u128()),
+      freeBalance: jest.fn(async (account: string) => new u128(registry)),
     },
     ctype: {
       // default return value decodes to null, represents CTYPE not found
-      cTYPEs: jest.fn(async (hash: string) => new Option(AccountId)),
+      cTYPEs: jest.fn(async (hash: string) => new Option(registry, AccountId)),
     },
     delegation: {
       // default return value decodes to null, represents delegation not found
-      root: jest.fn(async (rootId: string) => new Option(Tuple)),
+      root: jest.fn(async (rootId: string) => new Option(registry, Tuple)),
       /* example return value:
       new Option(
         Tuple,
@@ -247,7 +253,9 @@ const __mocked_api: any = {
       ) */
 
       // default return value decodes to null, represents delegation not found
-      delegations: jest.fn(async (delegationId: string) => new Option(Tuple)),
+      delegations: jest.fn(
+        async (delegationId: string) => new Option(registry, Tuple)
+      ),
       /* example return value:
       new Option(
       Tuple,
@@ -264,7 +272,7 @@ const __mocked_api: any = {
     ) */
 
       // default return value decodes to [], represents: no children found
-      children: jest.fn(async (id: string) => new Vec(H256, [])),
+      children: jest.fn(async (id: string) => new Vec(registry, 'H256', [])),
       /* example return value:
       new Vec(
         H256,
@@ -274,7 +282,7 @@ const __mocked_api: any = {
     },
     did: {
       // default return value decodes to null, represents dID not found
-      dIDs: jest.fn(async (address: string) => new Option(Tuple)),
+      dIDs: jest.fn(async (address: string) => new Option(registry, Tuple)),
       /* example return value:
       new Option(
         Tuple,
@@ -289,14 +297,15 @@ const __mocked_api: any = {
     ) */
     },
     portablegabi: {
-      accumulatorList: jest.fn((address: string, index: number) =>
-        new Option('Vec<u8>', new Vec('Vec<u8>', '0xFF'))
+      accumulatorList: jest.fn(
+        (address: string, index: number) =>
+          new Option(registry, 'Vec<u8>', new Vec(registry, 'Vec<u8>', '0xFF'))
       ),
       accumulatorCount: jest.fn((address: string) => 1),
-    }
+    },
   },
   runtimeMetadata: {
-    asV4: {
+    asV11: {
       modules: [],
     },
   },

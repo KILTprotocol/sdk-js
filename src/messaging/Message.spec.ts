@@ -15,6 +15,10 @@ import IClaim from '../types/Claim'
 import { IQuote } from '../types/Quote'
 import { IAttestedClaim, Verifier } from '..'
 
+it.only('sqwdqw', () => {
+  expect(true).toBe(true)
+})
+
 describe('Messaging', () => {
   let identityAlice: Identity
   let identityBob: Identity

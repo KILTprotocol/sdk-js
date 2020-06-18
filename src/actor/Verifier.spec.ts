@@ -1,21 +1,21 @@
+import { Text, TypeRegistry } from '@polkadot/types'
+import { Option, Tuple } from '@polkadot/types/codec'
+import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
-import { Tuple, Option } from '@polkadot/types/codec'
-import { Text } from '@polkadot/types'
 import {
-  Verifier,
   Attester,
   Claimer,
   CombinedPresentation,
   CType,
   ICType,
+  Verifier,
 } from '..'
-import { MessageBodyType } from '../messaging/Message'
+import Credential from '../credential/Credential'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
-import IClaim from '../types/Claim'
+import { MessageBodyType } from '../messaging/Message'
 import constants from '../test/constants'
-import Credential from '../credential/Credential'
+import IClaim from '../types/Claim'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -28,12 +28,13 @@ describe('Verifier', () => {
   let credentialPE: Credential
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
+  const registry = new TypeRegistry()
 
   beforeAll(async () => {
     attester = await AttesterIdentity.buildFromURI('//Alice', {
       key: {
-        publicKey: constants.PUBLIC_KEY.valueOf(),
-        privateKey: constants.PRIVATE_KEY.valueOf(),
+        publicKey: constants.PUBLIC_KEY.toString(),
+        privateKey: constants.PRIVATE_KEY.toString(),
       },
     })
 
@@ -64,10 +65,12 @@ describe('Verifier', () => {
 
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, false]
+          ['0xdead', attester.getAddress(), undefined, 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
         )
       )
     )

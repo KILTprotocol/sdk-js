@@ -297,8 +297,8 @@ export default class AttesterIdentity extends Identity {
    */
   public async updateAccumulator(acc: gabi.Accumulator): Promise<void> {
     const bc = await getCached()
-    await bc.portablegabi.updateAccumulator(this.signKeyringPair, acc)
-    this.accumulator = acc
+    const tx = await bc.portablegabi.buildUpdateAccumulatorTX(acc)
+    await bc.portablegabi.signAndSend(tx, this.signKeyringPair)
   }
 
   /**

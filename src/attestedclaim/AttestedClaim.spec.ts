@@ -68,8 +68,8 @@ describe('RequestForAttestation', () => {
   beforeAll(async () => {
     identityAlice = await AttesterIdentity.buildFromURI('//Alice', {
       key: {
-        publicKey: constants.PUBLIC_KEY.valueOf(),
-        privateKey: constants.PRIVATE_KEY.valueOf(),
+        publicKey: constants.PUBLIC_KEY.toString(),
+        privateKey: constants.PRIVATE_KEY.toString(),
       },
     })
 

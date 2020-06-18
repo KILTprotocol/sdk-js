@@ -55,16 +55,16 @@ describe('Identity', () => {
 
     // @ts-ignore
     expect(alice.signPublicKeyAsHex).toEqual(
-      '0x3cd649d521d0fa29da940accd9944b60ec72948e2666adb84493b3e35303fb29'
+      '0x89bd53e9cde92516291a674475f41cc3d66f3db97463c92252e5c5b575ab9d0c'
     )
 
     // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.boxKeyPair.publicKey)).toEqual(
-      '0x7dbec771d890b6b15456a407771eef290119a164a60158cf76970168d362304d'
+      '0xac6f5e0780a4e38f1b2705eef3485e7a588b9ff98d7ee7222b7f1fed4d835145'
     )
     // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.boxKeyPair.secretKey)).toEqual(
-      '0x0eaa3cae227044959659476bcbffafd38b2acb201c9cf63f079284f76bf5d28f'
+      '0x7329c426ed20a35f0486645f2f2b72f59db38319444c88c59c62108f50655261'
     )
   })
 
@@ -101,8 +101,8 @@ describe('Identity', () => {
   it('should initiate attestation with gabi keys (PE)', async () => {
     const alice = await AttesterIdentity.buildFromMnemonic(undefined, {
       key: {
-        publicKey: constants.PUBLIC_KEY.valueOf(),
-        privateKey: constants.PRIVATE_KEY.valueOf(),
+        publicKey: constants.PUBLIC_KEY.toString(),
+        privateKey: constants.PRIVATE_KEY.toString(),
       },
     })
 

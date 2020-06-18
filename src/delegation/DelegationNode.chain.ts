@@ -3,16 +3,17 @@
  * @ignore
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text } from '@polkadot/types'
-
 import { SubmittableResult } from '@polkadot/api'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import { Option, Text, TypeRegistry } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
+import Identity from '../identity/Identity'
+import { IDelegationNode } from '../types/Delegation'
 import { decodeDelegationNode } from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
-import Identity from '../identity/Identity'
-import { IDelegationNode } from '../types/Delegation'
+
+// TODO: Check me
 
 export async function store(
   delegation: IDelegationNode,
@@ -26,7 +27,11 @@ export async function store(
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.addDelegation(
     delegation.id,
     delegation.rootId,
-    new Option(Text, includeParentId ? delegation.parentId : undefined),
+    new Option(
+      new TypeRegistry(),
+      Text,
+      includeParentId ? delegation.parentId : undefined
+    ),
     delegation.account,
     permissionsAsBitset(delegation),
     signature

@@ -1,27 +1,32 @@
-import { Text, Tuple, Option, U8a } from '@polkadot/types'
+import { Option, Text, Tuple, TypeRegistry } from '@polkadot/types'
 import { Did } from '..'
-import { IDid } from './Did'
 import Identity from '../identity/Identity'
+import { IDid } from './Did'
 import { getIdentifierFromAddress } from './Did.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('DID', () => {
+  const registry = new TypeRegistry()
   require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
     async address => {
       if (address === 'withDocumentStore') {
         return new Option(
+          registry,
           Tuple,
           new Tuple(
+            registry,
             // (publicBoxKey, publicSigningKey, documentStore?)
-            [Text, Text, U8a],
+            [Text, Text, Option],
             ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
           )
         )
       }
       return new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           // (publicBoxKey, publicSigningKey, documentStore?)
           [Text, Text, Option],
           ['0x987', '0x123', null]

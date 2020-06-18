@@ -1,27 +1,28 @@
+import { Text, TypeRegistry } from '@polkadot/types'
+import { Option, Tuple } from '@polkadot/types/codec'
+import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
-import { Tuple, Option } from '@polkadot/types/codec'
-import { Text } from '@polkadot/types'
-import AttesterIdentity from '../identity/AttesterIdentity'
-import Identity from '../identity/Identity'
-import constants from '../test/constants'
 import {
   Attester,
   Claimer,
-  IClaim,
-  Verifier,
   CombinedPresentation,
-  ICType,
   CType,
+  IClaim,
+  ICType,
+  Verifier,
 } from '..'
-import { MessageBodyType } from '../messaging/Message'
 import Credential from '../credential/Credential'
+import AttesterIdentity from '../identity/AttesterIdentity'
+import Identity from '../identity/Identity'
+import { MessageBodyType } from '../messaging/Message'
+import constants from '../test/constants'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Claimer', () => {
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
+  const registry = new TypeRegistry()
   let attester: AttesterIdentity
   let claimer: Identity
   let verifier: Identity
@@ -32,8 +33,8 @@ describe('Claimer', () => {
   beforeAll(async () => {
     attester = await AttesterIdentity.buildFromURI('//Alice', {
       key: {
-        publicKey: constants.PUBLIC_KEY.valueOf(),
-        privateKey: constants.PRIVATE_KEY.valueOf(),
+        publicKey: constants.PUBLIC_KEY.toString(),
+        privateKey: constants.PRIVATE_KEY.toString(),
       },
     })
 
@@ -64,10 +65,12 @@ describe('Claimer', () => {
 
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, false]
+          ['0xdead', attester.getAddress(), undefined, 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
         )
       )
     )
@@ -138,10 +141,12 @@ describe('Claimer', () => {
   it('request privacy enhanced attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, false]
+          ['0xdead', attester.getAddress(), undefined, 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
         )
       )
     )
@@ -213,10 +218,12 @@ describe('Claimer', () => {
   it('request only public attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, false]
+          ['0xdead', attester.getAddress(), undefined, 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
         )
       )
     )

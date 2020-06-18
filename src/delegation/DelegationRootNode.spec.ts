@@ -1,9 +1,9 @@
-import { Text, Tuple, H256, Option } from '@polkadot/types'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
+import { Option, Text, Tuple, TypeRegistry } from '@polkadot/types'
+import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
 import { Crypto, Identity } from '..'
-import DelegationRootNode from './DelegationRootNode'
 import getCached from '../blockchainApiConnection'
+import DelegationRootNode from './DelegationRootNode'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -11,27 +11,32 @@ describe('Delegation', () => {
   let identityAlice: Identity
   let ctypeHash: string
   let ROOT_IDENTIFIER: string
+  const registry = new TypeRegistry()
 
   beforeAll(async () => {
     identityAlice = await Identity.buildFromURI('//Alice')
     ctypeHash = Crypto.hashStr('testCtype')
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
       new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          [H256, AccountId, Bool],
-          [ctypeHash, identityAlice.getAddress(), false]
+          ['H256', AccountId, Bool],
+          [ctypeHash, identityAlice.getAddress(), 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
         )
       )
     )
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations.mockReturnValue(
       new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-          [H256, AccountId, Bool],
-          [ctypeHash, identityAlice.getAddress(), false]
+          ['H256', AccountId, Bool],
+          [ctypeHash, identityAlice.getAddress(), 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
         )
       )
     )
@@ -68,21 +73,25 @@ describe('Delegation', () => {
       async rootId => {
         if (rootId === 'success') {
           const tuple = new Option(
+            registry,
             Tuple,
             new Tuple(
+              registry,
               // Root-Delegation: root-id -> (ctype-hash, account, revoked)
               [Text, Text, Bool],
-              ['myCtypeHash', 'myAccount', false]
+              ['myCtypeHash', 'myAccount', 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
             )
           )
           return Promise.resolve(tuple)
         }
         const tuple = new Option(
+          registry,
           Tuple,
           new Tuple(
+            registry,
             // Root-Delegation: root-id -> (ctype-hash, account, revoked)
             [Text, Text, Bool],
-            ['myCtypeHash', 'myAccount', true]
+            ['myCtypeHash', 'myAccount', 1] // FIXME: boolean "true" - not supported --> 1 or "true" or ??
           )
         )
         return Promise.resolve(tuple)

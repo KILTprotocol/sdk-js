@@ -81,7 +81,10 @@ export function verify(
   address: Address
 ): boolean {
   const publicKey = decodeAddress(address)
-  const keyringPair = createPair('ed25519', { publicKey })
+  const keyringPair = createPair(
+    { toSS58: encodeAddress, type: 'ed25519' },
+    { publicKey }
+  )
 
   return keyringPair.verify(coToUInt8(message), coToUInt8(signature))
 }

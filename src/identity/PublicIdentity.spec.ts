@@ -1,10 +1,11 @@
-import { Tuple, Option, H256, Text } from '@polkadot/types'
-import PublicIdentity, { IURLResolver } from './PublicIdentity'
+import { Option, Text, Tuple, TypeRegistry } from '@polkadot/types'
 import IPublicIdentity from '../types/PublicIdentity'
+import PublicIdentity, { IURLResolver } from './PublicIdentity'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('PublicIdentity', () => {
+  const registry = new TypeRegistry()
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
 
@@ -13,8 +14,10 @@ describe('PublicIdentity', () => {
       switch (id) {
         case '1':
           return new Option(
+            registry,
             Tuple,
             new Tuple(
+              registry,
               // (public-signing-key, public-encryption-key, did-reference?)
               [Text, Text, 'Option<Bytes>'],
               ['pub-key', 'box-key', [14, 75, 23, 14, 55]]
@@ -22,15 +25,20 @@ describe('PublicIdentity', () => {
           )
         case '2':
           return new Option(
+            registry,
             Tuple,
             new Tuple(
+              registry,
               // (public-signing-key, public-encryption-key, did-reference?)
               [Text, Text, 'Option<Bytes>'],
               ['pub-key', 'box-key', undefined]
             )
           )
         default:
-          return new Option(Tuple.with([H256, H256, 'Option<Bytes>']))
+          return new Option(
+            registry,
+            Tuple.with(['H256', 'H256', 'Option<Bytes>'])
+          )
       }
     }
   )

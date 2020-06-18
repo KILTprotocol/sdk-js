@@ -51,7 +51,7 @@
     "@commitlint/cli": "^8.3",
     "@commitlint/config-conventional": "^8.3",
     "@types/jest": "^25.0.0",
-    "@types/uuid": "^3.4.4",
+    "@types/uuid": "^8.0.0",
     "@typescript-eslint/eslint-plugin": "^2.8.0",
     "@typescript-eslint/parser": "^2.8.0",
     "eslint": "6.1.0",
@@ -68,27 +68,28 @@
     "npm-registry-client": "^8.6.0",
     "prettier": "^1.15.3",
     "ts-jest": "^25.0.0",
-    "ts-node": "^8.6.2",
-    "tslib": "^1.10.0",
-    "typedoc": "^0.16.4",
-    "typedoc-plugin-external-module-name": "^3.0.0",
-    "typescript": "^3.7.2"
+    "ts-node": "^8.10.2",
+    "tslib": "^2.0.0",
+    "typedoc": "^0.17.7",
+    "typedoc-plugin-external-module-name": "^4.0.3",
+    "typescript": "^3.9.5"
   },
   "dependencies": {
-    "@kiltprotocol/portablegabi": "^0.2.1",
-    "@polkadot/api": "^0.96.1",
-    "@polkadot/keyring": "^1.7.0",
-    "@polkadot/types": "^0.96.1",
-    "@polkadot/util": "^1.7.0",
-    "@polkadot/util-crypto": "^1.7.0",
+    "@kiltprotocol/portablegabi": "^0.3.1",
+    "@polkadot/api": "^1.19.1",
+    "@polkadot/keyring": "^2.14.1",
+    "@polkadot/types": "^1.19.1",
+    "@polkadot/types-known": "^1.19.1",
+    "@polkadot/util": "^2.14.1",
+    "@polkadot/util-crypto": "^2.14.1",
     "@types/jsonabc": "^2.3.1",
-    "ajv": "^6.6.1",
-    "bn.js": "^4.11.8",
+    "ajv": "^6.12.2",
+    "bn.js": "^5.1.2",
     "jsonabc": "^2.3.1",
     "typescript-logging": "^0.6.3",
-    "uuid": "^3.3.2"
+    "uuid": "^8.1.0"
   },
   "peerDependencies": {
-    "tweetnacl": "^1.0.0"
+    "tweetnacl": "^1.0.3"
   }
 }

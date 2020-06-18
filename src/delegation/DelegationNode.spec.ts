@@ -1,14 +1,15 @@
-import { Option, Text, Tuple, H256 } from '@polkadot/types'
+import { Option, Text, Tuple, TypeRegistry } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
 import Identity from '../identity/Identity'
-import DelegationNode from './DelegationNode'
 import { Permission } from '../types/Delegation'
+import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Delegation', () => {
+  const registry = new TypeRegistry()
   it('delegation generate hash', () => {
     const node = new DelegationNode(
       '0x0000000000000000000000000000000000000000000000000000000000000001',
@@ -43,20 +44,24 @@ describe('Delegation', () => {
       async id => {
         if (id === 'success') {
           return new Option(
+            registry,
             Tuple,
             new Tuple(
+              registry,
               // (root-id, parent-id?, account, permissions, revoked)
               [Text, Option, Text, U32, Bool],
-              ['myRootId', null, 'myAccount', 1, false]
+              ['myRootId', null, 'myAccount', 1, 0]
             )
           )
         }
         return new Option(
+          registry,
           Tuple,
           new Tuple(
+            registry,
             // (root-id, parent-id?, account, permissions, revoked)
             [Text, Option, Text, U32, Bool],
-            ['myRootId', null, 'myAccount', 1, true]
+            ['myRootId', null, 'myAccount', 1, 1]
           )
         )
       }
@@ -86,14 +91,16 @@ describe('Delegation', () => {
 
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
       new Option(
+        registry,
         Tuple,
         new Tuple(
+          registry,
           // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          [H256, Text, Bool],
+          ['H256', Text, Bool],
           [
             '0x1234000000000000000000000000000000000000000000000000000000000000',
             identityAlice.getAddress(),
-            false,
+            0,
           ]
         )
       )

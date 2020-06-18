@@ -1,15 +1,15 @@
-import { Text, Data } from '@polkadot/types'
+import { TypeRegistry } from '@polkadot/types'
+import { Option, Tuple } from '@polkadot/types/codec'
+import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
-import { Tuple, Option } from '@polkadot/types/codec'
+import Claim from '../claim/Claim'
+import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import IAttestation, { CompressedAttestation } from '../types/Attestation'
+import ICType from '../types/CType'
 import Attestation from './Attestation'
 import AttestationUtils from './Attestation.utils'
-import CType from '../ctype/CType'
-import ICType from '../types/CType'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import Claim from '../claim/Claim'
-import IAttestation, { CompressedAttestation } from '../types/Attestation'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -23,6 +23,7 @@ describe('Attestation', () => {
   let requestForAttestation: RequestForAttestation
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
+  const registry = new TypeRegistry()
 
   beforeAll(async () => {
     identityAlice = await Identity.buildFromURI('//Alice')
@@ -54,11 +55,9 @@ describe('Attestation', () => {
   it('stores attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
-        Tuple,
-        new Tuple(
-          [Data, AccountId, Text, Bool],
-          [testCType.hash, identityAlice.getAddress(), undefined, false]
-        )
+        registry,
+        Tuple.with(['H256', AccountId, Option.with('H256'), Bool]),
+        [testCType.hash, identityAlice.getAddress(), null, false]
       )
     )
 
@@ -71,7 +70,7 @@ describe('Attestation', () => {
 
   it('verify attestations not on chain', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(Tuple)
+      new Option(registry, Tuple)
     )
 
     const attestation: Attestation = Attestation.fromAttestation({
@@ -87,17 +86,12 @@ describe('Attestation', () => {
   it('verify attestation revoked', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
-        Tuple,
-        new Tuple(
+        registry,
+        Tuple.with(
           // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
-          [Data, AccountId, Text, Bool],
-          [
-            testCType.hash,
-            identityAlice.signKeyringPair.address,
-            undefined,
-            true,
-          ]
-        )
+          ['H256', AccountId, 'Option<H256>', Bool]
+        ),
+        [testCType.hash, identityAlice.getAddress(), null, true]
       )
     )
 

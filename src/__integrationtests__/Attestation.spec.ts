@@ -106,7 +106,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   it('should not be possible to attest a claim w/o tokens', async () => {
-    const content: IClaim['contents'] = { name: 'Ralph', age: 10 }
+    const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
 
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,

@@ -8,7 +8,6 @@
  */
 
 import { v4 as uuid } from 'uuid'
-import { H256 } from '@polkadot/types'
 
 /**
  * Generates a H256 compliant UUID.
@@ -16,7 +15,10 @@ import { H256 } from '@polkadot/types'
  * @returns The hashed uuid.
  */
 export function generate(): string {
-  return new H256(uuid()).toString()
+  const undashedPaddedUUID = uuid()
+    .replace(/-/g, '')
+    .padEnd(64, 'F')
+  return `0x${undashedPaddedUUID}`
 }
 
 export default {

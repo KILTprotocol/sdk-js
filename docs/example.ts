@@ -31,8 +31,8 @@ async function setup(): Promise<{
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together',
     {
       key: {
-        publicKey: constants.PUBLIC_KEY.valueOf(),
-        privateKey: constants.PRIVATE_KEY.valueOf(),
+        publicKey: constants.PUBLIC_KEY.toString(),
+        privateKey: constants.PRIVATE_KEY.toString(),
       },
     }
   )

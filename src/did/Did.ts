@@ -12,7 +12,7 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import { AnyJson, AnyJsonObject } from '@polkadot/types/types'
+import { AnyJson } from '@polkadot/types/types'
 import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
 import IPublicIdentity from '../types/PublicIdentity'
@@ -67,14 +67,14 @@ export interface IDidDocumentPublicKey {
 }
 
 export interface IDidDocumentProperties {
-  authentication: Array<string | IDidDocumentPublicKey | AnyJsonObject>
+  authentication: Array<string | IDidDocumentPublicKey | AnyJson>
   publicKey: IDidDocumentPublicKey[]
   service: IDidService[]
 }
 
 export interface IDidService {
   type: string
-  serviceEndpoint: string | AnyJsonObject
+  serviceEndpoint: string | AnyJson
   id?: string
   [key: string]: AnyJson
 }

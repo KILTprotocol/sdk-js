@@ -1,23 +1,37 @@
 import BN from 'bn.js/'
 import { SubmittableResult } from '@polkadot/api'
+import { AccountInfo, AccountData } from '@polkadot/types/interfaces'
 import Identity from '../identity/Identity'
-// import partial from 'lodash/partial'
 import { listenToBalanceChanges, makeTransfer } from './Balance.chain'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+
+const BALANCE = 42
+const FEE = 30
 
 describe('Balance', () => {
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
+  const accountInfo = (balance: number): AccountInfo => {
+    return {
+      data: {
+        free: new BN(balance),
+        reserved: new BN(balance),
+        miscFrozen: new BN(balance),
+        feeFrozen: new BN(balance),
+      } as AccountData,
+    } as AccountInfo
+  }
+
   blockchainApi.query.balances.freeBalance = jest.fn(
     async (accountAddress, cb) => {
       if (cb) {
         setTimeout(() => {
-          cb(new BN(42))
+          cb(accountInfo(BALANCE))
         }, 1)
       }
-      return new BN(12)
+      return accountInfo(BALANCE - FEE)
     }
   )
 
@@ -25,8 +39,8 @@ describe('Balance', () => {
     const bob = await Identity.buildFromURI('//Bob')
     const listener = (account: string, balance: BN, change: BN): void => {
       expect(account).toBe(bob.getAddress())
-      expect(balance.toNumber()).toBe(42)
-      expect(change.toNumber()).toBe(30)
+      expect(balance.toNumber()).toBe(BALANCE)
+      expect(change.toNumber()).toBe(FEE)
       done()
     }
 

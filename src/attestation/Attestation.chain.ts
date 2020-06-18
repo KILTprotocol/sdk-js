@@ -2,19 +2,19 @@
  * @packageDocumentation
  * @ignore
  */
-import { Option, Text } from '@polkadot/types'
-import { Codec } from '@polkadot/types/types'
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-
 import { SubmittableResult } from '@polkadot/api'
-import { getCached } from '../blockchainApiConnection'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import { Option, Text, TypeRegistry } from '@polkadot/types'
+import { Codec } from '@polkadot/types/types'
 import { QueryResult } from '../blockchain/Blockchain'
-import Identity from '../identity/Identity'
+import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigLog'
+import Identity from '../identity/Identity'
 import IAttestation from '../types/Attestation'
 import Attestation from './Attestation'
 
 const log = factory.getLogger('Attestation')
+// TODO: Check whether this should really be initiated here
 
 export async function store(
   attestation: IAttestation,
@@ -23,7 +23,11 @@ export async function store(
   const txParams = {
     claimHash: attestation.claimHash,
     ctypeHash: attestation.cTypeHash,
-    delegationId: new Option(Text, attestation.delegationId),
+    delegationId: new Option(
+      new TypeRegistry(),
+      Text,
+      attestation.delegationId
+    ),
   }
   log.debug(() => `Create tx for 'attestation.add'`)
 

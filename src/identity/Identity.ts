@@ -16,7 +16,6 @@
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
-import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
 import * as u8aUtil from '@polkadot/util/u8a'
 import { hexToU8a } from '@polkadot/util/hex'
@@ -26,6 +25,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair } from 'tweetnacl'
 import { Claimer } from '@kiltprotocol/portablegabi'
+import { mnemonicToMiniSecret } from '@polkadot/util-crypto'
 import Crypto from '../crypto'
 import {
   CryptoInput,
@@ -105,7 +105,7 @@ export default class Identity {
       throw Error(`Invalid phrase '${phrase}'`)
     }
 
-    const seed = toSeed(phrase)
+    const seed = mnemonicToMiniSecret(phrase)
     return Identity.buildFromSeed(seed)
   }
 

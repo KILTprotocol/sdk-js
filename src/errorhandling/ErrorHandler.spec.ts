@@ -85,7 +85,7 @@ describe('ErrorHandler', () => {
       // @ts-ignore
       name: {
         toString: jest.fn(() => {
-          return 'error'
+          return 'Error'
         }),
       },
     },
@@ -94,7 +94,7 @@ describe('ErrorHandler', () => {
   const apiPromise: ApiPromise = {
     // @ts-ignore
     runtimeMetadata: {
-      asV4: {
+      asV11: {
         // @ts-ignore
         modules,
       },

@@ -3,19 +3,20 @@
  * @ignore
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text } from '@polkadot/types'
-
 import { SubmittableResult } from '@polkadot/api'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import { Option, Text, TypeRegistry } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
-import { IDid } from './Did'
-import {
-  getAddressFromIdentifier,
-  getIdentifierFromAddress,
-  decodeDid,
-} from './Did.utils'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
+import { IDid } from './Did'
+import {
+  decodeDid,
+  getAddressFromIdentifier,
+  getIdentifierFromAddress,
+} from './Did.utils'
+
+// TODO: Check me
 
 export async function queryByIdentifier(
   identifier: IDid['identifier']
@@ -55,7 +56,7 @@ export async function store(
   const tx: SubmittableExtrinsic = blockchain.api.tx.did.add(
     did.publicBoxKey,
     did.publicSigningKey,
-    new Option(Text, did.documentStore)
+    new Option(new TypeRegistry(), Text, did.documentStore)
   )
   return blockchain.submitTx(identity, tx)
 }

@@ -11,7 +11,7 @@
  * @preferred
  */
 
-import { AnyJsonObject } from '@polkadot/types/types'
+import { AnyJson } from '@polkadot/types/types'
 import {
   Attestation as AttestationPE,
   CombinedPresentation,
@@ -368,7 +368,7 @@ export interface IRequestAcceptDelegation extends IMessageBodyBase {
       permissions: IDelegationNode['permissions']
       isPCR: boolean
     }
-    metaData?: AnyJsonObject
+    metaData?: AnyJson
     signatures: {
       inviter: string
     }
