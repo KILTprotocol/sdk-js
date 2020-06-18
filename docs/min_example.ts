@@ -96,10 +96,10 @@ async function setup(): Promise<{
     owner: claimer.getAddress(),
   })
 
-  console.log('Claimer', claimer.getAddress(), '\n')
-  console.log('Attester', attester.getAddress(), '\n')
-  console.log('Ctype', ctype, '\n')
-  console.log('Claim', claim, '\n')
+  console.log('Claimer:', claimer.getAddress(), '\n')
+  console.log('Attester:', attester.getAddress(), '\n')
+  console.log('Ctype:', ctype, '\n')
+  console.log('Claim:', claim, '\n')
 
   return {
     claimer,
@@ -188,7 +188,7 @@ async function doVerification(
     .finalize(privacyEnhanced, verifier, claimer.getPublicIdentity())
   console.log('Presentation: ', request.body.content, '\n')
 
-  // ------------------------- Claimer -----------------------------------------
+  // ------------------------- CLAIMER -----------------------------------------
   const presentation = await Kilt.Claimer.createPresentation(
     claimer,
     request,
@@ -197,7 +197,11 @@ async function doVerification(
     [attesterPub],
     privacyEnhanced
   )
-  console.log('Presentation: ', presentation.body.content, '\n')
+  console.log(
+    'Presentation: ',
+    JSON.parse(presentation.body.content.valueOf() as any).prooflist[0],
+    '\n'
+  )
 
   // ------------------------- Verifier ----------------------------------------
   const { verified, claims } = await Kilt.Verifier.verifyPresentation(
