@@ -17,7 +17,7 @@ import DelegationBaseNode from './Delegation'
 import DelegationRootNode from './DelegationRootNode'
 import { IDelegationNode } from '../types/Delegation'
 import permissionsAsBitset from './DelegationNode.utils'
-import { query, store, revoke } from './DelegationNode.chain'
+import { query, store, revoke, getChildren } from './DelegationNode.chain'
 import { query as queryRoot } from './DelegationRootNode.chain'
 
 const log = factory.getLogger('DelegationNode')
@@ -161,5 +161,9 @@ export default class DelegationNode extends DelegationBaseNode
   public async revoke(identity: Identity): Promise<SubmittableResult> {
     log.debug(`:: revoke(${this.id})`)
     return revoke(this.id, identity)
+  }
+
+  public async getChildren(): Promise<DelegationNode[]> {
+    return getChildren(this.id)
   }
 }
