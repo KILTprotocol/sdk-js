@@ -149,7 +149,7 @@ describe('Attester', () => {
     }
   })
 
-  xit('Revoke privacy enhanced attestation', async () => {
+  it('Revoke privacy enhanced attestation', async () => {
     const {
       message: initAttestation,
       session: attersterSession,

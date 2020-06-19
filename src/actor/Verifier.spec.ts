@@ -1,7 +1,7 @@
 import Bool from '@polkadot/types/primitive/Bool'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
-import { Text, H256 } from '@polkadot/types'
+import { H256 } from '@polkadot/types'
 import {
   Verifier,
   Attester,
@@ -16,6 +16,7 @@ import Identity from '../identity/Identity'
 import IClaim from '../types/Claim'
 import constants from '../test/constants'
 import Credential from '../credential/Credential'
+import IRequestForAttestation from '../types/RequestForAttestation'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -63,13 +64,12 @@ describe('Verifier', () => {
     }
 
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(
-        Tuple,
-        new Tuple(
-          [H256, AccountId, Text, Bool],
-          [cType.hash, attester.getAddress(), undefined, false]
-        )
-      )
+      new Option(Tuple.with([H256, AccountId, 'Option<H256>', Bool]), [
+        '"0xde9f624875aa620d06434603787a40c8cd02cc25c7b775cf50de8a3a96bbeafa"', // ctype hash
+        attester.getAddress(), // Account
+        null, // delegation-id?
+        false, // revoked flag
+      ])
     )
 
     const {
@@ -199,7 +199,7 @@ describe('Verifier', () => {
     expect(claims.length).toEqual(1)
     const { owner, ...unownedClaim } = claim
     expect(owner).toBeDefined()
-    expect(claims[0].claim).toEqual(unownedClaim)
+    expect((claims[0] as IRequestForAttestation).claim).toEqual(unownedClaim)
   })
 
   it('verify forbidden privacy enhanced presentation', async () => {
@@ -236,7 +236,7 @@ describe('Verifier', () => {
     expect(claims.length).toEqual(0)
   })
 
-  it('verify public-only presentation', async () => {
+  it('verify public-only presentation all good', async () => {
     const { session, message: request } = await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
