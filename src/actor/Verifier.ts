@@ -6,6 +6,7 @@ import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 import Identity from '../identity/Identity'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import CType from '../ctype/CType'
+import IAttestedClaim from '../types/AttestedClaim'
 
 const log = LoggerFactory.getLogger('Verifier')
 
@@ -145,7 +146,7 @@ async function verifyPublicPresentation(
   session: IVerifierSession
 ): Promise<{
   verified: boolean
-  claims: any[]
+  claims: Array<Partial<IAttestedClaim>>
 }> {
   if (attestedClaims.length !== session.requestedProperties.length) {
     log.info(
@@ -197,7 +198,7 @@ export async function verifyPresentation(
   attesterPubKeys?: PublicAttesterIdentity[]
 ): Promise<{
   verified: boolean
-  claims: any[]
+  claims: Array<Partial<IAttestedClaim>>
 }> {
   // If we got a public presentation, check that the attestation is valid
   if (message.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC) {
