@@ -21,6 +21,8 @@ export enum ErrorCode {
   ERROR_ATTESTATION_SESSION_MISSING = 10010,
   ERROR_PE_MISSING = 10011,
   ERROR_PE_CREDENTIAL_MISSING = 10012,
+  ERROR_CTYPE_HASH_NOT_MATCHING = 10013,
+  ERROR_CTYPE_ID_NOT_MATCHING = 10014,
 
   ERROR_ADDRESS_TYPE = 20001,
   ERROR_HASH_TYPE = 20002,
@@ -73,6 +75,20 @@ export const ERROR_CTYPE_HASH_NOT_PROVIDED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CTYPE_HASH_NOT_PROVIDED,
     'CType hash missing'
+  )
+}
+
+export const ERROR_CTYPE_HASH_NOT_MATCHING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_CTYPE_HASH_NOT_MATCHING,
+    'Provided and generated cType hash are not matching'
+  )
+}
+
+export const ERROR_CTYPE_ID_NOT_MATCHING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_CTYPE_ID_NOT_MATCHING,
+    'Provided and generated $id are not matching'
   )
 }
 export const ERROR_CLAIM_HASH_NOT_PROVIDED: () => SDKError = () => {

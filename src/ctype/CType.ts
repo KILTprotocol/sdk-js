@@ -16,6 +16,7 @@ import ICType, { CompressedCType } from '../types/CType'
 import Identity from '../identity/Identity'
 import { store } from './CType.chain'
 import IClaim from '../types/Claim'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 export default class CType implements ICType {
   public static fromCType(cTypeInput: ICType): CType {
@@ -65,14 +66,14 @@ export default class CType implements ICType {
       this.schema.$id = `kilt:ctype:${CTypeUtils.getHashForSchema(this.schema)}`
     } else {
       if (CTypeUtils.getHashForSchema(cTypeInput.schema) !== cTypeInput.hash) {
-        throw Error('provided and generated cType hash are not matching') // To Do change the errors to match the new errors
+        throw SDKErrors.ERROR_CTYPE_HASH_NOT_MATCHING()
       }
       this.hash = cTypeInput.hash
       if (
         cTypeInput.schema.$id !==
         `kilt:ctype:${CTypeUtils.getHashForSchema(this.schema)}`
       ) {
-        throw Error('Provided and generated $id are not matching') // To Do change the errors to match the new errors
+        throw SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING()
       }
       this.schema.$id = `kilt:ctype:${cTypeInput.hash}`
     }
