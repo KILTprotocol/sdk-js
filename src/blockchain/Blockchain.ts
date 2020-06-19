@@ -176,50 +176,93 @@ export default class Blockchain implements IBlockchainApi {
     return Blockchain.submitSignedTx(signedTx, opts)
   }
 
+  /**
+   * Initiates the Nonce retrieval for the given identity.
+   * I N C E P T I O N.
+   *
+   * @param accountAddress The address of the identity that we retrieve the Transaction nonce for.
+   * @returns Promise of the [[Index]] representation of the Transaction nonce of the identity.
+   *
+   */
   public async getNonce(accountAddress: string): Promise<Index> {
+    // Initiate nonceRetrieval
     const unlock = await this.lock(accountAddress)
+    // Evil Necromancy of the in handleQueue defined function
     const nonce = await unlock()
     return nonce
   }
 
+  /**
+   * Creates Promise and queues it's resolve CB into nonceQueue for later processing, starts recursive execution of handleQueue.
+   *
+   * @param accountAddress The address of the identity that we retrieve the nonce for.
+   * @returns A Promise of the actual.
+   * The Index representation of the Transaction nonce of the identity.
+   *
+   */
   private lock(
     accountAddress: Identity['address']
   ): Promise<() => Promise<Index>> {
+    // Create entry in pending Map for account.
+    // Pending Map indicates whether the nonceQueue is being processed for the account
     if (!this.pending.has(accountAddress)) {
       this.pending.set(accountAddress, false)
     }
+    // lock Promise, whose resolve CB is put into the nonceQueue for the specific account
     const lock = new Promise<() => Promise<Index>>(resolve => {
+      // if the queue does not exists for the account, create entry.
       if (!this.nonceQueue.has(accountAddress)) {
         this.nonceQueue.set(accountAddress, [resolve])
       } else {
+        // if queue exists for account, append.
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.nonceQueue.get(accountAddress)!.push(resolve)
       }
     })
+    // If nonceQueue is not yet being processed for the account, start now.
     if (!this.pending.get(accountAddress)) {
       this.handleQueue(accountAddress)
     }
+    // The promise, whose resolve CB was put into nonceQueue and is getting resolved inside handleQueue.
     return lock
   }
 
+  /**
+   * Handles the entries in nonceQueue for accountAddress, resolves the resolve() with the actual anonymous function for nonce retrieval and recursion.
+   *
+   * @param accountAddress The address of the identity that we handle nonceQueue for.
+   */
   private handleQueue(accountAddress: Identity['address']): void {
+    // Check whether nonceQueue has entries for account
     if ((this.nonceQueue.get(accountAddress) || []).length > 0) {
+      // Set pending map to true for account, indicating that nonceQueue is being processed for account.
       this.pending.set(accountAddress, true)
+      // Retrieve the resolve CB put into nonceQueue in lock
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const resolve = this.nonceQueue.get(accountAddress)!.shift()
       if (resolve) {
-        resolve(async () => {
-          const nonce = await this.retrieveNonce(accountAddress)
+        // resolve with a function which returns the retrieveNonce Promise
+        resolve(() => {
+          const nonce = this.retrieveNonce(accountAddress)
+          // recursive execution of handleQueue
           this.handleQueue(accountAddress)
           return nonce
         })
       }
     } else {
+      // if account is not registered or has no entries in nonceQueue
+      // set pending for account to false and remove accountNonces entry for account.
       this.pending.set(accountAddress, false)
       this.accountNonces.delete(accountAddress)
     }
   }
 
+  /**
+   * Retrieves the Nonce for the specific account either directly from the API or from the, previously to the account mapped, accountNonce.
+   *
+   * @param accountAddress The address of the identity that we handle nonceQueue for.
+   * @returns Promise of the [[Index]] representation of the Transaction nonce of the identity.
+   */
   private async retrieveNonce(
     accountAddress: Identity['address']
   ): Promise<Index> {
