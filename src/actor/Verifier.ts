@@ -6,6 +6,7 @@ import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 import Identity from '../identity/Identity'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import CType from '../ctype/CType'
+import { ERROR_MESSAGE_TYPE } from '../errorhandling/SDKErrors'
 
 const log = LoggerFactory.getLogger('Verifier')
 
@@ -187,6 +188,8 @@ async function verifyPublicPresentation(
  * @param session The Verifier's private verification session created in [[finalize]].
  * @param latestAccumulators The list of the latest accumulators for each Attester which signed a [[Credential]] of this presentation.
  * @param attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
+ * @throws When either latestAccumulators or attesterPubKeys are undefined.
+ * @throws [[ERROR_MESSAGE_TYPE]].
  * @returns An object containing the keys
  * **verified** (which describes whether the [[Credential]]s could be verified)
  * and **claims** (an array of [[Claim]]s restricted on the disclosed attributes selected in [[requestPresentationForCtype]]).
@@ -235,8 +238,10 @@ export async function verifyPresentation(
       return { verified, claims }
     }
   } else {
-    throw new Error(
-      `Expected message type '${MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE}' or '${MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC}' but got type '${message.body.type}'`
+    throw ERROR_MESSAGE_TYPE(
+      message.body.type,
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
     )
   }
   return { verified: false, claims: [] }

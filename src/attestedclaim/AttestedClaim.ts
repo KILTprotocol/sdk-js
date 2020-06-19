@@ -16,6 +16,7 @@ import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import AttestedClaimUtils from './AttestedClaim.utils'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import IAttestation from '../types/Attestation'
+import { validateNonceHash } from '../util/DataUtils'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -132,9 +133,18 @@ export default class AttestedClaim implements IAttestedClaim {
    * ```
    */
   public static verifyData(attestedClaim: IAttestedClaim): boolean {
+    try {
+      validateNonceHash(
+        attestedClaim.request.cTypeHash,
+        attestedClaim.attestation.cTypeHash,
+        'CType Hash'
+      )
+    } catch (error) {
+      return false
+    }
     return (
-      RequestForAttestation.verifyData(attestedClaim.request) &&
-      attestedClaim.request.rootHash === attestedClaim.attestation.claimHash
+      attestedClaim.request.rootHash === attestedClaim.attestation.claimHash &&
+      RequestForAttestation.verifyData(attestedClaim.request)
     )
   }
 

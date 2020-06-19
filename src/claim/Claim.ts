@@ -17,6 +17,7 @@ import CTypeUtils from '../ctype/CType.utils'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
 import ClaimUtils from './Claim.utils'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 function verifyClaim(
   claimContents: IClaim['contents'],
@@ -32,6 +33,7 @@ export default class Claim implements IClaim {
    * @param claimInput IClaim to instantiate the new claim from.
    * @param cTypeSchema ICType['schema'] to verify claimInput's contents.
    * @throws When claimInput's contents could not be verified with the provided cTypeSchema.
+   * @throws [[ERROR_CLAIM_UNVERIFIABLE]].
    *
    * @returns An instantiated Claim.
    */
@@ -40,9 +42,8 @@ export default class Claim implements IClaim {
     cTypeSchema: ICType['schema']
   ): Claim {
     if (!verifyClaim(claimInput.contents, cTypeSchema)) {
-      throw Error('Claim not valid')
+      throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
     }
-
     return new Claim(claimInput)
   }
 
@@ -53,6 +54,7 @@ export default class Claim implements IClaim {
    * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
    * @param claimOwner IPublicIdentity['address'] to be used as the Claim owner.
    * @throws When claimInput's contents could not be verified with the schema of the provided ctypeInput.
+   * @throws [[ERROR_CLAIM_UNVERIFIABLE]].
    *
    * @returns An instantiated Claim.
    */
@@ -63,7 +65,7 @@ export default class Claim implements IClaim {
   ): Claim {
     if (ctypeInput.schema) {
       if (!verifyClaim(claimContents, ctypeInput.schema)) {
-        throw Error('Claim not valid')
+        throw SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
       }
     }
     return new Claim({

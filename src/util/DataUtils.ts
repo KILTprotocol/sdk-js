@@ -12,6 +12,17 @@ import { NonceHash } from '../types/RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
 import PublicIdentity from '../identity/PublicIdentity'
+import {
+  ERROR_ADDRESS_INVALID,
+  ERROR_ADDRESS_TYPE,
+  ERROR_HASH_TYPE,
+  ERROR_HASH_MALFORMED,
+  ERROR_NONCE_HASH_MALFORMED,
+  ERROR_NONCE_HASH_INVALID,
+  ERROR_LEGITIMATIONS_UNVERIFIABLE,
+  ERROR_SIGNATURE_DATA_TYPE,
+  ERROR_SIGNATURE_UNVERIFIABLE,
+} from '../errorhandling/SDKErrors'
 
 /**
  *  Validates an given address string against the External Address Format (SS58) with our Prefix of 42.
@@ -19,6 +30,7 @@ import PublicIdentity from '../identity/PublicIdentity'
  * @param address Address string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
  * @throws When address not of type string or of invalid Format.
+ * @throws [[ERROR_ADDRESS_TYPE]].
  *
  * @returns Boolean whether the given address string checks out against the Format.
  */
@@ -27,11 +39,10 @@ export function validateAddress(
   name: string
 ): boolean {
   if (typeof address !== 'string') {
-    throw new Error('Address not of type string')
+    throw ERROR_ADDRESS_TYPE()
   }
   if (!checkAddress(address, 42)[0]) {
-    throw new Error(`Provided ${name} address invalid \n
-    Address: ${address}`)
+    throw ERROR_ADDRESS_INVALID(address, name)
   }
   return true
 }
@@ -42,17 +53,17 @@ export function validateAddress(
  * @param hash Hash string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
  * @throws When hash not of type string or of invalid Format.
+ * @throws [[ERROR_HASH_TYPE]].
  *
  * @returns Boolean whether the given hash string checks out against the Format.
  */
 export function validateHash(hash: string, name: string): boolean {
   if (typeof hash !== 'string') {
-    throw new Error('Hash not of type string')
+    throw ERROR_HASH_TYPE()
   }
   const blake2bPattern = new RegExp('(0x)[A-F0-9]{64}', 'i')
   if (!hash.match(blake2bPattern)) {
-    throw new Error(`Provided ${name} hash invalid or malformed \n
-    Hash: ${hash}`)
+    throw ERROR_HASH_MALFORMED(hash, name)
   }
   return true
 }
@@ -65,6 +76,7 @@ export function validateHash(hash: string, name: string): boolean {
  * @param name Contextual name of the address, e.g. "claim owner".
  * @throws When nonceHash is of wrong format or has incorrectly set properties.
  * @throws When the nonceHash does not validate against the given data.
+ * @throws [[ERROR_NONCE_HASH_MALFORMED]], [[ERROR_NONCE_HASH_INVALID]].
  *
  * @returns Boolean whether the given NonceHash checks out against the Format and it's hashed data.
  */
@@ -74,16 +86,14 @@ export function validateNonceHash(
   name: string
 ): boolean {
   if (!nonceHash || typeof nonceHash.hash !== 'string') {
-    throw new Error('Nonce Hash incomplete')
+    throw ERROR_NONCE_HASH_MALFORMED()
   }
   validateHash(nonceHash.hash, name)
   if (
     nonceHash.nonce &&
     nonceHash.hash !== hashObjectAsStr(data, nonceHash.nonce)
   ) {
-    throw new Error(`Provided ${name} hash not corresponding to data \n
-    Hash: ${nonceHash.hash} \n
-    Nonce: ${nonceHash.nonce}`)
+    throw ERROR_NONCE_HASH_INVALID(nonceHash, name)
   }
   return true
 }
@@ -93,6 +103,7 @@ export function validateNonceHash(
  *
  * @param legitimations Array of IAttestedClaims to validate.
  * @throws When one of the IAttestedClaims data is unable to be verified.
+ * @throws [[ERROR_LEGITIMATIONS_UNVERIFIABLE]].
  *
  * @returns Boolean whether each element of the given Array of IAttestedClaims is verifiable.
  */
@@ -101,7 +112,7 @@ export function validateLegitimations(
 ): boolean {
   legitimations.forEach((legitimation: IAttestedClaim) => {
     if (!AttestedClaim.verifyData(legitimation)) {
-      throw new Error(`Provided Legitimations not verifiable`)
+      throw ERROR_LEGITIMATIONS_UNVERIFIABLE()
     }
   })
   return true
@@ -115,6 +126,7 @@ export function validateLegitimations(
  * @param signer Address of the signer identity.
  * @throws When parameters are of invalid type.
  * @throws When the signature could not be validated against the data.
+ * @throws [[ERROR_SIGNATURE_DATA_TYPE]], [[ERROR_SIGNATURE_UNVERIFIABLE]].
  *
  * @returns Boolean whether the signature is valid for the given data.
  */
@@ -128,10 +140,10 @@ export function validateSignature(
     typeof signature !== 'string' ||
     typeof signer !== 'string'
   ) {
-    throw new Error('data, signature or signer not of type string')
+    throw ERROR_SIGNATURE_DATA_TYPE()
   }
   if (!verify(data, signature, signer)) {
-    throw new Error(`Provided signature invalid`)
+    throw ERROR_SIGNATURE_UNVERIFIABLE()
   }
   return true
 }
