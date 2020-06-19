@@ -34,6 +34,7 @@ import {
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
 import ITerms from '../types/Terms'
 import { IQuoteAgreement } from '../types/Quote'
+import { validateSignature } from '../util/DataUtils'
 
 /**
  * - `body` - The body of the message, see [[MessageBody]].
@@ -167,9 +168,7 @@ export default class Message implements IMessage {
     ) {
       throw new Error('Hash of message not correct')
     }
-    if (!Crypto.verify(encrypted.hash, encrypted.signature, senderAddress)) {
-      throw new Error('Signature of message not correct')
-    }
+    validateSignature(encrypted.hash, encrypted.signature, senderAddress)
   }
 
   /**

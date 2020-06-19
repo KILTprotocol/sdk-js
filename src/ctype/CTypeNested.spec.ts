@@ -167,58 +167,57 @@ describe('Nested CTypes', () => {
       claimDeepContents,
       identityAlice.getAddress()
     )
-
-    it('verify ajv compiler', () => {
-      expect(
-        CTypeUtils.validateNestedSchemas(
-          nestedCType.schema,
-          [passport.schema, kyc.schema],
-          claimContents
-        )
-      ).toBeTruthy()
-
-      // @ts-ignore
-      claimContents.fullName = {}
-      expect(() =>
-        Claim.fromNestedCTypeClaim(
-          nestedCType,
-          [passport.schema, kyc.schema],
-          claimContents,
-          identityAlice.getAddress()
-        )
-      ).toThrowError(
-        new Error('Nested claim data does not validate against CType')
+  })
+  it('verify ajv compiler', () => {
+    expect(
+      CTypeUtils.validateNestedSchemas(
+        nestedCType.schema,
+        [passport.schema, kyc.schema],
+        claimContents
       )
-      expect(
-        CTypeUtils.validateNestedSchemas(
-          deeplyNestedCType.schema,
-          [passport.schema, kyc.schema],
-          claimDeepContents
-        )
-      ).toBeTruthy()
-      // @ts-ignore
-      claimDeepContents.passport.fullName = {}
-      expect(
-        CTypeUtils.validateNestedSchemas(
-          deeplyNestedCType.schema,
-          [passport.schema, kyc.schema],
-          claimDeepContents
-        )
-      ).toBeFalsy()
-    })
-    it('verify claim from a nested ctype', () => {
-      expect(nestedData).toBeTruthy()
-      expect(nestedDeepData).toBeTruthy()
-      expect(() =>
-        Claim.fromNestedCTypeClaim(
-          deeplyNestedCType,
-          [passport.schema, kyc.schema],
-          claimDeepContents,
-          identityAlice.getAddress()
-        )
-      ).toThrowError(
-        new Error('Nested claim data does not validate against CType')
+    ).toBeTruthy()
+
+    // @ts-ignore
+    claimContents.fullName = {}
+    expect(() =>
+      Claim.fromNestedCTypeClaim(
+        nestedCType,
+        [passport.schema, kyc.schema],
+        claimContents,
+        identityAlice.getAddress()
       )
-    })
+    ).toThrowError(
+      new Error('Nested claim data does not validate against CType')
+    )
+    expect(
+      CTypeUtils.validateNestedSchemas(
+        deeplyNestedCType.schema,
+        [passport.schema, kyc.schema],
+        claimDeepContents
+      )
+    ).toBeTruthy()
+    // @ts-ignore
+    claimDeepContents.passport.fullName = {}
+    expect(
+      CTypeUtils.validateNestedSchemas(
+        deeplyNestedCType.schema,
+        [passport.schema, kyc.schema],
+        claimDeepContents
+      )
+    ).toBeFalsy()
+  })
+  it('verify claim from a nested ctype', () => {
+    expect(nestedData).toBeTruthy()
+    expect(nestedDeepData).toBeTruthy()
+    expect(() =>
+      Claim.fromNestedCTypeClaim(
+        deeplyNestedCType,
+        [passport.schema, kyc.schema],
+        claimDeepContents,
+        identityAlice.getAddress()
+      )
+    ).toThrowError(
+      new Error('Nested claim data does not validate against CType')
+    )
   })
 })

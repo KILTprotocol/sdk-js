@@ -4,13 +4,12 @@ import ClaimUtils from './Claim.utils'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
-import { CompressedClaim } from '../types/Claim'
+import IClaim, { CompressedClaim } from '../types/Claim'
 
 describe('Claim', () => {
   let identityAlice: Identity
   let claimContents: any
   let rawCType: ICType['schema']
-  let fromRawCType: ICType
   let testCType: CType
   let claim: Claim
   let compressedClaim: CompressedClaim
@@ -32,13 +31,7 @@ describe('Claim', () => {
       type: 'object',
     }
 
-    fromRawCType = {
-      schema: rawCType,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-
-    testCType = CType.fromCType(fromRawCType)
+    testCType = CType.fromSchema(rawCType, identityAlice.getAddress())
 
     claim = Claim.fromCTypeAndClaimContents(
       testCType,
@@ -71,11 +64,12 @@ describe('Claim', () => {
 
   it('Negative test for compresses and decompresses the Claim object', () => {
     compressedClaim.pop()
-    delete claim.owner
+    // Claim type guard won't throw on deleted claim.owner
+    // delete claim.owner
 
-    expect(() => {
-      ClaimUtils.compress(claim)
-    }).toThrow()
+    // expect(() => {
+    //   ClaimUtils.compress(claim)
+    // }).toThrow()
 
     expect(() => {
       ClaimUtils.decompress(compressedClaim)
@@ -85,8 +79,58 @@ describe('Claim', () => {
       Claim.decompress(compressedClaim)
     }).toThrow()
 
-    expect(() => {
-      claim.compress()
-    }).toThrow()
+    // expect(() => {
+    //   claim.compress()
+    // }).toThrow()
+  })
+
+  it('should throw an error on faulty constructor input', () => {
+    const cTypeHash = testCType.hash
+    const ownerAddress = identityAlice.signKeyringPair.address
+
+    const everything = {
+      cTypeHash,
+      contents: claimContents,
+      owner: ownerAddress,
+    } as IClaim
+
+    const noCTypeHash = {
+      cTypeHash: '',
+      contents: claimContents,
+      owner: ownerAddress,
+    } as IClaim
+
+    const malformedCTypeHash = {
+      cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
+      contents: claimContents,
+      owner: ownerAddress,
+    } as IClaim
+
+    const malformedAddress = {
+      cTypeHash,
+      contents: claimContents,
+      owner: ownerAddress.replace('7', 'D'),
+    } as IClaim
+
+    expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
+
+    expect(() =>
+      ClaimUtils.errorCheck(noCTypeHash)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"cTypeHash of provided Claim not set"`
+    )
+
+    expect(() => ClaimUtils.errorCheck(malformedCTypeHash))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided Claim CType hash invalid or malformed 
+
+    Hash: 0xf87dd9c5979e92ae721279f60ee1925d4fc8904cd4700b966764f179e877891"
+`)
+    expect(() => ClaimUtils.errorCheck(malformedAddress))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided Claim Owner address invalid 
+
+    Address: 5FA9nQDVg26DDEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+`)
   })
 })

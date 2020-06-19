@@ -10,6 +10,8 @@ import {
   Claimer,
   MessageBodyType,
   IClaim,
+  ICType,
+  CType,
 } from '..'
 import constants from '../test/constants'
 
@@ -21,7 +23,8 @@ describe('Attester', () => {
   let attester: AttesterIdentity
   let claimer: Identity
   let acc: gabi.Accumulator
-
+  let rawCType: ICType['schema']
+  let cType: CType
   beforeAll(async () => {
     attester = await AttesterIdentity.buildFromURI('//Alice', {
       key: {
@@ -32,6 +35,17 @@ describe('Attester', () => {
 
     claimer = await Identity.buildFromURI('//Bob')
 
+    rawCType = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Attester',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+
+    cType = CType.fromSchema(rawCType, claimer.getAddress())
     acc = await Attester.buildAccumulator(attester)
   })
 
@@ -57,15 +71,16 @@ describe('Attester', () => {
       MessageBodyType.INITIATE_ATTESTATION
     )
     expect(initAttestation.body.content).toBeDefined()
+
     const claim: IClaim = {
-      cTypeHash: '0xdead',
+      cTypeHash: cType.hash,
       contents: {
         name: 'bob',
         and: 1,
         other: '0xbeef',
         attributes: true,
       },
-      owner: claimer.getPublicIdentity().address,
+      owner: claimer.getAddress(),
     }
     const { message: requestAttestation } = await Claimer.requestAttestation(
       claim,
@@ -105,7 +120,7 @@ describe('Attester', () => {
     )
 
     const claim: IClaim = {
-      cTypeHash: '0xdead',
+      cTypeHash: cType.hash,
       contents: {
         name: 'bob',
         and: 1,
@@ -145,7 +160,7 @@ describe('Attester', () => {
     )
 
     const claim: IClaim = {
-      cTypeHash: '0xdead',
+      cTypeHash: cType.hash,
       contents: {
         name: 'bob',
         and: 1,
@@ -186,7 +201,7 @@ describe('Attester', () => {
     )
 
     const claim: IClaim = {
-      cTypeHash: '0xdead',
+      cTypeHash: cType.hash,
       contents: {
         name: 'bob',
         and: 1,

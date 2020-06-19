@@ -10,7 +10,7 @@ import {
   wannabeBob,
   DriversLicense,
   CtypeOnChain,
-  isOfficialLicenseAuthority,
+  IsOfficialLicenseAuthority,
 } from './utils'
 import Claim from '../claim/Claim'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
@@ -23,6 +23,7 @@ import ICType from '../types/CType'
 import Identity from '../identity/Identity'
 import Credential from '../credential/Credential'
 import { IBlockchainApi } from '../blockchain/Blockchain'
+import { IClaim, IAttestedClaim } from '..'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
@@ -60,7 +61,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   it('should be possible to make a claim', async () => {
-    const content = { name: 'Ralfi', age: 12 }
+    const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
@@ -75,7 +76,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   })
 
   it('should be possible to attest a claim', async () => {
-    const content = { name: 'Ralph', age: 12 }
+    const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
+
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
@@ -104,7 +106,8 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   it('should not be possible to attest a claim w/o tokens', async () => {
-    const content = { name: 'Ralph', age: 10 }
+    const content: IClaim['contents'] = { name: 'Ralph', age: 10 }
+
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
@@ -135,24 +138,22 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   it('should not be possible to attest a claim on a Ctype that is not on chain', async () => {
-    const badCtype = CType.fromCType({
-      schema: {
-        $id: 'kilt:ctype:0x1',
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-        title: 'badDriversLicense',
-        properties: {
-          name: {
-            type: 'string',
-          },
-          weight: {
-            type: 'integer',
-          },
+    const badCtype = CType.fromSchema({
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'badDriversLicense',
+      properties: {
+        name: {
+          type: 'string',
         },
-        type: 'object',
-      } as ICType['schema'],
-    } as ICType)
+        weight: {
+          type: 'integer',
+        },
+      },
+      type: 'object',
+    } as ICType['schema'])
 
-    const content = { name: 'Ralph', weight: 120 }
+    const content: IClaim['contents'] = { name: 'Ralph', weight: 120 }
     const claim = Claim.fromCTypeAndClaimContents(
       badCtype,
       content,
@@ -175,7 +176,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     let attClaim: AttestedClaim
 
     beforeAll(async () => {
-      const content = { name: 'Rolfi', age: 18 }
+      const content: IClaim['contents'] = { name: 'Rolfi', age: 18 }
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,
@@ -217,11 +218,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         claim,
         claimer
       )).message
-      const fakeAttClaim = new AttestedClaim({
+      const fakeAttClaim: IAttestedClaim = {
         request,
         attestation: attClaim.attestation,
-      })
-      await expect(fakeAttClaim.verify()).resolves.toBeFalsy()
+      }
+
+      expect(AttestedClaim.verify(fakeAttClaim)).resolves.toBeFalsy()
     }, 15000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
@@ -242,18 +244,18 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
   describe('when there is another Ctype that works as a legitimation', () => {
     beforeAll(async () => {
-      if (!(await CtypeOnChain(isOfficialLicenseAuthority))) {
-        await isOfficialLicenseAuthority.store(faucet)
+      if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
+        await IsOfficialLicenseAuthority.store(faucet)
       }
       await expect(
-        CtypeOnChain(isOfficialLicenseAuthority)
+        CtypeOnChain(IsOfficialLicenseAuthority)
       ).resolves.toBeTruthy()
     }, 30_000)
 
     it('can be included in a claim as a legitimation', async () => {
       // make credential to be used as legitimation
       const licenseAuthorization = Claim.fromCTypeAndClaimContents(
-        isOfficialLicenseAuthority,
+        IsOfficialLicenseAuthority,
         {
           LicenseType: "Driver's License",
           LicenseSubtypes: 'sportscars, tanks',

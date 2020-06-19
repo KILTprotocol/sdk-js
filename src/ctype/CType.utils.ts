@@ -6,11 +6,12 @@
 
 import Ajv from 'ajv'
 import * as jsonabc from 'jsonabc'
-import { checkAddress } from '@polkadot/util-crypto'
-import { CTypeModel } from './CTypeSchema'
+import { getOwner } from './CType.chain'
+import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import ICType, { CompressedCTypeSchema, CompressedCType } from '../types/CType'
 import Crypto from '../crypto'
 import IClaim from '../types/Claim'
+import { validateAddress } from '../util/DataUtils'
 
 export function verifySchemaWithErrors(
   object: object,
@@ -55,6 +56,11 @@ export function verifyClaimStructure(
   return verifySchema(claimContents, schema)
 }
 
+export async function verifyStored(ctype: ICType): Promise<boolean> {
+  const actualOwner = await getOwner(ctype.hash)
+  return ctype.owner ? actualOwner === ctype.owner : actualOwner !== null
+}
+
 export function getHashForSchema(schema: ICType['schema']): string {
   const hashVal = {
     $schema: schema.$schema,
@@ -63,6 +69,32 @@ export function getHashForSchema(schema: ICType['schema']): string {
     type: schema.type,
   }
   return Crypto.hashObjectAsStr(hashVal)
+}
+
+/**
+ *  Checks whether the input meets all the required criteria of an ICType object.
+ *  Throws on invalid input.
+ *
+ * @param input The potentially only partial ICType.
+ * @throws When input does not correspond to either it's schema, or the CTypeWrapperModel.
+ * @throws When the input's hash does not match the hash calculated from ICType's schema.
+ * @throws When the input's owner is not of type string or null.
+ *
+ */
+export function errorCheck(input: ICType): void {
+  if (!verifySchema(input, CTypeWrapperModel)) {
+    throw new Error('CType does not correspond to schema')
+  }
+  if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
+    throw new Error('provided CType hash not matching calculated hash')
+  }
+  if (
+    typeof input.owner === 'string'
+      ? !validateAddress(input.owner, 'CType Owner')
+      : !(input.owner === null)
+  ) {
+    throw new Error('CType owner unknown data')
+  }
 }
 
 /**
@@ -134,21 +166,7 @@ export function decompressSchema(
  */
 
 export function compress(cType: ICType): CompressedCType {
-  if (
-    !cType.hash ||
-    (typeof cType.owner === 'string'
-      ? !checkAddress(cType.owner, 42)[0]
-      : !(cType.owner === null)) ||
-    !cType.schema
-  ) {
-    throw new Error(
-      `Property Not Provided while building cType: ${JSON.stringify(
-        cType,
-        null,
-        2
-      )}`
-    )
-  }
+  errorCheck(cType)
   return [cType.hash, cType.owner, compressSchema(cType.schema)]
 }
 
@@ -208,13 +226,15 @@ export function validateNestedSchemas(
 }
 
 export default {
-  verifySchema,
+  compress,
   compressSchema,
   decompressSchema,
   decompress,
-  compress,
-  verifySchemaWithErrors,
+  errorCheck,
   verifyClaimStructure,
+  verifySchema,
+  verifySchemaWithErrors,
+  verifyStored,
   getHashForSchema,
   validateNestedSchemas,
 }

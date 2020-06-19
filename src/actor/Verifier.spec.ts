@@ -2,9 +2,16 @@ import Bool from '@polkadot/types/primitive/Bool'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
 import { Text } from '@polkadot/types'
-import { Verifier, Attester, Claimer, CombinedPresentation } from '..'
+import {
+  Verifier,
+  Attester,
+  Claimer,
+  CombinedPresentation,
+  CType,
+  ICType,
+} from '..'
 import { MessageBodyType } from '../messaging/Message'
-import AttesterIdentity from '../attesteridentity/AttesterIdentity'
+import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
 import IClaim from '../types/Claim'
 import constants from '../test/constants'
@@ -16,6 +23,7 @@ describe('Verifier', () => {
   let attester: AttesterIdentity
   let claimer: Identity
   let verifier: Identity
+  let cType: CType
   let claim: IClaim
   let credentialPE: Credential
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
@@ -32,8 +40,20 @@ describe('Verifier', () => {
     claimer = await Identity.buildFromURI('//bob')
     verifier = await Identity.buildFromMnemonic()
 
+    const rawCType: ICType['schema'] = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Verifier',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+
+    cType = CType.fromSchema(rawCType, claimer.getAddress())
+
     claim = {
-      cTypeHash: '0xdead',
+      cTypeHash: cType.hash,
       contents: {
         name: 'bob',
         and: 1,

@@ -11,24 +11,44 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import { CTypeWrapperModel } from './CTypeSchema'
 import CTypeUtils from './CType.utils'
 import ICType, { CompressedCType } from '../types/CType'
 import Identity from '../identity/Identity'
-import { getOwner, store } from './CType.chain'
+import { store } from './CType.chain'
 import IClaim from '../types/Claim'
 
 export default class CType implements ICType {
   public static fromCType(cTypeInput: ICType): CType {
-    if (!CTypeUtils.verifySchema(cTypeInput, CTypeWrapperModel)) {
-      throw new Error('CType does not correspond to schema')
-    }
-    if (cTypeInput.hash) {
-      if (CTypeUtils.getHashForSchema(cTypeInput.schema) !== cTypeInput.hash) {
-        throw Error('provided and generated cType hash are not matching')
-      }
-    }
     return new CType(cTypeInput)
+  }
+
+  public static fromSchema(
+    schema: ICType['schema'],
+    owner?: ICType['owner']
+  ): CType {
+    // eslint-disable-next-line no-param-reassign
+    schema.$id = `kilt:ctype:${CTypeUtils.getHashForSchema(schema)}`
+    return new CType({
+      hash: CTypeUtils.getHashForSchema(schema),
+      owner: owner || null,
+      schema,
+    })
+  }
+
+  /**
+   *  [STATIC] Custom Type Guard to determine input being of type ICType using the CTypeUtils errorCheck.
+   *
+   * @param input The potentially only partial ICType.
+   *
+   * @returns Boolean whether input is of type ICType.
+   */
+  static isICType(input: object): input is ICType {
+    try {
+      CTypeUtils.errorCheck(input as ICType)
+    } catch (error) {
+      return false
+    }
+    return true
   }
 
   public hash: ICType['hash']
@@ -36,6 +56,7 @@ export default class CType implements ICType {
   public schema: ICType['schema']
 
   public constructor(cTypeInput: ICType) {
+    CTypeUtils.errorCheck(cTypeInput)
     this.schema = cTypeInput.schema
     this.owner = cTypeInput.owner
 
@@ -66,8 +87,7 @@ export default class CType implements ICType {
   }
 
   public async verifyStored(): Promise<boolean> {
-    const actualOwner = await getOwner(this.hash)
-    return this.owner ? actualOwner === this.owner : actualOwner !== null
+    return CTypeUtils.verifyStored(this)
   }
 
   /**

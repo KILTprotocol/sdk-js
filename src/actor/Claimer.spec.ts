@@ -2,10 +2,18 @@ import Bool from '@polkadot/types/primitive/Bool'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
 import { Text } from '@polkadot/types'
-import AttesterIdentity from '../attesteridentity/AttesterIdentity'
+import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
 import constants from '../test/constants'
-import { Attester, Claimer, IClaim, Verifier, CombinedPresentation } from '..'
+import {
+  Attester,
+  Claimer,
+  IClaim,
+  Verifier,
+  CombinedPresentation,
+  ICType,
+  CType,
+} from '..'
 import { MessageBodyType } from '../messaging/Message'
 import Credential from '../credential/Credential'
 
@@ -32,8 +40,20 @@ describe('Claimer', () => {
     claimer = await Identity.buildFromURI('//bob')
     verifier = await Identity.buildFromMnemonic()
 
+    const rawCType: ICType['schema'] = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Claimer',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+
+    const cType = CType.fromSchema(rawCType, claimer.getAddress())
+
     claim = {
-      cTypeHash: '0xdead',
+      cTypeHash: cType.hash,
       contents: {
         name: 'bob',
         and: 1,

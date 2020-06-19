@@ -9,7 +9,6 @@ import Identity from '../identity/Identity'
 describe('CType', () => {
   let identityAlice: Identity
   let rawCType: ICType['schema']
-  let fromRawCType: ICType
   let ctype: ICType
   let ctypeMetadata: ICTypeMetadata['metadata']
   let metadata: CTypeMetadata
@@ -27,13 +26,7 @@ describe('CType', () => {
       },
       type: 'object',
     }
-
-    fromRawCType = {
-      schema: rawCType,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-    ctype = CType.fromCType(fromRawCType)
+    ctype = CType.fromSchema(rawCType, identityAlice.signKeyringPair.address)
 
     ctypeMetadata = {
       title: { default: 'Title' },

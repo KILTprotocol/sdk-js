@@ -23,17 +23,15 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   function makeCType(): CType {
     ctypeCounter += 1
-    return CType.fromCType({
-      schema: {
-        $id: `kilt:ctype:0x${ctypeCounter}`,
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-        title: 'ctype10',
-        properties: {
-          name: { type: 'string' },
-        },
-        type: 'object',
-      } as ICType['schema'],
-    } as ICType)
+    return CType.fromSchema({
+      $id: `kilt:ctype:0x${ctypeCounter}`,
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'ctype10',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    } as ICType['schema'])
   }
 
   beforeAll(async () => {
@@ -81,8 +79,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
       } as ICType['schema'],
     } as ICType)
 
-    const iAmNotThereWithOwner = CType.fromCType({
-      schema: {
+    const iAmNotThereWithOwner = CType.fromSchema(
+      {
         $id: 'kilt:ctype:0x2',
         $schema: 'http://kilt-protocol.org/draft-01/ctype#',
         title: 'ctype2',
@@ -90,9 +88,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
           game: { type: 'string' },
         },
         type: 'object',
-      } as ICType['schema'],
-      owner: ctypeCreator.getAddress(),
-    } as ICType)
+      },
+      ctypeCreator.signKeyringPair.address
+    )
 
     await Promise.all([
       expect(iAmNotThere.verifyStored()).resolves.toBeFalsy(),

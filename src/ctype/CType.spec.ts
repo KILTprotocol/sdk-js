@@ -1,7 +1,7 @@
 import { SubmittableResult } from '@polkadot/api'
 import CType from './CType'
 import Identity from '../identity/Identity'
-import ICType, { CompressedCType } from '../types/CType'
+import ICType, { CompressedCType, ICTypeSchema } from '../types/CType'
 import CTypeUtils from './CType.utils'
 import Claim from '../claim/Claim'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
@@ -12,8 +12,6 @@ describe('CType', () => {
   let ctypeModel: ICType['schema']
   let rawCType: ICType['schema']
   let identityAlice: Identity
-  let fromRawCType: ICType
-  let fromCTypeModel: ICType
   let claimCtype: CType
   let claimContents: any
   let claim: Claim
@@ -42,18 +40,7 @@ describe('CType', () => {
 
     identityAlice = await Identity.buildFromURI('//Alice')
 
-    fromRawCType = {
-      schema: rawCType,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-
-    fromCTypeModel = {
-      schema: ctypeModel,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-    claimCtype = CType.fromCType(fromRawCType)
+    claimCtype = CType.fromSchema(rawCType, identityAlice.getAddress())
 
     claimContents = {
       name: 'Bob',
@@ -82,28 +69,53 @@ describe('CType', () => {
   })
 
   it('stores ctypes', async () => {
-    const ctype = CType.fromCType(fromCTypeModel)
+    const ctype = CType.fromSchema(ctypeModel, identityAlice.getAddress())
 
     const result = await ctype.store(identityAlice)
     expect(result).toBeInstanceOf(SubmittableResult)
     expect(result.isFinalized).toBeTruthy()
     expect(result.isCompleted).toBeTruthy()
   })
+
   it('verifies the claim structure', () => {
     expect(claimCtype.verifyClaimStructure(claim)).toBeTruthy()
     // @ts-ignore
     claim.contents.name = 123
     expect(claimCtype.verifyClaimStructure(claim)).toBeFalsy()
   })
-  it('throws error on wrong ctype hash', () => {
-    const wrongRawCtype = {
-      ...fromRawCType,
+
+  it('throws error on faulty input', () => {
+    const wrongHashCtype: ICType = {
+      ...claimCtype,
       hash: '0x1234',
     }
-    expect(() => {
-      return CType.fromCType(wrongRawCtype)
-    }).toThrow()
+    const faultySchemaCtype: ICType = {
+      ...claimCtype,
+      schema: ({ ...rawCType, properties: null } as unknown) as ICTypeSchema,
+    }
+    const invalidAddressCtype: ICType = {
+      ...claimCtype,
+      owner: claimCtype.owner ? claimCtype.owner.replace('7', 'D') : null,
+    }
+
+    expect(() =>
+      CType.fromCType(wrongHashCtype)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"provided CType hash not matching calculated hash"`
+    )
+    expect(() =>
+      CType.fromCType(faultySchemaCtype)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"CType does not correspond to schema"`
+    )
+    expect(() => CType.fromCType(invalidAddressCtype))
+      .toThrowErrorMatchingInlineSnapshot(`
+"Provided CType Owner address invalid 
+
+    Address: 5FA9nQDVg26DDEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+`)
   })
+
   it('compresses and decompresses the ctype object', () => {
     expect(CTypeUtils.compressSchema(rawCType)).toEqual(compressedCType[2])
 
@@ -136,9 +148,7 @@ describe('CType', () => {
 describe('blank ctypes', () => {
   let identityAlice: Identity
   let ctypeSchema1: ICType['schema']
-  let icytype1: ICType
   let ctypeSchema2: ICType['schema']
-  let icytype2: ICType
   let ctype1: CType
   let ctype2: CType
 
@@ -153,12 +163,6 @@ describe('blank ctypes', () => {
       type: 'object',
     }
 
-    icytype1 = {
-      schema: ctypeSchema1,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-
     ctypeSchema2 = {
       $id: 'kilt:ctype:0x4',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -167,14 +171,14 @@ describe('blank ctypes', () => {
       type: 'object',
     }
 
-    icytype2 = {
-      schema: ctypeSchema2,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-
-    ctype1 = CType.fromCType(icytype1)
-    ctype2 = CType.fromCType(icytype2)
+    ctype1 = CType.fromSchema(
+      ctypeSchema1,
+      identityAlice.signKeyringPair.address
+    )
+    ctype2 = CType.fromSchema(
+      ctypeSchema2,
+      identityAlice.signKeyringPair.address
+    )
   })
 
   it('two ctypes with no properties have different hashes if id is different', () => {

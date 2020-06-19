@@ -34,11 +34,7 @@ describe('Credential', () => {
       type: 'object',
     }
 
-    ctype = CType.fromCType({
-      schema: rawCType,
-      owner: claimer.getAddress(),
-      hash: '',
-    })
+    ctype = CType.fromSchema(rawCType, claimer.getAddress())
 
     // cannot be used since the variable needs to be established in the outer scope
     // eslint-disable-next-line prefer-destructuring
