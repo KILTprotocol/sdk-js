@@ -5,6 +5,7 @@ import {
   verifySchemaWithErrors,
 } from './CType.utils'
 import ICType from '../types/CType'
+import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
 
 const ctypeInput = ({
   $id: 'kilt:ctype:0x1',
@@ -55,7 +56,7 @@ describe('CTypeUtils', () => {
     expect(verifySchemaWithErrors(badClaim, CTypeWrapperModel, [])).toBeFalsy()
     expect(() => {
       verifyClaimStructure(badClaim, ctypeInput)
-    }).toThrow(new Error('CType does not correspond to schema'))
+    }).toThrow(ERROR_OBJECT_MALFORMED())
   })
   it('verifies ctypes', () => {
     expect(verifySchema(ctypeWrapperModel, CTypeModel)).toBeTruthy()

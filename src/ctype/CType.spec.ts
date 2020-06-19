@@ -5,6 +5,11 @@ import ICType, { CompressedCType, ICTypeSchema } from '../types/CType'
 import CTypeUtils from './CType.utils'
 import Claim from '../claim/Claim'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
+import {
+  ERROR_HASH_MALFORMED,
+  ERROR_OBJECT_MALFORMED,
+  ERROR_ADDRESS_INVALID,
+} from '../errorhandling/SDKErrors'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -95,25 +100,20 @@ describe('CType', () => {
     }
     const invalidAddressCtype: ICType = {
       ...claimCtype,
-      owner: claimCtype.owner ? claimCtype.owner.replace('7', 'D') : null,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      owner: claimCtype.owner!.replace('7', 'D'),
     }
 
-    expect(() =>
-      CType.fromCType(wrongHashCtype)
-    ).toThrowErrorMatchingInlineSnapshot(
-      `"provided CType hash not matching calculated hash"`
+    expect(() => CType.fromCType(wrongHashCtype)).toThrowError(
+      ERROR_HASH_MALFORMED(wrongHashCtype.hash, 'CType')
     )
-    expect(() =>
-      CType.fromCType(faultySchemaCtype)
-    ).toThrowErrorMatchingInlineSnapshot(
-      `"CType does not correspond to schema"`
+    expect(() => CType.fromCType(faultySchemaCtype)).toThrowError(
+      ERROR_OBJECT_MALFORMED()
     )
-    expect(() => CType.fromCType(invalidAddressCtype))
-      .toThrowErrorMatchingInlineSnapshot(`
-"Provided CType Owner address invalid 
-
-    Address: 5FA9nQDVg26DDEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
-`)
+    expect(() => CType.fromCType(invalidAddressCtype)).toThrowError(
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      ERROR_ADDRESS_INVALID(invalidAddressCtype.owner!, 'CType owner')
+    )
   })
 
   it('compresses and decompresses the ctype object', () => {

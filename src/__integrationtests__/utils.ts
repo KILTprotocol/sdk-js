@@ -44,7 +44,7 @@ export const DriversLicense = CType.fromSchema({
   type: 'object',
 })
 
-export const isOfficialLicenseAuthority = CType.fromSchema({
+export const IsOfficialLicenseAuthority = CType.fromSchema({
   $id: 'kilt:ctype:0x2',
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
   title: 'License Authority',
@@ -56,6 +56,5 @@ export const isOfficialLicenseAuthority = CType.fromSchema({
       type: 'string',
     },
   },
-
   type: 'object',
 })

@@ -1,7 +1,7 @@
 import Bool from '@polkadot/types/primitive/Bool'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
-import { Text } from '@polkadot/types'
+import { Text, H256 } from '@polkadot/types'
 import * as gabi from '@kiltprotocol/portablegabi'
 import {
   AttesterIdentity,
@@ -54,8 +54,8 @@ describe('Attester', () => {
       new Option(
         Tuple,
         new Tuple(
-          [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, false]
+          [H256, AccountId, Text, Bool],
+          [cType.hash, attester.getAddress(), undefined, false]
         )
       )
     )
@@ -113,8 +113,8 @@ describe('Attester', () => {
       new Option(
         Tuple,
         new Tuple(
-          [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, false]
+          [H256, AccountId, Text, Bool],
+          [cType.hash, attester.getAddress(), undefined, false]
         )
       )
     )
@@ -189,7 +189,7 @@ describe('Attester', () => {
       attester.getPublicIdentity()
     )
     await Attester.revokeAttestation(attester, revocationHandle)
-    expect(
+    await expect(
       Attester.getLatestAccumulator(attester.getPublicIdentity())
     ).resolves.not.toEqual(oldAcc)
   })

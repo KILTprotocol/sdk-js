@@ -16,6 +16,7 @@ import IRequestForAttestation, {
   CompressedNonceHashTree,
   CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
@@ -24,32 +25,31 @@ import IRequestForAttestation, {
  * @param input - A potentially only partial [[IRequestForAttestation]].
  * @throws When either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type.
  * @throws When any of the input's claimHashTree's keys missing their hash.
+ * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_HASHTREE_NOT_PROVIDED]], [[ERROR_CLAIM_HASHTREE_MALFORMED]], [[ERROR_DELEGATION_ID_TYPE]].
  *
  */
 export function errorCheck(input: IRequestForAttestation): void {
   if (!input.claim) {
-    throw new Error('Claim not provided')
+    throw SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
   } else {
     ClaimUtils.errorCheck(input.claim)
   }
-  if (!input.legitimations) {
-    throw new Error('Legitimations not provided')
-  } else if (!Array.isArray(input.legitimations)) {
-    throw new Error('Legitimations not an Array')
+  if (!input.legitimations && !Array.isArray(input.legitimations)) {
+    throw SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
   }
 
   if (!input.claimHashTree) {
-    throw new Error('Claim Hash Tree not provided')
+    throw SDKErrors.ERROR_CLAIM_HASHTREE_NOT_PROVIDED()
   } else {
     Object.keys(input.claimHashTree).forEach(key => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (!input.claimHashTree![key].hash) {
-        throw new Error('incomplete claim Hash Tree')
+        throw SDKErrors.ERROR_CLAIM_HASHTREE_MALFORMED()
       }
     })
   }
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw new Error('DelegationId not provided')
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE
   }
   RequestForAttestation.verifyData(input as IRequestForAttestation)
 }
@@ -59,6 +59,7 @@ export function errorCheck(input: IRequestForAttestation): void {
  *
  * @param nonceHash A hash or a hash and nonce object that will be sorted and stripped for messaging or storage.
  * @throws When the nonceHash is missing it's hash (existence of nonce is ignored).
+ * @throws [[ERROR_COMPRESS_OBJECT]].
  *
  * @returns An object compressing of a hash or a hash and nonce.
  */
@@ -67,13 +68,7 @@ export function compressNonceAndHash(
   nonceHash: NonceHash
 ): CompressedNonceHash {
   if (!nonceHash.hash) {
-    throw new Error(
-      `Property Not Provided while building RequestForAttestation: ${JSON.stringify(
-        nonceHash,
-        null,
-        2
-      )}`
-    )
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(nonceHash, 'Nonce Hash')
   }
   return [nonceHash.hash, nonceHash.nonce]
 }
@@ -195,6 +190,7 @@ export function compress(
  *
  * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
  * @throws When reqForAtt is not an Array and it's length is not equal to the defined length of 8.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */
@@ -203,9 +199,7 @@ export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
   if (!Array.isArray(reqForAtt) || reqForAtt.length !== 9) {
-    throw new Error(
-      "Compressed Request For Attestation isn't an Array or has all the required data types"
-    )
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }
   return {
     claim: ClaimUtils.decompress(reqForAtt[0]),

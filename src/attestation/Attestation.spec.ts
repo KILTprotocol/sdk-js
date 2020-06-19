@@ -1,4 +1,4 @@
-import { Text, Data } from '@polkadot/types'
+import { H256 } from '@polkadot/types'
 import Bool from '@polkadot/types/primitive/Bool'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
@@ -10,6 +10,7 @@ import ICType from '../types/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -54,13 +55,12 @@ describe('Attestation', () => {
 
   it('stores attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(
-        Tuple,
-        new Tuple(
-          [Data, AccountId, Text, Bool],
-          [testCType.hash, identityAlice.getAddress(), undefined, false]
-        )
-      )
+      new Option(Tuple.with([H256, AccountId, Option.with(H256), Bool]), [
+        testCType.hash,
+        identityAlice.getAddress(),
+        null,
+        false,
+      ])
     )
 
     const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
@@ -72,7 +72,7 @@ describe('Attestation', () => {
 
   it('verify attestations not on chain', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(Tuple)
+      new Option(Tuple.with([H256, AccountId, Option.with(H256), Bool]))
     )
 
     const attestation: Attestation = Attestation.fromAttestation({
@@ -88,17 +88,11 @@ describe('Attestation', () => {
   it('verify attestation revoked', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
-        Tuple,
-        new Tuple(
+        Tuple.with(
           // Attestations: claim-hash -> (ctype-hash, account, delegation-id?, revoked)
-          [Data, AccountId, Text, Bool],
-          [
-            testCType.hash,
-            identityAlice.signKeyringPair.address,
-            undefined,
-            true,
-          ]
-        )
+          [H256, AccountId, 'Option<H256>', Bool]
+        ),
+        [testCType.hash, identityAlice.getAddress(), null, true]
       )
     )
 
@@ -238,43 +232,34 @@ describe('Attestation', () => {
       delegationId: null,
     } as IAttestation
 
-    expect(() =>
-      AttestationUtils.errorCheck(noClaimHash)
-    ).toThrowErrorMatchingInlineSnapshot(`"Claim Hash not provided"`)
+    expect(() => AttestationUtils.errorCheck(noClaimHash)).toThrow(
+      SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
+    )
 
-    expect(() =>
-      AttestationUtils.errorCheck(noCTypeHash)
-    ).toThrowErrorMatchingInlineSnapshot(`"CType Hash not provided"`)
+    expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowError(
+      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+    )
 
-    expect(() =>
-      AttestationUtils.errorCheck(malformedOwner)
-    ).toThrowErrorMatchingInlineSnapshot(`"Owner not provided"`)
+    expect(() => AttestationUtils.errorCheck(malformedOwner)).toThrowError(
+      SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    )
 
-    expect(() =>
-      AttestationUtils.errorCheck(noRevocationBit)
-    ).toThrowErrorMatchingInlineSnapshot(`"revocation bit not provided"`)
+    expect(() => AttestationUtils.errorCheck(noRevocationBit)).toThrowError(
+      SDKErrors.ERROR_REVOCATION_BIT_MISSING()
+    )
 
     expect(() => AttestationUtils.errorCheck(everything)).not.toThrow()
 
-    expect(() => AttestationUtils.errorCheck(malformedClaimHash))
-      .toThrowErrorMatchingInlineSnapshot(`
-"Provided Claim hash invalid or malformed 
+    expect(() => AttestationUtils.errorCheck(malformedClaimHash)).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(malformedClaimHash.claimHash, 'Claim')
+    )
 
-    Hash: 0x21a3448ccf10f6568dcd9a08af689c220d842b893a40344d010e398ab74e557"
-`)
+    expect(() => AttestationUtils.errorCheck(malformedCTypeHash)).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(malformedCTypeHash.cTypeHash, 'CType')
+    )
 
-    expect(() => AttestationUtils.errorCheck(malformedCTypeHash))
-      .toThrowErrorMatchingInlineSnapshot(`
-"Provided CType hash invalid or malformed 
-
-    Hash: 0xa8c5bdb22aaea3fceb467d37169cbe49c71f226233037537e70a32a032304ff"
-`)
-
-    expect(() => AttestationUtils.errorCheck(malformedAddress))
-      .toThrowErrorMatchingInlineSnapshot(`
-"Provided Owner address invalid 
-
-    Address: 5FA9nQDVg26DDEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
-`)
+    expect(() => AttestationUtils.errorCheck(malformedAddress)).toThrowError(
+      SDKErrors.ERROR_ADDRESS_INVALID(malformedAddress.owner, 'owner')
+    )
   })
 })

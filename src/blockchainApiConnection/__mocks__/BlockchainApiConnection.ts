@@ -45,16 +45,19 @@
  *
  */
 
-import Blockchain, { IBlockchainApi } from '../../blockchain/Blockchain'
+import Blockchain from '../../blockchain/Blockchain'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { Option, Tuple, Vec, H256, u64, u128 } from '@polkadot/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { ExtrinsicStatus } from '@polkadot/types/interfaces'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
+import Bool from '@polkadot/types/primitive/Bool'
+import U32 from '@polkadot/types/primitive/U32'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
+const accumulator = [0,1,2,3,4,5,6,7,8,9,10]
 
-async function getCached(): Promise<IBlockchainApi> {
+async function getCached(): Promise<Blockchain> {
   if (!BlockchainApiConnection.instance) {
     BlockchainApiConnection.instance = Promise.resolve(
       new Blockchain(__mocked_api as ApiPromise)
@@ -187,6 +190,8 @@ const __mocked_api: any = {
     },
     portablegabi: {
       updateAccumulator: jest.fn((acc) => {
+        // change the accumulator for each update
+        accumulator.push(accumulator.length)
         return __getMockSubmittableExtrinsic()
       }),
     },
@@ -207,12 +212,15 @@ const __mocked_api: any = {
       */
 
       // default return value decodes to null, represents attestation not found
-      attestations: jest.fn(async (claim_hash: string) => new Option(Tuple)),
+      attestations: jest.fn(
+        async (claim_hash: string) =>
+          new Option(Tuple.with([H256, AccountId, 'Option<H256>', Bool]))
+      ),
       /* example return value:
       new Option(
-        Tuple,
-          new Tuple(
-            [H256, AccountId, 'Option<H256>', Bool],
+        Tuple.with(
+            [H256, AccountId, 'Option<H256>', Bool]
+            ),
             [
               '0x1234',                                            // ctype hash
               '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',  // Account
@@ -232,12 +240,15 @@ const __mocked_api: any = {
     },
     delegation: {
       // default return value decodes to null, represents delegation not found
-      root: jest.fn(async (rootId: string) => new Option(Tuple)),
+      root: jest.fn(
+        async (rootId: string) =>
+          new Option(Tuple.with([H256, AccountId, Bool]))
+      ),
       /* example return value:
       new Option(
-        Tuple,
-        new Tuple(
-          [H256, AccountId, Bool],
+        Tuple.with(
+          [H256, AccountId, Bool]
+          ),
           [
             '0x1234',                                            // ctype hash
             '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',  // Account
@@ -247,12 +258,15 @@ const __mocked_api: any = {
       ) */
 
       // default return value decodes to null, represents delegation not found
-      delegations: jest.fn(async (delegationId: string) => new Option(Tuple)),
+      delegations: jest.fn(
+        async (delegationId: string) =>
+          new Option(Tuple.with([H256, 'Option<H256>', AccountId, U32, Bool]))
+      ),
       /* example return value:
       new Option(
-      Tuple,
-      new Tuple(
-        [H256,'Option<H256>',AccountId,U32,Bool],
+        Tuple.with(
+          [H256,'Option<H256>',AccountId,U32,Bool]
+        ),
         [
           '0x1234',                                            // root-id
           null,                                                // parent-id?
@@ -264,7 +278,7 @@ const __mocked_api: any = {
     ) */
 
       // default return value decodes to [], represents: no children found
-      children: jest.fn(async (id: string) => new Vec(H256, [])),
+      children: jest.fn(async (id: string) => new Vec(H256)),
       /* example return value:
       new Vec(
         H256,
@@ -274,12 +288,15 @@ const __mocked_api: any = {
     },
     did: {
       // default return value decodes to null, represents dID not found
-      dIDs: jest.fn(async (address: string) => new Option(Tuple)),
+      dIDs: jest.fn(
+        async (address: string) =>
+          new Option(Tuple.with([H256, H256, 'Option<Bytes>']))
+      ),
       /* example return value:
       new Option(
-        Tuple,
-        new Tuple(
-          [H256,H256,'Option<Bytes>'],
+        Tuple.with(
+          [H256,H256,'Option<Bytes>']
+          ),
           [
             'publicSigningKey',                  // publicSigningKey
             'publicBoxKey',                      // publicBoxKey
@@ -290,7 +307,7 @@ const __mocked_api: any = {
     },
     portablegabi: {
       accumulatorList: jest.fn((address: string, index: number) =>
-        new Option('Vec<u8>', new Vec('Vec<u8>', '0xFF'))
+        new Option('Vec<u8>', new Vec('u8', accumulator))
       ),
       accumulatorCount: jest.fn((address: string) => 1),
     }

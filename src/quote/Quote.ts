@@ -16,6 +16,7 @@ import Identity from '../identity/Identity'
 import { IQuote, IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
 import { hashObjectAsStr } from '../crypto/Crypto'
 import { validateSignature } from '../util/DataUtils'
+import { ERROR_QUOTE_MALFORMED } from '../errorhandling/SDKErrors'
 
 /**
  * Validates the quote against the meta schema and quote data against the provided schema.
@@ -54,8 +55,8 @@ export function validateQuoteSchema(
  * Builds a [[Quote]] object, from a simple object with the same properties.
  *
  * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
- * @throws When the deserializedQuote's signature could not be verified.
  * @throws When the derived basicQuote can not be validated with the QuoteSchema.
+ * @throws [[ERROR_QUOTE_MALFORMED]].
  *
  * @returns A [[Quote]] object signed by an Attester.
  */
@@ -70,7 +71,7 @@ export function fromAttesterSignedInput(
     deserializedQuote.attesterAddress
   )
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
-    throw new Error('Quote does not correspond to schema')
+    throw ERROR_QUOTE_MALFORMED()
   }
 
   return {
@@ -105,6 +106,7 @@ export function createAttesterSignature(
  * @param quoteInput A [[Quote]] object.
  * @param identity [[Identity]] used to sign the object.
  * @throws When the derived quoteInput can not be validated with the QuoteSchema.
+ * @throws [[ERROR_QUOTE_MALFORMED]].
  *
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
  */
@@ -114,7 +116,7 @@ export function fromQuoteDataAndIdentity(
   identity: Identity
 ): IQuoteAttesterSigned {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
-    throw new Error('Quote does not correspond to schema')
+    throw ERROR_QUOTE_MALFORMED()
   }
   return createAttesterSignature(quoteInput, identity)
 }
@@ -125,7 +127,6 @@ export function fromQuoteDataAndIdentity(
  * @param claimerIdentity [[Identity]] of the Claimer in order to sign.
  * @param attesterSignedQuote A [[Quote]] object signed by an Attester.
  * @param requestRootHash A root hash of the entire object.
- * @throws When the attesterSignedQuote's signature could not be verified.
  *
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */

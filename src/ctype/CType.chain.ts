@@ -5,12 +5,14 @@
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { SubmittableResult } from '@polkadot/api'
-import { QueryResult } from '../blockchain/Blockchain'
+import { AccountId } from '@polkadot/types/interfaces'
+import { Option } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
 import { factory } from '../config/ConfigLog'
 import ICType from '../types/CType'
+import { assertCodecIsType } from '../util/Decode'
 
 const log = factory.getLogger('CType')
 
@@ -24,19 +26,21 @@ export async function store(
   return blockchain.submitTx(identity, tx)
 }
 
-function decode(encoded: QueryResult): IPublicIdentity['address'] | null {
-  return encoded && encoded.encodedLength && !encoded.isEmpty
-    ? encoded.toString()
-    : null
+// decoding is backwards compatible with mashnet-node 0.22
+export function decode(
+  encoded: Option<AccountId> | AccountId
+): IPublicIdentity['address'] | null {
+  assertCodecIsType(encoded, ['AccountId', 'Option<AccountId>'])
+  return !encoded.isEmpty ? encoded.toString() : null
 }
 
 export async function getOwner(
   ctypeHash: ICType['hash']
 ): Promise<IPublicIdentity['address'] | null> {
   const blockchain = await getCached()
-  const encoded: QueryResult = await blockchain.api.query.ctype.cTYPEs(
-    ctypeHash
-  )
+  const encoded = await blockchain.api.query.ctype.cTYPEs<
+    Option<AccountId> | AccountId
+  >(ctypeHash)
   const queriedCTypeAccount = decode(encoded)
   return queriedCTypeAccount
 }

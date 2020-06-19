@@ -24,6 +24,10 @@ import Identity from '../identity/Identity'
 import Credential from '../credential/Credential'
 import { IBlockchainApi } from '../blockchain/Blockchain'
 import { IClaim, IAttestedClaim } from '..'
+import {
+  ERROR_CTYPE_NOT_FOUND,
+  ERROR_ALREADY_ATTESTED,
+} from '../errorhandling/ExtrinsicError'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
@@ -31,7 +35,7 @@ beforeAll(async () => {
 })
 
 describe('handling attestations that do not exist', () => {
-  it('Attestation.query', () => {
+  it('Attestation.query', async () => {
     return expect(Attestation.query('0x012012012')).resolves.toBeNull()
   }, 30_000)
 
@@ -151,7 +155,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         },
       },
       type: 'object',
-    } as ICType['schema'])
+    })
 
     const content: IClaim['contents'] = { name: 'Ralph', weight: 120 }
     const claim = Claim.fromCTypeAndClaimContents(
@@ -168,7 +172,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attester.getPublicIdentity()
     )
     await expect(attestation.store(attester)).rejects.toThrowError(
-      'CTYPE not found'
+      ERROR_CTYPE_NOT_FOUND
     )
   }, 60_000)
 
@@ -203,7 +207,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible to attest the same claim twice', async () => {
       await expect(attClaim.attestation.store(attester)).rejects.toThrowError(
-        'already attested'
+        ERROR_ALREADY_ATTESTED
       )
     }, 15000)
 
@@ -223,7 +227,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         attestation: attClaim.attestation,
       }
 
-      expect(AttestedClaim.verify(fakeAttClaim)).resolves.toBeFalsy()
+      await expect(AttestedClaim.verify(fakeAttClaim)).resolves.toBeFalsy()
     }, 15000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {

@@ -1,31 +1,36 @@
-import { Text, Tuple, Option, U8a } from '@polkadot/types'
+import { Tuple, Option, H256 } from '@polkadot/types'
 import { Did } from '..'
 import { IDid } from './Did'
 import Identity from '../identity/Identity'
-import { getIdentifierFromAddress } from './Did.utils'
+import {
+  getIdentifierFromAddress,
+  verifyDidDocumentSignature,
+} from './Did.utils'
+import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/SDKErrors'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('DID', () => {
-  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
-    async address => {
+  const key1 = new H256('box-me')
+  const key2 = new H256('sign-me')
+
+  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs.mockImplementation(
+    async (address: string) => {
       if (address === 'withDocumentStore') {
         return new Option(
-          Tuple,
-          new Tuple(
+          Tuple.with(
             // (publicBoxKey, publicSigningKey, documentStore?)
-            [Text, Text, U8a],
-            ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
-          )
+            [H256, H256, 'Option<Bytes>']
+          ),
+          [key2, key1, '0x687474703a2f2f6d794449442e6b696c742e696f']
         )
       }
       return new Option(
-        Tuple,
-        new Tuple(
+        Tuple.with(
           // (publicBoxKey, publicSigningKey, documentStore?)
-          [Text, Text, Option],
-          ['0x987', '0x123', null]
-        )
+          [H256, H256, 'Option<Bytes>']
+        ),
+        [key1, key2, null]
       )
     }
   )
@@ -34,8 +39,8 @@ describe('DID', () => {
     const did = await Did.queryByAddress('withDocumentStore')
     expect(did).toEqual({
       identifier: 'did:kilt:withDocumentStore',
-      publicBoxKey: '0x123',
-      publicSigningKey: '0x987',
+      publicBoxKey: key1.toString(),
+      publicSigningKey: key2.toString(),
       documentStore: 'http://myDID.kilt.io',
     } as IDid)
   })
@@ -44,8 +49,8 @@ describe('DID', () => {
     const did = await Did.queryByAddress('w/oDocumentStore')
     expect(did).toEqual({
       identifier: 'did:kilt:w/oDocumentStore',
-      publicBoxKey: '0x123',
-      publicSigningKey: '0x987',
+      publicBoxKey: key2.toString(),
+      publicSigningKey: key1.toString(),
       documentStore: null,
     } as IDid)
   })
@@ -54,8 +59,8 @@ describe('DID', () => {
     const did = await Did.queryByIdentifier('did:kilt:w/oDocumentStore')
     expect(did).toEqual({
       identifier: 'did:kilt:w/oDocumentStore',
-      publicBoxKey: '0x123',
-      publicSigningKey: '0x987',
+      publicBoxKey: key2.toString(),
+      publicSigningKey: key1.toString(),
       documentStore: null,
     } as IDid)
   })
@@ -219,13 +224,9 @@ describe('DID', () => {
     const identityBob = await Identity.buildFromURI('//Bob')
     const id = getIdentifierFromAddress(identityBob.getAddress())
 
-    expect(() => {
-      Did.verifyDidDocumentSignature(signedDidDocument, id)
-    }).toThrowError(
-      new Error(
-        `This identifier (${id}) doesn't match the DID Document's identifier (${signedDidDocument.id})`
-      )
-    )
+    expect(() =>
+      verifyDidDocumentSignature(signedDidDocument, id)
+    ).toThrowError(ERROR_DID_IDENTIFIER_MISMATCH(id, signedDidDocument.id))
   })
 
   it('gets identifier from address', () => {

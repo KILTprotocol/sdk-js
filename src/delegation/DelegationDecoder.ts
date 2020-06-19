@@ -2,33 +2,52 @@
  * When [[DelegationNode]]s or [[DelegationRootNode]]s are written on the blockchain, they're encoded.
  * DelegationDecoder helps to decode them when they're queried from the chain.
  *
- * The DelegationDecoder methods transform a [[QueryResult]] into an object of a KILT type.
+ * The DelegationDecoder methods transform a Codec type into an object of a KILT type.
  *
  * @packageDocumentation
  * @ignore
  */
 
-import { QueryResult } from '../blockchain/Blockchain'
+/**
+ * Dummy comment needed for correct doc display, do not remove.
+ */
+import { Option, Tuple } from '@polkadot/types'
+import { Codec } from '@polkadot/types/types'
+import { DelegationNode } from '..'
+import { hasNonNullByte, assertCodecIsType } from '../util/Decode'
 import { coToUInt8 } from '../crypto/Crypto'
-import DelegationNode from './DelegationNode'
-import DelegationRootNode from './DelegationRootNode'
-import { Permission } from '../types/Delegation'
+import { Permission, IDelegationRootNode } from '../types/Delegation'
 
 export type CodecWithId = {
   id: string
-  codec: QueryResult
+  codec: Option<Tuple> | Tuple
+}
+
+export type RootDelegationRecord = Pick<
+  IDelegationRootNode,
+  'cTypeHash' | 'account' | 'revoked'
+>
+
+interface IChainRootDelegation extends Codec {
+  toJSON: () => [string, string, boolean] | null
 }
 
 export function decodeRootDelegation(
-  encoded: QueryResult
-): DelegationRootNode | null {
-  const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-  if (json instanceof Array) {
-    return Object.assign(Object.create(DelegationRootNode.prototype), {
-      cTypeHash: json[0],
-      account: json[1],
-      revoked: json[2],
-    })
+  encoded: Option<Tuple> | Tuple
+): RootDelegationRecord | null {
+  assertCodecIsType(encoded, [
+    'Option<(H256,AccountId,bool)>',
+    'H256,AccountId,bool',
+  ])
+  if (encoded instanceof Option || hasNonNullByte(encoded)) {
+    const json = (encoded as IChainRootDelegation).toJSON()
+    if (json instanceof Array) {
+      return {
+        cTypeHash: json[0],
+        account: json[1],
+        revoked: json[2],
+      }
+    }
   }
   return null
 }
@@ -66,24 +85,40 @@ function verifyRoot(rootId: string): boolean {
   )
 }
 
+export type DelegationNodeRecord = Pick<
+  DelegationNode,
+  'rootId' | 'parentId' | 'account' | 'permissions' | 'revoked'
+>
+
+interface IChainDelegationNode extends Codec {
+  toJSON: () => [string, string | null, string, number, boolean] | null
+}
+
 export function decodeDelegationNode(
-  encoded: QueryResult
-): DelegationNode | null {
-  const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-  if (json instanceof Array) {
-    if (typeof json[0] !== 'string' || typeof json[3] !== 'number') return null
-    if (!verifyRoot(json[0])) {
-      // Query returns 0x0 for rootId if queried for a root id instead of a node id.
-      // A node without a root node is therefore interpreted as invalid.
-      return null
+  encoded: Option<Tuple> | Tuple
+): DelegationNodeRecord | null {
+  assertCodecIsType(encoded, [
+    'Option<(H256,Option<H256>,AccountId,u32,bool)>',
+    '(H256,Option<H256>,AccountId,u32,bool)',
+  ])
+  if (encoded instanceof Option || hasNonNullByte(encoded)) {
+    const json = (encoded as IChainDelegationNode).toJSON()
+    if (json instanceof Array) {
+      if (typeof json[0] !== 'string' || typeof json[3] !== 'number')
+        return null
+      if (!verifyRoot(json[0])) {
+        // Query returns 0x0 for rootId if queried for a root id instead of a node id.
+        // A node without a root node is therefore interpreted as invalid.
+        return null
+      }
+      return {
+        rootId: json[0],
+        parentId: json[1] || undefined, // optional
+        account: json[2],
+        permissions: decodePermissions(json[3]),
+        revoked: json[4],
+      }
     }
-    return Object.assign(Object.create(DelegationNode.prototype), {
-      rootId: json[0],
-      parentId: json[1], // optional
-      account: json[2],
-      permissions: decodePermissions(json[3]),
-      revoked: json[4],
-    })
   }
   return null
 }

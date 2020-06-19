@@ -17,6 +17,13 @@ import IRequestForAttestation, {
   CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
 import { CompressedAttestedClaim } from '../types/AttestedClaim'
+import {
+  ERROR_ROOT_HASH_UNVERIFIABLE,
+  ERROR_LEGITIMATIONS_NOT_PROVIDED,
+  ERROR_NONCE_HASH_INVALID,
+  ERROR_SIGNATURE_UNVERIFIABLE,
+  ERROR_CLAIM_HASHTREE_MALFORMED,
+} from '../errorhandling/SDKErrors'
 
 async function buildRequestForAttestationPE(
   claimer: Identity,
@@ -180,8 +187,8 @@ describe('RequestForAttestation', () => {
     const propertyName = 'a'
     delete request.claim.contents[propertyName]
     delete request.claimHashTree[propertyName]
-    expect(() => request.verifyData()).toThrowErrorMatchingInlineSnapshot(
-      `"Provided rootHash does not correspond to data"`
+    expect(() => request.verifyData()).toThrowError(
+      ERROR_ROOT_HASH_UNVERIFIABLE()
     )
   })
 
@@ -208,8 +215,8 @@ describe('RequestForAttestation', () => {
     const propertyName = 'a'
     delete request.claim.contents[propertyName]
     delete request.claimHashTree[propertyName]
-    expect(() => request.verifyData()).toThrowErrorMatchingInlineSnapshot(
-      `"Provided rootHash does not correspond to data"`
+    expect(() => request.verifyData()).toThrowError(
+      ERROR_ROOT_HASH_UNVERIFIABLE()
     )
     expect(claimerSession).toBeDefined()
     expect(attester).toBeDefined()
@@ -485,7 +492,8 @@ describe('RequestForAttestation', () => {
         []
       )),
     } as IRequestForAttestation
-    delete builtRequestIncompleteClaimHashTree.claimHashTree.a
+    const deletedKey = 'a'
+    delete builtRequestIncompleteClaimHashTree.claimHashTree[deletedKey]
     builtRequestIncompleteClaimHashTree.rootHash = RequestForAttestation[
       'calculateRootHash'
     ](
@@ -558,38 +566,32 @@ describe('RequestForAttestation', () => {
     )
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
-    ).toThrowErrorMatchingInlineSnapshot(`"Legitimations not provided"`)
+    ).toThrowError(ERROR_LEGITIMATIONS_NOT_PROVIDED())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
-    ).toThrowErrorMatchingInlineSnapshot(
-      `"Provided rootHash does not correspond to data"`
-    )
+    ).toThrowError(ERROR_ROOT_HASH_UNVERIFIABLE())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedClaimOwner)
-    ).toThrowErrorMatchingInlineSnapshot(`
-"Provided Claim Owner hash not corresponding to data 
-
-    Hash: ${builtRequestMalformedClaimOwner.claimOwner.hash} 
-
-    Nonce: ${builtRequestMalformedClaimOwner.claimOwner.nonce}"
-`)
-    expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
-    ).toThrowErrorMatchingInlineSnapshot(
-      `"Property 'a' not in claim hash tree"`
+    ).toThrowError(
+      ERROR_NONCE_HASH_INVALID(
+        builtRequestMalformedClaimOwner.claimOwner,
+        'Claim owner'
+      )
     )
     expect(() =>
+      RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
+    ).toThrowError(ERROR_CLAIM_HASHTREE_MALFORMED())
+    expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
-    ).toThrowErrorMatchingInlineSnapshot(`"Provided Signature not verifiable"`)
+    ).toThrowError(ERROR_SIGNATURE_UNVERIFIABLE())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedCtypeHash)
-    ).toThrowErrorMatchingInlineSnapshot(`
-"Provided Claim CType hash not corresponding to data 
-
-    Hash: ${builtRequestMalformedCtypeHash.cTypeHash.hash} 
-
-    Nonce: ${builtRequestMalformedCtypeHash.cTypeHash.nonce}"
-`)
+    ).toThrowError(
+      ERROR_NONCE_HASH_INVALID(
+        builtRequestMalformedCtypeHash.cTypeHash,
+        'CType'
+      )
+    )
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequest)
     ).not.toThrow()

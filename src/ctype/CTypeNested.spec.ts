@@ -22,6 +22,7 @@ describe('Nested CTypes', () => {
   let deeplyNestedCType: CType
   let nestedData: Claim
   let nestedDeepData: Claim
+
   beforeAll(async () => {
     identityAlice = await Identity.buildFromURI('//Alice')
 
@@ -168,7 +169,9 @@ describe('Nested CTypes', () => {
       identityAlice.getAddress()
     )
   })
+
   it('verify ajv compiler', () => {
+    console.log(kyc)
     expect(
       CTypeUtils.validateNestedSchemas(
         nestedCType.schema,
@@ -206,6 +209,7 @@ describe('Nested CTypes', () => {
       )
     ).toBeFalsy()
   })
+
   it('verify claim from a nested ctype', () => {
     expect(nestedData).toBeTruthy()
     expect(nestedDeepData).toBeTruthy()

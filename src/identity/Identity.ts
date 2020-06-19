@@ -33,6 +33,7 @@ import {
   EncryptedAsymmetricString,
 } from '../crypto/Crypto'
 import PublicIdentity from './PublicIdentity'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
@@ -81,6 +82,7 @@ export default class Identity {
    * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
    * @throws When phraseArg contains fewer than 12 correctly separated mnemonic words.
    * @throws When the phraseArg could not be validated.
+   * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]], [[ERROR_MNEMONIC_PHRASE_INVALID]].
    * @returns An [[Identity]].
    *
    * @example ```javascript
@@ -95,14 +97,14 @@ export default class Identity {
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
         // https://www.npmjs.com/package/bip39
-        throw Error(`Phrase '${phrase}' too short or malformed`)
+        throw SDKErrors.ERROR_MNEMONIC_PHRASE_MALFORMED()
       }
     } else {
       phrase = generate()
     }
 
     if (!validate(phrase)) {
-      throw Error(`Invalid phrase '${phrase}'`)
+      throw SDKErrors.ERROR_MNEMONIC_PHRASE_INVALID()
     }
 
     const seed = toSeed(phrase)

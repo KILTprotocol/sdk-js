@@ -1,7 +1,7 @@
 import Bool from '@polkadot/types/primitive/Bool'
 import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import { Tuple, Option } from '@polkadot/types/codec'
-import { Text } from '@polkadot/types'
+import { Text, H256 } from '@polkadot/types'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
 import constants from '../test/constants'
@@ -25,7 +25,7 @@ describe('Claimer', () => {
   let attester: AttesterIdentity
   let claimer: Identity
   let verifier: Identity
-
+  let cType: CType
   let claim: IClaim
   let credentialPE: Credential
 
@@ -50,7 +50,7 @@ describe('Claimer', () => {
       type: 'object',
     }
 
-    const cType = CType.fromSchema(rawCType, claimer.getAddress())
+    cType = CType.fromSchema(rawCType, claimer.getAddress())
 
     claim = {
       cTypeHash: cType.hash,
@@ -67,8 +67,8 @@ describe('Claimer', () => {
       new Option(
         Tuple,
         new Tuple(
-          [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, false]
+          [H256, AccountId, Text, Bool],
+          [cType.hash, attester.getAddress(), undefined, false]
         )
       )
     )
@@ -141,8 +141,8 @@ describe('Claimer', () => {
       new Option(
         Tuple,
         new Tuple(
-          [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, false]
+          [H256, AccountId, Text, Bool],
+          [cType.hash, attester.getAddress(), undefined, false]
         )
       )
     )
@@ -216,8 +216,8 @@ describe('Claimer', () => {
       new Option(
         Tuple,
         new Tuple(
-          [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, false]
+          [H256, AccountId, Text, Bool],
+          [cType.hash, attester.getAddress(), undefined, false]
         )
       )
     )

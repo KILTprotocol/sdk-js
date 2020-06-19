@@ -12,6 +12,7 @@ import ICType, { CompressedCTypeSchema, CompressedCType } from '../types/CType'
 import Crypto from '../crypto'
 import IClaim from '../types/Claim'
 import { validateAddress } from '../util/DataUtils'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 export function verifySchemaWithErrors(
   object: object,
@@ -43,6 +44,7 @@ export function verifySchema(object: object, schema: object): boolean {
  * @param claimContents IClaim['contents'] to be verified against the schema.
  * @param schema ICType['schema'] to be verified against the [CTypeModel].
  * @throws When schema does not correspond to the CTypeModel.
+ * @throws [[ERROR_OBJECT_MALFORMED]].
  *
  * @returns Boolean whether both claimContents and schema could be verified.
  */
@@ -51,7 +53,7 @@ export function verifyClaimStructure(
   schema: ICType['schema']
 ): boolean {
   if (!verifySchema(schema, CTypeModel)) {
-    throw new Error('CType does not correspond to schema')
+    throw SDKErrors.ERROR_OBJECT_MALFORMED()
   }
   return verifySchema(claimContents, schema)
 }
@@ -79,21 +81,22 @@ export function getHashForSchema(schema: ICType['schema']): string {
  * @throws When input does not correspond to either it's schema, or the CTypeWrapperModel.
  * @throws When the input's hash does not match the hash calculated from ICType's schema.
  * @throws When the input's owner is not of type string or null.
+ * @throws [[ERROR_OBJECT_MALFORMED]], [[ERROR_HASH_MALFORMED]], [[ERROR_CTYPE_OWNER_TYPE]].
  *
  */
 export function errorCheck(input: ICType): void {
   if (!verifySchema(input, CTypeWrapperModel)) {
-    throw new Error('CType does not correspond to schema')
+    throw SDKErrors.ERROR_OBJECT_MALFORMED()
   }
   if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
-    throw new Error('provided CType hash not matching calculated hash')
+    throw SDKErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
   }
   if (
     typeof input.owner === 'string'
-      ? !validateAddress(input.owner, 'CType Owner')
+      ? !validateAddress(input.owner, 'CType owner')
       : !(input.owner === null)
   ) {
-    throw new Error('CType owner unknown data')
+    throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
   }
 }
 
@@ -102,6 +105,7 @@ export function errorCheck(input: ICType): void {
  *
  * @param cTypeSchema A [[CType]] schema object that will be sorted and stripped for messaging or storage.
  * @throws When any of the four required properties of the cTypeSchema are missing.
+ * @throws [[ERROR_COMPRESS_OBJECT]].
  *
  * @returns An ordered array of a [[CType]] schema.
  */
@@ -116,10 +120,7 @@ export function compressSchema(
     !cTypeSchema.properties ||
     !cTypeSchema.type
   ) {
-    throw new Error(
-      `Property Not Provided while building cTypeSchema: 
-      ${JSON.stringify(cTypeSchema, null, 2)}`
-    )
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(cTypeSchema, 'cTypeSchema')
   }
   const sortedCTypeSchema = jsonabc.sortObj(cTypeSchema)
   return [
@@ -136,6 +137,7 @@ export function compressSchema(
  *
  * @param cTypeSchema A compressed [[CType]] schema array that is reverted back into an object.
  * @throws When either the cTypeSchema is not an Array or it's length is not equal to the defined length of 4.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as a [[CType]] schema.
  */
@@ -144,9 +146,7 @@ export function decompressSchema(
   cTypeSchema: CompressedCTypeSchema
 ): ICType['schema'] {
   if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 5) {
-    throw new Error(
-      "Compressed cTypeSchema isn't an Array or has all the required data types"
-    )
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('cTypeSchema')
   }
   return {
     $id: cTypeSchema[0],
@@ -175,15 +175,14 @@ export function compress(cType: ICType): CompressedCType {
  *
  * @param cType A compressed [[CType]] array that is reverted back into an object.
  * @throws When either the cType is not an Array or it's length is not equal to the defined length of 3.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as a [[CType]].
  */
 
 export function decompress(cType: CompressedCType): ICType {
   if (!Array.isArray(cType) || cType.length !== 3) {
-    throw new Error(
-      "Compressed cType isn't an Array or has all the required data types"
-    )
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('CType')
   }
   return {
     hash: cType[0],

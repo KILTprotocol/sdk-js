@@ -11,6 +11,7 @@ import { getOwner } from '../ctype/CType.chain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import { Identity } from '..'
 import { IBlockchainApi } from '../blockchain/Blockchain'
+import { ERROR_CTYPE_ALREADY_EXISTS } from '../errorhandling/ExtrinsicError'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
@@ -60,24 +61,22 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     await ctype.store(ctypeCreator)
     await expect(ctype.store(ctypeCreator)).rejects.toThrowError(
-      'CTYPE already exists'
+      ERROR_CTYPE_ALREADY_EXISTS
     )
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.getAddress())
   }, 30000)
 
   it('should tell when a ctype is not on chain', async () => {
-    const iAmNotThere = CType.fromCType({
-      schema: {
-        $id: 'kilt:ctype:0x2',
-        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-        title: 'ctype2',
-        properties: {
-          game: { type: 'string' },
-        },
-        type: 'object',
-      } as ICType['schema'],
-    } as ICType)
+    const iAmNotThere = CType.fromSchema({
+      $id: 'kilt:ctype:0x2',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'ctype2',
+      properties: {
+        game: { type: 'string' },
+      },
+      type: 'object',
+    } as ICType['schema'])
 
     const iAmNotThereWithOwner = CType.fromSchema(
       {
