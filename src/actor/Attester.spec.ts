@@ -56,8 +56,8 @@ describe('Attester', () => {
         Tuple,
         new Tuple(
           registry,
-          [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
+          ['H256', AccountId, Text, Bool],
+          [cType.hash, attester.getAddress(), undefined, 0]
         )
       )
     )
@@ -117,8 +117,8 @@ describe('Attester', () => {
         Tuple,
         new Tuple(
           registry,
-          [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
+          ['H256', AccountId, Text, Bool],
+          [cType.hash, attester.getAddress(), undefined, 0]
         )
       )
     )
@@ -193,7 +193,7 @@ describe('Attester', () => {
       attester.getPublicIdentity()
     )
     await Attester.revokeAttestation(attester, revocationHandle)
-    expect(
+    await expect(
       Attester.getLatestAccumulator(attester.getPublicIdentity())
     ).resolves.not.toEqual(oldAcc)
   })

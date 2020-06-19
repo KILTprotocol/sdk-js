@@ -5,7 +5,7 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text, TypeRegistry } from '@polkadot/types'
+import { Option, Text, TypeRegistry, Tuple } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
@@ -25,7 +25,7 @@ export async function queryByIdentifier(
   const address = getAddressFromIdentifier(identifier)
   const decoded = decodeDid(
     identifier,
-    await blockchain.api.query.did.dIDs(address)
+    await blockchain.api.query.did.dIDs<Option<Tuple> | Tuple>(address)
   )
   return decoded
 }
@@ -37,7 +37,7 @@ export async function queryByAddress(
   const identifier = getIdentifierFromAddress(address)
   const decoded = decodeDid(
     identifier,
-    await blockchain.api.query.did.dIDs(address)
+    await blockchain.api.query.did.dIDs<Option<Tuple> | Tuple>(address)
   )
   return decoded
 }

@@ -1,4 +1,5 @@
-import { Option, Text, Tuple, TypeRegistry } from '@polkadot/types'
+import { Option, Tuple, TypeRegistry } from '@polkadot/types'
+import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
 import Identity from '../identity/Identity'
@@ -7,6 +8,12 @@ import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+
+let identityAlice: Identity
+
+beforeAll(async () => {
+  identityAlice = await Identity.buildFromURI('//Alice')
+})
 
 describe('Delegation', () => {
   const registry = new TypeRegistry()
@@ -45,37 +52,42 @@ describe('Delegation', () => {
         if (id === 'success') {
           return new Option(
             registry,
-            Tuple,
-            new Tuple(
-              registry,
+            Tuple.with(
               // (root-id, parent-id?, account, permissions, revoked)
-              [Text, Option, Text, U32, Bool],
-              ['myRootId', null, 'myAccount', 1, 0]
-            )
+              ['H256', 'Option<H256>', AccountId, U32, Bool]
+            ),
+            ['myRootId', null, identityAlice.getAddress(), 1, false]
           )
         }
         return new Option(
           registry,
-          Tuple,
-          new Tuple(
-            registry,
+          Tuple.with(
             // (root-id, parent-id?, account, permissions, revoked)
-            [Text, Option, Text, U32, Bool],
-            ['myRootId', null, 'myAccount', 1, 1]
-          )
+            ['H256', 'Option<H256>', AccountId, U32, Bool]
+          ),
+          ['myRootId', null, identityAlice.getAddress(), 1, true]
         )
       }
     )
 
     expect(
-      await new DelegationNode('success', 'myRootId', 'myAccount', []).verify()
+      await new DelegationNode(
+        'success',
+        'myRootId',
+        identityAlice.getAddress(),
+        []
+      ).verify()
     ).toBe(true)
 
     expect(
-      await new DelegationNode('failure', 'myRootId', 'myAccount', []).verify()
+      await new DelegationNode(
+        'failure',
+        'myRootId',
+        identityAlice.getAddress(),
+        []
+      ).verify()
     ).toBe(false)
 
-    const identityAlice = await Identity.buildFromURI('//Alice')
     const aDelegationNode = new DelegationNode(
       'myDelegationNode',
       'myRootId',
@@ -87,22 +99,18 @@ describe('Delegation', () => {
   })
 
   it('get delegation root', async () => {
-    const identityAlice = await Identity.buildFromURI('//Alice')
-
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
       new Option(
         registry,
-        Tuple,
-        new Tuple(
-          registry,
+        Tuple.with(
           // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          ['H256', Text, Bool],
-          [
-            '0x1234000000000000000000000000000000000000000000000000000000000000',
-            identityAlice.getAddress(),
-            0,
-          ]
-        )
+          ['H256', AccountId, Bool]
+        ),
+        [
+          '0x1234000000000000000000000000000000000000000000000000000000000000',
+          identityAlice.getAddress(),
+          false,
+        ]
       )
     )
 

@@ -4,13 +4,13 @@
  */
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text, TypeRegistry } from '@polkadot/types'
+import { Option, Text, Tuple, TypeRegistry } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
-import { QueryResult } from '../blockchain/Blockchain'
 import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import IAttestation from '../types/Attestation'
+import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 import Attestation from './Attestation'
 
 const log = factory.getLogger('Attestation')
@@ -41,17 +41,21 @@ export async function store(
   return blockchain.submitTx(identity, tx)
 }
 
-function decode(encoded: QueryResult, claimHash: string): Attestation | null {
-  if (encoded && encoded.encodedLength) {
-    const attestationTuple = encoded.toJSON()
-    if (
-      attestationTuple instanceof Array &&
-      typeof attestationTuple[0] === 'string' &&
-      typeof attestationTuple[1] === 'string' &&
-      (typeof attestationTuple[2] === 'string' ||
-        attestationTuple[2] === null) &&
-      typeof attestationTuple[3] === 'boolean'
-    ) {
+interface IChainAttestation extends Codec {
+  toJSON: () => [string, string, string | null, boolean] | null
+}
+
+function decode(
+  encoded: Option<Tuple> | Tuple,
+  claimHash: string // all the other decoders do not use extra data; they just return partial types
+): Attestation | null {
+  assertCodecIsType(encoded, [
+    'Option<(H256,AccountId,Option<H256>,bool)>',
+    '(H256,AccountId,Option<H256>,bool)',
+  ])
+  if (encoded instanceof Option || hasNonNullByte(encoded)) {
+    const attestationTuple = (encoded as IChainAttestation).toJSON()
+    if (attestationTuple instanceof Array) {
       const attestation: IAttestation = {
         claimHash,
         cTypeHash: attestationTuple[0],
@@ -66,17 +70,18 @@ function decode(encoded: QueryResult, claimHash: string): Attestation | null {
   return null
 }
 
-async function queryRaw(claimHash: string): Promise<Codec | null> {
+// return types reflect backwards compatibility with mashnet-node v 0.22
+async function queryRaw(claimHash: string): Promise<Option<Tuple> | Tuple> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await getCached()
-  const result: QueryResult = await blockchain.api.query.attestation.attestations(
-    claimHash
-  )
+  const result = await blockchain.api.query.attestation.attestations<
+    Option<Tuple> | Tuple
+  >(claimHash)
   return result
 }
 
 export async function query(claimHash: string): Promise<Attestation | null> {
-  const encoded: QueryResult = await queryRaw(claimHash)
+  const encoded = await queryRaw(claimHash)
   return decode(encoded, claimHash)
 }
 

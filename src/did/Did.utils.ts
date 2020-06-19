@@ -5,11 +5,13 @@
 
 import { isHex, hexToString } from '@polkadot/util'
 
+import { Tuple, Option } from '@polkadot/types'
+import { Codec } from '@polkadot/types/types'
+import { hasNonNullByte, assertCodecIsType } from '../util/Decode'
 import IPublicIdentity from '../types/PublicIdentity'
 import Crypto from '../crypto'
 import Identity from '../identity/Identity'
-import { QueryResult } from '../blockchain/Blockchain'
-import Did, {
+import {
   IDid,
   IDidDocument,
   IDidDocumentSigned,
@@ -20,23 +22,34 @@ import Did, {
   KEY_TYPE_ENCRYPTION,
   SERVICE_KILT_MESSAGING,
 } from './Did'
+import {
+  ERROR_DID_IDENTIFIER_MISMATCH,
+  ERROR_INVALID_DID_PREFIX,
+} from '../errorhandling/SDKErrors'
+
+interface IEncodedDid extends Codec {
+  toJSON: () => [string, string, string | null] | null
+}
 
 export function decodeDid(
   identifier: string,
-  encoded: QueryResult
+  encoded: Option<Tuple> | Tuple
 ): IDid | null {
-  const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-  if (json instanceof Array) {
-    let documentStore = null
-    if (isHex(json[2])) {
-      documentStore = hexToString(json[2])
+  assertCodecIsType(encoded, [
+    'Option<(H256,H256,Option<Bytes>)>',
+    '(H256,H256,Option<Bytes>)',
+  ])
+  if (encoded instanceof Option || hasNonNullByte(encoded)) {
+    const decoded = (encoded as IEncodedDid).toJSON()
+    if (decoded) {
+      const documentStore = isHex(decoded[2]) ? hexToString(decoded[2]) : null
+      return {
+        identifier,
+        publicSigningKey: decoded[0],
+        publicBoxKey: decoded[1],
+        documentStore,
+      }
     }
-    return Object.assign(Object.create(Did.prototype), {
-      identifier,
-      publicSigningKey: json[0],
-      publicBoxKey: json[1],
-      documentStore,
-    })
   }
   return null
 }
@@ -52,6 +65,7 @@ export function getIdentifierFromAddress(
  *
  * @param identifier IDid identifier to derive it's address from.
  * @throws When the identifier is not prefixed with the defined Kilt IDENTIFIER_PREFIX.
+ * @throws [[ERROR_INVALID_DID_PREFIX]].
  *
  * @returns The Address derived from the IDid Identifier.
  */
@@ -59,7 +73,7 @@ export function getAddressFromIdentifier(
   identifier: IDid['identifier']
 ): IPublicIdentity['address'] {
   if (!identifier.startsWith(IDENTIFIER_PREFIX)) {
-    throw new Error(`Not a KILT did: ${identifier}`)
+    throw ERROR_INVALID_DID_PREFIX(identifier)
   }
   return identifier.substr(IDENTIFIER_PREFIX.length)
 }
@@ -111,6 +125,7 @@ export function createDefaultDidDocument(
  * @param identifier IDid identifier to match the IDidDocumentSigned id and to verify the signature with.
  * @throws When didDocument and it's signature as well as the identifier are missing.
  * @throws When identifier does not match didDocument's id.
+ * @throws [[ERROR_DID_IDENTIFIER_MISMATCH]].
  *
  * @returns The Address derived from the IDid Identifier.
  */
@@ -132,9 +147,7 @@ export function verifyDidDocumentSignature(
   }
   const { id } = didDocument
   if (identifier !== id) {
-    throw new Error(
-      `This identifier (${identifier}) doesn't match the DID Document's identifier (${id})`
-    )
+    throw ERROR_DID_IDENTIFIER_MISMATCH(identifier, id)
   }
   const unsignedDidDocument = { ...didDocument }
   delete unsignedDidDocument.signature

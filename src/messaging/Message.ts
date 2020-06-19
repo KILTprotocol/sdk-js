@@ -35,6 +35,7 @@ import Crypto, { EncryptedAsymmetricString } from '../crypto'
 import ITerms from '../types/Terms'
 import { IQuoteAgreement } from '../types/Quote'
 import { validateSignature } from '../util/DataUtils'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  * - `body` - The body of the message, see [[MessageBody]].
@@ -112,6 +113,7 @@ export default class Message implements IMessage {
    * @param message.body The body of the [[Message]] which depends on the [[MessageBodyType]].
    * @param message.senderAddress The sender's public SS58 address of the [[Message]].
    * @throws When the sender does not match the owner of the in the Message supplied Object.
+   * @throws [[SUBMIT_ATTESTATION_FOR_CLAIM]], [[SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC]], [[ERROR_IDENTITY_MISMATCH]].
    *
    */
   public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
@@ -123,7 +125,7 @@ export default class Message implements IMessage {
             requestAttestation.content.requestForAttestation.claim.owner !==
             senderAddress
           ) {
-            throw new Error('Sender is not owner of the claim')
+            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
           }
         }
         break
@@ -131,7 +133,7 @@ export default class Message implements IMessage {
         {
           const submitAttestation = body
           if (submitAttestation.content.attestation.owner !== senderAddress) {
-            throw new Error('Sender is not owner of the attestation')
+            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
           }
         }
         break
@@ -140,7 +142,7 @@ export default class Message implements IMessage {
           const submitClaimsForCtype = body
           submitClaimsForCtype.content.forEach(claim => {
             if (claim.request.claim.owner !== senderAddress) {
-              throw new Error('Sender is not owner of the claims')
+              throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
           })
         }
@@ -155,6 +157,7 @@ export default class Message implements IMessage {
    * @param encrypted The encrypted [[Message]] object which needs to be decrypted.
    * @param senderAddress The sender's public SS58 address of the [[Message]].
    * @throws When either the hash or the signature could not be verified against the calculations.
+   * @throws [[ERROR_NONCE_HASH_INVALID]].
    *
    */
   public static ensureHashAndSignature(
@@ -166,7 +169,10 @@ export default class Message implements IMessage {
         encrypted.message + encrypted.nonce + encrypted.createdAt
       ) !== encrypted.hash
     ) {
-      throw new Error('Hash of message not correct')
+      throw SDKErrors.ERROR_NONCE_HASH_INVALID(
+        { hash: encrypted.hash, nonce: encrypted.nonce },
+        'Message'
+      )
     }
     validateSignature(encrypted.hash, encrypted.signature, senderAddress)
   }
@@ -180,6 +186,7 @@ export default class Message implements IMessage {
    * @param receiver The [[Identity]] of the receiver.
    * @throws When encrypted message couldn't be decrypted.
    * @throws When the decoded message could not be parsed.
+   * @throws [[ERROR_DECODING_MESSAGE]], [[ERROR_PARSING_MESSAGE]].
    * @returns The original [[Message]].
    */
   public static decrypt(
@@ -198,7 +205,7 @@ export default class Message implements IMessage {
       encrypted.senderBoxPublicKey
     )
     if (!decoded) {
-      throw new Error('Error decoding message')
+      throw SDKErrors.ERROR_DECODING_MESSAGE()
     }
 
     try {
@@ -212,7 +219,7 @@ export default class Message implements IMessage {
 
       return decrypted
     } catch (error) {
-      throw new Error('Error parsing message body')
+      throw SDKErrors.ERROR_PARSING_MESSAGE()
     }
   }
 

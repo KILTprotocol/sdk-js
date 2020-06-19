@@ -1,36 +1,44 @@
-import { Option, Text, Tuple, TypeRegistry } from '@polkadot/types'
-import { Did } from '..'
+import { Tuple, Option, TypeRegistry, U8aFixed } from '@polkadot/types'
+import { Did, IDid } from '..'
 import Identity from '../identity/Identity'
-import { IDid } from './Did'
-import { getIdentifierFromAddress } from './Did.utils'
+import {
+  getIdentifierFromAddress,
+  verifyDidDocumentSignature,
+} from './Did.utils'
+import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/SDKErrors'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('DID', () => {
   const registry = new TypeRegistry()
-  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
-    async address => {
+
+  // TODO: Delete this note before merging and use as PR comment
+  // H256 class was deprecated in 1.4.1
+  // Constructor was exactly what can be found below
+  // See https://github.com/polkadot-js/api/compare/v1.3.1...1.4.1#diff-43e6848b127cb59299114e36a27f8717L16
+  // See https://github.com/polkadot-js/api/blob/master/packages/types/src/codec/U8aFixed.ts#L45
+  const key1 = new U8aFixed(registry, 'box-me', 256)
+  const key2 = new U8aFixed(registry, 'sign-me', 256)
+
+  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs.mockImplementation(
+    async (address: string) => {
       if (address === 'withDocumentStore') {
         return new Option(
           registry,
-          Tuple,
-          new Tuple(
-            registry,
+          Tuple.with(
             // (publicBoxKey, publicSigningKey, documentStore?)
-            [Text, Text, Option],
-            ['0x987', '0x123', '0x687474703a2f2f6d794449442e6b696c742e696f']
-          )
+            ['H256', 'H256', 'Option<Bytes>']
+          ),
+          [key2, key1, '0x687474703a2f2f6d794449442e6b696c742e696f']
         )
       }
       return new Option(
         registry,
-        Tuple,
-        new Tuple(
-          registry,
-          // (publicBoxKey, publicSigningKey, documentStore?)
-          [Text, Text, Option],
-          ['0x987', '0x123', null]
-        )
+        Tuple.with(
+          // (publicBoxKey, publicSigningKey, documentStore?)+
+          ['H256', 'H256', 'Option<Bytes>']
+        ),
+        [key1, key2, null]
       )
     }
   )
@@ -39,8 +47,8 @@ describe('DID', () => {
     const did = await Did.queryByAddress('withDocumentStore')
     expect(did).toEqual({
       identifier: 'did:kilt:withDocumentStore',
-      publicBoxKey: '0x123',
-      publicSigningKey: '0x987',
+      publicBoxKey: key1.toString(),
+      publicSigningKey: key2.toString(),
       documentStore: 'http://myDID.kilt.io',
     } as IDid)
   })
@@ -49,8 +57,8 @@ describe('DID', () => {
     const did = await Did.queryByAddress('w/oDocumentStore')
     expect(did).toEqual({
       identifier: 'did:kilt:w/oDocumentStore',
-      publicBoxKey: '0x123',
-      publicSigningKey: '0x987',
+      publicBoxKey: key2.toString(),
+      publicSigningKey: key1.toString(),
       documentStore: null,
     } as IDid)
   })
@@ -59,8 +67,8 @@ describe('DID', () => {
     const did = await Did.queryByIdentifier('did:kilt:w/oDocumentStore')
     expect(did).toEqual({
       identifier: 'did:kilt:w/oDocumentStore',
-      publicBoxKey: '0x123',
-      publicSigningKey: '0x987',
+      publicBoxKey: key2.toString(),
+      publicSigningKey: key1.toString(),
       documentStore: null,
     } as IDid)
   })
@@ -224,13 +232,9 @@ describe('DID', () => {
     const identityBob = await Identity.buildFromURI('//Bob')
     const id = getIdentifierFromAddress(identityBob.getAddress())
 
-    expect(() => {
-      Did.verifyDidDocumentSignature(signedDidDocument, id)
-    }).toThrowError(
-      new Error(
-        `This identifier (${id}) doesn't match the DID Document's identifier (${signedDidDocument.id})`
-      )
-    )
+    expect(() =>
+      verifyDidDocumentSignature(signedDidDocument, id)
+    ).toThrowError(ERROR_DID_IDENTIFIER_MISMATCH(id, signedDidDocument.id))
   })
 
   it('gets identifier from address', () => {

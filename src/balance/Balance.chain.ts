@@ -16,8 +16,6 @@ import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
 
-export type UnsubscribeHandle = () => void
-
 /**
  * Fetches the current balance of the account with [accountAddress].
  * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.
@@ -75,17 +73,23 @@ export async function listenToBalanceChanges(
     balance: BN,
     change: BN
   ) => void
-): Promise<UnsubscribeHandle> {
+): Promise<BN> {
   const blockchain = await getCached()
-  let previous = await getBalance(accountAddress)
-  return blockchain.api.query.balances.freeBalance<Balance>(
-    accountAddress,
-    (current: Balance) => {
-      const change = current.sub(previous)
-      previous = current
-      listener(accountAddress, current, change)
-    }
-  )
+  let {
+    data: { free: previousFree },
+  } = await blockchain.api.query.system.account(accountAddress)
+
+  if (listener) {
+    blockchain.api.query.system.account(
+      accountAddress,
+      ({ data: { free: currentFree } }) => {
+        const change = currentFree.sub(previousFree)
+        previousFree = currentFree
+        listener(accountAddress, currentFree, change)
+      }
+    )
+  }
+  return previousFree
 }
 
 /**

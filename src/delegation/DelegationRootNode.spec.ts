@@ -1,4 +1,4 @@
-import { Option, Text, Tuple, TypeRegistry } from '@polkadot/types'
+import { Option, Tuple, TypeRegistry } from '@polkadot/types'
 import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
 import { Crypto, Identity } from '..'
@@ -19,25 +19,22 @@ describe('Delegation', () => {
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
       new Option(
         registry,
-        Tuple,
-        new Tuple(
-          registry,
+        Tuple.with(
           // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          ['H256', AccountId, Bool],
-          [ctypeHash, identityAlice.getAddress(), 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
-        )
+          ['H256', AccountId, Bool]
+        ),
+        [ctypeHash, identityAlice.getAddress(), false]
       )
     )
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations.mockReturnValue(
       new Option(
         registry,
-        Tuple,
-        new Tuple(
-          registry,
+        Tuple.with(
           // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-          ['H256', AccountId, Bool],
-          [ctypeHash, identityAlice.getAddress(), 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
-        )
+
+          ['H256', AccountId, Bool]
+        ),
+        [ctypeHash, identityAlice.getAddress(), false]
       )
     )
 
@@ -74,26 +71,24 @@ describe('Delegation', () => {
         if (rootId === 'success') {
           const tuple = new Option(
             registry,
-            Tuple,
-            new Tuple(
-              registry,
+            Tuple.with(
               // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-              [Text, Text, Bool],
-              ['myCtypeHash', 'myAccount', 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
-            )
+              ['H256', AccountId, Bool]
+            ),
+            ['myCtypeHash', identityAlice.getAddress(), false]
           )
+
           return Promise.resolve(tuple)
         }
         const tuple = new Option(
           registry,
-          Tuple,
-          new Tuple(
-            registry,
+          Tuple.with(
             // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-            [Text, Text, Bool],
-            ['myCtypeHash', 'myAccount', 1] // FIXME: boolean "true" - not supported --> 1 or "true" or ??
-          )
+            ['H256', AccountId, Bool]
+          ),
+          ['myCtypeHash', identityAlice.getAddress(), true]
         )
+
         return Promise.resolve(tuple)
       }
     )
@@ -102,16 +97,12 @@ describe('Delegation', () => {
       await new DelegationRootNode(
         'success',
         'myCtypeHash',
-        'myAccount'
+        identityAlice.getAddress()
       ).verify()
     ).toBe(true)
 
     expect(
-      await new DelegationRootNode(
-        'failure',
-        'myCtypeHash',
-        'myAccount'
-      ).verify()
+      await new DelegationRootNode('failure', ctypeHash, 'myAccount').verify()
     ).toBe(false)
   })
 
@@ -120,7 +111,7 @@ describe('Delegation', () => {
 
     const aDelegationRootNode = new DelegationRootNode(
       'myRootId',
-      'myCtypeHash',
+      ctypeHash,
       'myAccount'
     )
     const revokeStatus = await aDelegationRootNode.revoke(identityAlice)

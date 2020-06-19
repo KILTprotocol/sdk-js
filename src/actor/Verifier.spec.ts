@@ -1,4 +1,4 @@
-import { Text, TypeRegistry } from '@polkadot/types'
+import { TypeRegistry } from '@polkadot/types'
 import { Option, Tuple } from '@polkadot/types/codec'
 import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
@@ -9,6 +9,7 @@ import {
   CType,
   ICType,
   Verifier,
+  IRequestForAttestation,
 } from '..'
 import Credential from '../credential/Credential'
 import AttesterIdentity from '../identity/AttesterIdentity'
@@ -66,12 +67,13 @@ describe('Verifier', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
         registry,
-        Tuple,
-        new Tuple(
-          registry,
-          [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
-        )
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [
+          '"0xde9f624875aa620d06434603787a40c8cd02cc25c7b775cf50de8a3a96bbeafa"', // ctype hash
+          attester.getAddress(), // Account
+          null, // delegation-id?
+          false, // revoked flag
+        ]
       )
     )
 
@@ -202,7 +204,7 @@ describe('Verifier', () => {
     expect(claims.length).toEqual(1)
     const { owner, ...unownedClaim } = claim
     expect(owner).toBeDefined()
-    expect(claims[0].claim).toEqual(unownedClaim)
+    expect((claims[0] as IRequestForAttestation).claim).toEqual(unownedClaim)
   })
 
   it('verify forbidden privacy enhanced presentation', async () => {
@@ -239,7 +241,7 @@ describe('Verifier', () => {
     expect(claims.length).toEqual(0)
   })
 
-  it('verify public-only presentation', async () => {
+  it('verify public-only presentation all good', async () => {
     const { session, message: request } = await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',

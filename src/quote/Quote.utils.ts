@@ -14,25 +14,21 @@ import {
   CompressedQuoteAttesterSigned,
   IQuoteAgreement,
 } from '../types/Quote'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  *  Compresses the cost from a [[Quote]] object.
  *
  * @param cost A cost object that will be sorted and stripped into a [[Quote]].
  * @throws When cost is missing any property defined in [[ICostBreakdown]].
+ * @throws [[ERROR_COMPRESS_OBJECT]].
  *
  * @returns An ordered array of a cost.
  */
 
 export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
   if (!cost.gross || !cost.net || !cost.tax) {
-    throw new Error(
-      `Property Not Provided while building cost : ${JSON.stringify(
-        cost,
-        null,
-        2
-      )}`
-    )
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(cost, 'Cost Breakdown')
   }
   return [cost.gross, cost.net, cost.tax]
 }
@@ -42,15 +38,14 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
  *
  * @param cost A compressed cost array that is reverted back into an object.
  * @throws When cost is not an Array and it's length does not equal the defined length of 3.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as a cost.
  */
 
 export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
   if (!Array.isArray(cost) || cost.length !== 3) {
-    throw new Error(
-      `Compressed cost isn't an Array or has all the required data types`
-    )
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Cost Breakdown')
   }
   return { gross: cost[0], net: cost[1], tax: cost[2] }
 }
@@ -60,6 +55,7 @@ export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
  *
  * @param quote An [[Quote]] object that will be sorted and stripped for messaging or storage.
  * @throws When quote is missing any property defined in [[IQuote]].
+ * @throws [[ERROR_COMPRESS_OBJECT]].
  *
  * @returns An ordered array of an [[Quote]].
  */
@@ -73,13 +69,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
     !quote.termsAndConditions ||
     !quote.timeframe
   ) {
-    throw new Error(
-      `Property Not Provided while building quote: ${JSON.stringify(
-        quote,
-        null,
-        2
-      )}`
-    )
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(quote, 'Quote')
   }
   return [
     quote.attesterAddress,
@@ -96,14 +86,13 @@ export function compressQuote(quote: IQuote): CompressedQuote {
  *
  * @param quote A compressed [[Quote]] array that is reverted back into an object.
  * @throws When quote is not an Array and it's length does not equal the defined length of 6.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  * @returns An object that has the same properties as an [[Quote]].
  */
 
 export function decompressQuote(quote: CompressedQuote): IQuote {
   if (!Array.isArray(quote) || quote.length !== 6) {
-    throw new Error(
-      `Compressed quote isn't an Array or has all the required data types`
-    )
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterAddress: quote[0],
@@ -120,6 +109,7 @@ export function decompressQuote(quote: CompressedQuote): IQuote {
  *
  * @param attesterSignedQuote An attester signed [[Quote]] object that will be sorted and stripped for messaging or storage.
  * @throws When attesterSignedQuote is missing any property defined in [[IQuoteAttesterSigned]].
+ * @throws [[ERROR_COMPRESS_OBJECT]].
  *
  * @returns An ordered array of an attester signed [[Quote]].
  */
@@ -136,12 +126,9 @@ export function compressAttesterSignedQuote(
     !attesterSignedQuote.timeframe ||
     !attesterSignedQuote.attesterSignature
   ) {
-    throw new Error(
-      `Property Not Provided while building attesterSignedQuote: ${JSON.stringify(
-        attesterSignedQuote,
-        null,
-        2
-      )}`
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(
+      attesterSignedQuote,
+      'Attester Signed Quote'
     )
   }
   return [
@@ -160,6 +147,7 @@ export function compressAttesterSignedQuote(
  *
  * @param attesterSignedQuote A compressed attester signed [[Quote]] array that is reverted back into an object.
  * @throws When attesterSignedQuote is not an Array and it's length does not equal the defined length of 7.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as an attester signed [[Quote]].
  */
@@ -168,9 +156,7 @@ export function decompressAttesterSignedQuote(
   attesterSignedQuote: CompressedQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   if (!Array.isArray(attesterSignedQuote) || attesterSignedQuote.length !== 7) {
-    throw new Error(
-      `Compressed attesterSignedQuote isn't an Array or has all the required data types`
-    )
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterAddress: attesterSignedQuote[0],
@@ -188,6 +174,7 @@ export function decompressAttesterSignedQuote(
  *
  * @param quoteAgreement A [[Quote]] Agreement object that will be sorted and stripped for messaging or storage.
  * @throws When quoteAgreement is missing any property defined in [[IQuoteAgreement]].
+ * @throws [[ERROR_COMPRESS_OBJECT]].
  *
  * @returns An ordered array of a [[Quote]] Agreement.
  */
@@ -204,13 +191,7 @@ export function compressQuoteAgreement(
     !quoteAgreement.timeframe ||
     !quoteAgreement.attesterSignature
   ) {
-    throw new Error(
-      `Property Not Provided while building quoteAgreement: ${JSON.stringify(
-        quoteAgreement,
-        null,
-        2
-      )}`
-    )
+    throw SDKErrors.ERROR_COMPRESS_OBJECT(quoteAgreement, 'Quote Agreement')
   }
   return [
     quoteAgreement.attesterAddress,
@@ -230,6 +211,7 @@ export function compressQuoteAgreement(
  *
  * @param quoteAgreement A compressed [[Quote]] Agreement array that is reverted back into an object.
  * @throws When quoteAgreement is not an Array and it's length does not equal the defined length of 9.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as a [[Quote]] Agreement.
  */
@@ -238,9 +220,7 @@ export function decompressQuoteAgreement(
   quoteAgreement: CompressedQuoteAgreed
 ): IQuoteAgreement {
   if (!Array.isArray(quoteAgreement) || quoteAgreement.length !== 9) {
-    throw new Error(
-      `Compressed quoteAgreement isn't an Array or has all the required data types`
-    )
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
     attesterAddress: quoteAgreement[0],

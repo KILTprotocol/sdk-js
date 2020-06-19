@@ -11,6 +11,7 @@ import { getOwner } from '../ctype/CType.chain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import { Identity } from '..'
 import { IBlockchainApi } from '../blockchain/Blockchain'
+import { ERROR_CTYPE_ALREADY_EXISTS } from '../errorhandling/ExtrinsicError'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
@@ -59,7 +60,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     await ctype.store(ctypeCreator)
     await expect(ctype.store(ctypeCreator)).rejects.toThrowError(
-      'CTYPE already exists'
+      ERROR_CTYPE_ALREADY_EXISTS
     )
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.getAddress())

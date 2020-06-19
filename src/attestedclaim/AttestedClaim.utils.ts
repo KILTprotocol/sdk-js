@@ -8,6 +8,7 @@ import AttestationUtils from '../attestation/Attestation.utils'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
 import AttestedClaim from './AttestedClaim'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  *  Checks whether the input meets all the required criteria of an IAttestedClaim object.
@@ -16,19 +17,20 @@ import AttestedClaim from './AttestedClaim'
  * @param input The potentially only partial IAttestedClaim.
  * @throws When input's attestation and request do not exist.
  * @throws When input's Data could not be verified.
+ * @throws [[ERROR_ATTESTATION_NOT_PROVIDED]], [[ERROR_RFA_NOT_PROVIDED]], [[ERROR_ATTESTEDCLAIM_UNVERIFIABLE]].
  *
  */
 export function errorCheck(input: IAttestedClaim): void {
   if (input.attestation) {
     AttestationUtils.errorCheck(input.attestation)
-  } else throw new Error('Attestation not provided!')
+  } else throw SDKErrors.ERROR_ATTESTATION_NOT_PROVIDED()
 
   if (input.request) {
     RequestForAttestationUtils.errorCheck(input.request)
-  } else throw new Error('RequestForAttestation not provided')
+  } else throw SDKErrors.ERROR_RFA_NOT_PROVIDED()
 
   if (!AttestedClaim.verifyData(input as IAttestedClaim)) {
-    throw new Error('could not verify Data of attested claim')
+    throw SDKErrors.ERROR_ATTESTEDCLAIM_UNVERIFIABLE()
   }
 }
 
@@ -56,6 +58,7 @@ export function compress(
  *
  * @param attestedClaim A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
  * @throws When attestedClaim is not an Array or it's length is unequal 2.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as an [[AttestedClaim]].
  */
@@ -64,9 +67,7 @@ export function decompress(
   attestedClaim: CompressedAttestedClaim
 ): IAttestedClaim {
   if (!Array.isArray(attestedClaim) || attestedClaim.length !== 2) {
-    throw new Error(
-      "Compressed Attested Claim isn't an Array or has all the required data types"
-    )
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attested Claim')
   }
   return {
     request: RequestForAttestationUtils.decompress(attestedClaim[0]),

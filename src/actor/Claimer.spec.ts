@@ -26,7 +26,7 @@ describe('Claimer', () => {
   let attester: AttesterIdentity
   let claimer: Identity
   let verifier: Identity
-
+  let cType: CType
   let claim: IClaim
   let credentialPE: Credential
 
@@ -50,7 +50,7 @@ describe('Claimer', () => {
       type: 'object',
     }
 
-    const cType = CType.fromSchema(rawCType, claimer.getAddress())
+    cType = CType.fromSchema(rawCType, claimer.getAddress())
 
     claim = {
       cTypeHash: cType.hash,
@@ -69,8 +69,8 @@ describe('Claimer', () => {
         Tuple,
         new Tuple(
           registry,
-          [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
+          ['H256', AccountId, Text, Bool],
+          [cType.hash, attester.getAddress(), undefined, 0]
         )
       )
     )
@@ -145,8 +145,8 @@ describe('Claimer', () => {
         Tuple,
         new Tuple(
           registry,
-          [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
+          ['H256', AccountId, Text, Bool],
+          [cType.hash, attester.getAddress(), undefined, 0]
         )
       )
     )
@@ -222,8 +222,8 @@ describe('Claimer', () => {
         Tuple,
         new Tuple(
           registry,
-          [Text, AccountId, Text, Bool],
-          ['0xdead', attester.getAddress(), undefined, 0] // FIXME: boolean "false" - not supported --> 0 or "false" or ??
+          ['H256', AccountId, Text, Bool],
+          [cType.hash, attester.getAddress(), undefined, 0]
         )
       )
     )

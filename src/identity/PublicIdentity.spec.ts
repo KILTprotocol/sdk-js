@@ -1,4 +1,4 @@
-import { Option, Text, Tuple, TypeRegistry } from '@polkadot/types'
+import { Option, Tuple, TypeRegistry, U8aFixed } from '@polkadot/types'
 import IPublicIdentity from '../types/PublicIdentity'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
 
@@ -6,34 +6,39 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('PublicIdentity', () => {
   const registry = new TypeRegistry()
+
+  // TODO: Delete this note before merging and use as PR comment
+  // H256 class was deprecated in 1.4.1
+  // Constructor was exactly what can be found below
+  // See https://github.com/polkadot-js/api/compare/v1.3.1...1.4.1#diff-43e6848b127cb59299114e36a27f8717L16
+  // See https://github.com/polkadot-js/api/blob/master/packages/types/src/codec/U8aFixed.ts#L45
+  const pubKey = new U8aFixed(registry, 'pub-key', 256)
+  const boxKey = new U8aFixed(registry, 'box-key', 256)
+
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
-
   require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
     async id => {
       switch (id) {
         case '1':
           return new Option(
             registry,
-            Tuple,
-            new Tuple(
-              registry,
+            Tuple.with(
               // (public-signing-key, public-encryption-key, did-reference?)
-              [Text, Text, 'Option<Bytes>'],
-              ['pub-key', 'box-key', [14, 75, 23, 14, 55]]
-            )
+              ['H256', 'H256', 'Option<Bytes>']
+            ),
+            [pubKey, boxKey, [14, 75, 23, 14, 55]]
           )
         case '2':
           return new Option(
             registry,
-            Tuple,
-            new Tuple(
-              registry,
+            Tuple.with(
               // (public-signing-key, public-encryption-key, did-reference?)
-              [Text, Text, 'Option<Bytes>'],
-              ['pub-key', 'box-key', undefined]
-            )
+              ['H256', 'H256', 'Option<Bytes>']
+            ),
+            [pubKey, boxKey, undefined]
           )
+
         default:
           return new Option(
             registry,
@@ -114,7 +119,7 @@ describe('PublicIdentity', () => {
     )
     expect(bcOnlyPubId).toEqual({
       address: '2',
-      boxPublicKeyAsHex: 'box-key',
+      boxPublicKeyAsHex: boxKey.toString(),
       serviceAddress: undefined,
     })
 
