@@ -16,6 +16,7 @@ import Identity from '../identity/Identity'
 import IClaim from '../types/Claim'
 import constants from '../test/constants'
 import Credential from '../credential/Credential'
+import IRequestForAttestation from '../types/RequestForAttestation'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -198,7 +199,7 @@ describe('Verifier', () => {
     expect(claims.length).toEqual(1)
     const { owner, ...unownedClaim } = claim
     expect(owner).toBeDefined()
-    expect(claims[0].claim).toEqual(unownedClaim)
+    expect((claims[0] as IRequestForAttestation).claim).toEqual(unownedClaim)
   })
 
   it('verify forbidden privacy enhanced presentation', async () => {

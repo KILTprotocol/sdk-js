@@ -8,6 +8,7 @@ import { factory as LoggerFactory } from '../config/ConfigLog'
 import CType from '../ctype/CType'
 import IAttestedClaim from '../types/AttestedClaim'
 import { ERROR_MESSAGE_TYPE } from '../errorhandling/SDKErrors'
+import IRequestForAttestation from '../types/RequestForAttestation'
 
 const log = LoggerFactory.getLogger('Verifier')
 
@@ -201,7 +202,7 @@ export async function verifyPresentation(
   attesterPubKeys?: PublicAttesterIdentity[]
 ): Promise<{
   verified: boolean
-  claims: Array<Partial<IClaim | IAttestedClaim>>
+  claims: Array<Partial<IRequestForAttestation | IAttestedClaim>>
 }> {
   // If we got a public presentation, check that the attestation is valid
   if (message.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC) {
