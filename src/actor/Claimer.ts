@@ -1,4 +1,9 @@
 import * as gabi from '@kiltprotocol/portablegabi'
+import {
+  ERROR_MESSAGE_TYPE,
+  ERROR_PE_MISMATCH,
+  ERROR_PE_CREDENTIAL_MISSING,
+} from '../errorhandling/SDKErrors'
 import IPublicIdentity from '../types/PublicIdentity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IClaim from '../types/Claim'
@@ -40,6 +45,7 @@ function finalizeReqProps(props: string[]): string[] {
  * @param credentials The [[Credential]]s which should be verified.
  * @param attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
  * @param requirePE A boolean to force privacy enhancement.
+ * @throws [[ERROR_PE_MISMATCH]], [[ERROR_MESSAGE_TYPE]], [[ERROR_PE_CREDENTIAL_MISSING]].
  * @returns A message which represents either an array of [[AttestedClaim]]s if privacy enhancement is not supported
  * or a CombinedPresentation. Both of these options can be verified.
  */
@@ -53,16 +59,15 @@ export async function createPresentation(
 ): Promise<Message> {
   // did we get the right message type?
   if (message.body.type !== MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
-    throw new Error(
-      `Expected message type '${MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES}' but got type '${message.body.type}'`
+    throw ERROR_MESSAGE_TYPE(
+      message.body.type,
+      MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
     )
   }
 
   // If privacy enhancement was required, but is not allowed, we can't create a presentation.
   if (!message.body.content.allowPE && requirePE) {
-    throw new Error(
-      'Verifier requested public presentation, but privacy enhancement was forced.'
-    )
+    throw ERROR_PE_MISMATCH()
   }
   const request = message.body
 
@@ -70,7 +75,7 @@ export async function createPresentation(
   if (request.content.allowPE) {
     const peCreds = credentials.map(c => c.privacyCredential)
     if (!noNulls(peCreds)) {
-      throw new Error('Missing privacy enhanced credential')
+      throw ERROR_PE_CREDENTIAL_MISSING()
     }
     const gabiPresentation = await identity.claimer.buildCombinedPresentation({
       credentials: peCreds,
@@ -164,8 +169,9 @@ export async function requestAttestation(
     typeof initiateAttestationMsg !== 'undefined' &&
     initiateAttestationMsg.body.type !== MessageBodyType.INITIATE_ATTESTATION
   ) {
-    throw new Error(
-      `Expected message type '${MessageBodyType.INITIATE_ATTESTATION}' but got type '${initiateAttestationMsg.body.type}'`
+    throw ERROR_MESSAGE_TYPE(
+      initiateAttestationMsg.body.type,
+      MessageBodyType.INITIATE_ATTESTATION
     )
   }
   const mappedOptions = {
@@ -213,8 +219,9 @@ export async function buildCredential(
   session: ClaimerAttestationSession
 ): Promise<Credential> {
   if (message.body.type !== MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
-    throw new Error(
-      `Expected message type '${MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM}' but got type '${message.body.type}'`
+    throw ERROR_MESSAGE_TYPE(
+      message.body.type,
+      MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
     )
   }
   return Credential.fromRequestAndAttestation(

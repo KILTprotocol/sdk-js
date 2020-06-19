@@ -6,6 +6,7 @@
 
 import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { validateHash, validateAddress } from '../util/DataUtils'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  *  Checks whether the input meets all the required criteria of an IAttestation object.
@@ -15,26 +16,27 @@ import { validateHash, validateAddress } from '../util/DataUtils'
  * @throws When input's cTypeHash, claimHash and owner do not exist.
  * @throws When the input's delegationId is not of type 'string' or 'null'.
  * @throws When input.revoked is not of type 'boolean'.
+ * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_HASH_NOT_PROVIDED]], [[ERROR_DELEGATION_ID_TYPE]], [[ERROR_OWNER_NOT_PROVIDED]], [[ERROR_REVOCATION_BIT_MISSING]].
  *
  */
 export function errorCheck(input: IAttestation): void {
   if (!input.cTypeHash) {
-    throw new Error('CType Hash not provided')
+    throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   } else validateHash(input.cTypeHash, 'CType')
 
   if (!input.claimHash) {
-    throw new Error('Claim Hash not provided')
+    throw SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
   } else validateHash(input.claimHash, 'Claim')
 
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
-    throw new Error(`Not a valid DelegationId: ${typeof input.delegationId}`)
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (!input.owner) {
-    throw new Error('Owner not provided')
-  } else validateAddress(input.owner, 'Owner')
+    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+  } else validateAddress(input.owner, 'owner')
 
   if (typeof input.revoked !== 'boolean') {
-    throw new Error('revocation bit not provided')
+    throw SDKErrors.ERROR_REVOCATION_BIT_MISSING()
   }
 }
 
@@ -62,15 +64,14 @@ export function compress(attestation: IAttestation): CompressedAttestation {
  *
  * @param attestation A compressed [[Attestation]] array that is reverted back into an object.
  * @throws When [[attestation]] is not an Array or it's length is unequal 5.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  *
  * @returns An object that has the same properties as an [[Attestation]].
  */
 
 export function decompress(attestation: CompressedAttestation): IAttestation {
   if (!Array.isArray(attestation) || attestation.length !== 5) {
-    throw new Error(
-      "Compressed Attestation isn't an Array or has all the required data types"
-    )
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attestation')
   }
   return {
     claimHash: attestation[0],
