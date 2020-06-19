@@ -64,7 +64,7 @@ describe('Verifier', () => {
 
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(Tuple.with([H256, AccountId, 'Option<H256>', Bool]), [
-        '0x1234', // ctype hash
+        '"0xde9f624875aa620d06434603787a40c8cd02cc25c7b775cf50de8a3a96bbeafa"', // ctype hash
         attester.getAddress(), // Account
         null, // delegation-id?
         false, // revoked flag
