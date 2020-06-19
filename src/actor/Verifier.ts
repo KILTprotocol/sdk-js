@@ -201,7 +201,7 @@ export async function verifyPresentation(
   attesterPubKeys?: PublicAttesterIdentity[]
 ): Promise<{
   verified: boolean
-  claims: Array<Partial<IAttestedClaim>>
+  claims: Array<Partial<IClaim | IAttestedClaim>>
 }> {
   // If we got a public presentation, check that the attestation is valid
   if (message.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC) {
