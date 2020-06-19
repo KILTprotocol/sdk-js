@@ -16,10 +16,6 @@ import { IQuote } from '../types/Quote'
 import { IAttestedClaim, Verifier } from '..'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 
-it.only('sqwdqw', () => {
-  expect(true).toBe(true)
-})
-
 describe('Messaging', () => {
   let identityAlice: Identity
   let identityBob: Identity
