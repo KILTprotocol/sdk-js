@@ -17,15 +17,14 @@ export const CTypeModel = {
     $schema: {
       type: 'string',
       format: 'uri',
-      default: 'http://kilt-protocol.org/draft-01/ctype#',
-      enum: ['http://kilt-protocol.org/draft-01/ctype#'],
+      const: 'http://kilt-protocol.org/draft-01/ctype#',
     },
     title: {
       type: 'string',
     },
     type: {
       type: 'string',
-      enum: ['object'],
+      const: 'object',
     },
     properties: {
       type: 'object',
@@ -71,6 +70,7 @@ export const CTypeWrapperModel = {
     schema: {
       type: 'object',
       properties: CTypeModel.properties,
+      required: CTypeModel.required,
     },
     owner: { type: ['string', 'null'] },
     hash: {
