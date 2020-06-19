@@ -13,7 +13,7 @@ import { Identity } from '..'
 import { IBlockchainApi } from '../blockchain/Blockchain'
 import { ERROR_CTYPE_ALREADY_EXISTS } from '../errorhandling/ExtrinsicError'
 
-let blockchain: IBlockchainApi
+let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
@@ -98,5 +98,5 @@ describe('When there is an CtypeCreator and a verifier', () => {
 })
 
 afterAll(() => {
-  blockchain.api.disconnect()
+  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
 })
