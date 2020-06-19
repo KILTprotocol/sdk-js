@@ -6,7 +6,9 @@ import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 import Identity from '../identity/Identity'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import CType from '../ctype/CType'
+import IAttestedClaim from '../types/AttestedClaim'
 import { ERROR_MESSAGE_TYPE } from '../errorhandling/SDKErrors'
+import IRequestForAttestation from '../types/RequestForAttestation'
 
 const log = LoggerFactory.getLogger('Verifier')
 
@@ -146,7 +148,7 @@ async function verifyPublicPresentation(
   session: IVerifierSession
 ): Promise<{
   verified: boolean
-  claims: any[]
+  claims: Array<Partial<IAttestedClaim>>
 }> {
   if (attestedClaims.length !== session.requestedProperties.length) {
     log.info(
@@ -159,7 +161,7 @@ async function verifyPublicPresentation(
   }
 
   const allVerified = await Promise.all(
-    session.requestedProperties.map((requested, i) => {
+    session.requestedProperties.map(async (requested, i) => {
       const ac = attestedClaims[i]
       const providedProperties = ac.getAttributes()
       // map the KILT Style properties to Gabi style properties
@@ -170,10 +172,9 @@ async function verifyPublicPresentation(
       rawProperties.push('claim.cTypeHash')
       rawProperties.push('claim.owner')
       return (
-        ac.verify() &&
         requested.properties.every(p => {
           return rawProperties.includes(p)
-        })
+        }) && ac.verify()
       )
     })
   )
@@ -201,7 +202,7 @@ export async function verifyPresentation(
   attesterPubKeys?: PublicAttesterIdentity[]
 ): Promise<{
   verified: boolean
-  claims: any[]
+  claims: Array<Partial<IRequestForAttestation | IAttestedClaim>>
 }> {
   // If we got a public presentation, check that the attestation is valid
   if (message.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC) {
