@@ -3,21 +3,18 @@ import Identity from '../identity/Identity'
 import ICType from '../types/CType'
 import Claim from '../claim/Claim'
 import CTypeUtils from './CType.utils'
+import { IClaim } from '..'
 
 describe('Nested CTypes', () => {
   let identityAlice: Identity
   let passportCType: ICType['schema']
   let kycCType: ICType['schema']
-  let fromPassportCType: ICType
-  let fromKYCCType: ICType
   let passport: CType
   let kyc: CType
-  let claimContents: any
-  let claimDeepContents: any
+  let claimContents: IClaim['contents']
+  let claimDeepContents: IClaim['contents']
   let nested: ICType['schema']
   let nestedDeeply: ICType['schema']
-  let fromNestedCType: ICType
-  let fromNestedDeep: ICType
   let nestedCType: CType
   let deeplyNestedCType: CType
   let nestedData: Claim
@@ -52,20 +49,9 @@ describe('Nested CTypes', () => {
       type: 'object',
     }
 
-    fromPassportCType = {
-      schema: passportCType,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-    fromKYCCType = {
-      schema: kycCType,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
+    passport = CType.fromSchema(passportCType, identityAlice.getAddress())
 
-    passport = CType.fromCType(fromPassportCType)
-
-    kyc = CType.fromCType(fromKYCCType)
+    kyc = CType.fromSchema(kycCType, identityAlice.getAddress())
 
     claimContents = {
       fullName: 'Archer Macdonald',
@@ -140,20 +126,12 @@ describe('Nested CTypes', () => {
       },
     }
 
-    fromNestedCType = {
-      schema: nested,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
+    nestedCType = CType.fromSchema(nested, identityAlice.getAddress())
 
-    fromNestedDeep = {
-      schema: nestedDeeply,
-      owner: identityAlice.getAddress(),
-      hash: '',
-    }
-    nestedCType = CType.fromCType(fromNestedCType)
-
-    deeplyNestedCType = CType.fromCType(fromNestedDeep)
+    deeplyNestedCType = CType.fromSchema(
+      nestedDeeply,
+      identityAlice.getAddress()
+    )
 
     nestedData = Claim.fromNestedCTypeClaim(
       nestedCType,
@@ -171,7 +149,6 @@ describe('Nested CTypes', () => {
   })
 
   it('verify ajv compiler', () => {
-    console.log(kyc)
     expect(
       CTypeUtils.validateNestedSchemas(
         nestedCType.schema,
