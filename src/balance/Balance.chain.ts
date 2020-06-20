@@ -9,9 +9,8 @@
  * @preferred
  */
 
-import BN from 'bn.js'
-import { Balance } from '@polkadot/types/interfaces'
 import { SubmittableResult } from '@polkadot/api'
+import BN from 'bn.js'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
@@ -40,7 +39,7 @@ export async function getBalance(
   accountAddress: IPublicIdentity['address']
 ): Promise<BN> {
   const blockchain = await getCached()
-  return blockchain.api.query.balances.freeBalance<Balance>(accountAddress)
+  return (await blockchain.api.query.system.account(accountAddress)).data.free
 }
 
 /**

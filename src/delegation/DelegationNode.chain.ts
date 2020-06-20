@@ -5,7 +5,7 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text, Tuple, TypeRegistry } from '@polkadot/types'
+import { Option, Tuple, TypeRegistry, Text } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
@@ -30,6 +30,7 @@ export async function store(
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.addDelegation(
     delegation.id,
     delegation.rootId,
+    // includeParentId ? delegation.parentId : undefined,
     new Option(
       new TypeRegistry(),
       Text,

@@ -10,7 +10,9 @@ import CType from '../ctype/CType'
 import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
 
-export const GAS = new BN(1000000)
+// FIXME: check with weights
+// export const GAS = new BN(1_000_000)
+export const GAS = new BN(320_000_000)
 export const MIN_TRANSACTION = new BN(100000000)
 export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 
@@ -18,7 +20,10 @@ export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 
-export const wannabeFaucet = Identity.buildFromMnemonic(FaucetSeed)
+export const wannabeFaucet = Identity.buildFromURI(FaucetSeed)
+// export const wannabeFaucet = Identity.buildFromURI(
+//   '0x3ba6e1019a22234a9349eb1d76e02f74fecff31da60a0c8fc1e74a4a3a32b925'
+// )
 export const wannabeAlice = Identity.buildFromURI('//Alice')
 export const wannabeBob = Identity.buildFromURI('//Bob')
 

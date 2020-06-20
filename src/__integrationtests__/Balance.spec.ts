@@ -96,7 +96,7 @@ describe('When there are haves and have-nots', () => {
     await makeTransfer(richieRich, stormyD.getAddress(), MIN_TRANSACTION)
     const balanceTo = await getBalance(stormyD.getAddress())
     expect(balanceTo.toNumber()).toBe(MIN_TRANSACTION.toNumber())
-  }, 15000)
+  }, 30_000)
 
   it('should not accept transactions from identity with zero balance', async () => {
     const originalBalance = await getBalance(stormyD.getAddress())
@@ -109,7 +109,7 @@ describe('When there are haves and have-nots', () => {
     ])
     expect(newBalance.toNumber()).toBe(originalBalance.toNumber())
     expect(zeroBalance.toNumber()).toBe(0)
-  }, 15000)
+  }, 30_000)
 
   it('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalance(richieRich.getAddress())
@@ -122,7 +122,7 @@ describe('When there are haves and have-nots', () => {
     ])
     expect(zeroBalance.toString()).toEqual('0')
     expect(newBalance.toString()).toEqual(RichieBalance.sub(GAS).toString())
-  }, 15000)
+  }, 30_000)
 
   xit('should be able to make multiple transactions at once', async () => {
     const listener = jest.fn()
@@ -132,7 +132,7 @@ describe('When there are haves and have-nots', () => {
       makeTransfer(faucet, stormyD.getAddress(), MIN_TRANSACTION),
     ])
     expect(listener).toBeCalledWith(faucet.getAddress())
-  }, 30000)
+  }, 30_000)
 })
 
 afterAll(() => {

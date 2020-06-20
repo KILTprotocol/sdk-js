@@ -8,14 +8,14 @@
  * @preferred
  */
 
+import * as gabi from '@kiltprotocol/portablegabi'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Header } from '@polkadot/types/interfaces/types'
-import { Codec, AnyJson } from '@polkadot/types/types'
-import { Text, u64 } from '@polkadot/types'
-import * as gabi from '@kiltprotocol/portablegabi'
-import { ErrorHandler } from '../errorhandling/ErrorHandler'
+import { Text } from '@polkadot/types'
+import { Header, Index } from '@polkadot/types/interfaces/types'
+import { AnyJson, Codec } from '@polkadot/types/types'
 import { factory as LoggerFactory } from '../config/ConfigLog'
+import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 
@@ -123,7 +123,8 @@ export default class Blockchain implements IBlockchainApi {
     })
   }
 
-  public async getNonce(accountAddress: string): Promise<u64> {
-    return this.api.query.system.accountNonce<u64>(accountAddress)
+  public async getNonce(accountAddress: string): Promise<Index> {
+    const x = (await this.api.query.system.account(accountAddress)).nonce
+    return x
   }
 }

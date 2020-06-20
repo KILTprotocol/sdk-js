@@ -1,8 +1,9 @@
 import { SubmittableResult } from '@polkadot/api'
+import { TypeRegistry } from '@polkadot/types'
+import AccountIndex from '@polkadot/types/generic/AccountIndex'
 import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
 import Identity from '../identity/Identity'
-// import partial from 'lodash/partial'
 import { listenToBalanceChanges, makeTransfer } from './Balance.chain'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
@@ -13,6 +14,7 @@ const FEE = 30
 describe('Balance', () => {
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
+  const registry = new TypeRegistry()
 
   const accountInfo = (balance: number): AccountInfo => {
     return {
@@ -22,6 +24,7 @@ describe('Balance', () => {
         miscFrozen: new BN(balance),
         feeFrozen: new BN(balance),
       } as AccountData,
+      nonce: new AccountIndex(registry, 0),
     } as AccountInfo
   }
 

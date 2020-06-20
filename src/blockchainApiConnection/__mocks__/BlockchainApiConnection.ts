@@ -47,18 +47,19 @@
 
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Tuple, TypeRegistry, u128, u64, Vec } from '@polkadot/types'
+import { Option, Tuple, TypeRegistry, u128, Vec } from '@polkadot/types'
 import AccountId from '@polkadot/types/generic/AccountId'
+import AccountIndex from '@polkadot/types/generic/AccountIndex'
 import {
   AccountData,
-  ExtrinsicStatus,
   AccountInfo,
+  ExtrinsicStatus,
 } from '@polkadot/types/interfaces'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
+import BN from 'bn.js'
 import IPublicIdentity from 'src/types/PublicIdentity'
 import Blockchain from '../../blockchain/Blockchain'
-import BN from 'bn.js'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
 const registry = new TypeRegistry()
@@ -207,30 +208,21 @@ const __mocked_api: any = {
   query: {
     system: {
       // default return value decodes to BN(0)
-      accountNonce: jest.fn(async () => new u64(registry)),
       // default return value decodes to AccountInfo with all entries holding BN(0)
       account: jest.fn(
         async (
           address: IPublicIdentity['address'],
           cb
         ): Promise<AccountInfo> => {
-          const accountInfo = (balance: number): AccountInfo => {
-            return {
-              data: {
-                free: new BN(balance),
-                reserved: new BN(balance),
-                miscFrozen: new BN(balance),
-                feeFrozen: new BN(balance),
-              } as AccountData,
-            } as AccountInfo
-          }
-
-          if (cb) {
-            setTimeout(() => {
-              cb(accountInfo(0))
-            }, 1)
-          }
-          return accountInfo(0)
+          return {
+            data: {
+              free: new BN(0),
+              reserved: new BN(0),
+              miscFrozen: new BN(0),
+              feeFrozen: new BN(0),
+            } as AccountData,
+            nonce: new AccountIndex(registry, 0),
+          } as AccountInfo
         }
       ),
     },

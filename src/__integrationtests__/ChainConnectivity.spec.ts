@@ -19,7 +19,7 @@ describe('Blockchain', () => {
 
     expect(stats).toMatchObject({
       chain: 'Development',
-      nodeName: 'mashnet-node',
+      nodeName: 'KILT Node',
       nodeVersion: expect.stringMatching(/.+\..+\..+/),
     })
   })
