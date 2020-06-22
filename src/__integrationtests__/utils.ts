@@ -21,9 +21,6 @@ const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 
 export const wannabeFaucet = Identity.buildFromURI(FaucetSeed)
-// export const wannabeFaucet = Identity.buildFromURI(
-//   '0x3ba6e1019a22234a9349eb1d76e02f74fecff31da60a0c8fc1e74a4a3a32b925'
-// )
 export const wannabeAlice = Identity.buildFromURI('//Alice')
 export const wannabeBob = Identity.buildFromURI('//Bob')
 

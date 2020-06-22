@@ -107,7 +107,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
+   * [STATIC] [ASYNC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
    *
    * @param claim An `IClaim` object the request for attestation is built for.
    * @param identity The Claimer's [[Identity]].

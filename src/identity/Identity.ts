@@ -258,7 +258,7 @@ export default class Identity {
   }
 
   /**
-   * Signs data with an [[Identity]] object's key returns it as string.
+   * Signs data with an [[Identity]] object's key and returns it as string.
    *
    * @param cryptoInput - The data to be signed.
    * @returns The signed data.

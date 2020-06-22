@@ -30,7 +30,6 @@ export async function store(
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.addDelegation(
     delegation.id,
     delegation.rootId,
-    // includeParentId ? delegation.parentId : undefined,
     includeParentId ? delegation.parentId : undefined,
     delegation.account,
     permissionsAsBitset(delegation),

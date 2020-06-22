@@ -14,7 +14,6 @@ import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 import Attestation from './Attestation'
 
 const log = factory.getLogger('Attestation')
-// TODO: Check whether this should really be initiated here
 
 export async function store(
   attestation: IAttestation,

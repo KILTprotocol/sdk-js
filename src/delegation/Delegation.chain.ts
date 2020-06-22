@@ -10,7 +10,6 @@ import { CodecWithId } from './DelegationDecoder'
 import { IDelegationBaseNode } from '../types/Delegation'
 import { assertCodecIsType } from '../util/Decode'
 
-// TODO: How to properly replace H256 after update? Text?
 function decodeDelegatedAttestations(queryResult: Vec<H256>): string[] {
   assertCodecIsType(queryResult, ['Vec<H256>'])
   return queryResult.map(hash => hash.toString())

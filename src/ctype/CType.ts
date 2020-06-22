@@ -18,10 +18,25 @@ import { store } from './CType.chain'
 import IClaim from '../types/Claim'
 
 export default class CType implements ICType {
+  /**
+   *  [STATIC] Clones an already existing [[CType]].
+   *
+   * @param cTypeInput The [[CType]] which shall be cloned.
+   *
+   * @returns A copy of the given [[CType]].
+   */
   public static fromCType(cTypeInput: ICType): CType {
     return new CType(cTypeInput)
   }
 
+  /**
+   *  [STATIC] Creates a new [[CType]] from an [[ICTypeSchema]].
+   *
+   * @param schema The JSON schema from which the [[CType]] should be generated.
+   * @param owner The public SS58 address of the owner of the [[CType]].
+   *
+   * @returns An instance of [[CType]].
+   */
   public static fromSchema(
     schema: ICType['schema'],
     owner?: ICType['owner']
@@ -60,14 +75,32 @@ export default class CType implements ICType {
     this.hash = cTypeInput.hash
   }
 
+  /**
+   * [ASYNC] Stores the [[CType]] on the blockchain.
+   *
+   * @param identity The identity which submits the blockchain transaction to store the [[CType]].
+   *
+   * @returns A promise of a [[SubmittableResult]] .
+   */
   public async store(identity: Identity): Promise<SubmittableResult> {
     return store(this, identity)
   }
 
+  /**
+   *  Verifies whether a [[Claim]] follows this [[CType]]'s schema.
+   *
+   * @param claim The [[Claim]] we want to check against.
+   * @returns Whether the [[Claim]] and the schema align.
+   */
   public verifyClaimStructure(claim: IClaim): boolean {
     return CTypeUtils.verifySchema(claim.contents, this.schema)
   }
 
+  /**
+   * [ASYNC] Check whether the current owner of [[CType]] matches the one stored on the blockchain.
+   *
+   * @returns Whether the owner of this [[CType]] matches the one stored on the blockchain.
+   *  */
   public async verifyStored(): Promise<boolean> {
     return CTypeUtils.verifyStored(this)
   }

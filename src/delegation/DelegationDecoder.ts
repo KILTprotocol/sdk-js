@@ -35,7 +35,6 @@ interface IChainRootDelegation extends Codec {
 export function decodeRootDelegation(
   encoded: Option<Tuple> | Tuple
 ): RootDelegationRecord | null {
-  // TODO: How to properly replace H256 after update?
   assertCodecIsType(encoded, [
     'Option<(H256,AccountId,bool)>',
     'H256,AccountId,bool',

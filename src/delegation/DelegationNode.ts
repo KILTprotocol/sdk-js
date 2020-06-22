@@ -101,7 +101,7 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * Fetches the root of this delegation node.
+   * [ASYNC] Fetches the root of this delegation node.
    *
    * @throws When the rootId could not be queried.
    * @throws [[ERROR_ROOT_NODE_QUERY]].
@@ -116,7 +116,7 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * Fetches the parent node of this delegation node.
+   * [ASYNC] Fetches the parent node of this delegation node.
    *
    * @returns Promise containing the parent as [[DelegationBaseNode]] or [null].
    */
@@ -130,7 +130,7 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * Stores the delegation node on chain.
+   * [ASYNC] Stores the delegation node on chain.
    *
    * @param identity Account used to store the delegation node.
    * @param signature Signature of the delegate to ensure it's done under his permission.
@@ -145,7 +145,7 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * Verifies the delegation node by querying it from chain and checking its revoke status.
+   * [ASYNC] Verifies the delegation node by querying it from chain and checking its revoke status.
    *
    * @returns Promise containing a boolean flag.
    */
@@ -155,7 +155,7 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * Revokes the delegation node on chain.
+   * [ASYNC] Revokes the delegation node on chain.
    *
    * @param identity The identity used to revoke the delegation.
    * @returns Promise containing the SubmittableResult.
