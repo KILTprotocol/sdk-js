@@ -4,7 +4,7 @@
  */
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text, Tuple, TypeRegistry } from '@polkadot/types'
+import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigLog'
@@ -23,11 +23,7 @@ export async function store(
   const txParams = {
     claimHash: attestation.claimHash,
     ctypeHash: attestation.cTypeHash,
-    delegationId: new Option(
-      new TypeRegistry(),
-      Text,
-      attestation.delegationId
-    ),
+    delegationId: attestation.delegationId,
   }
   log.debug(() => `Create tx for 'attestation.add'`)
 

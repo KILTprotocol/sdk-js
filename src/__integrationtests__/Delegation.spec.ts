@@ -139,7 +139,7 @@ describe('when there is an account hierarchy', () => {
       // FIXME: Why is ErrorCode.ERROR_DELEGATION_NOT_FOUND thrown?
       const result2 = await attClaim.attestation.revoke(uncleSam)
       expect(result2.status.type).toBe('Finalized')
-    }, 30_000)
+    }, 50_000)
   })
 })
 

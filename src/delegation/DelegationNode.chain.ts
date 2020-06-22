@@ -5,7 +5,7 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Tuple, TypeRegistry, Text } from '@polkadot/types'
+import { Option, Tuple } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
@@ -31,11 +31,7 @@ export async function store(
     delegation.id,
     delegation.rootId,
     // includeParentId ? delegation.parentId : undefined,
-    new Option(
-      new TypeRegistry(),
-      Text,
-      includeParentId ? delegation.parentId : undefined
-    ),
+    includeParentId ? delegation.parentId : undefined,
     delegation.account,
     permissionsAsBitset(delegation),
     signature

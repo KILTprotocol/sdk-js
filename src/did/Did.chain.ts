@@ -5,7 +5,7 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text, TypeRegistry, Tuple } from '@polkadot/types'
+import { Option, Tuple } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
@@ -56,7 +56,7 @@ export async function store(
   const tx: SubmittableExtrinsic = blockchain.api.tx.did.add(
     did.publicBoxKey,
     did.publicSigningKey,
-    new Option(new TypeRegistry(), Text, did.documentStore)
+    did.documentStore
   )
   return blockchain.submitTx(identity, tx)
 }
