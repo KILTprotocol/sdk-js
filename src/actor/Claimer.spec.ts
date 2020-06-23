@@ -69,7 +69,7 @@ describe('Claimer', () => {
         Tuple,
         new Tuple(
           registry,
-          ['H256', AccountId, Text, Bool],
+          ['H256', AccountId, 'Option<H256>', Bool],
           [cType.hash, attester.getAddress(), undefined, 0]
         )
       )
@@ -145,7 +145,7 @@ describe('Claimer', () => {
         Tuple,
         new Tuple(
           registry,
-          ['H256', AccountId, Text, Bool],
+          ['H256', AccountId, 'Option<H256>', Bool],
           [cType.hash, attester.getAddress(), undefined, 0]
         )
       )
@@ -222,7 +222,7 @@ describe('Claimer', () => {
         Tuple,
         new Tuple(
           registry,
-          ['H256', AccountId, Text, Bool],
+          ['H256', AccountId, 'Option<H256>', Bool],
           [cType.hash, attester.getAddress(), undefined, 0]
         )
       )
@@ -267,14 +267,12 @@ describe('Claimer', () => {
   })
 
   it('create privacy enhanced presentation', async () => {
-    const request = (
-      await Verifier.newRequestBuilder()
-        .requestPresentationForCtype({
-          ctypeHash: 'this is a ctype hash',
-          properties: ['name', 'and', 'other', 'attributes'],
-        })
-        .finalize(true, verifier, claimer.getPublicIdentity())
-    ).message
+    const { message: request } = await Verifier.newRequestBuilder()
+      .requestPresentationForCtype({
+        ctypeHash: 'this is a ctype hash',
+        properties: ['name', 'and', 'other', 'attributes'],
+      })
+      .finalize(true, verifier, claimer.getPublicIdentity())
 
     const presentation = await Claimer.createPresentation(
       claimer,
@@ -290,14 +288,12 @@ describe('Claimer', () => {
   })
 
   it('create public presentation', async () => {
-    const request = (
-      await Verifier.newRequestBuilder()
-        .requestPresentationForCtype({
-          ctypeHash: 'this is a ctype hash',
-          properties: ['name', 'and', 'other', 'attributes'],
-        })
-        .finalize(false, verifier, claimer.getPublicIdentity())
-    ).message
+    const { message: request } = await Verifier.newRequestBuilder()
+      .requestPresentationForCtype({
+        ctypeHash: 'this is a ctype hash',
+        properties: ['name', 'and', 'other', 'attributes'],
+      })
+      .finalize(false, verifier, claimer.getPublicIdentity())
 
     const presentation = await Claimer.createPresentation(
       claimer,

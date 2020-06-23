@@ -124,7 +124,6 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public async getNonce(accountAddress: string): Promise<Index> {
-    const x = (await this.api.query.system.account(accountAddress)).nonce
-    return x
+    return (await this.api.query.system.account(accountAddress)).nonce
   }
 }

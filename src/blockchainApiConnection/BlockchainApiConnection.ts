@@ -17,7 +17,7 @@ export const DEFAULT_WS_ADDRESS =
 
 let instance: Promise<Blockchain> | null
 
-export const CUSTOM_TYPES: RegistryTypes = {
+const CUSTOM_TYPES: RegistryTypes = {
   DelegationNodeId: 'Hash',
   PublicSigningKey: 'Hash',
   PublicBoxKey: 'Hash',

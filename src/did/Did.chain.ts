@@ -16,8 +16,6 @@ import {
   getIdentifierFromAddress,
 } from './Did.utils'
 
-// TODO: Check me
-
 export async function queryByIdentifier(
   identifier: IDid['identifier']
 ): Promise<IDid | null> {

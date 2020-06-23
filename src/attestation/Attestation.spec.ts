@@ -47,9 +47,12 @@ describe('Attestation', () => {
       testcontents,
       identityBob.getAddress()
     )
-    requestForAttestation = (
-      await RequestForAttestation.fromClaimAndIdentity(testClaim, identityBob)
-    ).message
+    ;({
+      message: requestForAttestation,
+    } = await RequestForAttestation.fromClaimAndIdentity(
+      testClaim,
+      identityBob
+    ))
   })
 
   it('stores attestation', async () => {
