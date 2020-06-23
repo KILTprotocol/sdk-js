@@ -1,4 +1,4 @@
-import { Text, TypeRegistry } from '@polkadot/types'
+import { TypeRegistry } from '@polkadot/types'
 import { Option, Tuple } from '@polkadot/types/codec'
 import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'

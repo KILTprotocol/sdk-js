@@ -4,7 +4,11 @@ import AccountIndex from '@polkadot/types/generic/AccountIndex'
 import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
 import Identity from '../identity/Identity'
-import { listenToBalanceChanges, makeTransfer } from './Balance.chain'
+import {
+  getBalance,
+  listenToBalanceChanges,
+  makeTransfer,
+} from './Balance.chain'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -48,10 +52,8 @@ describe('Balance', () => {
       done()
     }
 
-    const currentBalance = await listenToBalanceChanges(
-      bob.getAddress(),
-      listener
-    )
+    await listenToBalanceChanges(bob.getAddress(), listener)
+    const currentBalance = await getBalance(bob.getAddress())
     expect(currentBalance.toNumber()).toBeTruthy()
     expect(currentBalance.toNumber()).toEqual(BALANCE - FEE)
   })

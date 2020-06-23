@@ -1,13 +1,13 @@
 import * as gabi from '@kiltprotocol/portablegabi'
-import IPublicIdentity from '../types/PublicIdentity'
-import Message, { MessageBodyType, IMessage } from '../messaging/Message'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
-import Identity from '../identity/Identity'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import CType from '../ctype/CType'
-import IAttestedClaim from '../types/AttestedClaim'
 import { ERROR_MESSAGE_TYPE } from '../errorhandling/SDKErrors'
+import Identity from '../identity/Identity'
+import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
+import Message, { IMessage, MessageBodyType } from '../messaging/Message'
+import IAttestedClaim from '../types/AttestedClaim'
+import IPublicIdentity from '../types/PublicIdentity'
 import IRequestForAttestation from '../types/RequestForAttestation'
 
 const log = LoggerFactory.getLogger('Verifier')

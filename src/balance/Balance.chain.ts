@@ -10,6 +10,7 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
+import { UnsubscribePromise } from '@polkadot/api/types'
 import BN from 'bn.js'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
@@ -72,23 +73,18 @@ export async function listenToBalanceChanges(
     balance: BN,
     change: BN
   ) => void
-): Promise<BN> {
+): Promise<UnsubscribePromise> {
   const blockchain = await getCached()
-  let {
-    data: { free: previousFree },
-  } = await blockchain.api.query.system.account(accountAddress)
+  let previous = await getBalance(accountAddress)
 
-  if (listener) {
-    blockchain.api.query.system.account(
-      accountAddress,
-      ({ data: { free: currentFree } }) => {
-        const change = currentFree.sub(previousFree)
-        previousFree = currentFree
-        listener(accountAddress, currentFree, change)
-      }
-    )
-  }
-  return previousFree
+  return blockchain.api.query.system.account(
+    accountAddress,
+    ({ data: { free: current } }) => {
+      const change = current.sub(previous)
+      previous = current
+      listener(accountAddress, current, change)
+    }
+  )
 }
 
 /**

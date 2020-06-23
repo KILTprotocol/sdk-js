@@ -1,24 +1,24 @@
 import * as gabi from '@kiltprotocol/portablegabi'
+import AttestedClaim from '../attestedclaim/AttestedClaim'
+import Credential from '../credential/Credential'
 import {
   ERROR_MESSAGE_TYPE,
-  ERROR_PE_MISMATCH,
   ERROR_PE_CREDENTIAL_MISSING,
+  ERROR_PE_MISMATCH,
 } from '../errorhandling/SDKErrors'
-import IPublicIdentity from '../types/PublicIdentity'
+import Identity from '../identity/Identity'
+import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
+import Message, {
+  IInitiateAttestation,
+  IMessage,
+  IRequestAttestationForClaim,
+  MessageBodyType,
+} from '../messaging/Message'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IClaim from '../types/Claim'
 import { IDelegationBaseNode } from '../types/Delegation'
-import Message, {
-  MessageBodyType,
-  IInitiateAttestation,
-  IRequestAttestationForClaim,
-  IMessage,
-} from '../messaging/Message'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
-import Identity from '../identity/Identity'
+import IPublicIdentity from '../types/PublicIdentity'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import Credential from '../credential/Credential'
-import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 
 function noNulls<T>(array: Array<T | null>): array is T[] {
   return array.every((c) => c !== null)
