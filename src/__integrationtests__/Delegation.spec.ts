@@ -30,7 +30,7 @@ import {
   wannabeFaucet,
 } from './utils'
 
-let blockchain: IBlockchainApi
+let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
@@ -169,5 +169,5 @@ describe('handling queries to data not on chain', () => {
 })
 
 afterAll(() => {
-  blockchain.api.disconnect()
+  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
 })

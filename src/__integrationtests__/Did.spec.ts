@@ -9,7 +9,7 @@ import { IBlockchainApi } from '../blockchain/Blockchain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import { queryByAddress, queryByIdentifier } from '../did/Did.chain'
 
-let blockchain: IBlockchainApi
+let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
@@ -33,5 +33,5 @@ describe('querying DIDs that do not exist', () => {
 })
 
 afterAll(() => {
-  blockchain.api.disconnect()
+  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
 })

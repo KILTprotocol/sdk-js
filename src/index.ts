@@ -38,6 +38,7 @@ export * from './errorhandling'
 export * from './messaging'
 // ---- Types, which define the most basic KILT objects ----
 export { default as IAttestation } from './types/Attestation'
+export * from './types/Attestation'
 export { default as IAttestedClaim } from './types/AttestedClaim'
 export { default as IClaim } from './types/Claim'
 export { default as ICredential } from './types/Credential'

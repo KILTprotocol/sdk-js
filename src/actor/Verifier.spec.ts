@@ -8,8 +8,8 @@ import {
   CombinedPresentation,
   CType,
   ICType,
-  Verifier,
   IRequestForAttestation,
+  Verifier,
 } from '..'
 import Credential from '../credential/Credential'
 import AttesterIdentity from '../identity/AttesterIdentity'

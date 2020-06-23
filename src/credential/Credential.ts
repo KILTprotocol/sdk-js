@@ -60,8 +60,12 @@ export default class Credential {
         attestation: attestationPE,
       })
     }
+    const copiedReq: IRequestForAttestation = {
+      ...request,
+      privacyEnhancement: null,
+    }
     return new Credential({
-      reqForAtt: request,
+      reqForAtt: copiedReq,
       attestation,
       privacyCredential,
     })

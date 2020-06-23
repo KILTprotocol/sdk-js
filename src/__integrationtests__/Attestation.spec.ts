@@ -29,7 +29,7 @@ import {
   wannabeFaucet,
 } from './utils'
 
-let blockchain: IBlockchainApi
+let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
@@ -312,5 +312,5 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 })
 
 afterAll(() => {
-  blockchain.api.disconnect()
+  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
 })

@@ -7,13 +7,13 @@ import Kilt, {
   AttesterIdentity,
   Credential,
   CType,
+  PublicAttesterIdentity,
+  IRevocationHandle,
 } from '../src'
 import constants from '../src/test/constants'
-import { IRevocationHandle } from '../src/types/Attestation'
-import { getBalance } from '../src/balance/Balance.chain'
-import PublicAttesterIdentity from '../src/attesteridentity/PublicAttesterIdentity'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
+const SEP = '_'
 
 async function setup(): Promise<{
   claimer: Identity
@@ -21,6 +21,9 @@ async function setup(): Promise<{
   claim: Claim
   ctype: CType
 }> {
+  console.log(
+    (s => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' SETUP ')
+  )
   // ------------------------- Attester ----------------------------------------
 
   // To get an attestation, we need an Attester
@@ -36,7 +39,10 @@ async function setup(): Promise<{
       },
     }
   )
-  console.log('Attester balance is:', await getBalance(attester.getAddress()))
+  console.log(
+    'Attester balance is:',
+    await Kilt.Balance.getBalance(attester.getAddress())
+  )
   // TODO: how to handle instantiation? We cannot always upload the accumulator...
   await attester.updateAccumulator(attester.getAccumulator())
   // for privacy enhanced attestations the attester has to initiate the attestation process
@@ -104,9 +110,6 @@ async function setup(): Promise<{
     owner: claimer.getAddress(),
   })
 
-  console.log(
-    (s => s.padEnd(40 + s.length / 2, '_').padStart(80, '_'))(' SETUP ')
-  )
   console.log('Claimer', claimer.getAddress(), '\n')
   console.log('Attester', attester.getAddress(), '\n')
   console.log('Ctype', ctype, '\n')
@@ -128,6 +131,9 @@ async function doAttestation(
   credential: Credential
   revocationHandle: IRevocationHandle
 }> {
+  console.log(
+    (s => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' ATTESTATION ')
+  )
   // ------------------------- Attester ----------------------------------------
 
   const {
@@ -200,9 +206,6 @@ async function doAttestation(
     claimerSession
   )
 
-  console.log(
-    (s => s.padEnd(40 + s.length / 2, '_').padStart(80, '_'))(' ATTESTATION ')
-  )
   console.log('RFO Message', reqAttestation.body, '\n')
   console.log('Submit attestation:', submitAttestation.body, '\n')
   console.log('AttestedClaim', credential, '\n')
@@ -219,6 +222,9 @@ async function doVerification(
   credential: Credential,
   privacyEnhanced: boolean
 ): Promise<void> {
+  console.log(
+    (s => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' VERIFICATION ')
+  )
   const verifier = await Kilt.Identity.buildFromMnemonic()
   // ------------------------- Verifier ----------------------------------------
   const { session, message: request } = await Kilt.Verifier.newRequestBuilder()
@@ -249,9 +255,6 @@ async function doVerification(
     [await Kilt.Attester.getLatestAccumulator(attesterPub)],
     [attesterPub]
   )
-  console.log(
-    (s => s.padEnd(40 + s.length / 2, '_').padStart(80, '_'))(' VERIFICATION ')
-  )
   console.log('Received claims: ', JSON.stringify(claims))
   console.log('All valid? ', verified)
 }
@@ -268,7 +271,10 @@ async function example(): Promise<void> {
   // should succeed
   await doVerification(claimer, attester.getPublicIdentity(), credential, true)
   await doVerification(claimer, attester.getPublicIdentity(), credential, false)
+
+  // revoke
   await Kilt.Attester.revokeAttestation(attester, revocationHandle)
+
   // should fail
   await doVerification(claimer, attester.getPublicIdentity(), credential, true)
   await doVerification(claimer, attester.getPublicIdentity(), credential, false)
@@ -281,7 +287,7 @@ Kilt.connect(NODE_URL)
   .then(
     () => process.exit(),
     e => {
-      console.log('Error Error Error!', e)
+      console.log('Error Error Error!\n', e)
       process.exit(1)
     }
   )
