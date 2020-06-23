@@ -3,10 +3,10 @@
  * @module IAttestation
  */
 import * as gabi from '@kiltprotocol/portablegabi'
-import ICType from './CType'
-import IPublicIdentity from './PublicIdentity'
-import { IDelegationBaseNode } from './Delegation'
 import Attestation from '../attestation/Attestation'
+import ICType from './CType'
+import { IDelegationBaseNode } from './Delegation'
+import IPublicIdentity from './PublicIdentity'
 
 export default interface IAttestation {
   claimHash: string

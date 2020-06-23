@@ -7,15 +7,15 @@
  */
 
 import Did, {
+  IDENTIFIER_PREFIX,
   KEY_TYPE_ENCRYPTION,
   SERVICE_KILT_MESSAGING,
-  IDENTIFIER_PREFIX,
 } from '../did/Did'
 import { getAddressFromIdentifier } from '../did/Did.utils'
 import IPublicIdentity from '../types/PublicIdentity'
 
 export interface IURLResolver {
-  resolve(url: string): Promise<object | null>
+  resolve(url: string): Promise<Record<string, unknown> | null>
 }
 
 type DIDPublicKey = {
@@ -40,12 +40,12 @@ type DIDResult = {
   didDocument: DIDDocument
 }
 
-function isDIDDocument(object: object): object is DIDDocument {
+function isDIDDocument(object: Record<string, unknown>): object is DIDDocument {
   const didDocument = object as DIDDocument
   return !!didDocument.id && !!didDocument.publicKey && !!didDocument.service
 }
 
-function isDIDResult(object: object): object is DIDResult {
+function isDIDResult(object: Record<string, unknown>): object is DIDResult {
   return isDIDDocument((object as DIDResult).didDocument)
 }
 
@@ -88,7 +88,9 @@ export default class PublicIdentity implements IPublicIdentity {
    * PublicIdentity.fromDidDocument(didDocument);
    * ```
    */
-  public static fromDidDocument(didDocument: object): IPublicIdentity | null {
+  public static fromDidDocument(
+    didDocument: Record<string, unknown>
+  ): IPublicIdentity | null {
     if (!isDIDDocument(didDocument)) {
       return null
     }
@@ -127,7 +129,7 @@ export default class PublicIdentity implements IPublicIdentity {
    * @example ```javascript
    * const urlResolver = {
    *   resolve: (url: string) => {
-   *     return fetch(url).then(response => response.json());
+   *     return fetch(url).then((response) => response.json());
    *   },
    * };
    * const identifier = 'did:kilt:1234567';
@@ -202,7 +204,7 @@ export default class PublicIdentity implements IPublicIdentity {
   }
 
   private static getJSONProperty(
-    did: object,
+    did: Record<string, any>,
     listProperty: string,
     filterKey: string,
     filterValue: string,
@@ -211,9 +213,9 @@ export default class PublicIdentity implements IPublicIdentity {
     if (!did[listProperty]) {
       throw Error()
     }
-    const listOfObjects: object[] = did[listProperty]
+    const listOfObjects: Array<Record<string, any>> = did[listProperty]
 
-    const correctObj = listOfObjects.find(object => {
+    const correctObj = listOfObjects.find((object) => {
       return object[filterKey] && object[filterKey] === filterValue
     })
 

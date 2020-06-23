@@ -39,7 +39,6 @@ describe('Delegation', () => {
       [Permission.ATTEST, Permission.DELEGATE],
       'myParentNodeId'
     )
-    // @ts-ignore
     const permissions: Uint8Array = permissionsAsBitset(node)
     const expected: Uint8Array = new Uint8Array(4)
     expected[0] = 3
@@ -48,7 +47,7 @@ describe('Delegation', () => {
 
   it('delegation verify / revoke', async () => {
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations = jest.fn(
-      async id => {
+      async (id) => {
         if (id === 'success') {
           return new Option(
             registry,

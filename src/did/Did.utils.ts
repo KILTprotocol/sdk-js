@@ -3,29 +3,28 @@
  * @ignore
  */
 
-import { isHex, hexToString } from '@polkadot/util'
-
-import { Tuple, Option } from '@polkadot/types'
+import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
-import { hasNonNullByte, assertCodecIsType } from '../util/Decode'
-import IPublicIdentity from '../types/PublicIdentity'
+import { hexToString, isHex } from '@polkadot/util'
 import Crypto from '../crypto'
-import Identity from '../identity/Identity'
-import {
-  IDid,
-  IDidDocument,
-  IDidDocumentSigned,
-  IDENTIFIER_PREFIX,
-  CONTEXT,
-  KEY_TYPE_AUTHENTICATION,
-  KEY_TYPE_SIGNATURE,
-  KEY_TYPE_ENCRYPTION,
-  SERVICE_KILT_MESSAGING,
-} from './Did'
 import {
   ERROR_DID_IDENTIFIER_MISMATCH,
   ERROR_INVALID_DID_PREFIX,
 } from '../errorhandling/SDKErrors'
+import Identity from '../identity/Identity'
+import IPublicIdentity from '../types/PublicIdentity'
+import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
+import {
+  CONTEXT,
+  IDENTIFIER_PREFIX,
+  IDid,
+  IDidDocument,
+  IDidDocumentSigned,
+  KEY_TYPE_AUTHENTICATION,
+  KEY_TYPE_ENCRYPTION,
+  KEY_TYPE_SIGNATURE,
+  SERVICE_KILT_MESSAGING,
+} from './Did'
 
 interface IEncodedDid extends Codec {
   toJSON: () => [string, string, string | null] | null

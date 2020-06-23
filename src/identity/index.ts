@@ -3,10 +3,10 @@
  * @ignore
  */
 
-import Identity from './Identity'
-import PublicIdentity, { IURLResolver } from './PublicIdentity'
 import AttesterIdentity from './AttesterIdentity'
+import Identity from './Identity'
 import PublicAttesterIdentity from './PublicAttesterIdentity'
+import PublicIdentity, { IURLResolver } from './PublicIdentity'
 
 export {
   Identity,

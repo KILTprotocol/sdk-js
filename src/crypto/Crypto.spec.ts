@@ -1,5 +1,4 @@
 import * as string from '@polkadot/util/string'
-
 import Identity from '../identity/Identity'
 import Crypto from './index'
 
@@ -19,7 +18,6 @@ describe('Crypto', () => {
   })
 
   it('should sign and verify (UInt8Array)', () => {
-    // @ts-ignore
     const signature = Crypto.sign(message, alice.signKeyringPair)
     expect(signature).not.toBeFalsy()
     expect(Crypto.verify(message, signature, alice.getAddress())).toBe(true)
@@ -31,7 +29,6 @@ describe('Crypto', () => {
   })
 
   it('should sign and verify (string)', () => {
-    // @ts-ignore
     const signature = Crypto.signStr(messageStr, alice.signKeyringPair)
     expect(signature).not.toBeFalsy()
     expect(Crypto.verify(messageStr, signature, alice.signPublicKeyAsHex)).toBe(
@@ -129,7 +126,6 @@ describe('Crypto', () => {
     const encrypted = Crypto.encryptAsymmetricAsStr(
       messageStr,
       alice.getBoxPublicKey(),
-      // @ts-ignore
       bob.boxKeyPair.secretKey
     )
     expect(encrypted).not.toEqual(messageStr)
@@ -137,14 +133,12 @@ describe('Crypto', () => {
     const decrypted = Crypto.decryptAsymmetricAsStr(
       encrypted,
       bob.getBoxPublicKey(),
-      // @ts-ignore
       alice.boxKeyPair.secretKey
     )
     expect(decrypted).toEqual(messageStr)
     const decryptedFalse = Crypto.decryptAsymmetricAsStr(
       encrypted,
       bob.getBoxPublicKey(),
-      // @ts-ignore
       bob.boxKeyPair.secretKey
     )
     expect(decryptedFalse).toEqual(false)
@@ -153,18 +147,14 @@ describe('Crypto', () => {
   it('should encrypt and decrypt asymmetrical (UInt8Array)', () => {
     const encrypted = Crypto.encryptAsymmetric(
       message,
-      // @ts-ignore
       alice.boxKeyPair.publicKey,
-      // @ts-ignore
       bob.boxKeyPair.secretKey
     )
     expect(encrypted).not.toEqual(message)
 
     const decrypted = Crypto.decryptAsymmetric(
       encrypted,
-      // @ts-ignore
       bob.boxKeyPair.publicKey,
-      // @ts-ignore
       alice.boxKeyPair.secretKey
     )
     expect(decrypted).toEqual(message)

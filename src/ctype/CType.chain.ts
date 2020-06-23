@@ -3,15 +3,15 @@
  * @ignore
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { SubmittableResult } from '@polkadot/api'
-import { AccountId } from '@polkadot/types/interfaces'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option } from '@polkadot/types'
+import { AccountId } from '@polkadot/types/interfaces'
 import { getCached } from '../blockchainApiConnection'
-import Identity from '../identity/Identity'
-import IPublicIdentity from '../types/PublicIdentity'
 import { factory } from '../config/ConfigLog'
+import Identity from '../identity/Identity'
 import ICType from '../types/CType'
+import IPublicIdentity from '../types/PublicIdentity'
 import { assertCodecIsType } from '../util/Decode'
 
 const log = factory.getLogger('CType')

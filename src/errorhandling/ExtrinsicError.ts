@@ -133,7 +133,7 @@ export const ERROR_UNKNOWN: ExtrinsicError = new ExtrinsicError(
  */
 export const errorsByCode: { [code: number]: ExtrinsicError } = {}
 
-  // fill dictionary
+// fill dictionary
 ;[
   ERROR_CTYPE_NOT_FOUND,
   ERROR_CTYPE_ALREADY_EXISTS,
@@ -159,7 +159,7 @@ export const errorsByCode: { [code: number]: ExtrinsicError } = {}
   ERROR_ROOT_NOT_FOUND,
 
   ERROR_UNKNOWN,
-].forEach(value => {
+].forEach((value) => {
   errorsByCode[value.errorCode] = value
 })
 

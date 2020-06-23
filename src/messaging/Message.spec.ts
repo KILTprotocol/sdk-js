@@ -1,20 +1,20 @@
-import Identity from '../identity/Identity'
-import Message, {
-  MessageBodyType,
-  IEncryptedMessage,
-  IRequestAttestationForClaim,
-  ISubmitAttestationForClaim,
-  ISubmitClaimsForCTypes,
-  IRequestClaimsForCTypes,
-} from './Message'
-import { EncryptedAsymmetricString } from '../crypto/Crypto'
+import { IAttestedClaim, Verifier } from '..'
 import Crypto from '../crypto'
-import IRequestForAttestation from '../types/RequestForAttestation'
+import { EncryptedAsymmetricString } from '../crypto/Crypto'
+import * as SDKErrors from '../errorhandling/SDKErrors'
+import Identity from '../identity/Identity'
 import * as Quote from '../quote/Quote'
 import IClaim from '../types/Claim'
 import { IQuote } from '../types/Quote'
-import { IAttestedClaim, Verifier } from '..'
-import * as SDKErrors from '../errorhandling/SDKErrors'
+import IRequestForAttestation from '../types/RequestForAttestation'
+import Message, {
+  IEncryptedMessage,
+  IRequestAttestationForClaim,
+  IRequestClaimsForCTypes,
+  ISubmitAttestationForClaim,
+  ISubmitClaimsForCTypes,
+  MessageBodyType,
+} from './Message'
 
 describe('Messaging', () => {
   let identityAlice: Identity

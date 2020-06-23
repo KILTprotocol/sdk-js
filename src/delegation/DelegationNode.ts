@@ -9,17 +9,17 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import Crypto from '../crypto'
 import { factory } from '../config/ConfigLog'
+import Crypto from '../crypto'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
-import Identity from '../identity/Identity'
-import DelegationBaseNode from './Delegation'
-import DelegationRootNode from './DelegationRootNode'
-import { IDelegationNode } from '../types/Delegation'
-import permissionsAsBitset from './DelegationNode.utils'
-import { query, store, revoke, getChildren } from './DelegationNode.chain'
-import { query as queryRoot } from './DelegationRootNode.chain'
 import { ERROR_ROOT_NODE_QUERY } from '../errorhandling/SDKErrors'
+import Identity from '../identity/Identity'
+import { IDelegationNode } from '../types/Delegation'
+import DelegationBaseNode from './Delegation'
+import { getChildren, query, revoke, store } from './DelegationNode.chain'
+import permissionsAsBitset from './DelegationNode.utils'
+import DelegationRootNode from './DelegationRootNode'
+import { query as queryRoot } from './DelegationRootNode.chain'
 
 const log = factory.getLogger('DelegationNode')
 
@@ -89,7 +89,7 @@ export default class DelegationNode extends DelegationBaseNode
     if (this.parentId && this.parentId !== this.rootId) {
       propsToHash.push(this.parentId)
     }
-    const uint8Props: Uint8Array[] = propsToHash.map(value => {
+    const uint8Props: Uint8Array[] = propsToHash.map((value) => {
       return coToUInt8(value)
     })
     uint8Props.push(permissionsAsBitset(this))

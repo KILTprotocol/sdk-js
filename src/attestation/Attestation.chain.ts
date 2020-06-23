@@ -67,7 +67,7 @@ function decode(
 
 // return types reflect backwards compatibility with mashnet-node v 0.22
 async function queryRaw(claimHash: string): Promise<Option<Tuple> | Tuple> {
-  log.debug(`Query chain for attestations with claim hash ${claimHash}`)
+  log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await getCached()
   const result = await blockchain.api.query.attestation.attestations<
     Option<Tuple> | Tuple
@@ -85,7 +85,7 @@ export async function revoke(
   identity: Identity
 ): Promise<SubmittableResult> {
   const blockchain = await getCached()
-  log.debug(`Revoking attestations with claim hash ${claimHash}`)
+  log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash
   )

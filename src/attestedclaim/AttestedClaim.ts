@@ -12,11 +12,11 @@
 
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
-import AttestedClaimUtils from './AttestedClaim.utils'
-import IRequestForAttestation from '../types/RequestForAttestation'
 import IAttestation from '../types/Attestation'
+import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
+import IRequestForAttestation from '../types/RequestForAttestation'
 import { validateNonceHash } from '../util/DataUtils'
+import AttestedClaimUtils from './AttestedClaim.utils'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -64,7 +64,7 @@ export default class AttestedClaim implements IAttestedClaim {
    *
    * @returns Boolean whether input is of type IAttestedClaim.
    */
-  public static isIAttestedClaim(input: object): input is IAttestedClaim {
+  public static isIAttestedClaim(input: unknown): input is IAttestedClaim {
     try {
       AttestedClaimUtils.errorCheck(input as IAttestedClaim)
     } catch (error) {
@@ -104,7 +104,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param attestedClaim - The attested claim to check for validity.
    * @returns A promise containing whether this attested claim is valid.
    * @example ```javascript
-   * attestedClaim.verify().then(isVerified => {
+   * attestedClaim.verify().then((isVerified) => {
    *   // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```

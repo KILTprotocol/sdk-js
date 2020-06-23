@@ -1,12 +1,12 @@
-import Identity from '../identity/Identity'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import { AttesterIdentity } from '..'
+import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
+import Identity from '../identity/Identity'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import constants from '../test/constants'
 import ICType from '../types/CType'
 import Credential from './Credential'
-import Attestation from '../attestation/Attestation'
-import { AttesterIdentity } from '..'
-import constants from '../test/constants'
 
 describe('Credential', () => {
   let claimer: Identity
@@ -37,17 +37,19 @@ describe('Credential', () => {
 
     // cannot be used since the variable needs to be established in the outer scope
     // eslint-disable-next-line prefer-destructuring
-    reqForAtt = (await RequestForAttestation.fromClaimAndIdentity(
-      Claim.fromCTypeAndClaimContents(
-        ctype,
-        {
-          name: 'Peter',
-          age: 12,
-        },
-        claimer.getAddress()
-      ),
-      claimer
-    )).message
+    reqForAtt = (
+      await RequestForAttestation.fromClaimAndIdentity(
+        Claim.fromCTypeAndClaimContents(
+          ctype,
+          {
+            name: 'Peter',
+            age: 12,
+          },
+          claimer.getAddress()
+        ),
+        claimer
+      )
+    ).message
 
     attestation = Attestation.fromRequestAndPublicIdentity(
       reqForAtt,

@@ -140,7 +140,7 @@ export default class Message implements IMessage {
       case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC:
         {
           const submitClaimsForCtype = body
-          submitClaimsForCtype.content.forEach(claim => {
+          submitClaimsForCtype.content.forEach((claim) => {
             if (claim.request.claim.owner !== senderAddress) {
               throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }

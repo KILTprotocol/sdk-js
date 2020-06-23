@@ -69,7 +69,7 @@ export default class Blockchain implements IBlockchainApi {
       this.api.rpc.system.name(),
       this.api.rpc.system.version(),
     ])
-    const [chain, nodeName, nodeVersion] = encoded.map(el => el.toString())
+    const [chain, nodeName, nodeVersion] = encoded.map((el) => el.toString())
     return { chain, nodeName, nodeVersion }
   }
 
@@ -94,7 +94,7 @@ export default class Blockchain implements IBlockchainApi {
 
     return new Promise<SubmittableResult>((resolve, reject) => {
       signed
-        .send(result => {
+        .send((result) => {
           log.info(`Got tx status '${result.status.type}'`)
 
           if (ErrorHandler.extrinsicFailed(result)) {

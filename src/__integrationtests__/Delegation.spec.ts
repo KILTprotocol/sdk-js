@@ -1,7 +1,7 @@
 /**
+ * @packageDocumentation
  * @group integration/delegation
  * @ignore
- * @packageDocumentation
  */
 
 import { cryptoWaitReady } from '@polkadot/util-crypto'
@@ -110,13 +110,11 @@ describe('when there is an account hierarchy', () => {
         content,
         claimer.getAddress()
       )
-      const request = (await RequestForAttestation.fromClaimAndIdentity(
-        claim,
-        claimer,
-        {
+      const request = (
+        await RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
           delegationId: delegatedNode.id,
-        }
-      )).message
+        })
+      ).message
       expect(request.verifyData()).toBeTruthy()
       expect(request.verifySignature()).toBeTruthy()
 
@@ -131,7 +129,7 @@ describe('when there is an account hierarchy', () => {
         claimer,
         request,
         attestation
-      ).then(c => c.createPresentation([]))
+      ).then((c) => c.createPresentation([]))
       expect(attClaim.verifyData()).toBeTruthy()
       await expect(attClaim.verify()).resolves.toBeTruthy()
 
@@ -161,8 +159,8 @@ describe('handling queries to data not on chain', () => {
 
   it('fetchChildren on empty', async () => {
     return expect(
-      fetchChildren(['0x012012012']).then(res =>
-        res.map(el => {
+      fetchChildren(['0x012012012']).then((res) =>
+        res.map((el) => {
           return { id: el.id, codec: decodeDelegationNode(el.codec) }
         })
       )

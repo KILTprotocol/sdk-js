@@ -14,9 +14,9 @@
 import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { DelegationNode } from '..'
-import { hasNonNullByte, assertCodecIsType } from '../util/Decode'
 import { coToUInt8 } from '../crypto/Crypto'
-import { Permission, IDelegationRootNode } from '../types/Delegation'
+import { IDelegationRootNode, Permission } from '../types/Delegation'
+import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 
 export type CodecWithId = {
   id: string

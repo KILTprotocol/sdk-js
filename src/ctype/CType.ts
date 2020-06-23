@@ -11,11 +11,11 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import CTypeUtils from './CType.utils'
-import ICType, { CompressedCType } from '../types/CType'
 import Identity from '../identity/Identity'
-import { store } from './CType.chain'
 import IClaim from '../types/Claim'
+import ICType, { CompressedCType } from '../types/CType'
+import { store } from './CType.chain'
+import CTypeUtils from './CType.utils'
 
 export default class CType implements ICType {
   /**
@@ -55,7 +55,7 @@ export default class CType implements ICType {
    *
    * @returns Boolean whether input is of type ICType.
    */
-  static isICType(input: object): input is ICType {
+  static isICType(input: unknown): input is ICType {
     try {
       CTypeUtils.errorCheck(input as ICType)
     } catch (error) {

@@ -13,27 +13,27 @@
  * @preferred
  */
 
+import { Claimer } from '@kiltprotocol/portablegabi'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
+import { mnemonicToMiniSecret } from '@polkadot/util-crypto'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
-import * as u8aUtil from '@polkadot/util/u8a'
 import { hexToU8a } from '@polkadot/util/hex'
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import * as u8aUtil from '@polkadot/util/u8a'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair } from 'tweetnacl'
-import { Claimer } from '@kiltprotocol/portablegabi'
-import { mnemonicToMiniSecret } from '@polkadot/util-crypto'
 import Crypto from '../crypto'
 import {
   CryptoInput,
   EncryptedAsymmetric,
   EncryptedAsymmetricString,
 } from '../crypto/Crypto'
-import PublicIdentity from './PublicIdentity'
 import * as SDKErrors from '../errorhandling/SDKErrors'
+import PublicIdentity from './PublicIdentity'
 
 type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']

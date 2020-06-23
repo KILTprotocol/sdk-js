@@ -1,25 +1,25 @@
 /**
+ * @packageDocumentation
  * @group integration/balance
  * @ignore
- * @packageDocumentation
  */
 
 import BN from 'bn.js/'
-import Identity from '../identity/Identity'
 import {
   getBalance,
-  makeTransfer,
   listenToBalanceChanges,
+  makeTransfer,
 } from '../balance/Balance.chain'
+import { IBlockchainApi } from '../blockchain/Blockchain'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
+import Identity from '../identity/Identity'
 import {
   GAS,
   MIN_TRANSACTION,
-  wannabeFaucet,
-  wannabeBob,
   wannabeAlice,
+  wannabeBob,
+  wannabeFaucet,
 } from './utils'
-import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
-import { IBlockchainApi } from '../blockchain/Blockchain'
 
 let blockchain: IBlockchainApi
 beforeAll(async () => {
@@ -55,7 +55,7 @@ describe('when there is a dev chain with a faucet', () => {
 
   it('getBalance should return 0 for new identity', async () => {
     return expect(
-      getBalance((await Identity.buildFromMnemonic()).getAddress()).then(n =>
+      getBalance((await Identity.buildFromMnemonic()).getAddress()).then((n) =>
         n.toNumber()
       )
     ).resolves.toEqual(0)

@@ -5,10 +5,10 @@
  */
 
 import AttestationUtils from '../attestation/Attestation.utils'
-import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
-import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
-import AttestedClaim from './AttestedClaim'
 import * as SDKErrors from '../errorhandling/SDKErrors'
+import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
+import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
+import AttestedClaim from './AttestedClaim'
 
 /**
  *  Checks whether the input meets all the required criteria of an IAttestedClaim object.

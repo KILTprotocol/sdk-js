@@ -424,9 +424,9 @@ export const ERROR_DECOMPRESSION_ARRAY: (type?: string) => SDKError = (
 }
 
 export const ERROR_COMPRESS_OBJECT: (
-  object?: object,
+  object?: Record<string, any>,
   type?: string
-) => SDKError = (object?: object, type?: string) => {
+) => SDKError = (object?: Record<string, unknown>, type?: string) => {
   if (object && type) {
     return new SDKError(
       ErrorCode.ERROR_COMPRESS_OBJECT,

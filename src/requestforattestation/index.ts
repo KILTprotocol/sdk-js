@@ -4,6 +4,4 @@
  */
 
 export { default } from './RequestForAttestation'
-export {
-  default as RequestForAttestationUtils,
-} from './RequestForAttestation.utils'
+export { default as RequestForAttestationUtils } from './RequestForAttestation.utils'

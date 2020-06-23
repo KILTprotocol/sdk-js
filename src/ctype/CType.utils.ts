@@ -6,17 +6,17 @@
 
 import Ajv from 'ajv'
 import * as jsonabc from 'jsonabc'
+import Crypto from '../crypto'
+import * as SDKErrors from '../errorhandling/SDKErrors'
+import IClaim from '../types/Claim'
+import ICType, { CompressedCType, CompressedCTypeSchema } from '../types/CType'
+import { validateAddress } from '../util/DataUtils'
 import { getOwner } from './CType.chain'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
-import ICType, { CompressedCTypeSchema, CompressedCType } from '../types/CType'
-import Crypto from '../crypto'
-import IClaim from '../types/Claim'
-import { validateAddress } from '../util/DataUtils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
 
 export function verifySchemaWithErrors(
-  object: object,
-  schema: object,
+  object: Record<string, unknown>,
+  schema: Record<string, unknown>,
   messages?: string[]
 ): boolean {
   const ajv = new Ajv()
@@ -34,7 +34,10 @@ export function verifySchemaWithErrors(
   return !!result
 }
 
-export function verifySchema(object: object, schema: object): boolean {
+export function verifySchema(
+  object: Record<string, any>,
+  schema: Record<string, any>
+): boolean {
   return verifySchemaWithErrors(object, schema)
 }
 

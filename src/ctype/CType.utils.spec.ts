@@ -1,11 +1,11 @@
-import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
+import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
+import ICType from '../types/CType'
 import {
   verifyClaimStructure,
   verifySchema,
   verifySchemaWithErrors,
 } from './CType.utils'
-import ICType from '../types/CType'
-import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
+import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 
 const ctypeInput = ({
   $id: 'http://example.com/ctype-1',

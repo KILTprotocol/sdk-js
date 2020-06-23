@@ -1,11 +1,11 @@
-import { Tuple, Option, TypeRegistry, U8aFixed } from '@polkadot/types'
+import { Option, Tuple, TypeRegistry, U8aFixed } from '@polkadot/types'
 import { Did, IDid } from '..'
+import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import {
   getIdentifierFromAddress,
   verifyDidDocumentSignature,
 } from './Did.utils'
-import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/SDKErrors'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -73,7 +73,7 @@ describe('DID', () => {
     } as IDid)
   })
 
-  it('query by identifier invalid identifier', async done => {
+  it('query by identifier invalid identifier', async (done) => {
     try {
       await Did.queryByIdentifier('invalidIdentifier')
       done.fail('should have detected an invalid DID')

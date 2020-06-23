@@ -1,29 +1,29 @@
 /* eslint-disable dot-notation */
 import {
-  ClaimerAttestationSession,
   AttesterAttestationSession,
+  ClaimerAttestationSession,
 } from '@kiltprotocol/portablegabi'
-import Identity from '../identity/Identity'
-import AttesterIdentity from '../identity/AttesterIdentity'
-import RequestForAttestation from './RequestForAttestation'
-import RequestForAttestationUtils from './RequestForAttestation.utils'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
 import Attestation from '../attestation/Attestation'
+import AttestedClaim from '../attestedclaim/AttestedClaim'
 import CType from '../ctype/CType'
-import ICType from '../types/CType'
-import IClaim, { IClaimContents } from '../types/Claim'
+import {
+  ERROR_CLAIM_HASHTREE_MALFORMED,
+  ERROR_LEGITIMATIONS_NOT_PROVIDED,
+  ERROR_NONCE_HASH_INVALID,
+  ERROR_ROOT_HASH_UNVERIFIABLE,
+  ERROR_SIGNATURE_UNVERIFIABLE,
+} from '../errorhandling/SDKErrors'
+import AttesterIdentity from '../identity/AttesterIdentity'
+import Identity from '../identity/Identity'
 import constants from '../test/constants'
+import { CompressedAttestedClaim } from '../types/AttestedClaim'
+import IClaim, { IClaimContents } from '../types/Claim'
+import ICType from '../types/CType'
 import IRequestForAttestation, {
   CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
-import { CompressedAttestedClaim } from '../types/AttestedClaim'
-import {
-  ERROR_ROOT_HASH_UNVERIFIABLE,
-  ERROR_LEGITIMATIONS_NOT_PROVIDED,
-  ERROR_NONCE_HASH_INVALID,
-  ERROR_SIGNATURE_UNVERIFIABLE,
-  ERROR_CLAIM_HASHTREE_MALFORMED,
-} from '../errorhandling/SDKErrors'
+import RequestForAttestation from './RequestForAttestation'
+import RequestForAttestationUtils from './RequestForAttestation.utils'
 
 async function buildRequestForAttestationPE(
   claimer: Identity,
@@ -116,13 +116,11 @@ async function buildRequestForAttestation(
     owner: claimer.getAddress(),
   }
   // build request for attestation with legitimations
-  const request = (await RequestForAttestation.fromClaimAndIdentity(
-    claim,
-    claimer,
-    {
+  const request = (
+    await RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
       legitimations,
-    }
-  )).message
+    })
+  ).message
   return request
 }
 

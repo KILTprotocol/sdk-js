@@ -4,17 +4,17 @@
  * @preferred
  */
 
-import {
-  CompressedQuoteAgreed,
-  ICostBreakdown,
-  CompressedCostBreakdown,
-  IQuote,
-  CompressedQuote,
-  IQuoteAttesterSigned,
-  CompressedQuoteAttesterSigned,
-  IQuoteAgreement,
-} from '../types/Quote'
 import * as SDKErrors from '../errorhandling/SDKErrors'
+import {
+  CompressedCostBreakdown,
+  CompressedQuote,
+  CompressedQuoteAgreed,
+  CompressedQuoteAttesterSigned,
+  ICostBreakdown,
+  IQuote,
+  IQuoteAgreement,
+  IQuoteAttesterSigned,
+} from '../types/Quote'
 
 /**
  *  Compresses the cost from a [[Quote]] object.

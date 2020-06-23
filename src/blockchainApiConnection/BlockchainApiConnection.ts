@@ -10,7 +10,6 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { RegistryTypes } from '@polkadot/types/types'
-
 import Blockchain from '../blockchain/Blockchain'
 
 export const DEFAULT_WS_ADDRESS =

@@ -3,15 +3,14 @@
  * @ignore
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-
 import { SubmittableResult } from '@polkadot/api'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Tuple } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
-import { decodeRootDelegation, RootDelegationRecord } from './DelegationDecoder'
-import DelegationRootNode from './DelegationRootNode'
 import Identity from '../identity/Identity'
 import { IDelegationRootNode } from '../types/Delegation'
+import { decodeRootDelegation, RootDelegationRecord } from './DelegationDecoder'
+import DelegationRootNode from './DelegationRootNode'
 
 export async function store(
   delegation: IDelegationRootNode,

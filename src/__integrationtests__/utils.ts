@@ -1,14 +1,14 @@
 /**
- * @ignore
  * @packageDocumentation
+ * @ignore
  */
 /* eslint-disable */
 
 import BN from 'bn.js/'
-import Identity from '../identity/Identity'
 import CType from '../ctype/CType'
-import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
+import Identity from '../identity/Identity'
+import ICType from '../types/CType'
 
 // FIXME: check with weights
 // export const GAS = new BN(1_000_000)
@@ -26,7 +26,7 @@ export const wannabeBob = Identity.buildFromURI('//Bob')
 
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)
-    .then(ownerAddress => {
+    .then((ownerAddress) => {
       return ownerAddress !== null
     })
     .catch(() => false)

@@ -12,7 +12,7 @@ describe('queries', () => {
     api.rpc.system.chain.mockResolvedValue(new Text(registry, 'mockchain'))
     api.rpc.system.name.mockResolvedValue(new Text(registry, 'KILT node'))
 
-    api.rpc.chain.subscribeNewHeads = jest.fn(async listener => {
+    api.rpc.chain.subscribeNewHeads = jest.fn(async (listener) => {
       listener('mockHead')
       return jest.fn()
     })

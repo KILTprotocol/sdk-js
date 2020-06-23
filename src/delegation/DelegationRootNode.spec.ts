@@ -55,7 +55,6 @@ describe('Delegation', () => {
   })
 
   it('query root delegation', async () => {
-    // @ts-ignore
     const queriedDelegation = await DelegationRootNode.query(ROOT_IDENTIFIER)
     expect(queriedDelegation).not.toBe(undefined)
     if (queriedDelegation) {
@@ -67,7 +66,7 @@ describe('Delegation', () => {
 
   it('root delegation verify', async () => {
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root = jest.fn(
-      async rootId => {
+      async (rootId) => {
         if (rootId === 'success') {
           const tuple = new Option(
             registry,

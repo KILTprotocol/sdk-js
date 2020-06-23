@@ -142,7 +142,7 @@ export function hashStr(value: CryptoInput): string {
 }
 
 export function hashObjectAsStr(
-  value: object | string | number | boolean,
+  value: Record<string, any> | string | number | boolean,
   nonce?: string
 ): string {
   let input =

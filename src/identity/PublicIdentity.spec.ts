@@ -18,7 +18,7 @@ describe('PublicIdentity', () => {
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
   require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
-    async id => {
+    async (id) => {
       switch (id) {
         case '1':
           return new Option(
@@ -52,7 +52,7 @@ describe('PublicIdentity', () => {
     const externalPubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
       'did:sov:1',
       {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             didDocument: {
               id: 'external-id',
@@ -86,7 +86,7 @@ describe('PublicIdentity', () => {
     const internalPubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
       'did:kilt:1',
       {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             id: 'internal-id',
             publicKey: [
@@ -125,7 +125,7 @@ describe('PublicIdentity', () => {
 
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             id: 'internal-id',
             publicKey: [],
@@ -136,7 +136,7 @@ describe('PublicIdentity', () => {
     ).toEqual(null)
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             id: 'internal-id',
             service: [],
@@ -146,7 +146,7 @@ describe('PublicIdentity', () => {
     ).toEqual(null)
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             publicKey: [],
             service: [],

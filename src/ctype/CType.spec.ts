@@ -1,15 +1,15 @@
 import { SubmittableResult } from '@polkadot/api'
-import CType from './CType'
-import Identity from '../identity/Identity'
-import ICType, { CompressedCType, ICTypeSchema } from '../types/CType'
-import CTypeUtils from './CType.utils'
 import Claim from '../claim/Claim'
-import requestForAttestation from '../requestforattestation/RequestForAttestation'
 import {
+  ERROR_ADDRESS_INVALID,
   ERROR_HASH_MALFORMED,
   ERROR_OBJECT_MALFORMED,
-  ERROR_ADDRESS_INVALID,
 } from '../errorhandling/SDKErrors'
+import Identity from '../identity/Identity'
+import requestForAttestation from '../requestforattestation/RequestForAttestation'
+import ICType, { CompressedCType, ICTypeSchema } from '../types/CType'
+import CType from './CType'
+import CTypeUtils from './CType.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -81,7 +81,6 @@ describe('CType', () => {
 
   it('verifies the claim structure', () => {
     expect(claimCtype.verifyClaimStructure(claim)).toBeTruthy()
-    // @ts-ignore
     claim.contents.name = 123
     expect(claimCtype.verifyClaimStructure(claim)).toBeFalsy()
   })

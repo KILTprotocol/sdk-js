@@ -21,7 +21,7 @@ import Credential from '../credential/Credential'
 import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 
 function noNulls<T>(array: Array<T | null>): array is T[] {
-  return array.every(c => c !== null)
+  return array.every((c) => c !== null)
 }
 
 /**
@@ -32,7 +32,7 @@ function noNulls<T>(array: Array<T | null>): array is T[] {
  * @returns All properties which can be publicly shown in the correct format.
  */
 function finalizeReqProps(props: string[]): string[] {
-  return props.map(prop => prop.replace('claim.contents.', ''))
+  return props.map((prop) => prop.replace('claim.contents.', ''))
 }
 
 /**
@@ -73,7 +73,7 @@ export async function createPresentation(
 
   // if privacy enhancement is allowed, we return a privacy enhanced presentation
   if (request.content.allowPE) {
-    const peCreds = credentials.map(c => c.privacyCredential)
+    const peCreds = credentials.map((c) => c.privacyCredential)
     if (!noNulls(peCreds)) {
       throw ERROR_PE_CREDENTIAL_MISSING()
     }

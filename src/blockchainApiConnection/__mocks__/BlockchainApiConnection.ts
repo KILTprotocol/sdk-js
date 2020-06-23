@@ -2,7 +2,6 @@
  * @packageDocumentation
  * @module BlockchainApiConnection
  * @ignore
- * @packageDocumentation
  */
 
 /**
@@ -58,8 +57,8 @@ import {
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
 import BN from 'bn.js'
-import IPublicIdentity from 'src/types/PublicIdentity'
 import Blockchain from '../../blockchain/Blockchain'
+import IPublicIdentity from '../../types/PublicIdentity'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
 const registry = new TypeRegistry()
@@ -143,7 +142,7 @@ function __makeSubmittableResult(success: boolean): SubmittableResult {
 }
 
 function __queueResults(results: boolean[]) {
-  results.forEach(success => {
+  results.forEach((success) => {
     TxResultsQueue.push(__makeSubmittableResult(success))
   })
 }
@@ -182,10 +181,10 @@ const __mocked_api: any = {
       createRoot: jest.fn((rootId, _ctypeHash) => {
         return __getMockSubmittableExtrinsic()
       }),
-      revokeRoot: jest.fn(rootId => {
+      revokeRoot: jest.fn((rootId) => {
         return __getMockSubmittableExtrinsic()
       }),
-      revokeDelegation: jest.fn(delegationId => {
+      revokeDelegation: jest.fn((delegationId) => {
         return __getMockSubmittableExtrinsic()
       }),
     },
@@ -198,7 +197,7 @@ const __mocked_api: any = {
       }),
     },
     portablegabi: {
-      updateAccumulator: jest.fn(acc => {
+      updateAccumulator: jest.fn((acc) => {
         // change the accumulator for each update
         accumulator.push(accumulator.length)
         return __getMockSubmittableExtrinsic()

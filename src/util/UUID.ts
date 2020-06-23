@@ -15,9 +15,7 @@ import { v4 as uuid } from 'uuid'
  * @returns The hashed uuid.
  */
 export function generate(): string {
-  const undashedPaddedUUID = uuid()
-    .replace(/-/g, '')
-    .padEnd(64, 'F')
+  const undashedPaddedUUID = uuid().replace(/-/g, '').padEnd(64, 'F')
   return `0x${undashedPaddedUUID}`
 }
 
