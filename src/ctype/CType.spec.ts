@@ -117,7 +117,9 @@ describe('CType', () => {
   })
 
   it('compresses and decompresses the ctype object', () => {
-    expect(CTypeUtils.compressSchema(rawCType)).toEqual(compressedCType[2])
+    expect(CTypeUtils.compressSchema(claimCtype.schema)).toEqual(
+      compressedCType[2]
+    )
 
     expect(CTypeUtils.compress(claimCtype)).toEqual(compressedCType)
 

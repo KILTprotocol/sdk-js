@@ -29,7 +29,7 @@ export default class CType implements ICType {
     return new CType({
       hash: CTypeUtils.getHashForSchema(schema),
       owner: owner || null,
-      schema,
+      schema: { ...schema, $id: CTypeUtils.getIdForSchema(schema) },
     })
   }
 
@@ -58,7 +58,6 @@ export default class CType implements ICType {
     this.schema = cTypeInput.schema
     this.owner = cTypeInput.owner
     this.hash = cTypeInput.hash
-    this.schema.$id = `kilt:ctype:${CTypeUtils.getHashForSchema(this.schema)}`
   }
 
   public async store(identity: Identity): Promise<SubmittableResult> {

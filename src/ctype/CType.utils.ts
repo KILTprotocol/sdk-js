@@ -73,6 +73,16 @@ export function getHashForSchema(schema: ICType['schema']): string {
   return Crypto.hashObjectAsStr(hashVal)
 }
 
+export function getIdForSchema(schema: ICType['schema']): string {
+  const hashVal = {
+    $schema: schema.$schema,
+    properties: schema.properties,
+    title: schema.title,
+    type: schema.type,
+  }
+  return `kilt:ctype:${Crypto.hashObjectAsStr(hashVal)}`
+}
+
 /**
  *  Checks whether the input meets all the required criteria of an ICType object.
  *  Throws on invalid input.
@@ -90,6 +100,9 @@ export function errorCheck(input: ICType): void {
   }
   if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
     throw SDKErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
+  }
+  if (getIdForSchema(input.schema) !== input.schema.$id) {
+    throw SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING()
   }
   if (
     typeof input.owner === 'string'
@@ -235,5 +248,6 @@ export default {
   verifySchemaWithErrors,
   verifyStored,
   getHashForSchema,
+  getIdForSchema,
   validateNestedSchemas,
 }
