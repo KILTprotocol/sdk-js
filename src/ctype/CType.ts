@@ -23,7 +23,7 @@ export default class CType implements ICType {
   }
 
   public static fromSchema(
-    schema: CTypeSchemaWithoutId,
+    schema: CTypeSchemaWithoutId | ICType['schema'],
     owner?: ICType['owner']
   ): CType {
     return new CType({
