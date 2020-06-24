@@ -72,7 +72,7 @@ export default class Claim implements IClaim {
         claimContents
       )
     ) {
-      throw Error('Nested claim data does not validate against CType')
+      throw SDKErrors.ERROR_NESTED_CLAIM_UNVERIFIABLE()
     }
     return new Claim({
       cTypeHash: cTypeInput.hash,

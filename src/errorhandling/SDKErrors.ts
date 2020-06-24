@@ -51,6 +51,7 @@ export enum ErrorCode {
   ERROR_MNEMONIC_PHRASE_INVALID = 30008,
   ERROR_IDENTITY_MISMATCH = 30009,
   ERROR_ROOT_HASH_UNVERIFIABLE = 30010,
+  ERROR_NESTED_CLAIM_UNVERIFIABLE = 30011,
 
   ERROR_DECOMPRESSION_ARRAY = 40001,
   ERROR_COMPRESS_OBJECT = 40002,
@@ -368,6 +369,14 @@ export const ERROR_CLAIM_UNVERIFIABLE: () => SDKError = () => {
     'Claim could not be verified'
   )
 }
+
+export const ERROR_NESTED_CLAIM_UNVERIFIABLE: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_NESTED_CLAIM_UNVERIFIABLE,
+    'Nested claim data does not validate against CType'
+  )
+}
+
 export const ERROR_CTYPE_HASH_INVALID: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CTYPE_HASH_INVALID,

@@ -26,8 +26,6 @@ export default class CType implements ICType {
     schema: ICType['schema'],
     owner?: ICType['owner']
   ): CType {
-    // eslint-disable-next-line no-param-reassign
-    schema.$id = `kilt:ctype:${CTypeUtils.getHashForSchema(schema)}`
     return new CType({
       hash: CTypeUtils.getHashForSchema(schema),
       owner: owner || null,
