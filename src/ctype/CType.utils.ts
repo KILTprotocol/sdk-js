@@ -63,7 +63,14 @@ export async function verifyStored(ctype: ICType): Promise<boolean> {
   return ctype.owner ? actualOwner === ctype.owner : actualOwner !== null
 }
 
-export function getHashForSchema(schema: ICType['schema']): string {
+type schemaPropsForHashing = {
+  $schema: ICType['schema']['$schema']
+  properties: ICType['schema']['properties']
+  title: ICType['schema']['title']
+  type: ICType['schema']['type']
+}
+
+export function getHashForSchema(schema: schemaPropsForHashing): string {
   const hashVal = {
     $schema: schema.$schema,
     properties: schema.properties,
@@ -73,14 +80,8 @@ export function getHashForSchema(schema: ICType['schema']): string {
   return Crypto.hashObjectAsStr(hashVal)
 }
 
-export function getIdForSchema(schema: ICType['schema']): string {
-  const hashVal = {
-    $schema: schema.$schema,
-    properties: schema.properties,
-    title: schema.title,
-    type: schema.type,
-  }
-  return `kilt:ctype:${Crypto.hashObjectAsStr(hashVal)}`
+export function getIdForSchema(schema: schemaPropsForHashing): string {
+  return `kilt:ctype:${getHashForSchema(schema)}`
 }
 
 /**

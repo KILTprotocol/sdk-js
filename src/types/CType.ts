@@ -15,6 +15,8 @@ export interface ICTypeSchema {
   type: 'object'
 }
 
+export type CTypeSchemaWithoutId = Omit<ICTypeSchema, '$id'>
+
 export default interface ICType {
   hash: string
   owner: IPublicIdentity['address'] | null

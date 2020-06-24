@@ -1,7 +1,11 @@
 import { SubmittableResult } from '@polkadot/api'
 import CType from './CType'
 import Identity from '../identity/Identity'
-import ICType, { CompressedCType, ICTypeSchema } from '../types/CType'
+import ICType, {
+  CompressedCType,
+  ICTypeSchema,
+  CTypeSchemaWithoutId,
+} from '../types/CType'
 import CTypeUtils from './CType.utils'
 import Claim from '../claim/Claim'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
@@ -15,6 +19,7 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('CType', () => {
   let ctypeModel: ICType['schema']
+  let ctypeSchemaWithoutId: CTypeSchemaWithoutId
   let rawCType: ICType['schema']
   let identityAlice: Identity
   let claimCtype: CType
@@ -39,6 +44,16 @@ describe('CType', () => {
       title: 'CtypeModel 2',
       properties: {
         name: { type: 'string' },
+      },
+      type: 'object',
+    }
+
+    ctypeSchemaWithoutId = {
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'CtypeModel 1',
+      properties: {
+        'first-property': { type: 'integer' },
+        'second-property': { type: 'string' },
       },
       type: 'object',
     }
@@ -80,6 +95,17 @@ describe('CType', () => {
     expect(result).toBeInstanceOf(SubmittableResult)
     expect(result.isFinalized).toBeTruthy()
     expect(result.isCompleted).toBeTruthy()
+  })
+
+  it('makes ctype object from schema without id', () => {
+    const ctype = CType.fromSchema(
+      ctypeSchemaWithoutId,
+      identityAlice.getAddress()
+    )
+
+    expect(ctype.schema.$id).toBe(
+      'kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84'
+    )
   })
 
   it('verifies the claim structure', () => {
