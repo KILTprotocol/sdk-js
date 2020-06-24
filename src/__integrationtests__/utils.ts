@@ -7,7 +7,6 @@
 import BN from 'bn.js/'
 import Identity from '../identity/Identity'
 import CType from '../ctype/CType'
-import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
 
 export const GAS = new BN(1000000)
@@ -31,8 +30,9 @@ export async function CtypeOnChain(ctype: CType): Promise<boolean> {
 }
 
 export const DriversLicense = CType.fromSchema({
-  $id: 'DriversLicense',
+  $id: 'kilt:ctype:0x1',
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  title: 'Drivers License',
   properties: {
     name: {
       type: 'string',
@@ -42,11 +42,12 @@ export const DriversLicense = CType.fromSchema({
     },
   },
   type: 'object',
-} as ICType['schema'])
+})
 
 export const IsOfficialLicenseAuthority = CType.fromSchema({
-  $id: 'LicenseAuthority',
+  $id: 'kilt:ctype:0x2',
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  title: 'License Authority',
   properties: {
     LicenseType: {
       type: 'string',
@@ -56,4 +57,4 @@ export const IsOfficialLicenseAuthority = CType.fromSchema({
     },
   },
   type: 'object',
-} as ICType['schema'])
+})

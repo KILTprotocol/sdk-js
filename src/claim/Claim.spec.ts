@@ -27,8 +27,9 @@ describe('Claim', () => {
     }
 
     rawCType = {
-      $id: 'http://example.com/ctype-1',
+      $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'ClaimCtype',
       properties: {
         name: { type: 'string' },
       },
@@ -46,8 +47,8 @@ describe('Claim', () => {
       {
         name: 'Bob',
       },
-      '0xa8c5bdb22aaea3fceb5467d37169cbe49c71f226233037537e70a32a032304ff',
-      '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',
+      claim.cTypeHash,
+      claim.owner,
     ]
   })
 

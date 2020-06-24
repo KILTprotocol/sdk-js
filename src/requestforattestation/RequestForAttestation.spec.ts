@@ -52,11 +52,12 @@ async function buildRequestForAttestationPE(
   } = await identityAlice.initiateAttestation()
 
   const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
+    $id: 'kilt:ctype:0x1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     properties: {
       name: { type: 'string' },
     },
+    title: 'title',
     type: 'object',
   }
 
@@ -97,8 +98,9 @@ async function buildRequestForAttestation(
   })
 
   const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
+    $id: 'kilt:ctype:0x2',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'raw ctype',
     properties: {
       name: { type: 'string' },
     },

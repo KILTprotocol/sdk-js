@@ -1,7 +1,11 @@
 import { SubmittableResult } from '@polkadot/api'
 import CType from './CType'
 import Identity from '../identity/Identity'
-import ICType, { CompressedCType, ICTypeSchema } from '../types/CType'
+import ICType, {
+  CompressedCType,
+  ICTypeSchema,
+  CTypeSchemaWithoutId,
+} from '../types/CType'
 import CTypeUtils from './CType.utils'
 import Claim from '../claim/Claim'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
@@ -15,6 +19,7 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('CType', () => {
   let ctypeModel: ICType['schema']
+  let ctypeSchemaWithoutId: CTypeSchemaWithoutId
   let rawCType: ICType['schema']
   let identityAlice: Identity
   let claimCtype: CType
@@ -23,8 +28,9 @@ describe('CType', () => {
   let compressedCType: CompressedCType
   beforeAll(async () => {
     ctypeModel = {
-      $id: 'http://example.com/ctype-1',
+      $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'CtypeModel 1',
       properties: {
         'first-property': { type: 'integer' },
         'second-property': { type: 'string' },
@@ -33,10 +39,21 @@ describe('CType', () => {
     }
 
     rawCType = {
-      $id: 'http://example.com/ctype-1',
+      $id: 'kilt:ctype:0x2',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'CtypeModel 2',
       properties: {
         name: { type: 'string' },
+      },
+      type: 'object',
+    }
+
+    ctypeSchemaWithoutId = {
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'CtypeModel 1',
+      properties: {
+        'first-property': { type: 'integer' },
+        'second-property': { type: 'string' },
       },
       type: 'object',
     }
@@ -58,8 +75,9 @@ describe('CType', () => {
       claimCtype.hash,
       claimCtype.owner,
       [
-        'http://example.com/ctype-1',
-        'http://kilt-protocol.org/draft-01/ctype#',
+        claimCtype.schema.$id,
+        claimCtype.schema.$schema,
+        claimCtype.schema.title,
         {
           name: {
             type: 'string',
@@ -77,6 +95,17 @@ describe('CType', () => {
     expect(result).toBeInstanceOf(SubmittableResult)
     expect(result.isFinalized).toBeTruthy()
     expect(result.isCompleted).toBeTruthy()
+  })
+
+  it('makes ctype object from schema without id', () => {
+    const ctype = CType.fromSchema(
+      ctypeSchemaWithoutId,
+      identityAlice.getAddress()
+    )
+
+    expect(ctype.schema.$id).toBe(
+      'kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84'
+    )
   })
 
   it('verifies the claim structure', () => {
@@ -114,7 +143,9 @@ describe('CType', () => {
   })
 
   it('compresses and decompresses the ctype object', () => {
-    expect(CTypeUtils.compressSchema(rawCType)).toEqual(compressedCType[2])
+    expect(CTypeUtils.compressSchema(claimCtype.schema)).toEqual(
+      compressedCType[2]
+    )
 
     expect(CTypeUtils.compress(claimCtype)).toEqual(compressedCType)
 
@@ -153,15 +184,17 @@ describe('blank ctypes', () => {
     identityAlice = await Identity.buildFromURI('//Alice')
 
     ctypeSchema1 = {
-      $id: 'http://example.com/hasDriversLicense',
+      $id: 'kilt:ctype:0x3',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'hasDriversLicense',
       properties: {},
       type: 'object',
     }
 
     ctypeSchema2 = {
-      $id: 'http://example.com/claimedSomething',
+      $id: 'kilt:ctype:0x4',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'claimedSomething',
       properties: {},
       type: 'object',
     }

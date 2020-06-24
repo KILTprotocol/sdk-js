@@ -63,8 +63,25 @@ export async function verifyStored(ctype: ICType): Promise<boolean> {
   return ctype.owner ? actualOwner === ctype.owner : actualOwner !== null
 }
 
-export function getHashForSchema(schema: ICType['schema']): string {
-  return Crypto.hashObjectAsStr(schema)
+type schemaPropsForHashing = {
+  $schema: ICType['schema']['$schema']
+  properties: ICType['schema']['properties']
+  title: ICType['schema']['title']
+  type: ICType['schema']['type']
+}
+
+export function getHashForSchema(schema: schemaPropsForHashing): string {
+  const hashVal = {
+    $schema: schema.$schema,
+    properties: schema.properties,
+    title: schema.title,
+    type: schema.type,
+  }
+  return Crypto.hashObjectAsStr(hashVal)
+}
+
+export function getIdForSchema(schema: schemaPropsForHashing): string {
+  return `kilt:ctype:${getHashForSchema(schema)}`
 }
 
 /**
@@ -84,6 +101,9 @@ export function errorCheck(input: ICType): void {
   }
   if (!input.schema || getHashForSchema(input.schema) !== input.hash) {
     throw SDKErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
+  }
+  if (getIdForSchema(input.schema) !== input.schema.$id) {
+    throw SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING()
   }
   if (
     typeof input.owner === 'string'
@@ -110,6 +130,7 @@ export function compressSchema(
   if (
     !cTypeSchema.$id ||
     !cTypeSchema.$schema ||
+    !cTypeSchema.title ||
     !cTypeSchema.properties ||
     !cTypeSchema.type
   ) {
@@ -119,6 +140,7 @@ export function compressSchema(
   return [
     sortedCTypeSchema.$id,
     sortedCTypeSchema.$schema,
+    sortedCTypeSchema.title,
     sortedCTypeSchema.properties,
     sortedCTypeSchema.type,
   ]
@@ -137,14 +159,15 @@ export function compressSchema(
 export function decompressSchema(
   cTypeSchema: CompressedCTypeSchema
 ): ICType['schema'] {
-  if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 4) {
+  if (!Array.isArray(cTypeSchema) || cTypeSchema.length !== 5) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('cTypeSchema')
   }
   return {
     $id: cTypeSchema[0],
     $schema: cTypeSchema[1],
-    properties: cTypeSchema[2],
-    type: cTypeSchema[3],
+    title: cTypeSchema[2],
+    properties: cTypeSchema[3],
+    type: cTypeSchema[4],
   }
 }
 
@@ -182,6 +205,39 @@ export function decompress(cType: CompressedCType): ICType {
   }
 }
 
+/**
+ * Validates an array of [[CType]]s against a [[Claim]].
+ *
+ * @param cType - A [[CType]] that has nested [[CType]]s inside.
+ * @param nestedCTypes - An array of [[CType]] schemas.
+ * @param claimContents - The contents of a [[Claim]] to be validated.
+ * @param messages
+ *
+ * @returns Whether the contents is valid.
+ */
+
+export function validateNestedSchemas(
+  cType: ICType['schema'],
+  nestedCTypes: Array<ICType['schema']>,
+  claimContents: object,
+  messages?: string[]
+): boolean {
+  const ajv = new Ajv()
+  ajv.addMetaSchema(CTypeModel)
+  const validate = ajv.addSchema(nestedCTypes).compile(cType)
+  const result = validate(claimContents)
+  if (!result && ajv.errors) {
+    if (messages) {
+      ajv.errors.forEach((error: Ajv.ErrorObject) => {
+        if (typeof error.message === 'string') {
+          messages.push(error.message)
+        }
+      })
+    }
+  }
+  return !!result
+}
+
 export default {
   compress,
   compressSchema,
@@ -193,4 +249,6 @@ export default {
   verifySchemaWithErrors,
   verifyStored,
   getHashForSchema,
+  getIdForSchema,
+  validateNestedSchemas,
 }

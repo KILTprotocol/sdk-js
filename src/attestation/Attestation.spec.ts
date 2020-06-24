@@ -30,8 +30,9 @@ describe('Attestation', () => {
     identityBob = await Identity.buildFromURI('//Bob')
 
     rawCTypeSchema = {
-      $id: 'http://example.com/ctype-1',
+      $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Attestation',
       properties: {
         name: { type: 'string' },
       },

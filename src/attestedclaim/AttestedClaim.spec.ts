@@ -21,8 +21,9 @@ async function buildAttestedClaim(
   const identityAlice = await Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
+    $id: 'kilt:ctype:0x1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'Attested Claim',
     properties: {
       name: { type: 'string' },
     },

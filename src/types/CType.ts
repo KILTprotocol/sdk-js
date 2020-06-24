@@ -8,9 +8,14 @@ import CType from '../ctype/CType'
 export interface ICTypeSchema {
   $id: string
   $schema: string
-  properties: { [key: string]: { type: string; format?: string } }
+  title: string
+  properties: {
+    [key: string]: { $ref?: string; type?: string; format?: string }
+  }
   type: 'object'
 }
+
+export type CTypeSchemaWithoutId = Omit<ICTypeSchema, '$id'>
 
 export default interface ICType {
   hash: string
@@ -21,6 +26,7 @@ export default interface ICType {
 export type CompressedCTypeSchema = [
   ICTypeSchema['$id'],
   ICTypeSchema['$schema'],
+  ICTypeSchema['title'],
   ICTypeSchema['properties'],
   ICTypeSchema['type']
 ]
