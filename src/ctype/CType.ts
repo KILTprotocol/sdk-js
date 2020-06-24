@@ -16,7 +16,6 @@ import ICType, { CompressedCType } from '../types/CType'
 import Identity from '../identity/Identity'
 import { store } from './CType.chain'
 import IClaim from '../types/Claim'
-import * as SDKErrors from '../errorhandling/SDKErrors'
 
 export default class CType implements ICType {
   public static fromCType(cTypeInput: ICType): CType {
@@ -60,23 +59,8 @@ export default class CType implements ICType {
     CTypeUtils.errorCheck(cTypeInput)
     this.schema = cTypeInput.schema
     this.owner = cTypeInput.owner
-
-    if (!cTypeInput.hash) {
-      this.hash = CTypeUtils.getHashForSchema(this.schema)
-      this.schema.$id = `kilt:ctype:${CTypeUtils.getHashForSchema(this.schema)}`
-    } else {
-      if (CTypeUtils.getHashForSchema(cTypeInput.schema) !== cTypeInput.hash) {
-        throw SDKErrors.ERROR_CTYPE_HASH_NOT_MATCHING()
-      }
-      this.hash = cTypeInput.hash
-      if (
-        cTypeInput.schema.$id !==
-        `kilt:ctype:${CTypeUtils.getHashForSchema(this.schema)}`
-      ) {
-        throw SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING()
-      }
-      this.schema.$id = `kilt:ctype:${cTypeInput.hash}`
-    }
+    this.hash = cTypeInput.hash
+    this.schema.$id = `kilt:ctype:${CTypeUtils.getHashForSchema(this.schema)}`
   }
 
   public async store(identity: Identity): Promise<SubmittableResult> {
