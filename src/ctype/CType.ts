@@ -19,7 +19,9 @@ import CTypeUtils from './CType.utils'
 
 export default class CType implements ICType {
   /**
-   *  [STATIC] Clones an already existing [[CType]].
+   * [STATIC] Clones an already existing [[CType]]
+   * or initializes from an [[ICType]] like object
+   * which is non-initialized and non-verified CType data.
    *
    * @param cTypeInput The [[CType]] which shall be cloned.
    *
@@ -44,7 +46,10 @@ export default class CType implements ICType {
     return new CType({
       hash: CTypeUtils.getHashForSchema(schema),
       owner: owner || null,
-      schema: { ...schema, $id: CTypeUtils.getIdForSchema(schema) },
+      schema: {
+        ...schema,
+        $id: CTypeUtils.getIdForSchema(schema),
+      },
     })
   }
 
@@ -98,9 +103,11 @@ export default class CType implements ICType {
 
   /**
    * [ASYNC] Check whether the current owner of [[CType]] matches the one stored on the blockchain.
+   * - If the [[CType]] has no owner property, it checks whether the [[CType]] hash is known on-chain.
+   * - Else it checks whether the [[CType]] hash is known on-chain AND the owner matches the one stored on the chain.
    *
    * @returns Whether the owner of this [[CType]] matches the one stored on the blockchain.
-   *  */
+   */
   public async verifyStored(): Promise<boolean> {
     return CTypeUtils.verifyStored(this)
   }
