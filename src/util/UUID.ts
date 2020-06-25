@@ -8,6 +8,7 @@
  */
 
 import { v4 as uuid } from 'uuid'
+import { hashStr } from '../crypto'
 
 /**
  * Generates a H256 compliant UUID.
@@ -15,8 +16,7 @@ import { v4 as uuid } from 'uuid'
  * @returns The hashed uuid.
  */
 export function generate(): string {
-  const undashedPaddedUUID = uuid().replace(/-/g, '').padEnd(64, 'F')
-  return `0x${undashedPaddedUUID}`
+  return hashStr(uuid())
 }
 
 export default {
