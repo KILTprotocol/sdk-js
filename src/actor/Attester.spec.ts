@@ -1,5 +1,5 @@
 import * as gabi from '@kiltprotocol/portablegabi'
-import { Text, TypeRegistry } from '@polkadot/types'
+import { TypeRegistry } from '@polkadot/types'
 import { Option, Tuple } from '@polkadot/types/codec'
 import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
@@ -52,12 +52,11 @@ describe('Attester', () => {
 
   it('Issue privacy enhanced attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(registry, Tuple.with(['H256', AccountId, Text, Bool]), [
-        cType.hash,
-        attester.getAddress(),
-        undefined,
-        0,
-      ])
+      new Option(
+        registry,
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [cType.hash, attester.getAddress(), undefined, 0]
+      )
     )
 
     const {
@@ -110,12 +109,11 @@ describe('Attester', () => {
 
   it('Issue only public attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(registry, Tuple.with(['H256', AccountId, Text, Bool]), [
-        cType.hash,
-        attester.getAddress(),
-        undefined,
-        0,
-      ])
+      new Option(
+        registry,
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [cType.hash, attester.getAddress(), undefined, 0]
+      )
     )
 
     const claim: IClaim = {

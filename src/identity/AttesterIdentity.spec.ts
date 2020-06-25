@@ -227,18 +227,18 @@ describe('AttesterIdentity', () => {
         new gabi.Attester(constants.PUBLIC_KEY, constants.PRIVATE_KEY)
       )
     )
-
     const newAttester = await AttesterIdentity.buildFromMnemonic(mnemonic, {
-      accumulator,
+      accumulator: attester.getAccumulator(),
     })
     expect(newAttester.getPrivateGabiKey()).toEqual(
       attester.getPrivateGabiKey()
     )
     expect(newAttester.getPublicGabiKey()).toEqual(attester.getPublicGabiKey())
-    expect(newAttester.getAccumulator()).toEqual(attester.getAccumulator())
     expect(newAttester.getBoxPublicKey()).toEqual(attester.getBoxPublicKey())
     expect(newAttester.getAddress()).toEqual(attester.getAddress())
-    expect(newAttester.getAccumulator()).toEqual(attester.getAccumulator())
+    expect(newAttester.getAccumulator()).toStrictEqual(
+      attester.getAccumulator()
+    )
 
     expect(mock).toHaveBeenCalled()
     mock.mockRestore()
