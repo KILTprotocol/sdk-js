@@ -78,10 +78,13 @@ export const ERROR_CTYPE_HASH_NOT_PROVIDED: () => SDKError = () => {
   )
 }
 
-export const ERROR_CTYPE_ID_NOT_MATCHING: () => SDKError = () => {
+export const ERROR_CTYPE_ID_NOT_MATCHING: (
+  fromSchema: string,
+  provided: string
+) => SDKError = (fromSchema: string, provided: string) => {
   return new SDKError(
     ErrorCode.ERROR_CTYPE_ID_NOT_MATCHING,
-    'Provided and generated $id are not matching'
+    `Provided $id "${provided}" and schema $id "${fromSchema}" are not matching`
   )
 }
 

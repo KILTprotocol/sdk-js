@@ -106,7 +106,10 @@ export function errorCheck(input: ICType): void {
     throw SDKErrors.ERROR_HASH_MALFORMED(input.hash, 'CType')
   }
   if (getIdForSchema(input.schema) !== input.schema.$id) {
-    throw SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING()
+    throw SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING(
+      getIdForSchema(input.schema),
+      input.schema.$id
+    )
   }
   if (
     typeof input.owner === 'string'
