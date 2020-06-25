@@ -615,10 +615,10 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@kiltprotocol/portablegabi@^0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@kiltprotocol/portablegabi/-/portablegabi-0.3.3.tgz#e593017bdb7a5c354a6591eb3b72577bc1667c36"
-  integrity sha512-Kj5Z+qLPC/Z6AC+Lns2cYOVEwybjSVFNlRVq/8xTI31J+r1QhazWulUH3Q9ccONvKxpqAaWKirzx3I8rJZ9JXQ==
+"@kiltprotocol/portablegabi@^0.3.4":
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/@kiltprotocol/portablegabi/-/portablegabi-0.3.4.tgz#4fa0f82c96f6c266172ece03aec44dd8c462a6bc"
+  integrity sha512-C5Sv1OMJHlsubYqmltqIkSyxnHQdrXm/B1MwTHijz66WAOcZLq10drPTIFb8VZ2zrdcegnO6HzVVhoJiDbIOMg==
   dependencies:
     "@polkadot/api" "^1.20.1"
     "@polkadot/keyring" "^2.15.1"

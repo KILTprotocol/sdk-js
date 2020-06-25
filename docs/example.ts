@@ -1,14 +1,14 @@
 /* eslint-disable no-console */
 import Kilt, {
-  ICType,
-  CTypeUtils,
-  Identity,
-  Claim,
   AttesterIdentity,
+  Claim,
   Credential,
   CType,
-  PublicAttesterIdentity,
+  CTypeUtils,
+  ICType,
+  Identity,
   IRevocationHandle,
+  PublicAttesterIdentity,
 } from '../src'
 import constants from '../src/test/constants'
 
@@ -22,7 +22,7 @@ async function setup(): Promise<{
   ctype: CType
 }> {
   console.log(
-    (s => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' SETUP ')
+    ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' SETUP ')
   )
   // ------------------------- Attester ----------------------------------------
 
@@ -50,7 +50,8 @@ async function setup(): Promise<{
   // ------------------------- CType    ----------------------------------------
   // First build a schema
   const ctypeSchema: ICType['schema'] = {
-    $id: 'DriversLicense',
+    $id:
+      'kilt:ctype:0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     properties: {
       name: {
@@ -61,6 +62,7 @@ async function setup(): Promise<{
       },
     },
     type: 'object',
+    title: 'title',
   }
   // Generate the Hash for it
   const ctypeHash = CTypeUtils.getHashForSchema(ctypeSchema)
@@ -132,7 +134,7 @@ async function doAttestation(
   revocationHandle: IRevocationHandle
 }> {
   console.log(
-    (s => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' ATTESTATION ')
+    ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' ATTESTATION ')
   )
   // ------------------------- Attester ----------------------------------------
 
@@ -223,7 +225,9 @@ async function doVerification(
   privacyEnhanced: boolean
 ): Promise<void> {
   console.log(
-    (s => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' VERIFICATION ')
+    ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(
+      ' VERIFICATION '
+    )
   )
   const verifier = await Kilt.Identity.buildFromMnemonic()
   // ------------------------- Verifier ----------------------------------------
@@ -260,7 +264,7 @@ async function doVerification(
 }
 
 // do an attestation and a verification
-async function example(): Promise<void> {
+async function example(): Promise<boolean> {
   const { claimer, attester, claim } = await setup()
 
   const { credential, revocationHandle } = await doAttestation(
@@ -278,16 +282,22 @@ async function example(): Promise<void> {
   // should fail
   await doVerification(claimer, attester.getPublicIdentity(), credential, true)
   await doVerification(claimer, attester.getPublicIdentity(), credential, false)
+
+  return true
 }
 
 // connect to the blockchain, execute the examples and then disconnect
-Kilt.connect(NODE_URL)
-  .then(example)
+;(async () => {
+  await Kilt.connect(NODE_URL)
+  const done = await example()
+  if (!done) {
+    throw new Error('Example did not finish')
+  }
+})()
   .finally(() => Kilt.disconnect(NODE_URL))
-  .then(
-    () => process.exit(),
-    e => {
-      console.log('Error Error Error!\n', e)
-      process.exit(1)
-    }
-  )
+  .catch((e) => {
+    console.error('Error Error Error!\n')
+    setTimeout(() => {
+      throw e
+    }, 1)
+  })
