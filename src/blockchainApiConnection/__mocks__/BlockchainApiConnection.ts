@@ -46,7 +46,7 @@
 
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Tuple, TypeRegistry, u128, Vec } from '@polkadot/types'
+import { Option, Tuple, TypeRegistry, Vec } from '@polkadot/types'
 import AccountId from '@polkadot/types/generic/AccountId'
 import AccountIndex from '@polkadot/types/generic/AccountIndex'
 import {
@@ -261,10 +261,6 @@ const __mocked_api: any = {
           )
       ) */
     },
-    balances: {
-      // default return value decodes to BN(0), represents unknown and broke accounts
-      freeBalance: jest.fn(async (account: string) => new u128(registry)),
-    },
     ctype: {
       // default return value decodes to null, represents CTYPE not found
       cTYPEs: jest.fn(async (hash: string) => new Option(registry, AccountId)),
@@ -345,7 +341,7 @@ const __mocked_api: any = {
     portablegabi: {
       accumulatorList: jest.fn(
         (address: string, index: number) =>
-          new Option(registry, 'Vec<u8>', new Vec(registry, 'u8', accumulator))
+          new Option(registry, 'Vec<u8>', accumulator)
       ),
       accumulatorCount: jest.fn((address: string) => 1),
     },
