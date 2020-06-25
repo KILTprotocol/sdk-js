@@ -231,14 +231,18 @@ describe('Attester', () => {
     const tAcc = await Attester.buildAccumulator(attester)
     expect(tAcc).toBeDefined()
   })
-
-  it('update accumulator', async () => {
-    await Attester.updateAccumulator(attester, acc)
-    // TODO: not sure why this fails
-    // expect(
-    //   blockchainApi.tx.portablegabi.updateAccumulator.mock.calls.length
-    // ).toEqual(1)
+  it('get accumulator', async () => {
+    expect(attester.getAccumulator()).toBeDefined()
+    expect(attester.getAccumulator()).toBeInstanceOf(gabi.Accumulator)
   })
-
-  it.todo('get accumulator')
+  it('update accumulator', async () => {
+    const beforeUpdate = attester.getAccumulator()
+    await attester.updateAccumulator(acc)
+    expect(
+      blockchainApi.tx.portablegabi.updateAccumulator.mock.calls.length
+    ).toEqual(1)
+    expect(attester.getAccumulator()).toBeDefined()
+    expect(attester.getAccumulator()).toBeInstanceOf(gabi.Accumulator)
+    expect(attester.getAccumulator()).not.toStrictEqual(beforeUpdate)
+  })
 })
