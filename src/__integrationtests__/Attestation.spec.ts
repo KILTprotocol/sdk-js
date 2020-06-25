@@ -19,7 +19,6 @@ import {
 } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import ICType from '../types/CType'
 import {
   CtypeOnChain,
   DriversLicense,
@@ -140,8 +139,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
   it('should not be possible to attest a claim on a Ctype that is not on chain', async () => {
     const badCtype = CType.fromSchema({
-      $id: 'badDriversLicense',
+      $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'badDriversLicense',
       properties: {
         name: {
           type: 'string',
@@ -151,7 +151,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         },
       },
       type: 'object',
-    } as ICType['schema'])
+    })
 
     const content: IClaim['contents'] = { name: 'Ralph', weight: 120 }
     const claim = Claim.fromCTypeAndClaimContents(

@@ -31,7 +31,7 @@ export function errorCheck(input: IClaim): void {
       if (
         !entry[0] ||
         !entry[1] ||
-        !['string', 'number', 'boolean'].includes(typeof entry[1])
+        !['string', 'number', 'boolean', 'object'].includes(typeof entry[1])
       ) {
         throw SDKErrors.ERROR_CLAIM_CONTENTS_MALFORMED()
       }

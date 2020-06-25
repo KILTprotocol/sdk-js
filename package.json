@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/sdk-js",
-  "version": "0.17.1",
+  "version": "0.18.0",
   "description": "",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -15,9 +15,8 @@
     "style": "prettier -l src/**/*.ts",
     "style:fix": "yarn style --write",
     "build": "tsc --declaration",
-    "build:docs": "typedoc --theme default --out docs/api --includeVersion && touch docs/api/.nojekyll",
-    "buildAndPublish": "yarn build && npm publish --access public",
-    "example": "yarn build && ts-node docs/example.ts"
+    "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
+    "buildAndPublish": "yarn build && npm publish --access=public"
   },
   "husky": {
     "hooks": {
@@ -74,7 +73,7 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
-    "@kiltprotocol/portablegabi": "^0.3.1",
+    "@kiltprotocol/portablegabi": "^0.3.3",
     "@polkadot/api": "^1.20.1",
     "@polkadot/keyring": "^2.15.1",
     "@polkadot/types": "^1.20.1",

@@ -43,8 +43,9 @@ describe('Verifier', () => {
     verifier = await Identity.buildFromMnemonic()
 
     const rawCType: ICType['schema'] = {
-      $id: 'http://example.com/ctype-1',
+      $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Verifier',
       properties: {
         name: { type: 'string' },
       },

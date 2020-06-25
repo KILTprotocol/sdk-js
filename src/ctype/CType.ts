@@ -13,7 +13,7 @@
 import { SubmittableResult } from '@polkadot/api'
 import Identity from '../identity/Identity'
 import IClaim from '../types/Claim'
-import ICType, { CompressedCType } from '../types/CType'
+import ICType, { CompressedCType, CTypeSchemaWithoutId } from '../types/CType'
 import { store } from './CType.chain'
 import CTypeUtils from './CType.utils'
 
@@ -38,13 +38,13 @@ export default class CType implements ICType {
    * @returns An instance of [[CType]].
    */
   public static fromSchema(
-    schema: ICType['schema'],
+    schema: CTypeSchemaWithoutId | ICType['schema'],
     owner?: ICType['owner']
   ): CType {
     return new CType({
       hash: CTypeUtils.getHashForSchema(schema),
       owner: owner || null,
-      schema,
+      schema: { ...schema, $id: CTypeUtils.getIdForSchema(schema) },
     })
   }
 

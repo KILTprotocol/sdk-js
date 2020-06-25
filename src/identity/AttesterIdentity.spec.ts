@@ -39,6 +39,7 @@ describe('AttesterIdentity', () => {
         name: { type: 'string' },
       },
       type: 'object',
+      title: 'title',
     }
     claimer = await Identity.buildFromURI('//Bob')
     cType = CType.fromSchema(rawCType, claimer.getAddress())

@@ -11,12 +11,16 @@ export const CTypeModel = {
   properties: {
     $id: {
       type: 'string',
-      minLength: 1,
+      format: 'uri',
+      pattern: '^kilt:ctype:0x[0-9a-f]+$',
     },
     $schema: {
       type: 'string',
       format: 'uri',
       const: 'http://kilt-protocol.org/draft-01/ctype#',
+    },
+    title: {
+      type: 'string',
     },
     type: {
       type: 'string',
@@ -32,17 +36,30 @@ export const CTypeModel = {
               type: 'string',
               enum: ['string', 'integer', 'number', 'boolean'],
             },
+            $ref: {
+              type: 'string',
+              format: 'uri',
+            },
             format: {
               type: 'string',
               enum: ['date', 'time', 'uri'],
             },
           },
-          required: ['type'],
+          additionalProperties: false,
+          oneOf: [
+            {
+              required: ['type'],
+            },
+            {
+              required: ['$ref'],
+            },
+          ],
         },
       },
     },
   },
-  required: ['$id', '$schema', 'properties', 'type'],
+  additionalProperties: false,
+  required: ['$id', 'title', '$schema', 'properties', 'type'],
 }
 
 export const CTypeWrapperModel = {
@@ -60,6 +77,7 @@ export const CTypeWrapperModel = {
       type: 'string',
     },
   },
+  additionalProperties: false,
   required: ['schema', 'hash'],
 }
 

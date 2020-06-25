@@ -11,12 +11,6 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('DID', () => {
   const registry = new TypeRegistry()
-
-  // TODO: Delete this note before merging and use as PR comment
-  // H256 class was deprecated in 1.4.1
-  // Constructor was exactly what can be found below
-  // See https://github.com/polkadot-js/api/compare/v1.3.1...1.4.1#diff-43e6848b127cb59299114e36a27f8717L16
-  // See https://github.com/polkadot-js/api/blob/master/packages/types/src/codec/U8aFixed.ts#L45
   const key1 = new U8aFixed(registry, 'box-me', 256)
   const key2 = new U8aFixed(registry, 'sign-me', 256)
 

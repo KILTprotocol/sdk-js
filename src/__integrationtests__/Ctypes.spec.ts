@@ -25,8 +25,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
   function makeCType(): CType {
     ctypeCounter += 1
     return CType.fromSchema({
-      $id: `http://example.com/ctype-${ctypeCounter}`,
+      $id: `kilt:ctype:0x${ctypeCounter}`,
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: `ctype1${ctypeCounter}`,
       properties: {
         name: { type: 'string' },
       },
@@ -68,8 +69,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should tell when a ctype is not on chain', async () => {
     const iAmNotThere = CType.fromSchema({
-      $id: 'http://example.com/ctype-2',
+      $id: 'kilt:ctype:0x2',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'ctype2',
       properties: {
         game: { type: 'string' },
       },
@@ -78,13 +80,14 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
     const iAmNotThereWithOwner = CType.fromSchema(
       {
-        $id: 'http://example.com/ctype-2',
+        $id: 'kilt:ctype:0x3',
         $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+        title: 'ctype2',
         properties: {
           game: { type: 'string' },
         },
         type: 'object',
-      } as ICType['schema'],
+      },
       ctypeCreator.signKeyringPair.address
     )
 

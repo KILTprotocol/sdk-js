@@ -82,7 +82,7 @@ export function validateHash(hash: string, name: string): boolean {
  */
 export function validateNonceHash(
   nonceHash: NonceHash,
-  data: string | Record<string, unknown> | number | boolean,
+  data: string | Record<string, any> | number | boolean,
   name: string
 ): boolean {
   if (!nonceHash || typeof nonceHash.hash !== 'string') {
