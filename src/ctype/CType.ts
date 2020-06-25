@@ -33,7 +33,7 @@ export default class CType implements ICType {
 
   /**
    *  [STATIC] Creates a new [[CType]] from an [[ICTypeSchema]].
-   *  _Note_ that you cana either supply the schema as [[ICTypeSchema]] with the id
+   *  _Note_ that you can either supply the schema as [[ICTypeSchema]] with the id
    *  or without the id as [[CTypeSchemaWithoutId]] which will automatically generate it
    *
    * @param schema The JSON schema from which the [[CType]] should be generated.
