@@ -15,6 +15,7 @@ jobs:
           registry-url: https://npm.pkg.github.com
       - run: yarn install --frozen-lockfile
       - run: yarn build
-      - run: npm publish
+      - run: yarn version --no-git-tag-version --prerelease --preid $(git rev-parse --short HEAD)
+      - run: npm publish --tag dev
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
