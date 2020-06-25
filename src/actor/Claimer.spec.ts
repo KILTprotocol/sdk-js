@@ -67,12 +67,8 @@ describe('Claimer', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
         registry,
-        Tuple,
-        new Tuple(
-          registry,
-          ['H256', AccountId, 'Option<H256>', Bool],
-          [cType.hash, attester.getAddress(), undefined, 0]
-        )
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [cType.hash, attester.getAddress(), undefined, 0]
       )
     )
 
@@ -143,12 +139,8 @@ describe('Claimer', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
         registry,
-        Tuple,
-        new Tuple(
-          registry,
-          ['H256', AccountId, 'Option<H256>', Bool],
-          [cType.hash, attester.getAddress(), undefined, 0]
-        )
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [cType.hash, attester.getAddress(), undefined, 0]
       )
     )
 
@@ -220,12 +212,8 @@ describe('Claimer', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
         registry,
-        Tuple,
-        new Tuple(
-          registry,
-          ['H256', AccountId, 'Option<H256>', Bool],
-          [cType.hash, attester.getAddress(), undefined, 0]
-        )
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [cType.hash, attester.getAddress(), undefined, 0]
       )
     )
 

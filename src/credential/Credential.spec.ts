@@ -37,7 +37,6 @@ describe('Credential', () => {
     ctype = CType.fromSchema(rawCType, claimer.getAddress())
 
     // cannot be used since the variable needs to be established in the outer scope
-    // eslint-disable-next-line prefer-destructuring
     ;({ message: reqForAtt } = await RequestForAttestation.fromClaimAndIdentity(
       Claim.fromCTypeAndClaimContents(
         ctype,
