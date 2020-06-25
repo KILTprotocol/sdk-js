@@ -22,7 +22,6 @@
   },
   "plugins": ["@typescript-eslint", "prettier", "jsdoc"],
   "rules": {
-    "@typescript-eslint/no-var-requires": "off",
     "import/no-cycle": 2,
     "import/extensions": [
       "error",
@@ -91,7 +90,8 @@
           {
             "definedTags": ["group"]
           }
-        ]
+        ],
+        "@typescript-eslint/no-var-requires": "off"
       }
     }
   ],
