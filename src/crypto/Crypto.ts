@@ -80,7 +80,7 @@ export function verify(
   signature: CryptoInput,
   address: Address
 ): boolean {
-  return signatureVerify(message, signature, address).isValid
+  return signatureVerify(message, signature, address).isValid === true
 }
 
 export function encryptSymmetric(
