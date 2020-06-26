@@ -12,7 +12,11 @@ jobs:
         with:
           node-version: 10
           registry-url: https://npm.pkg.github.com
-      - run: yarn install --frozen-lockfile
+          scope: '@kiltprotocol'
+      - run: echo $(jq '.dependencies."@kiltprotocol/portablegabi"="latest"' package.json) > package.json
+      - run: yarn install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: yarn build
       - run: yarn version --no-git-tag-version --prerelease --preid $(git rev-parse --short HEAD)
       - run: npm publish --tag dev
