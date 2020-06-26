@@ -11,6 +11,8 @@ import {
   LoggerFactoryOptions,
   LogGroupRule,
   LogLevel,
+  getLogControl,
+  LogGroupControlSettings,
 } from 'typescript-logging'
 
 // Create options instance and specify 2 LogGroupRules:
@@ -33,19 +35,16 @@ export const factory = LFService.createNamedLoggerFactory(
 )
 
 export function modifyLogLevel(level: number): void {
+  const control = getLogControl()
+  control.listFactories()
   let actualLevel
   if (level < 0) {
     actualLevel = 0
   } else if (level > 5) {
     actualLevel = 5
   } else actualLevel = level
-  factory.configure(
-    new LoggerFactoryOptions().addLogGroupRule(
-      new LogGroupRule(new RegExp('.+'), actualLevel)
-    )
-  )
-  // eslint-disable-next-line no-console
-  console.log(`changed logging level to ${actualLevel}`)
-  // eslint-disable-next-line no-console
-  console.log(factory.getLogger('test').getLogLevel())
+  control.getLoggerFactoryControl(0).change({
+    group: 'all',
+    logLevel: LogLevel[actualLevel],
+  } as LogGroupControlSettings)
 }
