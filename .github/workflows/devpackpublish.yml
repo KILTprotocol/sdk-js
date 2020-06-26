@@ -1,0 +1,24 @@
+name: Publish package to github packages
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10
+          registry-url: https://npm.pkg.github.com
+          scope: '@kiltprotocol'
+      - run: echo $(jq '.dependencies."@kiltprotocol/portablegabi"="latest"' package.json) > package.json
+      - run: yarn install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: yarn build
+      - run: yarn version --no-git-tag-version --prerelease --preid $(git rev-parse --short HEAD)
+      - run: npm publish --tag dev
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
