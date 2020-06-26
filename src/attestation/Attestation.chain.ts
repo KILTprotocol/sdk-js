@@ -41,7 +41,7 @@ interface IChainAttestation extends Codec {
 }
 
 function decode(
-  encoded: Option<Tuple> | Tuple,
+  encoded: Option<Tuple>,
   claimHash: string // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
   assertCodecIsType(encoded, [
@@ -66,11 +66,11 @@ function decode(
 }
 
 // return types reflect backwards compatibility with mashnet-node v 0.22
-async function queryRaw(claimHash: string): Promise<Option<Tuple> | Tuple> {
+async function queryRaw(claimHash: string): Promise<Option<Tuple>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await getCached()
   const result = await blockchain.api.query.attestation.attestations<
-    Option<Tuple> | Tuple
+    Option<Tuple>
   >(claimHash)
   return result
 }

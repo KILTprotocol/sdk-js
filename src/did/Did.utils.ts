@@ -32,7 +32,7 @@ interface IEncodedDid extends Codec {
 
 export function decodeDid(
   identifier: string,
-  encoded: Option<Tuple> | Tuple
+  encoded: Option<Tuple>
 ): IDid | null {
   assertCodecIsType(encoded, [
     'Option<(H256,H256,Option<Bytes>)>',

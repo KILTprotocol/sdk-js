@@ -20,7 +20,7 @@ import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 
 export type CodecWithId = {
   id: string
-  codec: Option<Tuple> | Tuple
+  codec: Option<Tuple>
 }
 
 export type RootDelegationRecord = Pick<
@@ -33,7 +33,7 @@ interface IChainRootDelegation extends Codec {
 }
 
 export function decodeRootDelegation(
-  encoded: Option<Tuple> | Tuple
+  encoded: Option<Tuple>
 ): RootDelegationRecord | null {
   assertCodecIsType(encoded, [
     'Option<(H256,AccountId,bool)>',
@@ -95,7 +95,7 @@ interface IChainDelegationNode extends Codec {
 }
 
 export function decodeDelegationNode(
-  encoded: Option<Tuple> | Tuple
+  encoded: Option<Tuple>
 ): DelegationNodeRecord | null {
   assertCodecIsType(encoded, [
     'Option<(H256,Option<H256>,AccountId,u32,bool)>',

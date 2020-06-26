@@ -43,7 +43,7 @@ export async function query(
 ): Promise<DelegationNode | null> {
   const blockchain = await getCached()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegations<Option<Tuple> | Tuple>(
+    await blockchain.api.query.delegation.delegations<Option<Tuple>>(
       delegationId
     )
   )
