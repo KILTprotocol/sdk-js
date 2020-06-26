@@ -98,7 +98,7 @@ describe('when there is an account hierarchy', () => {
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
       ])
-    }, 40_000)
+    }, 50_000)
 
     it("should be possible to attest a claim in the root's name and revoke it by the root", async () => {
       const content = {

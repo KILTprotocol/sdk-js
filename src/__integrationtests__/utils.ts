@@ -11,8 +11,8 @@ import Identity from '../identity/Identity'
 
 // FIXME: check with weights
 // export const GAS = new BN(1_000_000)
-export const GAS = new BN(320_000_000)
-export const MIN_TRANSACTION = new BN(100000000)
+export const GAS = new BN(125_000_000)
+export const MIN_TRANSACTION = new BN(100_000_000)
 export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 
 // Dev Faucet account seed phrase
