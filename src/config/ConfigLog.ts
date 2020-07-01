@@ -36,7 +36,7 @@ export const factory = LFService.createNamedLoggerFactory(
 /**
  *  Changes all existing Loggers of our default Factory with id 0 to the intended Level.
  *
- * @param level The intended LogLevel.
+ * @param level The intended LogLevel. LogLevel has a range of 0 to 5.
  */
 export function modifyLogLevel(level: LogLevel): void {
   let actualLevel
