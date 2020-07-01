@@ -71,7 +71,7 @@ describe('when there is an account hierarchy', () => {
       expect(rootNode.verify()).resolves.toBeTruthy(),
       expect(delegatedNode.verify()).resolves.toBeTruthy(),
     ])
-  }, 50_000)
+  }, 75_000)
 
   describe('and attestation rights have been delegated', () => {
     let rootNode: DelegationRootNode
@@ -98,7 +98,7 @@ describe('when there is an account hierarchy', () => {
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
       ])
-    }, 50_000)
+    }, 75_000)
 
     it("should be possible to attest a claim in the root's name and revoke it by the root", async () => {
       const content = {
@@ -136,7 +136,7 @@ describe('when there is an account hierarchy', () => {
       // revoke attestation through root
       const result2 = await attClaim.attestation.revoke(uncleSam)
       expect(result2.status.type).toBe('Finalized')
-    }, 50_000)
+    }, 75_000)
   })
 })
 

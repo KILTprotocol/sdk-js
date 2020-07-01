@@ -221,7 +221,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       }
 
       await expect(AttestedClaim.verify(fakeAttClaim)).resolves.toBeFalsy()
-    }, 15000)
+    }, 15_000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(revoke(attClaim.getHash(), claimer)).rejects.toThrowError(
@@ -236,7 +236,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       expect(result.status.type).toBe('Finalized')
       expect(result.isFinalized).toBeTruthy()
       await expect(attClaim.verify()).resolves.toBeFalsy()
-    }, 30_000)
+    }, 40_000)
   })
 
   describe('when there is another Ctype that works as a legitimation', () => {
@@ -307,7 +307,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         expect(license.verify()).resolves.toBeTruthy(),
         expect(licenseAuthorizationGranted.verify()).resolves.toBeTruthy(),
       ])
-    }, 60_000)
+    }, 70_000)
   })
 })
 

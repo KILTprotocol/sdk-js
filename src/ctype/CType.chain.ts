@@ -30,7 +30,7 @@ export async function store(
 export function decode(
   encoded: Option<AccountId>
 ): IPublicIdentity['address'] | null {
-  assertCodecIsType(encoded, ['AccountId'])
+  assertCodecIsType(encoded, ['Option<AccountId>'])
   return !encoded.isEmpty ? encoded.toString() : null
 }
 
