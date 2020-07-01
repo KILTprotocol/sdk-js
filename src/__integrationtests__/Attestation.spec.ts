@@ -228,7 +228,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         'not permitted'
       )
       await expect(attClaim.verify()).resolves.toBeTruthy()
-    }, 30_000)
+    }, 45_000)
 
     it('should be possible for the attester to revoke an attestation', async () => {
       await expect(attClaim.verify()).resolves.toBeTruthy()
@@ -247,7 +247,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       await expect(
         CtypeOnChain(IsOfficialLicenseAuthority)
       ).resolves.toBeTruthy()
-    }, 30_000)
+    }, 45_000)
 
     it('can be included in a claim as a legitimation', async () => {
       // make credential to be used as legitimation
