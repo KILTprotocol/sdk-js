@@ -5,17 +5,17 @@
  * @module Identity
  * @preferred
  */
-import * as u8aUtil from '@polkadot/util/u8a'
 import * as gabi from '@kiltprotocol/portablegabi'
 import { KeyringPair } from '@polkadot/keyring/types'
-import { IRevocationHandle } from '../types/Attestation'
-import Identity from './Identity'
-import { MessageBodyType, IInitiateAttestation } from '../messaging/Message'
-import IRequestForAttestation from '../types/RequestForAttestation'
-import PublicAttesterIdentity from './PublicAttesterIdentity'
+import * as u8aUtil from '@polkadot/util/u8a'
 import Attestation from '../attestation/Attestation'
 import getCached from '../blockchainApiConnection'
 import { ERROR_PE_MISSING } from '../errorhandling/SDKErrors'
+import { IInitiateAttestation, MessageBodyType } from '../messaging/Message'
+import { IRevocationHandle } from '../types/Attestation'
+import IRequestForAttestation from '../types/RequestForAttestation'
+import Identity from './Identity'
+import PublicAttesterIdentity from './PublicAttesterIdentity'
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
 const DEFAULT_MAX_ATTRIBUTES = 70
@@ -297,8 +297,9 @@ export default class AttesterIdentity extends Identity {
    */
   public async updateAccumulator(acc: gabi.Accumulator): Promise<void> {
     const bc = await getCached()
-    await bc.portablegabi.updateAccumulator(this.signKeyringPair, acc)
+    const tx = bc.portablegabi.buildUpdateAccumulatorTX(acc)
     this.accumulator = acc
+    await bc.portablegabi.signAndSend(tx, this.signKeyringPair)
   }
 
   /**

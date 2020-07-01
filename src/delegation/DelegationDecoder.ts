@@ -14,13 +14,13 @@
 import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { DelegationNode } from '..'
-import { hasNonNullByte, assertCodecIsType } from '../util/Decode'
 import { coToUInt8 } from '../crypto/Crypto'
-import { Permission, IDelegationRootNode } from '../types/Delegation'
+import { IDelegationRootNode, Permission } from '../types/Delegation'
+import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 
 export type CodecWithId = {
   id: string
-  codec: Option<Tuple> | Tuple
+  codec: Option<Tuple>
 }
 
 export type RootDelegationRecord = Pick<
@@ -33,12 +33,9 @@ interface IChainRootDelegation extends Codec {
 }
 
 export function decodeRootDelegation(
-  encoded: Option<Tuple> | Tuple
+  encoded: Option<Tuple>
 ): RootDelegationRecord | null {
-  assertCodecIsType(encoded, [
-    'Option<(H256,AccountId,bool)>',
-    'H256,AccountId,bool',
-  ])
+  assertCodecIsType(encoded, ['Option<(H256,AccountId,bool)>'])
   if (encoded instanceof Option || hasNonNullByte(encoded)) {
     const json = (encoded as IChainRootDelegation).toJSON()
     if (json instanceof Array) {
@@ -95,12 +92,9 @@ interface IChainDelegationNode extends Codec {
 }
 
 export function decodeDelegationNode(
-  encoded: Option<Tuple> | Tuple
+  encoded: Option<Tuple>
 ): DelegationNodeRecord | null {
-  assertCodecIsType(encoded, [
-    'Option<(H256,Option<H256>,AccountId,u32,bool)>',
-    '(H256,Option<H256>,AccountId,u32,bool)',
-  ])
+  assertCodecIsType(encoded, ['Option<(H256,Option<H256>,AccountId,u32,bool)>'])
   if (encoded instanceof Option || hasNonNullByte(encoded)) {
     const json = (encoded as IChainDelegationNode).toJSON()
     if (json instanceof Array) {

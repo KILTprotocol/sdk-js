@@ -1,6 +1,6 @@
 import {
-  AttesterPublicKey,
   AttesterPrivateKey,
+  AttesterPublicKey,
 } from '@kiltprotocol/portablegabi'
 
 export const privKey = new AttesterPrivateKey(

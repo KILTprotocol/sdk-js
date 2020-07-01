@@ -1,15 +1,15 @@
-import Identity from '../identity/Identity'
+import Attestation from '../attestation/Attestation'
+import Claim from '../claim/Claim'
+import CType from '../ctype/CType'
 import AttesterIdentity from '../identity/AttesterIdentity'
+import Identity from '../identity/Identity'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import constants from '../test/constants'
+import { CompressedAttestedClaim } from '../types/AttestedClaim'
+import IClaim from '../types/Claim'
+import ICType from '../types/CType'
 import AttestedClaim from './AttestedClaim'
 import AttestedClaimUtils from './AttestedClaim.utils'
-import Attestation from '../attestation/Attestation'
-import CType from '../ctype/CType'
-import ICType from '../types/CType'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import Claim from '../claim/Claim'
-import constants from '../test/constants'
-import IClaim from '../types/Claim'
-import { CompressedAttestedClaim } from '../types/AttestedClaim'
 
 async function buildAttestedClaim(
   claimer: Identity,
@@ -69,8 +69,8 @@ describe('RequestForAttestation', () => {
   beforeAll(async () => {
     identityAlice = await AttesterIdentity.buildFromURI('//Alice', {
       key: {
-        publicKey: constants.PUBLIC_KEY.valueOf(),
-        privateKey: constants.PRIVATE_KEY.valueOf(),
+        publicKey: constants.PUBLIC_KEY.toString(),
+        privateKey: constants.PRIVATE_KEY.toString(),
       },
     })
 

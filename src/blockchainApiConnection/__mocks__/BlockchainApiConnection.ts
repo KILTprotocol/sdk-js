@@ -2,7 +2,6 @@
  * @packageDocumentation
  * @module BlockchainApiConnection
  * @ignore
- * @packageDocumentation
  */
 
 /**
@@ -34,7 +33,7 @@
  *   const mocked_api = require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api
  *   mocked_api.query.delegation.children.mockReturnValue(
  *     new Vec(
- *       H256,
+ *       'H256',
  *       ['0x123', '0x456', '0x789']
  *     )
  *   )
@@ -45,17 +44,25 @@
  *
  */
 
-import Blockchain from '../../blockchain/Blockchain'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { Option, Tuple, Vec, H256, u64, u128 } from '@polkadot/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { ExtrinsicStatus } from '@polkadot/types/interfaces'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
+import { Option, Tuple, TypeRegistry, Vec } from '@polkadot/types'
+import AccountId from '@polkadot/types/generic/AccountId'
+import AccountIndex from '@polkadot/types/generic/AccountIndex'
+import {
+  AccountData,
+  AccountInfo,
+  ExtrinsicStatus,
+} from '@polkadot/types/interfaces'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
+import BN from 'bn.js'
+import Blockchain from '../../blockchain/Blockchain'
+import IPublicIdentity from '../../types/PublicIdentity'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
-const accumulator = [0,1,2,3,4,5,6,7,8,9,10]
+const registry = new TypeRegistry()
+const accumulator = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 async function getCached(): Promise<Blockchain> {
   if (!BlockchainApiConnection.instance) {
@@ -112,29 +119,30 @@ function __makeSubmittableResult(success: boolean): SubmittableResult {
 
   return new SubmittableResult({
     status,
-    events: [({
-
-      phase: {
-        asApplyExtrinsic: {
-          isEmpty: false,
+    events: [
+      {
+        phase: {
+          asApplyExtrinsic: {
+            isEmpty: false,
+          },
         },
-      },
-      event: {
-        section: 'system',
-        index: {
-          toHex: jest.fn(() => {
-            return '0x0000'
-          }),
+        event: {
+          section: 'system',
+          index: {
+            toHex: jest.fn(() => {
+              return '0x0000'
+            }),
+          },
+          // portablegabi checks if a transaction was successful
+          method: 'ExtrinsicSuccess',
         },
-        // portablegabi checks if a transaction was successful
-        method: 'ExtrinsicSuccess'
-      }
-    } as any)]
+      } as any,
+    ],
   })
 }
 
 function __queueResults(results: boolean[]) {
-  results.forEach(success => {
+  results.forEach((success) => {
     TxResultsQueue.push(__makeSubmittableResult(success))
   })
 }
@@ -173,10 +181,10 @@ const __mocked_api: any = {
       createRoot: jest.fn((rootId, _ctypeHash) => {
         return __getMockSubmittableExtrinsic()
       }),
-      revokeRoot: jest.fn(rootId => {
+      revokeRoot: jest.fn((rootId) => {
         return __getMockSubmittableExtrinsic()
       }),
-      revokeDelegation: jest.fn(delegationId => {
+      revokeDelegation: jest.fn((delegationId) => {
         return __getMockSubmittableExtrinsic()
       }),
     },
@@ -199,14 +207,33 @@ const __mocked_api: any = {
   query: {
     system: {
       // default return value decodes to BN(0)
-      accountNonce: jest.fn(async () => new u64()),
+      // default return value decodes to AccountInfo with all entries holding BN(0)
+      account: jest.fn(
+        async (
+          address: IPublicIdentity['address'],
+          cb
+        ): Promise<AccountInfo> => {
+          return {
+            data: {
+              free: new BN(0),
+              reserved: new BN(0),
+              miscFrozen: new BN(0),
+              feeFrozen: new BN(0),
+            } as AccountData,
+            nonce: new AccountIndex(registry, 0),
+          } as AccountInfo
+        }
+      ),
     },
     attestation: {
       // default return value decodes to [], represents no delegated attestations
-      delegatedAttestations: jest.fn(async (id: string) => new Vec(H256)),
+      delegatedAttestations: jest.fn(
+        async (id: string) => new Vec(registry, 'H256')
+      ),
       /* example return value:
       new Vec(
-        H256,
+        registry
+        'H256',
         ['0x123', '0x456', '0x789']
       )
       */
@@ -214,12 +241,16 @@ const __mocked_api: any = {
       // default return value decodes to null, represents attestation not found
       attestations: jest.fn(
         async (claim_hash: string) =>
-          new Option(Tuple.with([H256, AccountId, 'Option<H256>', Bool]))
+          new Option(
+            registry,
+            Tuple.with(['H256', AccountId, 'Option<H256>', Bool])
+          )
       ),
       /* example return value:
       new Option(
+        registry,
         Tuple.with(
-            [H256, AccountId, 'Option<H256>', Bool]
+            ['H256', AccountId, 'Option<H256>', Bool]
             ),
             [
               '0x1234',                                            // ctype hash
@@ -230,24 +261,21 @@ const __mocked_api: any = {
           )
       ) */
     },
-    balances: {
-      // default return value decodes to BN(0), represents unknown and broke accounts
-      freeBalance: jest.fn(async (account: string) => new u128()),
-    },
     ctype: {
       // default return value decodes to null, represents CTYPE not found
-      cTYPEs: jest.fn(async (hash: string) => new Option(AccountId)),
+      cTYPEs: jest.fn(async (hash: string) => new Option(registry, AccountId)),
     },
     delegation: {
       // default return value decodes to null, represents delegation not found
       root: jest.fn(
         async (rootId: string) =>
-          new Option(Tuple.with([H256, AccountId, Bool]))
+          new Option(registry, Tuple.with(['H256', AccountId, Bool]))
       ),
       /* example return value:
       new Option(
+        registry,
         Tuple.with(
-          [H256, AccountId, Bool]
+          ['H256', AccountId, Bool]
           ),
           [
             '0x1234',                                            // ctype hash
@@ -260,12 +288,16 @@ const __mocked_api: any = {
       // default return value decodes to null, represents delegation not found
       delegations: jest.fn(
         async (delegationId: string) =>
-          new Option(Tuple.with([H256, 'Option<H256>', AccountId, U32, Bool]))
+          new Option(
+            registry,
+            Tuple.with(['H256', 'Option<H256>', AccountId, U32, Bool])
+          )
       ),
       /* example return value:
       new Option(
+        registry,
         Tuple.with(
-          [H256,'Option<H256>',AccountId,U32,Bool]
+          ['H256','Option<H256>',AccountId,U32,Bool]
         ),
         [
           '0x1234',                                            // root-id
@@ -278,10 +310,10 @@ const __mocked_api: any = {
     ) */
 
       // default return value decodes to [], represents: no children found
-      children: jest.fn(async (id: string) => new Vec(H256)),
+      children: jest.fn(async (id: string) => new Vec(registry, 'H256')),
       /* example return value:
       new Vec(
-        H256,
+        'H256',
         ['0x123', '0x456', '0x789']
       )
       */
@@ -290,12 +322,13 @@ const __mocked_api: any = {
       // default return value decodes to null, represents dID not found
       dIDs: jest.fn(
         async (address: string) =>
-          new Option(Tuple.with([H256, H256, 'Option<Bytes>']))
+          new Option(registry, Tuple.with(['H256', 'H256', 'Option<Bytes>']))
       ),
       /* example return value:
       new Option(
+        registry,
         Tuple.with(
-          [H256,H256,'Option<Bytes>']
+          ['H256','H256','Option<Bytes>']
           ),
           [
             'publicSigningKey',                  // publicSigningKey
@@ -306,14 +339,15 @@ const __mocked_api: any = {
     ) */
     },
     portablegabi: {
-      accumulatorList: jest.fn((address: string, index: number) =>
-        new Option('Vec<u8>', new Vec('u8', accumulator))
+      accumulatorList: jest.fn(
+        (address: string, index: number) =>
+          new Option(registry, 'Vec<u8>', accumulator)
       ),
       accumulatorCount: jest.fn((address: string) => 1),
-    }
+    },
   },
   runtimeMetadata: {
-    asV4: {
+    asV11: {
       modules: [],
     },
   },

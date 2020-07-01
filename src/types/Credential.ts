@@ -4,8 +4,8 @@
  */
 
 import * as gabi from '@kiltprotocol/portablegabi'
-import IRequestForAttestation from './RequestForAttestation'
 import IAttestation from './Attestation'
+import IRequestForAttestation from './RequestForAttestation'
 
 export default interface ICredential {
   readonly reqForAtt: IRequestForAttestation

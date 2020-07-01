@@ -6,7 +6,7 @@
 import ICType from './CType'
 
 export interface ICostBreakdown {
-  tax: object
+  tax: Record<string, unknown>
   net: number
   gross: number
 }

@@ -14,10 +14,10 @@
 
 import ICType from '../ctype/CType'
 import CTypeUtils from '../ctype/CType.utils'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
 import ClaimUtils from './Claim.utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
 
 function verifyClaim(
   claimContents: IClaim['contents'],
@@ -116,7 +116,7 @@ export default class Claim implements IClaim {
    *
    * @returns Boolean whether input is of type IClaim.
    */
-  static isIClaim(input: object): input is IClaim {
+  static isIClaim(input: unknown): input is IClaim {
     try {
       ClaimUtils.errorCheck(input as IClaim)
     } catch (error) {

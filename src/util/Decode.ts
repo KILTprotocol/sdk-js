@@ -18,7 +18,7 @@ import { Codec } from '@polkadot/types/types'
  * @returns Whether the codec is evidently non-empty. In case of `false` it *may* be empty.
  */
 export function hasNonNullByte(codec: Codec): boolean {
-  return !codec.toU8a().some(e => e !== 0)
+  return !codec.toU8a().some((e) => e !== 0)
 }
 
 /**

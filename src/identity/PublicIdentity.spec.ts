@@ -1,38 +1,43 @@
-import { Tuple, Option, H256 } from '@polkadot/types'
-import PublicIdentity, { IURLResolver } from './PublicIdentity'
+import { Option, Tuple, TypeRegistry, U8aFixed } from '@polkadot/types'
 import IPublicIdentity from '../types/PublicIdentity'
+import PublicIdentity, { IURLResolver } from './PublicIdentity'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
-const pubKey = new H256('pub-key')
-const boxKey = new H256('box-key')
-
 describe('PublicIdentity', () => {
+  const registry = new TypeRegistry()
+  const pubKey = new U8aFixed(registry, 'pub-key', 256)
+  const boxKey = new U8aFixed(registry, 'box-key', 256)
+
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
-
   require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
-    async id => {
+    async (id) => {
       switch (id) {
         case '1':
           return new Option(
+            registry,
             Tuple.with(
               // (public-signing-key, public-encryption-key, did-reference?)
-              [H256, H256, 'Option<Bytes>']
+              ['H256', 'H256', 'Option<Bytes>']
             ),
             [pubKey, boxKey, [14, 75, 23, 14, 55]]
           )
         case '2':
           return new Option(
+            registry,
             Tuple.with(
               // (public-signing-key, public-encryption-key, did-reference?)
-              [H256, H256, 'Option<Bytes>']
+              ['H256', 'H256', 'Option<Bytes>']
             ),
             [pubKey, boxKey, undefined]
           )
 
         default:
-          return new Option(Tuple.with([H256, H256, 'Option<Bytes>']))
+          return new Option(
+            registry,
+            Tuple.with(['H256', 'H256', 'Option<Bytes>'])
+          )
       }
     }
   )
@@ -41,7 +46,7 @@ describe('PublicIdentity', () => {
     const externalPubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
       'did:sov:1',
       {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             didDocument: {
               id: 'external-id',
@@ -75,7 +80,7 @@ describe('PublicIdentity', () => {
     const internalPubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
       'did:kilt:1',
       {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             id: 'internal-id',
             publicKey: [
@@ -114,7 +119,7 @@ describe('PublicIdentity', () => {
 
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             id: 'internal-id',
             publicKey: [],
@@ -125,7 +130,7 @@ describe('PublicIdentity', () => {
     ).toEqual(null)
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             id: 'internal-id',
             service: [],
@@ -135,7 +140,7 @@ describe('PublicIdentity', () => {
     ).toEqual(null)
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             publicKey: [],
             service: [],

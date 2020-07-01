@@ -1,7 +1,7 @@
 import {
   ErrorCode,
-  errorsByCode,
   errorForCode,
+  errorsByCode,
   ExtrinsicError,
 } from './ExtrinsicError'
 
@@ -23,7 +23,7 @@ describe('ExtrinsicError', () => {
   it('checks whether errorsByCode includes all errors', () => {
     expect(Object.keys(errorsByCode).length).toBe(errorCodes.length)
   })
-  it.each(errorCodes)('should return error for code %s', errorCode => {
+  it.each(errorCodes)('should return error for code %s', (errorCode) => {
     expect(errorForCode(errorCode)).toBeDefined()
     expect(errorForCode(errorCode)).toBeInstanceOf(ExtrinsicError)
   })

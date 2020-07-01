@@ -1,13 +1,13 @@
 /**
+ * @packageDocumentation
  * @group integration/did
  * @ignore
- * @packageDocumentation
  */
 
-import { queryByAddress, queryByIdentifier } from '../did/Did.chain'
 import { Did, Identity } from '..'
-import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import { IBlockchainApi } from '../blockchain/Blockchain'
+import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
+import { queryByAddress, queryByIdentifier } from '../did/Did.chain'
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {

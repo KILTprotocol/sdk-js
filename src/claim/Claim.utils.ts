@@ -5,9 +5,9 @@
  */
 
 import * as jsonabc from 'jsonabc'
-import IClaim, { CompressedClaim } from '../types/Claim'
-import { validateHash, validateAddress } from '../util/DataUtils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
+import IClaim, { CompressedClaim } from '../types/Claim'
+import { validateAddress, validateHash } from '../util/DataUtils'
 
 /**
  *  Checks whether the input meets all the required criteria of an IClaim object.
@@ -27,7 +27,7 @@ export function errorCheck(input: IClaim): void {
     validateAddress(input.owner, 'Claim owner')
   }
   if (input.contents !== undefined) {
-    Object.entries(input.contents).forEach(entry => {
+    Object.entries(input.contents).forEach((entry) => {
       if (
         !entry[0] ||
         !entry[1] ||

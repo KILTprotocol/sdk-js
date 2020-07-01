@@ -1,19 +1,19 @@
 import * as gabi from '@kiltprotocol/portablegabi'
-import {
-  ERROR_MESSAGE_TYPE,
-  ERROR_ATTESTATION_SESSION_MISSING,
-} from '../errorhandling/SDKErrors'
+import Attestation from '../attestation/Attestation'
 import { getCached } from '../blockchainApiConnection'
-import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
+import {
+  ERROR_ATTESTATION_SESSION_MISSING,
+  ERROR_MESSAGE_TYPE,
+} from '../errorhandling/SDKErrors'
 import AttesterIdentity from '../identity/AttesterIdentity'
+import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
+import PublicIdentity from '../identity/PublicIdentity'
 import Message, {
+  IMessage,
   IRequestAttestationForClaim,
   MessageBodyType,
-  IMessage,
 } from '../messaging/Message'
-import Attestation from '../attestation/Attestation'
 import { IRevocationHandle } from '../types/Attestation'
-import PublicIdentity from '../identity/PublicIdentity'
 import IPublicIdentity from '../types/PublicIdentity'
 
 /**

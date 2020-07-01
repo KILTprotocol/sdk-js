@@ -4,9 +4,9 @@
  * @preferred
  */
 
-import IAttestation, { CompressedAttestation } from '../types/Attestation'
-import { validateHash, validateAddress } from '../util/DataUtils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
+import IAttestation, { CompressedAttestation } from '../types/Attestation'
+import { validateAddress, validateHash } from '../util/DataUtils'
 
 /**
  *  Checks whether the input meets all the required criteria of an IAttestation object.

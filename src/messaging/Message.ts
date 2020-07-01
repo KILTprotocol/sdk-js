@@ -11,7 +11,7 @@
  * @preferred
  */
 
-import { AnyJsonObject } from '@polkadot/types/types'
+import { AnyJson } from '@polkadot/types/types'
 import {
   Attestation as AttestationPE,
   CombinedPresentation,
@@ -140,7 +140,7 @@ export default class Message implements IMessage {
       case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC:
         {
           const submitClaimsForCtype = body
-          submitClaimsForCtype.content.forEach(claim => {
+          submitClaimsForCtype.content.forEach((claim) => {
             if (claim.request.claim.owner !== senderAddress) {
               throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
@@ -375,7 +375,7 @@ export interface IRequestAcceptDelegation extends IMessageBodyBase {
       permissions: IDelegationNode['permissions']
       isPCR: boolean
     }
-    metaData?: AnyJsonObject
+    metaData?: AnyJson
     signatures: {
       inviter: string
     }

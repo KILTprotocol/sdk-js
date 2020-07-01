@@ -13,27 +13,27 @@
  * @preferred
  */
 
+import { Claimer } from '@kiltprotocol/portablegabi'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
+import { mnemonicToMiniSecret } from '@polkadot/util-crypto'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
-import toSeed from '@polkadot/util-crypto/mnemonic/toSeed'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
-import * as u8aUtil from '@polkadot/util/u8a'
 import { hexToU8a } from '@polkadot/util/hex'
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import * as u8aUtil from '@polkadot/util/u8a'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair } from 'tweetnacl'
-import { Claimer } from '@kiltprotocol/portablegabi'
 import Crypto from '../crypto'
 import {
   CryptoInput,
   EncryptedAsymmetric,
   EncryptedAsymmetricString,
 } from '../crypto/Crypto'
-import PublicIdentity from './PublicIdentity'
 import * as SDKErrors from '../errorhandling/SDKErrors'
+import PublicIdentity from './PublicIdentity'
 
 type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
@@ -107,7 +107,7 @@ export default class Identity {
       throw SDKErrors.ERROR_MNEMONIC_PHRASE_INVALID()
     }
 
-    const seed = toSeed(phrase)
+    const seed = mnemonicToMiniSecret(phrase)
     return Identity.buildFromSeed(seed)
   }
 
@@ -258,7 +258,7 @@ export default class Identity {
   }
 
   /**
-   * Signs data with an [[Identity]] object's key returns it as string.
+   * Signs data with an [[Identity]] object's key and returns it as string.
    *
    * @param cryptoInput - The data to be signed.
    * @returns The signed data.
@@ -398,7 +398,7 @@ export default class Identity {
    * @example ```javascript
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const tx = await blockchain.api.tx.ctype.add(ctype.hash);
-   * const nonce = await blockchain.api.query.system.accountNonce(alice.address);
+   * const { nonce } = await blockchain.api.query.system.account(alice.address);
    * alice.signSubmittableExtrinsic(tx, nonce.toHex());
    * ```
    */

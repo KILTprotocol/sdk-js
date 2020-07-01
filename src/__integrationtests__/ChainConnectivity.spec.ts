@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
+ * @packageDocumentation
  * @group integration/connectivity
  * @ignore
- * @packageDocumentation
  */
 
 import { Header } from '@polkadot/types/interfaces/types'
-import { getCached, DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import { IBlockchainApi } from '../blockchain/Blockchain'
+import { DEFAULT_WS_ADDRESS, getCached } from '../blockchainApiConnection'
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
@@ -21,12 +21,12 @@ describe('Blockchain', () => {
 
     expect(stats).toMatchObject({
       chain: 'Development',
-      nodeName: 'substrate-node',
+      nodeName: 'KILT Node',
       nodeVersion: expect.stringMatching(/.+\..+\..+/),
     })
   })
 
-  it('should listen to blocks', async done => {
+  it('should listen to blocks', async (done) => {
     const listener = (header: Header): void => {
       // console.log(`Best block number ${header.number}`)
       expect(Number(header.number)).toBeGreaterThanOrEqual(0)

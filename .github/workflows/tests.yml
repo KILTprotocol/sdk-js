@@ -70,4 +70,5 @@ jobs:
             docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
             sleep 5s
             yarn test:integration:run
+            yarn ts-node docs/example.ts
             docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)

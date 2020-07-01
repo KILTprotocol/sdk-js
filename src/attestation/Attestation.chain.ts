@@ -2,16 +2,15 @@
  * @packageDocumentation
  * @ignore
  */
-import { Option, Text, Tuple } from '@polkadot/types'
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-
 import { SubmittableResult } from '@polkadot/api'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
-import { hasNonNullByte, assertCodecIsType } from '../util/Decode'
 import { getCached } from '../blockchainApiConnection'
-import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
+import Identity from '../identity/Identity'
 import IAttestation from '../types/Attestation'
+import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 import Attestation from './Attestation'
 
 const log = factory.getLogger('Attestation')
@@ -23,7 +22,7 @@ export async function store(
   const txParams = {
     claimHash: attestation.claimHash,
     ctypeHash: attestation.cTypeHash,
-    delegationId: new Option(Text, attestation.delegationId),
+    delegationId: attestation.delegationId,
   }
   log.debug(() => `Create tx for 'attestation.add'`)
 
@@ -42,13 +41,10 @@ interface IChainAttestation extends Codec {
 }
 
 function decode(
-  encoded: Option<Tuple> | Tuple,
+  encoded: Option<Tuple>,
   claimHash: string // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
-  assertCodecIsType(encoded, [
-    'Option<(H256,AccountId,Option<H256>,bool)>',
-    '(H256,AccountId,Option<H256>,bool)',
-  ])
+  assertCodecIsType(encoded, ['Option<(H256,AccountId,Option<H256>,bool)>'])
   if (encoded instanceof Option || hasNonNullByte(encoded)) {
     const attestationTuple = (encoded as IChainAttestation).toJSON()
     if (attestationTuple instanceof Array) {
@@ -67,11 +63,11 @@ function decode(
 }
 
 // return types reflect backwards compatibility with mashnet-node v 0.22
-async function queryRaw(claimHash: string): Promise<Option<Tuple> | Tuple> {
+async function queryRaw(claimHash: string): Promise<Option<Tuple>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await getCached()
   const result = await blockchain.api.query.attestation.attestations<
-    Option<Tuple> | Tuple
+    Option<Tuple>
   >(claimHash)
   return result
 }

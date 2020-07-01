@@ -11,12 +11,12 @@
  */
 
 import Ajv from 'ajv'
-import QuoteSchema from './QuoteSchema'
+import { hashObjectAsStr } from '../crypto/Crypto'
+import { ERROR_QUOTE_MALFORMED } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import { IQuote, IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
-import { hashObjectAsStr } from '../crypto/Crypto'
 import { validateSignature } from '../util/DataUtils'
-import { ERROR_QUOTE_MALFORMED } from '../errorhandling/SDKErrors'
+import QuoteSchema from './QuoteSchema'
 
 /**
  * Validates the quote against the meta schema and quote data against the provided schema.
@@ -29,8 +29,8 @@ import { ERROR_QUOTE_MALFORMED } from '../errorhandling/SDKErrors'
  */
 
 export function validateQuoteSchema(
-  schema: object,
-  validate: object,
+  schema: unknown,
+  validate: unknown,
   messages?: string[]
 ): boolean {
   const ajv = new Ajv()

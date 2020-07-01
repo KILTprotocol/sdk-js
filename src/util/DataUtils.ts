@@ -7,22 +7,22 @@
  * Dummy comment needed for correct doc display, do not remove.
  */
 import { checkAddress } from '@polkadot/util-crypto'
-import IAttestedClaim from '../types/AttestedClaim'
-import { NonceHash } from '../types/RequestForAttestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
-import PublicIdentity from '../identity/PublicIdentity'
 import {
   ERROR_ADDRESS_INVALID,
   ERROR_ADDRESS_TYPE,
-  ERROR_HASH_TYPE,
   ERROR_HASH_MALFORMED,
-  ERROR_NONCE_HASH_MALFORMED,
-  ERROR_NONCE_HASH_INVALID,
+  ERROR_HASH_TYPE,
   ERROR_LEGITIMATIONS_UNVERIFIABLE,
+  ERROR_NONCE_HASH_INVALID,
+  ERROR_NONCE_HASH_MALFORMED,
   ERROR_SIGNATURE_DATA_TYPE,
   ERROR_SIGNATURE_UNVERIFIABLE,
 } from '../errorhandling/SDKErrors'
+import PublicIdentity from '../identity/PublicIdentity'
+import IAttestedClaim from '../types/AttestedClaim'
+import { NonceHash } from '../types/RequestForAttestation'
 
 /**
  *  Validates an given address string against the External Address Format (SS58) with our Prefix of 42.
@@ -82,7 +82,7 @@ export function validateHash(hash: string, name: string): boolean {
  */
 export function validateNonceHash(
   nonceHash: NonceHash,
-  data: string | object | number | boolean,
+  data: string | Record<string, any> | number | boolean,
   name: string
 ): boolean {
   if (!nonceHash || typeof nonceHash.hash !== 'string') {

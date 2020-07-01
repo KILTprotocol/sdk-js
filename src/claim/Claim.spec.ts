@@ -1,15 +1,14 @@
-import Claim from './Claim'
-import ClaimUtils from './Claim.utils'
-
 import CType from '../ctype/CType'
-import Identity from '../identity/Identity'
-import ICType from '../types/CType'
-import IClaim, { CompressedClaim } from '../types/Claim'
 import {
+  ERROR_ADDRESS_INVALID,
   ERROR_CTYPE_HASH_NOT_PROVIDED,
   ERROR_HASH_MALFORMED,
-  ERROR_ADDRESS_INVALID,
 } from '../errorhandling/SDKErrors'
+import Identity from '../identity/Identity'
+import IClaim, { CompressedClaim } from '../types/Claim'
+import ICType from '../types/CType'
+import Claim from './Claim'
+import ClaimUtils from './Claim.utils'
 
 describe('Claim', () => {
   let identityAlice: Identity

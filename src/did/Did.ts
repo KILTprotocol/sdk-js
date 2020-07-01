@@ -12,18 +12,18 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import { AnyJson, AnyJsonObject } from '@polkadot/types/types'
-import Identity from '../identity/Identity'
+import { AnyJson } from '@polkadot/types/types'
 import { factory } from '../config/ConfigLog'
+import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
+import { queryByAddress, queryByIdentifier, remove, store } from './Did.chain'
 import {
-  getIdentifierFromAddress,
-  getAddressFromIdentifier,
   createDefaultDidDocument,
-  verifyDidDocumentSignature,
+  getAddressFromIdentifier,
+  getIdentifierFromAddress,
   signDidDocument,
+  verifyDidDocumentSignature,
 } from './Did.utils'
-import { store, queryByAddress, queryByIdentifier, remove } from './Did.chain'
 
 const log = factory.getLogger('DID')
 
@@ -67,14 +67,14 @@ export interface IDidDocumentPublicKey {
 }
 
 export interface IDidDocumentProperties {
-  authentication: Array<string | IDidDocumentPublicKey | AnyJsonObject>
+  authentication: Array<string | IDidDocumentPublicKey | AnyJson>
   publicKey: IDidDocumentPublicKey[]
   service: IDidService[]
 }
 
 export interface IDidService {
   type: string
-  serviceEndpoint: string | AnyJsonObject
+  serviceEndpoint: string | AnyJson
   id?: string
   [key: string]: AnyJson
 }

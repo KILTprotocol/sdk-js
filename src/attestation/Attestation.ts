@@ -26,7 +26,7 @@ export default class Attestation implements IAttestation {
    * @param claimHash - The hash of the claim that corresponds to the attestation to query.
    * @returns A promise containing the [[Attestation]] or null.
    * @example ```javascript
-   * Attestation.query('0xd8024cdc147c4fa9221cd177').then(attestation => {
+   * Attestation.query('0xd8024cdc147c4fa9221cd177').then((attestation) => {
    *   // now we can for example revoke `attestation`
    * });
    * ```
@@ -99,7 +99,7 @@ export default class Attestation implements IAttestation {
    * @param input The potentially only partial IAttestation.
    * @returns Boolean whether input is of type IAttestation.
    */
-  public static isIAttestation(input: object): input is IAttestation {
+  public static isIAttestation(input: unknown): input is IAttestation {
     try {
       AttestationUtils.errorCheck(input as IAttestation)
     } catch (error) {
@@ -170,7 +170,7 @@ export default class Attestation implements IAttestation {
    * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
    * @returns A promise containing whether the attestation is valid.
    * @example ```javascript
-   * attestation.verify().then(isVerified => {
+   * attestation.verify().then((isVerified) => {
    *   // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```

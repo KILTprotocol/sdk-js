@@ -15,13 +15,13 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import Identity from '../identity/Identity'
 import Attestation from '../attestation/Attestation'
-import { IDelegationBaseNode } from '../types/Delegation'
-import DelegationRootNode from './DelegationRootNode'
-import { getAttestationHashes } from './Delegation.chain'
 import { query } from '../attestation/Attestation.chain'
+import Identity from '../identity/Identity'
+import { IDelegationBaseNode } from '../types/Delegation'
+import { getAttestationHashes } from './Delegation.chain'
 import DelegationNode from './DelegationNode'
+import DelegationRootNode from './DelegationRootNode'
 
 export default abstract class DelegationBaseNode
   implements IDelegationBaseNode {

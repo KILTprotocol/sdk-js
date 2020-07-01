@@ -4,10 +4,10 @@
  */
 
 import { AttestationRequest } from '@kiltprotocol/portablegabi'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import IAttestedClaim, { CompressedAttestedClaim } from './AttestedClaim'
 import IClaim, { CompressedClaim } from './Claim'
 import { IDelegationBaseNode } from './Delegation'
-import IAttestedClaim, { CompressedAttestedClaim } from './AttestedClaim'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 
 export type Hash = string
 
@@ -32,7 +32,7 @@ export default interface IRequestForAttestation {
 
 export type CompressedNonceHash = [string, string?]
 
-export type CompressedNonceHashTree = object
+export type CompressedNonceHashTree = Record<string, any>
 
 export type CompressedClaimOwner = CompressedNonceHash
 export type CompressedCTypeHash = CompressedNonceHash

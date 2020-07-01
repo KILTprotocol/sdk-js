@@ -3,19 +3,18 @@
  * @ignore
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Text, Tuple } from '@polkadot/types'
-
 import { SubmittableResult } from '@polkadot/api'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import { Option, Tuple } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
-import { decodeDelegationNode, CodecWithId } from './DelegationDecoder'
-import DelegationNode from './DelegationNode'
-import permissionsAsBitset from './DelegationNode.utils'
+import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { IDelegationNode } from '../types/Delegation'
-import { factory } from '../config/ConfigLog'
 import DelegationBaseNode from './Delegation'
-import { getChildIds, fetchChildren } from './Delegation.chain'
+import { fetchChildren, getChildIds } from './Delegation.chain'
+import { CodecWithId, decodeDelegationNode } from './DelegationDecoder'
+import DelegationNode from './DelegationNode'
+import permissionsAsBitset from './DelegationNode.utils'
 
 const log = factory.getLogger('DelegationBaseNode')
 
@@ -31,7 +30,7 @@ export async function store(
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.addDelegation(
     delegation.id,
     delegation.rootId,
-    new Option(Text, includeParentId ? delegation.parentId : undefined),
+    includeParentId ? delegation.parentId : undefined,
     delegation.account,
     permissionsAsBitset(delegation),
     signature
@@ -44,7 +43,7 @@ export async function query(
 ): Promise<DelegationNode | null> {
   const blockchain = await getCached()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegations<Option<Tuple> | Tuple>(
+    await blockchain.api.query.delegation.delegations<Option<Tuple>>(
       delegationId
     )
   )

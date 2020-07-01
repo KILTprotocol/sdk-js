@@ -1,22 +1,22 @@
+import { TypeRegistry } from '@polkadot/types'
+import { Option, Tuple } from '@polkadot/types/codec'
+import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
-import { Tuple, Option } from '@polkadot/types/codec'
-import { H256 } from '@polkadot/types'
 import {
-  Verifier,
   Attester,
   Claimer,
   CombinedPresentation,
   CType,
   ICType,
+  IRequestForAttestation,
+  Verifier,
 } from '..'
-import { MessageBodyType } from '../messaging/Message'
+import Credential from '../credential/Credential'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
-import IClaim from '../types/Claim'
+import { MessageBodyType } from '../messaging/Message'
 import constants from '../test/constants'
-import Credential from '../credential/Credential'
-import IRequestForAttestation from '../types/RequestForAttestation'
+import IClaim from '../types/Claim'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -29,12 +29,13 @@ describe('Verifier', () => {
   let credentialPE: Credential
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
+  const registry = new TypeRegistry()
 
   beforeAll(async () => {
     attester = await AttesterIdentity.buildFromURI('//Alice', {
       key: {
-        publicKey: constants.PUBLIC_KEY.valueOf(),
-        privateKey: constants.PRIVATE_KEY.valueOf(),
+        publicKey: constants.PUBLIC_KEY.toString(),
+        privateKey: constants.PRIVATE_KEY.toString(),
       },
     })
 
@@ -65,12 +66,16 @@ describe('Verifier', () => {
     }
 
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(Tuple.with([H256, AccountId, 'Option<H256>', Bool]), [
-        '"0xde9f624875aa620d06434603787a40c8cd02cc25c7b775cf50de8a3a96bbeafa"', // ctype hash
-        attester.getAddress(), // Account
-        null, // delegation-id?
-        false, // revoked flag
-      ])
+      new Option(
+        registry,
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [
+          '"0xde9f624875aa620d06434603787a40c8cd02cc25c7b775cf50de8a3a96bbeafa"', // ctype hash
+          attester.getAddress(), // Account
+          null, // delegation-id?
+          false, // revoked flag
+        ]
+      )
     )
 
     const {

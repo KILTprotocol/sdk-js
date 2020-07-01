@@ -1,13 +1,13 @@
 import * as gabi from '@kiltprotocol/portablegabi'
-import IPublicIdentity from '../types/PublicIdentity'
-import Message, { MessageBodyType, IMessage } from '../messaging/Message'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
-import Identity from '../identity/Identity'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import CType from '../ctype/CType'
-import IAttestedClaim from '../types/AttestedClaim'
 import { ERROR_MESSAGE_TYPE } from '../errorhandling/SDKErrors'
+import Identity from '../identity/Identity'
+import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
+import Message, { IMessage, MessageBodyType } from '../messaging/Message'
+import IAttestedClaim from '../types/AttestedClaim'
+import IPublicIdentity from '../types/PublicIdentity'
 import IRequestForAttestation from '../types/RequestForAttestation'
 
 const log = LoggerFactory.getLogger('Verifier')
@@ -48,7 +48,7 @@ export class PresentationRequestBuilder {
    * Note that you are required to call [[finalize]] on the request to conclude it.
    *
    * @param p The parameter object.
-   * @param p.ctypehash The SHA-256 hash of the [[CType]].
+   * @param p.ctypeHash The SHA-256 hash of the [[CType]].
    * @param p.properties A list of properties of the [[Credential]]s the verifier has to see in order to verify it.
    * @param p.legitimations An optional boolean representing whether the verifier requests to see the legitimations of the attesters which signed the [[Credential]]s.
    * @param p.delegation An optional boolean representing whether the verifier requests to see the attesters' unique delegation identifiers.
@@ -65,7 +65,7 @@ export class PresentationRequestBuilder {
   }: IPresentationReq): PresentationRequestBuilder {
     // since we are building always a pe request, we need to translate the attribute names to
     // absolute property paths. The PE credential contains a RequestForAttestation
-    const rawProperties = properties.map(attr => `claim.contents.${attr}`)
+    const rawProperties = properties.map((attr) => `claim.contents.${attr}`)
     if (typeof ctypeHash !== 'undefined') {
       rawProperties.push('claim.cTypeHash')
     }
@@ -115,7 +115,7 @@ export class PresentationRequestBuilder {
         {
           type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
           content: {
-            ctypes: this.partialReq.map(pr => pr.ctype),
+            ctypes: this.partialReq.map((pr) => pr.ctype),
             peRequest: message,
             allowPE,
           },
@@ -166,13 +166,13 @@ async function verifyPublicPresentation(
       const providedProperties = ac.getAttributes()
       // map the KILT Style properties to Gabi style properties
       const rawProperties = Array.from(providedProperties.keys()).map(
-        prop => `claim.contents.${prop}`
+        (prop) => `claim.contents.${prop}`
       )
       // FIXME: types are strange. if you can remove them, the claim types are wrong...
       rawProperties.push('claim.cTypeHash')
       rawProperties.push('claim.owner')
       return (
-        requested.properties.every(p => {
+        requested.properties.every((p) => {
           return rawProperties.includes(p)
         }) && ac.verify()
       )

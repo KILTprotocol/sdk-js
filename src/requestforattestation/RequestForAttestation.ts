@@ -10,45 +10,44 @@
  * @module RequestForAttestation
  * @preferred
  */
-import { v4 as uuid } from 'uuid'
 import {
-  AttesterPublicKey,
   AttestationRequest,
+  AttesterPublicKey,
   ClaimerAttestationSession,
 } from '@kiltprotocol/portablegabi'
-import { validateLegitimations, validateNonceHash } from '../util/DataUtils'
-import { IInitiateAttestation } from '../messaging/Message'
-import {
-  verify,
-  hash,
-  coToUInt8,
-  u8aToHex,
-  u8aConcat,
-  hashObjectAsStr,
-} from '../crypto/Crypto'
-
-import Identity from '../identity/Identity'
+import { v4 as uuid } from 'uuid'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import RequestForAttestationUtils from './RequestForAttestation.utils'
+import {
+  coToUInt8,
+  hash,
+  hashObjectAsStr,
+  u8aConcat,
+  u8aToHex,
+  verify,
+} from '../crypto/Crypto'
+import * as SDKErrors from '../errorhandling/SDKErrors'
+import Identity from '../identity/Identity'
+import { IInitiateAttestation } from '../messaging/Message'
+import IAttestedClaim from '../types/AttestedClaim'
+import IClaim from '../types/Claim'
+import { IDelegationBaseNode } from '../types/Delegation'
 import IRequestForAttestation, {
+  CompressedRequestForAttestation,
   Hash,
   NonceHash,
   NonceHashTree,
-  CompressedRequestForAttestation,
 } from '../types/RequestForAttestation'
-import { IDelegationBaseNode } from '../types/Delegation'
-import IClaim from '../types/Claim'
-import IAttestedClaim from '../types/AttestedClaim'
-import * as SDKErrors from '../errorhandling/SDKErrors'
+import { validateLegitimations, validateNonceHash } from '../util/DataUtils'
+import RequestForAttestationUtils from './RequestForAttestation.utils'
 
 function hashNonceValue(
   nonce: string,
-  value: string | object | number | boolean
+  value: string | Record<string, unknown> | number | boolean
 ): string {
   return hashObjectAsStr(value, nonce)
 }
 
-function generateHash(value: string | object): NonceHash {
+function generateHash(value: string | Record<string, unknown>): NonceHash {
   const nonce: string = uuid()
   return {
     nonce,
@@ -59,7 +58,7 @@ function generateHash(value: string | object): NonceHash {
 function generateHashTree(contents: IClaim['contents']): NonceHashTree {
   const result: NonceHashTree = {}
 
-  Object.keys(contents).forEach(key => {
+  Object.keys(contents).forEach((key) => {
     result[key] = generateHash(contents[key].toString())
   })
 
@@ -107,7 +106,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
+   * [STATIC] [ASYNC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
    *
    * @param claim An `IClaim` object the request for attestation is built for.
    * @param identity The Claimer's [[Identity]].
@@ -202,7 +201,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns  Boolean whether input is of type IRequestForAttestation.
    */
   public static isIRequestForAttestation(
-    input: object
+    input: unknown
   ): input is IRequestForAttestation {
     try {
       RequestForAttestationUtils.errorCheck(input as IRequestForAttestation)
@@ -242,7 +241,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       requestForAttestationInput.legitimations.length
     ) {
       this.legitimations = requestForAttestationInput.legitimations.map(
-        legitimation => AttestedClaim.fromAttestedClaim(legitimation)
+        (legitimation) => AttestedClaim.fromAttestedClaim(legitimation)
       )
     } else {
       this.legitimations = []
@@ -277,7 +276,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public removeClaimProperties(properties: string[]): void {
-    properties.forEach(key => {
+    properties.forEach((key) => {
       if (!this.claimHashTree[key]) {
         throw SDKErrors.ERROR_CLAIM_HASHTREE_MISMATCH(key)
       }
@@ -324,7 +323,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     validateNonceHash(input.cTypeHash, input.claim.cTypeHash, 'CType')
 
     // check all hashes for provided claim properties
-    Object.keys(input.claim.contents).forEach(key => {
+    Object.keys(input.claim.contents).forEach((key) => {
       const value = input.claim.contents[key]
       if (!input.claimHashTree[key]) {
         throw SDKErrors.ERROR_CLAIM_HASHTREE_MALFORMED()
@@ -404,11 +403,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
     const result: Uint8Array[] = []
     result.push(coToUInt8(claimOwner.hash))
     result.push(coToUInt8(cTypeHash.hash))
-    Object.keys(claimHashTree).forEach(key => {
+    Object.keys(claimHashTree).forEach((key) => {
       result.push(coToUInt8(claimHashTree[key].hash))
     })
     if (legitimations) {
-      legitimations.forEach(legitimation => {
+      legitimations.forEach((legitimation) => {
         result.push(coToUInt8(legitimation.attestation.claimHash))
       })
     }

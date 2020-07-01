@@ -7,8 +7,8 @@
  */
 
 import {
-  LoggerFactoryOptions,
   LFService,
+  LoggerFactoryOptions,
   LogGroupRule,
   LogLevel,
 } from 'typescript-logging'

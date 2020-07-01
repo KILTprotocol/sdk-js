@@ -4,6 +4,7 @@ import ICType from '../types/CType'
 import Claim from '../claim/Claim'
 import CTypeUtils from './CType.utils'
 import { IClaim } from '..'
+import { IClaimContents } from '../types/Claim'
 
 describe('Nested CTypes', () => {
   let identityAlice: Identity
@@ -11,7 +12,7 @@ describe('Nested CTypes', () => {
   let kycCType: ICType['schema']
   let passport: CType
   let kyc: CType
-  let claimContents: IClaim['contents']
+  let claimContents: IClaimContents
   let claimDeepContents: IClaim['contents']
   let nested: ICType['schema']
   let nestedDeeply: ICType['schema']
@@ -157,7 +158,6 @@ describe('Nested CTypes', () => {
       )
     ).toBeTruthy()
 
-    // @ts-ignore
     claimContents.fullName = {}
     expect(() =>
       Claim.fromNestedCTypeClaim(
@@ -176,8 +176,7 @@ describe('Nested CTypes', () => {
         claimDeepContents
       )
     ).toBeTruthy()
-    // @ts-ignore
-    claimDeepContents.passport.fullName = {}
+    ;(claimDeepContents.passport as Record<string, unknown>).fullName = {}
     expect(
       CTypeUtils.validateNestedSchemas(
         deeplyNestedCType.schema,

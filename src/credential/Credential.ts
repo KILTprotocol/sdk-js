@@ -12,11 +12,11 @@
  */
 
 import * as gabi from '@kiltprotocol/portablegabi'
-import IRequestForAttestation from '../types/RequestForAttestation'
-import IAttestation from '../types/Attestation'
-import Identity from '../identity/Identity'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
+import Identity from '../identity/Identity'
+import IAttestation from '../types/Attestation'
 import ICredential from '../types/Credential'
+import IRequestForAttestation from '../types/RequestForAttestation'
 
 export default class Credential {
   /**

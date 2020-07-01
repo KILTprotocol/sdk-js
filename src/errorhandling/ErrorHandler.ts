@@ -6,10 +6,9 @@
  */
 
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { EventRecord } from '@polkadot/types/interfaces'
-import { ModuleMetadataV4 } from '@polkadot/types/Metadata/v4'
+import { EventRecord, ModuleMetadataV11 } from '@polkadot/types/interfaces'
 import { factory as LoggerFactory } from '../config/ConfigLog'
-import { ExtrinsicError, errorForCode } from './ExtrinsicError'
+import { errorForCode, ExtrinsicError } from './ExtrinsicError'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -19,7 +18,7 @@ export enum SystemEvent {
 }
 
 export class ErrorHandler {
-  private static readonly ERROR_MODULE_NAME = 'error'
+  private static readonly ERROR_MODULE_NAME = 'Error'
 
   /**
    * [STATIC] Checks if there is `SystemEvent.ExtrinsicFailed` in the list of
@@ -45,7 +44,10 @@ export class ErrorHandler {
       .then((moduleIndex: number) => {
         this.moduleIndex = moduleIndex
       })
-      .then(() => true, () => false)
+      .then(
+        () => true,
+        () => false
+      )
   }
 
   private moduleIndex = -1
@@ -91,14 +93,14 @@ export class ErrorHandler {
   private static async getErrorModuleIndex(
     apiPromise: ApiPromise
   ): Promise<number> {
-    const { modules } = apiPromise.runtimeMetadata.asV4
-    const filtered: ModuleMetadataV4[] = modules.filter(
-      (mod: ModuleMetadataV4) => {
+    const { modules } = apiPromise.runtimeMetadata.asV11
+    const filtered: ModuleMetadataV11[] = modules.filter(
+      (mod: ModuleMetadataV11) => {
         return !mod.events.isEmpty
       }
     )
     return filtered
-      .map(m => m.name.toString())
+      .map((m) => m.name.toString())
       .indexOf(ErrorHandler.ERROR_MODULE_NAME)
   }
 }

@@ -1,21 +1,21 @@
-import QuoteSchema from './QuoteSchema'
+import { hashObjectAsStr, verify } from '../crypto/Crypto'
+import CType from '../ctype/CType'
+import Identity from '../identity/Identity'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import IClaim from '../types/Claim'
+import ICType from '../types/CType'
 import {
-  IQuote,
-  ICostBreakdown,
-  IQuoteAttesterSigned,
-  IQuoteAgreement,
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
+  ICostBreakdown,
+  IQuote,
+  IQuoteAgreement,
+  IQuoteAttesterSigned,
 } from '../types/Quote'
-import Identity from '../identity/Identity'
 import * as Quote from './Quote'
 import QuoteUtils from './Quote.utils'
-import CType from '../ctype/CType'
-import ICType from '../types/CType'
-import IClaim from '../types/Claim'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import { verify, hashObjectAsStr } from '../crypto/Crypto'
+import QuoteSchema from './QuoteSchema'
 
 describe('Claim', () => {
   let claimerIdentity: Identity
@@ -40,7 +40,10 @@ describe('Claim', () => {
   beforeAll(async () => {
     claimerIdentity = await Identity.buildFromURI('//Alice')
     attesterIdentity = await Identity.buildFromURI('//Bob')
-    invalidCost = { gross: 233, tax: { vat: 3.3 } } as ICostBreakdown
+    invalidCost = ({
+      gross: 233,
+      tax: { vat: 3.3 },
+    } as unknown) as ICostBreakdown
     date = new Date(2019, 11, 10)
 
     cTypeSchema = {
@@ -62,10 +65,10 @@ describe('Claim', () => {
     }
 
     // build request for attestation with legitimations
-    request = (await RequestForAttestation.fromClaimAndIdentity(
+    ;({ message: request } = await RequestForAttestation.fromClaimAndIdentity(
       claim,
       claimerIdentity
-    )).message
+    ))
 
     invalidCostQuoteData = {
       cTypeHash: '0x12345678',
@@ -75,7 +78,7 @@ describe('Claim', () => {
       termsAndConditions: 'Lots of these',
     } as IQuote
 
-    invalidPropertiesQuoteData = {
+    invalidPropertiesQuoteData = ({
       cTypeHash: '0x12345678',
       cost: {
         gross: 233,
@@ -85,7 +88,7 @@ describe('Claim', () => {
       timeframe: date,
       currency: 'Euro',
       termsAndConditions: 'Lots of these',
-    } as IQuote
+    } as unknown) as IQuote
 
     validQuoteData = {
       attesterAddress: attesterIdentity.getAddress(),

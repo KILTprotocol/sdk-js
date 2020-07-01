@@ -16,9 +16,9 @@ import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { IDelegationRootNode } from '../types/Delegation'
 import DelegationBaseNode from './Delegation'
-import { query, revoke, store } from './DelegationRootNode.chain'
 import DelegationNode from './DelegationNode'
 import { getChildren } from './DelegationNode.chain'
+import { query, revoke, store } from './DelegationRootNode.chain'
 
 const log = factory.getLogger('DelegationRootNode')
 

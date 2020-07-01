@@ -1,27 +1,27 @@
 import * as gabi from '@kiltprotocol/portablegabi'
+import AttestedClaim from '../attestedclaim/AttestedClaim'
+import Credential from '../credential/Credential'
 import {
   ERROR_MESSAGE_TYPE,
-  ERROR_PE_MISMATCH,
   ERROR_PE_CREDENTIAL_MISSING,
+  ERROR_PE_MISMATCH,
 } from '../errorhandling/SDKErrors'
-import IPublicIdentity from '../types/PublicIdentity'
+import Identity from '../identity/Identity'
+import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
+import Message, {
+  IInitiateAttestation,
+  IMessage,
+  IRequestAttestationForClaim,
+  MessageBodyType,
+} from '../messaging/Message'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IClaim from '../types/Claim'
 import { IDelegationBaseNode } from '../types/Delegation'
-import Message, {
-  MessageBodyType,
-  IInitiateAttestation,
-  IRequestAttestationForClaim,
-  IMessage,
-} from '../messaging/Message'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
-import Identity from '../identity/Identity'
+import IPublicIdentity from '../types/PublicIdentity'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import Credential from '../credential/Credential'
-import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 
 function noNulls<T>(array: Array<T | null>): array is T[] {
-  return array.every(c => c !== null)
+  return array.every((c) => c !== null)
 }
 
 /**
@@ -32,7 +32,7 @@ function noNulls<T>(array: Array<T | null>): array is T[] {
  * @returns All properties which can be publicly shown in the correct format.
  */
 function finalizeReqProps(props: string[]): string[] {
-  return props.map(prop => prop.replace('claim.contents.', ''))
+  return props.map((prop) => prop.replace('claim.contents.', ''))
 }
 
 /**
@@ -73,7 +73,7 @@ export async function createPresentation(
 
   // if privacy enhancement is allowed, we return a privacy enhanced presentation
   if (request.content.allowPE) {
-    const peCreds = credentials.map(c => c.privacyCredential)
+    const peCreds = credentials.map((c) => c.privacyCredential)
     if (!noNulls(peCreds)) {
       throw ERROR_PE_CREDENTIAL_MISSING()
     }

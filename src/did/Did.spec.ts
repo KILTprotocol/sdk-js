@@ -1,34 +1,36 @@
-import { Tuple, Option, H256 } from '@polkadot/types'
-import { Did } from '..'
-import { IDid } from './Did'
+import { Option, Tuple, TypeRegistry, U8aFixed } from '@polkadot/types'
+import { Did, IDid } from '..'
+import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import {
   getIdentifierFromAddress,
   verifyDidDocumentSignature,
 } from './Did.utils'
-import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/SDKErrors'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('DID', () => {
-  const key1 = new H256('box-me')
-  const key2 = new H256('sign-me')
+  const registry = new TypeRegistry()
+  const key1 = new U8aFixed(registry, 'box-me', 256)
+  const key2 = new U8aFixed(registry, 'sign-me', 256)
 
   require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs.mockImplementation(
     async (address: string) => {
       if (address === 'withDocumentStore') {
         return new Option(
+          registry,
           Tuple.with(
             // (publicBoxKey, publicSigningKey, documentStore?)
-            [H256, H256, 'Option<Bytes>']
+            ['H256', 'H256', 'Option<Bytes>']
           ),
           [key2, key1, '0x687474703a2f2f6d794449442e6b696c742e696f']
         )
       }
       return new Option(
+        registry,
         Tuple.with(
-          // (publicBoxKey, publicSigningKey, documentStore?)
-          [H256, H256, 'Option<Bytes>']
+          // (publicBoxKey, publicSigningKey, documentStore?)+
+          ['H256', 'H256', 'Option<Bytes>']
         ),
         [key1, key2, null]
       )
@@ -65,7 +67,7 @@ describe('DID', () => {
     } as IDid)
   })
 
-  it('query by identifier invalid identifier', async done => {
+  it('query by identifier invalid identifier', async (done) => {
     try {
       await Did.queryByIdentifier('invalidIdentifier')
       done.fail('should have detected an invalid DID')

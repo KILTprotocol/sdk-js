@@ -1,29 +1,31 @@
 /**
- * @ignore
  * @packageDocumentation
+ * @ignore
  */
 /* eslint-disable */
 
 import BN from 'bn.js/'
-import Identity from '../identity/Identity'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
+import Identity from '../identity/Identity'
 
-export const GAS = new BN(1000000)
-export const MIN_TRANSACTION = new BN(100000000)
+// FIXME: check with weights
+// export const GAS = new BN(1_000_000)
+export const GAS = new BN(125_000_000)
+export const MIN_TRANSACTION = new BN(100_000_000)
 export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 
 // Dev Faucet account seed phrase
 const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 
-export const wannabeFaucet = Identity.buildFromMnemonic(FaucetSeed)
+export const wannabeFaucet = Identity.buildFromURI(FaucetSeed)
 export const wannabeAlice = Identity.buildFromURI('//Alice')
 export const wannabeBob = Identity.buildFromURI('//Bob')
 
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)
-    .then(ownerAddress => {
+    .then((ownerAddress) => {
       return ownerAddress !== null
     })
     .catch(() => false)

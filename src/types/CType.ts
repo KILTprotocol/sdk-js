@@ -2,8 +2,8 @@
  * @packageDocumentation
  * @module ICType
  */
-import IPublicIdentity from './PublicIdentity'
 import CType from '../ctype/CType'
+import IPublicIdentity from './PublicIdentity'
 
 export interface ICTypeSchema {
   $id: string

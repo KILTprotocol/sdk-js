@@ -1,10 +1,10 @@
-import CType from './CType'
-import ICType from '../types/CType'
-import CTypeMetadata from './CTypeMetadata'
-import CTypeUtils from './CType.utils'
-import { MetadataModel } from './CTypeSchema'
-import ICTypeMetadata from '../types/CTypeMetadata'
 import Identity from '../identity/Identity'
+import ICType from '../types/CType'
+import ICTypeMetadata from '../types/CTypeMetadata'
+import CType from './CType'
+import CTypeUtils from './CType.utils'
+import CTypeMetadata from './CTypeMetadata'
+import { MetadataModel } from './CTypeSchema'
 
 describe('CType', () => {
   let identityAlice: Identity

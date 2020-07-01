@@ -5,18 +5,18 @@
  */
 
 import * as jsonabc from 'jsonabc'
-import RequestForAttestation from './RequestForAttestation'
-import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
+import ClaimUtils from '../claim/Claim.utils'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import IRequestForAttestation, {
-  NonceHash,
   CompressedNonceHash,
-  NonceHashTree,
   CompressedNonceHashTree,
   CompressedRequestForAttestation,
+  NonceHash,
+  NonceHashTree,
 } from '../types/RequestForAttestation'
-import * as SDKErrors from '../errorhandling/SDKErrors'
+import RequestForAttestation from './RequestForAttestation'
 
 /**
  *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
@@ -41,7 +41,7 @@ export function errorCheck(input: IRequestForAttestation): void {
   if (!input.claimHashTree) {
     throw SDKErrors.ERROR_CLAIM_HASHTREE_NOT_PROVIDED()
   } else {
-    Object.keys(input.claimHashTree).forEach(key => {
+    Object.keys(input.claimHashTree).forEach((key) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (!input.claimHashTree![key].hash) {
         throw SDKErrors.ERROR_CLAIM_HASHTREE_MALFORMED()
@@ -107,7 +107,7 @@ export function compressClaimHashTree(
   const sortedClaimHashTree = jsonabc.sortObj(claimHashTree)
   const result = {}
 
-  Object.keys(sortedClaimHashTree).forEach(entryKey => {
+  Object.keys(sortedClaimHashTree).forEach((entryKey) => {
     result[entryKey] = compressNonceAndHash(sortedClaimHashTree[entryKey])
   })
   return result
@@ -126,7 +126,7 @@ export function decompressClaimHashTree(
 ): NonceHashTree {
   const result = {}
 
-  Object.keys(compressedClaimHashTree).forEach(entryKey => {
+  Object.keys(compressedClaimHashTree).forEach((entryKey) => {
     result[entryKey] = decompressNonceAndHash(compressedClaimHashTree[entryKey])
   })
   return result

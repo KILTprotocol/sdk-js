@@ -1,27 +1,28 @@
+import { TypeRegistry } from '@polkadot/types'
+import { Option, Tuple } from '@polkadot/types/codec'
+import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
-import { Tuple, Option } from '@polkadot/types/codec'
-import { Text, H256 } from '@polkadot/types'
-import AttesterIdentity from '../identity/AttesterIdentity'
-import Identity from '../identity/Identity'
-import constants from '../test/constants'
 import {
   Attester,
   Claimer,
-  IClaim,
-  Verifier,
   CombinedPresentation,
-  ICType,
   CType,
+  IClaim,
+  ICType,
+  Verifier,
 } from '..'
-import { MessageBodyType } from '../messaging/Message'
 import Credential from '../credential/Credential'
+import AttesterIdentity from '../identity/AttesterIdentity'
+import Identity from '../identity/Identity'
+import { MessageBodyType } from '../messaging/Message'
+import constants from '../test/constants'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Claimer', () => {
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
+  const registry = new TypeRegistry()
   let attester: AttesterIdentity
   let claimer: Identity
   let verifier: Identity
@@ -32,8 +33,8 @@ describe('Claimer', () => {
   beforeAll(async () => {
     attester = await AttesterIdentity.buildFromURI('//Alice', {
       key: {
-        publicKey: constants.PUBLIC_KEY.valueOf(),
-        privateKey: constants.PRIVATE_KEY.valueOf(),
+        publicKey: constants.PUBLIC_KEY.toString(),
+        privateKey: constants.PRIVATE_KEY.toString(),
       },
     })
 
@@ -65,11 +66,9 @@ describe('Claimer', () => {
 
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
-        Tuple,
-        new Tuple(
-          [H256, AccountId, Text, Bool],
-          [cType.hash, attester.getAddress(), undefined, false]
-        )
+        registry,
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [cType.hash, attester.getAddress(), undefined, 0]
       )
     )
 
@@ -139,11 +138,9 @@ describe('Claimer', () => {
   it('request privacy enhanced attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
-        Tuple,
-        new Tuple(
-          [H256, AccountId, Text, Bool],
-          [cType.hash, attester.getAddress(), undefined, false]
-        )
+        registry,
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [cType.hash, attester.getAddress(), undefined, 0]
       )
     )
 
@@ -214,11 +211,9 @@ describe('Claimer', () => {
   it('request only public attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
-        Tuple,
-        new Tuple(
-          [H256, AccountId, Text, Bool],
-          [cType.hash, attester.getAddress(), undefined, false]
-        )
+        registry,
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [cType.hash, attester.getAddress(), undefined, 0]
       )
     )
 
@@ -261,12 +256,12 @@ describe('Claimer', () => {
   })
 
   it('create privacy enhanced presentation', async () => {
-    const request = (await Verifier.newRequestBuilder()
+    const { message: request } = await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(true, verifier, claimer.getPublicIdentity())).message
+      .finalize(true, verifier, claimer.getPublicIdentity())
 
     const presentation = await Claimer.createPresentation(
       claimer,
@@ -282,12 +277,12 @@ describe('Claimer', () => {
   })
 
   it('create public presentation', async () => {
-    const request = (await Verifier.newRequestBuilder()
+    const { message: request } = await Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
-      .finalize(false, verifier, claimer.getPublicIdentity())).message
+      .finalize(false, verifier, claimer.getPublicIdentity())
 
     const presentation = await Claimer.createPresentation(
       claimer,

@@ -1,8 +1,8 @@
 import * as u8aUtil from '@polkadot/util/u8a'
-import Identity from './Identity'
 import { coToUInt8 } from '../crypto/Crypto'
 import constants from '../test/constants'
 import AttesterIdentity from './AttesterIdentity'
+import Identity from './Identity'
 import PublicIdentity from './PublicIdentity'
 
 describe('Identity', () => {
@@ -17,7 +17,6 @@ describe('Identity', () => {
       '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu'
     )
 
-    // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.signKeyringPair.publicKey)).toEqual(
       '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee'
     )
@@ -32,17 +31,13 @@ describe('Identity', () => {
     const bob = await Identity.buildFromMnemonic()
 
     expect(alice.signPublicKeyAsHex).not.toBeFalsy()
-    // @ts-ignore
     expect(alice.boxKeyPair.publicKey).not.toBeFalsy()
-    // @ts-ignore
     expect(alice.boxKeyPair.secretKey).not.toBeFalsy()
     expect(alice.seed).not.toBeFalsy()
     expect(alice.seedAsHex).not.toBeFalsy()
 
     expect(alice.signPublicKeyAsHex).not.toEqual(bob.signPublicKeyAsHex)
-    // @ts-ignore
     expect(alice.getBoxPublicKey()).not.toEqual(bob.getBoxPublicKey())
-    // @ts-ignore
     expect(alice.boxKeyPair.secretKey).not.toEqual(bob.boxKeyPair.secretKey)
     expect(alice.seed).not.toEqual(bob.seed)
     expect(alice.seedAsHex).not.toEqual(bob.seedAsHex)
@@ -53,25 +48,21 @@ describe('Identity', () => {
       'taxi toddler rally tonight certain tired program settle topple what execute few'
     const alice = await Identity.buildFromMnemonic(expectedPhrase)
 
-    // @ts-ignore
     expect(alice.signPublicKeyAsHex).toEqual(
-      '0x3cd649d521d0fa29da940accd9944b60ec72948e2666adb84493b3e35303fb29'
+      '0x89bd53e9cde92516291a674475f41cc3d66f3db97463c92252e5c5b575ab9d0c'
     )
 
-    // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.boxKeyPair.publicKey)).toEqual(
-      '0x7dbec771d890b6b15456a407771eef290119a164a60158cf76970168d362304d'
+      '0xac6f5e0780a4e38f1b2705eef3485e7a588b9ff98d7ee7222b7f1fed4d835145'
     )
-    // @ts-ignore
     expect(u8aUtil.u8aToHex(alice.boxKeyPair.secretKey)).toEqual(
-      '0x0eaa3cae227044959659476bcbffafd38b2acb201c9cf63f079284f76bf5d28f'
+      '0x7329c426ed20a35f0486645f2f2b72f59db38319444c88c59c62108f50655261'
     )
   })
 
   it('should have different keys for signing and boxing', async () => {
     const alice = await Identity.buildFromMnemonic()
     expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
-      // @ts-ignore
       alice.boxKeyPair.publicKey
     )
   })
@@ -93,7 +84,6 @@ describe('Identity', () => {
   it('should have different keys for signing and boxing', async () => {
     const alice = await Identity.buildFromMnemonic()
     expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
-      // @ts-ignore
       alice.boxKeyPair.publicKey
     )
   })
@@ -101,8 +91,8 @@ describe('Identity', () => {
   it('should initiate attestation with gabi keys (PE)', async () => {
     const alice = await AttesterIdentity.buildFromMnemonic(undefined, {
       key: {
-        publicKey: constants.PUBLIC_KEY.valueOf(),
-        privateKey: constants.PRIVATE_KEY.valueOf(),
+        publicKey: constants.PUBLIC_KEY.toString(),
+        privateKey: constants.PRIVATE_KEY.toString(),
       },
     })
 

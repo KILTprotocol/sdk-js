@@ -1,10 +1,10 @@
-import { Option, Tuple, H256 } from '@polkadot/types'
+import { Option, Tuple, TypeRegistry } from '@polkadot/types'
+import AccountId from '@polkadot/types/generic/AccountId'
 import Bool from '@polkadot/types/primitive/Bool'
 import U32 from '@polkadot/types/primitive/U32'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
 import Identity from '../identity/Identity'
-import DelegationNode from './DelegationNode'
 import { Permission } from '../types/Delegation'
+import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
@@ -16,6 +16,7 @@ beforeAll(async () => {
 })
 
 describe('Delegation', () => {
+  const registry = new TypeRegistry()
   it('delegation generate hash', () => {
     const node = new DelegationNode(
       '0x0000000000000000000000000000000000000000000000000000000000000001',
@@ -38,7 +39,6 @@ describe('Delegation', () => {
       [Permission.ATTEST, Permission.DELEGATE],
       'myParentNodeId'
     )
-    // @ts-ignore
     const permissions: Uint8Array = permissionsAsBitset(node)
     const expected: Uint8Array = new Uint8Array(4)
     expected[0] = 3
@@ -47,20 +47,22 @@ describe('Delegation', () => {
 
   it('delegation verify / revoke', async () => {
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations = jest.fn(
-      async id => {
+      async (id) => {
         if (id === 'success') {
           return new Option(
+            registry,
             Tuple.with(
               // (root-id, parent-id?, account, permissions, revoked)
-              [H256, 'Option<H256>', AccountId, U32, Bool]
+              ['H256', 'Option<H256>', AccountId, U32, Bool]
             ),
             ['myRootId', null, identityAlice.getAddress(), 1, false]
           )
         }
         return new Option(
+          registry,
           Tuple.with(
             // (root-id, parent-id?, account, permissions, revoked)
-            [H256, 'Option<H256>', AccountId, U32, Bool]
+            ['H256', 'Option<H256>', AccountId, U32, Bool]
           ),
           ['myRootId', null, identityAlice.getAddress(), 1, true]
         )
@@ -98,9 +100,10 @@ describe('Delegation', () => {
   it('get delegation root', async () => {
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
       new Option(
+        registry,
         Tuple.with(
           // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          [H256, AccountId, Bool]
+          ['H256', AccountId, Bool]
         ),
         [
           '0x1234000000000000000000000000000000000000000000000000000000000000',

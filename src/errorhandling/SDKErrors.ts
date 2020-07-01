@@ -78,10 +78,13 @@ export const ERROR_CTYPE_HASH_NOT_PROVIDED: () => SDKError = () => {
   )
 }
 
-export const ERROR_CTYPE_ID_NOT_MATCHING: () => SDKError = () => {
+export const ERROR_CTYPE_ID_NOT_MATCHING: (
+  fromSchema: string,
+  provided: string
+) => SDKError = (fromSchema: string, provided: string) => {
   return new SDKError(
     ErrorCode.ERROR_CTYPE_ID_NOT_MATCHING,
-    'Provided and generated $id are not matching'
+    `Provided $id "${provided}" and schema $id "${fromSchema}" are not matching`
   )
 }
 
@@ -442,9 +445,9 @@ export const ERROR_DECOMPRESSION_ARRAY: (type?: string) => SDKError = (
 }
 
 export const ERROR_COMPRESS_OBJECT: (
-  object?: object,
+  object?: Record<string, any>,
   type?: string
-) => SDKError = (object?: object, type?: string) => {
+) => SDKError = (object?: Record<string, unknown>, type?: string) => {
   if (object && type) {
     return new SDKError(
       ErrorCode.ERROR_COMPRESS_OBJECT,

@@ -1,17 +1,17 @@
-import Bool from '@polkadot/types/primitive/Bool'
-import AccountId from '@polkadot/types/primitive/Generic/AccountId'
-import { Tuple, Option } from '@polkadot/types/codec'
-import { Text, H256 } from '@polkadot/types'
 import * as gabi from '@kiltprotocol/portablegabi'
+import { TypeRegistry } from '@polkadot/types'
+import { Option, Tuple } from '@polkadot/types/codec'
+import AccountId from '@polkadot/types/generic/AccountId'
+import Bool from '@polkadot/types/primitive/Bool'
 import {
-  AttesterIdentity,
-  Identity,
   Attester,
+  AttesterIdentity,
   Claimer,
-  MessageBodyType,
+  CType,
   IClaim,
   ICType,
-  CType,
+  Identity,
+  MessageBodyType,
 } from '..'
 import constants from '../test/constants'
 
@@ -20,6 +20,7 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 describe('Attester', () => {
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
+  const registry = new TypeRegistry()
   let attester: AttesterIdentity
   let claimer: Identity
   let acc: gabi.Accumulator
@@ -28,8 +29,8 @@ describe('Attester', () => {
   beforeAll(async () => {
     attester = await AttesterIdentity.buildFromURI('//Alice', {
       key: {
-        publicKey: constants.PUBLIC_KEY.valueOf(),
-        privateKey: constants.PRIVATE_KEY.valueOf(),
+        publicKey: constants.PUBLIC_KEY.toString(),
+        privateKey: constants.PRIVATE_KEY.toString(),
       },
     })
 
@@ -52,11 +53,9 @@ describe('Attester', () => {
   it('Issue privacy enhanced attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
-        Tuple,
-        new Tuple(
-          [H256, AccountId, Text, Bool],
-          [cType.hash, attester.getAddress(), undefined, false]
-        )
+        registry,
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [cType.hash, attester.getAddress(), undefined, 0]
       )
     )
 
@@ -111,11 +110,9 @@ describe('Attester', () => {
   it('Issue only public attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       new Option(
-        Tuple,
-        new Tuple(
-          [H256, AccountId, Text, Bool],
-          [cType.hash, attester.getAddress(), undefined, false]
-        )
+        registry,
+        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
+        [cType.hash, attester.getAddress(), undefined, 0]
       )
     )
 
@@ -227,21 +224,25 @@ describe('Attester', () => {
     const oldAcc = attester.getAccumulator()
     await Attester.revokeAttestation(attester, revocationHandle)
     // accumulator should not change!
-    expect(attester.getAccumulator().valueOf()).toEqual(oldAcc.valueOf())
+    expect(attester.getAccumulator().toString()).toEqual(oldAcc.toString())
   })
 
   it('build accumulator', async () => {
     const tAcc = await Attester.buildAccumulator(attester)
     expect(tAcc).toBeDefined()
   })
-
-  it('update accumulator', async () => {
-    await Attester.updateAccumulator(attester, acc)
-    // TODO: not sure why this fails
-    // expect(
-    //   blockchainApi.tx.portablegabi.updateAccumulator.mock.calls.length
-    // ).toEqual(1)
+  it('get accumulator', async () => {
+    expect(attester.getAccumulator()).toBeDefined()
+    expect(attester.getAccumulator()).toBeInstanceOf(gabi.Accumulator)
   })
-
-  it.todo('get accumulator')
+  it('update accumulator', async () => {
+    const beforeUpdate = attester.getAccumulator()
+    await attester.updateAccumulator(acc)
+    expect(
+      blockchainApi.tx.portablegabi.updateAccumulator.mock.calls.length
+    ).toEqual(1)
+    expect(attester.getAccumulator()).toBeDefined()
+    expect(attester.getAccumulator()).toBeInstanceOf(gabi.Accumulator)
+    expect(attester.getAccumulator()).not.toStrictEqual(beforeUpdate)
+  })
 })

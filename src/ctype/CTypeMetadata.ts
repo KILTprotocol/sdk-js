@@ -4,10 +4,10 @@
  * @preferred
  */
 
-import ICTypeMetadata from '../types/CTypeMetadata'
-import { MetadataModel } from './CTypeSchema'
-import CTypeUtils from './CType.utils'
 import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
+import ICTypeMetadata from '../types/CTypeMetadata'
+import CTypeUtils from './CType.utils'
+import { MetadataModel } from './CTypeSchema'
 
 export default class CTypeMetadata implements ICTypeMetadata {
   public ctypeHash: ICTypeMetadata['ctypeHash']
