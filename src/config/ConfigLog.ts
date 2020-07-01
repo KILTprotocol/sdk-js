@@ -15,9 +15,8 @@ import {
   LogGroupControlSettings,
 } from 'typescript-logging'
 
-// Create options instance and specify 2 LogGroupRules:
-// * One for any logger with a name starting with model, to log on debug
-// * The second one for anything else to log on info
+// Create options instance and specify 1 LogGroupRule:
+// * LogLevel Error on default, env DEBUG = 'true' changes Level to Debug.
 const options = new LoggerFactoryOptions().addLogGroupRule(
   new LogGroupRule(
     new RegExp('.+'),
@@ -34,17 +33,22 @@ export const factory = LFService.createNamedLoggerFactory(
   options
 )
 
-export function modifyLogLevel(level: number): void {
-  const control = getLogControl()
-  control.listFactories()
+/**
+ *  Changes all existing Loggers of our default Factory with id 0 to the intended Level.
+ *
+ * @param level The intended LogLevel.
+ */
+export function modifyLogLevel(level: LogLevel): void {
   let actualLevel
   if (level < 0) {
     actualLevel = 0
   } else if (level > 5) {
     actualLevel = 5
   } else actualLevel = level
-  control.getLoggerFactoryControl(0).change({
-    group: 'all',
-    logLevel: LogLevel[actualLevel],
-  } as LogGroupControlSettings)
+  getLogControl()
+    .getLoggerFactoryControl(0)
+    .change({
+      group: 'all',
+      logLevel: LogLevel[actualLevel],
+    } as LogGroupControlSettings)
 }
