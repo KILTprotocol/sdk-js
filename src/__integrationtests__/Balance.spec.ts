@@ -39,7 +39,7 @@ describe('when there is a dev chain with a faucet', () => {
 
   it('should have enough coins available on the faucet', async () => {
     const balance = await getBalance(faucet.getAddress())
-    expect(balance.gt(new BN(100000000))).toBeTruthy()
+    expect(balance.gt(new BN(100_000_000))).toBeTruthy()
     // console.log(`Faucet has ${Number(balance)} micro Kilt`)
   })
 
@@ -76,7 +76,7 @@ describe('when there is a dev chain with a faucet', () => {
     ).toBeTruthy()
     expect(balanceIdent.toNumber()).toBe(MIN_TRANSACTION.toNumber())
     expect(funny).toBeCalled()
-  }, 15000)
+  }, 30_000)
 })
 
 describe('When there are haves and have-nots', () => {
@@ -96,7 +96,7 @@ describe('When there are haves and have-nots', () => {
     await makeTransfer(richieRich, stormyD.getAddress(), MIN_TRANSACTION)
     const balanceTo = await getBalance(stormyD.getAddress())
     expect(balanceTo.toNumber()).toBe(MIN_TRANSACTION.toNumber())
-  }, 30_000)
+  }, 40_000)
 
   it('should not accept transactions from identity with zero balance', async () => {
     const originalBalance = await getBalance(stormyD.getAddress())

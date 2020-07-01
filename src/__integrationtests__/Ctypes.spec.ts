@@ -44,7 +44,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const bobbyBroke = await Identity.buildFromMnemonic()
     await expect(ctype.store(bobbyBroke)).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
-  }, 20000)
+  }, 20_000)
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
@@ -55,7 +55,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     ])
     ctype.owner = ctypeCreator.getAddress()
     await expect(ctype.verifyStored()).resolves.toBeTruthy()
-  }, 20000)
+  }, 40_000)
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
@@ -65,7 +65,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.getAddress())
-  }, 30000)
+  }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {
     const iAmNotThere = CType.fromSchema({
