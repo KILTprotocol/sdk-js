@@ -18,6 +18,8 @@ import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { revoke, query, store } from './Attestation.chain'
 import IPublicIdentity from '../types/PublicIdentity'
 import AttestationUtils from './Attestation.utils'
+import DelegationRootNode from '../delegation/DelegationRootNode'
+import DelegationNode from '../delegation/DelegationNode'
 
 export default class Attestation implements IAttestation {
   /**
@@ -91,6 +93,30 @@ export default class Attestation implements IAttestation {
       owner: attesterPublicIdentity.address,
       revoked: false,
     })
+  }
+
+  /**
+   * [STATIC] [ASYNC] Tries to query the delegationId and if successful query the rootId.
+   *
+   * @param delegationId - The Id of the [[Delegation]] stored in [[Attestation]].
+   * @returns A promise of either null if querying was not successful or the affiliated [[DelegationRootNode]].
+   */
+  public static async getDelegationRoot(
+    delegationId: IAttestation['delegationId'] | null
+  ): Promise<DelegationRootNode | null> {
+    if (delegationId) {
+      const delegationNode: DelegationNode | null = await DelegationNode.query(
+        delegationId
+      )
+      if (delegationNode) {
+        return delegationNode.getRoot()
+      }
+    }
+    return null
+  }
+
+  public async getDelegationRoot(): Promise<DelegationRootNode | null> {
+    return Attestation.getDelegationRoot(this.delegationId)
   }
 
   /**
