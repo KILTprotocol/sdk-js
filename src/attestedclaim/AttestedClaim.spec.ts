@@ -52,10 +52,10 @@ async function buildAttestedClaim(
     attester.getPublicIdentity()
   )
   // combine to attested claim
-  const attestedClaim = new AttestedClaim({
-    request: requestForAttestation,
-    attestation: testAttestation,
-  })
+  const attestedClaim = AttestedClaim.fromRequestAndAttestation(
+    requestForAttestation,
+    testAttestation
+  )
   return attestedClaim
 }
 
@@ -161,5 +161,16 @@ describe('RequestForAttestation', () => {
     expect(() => {
       legitimation.compress()
     }).toThrow()
+  })
+  it('Typeguard should return true on complete AttestedClaims', async () => {
+    const testAttestation = await buildAttestedClaim(
+      identityAlice,
+      identityBob,
+      {},
+      []
+    )
+    expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeTruthy()
+    delete testAttestation.attestation.claimHash
+    expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeFalsy()
   })
 })
