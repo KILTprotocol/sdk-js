@@ -268,4 +268,14 @@ describe('Attestation', () => {
       SDKErrors.ERROR_ADDRESS_INVALID(malformedAddress.owner, 'owner')
     )
   })
+  it('Typeguard should return true on complete Attestations', () => {
+    const attestation = Attestation.fromRequestAndPublicIdentity(
+      requestForAttestation,
+      identityAlice.getPublicIdentity()
+    )
+    expect(Attestation.isIAttestation(attestation)).toBeTruthy()
+    expect(
+      Attestation.isIAttestation({ ...attestation, owner: '' })
+    ).toBeFalsy()
+  })
 })
