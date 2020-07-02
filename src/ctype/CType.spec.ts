@@ -231,4 +231,8 @@ describe('blank ctypes', () => {
         .message.rootHash
     )
   })
+  it('typeguard returns true or false for complete or incomplete CTypes', () => {
+    expect(CType.isICType(ctype1)).toBeTruthy()
+    expect(CType.isICType({ ...ctype2, owner: '' })).toBeFalsy()
+  })
 })
