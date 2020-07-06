@@ -52,10 +52,10 @@ async function buildAttestedClaim(
     attester.getPublicIdentity()
   )
   // combine to attested claim
-  const attestedClaim = new AttestedClaim({
-    request: requestForAttestation,
-    attestation: testAttestation,
-  })
+  const attestedClaim = AttestedClaim.fromRequestAndAttestation(
+    requestForAttestation,
+    testAttestation
+  )
   return attestedClaim
 }
 
@@ -161,5 +161,44 @@ describe('RequestForAttestation', () => {
     expect(() => {
       legitimation.compress()
     }).toThrow()
+  })
+  it('Typeguard should return true on complete AttestedClaims', async () => {
+    const testAttestation = await buildAttestedClaim(
+      identityAlice,
+      identityBob,
+      {},
+      []
+    )
+    expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeTruthy()
+    delete testAttestation.attestation.claimHash
+
+    expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeFalsy()
+  })
+  it('Should throw error when attestation is from different request', async () => {
+    const testAttestation = await buildAttestedClaim(
+      identityAlice,
+      identityBob,
+      {},
+      []
+    )
+    expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeTruthy()
+    const { cTypeHash } = testAttestation.attestation
+    testAttestation.attestation.cTypeHash = [
+      cTypeHash.slice(0, 15),
+      ((parseInt(cTypeHash.charAt(15), 16) + 1) % 16).toString(16),
+      cTypeHash.slice(16),
+    ].join('')
+    expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeFalsy()
+  })
+  it('returns Claim Hash of the attestation', async () => {
+    const testAttestation = await buildAttestedClaim(
+      identityAlice,
+      identityBob,
+      {},
+      []
+    )
+    expect(testAttestation.getHash()).toEqual(
+      testAttestation.attestation.claimHash
+    )
   })
 })

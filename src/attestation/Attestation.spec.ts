@@ -106,7 +106,7 @@ describe('Attestation', () => {
       requestForAttestation,
       identityAlice.getPublicIdentity()
     )
-    expect(await Attestation.verify(attestation)).toBeFalsy()
+    expect(await attestation.verify()).toBeFalsy()
   })
 
   it('compresses and decompresses the attestation object', () => {

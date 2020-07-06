@@ -180,7 +180,9 @@ export default class Attestation implements IAttestation {
     claimHash: string = attestation.claimHash
   ): Promise<boolean> {
     // Query attestation by claimHash. null if no attestation is found on-chain for this hash
-    const chainAttestation: Attestation | null = await query(claimHash)
+    const chainAttestation: Attestation | null = await Attestation.query(
+      claimHash
+    )
     return !!(
       chainAttestation !== null &&
       chainAttestation.owner === attestation.owner &&
