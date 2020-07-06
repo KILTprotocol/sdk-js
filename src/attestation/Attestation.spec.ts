@@ -106,7 +106,7 @@ describe('Attestation', () => {
       requestForAttestation,
       identityAlice.getPublicIdentity()
     )
-    expect(await Attestation.verify(attestation)).toBeFalsy()
+    expect(await attestation.verify()).toBeFalsy()
   })
 
   it('compresses and decompresses the attestation object', () => {
@@ -267,5 +267,15 @@ describe('Attestation', () => {
     expect(() => AttestationUtils.errorCheck(malformedAddress)).toThrowError(
       SDKErrors.ERROR_ADDRESS_INVALID(malformedAddress.owner, 'owner')
     )
+  })
+  it('Typeguard should return true on complete Attestations', () => {
+    const attestation = Attestation.fromRequestAndPublicIdentity(
+      requestForAttestation,
+      identityAlice.getPublicIdentity()
+    )
+    expect(Attestation.isIAttestation(attestation)).toBeTruthy()
+    expect(
+      Attestation.isIAttestation({ ...attestation, owner: '' })
+    ).toBeFalsy()
   })
 })

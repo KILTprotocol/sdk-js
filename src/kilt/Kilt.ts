@@ -9,10 +9,10 @@
  * @preferred
  */
 
-import { IBlockchainApi } from '../blockchain/Blockchain'
+import Blockchain from '../blockchain/Blockchain'
 import { clearCache, getCached } from '../blockchainApiConnection'
 
-export function connect(host: string): Promise<IBlockchainApi> {
+export function connect(host: string): Promise<Blockchain> {
   return getCached(host)
 }
 
