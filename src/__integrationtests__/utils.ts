@@ -16,7 +16,7 @@ export const MIN_TRANSACTION = new BN(100_000_000)
 export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 
 // Dev Faucet account seed phrase
-const FaucetSeed =
+export const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 
 export const wannabeFaucet = Identity.buildFromURI(FaucetSeed)
