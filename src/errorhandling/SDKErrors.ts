@@ -22,6 +22,7 @@ export enum ErrorCode {
   ERROR_PE_MISSING = 10011,
   ERROR_PE_CREDENTIAL_MISSING = 10012,
   ERROR_CTYPE_ID_NOT_MATCHING = 10013,
+  ERROR_PE_VERIFICATION = 10014,
 
   ERROR_ADDRESS_TYPE = 20001,
   ERROR_HASH_TYPE = 20002,
@@ -511,4 +512,19 @@ export const ERROR_MESSAGE_TYPE: (
 
 export const ERROR_UNKNOWN: () => SDKError = () => {
   return new SDKError(ErrorCode.ERROR_UNKNOWN, 'an unknown error ocurred')
+}
+
+export const ERROR_PE_VERIFICATION: (
+  accFailure: boolean,
+  keyFailure: boolean
+) => SDKError = (
+  ...[accFailure, keyFailure]: Parameters<typeof ERROR_PE_VERIFICATION>
+) => {
+  return new SDKError(
+    ErrorCode.ERROR_PE_VERIFICATION,
+    `Received privacy enhanced presentation with insufficient data. 
+    \n\tMissing accumulators? ${accFailure}
+    \n\tMissing attester public keys? ${keyFailure}
+    `
+  )
 }
