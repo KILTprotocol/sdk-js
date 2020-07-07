@@ -1,16 +1,18 @@
 import Blockchain from '../blockchain'
-import getCached, { clearCache } from './BlockchainApiConnection'
+import getCached from './BlockchainApiConnection'
+import { disconnect } from '../kilt'
 
 const DEVNET_WS_ADDRESS = 'ws://full-nodes.devnet.kilt.io:9944/'
 
-let blockchain: Blockchain | undefined
+let blockchain: Blockchain
 beforeAll(async () => {
   blockchain = await getCached(DEVNET_WS_ADDRESS)
 })
 
 async function timeboxCache(): Promise<number> {
   const start = new Date().getTime()
-  await getCached(DEVNET_WS_ADDRESS)
+  // only initiates new connection after first call
+  await disconnect(DEVNET_WS_ADDRESS)
   return new Date().getTime() - start
 }
 
@@ -25,12 +27,11 @@ describe('BlockchainApiConnection', () => {
   it('Should clear cache', async () => {
     // cache already exists
     await expect(timeboxCache()).resolves.toBeLessThan(10)
-    clearCache()
     // has to build new connection
     await expect(timeboxCache()).resolves.toBeGreaterThan(100)
   })
 })
 
-afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+afterAll(async () => {
+  await disconnect(DEVNET_WS_ADDRESS)
 })
