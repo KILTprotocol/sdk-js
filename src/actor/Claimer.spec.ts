@@ -12,10 +12,16 @@ import {
   Verifier,
 } from '..'
 import Credential from '../credential/Credential'
+import {
+  ERROR_MESSAGE_TYPE,
+  ERROR_PE_CREDENTIAL_MISSING,
+  ERROR_PE_MISMATCH,
+} from '../errorhandling/SDKErrors'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
-import { MessageBodyType } from '../messaging/Message'
+import Message, { MessageBodyType } from '../messaging/Message'
 import constants from '../test/constants'
+import { ClaimerAttestationSession } from './Claimer'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -296,5 +302,104 @@ describe('Claimer', () => {
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
     )
     expect(Array.isArray(presentation.body.content))
+  })
+  describe('Negative tests', () => {
+    describe('create presentation', () => {
+      // fakes the input for Claimer.createPresentation
+      const fakePresentation = ({
+        messageBody = MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        allowPE = false,
+        credentials = [],
+      }: {
+        messageBody?: MessageBodyType
+        allowPE?: boolean
+        credentials?: Credential[]
+      }): Promise<Message> => {
+        return Claimer.createPresentation(
+          claimer,
+          ({
+            body: {
+              type: messageBody, // should be default value
+              content: { allowPE },
+            },
+          } as unknown) as Message,
+          verifier.getPublicIdentity(),
+          credentials,
+          [],
+          true
+        )
+      }
+      it('Should throw when message body type does not match', () => {
+        return expect(
+          fakePresentation({
+            messageBody: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
+          })
+        ).rejects.toThrowError(
+          ERROR_MESSAGE_TYPE(
+            MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
+            MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
+          )
+        )
+      })
+      it('Should throw when PE is required but not allowed', () => {
+        return expect(fakePresentation({})).rejects.toThrowError(
+          ERROR_PE_MISMATCH()
+        )
+      })
+      it('Should throw when PE is allowed and required but credentials have nulls', () => {
+        return expect(
+          fakePresentation({
+            allowPE: true,
+            credentials: [
+              ({ privacyCredential: null } as unknown) as Credential,
+            ],
+          })
+        ).rejects.toThrowError(ERROR_PE_CREDENTIAL_MISSING())
+      })
+      it('Should throw when PE is required but not allowed', () => {
+        return expect(fakePresentation({})).rejects.toThrowError(
+          ERROR_PE_MISMATCH()
+        )
+      })
+    })
+    it('Should throw when message body type does not match in requestAttestation', () => {
+      return expect(
+        Claimer.requestAttestation(
+          (undefined as unknown) as IClaim,
+          attester,
+          attester.getPublicIdentity(),
+          {
+            initiateAttestationMsg: {
+              body: {
+                type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
+              },
+            } as Message,
+          }
+        )
+      ).rejects.toThrowError(
+        ERROR_MESSAGE_TYPE(
+          MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
+          MessageBodyType.INITIATE_ATTESTATION
+        )
+      )
+    })
+    it('Should throw when message body type does not match in buildCredential', () => {
+      return expect(
+        Claimer.buildCredential(
+          attester,
+          {
+            body: {
+              type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
+            },
+          } as Message,
+          {} as ClaimerAttestationSession
+        )
+      ).rejects.toThrowError(
+        ERROR_MESSAGE_TYPE(
+          MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
+          MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+        )
+      )
+    })
   })
 })
