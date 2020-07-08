@@ -46,6 +46,7 @@ function decode(
 ): Attestation | null {
   assertCodecIsType(encoded, [
     'Option<(Hash,AccountId,Option<DelegationNodeId>,bool)>',
+    'Option<(H256,AccountId,Option<H256>,bool)>',
   ])
   if (encoded instanceof Option || hasNonNullByte(encoded)) {
     const attestationTuple = (encoded as IChainAttestation).toJSON()
