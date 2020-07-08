@@ -5,7 +5,7 @@
  */
 
 import { Identity } from '..'
-import { IBlockchainApi } from '../blockchain/Blockchain'
+import Blockchain from '../blockchain/Blockchain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
@@ -13,7 +13,7 @@ import { ERROR_CTYPE_ALREADY_EXISTS } from '../errorhandling/ExtrinsicError'
 import ICType from '../types/CType'
 import { wannabeFaucet } from './utils'
 
-let blockchain: IBlockchainApi | undefined
+let blockchain: Blockchain | undefined
 beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })

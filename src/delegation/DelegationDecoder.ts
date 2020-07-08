@@ -35,7 +35,7 @@ interface IChainRootDelegation extends Codec {
 export function decodeRootDelegation(
   encoded: Option<Tuple>
 ): RootDelegationRecord | null {
-  assertCodecIsType(encoded, ['Option<(H256,AccountId,bool)>'])
+  assertCodecIsType(encoded, ['Option<(Hash,AccountId,bool)>'])
   if (encoded instanceof Option || hasNonNullByte(encoded)) {
     const json = (encoded as IChainRootDelegation).toJSON()
     if (json instanceof Array) {

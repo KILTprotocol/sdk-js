@@ -8,7 +8,7 @@ import { IAttestedClaim, IClaim } from '..'
 import Attestation from '../attestation/Attestation'
 import { revoke } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { IBlockchainApi } from '../blockchain/Blockchain'
+import Blockchain from '../blockchain/Blockchain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import Credential from '../credential/Credential'
@@ -28,7 +28,7 @@ import {
   wannabeFaucet,
 } from './utils'
 
-let blockchain: IBlockchainApi | undefined
+let blockchain: Blockchain | undefined
 beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
