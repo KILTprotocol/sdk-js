@@ -30,7 +30,7 @@ export async function getChildIds(
 ): Promise<string[]> {
   const blockchain = await getCached()
   const childIds = await blockchain.api.query.delegation.children<Vec<H256>>(id)
-  assertCodecIsType(childIds, ['Vec<DelegationNodeId>'])
+  assertCodecIsType(childIds, ['Vec<DelegationNodeId>', 'Vec<H256>'])
   return childIds.map((hash) => hash.toString())
 }
 
