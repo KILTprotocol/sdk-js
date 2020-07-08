@@ -16,7 +16,8 @@
     "style:fix": "yarn style --write",
     "build": "tsc --declaration",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
-    "buildAndPublish": "yarn build && npm publish --access=public"
+    "buildAndPublish": "npm publish --access=public",
+    "prepublishOnly": "yarn build"
   },
   "husky": {
     "hooks": {
@@ -63,6 +64,8 @@
     "eslint-plugin-tsc": "^1.2.0",
     "husky": "^4.2.5",
     "jest": "^26.0.1",
+    "jest-docblock": "^26.0.0",
+    "jest-runner": "^26.0.1",
     "jest-runner-groups": "^2.0.1",
     "prettier": "^2.0.5",
     "ts-jest": "^26.1.1",
@@ -83,8 +86,6 @@
     "@types/jsonabc": "^2.3.1",
     "ajv": "^6.12.2",
     "bn.js": "^5.1.2",
-    "jest-docblock": "^26.0.0",
-    "jest-runner": "^26.0.1",
     "jsonabc": "^2.3.1",
     "typescript-logging": "^0.6.4",
     "uuid": "^8.1.0"
