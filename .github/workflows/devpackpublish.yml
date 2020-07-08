@@ -17,7 +17,6 @@ jobs:
       - run: yarn install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: yarn build
       - run: yarn version --no-git-tag-version --prerelease --preid $(git rev-parse --short HEAD)
       - run: npm publish
         env:
