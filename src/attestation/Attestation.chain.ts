@@ -44,7 +44,10 @@ function decode(
   encoded: Option<Tuple>,
   claimHash: string // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
-  assertCodecIsType(encoded, ['Option<(H256,AccountId,Option<H256>,bool)>'])
+  assertCodecIsType(encoded, [
+    'Option<(Hash,AccountId,Option<DelegationNodeId>,bool)>',
+    'Option<(H256,AccountId,Option<H256>,bool)>',
+  ])
   if (encoded instanceof Option || hasNonNullByte(encoded)) {
     const attestationTuple = (encoded as IChainAttestation).toJSON()
     if (attestationTuple instanceof Array) {

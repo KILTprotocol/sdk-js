@@ -11,7 +11,7 @@ import { assertCodecIsType } from '../util/Decode'
 import { CodecWithId } from './DelegationDecoder'
 
 function decodeDelegatedAttestations(queryResult: Vec<H256>): string[] {
-  assertCodecIsType(queryResult, ['Vec<H256>'])
+  assertCodecIsType(queryResult, ['Vec<Hash>', 'Vec<H256>'])
   return queryResult.map((hash) => hash.toString())
 }
 
