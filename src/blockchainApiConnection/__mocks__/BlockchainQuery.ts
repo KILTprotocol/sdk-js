@@ -12,19 +12,11 @@ import U64 from '@polkadot/types/primitive/U64'
 import U8 from '@polkadot/types/primitive/U8'
 import { Codec } from '@polkadot/types/types'
 import { Constructor } from '@polkadot/util/types'
+import { CUSTOM_TYPES } from '../BlockchainApiConnection'
 
 const TYPE_REGISTRY = new TypeRegistry()
 TYPE_REGISTRY.register({
-  DelegationNodeId: 'Hash',
-  PublicSigningKey: 'Hash',
-  PublicBoxKey: 'Hash',
-  Permissions: 'u32',
-  ErrorCode: 'u16',
-  Signature: 'MultiSignature',
-  Address: 'AccountId',
-  LookupSource: 'AccountId',
-  BlockNumber: 'u64',
-  Index: 'u64',
+  ...CUSTOM_TYPES,
   GenericAccountId: 'AccountId',
 })
 export default TYPE_REGISTRY
@@ -79,7 +71,11 @@ const chainQueryReturnTuples: {
   },
   did: {
     // DID: account-id -> (public-signing-key, public-encryption-key, did-reference?)?
-    dIDs: Tuple.with(['Hash', 'Hash', Option.with(Bytes)]),
+    dIDs: Tuple.with([
+      TYPE_REGISTRY.getOrUnknown('PublicSigningKey'),
+      TYPE_REGISTRY.getOrUnknown('PublicBoxKey'),
+      Option.with(Bytes),
+    ]),
   },
   portablegabi: {
     // AccumulatorList: account-id -> [accumulators]?

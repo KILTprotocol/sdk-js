@@ -34,7 +34,9 @@ export function decodeDid(
   identifier: string,
   encoded: Option<Tuple>
 ): IDid | null {
-  assertCodecIsType(encoded, ['Option<(Hash,Hash,Option<Bytes>)>'])
+  assertCodecIsType(encoded, [
+    'Option<(PublicSigningKey,PublicBoxKey,Option<Bytes>)>',
+  ])
   if (encoded instanceof Option || hasNonNullByte(encoded)) {
     const decoded = (encoded as IEncodedDid).toJSON()
     if (decoded) {
