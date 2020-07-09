@@ -1,8 +1,4 @@
 import * as gabi from '@kiltprotocol/portablegabi'
-import { TypeRegistry } from '@polkadot/types'
-import { Option, Tuple } from '@polkadot/types/codec'
-import AccountId from '@polkadot/types/generic/AccountId'
-import Bool from '@polkadot/types/primitive/Bool'
 import {
   Attester,
   AttesterIdentity,
@@ -14,13 +10,13 @@ import {
   MessageBodyType,
 } from '..'
 import constants from '../test/constants'
+import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('Attester', () => {
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
-  const registry = new TypeRegistry()
   let attester: AttesterIdentity
   let claimer: Identity
   let acc: gabi.Accumulator
@@ -52,11 +48,12 @@ describe('Attester', () => {
 
   it('Issue privacy enhanced attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(
-        registry,
-        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
-        [cType.hash, attester.getAddress(), undefined, 0]
-      )
+      mockChainQueryReturn('attestation', 'attestations', [
+        cType.hash,
+        attester.getAddress(),
+        undefined,
+        0,
+      ])
     )
 
     const {
@@ -109,11 +106,12 @@ describe('Attester', () => {
 
   it('Issue only public attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(
-        registry,
-        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
-        [cType.hash, attester.getAddress(), undefined, 0]
-      )
+      mockChainQueryReturn<'attestation'>('attestation', 'attestations', [
+        cType.hash,
+        attester.getAddress(),
+        undefined,
+        0,
+      ])
     )
 
     const claim: IClaim = {

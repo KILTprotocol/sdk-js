@@ -1,13 +1,15 @@
-import { Option, Tuple, TypeRegistry, U8aFixed } from '@polkadot/types'
+import { U8aFixed } from '@polkadot/types'
+import TYPE_REGISTRY, {
+  mockChainQueryReturn,
+} from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import IPublicIdentity from '../types/PublicIdentity'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('PublicIdentity', () => {
-  const registry = new TypeRegistry()
-  const pubKey = new U8aFixed(registry, 'pub-key', 256)
-  const boxKey = new U8aFixed(registry, 'box-key', 256)
+  const pubKey = new U8aFixed(TYPE_REGISTRY, 'pub-key', 256)
+  const boxKey = new U8aFixed(TYPE_REGISTRY, 'box-key', 256)
 
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
@@ -15,29 +17,20 @@ describe('PublicIdentity', () => {
     async (id) => {
       switch (id) {
         case '1':
-          return new Option(
-            registry,
-            Tuple.with(
-              // (public-signing-key, public-encryption-key, did-reference?)
-              ['H256', 'H256', 'Option<Bytes>']
-            ),
-            [pubKey, boxKey, [14, 75, 23, 14, 55]]
-          )
+          return mockChainQueryReturn('did', 'dIDs', [
+            pubKey,
+            boxKey,
+            [14, 75, 23, 14, 55],
+          ])
         case '2':
-          return new Option(
-            registry,
-            Tuple.with(
-              // (public-signing-key, public-encryption-key, did-reference?)
-              ['H256', 'H256', 'Option<Bytes>']
-            ),
-            [pubKey, boxKey, undefined]
-          )
+          return mockChainQueryReturn('did', 'dIDs', [
+            pubKey,
+            boxKey,
+            undefined,
+          ])
 
         default:
-          return new Option(
-            registry,
-            Tuple.with(['H256', 'H256', 'Option<Bytes>'])
-          )
+          return mockChainQueryReturn('did', 'dIDs')
       }
     }
   )
