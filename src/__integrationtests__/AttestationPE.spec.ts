@@ -57,19 +57,126 @@ describe('Privacy enhanced claim, attestation, verification process', () => {
       claimer.getAddress()
     )
   }, 80_000)
+
   it('should get accumulator of attester', async () => {
     expect(accumulator).toBeDefined()
     expect(accumulator).toStrictEqual(attester.getAccumulator())
     expect(accumulator).toBeInstanceOf(Accumulator)
   })
-  describe('Attestation and verification', () => {
+
+  it('should attest and verify a PE claim from start to finish', async () => {
+    // attester initiates attestation
+    const {
+      session: attestersSession,
+      message: initiateAttestationMsg,
+    } = await Attester.initiateAttestation(
+      attester,
+      claimer.getPublicIdentity()
+    )
+    expect(attestersSession).toBeDefined()
+    expect(initiateAttestationMsg).toBeDefined()
+    expect(initiateAttestationMsg.body).toBeDefined()
+    expect(initiateAttestationMsg).toBeInstanceOf(Message)
+
+    // claimer requests attestation
+    const {
+      message: reqForAtt,
+      session: claimerSession,
+    } = await Claimer.requestAttestation(
+      claim,
+      claimer,
+      attester.getPublicIdentity(),
+      {
+        initiateAttestationMsg,
+      }
+    )
+    expect(reqForAtt).toBeDefined()
+    expect(reqForAtt.body).toBeDefined()
+    expect(reqForAtt).toBeInstanceOf(Message)
+    expect(claimerSession).toBeDefined()
+    expect(claimerSession).toHaveProperty('peSession')
+    expect(claimerSession).toHaveProperty('requestForAttestation')
+
+    // attester issues attestation
+    const {
+      revocationHandle,
+      message: submitAttestation,
+    } = await Attester.issueAttestation(
+      attester,
+      reqForAtt,
+      claimer.getPublicIdentity(),
+      attestersSession,
+      requirePE
+    )
+    expect(revocationHandle).toBeDefined()
+    expect(revocationHandle).toHaveProperty('attestation')
+    expect(revocationHandle).toHaveProperty('witness')
+    expect(submitAttestation).toBeDefined()
+    expect(submitAttestation.body).toBeDefined()
+    expect(submitAttestation).toBeInstanceOf(Message)
+
+    // claimer builds credential
+    const credential = await Claimer.buildCredential(
+      claimer,
+      submitAttestation,
+      claimerSession
+    )
+    expect(credential).toBeDefined()
+    expect(credential.attestation.cTypeHash).toBe(claim.cTypeHash)
+    expect(credential.privacyCredential).toBeDefined()
+    expect(credential.reqForAtt).toBeDefined()
+
+    // verifier initiates verification session
+    const {
+      session: verifierSession,
+      message: verifyReq,
+    } = await Verifier.newRequestBuilder()
+      .requestPresentationForCtype({
+        ctypeHash: credential.attestation.cTypeHash,
+        requestUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available
+        properties: ['age'],
+      })
+      .finalize(requirePE, verifier, claimer.getPublicIdentity())
+    expect(verifierSession).toBeDefined()
+    expect(verifierSession).toHaveProperty('privacyEnhancement')
+    expect(verifierSession).toHaveProperty('requestedProperties', [
+      {
+        ctype: claim.cTypeHash,
+        properties: ['claim.contents.age', 'claim.cTypeHash'],
+      },
+    ])
+    expect(verifierSession).toHaveProperty('allowedPrivacyEnhancement', true)
+    expect(verifyReq).toBeDefined()
+    expect(verifyReq.body).toBeDefined()
+    expect(verifyReq).toBeInstanceOf(Message)
+
+    // claimer creates presentation
+    const presentation = await Claimer.createPresentation(
+      claimer,
+      verifyReq,
+      verifier.getPublicIdentity(),
+      [credential],
+      [attester.getPublicIdentity()],
+      requirePE
+    )
+    expect(presentation).toBeDefined()
+    expect(presentation.body).toBeDefined()
+    expect(presentation).toBeInstanceOf(Message)
+  }, 80_000)
+
+  describe('Verification', () => {
     let attestersSession: AttesterAttestationSession
     let initiateAttestationMsg: Message
     let reqForAtt: Message
     let claimerSession: ClaimerAttestationSession
     let revocationHandle: IRevocationHandle
     let submitAttestation: Message
+    let credential: Credential
+    let verifierSession: Verifier.IVerifierSession
+    let verifyReq: Message
+    let presentation: Message
 
+    // errors in this setup will be caught in previous test
     beforeAll(async () => {
       // attester initiates attestation
       ;({
@@ -100,117 +207,103 @@ describe('Privacy enhanced claim, attestation, verification process', () => {
         attestersSession,
         requirePE
       ))
-    }, 40_000)
-    it('should be possible to make PE claim', async () => {
-      expect(reqForAtt).toBeDefined()
-      expect(reqForAtt).toBeInstanceOf(Message)
-    })
-    it('should be possible to attest PE claim', async () => {
-      expect(revocationHandle).toBeDefined()
-      expect(submitAttestation).toBeDefined()
-      expect(submitAttestation.body).toBeDefined()
-    })
-    describe('Verification', () => {
-      let credential: Credential
-      let verifierSession: Verifier.IVerifierSession
-      let verifyReq: Message
-      let presentation: Message
-      beforeAll(async () => {
-        // claimer builds credential
-        credential = await Claimer.buildCredential(
-          claimer,
-          submitAttestation,
-          claimerSession
-        )
-        // verifier initiates verification session
-        ;({
-          session: verifierSession,
-          message: verifyReq,
-        } = await Verifier.newRequestBuilder()
-          .requestPresentationForCtype({
-            ctypeHash: credential.attestation.cTypeHash,
-            requestUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available
-            properties: ['age'],
-          })
-          .finalize(requirePE, verifier, claimer.getPublicIdentity()))
-        // claimer creates presentation
-        presentation = await Claimer.createPresentation(
-          claimer,
-          verifyReq,
-          verifier.getPublicIdentity(),
-          [credential],
-          [attester.getPublicIdentity()],
-          requirePE
-        )
-      })
-      it('checks verification setup', () => {
-        expect(credential).toBeDefined()
-        expect(credential.privacyCredential).toBeDefined()
-        expect(credential.reqForAtt).toBeDefined()
-        expect(verifierSession).toBeDefined()
-        expect(verifyReq).toBeDefined()
-        expect(presentation).toBeDefined()
-      })
-      it('should be possible to verify PE claim', async () => {
-        // verifier checks presentation
-        const { verified, claims } = await Verifier.verifyPresentation(
-          presentation,
-          verifierSession,
-          [await Attester.getLatestAccumulator(attester.getPublicIdentity())],
-          [attester.getPublicIdentity()]
-        )
-        expect(verified).toBeTruthy()
-        expect(claims).toBeDefined()
-        expect(claims).toHaveLength(1)
-        expect(claims[0]).toHaveProperty('claim')
-        expect((claims[0] as any).claim.contents).toStrictEqual({
-          age: content.age,
+      // claimer builds credential
+      credential = await Claimer.buildCredential(
+        claimer,
+        submitAttestation,
+        claimerSession
+      )
+      // verifier initiates verification session
+      ;({
+        session: verifierSession,
+        message: verifyReq,
+      } = await Verifier.newRequestBuilder()
+        .requestPresentationForCtype({
+          ctypeHash: credential.attestation.cTypeHash,
+          requestUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available
+          properties: ['age'],
         })
-      })
-      it('should not verify revoked attestation', async () => {
-        const accumulatorBeforeRevocation = accumulator
-        await Attester.revokeAttestation(attester, revocationHandle)
-        // should update accumulator
-        expect(attester.getAccumulator()).not.toStrictEqual(
-          accumulatorBeforeRevocation
-        )
-        // should not verify with latest accumulator
-        const { verified: shouldBeRevoked } = await Verifier.verifyPresentation(
-          presentation,
-          verifierSession,
-          [await Attester.getLatestAccumulator(attester.getPublicIdentity())],
-          [attester.getPublicIdentity()]
-        )
-        expect(shouldBeRevoked).toBeFalsy()
-        // but should verify with outdated accumulator on which credential was still valid
-        const { verified: shouldBeTrue } = await Verifier.verifyPresentation(
-          presentation,
-          verifierSession,
-          [accumulatorBeforeRevocation],
-          [attester.getPublicIdentity()]
-        )
-        expect(shouldBeTrue).toBeTruthy()
-      }, 80_000)
+        .finalize(requirePE, verifier, claimer.getPublicIdentity()))
+      // claimer creates presentation
+      presentation = await Claimer.createPresentation(
+        claimer,
+        verifyReq,
+        verifier.getPublicIdentity(),
+        [credential],
+        [attester.getPublicIdentity()],
+        requirePE
+      )
+    }, 80_000)
 
-      it('should not reveal any non-public claimer data', async () => {
-        // compare two presentations on same credential from same claimer
-        const presentation2 = await Claimer.createPresentation(
-          claimer,
-          verifyReq,
-          verifier.getPublicIdentity(),
-          [credential],
-          [attester.getPublicIdentity()],
-          requirePE
-        )
-        // FIXME: At a later stage. For privacy enhancement, this should have length 1.
-        // But senderAddress and senderBoxPublicKey obviously match (currently)
-        // when created from same claimer identity
-        expect(
-          Object.entries(presentation).filter(
-            ([key, value]) => value === presentation2[key]
-          )
-        ).toHaveLength(3)
+    it('safety checks verification setup', () => {
+      expect(credential).toBeDefined()
+      expect(credential.privacyCredential).toBeDefined()
+      expect(credential.reqForAtt).toBeDefined()
+      expect(verifierSession).toBeDefined()
+      expect(verifyReq).toBeDefined()
+      expect(presentation).toBeDefined()
+    })
+
+    it('should be possible to verify PE claim', async () => {
+      // verifier checks presentation
+      const { verified, claims } = await Verifier.verifyPresentation(
+        presentation,
+        verifierSession,
+        [await Attester.getLatestAccumulator(attester.getPublicIdentity())],
+        [attester.getPublicIdentity()]
+      )
+      expect(verified).toBeTruthy()
+      expect(claims).toBeDefined()
+      expect(claims).toHaveLength(1)
+      expect(claims[0]).toHaveProperty('claim')
+      expect((claims[0] as any).claim.contents).toStrictEqual({
+        age: content.age,
       })
+    })
+
+    it('should not verify revoked attestation', async () => {
+      const accumulatorBeforeRevocation = accumulator
+      await Attester.revokeAttestation(attester, revocationHandle)
+      // should update accumulator
+      expect(attester.getAccumulator()).not.toStrictEqual(
+        accumulatorBeforeRevocation
+      )
+      // should not verify with latest accumulator
+      const { verified: shouldBeRevoked } = await Verifier.verifyPresentation(
+        presentation,
+        verifierSession,
+        [await Attester.getLatestAccumulator(attester.getPublicIdentity())],
+        [attester.getPublicIdentity()]
+      )
+      expect(shouldBeRevoked).toBeFalsy()
+      // but should verify with outdated accumulator on which credential was still valid
+      const { verified: shouldBeTrue } = await Verifier.verifyPresentation(
+        presentation,
+        verifierSession,
+        [accumulatorBeforeRevocation],
+        [attester.getPublicIdentity()]
+      )
+      expect(shouldBeTrue).toBeTruthy()
+    }, 80_000)
+
+    it('should not reveal any non-public claimer data', async () => {
+      // compare two presentations on same credential from same claimer
+      const presentation2 = await Claimer.createPresentation(
+        claimer,
+        verifyReq,
+        verifier.getPublicIdentity(),
+        [credential],
+        [attester.getPublicIdentity()],
+        requirePE
+      )
+      // FIXME: At a later stage. For privacy enhancement, this should have length 1.
+      // But senderAddress and senderBoxPublicKey obviously match (currently)
+      // when created from same claimer identity
+      expect(
+        Object.entries(presentation).filter(
+          ([key, value]) => value === presentation2[key]
+        )
+      ).toHaveLength(3)
     })
   })
 })
