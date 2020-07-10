@@ -1,7 +1,3 @@
-import { TypeRegistry } from '@polkadot/types'
-import { Option, Tuple } from '@polkadot/types/codec'
-import AccountId from '@polkadot/types/generic/AccountId'
-import Bool from '@polkadot/types/primitive/Bool'
 import {
   Attester,
   Claimer,
@@ -11,6 +7,7 @@ import {
   IRequestForAttestation,
   Verifier,
 } from '..'
+import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Credential from '../credential/Credential'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
@@ -34,7 +31,6 @@ describe('Verifier', () => {
   let credentialPE: Credential
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
-  const registry = new TypeRegistry()
 
   beforeAll(async () => {
     attester = await AttesterIdentity.buildFromURI('//Alice', {
@@ -71,16 +67,12 @@ describe('Verifier', () => {
     }
 
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(
-        registry,
-        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
-        [
-          '"0xde9f624875aa620d06434603787a40c8cd02cc25c7b775cf50de8a3a96bbeafa"', // ctype hash
-          attester.getAddress(), // Account
-          null, // delegation-id?
-          false, // revoked flag
-        ]
-      )
+      mockChainQueryReturn('attestation', 'attestations', [
+        '"0xde9f624875aa620d06434603787a40c8cd02cc25c7b775cf50de8a3a96bbeafa"', // ctype hash
+        attester.getAddress(), // Account
+        undefined, // delegation-id?
+        false, // revoked flag
+      ])
     )
 
     const {

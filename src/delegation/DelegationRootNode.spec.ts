@@ -1,8 +1,6 @@
-import { Option, Tuple, TypeRegistry } from '@polkadot/types'
-import AccountId from '@polkadot/types/generic/AccountId'
-import Bool from '@polkadot/types/primitive/Bool'
 import { Crypto, Identity } from '..'
 import getCached from '../blockchainApiConnection'
+import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import DelegationRootNode from './DelegationRootNode'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
@@ -11,31 +9,25 @@ describe('Delegation', () => {
   let identityAlice: Identity
   let ctypeHash: string
   let ROOT_IDENTIFIER: string
-  const registry = new TypeRegistry()
 
   beforeAll(async () => {
     identityAlice = await Identity.buildFromURI('//Alice')
     ctypeHash = Crypto.hashStr('testCtype')
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
-      new Option(
-        registry,
-        Tuple.with(
-          // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-          ['H256', AccountId, Bool]
-        ),
-        [ctypeHash, identityAlice.getAddress(), false]
-      )
+      mockChainQueryReturn('delegation', 'root', [
+        ctypeHash,
+        identityAlice.getAddress(),
+        false,
+      ])
     )
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations.mockReturnValue(
-      new Option(
-        registry,
-        Tuple.with(
-          // Root-Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-
-          ['H256', AccountId, Bool]
-        ),
-        [ctypeHash, identityAlice.getAddress(), false]
-      )
+      mockChainQueryReturn('delegation', 'delegations', [
+        ctypeHash,
+        null,
+        identityAlice.getAddress(),
+        1,
+        false,
+      ])
     )
 
     ROOT_IDENTIFIER = 'abc123'
@@ -68,25 +60,19 @@ describe('Delegation', () => {
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root = jest.fn(
       async (rootId) => {
         if (rootId === 'success') {
-          const tuple = new Option(
-            registry,
-            Tuple.with(
-              // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-              ['H256', AccountId, Bool]
-            ),
-            ['myCtypeHash', identityAlice.getAddress(), false]
-          )
+          const tuple = mockChainQueryReturn('delegation', 'root', [
+            'myCtypeHash',
+            identityAlice.getAddress(),
+            false,
+          ])
 
           return Promise.resolve(tuple)
         }
-        const tuple = new Option(
-          registry,
-          Tuple.with(
-            // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-            ['H256', AccountId, Bool]
-          ),
-          ['myCtypeHash', identityAlice.getAddress(), true]
-        )
+        const tuple = mockChainQueryReturn('delegation', 'root', [
+          'myCtypeHash',
+          identityAlice.getAddress(),
+          true,
+        ])
 
         return Promise.resolve(tuple)
       }

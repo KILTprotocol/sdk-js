@@ -33,7 +33,7 @@
  *   const mocked_api = require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api
  *   mocked_api.query.delegation.children.mockReturnValue(
  *     new Vec(
- *       'H256',
+ *       'Hash',
  *       ['0x123', '0x456', '0x789']
  *     )
  *   )
@@ -46,22 +46,19 @@
 
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Tuple, TypeRegistry, Vec } from '@polkadot/types'
-import AccountId from '@polkadot/types/generic/AccountId'
 import AccountIndex from '@polkadot/types/generic/AccountIndex'
 import {
   AccountData,
   AccountInfo,
   ExtrinsicStatus,
 } from '@polkadot/types/interfaces'
-import Bool from '@polkadot/types/primitive/Bool'
-import U32 from '@polkadot/types/primitive/U32'
+import U64 from '@polkadot/types/primitive/U64'
 import BN from 'bn.js'
 import Blockchain from '../../blockchain/Blockchain'
 import IPublicIdentity from '../../types/PublicIdentity'
+import TYPE_REGISTRY, { mockChainQueryReturn } from './BlockchainQuery'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
-const registry = new TypeRegistry()
 const accumulator = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 async function getCached(): Promise<Blockchain> {
@@ -220,85 +217,72 @@ const __mocked_api: any = {
               miscFrozen: new BN(0),
               feeFrozen: new BN(0),
             } as AccountData,
-            nonce: new AccountIndex(registry, 0),
+            nonce: new AccountIndex(TYPE_REGISTRY, 0),
           } as AccountInfo
         }
       ),
     },
     attestation: {
       // default return value decodes to [], represents no delegated attestations
-      delegatedAttestations: jest.fn(
-        async (id: string) => new Vec(registry, 'H256')
+      delegatedAttestations: jest.fn(async (id: string) =>
+        mockChainQueryReturn('attestation', 'delegatedAttestations')
       ),
       /* example return value:
       new Vec(
-        registry
-        'H256',
+        TYPE_REGISTRY
+        'Hash',
         ['0x123', '0x456', '0x789']
       )
       */
 
       // default return value decodes to null, represents attestation not found
-      attestations: jest.fn(
-        async (claim_hash: string) =>
-          new Option(
-            registry,
-            Tuple.with(['H256', AccountId, 'Option<H256>', Bool])
-          )
+      attestations: jest.fn(async (claim_hash: string) =>
+        mockChainQueryReturn('attestation', 'attestations')
       ),
       /* example return value:
       new Option(
-        registry,
-        Tuple.with(
-            ['H256', AccountId, 'Option<H256>', Bool]
-            ),
-            [
-              '0x1234',                                            // ctype hash
-              '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',  // Account
-              null,                                                // delegation-id?
-              true,                                                // revoked flag
-            ]
-          )
-      ) */
+        TYPE_REGISTRY,
+        Tuple.with(['Hash', AccountId, 'Option<Hash>', Bool]),
+        [
+          '0x1234',                                            // ctype hash
+          '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',  // Account
+          null,                                                // delegation-id?
+          true,                                                // revoked flag
+        ]
+      )
+      */
     },
     ctype: {
       // default return value decodes to null, represents CTYPE not found
-      cTYPEs: jest.fn(async (hash: string) => new Option(registry, AccountId)),
+      cTYPEs: jest.fn(async (hash: string) =>
+        mockChainQueryReturn('ctype', 'cTYPEs')
+      ),
     },
     delegation: {
       // default return value decodes to null, represents delegation not found
-      root: jest.fn(
-        async (rootId: string) =>
-          new Option(registry, Tuple.with(['H256', AccountId, Bool]))
+      root: jest.fn(async (rootId: string) =>
+        mockChainQueryReturn('delegation', 'root')
       ),
       /* example return value:
       new Option(
-        registry,
-        Tuple.with(
-          ['H256', AccountId, Bool]
-          ),
-          [
-            '0x1234',                                            // ctype hash
-            '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',  // Account
-            false,                                               // revoked flag
-          ]
-        )
-      ) */
+        TYPE_REGISTRY,
+        Tuple.with(['Hash', AccountId, Bool]),
+        [
+          '0x1234',                                            // ctype hash
+          '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',  // Account
+          false,                                               // revoked flag
+        ]
+      )
+      */
 
       // default return value decodes to null, represents delegation not found
-      delegations: jest.fn(
-        async (delegationId: string) =>
-          new Option(
-            registry,
-            Tuple.with(['H256', 'Option<H256>', AccountId, U32, Bool])
-          )
+      delegations: jest.fn(async (delegationId: string) =>
+        mockChainQueryReturn('delegation', 'delegations')
       ),
       /* example return value:
       new Option(
-        registry,
-        Tuple.with(
-          ['H256','Option<H256>',AccountId,U32,Bool]
-        ),
+        TYPE_REGISTRY,
+        Tuple.with(['DelegationNodeId','Option<DelegationNodeId>',AccountId,U32,Bool]),
         [
           '0x1234',                                            // root-id
           null,                                                // parent-id?
@@ -307,43 +291,48 @@ const __mocked_api: any = {
           false,                                               // revoked flag
         ]
       )
-    ) */
+      */
 
       // default return value decodes to [], represents: no children found
-      children: jest.fn(async (id: string) => new Vec(registry, 'H256')),
+      children: jest.fn(async (id: string) =>
+        mockChainQueryReturn('delegation', 'children')
+      ),
       /* example return value:
       new Vec(
-        'H256',
+        TYPE_REGISTRY,
+        'DelegationNodeId',
         ['0x123', '0x456', '0x789']
       )
       */
     },
     did: {
       // default return value decodes to null, represents dID not found
-      dIDs: jest.fn(
-        async (address: string) =>
-          new Option(registry, Tuple.with(['H256', 'H256', 'Option<Bytes>']))
+      dIDs: jest.fn(async (address: string) =>
+        mockChainQueryReturn('did', 'dIDs')
       ),
       /* example return value:
       new Option(
-        registry,
-        Tuple.with(
-          ['H256','H256','Option<Bytes>']
-          ),
-          [
-            'publicSigningKey',                  // publicSigningKey
-            'publicBoxKey',                      // publicBoxKey
-            stringToHex('http://myDID.kilt.io'), // document store
-          ]
+        TYPE_REGISTRY,
+        Tuple.with(['Hash','Hash','Option<Bytes>']),
+        [
+          'publicSigningKey',                  // publicSigningKey
+          'publicBoxKey',                      // publicBoxKey
+          stringToHex('http://myDID.kilt.io'), // document store
+        ]
       )
-    ) */
+      */
     },
     portablegabi: {
-      accumulatorList: jest.fn(
-        (address: string, index: number) =>
-          new Option(registry, 'Vec<u8>', accumulator)
+      accumulatorList: jest.fn((address: string, index: number) =>
+        mockChainQueryReturn('portablegabi', 'accumulatorList', accumulator)
       ),
-      accumulatorCount: jest.fn((address: string) => 1),
+      accumulatorCount: jest.fn((address: string) =>
+        mockChainQueryReturn(
+          'portablegabi',
+          'accumulatorCount',
+          new U64(TYPE_REGISTRY, 1)
+        )
+      ),
     },
   },
   runtimeMetadata: {
@@ -357,6 +346,7 @@ BlockchainApiConnection.getCached = getCached
 BlockchainApiConnection.__queueResults = __queueResults
 BlockchainApiConnection.__setDefaultResult = __setDefaultResult
 BlockchainApiConnection.__mocked_api = __mocked_api
+BlockchainApiConnection.mockChainQueryReturn = mockChainQueryReturn
 
 module.exports = BlockchainApiConnection
 module.exports.default = BlockchainApiConnection.getCached

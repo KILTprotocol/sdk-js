@@ -1,7 +1,3 @@
-import { TypeRegistry } from '@polkadot/types'
-import { Option, Tuple } from '@polkadot/types/codec'
-import AccountId from '@polkadot/types/generic/AccountId'
-import Bool from '@polkadot/types/primitive/Bool'
 import {
   Attester,
   Claimer,
@@ -11,6 +7,7 @@ import {
   ICType,
   Verifier,
 } from '..'
+import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Credential from '../credential/Credential'
 import {
   ERROR_MESSAGE_TYPE,
@@ -28,7 +25,6 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 describe('Claimer', () => {
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
-  const registry = new TypeRegistry()
   let attester: AttesterIdentity
   let claimer: Identity
   let verifier: Identity
@@ -71,11 +67,12 @@ describe('Claimer', () => {
     }
 
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(
-        registry,
-        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
-        [cType.hash, attester.getAddress(), undefined, 0]
-      )
+      mockChainQueryReturn('attestation', 'attestations', [
+        cType.hash,
+        attester.getAddress(),
+        undefined,
+        0,
+      ])
     )
 
     const {
@@ -143,11 +140,12 @@ describe('Claimer', () => {
 
   it('request privacy enhanced attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(
-        registry,
-        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
-        [cType.hash, attester.getAddress(), undefined, 0]
-      )
+      mockChainQueryReturn('attestation', 'attestations', [
+        cType.hash,
+        attester.getAddress(),
+        undefined,
+        0,
+      ])
     )
 
     const {
@@ -216,11 +214,12 @@ describe('Claimer', () => {
 
   it('request only public attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
-      new Option(
-        registry,
-        Tuple.with(['H256', AccountId, 'Option<H256>', Bool]),
-        [cType.hash, attester.getAddress(), undefined, 0]
-      )
+      mockChainQueryReturn('attestation', 'attestations', [
+        cType.hash,
+        attester.getAddress(),
+        undefined,
+        0,
+      ])
     )
 
     const {
