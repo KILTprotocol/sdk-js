@@ -1,5 +1,6 @@
-import { Text, TypeRegistry } from '@polkadot/types'
+import { Text } from '@polkadot/types'
 import getCached from '../blockchainApiConnection/BlockchainApiConnection'
+import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -7,10 +8,9 @@ describe('queries', () => {
   beforeAll(() => {
     const api = require('../blockchainApiConnection/BlockchainApiConnection')
       .__mocked_api
-    const registry = new TypeRegistry()
-    api.rpc.system.version.mockResolvedValue(new Text(registry, '1.0.0'))
-    api.rpc.system.chain.mockResolvedValue(new Text(registry, 'mockchain'))
-    api.rpc.system.name.mockResolvedValue(new Text(registry, 'KILT node'))
+    api.rpc.system.version.mockResolvedValue(new Text(TYPE_REGISTRY, '1.0.0'))
+    api.rpc.system.chain.mockResolvedValue(new Text(TYPE_REGISTRY, 'mockchain'))
+    api.rpc.system.name.mockResolvedValue(new Text(TYPE_REGISTRY, 'KILT node'))
 
     api.rpc.chain.subscribeNewHeads = jest.fn(async (listener) => {
       listener('mockHead')

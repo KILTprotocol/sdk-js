@@ -1,5 +1,8 @@
-import { Option, Tuple, TypeRegistry, U8aFixed } from '@polkadot/types'
+import { U8aFixed } from '@polkadot/types'
 import { Did, IDid } from '..'
+import TYPE_REGISTRY, {
+  mockChainQueryReturn,
+} from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import {
@@ -10,30 +13,19 @@ import {
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('DID', () => {
-  const registry = new TypeRegistry()
-  const key1 = new U8aFixed(registry, 'box-me', 256)
-  const key2 = new U8aFixed(registry, 'sign-me', 256)
+  const key1 = new U8aFixed(TYPE_REGISTRY, 'box-me', 256)
+  const key2 = new U8aFixed(TYPE_REGISTRY, 'sign-me', 256)
 
   require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs.mockImplementation(
     async (address: string) => {
       if (address === 'withDocumentStore') {
-        return new Option(
-          registry,
-          Tuple.with(
-            // (publicBoxKey, publicSigningKey, documentStore?)
-            ['H256', 'H256', 'Option<Bytes>']
-          ),
-          [key2, key1, '0x687474703a2f2f6d794449442e6b696c742e696f']
-        )
+        return mockChainQueryReturn('did', 'dIDs', [
+          key2,
+          key1,
+          '0x687474703a2f2f6d794449442e6b696c742e696f',
+        ])
       }
-      return new Option(
-        registry,
-        Tuple.with(
-          // (publicBoxKey, publicSigningKey, documentStore?)+
-          ['H256', 'H256', 'Option<Bytes>']
-        ),
-        [key1, key2, null]
-      )
+      return mockChainQueryReturn('did', 'dIDs', [key1, key2, null])
     }
   )
 
