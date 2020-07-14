@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable no-console */
-import * as Kilt from '../../..'
+import * as Kilt from '../../index'
 
 /* 🚧 COPY_START for identity_example (below this comment) 🚧 */
 // const Kilt = require('@kiltprotocol/sdk-js') //❗️ UNCOMMENT-LINE in workshop ❗️
