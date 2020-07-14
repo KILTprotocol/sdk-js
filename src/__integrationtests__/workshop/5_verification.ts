@@ -16,7 +16,6 @@ async function main() {
 
   await Kilt.default.connect(Kilt.BlockchainApiConnection.DEFAULT_WS_ADDRESS) // ❗️ REMOVE-LINE in workshop ❗️
   // await Kilt.default.connect('ws://full-nodes.devnet.kilt.io:9944') // ❗️ UNCOMMENT-LINE in workshop ❗️
-
   console.log(
     'Successfully connected to KILT devnet, verifying attested claim next...'
   )

@@ -10,6 +10,7 @@ import setup from './setup'
 // const Kilt = require('@kiltprotocol/sdk-js') //❗️ UNCOMMENT-LINE in workshop ❗️
 
 // async function main() { //❗️ UNCOMMENT-LINE in workshop ❗️
+// ❗️ REMOVE-LINE BELOW in workshop ❗️
 async function main(requestForAttestationStruct: Kilt.RequestForAttestation) {
   // use the attester mnemonic you've generated in the Identity step
   // const attester = await Kilt.Identity.buildFromMnemonic("<attesterMnemonic>"); //❗️ UNCOMMENT-LINE in workshop ❗️
@@ -72,7 +73,6 @@ async function attestClaim(
   // await Kilt.default.disconnect('ws://full-nodes.devnet.kilt.io:9944') // ❗️ UNCOMMENT-LINE in workshop ❗️
   console.log('Disconnected from KILT devnet')
   /* 🚧 3️⃣  COPY_END for attestClaim_example (above this comment) 🚧  */
-  return attestedClaim
 }
 
 async function execution() {
