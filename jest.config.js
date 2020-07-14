@@ -17,6 +17,7 @@ module.exports = {
     '!**/blockchain/**/*.ts',
     '!index.ts',
     '!**/__integrationtests__/*.ts',
+    '!**/__integrationtests__/workshop/*.ts',
   ],
   rootDir: 'src',
   coverageDirectory: '../coverage',
