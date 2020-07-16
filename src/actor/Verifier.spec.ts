@@ -11,9 +11,14 @@ import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/Block
 import Credential from '../credential/Credential'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
-import { MessageBodyType } from '../messaging/Message'
+import Message, { MessageBodyType } from '../messaging/Message'
 import constants from '../test/constants'
 import IClaim from '../types/Claim'
+import {
+  ERROR_PE_VERIFICATION,
+  ERROR_MESSAGE_TYPE,
+} from '../errorhandling/SDKErrors'
+import { factory as LoggerFactory } from '../config/ConfigLog'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -142,11 +147,38 @@ describe('Verifier', () => {
       })
       .finalize(true, verifier, claimer.getPublicIdentity())
     expect(session).toBeDefined()
+    expect(session.requestedProperties[0].properties).not.toContain(
+      'legitimation'
+    )
+    expect(session.requestedProperties[0].properties).not.toContain(
+      'delegation'
+    )
     expect(request.body.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
     if (request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
       expect(request.body.content.allowPE).toBeTruthy()
       expect(request.body.content.peRequest).toBeDefined()
       expect(request.body.content.ctypes).toEqual(['this is a ctype hash'])
+    }
+  })
+  it('request privacy enhanced presentation w/ legitimations and delegation', async () => {
+    const { session, message: request } = await Verifier.newRequestBuilder()
+      .requestPresentationForCtype({
+        properties: ['name', 'and', 'other', 'attributes'],
+        legitimations: true,
+        delegation: true,
+      })
+      .finalize(true, verifier, claimer.getPublicIdentity())
+    expect(session).toBeDefined()
+    expect(session.requestedProperties[0].properties).not.toContain(
+      'claim.cTypeHash'
+    )
+    expect(session.requestedProperties[0].properties).toContain('delegationId')
+    expect(session.requestedProperties[0].properties).toContain('legitimation')
+    expect(request.body.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
+    if (request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
+      expect(request.body.content.allowPE).toBeTruthy()
+      expect(request.body.content.peRequest).toBeDefined()
+      expect(request.body.content.ctypes).toEqual([null])
     }
   })
 
@@ -198,6 +230,117 @@ describe('Verifier', () => {
     const { owner, ...unownedClaim } = claim
     expect(owner).toBeDefined()
     expect((claims[0] as IRequestForAttestation).claim).toEqual(unownedClaim)
+  })
+  it('should throw ... during privacy enhanced presentation', async () => {
+    const accumulator = await Attester.buildAccumulator(attester)
+    const { session, message: request } = await Verifier.newRequestBuilder()
+      .requestPresentationForCtype({
+        ctypeHash: 'this is a ctype hash',
+        properties: ['name', 'and', 'other', 'attributes'],
+      })
+      .finalize(true, verifier, claimer.getPublicIdentity())
+
+    const presentation = await Claimer.createPresentation(
+      claimer,
+      request,
+      verifier.getPublicIdentity(),
+      [credentialPE],
+      [attester.getPublicIdentity()]
+    )
+    expect(presentation.body.type).toEqual(
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
+    )
+    expect(presentation.body.content).toBeInstanceOf(CombinedPresentation)
+
+    // test throw for public verification
+    const log = LoggerFactory.getLogger('Verifier')
+    const spy = jest.spyOn(log, 'info')
+    const publicPresentation = {
+      ...presentation,
+      ...{
+        // set public type and remove attestedClaims
+        body: {
+          type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+          content: [],
+        },
+      },
+    }
+    await expect(
+      Verifier.verifyPresentation(
+        (publicPresentation as unknown) as Message,
+        session,
+        [accumulator],
+        [attester.getPublicIdentity()]
+      )
+    ).resolves.toStrictEqual({
+      claims: [],
+      verified: false,
+    })
+    expect(spy).toHaveBeenCalledWith(
+      'Rejected presentation because number of attested claims (0) did not match number of requested claims (1).'
+    )
+
+    // PE presentation with missing accumulator(s) but existing attester gabi key(s)
+    await expect(
+      Verifier.verifyPresentation(presentation, session, undefined, [
+        attester.getPublicIdentity(),
+      ])
+    ).rejects.toThrowError(ERROR_PE_VERIFICATION(true, false))
+    await expect(
+      Verifier.verifyPresentation(
+        presentation,
+        session,
+        [],
+        [attester.getPublicIdentity()]
+      )
+    ).rejects.toThrowError(ERROR_PE_VERIFICATION(true, false))
+
+    // PE presentation with existing accumulator(s) but missing attester gabi key(s)
+    await expect(
+      Verifier.verifyPresentation(
+        presentation,
+        session,
+        [accumulator],
+        undefined
+      )
+    ).rejects.toThrowError(ERROR_PE_VERIFICATION(false, true))
+    await expect(
+      Verifier.verifyPresentation(presentation, session, [accumulator], [])
+    ).rejects.toThrowError(ERROR_PE_VERIFICATION(false, true))
+
+    // PE presentation with missing both accumulator(s) and attester gabi key(s)
+    await expect(
+      Verifier.verifyPresentation(presentation, session, [], [])
+    ).rejects.toThrowError(ERROR_PE_VERIFICATION(true, true))
+    await expect(
+      Verifier.verifyPresentation(presentation, session, undefined, [])
+    ).rejects.toThrowError(ERROR_PE_VERIFICATION(true, true))
+    await expect(
+      Verifier.verifyPresentation(presentation, session, [], undefined)
+    ).rejects.toThrowError(ERROR_PE_VERIFICATION(true, true))
+    await expect(
+      Verifier.verifyPresentation(presentation, session, undefined, undefined)
+    ).rejects.toThrowError(ERROR_PE_VERIFICATION(true, true))
+
+    // PE presentation with incorrect message body type
+    await expect(
+      Verifier.verifyPresentation(
+        {
+          body: {
+            type: MessageBodyType.SUBMIT_TERMS,
+          },
+        } as Message,
+        session,
+        [],
+        [attester.getPublicIdentity()]
+      )
+    ).rejects.toThrowError(
+      ERROR_MESSAGE_TYPE(
+        MessageBodyType.SUBMIT_TERMS,
+        MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+        MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
+      )
+    )
   })
 
   it('verify forbidden privacy enhanced presentation', async () => {

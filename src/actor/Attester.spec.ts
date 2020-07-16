@@ -1,4 +1,5 @@
 import * as gabi from '@kiltprotocol/portablegabi'
+import { stringToHex } from '@polkadot/util'
 import {
   Attester,
   AttesterIdentity,
@@ -7,10 +8,16 @@ import {
   IClaim,
   ICType,
   Identity,
+  Message,
   MessageBodyType,
 } from '..'
-import constants from '../test/constants'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
+import {
+  ERROR_ATTESTATION_SESSION_MISSING,
+  ERROR_MESSAGE_TYPE,
+} from '../errorhandling/SDKErrors'
+import constants from '../test/constants'
+import { issueAttestation } from './Attester'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -225,15 +232,39 @@ describe('Attester', () => {
     expect(attester.getAccumulator().toString()).toEqual(oldAcc.toString())
   })
 
-  it('build accumulator', async () => {
+  it('Should build accumulator', async () => {
     const tAcc = await Attester.buildAccumulator(attester)
     expect(tAcc).toBeDefined()
   })
-  it('get accumulator', async () => {
+  it('Should get accumulator', async () => {
     expect(attester.getAccumulator()).toBeDefined()
     expect(attester.getAccumulator()).toBeInstanceOf(gabi.Accumulator)
+    // Attester static
+    await expect(
+      Attester.getAccumulator(attester.getPublicIdentity(), 0)
+    ).resolves.toBeInstanceOf(gabi.Accumulator)
   })
-  it('update accumulator', async () => {
+  it('Should get accumulator array', async () => {
+    blockchainApi.query.portablegabi.accumulatorList.mockReturnValue(
+      mockChainQueryReturn('portablegabi', 'accumulatorList', [[0], [1]])
+    )
+    blockchainApi.query.portablegabi.accumulatorList.multi = jest.fn(async () =>
+      ['a', 'b'].map((x) => stringToHex(x.toString()))
+    )
+    const accumulator = await Attester.getAccumulatorArray(
+      attester.getPublicIdentity(),
+      0,
+      1
+    )
+    expect(accumulator).toStrictEqual([
+      new gabi.Accumulator('a'),
+      new gabi.Accumulator('b'),
+    ])
+    expect(
+      blockchainApi.query.portablegabi.accumulatorList.multi
+    ).toHaveBeenCalled()
+  })
+  it('Should update accumulator', async () => {
     const beforeUpdate = attester.getAccumulator()
     await attester.updateAccumulator(acc)
     expect(
@@ -242,5 +273,41 @@ describe('Attester', () => {
     expect(attester.getAccumulator()).toBeDefined()
     expect(attester.getAccumulator()).toBeInstanceOf(gabi.Accumulator)
     expect(attester.getAccumulator()).not.toStrictEqual(beforeUpdate)
+    // Attester static
+    const spy = jest.spyOn(attester, 'updateAccumulator')
+    await Attester.updateAccumulator(attester, attester.getAccumulator())
+    expect(spy).toHaveBeenCalledWith(attester.getAccumulator())
+  })
+  describe('Negative tests', () => {
+    it('Should throw when message body type does not match', async () => {
+      const { messageBody } = await attester.initiateAttestation()
+      await expect(
+        issueAttestation(
+          attester,
+          new Message(messageBody, attester, claimer.getPublicIdentity()),
+          claimer.getPublicIdentity()
+        )
+      ).rejects.toThrowError(
+        ERROR_MESSAGE_TYPE(
+          messageBody.type,
+          MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+        )
+      )
+    })
+    it('Should throw when PE is required but session missing', async () => {
+      await expect(
+        issueAttestation(
+          attester,
+          {
+            body: {
+              type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+            },
+          } as Message,
+          claimer.getPublicIdentity(),
+          null,
+          true
+        )
+      ).rejects.toThrowError(ERROR_ATTESTATION_SESSION_MISSING())
+    })
   })
 })

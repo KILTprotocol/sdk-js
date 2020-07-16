@@ -2,7 +2,10 @@ import * as gabi from '@kiltprotocol/portablegabi'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import CType from '../ctype/CType'
-import { ERROR_MESSAGE_TYPE } from '../errorhandling/SDKErrors'
+import {
+  ERROR_MESSAGE_TYPE,
+  ERROR_PE_VERIFICATION,
+} from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
 import Message, { IMessage, MessageBodyType } from '../messaging/Message'
@@ -69,10 +72,10 @@ export class PresentationRequestBuilder {
     if (typeof ctypeHash !== 'undefined') {
       rawProperties.push('claim.cTypeHash')
     }
-    if (typeof legitimations !== 'undefined' && legitimations) {
+    if (legitimations === true) {
       rawProperties.push('legitimation')
     }
-    if (typeof delegation !== 'undefined' && delegation) {
+    if (delegation === true) {
       rawProperties.push('delegationId')
     }
     this.builder.requestPresentation({
@@ -183,12 +186,42 @@ async function verifyPublicPresentation(
 }
 
 /**
+ * Checks whether a given value is an array of which each entry is instance of an Accumulator.
+ *
+ * @param args Either an array or undefined which should be checked.
+ * @returns True if typeguard is successful.
+ */
+function accumulatorArrTypeguard(
+  args: gabi.Accumulator[] | unknown
+): args is gabi.Accumulator[] {
+  if (Array.isArray(args) && args.length) {
+    return args.every((a) => a instanceof gabi.Accumulator)
+  }
+  return false
+}
+
+/**
+ * Checks whether a given value is an array of which each entry is instance of a [[PublicAttesterIdentity]].
+ *
+ * @param args Either an array or undefined which should be checked.
+ * @returns True if typeguard is successful.
+ */
+function publicAttesterArrTypeguard(
+  args: PublicAttesterIdentity[] | unknown
+): args is PublicAttesterIdentity[] {
+  if (Array.isArray(args) && args.length) {
+    return args.every((a) => a instanceof PublicAttesterIdentity)
+  }
+  return false
+}
+
+/**
  * [ASYNC] Verifies the Claimer's presentation of [[Credential]]s.
  *
  * @param message The Claimer's presentation of the [[Credential]]s that should be verified, the result of [[createPresentation]].
  * @param session The Verifier's private verification session created in [[finalize]].
- * @param latestAccumulators The list of the latest accumulators for each Attester which signed a [[Credential]] of this presentation.
- * @param attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
+ * @param _latestAccumulators The list of the latest accumulators for each Attester which signed a [[Credential]] of this presentation.
+ * @param _attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
  * @throws When either latestAccumulators or attesterPubKeys are undefined.
  * @throws [[ERROR_MESSAGE_TYPE]].
  * @returns An object containing the keys
@@ -198,8 +231,8 @@ async function verifyPublicPresentation(
 export async function verifyPresentation(
   message: IMessage,
   session: IVerifierSession,
-  latestAccumulators?: gabi.Accumulator[],
-  attesterPubKeys?: PublicAttesterIdentity[]
+  _latestAccumulators?: gabi.Accumulator[],
+  _attesterPubKeys?: PublicAttesterIdentity[]
 ): Promise<{
   verified: boolean
   claims: Array<Partial<IRequestForAttestation | IAttestedClaim>>
@@ -215,16 +248,16 @@ export async function verifyPresentation(
   // if we got a privacy enhanced attestation, check that this was allowed by the verifier and
   // verify the attestation
   if (message.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE) {
-    if (
-      typeof latestAccumulators === 'undefined' ||
-      typeof attesterPubKeys === 'undefined'
-    ) {
-      throw new Error(`Received privacy enhanced presentation. Require:
-      Session: ${session}
-      accumulators: ${latestAccumulators}
-      public keys: ${attesterPubKeys}`)
+    const accFailure = !accumulatorArrTypeguard(_latestAccumulators)
+    const keyFailure = !publicAttesterArrTypeguard(_attesterPubKeys)
+    if (accFailure || keyFailure) {
+      throw ERROR_PE_VERIFICATION(accFailure, keyFailure)
     }
     if (session.allowedPrivacyEnhancement) {
+      const latestAccumulators = _latestAccumulators as gabi.Accumulator[]
+      const attesterPubKeys = (_attesterPubKeys as PublicAttesterIdentity[]).map(
+        (ai: PublicAttesterIdentity) => ai.publicGabiKey
+      )
       const {
         verified,
         claims,
@@ -232,9 +265,7 @@ export async function verifyPresentation(
         proof: message.body.content,
         verifierSession: session.privacyEnhancement,
         latestAccumulators,
-        attesterPubKeys: attesterPubKeys.map(
-          (ai: PublicAttesterIdentity) => ai.publicGabiKey
-        ),
+        attesterPubKeys,
       })
       return { verified, claims }
     }
