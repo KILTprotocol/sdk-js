@@ -173,7 +173,7 @@ describe('Verifier', () => {
       'claim.cTypeHash'
     )
     expect(session.requestedProperties[0].properties).toContain('delegationId')
-    expect(session.requestedProperties[0].properties).toContain('delegationId')
+    expect(session.requestedProperties[0].properties).toContain('legitimation')
     expect(request.body.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
     if (request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
       expect(request.body.content.allowPE).toBeTruthy()

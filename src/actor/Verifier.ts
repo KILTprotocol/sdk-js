@@ -186,22 +186,31 @@ async function verifyPublicPresentation(
 }
 
 /**
- * Checks whether each value is either an instance of an Accumulator or a [[PublicAttesterIdentity]].
+ * Checks whether a given value is an array of which each entry is instance of an Accumulator.
  *
- * @param values Either an array or undefined which should be checked.
- * @param isAcc A boolean to display whether we check for Accumulators.
- * @returns True if the supplied values are correct.
+ * @param args Either an array or undefined which should be checked.
+ * @returns True if typeguard is successful.
  */
-function verificationCheck(
-  values:
-    | Array<gabi.Accumulator | PublicAttesterIdentity | undefined>
-    | undefined,
-  isAcc: boolean
-): boolean {
-  if (Array.isArray(values) && values.length) {
-    return values.every(
-      (a) => a instanceof (isAcc ? gabi.Accumulator : PublicAttesterIdentity)
-    )
+function accumulatorArrTypeguard(
+  args: gabi.Accumulator[] | unknown
+): args is gabi.Accumulator[] {
+  if (Array.isArray(args) && args.length) {
+    return args.every((a) => a instanceof gabi.Accumulator)
+  }
+  return false
+}
+
+/**
+ * Checks whether a given value is an array of which each entry is instance of a [[PublicAttesterIdentity]].
+ *
+ * @param args Either an array or undefined which should be checked.
+ * @returns True if typeguard is successful.
+ */
+function publicAttesterArrTypeguard(
+  args: PublicAttesterIdentity[] | unknown
+): args is PublicAttesterIdentity[] {
+  if (Array.isArray(args) && args.length) {
+    return args.every((a) => a instanceof PublicAttesterIdentity)
   }
   return false
 }
@@ -239,8 +248,8 @@ export async function verifyPresentation(
   // if we got a privacy enhanced attestation, check that this was allowed by the verifier and
   // verify the attestation
   if (message.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE) {
-    const accFailure = !verificationCheck(_latestAccumulators, true)
-    const keyFailure = !verificationCheck(_attesterPubKeys, false)
+    const accFailure = !accumulatorArrTypeguard(_latestAccumulators)
+    const keyFailure = !publicAttesterArrTypeguard(_attesterPubKeys)
     if (accFailure || keyFailure) {
       throw ERROR_PE_VERIFICATION(accFailure, keyFailure)
     }

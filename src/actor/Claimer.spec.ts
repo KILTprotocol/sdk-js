@@ -355,11 +355,6 @@ describe('Claimer', () => {
           })
         ).rejects.toThrowError(ERROR_PE_CREDENTIAL_MISSING())
       })
-      it('Should throw when PE is required but not allowed', () => {
-        return expect(fakePresentation({})).rejects.toThrowError(
-          ERROR_PE_MISMATCH()
-        )
-      })
     })
     it('Should throw when message body type does not match in requestAttestation', () => {
       return expect(
