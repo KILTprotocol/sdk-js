@@ -9,6 +9,7 @@
 import { NonceHash } from '../types/RequestForAttestation'
 
 export enum ErrorCode {
+  // Data is missing
   ERROR_CTYPE_HASH_NOT_PROVIDED = 10001,
   ERROR_CLAIM_HASH_NOT_PROVIDED = 10002,
   ERROR_CLAIM_HASHTREE_NOT_PROVIDED = 10003,
@@ -23,7 +24,9 @@ export enum ErrorCode {
   ERROR_PE_CREDENTIAL_MISSING = 10012,
   ERROR_CTYPE_ID_NOT_MATCHING = 10013,
   ERROR_PE_VERIFICATION = 10014,
+  ERROR_IDENTITY_NOT_PE_ENABLED = 10014,
 
+  // Data type is wrong or malformed
   ERROR_ADDRESS_TYPE = 20001,
   ERROR_HASH_TYPE = 20002,
   ERROR_HASH_MALFORMED = 20003,
@@ -43,6 +46,7 @@ export enum ErrorCode {
   ERROR_ROOT_NODE_QUERY = 20017,
   ERROR_INVALID_DID_PREFIX = 20018,
 
+  // Data is invalid
   ERROR_ADDRESS_INVALID = 30001,
   ERROR_NONCE_HASH_INVALID = 30002,
   ERROR_LEGITIMATIONS_UNVERIFIABLE = 30003,
@@ -55,6 +59,7 @@ export enum ErrorCode {
   ERROR_ROOT_HASH_UNVERIFIABLE = 30010,
   ERROR_NESTED_CLAIM_UNVERIFIABLE = 30011,
 
+  // Compression / Decompressions
   ERROR_DECOMPRESSION_ARRAY = 40001,
   ERROR_COMPRESS_OBJECT = 40002,
   ERROR_DECODING_MESSAGE = 40003,
@@ -423,6 +428,14 @@ export const ERROR_IDENTITY_MISMATCH: (
     'Addresses expected to be equal mismatched'
   )
 }
+
+export const ERROR_IDENTITY_NOT_PE_ENABLED: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_IDENTITY_NOT_PE_ENABLED,
+    'Identity is not privacy enhaced'
+  )
+}
+
 export const ERROR_ROOT_HASH_UNVERIFIABLE: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_ROOT_HASH_UNVERIFIABLE,

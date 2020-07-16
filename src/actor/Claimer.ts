@@ -5,6 +5,7 @@ import {
   ERROR_MESSAGE_TYPE,
   ERROR_PE_CREDENTIAL_MISSING,
   ERROR_PE_MISMATCH,
+  ERROR_IDENTITY_NOT_PE_ENABLED,
 } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
@@ -76,6 +77,9 @@ export async function createPresentation(
     const peCreds = credentials.map((c) => c.privacyCredential)
     if (!noNulls(peCreds)) {
       throw ERROR_PE_CREDENTIAL_MISSING()
+    }
+    if (!identity.claimer) {
+      throw ERROR_IDENTITY_NOT_PE_ENABLED()
     }
     const gabiPresentation = await identity.claimer.buildCombinedPresentation({
       credentials: peCreds,

@@ -17,6 +17,7 @@ import Identity from '../identity/Identity'
 import IAttestation from '../types/Attestation'
 import ICredential from '../types/Credential'
 import IRequestForAttestation from '../types/RequestForAttestation'
+import { ERROR_IDENTITY_NOT_PE_ENABLED } from '../errorhandling/SDKErrors'
 
 export default class Credential {
   /**
@@ -55,6 +56,9 @@ export default class Credential {
     let privacyCredential: gabi.Credential | null = null
 
     if (session !== null && attestationPE !== null) {
+      if (!claimer.claimer) {
+        throw ERROR_IDENTITY_NOT_PE_ENABLED()
+      }
       privacyCredential = await claimer.claimer.buildCredential({
         claimerSession: session,
         attestation: attestationPE,
