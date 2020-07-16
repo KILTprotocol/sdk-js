@@ -21,3 +21,10 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Repository dispatch to workshop
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: KILTprotocol/kilt-workshop-101
+          event-type: sdk-update
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "github": ${{ toJson(github) }}}'
