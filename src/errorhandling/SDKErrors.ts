@@ -517,9 +517,7 @@ export const ERROR_UNKNOWN: () => SDKError = () => {
 export const ERROR_PE_VERIFICATION: (
   accFailure: boolean,
   keyFailure: boolean
-) => SDKError = (
-  ...[accFailure, keyFailure]: Parameters<typeof ERROR_PE_VERIFICATION>
-) => {
+) => SDKError = (accFailure: boolean, keyFailure: boolean) => {
   return new SDKError(
     ErrorCode.ERROR_PE_VERIFICATION,
     `Received privacy enhanced presentation with insufficient data. 
