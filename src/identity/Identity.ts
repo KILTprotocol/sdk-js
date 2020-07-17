@@ -61,7 +61,7 @@ function fillRight(
 }
 
 export type IdentityBuildOptions = {
-  peEnabled: boolean
+  peEnabled?: boolean
 }
 
 export default class Identity {
@@ -100,7 +100,7 @@ export default class Identity {
    */
   public static async buildFromMnemonic(
     phraseArg?: string,
-    options: IdentityBuildOptions = { peEnabled: true }
+    { peEnabled = true }: IdentityBuildOptions = {}
   ): Promise<Identity> {
     let phrase = phraseArg
     if (phrase) {
@@ -117,7 +117,7 @@ export default class Identity {
     }
 
     const seed = mnemonicToMiniSecret(phrase)
-    return Identity.buildFromSeed(seed, options)
+    return Identity.buildFromSeed(seed, { peEnabled })
   }
 
   /**
@@ -135,10 +135,10 @@ export default class Identity {
    */
   public static async buildFromSeedString(
     seedArg: string,
-    options: IdentityBuildOptions = { peEnabled: true }
+    { peEnabled = true }: IdentityBuildOptions = {}
   ): Promise<Identity> {
     const asU8a = hexToU8a(seedArg)
-    return Identity.buildFromSeed(asU8a, options)
+    return Identity.buildFromSeed(asU8a, { peEnabled })
   }
 
   /**
@@ -160,7 +160,7 @@ export default class Identity {
    */
   public static async buildFromSeed(
     seed: Uint8Array,
-    options: IdentityBuildOptions = { peEnabled: true }
+    { peEnabled = true }: IdentityBuildOptions = {}
   ): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
     const keyringPair = keyring.addFromSeed(seed)
@@ -168,7 +168,7 @@ export default class Identity {
     // pad seed if needed for claimer
     const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
     let claimer = null
-    if (options.peEnabled) {
+    if (peEnabled) {
       claimer = await Claimer.buildFromSeed(paddedSeed)
     }
 
@@ -188,14 +188,14 @@ export default class Identity {
    */
   public static async buildFromURI(
     uri: string,
-    options: IdentityBuildOptions = { peEnabled: true }
+    { peEnabled = true }: IdentityBuildOptions = {}
   ): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
     const derived = keyring.createFromUri(uri)
     const seed = u8aUtil.u8aToU8a(uri)
 
     let claimer = null
-    if (options.peEnabled) {
+    if (peEnabled) {
       const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
       claimer = await Claimer.buildFromSeed(paddedSeed)
     }

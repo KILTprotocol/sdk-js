@@ -55,7 +55,7 @@ export default class AttesterIdentity extends Identity {
    */
   public static async buildFromIdentity(
     identity: Identity,
-    options: Options = { peEnabled: true }
+    options: Options = {}
   ): Promise<AttesterIdentity> {
     if (!identity.claimer) {
       throw ERROR_IDENTITY_NOT_PE_ENABLED()
@@ -104,10 +104,10 @@ export default class AttesterIdentity extends Identity {
    */
   public static async buildFromMnemonic(
     phraseArg?: string,
-    options: Options = { peEnabled: true }
+    options: Options = {}
   ): Promise<AttesterIdentity> {
     return this.buildFromIdentity(
-      await Identity.buildFromMnemonic(phraseArg, options),
+      await Identity.buildFromMnemonic(phraseArg, { peEnabled: true }),
       options
     )
   }
@@ -127,10 +127,10 @@ export default class AttesterIdentity extends Identity {
    */
   public static async buildFromSeedString(
     seedArg: string,
-    options: Options = { peEnabled: true }
+    options: Options = {}
   ): Promise<AttesterIdentity> {
     return this.buildFromIdentity(
-      await Identity.buildFromSeedString(seedArg, options),
+      await Identity.buildFromSeedString(seedArg, { peEnabled: true }),
       options
     )
   }
@@ -153,10 +153,10 @@ export default class AttesterIdentity extends Identity {
    */
   public static async buildFromSeed(
     seed: Uint8Array,
-    options: Options = { peEnabled: true }
+    options: Options = {}
   ): Promise<AttesterIdentity> {
     return this.buildFromIdentity(
-      await Identity.buildFromSeed(seed, options),
+      await Identity.buildFromSeed(seed, { peEnabled: true }),
       options
     )
   }
@@ -173,10 +173,10 @@ export default class AttesterIdentity extends Identity {
    */
   public static async buildFromURI(
     uri: string,
-    options: Options = { peEnabled: true }
+    options: Options = {}
   ): Promise<AttesterIdentity> {
     return this.buildFromIdentity(
-      await Identity.buildFromURI(uri, options),
+      await Identity.buildFromURI(uri, { peEnabled: true }),
       options
     )
   }
