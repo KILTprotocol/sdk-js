@@ -6,6 +6,7 @@ import {
   ERROR_PE_CREDENTIAL_MISSING,
   ERROR_PE_MISMATCH,
   ERROR_IDENTITY_NOT_PE_ENABLED,
+  ERROR_PE_MISSING,
 } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import PublicAttesterIdentity from '../identity/PublicAttesterIdentity'
@@ -81,6 +82,9 @@ export async function createPresentation(
     if (!identity.claimer) {
       throw ERROR_IDENTITY_NOT_PE_ENABLED()
     }
+    if (!request.content.peRequest) {
+      throw ERROR_PE_MISSING()
+    }
     const gabiPresentation = await identity.claimer.buildCombinedPresentation({
       credentials: peCreds,
       combinedPresentationReq: request.content.peRequest,
@@ -100,9 +104,16 @@ export async function createPresentation(
   // otherwise we return a public presentation
 
   // get attributes requested by the verifier
-  const requestedAttributes = request.content.peRequest
-    .getRequestedProperties()
-    .map((propsPerClaim: string[]) => finalizeReqProps(propsPerClaim))
+  let requestedAttributes: string[][]
+  if (request.content.peRequest) {
+    requestedAttributes = request.content.peRequest
+      .getRequestedProperties()
+      .map((propsPerClaim: string[]) => finalizeReqProps(propsPerClaim))
+  } else {
+    requestedAttributes = credentials.map((cred) =>
+      Array.from(cred.getAttributes())
+    )
+  }
 
   // create presentation for each credential
   const attestedClaims = credentials.map((cred, i) => {

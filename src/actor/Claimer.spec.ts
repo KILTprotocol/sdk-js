@@ -16,7 +16,11 @@ import {
 } from '../errorhandling/SDKErrors'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
-import Message, { MessageBodyType } from '../messaging/Message'
+import Message, {
+  MessageBodyType,
+  IRequestClaimsForCTypes,
+  ISubmitClaimsForCTypesPublic,
+} from '../messaging/Message'
 import constants from '../test/constants'
 import { ClaimerAttestationSession } from './Claimer'
 
@@ -301,6 +305,33 @@ describe('Claimer', () => {
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
     )
     expect(Array.isArray(presentation.body.content))
+  })
+  it('create public presentation from request without peRequest', async () => {
+    const body: IRequestClaimsForCTypes = {
+      type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+      content: {
+        allowPE: false,
+        ctypes: ['this is a ctype hash'],
+      },
+    }
+    const request = new Message(body, verifier, claimer.getPublicIdentity())
+
+    const presentation = await Claimer.createPresentation(
+      claimer,
+      request,
+      verifier.getPublicIdentity(),
+      [credentialPE],
+      [attester.getPublicIdentity()],
+      false
+    )
+    expect(presentation.body.type).toEqual(
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
+    )
+    expect(Array.isArray(presentation.body.content))
+    const { content } = presentation.body as ISubmitClaimsForCTypesPublic
+    expect(Object.keys(content[0].request.claim.contents)).toEqual(
+      Object.keys(content[0].request.claimHashTree)
+    )
   })
   describe('Negative tests', () => {
     describe('create presentation', () => {
