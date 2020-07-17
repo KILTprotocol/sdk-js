@@ -13,6 +13,7 @@ import {
   ERROR_MESSAGE_TYPE,
   ERROR_PE_CREDENTIAL_MISSING,
   ERROR_PE_MISMATCH,
+  ERROR_IDENTITY_NOT_PE_ENABLED,
 } from '../errorhandling/SDKErrors'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
@@ -386,6 +387,28 @@ describe('Claimer', () => {
           })
         ).rejects.toThrowError(ERROR_PE_CREDENTIAL_MISSING())
       })
+      it('Should throw, if PE is allowed, but claimer has no PE-enabled identity', async () => {
+        const claimerWithoutPE = await Identity.buildFromURI('//bob', {
+          peEnabled: false,
+        })
+        const { message: request } = await Verifier.newRequestBuilder()
+          .requestPresentationForCtype({
+            ctypeHash: 'this is a ctype hash',
+            properties: ['name', 'and', 'other', 'attributes'],
+          })
+          .finalize(true, verifier, claimer.getPublicIdentity())
+
+        await expect(
+          Claimer.createPresentation(
+            claimerWithoutPE,
+            request,
+            verifier.getPublicIdentity(),
+            [credentialPE],
+            [attester.getPublicIdentity()],
+            false
+          )
+        ).rejects.toThrowError(ERROR_IDENTITY_NOT_PE_ENABLED())
+      })
     })
     it('Should throw when message body type does not match in requestAttestation', () => {
       return expect(
@@ -425,6 +448,87 @@ describe('Claimer', () => {
           MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
         )
       )
+    })
+    it('Should throw, when claimer tries to make a request for attestation, without a PE-enabled identity', async () => {
+      blockchainApi.query.attestation.attestations.mockReturnValue(
+        mockChainQueryReturn('attestation', 'attestations', [
+          cType.hash,
+          attester.getAddress(),
+          undefined,
+          0,
+        ])
+      )
+
+      const claimerWithoutPE = await Identity.buildFromURI('//bob', {
+        peEnabled: false,
+      })
+
+      const { message: initAttestation } = await Attester.initiateAttestation(
+        attester,
+        claimerWithoutPE.getPublicIdentity()
+      )
+
+      await expect(
+        Claimer.requestAttestation(
+          claim,
+          claimerWithoutPE,
+          attester.getPublicIdentity(),
+          {
+            initiateAttestationMsg: initAttestation,
+          }
+        )
+      ).rejects.toThrowError(ERROR_IDENTITY_NOT_PE_ENABLED())
+    })
+
+    it('Should throw, when claimer tries to make a credential, without a PE-enabled identity', async () => {
+      blockchainApi.query.attestation.attestations.mockReturnValue(
+        mockChainQueryReturn('attestation', 'attestations', [
+          cType.hash,
+          attester.getAddress(),
+          undefined,
+          0,
+        ])
+      )
+
+      const claimerWithoutPE = await Identity.buildFromURI('//bob', {
+        peEnabled: false,
+      })
+
+      const {
+        message: initAttestation,
+        session: attersterSession,
+      } = await Attester.initiateAttestation(
+        attester,
+        claimer.getPublicIdentity()
+      )
+
+      const {
+        message: requestAttestation,
+        session: claimerSession,
+      } = await Claimer.requestAttestation(
+        claim,
+        claimer,
+        attester.getPublicIdentity(),
+        {
+          initiateAttestationMsg: initAttestation,
+        }
+      )
+
+      const { message: attestationMessage } = await Attester.issueAttestation(
+        attester,
+        requestAttestation,
+        claimer.getPublicIdentity(),
+        attersterSession,
+        true
+      )
+
+      await expect(
+        Claimer.buildCredential(
+          claimerWithoutPE,
+          attestationMessage,
+          claimerSession
+        )
+      ).rejects.toThrowError(ERROR_IDENTITY_NOT_PE_ENABLED())
     })
   })
 })
