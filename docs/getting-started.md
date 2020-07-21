@@ -142,7 +142,7 @@ await ctype.store(identity)
 
 Please note that the **same CTYPE can only be stored once** on the blockchain.
 
-At the end of the process, the `CType` object should contain the following.
+At the end of the process, the `CType` object should match the Ctype below.
 This can be saved anywhere, for example on a CTYPE registry service:
 
 ```typescript

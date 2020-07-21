@@ -47,7 +47,7 @@ yarn add @kiltprotocol/sdk-js
 
 Please have a look at our examples within our [getting started guide](https://github.com/KILTprotocol/sdk-js/blob/develop/docs/getting-started.md).
 
-A claim type (CTYPE) can be a credential of any kind, e.g. a drivers license, a sports club membership or even a fairtrade chocolate.
+A claim type (CTYPE) can be a credential of any kind, e.g. a drivers license, a sports club membership or even a fairtrade certificate for chocolate.
 
 Building a claim must be done by the defined CTYPE respective fields.
 Now we can easily create the KILT compliant claim. We have to include the full CTYPE object, the raw claim object and the address of the owner/creator of the claim in the constructor:
