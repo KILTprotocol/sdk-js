@@ -62,14 +62,11 @@ yarn install --check-files
 
 ## Release / Deployment
 
-A deployment is triggered by a push to the master branch as a result to a release build.
+### NPM
 
-To build a release, start the release build job for the SDK in _AWS CodeBuild_. See [here](https://github.com/KILTprotocol/release-build-job/blob/master/README.md#usage) for more info on building releases.
-As a result of a release build, a new version of the SDK is published to the NPM registry.
+A new version of the SDK is automatically published to NPM when creating a Github release.
 
-_Note: Don't forget to reference the correct version in the client and services_
+### Github
 
-### Dev releases
-
-As of July 10th 2020 we automatically publish [develop releases on Github](https://github.com/KILTprotocol/sdk-js/packages/286306) on each push to the `develop` branch.
+As of July 10th 2020, we automatically publish [develop releases on Github](https://github.com/KILTprotocol/sdk-js/packages/286306) on each push to the `develop` branch.
 In order to use these, you need to set up an `.npmrc` file in your project root and add an Github Access Token with `read:packages` permission.
