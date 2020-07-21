@@ -448,8 +448,6 @@ const verifier = await Kilt.Identity.buildFromMnemonic()
 Before a claimer sends any data to a verifier, the verifier needs to initiate the verification process by requesting a presentation for a specific CTYPE.
 Therefore, the verifier knows which properties are included in the attested claim and can request to see any combination of these publicly (including all of them or none).
 This is an **important feature for the privacy of a claimer** as this enables them to only show necessary properties for a specific verification.
-However, a verifier has to **allow privacy enhancement** for this to work.
-Otherwise, the verifier will always see all properties of the claim independent of the requested ones.
 
 When requesting a CTYPE, a **session** object for the verifier is automatically generated.
 It prevents replay attacks and will be needed when verifying the attested claim.
