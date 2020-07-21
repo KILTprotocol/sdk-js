@@ -6,8 +6,7 @@ import Kilt, {
   ISubmitAttestationForClaim,
   ISubmitClaimsForCTypesPublic,
 } from '../src'
-
-const WS_HOST = 'ws://127.0.0.1:9944'
+import { DEFAULT_WS_ADDRESS } from '../src/blockchainApiConnection'
 
 async function main(): Promise<void> {
   /* 2. How to generate an Identity */
@@ -34,7 +33,7 @@ async function main(): Promise<void> {
   })
 
   /* To store the CTYPE on the blockchain, you have to call: */
-  Kilt.connect(WS_HOST)
+  Kilt.connect(DEFAULT_WS_ADDRESS)
   const identity = await Kilt.Identity.buildFromMnemonic(
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   )
@@ -59,7 +58,7 @@ async function main(): Promise<void> {
   /* As a result we get the following KILT claim: */
   console.log(claim)
 
-  /* ### Requesting an Attestation */
+  /* 5.1.1. Requesting an Attestation */
   const {
     message: requestForAttestation,
   } = await Kilt.RequestForAttestation.fromClaimAndIdentity(claim, claimer)
@@ -184,4 +183,4 @@ async function main(): Promise<void> {
   }
 }
 // execute
-main().finally(() => Kilt.disconnect(WS_HOST))
+main().finally(() => Kilt.disconnect(DEFAULT_WS_ADDRESS))
