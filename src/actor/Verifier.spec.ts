@@ -40,8 +40,8 @@ describe('Verifier', () => {
       },
     })
 
-    claimer = await Identity.buildFromURI('//bob')
-    verifier = await Identity.buildFromMnemonic()
+    claimer = await Identity.buildFromURI('//bob', { peEnabled: true })
+    verifier = await Identity.buildFromMnemonic(undefined, { peEnabled: true })
 
     const rawCType: ICType['schema'] = {
       $id: 'kilt:ctype:0x1',

@@ -41,7 +41,7 @@ describe('AttesterIdentity', () => {
       type: 'object',
       title: 'title',
     }
-    claimer = await Identity.buildFromURI('//Bob')
+    claimer = await Identity.buildFromURI('//Bob', { peEnabled: true })
     cType = CType.fromSchema(rawCType, claimer.getAddress())
     attester = await AttesterIdentity.buildFromMnemonic(mnemonic, {
       key: {
@@ -113,7 +113,9 @@ describe('AttesterIdentity', () => {
   })
 
   it('should build the same from plain identity', async () => {
-    const plainId = await Identity.buildFromMnemonic(mnemonic)
+    const plainId = await Identity.buildFromMnemonic(mnemonic, {
+      peEnabled: true,
+    })
     const newAttester = await AttesterIdentity.buildFromIdentity(plainId, {
       key: {
         publicKey: constants.PUBLIC_KEY.toString(),
