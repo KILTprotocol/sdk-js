@@ -60,6 +60,10 @@ function fillRight(
   return paddedSeed
 }
 
+export type IdentityBuildOptions = {
+  peEnabled?: boolean
+}
+
 export default class Identity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
 
@@ -80,6 +84,8 @@ export default class Identity {
    * [STATIC] Builds an identity object from a mnemonic string.
    *
    * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
+   * @param options The option object.
+   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: true).
    * @throws When phraseArg contains fewer than 12 correctly separated mnemonic words.
    * @throws When the phraseArg could not be validated.
    * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]], [[ERROR_MNEMONIC_PHRASE_INVALID]].
@@ -92,7 +98,10 @@ export default class Identity {
    * await Identity.buildFromMnemonic(mnemonic);
    * ```
    */
-  public static async buildFromMnemonic(phraseArg?: string): Promise<Identity> {
+  public static async buildFromMnemonic(
+    phraseArg?: string,
+    { peEnabled = true }: IdentityBuildOptions = {}
+  ): Promise<Identity> {
     let phrase = phraseArg
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
@@ -108,13 +117,15 @@ export default class Identity {
     }
 
     const seed = mnemonicToMiniSecret(phrase)
-    return Identity.buildFromSeed(seed)
+    return Identity.buildFromSeed(seed, { peEnabled })
   }
 
   /**
    * [STATIC] Builds an [[Identity]], generated from a seed hex string.
    *
    * @param seedArg - Seed as hex string (Starting with 0x).
+   * @param options The option object.
+   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: true).
    * @returns  An [[Identity]].
    * @example ```javascript
    * const seed =
@@ -122,15 +133,20 @@ export default class Identity {
    * await Identity.buildFromSeedString(seed);
    * ```
    */
-  public static async buildFromSeedString(seedArg: string): Promise<Identity> {
+  public static async buildFromSeedString(
+    seedArg: string,
+    { peEnabled = true }: IdentityBuildOptions = {}
+  ): Promise<Identity> {
     const asU8a = hexToU8a(seedArg)
-    return Identity.buildFromSeed(asU8a)
+    return Identity.buildFromSeed(asU8a, { peEnabled })
   }
 
   /**
    * [STATIC] Builds a new [[Identity]], generated from a seed (Secret Seed).
    *
    * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
+   * @param options The option object.
+   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: true).
    * @returns An [[Identity]].
    * @example ```javascript
    * // prettier-ignore
@@ -142,13 +158,19 @@ export default class Identity {
    * await Identity.buildFromSeed(seed);
    * ```
    */
-  public static async buildFromSeed(seed: Uint8Array): Promise<Identity> {
+  public static async buildFromSeed(
+    seed: Uint8Array,
+    { peEnabled = true }: IdentityBuildOptions = {}
+  ): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
     const keyringPair = keyring.addFromSeed(seed)
 
     // pad seed if needed for claimer
     const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
-    const claimer = await Claimer.buildFromSeed(paddedSeed)
+    let claimer = null
+    if (peEnabled) {
+      claimer = await Claimer.buildFromSeed(paddedSeed)
+    }
 
     return new Identity(seed, keyringPair, claimer)
   }
@@ -157,18 +179,26 @@ export default class Identity {
    * [STATIC] Builds a new [[Identity]], generated from a uniform resource identifier (URIs).
    *
    * @param uri - Standard identifiers.
+   * @param options The option object.
+   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: true).
    * @returns  An [[Identity]].
    * @example ```javascript
    * Identity.buildFromURI('//Bob');
    * ```
    */
-  public static async buildFromURI(uri: string): Promise<Identity> {
+  public static async buildFromURI(
+    uri: string,
+    { peEnabled = true }: IdentityBuildOptions = {}
+  ): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
     const derived = keyring.createFromUri(uri)
     const seed = u8aUtil.u8aToU8a(uri)
 
-    const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
-    const claimer = await Claimer.buildFromSeed(paddedSeed)
+    let claimer = null
+    if (peEnabled) {
+      const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
+      claimer = await Claimer.buildFromSeed(paddedSeed)
+    }
 
     return new Identity(seed, derived, claimer)
   }
@@ -176,7 +206,7 @@ export default class Identity {
   public readonly seed: Uint8Array
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
-  public readonly claimer: Claimer
+  public readonly claimer: Claimer | null
   public readonly signKeyringPair: KeyringPair
   public readonly boxKeyPair: BoxKeyPair
   public serviceAddress?: string
@@ -184,7 +214,7 @@ export default class Identity {
   protected constructor(
     seed: Uint8Array,
     signKeyringPair: KeyringPair,
-    claimer: Claimer
+    claimer: Claimer | null
   ) {
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public

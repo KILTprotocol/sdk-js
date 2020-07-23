@@ -10,11 +10,14 @@ import { KeyringPair } from '@polkadot/keyring/types'
 import * as u8aUtil from '@polkadot/util/u8a'
 import Attestation from '../attestation/Attestation'
 import getCached from '../blockchainApiConnection'
-import { ERROR_PE_MISSING } from '../errorhandling/SDKErrors'
+import {
+  ERROR_PE_MISSING,
+  ERROR_IDENTITY_NOT_PE_ENABLED,
+} from '../errorhandling/SDKErrors'
 import { IInitiateAttestation, MessageBodyType } from '../messaging/Message'
 import { IRevocationHandle } from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import Identity from './Identity'
+import Identity, { IdentityBuildOptions } from './Identity'
 import PublicAttesterIdentity from './PublicAttesterIdentity'
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
@@ -28,7 +31,7 @@ export type KeyOptions = {
   publicKey: string
 }
 
-export type Options = {
+export type Options = IdentityBuildOptions & {
   /** The duration for which the generated privacy enhanced key pair should be valid (in ms). The default value is one year. */
   validityDuration?: number
   /** The maximum number of attributes of a [[Claim]] attributes which can be signed. The default value is 70. */
@@ -54,6 +57,10 @@ export default class AttesterIdentity extends Identity {
     identity: Identity,
     options: Options = {}
   ): Promise<AttesterIdentity> {
+    if (!identity.claimer) {
+      throw ERROR_IDENTITY_NOT_PE_ENABLED()
+    }
+
     let acc = options.accumulator
     let attester: gabi.Attester
     if (typeof options.key === 'undefined') {
@@ -100,7 +107,7 @@ export default class AttesterIdentity extends Identity {
     options: Options = {}
   ): Promise<AttesterIdentity> {
     return this.buildFromIdentity(
-      await Identity.buildFromMnemonic(phraseArg),
+      await Identity.buildFromMnemonic(phraseArg, { peEnabled: true }),
       options
     )
   }
@@ -123,7 +130,7 @@ export default class AttesterIdentity extends Identity {
     options: Options = {}
   ): Promise<AttesterIdentity> {
     return this.buildFromIdentity(
-      await Identity.buildFromSeedString(seedArg),
+      await Identity.buildFromSeedString(seedArg, { peEnabled: true }),
       options
     )
   }
@@ -148,7 +155,10 @@ export default class AttesterIdentity extends Identity {
     seed: Uint8Array,
     options: Options = {}
   ): Promise<AttesterIdentity> {
-    return this.buildFromIdentity(await Identity.buildFromSeed(seed), options)
+    return this.buildFromIdentity(
+      await Identity.buildFromSeed(seed, { peEnabled: true }),
+      options
+    )
   }
 
   /**
@@ -165,7 +175,10 @@ export default class AttesterIdentity extends Identity {
     uri: string,
     options: Options = {}
   ): Promise<AttesterIdentity> {
-    return this.buildFromIdentity(await Identity.buildFromURI(uri), options)
+    return this.buildFromIdentity(
+      await Identity.buildFromURI(uri, { peEnabled: true }),
+      options
+    )
   }
 
   protected constructor(

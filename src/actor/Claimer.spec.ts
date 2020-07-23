@@ -13,10 +13,16 @@ import {
   ERROR_MESSAGE_TYPE,
   ERROR_PE_CREDENTIAL_MISSING,
   ERROR_PE_MISMATCH,
+  ERROR_IDENTITY_NOT_PE_ENABLED,
+  ERROR_PE_MISSING,
 } from '../errorhandling/SDKErrors'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
-import Message, { MessageBodyType } from '../messaging/Message'
+import Message, {
+  MessageBodyType,
+  IRequestClaimsForCTypes,
+  ISubmitClaimsForCTypesPublic,
+} from '../messaging/Message'
 import constants from '../test/constants'
 import { ClaimerAttestationSession } from './Claimer'
 
@@ -40,7 +46,7 @@ describe('Claimer', () => {
       },
     })
 
-    claimer = await Identity.buildFromURI('//bob')
+    claimer = await Identity.buildFromURI('//Bob')
     verifier = await Identity.buildFromMnemonic()
 
     const rawCType: ICType['schema'] = {
@@ -300,7 +306,34 @@ describe('Claimer', () => {
     expect(presentation.body.type).toEqual(
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
     )
-    expect(Array.isArray(presentation.body.content))
+    expect(Array.isArray(presentation.body.content)).toBe(true)
+  })
+  it('create public presentation from request without peRequest', async () => {
+    const body: IRequestClaimsForCTypes = {
+      type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+      content: {
+        allowPE: false,
+        ctypes: ['this is a ctype hash'],
+      },
+    }
+    const request = new Message(body, verifier, claimer.getPublicIdentity())
+
+    const presentation = await Claimer.createPresentation(
+      claimer,
+      request,
+      verifier.getPublicIdentity(),
+      [credentialPE],
+      [attester.getPublicIdentity()],
+      false
+    )
+    expect(presentation.body.type).toEqual(
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
+    )
+    expect(Array.isArray(presentation.body.content)).toBe(true)
+    const { content } = presentation.body as ISubmitClaimsForCTypesPublic
+    expect(Object.keys(content[0].request.claim.contents)).toEqual(
+      Object.keys(content[0].request.claimHashTree)
+    )
   })
   describe('Negative tests', () => {
     describe('create presentation', () => {
@@ -355,6 +388,70 @@ describe('Claimer', () => {
           })
         ).rejects.toThrowError(ERROR_PE_CREDENTIAL_MISSING())
       })
+      it('Should throw, if PE is allowed, but claimer has no PE-enabled identity', async () => {
+        const claimerWithoutPE = await Identity.buildFromURI('//Bob', {
+          peEnabled: false,
+        })
+        const { message: request } = await Verifier.newRequestBuilder()
+          .requestPresentationForCtype({
+            ctypeHash: 'this is a ctype hash',
+            properties: ['name', 'and', 'other', 'attributes'],
+          })
+          .finalize(true, verifier, claimer.getPublicIdentity())
+
+        await expect(
+          Claimer.createPresentation(
+            claimerWithoutPE,
+            request,
+            verifier.getPublicIdentity(),
+            [credentialPE],
+            [attester.getPublicIdentity()],
+            false
+          )
+        ).rejects.toThrowError(ERROR_IDENTITY_NOT_PE_ENABLED())
+      })
+    })
+    it('Should throw, if PE is allowed and required, but peRequest is missing', async () => {
+      const claimerWithoutPE = await Identity.buildFromURI('//Bob', {
+        peEnabled: false,
+      })
+      const { message: request } = await Verifier.newRequestBuilder()
+        .requestPresentationForCtype({
+          ctypeHash: 'this is a ctype hash',
+          properties: ['name', 'and', 'other', 'attributes'],
+        })
+        .finalize(true, verifier, claimer.getPublicIdentity())
+
+      await expect(
+        Claimer.createPresentation(
+          claimerWithoutPE,
+          request,
+          verifier.getPublicIdentity(),
+          [credentialPE],
+          [attester.getPublicIdentity()],
+          false
+        )
+      ).rejects.toThrowError(ERROR_IDENTITY_NOT_PE_ENABLED())
+    })
+    it('Should throw when PE is allowed, but peRequest is missing in the request message', async () => {
+      const body: IRequestClaimsForCTypes = {
+        type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        content: {
+          allowPE: true,
+          ctypes: ['this is a ctype hash'],
+        },
+      }
+      const request = new Message(body, verifier, claimer.getPublicIdentity())
+
+      await expect(
+        Claimer.createPresentation(
+          claimer,
+          request,
+          verifier.getPublicIdentity(),
+          [credentialPE],
+          [attester.getPublicIdentity()]
+        )
+      ).rejects.toThrowError(ERROR_PE_MISSING())
     })
     it('Should throw when message body type does not match in requestAttestation', () => {
       return expect(
@@ -394,6 +491,91 @@ describe('Claimer', () => {
           MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
         )
       )
+    })
+    it('Should throw, when claimer tries to make a request for attestation, without a PE-enabled identity', async () => {
+      blockchainApi.query.attestation.attestations.mockReturnValue(
+        mockChainQueryReturn('attestation', 'attestations', [
+          cType.hash,
+          attester.getAddress(),
+          undefined,
+          0,
+        ])
+      )
+
+      const claimerWithoutPE = await Identity.buildFromURI('//Bob', {
+        peEnabled: false,
+      })
+
+      const { message: initAttestation } = await Attester.initiateAttestation(
+        attester,
+        claimerWithoutPE.getPublicIdentity()
+      )
+
+      await expect(
+        Claimer.requestAttestation(
+          claim,
+          claimerWithoutPE,
+          attester.getPublicIdentity(),
+          {
+            initiateAttestationMsg: initAttestation,
+          }
+        )
+      ).rejects.toThrowError(ERROR_IDENTITY_NOT_PE_ENABLED())
+    })
+
+    it('Should throw, when claimer tries to make a credential, without a PE-enabled identity', async () => {
+      blockchainApi.query.attestation.attestations.mockReturnValue(
+        mockChainQueryReturn('attestation', 'attestations', [
+          cType.hash,
+          attester.getAddress(),
+          undefined,
+          0,
+        ])
+      )
+
+      const claimerWithoutPE = await Identity.buildFromURI('//Bob', {
+        peEnabled: false,
+      })
+
+      const {
+        message: initAttestation,
+        session: attersterSession,
+      } = await Attester.initiateAttestation(
+        attester,
+        claimer.getPublicIdentity()
+      )
+
+      const {
+        message: requestAttestation,
+        session: claimerSession,
+      } = await Claimer.requestAttestation(
+        claim,
+        claimer,
+        attester.getPublicIdentity(),
+        {
+          initiateAttestationMsg: initAttestation,
+        }
+      )
+
+      const { message: attestationMessage } = await Attester.issueAttestation(
+        attester,
+        requestAttestation,
+        claimer.getPublicIdentity(),
+        attersterSession,
+        true
+      )
+
+      await expect(
+        Claimer.buildCredential(claimer, attestationMessage, claimerSession)
+      ).resolves.toBeTruthy()
+
+      await expect(
+        Claimer.buildCredential(
+          claimerWithoutPE,
+          attestationMessage,
+          claimerSession
+        )
+      ).rejects.toThrowError(ERROR_IDENTITY_NOT_PE_ENABLED())
     })
   })
 })

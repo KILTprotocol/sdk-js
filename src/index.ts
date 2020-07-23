@@ -42,7 +42,7 @@ export * from './types/Attestation'
 export { default as IAttestedClaim } from './types/AttestedClaim'
 export { default as IClaim } from './types/Claim'
 export { default as ICredential } from './types/Credential'
-export { default as ICType } from './types/CType'
+export { default as ICType, CTypeSchemaWithoutId } from './types/CType'
 export { default as ICTypeMetadata } from './types/CTypeMetadata'
 export {
   IDelegationBaseNode,

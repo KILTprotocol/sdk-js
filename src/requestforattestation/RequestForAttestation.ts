@@ -154,6 +154,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
       if (typeof delegationId !== 'undefined') {
         rawClaim.delegationId = delegationId
       }
+      if (!identity.claimer) {
+        throw SDKErrors.ERROR_IDENTITY_NOT_PE_ENABLED()
+      }
       const peSessionMessage = await identity.claimer.requestAttestation({
         claim: rawClaim,
         startAttestationMsg: initiateAttestationMsg.content,
