@@ -4,7 +4,7 @@ import Kilt, {
   Message,
   MessageBodyType,
   ISubmitAttestationForClaim,
-  ISubmitClaimsForCTypesPublic,
+  ISubmitClaimsForCTypesClassic,
 } from '../src'
 import { DEFAULT_WS_ADDRESS } from '../src/blockchainApiConnection'
 
@@ -159,9 +159,9 @@ async function main(): Promise<void> {
         )
 
       /* Now the claimer can send a message to verifier including the attested claim: */
-      const messageBodyForVerifier: ISubmitClaimsForCTypesPublic = {
+      const messageBodyForVerifier: ISubmitClaimsForCTypesClassic = {
         content: [myAttestedClaim],
-        type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+        type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC,
       }
       const messageForVerifier = new Kilt.Message(
         messageBodyForVerifier,

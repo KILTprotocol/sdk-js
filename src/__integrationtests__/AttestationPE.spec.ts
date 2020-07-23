@@ -16,7 +16,7 @@ import Credential from '../credential'
 import Identity, { AttesterIdentity } from '../identity'
 import constants from '../test/constants'
 import { IRevocationHandle } from '../types/Attestation'
-import { CtypeOnChain, DriversLicense, FaucetSeed, wannabeBob } from './utils'
+import { CtypeOnChain, DriversLicense, FaucetSeed } from './utils'
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
@@ -34,14 +34,14 @@ describe('Privacy enhanced claim, attestation, verification process', () => {
 
   beforeAll(async () => {
     // set up actors
-    claimer = await wannabeBob
+    claimer = await Identity.buildFromURI('//Bob', { peEnabled: true })
     attester = await AttesterIdentity.buildFromMnemonic(FaucetSeed, {
       key: {
         publicKey: constants.PUBLIC_KEY.toString(),
         privateKey: constants.PRIVATE_KEY.toString(),
       },
     })
-    verifier = await Identity.buildFromMnemonic()
+    verifier = await Identity.buildFromMnemonic(undefined, { peEnabled: true })
 
     // update accumulator (empty for fresh chain)
     accumulator = await Attester.buildAccumulator(attester)
