@@ -124,7 +124,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attester.getPublicIdentity()
     )
 
-    const bobbyBroke = await Identity.buildFromMnemonic()
+    const bobbyBroke = await Identity.buildFromMnemonic(
+      Identity.generateMnemonic()
+    )
 
     await expect(attestation.store(bobbyBroke)).rejects.toThrow()
     const cred = await Credential.fromRequestAndAttestation(

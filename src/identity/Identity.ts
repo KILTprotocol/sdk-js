@@ -99,7 +99,7 @@ export default class Identity {
    * ```
    */
   public static async buildFromMnemonic(
-    phraseArg?: string,
+    phraseArg: string,
     { peEnabled = false }: IdentityBuildOptions = {}
   ): Promise<Identity> {
     let phrase = phraseArg
@@ -239,7 +239,8 @@ export default class Identity {
    *
    * @returns The [[PublicIdentity]], corresponding to the [[Identity]].
    * @example ```javascript
-   * const alice = await Kilt.Identity.buildFromMnemonic();
+   * const mnemonic = Identity.generateMnemonic();
+   * const alice = await Kilt.Identity.buildFromMnemonic(mnemonic);
    * alice.getPublicIdentity();
    * ```
    */
@@ -275,7 +276,8 @@ export default class Identity {
    * @param cryptoInput - The data to be signed.
    * @returns The signed data.
    * @example  ```javascript
-   * const alice = await Identity.buildFromMnemonic();
+   * const mnemonic = Identity.generateMnemonic();
+   * const alice = await Identity.buildFromMnemonic(mnemonic);
    * const data = 'This is a test';
    * alice.sign(data);
    * // (output) Uint8Array [

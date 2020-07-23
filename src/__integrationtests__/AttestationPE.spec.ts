@@ -41,7 +41,9 @@ describe('Privacy enhanced claim, attestation, verification process', () => {
         privateKey: constants.PRIVATE_KEY.toString(),
       },
     })
-    verifier = await Identity.buildFromMnemonic(undefined, { peEnabled: true })
+    verifier = await Identity.buildFromMnemonic(Identity.generateMnemonic(), {
+      peEnabled: true,
+    })
 
     // update accumulator (empty for fresh chain)
     accumulator = await Attester.buildAccumulator(attester)
