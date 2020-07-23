@@ -126,7 +126,7 @@ export async function createPresentation(
 
   return new Message(
     {
-      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC,
       content: attestedClaims,
     },
     identity,

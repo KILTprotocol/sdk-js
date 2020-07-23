@@ -238,7 +238,7 @@ export async function verifyPresentation(
   claims: Array<Partial<IRequestForAttestation | IAttestedClaim>>
 }> {
   // If we got a public presentation, check that the attestation is valid
-  if (message.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC) {
+  if (message.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC) {
     const attestedClaims = message.body.content.map(
       AttestedClaim.fromAttestedClaim
     )
@@ -272,7 +272,7 @@ export async function verifyPresentation(
   } else {
     throw ERROR_MESSAGE_TYPE(
       message.body.type,
-      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC,
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
     )
   }

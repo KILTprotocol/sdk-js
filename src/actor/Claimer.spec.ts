@@ -21,7 +21,7 @@ import Identity from '../identity/Identity'
 import Message, {
   MessageBodyType,
   IRequestClaimsForCTypes,
-  ISubmitClaimsForCTypesPublic,
+  ISubmitClaimsForCTypesClassic,
 } from '../messaging/Message'
 import constants from '../test/constants'
 import { ClaimerAttestationSession } from './Claimer'
@@ -304,7 +304,7 @@ describe('Claimer', () => {
       false
     )
     expect(presentation.body.type).toEqual(
-      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC
     )
     expect(Array.isArray(presentation.body.content)).toBe(true)
   })
@@ -327,10 +327,10 @@ describe('Claimer', () => {
       false
     )
     expect(presentation.body.type).toEqual(
-      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC
     )
     expect(Array.isArray(presentation.body.content)).toBe(true)
-    const { content } = presentation.body as ISubmitClaimsForCTypesPublic
+    const { content } = presentation.body as ISubmitClaimsForCTypesClassic
     expect(Object.keys(content[0].request.claim.contents)).toEqual(
       Object.keys(content[0].request.claimHashTree)
     )

@@ -260,7 +260,7 @@ describe('Verifier', () => {
       ...{
         // set public type and remove attestedClaims
         body: {
-          type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+          type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC,
           content: [],
         },
       },
@@ -337,7 +337,7 @@ describe('Verifier', () => {
     ).rejects.toThrowError(
       ERROR_MESSAGE_TYPE(
         MessageBodyType.SUBMIT_TERMS,
-        MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+        MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC,
         MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
       )
     )
@@ -394,7 +394,7 @@ describe('Verifier', () => {
       false
     )
     expect(presentation.body.type).toEqual(
-      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC
     )
     expect(Array.isArray(presentation.body.content)).toBeTruthy()
 
@@ -426,11 +426,12 @@ describe('Verifier', () => {
       false
     )
     expect(presentation.body.type).toEqual(
-      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC
     )
     expect(Array.isArray(presentation.body.content)).toBeTruthy()
     if (
-      presentation.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
+      presentation.body.type ===
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC
     ) {
       delete presentation.body.content[0].request.claim.contents.name
       const { verified: ok, claims } = await Verifier.verifyPresentation(
