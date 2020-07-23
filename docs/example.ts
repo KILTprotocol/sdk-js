@@ -231,7 +231,9 @@ async function doVerification(
     )
   )
   const verifierMnemonic = Identity.generateMnemonic()
-  const verifier = await Kilt.Identity.buildFromMnemonic(verifierMnemonic)
+  const verifier = await Kilt.Identity.buildFromMnemonic(verifierMnemonic, {
+    peEnabled: true,
+  })
   // ------------------------- Verifier ----------------------------------------
   const { session, message: request } = await Kilt.Verifier.newRequestBuilder()
     .requestPresentationForCtype({
