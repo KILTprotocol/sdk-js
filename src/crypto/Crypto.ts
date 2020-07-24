@@ -22,8 +22,8 @@ import { signatureVerify } from '@polkadot/util-crypto'
 import blake2AsU8a from '@polkadot/util-crypto/blake2/asU8a'
 import naclDecrypt from '@polkadot/util-crypto/nacl/decrypt'
 import naclEncrypt from '@polkadot/util-crypto/nacl/encrypt'
-import * as jsonabc from 'jsonabc'
 import nacl from 'tweetnacl'
+import jsonabc from '../util/jsonabc'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 

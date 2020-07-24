@@ -83,10 +83,8 @@
     "@polkadot/types-known": "^1.23.1",
     "@polkadot/util": "^2.17.1",
     "@polkadot/util-crypto": "^2.17.1",
-    "@types/jsonabc": "^2.3.1",
     "ajv": "^6.12.2",
     "bn.js": "^5.1.2",
-    "jsonabc": "^2.3.1",
     "typescript-logging": "^0.6.4",
     "uuid": "^8.1.0"
   },
