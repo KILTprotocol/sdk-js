@@ -94,7 +94,7 @@ export enum MessageBodyType {
   REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
 
   REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
-  SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC = 'submit-claims-for-ctypes-public',
+  SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC = 'submit-claims-for-ctypes-classic',
   SUBMIT_CLAIMS_FOR_CTYPES_PE = 'submit-claims-for-ctypes-pe',
   ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
   REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
@@ -113,7 +113,7 @@ export default class Message implements IMessage {
    * @param message.body The body of the [[Message]] which depends on the [[MessageBodyType]].
    * @param message.senderAddress The sender's public SS58 address of the [[Message]].
    * @throws When the sender does not match the owner of the in the Message supplied Object.
-   * @throws [[SUBMIT_ATTESTATION_FOR_CLAIM]], [[SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC]], [[ERROR_IDENTITY_MISMATCH]].
+   * @throws [[SUBMIT_ATTESTATION_FOR_CLAIM]], [[SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC]], [[ERROR_IDENTITY_MISMATCH]].
    *
    */
   public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
@@ -137,9 +137,9 @@ export default class Message implements IMessage {
           }
         }
         break
-      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC:
+      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC:
         {
-          const submitClaimsForCtype = body
+          const submitClaimsForCtype: ISubmitClaimsForCTypesClassic = body
           submitClaimsForCtype.content.forEach((claim) => {
             if (claim.request.claim.owner !== senderAddress) {
               throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
@@ -344,12 +344,12 @@ export interface IRequestClaimsForCTypes extends IMessageBodyBase {
 }
 
 export type ISubmitClaimsForCTypes =
-  | ISubmitClaimsForCTypesPublic
+  | ISubmitClaimsForCTypesClassic
   | ISubmitClaimsForCTypesPE
 
-export interface ISubmitClaimsForCTypesPublic extends IMessageBodyBase {
+export interface ISubmitClaimsForCTypesClassic extends IMessageBodyBase {
   content: IAttestedClaim[]
-  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC
+  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC
 }
 
 export interface ISubmitClaimsForCTypesPE extends IMessageBodyBase {
@@ -419,7 +419,7 @@ export type MessageBody =
   | IRejectAttestationForClaim
   //
   | IRequestClaimsForCTypes
-  | ISubmitClaimsForCTypesPublic
+  | ISubmitClaimsForCTypesClassic
   | ISubmitClaimsForCTypesPE
   | IAcceptClaimsForCTypes
   | IRejectClaimsForCTypes

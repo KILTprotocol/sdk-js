@@ -476,9 +476,9 @@ const { session: verifierSession } = await Kilt.Verifier.newRequestBuilder()
 Now the claimer can send a message to the verifier including the attested claim:
 
 ```typescript
-const messageBodyForVerifier: ISubmitClaimsForCTypesPublic = {
+const messageBodyForVerifier: ISubmitClaimsForCTypesClassic = {
   content: [myAttestedClaim],
-  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC,
 }
 const messageForVerifier = new Kilt.Message(
   messageBodyForVerifier,

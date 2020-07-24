@@ -18,7 +18,7 @@ describe('querying DIDs that do not exist', () => {
   let ident: Identity
 
   beforeAll(async () => {
-    ident = await Identity.buildFromMnemonic()
+    ident = await Identity.buildFromMnemonic(Identity.generateMnemonic())
   })
 
   it('queryByAddress', async () => {

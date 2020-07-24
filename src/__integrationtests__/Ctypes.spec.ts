@@ -41,7 +41,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
-    const bobbyBroke = await Identity.buildFromMnemonic()
+    const bobbyBroke = await Identity.buildFromMnemonic(
+      Identity.generateMnemonic()
+    )
     await expect(ctype.store(bobbyBroke)).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
   }, 20_000)

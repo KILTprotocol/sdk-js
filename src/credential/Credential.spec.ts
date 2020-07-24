@@ -16,13 +16,16 @@ describe('Credential', () => {
   let attestation: Attestation
 
   beforeAll(async () => {
-    attester = await AttesterIdentity.buildFromMnemonic(undefined, {
-      key: {
-        publicKey: constants.PUBLIC_KEY.toString(),
-        privateKey: constants.PRIVATE_KEY.toString(),
-      },
-    })
-    claimer = await Identity.buildFromMnemonic()
+    attester = await AttesterIdentity.buildFromMnemonic(
+      Identity.generateMnemonic(),
+      {
+        key: {
+          publicKey: constants.PUBLIC_KEY.toString(),
+          privateKey: constants.PRIVATE_KEY.toString(),
+        },
+      }
+    )
+    claimer = await Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     const rawCType: ICType['schema'] = {
       $id: 'kilt:ctype:0x1',

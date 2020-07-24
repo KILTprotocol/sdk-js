@@ -37,7 +37,7 @@ describe('Attester', () => {
       },
     })
 
-    claimer = await Identity.buildFromURI('//Bob')
+    claimer = await Identity.buildFromURI('//Bob', { peEnabled: true })
 
     rawCType = {
       $id: 'kilt:ctype:0x1',

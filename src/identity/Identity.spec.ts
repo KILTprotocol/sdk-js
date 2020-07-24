@@ -27,8 +27,8 @@ describe('Identity', () => {
   })
 
   it('should create different identities with random phrases', async () => {
-    const alice = await Identity.buildFromMnemonic()
-    const bob = await Identity.buildFromMnemonic()
+    const alice = await Identity.buildFromMnemonic(Identity.generateMnemonic())
+    const bob = await Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     expect(alice.signPublicKeyAsHex).not.toBeFalsy()
     expect(alice.boxKeyPair.publicKey).not.toBeFalsy()
@@ -61,7 +61,7 @@ describe('Identity', () => {
   })
 
   it('should have different keys for signing and boxing', async () => {
-    const alice = await Identity.buildFromMnemonic()
+    const alice = await Identity.buildFromMnemonic(Identity.generateMnemonic())
     expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
       alice.boxKeyPair.publicKey
     )
@@ -82,19 +82,22 @@ describe('Identity', () => {
   })
 
   it('should have different keys for signing and boxing', async () => {
-    const alice = await Identity.buildFromMnemonic()
+    const alice = await Identity.buildFromMnemonic(Identity.generateMnemonic())
     expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
       alice.boxKeyPair.publicKey
     )
   })
 
   it('should initiate attestation with gabi keys (PE)', async () => {
-    const alice = await AttesterIdentity.buildFromMnemonic(undefined, {
-      key: {
-        publicKey: constants.PUBLIC_KEY.toString(),
-        privateKey: constants.PRIVATE_KEY.toString(),
-      },
-    })
+    const alice = await AttesterIdentity.buildFromMnemonic(
+      Identity.generateMnemonic(),
+      {
+        key: {
+          publicKey: constants.PUBLIC_KEY.toString(),
+          privateKey: constants.PRIVATE_KEY.toString(),
+        },
+      }
+    )
 
     const msgSession = await alice.initiateAttestation()
     expect(msgSession.session).toBeDefined()

@@ -55,14 +55,16 @@ describe('when there is a dev chain with a faucet', () => {
 
   it('getBalance should return 0 for new identity', async () => {
     return expect(
-      getBalance((await Identity.buildFromMnemonic()).getAddress()).then((n) =>
-        n.toNumber()
-      )
+      getBalance(
+        (
+          await Identity.buildFromMnemonic(Identity.generateMnemonic())
+        ).getAddress()
+      ).then((n) => n.toNumber())
     ).resolves.toEqual(0)
   })
 
   it('should be able to faucet coins to a new identity', async () => {
-    const ident = await Identity.buildFromMnemonic()
+    const ident = await Identity.buildFromMnemonic(Identity.generateMnemonic())
     const funny = jest.fn()
     listenToBalanceChanges(ident.getAddress(), funny)
     const balanceBefore = await getBalance(faucet.getAddress())
@@ -86,10 +88,10 @@ describe('When there are haves and have-nots', () => {
   let faucet: Identity
 
   beforeAll(async () => {
-    bobbyBroke = await Identity.buildFromMnemonic()
+    bobbyBroke = await Identity.buildFromMnemonic(Identity.generateMnemonic())
     richieRich = await wannabeAlice
     faucet = await wannabeFaucet
-    stormyD = await Identity.buildFromMnemonic()
+    stormyD = await Identity.buildFromMnemonic(Identity.generateMnemonic())
   })
 
   it('can transfer tokens from the rich to the poor', async () => {

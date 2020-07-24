@@ -103,7 +103,7 @@ export default class AttesterIdentity extends Identity {
    * ```
    */
   public static async buildFromMnemonic(
-    phraseArg?: string,
+    phraseArg: string,
     options: Options = {}
   ): Promise<AttesterIdentity> {
     return this.buildFromIdentity(

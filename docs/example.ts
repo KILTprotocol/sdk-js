@@ -93,7 +93,8 @@ async function setup(): Promise<{
   // How to generate an Identity
   // const mnemonic = Kilt.Identity.generateMnemonic()
   const claimer = await Kilt.Identity.buildFromMnemonic(
-    'wish rather clinic rather connect culture frown like quote effort cart faculty'
+    'wish rather clinic rather connect culture frown like quote effort cart faculty',
+    { peEnabled: true }
   )
   // const address = claimer.getAddress()
 
@@ -229,7 +230,10 @@ async function doVerification(
       ' VERIFICATION '
     )
   )
-  const verifier = await Kilt.Identity.buildFromMnemonic()
+  const verifierMnemonic = Identity.generateMnemonic()
+  const verifier = await Kilt.Identity.buildFromMnemonic(verifierMnemonic, {
+    peEnabled: true,
+  })
   // ------------------------- Verifier ----------------------------------------
   const { session, message: request } = await Kilt.Verifier.newRequestBuilder()
     .requestPresentationForCtype({

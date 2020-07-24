@@ -4,7 +4,8 @@ import Kilt, {
   Message,
   MessageBodyType,
   ISubmitAttestationForClaim,
-  ISubmitClaimsForCTypesPublic,
+  ISubmitClaimsForCTypesClassic,
+  Identity,
 } from '../src'
 import { DEFAULT_WS_ADDRESS } from '../src/blockchainApiConnection'
 
@@ -141,7 +142,8 @@ async function main(): Promise<void> {
       console.log(myAttestedClaim)
 
       /* As in the attestation, you need a second identity to act as the verifier: */
-      const verifier = await Kilt.Identity.buildFromMnemonic()
+      const verifierMnemonic = Identity.generateMnemonic()
+      const verifier = await Kilt.Identity.buildFromMnemonic(verifierMnemonic)
 
       /* 6.1.1. Without privacy enhancement */
       const {
@@ -159,9 +161,9 @@ async function main(): Promise<void> {
         )
 
       /* Now the claimer can send a message to verifier including the attested claim: */
-      const messageBodyForVerifier: ISubmitClaimsForCTypesPublic = {
+      const messageBodyForVerifier: ISubmitClaimsForCTypesClassic = {
         content: [myAttestedClaim],
-        type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PUBLIC,
+        type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC,
       }
       const messageForVerifier = new Kilt.Message(
         messageBodyForVerifier,

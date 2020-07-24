@@ -193,13 +193,16 @@ describe('RequestForAttestation', () => {
   })
 
   it('verify request for attestation (PE)', async () => {
+    const identityBobWithPE = await Identity.buildFromURI('//Bob', {
+      peEnabled: true,
+    })
     const [
       request,
       claimerSession,
       attester,
       attesterSession,
     ] = await buildRequestForAttestationPE(
-      identityBob,
+      identityBobWithPE,
       {
         a: 'a',
         b: 'b',
