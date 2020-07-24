@@ -5,7 +5,7 @@
  */
 
 import Ajv from 'ajv'
-import * as jsonabc from 'jsonabc'
+import jsonabc from '../util/jsonabc'
 import Crypto from '../crypto'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import IClaim from '../types/Claim'

@@ -4,7 +4,7 @@
  * @preferred
  */
 
-import * as jsonabc from 'jsonabc'
+import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import { validateAddress, validateHash } from '../util/DataUtils'

@@ -4,7 +4,7 @@
  * @preferred
  */
 
-import * as jsonabc from 'jsonabc'
+import jsonabc from '../util/jsonabc'
 import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
 import ClaimUtils from '../claim/Claim.utils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
