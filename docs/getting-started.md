@@ -79,7 +79,7 @@ const claimerMnemonic = Kilt.Identity.generateMnemonic()
 console.log('claimer mnemonic', claimerMnemonic)
 const claimer = await Kilt.Identity.buildFromMnemonic(claimerMnemonic)
 // claimer.address: 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
-console.log('claimer address', claimer.getAddress())
+console.log('claimer address', claimer.address)
 ```
 
 At this point the generated Identity has no tokens. If you want to interact with the blockchain, you will have to get some by [requesting them from our faucet](https://faucet.kilt.io/).
@@ -178,7 +178,7 @@ Now we can easily create the KILT compliant claim. We have to include the full C
 const claim = Kilt.Claim.fromCTypeAndClaimContents(
   ctype,
   rawClaim,
-  claimer.getAddress()
+  claimer.address
 )
 ```
 

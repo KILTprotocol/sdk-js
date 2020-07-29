@@ -123,7 +123,7 @@ describe('DID', () => {
     const alice = await Identity.buildFromURI('//Alice')
     expect(
       Did.createDefaultDidDocument(
-        Did.getIdentifierFromAddress(alice.getAddress()),
+        Did.getIdentifierFromAddress(alice.address),
         alice.getBoxPublicKey(),
         alice.signPublicKeyAsHex,
         'http://myDID.kilt.io/service'
@@ -179,7 +179,7 @@ describe('DID', () => {
     expect(
       Did.verifyDidDocumentSignature(
         signedDidDocument,
-        getIdentifierFromAddress(identity.getAddress())
+        getIdentifierFromAddress(identity.address)
       )
     ).toBeTruthy()
   })
@@ -203,7 +203,7 @@ describe('DID', () => {
     expect(
       Did.verifyDidDocumentSignature(
         tamperedSignedDidDocument,
-        getIdentifierFromAddress(identity.getAddress())
+        getIdentifierFromAddress(identity.address)
       )
     ).toBeFalsy()
   })
@@ -216,7 +216,7 @@ describe('DID', () => {
     )
     const signedDidDocument = Did.signDidDocument(didDocument, identityAlice)
     const identityBob = await Identity.buildFromURI('//Bob')
-    const id = getIdentifierFromAddress(identityBob.getAddress())
+    const id = getIdentifierFromAddress(identityBob.address)
 
     expect(() =>
       verifyDidDocumentSignature(signedDidDocument, id)

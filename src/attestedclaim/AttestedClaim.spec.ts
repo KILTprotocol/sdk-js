@@ -38,7 +38,7 @@ async function buildAttestedClaim(
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
     contents,
-    claimer.getAddress()
+    claimer.address
   )
   // build request for attestation with legitimations
   const {

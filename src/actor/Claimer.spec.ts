@@ -61,7 +61,7 @@ describe('Claimer', () => {
       type: 'object',
     }
 
-    cType = CType.fromSchema(rawCType, claimer.getAddress())
+    cType = CType.fromSchema(rawCType, claimer.address)
 
     claim = {
       cTypeHash: cType.hash,
@@ -77,7 +77,7 @@ describe('Claimer', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'attestations', [
         cType.hash,
-        attester.getAddress(),
+        attester.address,
         undefined,
         0,
       ])
@@ -150,7 +150,7 @@ describe('Claimer', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'attestations', [
         cType.hash,
-        attester.getAddress(),
+        attester.address,
         undefined,
         0,
       ])
@@ -224,7 +224,7 @@ describe('Claimer', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'attestations', [
         cType.hash,
-        attester.getAddress(),
+        attester.address,
         undefined,
         0,
       ])
@@ -498,7 +498,7 @@ describe('Claimer', () => {
       blockchainApi.query.attestation.attestations.mockReturnValue(
         mockChainQueryReturn('attestation', 'attestations', [
           cType.hash,
-          attester.getAddress(),
+          attester.address,
           undefined,
           0,
         ])
@@ -529,7 +529,7 @@ describe('Claimer', () => {
       blockchainApi.query.attestation.attestations.mockReturnValue(
         mockChainQueryReturn('attestation', 'attestations', [
           cType.hash,
-          attester.getAddress(),
+          attester.address,
           undefined,
           0,
         ])

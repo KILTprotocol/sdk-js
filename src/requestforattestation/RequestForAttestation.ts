@@ -135,7 +135,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     message: RequestForAttestation
     session: ClaimerAttestationSession | null
   }> {
-    if (claim.owner !== identity.getAddress()) {
+    if (claim.owner !== identity.address) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH()
     }
 

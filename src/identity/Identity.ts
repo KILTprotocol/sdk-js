@@ -257,7 +257,7 @@ export default class Identity {
    *
    * @returns The on chain address.
    */
-  public getAddress(): string {
+  public get address(): string {
     return this.signKeyringPair.address
   }
 

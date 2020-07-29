@@ -22,7 +22,7 @@ describe('querying DIDs that do not exist', () => {
   })
 
   it('queryByAddress', async () => {
-    return expect(queryByAddress(ident.getAddress())).resolves.toBeNull()
+    return expect(queryByAddress(ident.address)).resolves.toBeNull()
   })
 
   it('queryByIdentifier', async () => {

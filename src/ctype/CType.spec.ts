@@ -60,7 +60,7 @@ describe('CType', () => {
 
     identityAlice = await Identity.buildFromURI('//Alice')
 
-    claimCtype = CType.fromSchema(rawCType, identityAlice.getAddress())
+    claimCtype = CType.fromSchema(rawCType, identityAlice.address)
 
     claimContents = {
       name: 'Bob',
@@ -69,7 +69,7 @@ describe('CType', () => {
     claim = Claim.fromCTypeAndClaimContents(
       claimCtype,
       claimContents,
-      identityAlice.getAddress()
+      identityAlice.address
     )
     compressedCType = [
       claimCtype.hash,
@@ -89,7 +89,7 @@ describe('CType', () => {
   })
 
   it('stores ctypes', async () => {
-    const ctype = CType.fromSchema(ctypeModel, identityAlice.getAddress())
+    const ctype = CType.fromSchema(ctypeModel, identityAlice.address)
 
     const result = await ctype.store(identityAlice)
     expect(result).toBeInstanceOf(SubmittableResult)
@@ -98,10 +98,7 @@ describe('CType', () => {
   })
 
   it('makes ctype object from schema without id', () => {
-    const ctype = CType.fromSchema(
-      ctypeSchemaWithoutId,
-      identityAlice.getAddress()
-    )
+    const ctype = CType.fromSchema(ctypeSchemaWithoutId, identityAlice.address)
 
     expect(ctype.schema.$id).toBe(
       'kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84'
@@ -218,12 +215,12 @@ describe('blank ctypes', () => {
     const claimA1 = Claim.fromCTypeAndClaimContents(
       ctype1,
       {},
-      identityAlice.getAddress()
+      identityAlice.address
     )
     const claimA2 = Claim.fromCTypeAndClaimContents(
       ctype2,
       {},
-      identityAlice.getAddress()
+      identityAlice.address
     )
 
     expect(

@@ -114,7 +114,7 @@ describe('Messaging', () => {
     const content = {
       claim: {
         cTypeHash: '0x12345678',
-        owner: identityAlice.getAddress(),
+        owner: identityAlice.address,
         contents: {},
       },
       delegationId: null,
@@ -128,7 +128,7 @@ describe('Messaging', () => {
     } as IRequestForAttestation
 
     const quoteData: IQuote = {
-      attesterAddress: identityAlice.getAddress(),
+      attesterAddress: identityAlice.address,
       cTypeHash: '0x12345678',
       cost: {
         tax: { vat: 3.3 },
@@ -258,7 +258,7 @@ describe('Messaging', () => {
 
     it('verifies no error is thrown when executed correctly', () => {
       expect(() =>
-        Message.ensureHashAndSignature(encrypted, identityAlice.getAddress())
+        Message.ensureHashAndSignature(encrypted, identityAlice.address)
       ).not.toThrowError()
     })
     it('expects hash error', () => {
@@ -283,7 +283,7 @@ describe('Messaging', () => {
             ...encrypted,
             message: msg,
           },
-          identityBob.getAddress()
+          identityBob.address
         )
       ).toThrowError(
         SDKErrors.ERROR_NONCE_HASH_INVALID(
@@ -296,7 +296,7 @@ describe('Messaging', () => {
       expect(() =>
         Message.ensureHashAndSignature(
           { ...encrypted, nonce },
-          identityBob.getAddress()
+          identityBob.address
         )
       ).toThrowError(
         SDKErrors.ERROR_NONCE_HASH_INVALID(
@@ -309,7 +309,7 @@ describe('Messaging', () => {
       expect(() =>
         Message.ensureHashAndSignature(
           { ...encrypted, createdAt },
-          identityBob.getAddress()
+          identityBob.address
         )
       ).toThrowError(
         SDKErrors.ERROR_NONCE_HASH_INVALID(
@@ -320,7 +320,7 @@ describe('Messaging', () => {
     })
     it('expects signature error', async () => {
       expect(() =>
-        Message.ensureHashAndSignature(encrypted, identityBob.getAddress())
+        Message.ensureHashAndSignature(encrypted, identityBob.address)
       ).toThrowError(SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE())
     })
   })

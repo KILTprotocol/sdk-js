@@ -16,7 +16,7 @@ describe('Delegation', () => {
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
       mockChainQueryReturn('delegation', 'root', [
         ctypeHash,
-        identityAlice.getAddress(),
+        identityAlice.address,
         false,
       ])
     )
@@ -24,7 +24,7 @@ describe('Delegation', () => {
       mockChainQueryReturn('delegation', 'delegations', [
         ctypeHash,
         null,
-        identityAlice.getAddress(),
+        identityAlice.address,
         1,
         false,
       ])
@@ -37,7 +37,7 @@ describe('Delegation', () => {
     const rootDelegation = new DelegationRootNode(
       ROOT_IDENTIFIER,
       ctypeHash,
-      identityAlice.getAddress()
+      identityAlice.address
     )
     rootDelegation.store(identityAlice)
     const rootNode = await DelegationRootNode.query(ROOT_IDENTIFIER)
@@ -50,7 +50,7 @@ describe('Delegation', () => {
     const queriedDelegation = await DelegationRootNode.query(ROOT_IDENTIFIER)
     expect(queriedDelegation).not.toBe(undefined)
     if (queriedDelegation) {
-      expect(queriedDelegation.account).toBe(identityAlice.getAddress())
+      expect(queriedDelegation.account).toBe(identityAlice.address)
       expect(queriedDelegation.cTypeHash).toBe(ctypeHash)
       expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
     }
@@ -62,7 +62,7 @@ describe('Delegation', () => {
         if (rootId === 'success') {
           const tuple = mockChainQueryReturn('delegation', 'root', [
             'myCtypeHash',
-            identityAlice.getAddress(),
+            identityAlice.address,
             false,
           ])
 
@@ -70,7 +70,7 @@ describe('Delegation', () => {
         }
         const tuple = mockChainQueryReturn('delegation', 'root', [
           'myCtypeHash',
-          identityAlice.getAddress(),
+          identityAlice.address,
           true,
         ])
 
@@ -82,7 +82,7 @@ describe('Delegation', () => {
       await new DelegationRootNode(
         'success',
         'myCtypeHash',
-        identityAlice.getAddress()
+        identityAlice.address
       ).verify()
     ).toBe(true)
 

@@ -61,15 +61,12 @@ async function buildRequestForAttestationPE(
     type: 'object',
   }
 
-  const testCType: CType = CType.fromSchema(
-    rawCType,
-    identityAlice.getAddress()
-  )
+  const testCType: CType = CType.fromSchema(rawCType, identityAlice.address)
 
   const claim: IClaim = {
     cTypeHash: testCType.hash,
     contents,
-    owner: claimer.getAddress(),
+    owner: claimer.address,
   }
   // build request for attestation with legitimations
   const {
@@ -115,7 +112,7 @@ async function buildRequestForAttestation(
   const claim: IClaim = {
     cTypeHash: testCType.hash,
     contents,
-    owner: claimer.getAddress(),
+    owner: claimer.address,
   }
   // build request for attestation with legitimations
   const { message: request } = await RequestForAttestation.fromClaimAndIdentity(

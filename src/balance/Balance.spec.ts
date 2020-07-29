@@ -45,14 +45,14 @@ describe('Balance', () => {
   it('should listen to balance changes', async (done) => {
     const bob = await Identity.buildFromURI('//Bob')
     const listener = (account: string, balance: BN, change: BN): void => {
-      expect(account).toBe(bob.getAddress())
+      expect(account).toBe(bob.address)
       expect(balance.toNumber()).toBe(BALANCE)
       expect(change.toNumber()).toBe(FEE)
       done()
     }
 
-    await listenToBalanceChanges(bob.getAddress(), listener)
-    const currentBalance = await getBalance(bob.getAddress())
+    await listenToBalanceChanges(bob.address, listener)
+    const currentBalance = await getBalance(bob.address)
     expect(currentBalance.toNumber()).toBeTruthy()
     expect(currentBalance.toNumber()).toEqual(BALANCE - FEE)
   })
@@ -61,7 +61,7 @@ describe('Balance', () => {
     const alice = await Identity.buildFromURI('//Alice')
     const bob = await Identity.buildFromURI('//Bob')
 
-    const status = await makeTransfer(alice, bob.getAddress(), new BN(100))
+    const status = await makeTransfer(alice, bob.address, new BN(100))
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })

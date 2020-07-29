@@ -41,7 +41,7 @@ async function setup(): Promise<{
   )
   console.log(
     'Attester balance is:',
-    await Kilt.Balance.getBalance(attester.getAddress())
+    await Kilt.Balance.getBalance(attester.address)
   )
   // TODO: how to handle instantiation? We cannot always upload the accumulator...
   await attester.updateAccumulator(attester.getAccumulator())
@@ -71,7 +71,7 @@ async function setup(): Promise<{
   const rawCtype: ICType = {
     schema: ctypeSchema,
     hash: ctypeHash,
-    owner: attester.getAddress(),
+    owner: attester.address,
   }
 
   // Build the CType object
@@ -96,7 +96,7 @@ async function setup(): Promise<{
     'wish rather clinic rather connect culture frown like quote effort cart faculty',
     { peEnabled: true }
   )
-  // const address = claimer.getAddress()
+  // const address = claimer.address
 
   // At this point the generated Identity has no tokens.
   // If you want to interact with the blockchain, you will have to get some.
@@ -110,11 +110,11 @@ async function setup(): Promise<{
   const claim = new Kilt.Claim({
     cTypeHash: ctypeHash,
     contents: rawClaim,
-    owner: claimer.getAddress(),
+    owner: claimer.address,
   })
 
-  console.log('Claimer', claimer.getAddress(), '\n')
-  console.log('Attester', attester.getAddress(), '\n')
+  console.log('Claimer', claimer.address, '\n')
+  console.log('Attester', attester.address, '\n')
   console.log('Ctype', ctype, '\n')
   console.log('Claim', claim, '\n')
 
@@ -169,7 +169,7 @@ async function doAttestation(
 
   // ------------------------- Attester ----------------------------------------
   // Check the validity of the message
-  Kilt.Message.ensureHashAndSignature(reqAttestationEnc, claimer.getAddress())
+  Kilt.Message.ensureHashAndSignature(reqAttestationEnc, claimer.address)
   // When the Attester receives the message, she can decrypt it
   const reqAttestationDec = Kilt.Message.decrypt(reqAttestationEnc, attester)
 
@@ -196,7 +196,7 @@ async function doAttestation(
   // ------------------------- CLAIMER -----------------------------------------
   Kilt.Message.ensureHashAndSignature(
     submitAttestationEnc,
-    attester.getAddress()
+    attester.address
   )
   const submitAttestationDec = Kilt.Message.decrypt(
     submitAttestationEnc,

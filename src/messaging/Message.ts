@@ -246,7 +246,7 @@ export default class Message implements IMessage {
     this.body = body
     this.createdAt = Date.now()
     this.receiverAddress = receiver.address
-    this.senderAddress = sender.getAddress()
+    this.senderAddress = sender.address
     this.senderBoxPublicKey = sender.getBoxPublicKey()
 
     const encryptedMessage: EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(
@@ -330,12 +330,13 @@ export interface ISubmitAttestationForClaim extends IMessageBodyBase {
   type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
 }
 export interface IRejectAttestationForClaim extends IMessageBodyBase {
-  content: false
+  content: IRequestForAttestation['rootHash']
   type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM
 }
 
 export interface IRequestClaimsForCTypes extends IMessageBodyBase {
   content: {
+    // Entries in the ctype hash array can be null, because ctypes are optional for portablegabi.
     ctypes: Array<ICType['hash'] | null>
     peRequest?: CombinedPresentationRequest
     allowPE: boolean

@@ -38,27 +38,25 @@ describe('when there is a dev chain with a faucet', () => {
   })
 
   it('should have enough coins available on the faucet', async () => {
-    const balance = await getBalance(faucet.getAddress())
+    const balance = await getBalance(faucet.address)
     expect(balance.gt(new BN(100_000_000))).toBeTruthy()
     // console.log(`Faucet has ${Number(balance)} micro Kilt`)
   })
 
   it('Bob has tokens', async () => {
-    const balance = await getBalance(bob.getAddress())
+    const balance = await getBalance(bob.address)
     expect(balance.gt(new BN(100_000_000))).toBeTruthy()
   })
 
   it('Alice has tokens', async () => {
-    const balance = await getBalance(alice.getAddress())
+    const balance = await getBalance(alice.address)
     expect(balance.gt(new BN(100_000_000))).toBeTruthy()
   })
 
   it('getBalance should return 0 for new identity', async () => {
     return expect(
       getBalance(
-        (
-          await Identity.buildFromMnemonic(Identity.generateMnemonic())
-        ).getAddress()
+        (await Identity.buildFromMnemonic(Identity.generateMnemonic())).address
       ).then((n) => n.toNumber())
     ).resolves.toEqual(0)
   })
@@ -66,12 +64,12 @@ describe('when there is a dev chain with a faucet', () => {
   it('should be able to faucet coins to a new identity', async () => {
     const ident = await Identity.buildFromMnemonic(Identity.generateMnemonic())
     const funny = jest.fn()
-    listenToBalanceChanges(ident.getAddress(), funny)
-    const balanceBefore = await getBalance(faucet.getAddress())
-    await makeTransfer(faucet, ident.getAddress(), MIN_TRANSACTION)
+    listenToBalanceChanges(ident.address, funny)
+    const balanceBefore = await getBalance(faucet.address)
+    await makeTransfer(faucet, ident.address, MIN_TRANSACTION)
     const [balanceAfter, balanceIdent] = await Promise.all([
-      getBalance(faucet.getAddress()),
-      getBalance(ident.getAddress()),
+      getBalance(faucet.address),
+      getBalance(ident.address),
     ])
     expect(
       balanceBefore.sub(balanceAfter).eq(MIN_TRANSACTION.add(GAS))
@@ -95,32 +93,32 @@ describe('When there are haves and have-nots', () => {
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    await makeTransfer(richieRich, stormyD.getAddress(), MIN_TRANSACTION)
-    const balanceTo = await getBalance(stormyD.getAddress())
+    await makeTransfer(richieRich, stormyD.address, MIN_TRANSACTION)
+    const balanceTo = await getBalance(stormyD.address)
     expect(balanceTo.toNumber()).toBe(MIN_TRANSACTION.toNumber())
   }, 40_000)
 
   it('should not accept transactions from identity with zero balance', async () => {
-    const originalBalance = await getBalance(stormyD.getAddress())
+    const originalBalance = await getBalance(stormyD.address)
     await expect(
-      makeTransfer(bobbyBroke, stormyD.getAddress(), MIN_TRANSACTION)
+      makeTransfer(bobbyBroke, stormyD.address, MIN_TRANSACTION)
     ).rejects.toThrowError('1010: Invalid Transaction')
     const [newBalance, zeroBalance] = await Promise.all([
-      getBalance(stormyD.getAddress()),
-      getBalance(bobbyBroke.getAddress()),
+      getBalance(stormyD.address),
+      getBalance(bobbyBroke.address),
     ])
     expect(newBalance.toNumber()).toBe(originalBalance.toNumber())
     expect(zeroBalance.toNumber()).toBe(0)
   }, 30_000)
 
   it('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
-    const RichieBalance = await getBalance(richieRich.getAddress())
+    const RichieBalance = await getBalance(richieRich.address)
     await expect(
-      makeTransfer(richieRich, bobbyBroke.getAddress(), RichieBalance)
+      makeTransfer(richieRich, bobbyBroke.address, RichieBalance)
     ).rejects.toThrowError()
     const [newBalance, zeroBalance] = await Promise.all([
-      getBalance(richieRich.getAddress()),
-      getBalance(bobbyBroke.getAddress()),
+      getBalance(richieRich.address),
+      getBalance(bobbyBroke.address),
     ])
     expect(zeroBalance.toString()).toEqual('0')
     expect(newBalance.toString()).toEqual(RichieBalance.sub(GAS).toString())
@@ -128,12 +126,12 @@ describe('When there are haves and have-nots', () => {
 
   xit('should be able to make multiple transactions at once', async () => {
     const listener = jest.fn()
-    listenToBalanceChanges(faucet.getAddress(), listener)
+    listenToBalanceChanges(faucet.address, listener)
     await Promise.all([
-      makeTransfer(faucet, richieRich.getAddress(), MIN_TRANSACTION),
-      makeTransfer(faucet, stormyD.getAddress(), MIN_TRANSACTION),
+      makeTransfer(faucet, richieRich.address, MIN_TRANSACTION),
+      makeTransfer(faucet, stormyD.address, MIN_TRANSACTION),
     ])
-    expect(listener).toBeCalledWith(faucet.getAddress())
+    expect(listener).toBeCalledWith(faucet.address)
   }, 30_000)
 })
 

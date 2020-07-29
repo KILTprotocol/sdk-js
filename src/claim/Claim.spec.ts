@@ -35,12 +35,12 @@ describe('Claim', () => {
       type: 'object',
     }
 
-    testCType = CType.fromSchema(rawCType, identityAlice.getAddress())
+    testCType = CType.fromSchema(rawCType, identityAlice.address)
 
     claim = Claim.fromCTypeAndClaimContents(
       testCType,
       claimContents,
-      identityAlice.getAddress()
+      identityAlice.address
     )
     compressedClaim = [
       {
