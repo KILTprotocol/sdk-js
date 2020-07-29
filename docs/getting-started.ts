@@ -16,7 +16,7 @@ async function main(): Promise<void> {
   console.log('claimer mnemonic', claimerMnemonic)
   const claimer = await Kilt.Identity.buildFromMnemonic(claimerMnemonic)
   // claimer.address: 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
-  console.log('claimer address', claimer.getAddress())
+  console.log('claimer address', claimer.address)
 
   /* 3.1. Building a CTYPE */
   const ctype = Kilt.CType.fromSchema({
@@ -53,7 +53,7 @@ async function main(): Promise<void> {
   const claim = Kilt.Claim.fromCTypeAndClaimContents(
     ctype,
     rawClaim,
-    claimer.getAddress()
+    claimer.address
   )
 
   /* As a result we get the following KILT claim: */
