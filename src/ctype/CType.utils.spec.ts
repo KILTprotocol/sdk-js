@@ -6,6 +6,10 @@ import {
   verifySchemaWithErrors,
 } from './CType.utils'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
+import CType from '.'
+import { Identity } from '..'
+
+jest.mock('./CType.chain')
 
 const ctypeInput = ({
   $id: 'kilt:ctype:0x1',
@@ -60,5 +64,74 @@ describe('CTypeUtils', () => {
   })
   it('verifies ctypes', () => {
     expect(verifySchema(ctypeWrapperModel, CTypeModel)).toBeTruthy()
+  })
+})
+
+describe('CType registration verification', () => {
+  const getOwnerMock = require('./CType.chain').getOwner
+
+  let identityAlice: Identity
+  let identityBob: Identity
+
+  const rawCType = {
+    $id: 'kilt:ctype:0x2',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'CtypeModel 2',
+    properties: {
+      name: { type: 'string' },
+    },
+    type: 'object',
+  } as ICType['schema']
+
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
+    identityBob = await Identity.buildFromURI('//Bob')
+  })
+
+  describe('when CType is not registered', () => {
+    beforeAll(() => {
+      getOwnerMock.mockReturnValue(null)
+    })
+
+    it('does not verify registration when not registered', async () => {
+      const ctype = CType.fromSchema(rawCType, identityAlice.getAddress())
+      await expect(ctype.verifyStored()).resolves.toBeFalsy()
+    })
+
+    it('does not verify owner when not registered', async () => {
+      const ctype = CType.fromSchema(rawCType, identityAlice.getAddress())
+      await expect(ctype.verifyOwner()).resolves.toBeFalsy()
+    })
+  })
+
+  describe('when CType is registered', () => {
+    beforeAll(() => {
+      getOwnerMock.mockReturnValue(identityAlice.getAddress())
+    })
+
+    it('verifies registration when owner not set', async () => {
+      const ctype = CType.fromSchema(rawCType)
+      await expect(ctype.verifyStored()).resolves.toBeTruthy()
+    })
+
+    it('verifies registration when owner matches', async () => {
+      const ctype = CType.fromSchema(rawCType, identityAlice.getAddress())
+      await expect(ctype.verifyStored()).resolves.toBeTruthy()
+    })
+
+    it('verifies registration when owner does not match', async () => {
+      const ctype = CType.fromSchema(rawCType, identityBob.getAddress())
+      await expect(ctype.verifyStored()).resolves.toBeTruthy()
+    })
+
+    it('verifies owner when owner matches', async () => {
+      const ctype = CType.fromSchema(rawCType, identityAlice.getAddress())
+      await expect(ctype.verifyOwner()).resolves.toBeTruthy()
+    })
+
+    it('does not verify owner when owner does not match', async () => {
+      const ctype = CType.fromSchema(rawCType, identityBob.getAddress())
+      await expect(ctype.verifyOwner()).resolves.toBeFalsy()
+    })
   })
 })

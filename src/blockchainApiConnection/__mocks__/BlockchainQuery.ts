@@ -102,6 +102,7 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
   mockValue?:
     | Constructor
     | U64
+    | string
     | Array<
         | Constructor
         | number
