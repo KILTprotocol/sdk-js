@@ -94,19 +94,19 @@ describe('CType registration verification', () => {
     })
 
     it('does not verify registration when not registered', async () => {
-      const ctype = CType.fromSchema(rawCType, identityAlice.getAddress())
+      const ctype = CType.fromSchema(rawCType, identityAlice.address)
       await expect(ctype.verifyStored()).resolves.toBeFalsy()
     })
 
     it('does not verify owner when not registered', async () => {
-      const ctype = CType.fromSchema(rawCType, identityAlice.getAddress())
+      const ctype = CType.fromSchema(rawCType, identityAlice.address)
       await expect(ctype.verifyOwner()).resolves.toBeFalsy()
     })
   })
 
   describe('when CType is registered', () => {
     beforeAll(() => {
-      getOwnerMock.mockReturnValue(identityAlice.getAddress())
+      getOwnerMock.mockReturnValue(identityAlice.address)
     })
 
     it('verifies registration when owner not set', async () => {
@@ -115,22 +115,22 @@ describe('CType registration verification', () => {
     })
 
     it('verifies registration when owner matches', async () => {
-      const ctype = CType.fromSchema(rawCType, identityAlice.getAddress())
+      const ctype = CType.fromSchema(rawCType, identityAlice.address)
       await expect(ctype.verifyStored()).resolves.toBeTruthy()
     })
 
     it('verifies registration when owner does not match', async () => {
-      const ctype = CType.fromSchema(rawCType, identityBob.getAddress())
+      const ctype = CType.fromSchema(rawCType, identityBob.address)
       await expect(ctype.verifyStored()).resolves.toBeTruthy()
     })
 
     it('verifies owner when owner matches', async () => {
-      const ctype = CType.fromSchema(rawCType, identityAlice.getAddress())
+      const ctype = CType.fromSchema(rawCType, identityAlice.address)
       await expect(ctype.verifyOwner()).resolves.toBeTruthy()
     })
 
     it('does not verify owner when owner does not match', async () => {
-      const ctype = CType.fromSchema(rawCType, identityBob.getAddress())
+      const ctype = CType.fromSchema(rawCType, identityBob.address)
       await expect(ctype.verifyOwner()).resolves.toBeFalsy()
     })
   })
