@@ -113,7 +113,7 @@ export default class Did implements IDid {
    * @returns The [[Did]] object.
    */
   public static fromIdentity(identity: Identity, documentStore?: string): Did {
-    const identifier = getIdentifierFromAddress(identity.getAddress())
+    const identifier = getIdentifierFromAddress(identity.address)
     return new Did(
       identifier,
       identity.getBoxPublicKey(),

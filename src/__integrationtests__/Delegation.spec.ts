@@ -55,13 +55,13 @@ describe('when there is an account hierarchy', () => {
     const rootNode = new DelegationRootNode(
       UUID.generate(),
       DriversLicense.hash,
-      uncleSam.getAddress()
+      uncleSam.address
     )
     await rootNode.store(uncleSam)
     const delegatedNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
-      attester.getAddress(),
+      attester.address,
       [Permission.ATTEST],
       rootNode.id
     )
@@ -82,12 +82,12 @@ describe('when there is an account hierarchy', () => {
       rootNode = new DelegationRootNode(
         UUID.generate(),
         DriversLicense.hash,
-        uncleSam.getAddress()
+        uncleSam.address
       )
       delegatedNode = new DelegationNode(
         UUID.generate(),
         rootNode.id,
-        attester.getAddress(),
+        attester.address,
         [Permission.ATTEST],
         rootNode.id
       )
@@ -108,7 +108,7 @@ describe('when there is an account hierarchy', () => {
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,
-        claimer.getAddress()
+        claimer.address
       )
       const {
         message: request,

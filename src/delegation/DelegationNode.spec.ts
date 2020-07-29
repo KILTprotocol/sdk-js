@@ -48,7 +48,7 @@ describe('Delegation', () => {
           return mockChainQueryReturn('delegation', 'delegations', [
             'myRootId',
             null,
-            identityAlice.getAddress(),
+            identityAlice.address,
             1,
             false,
           ])
@@ -56,7 +56,7 @@ describe('Delegation', () => {
         return mockChainQueryReturn('delegation', 'delegations', [
           'myRootId',
           null,
-          identityAlice.getAddress(),
+          identityAlice.address,
           1,
           true,
         ])
@@ -67,7 +67,7 @@ describe('Delegation', () => {
       await new DelegationNode(
         'success',
         'myRootId',
-        identityAlice.getAddress(),
+        identityAlice.address,
         []
       ).verify()
     ).toBe(true)
@@ -76,7 +76,7 @@ describe('Delegation', () => {
       await new DelegationNode(
         'failure',
         'myRootId',
-        identityAlice.getAddress(),
+        identityAlice.address,
         []
       ).verify()
     ).toBe(false)
@@ -95,7 +95,7 @@ describe('Delegation', () => {
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
       mockChainQueryReturn('delegation', 'root', [
         '0x1234000000000000000000000000000000000000000000000000000000000000',
-        identityAlice.getAddress(),
+        identityAlice.address,
         false,
       ])
     )
@@ -103,7 +103,7 @@ describe('Delegation', () => {
     const node: DelegationNode = new DelegationNode(
       'nodeId',
       'rootNodeId',
-      identityAlice.getAddress(),
+      identityAlice.address,
       []
     )
     const rootNode = await node.getRoot()

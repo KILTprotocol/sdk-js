@@ -29,7 +29,7 @@ describe('Delegation', () => {
     blockchainApi.query.delegation.root.mockReturnValue(
       mockChainQueryReturn('delegation', 'root', [
         ctypeHash,
-        identityAlice.getAddress(),
+        identityAlice.address,
         false,
       ])
     )

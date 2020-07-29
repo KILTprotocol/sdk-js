@@ -55,7 +55,7 @@ describe('Verifier', () => {
       type: 'object',
     }
 
-    cType = CType.fromSchema(rawCType, claimer.getAddress())
+    cType = CType.fromSchema(rawCType, claimer.address)
 
     claim = {
       cTypeHash: cType.hash,
@@ -71,7 +71,7 @@ describe('Verifier', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'attestations', [
         '"0xde9f624875aa620d06434603787a40c8cd02cc25c7b775cf50de8a3a96bbeafa"', // ctype hash
-        attester.getAddress(), // Account
+        attester.address, // Account
         undefined, // delegation-id?
         false, // revoked flag
       ])

@@ -50,9 +50,9 @@ describe('Nested CTypes', () => {
       type: 'object',
     }
 
-    passport = CType.fromSchema(passportCType, identityAlice.getAddress())
+    passport = CType.fromSchema(passportCType, identityAlice.address)
 
-    kyc = CType.fromSchema(kycCType, identityAlice.getAddress())
+    kyc = CType.fromSchema(kycCType, identityAlice.address)
 
     claimContents = {
       fullName: 'Archer Macdonald',
@@ -127,25 +127,22 @@ describe('Nested CTypes', () => {
       },
     }
 
-    nestedCType = CType.fromSchema(nested, identityAlice.getAddress())
+    nestedCType = CType.fromSchema(nested, identityAlice.address)
 
-    deeplyNestedCType = CType.fromSchema(
-      nestedDeeply,
-      identityAlice.getAddress()
-    )
+    deeplyNestedCType = CType.fromSchema(nestedDeeply, identityAlice.address)
 
     nestedData = Claim.fromNestedCTypeClaim(
       nestedCType,
       [passport.schema, kyc.schema],
       claimContents,
-      identityAlice.getAddress()
+      identityAlice.address
     )
 
     nestedDeepData = Claim.fromNestedCTypeClaim(
       deeplyNestedCType,
       [passport.schema, kyc.schema],
       claimDeepContents,
-      identityAlice.getAddress()
+      identityAlice.address
     )
   })
 
@@ -164,7 +161,7 @@ describe('Nested CTypes', () => {
         nestedCType,
         [passport.schema, kyc.schema],
         claimContents,
-        identityAlice.getAddress()
+        identityAlice.address
       )
     ).toThrowError(
       new Error('Nested claim data does not validate against CType')
@@ -194,7 +191,7 @@ describe('Nested CTypes', () => {
         deeplyNestedCType,
         [passport.schema, kyc.schema],
         claimDeepContents,
-        identityAlice.getAddress()
+        identityAlice.address
       )
     ).toThrowError(
       new Error('Nested claim data does not validate against CType')

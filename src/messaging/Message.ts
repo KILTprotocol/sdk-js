@@ -246,7 +246,7 @@ export default class Message implements IMessage {
     this.body = body
     this.createdAt = Date.now()
     this.receiverAddress = receiver.address
-    this.senderAddress = sender.getAddress()
+    this.senderAddress = sender.address
     this.senderBoxPublicKey = sender.getBoxPublicKey()
 
     const encryptedMessage: EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(

@@ -36,13 +36,13 @@ describe('Attestation', () => {
       type: 'object',
     }
 
-    testCType = CType.fromSchema(rawCTypeSchema, identityAlice.getAddress())
+    testCType = CType.fromSchema(rawCTypeSchema, identityAlice.address)
 
     testcontents = {}
     testClaim = Claim.fromCTypeAndClaimContents(
       testCType,
       testcontents,
-      identityBob.getAddress()
+      identityBob.address
     )
     ;({
       message: requestForAttestation,
@@ -56,7 +56,7 @@ describe('Attestation', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'attestations', [
         testCType.hash,
-        identityAlice.getAddress(),
+        identityAlice.address,
         null,
         false,
       ])
@@ -78,7 +78,7 @@ describe('Attestation', () => {
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
       delegationId: null,
-      owner: identityAlice.getAddress(),
+      owner: identityAlice.address,
       revoked: false,
     })
     expect(await Attestation.verify(attestation)).toBeFalsy()
@@ -88,7 +88,7 @@ describe('Attestation', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'attestations', [
         testCType.hash,
-        identityAlice.getAddress(),
+        identityAlice.address,
         null,
         true,
       ])

@@ -68,7 +68,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
-      claimer.getAddress()
+      claimer.address
     )
     const {
       message: request,
@@ -83,7 +83,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
-      claimer.getAddress()
+      claimer.address
     )
     const {
       message: request,
@@ -112,7 +112,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
-      claimer.getAddress()
+      claimer.address
     )
     const {
       message: request,
@@ -159,7 +159,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       badCtype,
       content,
-      claimer.getAddress()
+      claimer.address
     )
     const {
       message: request,
@@ -181,7 +181,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,
-        claimer.getAddress()
+        claimer.address
       )
       const {
         message: request,
@@ -212,7 +212,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,
-        claimer.getAddress()
+        claimer.address
       )
       const {
         message: request,
@@ -259,7 +259,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           LicenseType: "Driver's License",
           LicenseSubtypes: 'sportscars, tanks',
         },
-        attester.getAddress()
+        attester.address
       )
       const {
         message: request1,
@@ -277,7 +277,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const iBelieveICanDrive = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         { name: 'Dominic Toretto', age: 52 },
-        claimer.getAddress()
+        claimer.address
       )
       const {
         message: request2,

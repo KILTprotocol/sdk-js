@@ -56,7 +56,7 @@ describe('Privacy enhanced claim, attestation, verification process', () => {
     claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
-      claimer.getAddress()
+      claimer.address
     )
   }, 80_000)
 

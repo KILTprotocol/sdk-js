@@ -52,10 +52,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     await ctype.store(ctypeCreator)
     await Promise.all([
-      expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.getAddress()),
+      expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.address),
       expect(ctype.verifyStored()).resolves.toBeTruthy(),
     ])
-    ctype.owner = ctypeCreator.getAddress()
+    ctype.owner = ctypeCreator.address
     await expect(ctype.verifyStored()).resolves.toBeTruthy()
   }, 40_000)
 
@@ -66,7 +66,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
       ERROR_CTYPE_ALREADY_EXISTS
     )
     // console.log('Triggered error on re-submit')
-    await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.getAddress())
+    await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.address)
   }, 45_000)
 
   it('should tell when a ctype is not on chain', async () => {

@@ -42,7 +42,7 @@ describe('AttesterIdentity', () => {
       title: 'title',
     }
     claimer = await Identity.buildFromURI('//Bob', { peEnabled: true })
-    cType = CType.fromSchema(rawCType, claimer.getAddress())
+    cType = CType.fromSchema(rawCType, claimer.address)
     attester = await AttesterIdentity.buildFromMnemonic(mnemonic, {
       key: {
         publicKey: constants.PUBLIC_KEY.toString(),
@@ -67,7 +67,7 @@ describe('AttesterIdentity', () => {
         other: '0xbeef',
         attributes: true,
       },
-      owner: claimer.getAddress(),
+      owner: claimer.address,
     }
     const { message: requestAttestation } = await Claimer.requestAttestation(
       claim,
@@ -91,7 +91,7 @@ describe('AttesterIdentity', () => {
     expect(attester.getPrivateGabiKey()).toBeDefined()
     expect(attester.getPublicGabiKey()).toBeDefined()
     expect(attester.getBoxPublicKey()).toBeDefined()
-    expect(attester.getAddress()).toBeDefined()
+    expect(attester.address).toBeDefined()
     expect(accumulator).toBeDefined()
   })
 
@@ -109,7 +109,7 @@ describe('AttesterIdentity', () => {
     expect(newAttester.getPublicGabiKey()).toEqual(attester.getPublicGabiKey())
     expect(newAttester.getAccumulator()).toEqual(attester.getAccumulator())
     expect(newAttester.getBoxPublicKey()).toEqual(attester.getBoxPublicKey())
-    expect(newAttester.getAddress()).toEqual(attester.getAddress())
+    expect(newAttester.address).toEqual(attester.address)
   })
 
   it('should build the same from plain identity', async () => {
@@ -128,7 +128,7 @@ describe('AttesterIdentity', () => {
     )
     expect(newAttester.getPublicGabiKey()).toEqual(attester.getPublicGabiKey())
     expect(newAttester.getBoxPublicKey()).toEqual(attester.getBoxPublicKey())
-    expect(newAttester.getAddress()).toEqual(attester.getAddress())
+    expect(newAttester.address).toEqual(attester.address)
     expect(plainId.getBoxPublicKey()).toEqual(attester.getBoxPublicKey())
   })
 
@@ -145,7 +145,7 @@ describe('AttesterIdentity', () => {
     )
     expect(newAttester.getPublicGabiKey()).toEqual(attester.getPublicGabiKey())
     expect(newAttester.getBoxPublicKey()).toEqual(attester.getBoxPublicKey())
-    expect(newAttester.getAddress()).toEqual(attester.getAddress())
+    expect(newAttester.address).toEqual(attester.address)
   })
 
   it('should build the same from seed', async () => {
@@ -162,7 +162,7 @@ describe('AttesterIdentity', () => {
     )
     expect(newAttester.getPublicGabiKey()).toEqual(attester.getPublicGabiKey())
     expect(newAttester.getBoxPublicKey()).toEqual(attester.getBoxPublicKey())
-    expect(newAttester.getAddress()).toEqual(attester.getAddress())
+    expect(newAttester.address).toEqual(attester.address)
   })
 
   it('should build the same from uri', async () => {
@@ -237,7 +237,7 @@ describe('AttesterIdentity', () => {
     )
     expect(newAttester.getPublicGabiKey()).toEqual(attester.getPublicGabiKey())
     expect(newAttester.getBoxPublicKey()).toEqual(attester.getBoxPublicKey())
-    expect(newAttester.getAddress()).toEqual(attester.getAddress())
+    expect(newAttester.address).toEqual(attester.address)
     expect(newAttester.getAccumulator()).toStrictEqual(
       attester.getAccumulator()
     )
@@ -260,7 +260,7 @@ describe('AttesterIdentity', () => {
     )
     expect(newAttester.getPublicGabiKey()).toEqual(attester.getPublicGabiKey())
     expect(newAttester.getBoxPublicKey()).toEqual(attester.getBoxPublicKey())
-    expect(newAttester.getAddress()).toEqual(attester.getAddress())
+    expect(newAttester.address).toEqual(attester.address)
 
     expect(mock).toHaveBeenCalled()
     mock.mockRestore()

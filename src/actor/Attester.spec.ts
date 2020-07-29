@@ -49,7 +49,7 @@ describe('Attester', () => {
       type: 'object',
     }
 
-    cType = CType.fromSchema(rawCType, claimer.getAddress())
+    cType = CType.fromSchema(rawCType, claimer.address)
     acc = await Attester.buildAccumulator(attester)
   })
 
@@ -57,7 +57,7 @@ describe('Attester', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'attestations', [
         cType.hash,
-        attester.getAddress(),
+        attester.address,
         undefined,
         0,
       ])
@@ -83,7 +83,7 @@ describe('Attester', () => {
         other: '0xbeef',
         attributes: true,
       },
-      owner: claimer.getAddress(),
+      owner: claimer.address,
     }
     const { message: requestAttestation } = await Claimer.requestAttestation(
       claim,
@@ -115,7 +115,7 @@ describe('Attester', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn<'attestation'>('attestation', 'attestations', [
         cType.hash,
-        attester.getAddress(),
+        attester.address,
         undefined,
         0,
       ])
