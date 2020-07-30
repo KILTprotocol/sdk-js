@@ -87,7 +87,7 @@ export default class CType implements ICType {
    *
    * @param identity The identity which submits the blockchain transaction to store the [[CType]].
    *
-   * @returns A promise of a [[SubmittableResult]] .
+   * @returns A promise of a SubmittableResult .
    */
   public async store(identity: Identity): Promise<SubmittableResult> {
     return store(this, identity)
