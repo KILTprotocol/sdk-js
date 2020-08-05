@@ -1,0 +1,476 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>QuoteUtils | @kiltprotocol/sdk-js</title>
+	<meta name="description" content="Documentation for @kiltprotocol/sdk-js">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">@kiltprotocol/sdk-js</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../globals.html">Globals</a>
+				</li>
+				<li>
+					<a href="quoteutils.html">QuoteUtils</a>
+				</li>
+			</ul>
+			<h1>Module QuoteUtils</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Functions</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="quoteutils.html#compressattestersignedquote" class="tsd-kind-icon">compress<wbr>Attester<wbr>Signed<wbr>Quote</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="quoteutils.html#compresscost" class="tsd-kind-icon">compress<wbr>Cost</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="quoteutils.html#compressquote" class="tsd-kind-icon">compress<wbr>Quote</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="quoteutils.html#compressquoteagreement" class="tsd-kind-icon">compress<wbr>Quote<wbr>Agreement</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="quoteutils.html#decompressattestersignedquote" class="tsd-kind-icon">decompress<wbr>Attester<wbr>Signed<wbr>Quote</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="quoteutils.html#decompresscost" class="tsd-kind-icon">decompress<wbr>Cost</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="quoteutils.html#decompressquote" class="tsd-kind-icon">decompress<wbr>Quote</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="quoteutils.html#decompressquoteagreement" class="tsd-kind-icon">decompress<wbr>Quote<wbr>Agreement</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="compressattestersignedquote" class="tsd-anchor"></a>
+					<h3>compress<wbr>Attester<wbr>Signed<wbr>Quote</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">compress<wbr>Attester<wbr>Signed<wbr>Quote<span class="tsd-signature-symbol">(</span>attesterSignedQuote<span class="tsd-signature-symbol">: </span><a href="../interfaces/iquote.iquoteattestersigned.html" class="tsd-signature-type">IQuoteAttesterSigned</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="iquote.html#compressedquoteattestersigned" class="tsd-signature-type">CompressedQuoteAttesterSigned</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/quote/Quote.utils.ts#L117">src/quote/Quote.utils.ts:117</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Compresses an attester signed <a href="quote.html">Quote</a> for storage and/or messaging.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When attesterSignedQuote is missing any property defined in <a href="../interfaces/iquote.iquoteattestersigned.html">IQuoteAttesterSigned</a>.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_compress_object">ERROR_COMPRESS_OBJECT</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>attesterSignedQuote: <a href="../interfaces/iquote.iquoteattestersigned.html" class="tsd-signature-type">IQuoteAttesterSigned</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An attester signed <a href="quote.html">Quote</a> object that will be sorted and stripped for messaging or storage.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="iquote.html#compressedquoteattestersigned" class="tsd-signature-type">CompressedQuoteAttesterSigned</a></h4>
+							<p>An ordered array of an attester signed <a href="quote.html">Quote</a>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="compresscost" class="tsd-anchor"></a>
+					<h3>compress<wbr>Cost</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">compress<wbr>Cost<span class="tsd-signature-symbol">(</span>cost<span class="tsd-signature-symbol">: </span><a href="../interfaces/iquote.icostbreakdown.html" class="tsd-signature-type">ICostBreakdown</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="iquote.html#compressedcostbreakdown" class="tsd-signature-type">CompressedCostBreakdown</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/quote/Quote.utils.ts#L29">src/quote/Quote.utils.ts:29</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Compresses the cost from a <a href="quote.html">Quote</a> object.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When cost is missing any property defined in <a href="../interfaces/iquote.icostbreakdown.html">ICostBreakdown</a>.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_compress_object">ERROR_COMPRESS_OBJECT</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>cost: <a href="../interfaces/iquote.icostbreakdown.html" class="tsd-signature-type">ICostBreakdown</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A cost object that will be sorted and stripped into a <a href="quote.html">Quote</a>.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="iquote.html#compressedcostbreakdown" class="tsd-signature-type">CompressedCostBreakdown</a></h4>
+							<p>An ordered array of a cost.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="compressquote" class="tsd-anchor"></a>
+					<h3>compress<wbr>Quote</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">compress<wbr>Quote<span class="tsd-signature-symbol">(</span>quote<span class="tsd-signature-symbol">: </span><a href="../interfaces/iquote.iquote-1.html" class="tsd-signature-type">IQuote</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="iquote.html#compressedquote" class="tsd-signature-type">CompressedQuote</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/quote/Quote.utils.ts#L63">src/quote/Quote.utils.ts:63</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Compresses a <a href="quote.html">Quote</a> for storage and/or messaging.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When quote is missing any property defined in <a href="iquote.html">IQuote</a>.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_compress_object">ERROR_COMPRESS_OBJECT</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>quote: <a href="../interfaces/iquote.iquote-1.html" class="tsd-signature-type">IQuote</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An <a href="quote.html">Quote</a> object that will be sorted and stripped for messaging or storage.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="iquote.html#compressedquote" class="tsd-signature-type">CompressedQuote</a></h4>
+							<p>An ordered array of an <a href="quote.html">Quote</a>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="compressquoteagreement" class="tsd-anchor"></a>
+					<h3>compress<wbr>Quote<wbr>Agreement</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">compress<wbr>Quote<wbr>Agreement<span class="tsd-signature-symbol">(</span>quoteAgreement<span class="tsd-signature-symbol">: </span><a href="../interfaces/iquote.iquoteagreement.html" class="tsd-signature-type">IQuoteAgreement</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="iquote.html#compressedquoteagreed" class="tsd-signature-type">CompressedQuoteAgreed</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/quote/Quote.utils.ts#L182">src/quote/Quote.utils.ts:182</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Compresses a <a href="quote.html">Quote</a> Agreement for storage and/or messaging.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When quoteAgreement is missing any property defined in <a href="../interfaces/iquote.iquoteagreement.html">IQuoteAgreement</a>.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_compress_object">ERROR_COMPRESS_OBJECT</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>quoteAgreement: <a href="../interfaces/iquote.iquoteagreement.html" class="tsd-signature-type">IQuoteAgreement</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A <a href="quote.html">Quote</a> Agreement object that will be sorted and stripped for messaging or storage.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="iquote.html#compressedquoteagreed" class="tsd-signature-type">CompressedQuoteAgreed</a></h4>
+							<p>An ordered array of a <a href="quote.html">Quote</a> Agreement.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="decompressattestersignedquote" class="tsd-anchor"></a>
+					<h3>decompress<wbr>Attester<wbr>Signed<wbr>Quote</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">decompress<wbr>Attester<wbr>Signed<wbr>Quote<span class="tsd-signature-symbol">(</span>attesterSignedQuote<span class="tsd-signature-symbol">: </span><a href="iquote.html#compressedquoteattestersigned" class="tsd-signature-type">CompressedQuoteAttesterSigned</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/iquote.iquoteattestersigned.html" class="tsd-signature-type">IQuoteAttesterSigned</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/quote/Quote.utils.ts#L155">src/quote/Quote.utils.ts:155</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Decompresses an attester signed <a href="quote.html">Quote</a> from storage and/or message.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When attesterSignedQuote is not an Array and it&#39;s length does not equal the defined length of 7.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>attesterSignedQuote: <a href="iquote.html#compressedquoteattestersigned" class="tsd-signature-type">CompressedQuoteAttesterSigned</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A compressed attester signed <a href="quote.html">Quote</a> array that is reverted back into an object.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/iquote.iquoteattestersigned.html" class="tsd-signature-type">IQuoteAttesterSigned</a></h4>
+							<p>An object that has the same properties as an attester signed <a href="quote.html">Quote</a>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="decompresscost" class="tsd-anchor"></a>
+					<h3>decompress<wbr>Cost</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">decompress<wbr>Cost<span class="tsd-signature-symbol">(</span>cost<span class="tsd-signature-symbol">: </span><a href="iquote.html#compressedcostbreakdown" class="tsd-signature-type">CompressedCostBreakdown</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/iquote.icostbreakdown.html" class="tsd-signature-type">ICostBreakdown</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/quote/Quote.utils.ts#L46">src/quote/Quote.utils.ts:46</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Decompresses the cost from storage and/or message.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When cost is not an Array and it&#39;s length does not equal the defined length of 3.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>cost: <a href="iquote.html#compressedcostbreakdown" class="tsd-signature-type">CompressedCostBreakdown</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A compressed cost array that is reverted back into an object.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/iquote.icostbreakdown.html" class="tsd-signature-type">ICostBreakdown</a></h4>
+							<p>An object that has the same properties as a cost.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="decompressquote" class="tsd-anchor"></a>
+					<h3>decompress<wbr>Quote</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">decompress<wbr>Quote<span class="tsd-signature-symbol">(</span>quote<span class="tsd-signature-symbol">: </span><a href="iquote.html#compressedquote" class="tsd-signature-type">CompressedQuote</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/iquote.iquote-1.html" class="tsd-signature-type">IQuote</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/quote/Quote.utils.ts#L93">src/quote/Quote.utils.ts:93</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Decompresses an <a href="quote.html">Quote</a> from storage and/or message.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When quote is not an Array and it&#39;s length does not equal the defined length of 6.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>quote: <a href="iquote.html#compressedquote" class="tsd-signature-type">CompressedQuote</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A compressed <a href="quote.html">Quote</a> array that is reverted back into an object.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/iquote.iquote-1.html" class="tsd-signature-type">IQuote</a></h4>
+							<p>An object that has the same properties as an <a href="quote.html">Quote</a>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="decompressquoteagreement" class="tsd-anchor"></a>
+					<h3>decompress<wbr>Quote<wbr>Agreement</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">decompress<wbr>Quote<wbr>Agreement<span class="tsd-signature-symbol">(</span>quoteAgreement<span class="tsd-signature-symbol">: </span><a href="iquote.html#compressedquoteagreed" class="tsd-signature-type">CompressedQuoteAgreed</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/iquote.iquoteagreement.html" class="tsd-signature-type">IQuoteAgreement</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/quote/Quote.utils.ts#L219">src/quote/Quote.utils.ts:219</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Decompresses a <a href="quote.html">Quote</a> Agreement from storage and/or message.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When quoteAgreement is not an Array and it&#39;s length does not equal the defined length of 9.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>quoteAgreement: <a href="iquote.html#compressedquoteagreed" class="tsd-signature-type">CompressedQuoteAgreed</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A compressed <a href="quote.html">Quote</a> Agreement array that is reverted back into an object.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/iquote.iquoteagreement.html" class="tsd-signature-type">IQuoteAgreement</a></h4>
+							<p>An object that has the same properties as a <a href="quote.html">Quote</a> Agreement.</p>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="../globals.html"><em>Globals</em></a>
+					</li>
+					<li class="current tsd-kind-module">
+						<a href="quoteutils.html">Quote<wbr>Utils</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="quoteutils.html#compressattestersignedquote" class="tsd-kind-icon">compress<wbr>Attester<wbr>Signed<wbr>Quote</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="quoteutils.html#compresscost" class="tsd-kind-icon">compress<wbr>Cost</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="quoteutils.html#compressquote" class="tsd-kind-icon">compress<wbr>Quote</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="quoteutils.html#compressquoteagreement" class="tsd-kind-icon">compress<wbr>Quote<wbr>Agreement</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="quoteutils.html#decompressattestersignedquote" class="tsd-kind-icon">decompress<wbr>Attester<wbr>Signed<wbr>Quote</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="quoteutils.html#decompresscost" class="tsd-kind-icon">decompress<wbr>Cost</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="quoteutils.html#decompressquote" class="tsd-kind-icon">decompress<wbr>Quote</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="quoteutils.html#decompressquoteagreement" class="tsd-kind-icon">decompress<wbr>Quote<wbr>Agreement</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer>
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

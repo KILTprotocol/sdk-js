@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Balance | @kiltprotocol/sdk-js - v0.18.0</title>
-	<meta name="description" content="">
+	<title>Balance | @kiltprotocol/sdk-js</title>
+	<meta name="description" content="Documentation for @kiltprotocol/sdk-js">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 </head>
@@ -13,7 +13,7 @@
 	<div class="tsd-page-toolbar">
 		<div class="container">
 			<div class="table-wrap">
-				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.js" data-base="..">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
 					<div class="field">
 						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
 						<input id="tsd-search-field" type="text" />
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">@kiltprotocol/sdk-js - v0.18.0</a>
+					<a href="../index.html" class="title">@kiltprotocol/sdk-js</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -55,7 +55,7 @@
 					<a href="balance.html">Balance</a>
 				</li>
 			</ul>
-			<h1>External module Balance</h1>
+			<h1>Module Balance</h1>
 		</div>
 	</div>
 </header>
@@ -80,9 +80,9 @@
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="balance.html#getbalance" class="tsd-kind-icon">get<wbr>Balance</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="balance.html#listentobalancechanges" class="tsd-kind-icon">listen<wbr>ToBalance<wbr>Changes</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="balance.html#maketransfer" class="tsd-kind-icon">make<wbr>Transfer</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="balance.html#getbalance" class="tsd-kind-icon">get<wbr>Balance</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="balance.html#listentobalancechanges" class="tsd-kind-icon">listen<wbr>ToBalance<wbr>Changes</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="balance.html#maketransfer" class="tsd-kind-icon">make<wbr>Transfer</a></li>
 							</ul>
 						</section>
 					</div>
@@ -90,17 +90,17 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 					<a name="getbalance" class="tsd-anchor"></a>
 					<h3>get<wbr>Balance</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
 						<li class="tsd-signature tsd-kind-icon">get<wbr>Balance<span class="tsd-signature-symbol">(</span>accountAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/balance/Balance.chain.ts#L86">src/balance/Balance.chain.ts:86</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/balance/Balance.chain.ts#L39">src/balance/Balance.chain.ts:39</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -111,7 +111,7 @@
 								<dl class="tsd-comment-tags">
 									<dt>example</dt>
 									<dd><BR>
-										<pre><code class="language-javascript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> sdk <span class="hljs-keyword">from</span> <span class="hljs-string">'@kiltprotocol/prototype-sdk'</span>;
+										<pre><code class="language-javascript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> sdk <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@kiltprotocol/prototype-sdk&#x27;</span>;
 
 <span class="hljs-keyword">const</span> address = ...
 sdk.Balance.getBalance(address)
@@ -135,17 +135,17 @@ sdk.Balance.getBalance(address)
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 					<a name="listentobalancechanges" class="tsd-anchor"></a>
 					<h3>listen<wbr>ToBalance<wbr>Changes</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">listen<wbr>ToBalance<wbr>Changes<span class="tsd-signature-symbol">(</span>accountAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span>, listener<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span>, balance<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span>, change<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">listen<wbr>ToBalance<wbr>Changes<span class="tsd-signature-symbol">(</span>accountAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span>, balance<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span>, change<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">UnsubscribePromise</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/balance/Balance.chain.ts#L40">src/balance/Balance.chain.ts:40</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/balance/Balance.chain.ts#L69">src/balance/Balance.chain.ts:69</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -156,13 +156,15 @@ sdk.Balance.getBalance(address)
 								<dl class="tsd-comment-tags">
 									<dt>example</dt>
 									<dd><BR>
-										<pre><code class="language-javascript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> sdk <span class="hljs-keyword">from</span> <span class="hljs-string">'@kiltprotocol/prototype-sdk'</span>;
+										<pre><code class="language-javascript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> sdk <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@kiltprotocol/prototype-sdk&#x27;</span>;
 
 <span class="hljs-keyword">const</span> address = ...
-sdk.Balance.listenToBalanceChanges(address,
-  (account: IPublicIdentity[<span class="hljs-string">'address'</span>], <span class="hljs-attr">balance</span>: BN, <span class="hljs-attr">change</span>: BN) =&gt; {
+const unsubscribe = sdk.Balance.listenToBalanceChanges(address,
+  <span class="hljs-function">(<span class="hljs-params">account: IPublicIdentity[<span class="hljs-string">&#x27;address&#x27;</span>], balance: BN, change: BN</span>) =&gt;</span> {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Balance has changed by <span class="hljs-subst">${change.toNumber()}</span> to <span class="hljs-subst">${balance.toNumber()}</span>`</span>)
-  });</code></pre>
+  });
+<span class="hljs-comment">// later</span>
+unsubscribe();</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -175,28 +177,52 @@ sdk.Balance.listenToBalanceChanges(address,
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> listener: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span>, balance<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span>, change<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></h5>
+									<h5>listener: <span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span>, balance<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span>, change<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>Listener to receive balance change updates.</p>
 									</div>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-signature">
+											<ul class="tsd-signatures tsd-kind-type-literal">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span>, balance<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span>, change<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>account: <span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span></h5>
+														</li>
+														<li>
+															<h5>balance: <span class="tsd-signature-type">BN</span></h5>
+														</li>
+														<li>
+															<h5>change: <span class="tsd-signature-type">BN</span></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>A promise containing the current balance of the account.</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">UnsubscribePromise</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>A promise containing a function that let&#39;s you unsubscribe from balance changes.</p>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 					<a name="maketransfer" class="tsd-anchor"></a>
 					<h3>make<wbr>Transfer</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">make<wbr>Transfer<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a>, accountAddressTo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span>, amount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/txstatus.txstatus-1.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></li>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">make<wbr>Transfer<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a>, accountAddressTo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span>, amount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/balance/Balance.chain.ts#L119">src/balance/Balance.chain.ts:119</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/balance/Balance.chain.ts#L117">src/balance/Balance.chain.ts:117</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -207,17 +233,17 @@ sdk.Balance.listenToBalanceChanges(address,
 								<dl class="tsd-comment-tags">
 									<dt>example</dt>
 									<dd><BR>
-										<pre><code class="language-javascript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> sdk <span class="hljs-keyword">from</span> <span class="hljs-string">'@kiltprotocol/prototype-sdk'</span>;
+										<pre><code class="language-javascript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> sdk <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@kiltprotocol/prototype-sdk&#x27;</span>;
 
 <span class="hljs-keyword">const</span> identity = ...
 const address = ...
 const amount: BN = <span class="hljs-keyword">new</span> BN(<span class="hljs-number">42</span>)
 sdk.Balance.makeTransfer(identity, address, amount)
-  .then(<span class="hljs-function">(<span class="hljs-params">status: TxStatus</span>) =&gt;</span> {
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Successfully transferred ${amount.toNumber()} tokens'</span>)
+  .then(<span class="hljs-function">(<span class="hljs-params">status: SubmittableResult</span>) =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;Successfully transferred ${amount.toNumber()} tokens&#x27;</span>)
   })
   .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Transfer failed'</span>)
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;Transfer failed&#x27;</span>)
   })</code></pre>
 									</dd>
 								</dl>
@@ -243,7 +269,7 @@ sdk.Balance.makeTransfer(identity, address, amount)
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/txstatus.txstatus-1.html" class="tsd-signature-type">TxStatus</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>Promise containing the transaction status.</p>
 						</li>
 					</ul>
@@ -256,20 +282,20 @@ sdk.Balance.makeTransfer(identity, address, amount)
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class="current tsd-kind-external-module">
+					<li class="current tsd-kind-module">
 						<a href="balance.html">Balance</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="balance.html#getbalance" class="tsd-kind-icon">get<wbr>Balance</a>
 					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="balance.html#listentobalancechanges" class="tsd-kind-icon">listen<wbr>ToBalance<wbr>Changes</a>
 					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="balance.html#maketransfer" class="tsd-kind-icon">make<wbr>Transfer</a>
 					</li>
 				</ul>
@@ -282,63 +308,24 @@ sdk.Balance.makeTransfer(identity, address, amount)
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
-				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
-				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
-				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
-				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
-				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
-				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
-				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
-				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
 			</ul>
 		</div>
 	</div>
 </footer>
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
-<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
 </body>
 </html>

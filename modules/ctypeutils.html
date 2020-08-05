@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>CTypeUtils | @kiltprotocol/sdk-js - v0.18.0</title>
-	<meta name="description" content="">
+	<title>CTypeUtils | @kiltprotocol/sdk-js</title>
+	<meta name="description" content="Documentation for @kiltprotocol/sdk-js">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 </head>
@@ -13,7 +13,7 @@
 	<div class="tsd-page-toolbar">
 		<div class="container">
 			<div class="table-wrap">
-				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.js" data-base="..">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
 					<div class="field">
 						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
 						<input id="tsd-search-field" type="text" />
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">@kiltprotocol/sdk-js - v0.18.0</a>
+					<a href="../index.html" class="title">@kiltprotocol/sdk-js</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -55,7 +55,7 @@
 					<a href="ctypeutils.html">CTypeUtils</a>
 				</li>
 			</ul>
-			<h1>External module CTypeUtils</h1>
+			<h1>Module CTypeUtils</h1>
 		</div>
 	</div>
 </header>
@@ -69,10 +69,18 @@
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="ctypeutils.html#gethashforschema" class="tsd-kind-icon">get<wbr>Hash<wbr>For<wbr>Schema</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="ctypeutils.html#verifyclaimstructure" class="tsd-kind-icon">verify<wbr>Claim<wbr>Structure</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="ctypeutils.html#verifyschema" class="tsd-kind-icon">verify<wbr>Schema</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="ctypeutils.html#verifyschemawitherrors" class="tsd-kind-icon">verify<wbr>Schema<wbr>With<wbr>Errors</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#compress" class="tsd-kind-icon">compress</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#compressschema" class="tsd-kind-icon">compress<wbr>Schema</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#decompress" class="tsd-kind-icon">decompress</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#decompressschema" class="tsd-kind-icon">decompress<wbr>Schema</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#errorcheck" class="tsd-kind-icon">error<wbr>Check</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#gethashforschema" class="tsd-kind-icon">get<wbr>Hash<wbr>For<wbr>Schema</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#getidforschema" class="tsd-kind-icon">get<wbr>IdFor<wbr>Schema</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#validatenestedschemas" class="tsd-kind-icon">validate<wbr>Nested<wbr>Schemas</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#verifyclaimstructure" class="tsd-kind-icon">verify<wbr>Claim<wbr>Structure</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#verifyschema" class="tsd-kind-icon">verify<wbr>Schema</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#verifyschemawitherrors" class="tsd-kind-icon">verify<wbr>Schema<wbr>With<wbr>Errors</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a></li>
 							</ul>
 						</section>
 					</div>
@@ -80,107 +88,420 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="gethashforschema" class="tsd-anchor"></a>
-					<h3>get<wbr>Hash<wbr>For<wbr>Schema</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Hash<wbr>For<wbr>Schema<span class="tsd-signature-symbol">(</span>schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="compress" class="tsd-anchor"></a>
+					<h3>compress</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">compress<span class="tsd-signature-symbol">(</span>cType<span class="tsd-signature-symbol">: </span><a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ictype.html#compressedctype" class="tsd-signature-type">CompressedCType</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/ctype/CTypeUtils.ts#L41">src/ctype/CTypeUtils.ts:41</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L188">src/ctype/CType.utils.ts:188</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Compresses a <a href="ctype.html">CType</a> for storage and/or messaging.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>cType: <a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A <a href="ctype.html">CType</a> object that will be sorted and stripped for messaging or storage.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="ictype.html#compressedctype" class="tsd-signature-type">CompressedCType</a></h4>
+							<p>An ordered array of a <a href="ctype.html">CType</a>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="compressschema" class="tsd-anchor"></a>
+					<h3>compress<wbr>Schema</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">compress<wbr>Schema<span class="tsd-signature-symbol">(</span>cTypeSchema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ictype.html#compressedctypeschema" class="tsd-signature-type">CompressedCTypeSchema</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L133">src/ctype/CType.utils.ts:133</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Compresses a <a href="ctype.html">CType</a> schema for storage and/or messaging.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When any of the four required properties of the cTypeSchema are missing.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_compress_object">ERROR_COMPRESS_OBJECT</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>cTypeSchema: <span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A <a href="ctype.html">CType</a> schema object that will be sorted and stripped for messaging or storage.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="ictype.html#compressedctypeschema" class="tsd-signature-type">CompressedCTypeSchema</a></h4>
+							<p>An ordered array of a <a href="ctype.html">CType</a> schema.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="decompress" class="tsd-anchor"></a>
+					<h3>decompress</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">decompress<span class="tsd-signature-symbol">(</span>cType<span class="tsd-signature-symbol">: </span><a href="ictype.html#compressedctype" class="tsd-signature-type">CompressedCType</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L203">src/ctype/CType.utils.ts:203</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Decompresses a <a href="ctype.html">CType</a> from storage and/or message.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When either the cType is not an Array or it&#39;s length is not equal to the defined length of 3.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>cType: <a href="ictype.html#compressedctype" class="tsd-signature-type">CompressedCType</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A compressed <a href="ctype.html">CType</a> array that is reverted back into an object.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a></h4>
+							<p>An object that has the same properties as a <a href="ctype.html">CType</a>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="decompressschema" class="tsd-anchor"></a>
+					<h3>decompress<wbr>Schema</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">decompress<wbr>Schema<span class="tsd-signature-symbol">(</span>cTypeSchema<span class="tsd-signature-symbol">: </span><a href="ictype.html#compressedctypeschema" class="tsd-signature-type">CompressedCTypeSchema</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L165">src/ctype/CType.utils.ts:165</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Decompresses a schema of a <a href="ctype.html">CType</a> from storage and/or message.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When either the cTypeSchema is not an Array or it&#39;s length is not equal to the defined length of 4.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>cTypeSchema: <a href="ictype.html#compressedctypeschema" class="tsd-signature-type">CompressedCTypeSchema</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A compressed <a href="ctype.html">CType</a> schema array that is reverted back into an object.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span></h4>
+							<p>An object that has the same properties as a <a href="ctype.html">CType</a> schema.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="errorcheck" class="tsd-anchor"></a>
+					<h3>error<wbr>Check</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">error<wbr>Check<span class="tsd-signature-symbol">(</span>input<span class="tsd-signature-symbol">: </span><a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L101">src/ctype/CType.utils.ts:101</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Checks whether the input meets all the required criteria of an ICType object.
+									Throws on invalid input.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When input does not correspond to either it&#39;s schema, or the CTypeWrapperModel.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p>When the input&#39;s hash does not match the hash calculated from ICType&#39;s schema.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p>When the input&#39;s owner is not of type string or null.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_object_malformed">ERROR_OBJECT_MALFORMED</a>, <a href="../enums/sdkerror.errorcode.html#error_hash_malformed">ERROR_HASH_MALFORMED</a>, <a href="../enums/sdkerror.errorcode.html#error_ctype_owner_type">ERROR_CTYPE_OWNER_TYPE</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>input: <a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The potentially only partial ICType.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="gethashforschema" class="tsd-anchor"></a>
+					<h3>get<wbr>Hash<wbr>For<wbr>Schema</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Hash<wbr>For<wbr>Schema<span class="tsd-signature-symbol">(</span>schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">schemaPropsForHashing</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L76">src/ctype/CType.utils.ts:76</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>schema: <span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span></h5>
+									<h5>schema: <span class="tsd-signature-type">schemaPropsForHashing</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="getidforschema" class="tsd-anchor"></a>
+					<h3>get<wbr>IdFor<wbr>Schema</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>IdFor<wbr>Schema<span class="tsd-signature-symbol">(</span>schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">schemaPropsForHashing</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L86">src/ctype/CType.utils.ts:86</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>schema: <span class="tsd-signature-type">schemaPropsForHashing</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="validatenestedschemas" class="tsd-anchor"></a>
+					<h3>validate<wbr>Nested<wbr>Schemas</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">validate<wbr>Nested<wbr>Schemas<span class="tsd-signature-symbol">(</span>cType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span>, nestedCTypes<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span>, claimContents<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, messages<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L225">src/ctype/CType.utils.ts:225</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Validates an array of <a href="ctype.html">CType</a>s against a <a href="claim.html">Claim</a>.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>cType: <span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A <a href="ctype.html">CType</a> that has nested <a href="ctype.html">CType</a>s inside.</p>
+									</div>
+								</li>
+								<li>
+									<h5>nestedCTypes: <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An array of <a href="ctype.html">CType</a> schemas.</p>
+									</div>
+								</li>
+								<li>
+									<h5>claimContents: <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The contents of a <a href="claim.html">Claim</a> to be validated.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> messages: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+							<p>Whether the contents is valid.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 					<a name="verifyclaimstructure" class="tsd-anchor"></a>
 					<h3>verify<wbr>Claim<wbr>Structure</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">verify<wbr>Claim<wbr>Structure<span class="tsd-signature-symbol">(</span>claim<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">verify<wbr>Claim<wbr>Structure<span class="tsd-signature-symbol">(</span>claimContents<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IClaim</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"contents"</span><span class="tsd-signature-symbol">]</span>, schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/ctype/CTypeUtils.ts#L34">src/ctype/CTypeUtils.ts:34</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L54">src/ctype/CType.utils.ts:54</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Verifies the Structure of the provided IClaim[&#39;contents&#39;] with ICType[&#39;schema&#39;].</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>When schema does not correspond to the CTypeModel.</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerror.errorcode.html#error_object_malformed">ERROR_OBJECT_MALFORMED</a>.</p>
+									</dd>
+								</dl>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>claim: <span class="tsd-signature-type">any</span></h5>
+									<h5>claimContents: <span class="tsd-signature-type">IClaim</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"contents"</span><span class="tsd-signature-symbol">]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>IClaim[&#39;contents&#39;] to be verified against the schema.</p>
+									</div>
 								</li>
 								<li>
-									<h5>schema: <span class="tsd-signature-type">any</span></h5>
+									<h5>schema: <span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"schema"</span><span class="tsd-signature-symbol">]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>ICType[&#39;schema&#39;] to be verified against the [CTypeModel].</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+							<p>Boolean whether both claimContents and schema could be verified.</p>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 					<a name="verifyschema" class="tsd-anchor"></a>
 					<h3>verify<wbr>Schema</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">verify<wbr>Schema<span class="tsd-signature-symbol">(</span>object<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">verify<wbr>Schema<span class="tsd-signature-symbol">(</span>object<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/ctype/CTypeUtils.ts#L30">src/ctype/CTypeUtils.ts:30</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L37">src/ctype/CType.utils.ts:37</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>object: <span class="tsd-signature-type">any</span></h5>
+									<h5>object: <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
-									<h5>schema: <span class="tsd-signature-type">any</span></h5>
+									<h5>schema: <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 					<a name="verifyschemawitherrors" class="tsd-anchor"></a>
 					<h3>verify<wbr>Schema<wbr>With<wbr>Errors</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">verify<wbr>Schema<wbr>With<wbr>Errors<span class="tsd-signature-symbol">(</span>object<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, messages<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">verify<wbr>Schema<wbr>With<wbr>Errors<span class="tsd-signature-symbol">(</span>object<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span>, schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span>, messages<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/ctype/CTypeUtils.ts#L12">src/ctype/CTypeUtils.ts:12</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L17">src/ctype/CType.utils.ts:17</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>object: <span class="tsd-signature-type">any</span></h5>
+									<h5>object: <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
-									<h5>schema: <span class="tsd-signature-type">any</span></h5>
+									<h5>schema: <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> messages: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="verifystored" class="tsd-anchor"></a>
+					<h3>verify<wbr>Stored</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">verify<wbr>Stored<span class="tsd-signature-symbol">(</span>ctype<span class="tsd-signature-symbol">: </span><a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L64">src/ctype/CType.utils.ts:64</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>ctype: <a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -192,24 +513,48 @@
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class="current tsd-kind-external-module">
+					<li class="current tsd-kind-module">
 						<a href="ctypeutils.html">CType<wbr>Utils</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="ctypeutils.html#compress" class="tsd-kind-icon">compress</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="ctypeutils.html#compressschema" class="tsd-kind-icon">compress<wbr>Schema</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="ctypeutils.html#decompress" class="tsd-kind-icon">decompress</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="ctypeutils.html#decompressschema" class="tsd-kind-icon">decompress<wbr>Schema</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="ctypeutils.html#errorcheck" class="tsd-kind-icon">error<wbr>Check</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="ctypeutils.html#gethashforschema" class="tsd-kind-icon">get<wbr>Hash<wbr>For<wbr>Schema</a>
 					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="ctypeutils.html#getidforschema" class="tsd-kind-icon">get<wbr>IdFor<wbr>Schema</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="ctypeutils.html#validatenestedschemas" class="tsd-kind-icon">validate<wbr>Nested<wbr>Schemas</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="ctypeutils.html#verifyclaimstructure" class="tsd-kind-icon">verify<wbr>Claim<wbr>Structure</a>
 					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="ctypeutils.html#verifyschema" class="tsd-kind-icon">verify<wbr>Schema</a>
 					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="ctypeutils.html#verifyschemawitherrors" class="tsd-kind-icon">verify<wbr>Schema<wbr>With<wbr>Errors</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="ctypeutils.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a>
 					</li>
 				</ul>
 			</nav>
@@ -221,63 +566,24 @@
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
-				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
-				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
-				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
-				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
-				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
-				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
-				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
-				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
 			</ul>
 		</div>
 	</div>
 </footer>
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
-<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
 </body>
 </html>

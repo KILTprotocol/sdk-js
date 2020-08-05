@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MessageBodyType | @kiltprotocol/sdk-js - v0.18.0</title>
-	<meta name="description" content="">
+	<title>MessageBodyType | @kiltprotocol/sdk-js</title>
+	<meta name="description" content="Documentation for @kiltprotocol/sdk-js">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 </head>
@@ -13,7 +13,7 @@
 	<div class="tsd-page-toolbar">
 		<div class="container">
 			<div class="table-wrap">
-				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.js" data-base="..">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
 					<div class="field">
 						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
 						<input id="tsd-search-field" type="text" />
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">@kiltprotocol/sdk-js - v0.18.0</a>
+					<a href="../index.html" class="title">@kiltprotocol/sdk-js</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -74,6 +74,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#accept_claims_for_ctypes" class="tsd-kind-icon">ACCEPT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES</a></li>
 								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#inform_create_delegation" class="tsd-kind-icon">INFORM_<wbr>CREATE_<wbr>DELEGATION</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#initiate_attestation" class="tsd-kind-icon">INITIATE_<wbr>ATTESTATION</a></li>
 								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#reject_accept_delegation" class="tsd-kind-icon">REJECT_<wbr>ACCEPT_<wbr>DELEGATION</a></li>
 								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#reject_attestation_for_claim" class="tsd-kind-icon">REJECT_<wbr>ATTESTATION_<wbr>FOR_<wbr>CLAIM</a></li>
 								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#reject_claims_for_ctypes" class="tsd-kind-icon">REJECT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES</a></li>
@@ -84,7 +85,8 @@
 								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#request_terms" class="tsd-kind-icon">REQUEST_<wbr>TERMS</a></li>
 								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#submit_accept_delegation" class="tsd-kind-icon">SUBMIT_<wbr>ACCEPT_<wbr>DELEGATION</a></li>
 								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#submit_attestation_for_claim" class="tsd-kind-icon">SUBMIT_<wbr>ATTESTATION_<wbr>FOR_<wbr>CLAIM</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#submit_claims_for_ctypes" class="tsd-kind-icon">SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#submit_claims_for_ctypes_classic" class="tsd-kind-icon">SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES_<wbr>CLASSIC</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#submit_claims_for_ctypes_pe" class="tsd-kind-icon">SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES_<wbr>PE</a></li>
 								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messaging.messagebodytype.html#submit_terms" class="tsd-kind-icon">SUBMIT_<wbr>TERMS</a></li>
 							</ul>
 						</section>
@@ -99,7 +101,7 @@
 					<div class="tsd-signature tsd-kind-icon">ACCEPT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;accept-claims-for-ctypes&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L69">src/messaging/Message.ts:69</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L99">src/messaging/Message.ts:99</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -109,7 +111,17 @@
 					<div class="tsd-signature tsd-kind-icon">INFORM_<wbr>CREATE_<wbr>DELEGATION<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;inform-create-delegation&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L75">src/messaging/Message.ts:75</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L105">src/messaging/Message.ts:105</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="initiate_attestation" class="tsd-anchor"></a>
+					<h3>INITIATE_<wbr>ATTESTATION</h3>
+					<div class="tsd-signature tsd-kind-icon">INITIATE_<wbr>ATTESTATION<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;initiate-attestation&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L90">src/messaging/Message.ts:90</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -119,7 +131,7 @@
 					<div class="tsd-signature tsd-kind-icon">REJECT_<wbr>ACCEPT_<wbr>DELEGATION<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;reject-accept-delegation&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L74">src/messaging/Message.ts:74</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L104">src/messaging/Message.ts:104</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -129,7 +141,7 @@
 					<div class="tsd-signature tsd-kind-icon">REJECT_<wbr>ATTESTATION_<wbr>FOR_<wbr>CLAIM<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;reject-attestation-for-claim&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L65">src/messaging/Message.ts:65</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L94">src/messaging/Message.ts:94</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -139,7 +151,7 @@
 					<div class="tsd-signature tsd-kind-icon">REJECT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;reject-claims-for-ctypes&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L70">src/messaging/Message.ts:70</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L100">src/messaging/Message.ts:100</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -149,7 +161,7 @@
 					<div class="tsd-signature tsd-kind-icon">REJECT_<wbr>TERMS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;reject-terms&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L61">src/messaging/Message.ts:61</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L88">src/messaging/Message.ts:88</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -159,7 +171,7 @@
 					<div class="tsd-signature tsd-kind-icon">REQUEST_<wbr>ACCEPT_<wbr>DELEGATION<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;request-accept-delegation&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L72">src/messaging/Message.ts:72</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L102">src/messaging/Message.ts:102</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -169,7 +181,7 @@
 					<div class="tsd-signature tsd-kind-icon">REQUEST_<wbr>ATTESTATION_<wbr>FOR_<wbr>CLAIM<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;request-attestation-for-claim&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L63">src/messaging/Message.ts:63</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L92">src/messaging/Message.ts:92</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -179,7 +191,7 @@
 					<div class="tsd-signature tsd-kind-icon">REQUEST_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;request-claims-for-ctypes&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L67">src/messaging/Message.ts:67</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L96">src/messaging/Message.ts:96</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -189,7 +201,7 @@
 					<div class="tsd-signature tsd-kind-icon">REQUEST_<wbr>TERMS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;request-terms&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L59">src/messaging/Message.ts:59</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L86">src/messaging/Message.ts:86</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -199,7 +211,7 @@
 					<div class="tsd-signature tsd-kind-icon">SUBMIT_<wbr>ACCEPT_<wbr>DELEGATION<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;submit-accept-delegation&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L73">src/messaging/Message.ts:73</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L103">src/messaging/Message.ts:103</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -209,17 +221,27 @@
 					<div class="tsd-signature tsd-kind-icon">SUBMIT_<wbr>ATTESTATION_<wbr>FOR_<wbr>CLAIM<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;submit-attestation-for-claim&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L64">src/messaging/Message.ts:64</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L93">src/messaging/Message.ts:93</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="submit_claims_for_ctypes" class="tsd-anchor"></a>
-					<h3>SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES</h3>
-					<div class="tsd-signature tsd-kind-icon">SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;submit-claims-for-ctypes&quot;</span></div>
+					<a name="submit_claims_for_ctypes_classic" class="tsd-anchor"></a>
+					<h3>SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES_<wbr>CLASSIC</h3>
+					<div class="tsd-signature tsd-kind-icon">SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES_<wbr>CLASSIC<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;submit-claims-for-ctypes-classic&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L68">src/messaging/Message.ts:68</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L97">src/messaging/Message.ts:97</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="submit_claims_for_ctypes_pe" class="tsd-anchor"></a>
+					<h3>SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES_<wbr>PE</h3>
+					<div class="tsd-signature tsd-kind-icon">SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES_<wbr>PE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;submit-claims-for-ctypes-pe&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L98">src/messaging/Message.ts:98</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -229,7 +251,7 @@
 					<div class="tsd-signature tsd-kind-icon">SUBMIT_<wbr>TERMS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;submit-terms&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/b75ed9f/src/messaging/Message.ts#L60">src/messaging/Message.ts:60</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L87">src/messaging/Message.ts:87</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -241,7 +263,7 @@
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class="current tsd-kind-external-module">
+					<li class="current tsd-kind-module">
 						<a href="../modules/messaging.html">Messaging</a>
 					</li>
 				</ul>
@@ -250,7 +272,7 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-enum tsd-parent-kind-external-module">
+					<li class="current tsd-kind-enum tsd-parent-kind-module">
 						<a href="messaging.messagebodytype.html" class="tsd-kind-icon">Message<wbr>Body<wbr>Type</a>
 						<ul>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
@@ -258,6 +280,9 @@
 							</li>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
 								<a href="messaging.messagebodytype.html#inform_create_delegation" class="tsd-kind-icon">INFORM_<wbr>CREATE_<wbr>DELEGATION</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="messaging.messagebodytype.html#initiate_attestation" class="tsd-kind-icon">INITIATE_<wbr>ATTESTATION</a>
 							</li>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
 								<a href="messaging.messagebodytype.html#reject_accept_delegation" class="tsd-kind-icon">REJECT_<wbr>ACCEPT_<wbr>DELEGATION</a>
@@ -290,7 +315,10 @@
 								<a href="messaging.messagebodytype.html#submit_attestation_for_claim" class="tsd-kind-icon">SUBMIT_<wbr>ATTESTATION_<wbr>FOR_<wbr>CLAIM</a>
 							</li>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messaging.messagebodytype.html#submit_claims_for_ctypes" class="tsd-kind-icon">SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES</a>
+								<a href="messaging.messagebodytype.html#submit_claims_for_ctypes_classic" class="tsd-kind-icon">SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES_<wbr>CLASSIC</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="messaging.messagebodytype.html#submit_claims_for_ctypes_pe" class="tsd-kind-icon">SUBMIT_<wbr>CLAIMS_<wbr>FOR_<wbr>CTYPES_<wbr>PE</a>
 							</li>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
 								<a href="messaging.messagebodytype.html#submit_terms" class="tsd-kind-icon">SUBMIT_<wbr>TERMS</a>
@@ -299,61 +327,70 @@
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
+					<li class=" tsd-kind-class tsd-parent-kind-module">
 						<a href="../classes/messaging.message.html" class="tsd-kind-icon">Message</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.iacceptclaimsforctypes.html" class="tsd-kind-icon">IAccept<wbr>Claims<wbr>ForCTypes</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="../interfaces/messaging.iencryptedmessage.html" class="tsd-kind-icon">IEncrypted<wbr>Message</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.iinformcreatedelegation.html" class="tsd-kind-icon">IInform<wbr>Create<wbr>Delegation</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/messaging.iinitiateattestation.html" class="tsd-kind-icon">IInitiate<wbr>Attestation</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.imessage.html" class="tsd-kind-icon">IMessage</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.ipartialclaim.html" class="tsd-kind-icon">IPartial<wbr>Claim</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.irejectacceptdelegation.html" class="tsd-kind-icon">IReject<wbr>Accept<wbr>Delegation</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.irejectattestationforclaim.html" class="tsd-kind-icon">IReject<wbr>Attestation<wbr>For<wbr>Claim</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.irejectclaimsforctypes.html" class="tsd-kind-icon">IReject<wbr>Claims<wbr>ForCTypes</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.irejectterms.html" class="tsd-kind-icon">IReject<wbr>Terms</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.irequestacceptdelegation.html" class="tsd-kind-icon">IRequest<wbr>Accept<wbr>Delegation</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.irequestattestationforclaim.html" class="tsd-kind-icon">IRequest<wbr>Attestation<wbr>For<wbr>Claim</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.irequestclaimsforctypes.html" class="tsd-kind-icon">IRequest<wbr>Claims<wbr>ForCTypes</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.irequestterms.html" class="tsd-kind-icon">IRequest<wbr>Terms</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.isubmitacceptdelegation.html" class="tsd-kind-icon">ISubmit<wbr>Accept<wbr>Delegation</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.isubmitattestationforclaim.html" class="tsd-kind-icon">ISubmit<wbr>Attestation<wbr>For<wbr>Claim</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="../interfaces/messaging.isubmitclaimsforctypes.html" class="tsd-kind-icon">ISubmit<wbr>Claims<wbr>ForCTypes</a>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/messaging.isubmitclaimsforctypesclassic.html" class="tsd-kind-icon">ISubmit<wbr>Claims<wbr>ForCTypes<wbr>Classic</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/messaging.isubmitclaimsforctypespe.html" class="tsd-kind-icon">ISubmit<wbr>Claims<wbr>ForCTypesPE</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/messaging.isubmitterms.html" class="tsd-kind-icon">ISubmit<wbr>Terms</a>
 					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/messaging.html#iencryptedmessage" class="tsd-kind-icon">IEncrypted<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/messaging.html#isubmitclaimsforctypes" class="tsd-kind-icon">ISubmit<wbr>Claims<wbr>ForCTypes</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
 						<a href="../modules/messaging.html#messagebody" class="tsd-kind-icon">Message<wbr>Body</a>
 					</li>
 				</ul>
@@ -366,63 +403,24 @@
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
-				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
-				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
-				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
-				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
-				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
-				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
-				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
-				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
 			</ul>
 		</div>
 	</div>
 </footer>
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
-<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
 </body>
 </html>
