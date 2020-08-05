@@ -2,16 +2,15 @@
  * @packageDocumentation
  * @ignore
  */
-import { Option, Text } from '@polkadot/types'
-import { Codec } from '@polkadot/types/types'
+import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-
+import { Option, Tuple } from '@polkadot/types'
+import { Codec } from '@polkadot/types/types'
 import { getCached } from '../blockchainApiConnection'
-import { QueryResult } from '../blockchain/Blockchain'
-import TxStatus from '../blockchain/TxStatus'
-import Identity from '../identity/Identity'
 import { factory } from '../config/ConfigLog'
+import Identity from '../identity/Identity'
 import IAttestation from '../types/Attestation'
+import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 import Attestation from './Attestation'
 
 const log = factory.getLogger('Attestation')
@@ -19,17 +18,17 @@ const log = factory.getLogger('Attestation')
 export async function store(
   attestation: IAttestation,
   identity: Identity
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const txParams = {
     claimHash: attestation.claimHash,
     ctypeHash: attestation.cTypeHash,
-    delegationId: new Option(Text, attestation.delegationId),
+    delegationId: attestation.delegationId,
   }
   log.debug(() => `Create tx for 'attestation.add'`)
 
   const blockchain = await getCached()
 
-  const tx = await blockchain.api.tx.attestation.add(
+  const tx = blockchain.api.tx.attestation.add(
     txParams.claimHash,
     txParams.ctypeHash,
     txParams.delegationId
@@ -37,17 +36,20 @@ export async function store(
   return blockchain.submitTx(identity, tx)
 }
 
-function decode(encoded: QueryResult, claimHash: string): Attestation | null {
-  if (encoded && encoded.encodedLength) {
-    const attestationTuple = encoded.toJSON()
-    if (
-      attestationTuple instanceof Array &&
-      typeof attestationTuple[0] === 'string' &&
-      typeof attestationTuple[1] === 'string' &&
-      (typeof attestationTuple[2] === 'string' ||
-        attestationTuple[2] === null) &&
-      typeof attestationTuple[3] === 'boolean'
-    ) {
+interface IChainAttestation extends Codec {
+  toJSON: () => [string, string, string | null, boolean] | null
+}
+
+function decode(
+  encoded: Option<Tuple>,
+  claimHash: string // all the other decoders do not use extra data; they just return partial types
+): Attestation | null {
+  assertCodecIsType(encoded, [
+    'Option<(Hash,AccountId,Option<DelegationNodeId>,bool)>',
+  ])
+  if (encoded instanceof Option || hasNonNullByte(encoded)) {
+    const attestationTuple = (encoded as IChainAttestation).toJSON()
+    if (attestationTuple instanceof Array) {
       const attestation: IAttestation = {
         claimHash,
         cTypeHash: attestationTuple[0],
@@ -62,24 +64,25 @@ function decode(encoded: QueryResult, claimHash: string): Attestation | null {
   return null
 }
 
-async function queryRaw(claimHash: string): Promise<Codec | null> {
+// return types reflect backwards compatibility with mashnet-node v 0.22
+async function queryRaw(claimHash: string): Promise<Option<Tuple>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await getCached()
-  const result: QueryResult = await blockchain.api.query.attestation.attestations(
-    claimHash
-  )
+  const result = await blockchain.api.query.attestation.attestations<
+    Option<Tuple>
+  >(claimHash)
   return result
 }
 
 export async function query(claimHash: string): Promise<Attestation | null> {
-  const encoded: QueryResult = await queryRaw(claimHash)
+  const encoded = await queryRaw(claimHash)
   return decode(encoded, claimHash)
 }
 
 export async function revoke(
   claimHash: string,
   identity: Identity
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const blockchain = await getCached()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(

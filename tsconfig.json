@@ -7,7 +7,7 @@
     "lib": ["es6"],
     "sourceMap": false,
     "strict": true,
-    "allowJs": false,
+    "allowJs": true,
     "esModuleInterop": true,
     "jsx": "preserve",
     "moduleResolution": "node",
@@ -21,6 +21,7 @@
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true
   },
+  "include": ["./src/**/*.ts", "./src/**/*.js"],
   "exclude": [
     "node_modules",
     "coverage",
@@ -32,6 +33,8 @@
     "src/setupTests.ts",
     "jest.config.js",
     "docs",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "src/__integrationtests__",
+    "**/__mocks__"
   ]
 }

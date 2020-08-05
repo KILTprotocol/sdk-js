@@ -8,33 +8,35 @@
  * @preferred
  */
 
-import { ApiPromise } from '@polkadot/api'
+import * as gabi from '@kiltprotocol/portablegabi'
+import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Header } from '@polkadot/types/interfaces/types'
-import { Codec } from '@polkadot/types/types'
-import { ErrorHandler } from '../errorhandling/ErrorHandler'
+import { Text } from '@polkadot/types'
+import { Header, Index } from '@polkadot/types/interfaces/types'
+import { AnyJson, Codec } from '@polkadot/types/types'
 import { factory as LoggerFactory } from '../config/ConfigLog'
+import { ErrorHandler } from '../errorhandling/ErrorHandler'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
-import TxStatus from './TxStatus'
-import { FINALIZED, DROPPED, INVALID } from '../const/TxStatus'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
-export type QueryResult = Codec | undefined | null
-
 export type Stats = {
-  chain: Codec
-  nodeName: Codec
-  nodeVersion: Codec
+  chain: string
+  nodeName: string
+  nodeVersion: string
 }
 
 export interface IBlockchainApi {
   api: ApiPromise
+  portablegabi: gabi.Blockchain
 
   getStats(): Promise<Stats>
-  listenToBlocks(listener: (header: Header) => void): Promise<any> // TODO: change any to something meaningful
-  submitTx(identity: Identity, tx: SubmittableExtrinsic): Promise<TxStatus>
+  listenToBlocks(listener: (header: Header) => void): Promise<() => void>
+  submitTx(
+    identity: Identity,
+    tx: SubmittableExtrinsic
+  ): Promise<SubmittableResult>
   getNonce(accountAddress: string): Promise<Codec>
 }
 
@@ -42,31 +44,32 @@ export interface IBlockchainApi {
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
 
 export default class Blockchain implements IBlockchainApi {
-  public static asArray(queryResult: QueryResult): any[] {
-    const json =
-      queryResult && queryResult.encodedLength ? queryResult.toJSON() : null
-    if (json instanceof Array) {
-      return json
-    }
+  public static asArray(queryResult: Codec): AnyJson[] {
+    const json = queryResult.toJSON()
+    if (json instanceof Array) return json
     return []
   }
 
   public api: ApiPromise
+  public readonly ready: Promise<boolean>
+  public readonly portablegabi: gabi.Blockchain
 
   public constructor(api: ApiPromise) {
     this.api = api
     this.errorHandler = new ErrorHandler(api)
+    this.ready = this.errorHandler.ready
+    this.portablegabi = new gabi.Blockchain('portablegabi', this.api as any)
   }
 
   private errorHandler: ErrorHandler
 
   public async getStats(): Promise<Stats> {
-    const [chain, nodeName, nodeVersion] = await Promise.all([
+    const encoded: Text[] = await Promise.all([
       this.api.rpc.system.chain(),
       this.api.rpc.system.name(),
       this.api.rpc.system.version(),
     ])
-
+    const [chain, nodeName, nodeVersion] = encoded.map((el) => el.toString())
     return { chain, nodeName, nodeVersion }
   }
 
@@ -74,14 +77,13 @@ export default class Blockchain implements IBlockchainApi {
   public async listenToBlocks(
     listener: (header: Header) => void
   ): Promise<() => void> {
-    const subscriptionId = await this.api.rpc.chain.subscribeNewHeads(listener)
-    return subscriptionId
+    return this.api.rpc.chain.subscribeNewHeads(listener)
   }
 
   public async submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic
-  ): Promise<TxStatus> {
+  ): Promise<SubmittableResult> {
     const accountAddress = identity.address
     const nonce = await this.getNonce(accountAddress)
     const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
@@ -90,12 +92,11 @@ export default class Blockchain implements IBlockchainApi {
     )
     log.info(`Submitting ${tx.method}`)
 
-    return new Promise<TxStatus>((resolve, reject) => {
+    return new Promise<SubmittableResult>((resolve, reject) => {
       signed
-        .send(result => {
+        .send((result) => {
           log.info(`Got tx status '${result.status.type}'`)
 
-          const { status } = result
           if (ErrorHandler.extrinsicFailed(result)) {
             log.warn(`Extrinsic execution failed`)
             log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
@@ -105,10 +106,14 @@ export default class Blockchain implements IBlockchainApi {
             log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
             reject(extrinsicError)
           }
-          if (status.type === FINALIZED) {
-            resolve(new TxStatus(status.type))
-          } else if (status.type === INVALID || status.type === DROPPED) {
-            reject(new Error(`Transaction failed with status '${status.type}'`))
+          if (result.isFinalized) {
+            resolve(result)
+          } else if (result.isError) {
+            reject(
+              new Error(
+                `Transaction failed with status '${result.status.type}'`
+              )
+            )
           }
         })
         .catch((err: Error) => {
@@ -118,12 +123,7 @@ export default class Blockchain implements IBlockchainApi {
     })
   }
 
-  public async getNonce(accountAddress: string): Promise<Codec> {
-    const nonce = await this.api.query.system.accountNonce(accountAddress)
-    if (!nonce) {
-      throw Error(`Nonce not found for account ${accountAddress}`)
-    }
-
-    return nonce
+  public async getNonce(accountAddress: string): Promise<Index> {
+    return (await this.api.query.system.account(accountAddress)).nonce
   }
 }

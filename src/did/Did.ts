@@ -1,5 +1,6 @@
 /**
- * A Decentralized Identifier (DID) is a new type of identifier that is globally unique, resolveable with high availability, and cryptographically verifiable. Although it's not mandatory in KILT, users can optionally create a DID and anchor it to the KILT blockchain.
+ * A Decentralized Identifier (DID) is a new type of identifier that is globally unique, resolvable with high availability, and cryptographically verifiable.
+ * Although it's not mandatory in KILT, users can optionally create a DID and anchor it to the KILT blockchain.
  *
  * Official DID specification: [[https://w3c-ccg.github.io/did-primer/]].
  *
@@ -10,18 +11,19 @@
  * @preferred
  */
 
-import Identity from '../identity/Identity'
+import { SubmittableResult } from '@polkadot/api'
+import { AnyJson } from '@polkadot/types/types'
 import { factory } from '../config/ConfigLog'
-import TxStatus from '../blockchain/TxStatus'
+import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
+import { queryByAddress, queryByIdentifier, remove, store } from './Did.chain'
 import {
-  getIdentifierFromAddress,
-  getAddressFromIdentifier,
   createDefaultDidDocument,
-  verifyDidDocumentSignature,
+  getAddressFromIdentifier,
+  getIdentifierFromAddress,
   signDidDocument,
+  verifyDidDocumentSignature,
 } from './Did.utils'
-import { store, queryByAddress, queryByIdentifier, remove } from './Did.chain'
 
 const log = factory.getLogger('DID')
 
@@ -52,7 +54,7 @@ export interface IDid {
 }
 
 export interface IDidDocumentCore {
-  // id and context are the only mandatory ppties, described as "MUST"s in the w3c spec https://w3c.github.io/did-core/
+  // id and context are the only mandatory properties, described as "MUST"s in the w3c spec https://w3c.github.io/did-core/
   id: string
   '@context': string
 }
@@ -64,15 +66,22 @@ export interface IDidDocumentPublicKey {
   publicKeyHex: string
 }
 
-export interface IDidDocumentPpties {
-  authentication: object
+export interface IDidDocumentProperties {
+  authentication: Array<string | IDidDocumentPublicKey | AnyJson>
   publicKey: IDidDocumentPublicKey[]
-  service: any
+  service: IDidService[]
+}
+
+export interface IDidService {
+  type: string
+  serviceEndpoint: string | AnyJson
+  id?: string
+  [key: string]: AnyJson
 }
 
 export interface IDidDocument
   extends IDidDocumentCore,
-    Partial<IDidDocumentPpties> {}
+    Partial<IDidDocumentProperties> {}
 
 export interface IDidDocumentSigned extends IDidDocument {
   signature: string
@@ -97,35 +106,35 @@ export default class Did implements IDid {
   }
 
   /**
-   * Builds a [[Did]] object from the given [[Identity]].
+   * [STATIC] Builds a [[Did]] object from the given [[Identity]].
    *
    * @param identity The identity used to build the [[Did]] object.
-   * @param documentStore The storage location of the associated DID Document; usally a URL.
+   * @param documentStore The storage location of the associated DID Document; usually a URL.
    * @returns The [[Did]] object.
    */
   public static fromIdentity(identity: Identity, documentStore?: string): Did {
     const identifier = getIdentifierFromAddress(identity.address)
     return new Did(
       identifier,
-      identity.boxPublicKeyAsHex,
+      identity.getBoxPublicKey(),
       identity.signPublicKeyAsHex,
       documentStore
     )
   }
 
   /**
-   * Stores the [[Did]] object on-chain.
+   * [ASYNC] Stores the [[Did]] object on-chain.
    *
    * @param identity The identity used to store the [[Did]] object on-chain.
-   * @returns A promise containing the [[TxStatus]] (transaction status).
+   * @returns A promise containing the SubmittableResult (transaction status).
    */
-  public async store(identity: Identity): Promise<TxStatus> {
+  public async store(identity: Identity): Promise<SubmittableResult> {
     log.debug(`Create tx for 'did.add'`)
     return store(this, identity)
   }
 
   /**
-   * Queries the [[Did]] object from the chain using the [identifier].
+   * [STATIC] Queries the [[Did]] object from the chain using the [identifier].
    *
    * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
    * @returns A promise containing the [[Did]] or [null].
@@ -135,7 +144,7 @@ export default class Did implements IDid {
   }
 
   /**
-   * Queries the [[Did]] object from the chain using the [address].
+   * [STATIC] Queries the [[Did]] object from the chain using the [address].
    *
    * @param address The address associated to this [[Did]].
    * @returns A promise containing the [[Did]] or [null].
@@ -145,18 +154,18 @@ export default class Did implements IDid {
   }
 
   /**
-   * Removes the [[Did]] object attached to a given [[Identity]] from the chain.
+   * [STATIC] Removes the [[Did]] object attached to a given [[Identity]] from the chain.
    *
    * @param identity The identity for which to delete the [[Did]].
-   * @returns A promise containing the [[TxStatus]] (transaction status).
+   * @returns A promise containing the SubmittableResult (transaction status).
    */
-  public static async remove(identity: Identity): Promise<TxStatus> {
+  public static async remove(identity: Identity): Promise<SubmittableResult> {
     log.debug(`Create tx for 'did.remove'`)
     return remove(identity)
   }
 
   /**
-   * Gets the complete KILT DID from an [address] (in KILT, the method-specific ID is an address). Reverse of [[getAddressFromIdentifier]].
+   * [STATIC] Gets the complete KILT DID from an [address] (in KILT, the method-specific ID is an address). Reverse of [[getAddressFromIdentifier]].
    *
    * @param address An address, e.g. "5CtPYoDuQQF...".
    * @returns The associated KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
@@ -168,7 +177,7 @@ export default class Did implements IDid {
   }
 
   /**
-   * Gets the [address] from a complete KILT DID (in KILT, the method-specific ID is an address). Reverse of [[getIdentifierFromAddress]].
+   * [STATIC] Gets the [address] from a complete KILT DID (in KILT, the method-specific ID is an address). Reverse of [[getIdentifierFromAddress]].
    *
    * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".
    * @returns The associated address, e.g. "5CtPYoDuQQF...".
@@ -180,7 +189,7 @@ export default class Did implements IDid {
   }
 
   /**
-   * Signs (the hash of) a DID Document.
+   * [STATIC] Signs (the hash of) a DID Document.
    *
    * @param didDocument A DID Document, e.g. Created via [[createDefaultDidDocument]].
    * @param identity [[Identity]] representing the DID subject for this DID Document, and used for signature.
@@ -194,7 +203,7 @@ export default class Did implements IDid {
   }
 
   /**
-   * Verifies the signature of a DID Document, to check whether the data has been tampered with.
+   * [STATIC] Verifies the signature of a DID Document, to check whether the data has been tampered with.
    *
    * @param didDocument A signed DID Document.
    * @param identifier A KILT DID identifier, e.g. "did:kilt:5CtPYoDuQQF...".

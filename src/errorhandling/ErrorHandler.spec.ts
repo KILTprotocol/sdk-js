@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { Tuple } from '@polkadot/types'
 import { ErrorHandler } from './ErrorHandler'
@@ -5,7 +6,6 @@ import { ErrorCode, ERROR_CTYPE_NOT_FOUND } from './ExtrinsicError'
 
 describe('ErrorHandler', () => {
   it('test extrinsic failed', () => {
-    // @ts-ignore
     const evtRecord = {
       phase: {
         asApplyExtrinsic: {
@@ -29,7 +29,6 @@ describe('ErrorHandler', () => {
   })
 
   it('test extrinsic succeeded', () => {
-    // @ts-ignore
     const evtRecord = {
       phase: {
         asApplyExtrinsic: {
@@ -54,11 +53,9 @@ describe('ErrorHandler', () => {
 
   const modules = [
     {
-      // @ts-ignore
       events: {
         isEmpty: false,
       },
-      // @ts-ignore
       name: {
         toString: jest.fn(() => {
           return 'system'
@@ -66,11 +63,9 @@ describe('ErrorHandler', () => {
       },
     },
     {
-      // @ts-ignore
       events: {
         isEmpty: true,
       },
-      // @ts-ignore
       name: {
         toString: jest.fn(() => {
           return 'balances'
@@ -78,23 +73,20 @@ describe('ErrorHandler', () => {
       },
     },
     {
-      // @ts-ignore
       events: {
         isEmpty: false,
       },
-      // @ts-ignore
       name: {
         toString: jest.fn(() => {
-          return 'error'
+          return 'Error'
         }),
       },
     },
   ]
 
   const apiPromise: ApiPromise = {
-    // @ts-ignore
     runtimeMetadata: {
-      asV4: {
+      asV11: {
         // @ts-ignore
         modules,
       },

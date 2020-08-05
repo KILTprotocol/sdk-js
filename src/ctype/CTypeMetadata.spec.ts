@@ -1,43 +1,46 @@
-import CType from './CType'
-import ICType from '../types/CType'
-import CTypeMetadata from './CTypeMetadata'
-import CTypeUtils from './CTypeUtils'
-import { MetadataModel } from './CTypeSchema'
-import ICTypeMetadata from '../types/CTypeMetadata'
 import Identity from '../identity/Identity'
+import ICType from '../types/CType'
+import ICTypeMetadata from '../types/CTypeMetadata'
+import CType from './CType'
+import CTypeUtils from './CType.utils'
+import CTypeMetadata from './CTypeMetadata'
+import { MetadataModel } from './CTypeSchema'
 
 describe('CType', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
+  let identityAlice: Identity
+  let rawCType: ICType['schema']
+  let ctype: ICType
+  let ctypeMetadata: ICTypeMetadata['metadata']
+  let metadata: CTypeMetadata
 
-  const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      'first-property': { type: 'integer' },
-      'second-property': { type: 'string' },
-    },
-    type: 'object',
-  }
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
 
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.address,
-    hash: '',
-  }
-  const ctype = CType.fromCType(fromRawCType)
+    rawCType = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'CtypeMetaData',
+      properties: {
+        'first-property': { type: 'integer' },
+        'second-property': { type: 'string' },
+      },
+      type: 'object',
+    }
+    ctype = CType.fromSchema(rawCType, identityAlice.signKeyringPair.address)
 
-  const ctypeMetadata: ICTypeMetadata['metadata'] = {
-    title: { default: 'Title' },
-    description: { default: 'Description' },
-    properties: {
-      'first-property': { title: { default: 'First Property' } },
-      'second-property': { title: { default: 'Second Property' } },
-    },
-  }
+    ctypeMetadata = {
+      title: { default: 'Title' },
+      description: { default: 'Description' },
+      properties: {
+        'first-property': { title: { default: 'First Property' } },
+        'second-property': { title: { default: 'Second Property' } },
+      },
+    }
 
-  const metadata = new CTypeMetadata({
-    metadata: ctypeMetadata,
-    ctypeHash: ctype.hash,
+    metadata = new CTypeMetadata({
+      metadata: ctypeMetadata,
+      ctypeHash: ctype.hash,
+    })
   })
 
   it('verifies the metadata of a ctype', async () => {

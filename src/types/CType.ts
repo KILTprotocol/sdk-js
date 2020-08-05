@@ -2,17 +2,37 @@
  * @packageDocumentation
  * @module ICType
  */
+import CType from '../ctype/CType'
 import IPublicIdentity from './PublicIdentity'
 
 export interface ICTypeSchema {
-  $id: any
-  $schema: any
-  properties: any
+  $id: string
+  $schema: string
+  title: string
+  properties: {
+    [key: string]: { $ref?: string; type?: string; format?: string }
+  }
   type: 'object'
 }
+
+export type CTypeSchemaWithoutId = Omit<ICTypeSchema, '$id'>
 
 export default interface ICType {
   hash: string
   owner: IPublicIdentity['address'] | null
   schema: ICTypeSchema
 }
+
+export type CompressedCTypeSchema = [
+  ICTypeSchema['$id'],
+  ICTypeSchema['$schema'],
+  ICTypeSchema['title'],
+  ICTypeSchema['properties'],
+  ICTypeSchema['type']
+]
+
+export type CompressedCType = [
+  CType['hash'],
+  CType['owner'],
+  CompressedCTypeSchema
+]

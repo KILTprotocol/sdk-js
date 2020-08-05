@@ -10,35 +10,42 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { RegistryTypes } from '@polkadot/types/types'
+import Blockchain from '../blockchain/Blockchain'
 
-import Blockchain, { IBlockchainApi } from '../blockchain/Blockchain'
+export const DEFAULT_WS_ADDRESS =
+  process.env.DEFAULT_WS_ADDRESS || 'ws://127.0.0.1:9944'
 
-export const DEFAULT_WS_ADDRESS = 'ws://127.0.0.1:9944'
+let instance: Promise<Blockchain> | null
 
-let instance: Promise<IBlockchainApi> | null
-
-const CUSTOM_TYPES: RegistryTypes = {
+export const CUSTOM_TYPES: RegistryTypes = {
   DelegationNodeId: 'Hash',
   PublicSigningKey: 'Hash',
   PublicBoxKey: 'Hash',
   Permissions: 'u32',
   ErrorCode: 'u16',
+  Signature: 'MultiSignature',
+  Address: 'AccountId',
+  LookupSource: 'AccountId',
+  BlockNumber: 'u64',
+  Index: 'u64',
 }
 
 export async function buildConnection(
   host: string = DEFAULT_WS_ADDRESS
-): Promise<IBlockchainApi> {
+): Promise<Blockchain> {
   const provider = new WsProvider(host)
   const api: ApiPromise = await ApiPromise.create({
     provider,
     types: CUSTOM_TYPES,
   })
-  return new Blockchain(api)
+  const bc = new Blockchain(api)
+  await bc.ready
+  return bc
 }
 
 export async function getCached(
   host: string = DEFAULT_WS_ADDRESS
-): Promise<IBlockchainApi> {
+): Promise<Blockchain> {
   if (!instance) {
     instance = buildConnection(host)
   }

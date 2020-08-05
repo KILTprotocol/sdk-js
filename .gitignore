@@ -24,8 +24,10 @@ yarn-error.log*
 settings.json
 
 # doc 
-docs/
+docs/api
 
 # misc
 /.idea
 
+# doc
+/docs/api

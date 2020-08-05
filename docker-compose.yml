@@ -1,0 +1,28 @@
+# allows running tests and integration tests in a dockerized environment
+# `docker-compose run sdk` will run integration tests using the latest
+# mashnet-node image on dockerhub. The src/ directory is mounted, so rebuilding
+# is not required to integrate changes in this directory.
+# `docker-compose run sdk yarn test:integration:run Attestation` would run specific tests.
+# In order to test agains the current state of the develop branch, you can build a mashnet-node 
+# image locally by telling docker-compose to use the override file `dc.build.node.yml` like so:
+# `docker-compose -f docker-compose.yml -f dc.build.node.yml run sdk`. Alternatively you could 
+# rename `dc.build.node.yml` to `docker-compose.override.yml`, in which case docker-compose
+# loads it by default
+
+version: '3.2'
+
+services:
+  dev-node:
+    image: kiltprotocol/mashnet-node:develop
+    command: './target/release/mashnet-node --dev --ws-port 9944 --ws-external'
+
+  sdk:
+    build: .
+    image: local/sdk-js
+    volumes:
+      - ./src:/app/src
+    environment:
+      DEFAULT_WS_ADDRESS: ws://dev-node:9944
+    command: 'yarn test:integration'
+    depends_on:
+      - dev-node

@@ -1,44 +1,68 @@
+import { SubmittableResult } from '@polkadot/api'
+import AccountIndex from '@polkadot/types/generic/AccountIndex'
+import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
 import Identity from '../identity/Identity'
-// import partial from 'lodash/partial'
-import { listenToBalanceChanges, makeTransfer } from './Balance.chain'
+import {
+  getBalance,
+  listenToBalanceChanges,
+  makeTransfer,
+} from './Balance.chain'
+import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
-describe('Balance', async () => {
-  const blockchain = require('../blockchain/Blockchain').default
+const BALANCE = 42
+const FEE = 30
 
-  blockchain.api.query.balances.freeBalance = jest.fn((accountAddress, cb) => {
-    if (cb) {
-      setTimeout(() => {
-        cb(new BN(42))
-      }, 1)
+describe('Balance', () => {
+  const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+    .__mocked_api
+
+  const accountInfo = (balance: number): AccountInfo => {
+    return {
+      data: {
+        free: new BN(balance),
+        reserved: new BN(balance),
+        miscFrozen: new BN(balance),
+        feeFrozen: new BN(balance),
+      } as AccountData,
+      nonce: new AccountIndex(TYPE_REGISTRY, 0),
+    } as AccountInfo
+  }
+
+  blockchainApi.query.system.account = jest.fn(
+    (accountAddress, cb): AccountInfo => {
+      if (cb) {
+        setTimeout(() => {
+          cb(accountInfo(BALANCE))
+        }, 1)
+      }
+      return accountInfo(BALANCE - FEE)
     }
-    return new BN(12)
-  })
+  )
 
-  it('should listen to balance changes', async done => {
-    const bob = Identity.buildFromURI('//Bob')
+  it('should listen to balance changes', async (done) => {
+    const bob = await Identity.buildFromURI('//Bob')
     const listener = (account: string, balance: BN, change: BN): void => {
       expect(account).toBe(bob.address)
-      expect(balance.toNumber()).toBe(42)
-      expect(change.toNumber()).toBe(30)
+      expect(balance.toNumber()).toBe(BALANCE)
+      expect(change.toNumber()).toBe(FEE)
       done()
     }
 
-    const currentBalance = await listenToBalanceChanges(bob.address, listener)
-
-    expect(currentBalance.toString()).toBeTruthy()
-    expect(currentBalance.toString()).toEqual('12')
+    await listenToBalanceChanges(bob.address, listener)
+    const currentBalance = await getBalance(bob.address)
+    expect(currentBalance.toNumber()).toBeTruthy()
+    expect(currentBalance.toNumber()).toEqual(BALANCE - FEE)
   })
 
-  blockchain.__mockResultHash = '123'
-
   it('should make transfer', async () => {
-    const alice = Identity.buildFromURI('//Alice')
-    const bob = Identity.buildFromURI('//Bob')
+    const alice = await Identity.buildFromURI('//Alice')
+    const bob = await Identity.buildFromURI('//Bob')
 
-    const hash = await makeTransfer(alice, bob.address, new BN(100))
-    expect(hash).toBe('123')
+    const status = await makeTransfer(alice, bob.address, new BN(100))
+    expect(status).toBeInstanceOf(SubmittableResult)
+    expect(status.isFinalized).toBeTruthy()
   })
 })

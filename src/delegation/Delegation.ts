@@ -14,23 +14,14 @@
  * @preferred
  */
 
-import { factory } from '../config/ConfigLog'
-import Identity from '../identity/Identity'
-import { CodecWithId } from './DelegationDecoder'
+import { SubmittableResult } from '@polkadot/api'
 import Attestation from '../attestation/Attestation'
-import TxStatus from '../blockchain/TxStatus'
+import { query } from '../attestation/Attestation.chain'
+import Identity from '../identity/Identity'
 import { IDelegationBaseNode } from '../types/Delegation'
+import { getAttestationHashes } from './Delegation.chain'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
-import {
-  getAttestationHashes,
-  fetchChildren,
-  getChildIds,
-} from './Delegation.chain'
-import { query } from '../attestation/Attestation.chain'
-import { QueryResult } from '../blockchain/Blockchain'
-
-const log = factory.getLogger('DelegationBaseNode')
 
 export default abstract class DelegationBaseNode
   implements IDelegationBaseNode {
@@ -71,24 +62,7 @@ export default abstract class DelegationBaseNode
    *
    * @returns Promise containing the resolved children nodes.
    */
-  public async getChildren(): Promise<DelegationNode[]> {
-    log.info(` :: getChildren('${this.id}')`)
-    const childIds: string[] = await getChildIds(this.id)
-    const queryResults: CodecWithId[] = await fetchChildren(childIds)
-    const children: DelegationNode[] = queryResults
-      .map((codec: CodecWithId) => {
-        const decoded = this.decodeChildNode(codec.codec)
-        if (decoded) {
-          decoded.id = codec.id
-        }
-        return decoded
-      })
-      .filter((value): value is DelegationNode => {
-        return value !== null
-      })
-    log.info(`children: ${JSON.stringify(children)}`)
-    return children
-  }
+  public abstract async getChildren(): Promise<DelegationNode[]>
 
   /**
    * Fetches and resolves all attestations attested with this delegation node.
@@ -127,12 +101,5 @@ export default abstract class DelegationBaseNode
    *
    * @returns Promise containing the transaction status.
    */
-  public abstract revoke(identity: Identity): Promise<TxStatus>
-
-  /**
-   * Required to avoid cyclic dependencies btw. DelegationBaseNode and DelegationNode implementations.
-   */
-  protected abstract decodeChildNode(
-    queryResult: QueryResult
-  ): DelegationNode | null
+  public abstract revoke(identity: Identity): Promise<SubmittableResult>
 }

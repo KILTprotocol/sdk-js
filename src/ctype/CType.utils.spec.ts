@@ -1,36 +1,36 @@
-import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
+import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
+import ICType from '../types/CType'
 import {
   verifyClaimStructure,
   verifySchema,
   verifySchemaWithErrors,
-} from './CTypeUtils'
-import ICType from '../types/CType'
+} from './CType.utils'
+import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 
-jest.mock('../blockchain/Blockchain')
-
-const ctypeInput = {
-  $id: 'http://example.com/ctype-1',
+const ctypeInput = ({
+  $id: 'kilt:ctype:0x1',
   $schema: 'http://kilt-protocol.org/draft-01/ctype-input#',
+  title: 'Ctype Title',
   properties: [
     {
-      title: 'First Property',
-      $id: 'first-property',
+      $id: 'kilt:ctype:0xfirst-property',
+      $ref: 'First Property',
       type: 'integer',
     },
     {
-      title: 'Second Property',
-      $id: 'second-property',
+      $id: 'kilt:ctype:0xsecond-property',
+      $ref: 'Second Property',
       type: 'string',
     },
   ],
   type: 'object',
-  title: 'CType Title',
   required: ['first-property', 'second-property'],
-}
+} as any) as ICType['schema']
 
 const ctypeWrapperModel: ICType['schema'] = {
-  $id: 'http://example.com/ctype-1',
+  $id: 'kilt:ctype:0x2',
   $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  title: 'name',
   properties: {
     'first-property': { type: 'integer' },
     'second-property': { type: 'string' },
@@ -56,7 +56,7 @@ describe('CTypeUtils', () => {
     expect(verifySchemaWithErrors(badClaim, CTypeWrapperModel, [])).toBeFalsy()
     expect(() => {
       verifyClaimStructure(badClaim, ctypeInput)
-    }).toThrow(new Error('CType does not correspond to schema'))
+    }).toThrow(ERROR_OBJECT_MALFORMED())
   })
   it('verifies ctypes', () => {
     expect(verifySchema(ctypeWrapperModel, CTypeModel)).toBeTruthy()

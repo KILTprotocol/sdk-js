@@ -1,98 +1,62 @@
+/**
+ * @packageDocumentation
+ * @ignore
+ */
 /* eslint-disable */
 
 import BN from 'bn.js/'
-import TxStatus from '../blockchain/TxStatus'
-import Identity from '../identity/Identity'
-import { getBalance, makeTransfer } from '../balance/Balance.chain'
 import CType from '../ctype/CType'
-import ICType from '../types/CType'
 import { getOwner } from '../ctype/CType.chain'
+import Identity from '../identity/Identity'
 
-export const GAS = new BN(1000000)
-export const MIN_TRANSACTION = new BN(100000000)
+// FIXME: check with weights
+// export const GAS = new BN(1_000_000)
+export const GAS = new BN(125_000_000)
+export const MIN_TRANSACTION = new BN(100_000_000)
 export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 
-export async function transferTokens(
-  from: Identity,
-  to: Identity,
-  amount: BN
-): Promise<TxStatus> {
-  const [balanceFrom, balanceTo] = await Promise.all([
-    getBalance(from.address),
-    getBalance(to.address),
-  ])
-  expect(balanceFrom.gte(amount.add(GAS))).toBeTruthy()
-  const status = await makeTransfer(from, to.address, amount)
-  const [newBalanceFrom, newBalanceTo] = await Promise.all([
-    getBalance(from.address),
-    getBalance(to.address),
-  ])
-  expect(newBalanceTo.sub(balanceTo).eq(amount)).toBeTruthy()
-  expect(balanceFrom.sub(newBalanceFrom).eq(amount.add(GAS))).toBeTruthy()
-  console.log(
-    `Successfully transferred ${amount.toNumber()} from ${from.address} to ${
-      to.address
-    }`
-  )
-  return status
-}
-
-export function NewIdentity(): Identity {
-  return Identity.buildFromMnemonic(Identity.generateMnemonic())
-}
-
 // Dev Faucet account seed phrase
-const FaucetSeed =
+export const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-export const faucet = Identity.buildFromMnemonic(FaucetSeed)
-export const alice = Identity.buildFromURI('//Alice')
-export const bob = Identity.buildFromURI('//Bob')
 
-export async function endow(receiver: Identity) {
-  const balance = await getBalance(receiver.address)
-  if (balance.eq(new BN(0))) {
-    await makeTransfer(faucet, receiver.address, ENDOWMENT)
-  }
-  return receiver
-}
+export const wannabeFaucet = Identity.buildFromURI(FaucetSeed)
+export const wannabeAlice = Identity.buildFromURI('//Alice')
+export const wannabeBob = Identity.buildFromURI('//Bob')
 
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)
-    .then(ownerAddress => {
-      console.log(ownerAddress)
+    .then((ownerAddress) => {
       return ownerAddress !== null
     })
     .catch(() => false)
 }
 
-export const DriversLicense = CType.fromCType({
-  schema: {
-    $id: 'DriversLicense',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      name: {
-        type: 'string',
-      },
-      age: {
-        type: 'integer',
-      },
+export const DriversLicense = CType.fromSchema({
+  $id: 'kilt:ctype:0x1',
+  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  title: 'Drivers License',
+  properties: {
+    name: {
+      type: 'string',
     },
-    type: 'object',
-  } as ICType['schema'],
-} as ICType)
+    age: {
+      type: 'integer',
+    },
+  },
+  type: 'object',
+})
 
-export const IsOfficialLicenseAuthority = CType.fromCType({
-  schema: {
-    $id: 'LicenseAuthority',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      LicenseType: {
-        type: 'string',
-      },
-      LicenseSubtypes: {
-        type: 'string',
-      },
+export const IsOfficialLicenseAuthority = CType.fromSchema({
+  $id: 'kilt:ctype:0x2',
+  $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+  title: 'License Authority',
+  properties: {
+    LicenseType: {
+      type: 'string',
     },
-    type: 'object',
-  } as ICType['schema'],
-} as ICType)
+    LicenseSubtypes: {
+      type: 'string',
+    },
+  },
+  type: 'object',
+})

@@ -3,6 +3,7 @@ module.exports = {
   testEnvironment: '../jest.env.js',
   clearMocks: true,
   runner: 'groups',
+  testTimeout: 10000,
   coverageThreshold: {
     global: {
       branches: 70,

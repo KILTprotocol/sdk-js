@@ -1,0 +1,27 @@
+name: Publish package to github packages
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10
+          registry-url: https://npm.pkg.github.com
+          scope: '@kiltprotocol'
+      - run: yarn install --frozen-lockfile
+      - run: yarn version --no-git-tag-version --prerelease --preid $(git rev-parse --short HEAD)
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Repository dispatch to workshop
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: KILTprotocol/kilt-workshop-101
+          event-type: sdk-update
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "github": ${{ toJson(github) }}}'

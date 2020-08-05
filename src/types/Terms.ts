@@ -4,10 +4,10 @@
  */
 
 import DelegationNode from '../delegation/DelegationNode'
-import ICType from './CType'
-import { IQuoteAttesterSigned } from './Quote'
 import { IPartialClaim } from '../messaging/Message'
 import IAttestedClaim from './AttestedClaim'
+import ICType from './CType'
+import { IQuoteAttesterSigned } from './Quote'
 
 export default interface ITerms {
   claim: IPartialClaim

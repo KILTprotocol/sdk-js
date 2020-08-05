@@ -3,46 +3,42 @@
  * @ignore
  */
 
+import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { FINALIZED } from '../const/TxStatus'
-import { QueryResult } from '../blockchain/Blockchain'
+import { Option } from '@polkadot/types'
+import { AccountId } from '@polkadot/types/interfaces'
 import { getCached } from '../blockchainApiConnection'
-import TxStatus from '../blockchain/TxStatus'
-import Identity from '../identity/Identity'
-import IPublicIdentity from '../types/PublicIdentity'
 import { factory } from '../config/ConfigLog'
+import Identity from '../identity/Identity'
 import ICType from '../types/CType'
+import IPublicIdentity from '../types/PublicIdentity'
+import { assertCodecIsType } from '../util/Decode'
 
 const log = factory.getLogger('CType')
 
 export async function store(
   ctype: ICType,
   identity: Identity
-): Promise<TxStatus> {
+): Promise<SubmittableResult> {
   const blockchain = await getCached()
   log.debug(() => `Create tx for 'ctype.add'`)
-  const tx: SubmittableExtrinsic = await blockchain.api.tx.ctype.add(ctype.hash)
-  const txStatus: TxStatus = await blockchain.submitTx(identity, tx)
-  if (txStatus.type === FINALIZED) {
-    txStatus.payload = {
-      ...ctype,
-      owner: identity.address,
-    }
-  }
-  return txStatus
+  const tx: SubmittableExtrinsic = blockchain.api.tx.ctype.add(ctype.hash)
+  return blockchain.submitTx(identity, tx)
 }
 
-function decode(encoded: QueryResult): IPublicIdentity['address'] | null {
-  return encoded && encoded.encodedLength && !encoded.isEmpty
-    ? encoded.toString()
-    : null
+// decoding is not backwards compatible with mashnet-node 0.22 anymore
+export function decode(
+  encoded: Option<AccountId>
+): IPublicIdentity['address'] | null {
+  assertCodecIsType(encoded, ['Option<AccountId>'])
+  return !encoded.isEmpty ? encoded.toString() : null
 }
 
 export async function getOwner(
   ctypeHash: ICType['hash']
 ): Promise<IPublicIdentity['address'] | null> {
   const blockchain = await getCached()
-  const encoded: QueryResult = await blockchain.api.query.ctype.cTYPEs(
+  const encoded = await blockchain.api.query.ctype.cTYPEs<Option<AccountId>>(
     ctypeHash
   )
   const queriedCTypeAccount = decode(encoded)

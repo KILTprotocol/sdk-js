@@ -1,91 +1,89 @@
-import { Text, Tuple } from '@polkadot/types'
-import Bool from '@polkadot/types/primitive/Bool'
-import U32 from '@polkadot/types/primitive/U32'
-import { Crypto, Identity } from '..'
-import DelegationNode from './DelegationNode'
-import { getAttestationHashes } from './Delegation.chain'
+import { Identity } from '..'
+import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
+import { hashStr } from '../crypto'
 import { Permission } from '../types/Delegation'
+import { getAttestationHashes } from './Delegation.chain'
+import DelegationNode from './DelegationNode'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
-describe('Delegation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
+const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+  .__mocked_api
 
-  const ctypeHash = Crypto.hashStr('testCtype')
-  const blockchain = require('../blockchain/Blockchain').default
-  blockchain.api.tx.delegation.createRoot = jest.fn(() => {
-    return Promise.resolve()
-  })
-  blockchain.api.query.attestation.delegatedAttestations = jest.fn(() => {
-    const tuple = new Tuple(
-      //  (claim-hash)
-      [Text, Text, Text],
-      ['0x123', '0x456', '0x789']
+const rootId = hashStr('rootId')
+const nodeId = hashStr('myNodeId')
+const ctypeHash = hashStr('testCtype')
+
+describe('Delegation', () => {
+  let identityAlice: Identity
+  beforeAll(async () => {
+    identityAlice = await Identity.buildFromURI('//Alice')
+
+    blockchainApi.query.attestation.delegatedAttestations.mockReturnValue(
+      mockChainQueryReturn('attestation', 'delegatedAttestations', [
+        ctypeHash,
+        hashStr('secondTest'),
+        hashStr('thirdTest'),
+      ])
     )
-    return Promise.resolve(tuple)
-  })
-  blockchain.api.query.delegation.root = jest.fn(() => {
-    const tuple = new Tuple(
-      // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-      [Tuple.with([Text, Text, Bool])],
-      [[ctypeHash, identityAlice.address, false]]
+    blockchainApi.query.delegation.root.mockReturnValue(
+      mockChainQueryReturn('delegation', 'root', [
+        ctypeHash,
+        identityAlice.address,
+        false,
+      ])
     )
-    return Promise.resolve(tuple)
-  })
-  blockchain.api.query.delegation.delegations = jest.fn(delegationId => {
-    let result = null
-    if (delegationId === 'firstChild') {
-      result = new Tuple(
-        // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-        [Text, Text, Text, U32, Bool],
-        [
-          'rootId',
-          'myNodeId',
+
+    blockchainApi.query.delegation.delegations
+      // first call
+      .mockResolvedValueOnce(
+        mockChainQueryReturn('delegation', 'delegations', [
+          rootId,
+          nodeId,
           identityAlice.getPublicIdentity().address,
           2,
           false,
-        ]
+        ])
       )
-    } else if (delegationId === 'secondChild') {
-      result = new Tuple(
-        // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-        [Text, Text, Text, U32, Bool],
-        [
-          'rootId',
-          'myNodeId',
+      // second call
+      .mockResolvedValueOnce(
+        mockChainQueryReturn('delegation', 'delegations', [
+          rootId,
+          nodeId,
           identityAlice.getPublicIdentity().address,
           1,
           false,
-        ]
+        ])
       )
-    } else if (delegationId === 'thirdChild') {
-      result = new Tuple(
-        // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
-        [Text, Text, Text, U32, Bool],
-        [
-          'rootId',
-          'myNodeId',
+      // third call
+      .mockResolvedValueOnce(
+        mockChainQueryReturn('delegation', 'delegations', [
+          rootId,
+          nodeId,
           identityAlice.getPublicIdentity().address,
           0,
           false,
-        ]
+        ])
       )
-    }
-    return Promise.resolve(result)
-  })
-  blockchain.api.query.delegation.children = jest.fn(() => {
-    const tuple = new Tuple(
-      // Children: delegation-id -> [delegation-ids]
-      [Text, Text, Text],
-      ['firstChild', 'secondChild', 'thirdChild']
+      // default (any further calls)
+      .mockResolvedValue(
+        // Delegation: delegation-id -> (root-id, parent-id?, account, permissions, revoked)
+        mockChainQueryReturn('delegation', 'delegations')
+      )
+
+    blockchainApi.query.delegation.children.mockResolvedValue(
+      mockChainQueryReturn('delegation', 'children', [
+        hashStr('firstChild'),
+        hashStr('secondChild'),
+        hashStr('thirdChild'),
+      ])
     )
-    return Promise.resolve(tuple)
   })
 
   it('get children', async () => {
     const myDelegation = new DelegationNode(
-      'myNodeId',
-      'rootId',
+      nodeId,
+      rootId,
       identityAlice.getPublicIdentity().address,
       [Permission.ATTEST],
       undefined
@@ -93,25 +91,25 @@ describe('Delegation', () => {
     const children: DelegationNode[] = await myDelegation.getChildren()
     expect(children).toHaveLength(3)
     expect(children[0]).toEqual({
-      id: 'firstChild',
-      rootId: 'rootId',
-      parentId: 'myNodeId',
+      id: hashStr('firstChild'),
+      rootId,
+      parentId: nodeId,
       account: identityAlice.getPublicIdentity().address,
       permissions: [Permission.DELEGATE],
       revoked: false,
     })
     expect(children[1]).toEqual({
-      id: 'secondChild',
-      rootId: 'rootId',
-      parentId: 'myNodeId',
+      id: hashStr('secondChild'),
+      rootId,
+      parentId: nodeId,
       account: identityAlice.getPublicIdentity().address,
       permissions: [Permission.ATTEST],
       revoked: false,
     })
     expect(children[2]).toEqual({
-      id: 'thirdChild',
-      rootId: 'rootId',
-      parentId: 'myNodeId',
+      id: hashStr('thirdChild'),
+      rootId,
+      parentId: nodeId,
       account: identityAlice.getPublicIdentity().address,
       permissions: [],
       revoked: false,
@@ -120,6 +118,6 @@ describe('Delegation', () => {
   it('get attestation hashes', async () => {
     const attestationHashes = await getAttestationHashes('myDelegationId')
     expect(attestationHashes).toHaveLength(3)
-    expect(attestationHashes).toContain('0x123')
+    expect(attestationHashes).toContain(ctypeHash)
   })
 })

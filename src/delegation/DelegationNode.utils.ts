@@ -14,16 +14,17 @@ import { IDelegationNode } from '../types/Delegation'
  *
  * Adding the enum values results in a decimal representation of the bitset.
  *
+ * @param delegation The delegation from which you want to convert the permissions to bitset.
  * @returns The bitset as single value uint8 array.
  */
 // eslint-disable-next-line import/prefer-default-export
 export default function permissionsAsBitset(
   delegation: IDelegationNode
 ): Uint8Array {
-  const permisssionsAsBitset: number = delegation.permissions.reduce(
+  const permissionsBitsetData: number = delegation.permissions.reduce(
     (accumulator, currentValue) => accumulator + currentValue
   )
   const uint8: Uint8Array = new Uint8Array(4)
-  uint8[0] = permisssionsAsBitset
+  uint8[0] = permissionsBitsetData
   return uint8
 }

@@ -11,17 +11,20 @@ export const CTypeModel = {
   properties: {
     $id: {
       type: 'string',
-      minLength: 1,
+      format: 'uri',
+      pattern: '^kilt:ctype:0x[0-9a-f]+$',
     },
     $schema: {
       type: 'string',
       format: 'uri',
-      default: 'http://kilt-protocol.org/draft-01/ctype#',
-      enum: ['http://kilt-protocol.org/draft-01/ctype#'],
+      const: 'http://kilt-protocol.org/draft-01/ctype#',
+    },
+    title: {
+      type: 'string',
     },
     type: {
       type: 'string',
-      enum: ['object'],
+      const: 'object',
     },
     properties: {
       type: 'object',
@@ -33,17 +36,30 @@ export const CTypeModel = {
               type: 'string',
               enum: ['string', 'integer', 'number', 'boolean'],
             },
+            $ref: {
+              type: 'string',
+              format: 'uri',
+            },
             format: {
               type: 'string',
               enum: ['date', 'time', 'uri'],
             },
           },
-          required: ['type'],
+          additionalProperties: false,
+          oneOf: [
+            {
+              required: ['type'],
+            },
+            {
+              required: ['$ref'],
+            },
+          ],
         },
       },
     },
   },
-  required: ['$id', '$schema', 'properties', 'type'],
+  additionalProperties: false,
+  required: ['$id', 'title', '$schema', 'properties', 'type'],
 }
 
 export const CTypeWrapperModel = {
@@ -54,13 +70,15 @@ export const CTypeWrapperModel = {
     schema: {
       type: 'object',
       properties: CTypeModel.properties,
+      required: CTypeModel.required,
     },
-    owner: { type: 'string' },
+    owner: { type: ['string', 'null'] },
     hash: {
       type: 'string',
     },
   },
-  required: ['schema'],
+  additionalProperties: false,
+  required: ['schema', 'hash'],
 }
 
 export const MetadataModel = {
@@ -120,6 +138,20 @@ export const MetadataModel = {
                   },
                   required: ['default'],
                 },
+                description: {
+                  type: 'object',
+                  properties: {
+                    default: {
+                      type: 'string',
+                    },
+                  },
+                  patternProperties: {
+                    '^.*$': {
+                      type: 'string',
+                    },
+                  },
+                  required: ['default'],
+                },
               },
               required: ['title'],
               additionalProperties: false,
@@ -127,7 +159,7 @@ export const MetadataModel = {
           },
         },
       },
-      required: ['title', 'description'],
+      required: ['title', 'properties'],
       additionalProperties: false,
     },
     ctypeHash: { type: 'string', minLength: 1 },

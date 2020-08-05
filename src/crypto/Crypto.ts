@@ -10,7 +10,6 @@
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
-import createPair from '@polkadot/keyring/pair'
 import {
   isString,
   stringToU8a,
@@ -19,11 +18,12 @@ import {
   u8aToString,
   u8aToU8a,
 } from '@polkadot/util'
+import { signatureVerify } from '@polkadot/util-crypto'
 import blake2AsU8a from '@polkadot/util-crypto/blake2/asU8a'
 import naclDecrypt from '@polkadot/util-crypto/nacl/decrypt'
 import naclEncrypt from '@polkadot/util-crypto/nacl/encrypt'
 import nacl from 'tweetnacl'
-import * as jsonabc from 'jsonabc'
+import jsonabc from '../util/jsonabc'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
@@ -65,7 +65,7 @@ export function sign(
   message: CryptoInput,
   signKeyPair: KeyringPair
 ): Uint8Array {
-  return signKeyPair.sign(coToUInt8(message))
+  return signKeyPair.sign(coToUInt8(message), { withType: true })
 }
 
 export function signStr(
@@ -80,10 +80,7 @@ export function verify(
   signature: CryptoInput,
   address: Address
 ): boolean {
-  const publicKey = decodeAddress(address)
-  const keyringPair = createPair('ed25519', { publicKey })
-
-  return keyringPair.verify(coToUInt8(message), coToUInt8(signature))
+  return signatureVerify(message, signature, address).isValid === true
 }
 
 export function encryptSymmetric(
@@ -145,12 +142,18 @@ export function hashStr(value: CryptoInput): string {
 }
 
 export function hashObjectAsStr(
-  value: object | string,
+  value: Record<string, any> | string | number | boolean,
   nonce?: string
 ): string {
   let input =
+    // eslint-disable-next-line no-nested-ternary
     typeof value === 'object' && value !== null
       ? JSON.stringify(jsonabc.sortObj(value))
+      : // eslint-disable-next-line no-nested-ternary
+      typeof value === 'number' && value !== null
+      ? value.toString()
+      : typeof value === 'boolean' && value !== null
+      ? JSON.stringify(value)
       : value
   if (nonce) {
     input = nonce + input
@@ -195,7 +198,7 @@ export function decryptAsymmetric(
     coToUInt8(publicKeyB),
     coToUInt8(secretKeyA)
   )
-  return decrypted
+  return decrypted || false
 }
 
 export function decryptAsymmetricAsStr(

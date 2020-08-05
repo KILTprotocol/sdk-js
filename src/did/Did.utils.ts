@@ -3,40 +3,51 @@
  * @ignore
  */
 
-import { isHex, hexToString } from '@polkadot/util'
-
-import IPublicIdentity from '../types/PublicIdentity'
+import { Option, Tuple } from '@polkadot/types'
+import { Codec } from '@polkadot/types/types'
+import { hexToString, isHex } from '@polkadot/util'
 import Crypto from '../crypto'
+import {
+  ERROR_DID_IDENTIFIER_MISMATCH,
+  ERROR_INVALID_DID_PREFIX,
+} from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import { QueryResult } from '../blockchain/Blockchain'
-import Did, {
+import IPublicIdentity from '../types/PublicIdentity'
+import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
+import {
+  CONTEXT,
+  IDENTIFIER_PREFIX,
   IDid,
   IDidDocument,
   IDidDocumentSigned,
-  IDENTIFIER_PREFIX,
-  CONTEXT,
   KEY_TYPE_AUTHENTICATION,
-  KEY_TYPE_SIGNATURE,
   KEY_TYPE_ENCRYPTION,
+  KEY_TYPE_SIGNATURE,
   SERVICE_KILT_MESSAGING,
 } from './Did'
 
+interface IEncodedDid extends Codec {
+  toJSON: () => [string, string, string | null] | null
+}
+
 export function decodeDid(
   identifier: string,
-  encoded: QueryResult
+  encoded: Option<Tuple>
 ): IDid | null {
-  const json = encoded && encoded.encodedLength ? encoded.toJSON() : null
-  if (json instanceof Array) {
-    let documentStore = null
-    if (isHex(json[2])) {
-      documentStore = hexToString(json[2])
+  assertCodecIsType(encoded, [
+    'Option<(PublicSigningKey,PublicBoxKey,Option<Bytes>)>',
+  ])
+  if (encoded instanceof Option || hasNonNullByte(encoded)) {
+    const decoded = (encoded as IEncodedDid).toJSON()
+    if (decoded) {
+      const documentStore = isHex(decoded[2]) ? hexToString(decoded[2]) : null
+      return {
+        identifier,
+        publicSigningKey: decoded[0],
+        publicBoxKey: decoded[1],
+        documentStore,
+      }
     }
-    return Object.assign(Object.create(Did.prototype), {
-      identifier,
-      publicSigningKey: json[0],
-      publicBoxKey: json[1],
-      documentStore,
-    })
   }
   return null
 }
@@ -47,11 +58,20 @@ export function getIdentifierFromAddress(
   return IDENTIFIER_PREFIX + address
 }
 
+/**
+ * Fetches the root of this delegation node.
+ *
+ * @param identifier IDid identifier to derive it's address from.
+ * @throws When the identifier is not prefixed with the defined Kilt IDENTIFIER_PREFIX.
+ * @throws [[ERROR_INVALID_DID_PREFIX]].
+ *
+ * @returns The Address derived from the IDid Identifier.
+ */
 export function getAddressFromIdentifier(
   identifier: IDid['identifier']
 ): IPublicIdentity['address'] {
   if (!identifier.startsWith(IDENTIFIER_PREFIX)) {
-    throw new Error(`Not a KILT did: ${identifier}`)
+    throw ERROR_INVALID_DID_PREFIX(identifier)
   }
   return identifier.substr(IDENTIFIER_PREFIX.length)
 }
@@ -65,10 +85,12 @@ export function createDefaultDidDocument(
   return {
     id: identifier,
     '@context': CONTEXT,
-    authentication: {
-      type: KEY_TYPE_AUTHENTICATION,
-      publicKey: [`${identifier}#key-1`],
-    },
+    authentication: [
+      {
+        type: KEY_TYPE_AUTHENTICATION,
+        publicKey: [`${identifier}#key-1`],
+      },
+    ],
     publicKey: [
       {
         id: `${identifier}#key-1`,
@@ -94,9 +116,20 @@ export function createDefaultDidDocument(
   }
 }
 
+/**
+ * Verifies the signature of a [[IDidDocumentSigned]].
+ *
+ * @param didDocument [[IDidDocumentSigned]] to verify it's signature.
+ * @param identifier IDid identifier to match the IDidDocumentSigned id and to verify the signature with.
+ * @throws When didDocument and it's signature as well as the identifier are missing.
+ * @throws When identifier does not match didDocument's id.
+ * @throws [[ERROR_DID_IDENTIFIER_MISMATCH]].
+ *
+ * @returns The Address derived from the IDid Identifier.
+ */
 export function verifyDidDocumentSignature(
   didDocument: IDidDocumentSigned,
-  identifier: string
+  identifier: IDid['identifier']
 ): boolean {
   if (!didDocument || !didDocument.signature || !identifier) {
     throw new Error(
@@ -112,9 +145,7 @@ export function verifyDidDocumentSignature(
   }
   const { id } = didDocument
   if (identifier !== id) {
-    throw new Error(
-      `This identifier (${identifier}) doesn't match the DID Document's identifier (${id})`
-    )
+    throw ERROR_DID_IDENTIFIER_MISMATCH(identifier, id)
   }
   const unsignedDidDocument = { ...didDocument }
   delete unsignedDidDocument.signature

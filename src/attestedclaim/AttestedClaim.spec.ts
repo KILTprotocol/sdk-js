@@ -1,57 +1,58 @@
-import Identity from '../identity/Identity'
-import AttestedClaim from './AttestedClaim'
 import Attestation from '../attestation/Attestation'
-import CType from '../ctype/CType'
-import ICType from '../types/CType'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Claim from '../claim/Claim'
+import CType from '../ctype/CType'
+import AttesterIdentity from '../identity/AttesterIdentity'
+import Identity from '../identity/Identity'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import constants from '../test/constants'
+import { CompressedAttestedClaim } from '../types/AttestedClaim'
+import IClaim from '../types/Claim'
+import ICType from '../types/CType'
+import AttestedClaim from './AttestedClaim'
+import AttestedClaimUtils from './AttestedClaim.utils'
 
-function buildAttestedClaim(
+async function buildAttestedClaim(
   claimer: Identity,
   attester: Identity,
-  ctype: string,
-  contents: object,
+  contents: IClaim['contents'],
   legitimations: AttestedClaim[]
-): AttestedClaim {
+): Promise<AttestedClaim> {
   // create claim
-  const identityAlice = Identity.buildFromURI('//Alice')
+  const identityAlice = await Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
-    $id: 'http://example.com/ctype-1',
+    $id: 'kilt:ctype:0x1',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'Attested Claim',
     properties: {
       name: { type: 'string' },
     },
     type: 'object',
   }
 
-  const fromRawCType: ICType = {
-    schema: rawCType,
-    owner: identityAlice.address,
-    hash: '',
-  }
-
-  const testCType: CType = CType.fromCType(fromRawCType)
+  const testCType: CType = CType.fromSchema(
+    rawCType,
+    identityAlice.signKeyringPair.address
+  )
 
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
     contents,
     claimer.address
   )
-  // build request for attestation with legimitations
-  const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
-    claim,
-    claimer,
+  // build request for attestation with legitimations
+  const {
+    message: requestForAttestation,
+  } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
     legitimations,
-    null
-  )
+  })
   // build attestation
-  const testAttestation: Attestation = Attestation.fromRequestAndPublicIdentity(
+  const testAttestation = Attestation.fromRequestAndPublicIdentity(
     requestForAttestation,
-    attester
+    attester.getPublicIdentity()
   )
   // combine to attested claim
-  const attestedClaim: AttestedClaim = AttestedClaim.fromRequestAndAttestation(
+  const attestedClaim = AttestedClaim.fromRequestAndAttestation(
     requestForAttestation,
     testAttestation
   )
@@ -59,24 +60,60 @@ function buildAttestedClaim(
 }
 
 describe('RequestForAttestation', () => {
-  const identityAlice = Identity.buildFromURI('//Alice')
+  let identityAlice: AttesterIdentity
+  let identityBob: Identity
+  let identityCharlie: Identity
+  let legitimation: AttestedClaim
+  let compressedLegitimation: CompressedAttestedClaim
 
-  const identityBob = Identity.buildFromURI('//Bob')
-  const identityCharlie = Identity.buildFromURI('//Charlie')
+  beforeAll(async () => {
+    identityAlice = await AttesterIdentity.buildFromURI('//Alice', {
+      key: {
+        publicKey: constants.PUBLIC_KEY.toString(),
+        privateKey: constants.PRIVATE_KEY.toString(),
+      },
+    })
 
-  const legitimation: AttestedClaim = buildAttestedClaim(
-    identityAlice,
-    identityBob,
-    'legitimationCtype',
-    {},
-    []
-  )
+    identityBob = await Identity.buildFromURI('//Bob')
+    identityCharlie = await Identity.buildFromURI('//Charlie')
+
+    legitimation = await buildAttestedClaim(identityAlice, identityBob, {}, [])
+    compressedLegitimation = [
+      [
+        [
+          legitimation.request.claim.contents,
+          legitimation.request.claim.cTypeHash,
+          legitimation.request.claim.owner,
+        ],
+        {},
+        [
+          legitimation.request.claimOwner.hash,
+          legitimation.request.claimOwner.nonce,
+        ],
+        legitimation.request.claimerSignature,
+        [
+          legitimation.request.cTypeHash.hash,
+          legitimation.request.cTypeHash.nonce,
+        ],
+        legitimation.request.rootHash,
+        [],
+        legitimation.request.delegationId,
+        null,
+      ],
+      [
+        legitimation.attestation.claimHash,
+        legitimation.attestation.cTypeHash,
+        legitimation.attestation.owner,
+        legitimation.attestation.revoked,
+        legitimation.attestation.delegationId,
+      ],
+    ]
+  })
 
   it('verify attested claims', async () => {
-    const attestedClaim: AttestedClaim = buildAttestedClaim(
+    const attestedClaim = await buildAttestedClaim(
       identityCharlie,
       identityAlice,
-      'ctype',
       {
         a: 'a',
         b: 'b',
@@ -86,17 +123,82 @@ describe('RequestForAttestation', () => {
     )
 
     // check proof on complete data
-    expect(attestedClaim.verifyData()).toBeTruthy()
+    expect(AttestedClaim.verifyData(attestedClaim)).toBeTruthy()
+  })
 
-    // build a repesentation excluding claim properties and verify proof
-    const correctPresentation = attestedClaim.createPresentation(['a'])
-    expect(correctPresentation.verifyData()).toBeTruthy()
+  it('compresses and decompresses the attested claims object', () => {
+    expect(AttestedClaimUtils.compress(legitimation)).toEqual(
+      compressedLegitimation
+    )
 
-    // just deleting a field will result in a wrong proof
-    const falsePresentation = attestedClaim.createPresentation([])
-    const propertyName = 'a'
-    delete falsePresentation.request.claim.contents[propertyName]
-    delete falsePresentation.request.claimHashTree[propertyName]
-    expect(falsePresentation.verifyData()).toBeFalsy()
+    expect(AttestedClaimUtils.decompress(compressedLegitimation)).toEqual(
+      legitimation
+    )
+
+    expect(legitimation.compress()).toEqual(
+      AttestedClaimUtils.compress(legitimation)
+    )
+
+    expect(AttestedClaim.decompress(compressedLegitimation)).toEqual(
+      legitimation
+    )
+  })
+
+  it('Negative test for compresses and decompresses the attested claims object', () => {
+    compressedLegitimation.pop()
+    delete legitimation.attestation
+
+    expect(() => {
+      AttestedClaimUtils.compress(legitimation)
+    }).toThrow()
+
+    expect(() => {
+      AttestedClaimUtils.decompress(compressedLegitimation)
+    }).toThrow()
+    expect(() => {
+      AttestedClaim.decompress(compressedLegitimation)
+    }).toThrow()
+    expect(() => {
+      legitimation.compress()
+    }).toThrow()
+  })
+  it('Typeguard should return true on complete AttestedClaims', async () => {
+    const testAttestation = await buildAttestedClaim(
+      identityAlice,
+      identityBob,
+      {},
+      []
+    )
+    expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeTruthy()
+    delete testAttestation.attestation.claimHash
+
+    expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeFalsy()
+  })
+  it('Should throw error when attestation is from different request', async () => {
+    const testAttestation = await buildAttestedClaim(
+      identityAlice,
+      identityBob,
+      {},
+      []
+    )
+    expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeTruthy()
+    const { cTypeHash } = testAttestation.attestation
+    testAttestation.attestation.cTypeHash = [
+      cTypeHash.slice(0, 15),
+      ((parseInt(cTypeHash.charAt(15), 16) + 1) % 16).toString(16),
+      cTypeHash.slice(16),
+    ].join('')
+    expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeFalsy()
+  })
+  it('returns Claim Hash of the attestation', async () => {
+    const testAttestation = await buildAttestedClaim(
+      identityAlice,
+      identityBob,
+      {},
+      []
+    )
+    expect(testAttestation.getHash()).toEqual(
+      testAttestation.attestation.claimHash
+    )
   })
 })

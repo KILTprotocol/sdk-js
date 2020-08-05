@@ -8,18 +8,17 @@
  * @preferred
  */
 
-import Crypto from '../crypto'
-import { QueryResult } from '../blockchain/Blockchain'
-import TxStatus from '../blockchain/TxStatus'
+import { SubmittableResult } from '@polkadot/api'
 import { factory } from '../config/ConfigLog'
+import Crypto from '../crypto'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
+import { ERROR_ROOT_NODE_QUERY } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import DelegationBaseNode from './Delegation'
-import { decodeDelegationNode } from './DelegationDecoder'
-import DelegationRootNode from './DelegationRootNode'
 import { IDelegationNode } from '../types/Delegation'
+import DelegationBaseNode from './Delegation'
+import { getChildren, query, revoke, store } from './DelegationNode.chain'
 import permissionsAsBitset from './DelegationNode.utils'
-import { query, store, revoke } from './DelegationNode.chain'
+import DelegationRootNode from './DelegationRootNode'
 import { query as queryRoot } from './DelegationRootNode.chain'
 
 const log = factory.getLogger('DelegationNode')
@@ -27,7 +26,7 @@ const log = factory.getLogger('DelegationNode')
 export default class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
   /**
-   * Queries the delegation node with [delegationId].
+   * [STATIC] Queries the delegation node with [delegationId].
    *
    * @param delegationId The unique identifier of the desired delegation.
    * @returns Promise containing the [[DelegationNode]] or [null].
@@ -90,7 +89,7 @@ export default class DelegationNode extends DelegationBaseNode
     if (this.parentId && this.parentId !== this.rootId) {
       propsToHash.push(this.parentId)
     }
-    const uint8Props: Uint8Array[] = propsToHash.map(value => {
+    const uint8Props: Uint8Array[] = propsToHash.map((value) => {
       return coToUInt8(value)
     })
     uint8Props.push(permissionsAsBitset(this))
@@ -102,20 +101,22 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * Fetches the root of this delegation node.
+   * [ASYNC] Fetches the root of this delegation node.
    *
+   * @throws When the rootId could not be queried.
+   * @throws [[ERROR_ROOT_NODE_QUERY]].
    * @returns Promise containing the [[DelegationRootNode]] of this delegation node.
    */
   public async getRoot(): Promise<DelegationRootNode> {
     const rootNode = await queryRoot(this.rootId)
     if (!rootNode) {
-      throw new Error(`Could not find root node with id ${this.rootId}`)
+      throw ERROR_ROOT_NODE_QUERY(this.rootId)
     }
     return rootNode
   }
 
   /**
-   * Fetches the parent node of this delegation node.
+   * [ASYNC] Fetches the parent node of this delegation node.
    *
    * @returns Promise containing the parent as [[DelegationBaseNode]] or [null].
    */
@@ -129,19 +130,22 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * Stores the delegation node on chain.
+   * [ASYNC] Stores the delegation node on chain.
    *
    * @param identity Account used to store the delegation node.
    * @param signature Signature of the delegate to ensure it's done under his permission.
-   * @returns Promise containing the [[TxStatus]].
+   * @returns Promise containing the SubmittableResult.
    */
-  public async store(identity: Identity, signature: string): Promise<TxStatus> {
+  public async store(
+    identity: Identity,
+    signature: string
+  ): Promise<SubmittableResult> {
     log.info(`:: store(${this.id})`)
     return store(this, identity, signature)
   }
 
   /**
-   * Verifies the delegation node by querying it from chain and checking its revoke status.
+   * [ASYNC] Verifies the delegation node by querying it from chain and checking its revoke status.
    *
    * @returns Promise containing a boolean flag.
    */
@@ -151,19 +155,17 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * Revokes the delegation node on chain.
+   * [ASYNC] Revokes the delegation node on chain.
    *
    * @param identity The identity used to revoke the delegation.
-   * @returns Promise containing the [[TxStatus]].
+   * @returns Promise containing the SubmittableResult.
    */
-  public async revoke(identity: Identity): Promise<TxStatus> {
+  public async revoke(identity: Identity): Promise<SubmittableResult> {
     log.debug(`:: revoke(${this.id})`)
     return revoke(this.id, identity)
   }
 
-  /* eslint-disable class-methods-use-this */
-  protected decodeChildNode(queryResult: QueryResult): DelegationNode | null {
-    return decodeDelegationNode(queryResult)
+  public async getChildren(): Promise<DelegationNode[]> {
+    return getChildren(this.id)
   }
-  /* eslint-enable class-methods-use-this */
 }

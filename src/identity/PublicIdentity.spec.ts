@@ -1,35 +1,37 @@
-import { Text, Tuple, U8a } from '@polkadot/types'
-import PublicIdentity, { IURLResolver } from './PublicIdentity'
+import { U8aFixed } from '@polkadot/types'
+import TYPE_REGISTRY, {
+  mockChainQueryReturn,
+} from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import IPublicIdentity from '../types/PublicIdentity'
+import PublicIdentity, { IURLResolver } from './PublicIdentity'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('PublicIdentity', () => {
+  const pubKey = new U8aFixed(TYPE_REGISTRY, 'pub-key', 256)
+  const boxKey = new U8aFixed(TYPE_REGISTRY, 'box-key', 256)
+
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
-
-  require('../blockchain/Blockchain').default.__mockQueryDidDids = jest.fn(
-    id => {
-      let tuple
+  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
+    async (id) => {
       switch (id) {
         case '1':
-          tuple = new Tuple(
-            // (public-signing-key, public-encryption-key, did-reference?)
-            [Text, Text, U8a],
-            ['pub-key', 'box-key', [14, 75, 23, 14, 55]]
-          )
-          break
+          return mockChainQueryReturn('did', 'dIDs', [
+            pubKey,
+            boxKey,
+            [14, 75, 23, 14, 55],
+          ])
         case '2':
-          tuple = new Tuple(
-            // (public-signing-key, public-encryption-key, did-reference?)
-            [Text, Text, Text],
-            ['pub-key', 'box-key', undefined]
-          )
-          break
+          return mockChainQueryReturn('did', 'dIDs', [
+            pubKey,
+            boxKey,
+            undefined,
+          ])
+
         default:
-          tuple = undefined
+          return mockChainQueryReturn('did', 'dIDs')
       }
-      return Promise.resolve(tuple)
     }
   )
 
@@ -37,20 +39,20 @@ describe('PublicIdentity', () => {
     const externalPubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
       'did:sov:1',
       {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             didDocument: {
               id: 'external-id',
               publicKey: [
                 {
-                  id: 'extenal-id#key-1',
+                  id: 'external-id#key-1',
                   type: 'X25519Salsa20Poly1305Key2018',
                   publicKeyHex: 'external-box-key',
                 },
               ],
               service: [
                 {
-                  id: 'extenal-id#service-1',
+                  id: 'external-id#service-1',
                   type: 'KiltMessagingService',
                   serviceEndpoint: 'external-service-address',
                 },
@@ -71,7 +73,7 @@ describe('PublicIdentity', () => {
     const internalPubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
       'did:kilt:1',
       {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             id: 'internal-id',
             publicKey: [
@@ -98,19 +100,19 @@ describe('PublicIdentity', () => {
       serviceAddress: 'internal-service-address',
     })
 
-    const bcOnleyubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
+    const bcOnlyPubId: IPublicIdentity | null = await PublicIdentity.resolveFromDid(
       'did:kilt:2',
       {} as IURLResolver
     )
-    expect(bcOnleyubId).toEqual({
+    expect(bcOnlyPubId).toEqual({
       address: '2',
-      boxPublicKeyAsHex: 'box-key',
+      boxPublicKeyAsHex: boxKey.toString(),
       serviceAddress: undefined,
     })
 
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             id: 'internal-id',
             publicKey: [],
@@ -121,7 +123,7 @@ describe('PublicIdentity', () => {
     ).toEqual(null)
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             id: 'internal-id',
             service: [],
@@ -131,7 +133,7 @@ describe('PublicIdentity', () => {
     ).toEqual(null)
     expect(
       await PublicIdentity.resolveFromDid('did:kilt:1', {
-        resolve: async (): Promise<object> => {
+        resolve: async (): Promise<Record<string, unknown>> => {
           return {
             publicKey: [],
             service: [],

@@ -4,19 +4,28 @@
  * @preferred
  */
 
+import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
 import ICTypeMetadata from '../types/CTypeMetadata'
+import CTypeUtils from './CType.utils'
 import { MetadataModel } from './CTypeSchema'
-import CTypeUtils from './CTypeUtils'
 
 export default class CTypeMetadata implements ICTypeMetadata {
   public ctypeHash: ICTypeMetadata['ctypeHash']
   public metadata: ICTypeMetadata['metadata']
 
-  public constructor(metdata: ICTypeMetadata) {
-    if (!CTypeUtils.verifySchema(metdata, MetadataModel)) {
-      throw new Error('CTypeMetadata does not correspond to schema')
+  /**
+   *  Instantiates a new CTypeMetadata.
+   *
+   * @param metadata [[ICTypeMetadata]] that is to be instantiated.
+   * @throws When metadata is not verifiable with the MetadataModel.
+   * @throws [[ERROR_OBJECT_MALFORMED]].
+   * @returns The verified and instantiated CTypeMetadata.
+   */
+  public constructor(metadata: ICTypeMetadata) {
+    if (!CTypeUtils.verifySchema(metadata, MetadataModel)) {
+      throw ERROR_OBJECT_MALFORMED()
     }
-    this.metadata = metdata.metadata
-    this.ctypeHash = metdata.ctypeHash
+    this.metadata = metadata.metadata
+    this.ctypeHash = metadata.ctypeHash
   }
 }
