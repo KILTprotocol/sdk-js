@@ -430,7 +430,7 @@ export default class Identity {
    * @example ```javascript
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const tx = await blockchain.api.tx.ctype.add(ctype.hash);
-   * const { nonce } = await blockchain.api.query.system.account(alice.address);
+   * const nonce = await blockchain.api.rpc.system.accountNextIndex(alice.address);
    * alice.signSubmittableExtrinsic(tx, nonce.toHex());
    * ```
    */

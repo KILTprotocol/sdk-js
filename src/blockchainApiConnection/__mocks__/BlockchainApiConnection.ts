@@ -51,6 +51,7 @@ import {
   AccountData,
   AccountInfo,
   ExtrinsicStatus,
+  Index
 } from '@polkadot/types/interfaces'
 import U64 from '@polkadot/types/primitive/U64'
 import BN from 'bn.js'
@@ -154,6 +155,9 @@ const __mocked_api: any = {
       chain: jest.fn(),
       name: jest.fn(),
       version: jest.fn(),
+      accountNextIndex: jest.fn(
+        async (): Promise<Index> => TYPE_REGISTRY.createType('Index', 0)
+      ),
     },
     chain: { subscribeNewHeads: jest.fn() },
   },
