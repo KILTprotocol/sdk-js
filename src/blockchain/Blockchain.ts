@@ -124,6 +124,6 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public async getNonce(accountAddress: string): Promise<Index> {
-    return (await this.api.query.system.account(accountAddress)).nonce
+    return this.api.rpc.system.accountNextIndex(accountAddress)
   }
 }
