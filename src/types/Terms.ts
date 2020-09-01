@@ -5,14 +5,15 @@
 
 import DelegationNode from '../delegation/DelegationNode'
 import { IPartialClaim } from '../messaging/Message'
-import IAttestedClaim from './AttestedClaim'
+import IAttestedClaim, { CompressedAttestedClaim } from './AttestedClaim'
 import ICType from './CType'
-import { IQuoteAttesterSigned } from './Quote'
+import { IQuoteAttesterSigned, CompressedQuoteAttesterSigned } from './Quote'
+import { CompressedClaim } from './Claim'
 
 export default interface ITerms {
-  claim: IPartialClaim
-  legitimations: IAttestedClaim[]
+  claim: IPartialClaim | CompressedClaim
+  legitimations: IAttestedClaim[] | CompressedAttestedClaim[]
   delegationId?: DelegationNode['id']
-  quote?: IQuoteAttesterSigned
+  quote?: IQuoteAttesterSigned | CompressedQuoteAttesterSigned
   prerequisiteClaims?: ICType['hash']
 }
