@@ -36,6 +36,7 @@ import ITerms from '../types/Terms'
 import { IQuoteAgreement } from '../types/Quote'
 import { validateSignature } from '../util/DataUtils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
+import { compressMessage, decompressMessage } from './Message.utils'
 
 /**
  * - `body` - The body of the message, see [[MessageBody]].
@@ -284,6 +285,14 @@ export default class Message implements IMessage {
       senderAddress: this.senderAddress,
       senderBoxPublicKey: this.senderBoxPublicKey,
     }
+  }
+
+  public compress(): MessageBody {
+    return compressMessage(this.body)
+  }
+
+  public decompress(): MessageBody {
+    return decompressMessage(this.body)
   }
 }
 
