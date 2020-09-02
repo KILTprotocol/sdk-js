@@ -303,7 +303,7 @@ interface IMessageBodyBase {
 }
 
 export interface IRequestTerms extends IMessageBodyBase {
-  content: IPartialClaim
+  content: IPartialClaim | IPartialCompressedClaim
   type: MessageBodyType.REQUEST_TERMS
 }
 export interface ISubmitTerms extends IMessageBodyBase {

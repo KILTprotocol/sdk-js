@@ -11,6 +11,7 @@ import {
   //   IAttestedClaim,
 } from '..'
 import { ICompressedTerms } from '../types/Terms'
+// import { IPartialCompressedClaim, IPartialClaim } from './Message'
 
 /**
  * [STATIC] Compresses a [[Message]] depending on the message body type.
@@ -22,18 +23,26 @@ import { ICompressedTerms } from '../types/Terms'
 
 export const compressMessage = (body: MessageBody): MessageBody => {
   switch (body.type) {
-    // case MessageBodyType.REQUEST_TERMS: {
-    //   const compressedBody = {}
-    //   return compressedBody
-    // }
-
+    case MessageBodyType.REQUEST_TERMS: {
+      if (!Array.isArray(body.content)) {
+        const compressedContents = ClaimUtils.compress(body.content)
+        const compressedBody: MessageBody = {
+          ...body,
+          content: compressedContents,
+        }
+        return compressedBody
+      }
+      return body
+    }
     case MessageBodyType.SUBMIT_TERMS: {
       if (!Array.isArray(body.content)) {
         const compressedContents: ICompressedTerms = [
           ClaimUtils.compress(body.content.claim),
           body.content.legitimations.map(
-            (val: IAttestedClaim | CompressedAttestedClaim) =>
-              Array.isArray(val) ? val : AttestedClaimUtils.compress(val)
+            (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
+              Array.isArray(attestedClaim)
+                ? attestedClaim
+                : AttestedClaimUtils.compress(attestedClaim)
           ),
           body.content.delegationId,
           body.content.quote
@@ -41,12 +50,13 @@ export const compressMessage = (body: MessageBody): MessageBody => {
             : undefined,
           body.content.prerequisiteClaims,
         ]
-        // eslint-disable-next-line no-param-reassign
-        body.content = compressedContents
-        return body
+        const compressedBody: MessageBody = {
+          ...body,
+          content: compressedContents,
+        }
+        return compressedBody
       }
       return body
-      break
     }
     // case MessageBodyType.REJECT_TERMS: {
     //   const compressedContents = {
@@ -56,10 +66,18 @@ export const compressMessage = (body: MessageBody): MessageBody => {
     //     ),
     //     delegationId: body.content.delegationId,
     //   }
-    //   return compressedContents
+    //   const compressedBody: MessageBody = {
+    //   ...body,
+    //   content: compressedContents,
+    // }
+    // return compressedBody
     // }
     // case MessageBodyType.INITIATE_ATTESTATION: {
-    //   return body.content
+    //   const compressedBody: MessageBody = {
+    //   ...body,
+    //   content: compressedContents,
+    // }
+    // return compressedBody
     // }
     // case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
     //   const compressedContents = {
@@ -71,14 +89,22 @@ export const compressMessage = (body: MessageBody): MessageBody => {
     //       : undefined,
     //     prerequisiteClaims: body.content.prerequisiteClaims,
     //   }
-    //   return compressedContents
+    //   const compressedBody: MessageBody = {
+    //   ...body,
+    //   content: compressedContents,
+    // }
+    // return compressedBody
     // }
     // case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
     //   const compressedContents = {
     //     attestation: AttestationUtils.compress(body.content.attestation),
     //     attestationPE: body.content.attestationPE,
     //   }
-    //   return compressedContents
+    //   const compressedBody: MessageBody = {
+    //   ...body,
+    //   content: compressedContents,
+    // }
+    // return compressedBody
     // }
     // case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
     //   const compressedContents = {
@@ -86,17 +112,29 @@ export const compressMessage = (body: MessageBody): MessageBody => {
     //     peRequest: body.content.peRequest,
     //     allowPE: body.content.allowPE,
     //   }
-    //   return compressedContents
+    //   const compressedBody: MessageBody = {
+    //   ...body,
+    //   content: compressedContents,
+    // }
+    // return compressedBody
     // }
     // case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC: {
     //   const compressedContents = {
     //     content: body.content.map((val) => AttestedClaimUtils.compress(val)),
     //   }
-    //   return compressedContents
+    //   const compressedBody: MessageBody = {
+    //   ...body,
+    //   content: compressedContents,
+    // }
+    // return compressedBody
     // }
     // case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE: {
     //   const compressedContents = {}
-    //   return compressedContents
+    //   const compressedBody: MessageBody = {
+    //   ...body,
+    //   content: compressedContents,
+    // }
+    // return compressedBody
     // }
     // case MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES: {
     //   const compressedContents = {}
@@ -138,10 +176,10 @@ export const compressMessage = (body: MessageBody): MessageBody => {
 
 export const decompressMessage = (body: MessageBody): MessageBody => {
   switch (body.type) {
-    case MessageBodyType.REQUEST_TERMS: {
-      console.log('hello', body.content.contents)
-      return body
-    }
+    // case MessageBodyType.REQUEST_TERMS: {
+    //   console.log('hello', body.content.contents)
+    //   return body
+    // }
 
     case MessageBodyType.SUBMIT_TERMS: {
       return body
