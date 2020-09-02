@@ -32,11 +32,12 @@ import {
   ICType,
 } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
-import ITerms from '../types/Terms'
+import ITerms, { ICompressedTerms } from '../types/Terms'
 import { IQuoteAgreement } from '../types/Quote'
 import { validateSignature } from '../util/DataUtils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import { compressMessage, decompressMessage } from './Message.utils'
+import { IClaimContents } from '../types/Claim'
 
 /**
  * - `body` - The body of the message, see [[MessageBody]].
@@ -306,7 +307,7 @@ export interface IRequestTerms extends IMessageBodyBase {
   type: MessageBodyType.REQUEST_TERMS
 }
 export interface ISubmitTerms extends IMessageBodyBase {
-  content: ITerms
+  content: ITerms | ICompressedTerms
   type: MessageBodyType.SUBMIT_TERMS
 }
 export interface IRejectTerms extends IMessageBodyBase {
@@ -417,6 +418,12 @@ export interface IInformCreateDelegation extends IMessageBodyBase {
 export interface IPartialClaim extends Partial<IClaim> {
   cTypeHash: Claim['cTypeHash']
 }
+
+export type IPartialCompressedClaim = [
+  IClaim['cTypeHash'],
+  IClaim['owner'] | undefined,
+  IClaimContents | undefined
+]
 
 export type MessageBody =
   | IRequestTerms

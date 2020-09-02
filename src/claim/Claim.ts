@@ -18,6 +18,7 @@ import * as SDKErrors from '../errorhandling/SDKErrors'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
 import ClaimUtils from './Claim.utils'
+import { IPartialCompressedClaim } from '../messaging'
 
 function verifyClaim(
   claimContents: IClaim['contents'],
@@ -142,7 +143,7 @@ export default class Claim implements IClaim {
    * @returns An array that contains the same properties of an [[Claim]].
    */
 
-  public compress(): CompressedClaim {
+  public compress(): IPartialCompressedClaim | CompressedClaim {
     return ClaimUtils.compress(this)
   }
 

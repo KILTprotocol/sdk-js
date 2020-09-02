@@ -16,7 +16,7 @@ export default interface IClaim {
 }
 
 export type CompressedClaim = [
-  IClaimContents,
   IClaim['cTypeHash'],
-  IClaim['owner']
+  IClaim['owner'],
+  IClaimContents
 ]

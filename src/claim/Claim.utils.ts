@@ -4,6 +4,7 @@
  * @preferred
  */
 
+import { IPartialClaim, IPartialCompressedClaim } from '../messaging'
 import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import IClaim, { CompressedClaim } from '../types/Claim'
@@ -19,7 +20,7 @@ import { validateAddress, validateHash } from '../util/DataUtils'
  * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_CONTENTS_MALFORMED]].
  *
  */
-export function errorCheck(input: IClaim): void {
+export function errorCheck(input: IClaim | IPartialClaim): void {
   if (!input.cTypeHash) {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
@@ -47,10 +48,19 @@ export function errorCheck(input: IClaim): void {
  *
  * @returns An ordered array of a [[Claim]].
  */
-export function compress(claim: IClaim): CompressedClaim {
+export function compress(
+  claim: IClaim | IPartialClaim
+): CompressedClaim | IPartialCompressedClaim {
   errorCheck(claim)
-  const sortedContents = jsonabc.sortObj(claim.contents)
-  return [sortedContents, claim.cTypeHash, claim.owner]
+  let sortedContents
+  let owner
+  if (claim.contents) {
+    sortedContents = jsonabc.sortObj(claim.contents)
+  }
+  if (claim.owner) {
+    owner = claim.owner
+  }
+  return [claim.cTypeHash, owner, sortedContents]
 }
 
 /**
@@ -66,9 +76,9 @@ export function decompress(claim: CompressedClaim): IClaim {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }
   return {
-    contents: claim[0],
-    cTypeHash: claim[1],
-    owner: claim[2],
+    cTypeHash: claim[0],
+    owner: claim[1],
+    contents: claim[2],
   }
 }
 

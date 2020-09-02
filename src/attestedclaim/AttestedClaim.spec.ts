@@ -81,9 +81,9 @@ describe('RequestForAttestation', () => {
     compressedLegitimation = [
       [
         [
-          legitimation.request.claim.contents,
           legitimation.request.claim.cTypeHash,
           legitimation.request.claim.owner,
+          legitimation.request.claim.contents,
         ],
         {},
         [

@@ -43,11 +43,11 @@ describe('Claim', () => {
       identityAlice.address
     )
     compressedClaim = [
+      claim.cTypeHash,
+      claim.owner,
       {
         name: 'Bob',
       },
-      claim.cTypeHash,
-      claim.owner,
     ]
   })
 
