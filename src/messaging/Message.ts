@@ -18,6 +18,7 @@ import {
   CombinedPresentationRequest,
   InitiateAttestationRequest,
 } from '@kiltprotocol/portablegabi'
+import { CompressedAttestedClaim } from '../types/AttestedClaim'
 import {
   Claim,
   DelegationNode,
@@ -311,11 +312,9 @@ export interface ISubmitTerms extends IMessageBodyBase {
   type: MessageBodyType.SUBMIT_TERMS
 }
 export interface IRejectTerms extends IMessageBodyBase {
-  content: {
-    claim: IPartialClaim
-    legitimations: IAttestedClaim[]
-    delegationId?: DelegationNode['id']
-  }
+  content:
+    | Pick<ITerms, 'claim' | 'legitimations' | 'delegationId'>
+    | CompressedRejectedTerms
   type: MessageBodyType.REJECT_TERMS
 }
 
@@ -423,6 +422,12 @@ export type IPartialCompressedClaim = [
   IClaim['cTypeHash'],
   IClaim['owner'] | undefined,
   IClaimContents | undefined
+]
+
+export type CompressedRejectedTerms = [
+  IPartialCompressedClaim,
+  CompressedAttestedClaim[],
+  DelegationNode['id'] | undefined
 ]
 
 export type MessageBody =

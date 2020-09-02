@@ -11,6 +11,7 @@ import {
   //   IAttestedClaim,
 } from '..'
 import { ICompressedTerms } from '../types/Terms'
+import { CompressedRejectedTerms } from './Message'
 // import { IPartialCompressedClaim, IPartialClaim } from './Message'
 
 /**
@@ -22,56 +23,51 @@ import { ICompressedTerms } from '../types/Terms'
  */
 
 export const compressMessage = (body: MessageBody): MessageBody => {
+  if (Array.isArray(body.content)) return body
   switch (body.type) {
     case MessageBodyType.REQUEST_TERMS: {
-      if (!Array.isArray(body.content)) {
-        const compressedContents = ClaimUtils.compress(body.content)
-        const compressedBody: MessageBody = {
-          ...body,
-          content: compressedContents,
-        }
-        return compressedBody
+      const compressedContents = ClaimUtils.compress(body.content)
+      const compressedBody: MessageBody = {
+        ...body,
+        content: compressedContents,
       }
-      return body
+      return compressedBody
     }
     case MessageBodyType.SUBMIT_TERMS: {
-      if (!Array.isArray(body.content)) {
-        const compressedContents: ICompressedTerms = [
-          ClaimUtils.compress(body.content.claim),
-          body.content.legitimations.map(
-            (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
-              Array.isArray(attestedClaim)
-                ? attestedClaim
-                : AttestedClaimUtils.compress(attestedClaim)
-          ),
-          body.content.delegationId,
-          body.content.quote
-            ? QuoteUtils.compressAttesterSignedQuote(body.content.quote)
-            : undefined,
-          body.content.prerequisiteClaims,
-        ]
-        const compressedBody: MessageBody = {
-          ...body,
-          content: compressedContents,
-        }
-        return compressedBody
+      const compressedContents: ICompressedTerms = [
+        ClaimUtils.compress(body.content.claim),
+        body.content.legitimations.map(
+          (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
+            Array.isArray(attestedClaim)
+              ? attestedClaim
+              : AttestedClaimUtils.compress(attestedClaim)
+        ),
+        body.content.delegationId,
+        body.content.quote
+          ? QuoteUtils.compressAttesterSignedQuote(body.content.quote)
+          : undefined,
+        body.content.prerequisiteClaims,
+      ]
+      const compressedBody: MessageBody = {
+        ...body,
+        content: compressedContents,
       }
-      return body
+      return compressedBody
     }
-    // case MessageBodyType.REJECT_TERMS: {
-    //   const compressedContents = {
-    //     claims: ClaimUtils.compress(body.content.claim),
-    //     legitimations: body.content.legitimations.map((val) =>
-    //       AttestedClaimUtils.compress(val)
-    //     ),
-    //     delegationId: body.content.delegationId,
-    //   }
-    //   const compressedBody: MessageBody = {
-    //   ...body,
-    //   content: compressedContents,
-    // }
-    // return compressedBody
-    // }
+    case MessageBodyType.REJECT_TERMS: {
+      const compressedContents: CompressedRejectedTerms = [
+        ClaimUtils.compress(body.content.claim),
+        body.content.legitimations.map((val) =>
+          AttestedClaimUtils.compress(val)
+        ),
+        body.content.delegationId ? body.content.delegationId : undefined,
+      ]
+      const compressedBody: MessageBody = {
+        ...body,
+        content: compressedContents,
+      }
+      return compressedBody
+    }
     // case MessageBodyType.INITIATE_ATTESTATION: {
     //   const compressedBody: MessageBody = {
     //   ...body,
