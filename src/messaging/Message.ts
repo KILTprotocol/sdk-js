@@ -18,6 +18,7 @@ import {
   CombinedPresentationRequest,
   InitiateAttestationRequest,
 } from '@kiltprotocol/portablegabi'
+import { CompressedAttestation } from '../types/Attestation'
 import { CompressedAttestedClaim } from '../types/AttestedClaim'
 import {
   Claim,
@@ -142,7 +143,15 @@ export default class Message implements IMessage {
       case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
         {
           const submitAttestation = body
-          if (submitAttestation.content.attestation.owner !== senderAddress) {
+          if (
+            !Array.isArray(submitAttestation.content) &&
+            submitAttestation.content.attestation.owner !== senderAddress
+          ) {
+            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
+          } else if (
+            Array.isArray(submitAttestation.content) &&
+            submitAttestation.content[0][2] !== senderAddress
+          ) {
             throw SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
           }
         }
@@ -335,10 +344,7 @@ export interface IRequestAttestationForClaim extends IMessageBodyBase {
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
 }
 export interface ISubmitAttestationForClaim extends IMessageBodyBase {
-  content: {
-    attestation: IAttestation
-    attestationPE?: AttestationPE
-  }
+  content: ISubmittingAttestationForClaim | CompressedSubmitAttestationForClaim
   type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
 }
 export interface IRejectAttestationForClaim extends IMessageBodyBase {
@@ -426,6 +432,12 @@ export interface IRequestingAttestationForClaim {
   quote?: IQuoteAgreement
   prerequisiteClaims?: IClaim[]
 }
+
+export interface ISubmittingAttestationForClaim {
+  attestation: IAttestation
+  attestationPE?: AttestationPE
+}
+
 export type IPartialCompressedClaim = [
   IClaim['cTypeHash'],
   IClaim['owner'] | undefined,
@@ -444,6 +456,11 @@ export type CompressedRequestAttestationForClaim = [
   CompressedRequestForAttestation,
   CompressedQuoteAgreed | undefined,
   Array<IPartialCompressedClaim | CompressedClaim> | undefined
+]
+
+export type CompressedSubmitAttestationForClaim = [
+  CompressedAttestation,
+  AttestationPE | undefined
 ]
 
 export type MessageBody =

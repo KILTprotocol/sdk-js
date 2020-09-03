@@ -4,7 +4,7 @@ import {
   ClaimUtils,
   AttestedClaimUtils,
   MessageBody,
-  // AttestationUtils,
+  AttestationUtils,
   MessageBodyType,
   IAttestedClaim,
   RequestForAttestationUtils,
@@ -14,6 +14,7 @@ import {
   CompressedRejectedTerms,
   CompressedRequestAttestationForClaim,
   CompressedInitiateAttestation,
+  CompressedSubmitAttestationForClaim,
 } from './Message'
 
 /**
@@ -91,16 +92,16 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         content: compressedContents,
       }
     }
-    // case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
-    //   const compressedContents = [
-    //     AttestationUtils.compress(body.content.attestation),
-    //     body.content.attestationPE,
-    //   ]
-    //   return {
-    //     ...body,
-    //     content: compressedContents,
-    //   }
-    // }
+    case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+      const compressedContents: CompressedSubmitAttestationForClaim = [
+        AttestationUtils.compress(body.content.attestation),
+        body.content.attestationPE ? body.content.attestationPE : undefined,
+      ]
+      return {
+        ...body,
+        content: compressedContents,
+      }
+    }
     // case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
     //   const compressedContents = [
     //     body.content.ctypes,
