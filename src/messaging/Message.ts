@@ -398,14 +398,11 @@ export interface ISubmitAcceptDelegation extends IMessageBodyBase {
   type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION
 }
 export interface IRejectAcceptDelegation extends IMessageBodyBase {
-  content: IRequestAcceptDelegation['content']
+  content: IDelegationData | CompressedDelegationData
   type: MessageBodyType.REJECT_ACCEPT_DELEGATION
 }
 export interface IInformCreateDelegation extends IMessageBodyBase {
-  content: {
-    delegationId: IDelegationBaseNode['id']
-    isPCR: boolean
-  }
+  content: IInformingCreateDelegation | CompressedInformCreateDelegation
   type: MessageBodyType.INFORM_CREATE_DELEGATION
 }
 
@@ -452,6 +449,11 @@ export interface ISubmitingAcceptDelegation {
     inviter: string
     invitee: string
   }
+}
+
+export interface IInformingCreateDelegation {
+  delegationId: IDelegationBaseNode['id']
+  isPCR: boolean
 }
 
 export type IPartialCompressedClaim = [
@@ -504,7 +506,10 @@ export type CompressedSubmitAcceptDelegation = [
   [string, string]
 ]
 
-// export type CompressedCombinedPresentation = [CombinedPresentation]
+export type CompressedInformCreateDelegation = [
+  IInformingCreateDelegation['delegationId'],
+  IInformingCreateDelegation['isPCR']
+]
 
 export type MessageBody =
   | IRequestTerms

@@ -18,6 +18,8 @@ import {
   CompressedRequestClaimsForCTypes,
   CompressedRequestAcceptDelegation,
   CompressedSubmitAcceptDelegation,
+  CompressedDelegationData,
+  CompressedInformCreateDelegation,
 } from './Message'
 
 /**
@@ -141,15 +143,6 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         content: compressedContents,
       }
     }
-    // case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE: {
-    //   const compressedContents: CompressedCombinedPresentation = [
-    //     body.content.toString(),
-    //   ]
-    //   return {
-    //     ...body,
-    //     content: compressedContents,
-    //   }
-    // }
     case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
       if (Array.isArray(body.content)) return body
 
@@ -187,20 +180,33 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         content: compressedContents,
       }
     }
-    // case MessageBodyType.REJECT_ACCEPT_DELEGATION: {
-    //   const compressedContents = []
-    //   return {
-    //     ...body,
-    //     content: compressedContents,
-    //   }
-    // }
-    // case MessageBodyType.INFORM_CREATE_DELEGATION: {
-    //   const compressedContents = []
-    //   return {
-    //     ...body,
-    //     content: compressedContents,
-    //   }
-    // }
+    case MessageBodyType.REJECT_ACCEPT_DELEGATION: {
+      if (Array.isArray(body.content)) return body
+
+      const compressedContents: CompressedDelegationData = [
+        body.content.account,
+        body.content.id,
+        body.content.parentId,
+        body.content.permissions,
+        body.content.isPCR,
+      ]
+      return {
+        ...body,
+        content: compressedContents,
+      }
+    }
+    case MessageBodyType.INFORM_CREATE_DELEGATION: {
+      if (Array.isArray(body.content)) return body
+
+      const compressedContents: CompressedInformCreateDelegation = [
+        body.content.delegationId,
+        body.content.isPCR,
+      ]
+      return {
+        ...body,
+        content: compressedContents,
+      }
+    }
 
     default:
       return body
