@@ -17,6 +17,7 @@ import {
   CompressedSubmitAttestationForClaim,
   CompressedRequestClaimsForCTypes,
   CompressedRequestAcceptDelegation,
+  CompressedSubmitAcceptDelegation,
 } from './Message'
 
 /**
@@ -168,13 +169,24 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         content: compressedContents,
       }
     }
-    // case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
-    //   const compressedContents = []
-    //   return {
-    //     ...body,
-    //     content: compressedContents,
-    //   }
-    // }
+    case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
+      if (Array.isArray(body.content)) return body
+
+      const compressedContents: CompressedSubmitAcceptDelegation = [
+        [
+          body.content.delegationData.account,
+          body.content.delegationData.id,
+          body.content.delegationData.parentId,
+          body.content.delegationData.permissions,
+          body.content.delegationData.isPCR,
+        ],
+        [body.content.signatures.inviter, body.content.signatures.invitee],
+      ]
+      return {
+        ...body,
+        content: compressedContents,
+      }
+    }
     // case MessageBodyType.REJECT_ACCEPT_DELEGATION: {
     //   const compressedContents = []
     //   return {

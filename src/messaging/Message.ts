@@ -394,13 +394,7 @@ export interface IRequestAcceptDelegation extends IMessageBodyBase {
   type: MessageBodyType.REQUEST_ACCEPT_DELEGATION
 }
 export interface ISubmitAcceptDelegation extends IMessageBodyBase {
-  content: {
-    delegationData: IRequestingAcceptDelegation['delegationData']
-    signatures: {
-      inviter: string
-      invitee: string
-    }
-  }
+  content: ISubmitingAcceptDelegation | CompressedSubmitAcceptDelegation
   type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION
 }
 export interface IRejectAcceptDelegation extends IMessageBodyBase {
@@ -437,17 +431,26 @@ export interface IRequestingClaimsForCTypes {
   allowPE: boolean
 }
 
+export interface IDelegationData {
+  account: IDelegationBaseNode['account']
+  id: IDelegationBaseNode['id']
+  parentId: IDelegationNode['id']
+  permissions: IDelegationNode['permissions']
+  isPCR: boolean
+}
 export interface IRequestingAcceptDelegation {
-  delegationData: {
-    account: IDelegationBaseNode['account']
-    id: IDelegationBaseNode['id']
-    parentId: IDelegationNode['id']
-    permissions: IDelegationNode['permissions']
-    isPCR: boolean
-  }
+  delegationData: IDelegationData
   metaData?: AnyJson
   signatures: {
     inviter: string
+  }
+}
+
+export interface ISubmitingAcceptDelegation {
+  delegationData: IDelegationData
+  signatures: {
+    inviter: string
+    invitee: string
   }
 }
 
@@ -482,16 +485,23 @@ export type CompressedRequestClaimsForCTypes = [
   boolean
 ]
 
+export type CompressedDelegationData = [
+  IDelegationBaseNode['account'],
+  IDelegationBaseNode['id'],
+  IDelegationNode['id'],
+  IDelegationNode['permissions'],
+  boolean
+]
+
 export type CompressedRequestAcceptDelegation = [
-  [
-    IDelegationBaseNode['account'],
-    IDelegationBaseNode['id'],
-    IDelegationNode['id'],
-    IDelegationNode['permissions'],
-    boolean
-  ],
+  CompressedDelegationData,
   string,
   AnyJson
+]
+
+export type CompressedSubmitAcceptDelegation = [
+  CompressedDelegationData,
+  [string, string]
 ]
 
 // export type CompressedCombinedPresentation = [CombinedPresentation]
