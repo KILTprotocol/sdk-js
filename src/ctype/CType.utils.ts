@@ -62,8 +62,12 @@ export function verifyClaimStructure(
 }
 
 export async function verifyStored(ctype: ICType): Promise<boolean> {
-  const actualOwner = await getOwner(ctype.hash)
-  return ctype.owner ? actualOwner === ctype.owner : actualOwner !== null
+  return typeof (await getOwner(ctype.hash)) === 'string'
+}
+
+export async function verifyOwner(ctype: ICType): Promise<boolean> {
+  const owner = await getOwner(ctype.hash)
+  return owner ? owner === ctype.owner : false
 }
 
 type schemaPropsForHashing = {
@@ -254,6 +258,7 @@ export default {
   verifySchema,
   verifySchemaWithErrors,
   verifyStored,
+  verifyOwner,
   getHashForSchema,
   getIdForSchema,
   validateNestedSchemas,
