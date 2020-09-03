@@ -376,6 +376,7 @@ export interface ISubmitClaimsForCTypesClassic extends IMessageBodyBase {
 
 export interface ISubmitClaimsForCTypesPE extends IMessageBodyBase {
   content: CombinedPresentation
+  // | CompressedCombinedPresentation
   type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
 }
 
@@ -389,24 +390,12 @@ export interface IRejectClaimsForCTypes extends IMessageBodyBase {
 }
 
 export interface IRequestAcceptDelegation extends IMessageBodyBase {
-  content: {
-    delegationData: {
-      account: IDelegationBaseNode['account']
-      id: IDelegationBaseNode['id']
-      parentId: IDelegationNode['id']
-      permissions: IDelegationNode['permissions']
-      isPCR: boolean
-    }
-    metaData?: AnyJson
-    signatures: {
-      inviter: string
-    }
-  }
+  content: IRequestingAcceptDelegation | CompressedRequestAcceptDelegation
   type: MessageBodyType.REQUEST_ACCEPT_DELEGATION
 }
 export interface ISubmitAcceptDelegation extends IMessageBodyBase {
   content: {
-    delegationData: IRequestAcceptDelegation['content']['delegationData']
+    delegationData: IRequestingAcceptDelegation['delegationData']
     signatures: {
       inviter: string
       invitee: string
@@ -448,6 +437,20 @@ export interface IRequestingClaimsForCTypes {
   allowPE: boolean
 }
 
+export interface IRequestingAcceptDelegation {
+  delegationData: {
+    account: IDelegationBaseNode['account']
+    id: IDelegationBaseNode['id']
+    parentId: IDelegationNode['id']
+    permissions: IDelegationNode['permissions']
+    isPCR: boolean
+  }
+  metaData?: AnyJson
+  signatures: {
+    inviter: string
+  }
+}
+
 export type IPartialCompressedClaim = [
   IClaim['cTypeHash'],
   IClaim['owner'] | undefined,
@@ -478,6 +481,20 @@ export type CompressedRequestClaimsForCTypes = [
   CombinedPresentationRequest | undefined,
   boolean
 ]
+
+export type CompressedRequestAcceptDelegation = [
+  [
+    IDelegationBaseNode['account'],
+    IDelegationBaseNode['id'],
+    IDelegationNode['id'],
+    IDelegationNode['permissions'],
+    boolean
+  ],
+  string,
+  AnyJson
+]
+
+// export type CompressedCombinedPresentation = [CombinedPresentation]
 
 export type MessageBody =
   | IRequestTerms

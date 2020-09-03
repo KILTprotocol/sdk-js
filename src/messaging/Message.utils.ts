@@ -16,6 +16,7 @@ import {
   CompressedInitiateAttestation,
   CompressedSubmitAttestationForClaim,
   CompressedRequestClaimsForCTypes,
+  CompressedRequestAcceptDelegation,
 } from './Message'
 
 /**
@@ -140,33 +141,33 @@ export const compressMessage = (body: MessageBody): MessageBody => {
       }
     }
     // case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE: {
-    //   const compressedContents = []
+    //   const compressedContents: CompressedCombinedPresentation = [
+    //     body.content.toString(),
+    //   ]
     //   return {
     //     ...body,
     //     content: compressedContents,
     //   }
     // }
-    // case MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES: {
-    //   const compressedContents = []
-    //   return {
-    //     ...body,
-    //     content: compressedContents,
-    //   }
-    // }
-    // case MessageBodyType.REJECT_CLAIMS_FOR_CTYPES: {
-    //   const compressedContents = []
-    //   return {
-    //     ...body,
-    //     content: compressedContents,
-    //   }
-    // }
-    // case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
-    //   const compressedContents = []
-    //   return {
-    //     ...body,
-    //     content: compressedContents,
-    //   }
-    // }
+    case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
+      if (Array.isArray(body.content)) return body
+
+      const compressedContents: CompressedRequestAcceptDelegation = [
+        [
+          body.content.delegationData.account,
+          body.content.delegationData.id,
+          body.content.delegationData.parentId,
+          body.content.delegationData.permissions,
+          body.content.delegationData.isPCR,
+        ],
+        body.content.signatures.inviter,
+        body.content.metaData,
+      ]
+      return {
+        ...body,
+        content: compressedContents,
+      }
+    }
     // case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
     //   const compressedContents = []
     //   return {
