@@ -4,15 +4,17 @@ import {
   ClaimUtils,
   AttestedClaimUtils,
   MessageBody,
-  //   AttestationUtils,
-  //   RequestForAttestationUtils,
+  // AttestationUtils,
   MessageBodyType,
   IAttestedClaim,
-  //   IAttestedClaim,
+  RequestForAttestationUtils,
 } from '..'
-import { ICompressedTerms } from '../types/Terms'
-import { CompressedRejectedTerms } from './Message'
-// import { IPartialCompressedClaim, IPartialClaim } from './Message'
+import { CompressedTerms } from '../types/Terms'
+import {
+  CompressedRejectedTerms,
+  CompressedRequestAttestationForClaim,
+  CompressedInitiateAttestation,
+} from './Message'
 
 /**
  * [STATIC] Compresses a [[Message]] depending on the message body type.
@@ -27,14 +29,13 @@ export const compressMessage = (body: MessageBody): MessageBody => {
   switch (body.type) {
     case MessageBodyType.REQUEST_TERMS: {
       const compressedContents = ClaimUtils.compress(body.content)
-      const compressedBody: MessageBody = {
+      return {
         ...body,
         content: compressedContents,
       }
-      return compressedBody
     }
     case MessageBodyType.SUBMIT_TERMS: {
-      const compressedContents: ICompressedTerms = [
+      const compressedContents: CompressedTerms = [
         ClaimUtils.compress(body.content.claim),
         body.content.legitimations.map(
           (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
@@ -48,11 +49,10 @@ export const compressMessage = (body: MessageBody): MessageBody => {
           : undefined,
         body.content.prerequisiteClaims,
       ]
-      const compressedBody: MessageBody = {
+      return {
         ...body,
         content: compressedContents,
       }
-      return compressedBody
     }
     case MessageBodyType.REJECT_TERMS: {
       const compressedContents: CompressedRejectedTerms = [
@@ -62,99 +62,118 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         ),
         body.content.delegationId ? body.content.delegationId : undefined,
       ]
-      const compressedBody: MessageBody = {
+      return {
         ...body,
         content: compressedContents,
       }
-      return compressedBody
     }
-    // case MessageBodyType.INITIATE_ATTESTATION: {
-    //   const compressedBody: MessageBody = {
-    //   ...body,
-    //   content: compressedContents,
-    // }
-    // return compressedBody
-    // }
-    // case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
-    //   const compressedContents = {
-    //     requestForAttestation: RequestForAttestationUtils.compress(
-    //       body.content.requestForAttestation
-    //     ),
-    //     quote: body.content.quote
-    //       ? QuoteUtils.compressAttesterSignedQuote(body.content.quote)
-    //       : undefined,
-    //     prerequisiteClaims: body.content.prerequisiteClaims,
-    //   }
-    //   const compressedBody: MessageBody = {
-    //   ...body,
-    //   content: compressedContents,
-    // }
-    // return compressedBody
-    // }
+    case MessageBodyType.INITIATE_ATTESTATION: {
+      const compressedContents: CompressedInitiateAttestation = [body.content]
+      return {
+        ...body,
+        content: compressedContents,
+      }
+    }
+    case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+      const compressedContents: CompressedRequestAttestationForClaim = [
+        RequestForAttestationUtils.compress(body.content.requestForAttestation),
+        body.content.quote
+          ? QuoteUtils.compressQuoteAgreement(body.content.quote)
+          : undefined,
+        body.content.prerequisiteClaims
+          ? body.content.prerequisiteClaims.map((claim) =>
+              ClaimUtils.compress(claim)
+            )
+          : undefined,
+      ]
+      return {
+        ...body,
+        content: compressedContents,
+      }
+    }
     // case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
-    //   const compressedContents = {
-    //     attestation: AttestationUtils.compress(body.content.attestation),
-    //     attestationPE: body.content.attestationPE,
+    //   const compressedContents = [
+    //     AttestationUtils.compress(body.content.attestation),
+    //     body.content.attestationPE,
+    //   ]
+    //   return {
+    //     ...body,
+    //     content: compressedContents,
     //   }
-    //   const compressedBody: MessageBody = {
-    //   ...body,
-    //   content: compressedContents,
-    // }
-    // return compressedBody
     // }
     // case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-    //   const compressedContents = {
-    //     ctypes: body.content.ctypes,
-    //     peRequest: body.content.peRequest,
-    //     allowPE: body.content.allowPE,
+    //   const compressedContents = [
+    //     body.content.ctypes,
+    //     body.content.peRequest,
+    //     body.content.allowPE,
+    //   ]
+    //   return {
+    //     ...body,
+    //     content: compressedContents,
     //   }
-    //   const compressedBody: MessageBody = {
-    //   ...body,
-    //   content: compressedContents,
-    // }
-    // return compressedBody
     // }
     // case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC: {
-    //   const compressedContents = {
-    //     content: body.content.map((val) => AttestedClaimUtils.compress(val)),
+    //   const compressedContents:  = [
+    //     body.content.map(
+    //       (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
+    //         Array.isArray(attestedClaim)
+    //           ? attestedClaim
+    //           : AttestedClaimUtils.compress(attestedClaim)
+    //     ),
+    //   ]
+    //   return {
+    //     ...body,
+    //     content: compressedContents,
     //   }
-    //   const compressedBody: MessageBody = {
-    //   ...body,
-    //   content: compressedContents,
-    // }
-    // return compressedBody
     // }
     // case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE: {
-    //   const compressedContents = {}
-    //   const compressedBody: MessageBody = {
-    //   ...body,
-    //   content: compressedContents,
-    // }
-    // return compressedBody
+    //   const compressedContents = []
+    //   return {
+    //     ...body,
+    //     content: compressedContents,
+    //   }
     // }
     // case MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES: {
-    //   const compressedContents = {}
-    //   return compressedContents
+    //   const compressedContents = []
+    //   return {
+    //     ...body,
+    //     content: compressedContents,
+    //   }
     // }
     // case MessageBodyType.REJECT_CLAIMS_FOR_CTYPES: {
-    //   const compressedContents = {}
-    //   return compressedContents
+    //   const compressedContents = []
+    //   return {
+    //     ...body,
+    //     content: compressedContents,
+    //   }
     // }
     // case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
-    //   const compressedContents = {}
-    //   return compressedContents
+    //   const compressedContents = []
+    //   return {
+    //     ...body,
+    //     content: compressedContents,
+    //   }
     // }
     // case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
-    //   const compressedContents = {}
-    //   return compressedContents
+    //   const compressedContents = []
+    //   return {
+    //     ...body,
+    //     content: compressedContents,
+    //   }
     // }
     // case MessageBodyType.REJECT_ACCEPT_DELEGATION: {
-    //   const compressedContents = {}
-    //   return compressedContents
+    //   const compressedContents = []
+    //   return {
+    //     ...body,
+    //     content: compressedContents,
+    //   }
     // }
     // case MessageBodyType.INFORM_CREATE_DELEGATION: {
-    //   const compressedContents = {}
-    //   return compressedContents
+    //   const compressedContents = []
+    //   return {
+    //     ...body,
+    //     content: compressedContents,
+    //   }
     // }
 
     default:

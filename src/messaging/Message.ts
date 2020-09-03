@@ -33,12 +33,13 @@ import {
   ICType,
 } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
-import ITerms, { ICompressedTerms } from '../types/Terms'
-import { IQuoteAgreement } from '../types/Quote'
+import ITerms, { CompressedTerms } from '../types/Terms'
+import { IQuoteAgreement, CompressedQuoteAgreed } from '../types/Quote'
 import { validateSignature } from '../util/DataUtils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import { compressMessage, decompressMessage } from './Message.utils'
-import { IClaimContents } from '../types/Claim'
+import { IClaimContents, CompressedClaim } from '../types/Claim'
+import { CompressedRequestForAttestation } from '../types/RequestForAttestation'
 
 /**
  * - `body` - The body of the message, see [[MessageBody]].
@@ -125,8 +126,14 @@ export default class Message implements IMessage {
         {
           const requestAttestation = body
           if (
+            !Array.isArray(requestAttestation.content) &&
             requestAttestation.content.requestForAttestation.claim.owner !==
-            senderAddress
+              senderAddress
+          ) {
+            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
+          } else if (
+            Array.isArray(requestAttestation.content) &&
+            requestAttestation.content[0][0][1] !== senderAddress
           ) {
             throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
           }
@@ -308,7 +315,7 @@ export interface IRequestTerms extends IMessageBodyBase {
   type: MessageBodyType.REQUEST_TERMS
 }
 export interface ISubmitTerms extends IMessageBodyBase {
-  content: ITerms | ICompressedTerms
+  content: ITerms | CompressedTerms
   type: MessageBodyType.SUBMIT_TERMS
 }
 export interface IRejectTerms extends IMessageBodyBase {
@@ -319,16 +326,12 @@ export interface IRejectTerms extends IMessageBodyBase {
 }
 
 export interface IInitiateAttestation extends IMessageBodyBase {
-  content: InitiateAttestationRequest
+  content: InitiateAttestationRequest | CompressedInitiateAttestation
   type: MessageBodyType.INITIATE_ATTESTATION
 }
 
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
-  content: {
-    requestForAttestation: IRequestForAttestation
-    quote?: IQuoteAgreement
-    prerequisiteClaims?: IClaim[]
-  }
+  content: IRequestingAttestationForClaim | CompressedRequestAttestationForClaim
   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
 }
 export interface ISubmitAttestationForClaim extends IMessageBodyBase {
@@ -418,6 +421,11 @@ export interface IPartialClaim extends Partial<IClaim> {
   cTypeHash: Claim['cTypeHash']
 }
 
+export interface IRequestingAttestationForClaim {
+  requestForAttestation: IRequestForAttestation
+  quote?: IQuoteAgreement
+  prerequisiteClaims?: IClaim[]
+}
 export type IPartialCompressedClaim = [
   IClaim['cTypeHash'],
   IClaim['owner'] | undefined,
@@ -428,6 +436,14 @@ export type CompressedRejectedTerms = [
   IPartialCompressedClaim,
   CompressedAttestedClaim[],
   DelegationNode['id'] | undefined
+]
+
+export type CompressedInitiateAttestation = [InitiateAttestationRequest]
+
+export type CompressedRequestAttestationForClaim = [
+  CompressedRequestForAttestation,
+  CompressedQuoteAgreed | undefined,
+  Array<IPartialCompressedClaim | CompressedClaim> | undefined
 ]
 
 export type MessageBody =

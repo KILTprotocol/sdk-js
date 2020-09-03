@@ -17,7 +17,7 @@ export default interface ITerms {
   prerequisiteClaims?: ICType['hash']
 }
 
-export type ICompressedTerms = [
+export type CompressedTerms = [
   IPartialCompressedClaim,
   CompressedAttestedClaim[],
   DelegationNode['id'] | undefined,
