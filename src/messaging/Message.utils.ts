@@ -15,6 +15,7 @@ import {
   CompressedRequestAttestationForClaim,
   CompressedInitiateAttestation,
   CompressedSubmitAttestationForClaim,
+  CompressedRequestClaimsForCTypes,
 } from './Message'
 
 /**
@@ -102,17 +103,17 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         content: compressedContents,
       }
     }
-    // case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-    //   const compressedContents = [
-    //     body.content.ctypes,
-    //     body.content.peRequest,
-    //     body.content.allowPE,
-    //   ]
-    //   return {
-    //     ...body,
-    //     content: compressedContents,
-    //   }
-    // }
+    case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
+      const compressedContents: CompressedRequestClaimsForCTypes = [
+        body.content.ctypes,
+        body.content.peRequest,
+        body.content.allowPE,
+      ]
+      return {
+        ...body,
+        content: compressedContents,
+      }
+    }
     // case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC: {
     //   const compressedContents:  = [
     //     body.content.map(

@@ -353,12 +353,7 @@ export interface IRejectAttestationForClaim extends IMessageBodyBase {
 }
 
 export interface IRequestClaimsForCTypes extends IMessageBodyBase {
-  content: {
-    // Entries in the ctype hash array can be null, because ctypes are optional for portablegabi.
-    ctypes: Array<ICType['hash'] | null>
-    peRequest?: CombinedPresentationRequest
-    allowPE: boolean
-  }
+  content: IRequestingClaimsForCTypes | CompressedRequestClaimsForCTypes
   type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
 }
 
@@ -438,6 +433,13 @@ export interface ISubmittingAttestationForClaim {
   attestationPE?: AttestationPE
 }
 
+export interface IRequestingClaimsForCTypes {
+  // Entries in the ctype hash array can be null, because ctypes are optional for portablegabi.
+  ctypes: Array<ICType['hash'] | null>
+  peRequest?: CombinedPresentationRequest
+  allowPE: boolean
+}
+
 export type IPartialCompressedClaim = [
   IClaim['cTypeHash'],
   IClaim['owner'] | undefined,
@@ -461,6 +463,12 @@ export type CompressedRequestAttestationForClaim = [
 export type CompressedSubmitAttestationForClaim = [
   CompressedAttestation,
   AttestationPE | undefined
+]
+
+export type CompressedRequestClaimsForCTypes = [
+  Array<ICType['hash'] | null>,
+  CombinedPresentationRequest | undefined,
+  boolean
 ]
 
 export type MessageBody =
