@@ -104,14 +104,25 @@ export default class CType implements ICType {
   }
 
   /**
-   * [ASYNC] Check whether the current owner of [[CType]] matches the one stored on the blockchain.
-   * - If the [[CType]] has no owner property, it checks whether the [[CType]] hash is known on-chain.
-   * - Else it checks whether the [[CType]] hash is known on-chain AND the owner matches the one stored on the chain.
+   * [ASYNC] Check whether the [[CType]]'s hash has been registered to the blockchain.
    *
-   * @returns Whether the owner of this [[CType]] matches the one stored on the blockchain.
+   * @returns Whether the [[CType]] hash is registered to the blockchain.
    */
   public async verifyStored(): Promise<boolean> {
     return CTypeUtils.verifyStored(this)
+  }
+
+  /**
+   * [ASYNC] Check whether the current owner of [[CType]] matches the one stored on the blockchain. Returns true iff:
+   * - The [[CType]] is registered on-chain
+   * - The owner property of the [[CType]] matches the registered owner
+   * If the owner property is not set this method will always return false because the blockchain always stores the
+   * submitter as owner.
+   *
+   * @returns Whether the owner of this [[CType]] matches the one stored on the blockchain.
+   */
+  public async verifyOwner(): Promise<boolean> {
+    return CTypeUtils.verifyOwner(this)
   }
 
   /**
