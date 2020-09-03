@@ -160,7 +160,15 @@ export default class Message implements IMessage {
         {
           const submitClaimsForCtype: ISubmitClaimsForCTypesClassic = body
           submitClaimsForCtype.content.forEach((claim) => {
-            if (claim.request.claim.owner !== senderAddress) {
+            if (
+              !Array.isArray(claim) &&
+              claim.request.claim.owner !== senderAddress
+            ) {
+              throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
+            } else if (
+              Array.isArray(claim) &&
+              claim[0][0][1] !== senderAddress
+            ) {
               throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
           })
@@ -362,7 +370,7 @@ export type ISubmitClaimsForCTypes =
   | ISubmitClaimsForCTypesPE
 
 export interface ISubmitClaimsForCTypesClassic extends IMessageBodyBase {
-  content: IAttestedClaim[]
+  content: Array<IAttestedClaim | CompressedAttestedClaim>
   type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC
 }
 

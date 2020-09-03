@@ -27,9 +27,10 @@ import {
  */
 
 export const compressMessage = (body: MessageBody): MessageBody => {
-  if (Array.isArray(body.content)) return body
   switch (body.type) {
     case MessageBodyType.REQUEST_TERMS: {
+      if (Array.isArray(body.content)) return body
+
       const compressedContents = ClaimUtils.compress(body.content)
       return {
         ...body,
@@ -37,6 +38,8 @@ export const compressMessage = (body: MessageBody): MessageBody => {
       }
     }
     case MessageBodyType.SUBMIT_TERMS: {
+      if (Array.isArray(body.content)) return body
+
       const compressedContents: CompressedTerms = [
         ClaimUtils.compress(body.content.claim),
         body.content.legitimations.map(
@@ -57,6 +60,8 @@ export const compressMessage = (body: MessageBody): MessageBody => {
       }
     }
     case MessageBodyType.REJECT_TERMS: {
+      if (Array.isArray(body.content)) return body
+
       const compressedContents: CompressedRejectedTerms = [
         ClaimUtils.compress(body.content.claim),
         body.content.legitimations.map((val) =>
@@ -70,6 +75,8 @@ export const compressMessage = (body: MessageBody): MessageBody => {
       }
     }
     case MessageBodyType.INITIATE_ATTESTATION: {
+      if (Array.isArray(body.content)) return body
+
       const compressedContents: CompressedInitiateAttestation = [body.content]
       return {
         ...body,
@@ -77,6 +84,8 @@ export const compressMessage = (body: MessageBody): MessageBody => {
       }
     }
     case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+      if (Array.isArray(body.content)) return body
+
       const compressedContents: CompressedRequestAttestationForClaim = [
         RequestForAttestationUtils.compress(body.content.requestForAttestation),
         body.content.quote
@@ -94,6 +103,8 @@ export const compressMessage = (body: MessageBody): MessageBody => {
       }
     }
     case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+      if (Array.isArray(body.content)) return body
+
       const compressedContents: CompressedSubmitAttestationForClaim = [
         AttestationUtils.compress(body.content.attestation),
         body.content.attestationPE ? body.content.attestationPE : undefined,
@@ -104,6 +115,8 @@ export const compressMessage = (body: MessageBody): MessageBody => {
       }
     }
     case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
+      if (Array.isArray(body.content)) return body
+
       const compressedContents: CompressedRequestClaimsForCTypes = [
         body.content.ctypes,
         body.content.peRequest,
@@ -114,20 +127,18 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         content: compressedContents,
       }
     }
-    // case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC: {
-    //   const compressedContents:  = [
-    //     body.content.map(
-    //       (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
-    //         Array.isArray(attestedClaim)
-    //           ? attestedClaim
-    //           : AttestedClaimUtils.compress(attestedClaim)
-    //     ),
-    //   ]
-    //   return {
-    //     ...body,
-    //     content: compressedContents,
-    //   }
-    // }
+    case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC: {
+      const compressedContents = body.content.map(
+        (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
+          Array.isArray(attestedClaim)
+            ? attestedClaim
+            : AttestedClaimUtils.compress(attestedClaim)
+      )
+      return {
+        ...body,
+        content: compressedContents,
+      }
+    }
     // case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE: {
     //   const compressedContents = []
     //   return {
