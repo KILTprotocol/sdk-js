@@ -14,7 +14,6 @@ import { IBlockchainApi } from '../blockchain/Blockchain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import {
-  GAS,
   MIN_TRANSACTION,
   wannabeAlice,
   wannabeBob,
@@ -71,9 +70,7 @@ describe('when there is a dev chain with a faucet', () => {
       getBalance(faucet.address),
       getBalance(ident.address),
     ])
-    expect(
-      balanceBefore.sub(balanceAfter).eq(MIN_TRANSACTION.add(GAS))
-    ).toBeTruthy()
+    expect(balanceBefore.sub(balanceAfter).gt(MIN_TRANSACTION)).toBeTruthy()
     expect(balanceIdent.toNumber()).toBe(MIN_TRANSACTION.toNumber())
     expect(funny).toBeCalled()
   }, 30_000)
@@ -121,7 +118,7 @@ describe('When there are haves and have-nots', () => {
       getBalance(bobbyBroke.address),
     ])
     expect(zeroBalance.toString()).toEqual('0')
-    expect(newBalance.toString()).toEqual(RichieBalance.sub(GAS).toString())
+    expect(newBalance.lt(RichieBalance))
   }, 30_000)
 
   xit('should be able to make multiple transactions at once', async () => {
