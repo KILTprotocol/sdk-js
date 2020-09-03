@@ -98,7 +98,7 @@ export default class Attestation implements IAttestation {
   /**
    * [STATIC] [ASYNC] Tries to query the delegationId and if successful query the rootId.
    *
-   * @param delegationId - The Id of the [[Delegation]] stored in [[Attestation]].
+   * @param delegationId - The Id of the Delegation stored in [[Attestation]].
    * @returns A promise of either null if querying was not successful or the affiliated [[DelegationRootNode]].
    */
   public static async getDelegationRoot(

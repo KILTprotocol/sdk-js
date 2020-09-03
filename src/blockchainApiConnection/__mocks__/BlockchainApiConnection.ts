@@ -46,14 +46,8 @@
 
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import AccountIndex from '@polkadot/types/generic/AccountIndex'
-import {
-  AccountData,
-  AccountInfo,
-  ExtrinsicStatus,
-} from '@polkadot/types/interfaces'
+import { AccountInfo, ExtrinsicStatus, Index } from '@polkadot/types/interfaces'
 import U64 from '@polkadot/types/primitive/U64'
-import BN from 'bn.js'
 import Blockchain from '../../blockchain/Blockchain'
 import IPublicIdentity from '../../types/PublicIdentity'
 import TYPE_REGISTRY, { mockChainQueryReturn } from './BlockchainQuery'
@@ -154,6 +148,9 @@ const __mocked_api: any = {
       chain: jest.fn(),
       name: jest.fn(),
       version: jest.fn(),
+      accountNextIndex: jest.fn(
+        async (): Promise<Index> => TYPE_REGISTRY.createType('Index', 0)
+      ),
     },
     chain: { subscribeNewHeads: jest.fn() },
   },
@@ -206,20 +203,8 @@ const __mocked_api: any = {
       // default return value decodes to BN(0)
       // default return value decodes to AccountInfo with all entries holding BN(0)
       account: jest.fn(
-        async (
-          address: IPublicIdentity['address'],
-          cb
-        ): Promise<AccountInfo> => {
-          return {
-            data: {
-              free: new BN(0),
-              reserved: new BN(0),
-              miscFrozen: new BN(0),
-              feeFrozen: new BN(0),
-            } as AccountData,
-            nonce: new AccountIndex(TYPE_REGISTRY, 0),
-          } as AccountInfo
-        }
+        async (address: IPublicIdentity['address'], cb): Promise<AccountInfo> =>
+          TYPE_REGISTRY.createType('AccountInfo')
       ),
     },
     attestation: {
