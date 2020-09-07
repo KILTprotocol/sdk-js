@@ -9,17 +9,24 @@ import {
   IAttestedClaim,
   RequestForAttestationUtils,
 } from '..'
-import { CompressedTerms } from '../types/Terms'
+import ITerms, { CompressedTerms } from '../types/Terms'
 import {
   CompressedRejectedTerms,
   CompressedRequestAttestationForClaim,
-  CompressedInitiateAttestation,
   CompressedSubmitAttestationForClaim,
   CompressedRequestClaimsForCTypes,
   CompressedRequestAcceptDelegation,
   CompressedSubmitAcceptDelegation,
   CompressedDelegationData,
   CompressedInformCreateDelegation,
+  IRequestingClaimsForCTypes,
+  IPartialClaim,
+  IRequestingAttestationForClaim,
+  ISubmittingAttestationForClaim,
+  IRequestingAcceptDelegation,
+  ISubmitingAcceptDelegation,
+  IDelegationData,
+  IInformingCreateDelegation,
 } from './Message'
 
 /**
@@ -78,15 +85,6 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         content: compressedContents,
       }
     }
-    case MessageBodyType.INITIATE_ATTESTATION: {
-      if (Array.isArray(body.content)) return body
-
-      const compressedContents: CompressedInitiateAttestation = [body.content]
-      return {
-        ...body,
-        content: compressedContents,
-      }
-    }
     case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
       if (Array.isArray(body.content)) return body
 
@@ -132,7 +130,7 @@ export const compressMessage = (body: MessageBody): MessageBody => {
       }
     }
     case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC: {
-      const compressedContents = body.content.map(
+      const compressedContents: CompressedAttestedClaim[] = body.content.map(
         (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
           Array.isArray(attestedClaim)
             ? attestedClaim
@@ -207,7 +205,6 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         content: compressedContents,
       }
     }
-
     default:
       return body
   }
@@ -223,57 +220,175 @@ export const compressMessage = (body: MessageBody): MessageBody => {
 
 export const decompressMessage = (body: MessageBody): MessageBody => {
   switch (body.type) {
-    // case MessageBodyType.REQUEST_TERMS: {
-    //   console.log('hello', body.content.contents)
-    //   return body
-    // }
-
+    case MessageBodyType.REQUEST_TERMS: {
+      if (!Array.isArray(body.content)) return body
+      const decompressedContents: IPartialClaim = ClaimUtils.decompress(
+        body.content
+      )
+      return {
+        ...body,
+        content: decompressedContents,
+      }
+    }
     case MessageBodyType.SUBMIT_TERMS: {
-      return body
+      if (!Array.isArray(body.content)) return body
+      const decompressedContents: ITerms = {
+        claim: ClaimUtils.decompress(body.content[0]),
+        legitimations: body.content[1].map(
+          (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
+            !Array.isArray(attestedClaim)
+              ? attestedClaim
+              : AttestedClaimUtils.decompress(attestedClaim)
+        ),
+        delegationId: body.content[2],
+        quote: body.content[3]
+          ? QuoteUtils.decompressAttesterSignedQuote(body.content[3])
+          : undefined,
+        prerequisiteClaims: body.content[4],
+      }
+
+      return {
+        ...body,
+        content: decompressedContents,
+      }
     }
     case MessageBodyType.REJECT_TERMS: {
-      return body
-    }
-    case MessageBodyType.INITIATE_ATTESTATION: {
-      return body
+      if (!Array.isArray(body.content)) return body
+      const decompressedContents: Pick<
+        ITerms,
+        'claim' | 'legitimations' | 'delegationId'
+      > = {
+        claim: ClaimUtils.decompress(body.content[0]),
+        legitimations: body.content[1].map((val) =>
+          AttestedClaimUtils.decompress(val)
+        ),
+        delegationId: body.content[2] ? body.content[2] : undefined,
+      }
+      return {
+        ...body,
+        content: decompressedContents,
+      }
     }
     case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
-      return body
+      if (!Array.isArray(body.content)) return body
+      const decompressedContents: IRequestingAttestationForClaim = {
+        requestForAttestation: RequestForAttestationUtils.decompress(
+          body.content[0]
+        ),
+        quote: body.content[1]
+          ? QuoteUtils.decompressQuoteAgreement(body.content[1])
+          : undefined,
+        prerequisiteClaims: body.content[2]
+          ? body.content[2].map((claim) => ClaimUtils.decompress(claim))
+          : undefined,
+      }
+
+      return {
+        ...body,
+        content: decompressedContents,
+      }
     }
     case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
-      return body
-    }
-    case MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM: {
-      return body
+      if (!Array.isArray(body.content)) return body
+      const decompressedContents: ISubmittingAttestationForClaim = {
+        attestation: AttestationUtils.decompress(body.content[0]),
+        attestationPE: body.content[1] ? body.content[1] : undefined,
+      }
+      return {
+        ...body,
+        content: decompressedContents,
+      }
     }
     case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      return body
+      if (!Array.isArray(body.content)) return body
+      const decompressedContents: IRequestingClaimsForCTypes = {
+        ctypes: body.content[0],
+        peRequest: body.content[1],
+        allowPE: body.content[2],
+      }
+      return {
+        ...body,
+        content: decompressedContents,
+      }
     }
     case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC: {
-      return body
-    }
-    case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE: {
-      return body
-    }
-    case MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES: {
-      return body
-    }
-    case MessageBodyType.REJECT_CLAIMS_FOR_CTYPES: {
-      return body
+      const decompressedContents: Array<
+        IAttestedClaim | CompressedAttestedClaim
+      > = body.content.map(
+        (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
+          !Array.isArray(attestedClaim)
+            ? attestedClaim
+            : AttestedClaimUtils.decompress(attestedClaim)
+      )
+
+      return {
+        ...body,
+        content: decompressedContents,
+      }
     }
     case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
-      return body
+      if (!Array.isArray(body.content)) return body
+      const decompressedContents: IRequestingAcceptDelegation = {
+        delegationData: {
+          account: body.content[0][0],
+          id: body.content[0][1],
+          parentId: body.content[0][2],
+          permissions: body.content[0][3],
+          isPCR: body.content[0][4],
+        },
+        signatures: { inviter: body.content[1] },
+        metaData: body.content[2],
+      }
+      return {
+        ...body,
+        content: decompressedContents,
+      }
     }
     case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
-      return body
+      if (!Array.isArray(body.content)) return body
+      const decompressedContents: ISubmitingAcceptDelegation = {
+        delegationData: {
+          account: body.content[0][0],
+          id: body.content[0][1],
+          parentId: body.content[0][2],
+          permissions: body.content[0][3],
+          isPCR: body.content[0][4],
+        },
+        signatures: {
+          inviter: body.content[1][0],
+          invitee: body.content[1][1],
+        },
+      }
+      return {
+        ...body,
+        content: decompressedContents,
+      }
     }
     case MessageBodyType.REJECT_ACCEPT_DELEGATION: {
-      return body
+      if (!Array.isArray(body.content)) return body
+      const decompressedContents: IDelegationData = {
+        account: body.content[0],
+        id: body.content[1],
+        parentId: body.content[2],
+        permissions: body.content[3],
+        isPCR: body.content[4],
+      }
+      return {
+        ...body,
+        content: decompressedContents,
+      }
     }
     case MessageBodyType.INFORM_CREATE_DELEGATION: {
-      return body
+      if (!Array.isArray(body.content)) return body
+      const decompressedContents: IInformingCreateDelegation = {
+        delegationId: body.content[0],
+        isPCR: body.content[1],
+      }
+      return {
+        ...body,
+        content: decompressedContents,
+      }
     }
-
     default:
       return body
   }
