@@ -71,7 +71,9 @@ export function compress(
  * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  * @returns An object that has the same properties as the [[Claim]].
  */
-export function decompress(claim: CompressedClaim): IClaim {
+export function decompress(
+  claim: CompressedClaim | IPartialCompressedClaim
+): IClaim | IPartialClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }

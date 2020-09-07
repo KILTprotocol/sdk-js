@@ -107,7 +107,8 @@ describe('Claimer', () => {
     )
     if (
       requestAttestation.body.type ===
-      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+        MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM &&
+      !Array.isArray(requestAttestation.body.content)
     ) {
       expect(
         requestAttestation.body.content.requestForAttestation.privacyEnhancement
@@ -180,7 +181,8 @@ describe('Claimer', () => {
     )
     if (
       requestAttestation.body.type ===
-      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+        MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM &&
+      !Array.isArray(requestAttestation.body.content)
     ) {
       expect(
         requestAttestation.body.content.requestForAttestation.privacyEnhancement
@@ -244,7 +246,8 @@ describe('Claimer', () => {
     )
     if (
       requestAttestation.body.type ===
-      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+        MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM &&
+      !Array.isArray(requestAttestation.body.content)
     ) {
       expect(
         requestAttestation.body.content.requestForAttestation.privacyEnhancement
@@ -333,9 +336,11 @@ describe('Claimer', () => {
     )
     expect(Array.isArray(presentation.body.content)).toBe(true)
     const { content } = presentation.body as ISubmitClaimsForCTypesClassic
-    expect(Object.keys(content[0].request.claim.contents)).toEqual(
-      Object.keys(content[0].request.claimHashTree)
-    )
+    if (!Array.isArray(content[0])) {
+      expect(Object.keys(content[0].request.claim.contents)).toEqual(
+        Object.keys(content[0].request.claimHashTree)
+      )
+    }
   })
   describe('Negative tests', () => {
     describe('create presentation', () => {

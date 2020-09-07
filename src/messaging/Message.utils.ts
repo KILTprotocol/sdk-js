@@ -218,20 +218,19 @@ export const compressMessage = (body: MessageBody): MessageBody => {
  *
  */
 
-export const decompressMessage = (body: MessageBody): MessageBody => {
+export const decompressMessage = (
+  body: MessageBody
+): MessageBody['content'] => {
   switch (body.type) {
     case MessageBodyType.REQUEST_TERMS: {
-      if (!Array.isArray(body.content)) return body
+      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: IPartialClaim = ClaimUtils.decompress(
         body.content
       )
-      return {
-        ...body,
-        content: decompressedContents,
-      }
+      return { ...decompressedContents }
     }
     case MessageBodyType.SUBMIT_TERMS: {
-      if (!Array.isArray(body.content)) return body
+      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: ITerms = {
         claim: ClaimUtils.decompress(body.content[0]),
         legitimations: body.content[1].map(
@@ -247,13 +246,10 @@ export const decompressMessage = (body: MessageBody): MessageBody => {
         prerequisiteClaims: body.content[4],
       }
 
-      return {
-        ...body,
-        content: decompressedContents,
-      }
+      return { ...decompressedContents }
     }
     case MessageBodyType.REJECT_TERMS: {
-      if (!Array.isArray(body.content)) return body
+      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: Pick<
         ITerms,
         'claim' | 'legitimations' | 'delegationId'
@@ -264,13 +260,10 @@ export const decompressMessage = (body: MessageBody): MessageBody => {
         ),
         delegationId: body.content[2] ? body.content[2] : undefined,
       }
-      return {
-        ...body,
-        content: decompressedContents,
-      }
+      return { ...decompressedContents }
     }
     case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
-      if (!Array.isArray(body.content)) return body
+      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: IRequestingAttestationForClaim = {
         requestForAttestation: RequestForAttestationUtils.decompress(
           body.content[0]
@@ -283,33 +276,24 @@ export const decompressMessage = (body: MessageBody): MessageBody => {
           : undefined,
       }
 
-      return {
-        ...body,
-        content: decompressedContents,
-      }
+      return { ...decompressedContents }
     }
     case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
-      if (!Array.isArray(body.content)) return body
+      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: ISubmittingAttestationForClaim = {
         attestation: AttestationUtils.decompress(body.content[0]),
         attestationPE: body.content[1] ? body.content[1] : undefined,
       }
-      return {
-        ...body,
-        content: decompressedContents,
-      }
+      return { ...decompressedContents }
     }
     case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      if (!Array.isArray(body.content)) return body
+      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: IRequestingClaimsForCTypes = {
         ctypes: body.content[0],
         peRequest: body.content[1],
         allowPE: body.content[2],
       }
-      return {
-        ...body,
-        content: decompressedContents,
-      }
+      return { ...decompressedContents }
     }
     case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC: {
       const decompressedContents: Array<
@@ -321,13 +305,10 @@ export const decompressMessage = (body: MessageBody): MessageBody => {
             : AttestedClaimUtils.decompress(attestedClaim)
       )
 
-      return {
-        ...body,
-        content: decompressedContents,
-      }
+      return { ...decompressedContents }
     }
     case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
-      if (!Array.isArray(body.content)) return body
+      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: IRequestingAcceptDelegation = {
         delegationData: {
           account: body.content[0][0],
@@ -339,13 +320,10 @@ export const decompressMessage = (body: MessageBody): MessageBody => {
         signatures: { inviter: body.content[1] },
         metaData: body.content[2],
       }
-      return {
-        ...body,
-        content: decompressedContents,
-      }
+      return { ...decompressedContents }
     }
     case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
-      if (!Array.isArray(body.content)) return body
+      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: ISubmitingAcceptDelegation = {
         delegationData: {
           account: body.content[0][0],
@@ -359,13 +337,10 @@ export const decompressMessage = (body: MessageBody): MessageBody => {
           invitee: body.content[1][1],
         },
       }
-      return {
-        ...body,
-        content: decompressedContents,
-      }
+      return { ...decompressedContents }
     }
     case MessageBodyType.REJECT_ACCEPT_DELEGATION: {
-      if (!Array.isArray(body.content)) return body
+      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: IDelegationData = {
         account: body.content[0],
         id: body.content[1],
@@ -373,23 +348,17 @@ export const decompressMessage = (body: MessageBody): MessageBody => {
         permissions: body.content[3],
         isPCR: body.content[4],
       }
-      return {
-        ...body,
-        content: decompressedContents,
-      }
+      return { ...decompressedContents }
     }
     case MessageBodyType.INFORM_CREATE_DELEGATION: {
-      if (!Array.isArray(body.content)) return body
+      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: IInformingCreateDelegation = {
         delegationId: body.content[0],
         isPCR: body.content[1],
       }
-      return {
-        ...body,
-        content: decompressedContents,
-      }
+      return { ...decompressedContents }
     }
     default:
-      return body
+      return body.content
   }
 }
