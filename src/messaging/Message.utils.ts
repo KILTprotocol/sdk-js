@@ -27,6 +27,7 @@ import {
   ISubmitingAcceptDelegation,
   IDelegationData,
   IInformingCreateDelegation,
+  CompressedMessageBody,
 } from './Message'
 
 /**
@@ -37,20 +38,13 @@ import {
  *
  */
 
-export const compressMessage = (body: MessageBody): MessageBody => {
+export const compressMessage = (body: MessageBody): CompressedMessageBody => {
   switch (body.type) {
     case MessageBodyType.REQUEST_TERMS: {
-      if (Array.isArray(body.content)) return body
-
       const compressedContents = ClaimUtils.compress(body.content)
-      return {
-        ...body,
-        content: compressedContents,
-      }
+      return [body.type, compressedContents]
     }
     case MessageBodyType.SUBMIT_TERMS: {
-      if (Array.isArray(body.content)) return body
-
       const compressedContents: CompressedTerms = [
         ClaimUtils.compress(body.content.claim),
         body.content.legitimations.map(
@@ -65,14 +59,9 @@ export const compressMessage = (body: MessageBody): MessageBody => {
           : undefined,
         body.content.prerequisiteClaims,
       ]
-      return {
-        ...body,
-        content: compressedContents,
-      }
+      return [body.type, compressedContents]
     }
     case MessageBodyType.REJECT_TERMS: {
-      if (Array.isArray(body.content)) return body
-
       const compressedContents: CompressedRejectedTerms = [
         ClaimUtils.compress(body.content.claim),
         body.content.legitimations.map((val) =>
@@ -80,14 +69,9 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         ),
         body.content.delegationId ? body.content.delegationId : undefined,
       ]
-      return {
-        ...body,
-        content: compressedContents,
-      }
+      return [body.type, compressedContents]
     }
     case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
-      if (Array.isArray(body.content)) return body
-
       const compressedContents: CompressedRequestAttestationForClaim = [
         RequestForAttestationUtils.compress(body.content.requestForAttestation),
         body.content.quote
@@ -99,35 +83,22 @@ export const compressMessage = (body: MessageBody): MessageBody => {
             )
           : undefined,
       ]
-      return {
-        ...body,
-        content: compressedContents,
-      }
+      return [body.type, compressedContents]
     }
     case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
-      if (Array.isArray(body.content)) return body
-
       const compressedContents: CompressedSubmitAttestationForClaim = [
         AttestationUtils.compress(body.content.attestation),
         body.content.attestationPE ? body.content.attestationPE : undefined,
       ]
-      return {
-        ...body,
-        content: compressedContents,
-      }
+      return [body.type, compressedContents]
     }
     case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      if (Array.isArray(body.content)) return body
-
       const compressedContents: CompressedRequestClaimsForCTypes = [
         body.content.ctypes,
         body.content.peRequest,
         body.content.allowPE,
       ]
-      return {
-        ...body,
-        content: compressedContents,
-      }
+      return [body.type, compressedContents]
     }
     case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC: {
       const compressedContents: CompressedAttestedClaim[] = body.content.map(
@@ -136,14 +107,9 @@ export const compressMessage = (body: MessageBody): MessageBody => {
             ? attestedClaim
             : AttestedClaimUtils.compress(attestedClaim)
       )
-      return {
-        ...body,
-        content: compressedContents,
-      }
+      return [body.type, compressedContents]
     }
     case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
-      if (Array.isArray(body.content)) return body
-
       const compressedContents: CompressedRequestAcceptDelegation = [
         [
           body.content.delegationData.account,
@@ -155,14 +121,9 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         body.content.signatures.inviter,
         body.content.metaData,
       ]
-      return {
-        ...body,
-        content: compressedContents,
-      }
+      return [body.type, compressedContents]
     }
     case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
-      if (Array.isArray(body.content)) return body
-
       const compressedContents: CompressedSubmitAcceptDelegation = [
         [
           body.content.delegationData.account,
@@ -173,14 +134,9 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         ],
         [body.content.signatures.inviter, body.content.signatures.invitee],
       ]
-      return {
-        ...body,
-        content: compressedContents,
-      }
+      return [body.type, compressedContents]
     }
     case MessageBodyType.REJECT_ACCEPT_DELEGATION: {
-      if (Array.isArray(body.content)) return body
-
       const compressedContents: CompressedDelegationData = [
         body.content.account,
         body.content.id,
@@ -188,25 +144,17 @@ export const compressMessage = (body: MessageBody): MessageBody => {
         body.content.permissions,
         body.content.isPCR,
       ]
-      return {
-        ...body,
-        content: compressedContents,
-      }
+      return [body.type, compressedContents]
     }
     case MessageBodyType.INFORM_CREATE_DELEGATION: {
-      if (Array.isArray(body.content)) return body
-
       const compressedContents: CompressedInformCreateDelegation = [
         body.content.delegationId,
         body.content.isPCR,
       ]
-      return {
-        ...body,
-        content: compressedContents,
-      }
+      return [body.type, compressedContents]
     }
     default:
-      return body
+      throw new Error('Was not able to compress')
   }
 }
 
@@ -218,147 +166,131 @@ export const compressMessage = (body: MessageBody): MessageBody => {
  *
  */
 
-export const decompressMessage = (
-  body: MessageBody
-): MessageBody['content'] => {
-  switch (body.type) {
+export const decompressMessage = (body: CompressedMessageBody): MessageBody => {
+  switch (body[0]) {
     case MessageBodyType.REQUEST_TERMS: {
-      if (!Array.isArray(body.content)) return body.content
-      const decompressedContents: IPartialClaim = ClaimUtils.decompress(
-        body.content
-      )
-      return { ...decompressedContents }
+      const decompressedContents: IPartialClaim = ClaimUtils.decompress(body[1])
+      return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.SUBMIT_TERMS: {
-      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: ITerms = {
-        claim: ClaimUtils.decompress(body.content[0]),
-        legitimations: body.content[1].map(
+        claim: ClaimUtils.decompress(body[1][0]),
+        legitimations: body[1][1].map(
           (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
             !Array.isArray(attestedClaim)
               ? attestedClaim
               : AttestedClaimUtils.decompress(attestedClaim)
         ),
-        delegationId: body.content[2],
-        quote: body.content[3]
-          ? QuoteUtils.decompressAttesterSignedQuote(body.content[3])
+        delegationId: body[1][2],
+        quote: body[1][3]
+          ? QuoteUtils.decompressAttesterSignedQuote(body[1][3])
           : undefined,
-        prerequisiteClaims: body.content[4],
+        prerequisiteClaims: body[1][4],
       }
 
-      return { ...decompressedContents }
+      return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.REJECT_TERMS: {
-      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: Pick<
         ITerms,
         'claim' | 'legitimations' | 'delegationId'
       > = {
-        claim: ClaimUtils.decompress(body.content[0]),
-        legitimations: body.content[1].map((val) =>
+        claim: ClaimUtils.decompress(body[1][0]),
+        legitimations: body[1][1].map((val) =>
           AttestedClaimUtils.decompress(val)
         ),
-        delegationId: body.content[2] ? body.content[2] : undefined,
+        delegationId: body[1][2] ? body[1][2] : undefined,
       }
-      return { ...decompressedContents }
+      return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
-      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: IRequestingAttestationForClaim = {
         requestForAttestation: RequestForAttestationUtils.decompress(
-          body.content[0]
+          body[1][0]
         ),
-        quote: body.content[1]
-          ? QuoteUtils.decompressQuoteAgreement(body.content[1])
+        quote: body[1][1]
+          ? QuoteUtils.decompressQuoteAgreement(body[1][1])
           : undefined,
-        prerequisiteClaims: body.content[2]
-          ? body.content[2].map((claim) => ClaimUtils.decompress(claim))
+        prerequisiteClaims: body[1][2]
+          ? body[1][2].map((claim) => ClaimUtils.decompress(claim))
           : undefined,
       }
 
-      return { ...decompressedContents }
+      return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
-      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: ISubmittingAttestationForClaim = {
-        attestation: AttestationUtils.decompress(body.content[0]),
-        attestationPE: body.content[1] ? body.content[1] : undefined,
+        attestation: AttestationUtils.decompress(body[1][0]),
+        attestationPE: body[1][1] ? body[1][1] : undefined,
       }
-      return { ...decompressedContents }
+      return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: IRequestingClaimsForCTypes = {
-        ctypes: body.content[0],
-        peRequest: body.content[1],
-        allowPE: body.content[2],
+        ctypes: body[1][0],
+        peRequest: body[1][1],
+        allowPE: body[1][2],
       }
-      return { ...decompressedContents }
+      return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC: {
-      const decompressedContents: Array<
-        IAttestedClaim | CompressedAttestedClaim
-      > = body.content.map(
+      const decompressedContents = body[1].map(
         (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
           !Array.isArray(attestedClaim)
             ? attestedClaim
             : AttestedClaimUtils.decompress(attestedClaim)
       )
 
-      return { ...decompressedContents }
+      return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
-      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: IRequestingAcceptDelegation = {
         delegationData: {
-          account: body.content[0][0],
-          id: body.content[0][1],
-          parentId: body.content[0][2],
-          permissions: body.content[0][3],
-          isPCR: body.content[0][4],
+          account: body[1][0][0],
+          id: body[1][0][1],
+          parentId: body[1][0][2],
+          permissions: body[1][0][3],
+          isPCR: body[1][0][4],
         },
-        signatures: { inviter: body.content[1] },
-        metaData: body.content[2],
+        signatures: { inviter: body[1][1] },
+        metaData: body[1][2],
       }
-      return { ...decompressedContents }
+      return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
-      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: ISubmitingAcceptDelegation = {
         delegationData: {
-          account: body.content[0][0],
-          id: body.content[0][1],
-          parentId: body.content[0][2],
-          permissions: body.content[0][3],
-          isPCR: body.content[0][4],
+          account: body[1][0][0],
+          id: body[1][0][1],
+          parentId: body[1][0][2],
+          permissions: body[1][0][3],
+          isPCR: body[1][0][4],
         },
         signatures: {
-          inviter: body.content[1][0],
-          invitee: body.content[1][1],
+          inviter: body[1][1][0],
+          invitee: body[1][1][1],
         },
       }
-      return { ...decompressedContents }
+      return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.REJECT_ACCEPT_DELEGATION: {
-      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: IDelegationData = {
-        account: body.content[0],
-        id: body.content[1],
-        parentId: body.content[2],
-        permissions: body.content[3],
-        isPCR: body.content[4],
+        account: body[1][0],
+        id: body[1][1],
+        parentId: body[1][2],
+        permissions: body[1][3],
+        isPCR: body[1][4],
       }
-      return { ...decompressedContents }
+      return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.INFORM_CREATE_DELEGATION: {
-      if (!Array.isArray(body.content)) return body.content
       const decompressedContents: IInformingCreateDelegation = {
-        delegationId: body.content[0],
-        isPCR: body.content[1],
+        delegationId: body[1][0],
+        isPCR: body[1][1],
       }
-      return { ...decompressedContents }
+      return { type: body[0], content: decompressedContents }
     }
     default:
-      return body.content
+      throw new Error('Was not able to decompress')
   }
 }
