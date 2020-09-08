@@ -996,6 +996,16 @@
   dependencies:
     eslint-visitor-keys "^1.1.0"
 
+DIDComm-js@uport-project/DIDComm-js#tweet-nacl:
+  version "0.6.0"
+  resolved "https://codeload.github.com/uport-project/DIDComm-js/tar.gz/a770c5946626f1fd50a2e53f6cf133648bde160b"
+  dependencies:
+    base-58 "0.0.1"
+    ed2curve-esm "^0.3.0-alpha-1"
+    tweetnacl "^1.0.1"
+    tweetnacl-sealedbox-js "^1.1.0"
+    tweetnacl-util "^0.15.0"
+
 JSONStream@^1.0.4:
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/JSONStream/-/JSONStream-1.3.5.tgz#3208c1f08d3a4d99261ab64f92302bc15e111ca0"
@@ -1293,6 +1303,11 @@ balanced-match@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
   integrity sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
+
+base-58@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/base-58/-/base-58-0.0.1.tgz#85d3e70251075661933388f831d1eb8b8f6314e3"
+  integrity sha1-hdPnAlEHVmGTM4j4MdHri49jFOM=
 
 base-x@^3.0.8:
   version "3.0.8"
@@ -1931,6 +1946,13 @@ ecc-jsbn@~0.1.1:
   dependencies:
     jsbn "~0.1.0"
     safer-buffer "^2.1.0"
+
+ed2curve-esm@^0.3.0-alpha-1:
+  version "0.3.0-alpha-1"
+  resolved "https://registry.yarnpkg.com/ed2curve-esm/-/ed2curve-esm-0.3.0-alpha-1.tgz#67a5722ea97976c3310aeaf0990a2b58ee383aef"
+  integrity sha512-Ydrqcf0NwKUBT4gL0Nnxp8/O5NG8iatN+/zbEgs/7eMGjgSVbgfE1YfWld2qYnoNIxOQvSWOFy5uBoaL3jCanw==
+  dependencies:
+    tweetnacl "^1.0.1"
 
 elliptic@^6.5.3:
   version "6.5.3"
@@ -5607,12 +5629,25 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
+tweetnacl-sealedbox-js@^1.1.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/tweetnacl-sealedbox-js/-/tweetnacl-sealedbox-js-1.2.0.tgz#37f0d49a24445d6f55a1b9e8870568529bcb233f"
+  integrity sha512-QoCr8K2hwri+ky7SUa22oSre8g88XaWi0hwwWd16pJMuDyn5gL/UyE0PyR2EOFEMJ70T2trJ9+Sv+Qa18olEmQ==
+  dependencies:
+    blakejs "^1.1.0"
+    tweetnacl "^1.0.1"
+
+tweetnacl-util@^0.15.0:
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/tweetnacl-util/-/tweetnacl-util-0.15.1.tgz#b80fcdb5c97bcc508be18c44a4be50f022eea00b"
+  integrity sha512-RKJBIj8lySrShN4w6i/BonWp2Z/uxwC3h4y7xsRrpP59ZboCd0GpEVsOnMDYLMmKBpYhb5TgHzZXy7wTfYFBRw==
+
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
-tweetnacl@^1.0.3:
+tweetnacl@^1.0.1, tweetnacl@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-1.0.3.tgz#ac0af71680458d8a6378d0d0d050ab1407d35596"
   integrity sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==

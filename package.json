@@ -83,6 +83,7 @@
     "@polkadot/types-known": "^1.26.1",
     "@polkadot/util": "^3.0.1",
     "@polkadot/util-crypto": "^3.0.1",
+    "DIDComm-js": "uport-project/DIDComm-js#tweet-nacl",
     "ajv": "^6.12.2",
     "bn.js": "^5.1.2",
     "typescript-logging": "^0.6.4",

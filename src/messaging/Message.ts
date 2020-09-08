@@ -31,11 +31,22 @@ import {
   IAttestation,
   ICType,
 } from '..'
-import Crypto, { EncryptedAsymmetricString } from '../crypto'
+import Crypto, {
+  EncryptedAsymmetricString,
+  encodeAddress,
+  decodeAddress,
+} from '../crypto'
 import ITerms from '../types/Terms'
 import { IQuoteAgreement } from '../types/Quote'
 import { validateSignature } from '../util/DataUtils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
+import { DIDComm } from 'DIDComm-js'
+import { u8aToHex } from '@polkadot/util'
+import { v4 as uuid } from 'uuid'
+import { convertPublicKey } from 'ed2curve-esm'
+import { naclKeypairFromSeed } from '@polkadot/util-crypto'
+
+const didcomm = new DIDComm()
 
 /**
  * - `body` - The body of the message, see [[MessageBody]].
@@ -106,6 +117,57 @@ export enum MessageBodyType {
 }
 
 export default class Message implements IMessage {
+  /**
+   * make a didcomm message
+   */
+  public async getDIDComm(
+    recipients: IPublicIdentity[],
+    sender: Identity,
+    repudiable: boolean = true
+  ): Promise<string> {
+    const messageBody = {
+      content: this.body.content,
+      '@id': this.messageId || uuid(),
+      '@type': this.body.type,
+      createdAt: this.createdAt,
+    }
+    const recipientKeys: nacl.SignKeyPair['publicKey'][] = recipients.map(
+      (pubId: IPublicIdentity): nacl.SignKeyPair['publicKey'] => {
+        const signPublicKey = decodeAddress(pubId.address)
+        return signPublicKey
+      }
+    )
+    const senderKeyPair: nacl.SignKeyPair = naclKeypairFromSeed(sender.seed)
+    return didcomm.pack_auth_msg_for_recipients(
+      JSON.stringify(messageBody),
+      recipientKeys,
+      senderKeyPair,
+      !repudiable
+    )
+  }
+
+  public static async decryptDIDComm(
+    message: string,
+    recipient: Identity
+  ): Promise<IMessage> {
+    const recKeyPair: nacl.SignKeyPair = naclKeypairFromSeed(recipient.seed)
+    const unpacked = await didcomm.unpackMessage(message, recKeyPair)
+    const contents = JSON.parse(unpacked.message) as object
+    const body: IMessage['body'] = {
+      content: contents['content'],
+      type: contents['@type'],
+    }
+    const senderSignPublicKey: Uint8Array = unpacked.senderKey as any
+    const senderBoxPublicKey = convertPublicKey(senderSignPublicKey)
+    return {
+      body,
+      createdAt: contents['createdAt'],
+      senderBoxPublicKey: u8aToHex(senderBoxPublicKey),
+      receiverAddress: recipient.address,
+      senderAddress: encodeAddress(unpacked.senderKey),
+    }
+  }
+
   /**
    * [STATIC] Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's public keys match.
    *
