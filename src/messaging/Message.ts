@@ -18,6 +18,13 @@ import {
   CombinedPresentationRequest,
   InitiateAttestationRequest,
 } from '@kiltprotocol/portablegabi'
+import { DIDComm } from 'DIDComm-js'
+import { v4 as uuid } from 'uuid'
+import {
+  naclKeypairFromSeed,
+  encodeAddress,
+  base58Decode,
+} from '@polkadot/util-crypto'
 import {
   Claim,
   DelegationNode,
@@ -31,20 +38,11 @@ import {
   IAttestation,
   ICType,
 } from '..'
-import Crypto, {
-  EncryptedAsymmetricString,
-  encodeAddress,
-  decodeAddress,
-} from '../crypto'
+import Crypto, { EncryptedAsymmetricString, decodeAddress } from '../crypto'
 import ITerms from '../types/Terms'
 import { IQuoteAgreement } from '../types/Quote'
 import { validateSignature } from '../util/DataUtils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
-import { DIDComm } from 'DIDComm-js'
-import { u8aToHex } from '@polkadot/util'
-import { v4 as uuid } from 'uuid'
-import { convertPublicKey } from 'ed2curve-esm'
-import { naclKeypairFromSeed } from '@polkadot/util-crypto'
 
 const didcomm = new DIDComm()
 
@@ -118,30 +116,43 @@ export enum MessageBodyType {
 
 export default class Message implements IMessage {
   /**
-   * make a didcomm message
+   * Make a didcomm message.
+   *
+   * @param recipients
+   * @param sender
+   * @param repudiable
+   * @param recipients
+   * @param sender
+   * @param repudiable
    */
   public async getDIDComm(
     recipients: IPublicIdentity[],
     sender: Identity,
-    repudiable: boolean = true
+    repudiable = true
   ): Promise<string> {
     const messageBody = {
       content: this.body.content,
       '@id': this.messageId || uuid(),
       '@type': this.body.type,
       createdAt: this.createdAt,
+      senderBoxPublicKey: sender.getBoxPublicKey(),
     }
-    const recipientKeys: nacl.SignKeyPair['publicKey'][] = recipients.map(
+    const recipientKeys: Array<nacl.SignKeyPair['publicKey']> = recipients.map(
       (pubId: IPublicIdentity): nacl.SignKeyPair['publicKey'] => {
         const signPublicKey = decodeAddress(pubId.address)
         return signPublicKey
       }
     )
     const senderKeyPair: nacl.SignKeyPair = naclKeypairFromSeed(sender.seed)
+    await didcomm.ready
     return didcomm.pack_auth_msg_for_recipients(
       JSON.stringify(messageBody),
       recipientKeys,
-      senderKeyPair,
+      {
+        publicKey: senderKeyPair.publicKey,
+        privateKey: senderKeyPair.secretKey,
+        keyType: 'ed25519',
+      },
       !repudiable
     )
   }
@@ -151,20 +162,25 @@ export default class Message implements IMessage {
     recipient: Identity
   ): Promise<IMessage> {
     const recKeyPair: nacl.SignKeyPair = naclKeypairFromSeed(recipient.seed)
-    const unpacked = await didcomm.unpackMessage(message, recKeyPair)
-    const contents = JSON.parse(unpacked.message) as object
+    await didcomm.ready
+    const unpacked = await didcomm.unpackMessage(message, {
+      publicKey: recKeyPair.publicKey,
+      privateKey: recKeyPair.secretKey,
+      keyType: 'ed25519',
+    })
+    const contents = JSON.parse(unpacked.message)
     const body: IMessage['body'] = {
-      content: contents['content'],
+      content: contents.content,
       type: contents['@type'],
     }
-    const senderSignPublicKey: Uint8Array = unpacked.senderKey as any
-    const senderBoxPublicKey = convertPublicKey(senderSignPublicKey)
+    const senderSignPublicKey = base58Decode(unpacked.senderKey)
+    const receiverSignPublicKey = base58Decode(unpacked.recipientKey)
     return {
       body,
-      createdAt: contents['createdAt'],
-      senderBoxPublicKey: u8aToHex(senderBoxPublicKey),
-      receiverAddress: recipient.address,
-      senderAddress: encodeAddress(unpacked.senderKey),
+      createdAt: contents.createdAt,
+      senderBoxPublicKey: contents.senderBoxPublicKey || '',
+      receiverAddress: encodeAddress(receiverSignPublicKey),
+      senderAddress: encodeAddress(senderSignPublicKey),
     }
   }
 
