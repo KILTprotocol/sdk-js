@@ -101,8 +101,7 @@ describe('Verifier', () => {
     )
     if (
       requestAttestation.body.type ===
-        MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM &&
-      !Array.isArray(requestAttestation.body.content)
+      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
     ) {
       expect(
         requestAttestation.body.content.requestForAttestation.privacyEnhancement
