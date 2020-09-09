@@ -53,7 +53,7 @@ import { CompressedRequestForAttestation } from '../types/RequestForAttestation'
  * - `references` - The references or the in-reply-to of the parent-message followed by the message-id of the parent-message.
  */
 export interface IMessage {
-  body: MessageBody | CompressedMessageBody
+  body: MessageBody
   createdAt: number
   receiverAddress: IPublicIdentity['address']
   senderAddress: IPublicIdentity['address']
@@ -253,7 +253,7 @@ export default class Message implements IMessage {
 
   public messageId?: string
   public receivedAt?: number
-  public body: MessageBody | CompressedMessageBody
+  public body: MessageBody
   public createdAt: number
   public receiverAddress: IMessage['receiverAddress']
   public senderAddress: IMessage['senderAddress']
@@ -267,11 +267,15 @@ export default class Message implements IMessage {
    * @param receiver The [[PublicIdentity]] of the receiver.
    */
   public constructor(
-    body: MessageBody,
+    body: MessageBody | CompressedMessageBody,
     sender: Identity,
     receiver: IPublicIdentity
   ) {
-    this.body = body
+    if (Array.isArray(body)) {
+      this.body = decompressMessage(body)
+    } else {
+      this.body = body
+    }
     this.createdAt = Date.now()
     this.receiverAddress = receiver.address
     this.senderAddress = sender.address
@@ -315,17 +319,7 @@ export default class Message implements IMessage {
   }
 
   public compress(): CompressedMessageBody {
-    if (!Array.isArray(this.body)) {
-      return compressMessage(this.body)
-    }
-    return this.body
-  }
-
-  public decompress(): MessageBody {
-    if (Array.isArray(this.body)) {
-      return decompressMessage(this.body)
-    }
-    return this.body
+    return compressMessage(this.body)
   }
 }
 
