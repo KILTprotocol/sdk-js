@@ -157,10 +157,7 @@ describe('Verifier', () => {
       'delegation'
     )
     expect(request.body.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
-    if (
-      request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES &&
-      !Array.isArray(request.body.content)
-    ) {
+    if (request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
       expect(request.body.content.allowPE).toBeTruthy()
       expect(request.body.content.peRequest).toBeDefined()
       expect(request.body.content.ctypes).toEqual(['this is a ctype hash'])
@@ -181,10 +178,7 @@ describe('Verifier', () => {
     expect(session.requestedProperties[0].properties).toContain('delegationId')
     expect(session.requestedProperties[0].properties).toContain('legitimation')
     expect(request.body.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
-    if (
-      request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES &&
-      !Array.isArray(request.body.content)
-    ) {
+    if (request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
       expect(request.body.content.allowPE).toBeTruthy()
       expect(request.body.content.peRequest).toBeDefined()
       expect(request.body.content.ctypes).toEqual([null])
@@ -200,10 +194,7 @@ describe('Verifier', () => {
       .finalize(false, verifier, claimer.getPublicIdentity())
     expect(session).toBeDefined()
     expect(request.body.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
-    if (
-      request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES &&
-      !Array.isArray(request.body.content)
-    ) {
+    if (request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
       expect(request.body.content.allowPE).toBeFalsy()
       expect(request.body.content.peRequest).toBeDefined()
       expect(request.body.content.ctypes).toEqual(['this is a ctype hash'])
@@ -362,10 +353,7 @@ describe('Verifier', () => {
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(false, verifier, claimer.getPublicIdentity())
-    if (
-      request.body.type !== MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES ||
-      Array.isArray(request.body.content)
-    ) {
+    if (request.body.type !== MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
       throw new Error('should never happen. Only a type check...')
     }
     request.body.content.allowPE = true
@@ -446,8 +434,7 @@ describe('Verifier', () => {
     expect(Array.isArray(presentation.body.content)).toBeTruthy()
     if (
       presentation.body.type ===
-        MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC &&
-      !Array.isArray(presentation.body.content[0])
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC
     ) {
       delete presentation.body.content[0].request.claim.contents.name
       const { verified: ok, claims } = await Verifier.verifyPresentation(

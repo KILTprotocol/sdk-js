@@ -105,10 +105,7 @@ describe('Attester', () => {
     expect(message.body.type).toEqual(
       MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
     )
-    if (
-      message.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM &&
-      !Array.isArray(message.body.content)
-    ) {
+    if (message.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
       expect(message.body.content.attestationPE).toBeDefined()
       expect(message.body.content.attestation).toBeDefined()
     }
@@ -149,10 +146,7 @@ describe('Attester', () => {
     expect(message.body.type).toEqual(
       MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
     )
-    if (
-      message.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM &&
-      !Array.isArray(message.body.content)
-    ) {
+    if (message.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
       expect(message.body.content.attestationPE).toBeUndefined()
       expect(message.body.content.attestation).toBeDefined()
     }
