@@ -5,15 +5,20 @@ import {
   CompressedSubmitAttestationForClaim,
   ISubmittingAttestationForClaim,
   IRequestingAttestationForClaim,
+  ICompressedSubmitAttestationForClaim,
+  MessageBody,
 } from './Message'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 import * as MessageUtils from './Message.utils'
-import IRequestForAttestation from '../types/RequestForAttestation'
 import { IQuote, IQuoteAttesterSigned, IQuoteAgreement } from '../types/Quote'
 import Quote from '../quote'
 import Claim from '../claim'
 import CType from '../ctype'
 import ICType from '../types/CType'
 import IClaim from '../types/Claim'
+import AttestedClaim from '../attestedclaim'
+import buildAttestedClaim from '../attestedclaim/AttestedClaim.spec'
+import { CompressedAttestedClaim } from '../types/AttestedClaim'
 
 describe('Messaging Utilities', () => {
   let identityAlice: Identity
@@ -23,7 +28,7 @@ describe('Messaging Utilities', () => {
   let testCType: CType
   let claim: Claim
   let claimContents: IClaim['contents']
-  let content: IRequestForAttestation
+
   let quoteData: IQuote
   let quoteAttesterSigned: IQuoteAttesterSigned
   let bothSigned: IQuoteAgreement
@@ -31,15 +36,15 @@ describe('Messaging Utilities', () => {
   let submitAttestationContent: ISubmittingAttestationForClaim
   let submitAttestationBody: ISubmitAttestationForClaim
   let compressedSubmitAttestationContent: CompressedSubmitAttestationForClaim
-  let compressedSubmitAttestationBody
+  let compressedSubmitAttestationBody: ICompressedSubmitAttestationForClaim
+  let legitimation: AttestedClaim
+  let compressedLegitimation: CompressedAttestedClaim
+  let attestedClaim: AttestedClaim
 
   beforeAll(async () => {
     identityAlice = await Identity.buildFromURI('//Alice')
     identityBob = await Identity.buildFromURI('//Bob')
     date = new Date(2019, 11, 10)
-  })
-
-  it('Checks the MessageBody Types through the compress switch funciton', () => {
     claimContents = {
       name: 'Bob',
     }
@@ -61,17 +66,39 @@ describe('Messaging Utilities', () => {
       claimContents,
       identityAlice.address
     )
-    content = {
-      claim,
-      delegationId: null,
-      legitimations: [],
-      claimOwner: { nonce: '0x12345678', hash: claim.cTypeHash },
-      claimHashTree: {},
-      cTypeHash: { nonce: '0x12345678', hash: claim.cTypeHash },
-      rootHash: '0x12345678',
-      claimerSignature: '0x12345678',
-      privacyEnhancement: null,
-    }
+
+    legitimation = await buildAttestedClaim(identityAlice, identityBob, {}, [])
+
+    compressedLegitimation = [
+      [
+        [
+          legitimation.request.claim.cTypeHash,
+          legitimation.request.claim.owner,
+          legitimation.request.claim.contents,
+        ],
+        {},
+        [
+          legitimation.request.claimOwner.hash,
+          legitimation.request.claimOwner.nonce,
+        ],
+        legitimation.request.claimerSignature,
+        [
+          legitimation.request.cTypeHash.hash,
+          legitimation.request.cTypeHash.nonce,
+        ],
+        legitimation.request.rootHash,
+        [],
+        legitimation.request.delegationId,
+        null,
+      ],
+      [
+        legitimation.attestation.claimHash,
+        legitimation.attestation.cTypeHash,
+        legitimation.attestation.owner,
+        legitimation.attestation.revoked,
+        legitimation.attestation.delegationId,
+      ],
+    ]
 
     quoteData = {
       attesterAddress: identityAlice.address,
@@ -90,14 +117,15 @@ describe('Messaging Utilities', () => {
       quoteData,
       identityAlice
     )
+
     bothSigned = Quote.createQuoteAgreement(
       identityAlice,
       quoteAttesterSigned,
-      content.rootHash
+      legitimation.request.rootHash
     )
 
     requestAttestationContent = {
-      requestForAttestation: content,
+      requestForAttestation: legitimation.request,
       quote: bothSigned,
       prerequisiteClaims: [],
     }
@@ -131,13 +159,36 @@ describe('Messaging Utilities', () => {
       undefined,
     ]
 
-    compressedSubmitAttestationBody = {
-      content: compressedSubmitAttestationContent,
-      type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
-    }
+    compressedSubmitAttestationBody = [
+      MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      compressedSubmitAttestationContent,
+    ]
 
+    attestedClaim = await buildAttestedClaim(
+      identityBob,
+      identityAlice,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation]
+    )
+  })
+
+  it('Checking message compression AttestedClaims', async () => {
     expect(MessageUtils.compressMessage(submitAttestationBody)).toEqual(
       compressedSubmitAttestationBody
+    )
+  })
+  it('Checks the MessageBody Types through the compress switch funciton', async () => {
+    const malformed = ({
+      content: '',
+      type: 'MessageBodyType',
+    } as unknown) as MessageBody
+
+    expect(MessageUtils.compressMessage(malformed)).toThrowError(
+      SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
     )
   })
 })

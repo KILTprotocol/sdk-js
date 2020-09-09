@@ -10,6 +10,7 @@ import {
   RequestForAttestationUtils,
 } from '..'
 import ITerms, { CompressedTerms } from '../types/Terms'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 import {
   CompressedRejectedTerms,
   CompressedRequestAttestationForClaim,
@@ -154,7 +155,7 @@ export const compressMessage = (body: MessageBody): CompressedMessageBody => {
       return [body.type, compressedContents]
     }
     default:
-      throw new Error('Was not able to compress')
+      throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
   }
 }
 
@@ -291,6 +292,6 @@ export const decompressMessage = (body: CompressedMessageBody): MessageBody => {
       return { type: body[0], content: decompressedContents }
     }
     default:
-      throw new Error('Was not able to decompress')
+      throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
   }
 }

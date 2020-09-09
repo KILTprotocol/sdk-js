@@ -45,6 +45,7 @@ export enum ErrorCode {
   ERROR_DID_IDENTIFIER_MISMATCH = 20016,
   ERROR_ROOT_NODE_QUERY = 20017,
   ERROR_INVALID_DID_PREFIX = 20018,
+  ERROR_MESSAGE_BODY_MALFORMED = 20019,
 
   // Data is invalid
   ERROR_ADDRESS_INVALID = 30001,
@@ -260,6 +261,13 @@ export const ERROR_CLAIM_HASHTREE_MALFORMED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CLAIM_HASHTREE_MALFORMED,
     'Claim HashTree malformed'
+  )
+}
+
+export const ERROR_MESSAGE_BODY_MALFORMED: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_MESSAGE_BODY_MALFORMED,
+    'Message body is malformed or wrong type'
   )
 }
 export const ERROR_CLAIM_HASHTREE_MISMATCH: (key?: string) => SDKError = (
