@@ -18,7 +18,7 @@ import * as SDKErrors from '../errorhandling/SDKErrors'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
 import ClaimUtils from './Claim.utils'
-import { IPartialCompressedClaim } from '../messaging'
+import { IPartialCompressedClaim, IPartialClaim } from '../messaging'
 
 function verifyClaim(
   claimContents: IClaim['contents'],
@@ -153,7 +153,15 @@ export default class Claim implements IClaim {
    * @returns A new [[Claim]] object.
    */
 
-  public static decompress(compressedClaim: CompressedClaim): Claim {
+  public static decompress(
+    compressedClaim: CompressedClaim
+  ): Claim | IPartialClaim {
+    if (!compressedClaim[1] || !compressedClaim[2]) {
+      const decompressedClaim = ClaimUtils.decompressPartialClaim(
+        compressedClaim
+      )
+      return decompressedClaim
+    }
     const decompressedClaim = ClaimUtils.decompress(compressedClaim)
     return new Claim(decompressedClaim)
   }

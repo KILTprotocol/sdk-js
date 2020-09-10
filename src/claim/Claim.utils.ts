@@ -71,9 +71,7 @@ export function compress(
  * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  * @returns An object that has the same properties as the [[Claim]].
  */
-export function decompress(
-  claim: CompressedClaim | IPartialCompressedClaim
-): IClaim | IPartialClaim {
+export function decompress(claim: CompressedClaim): IClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }
@@ -84,4 +82,25 @@ export function decompress(
   }
 }
 
-export default { decompress, compress, errorCheck }
+/**
+ *  Decompresses the Partial [[Claim]] from storage and/or message.
+ *
+ * @param claim A compressed Partial [[Claim]] array that is reverted back into an object.
+ * @throws When a Partial [[Claim]] is not an Array or it's length is unequal 3.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @returns An object that has the same properties as the Partial [[Claim]].
+ */
+export function decompressPartialClaim(
+  claim: IPartialCompressedClaim
+): IPartialClaim {
+  if (!Array.isArray(claim) || claim.length !== 3) {
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
+  }
+  return {
+    cTypeHash: claim[0],
+    owner: claim[1],
+    contents: claim[2],
+  }
+}
+
+export default { decompress, compress, errorCheck, decompressPartialClaim }
