@@ -45,6 +45,13 @@ import { validateSignature } from '../util/DataUtils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 
 const didcomm = new DIDComm()
+const typestringReg = new RegExp(
+  '(.*?)[/?&:;=]([a-z0-9._-]+)/([0-9.]+)/([a-z0-9._-]+)$'
+)
+const PROTOCOL_NAME = 'kilt-messaging'
+const PROTOCOL_VERSION = '0.19'
+const ERROR_CANT_HANDLE_PROTOCOL = (name: string, version: string) =>
+  new Error(`no handler for protocol '${name}' version '${version}'`)
 
 /**
  * - `body` - The body of the message, see [[MessageBody]].
@@ -114,6 +121,9 @@ export enum MessageBodyType {
   INFORM_CREATE_DELEGATION = 'inform-create-delegation',
 }
 
+export function isKnownMessageType(type: string): type is MessageBodyType {
+  return Object.values(MessageBodyType).includes(type as MessageBodyType)
+}
 export default class Message implements IMessage {
   /**
    * Make a didcomm message.
@@ -133,8 +143,10 @@ export default class Message implements IMessage {
     const messageBody = {
       content: this.body.content,
       '@id': this.messageId || uuid(),
-      '@type': this.body.type,
-      createdAt: this.createdAt,
+      '@type': `kilt.io/${PROTOCOL_NAME}/${PROTOCOL_VERSION}/${this.body.type}`,
+      sent_time: new Date(this.createdAt).toISOString(),
+      // up to here this is a did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/basicmessage/1.0/message
+      // below is included bc I haven't figured out how to get the boxing key from the signing key
       senderBoxPublicKey: sender.getBoxPublicKey(),
     }
     const recipientKeys: Array<nacl.SignKeyPair['publicKey']> = recipients.map(
@@ -169,15 +181,31 @@ export default class Message implements IMessage {
       keyType: 'ed25519',
     })
     const contents = JSON.parse(unpacked.message)
+    let type: MessageBodyType | null = null
+    if (typeof contents['@type'] === 'string') {
+      const captures = contents['@type'].match(typestringReg)
+      console.log(captures?.length)
+
+      if (captures?.length === 5) {
+        const [, , name, version, typestr] = captures
+        if (name !== PROTOCOL_NAME || version !== PROTOCOL_VERSION)
+          throw ERROR_CANT_HANDLE_PROTOCOL(name, version)
+        if (isKnownMessageType(typestr)) {
+          type = typestr
+        } else throw new Error(`unknown message type: '${typestr}'`)
+      }
+    }
+    if (!type) throw new Error('no or invalid @type URI in message')
     const body: IMessage['body'] = {
       content: contents.content,
-      type: contents['@type'],
+      type,
     }
+    const createdAt = new Date(contents.sent_time)
     const senderSignPublicKey = base58Decode(unpacked.senderKey)
     const receiverSignPublicKey = base58Decode(unpacked.recipientKey)
     return {
       body,
-      createdAt: contents.createdAt,
+      createdAt: createdAt.getTime(),
       senderBoxPublicKey: contents.senderBoxPublicKey || '',
       receiverAddress: encodeAddress(receiverSignPublicKey),
       senderAddress: encodeAddress(senderSignPublicKey),
