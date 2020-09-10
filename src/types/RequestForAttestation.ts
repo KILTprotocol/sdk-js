@@ -6,7 +6,7 @@
 import { AttestationRequest } from '@kiltprotocol/portablegabi'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import IAttestedClaim, { CompressedAttestedClaim } from './AttestedClaim'
-import IClaim, { CompressedClaim } from './Claim'
+import IClaim, { ICompressedClaim } from './Claim'
 import { IDelegationBaseNode } from './Delegation'
 
 export type Hash = string
@@ -38,7 +38,7 @@ export type CompressedClaimOwner = CompressedNonceHash
 export type CompressedCTypeHash = CompressedNonceHash
 
 export type CompressedRequestForAttestation = [
-  CompressedClaim,
+  ICompressedClaim,
   CompressedNonceHashTree,
   CompressedClaimOwner,
   RequestForAttestation['claimerSignature'],

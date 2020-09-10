@@ -39,7 +39,7 @@ import { IQuoteAgreement, CompressedQuoteAgreed } from '../types/Quote'
 import { validateSignature } from '../util/DataUtils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import { compressMessage, decompressMessage } from './Message.utils'
-import { IClaimContents, CompressedClaim } from '../types/Claim'
+import { IClaimContents, ICompressedClaim } from '../types/Claim'
 import { CompressedRequestForAttestation } from '../types/RequestForAttestation'
 
 /**
@@ -540,7 +540,7 @@ export type CompressedRejectedTerms = [
 export type CompressedRequestAttestationForClaim = [
   CompressedRequestForAttestation,
   CompressedQuoteAgreed | undefined,
-  Array<IPartialCompressedClaim | CompressedClaim> | undefined
+  Array<IPartialCompressedClaim | ICompressedClaim> | undefined
 ]
 
 export type CompressedSubmitAttestationForClaim = [

@@ -170,14 +170,12 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
 export function decompressMessage(body: CompressedMessageBody): MessageBody {
   switch (body[0]) {
     case MessageBodyType.REQUEST_TERMS: {
-      const decompressedContents: IPartialClaim = ClaimUtils.decompressPartialClaim(
-        body[1]
-      )
+      const decompressedContents: IPartialClaim = ClaimUtils.decompress(body[1])
       return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.SUBMIT_TERMS: {
       const decompressedContents: ITerms = {
-        claim: ClaimUtils.decompressPartialClaim(body[1][0]),
+        claim: ClaimUtils.decompress(body[1][0]),
         legitimations: body[1][1].map(
           (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
             !Array.isArray(attestedClaim)
@@ -198,7 +196,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
         ITerms,
         'claim' | 'legitimations' | 'delegationId'
       > = {
-        claim: ClaimUtils.decompressPartialClaim(body[1][0]),
+        claim: ClaimUtils.decompress(body[1][0]),
         legitimations: body[1][1].map((val) =>
           AttestedClaimUtils.decompress(val)
         ),
@@ -215,7 +213,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
           ? QuoteUtils.decompressQuoteAgreement(body[1][1])
           : undefined,
         prerequisiteClaims: body[1][2]
-          ? body[1][2].map((claim) => ClaimUtils.decompressPartialClaim(claim))
+          ? body[1][2].map((claim) => ClaimUtils.decompress(claim))
           : undefined,
       }
 

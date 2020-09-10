@@ -15,7 +15,7 @@ export default interface IClaim {
   owner: IPublicIdentity['address']
 }
 
-export type CompressedClaim = [
+export type ICompressedClaim = [
   IClaim['cTypeHash'],
   IClaim['owner'],
   IClaimContents

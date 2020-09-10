@@ -7,7 +7,7 @@
 import { IPartialClaim, IPartialCompressedClaim } from '../messaging'
 import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
-import IClaim, { CompressedClaim } from '../types/Claim'
+import IClaim, { ICompressedClaim } from '../types/Claim'
 import { validateAddress, validateHash } from '../util/DataUtils'
 
 /**
@@ -42,36 +42,53 @@ export function errorCheck(input: IClaim | IPartialClaim): void {
 }
 
 /**
- *  Compresses the [[Claim]] for storage and/or messaging.
+ *  Compresses the [[IClaim]] for storage and/or messaging.
  *
- * @param claim A [[Claim]] object that will be sorted and stripped for messaging or storage.
+ * @param claim A [[IClaim]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of a [[Claim]].
+ * @returns An ordered array of a [[ICompressedClaim]].
  */
+export function compress(claim: IClaim): ICompressedClaim
+/**
+ *  Compresses the [[IPartialClaim]] for storage and/or messaging.
+ *
+ * @param claim A [[IPartialClaim]] object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of a [[IPartialCompressedClaim]].
+ */
+export function compress(claim: IPartialClaim): IPartialCompressedClaim
 export function compress(
   claim: IClaim | IPartialClaim
-): CompressedClaim | IPartialCompressedClaim {
+): ICompressedClaim | IPartialCompressedClaim {
   errorCheck(claim)
   let sortedContents
-  let owner
   if (claim.contents) {
     sortedContents = jsonabc.sortObj(claim.contents)
   }
-  if (claim.owner) {
-    owner = claim.owner
-  }
-  return [claim.cTypeHash, owner, sortedContents]
+  return [claim.cTypeHash, claim.owner, sortedContents]
 }
 
 /**
- *  Decompresses the [[Claim]] from storage and/or message.
+ *  Decompresses the [[IClaim]] from storage and/or message.
  *
- * @param claim A compressed [[Claim]] array that is reverted back into an object.
- * @throws When [[Claim]] is not an Array or it's length is unequal 3.
+ * @param claim An [[ICompressedClaim]] array that is reverted back into an object.
+ * @throws When an [[ICompressedClaim]] is not an Array or it's length is unequal 3.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]].
- * @returns An object that has the same properties as the [[Claim]].
+ * @returns An [[IClaim]] object that has the same properties as the [[ICompressedClaim]].
  */
-export function decompress(claim: CompressedClaim): IClaim {
+export function decompress(claim: ICompressedClaim): IClaim
+/**
+ *  Decompresses the Partial [[IClaim]] from storage and/or message.
+ *
+ * @param claim An [[IPartialCompressedClaim]] array that is reverted back into an object.
+ * @throws When an [[IPartialCompressedClaim]] is not an Array or it's length is unequal 3.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @returns An [[IPartialClaim]] object that has the same properties as the [[IPartialCompressedClaim]].
+ */
+export function decompress(claim: IPartialCompressedClaim): IPartialClaim
+export function decompress(
+  claim: ICompressedClaim | IPartialCompressedClaim
+): IClaim | IPartialClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }
@@ -82,25 +99,4 @@ export function decompress(claim: CompressedClaim): IClaim {
   }
 }
 
-/**
- *  Decompresses the Partial [[Claim]] from storage and/or message.
- *
- * @param claim A compressed Partial [[Claim]] array that is reverted back into an object.
- * @throws When a Partial [[Claim]] is not an Array or it's length is unequal 3.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
- * @returns An object that has the same properties as the Partial [[Claim]].
- */
-export function decompressPartialClaim(
-  claim: IPartialCompressedClaim
-): IPartialClaim {
-  if (!Array.isArray(claim) || claim.length !== 3) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
-  }
-  return {
-    cTypeHash: claim[0],
-    owner: claim[1],
-    contents: claim[2],
-  }
-}
-
-export default { decompress, compress, errorCheck, decompressPartialClaim }
+export default { decompress, compress, errorCheck }
