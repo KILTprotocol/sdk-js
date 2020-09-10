@@ -4,7 +4,7 @@ import Identity from '.'
 import { Attester, Claimer } from '../actor'
 import CType from '../ctype/CType'
 import { ERROR_PE_MISSING } from '../errorhandling/SDKErrors'
-import Message, { IRequestingAttestationForClaim } from '../messaging/Message'
+import Message, { IRequestAttestationForClaim } from '../messaging/Message'
 import constants from '../test/constants'
 import { IRevocationHandle } from '../types/Attestation'
 import IClaim from '../types/Claim'
@@ -29,7 +29,7 @@ describe('AttesterIdentity', () => {
   let cType: CType
   let revocationHandle: IRevocationHandle
   let attesterSession: gabi.AttesterAttestationSession
-  let req4Att: IRequestForAttestation
+  let requestForAttestation: IRequestForAttestation
 
   beforeAll(async () => {
     rawCType = {
@@ -77,12 +77,8 @@ describe('AttesterIdentity', () => {
         initiateAttestationMsg: initAttestation,
       }
     )
-    if (Array.isArray(requestAttestation.body.content)) {
-      return
-    }
-    const { requestForAttestation } = requestAttestation.body
-      .content as IRequestingAttestationForClaim
-    req4Att = requestForAttestation
+    requestForAttestation = (requestAttestation.body as IRequestAttestationForClaim)
+      .content.requestForAttestation
     ;({ revocationHandle } = await Attester.issueAttestation(
       attester,
       requestAttestation,
@@ -195,7 +191,10 @@ describe('AttesterIdentity', () => {
 
   it('should issue privacy enhanced Attestation', async () => {
     await expect(
-      attester.issuePrivacyEnhancedAttestation(attesterSession, req4Att)
+      attester.issuePrivacyEnhancedAttestation(
+        attesterSession,
+        requestForAttestation
+      )
     ).resolves.toBeDefined()
   })
 

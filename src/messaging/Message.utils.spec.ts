@@ -41,10 +41,17 @@ import {
   CompressedDelegationData,
   IInformingCreateDelegation,
   CompressedInformCreateDelegation,
+  CompressedMessageBody,
 } from './Message'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import * as MessageUtils from './Message.utils'
-import { IQuote, IQuoteAttesterSigned, IQuoteAgreement } from '../types/Quote'
+import {
+  IQuote,
+  IQuoteAttesterSigned,
+  IQuoteAgreement,
+  CompressedQuoteAttesterSigned,
+  CompressedQuoteAgreed,
+} from '../types/Quote'
 import Quote from '../quote'
 import Claim from '../claim'
 import CType from '../ctype'
@@ -67,13 +74,10 @@ describe('Messaging Utilities', () => {
   let quoteData: IQuote
   let quoteAttesterSigned: IQuoteAttesterSigned
   let bothSigned: IQuoteAgreement
-  let submitAttestationContent: ISubmittingAttestationForClaim
-  let submitAttestationBody: ISubmitAttestationForClaim
-  let compressedSubmitAttestationContent: CompressedSubmitAttestationForClaim
-  let compressedSubmitAttestationBody: ICompressedSubmitAttestationForClaim
-  let legitimation: AttestedClaim
   let compressedLegitimation: CompressedAttestedClaim
-  let attestedClaim: AttestedClaim
+  let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
+  let legitimation: AttestedClaim
+  let compressedQuoteAgreement: CompressedQuoteAgreed
   let requestTermsBody: IRequestTerms
   let requestTermsContent: IPartialClaim
   let compressedRequestTermsBody: ICompressedRequestTerms
@@ -93,6 +97,10 @@ describe('Messaging Utilities', () => {
   let requestAttestationContent: IRequestingAttestationForClaim
   let compressedRequestAttestationBody: ICompressedRequestAttestationForClaim
   let compressedRequestAttestationContent: CompressedRequestAttestationForClaim
+  let submitAttestationContent: ISubmittingAttestationForClaim
+  let submitAttestationBody: ISubmitAttestationForClaim
+  let compressedSubmitAttestationContent: CompressedSubmitAttestationForClaim
+  let compressedSubmitAttestationBody: ICompressedSubmitAttestationForClaim
   let requestClaimsForCTypesBody: IRequestClaimsForCTypes
   let requestClaimsForCTypesContent: IRequestingClaimsForCTypes
   let compressedRequestClaimsForCTypesBody: ICompressedRequestClaimsForCTypes
@@ -125,7 +133,7 @@ describe('Messaging Utilities', () => {
     claimContents = {
       name: 'Bob',
     }
-
+    // CType Schema
     rawCType = {
       $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -135,17 +143,17 @@ describe('Messaging Utilities', () => {
       },
       type: 'object',
     }
-
+    // CType
     testCType = CType.fromSchema(rawCType, identityAlice.address)
-
+    // Claim
     claim = Claim.fromCTypeAndClaimContents(
       testCType,
       claimContents,
       identityAlice.address
     )
-
+    // Legitimation
     legitimation = await buildAttestedClaim(identityAlice, identityBob, {}, [])
-
+    // Compressed Legitimation
     compressedLegitimation = [
       [
         [
@@ -176,7 +184,7 @@ describe('Messaging Utilities', () => {
         legitimation.attestation.delegationId,
       ],
     ]
-
+    // Quote Data
     quoteData = {
       attesterAddress: identityAlice.address,
       cTypeHash: claim.cTypeHash,
@@ -189,24 +197,127 @@ describe('Messaging Utilities', () => {
       termsAndConditions: 'https://coolcompany.io/terms.pdf',
       timeframe: date,
     }
-
+    // Quote signed by attester
     quoteAttesterSigned = Quote.createAttesterSignature(
       quoteData,
       identityAlice
     )
-
+    // Compressed Quote Attester Signed quote
+    compressedResultAttesterSignedQuote = [
+      quoteAttesterSigned.attesterAddress,
+      quoteAttesterSigned.cTypeHash,
+      [
+        quoteAttesterSigned.cost.gross,
+        quoteAttesterSigned.cost.net,
+        quoteAttesterSigned.cost.tax,
+      ],
+      quoteAttesterSigned.currency,
+      quoteAttesterSigned.termsAndConditions,
+      quoteAttesterSigned.timeframe,
+      quoteAttesterSigned.attesterSignature,
+    ]
+    // Quote agreement
     bothSigned = Quote.createQuoteAgreement(
       identityAlice,
       quoteAttesterSigned,
       legitimation.request.rootHash
     )
+    // Compressed Quote Agreement
+    compressedQuoteAgreement = [
+      bothSigned.attesterAddress,
+      bothSigned.cTypeHash,
+      [bothSigned.cost.gross, bothSigned.cost.net, bothSigned.cost.tax],
+      bothSigned.currency,
+      bothSigned.termsAndConditions,
+      bothSigned.timeframe,
+      bothSigned.attesterSignature,
+      bothSigned.claimerSignature,
+      bothSigned.rootHash,
+    ]
+    // Request Terms content
+    requestTermsContent = {
+      cTypeHash: claim.cTypeHash,
+    }
+    // Compressed Request terms content
+    compressedRequestTermsContent = [claim.cTypeHash, undefined, undefined]
+    // Submit Terms content
+    submitTermsContent = {
+      claim: {
+        cTypeHash: claim.cTypeHash,
+      },
+      legitimations: [legitimation],
+      delegationId: undefined,
+      quote: quoteAttesterSigned,
+      prerequisiteClaims: undefined,
+    }
+    // Compressed Submit Terms Contentƒ
+    compressedSubmitTermsContent = [
+      compressedRequestTermsContent,
+      [compressedLegitimation],
+      undefined,
+      compressedResultAttesterSignedQuote,
+      undefined,
+    ]
+    // Reject terms Content
+    rejectTermsContent = {
+      claim: {
+        cTypeHash: claim.cTypeHash,
+      },
+      legitimations: [legitimation],
+    }
+    // Compressed Reject terms content
+    compressedRejectTermsContent = [
+      compressedRequestTermsContent,
+      [compressedLegitimation],
+      undefined,
+    ]
 
+    // Request Attestation Content
     requestAttestationContent = {
       requestForAttestation: legitimation.request,
       quote: bothSigned,
-      prerequisiteClaims: [],
+      prerequisiteClaims: undefined,
     }
 
+    // Compressed Request attestation content
+    compressedRequestAttestationContent = [
+      [
+        [
+          legitimation.request.claim.cTypeHash,
+          legitimation.request.claim.owner,
+          legitimation.request.claim.contents,
+        ],
+        {},
+        [
+          legitimation.request.claimOwner.hash,
+          legitimation.request.claimOwner.nonce,
+        ],
+        legitimation.request.claimerSignature,
+        [
+          legitimation.request.cTypeHash.hash,
+          legitimation.request.cTypeHash.nonce,
+        ],
+        legitimation.request.rootHash,
+        [],
+        legitimation.request.delegationId,
+        null,
+      ],
+      compressedQuoteAgreement,
+      undefined,
+    ]
+
+    // Submit Attestation content
+    submitAttestationContent = {
+      attestation: {
+        delegationId: null,
+        claimHash: requestAttestationContent.requestForAttestation.rootHash,
+        cTypeHash: claim.cTypeHash,
+        owner: identityBob.getPublicIdentity().address,
+        revoked: false,
+      },
+    }
+
+    // Compressed Submit Attestation content
     compressedSubmitAttestationContent = [
       [
         submitAttestationContent.attestation.claimHash,
@@ -217,30 +328,99 @@ describe('Messaging Utilities', () => {
       ],
       undefined,
     ]
-
-    attestedClaim = await buildAttestedClaim(
-      identityBob,
-      identityAlice,
-      {
-        a: 'a',
-        b: 'b',
-        c: 'c',
+    // Request Claims for CTypes content
+    requestClaimsForCTypesContent = {
+      ctypes: [claim.cTypeHash],
+      peRequest: undefined,
+      allowPE: false,
+    }
+    // Compressed Request claims for CType content
+    compressedRequestClaimsForCTypesContent = [
+      [claim.cTypeHash],
+      undefined,
+      false,
+    ]
+    // Submit claims for CType content
+    submitClaimsForCTypesClassicContent = [legitimation]
+    // Compressed Submit claims for CType content
+    compressedSubmitClaimsForCTypesClassicContent = [compressedLegitimation]
+    // Request Accept delegation content
+    requestAcceptDelegationContent = {
+      delegationData: {
+        account: '',
+        id: '',
+        parentId: '',
+        permissions: [1],
+        isPCR: false,
       },
-      [legitimation]
-    )
-    // const requestAttestationBody: IRequestAttestationForClaim = {
-    //   content: requestAttestationContent,
-    //   type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
-    // }
-    submitAttestationContent = {
-      attestation: {
-        delegationId: null,
-        claimHash: requestAttestationContent.requestForAttestation.rootHash,
-        cTypeHash: claim.cTypeHash,
-        owner: identityBob.getPublicIdentity().address,
-        revoked: false,
+      metaData: undefined,
+      signatures: {
+        inviter: 'string',
       },
     }
+    // Compressed Request accept delegation content
+    compressedRequestAcceptDelegationContent = [
+      [
+        requestAcceptDelegationContent.delegationData.account,
+        requestAcceptDelegationContent.delegationData.id,
+        requestAcceptDelegationContent.delegationData.parentId,
+        requestAcceptDelegationContent.delegationData.permissions,
+        requestAcceptDelegationContent.delegationData.isPCR,
+      ],
+      requestAcceptDelegationContent.signatures.inviter,
+      requestAcceptDelegationContent.metaData,
+    ]
+    // Submit Accept delegation content
+    submitAcceptDelegationContent = {
+      delegationData: {
+        account: '',
+        id: '',
+        parentId: '',
+        permissions: [1],
+        isPCR: false,
+      },
+      signatures: {
+        inviter: 'string',
+        invitee: 'string',
+      },
+    }
+    // Compressed Submit accept delegation content
+    compressedSubmitAcceptDelegationContent = [
+      [
+        submitAcceptDelegationContent.delegationData.account,
+        submitAcceptDelegationContent.delegationData.id,
+        submitAcceptDelegationContent.delegationData.parentId,
+        submitAcceptDelegationContent.delegationData.permissions,
+        submitAcceptDelegationContent.delegationData.isPCR,
+      ],
+      [
+        submitAcceptDelegationContent.signatures.inviter,
+        submitAcceptDelegationContent.signatures.invitee,
+      ],
+    ]
+    // Reject Accept Delegation content
+    rejectAcceptDelegationContent = {
+      account: '',
+      id: '',
+      parentId: '',
+      permissions: [1],
+      isPCR: false,
+    }
+    // Compressed Reject accept delegation content
+    compressedRejectAcceptDelegationContent = [
+      rejectAcceptDelegationContent.account,
+      rejectAcceptDelegationContent.id,
+      rejectAcceptDelegationContent.parentId,
+      rejectAcceptDelegationContent.permissions,
+      rejectAcceptDelegationContent.isPCR,
+    ]
+
+    informCreateDelegationContent = { delegationId: '', isPCR: false }
+
+    compressedInformCreateDelegationContent = [
+      informCreateDelegationContent.delegationId,
+      informCreateDelegationContent.isPCR,
+    ]
 
     requestTermsBody = {
       content: requestTermsContent,
@@ -351,8 +531,6 @@ describe('Messaging Utilities', () => {
       MessageBodyType.INFORM_CREATE_DELEGATION,
       compressedInformCreateDelegationContent,
     ]
-
-    console.log(attestedClaim, compressedLegitimation)
   })
 
   it('Checking message compression and decompression Terms', async () => {
@@ -454,13 +632,19 @@ describe('Messaging Utilities', () => {
       MessageUtils.decompressMessage(compressedInformCreateDelegationBody)
     ).toEqual(informCreateDelegationBody)
   })
-  it('Checks the MessageBody Types through the compress switch funciton', async () => {
+  it('Checks the MessageBody Types through the compress and decompress switch funciton', async () => {
+    const compressedMalformed = (['', []] as unknown) as CompressedMessageBody
+
+    expect(() =>
+      MessageUtils.decompressMessage(compressedMalformed)
+    ).toThrowError(SDKErrors.ERROR_MESSAGE_BODY_MALFORMED())
+
     const malformed = ({
       content: '',
       type: 'MessageBodyType',
     } as unknown) as MessageBody
 
-    expect(MessageUtils.compressMessage(malformed)).toThrowError(
+    expect(() => MessageUtils.compressMessage(malformed)).toThrowError(
       SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
     )
   })

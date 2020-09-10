@@ -39,7 +39,7 @@ import {
  *
  */
 
-export const compressMessage = (body: MessageBody): CompressedMessageBody => {
+export function compressMessage(body: MessageBody): CompressedMessageBody {
   switch (body.type) {
     case MessageBodyType.REQUEST_TERMS: {
       const compressedContents = ClaimUtils.compress(body.content)
@@ -167,7 +167,7 @@ export const compressMessage = (body: MessageBody): CompressedMessageBody => {
  *
  */
 
-export const decompressMessage = (body: CompressedMessageBody): MessageBody => {
+export function decompressMessage(body: CompressedMessageBody): MessageBody {
   switch (body[0]) {
     case MessageBodyType.REQUEST_TERMS: {
       const decompressedContents: IPartialClaim = ClaimUtils.decompress(body[1])
