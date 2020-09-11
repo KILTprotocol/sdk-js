@@ -112,7 +112,7 @@ export default class AttestedClaim implements IAttestedClaim {
   public static async verify(attestedClaim: IAttestedClaim): Promise<boolean> {
     return (
       AttestedClaim.verifyData(attestedClaim) &&
-      Attestation.verify(attestedClaim.attestation)
+      Attestation.checkValidity(attestedClaim.attestation)
     )
   }
 

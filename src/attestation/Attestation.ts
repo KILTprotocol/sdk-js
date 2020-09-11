@@ -201,7 +201,7 @@ export default class Attestation implements IAttestation {
    * });
    * ```
    */
-  public static async verify(
+  public static async checkValidity(
     attestation: IAttestation,
     claimHash: string = attestation.claimHash
   ): Promise<boolean> {
@@ -216,8 +216,8 @@ export default class Attestation implements IAttestation {
     )
   }
 
-  public async verify(): Promise<boolean> {
-    return Attestation.verify(this)
+  public async checkValidity(): Promise<boolean> {
+    return Attestation.checkValidity(this)
   }
 
   /**
