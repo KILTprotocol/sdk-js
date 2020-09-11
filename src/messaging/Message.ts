@@ -122,20 +122,13 @@ export default class Message implements IMessage {
    *
    */
   public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
-    if (Array.isArray(body)) return
     switch (body.type) {
       case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM:
         {
           const requestAttestation = body
           if (
-            !Array.isArray(requestAttestation.content) &&
             requestAttestation.content.requestForAttestation.claim.owner !==
-              senderAddress
-          ) {
-            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
-          } else if (
-            Array.isArray(requestAttestation.content) &&
-            requestAttestation.content[0][0][1] !== senderAddress
+            senderAddress
           ) {
             throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
           }
@@ -144,15 +137,7 @@ export default class Message implements IMessage {
       case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
         {
           const submitAttestation = body
-          if (
-            !Array.isArray(submitAttestation.content) &&
-            submitAttestation.content.attestation.owner !== senderAddress
-          ) {
-            throw SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
-          } else if (
-            Array.isArray(submitAttestation.content) &&
-            submitAttestation.content[0][2] !== senderAddress
-          ) {
+          if (submitAttestation.content.attestation.owner !== senderAddress) {
             throw SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
           }
         }
@@ -161,15 +146,7 @@ export default class Message implements IMessage {
         {
           const submitClaimsForCtype: ISubmitClaimsForCTypesClassic = body
           submitClaimsForCtype.content.forEach((claim) => {
-            if (
-              !Array.isArray(claim) &&
-              claim.request.claim.owner !== senderAddress
-            ) {
-              throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
-            } else if (
-              Array.isArray(claim) &&
-              claim[0][0][1] !== senderAddress
-            ) {
+            if (claim.request.claim.owner !== senderAddress) {
               throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
           })
