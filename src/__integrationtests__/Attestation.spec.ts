@@ -307,7 +307,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       ).then((e) => e.createPresentation([], false))
       await Promise.all([
         expect(license.verify()).resolves.toBeTruthy(),
-        expect(licenseAuthorizationGranted.verify()).resolves.toBeTruthy(),
+        expect(
+          licenseAuthorizationGranted.checkValidity()
+        ).resolves.toBeTruthy(),
       ])
     }, 70_000)
   })
