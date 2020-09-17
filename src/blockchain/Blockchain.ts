@@ -33,10 +33,11 @@ export interface IBlockchainApi {
 
   getStats(): Promise<Stats>
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
-  submitTx(
+  signTx(
     identity: Identity,
     tx: SubmittableExtrinsic
-  ): Promise<SubmittableResult>
+  ): Promise<SubmittableExtrinsic>
+  submitTx(tx: SubmittableExtrinsic): Promise<SubmittableResult>
   getNonce(accountAddress: string): Promise<Codec>
 }
 
@@ -80,46 +81,47 @@ export default class Blockchain implements IBlockchainApi {
     return this.api.rpc.chain.subscribeNewHeads(listener)
   }
 
-  public async submitTx(
+  public async signTx(
     identity: Identity,
     tx: SubmittableExtrinsic
-  ): Promise<SubmittableResult> {
-    const accountAddress = identity.address
-    const nonce = await this.getNonce(accountAddress)
+  ): Promise<SubmittableExtrinsic> {
+    const nonce = await this.getNonce(identity.address)
     const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
       tx,
       nonce.toHex()
     )
+    return signed
+  }
+
+  public async submitTx(
+    tx: SubmittableExtrinsic,
+    resolveOn: (result: SubmittableResult) => boolean = (result) =>
+      result.isFinalized
+  ): Promise<SubmittableResult> {
     log.info(`Submitting ${tx.method}`)
-
     return new Promise<SubmittableResult>((resolve, reject) => {
-      signed
-        .send((result) => {
-          log.info(`Got tx status '${result.status.type}'`)
+      tx.send((result) => {
+        log.info(`Got tx status '${result.status.type}'`)
 
-          if (ErrorHandler.extrinsicFailed(result)) {
-            log.warn(`Extrinsic execution failed`)
-            log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
-            const extrinsicError: ExtrinsicError =
-              this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
+        if (ErrorHandler.extrinsicFailed(result)) {
+          log.warn(`Extrinsic execution failed`)
+          log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
+          const extrinsicError: ExtrinsicError =
+            this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
 
-            log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
-            reject(extrinsicError)
-          }
-          if (result.isFinalized) {
-            resolve(result)
-          } else if (result.isError) {
-            reject(
-              new Error(
-                `Transaction failed with status '${result.status.type}'`
-              )
-            )
-          }
-        })
-        .catch((err: Error) => {
-          // just reject with the original tx error from the chain
-          reject(err)
-        })
+          log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
+          reject(extrinsicError)
+        } else if (result.isError) {
+          reject(
+            new Error(`Transaction failed with status '${result.status.type}'`)
+          )
+        } else if (resolveOn(result)) {
+          resolve(result)
+        }
+      }).catch((err: Error) => {
+        // just reject with the original tx error from the chain
+        reject(err)
+      })
     })
   }
 

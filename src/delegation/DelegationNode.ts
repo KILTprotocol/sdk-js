@@ -1,3 +1,4 @@
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 /**
  * Delegation nodes are used within the KILT protocol to construct the trust hierarchy.
  *
@@ -8,7 +9,6 @@
  * @preferred
  */
 
-import { SubmittableResult } from '@polkadot/api'
 import { factory } from '../config/ConfigLog'
 import Crypto from '../crypto'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
@@ -134,12 +134,12 @@ export default class DelegationNode extends DelegationBaseNode
    *
    * @param identity Account used to store the delegation node.
    * @param signature Signature of the delegate to ensure it's done under his permission.
-   * @returns Promise containing the SubmittableResult.
+   * @returns Promise containing a SubmittableExtrinsic.
    */
   public async store(
     identity: Identity,
     signature: string
-  ): Promise<SubmittableResult> {
+  ): Promise<SubmittableExtrinsic> {
     log.info(`:: store(${this.id})`)
     return store(this, identity, signature)
   }
@@ -158,9 +158,9 @@ export default class DelegationNode extends DelegationBaseNode
    * [ASYNC] Revokes the delegation node on chain.
    *
    * @param identity The identity used to revoke the delegation.
-   * @returns Promise containing the SubmittableResult.
+   * @returns Promise containing a SubmittableExtrinsic.
    */
-  public async revoke(identity: Identity): Promise<SubmittableResult> {
+  public async revoke(identity: Identity): Promise<SubmittableExtrinsic> {
     log.debug(`:: revoke(${this.id})`)
     return revoke(this.id, identity)
   }

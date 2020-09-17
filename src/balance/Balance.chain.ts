@@ -9,7 +9,7 @@
  * @preferred
  */
 
-import { SubmittableResult } from '@polkadot/api'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { UnsubscribePromise } from '@polkadot/api/types'
 import BN from 'bn.js'
 import { getCached } from '../blockchainApiConnection'
@@ -105,10 +105,10 @@ export async function listenToBalanceChanges(
  * const identity = ...
  * const address = ...
  * const amount: BN = new BN(42)
+ * const blockchain = await sdk.getCached()
  * sdk.Balance.makeTransfer(identity, address, amount)
- *   .then((status: SubmittableResult) => {
- *     console.log('Successfully transferred ${amount.toNumber()} tokens')
- *   })
+ *   .then(tx => blockchain.sendTx(tx))
+ *   .then(() => console.log('Successfully transferred ${amount.toNumber()} tokens'))
  *   .catch(err => {
  *     console.log('Transfer failed')
  *   })
@@ -118,8 +118,8 @@ export async function makeTransfer(
   identity: Identity,
   accountAddressTo: IPublicIdentity['address'],
   amount: BN
-): Promise<SubmittableResult> {
+): Promise<SubmittableExtrinsic> {
   const blockchain = await getCached()
   const transfer = blockchain.api.tx.balances.transfer(accountAddressTo, amount)
-  return blockchain.submitTx(identity, transfer)
+  return blockchain.signTx(identity, transfer)
 }
