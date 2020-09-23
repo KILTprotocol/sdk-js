@@ -37,9 +37,16 @@ export interface IBlockchainApi {
     identity: Identity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic>
-  submitTx(tx: SubmittableExtrinsic): Promise<SubmittableResult>
+  submitTx(
+    tx: SubmittableExtrinsic,
+    resolveOn: (result: SubmittableResult) => boolean
+  ): Promise<SubmittableResult>
   getNonce(accountAddress: string): Promise<Codec>
 }
+
+export const AWAIT_READY = (result: SubmittableResult) => result.status.isReady
+export const AWAIT_IN_BLOCK = (result: SubmittableResult) => result.isInBlock
+export const AWAIT_FINALIZED = (result: SubmittableResult) => result.isFinalized
 
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
@@ -99,16 +106,15 @@ export default class Blockchain implements IBlockchainApi {
       result.isFinalized
   ): Promise<SubmittableResult> {
     log.info(`Submitting ${tx.method}`)
+    let unsubscribe: () => void
     return new Promise<SubmittableResult>((resolve, reject) => {
       tx.send((result) => {
         log.info(`Got tx status '${result.status.type}'`)
-
         if (ErrorHandler.extrinsicFailed(result)) {
           log.warn(`Extrinsic execution failed`)
           log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
           const extrinsicError: ExtrinsicError =
             this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
-
           log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
           reject(extrinsicError)
         } else if (result.isError) {
@@ -118,10 +124,17 @@ export default class Blockchain implements IBlockchainApi {
         } else if (resolveOn(result)) {
           resolve(result)
         }
-      }).catch((err: Error) => {
-        // just reject with the original tx error from the chain
-        reject(err)
       })
+        .then((cb) => {
+          unsubscribe = cb
+        })
+        // not sure we need this final catch block
+        .catch((err: Error) => {
+          // just reject with the original tx error from the chain
+          reject(err)
+        })
+    }).finally(() => {
+      if (unsubscribe) unsubscribe()
     })
   }
 
