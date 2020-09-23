@@ -40,6 +40,12 @@ export interface IBlockchainApi {
   api: ApiPromise
   portablegabi: gabi.Blockchain
 
+  nonceQueue: Map<
+    Identity['address'],
+    Array<(unlock: () => Promise<Index>) => void>
+  >
+  pending: Map<Identity['address'], boolean>
+  accountNonces: Map<Identity['address'], Index>
   getStats(): Promise<Stats>
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
   signTx(
@@ -119,12 +125,12 @@ export default class Blockchain implements IBlockchainApi {
   public readonly portablegabi: gabi.Blockchain
   public accountNonces: Map<Identity['address'], Index>
 
-  private pending: Map<Identity['address'], boolean> = new Map<
+  public pending: Map<Identity['address'], boolean> = new Map<
     Identity['address'],
     boolean
   >()
 
-  private nonceQueue: Map<
+  public nonceQueue: Map<
     Identity['address'],
     Array<(unlock: () => Promise<Index>) => void>
   > = new Map<
@@ -178,16 +184,15 @@ export default class Blockchain implements IBlockchainApi {
 
   /**
    * Initiates the Nonce retrieval for the given identity.
-   * I N C E P T I O N.
    *
-   * @param accountAddress The address of the identity that we retrieve the Transaction nonce for.
+   * @param accountAddress The address of the identity that we retrieve the nonce for.
    * @returns Promise of the [[Index]] representation of the Transaction nonce of the identity.
    *
    */
   public async getNonce(accountAddress: string): Promise<Index> {
     // Initiate nonceRetrieval
     const unlock = await this.lock(accountAddress)
-    // Evil Necromancy of the in handleQueue defined function
+    // Await execution of the in handleQueue defined resolve function
     const nonce = await unlock()
     return nonce
   }
@@ -196,8 +201,7 @@ export default class Blockchain implements IBlockchainApi {
    * Creates Promise and queues it's resolve CB into nonceQueue for later processing, starts recursive execution of handleQueue.
    *
    * @param accountAddress The address of the identity that we retrieve the nonce for.
-   * @returns A Promise of the actual.
-   * The Index representation of the Transaction nonce of the identity.
+   * @returns The Promise with the queued up resolve CB.
    *
    */
   private lock(
@@ -210,7 +214,7 @@ export default class Blockchain implements IBlockchainApi {
     }
     // lock Promise, whose resolve CB is put into the nonceQueue for the specific account
     const lock = new Promise<() => Promise<Index>>(resolve => {
-      // if the queue does not exists for the account, create entry.
+      // if the queue doesn't exist for the account, create entry.
       if (!this.nonceQueue.has(accountAddress)) {
         this.nonceQueue.set(accountAddress, [resolve])
       } else {
@@ -241,7 +245,7 @@ export default class Blockchain implements IBlockchainApi {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const resolve = this.nonceQueue.get(accountAddress)!.shift()
       if (resolve) {
-        // resolve with a function which returns the retrieveNonce Promise
+        // resolve with a function that returns the retrieveNonce Promise
         resolve(() => {
           const nonce = this.retrieveNonce(accountAddress)
           // recursive execution of handleQueue
@@ -258,7 +262,7 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   /**
-   * Retrieves the Nonce for the specific account either directly from the API or from the, previously to the account mapped, accountNonce.
+   * Retrieves the Nonce for the specific account either directly from the API or from the previously to the account mapped accountNonce.
    *
    * @param accountAddress The address of the identity that we handle nonceQueue for.
    * @returns Promise of the [[Index]] representation of the Transaction nonce of the identity.

@@ -56,7 +56,10 @@ describe('nonce retrieval logic', () => {
       },
     },
   } as any) as ApiPromise
-
+  const dispatchTransactions = async (address: string): Promise<Index> => {
+    const chain = await getCached()
+    return chain.getNonce(address)
+  }
   it('should increment nonce for account', async () => {
     const chain = new Blockchain((await getCached()).api)
 
@@ -67,7 +70,17 @@ describe('nonce retrieval logic', () => {
       initialNonce.toNumber() + 1
     )
   })
-
+  it('should return nonces from different closures', async () => {
+    const promisedNonces: Array<Promise<Index>> = []
+    for (let i = 0; i < 25; i += 1) {
+      promisedNonces.push(dispatchTransactions(alice.address))
+    }
+    const nonces = await Promise.all(promisedNonces)
+    expect(nonces.length).toEqual(25)
+    nonces.forEach((value, index) => {
+      expect(value.toNumber()).toEqual(new UInt(index).toNumber())
+    })
+  })
   it('should return incrementing nonces', async () => {
     const promisedNonces: Array<Promise<Index>> = []
     const chain = new Blockchain((await getCached()).api)
