@@ -39,7 +39,11 @@ describe('Delegation', () => {
       ctypeHash,
       identityAlice.address
     )
-    rootDelegation.store(identityAlice)
+    const blockchain = await getCached()
+    await rootDelegation
+      .store(identityAlice)
+      .then((tx) => blockchain.submitTx(tx))
+
     const rootNode = await DelegationRootNode.query(ROOT_IDENTIFIER)
     if (rootNode) {
       expect(rootNode.id).toBe(ROOT_IDENTIFIER)
@@ -99,7 +103,9 @@ describe('Delegation', () => {
       ctypeHash,
       'myAccount'
     )
-    const revokeStatus = await aDelegationRootNode.revoke(identityAlice)
+    const revokeStatus = await aDelegationRootNode
+      .revoke(identityAlice)
+      .then((tx) => blockchain.submitTx(tx))
     expect(blockchain.api.tx.delegation.revokeRoot).toBeCalledWith('myRootId')
     expect(revokeStatus).toBeDefined()
   })

@@ -60,13 +60,8 @@ describe('DID', () => {
     } as IDid)
   })
 
-  it('query by identifier invalid identifier', async (done) => {
-    try {
-      await Did.queryByIdentifier('invalidIdentifier')
-      done.fail('should have detected an invalid DID')
-    } catch (err) {
-      done()
-    }
+  it('query by identifier invalid identifier', async () => {
+    await expect(Did.queryByIdentifier('invalidIdentifier')).rejects.toThrow()
   })
 
   it('store did', async () => {
