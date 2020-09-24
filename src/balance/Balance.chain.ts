@@ -18,7 +18,7 @@ import IPublicIdentity from '../types/PublicIdentity'
 
 /**
  * Fetches the current balance of the account with [accountAddress].
- * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.
+ * <B>Note that balance amount is in Femto-Kilt (1e-15)and must be translated to Kilt-Coin</B>.
  *
  * @param accountAddress Address of the account for which to get the balance.
  * @returns A promise containing the current balance of the account.
@@ -45,7 +45,7 @@ export async function getBalance(
 
 /**
  * Attaches the given [listener] for balance changes on the account with [accountAddress].
- * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.
+ * <B>Note that balance amount is in Femto-Kilt (1e-15) and must be translated to Kilt-Coin</B>.
  *
  * @param accountAddress Address of the account on which to listen for balance changes.
  * @param listener Listener to receive balance change updates.
@@ -89,11 +89,11 @@ export async function listenToBalanceChanges(
 
 /**
  * Transfer Kilt [amount] tokens to [toAccountAddress] using the given [[Identity]].
- * <B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.
+ * <B>Note that balance amount is in Femto-Kilt (1e-15) and must be translated to Kilt-Coin</B>.
  *
  * @param identity Identity to use for token transfer.
  * @param accountAddressTo Address of the receiver account.
- * @param amount Amount of µ-Kilt to transfer.
+ * @param amount Amount of Femto-Kilt (1e-15) to transfer.
  * @returns Promise containing the transaction status.
  *
  * @example
