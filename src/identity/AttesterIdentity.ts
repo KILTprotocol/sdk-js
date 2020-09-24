@@ -8,6 +8,7 @@
 import * as gabi from '@kiltprotocol/portablegabi'
 import { KeyringPair } from '@polkadot/keyring/types'
 import * as u8aUtil from '@polkadot/util/u8a'
+import { AWAIT_FINALIZED } from '../blockchain/Blockchain'
 import Attestation from '../attestation/Attestation'
 import getCached from '../blockchainApiConnection'
 import {
@@ -328,6 +329,9 @@ export default class AttesterIdentity extends Identity {
       })
       await this.updateAccumulator(newAcc)
     }
-    await new Attestation(handle.attestation).revoke(this)
+    const blockchain = await getCached()
+    await new Attestation(handle.attestation)
+      .revoke(this)
+      .then((tx) => blockchain.submitTx(tx, AWAIT_FINALIZED))
   }
 }
