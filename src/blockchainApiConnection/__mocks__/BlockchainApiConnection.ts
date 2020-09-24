@@ -49,7 +49,6 @@ import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { AccountInfo, ExtrinsicStatus, Index } from '@polkadot/types/interfaces'
 import U64 from '@polkadot/types/primitive/U64'
-import Blockchain from '../../blockchain/Blockchain'
 import IPublicIdentity from '../../types/PublicIdentity'
 import TYPE_REGISTRY, { mockChainQueryReturn } from './BlockchainQuery'
 
@@ -330,6 +329,7 @@ const __mocked_api: any = {
       modules: [],
     },
   },
+  registry: TYPE_REGISTRY
 }
 
 BlockchainApiConnection.getCached = getCached

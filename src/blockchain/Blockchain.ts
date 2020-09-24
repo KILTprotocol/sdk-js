@@ -14,6 +14,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header, Index } from '@polkadot/types/interfaces/types'
 import { AnyJson, Codec } from '@polkadot/types/types'
 import { Evaluator, makeSubscriptionPromise } from '../util/SubscriptionPromise'
+import { Text } from '@polkadot/types'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ErrorHandler } from '../errorhandling'
 import { ERROR_UNKNOWN as UNKNOWN_EXTRINSIC_ERROR } from '../errorhandling/ExtrinsicError'
@@ -40,12 +41,12 @@ export interface IBlockchainApi {
   api: ApiPromise
   portablegabi: gabi.Blockchain
 
-  nonceQueue: Map<
-    Identity['address'],
-    Array<(unlock: () => Promise<Index>) => void>
-  >
-  pending: Map<Identity['address'], boolean>
-  accountNonces: Map<Identity['address'], Index>
+  // nonceQueue: Map<
+  //   Identity['address'],
+  //   Array<(unlock: () => Promise<Index>) => void>
+  // >
+  // pending: Map<Identity['address'], boolean>
+  // accountNonces: Map<Identity['address'], Index>
   getStats(): Promise<Stats>
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
   signTx(
@@ -123,14 +124,14 @@ export default class Blockchain implements IBlockchainApi {
 
   public api: ApiPromise
   public readonly portablegabi: gabi.Blockchain
-  public accountNonces: Map<Identity['address'], Index>
+  private accountNonces: Map<Identity['address'], Index>
 
-  public pending: Map<Identity['address'], boolean> = new Map<
+  private pending: Map<Identity['address'], boolean> = new Map<
     Identity['address'],
     boolean
   >()
 
-  public nonceQueue: Map<
+  private nonceQueue: Map<
     Identity['address'],
     Array<(unlock: () => Promise<Index>) => void>
   > = new Map<
@@ -213,7 +214,7 @@ export default class Blockchain implements IBlockchainApi {
       this.pending.set(accountAddress, false)
     }
     // lock Promise, whose resolve CB is put into the nonceQueue for the specific account
-    const lock = new Promise<() => Promise<Index>>(resolve => {
+    const lock = new Promise<() => Promise<Index>>((resolve) => {
       // if the queue doesn't exist for the account, create entry.
       if (!this.nonceQueue.has(accountAddress)) {
         this.nonceQueue.set(accountAddress, [resolve])
@@ -272,15 +273,21 @@ export default class Blockchain implements IBlockchainApi {
   ): Promise<Index> {
     let nonce: Index
     if (!this.accountNonces.has(accountAddress)) {
-      nonce = await this.api.query.system.accountNonce<Index>(accountAddress)
-      this.accountNonces.set(accountAddress, new UInt(nonce.addn(1)))
+      nonce = await this.api.rpc.system.accountNextIndex<Index>(accountAddress)
+      this.accountNonces.set(
+        accountAddress,
+        this.api.registry.createType('Index', nonce.addn(1))
+      )
     } else {
       const temp: Index | undefined = this.accountNonces.get(accountAddress)
       if (!temp) {
         throw new Error(`Nonce Retrieval Failed for : ${accountAddress}`)
       } else {
         nonce = temp
-        this.accountNonces.set(accountAddress, new UInt(temp.addn(1)))
+        this.accountNonces.set(
+          accountAddress,
+          this.api.registry.createType('Index', nonce.addn(1))
+        )
       }
     }
     return nonce
