@@ -165,7 +165,9 @@ describe('When there are haves and have-nots', () => {
         submitSignedTx(tx, IS_IN_BLOCK)
       ),
     ])
-    expect(listener).toBeCalledWith(expect.objectContaining(faucet.address))
+    expect(listener).toBeCalledWith(
+      expect.objectContaining({ account: faucet.address })
+    )
   }, 40_000)
 })
 
