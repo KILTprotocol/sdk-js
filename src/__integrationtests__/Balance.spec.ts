@@ -10,7 +10,11 @@ import {
   listenToBalanceChanges,
   makeTransfer,
 } from '../balance/Balance.chain'
-import { IBlockchainApi } from '../blockchain/Blockchain'
+import {
+  AWAIT_IN_BLOCK,
+  AWAIT_READY,
+  IBlockchainApi,
+} from '../blockchain/Blockchain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import {
@@ -20,7 +24,7 @@ import {
   wannabeFaucet,
 } from './utils'
 
-let blockchain: IBlockchainApi | undefined
+let blockchain: IBlockchainApi
 beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
@@ -65,7 +69,8 @@ describe('when there is a dev chain with a faucet', () => {
     const funny = jest.fn()
     listenToBalanceChanges(ident.address, funny)
     const balanceBefore = await getBalance(faucet.address)
-    await makeTransfer(faucet, ident.address, MIN_TRANSACTION)
+    const tx = await makeTransfer(faucet, ident.address, MIN_TRANSACTION)
+    await blockchain.submitTx(tx, AWAIT_IN_BLOCK)
     const [balanceAfter, balanceIdent] = await Promise.all([
       getBalance(faucet.address),
       getBalance(ident.address),
@@ -90,7 +95,11 @@ describe('When there are haves and have-nots', () => {
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    await makeTransfer(richieRich, stormyD.address, MIN_TRANSACTION)
+    await makeTransfer(
+      richieRich,
+      stormyD.address,
+      MIN_TRANSACTION
+    ).then((tx) => blockchain.submitTx(tx, AWAIT_IN_BLOCK))
     const balanceTo = await getBalance(stormyD.address)
     expect(balanceTo.toNumber()).toBe(MIN_TRANSACTION.toNumber())
   }, 40_000)
@@ -98,7 +107,9 @@ describe('When there are haves and have-nots', () => {
   it('should not accept transactions from identity with zero balance', async () => {
     const originalBalance = await getBalance(stormyD.address)
     await expect(
-      makeTransfer(bobbyBroke, stormyD.address, MIN_TRANSACTION)
+      makeTransfer(bobbyBroke, stormyD.address, MIN_TRANSACTION).then((tx) =>
+        blockchain.submitTx(tx, AWAIT_IN_BLOCK)
+      )
     ).rejects.toThrowError('1010: Invalid Transaction')
     const [newBalance, zeroBalance] = await Promise.all([
       getBalance(stormyD.address),
@@ -111,7 +122,9 @@ describe('When there are haves and have-nots', () => {
   it('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalance(richieRich.address)
     await expect(
-      makeTransfer(richieRich, bobbyBroke.address, RichieBalance)
+      makeTransfer(richieRich, bobbyBroke.address, RichieBalance).then((tx) =>
+        blockchain.submitTx(tx, AWAIT_IN_BLOCK)
+      )
     ).rejects.toThrowError()
     const [newBalance, zeroBalance] = await Promise.all([
       getBalance(richieRich.address),
@@ -121,12 +134,34 @@ describe('When there are haves and have-nots', () => {
     expect(newBalance.lt(RichieBalance))
   }, 30_000)
 
+  it('should be able to make a new transaction once the last is ready', async () => {
+    const listener = jest.fn()
+    listenToBalanceChanges(faucet.address, listener)
+    await makeTransfer(faucet, richieRich.address, MIN_TRANSACTION).then((tx) =>
+      blockchain.submitTx(tx, AWAIT_READY)
+    )
+    await makeTransfer(faucet, stormyD.address, MIN_TRANSACTION).then((tx) =>
+      blockchain.submitTx(tx, AWAIT_IN_BLOCK)
+    )
+
+    expect(listener).toBeCalledWith(
+      faucet.address,
+      expect.anything(),
+      expect.anything()
+    )
+    expect(listener).toBeCalledTimes(2)
+  }, 30_000)
+
   xit('should be able to make multiple transactions at once', async () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
     await Promise.all([
-      makeTransfer(faucet, richieRich.address, MIN_TRANSACTION),
-      makeTransfer(faucet, stormyD.address, MIN_TRANSACTION),
+      makeTransfer(faucet, richieRich.address, MIN_TRANSACTION).then((tx) =>
+        blockchain.submitTx(tx, AWAIT_IN_BLOCK)
+      ),
+      makeTransfer(faucet, stormyD.address, MIN_TRANSACTION).then((tx) =>
+        blockchain.submitTx(tx, AWAIT_IN_BLOCK)
+      ),
     ])
     expect(listener).toBeCalledWith(faucet.address)
   }, 30_000)

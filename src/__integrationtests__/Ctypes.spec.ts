@@ -5,7 +5,11 @@
  */
 
 import { Identity } from '..'
-import { IBlockchainApi } from '../blockchain/Blockchain'
+import {
+  AWAIT_IN_BLOCK,
+  AWAIT_READY,
+  IBlockchainApi,
+} from '../blockchain/Blockchain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
@@ -13,7 +17,7 @@ import { ERROR_CTYPE_ALREADY_EXISTS } from '../errorhandling/ExtrinsicError'
 import ICType from '../types/CType'
 import { wannabeFaucet } from './utils'
 
-let blockchain: IBlockchainApi | undefined
+let blockchain: IBlockchainApi
 beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
 })
@@ -44,13 +48,19 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const bobbyBroke = await Identity.buildFromMnemonic(
       Identity.generateMnemonic()
     )
-    await expect(ctype.store(bobbyBroke)).rejects.toThrowError()
+    await expect(
+      ctype
+        .store(bobbyBroke)
+        .then((tx) => blockchain.submitTx(tx, AWAIT_IN_BLOCK))
+    ).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
-    await ctype.store(ctypeCreator)
+    await ctype
+      .store(ctypeCreator)
+      .then((tx) => blockchain.submitTx(tx, AWAIT_IN_BLOCK))
     await Promise.all([
       expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.address),
       expect(ctype.verifyStored()).resolves.toBeTruthy(),
@@ -61,10 +71,14 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
-    await ctype.store(ctypeCreator)
-    await expect(ctype.store(ctypeCreator)).rejects.toThrowError(
-      ERROR_CTYPE_ALREADY_EXISTS
-    )
+    await ctype
+      .store(ctypeCreator)
+      .then((tx) => blockchain.submitTx(tx, AWAIT_READY))
+    await expect(
+      ctype
+        .store(ctypeCreator)
+        .then((tx) => blockchain.submitTx(tx, AWAIT_IN_BLOCK))
+    ).rejects.toThrowError(ERROR_CTYPE_ALREADY_EXISTS)
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.address)
   }, 45_000)
