@@ -166,7 +166,7 @@ describe('When there are haves and have-nots', () => {
       ),
     ])
     expect(listener).toBeCalledWith(faucet.address)
-  }, 30_000)
+  }, 40_000)
 })
 
 afterAll(() => {
