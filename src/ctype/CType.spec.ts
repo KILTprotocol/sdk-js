@@ -2,7 +2,6 @@ import { SubmittableResult } from '@polkadot/api'
 import { TypeRegistry } from '@polkadot/types'
 import { Option } from '@polkadot/types/codec'
 
-import AccountId from '@polkadot/types/generic/AccountId'
 import Claim from '../claim/Claim'
 import {
   ERROR_ADDRESS_INVALID,
@@ -139,11 +138,11 @@ describe('CType', () => {
 
     // This tst is not possible as it throws the error for malformed object first
     // TODO: Discuss whether the specific check in the errorCheck is obsolete and therefore should be removed
-    // const faultyAddressTypeCType: ICType = ({
-    //   schema: claimCtype.schema,
-    //   hash: claimCtype.hash,
-    //   owner: 4262626426,
-    // } as any) as ICType
+    const faultyAddressTypeCType: ICType = ({
+      schema: claimCtype.schema,
+      hash: claimCtype.hash,
+      owner: '4262626426',
+    } as any) as ICType
 
     const wrongSchemaIdCType: ICType = {
       ...claimCtype,
@@ -162,9 +161,10 @@ describe('CType', () => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       ERROR_ADDRESS_INVALID(invalidAddressCtype.owner!, 'CType owner')
     )
-    // expect(() => CType.fromCType(faultyAddressTypeCType)).toThrowError(
-    //   ERROR_CTYPE_OWNER_TYPE()
-    // )
+    expect(() => CType.fromCType(faultyAddressTypeCType)).toThrowError(
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      ERROR_ADDRESS_INVALID(faultyAddressTypeCType.owner!, 'CType owner')
+    )
     expect(() => CType.fromCType(wrongSchemaIdCType)).toThrowError(
       ERROR_CTYPE_ID_NOT_MATCHING(
         getIdForSchema(wrongSchemaIdCType.schema),
@@ -210,16 +210,16 @@ describe('CType', () => {
     expect(() => claimCtype.compress()).toThrow()
   })
   it('verifies whether a ctype is registered with the address on chain ', async () => {
-    blockchainApi.query.ctype.cTYPEs = jest.fn(async () => {
-      return new Option(registry, AccountId, claimCtype.owner)
+    blockchainApi.query.ctype.cTYPEs = jest.fn(async (hash: string) => {
+      return new Option(registry, 'AccountId', claimCtype.owner)
     })
     expect(await claimCtype.verifyStored()).toBeTruthy()
-    blockchainApi.query.ctype.cTYPEs = jest.fn(async () => {
-      return new Option(registry, AccountId, identityBob.address)
+    blockchainApi.query.ctype.cTYPEs = jest.fn(async (hash: string) => {
+      return new Option(registry, 'AccountId', identityBob.address)
     })
-    expect(await claimCtype.verifyStored()).toBeFalsy()
-    blockchainApi.query.ctype.cTYPEs = jest.fn(async () => {
-      return new Option(registry, AccountId, null)
+    expect(await claimCtype.verifyOwner()).toBeFalsy()
+    blockchainApi.query.ctype.cTYPEs = jest.fn(async (hash: string) => {
+      return new Option(registry, 'AccountId', null)
     })
     expect(await claimCtype.verifyStored()).toBeFalsy()
   })
