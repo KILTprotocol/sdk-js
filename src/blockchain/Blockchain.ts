@@ -41,12 +41,6 @@ export interface IBlockchainApi {
   api: ApiPromise
   portablegabi: gabi.Blockchain
 
-  // nonceQueue: Map<
-  //   Identity['address'],
-  //   Array<(unlock: () => Promise<Index>) => void>
-  // >
-  // pending: Map<Identity['address'], boolean>
-  // accountNonces: Map<Identity['address'], Index>
   getStats(): Promise<Stats>
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
   signTx(
@@ -247,8 +241,8 @@ export default class Blockchain implements IBlockchainApi {
       const resolve = this.nonceQueue.get(accountAddress)!.shift()
       if (resolve) {
         // resolve with a function that returns the retrieveNonce Promise
-        resolve(() => {
-          const nonce = this.retrieveNonce(accountAddress)
+        resolve(async () => {
+          const nonce = await this.retrieveNonce(accountAddress)
           // recursive execution of handleQueue
           this.handleQueue(accountAddress)
           return nonce
