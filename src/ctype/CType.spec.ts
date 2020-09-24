@@ -1,9 +1,13 @@
 import { SubmittableResult } from '@polkadot/api'
+import { TypeRegistry } from '@polkadot/types'
+import { Option } from '@polkadot/types/codec'
+
 import Claim from '../claim/Claim'
 import {
   ERROR_ADDRESS_INVALID,
   ERROR_HASH_MALFORMED,
   ERROR_OBJECT_MALFORMED,
+  ERROR_CTYPE_ID_NOT_MATCHING,
 } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
@@ -11,17 +15,22 @@ import ICType, {
   CompressedCType,
   CTypeSchemaWithoutId,
   ICTypeSchema,
+  CompressedCTypeSchema,
 } from '../types/CType'
 import CType from './CType'
-import CTypeUtils from './CType.utils'
+import CTypeUtils, { getIdForSchema } from './CType.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('CType', () => {
+  const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+    .__mocked_api
+  const registry = new TypeRegistry()
   let ctypeModel: ICType['schema']
   let ctypeSchemaWithoutId: CTypeSchemaWithoutId
   let rawCType: ICType['schema']
   let identityAlice: Identity
+  let identityBob: Identity
   let claimCtype: CType
   let claimContents: any
   let claim: Claim
@@ -61,6 +70,7 @@ describe('CType', () => {
     identityAlice = await Identity.buildFromURI('//Alice')
 
     claimCtype = CType.fromSchema(rawCType, identityAlice.address)
+    identityBob = await Identity.buildFromURI('//Bob')
 
     claimContents = {
       name: 'Bob',
@@ -126,6 +136,21 @@ describe('CType', () => {
       owner: claimCtype.owner!.replace('7', 'D'),
     }
 
+    // This tst is not possible as it throws the error for malformed object first
+    // TODO: Discuss whether the specific check in the errorCheck is obsolete and therefore should be removed
+    const faultyAddressTypeCType: ICType = ({
+      schema: claimCtype.schema,
+      hash: claimCtype.hash,
+      owner: '4262626426',
+    } as any) as ICType
+
+    const wrongSchemaIdCType: ICType = {
+      ...claimCtype,
+      schema: {
+        ...claimCtype.schema,
+        $id: claimCtype.schema.$id.replace('1', '2'),
+      },
+    }
     expect(() => CType.fromCType(wrongHashCtype)).toThrowError(
       ERROR_HASH_MALFORMED(wrongHashCtype.hash, 'CType')
     )
@@ -135,6 +160,16 @@ describe('CType', () => {
     expect(() => CType.fromCType(invalidAddressCtype)).toThrowError(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       ERROR_ADDRESS_INVALID(invalidAddressCtype.owner!, 'CType owner')
+    )
+    expect(() => CType.fromCType(faultyAddressTypeCType)).toThrowError(
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      ERROR_ADDRESS_INVALID(faultyAddressTypeCType.owner!, 'CType owner')
+    )
+    expect(() => CType.fromCType(wrongSchemaIdCType)).toThrowError(
+      ERROR_CTYPE_ID_NOT_MATCHING(
+        getIdForSchema(wrongSchemaIdCType.schema),
+        wrongSchemaIdCType.schema.$id
+      )
     )
   })
 
@@ -153,10 +188,17 @@ describe('CType', () => {
   })
 
   it('Negative test for compresses and decompresses the ctype object', () => {
+    const faultySchema = [...compressedCType[2]]
+    faultySchema.pop()
+    const faultySchemaCTypeCompressed = [...compressedCType]
+    faultySchemaCTypeCompressed[2] = faultySchema as CompressedCTypeSchema
     compressedCType.pop()
     delete rawCType.$id
     delete claimCtype.hash
 
+    expect(() =>
+      CTypeUtils.decompress(faultySchemaCTypeCompressed as CompressedCType)
+    ).toThrow()
     expect(() => CTypeUtils.compressSchema(rawCType)).toThrow()
 
     expect(() => CTypeUtils.compress(claimCtype)).toThrow()
@@ -166,6 +208,20 @@ describe('CType', () => {
     expect(() => CType.decompress(compressedCType)).toThrow()
 
     expect(() => claimCtype.compress()).toThrow()
+  })
+  it('verifies whether a ctype is registered with the address on chain ', async () => {
+    blockchainApi.query.ctype.cTYPEs = jest.fn(async (hash: string) => {
+      return new Option(registry, 'AccountId', claimCtype.owner)
+    })
+    expect(await claimCtype.verifyStored()).toBeTruthy()
+    blockchainApi.query.ctype.cTYPEs = jest.fn(async (hash: string) => {
+      return new Option(registry, 'AccountId', identityBob.address)
+    })
+    expect(await claimCtype.verifyOwner()).toBeFalsy()
+    blockchainApi.query.ctype.cTYPEs = jest.fn(async (hash: string) => {
+      return new Option(registry, 'AccountId', null)
+    })
+    expect(await claimCtype.verifyStored()).toBeFalsy()
   })
 })
 
@@ -230,5 +286,9 @@ describe('blank ctypes', () => {
       (await requestForAttestation.fromClaimAndIdentity(claimA2, identityAlice))
         .message.rootHash
     )
+  })
+  it('typeguard returns true or false for complete or incomplete CTypes', () => {
+    expect(CType.isICType(ctype1)).toBeTruthy()
+    expect(CType.isICType({ ...ctype2, owner: '' })).toBeFalsy()
   })
 })

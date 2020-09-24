@@ -5,6 +5,7 @@ import CType from './CType'
 import CTypeUtils from './CType.utils'
 import CTypeMetadata from './CTypeMetadata'
 import { MetadataModel } from './CTypeSchema'
+import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
 
 describe('CType', () => {
   let identityAlice: Identity
@@ -50,5 +51,15 @@ describe('CType', () => {
   })
   it('checks if the metadata matches corresponding ctype hash', async () => {
     expect(metadata.ctypeHash).toEqual(ctype.hash)
+  })
+  it('throws error when supplied malformed constructor input', () => {
+    const faultyMetadata: ICTypeMetadata = {
+      metadata: ctypeMetadata,
+      ctypeHash: ctype.hash,
+    }
+    delete faultyMetadata.metadata.properties
+    expect(() => new CTypeMetadata(faultyMetadata)).toThrow(
+      ERROR_OBJECT_MALFORMED()
+    )
   })
 })
