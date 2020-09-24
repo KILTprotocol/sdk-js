@@ -166,7 +166,9 @@ describe('When there are haves and have-nots', () => {
       ),
     ])
     expect(listener).toBeCalledWith(
-      expect.objectContaining({ account: faucet.address })
+      faucet.address,
+      expect.anything(),
+      expect.anything()
     )
   }, 40_000)
 })
