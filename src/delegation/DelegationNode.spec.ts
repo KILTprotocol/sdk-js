@@ -1,5 +1,7 @@
 import { submitSignedTx } from '../blockchain'
-import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
+import TYPE_REGISTRY, {
+  mockChainQueryReturn,
+} from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Identity from '../identity/Identity'
 import { Permission } from '../types/Delegation'
 import DelegationNode from './DelegationNode'
@@ -14,6 +16,8 @@ beforeAll(async () => {
 })
 
 describe('Delegation', () => {
+  const api = require('../blockchainApiConnection/BlockchainApiConnection')
+    .__mocked_api
   it('delegation generate hash', () => {
     const node = new DelegationNode(
       '0x0000000000000000000000000000000000000000000000000000000000000001',
@@ -43,26 +47,25 @@ describe('Delegation', () => {
   })
 
   it('delegation verify / revoke', async () => {
-    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations = jest.fn(
-      async (id) => {
-        if (id === 'success') {
-          return mockChainQueryReturn('delegation', 'delegations', [
-            'myRootId',
-            null,
-            identityAlice.address,
-            1,
-            false,
-          ])
-        }
+    api.query.delegation.delegations = jest.fn(async (id) => {
+      if (id === 'success') {
         return mockChainQueryReturn('delegation', 'delegations', [
           'myRootId',
           null,
           identityAlice.address,
           1,
-          true,
+          false,
         ])
       }
-    )
+      return mockChainQueryReturn('delegation', 'delegations', [
+        'myRootId',
+        null,
+        identityAlice.address,
+        1,
+        true,
+      ])
+    })
+    api.registry = TYPE_REGISTRY
 
     expect(
       await new DelegationNode(
