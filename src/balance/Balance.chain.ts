@@ -90,14 +90,13 @@ export async function listenToBalanceChanges(
 
 /**
  * Transfer Kilt [amount] tokens to [toAccountAddress] using the given [[Identity]].
- * <B>Note that the value of the transferred currency and the balance amount reported by the chain is in Femto-Kilt (1e-15), and must be translated to Kilt-Coin</B>.
+ * <B>Note that balance amount is in Femto-Kilt (1e-15) and must be translated to Kilt-Coin</B>.
  *
  * @param identity Identity to use for token transfer.
  * @param accountAddressTo Address of the receiver account.
- * @param amount Amount of Units to transfer.
- * @param exponent Magnitude of the amount. Default magnitude of Femto-Kilt.
+ * @param amount Amount of Femto-Kilt (1e-15) to transfer.
+ * @param exponent
  * @returns Promise containing the transaction status.
- *
  * @example
  * <BR>
  *
@@ -109,11 +108,11 @@ export async function listenToBalanceChanges(
  * const amount: BN = new BN(42)
  * const blockchain = await sdk.getCached()
  * sdk.Balance.makeTransfer(identity, address, amount)
- *   .then(tx => blockchain.sendTx(tx))
- *   .then(() => console.log('Successfully transferred ${amount.toNumber()} tokens'))
- *   .catch(err => {
- *     console.log('Transfer failed')
- *   })
+ * .then(tx => blockchain.sendTx(tx))
+ * .then(() => console.log('Successfully transferred ${amount.toNumber()} tokens'))
+ * .catch(err => {
+ * console.log('Transfer failed')
+ * })
  * ```
  */
 export async function makeTransfer(
