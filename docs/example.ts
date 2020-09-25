@@ -10,6 +10,7 @@ import Kilt, {
   IRevocationHandle,
   PublicAttesterIdentity,
 } from '../src'
+import { AWAIT_IN_BLOCK, submitTx } from '../src/blockchain/Blockchain'
 import constants from '../src/test/constants'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
@@ -81,8 +82,7 @@ async function setup(): Promise<{
   // ! This costs tokens !
   // Also note, that the completely same ctype can only be stored once on the blockchain.
   try {
-    // TODO: use submitTx to handle extrinsic errors correctly
-    await ctype.store(attester).then(tx => tx.send())
+    await ctype.store(attester).then((tx) => submitTx(tx, AWAIT_IN_BLOCK))
   } catch (e) {
     console.log(
       'Error while storing CType. Probably either insufficient funds or ctype does already exist.',
@@ -195,10 +195,7 @@ async function doAttestation(
   const submitAttestationEnc = submitAttestation.encrypt()
 
   // ------------------------- CLAIMER -----------------------------------------
-  Kilt.Message.ensureHashAndSignature(
-    submitAttestationEnc,
-    attester.address
-  )
+  Kilt.Message.ensureHashAndSignature(submitAttestationEnc, attester.address)
   const submitAttestationDec = Kilt.Message.decrypt(
     submitAttestationEnc,
     claimer

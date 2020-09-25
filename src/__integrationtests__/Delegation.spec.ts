@@ -11,6 +11,7 @@ import {
   AWAIT_IN_BLOCK,
   AWAIT_READY,
   IBlockchainApi,
+  submitTx,
 } from '../blockchain/Blockchain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
@@ -52,7 +53,7 @@ describe('when there is an account hierarchy', () => {
 
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester).then((tx) =>
-        blockchain.submitTx(tx, AWAIT_READY)
+        submitTx(tx, AWAIT_READY)
       )
     }
   }, 30_000)
@@ -63,9 +64,7 @@ describe('when there is an account hierarchy', () => {
       DriversLicense.hash,
       uncleSam.address
     )
-    await rootNode
-      .store(uncleSam)
-      .then((tx) => blockchain.submitTx(tx, AWAIT_READY))
+    await rootNode.store(uncleSam).then((tx) => submitTx(tx, AWAIT_READY))
     const delegatedNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
@@ -76,7 +75,7 @@ describe('when there is an account hierarchy', () => {
     const HashSignedByDelegate = attester.signStr(delegatedNode.generateHash())
     await delegatedNode
       .store(uncleSam, HashSignedByDelegate)
-      .then((tx) => blockchain.submitTx(tx, AWAIT_IN_BLOCK))
+      .then((tx) => submitTx(tx, AWAIT_IN_BLOCK))
     await Promise.all([
       expect(rootNode.verify()).resolves.toBeTruthy(),
       expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -102,12 +101,10 @@ describe('when there is an account hierarchy', () => {
         rootNode.id
       )
       HashSignedByDelegate = attester.signStr(delegatedNode.generateHash())
-      await rootNode
-        .store(uncleSam)
-        .then((tx) => blockchain.submitTx(tx, AWAIT_READY))
+      await rootNode.store(uncleSam).then((tx) => submitTx(tx, AWAIT_READY))
       await delegatedNode
         .store(uncleSam, HashSignedByDelegate)
-        .then((tx) => blockchain.submitTx(tx, AWAIT_IN_BLOCK))
+        .then((tx) => submitTx(tx, AWAIT_IN_BLOCK))
       await Promise.all([
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -138,7 +135,7 @@ describe('when there is an account hierarchy', () => {
       )
       await attestation
         .store(attester)
-        .then((tx) => blockchain.submitTx(tx, AWAIT_IN_BLOCK))
+        .then((tx) => submitTx(tx, AWAIT_IN_BLOCK))
 
       const attClaim = await Credential.fromRequestAndAttestation(
         claimer,
@@ -151,7 +148,7 @@ describe('when there is an account hierarchy', () => {
       // revoke attestation through root
       await attClaim.attestation
         .revoke(uncleSam)
-        .then((tx) => blockchain.submitTx(tx, AWAIT_IN_BLOCK))
+        .then((tx) => submitTx(tx, AWAIT_IN_BLOCK))
       await expect(attClaim.verify()).resolves.toBeFalsy()
     }, 75_000)
   })

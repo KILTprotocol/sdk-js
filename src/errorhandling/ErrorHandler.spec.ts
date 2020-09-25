@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { ApiPromise, SubmittableResult } from '@polkadot/api'
+import { SubmittableResult } from '@polkadot/api'
 import { Tuple } from '@polkadot/types'
 import { ErrorHandler } from './ErrorHandler'
 import { ErrorCode, ERROR_CTYPE_NOT_FOUND } from './ExtrinsicError'
@@ -51,57 +51,7 @@ describe('ErrorHandler', () => {
     expect(ErrorHandler.extrinsicFailed(submittableResult)).toBeFalsy()
   })
 
-  const modules = [
-    {
-      events: {
-        isEmpty: false,
-      },
-      name: {
-        toString: jest.fn(() => {
-          return 'system'
-        }),
-      },
-    },
-    {
-      events: {
-        isEmpty: true,
-      },
-      name: {
-        toString: jest.fn(() => {
-          return 'balances'
-        }),
-      },
-    },
-    {
-      events: {
-        isEmpty: false,
-      },
-      name: {
-        toString: jest.fn(() => {
-          return 'Error'
-        }),
-      },
-    },
-  ]
-
-  const apiPromise: ApiPromise = {
-    runtimeMetadata: {
-      asV11: {
-        // @ts-ignore
-        modules,
-      },
-    },
-  }
-  it('test get error module index', async () => {
-    // @ts-ignore
-    expect(await ErrorHandler.getErrorModuleIndex(apiPromise)).toBe(1)
-  })
-
   it('test get extrinsic error', async () => {
-    const errorHandler: ErrorHandler = new ErrorHandler(apiPromise)
-    // @ts-ignore
-    errorHandler.moduleIndex = 1
-
     // @ts-ignore
     const errorCode: Tuple = {
       // @ts-ignore
@@ -116,7 +66,7 @@ describe('ErrorHandler', () => {
         },
       },
       event: {
-        index: [1],
+        section: 'error',
         data: [errorCode],
       },
     }
@@ -126,7 +76,7 @@ describe('ErrorHandler', () => {
     }
 
     // @ts-ignore
-    expect(errorHandler.getExtrinsicError(submittableResult)).toBe(
+    expect(ErrorHandler.getExtrinsicError(submittableResult)).toBe(
       ERROR_CTYPE_NOT_FOUND
     )
   })

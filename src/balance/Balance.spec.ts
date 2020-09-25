@@ -9,7 +9,7 @@ import {
   makeTransfer,
 } from './Balance.chain'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import { getCached } from '../blockchainApiConnection'
+import { submitTx } from '../blockchain/Blockchain'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -62,10 +62,8 @@ describe('Balance', () => {
     const alice = await Identity.buildFromURI('//Alice')
     const bob = await Identity.buildFromURI('//Bob')
 
-    const blockchain = await getCached()
-
     const tx = await makeTransfer(alice, bob.address, new BN(100))
-    const status = await blockchain.submitTx(tx)
+    const status = await submitTx(tx)
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })

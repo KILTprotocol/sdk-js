@@ -1,6 +1,6 @@
 import { U8aFixed } from '@polkadot/types'
 import { Did, IDid } from '..'
-import getCached from '../blockchainApiConnection'
+import { submitTx } from '../blockchain/Blockchain'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
 } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
@@ -67,12 +67,8 @@ describe('DID', () => {
   it('store did', async () => {
     const alice = await Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(alice, 'http://myDID.kilt.io')
-    const blockchain = await getCached()
     const tx = await did.store(alice)
-    await expect(blockchain.submitTx(tx)).resolves.toHaveProperty(
-      'isFinalized',
-      true
-    )
+    await expect(submitTx(tx)).resolves.toHaveProperty('isFinalized', true)
   })
 
   it('creates default did document', async () => {

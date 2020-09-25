@@ -1,4 +1,4 @@
-import getCached from '../blockchainApiConnection'
+import { submitTx } from '../blockchain/Blockchain'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Identity from '../identity/Identity'
 import { Permission } from '../types/Delegation'
@@ -88,10 +88,9 @@ describe('Delegation', () => {
       'myAccount',
       []
     )
-    const blockchain = await getCached()
     const revokeStatus = await aDelegationNode
       .revoke(identityAlice)
-      .then((tx) => blockchain.submitTx(tx))
+      .then((tx) => submitTx(tx))
 
     expect(revokeStatus).toBeDefined()
   })

@@ -38,8 +38,9 @@ export interface IBlockchainApi {
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic>
   submitTx(
+    identity: Identity,
     tx: SubmittableExtrinsic,
-    resolveOn: (result: SubmittableResult) => boolean
+    resolveOn?: (result: SubmittableResult) => boolean
   ): Promise<SubmittableResult>
   getNonce(accountAddress: string): Promise<Codec>
 }
@@ -47,6 +48,43 @@ export interface IBlockchainApi {
 export const AWAIT_READY = (result: SubmittableResult) => result.status.isReady
 export const AWAIT_IN_BLOCK = (result: SubmittableResult) => result.isInBlock
 export const AWAIT_FINALIZED = (result: SubmittableResult) => result.isFinalized
+
+export async function submitTx(
+  tx: SubmittableExtrinsic,
+  resolveOn: (result: SubmittableResult) => boolean = AWAIT_FINALIZED
+): Promise<SubmittableResult> {
+  log.info(`Submitting ${tx.method}`)
+  let unsubscribe: () => void
+  return new Promise<SubmittableResult>((resolve, reject) => {
+    tx.send((result) => {
+      log.info(`Got tx status '${result.status.type}'`)
+      if (ErrorHandler.extrinsicFailed(result)) {
+        log.warn(`Extrinsic execution failed`)
+        log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
+        const extrinsicError: ExtrinsicError =
+          ErrorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
+        log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
+        reject(extrinsicError)
+      } else if (result.isError) {
+        reject(
+          new Error(`Transaction failed with status '${result.status.type}'`)
+        )
+      } else if (resolveOn(result)) {
+        resolve(result)
+      }
+    })
+      .then((cb) => {
+        unsubscribe = cb
+      })
+      // not sure we need this final catch block
+      .catch((err: Error) => {
+        // just reject with the original tx error from the chain
+        reject(err)
+      })
+  }).finally(() => {
+    if (unsubscribe) unsubscribe()
+  })
+}
 
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
@@ -59,17 +97,12 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public api: ApiPromise
-  public readonly ready: Promise<boolean>
   public readonly portablegabi: gabi.Blockchain
 
   public constructor(api: ApiPromise) {
     this.api = api
-    this.errorHandler = new ErrorHandler(api)
-    this.ready = this.errorHandler.ready
     this.portablegabi = new gabi.Blockchain('portablegabi', this.api as any)
   }
-
-  private errorHandler: ErrorHandler
 
   public async getStats(): Promise<Stats> {
     const encoded: Text[] = await Promise.all([
@@ -100,42 +133,14 @@ export default class Blockchain implements IBlockchainApi {
     return signed
   }
 
+  // TODO: should this be renamed signAndSubmitTx ?
   public async submitTx(
+    identity: Identity,
     tx: SubmittableExtrinsic,
-    resolveOn: (result: SubmittableResult) => boolean = (result) =>
-      result.isFinalized
-  ): Promise<SubmittableResult> {
-    log.info(`Submitting ${tx.method}`)
-    let unsubscribe: () => void
-    return new Promise<SubmittableResult>((resolve, reject) => {
-      tx.send((result) => {
-        log.info(`Got tx status '${result.status.type}'`)
-        if (ErrorHandler.extrinsicFailed(result)) {
-          log.warn(`Extrinsic execution failed`)
-          log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
-          const extrinsicError: ExtrinsicError =
-            this.errorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
-          log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
-          reject(extrinsicError)
-        } else if (result.isError) {
-          reject(
-            new Error(`Transaction failed with status '${result.status.type}'`)
-          )
-        } else if (resolveOn(result)) {
-          resolve(result)
-        }
-      })
-        .then((cb) => {
-          unsubscribe = cb
-        })
-        // not sure we need this final catch block
-        .catch((err: Error) => {
-          // just reject with the original tx error from the chain
-          reject(err)
-        })
-    }).finally(() => {
-      if (unsubscribe) unsubscribe()
-    })
+    resolveOn: (result: SubmittableResult) => boolean = AWAIT_FINALIZED
+  ) {
+    const signedTx = await this.signTx(identity, tx)
+    return submitTx(signedTx, resolveOn)
   }
 
   public async getNonce(accountAddress: string): Promise<Index> {

@@ -38,9 +38,7 @@ export async function buildConnection(
     provider,
     types: CUSTOM_TYPES,
   })
-  const bc = new Blockchain(api)
-  await bc.ready
-  return bc
+  return new Blockchain(api)
 }
 
 export async function getCached(

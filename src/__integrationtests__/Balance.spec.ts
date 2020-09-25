@@ -14,6 +14,7 @@ import {
   AWAIT_IN_BLOCK,
   AWAIT_READY,
   IBlockchainApi,
+  submitTx,
 } from '../blockchain/Blockchain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
@@ -70,7 +71,7 @@ describe('when there is a dev chain with a faucet', () => {
     listenToBalanceChanges(ident.address, funny)
     const balanceBefore = await getBalance(faucet.address)
     const tx = await makeTransfer(faucet, ident.address, MIN_TRANSACTION)
-    await blockchain.submitTx(tx, AWAIT_IN_BLOCK)
+    await submitTx(tx, AWAIT_IN_BLOCK)
     const [balanceAfter, balanceIdent] = await Promise.all([
       getBalance(faucet.address),
       getBalance(ident.address),
@@ -99,7 +100,7 @@ describe('When there are haves and have-nots', () => {
       richieRich,
       stormyD.address,
       MIN_TRANSACTION
-    ).then((tx) => blockchain.submitTx(tx, AWAIT_IN_BLOCK))
+    ).then((tx) => submitTx(tx, AWAIT_IN_BLOCK))
     const balanceTo = await getBalance(stormyD.address)
     expect(balanceTo.toNumber()).toBe(MIN_TRANSACTION.toNumber())
   }, 40_000)
@@ -108,7 +109,7 @@ describe('When there are haves and have-nots', () => {
     const originalBalance = await getBalance(stormyD.address)
     await expect(
       makeTransfer(bobbyBroke, stormyD.address, MIN_TRANSACTION).then((tx) =>
-        blockchain.submitTx(tx, AWAIT_IN_BLOCK)
+        submitTx(tx, AWAIT_IN_BLOCK)
       )
     ).rejects.toThrowError('1010: Invalid Transaction')
     const [newBalance, zeroBalance] = await Promise.all([
@@ -123,7 +124,7 @@ describe('When there are haves and have-nots', () => {
     const RichieBalance = await getBalance(richieRich.address)
     await expect(
       makeTransfer(richieRich, bobbyBroke.address, RichieBalance).then((tx) =>
-        blockchain.submitTx(tx, AWAIT_IN_BLOCK)
+        submitTx(tx, AWAIT_IN_BLOCK)
       )
     ).rejects.toThrowError()
     const [newBalance, zeroBalance] = await Promise.all([
@@ -138,10 +139,10 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
     await makeTransfer(faucet, richieRich.address, MIN_TRANSACTION).then((tx) =>
-      blockchain.submitTx(tx, AWAIT_READY)
+      submitTx(tx, AWAIT_READY)
     )
     await makeTransfer(faucet, stormyD.address, MIN_TRANSACTION).then((tx) =>
-      blockchain.submitTx(tx, AWAIT_IN_BLOCK)
+      submitTx(tx, AWAIT_IN_BLOCK)
     )
 
     expect(listener).toBeCalledWith(
@@ -157,10 +158,10 @@ describe('When there are haves and have-nots', () => {
     listenToBalanceChanges(faucet.address, listener)
     await Promise.all([
       makeTransfer(faucet, richieRich.address, MIN_TRANSACTION).then((tx) =>
-        blockchain.submitTx(tx, AWAIT_IN_BLOCK)
+        submitTx(tx, AWAIT_IN_BLOCK)
       ),
       makeTransfer(faucet, stormyD.address, MIN_TRANSACTION).then((tx) =>
-        blockchain.submitTx(tx, AWAIT_IN_BLOCK)
+        submitTx(tx, AWAIT_IN_BLOCK)
       ),
     ])
     expect(listener).toBeCalledWith(faucet.address)
