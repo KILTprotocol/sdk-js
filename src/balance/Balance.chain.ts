@@ -90,12 +90,12 @@ export async function listenToBalanceChanges(
 
 /**
  * Transfer Kilt [amount] tokens to [toAccountAddress] using the given [[Identity]].
- * <B>Note that balance amount is in Femto-Kilt (1e-15) and must be translated to Kilt-Coin</B>.
+ * <B>Note that the value of the transferred currency and the balance amount reported by the chain is in Femto-Kilt (1e-15), and must be translated to Kilt-Coin</B>.
  *
  * @param identity Identity to use for token transfer.
  * @param accountAddressTo Address of the receiver account.
  * @param amount Amount of Units to transfer.
- * @param exponent Magnitude of the amount.
+ * @param exponent Magnitude of the amount. Default magnitude of Femto-Kilt.
  * @returns Promise containing the transaction status.
  *
  * @example
@@ -123,12 +123,13 @@ export async function makeTransfer(
   exponent = -15
 ): Promise<SubmittableResult> {
   const blockchain = await getCached()
+  const cleanExponent =
+    (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
   const transfer = blockchain.api.tx.balances.transfer(
     accountAddressTo,
-    BalanceUtils.convertToTxUnit(
-      amount,
-      (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
-    )
+    cleanExponent === -15
+      ? amount
+      : BalanceUtils.convertToTxUnit(amount, cleanExponent)
   )
   return blockchain.submitTx(identity, transfer)
 }

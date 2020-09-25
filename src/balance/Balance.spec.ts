@@ -9,6 +9,7 @@ import {
   makeTransfer,
 } from './Balance.chain'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
+import BalanceUtils from './Balance.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -62,6 +63,23 @@ describe('Balance', () => {
     const bob = await Identity.buildFromURI('//Bob')
 
     const status = await makeTransfer(alice, bob.address, new BN(100))
+    expect(status).toBeInstanceOf(SubmittableResult)
+    expect(status.isFinalized).toBeTruthy()
+  })
+  it('should make transfer of amount with arbitrary exponent', async () => {
+    const alice = await Identity.buildFromURI('//Alice')
+    const bob = await Identity.buildFromURI('//Bob')
+    const amount = new BN(10)
+    const exponent = -6
+    const expectedAmount = BalanceUtils.convertToTxUnit(
+      amount,
+      (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
+    )
+    const status = await makeTransfer(alice, bob.address, amount, exponent)
+    expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(
+      bob.address,
+      expectedAmount
+    )
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
