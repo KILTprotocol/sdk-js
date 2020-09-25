@@ -15,6 +15,7 @@ import BN from 'bn.js'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
+import BalanceUtils from './Balance.utils'
 
 /**
  * Fetches the current balance of the account with [accountAddress].
@@ -93,7 +94,8 @@ export async function listenToBalanceChanges(
  *
  * @param identity Identity to use for token transfer.
  * @param accountAddressTo Address of the receiver account.
- * @param amount Amount of Femto-Kilt (1e-15) to transfer.
+ * @param amount Amount of Units to transfer.
+ * @param exponent Magnitude of the amount.
  * @returns Promise containing the transaction status.
  *
  * @example
@@ -117,9 +119,16 @@ export async function listenToBalanceChanges(
 export async function makeTransfer(
   identity: Identity,
   accountAddressTo: IPublicIdentity['address'],
-  amount: BN
+  amount: BN,
+  exponent = -15
 ): Promise<SubmittableResult> {
   const blockchain = await getCached()
-  const transfer = blockchain.api.tx.balances.transfer(accountAddressTo, amount)
+  const transfer = blockchain.api.tx.balances.transfer(
+    accountAddressTo,
+    BalanceUtils.convertToTxUnit(
+      amount,
+      (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
+    )
+  )
   return blockchain.submitTx(identity, transfer)
 }
