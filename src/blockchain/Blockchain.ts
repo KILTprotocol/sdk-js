@@ -27,6 +27,8 @@ export type Stats = {
   nodeVersion: string
 }
 
+export type txStatusPromiseResolver = (result: SubmittableResult) => boolean
+
 export interface IBlockchainApi {
   api: ApiPromise
   portablegabi: gabi.Blockchain
@@ -40,18 +42,21 @@ export interface IBlockchainApi {
   submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
-    resolveOn?: (result: SubmittableResult) => boolean
+    resolveOn?: txStatusPromiseResolver
   ): Promise<SubmittableResult>
   getNonce(accountAddress: string): Promise<Codec>
 }
 
-export const AWAIT_READY = (result: SubmittableResult) => result.status.isReady
-export const AWAIT_IN_BLOCK = (result: SubmittableResult) => result.isInBlock
-export const AWAIT_FINALIZED = (result: SubmittableResult) => result.isFinalized
+export const AWAIT_READY: txStatusPromiseResolver = (result) =>
+  result.status.isReady
+export const AWAIT_IN_BLOCK: txStatusPromiseResolver = (result) =>
+  result.isInBlock
+export const AWAIT_FINALIZED: txStatusPromiseResolver = (result) =>
+  result.isFinalized
 
 export async function submitTx(
   tx: SubmittableExtrinsic,
-  resolveOn: (result: SubmittableResult) => boolean = AWAIT_FINALIZED
+  resolveOn: txStatusPromiseResolver = AWAIT_FINALIZED
 ): Promise<SubmittableResult> {
   log.info(`Submitting ${tx.method}`)
   let unsubscribe: () => void
@@ -137,7 +142,7 @@ export default class Blockchain implements IBlockchainApi {
   public async submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
-    resolveOn: (result: SubmittableResult) => boolean = AWAIT_FINALIZED
+    resolveOn: txStatusPromiseResolver = AWAIT_FINALIZED
   ) {
     const signedTx = await this.signTx(identity, tx)
     return submitTx(signedTx, resolveOn)
