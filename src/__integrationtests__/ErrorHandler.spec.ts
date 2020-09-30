@@ -6,7 +6,7 @@
 
 import BN from 'bn.js'
 import { Attestation, IBlockchainApi } from '..'
-import { makeTransfer } from '../balance'
+import { makeTransfer } from '../balance/Balance.chain'
 import { AWAIT_IN_BLOCK, submitSignedTx } from '../blockchain/Blockchain'
 import { DEFAULT_WS_ADDRESS, getCached } from '../blockchainApiConnection'
 import { ERROR_CTYPE_NOT_FOUND } from '../errorhandling'
