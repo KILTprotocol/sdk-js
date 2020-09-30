@@ -92,4 +92,19 @@ describe('Balance', () => {
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
+  it('should make transfer of amount with arbitrary exponent', async () => {
+    const amount = new BN(10)
+    const exponent = -6
+    const expectedAmount = BalanceUtils.convertToTxUnit(
+      amount,
+      (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
+    )
+    const status = await makeTransfer(alice, bob.address, amount, exponent)
+    expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(
+      bob.address,
+      expectedAmount
+    )
+    expect(status).toBeInstanceOf(SubmittableResult)
+    expect(status.isFinalized).toBeTruthy()
+  })
 })
