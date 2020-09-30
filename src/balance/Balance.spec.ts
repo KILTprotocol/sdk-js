@@ -17,6 +17,8 @@ const BALANCE = 42
 const FEE = 30
 
 describe('Balance', () => {
+  let alice: Identity
+  let bob: Identity
   const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
@@ -42,9 +44,11 @@ describe('Balance', () => {
       return accountInfo(BALANCE - FEE)
     }
   )
-
+  beforeAll(async () => {
+    alice = await Identity.buildFromURI('//Alice')
+    bob = await Identity.buildFromURI('//Bob')
+  })
   it('should listen to balance changes', async (done) => {
-    const bob = await Identity.buildFromURI('//Bob')
     const listener = (account: string, balance: BN, change: BN): void => {
       expect(account).toBe(bob.address)
       expect(balance.toNumber()).toBe(BALANCE)
@@ -59,16 +63,11 @@ describe('Balance', () => {
   })
 
   it('should make transfer', async () => {
-    const alice = await Identity.buildFromURI('//Alice')
-    const bob = await Identity.buildFromURI('//Bob')
-
     const status = await makeTransfer(alice, bob.address, new BN(100))
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
   it('should make transfer of amount with arbitrary exponent', async () => {
-    const alice = await Identity.buildFromURI('//Alice')
-    const bob = await Identity.buildFromURI('//Bob')
     const amount = new BN(10)
     const exponent = -6
     const expectedAmount = BalanceUtils.convertToTxUnit(
