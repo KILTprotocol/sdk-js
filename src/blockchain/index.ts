@@ -3,4 +3,4 @@
  * @ignore
  */
 
-export { default, IBlockchainApi } from './Blockchain'
+export { default, IBlockchainApi, submitSignedTx } from './Blockchain'

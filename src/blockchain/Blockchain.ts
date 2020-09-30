@@ -15,7 +15,7 @@ import { Text } from '@polkadot/types'
 import { Header, Index } from '@polkadot/types/interfaces/types'
 import { AnyJson, Codec } from '@polkadot/types/types'
 import { factory as LoggerFactory } from '../config/ConfigLog'
-import { ErrorHandler } from '../errorhandling/ErrorHandler'
+import { ErrorHandler } from '../errorhandling'
 import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 
@@ -78,10 +78,9 @@ export async function submitSignedTx(
         resolve(result)
       }
     })
-      .then((cb) => {
-        unsubscribe = cb
+      .then((subsciptionHandle: () => void) => {
+        unsubscribe = subsciptionHandle
       })
-      // not sure we need this final catch block
       .catch((err: Error) => {
         // just reject with the original tx error from the chain
         reject(err)
@@ -99,6 +98,13 @@ export default class Blockchain implements IBlockchainApi {
     const json = queryResult.toJSON()
     if (json instanceof Array) return json
     return []
+  }
+
+  public static submitSignedTx(
+    tx: SubmittableExtrinsic,
+    resolveOn: txStatusPromiseResolver = AWAIT_FINALIZED
+  ): Promise<SubmittableResult> {
+    return submitSignedTx(tx, resolveOn)
   }
 
   public api: ApiPromise

@@ -70,8 +70,9 @@ describe('when there is a dev chain with a faucet', () => {
     const funny = jest.fn()
     listenToBalanceChanges(ident.address, funny)
     const balanceBefore = await getBalance(faucet.address)
-    const tx = await makeTransfer(faucet, ident.address, MIN_TRANSACTION)
-    await submitSignedTx(tx, AWAIT_IN_BLOCK)
+    await makeTransfer(faucet, ident.address, MIN_TRANSACTION).then((tx) =>
+      submitSignedTx(tx, AWAIT_IN_BLOCK)
+    )
     const [balanceAfter, balanceIdent] = await Promise.all([
       getBalance(faucet.address),
       getBalance(ident.address),
