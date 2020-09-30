@@ -1,4 +1,4 @@
-import { submitTx } from '../blockchain/Blockchain'
+import { submitSignedTx } from '../blockchain/Blockchain'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Identity from '../identity/Identity'
 import { Permission } from '../types/Delegation'
@@ -90,7 +90,7 @@ describe('Delegation', () => {
     )
     const revokeStatus = await aDelegationNode
       .revoke(identityAlice)
-      .then((tx) => submitTx(tx))
+      .then((tx) => submitSignedTx(tx))
 
     expect(revokeStatus).toBeDefined()
   })

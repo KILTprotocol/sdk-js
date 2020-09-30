@@ -9,7 +9,7 @@ import {
   makeTransfer,
 } from './Balance.chain'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import { submitTx } from '../blockchain/Blockchain'
+import { submitSignedTx } from '../blockchain/Blockchain'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
@@ -63,7 +63,7 @@ describe('Balance', () => {
     const bob = await Identity.buildFromURI('//Bob')
 
     const tx = await makeTransfer(alice, bob.address, new BN(100))
-    const status = await submitTx(tx)
+    const status = await submitSignedTx(tx)
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })

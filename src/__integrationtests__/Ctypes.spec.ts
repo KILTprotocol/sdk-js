@@ -9,7 +9,7 @@ import {
   AWAIT_IN_BLOCK,
   AWAIT_READY,
   IBlockchainApi,
-  submitTx,
+  submitSignedTx,
 } from '../blockchain/Blockchain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import CType from '../ctype/CType'
@@ -50,14 +50,16 @@ describe('When there is an CtypeCreator and a verifier', () => {
       Identity.generateMnemonic()
     )
     await expect(
-      ctype.store(bobbyBroke).then((tx) => submitTx(tx, AWAIT_IN_BLOCK))
+      ctype.store(bobbyBroke).then((tx) => submitSignedTx(tx, AWAIT_IN_BLOCK))
     ).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
   }, 20_000)
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
-    await ctype.store(ctypeCreator).then((tx) => submitTx(tx, AWAIT_IN_BLOCK))
+    await ctype
+      .store(ctypeCreator)
+      .then((tx) => submitSignedTx(tx, AWAIT_IN_BLOCK))
     await Promise.all([
       expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.address),
       expect(ctype.verifyStored()).resolves.toBeTruthy(),
@@ -68,9 +70,11 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
-    await ctype.store(ctypeCreator).then((tx) => submitTx(tx, AWAIT_READY))
+    await ctype
+      .store(ctypeCreator)
+      .then((tx) => submitSignedTx(tx, AWAIT_READY))
     await expect(
-      ctype.store(ctypeCreator).then((tx) => submitTx(tx, AWAIT_IN_BLOCK))
+      ctype.store(ctypeCreator).then((tx) => submitSignedTx(tx, AWAIT_IN_BLOCK))
     ).rejects.toThrowError(ERROR_CTYPE_ALREADY_EXISTS)
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.address)

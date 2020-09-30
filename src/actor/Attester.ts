@@ -1,5 +1,5 @@
 import * as gabi from '@kiltprotocol/portablegabi'
-import { AWAIT_FINALIZED, submitTx } from '../blockchain/Blockchain'
+import { AWAIT_FINALIZED, submitSignedTx } from '../blockchain/Blockchain'
 import Attestation from '../attestation/Attestation'
 import { getCached } from '../blockchainApiConnection'
 import {
@@ -90,7 +90,9 @@ export async function issueAttestation(
     witness = attestationInfo.witness
     peAttestation = attestationInfo.attestation
   }
-  await attestation.store(attester).then((tx) => submitTx(tx, AWAIT_FINALIZED))
+  await attestation
+    .store(attester)
+    .then((tx) => submitSignedTx(tx, AWAIT_FINALIZED))
 
   const revocationHandle: IRevocationHandle = {
     witness,

@@ -54,7 +54,7 @@ export const AWAIT_IN_BLOCK: txStatusPromiseResolver = (result) =>
 export const AWAIT_FINALIZED: txStatusPromiseResolver = (result) =>
   result.isFinalized
 
-export async function submitTx(
+export async function submitSignedTx(
   tx: SubmittableExtrinsic,
   resolveOn: txStatusPromiseResolver = AWAIT_FINALIZED
 ): Promise<SubmittableResult> {
@@ -145,7 +145,7 @@ export default class Blockchain implements IBlockchainApi {
     resolveOn: txStatusPromiseResolver = AWAIT_FINALIZED
   ) {
     const signedTx = await this.signTx(identity, tx)
-    return submitTx(signedTx, resolveOn)
+    return submitSignedTx(signedTx, resolveOn)
   }
 
   public async getNonce(accountAddress: string): Promise<Index> {
