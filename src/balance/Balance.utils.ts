@@ -10,14 +10,11 @@ import { formatBalance } from '@polkadot/util'
 export const KILT_COIN = new BN(1)
 
 export function formatKiltBalance(amount: BN): string {
-  return formatBalance(
-    amount,
-    {
-      withSiFull: true,
-      withUnit: 'KILT',
-    },
-    15
-  )
+  return formatBalance(amount, {
+    decimals: 15,
+    withSiFull: true,
+    withUnit: 'KILT',
+  })
 }
 
 export function convertToTxUnit(balance: BN, power: number): BN {
