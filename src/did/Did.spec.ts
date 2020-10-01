@@ -4,7 +4,10 @@ import { submitSignedTx } from '../blockchain'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
 } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/SDKErrors'
+import {
+  ERROR_DID_IDENTIFIER_MISMATCH,
+  ERROR_INVALID_DID_PREFIX,
+} from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import {
   getIdentifierFromAddress,
@@ -61,7 +64,10 @@ describe('DID', () => {
   })
 
   it('query by identifier invalid identifier', async () => {
-    await expect(Did.queryByIdentifier('invalidIdentifier')).rejects.toThrow()
+    const identifier = 'invalidIdentifier'
+    await expect(Did.queryByIdentifier(identifier)).rejects.toThrow(
+      ERROR_INVALID_DID_PREFIX(identifier)
+    )
   })
 
   it('store did', async () => {
