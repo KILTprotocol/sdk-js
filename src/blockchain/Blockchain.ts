@@ -144,12 +144,11 @@ export default class Blockchain implements IBlockchainApi {
     return signed
   }
 
-  // TODO: should this be renamed signAndSubmitTx ?
   public async submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
     resolveOn: txStatusPromiseResolver = AWAIT_FINALIZED
-  ) {
+  ): Promise<SubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
     return submitSignedTx(signedTx, resolveOn)
   }
