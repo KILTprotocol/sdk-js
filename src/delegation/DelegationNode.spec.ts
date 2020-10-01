@@ -1,4 +1,4 @@
-import { submitSignedTx } from '../blockchain/Blockchain'
+import { submitSignedTx } from '../blockchain'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Identity from '../identity/Identity'
 import { Permission } from '../types/Delegation'

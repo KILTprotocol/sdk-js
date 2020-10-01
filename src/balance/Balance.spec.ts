@@ -9,7 +9,7 @@ import {
   makeTransfer,
 } from './Balance.chain'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import { submitSignedTx } from '../blockchain/Blockchain'
+import { submitSignedTx } from '../blockchain'
 import BalanceUtils from './Balance.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')

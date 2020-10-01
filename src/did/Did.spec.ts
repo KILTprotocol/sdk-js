@@ -1,6 +1,6 @@
 import { U8aFixed } from '@polkadot/types'
 import { Did, IDid } from '..'
-import { submitSignedTx } from '../blockchain/Blockchain'
+import { submitSignedTx } from '../blockchain'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
 } from '../blockchainApiConnection/__mocks__/BlockchainQuery'

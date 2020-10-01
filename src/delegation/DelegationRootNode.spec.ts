@@ -1,5 +1,5 @@
 import { Crypto, Identity } from '..'
-import { submitSignedTx } from '../blockchain/Blockchain'
+import { submitSignedTx } from '../blockchain'
 import getCached from '../blockchainApiConnection'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import DelegationRootNode from './DelegationRootNode'
