@@ -32,6 +32,12 @@ export type Stats = {
   nodeVersion: string
 }
 
+export interface SubscriptionPromiseOptions {
+  resolveOn?: Array<Evaluator<SubmittableResult, SubmittableResult>>
+  rejectOn?: Array<Evaluator<SubmittableResult, any>>
+  timeout?: number
+}
+
 export interface IBlockchainApi {
   api: ApiPromise
   portablegabi: gabi.Blockchain
@@ -45,10 +51,7 @@ export interface IBlockchainApi {
   submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
-    opts?: {
-      resolveOn?: Array<Evaluator<SubmittableResult, SubmittableResult>>
-      rejectOn?: Array<Evaluator<SubmittableResult, any>>
-    }
+    opts?: SubscriptionPromiseOptions
   ): Promise<SubmittableResult>
   getNonce(accountAddress: string): Promise<Codec>
 }
@@ -86,10 +89,15 @@ export async function submitSignedTx(
   rejectOn: Array<Evaluator<SubmittableResult, any>> = [
     EXTRINSIC_FAILED,
     IS_ERROR,
-  ]
+  ],
+  timeout?: number
 ): Promise<SubmittableResult> {
   log.info(`Submitting ${tx.method}`)
-  const { promise, subscription } = makeSubscriptionPromise(resolveOn, rejectOn)
+  const { promise, subscription } = makeSubscriptionPromise(
+    resolveOn,
+    rejectOn,
+    timeout
+  )
   const unsubscribe = await tx.send(subscription)
   return promise.finally(() => unsubscribe())
 }
@@ -106,12 +114,9 @@ export default class Blockchain implements IBlockchainApi {
 
   public static submitSignedTx(
     tx: SubmittableExtrinsic,
-    opts: {
-      resolveOn?: Array<Evaluator<SubmittableResult, SubmittableResult>>
-      rejectOn?: Array<Evaluator<SubmittableResult, any>>
-    }
+    opts: SubscriptionPromiseOptions
   ): Promise<SubmittableResult> {
-    return submitSignedTx(tx, opts.resolveOn, opts.rejectOn)
+    return submitSignedTx(tx, opts.resolveOn, opts.rejectOn, opts.timeout)
   }
 
   public api: ApiPromise

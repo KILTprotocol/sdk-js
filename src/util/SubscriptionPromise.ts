@@ -1,10 +1,13 @@
+import { ERROR_TIMEOUT } from '../errorhandling/SDKErrors'
+
 export interface Evaluator<I, O> {
   (value: I): [boolean, O]
 }
 
 export function makeSubscriptionPromise<SubscriptionType, PromiseType>(
   resolveOn: Array<Evaluator<SubscriptionType, PromiseType>>,
-  rejectOn: Array<Evaluator<SubscriptionType, any>>
+  rejectOn: Array<Evaluator<SubscriptionType, any>>,
+  timeout?: number
 ): {
   promise: Promise<PromiseType>
   subscription: (value: SubscriptionType) => void
@@ -25,5 +28,9 @@ export function makeSubscriptionPromise<SubscriptionType, PromiseType>(
       if (resolved) resolve(resolveValue)
     })
   }
+  if (timeout)
+    setTimeout(() => {
+      reject(ERROR_TIMEOUT())
+    }, timeout)
   return { promise, subscription }
 }
