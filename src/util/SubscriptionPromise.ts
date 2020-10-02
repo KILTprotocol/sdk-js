@@ -34,3 +34,30 @@ export function makeSubscriptionPromise<SubscriptionType, PromiseType>(
     }, timeout)
   return { promise, subscription }
 }
+
+export function makeSubscriptionPromiseMulti<SubscriptionType, PromiseType>(
+  args: Array<{
+    resolveOn: Array<Evaluator<SubscriptionType, PromiseType>>
+    rejectOn: Array<Evaluator<SubscriptionType, any>>
+    timeout?: number
+  }>
+): {
+  promises: Array<Promise<PromiseType>>
+  subscription: (value: SubscriptionType) => void
+} {
+  const promises: Array<Promise<PromiseType>> = []
+  let subscriptions: Array<(value: SubscriptionType) => void>
+  args.forEach(({ resolveOn, rejectOn, timeout }) => {
+    const { promise, subscription } = makeSubscriptionPromise(
+      resolveOn,
+      rejectOn,
+      timeout
+    )
+    promises.push(promise)
+    subscriptions.push(subscription)
+  })
+  const subscription = (value: SubscriptionType): void => {
+    subscriptions.forEach((s) => s(value))
+  }
+  return { promises, subscription }
+}
