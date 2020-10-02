@@ -14,10 +14,15 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Text } from '@polkadot/types'
 import { Header, Index } from '@polkadot/types/interfaces/types'
 import { AnyJson, Codec } from '@polkadot/types/types'
+import { Evaluator, makeSubscriptionPromise } from '../util/SubscriptionPromise'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ErrorHandler } from '../errorhandling'
-import { ERROR_UNKNOWN, ExtrinsicError } from '../errorhandling/ExtrinsicError'
+import {
+  ERROR_UNKNOWN as UNKNOWN_EXTRINSIC_ERROR,
+  ExtrinsicError,
+} from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
+import { ERROR_UNKNOWN, SDKError } from '../errorhandling/SDKErrors'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -26,8 +31,6 @@ export type Stats = {
   nodeName: string
   nodeVersion: string
 }
-
-export type txStatusPromiseResolver = (result: SubmittableResult) => boolean
 
 export interface IBlockchainApi {
   api: ApiPromise
@@ -42,52 +45,53 @@ export interface IBlockchainApi {
   submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
-    resolveOn?: txStatusPromiseResolver
+    opts?: {
+      resolveOn?: Array<Evaluator<SubmittableResult, SubmittableResult>>
+      rejectOn?: Array<Evaluator<SubmittableResult, any>>
+    }
   ): Promise<SubmittableResult>
   getNonce(accountAddress: string): Promise<Codec>
 }
 
-export const AWAIT_READY: txStatusPromiseResolver = (result) =>
-  result.status.isReady
-export const AWAIT_IN_BLOCK: txStatusPromiseResolver = (result) =>
-  result.isInBlock
-export const AWAIT_FINALIZED: txStatusPromiseResolver = (result) =>
-  result.isFinalized
+export const IS_READY: Evaluator<SubmittableResult, SubmittableResult> = (
+  result
+) => [result.status.isReady, result]
+export const IS_IN_BLOCK: Evaluator<SubmittableResult, SubmittableResult> = (
+  result
+) => [result.isInBlock, result]
+export const EXTRINSIC_EXECUTED: Evaluator<
+  SubmittableResult,
+  SubmittableResult
+> = (result) => [ErrorHandler.extrinsicSuccessful(result), result]
+export const IS_FINALIZED: Evaluator<SubmittableResult, SubmittableResult> = (
+  result
+) => [result.isFinalized, result]
+
+export const IS_ERROR: Evaluator<SubmittableResult, SDKError | null> = (
+  result
+) => (result.isError ? [true, ERROR_UNKNOWN()] : [false, null])
+export const EXTRINSIC_FAILED: Evaluator<
+  SubmittableResult,
+  ExtrinsicError | null
+> = (result) =>
+  ErrorHandler.extrinsicFailed(result)
+    ? [true, ErrorHandler.getExtrinsicError(result) || UNKNOWN_EXTRINSIC_ERROR]
+    : [false, null]
 
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,
-  resolveOn: txStatusPromiseResolver = AWAIT_FINALIZED
+  resolveOn: Array<Evaluator<SubmittableResult, SubmittableResult>> = [
+    IS_FINALIZED,
+  ],
+  rejectOn: Array<Evaluator<SubmittableResult, any>> = [
+    EXTRINSIC_FAILED,
+    IS_ERROR,
+  ]
 ): Promise<SubmittableResult> {
   log.info(`Submitting ${tx.method}`)
-  let unsubscribe: () => void
-  return new Promise<SubmittableResult>((resolve, reject) => {
-    tx.send((result) => {
-      log.info(`Got tx status '${result.status.type}'`)
-      if (ErrorHandler.extrinsicFailed(result)) {
-        log.warn(`Extrinsic execution failed`)
-        log.debug(`Transaction detail: ${JSON.stringify(result, null, 2)}`)
-        const extrinsicError: ExtrinsicError =
-          ErrorHandler.getExtrinsicError(result) || ERROR_UNKNOWN
-        log.warn(`Extrinsic error ocurred: ${extrinsicError}`)
-        reject(extrinsicError)
-      } else if (result.isError) {
-        reject(
-          new Error(`Transaction failed with status '${result.status.type}'`)
-        )
-      } else if (resolveOn(result)) {
-        resolve(result)
-      }
-    })
-      .then((subsciptionHandle: () => void) => {
-        unsubscribe = subsciptionHandle
-      })
-      .catch((err: Error) => {
-        // just reject with the original tx error from the chain
-        reject(err)
-      })
-  }).finally(() => {
-    if (unsubscribe) unsubscribe()
-  })
+  const { promise, subscription } = makeSubscriptionPromise(resolveOn, rejectOn)
+  const unsubscribe = await tx.send(subscription)
+  return promise.finally(() => unsubscribe())
 }
 
 // Code taken from
@@ -102,9 +106,12 @@ export default class Blockchain implements IBlockchainApi {
 
   public static submitSignedTx(
     tx: SubmittableExtrinsic,
-    resolveOn: txStatusPromiseResolver = AWAIT_FINALIZED
+    opts: {
+      resolveOn?: Array<Evaluator<SubmittableResult, SubmittableResult>>
+      rejectOn?: Array<Evaluator<SubmittableResult, any>>
+    }
   ): Promise<SubmittableResult> {
-    return submitSignedTx(tx, resolveOn)
+    return submitSignedTx(tx, opts.resolveOn, opts.rejectOn)
   }
 
   public api: ApiPromise
@@ -147,10 +154,13 @@ export default class Blockchain implements IBlockchainApi {
   public async submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
-    resolveOn: txStatusPromiseResolver = AWAIT_FINALIZED
+    opts: {
+      resolveOn?: Array<Evaluator<SubmittableResult, SubmittableResult>>
+      rejectOn?: Array<Evaluator<SubmittableResult, any>>
+    }
   ): Promise<SubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
-    return submitSignedTx(signedTx, resolveOn)
+    return Blockchain.submitSignedTx(signedTx, opts)
   }
 
   public async getNonce(accountAddress: string): Promise<Index> {

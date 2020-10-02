@@ -7,7 +7,7 @@
 import BN from 'bn.js'
 import { Attestation, IBlockchainApi } from '..'
 import { makeTransfer } from '../balance/Balance.chain'
-import { AWAIT_IN_BLOCK, submitSignedTx } from '../blockchain/Blockchain'
+import { IS_IN_BLOCK, submitSignedTx } from '../blockchain/Blockchain'
 import { DEFAULT_WS_ADDRESS, getCached } from '../blockchainApiConnection'
 import { ERROR_CTYPE_NOT_FOUND, ERROR_UNKNOWN } from '../errorhandling'
 import Identity from '../identity'
@@ -24,7 +24,7 @@ it('records an unknown extrinsic error when transferring less than the existenti
   const to = await Identity.buildFromMnemonic('')
   await expect(
     makeTransfer(alice, to.address, new BN(1)).then((tx) =>
-      submitSignedTx(tx, AWAIT_IN_BLOCK)
+      submitSignedTx(tx, [IS_IN_BLOCK])
     )
   ).rejects.toThrow(ERROR_UNKNOWN)
 }, 30_000)
@@ -40,7 +40,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
     revoked: false,
   })
   const tx = await attestation.store(alice)
-  await expect(submitSignedTx(tx, AWAIT_IN_BLOCK)).rejects.toThrow(
+  await expect(submitSignedTx(tx, [IS_IN_BLOCK])).rejects.toThrow(
     ERROR_CTYPE_NOT_FOUND
   )
 }, 30_000)

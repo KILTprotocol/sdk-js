@@ -37,6 +37,25 @@ export function extrinsicFailed(extrinsicResult: SubmittableResult): boolean {
 }
 
 /**
+ * Checks if there is `SystemEvent.ExtrinsicSuccess` in the list of
+ * transaction events within the given `extrinsicResult`.
+ *
+ * @param extrinsicResult The result of a submission.
+ * @returns Whether the extrinsic submission succeeded.
+ */
+export function extrinsicSuccessful(
+  extrinsicResult: SubmittableResult
+): boolean {
+  const events: EventRecord[] = extrinsicResult.events || []
+  return events.some((eventRecord: EventRecord) => {
+    return (
+      !eventRecord.phase.asApplyExtrinsic.isEmpty &&
+      eventRecord.event.index.toHex() === SystemEvent.ExtrinsicSuccess
+    )
+  })
+}
+
+/**
  * Get the extrinsic error from the transaction result.
  *
  * @param extrinsicResult The transaction result.
