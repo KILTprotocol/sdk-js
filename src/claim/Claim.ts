@@ -15,7 +15,7 @@
 import ICType from '../ctype/CType'
 import CTypeUtils from '../ctype/CType.utils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
-import IClaim, { ICompressedClaim } from '../types/Claim'
+import IClaim, { CompressedClaim } from '../types/Claim'
 import IPublicIdentity from '../types/PublicIdentity'
 import ClaimUtils from './Claim.utils'
 import { IPartialClaim } from '../messaging'
@@ -143,7 +143,7 @@ export default class Claim implements IClaim {
    * @returns An array that contains the same properties of an [[Claim]].
    */
 
-  public compress(): ICompressedClaim {
+  public compress(): CompressedClaim {
     return ClaimUtils.compress(this)
   }
 
@@ -154,7 +154,7 @@ export default class Claim implements IClaim {
    */
 
   public static decompress(
-    compressedClaim: ICompressedClaim
+    compressedClaim: CompressedClaim
   ): Claim | IPartialClaim {
     if (!compressedClaim[1] || !compressedClaim[2]) {
       const decompressedClaim = ClaimUtils.decompress(compressedClaim)

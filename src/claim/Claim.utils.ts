@@ -7,7 +7,7 @@
 import { IPartialClaim, IPartialCompressedClaim } from '../messaging'
 import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
-import IClaim, { ICompressedClaim } from '../types/Claim'
+import IClaim, { CompressedClaim } from '../types/Claim'
 import { validateAddress, validateHash } from '../util/DataUtils'
 
 /**
@@ -46,9 +46,9 @@ export function errorCheck(input: IClaim | IPartialClaim): void {
  *
  * @param claim An [[IClaim]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of a [[ICompressedClaim]].
+ * @returns An ordered array of a [[CompressedClaim]].
  */
-export function compress(claim: IClaim): ICompressedClaim
+export function compress(claim: IClaim): CompressedClaim
 /**
  *  Compresses the [[IPartialClaim]] for storage and/or messaging.
  *
@@ -59,7 +59,7 @@ export function compress(claim: IClaim): ICompressedClaim
 export function compress(claim: IPartialClaim): IPartialCompressedClaim
 export function compress(
   claim: IClaim | IPartialClaim
-): ICompressedClaim | IPartialCompressedClaim {
+): CompressedClaim | IPartialCompressedClaim {
   errorCheck(claim)
   let sortedContents
   if (claim.contents) {
@@ -71,12 +71,12 @@ export function compress(
 /**
  *  Decompresses the [[IClaim]] from storage and/or message.
  *
- * @param claim An [[ICompressedClaim]] array that is reverted back into an object.
- * @throws When an [[ICompressedClaim]] is not an Array or it's length is unequal 3.
+ * @param claim An [[CompressedClaim]] array that is reverted back into an object.
+ * @throws When an [[CompressedClaim]] is not an Array or it's length is unequal 3.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]].
- * @returns An [[IClaim]] object that has the same properties as the [[ICompressedClaim]].
+ * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
  */
-export function decompress(claim: ICompressedClaim): IClaim
+export function decompress(claim: CompressedClaim): IClaim
 /**
  *  Decompresses the Partial [[IClaim]] from storage and/or message.
  *
@@ -87,7 +87,7 @@ export function decompress(claim: ICompressedClaim): IClaim
  */
 export function decompress(claim: IPartialCompressedClaim): IPartialClaim
 export function decompress(
-  claim: ICompressedClaim | IPartialCompressedClaim
+  claim: CompressedClaim | IPartialCompressedClaim
 ): IClaim | IPartialClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')

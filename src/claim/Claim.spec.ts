@@ -5,7 +5,7 @@ import {
   ERROR_HASH_MALFORMED,
 } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import IClaim, { ICompressedClaim } from '../types/Claim'
+import IClaim, { CompressedClaim } from '../types/Claim'
 import ICType from '../types/CType'
 import Claim from './Claim'
 import ClaimUtils from './Claim.utils'
@@ -16,7 +16,7 @@ describe('Claim', () => {
   let rawCType: ICType['schema']
   let testCType: CType
   let claim: Claim
-  let compressedClaim: ICompressedClaim
+  let compressedClaim: CompressedClaim
 
   beforeAll(async () => {
     identityAlice = await Identity.buildFromURI('//Alice')

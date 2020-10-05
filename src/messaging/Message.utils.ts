@@ -13,21 +13,21 @@ import ITerms, { CompressedTerms } from '../types/Terms'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import {
   CompressedRejectedTerms,
-  CompressedRequestAttestationForClaim,
-  CompressedSubmitAttestationForClaim,
-  CompressedRequestClaimsForCTypes,
-  CompressedRequestAcceptDelegation,
-  CompressedSubmitAcceptDelegation,
+  CompressedRequestAttestationForClaimContent,
+  CompressedSubmitAttestationForClaimContent,
+  CompressedRequestClaimsForCTypesContent,
+  CompressedRequestDelegationApproval,
+  CompressedSubmitDelegationApproval,
   CompressedDelegationData,
-  CompressedInformCreateDelegation,
-  IRequestingClaimsForCTypes,
+  CompressedInformDelegationCreation,
+  IRequestClaimsForCTypesContent,
   IPartialClaim,
-  IRequestingAttestationForClaim,
-  ISubmittingAttestationForClaim,
-  IRequestingAcceptDelegation,
-  ISubmitingAcceptDelegation,
+  IRequestAttestationForClaimContent,
+  ISubmitAttestationForClaimContent,
+  IRequestDelegationApproval,
+  ISubmitDelegationApproval,
   IDelegationData,
-  IInformingCreateDelegation,
+  IInformDelegationCreation,
   CompressedMessageBody,
 } from './Message'
 
@@ -73,7 +73,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       return [body.type, compressedContents]
     }
     case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
-      const compressedContents: CompressedRequestAttestationForClaim = [
+      const compressedContents: CompressedRequestAttestationForClaimContent = [
         RequestForAttestationUtils.compress(body.content.requestForAttestation),
         body.content.quote
           ? QuoteUtils.compressQuoteAgreement(body.content.quote)
@@ -87,14 +87,14 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       return [body.type, compressedContents]
     }
     case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
-      const compressedContents: CompressedSubmitAttestationForClaim = [
+      const compressedContents: CompressedSubmitAttestationForClaimContent = [
         AttestationUtils.compress(body.content.attestation),
         body.content.attestationPE || undefined,
       ]
       return [body.type, compressedContents]
     }
     case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      const compressedContents: CompressedRequestClaimsForCTypes = [
+      const compressedContents: CompressedRequestClaimsForCTypesContent = [
         body.content.ctypes,
         body.content.peRequest,
         body.content.allowPE,
@@ -111,7 +111,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       return [body.type, compressedContents]
     }
     case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
-      const compressedContents: CompressedRequestAcceptDelegation = [
+      const compressedContents: CompressedRequestDelegationApproval = [
         [
           body.content.delegationData.account,
           body.content.delegationData.id,
@@ -125,7 +125,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       return [body.type, compressedContents]
     }
     case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
-      const compressedContents: CompressedSubmitAcceptDelegation = [
+      const compressedContents: CompressedSubmitDelegationApproval = [
         [
           body.content.delegationData.account,
           body.content.delegationData.id,
@@ -148,7 +148,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       return [body.type, compressedContents]
     }
     case MessageBodyType.INFORM_CREATE_DELEGATION: {
-      const compressedContents: CompressedInformCreateDelegation = [
+      const compressedContents: CompressedInformDelegationCreation = [
         body.content.delegationId,
         body.content.isPCR,
       ]
@@ -168,8 +168,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
  */
 
 export function decompressMessage(body: CompressedMessageBody): MessageBody {
-  const [bodyType] = body
-  switch (bodyType) {
+  switch (body[0]) {
     case MessageBodyType.REQUEST_TERMS: {
       const decompressedContents: IPartialClaim = ClaimUtils.decompress(body[1])
       return { type: body[0], content: decompressedContents }
@@ -206,7 +205,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
-      const decompressedContents: IRequestingAttestationForClaim = {
+      const decompressedContents: IRequestAttestationForClaimContent = {
         requestForAttestation: RequestForAttestationUtils.decompress(
           body[1][0]
         ),
@@ -221,14 +220,14 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
-      const decompressedContents: ISubmittingAttestationForClaim = {
+      const decompressedContents: ISubmitAttestationForClaimContent = {
         attestation: AttestationUtils.decompress(body[1][0]),
         attestationPE: body[1][1] ? body[1][1] : undefined,
       }
       return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      const decompressedContents: IRequestingClaimsForCTypes = {
+      const decompressedContents: IRequestClaimsForCTypesContent = {
         ctypes: body[1][0],
         peRequest: body[1][1],
         allowPE: body[1][2],
@@ -246,7 +245,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
-      const decompressedContents: IRequestingAcceptDelegation = {
+      const decompressedContents: IRequestDelegationApproval = {
         delegationData: {
           account: body[1][0][0],
           id: body[1][0][1],
@@ -260,7 +259,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
-      const decompressedContents: ISubmitingAcceptDelegation = {
+      const decompressedContents: ISubmitDelegationApproval = {
         delegationData: {
           account: body[1][0][0],
           id: body[1][0][1],
@@ -286,7 +285,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.INFORM_CREATE_DELEGATION: {
-      const decompressedContents: IInformingCreateDelegation = {
+      const decompressedContents: IInformDelegationCreation = {
         delegationId: body[1][0],
         isPCR: body[1][1],
       }

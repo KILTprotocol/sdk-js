@@ -3,43 +3,43 @@ import {
   MessageBodyType,
   ISubmitAttestationForClaim,
   CompressedSubmitAttestationForClaim,
-  ISubmittingAttestationForClaim,
-  IRequestingAttestationForClaim,
-  ICompressedSubmitAttestationForClaim,
+  ISubmitAttestationForClaimContent,
+  IRequestAttestationForClaimContent,
+  CompressedSubmitAttestationForClaimContent,
   MessageBody,
   IRequestTerms,
-  ICompressedRequestTerms,
+  CompressedRequestTerms,
   ISubmitTerms,
-  ICompressedSubmitTerms,
+  CompressedSubmitTerms,
   IRejectTerms,
-  ICompressedRejectTerms,
+  CompressedRejectTerms,
   IRequestAttestationForClaim,
-  ICompressedRequestAttestationForClaim,
-  ICompressedRequestClaimsForCTypes,
+  CompressedRequestAttestationForClaim,
+  CompressedRequestAttestationForClaimContent,
+  CompressedRequestClaimsForCTypesContent,
   ISubmitClaimsForCTypesClassic,
-  ICompressedSubmitClaimsForCTypesClassic,
+  CompressedSubmitClaimsForCTypesClassic,
   IRequestAcceptDelegation,
-  ICompressedRequestAcceptDelegation,
+  CompressedRequestAcceptDelegation,
   ISubmitAcceptDelegation,
-  ICompressedSubmitAcceptDelegation,
+  CompressedSubmitDelegationApproval,
+  CompressedSubmitAcceptDelegation,
   IRequestClaimsForCTypes,
   IRejectAcceptDelegation,
-  ICompressedRejectAcceptDelegation,
   IInformCreateDelegation,
-  ICompressedInformCreateDelegation,
+  CompressedInformDelegationCreation,
   IPartialClaim,
   IPartialCompressedClaim,
   CompressedRejectedTerms,
-  CompressedRequestAttestationForClaim,
-  IRequestingClaimsForCTypes,
+  IRequestClaimsForCTypesContent,
   CompressedRequestClaimsForCTypes,
-  IRequestingAcceptDelegation,
-  CompressedRequestAcceptDelegation,
-  ISubmitingAcceptDelegation,
-  CompressedSubmitAcceptDelegation,
+  IRequestDelegationApproval,
+  CompressedRequestDelegationApproval,
+  ISubmitDelegationApproval,
+  CompressedRejectAcceptDelegation,
   IDelegationData,
   CompressedDelegationData,
-  IInformingCreateDelegation,
+  IInformDelegationCreation,
   CompressedInformCreateDelegation,
   CompressedMessageBody,
 } from './Message'
@@ -80,51 +80,51 @@ describe('Messaging Utilities', () => {
   let compressedQuoteAgreement: CompressedQuoteAgreed
   let requestTermsBody: IRequestTerms
   let requestTermsContent: IPartialClaim
-  let compressedRequestTermsBody: ICompressedRequestTerms
+  let compressedRequestTermsBody: CompressedRequestTerms
   let compressedRequestTermsContent: IPartialCompressedClaim
   let submitTermsBody: ISubmitTerms
   let submitTermsContent: ITerms
-  let compressedSubmitTermsBody: ICompressedSubmitTerms
+  let compressedSubmitTermsBody: CompressedSubmitTerms
   let compressedSubmitTermsContent: CompressedTerms
   let rejectTermsBody: IRejectTerms
   let rejectTermsContent: Pick<
     ITerms,
     'claim' | 'legitimations' | 'delegationId'
   >
-  let compressedRejectTermsBody: ICompressedRejectTerms
+  let compressedRejectTermsBody: CompressedRejectTerms
   let compressedRejectTermsContent: CompressedRejectedTerms
   let requestAttestationBody: IRequestAttestationForClaim
-  let requestAttestationContent: IRequestingAttestationForClaim
-  let compressedRequestAttestationBody: ICompressedRequestAttestationForClaim
-  let compressedRequestAttestationContent: CompressedRequestAttestationForClaim
-  let submitAttestationContent: ISubmittingAttestationForClaim
+  let requestAttestationContent: IRequestAttestationForClaimContent
+  let compressedRequestAttestationBody: CompressedRequestAttestationForClaim
+  let compressedRequestAttestationContent: CompressedRequestAttestationForClaimContent
+  let submitAttestationContent: ISubmitAttestationForClaimContent
   let submitAttestationBody: ISubmitAttestationForClaim
-  let compressedSubmitAttestationContent: CompressedSubmitAttestationForClaim
-  let compressedSubmitAttestationBody: ICompressedSubmitAttestationForClaim
+  let compressedSubmitAttestationContent: CompressedSubmitAttestationForClaimContent
+  let compressedSubmitAttestationBody: CompressedSubmitAttestationForClaim
   let requestClaimsForCTypesBody: IRequestClaimsForCTypes
-  let requestClaimsForCTypesContent: IRequestingClaimsForCTypes
-  let compressedRequestClaimsForCTypesBody: ICompressedRequestClaimsForCTypes
-  let compressedRequestClaimsForCTypesContent: CompressedRequestClaimsForCTypes
+  let requestClaimsForCTypesContent: IRequestClaimsForCTypesContent
+  let compressedRequestClaimsForCTypesBody: CompressedRequestClaimsForCTypes
+  let compressedRequestClaimsForCTypesContent: CompressedRequestClaimsForCTypesContent
   let submitClaimsForCTypesClassicBody: ISubmitClaimsForCTypesClassic
   let submitClaimsForCTypesClassicContent: IAttestedClaim[]
-  let compressedSubmitClaimsForCTypesClassicBody: ICompressedSubmitClaimsForCTypesClassic
+  let compressedSubmitClaimsForCTypesClassicBody: CompressedSubmitClaimsForCTypesClassic
   let compressedSubmitClaimsForCTypesClassicContent: CompressedAttestedClaim[]
   let requestAcceptDelegationBody: IRequestAcceptDelegation
-  let requestAcceptDelegationContent: IRequestingAcceptDelegation
-  let compressedRequestAcceptDelegationBody: ICompressedRequestAcceptDelegation
-  let compressedRequestAcceptDelegationContent: CompressedRequestAcceptDelegation
+  let requestAcceptDelegationContent: IRequestDelegationApproval
+  let compressedRequestAcceptDelegationBody: CompressedRequestAcceptDelegation
+  let compressedRequestAcceptDelegationContent: CompressedRequestDelegationApproval
   let submitAcceptDelegationBody: ISubmitAcceptDelegation
-  let submitAcceptDelegationContent: ISubmitingAcceptDelegation
-  let compressedSubmitAcceptDelegationBody: ICompressedSubmitAcceptDelegation
-  let compressedSubmitAcceptDelegationContent: CompressedSubmitAcceptDelegation
+  let submitAcceptDelegationContent: ISubmitDelegationApproval
+  let compressedSubmitAcceptDelegationBody: CompressedSubmitAcceptDelegation
+  let compressedSubmitAcceptDelegationContent: CompressedSubmitDelegationApproval
   let rejectAcceptDelegationBody: IRejectAcceptDelegation
   let rejectAcceptDelegationContent: IDelegationData
-  let compressedRejectAcceptDelegationBody: ICompressedRejectAcceptDelegation
+  let compressedRejectAcceptDelegationBody: CompressedRejectAcceptDelegation
   let compressedRejectAcceptDelegationContent: CompressedDelegationData
   let informCreateDelegationBody: IInformCreateDelegation
-  let informCreateDelegationContent: IInformingCreateDelegation
-  let compressedInformCreateDelegationBody: ICompressedInformCreateDelegation
-  let compressedInformCreateDelegationContent: CompressedInformCreateDelegation
+  let informCreateDelegationContent: IInformDelegationCreation
+  let compressedInformCreateDelegationBody: CompressedInformCreateDelegation
+  let compressedInformCreateDelegationContent: CompressedInformDelegationCreation
 
   beforeAll(async () => {
     identityAlice = await Identity.buildFromURI('//Alice')
