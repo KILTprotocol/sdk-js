@@ -68,7 +68,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
         body.content.legitimations.map((val) =>
           AttestedClaimUtils.compress(val)
         ),
-        body.content.delegationId ? body.content.delegationId : undefined,
+        body.content.delegationId || undefined,
       ]
       return [body.type, compressedContents]
     }
@@ -89,7 +89,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
       const compressedContents: CompressedSubmitAttestationForClaim = [
         AttestationUtils.compress(body.content.attestation),
-        body.content.attestationPE ? body.content.attestationPE : undefined,
+        body.content.attestationPE || undefined,
       ]
       return [body.type, compressedContents]
     }
@@ -168,7 +168,8 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
  */
 
 export function decompressMessage(body: CompressedMessageBody): MessageBody {
-  switch (body[0]) {
+  const [bodyType] = body
+  switch (bodyType) {
     case MessageBodyType.REQUEST_TERMS: {
       const decompressedContents: IPartialClaim = ClaimUtils.decompress(body[1])
       return { type: body[0], content: decompressedContents }

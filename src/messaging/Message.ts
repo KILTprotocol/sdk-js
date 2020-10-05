@@ -366,7 +366,7 @@ export interface IRejectClaimsForCTypes extends IMessageBodyBase {
   type: MessageBodyType.REJECT_CLAIMS_FOR_CTYPES
 }
 
-export interface IRequestAcceptDelegation extends IMessageBodyBase {
+export interface IRequestDelegationApproval extends IMessageBodyBase {
   content: IRequestingAcceptDelegation
   type: MessageBodyType.REQUEST_ACCEPT_DELEGATION
 }
@@ -435,20 +435,20 @@ export type ICompressedRejectClaimsForCTypes = [
   Array<ICType['hash']>
 ]
 
-export type ICompressedRequestAcceptDelegation = [
+export type CompressedRequestDelegationApproval = [
   MessageBodyType.REQUEST_ACCEPT_DELEGATION,
   CompressedRequestAcceptDelegation
 ]
-export type ICompressedSubmitAcceptDelegation = [
+export type CompressedSubmitDelegationApproval = [
   MessageBodyType.SUBMIT_ACCEPT_DELEGATION,
   CompressedSubmitAcceptDelegation
 ]
-export type ICompressedRejectAcceptDelegation = [
+export type CompressedRejectDelegationApproval = [
   MessageBodyType.REJECT_ACCEPT_DELEGATION,
   CompressedDelegationData
 ]
 
-export type ICompressedInformCreateDelegation = [
+export type CompressedInformDelegationCreation = [
   MessageBodyType.INFORM_CREATE_DELEGATION,
   CompressedInformCreateDelegation
 ]
@@ -462,12 +462,12 @@ export interface IRequestingAttestationForClaim {
   prerequisiteClaims?: Array<IClaim | IPartialClaim>
 }
 
-export interface ISubmittingAttestationForClaim {
+export interface ISubmitAttestationForClaimContent {
   attestation: IAttestation
   attestationPE?: AttestationPE
 }
 
-export interface IRequestingClaimsForCTypes {
+export interface IRequestClaimsForCTypesContent {
   // Entries in the ctype hash array can be null, because ctypes are optional for portablegabi.
   ctypes: Array<ICType['hash'] | null>
   peRequest?: CombinedPresentationRequest
@@ -481,7 +481,7 @@ export interface IDelegationData {
   permissions: IDelegationNode['permissions']
   isPCR: boolean
 }
-export interface IRequestingAcceptDelegation {
+export interface IRequestDelegationApproval {
   delegationData: IDelegationData
   metaData?: AnyJson
   signatures: {
@@ -489,7 +489,7 @@ export interface IRequestingAcceptDelegation {
   }
 }
 
-export interface ISubmitingAcceptDelegation {
+export interface ISubmitDelegationApproval {
   delegationData: IDelegationData
   signatures: {
     inviter: string
@@ -497,7 +497,7 @@ export interface ISubmitingAcceptDelegation {
   }
 }
 
-export interface IInformingCreateDelegation {
+export interface IInformDelegationCreation {
   delegationId: IDelegationBaseNode['id']
   isPCR: boolean
 }
@@ -539,18 +539,18 @@ export type CompressedDelegationData = [
   boolean
 ]
 
-export type CompressedRequestAcceptDelegation = [
+export type CompressedRequestDelegationApproval = [
   CompressedDelegationData,
   string,
   AnyJson
 ]
 
-export type CompressedSubmitAcceptDelegation = [
+export type CompressedSubmitDelegationApproval = [
   CompressedDelegationData,
   [string, string]
 ]
 
-export type CompressedInformCreateDelegation = [
+export type CompressedInformDelegationCreation = [
   IInformingCreateDelegation['delegationId'],
   IInformingCreateDelegation['isPCR']
 ]

@@ -44,7 +44,7 @@ export function errorCheck(input: IClaim | IPartialClaim): void {
 /**
  *  Compresses the [[IClaim]] for storage and/or messaging.
  *
- * @param claim A [[IClaim]] object that will be sorted and stripped for messaging or storage.
+ * @param claim An [[IClaim]] object that will be sorted and stripped for messaging or storage.
  *
  * @returns An ordered array of a [[ICompressedClaim]].
  */
@@ -52,9 +52,9 @@ export function compress(claim: IClaim): ICompressedClaim
 /**
  *  Compresses the [[IPartialClaim]] for storage and/or messaging.
  *
- * @param claim A [[IPartialClaim]] object that will be sorted and stripped for messaging or storage.
+ * @param claim An [[IPartialClaim]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of a [[IPartialCompressedClaim]].
+ * @returns An ordered array of an [[IPartialCompressedClaim]].
  */
 export function compress(claim: IPartialClaim): IPartialCompressedClaim
 export function compress(
