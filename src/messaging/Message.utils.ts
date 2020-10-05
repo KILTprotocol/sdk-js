@@ -36,7 +36,7 @@ import {
  *
  * @param body The body of the [[Message]] which depends on the [[MessageBodyType]] that needs to be compressed.
  *
- *
+ * @returns Returns the compressed message optimised for sending.
  */
 
 export function compressMessage(body: MessageBody): CompressedMessageBody {
@@ -164,7 +164,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
  *
  * @param body The body of the compressed [[Message]] which depends on the [[MessageBodyType]] that needs to be decompressed.
  *
- *
+ * @returns Returns the compressed message back to its original form and more human readable.
  */
 
 export function decompressMessage(body: CompressedMessageBody): MessageBody {
