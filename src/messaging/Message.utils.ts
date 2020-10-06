@@ -169,8 +169,8 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
 
 export function decompressMessage(body: CompressedMessageBody): MessageBody {
   // body[0] is the [[MessageBodyType]] being sent.
-  // body[1] is the content and follows [[compressMessage]] patterns for each [[MessageBodyType]].
-  // Additionally, each following index matches the object keys.
+  // body[1] is the content order of the [[compressMessage]] for each [[MessageBodyType]].
+  // Each index matches the object keys from the given [[MessageBodyType]].
   switch (body[0]) {
     case MessageBodyType.REQUEST_TERMS: {
       const decompressedContents: IPartialClaim = ClaimUtils.decompress(body[1])
