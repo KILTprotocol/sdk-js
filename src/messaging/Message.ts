@@ -385,7 +385,7 @@ export interface IInformCreateDelegation extends IMessageBodyBase {
 
 export type CompressedRequestTerms = [
   MessageBodyType.REQUEST_TERMS,
-  IPartialCompressedClaim
+  CompressedPartialClaim
 ]
 export type CompressedSubmitTerms = [
   MessageBodyType.SUBMIT_TERMS,
@@ -502,14 +502,14 @@ export interface IInformDelegationCreation {
   isPCR: boolean
 }
 
-export type IPartialCompressedClaim = [
+export type CompressedPartialClaim = [
   IClaim['cTypeHash'],
   IClaim['owner'] | undefined,
   IClaimContents | undefined
 ]
 
 export type CompressedRejectedTerms = [
-  IPartialCompressedClaim,
+  CompressedPartialClaim,
   CompressedAttestedClaim[],
   DelegationNode['id'] | undefined
 ]
@@ -517,7 +517,7 @@ export type CompressedRejectedTerms = [
 export type CompressedRequestAttestationForClaimContent = [
   CompressedRequestForAttestation,
   CompressedQuoteAgreed | undefined,
-  Array<IPartialCompressedClaim | CompressedClaim> | undefined
+  Array<CompressedPartialClaim | CompressedClaim> | undefined
 ]
 
 export type CompressedSubmitAttestationForClaimContent = [

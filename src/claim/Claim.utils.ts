@@ -4,7 +4,7 @@
  * @preferred
  */
 
-import { IPartialClaim, IPartialCompressedClaim } from '../messaging'
+import { IPartialClaim, CompressedPartialClaim } from '../messaging'
 import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import IClaim, { CompressedClaim } from '../types/Claim'
@@ -56,10 +56,10 @@ export function compress(claim: IClaim): CompressedClaim
  *
  * @returns An ordered array of an [[IPartialCompressedClaim]].
  */
-export function compress(claim: IPartialClaim): IPartialCompressedClaim
+export function compress(claim: IPartialClaim): CompressedPartialClaim
 export function compress(
   claim: IClaim | IPartialClaim
-): CompressedClaim | IPartialCompressedClaim {
+): CompressedClaim | CompressedPartialClaim {
   errorCheck(claim)
   let sortedContents
   if (claim.contents) {
@@ -85,9 +85,9 @@ export function decompress(claim: CompressedClaim): IClaim
  * @throws [[ERROR_DECOMPRESSION_ARRAY]].
  * @returns An [[IPartialClaim]] object that has the same properties as the [[IPartialCompressedClaim]].
  */
-export function decompress(claim: IPartialCompressedClaim): IPartialClaim
+export function decompress(claim: CompressedPartialClaim): IPartialClaim
 export function decompress(
-  claim: CompressedClaim | IPartialCompressedClaim
+  claim: CompressedClaim | CompressedPartialClaim
 ): IClaim | IPartialClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')

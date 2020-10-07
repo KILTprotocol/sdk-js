@@ -29,7 +29,7 @@ import {
   IInformCreateDelegation,
   CompressedInformDelegationCreation,
   IPartialClaim,
-  IPartialCompressedClaim,
+  CompressedPartialClaim,
   CompressedRejectedTerms,
   IRequestClaimsForCTypesContent,
   CompressedRequestClaimsForCTypes,
@@ -81,7 +81,7 @@ describe('Messaging Utilities', () => {
   let requestTermsBody: IRequestTerms
   let requestTermsContent: IPartialClaim
   let compressedRequestTermsBody: CompressedRequestTerms
-  let compressedRequestTermsContent: IPartialCompressedClaim
+  let compressedRequestTermsContent: CompressedPartialClaim
   let submitTermsBody: ISubmitTerms
   let submitTermsContent: ITerms
   let compressedSubmitTermsBody: CompressedSubmitTerms

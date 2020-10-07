@@ -4,7 +4,7 @@
  */
 
 import DelegationNode from '../delegation/DelegationNode'
-import { IPartialClaim, IPartialCompressedClaim } from '../messaging/Message'
+import { IPartialClaim, CompressedPartialClaim } from '../messaging/Message'
 import IAttestedClaim, { CompressedAttestedClaim } from './AttestedClaim'
 import ICType from './CType'
 import { IQuoteAttesterSigned, CompressedQuoteAttesterSigned } from './Quote'
@@ -18,7 +18,7 @@ export default interface ITerms {
 }
 
 export type CompressedTerms = [
-  IPartialCompressedClaim,
+  CompressedPartialClaim,
   CompressedAttestedClaim[],
   DelegationNode['id'] | undefined,
   CompressedQuoteAttesterSigned | undefined,
