@@ -157,10 +157,12 @@ export default class Claim implements IClaim {
     compressedClaim: CompressedClaim
   ): Claim | IPartialClaim {
     if (!compressedClaim[1] || !compressedClaim[2]) {
-      const decompressedClaim = ClaimUtils.decompress(compressedClaim)
+      const decompressedClaim: IPartialClaim = ClaimUtils.decompress(
+        compressedClaim
+      )
       return decompressedClaim
     }
-    const decompressedClaim = ClaimUtils.decompress(compressedClaim)
+    const decompressedClaim: IClaim = ClaimUtils.decompress(compressedClaim)
     return new Claim(decompressedClaim)
   }
 }
