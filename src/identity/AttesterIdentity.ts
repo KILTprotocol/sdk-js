@@ -331,6 +331,6 @@ export default class AttesterIdentity extends Identity {
     }
     await new Attestation(handle.attestation)
       .revoke(this)
-      .then((tx) => submitSignedTx(tx, [IS_FINALIZED]))
+      .then((tx) => submitSignedTx(tx, IS_FINALIZED))
   }
 }

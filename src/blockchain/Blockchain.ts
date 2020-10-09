@@ -17,12 +17,9 @@ import { AnyJson, Codec } from '@polkadot/types/types'
 import { Evaluator, makeSubscriptionPromise } from '../util/SubscriptionPromise'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ErrorHandler } from '../errorhandling'
-import {
-  ERROR_UNKNOWN as UNKNOWN_EXTRINSIC_ERROR,
-  ExtrinsicError,
-} from '../errorhandling/ExtrinsicError'
+import { ERROR_UNKNOWN as UNKNOWN_EXTRINSIC_ERROR } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
-import { ERROR_UNKNOWN, SDKError } from '../errorhandling/SDKErrors'
+import { ERROR_UNKNOWN } from '../errorhandling/SDKErrors'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -33,8 +30,8 @@ export type Stats = {
 }
 
 export interface SubscriptionPromiseOptions {
-  resolveOn?: Array<Evaluator<SubmittableResult, SubmittableResult>>
-  rejectOn?: Array<Evaluator<SubmittableResult, any>>
+  resolveOn?: Evaluator<SubmittableResult>
+  rejectOn?: Evaluator<SubmittableResult>
   timeout?: number
 }
 
@@ -56,40 +53,41 @@ export interface IBlockchainApi {
   getNonce(accountAddress: string): Promise<Codec>
 }
 
-export const IS_READY: Evaluator<SubmittableResult, SubmittableResult> = (
-  result
-) => [result.status.isReady, result]
-export const IS_IN_BLOCK: Evaluator<SubmittableResult, SubmittableResult> = (
-  result
-) => [result.isInBlock, result]
-export const EXTRINSIC_EXECUTED: Evaluator<
-  SubmittableResult,
-  SubmittableResult
-> = (result) => [ErrorHandler.extrinsicSuccessful(result), result]
-export const IS_FINALIZED: Evaluator<SubmittableResult, SubmittableResult> = (
-  result
-) => [result.isFinalized, result]
+export const IS_READY: Evaluator<SubmittableResult> = (result) =>
+  result.status.isReady
+export const IS_IN_BLOCK: Evaluator<SubmittableResult> = (result) =>
+  result.isInBlock
+export const EXTRINSIC_EXECUTED: Evaluator<SubmittableResult> = (result) =>
+  ErrorHandler.extrinsicSuccessful(result)
+export const IS_FINALIZED: Evaluator<SubmittableResult> = (result) =>
+  result.isFinalized
 
-export const IS_ERROR: Evaluator<SubmittableResult, SDKError | null> = (
-  result
-) => (result.isError ? [true, ERROR_UNKNOWN()] : [false, null])
-export const EXTRINSIC_FAILED: Evaluator<
-  SubmittableResult,
-  ExtrinsicError | null
-> = (result) =>
-  ErrorHandler.extrinsicFailed(result)
-    ? [true, ErrorHandler.getExtrinsicError(result) || UNKNOWN_EXTRINSIC_ERROR]
-    : [false, null]
+export const IS_ERROR: Evaluator<SubmittableResult> = (result) =>
+  result.isError && ERROR_UNKNOWN()
+export const EXTRINSIC_FAILED: Evaluator<SubmittableResult> = (result) =>
+  ErrorHandler.extrinsicFailed(result) &&
+  (ErrorHandler.getExtrinsicError(result) || UNKNOWN_EXTRINSIC_ERROR)
 
+/**
+ * Submits a signed [[SubmittableExtrinsic]] and attaches a callback to monitor the inclusion status of the transaction
+ * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
+ * finalization and rejects any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters.
+ *
+ * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
+ *
+ * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
+ * @param resolveOn A function which triggers the resolution of the promise. Defaults to resolution on finalization.
+ * @param rejectOn A function which triggers the rejection of the promise and specifies the rejection reason.
+ * Defaults to rejection if either the submission of the transaction failed or if the execution of extrinsics emitted an error event.
+ * @param timeout Optional timeout in ms. If set, an unresolved promise will reject after this period of time.
+ * @returns A promise which can be used to track transaction status.
+ * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ */
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,
-  resolveOn: Array<Evaluator<SubmittableResult, SubmittableResult>> = [
-    IS_FINALIZED,
-  ],
-  rejectOn: Array<Evaluator<SubmittableResult, any>> = [
-    EXTRINSIC_FAILED,
-    IS_ERROR,
-  ],
+  resolveOn: Evaluator<SubmittableResult> = IS_FINALIZED,
+  rejectOn: Evaluator<SubmittableResult> = (result) =>
+    IS_ERROR(result) || EXTRINSIC_FAILED(result),
   timeout?: number
 ): Promise<SubmittableResult> {
   log.info(`Submitting ${tx.method}`)
@@ -159,10 +157,7 @@ export default class Blockchain implements IBlockchainApi {
   public async submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
-    opts: {
-      resolveOn?: Array<Evaluator<SubmittableResult, SubmittableResult>>
-      rejectOn?: Array<Evaluator<SubmittableResult, any>>
-    }
+    opts: SubscriptionPromiseOptions = {}
   ): Promise<SubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
     return Blockchain.submitSignedTx(signedTx, opts)

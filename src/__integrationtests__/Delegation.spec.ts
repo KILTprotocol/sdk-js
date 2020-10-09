@@ -53,7 +53,7 @@ describe('when there is an account hierarchy', () => {
 
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester).then((tx) =>
-        submitSignedTx(tx, [IS_READY])
+        submitSignedTx(tx, IS_READY)
       )
     }
   }, 30_000)
@@ -64,7 +64,7 @@ describe('when there is an account hierarchy', () => {
       DriversLicense.hash,
       uncleSam.address
     )
-    await rootNode.store(uncleSam).then((tx) => submitSignedTx(tx, [IS_READY]))
+    await rootNode.store(uncleSam).then((tx) => submitSignedTx(tx, IS_READY))
     const delegatedNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
@@ -75,7 +75,7 @@ describe('when there is an account hierarchy', () => {
     const HashSignedByDelegate = attester.signStr(delegatedNode.generateHash())
     await delegatedNode
       .store(uncleSam, HashSignedByDelegate)
-      .then((tx) => submitSignedTx(tx, [IS_IN_BLOCK]))
+      .then((tx) => submitSignedTx(tx, IS_IN_BLOCK))
     await Promise.all([
       expect(rootNode.verify()).resolves.toBeTruthy(),
       expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -101,12 +101,10 @@ describe('when there is an account hierarchy', () => {
         rootNode.id
       )
       HashSignedByDelegate = attester.signStr(delegatedNode.generateHash())
-      await rootNode
-        .store(uncleSam)
-        .then((tx) => submitSignedTx(tx, [IS_READY]))
+      await rootNode.store(uncleSam).then((tx) => submitSignedTx(tx, IS_READY))
       await delegatedNode
         .store(uncleSam, HashSignedByDelegate)
-        .then((tx) => submitSignedTx(tx, [IS_IN_BLOCK]))
+        .then((tx) => submitSignedTx(tx, IS_IN_BLOCK))
       await Promise.all([
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -137,7 +135,7 @@ describe('when there is an account hierarchy', () => {
       )
       await attestation
         .store(attester)
-        .then((tx) => submitSignedTx(tx, [IS_IN_BLOCK]))
+        .then((tx) => submitSignedTx(tx, IS_IN_BLOCK))
 
       const attClaim = await Credential.fromRequestAndAttestation(
         claimer,
@@ -150,7 +148,7 @@ describe('when there is an account hierarchy', () => {
       // revoke attestation through root
       await attClaim.attestation
         .revoke(uncleSam)
-        .then((tx) => submitSignedTx(tx, [IS_IN_BLOCK]))
+        .then((tx) => submitSignedTx(tx, IS_IN_BLOCK))
       await expect(attClaim.verify()).resolves.toBeFalsy()
     }, 75_000)
   })

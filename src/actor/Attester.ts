@@ -92,7 +92,7 @@ export async function issueAttestation(
   }
   await attestation
     .store(attester)
-    .then((tx) => submitSignedTx(tx, [IS_FINALIZED]))
+    .then((tx) => submitSignedTx(tx, IS_FINALIZED))
 
   const revocationHandle: IRevocationHandle = {
     witness,

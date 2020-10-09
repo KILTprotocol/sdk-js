@@ -4,19 +4,14 @@ import { Evaluator, makeSubscriptionPromise } from './SubscriptionPromise'
 const RESOLVE = 'resolve'
 const REJECT = 'reject'
 
-const RESOLVE_ON: Evaluator<string, string> = (value) => [
-  value === RESOLVE,
-  value,
-]
-const REJECT_ON: Evaluator<string, string> = (value) => [
-  value === REJECT,
-  value,
-]
+const RESOLVE_ON: Evaluator<string> = (value) => value === RESOLVE
+
+const REJECT_ON: Evaluator<string> = (value) => value === REJECT && 'error'
 
 it('rejects promise on timeout', async () => {
   const { promise, subscription } = makeSubscriptionPromise(
-    [RESOLVE_ON],
-    [REJECT_ON],
+    RESOLVE_ON,
+    REJECT_ON,
     500
   )
   subscription('something else')
@@ -25,8 +20,8 @@ it('rejects promise on timeout', async () => {
 
 it('resolves the promise', async () => {
   const { promise, subscription } = makeSubscriptionPromise(
-    [RESOLVE_ON],
-    [REJECT_ON]
+    RESOLVE_ON,
+    REJECT_ON
   )
   subscription(RESOLVE)
   await expect(promise).resolves.toEqual(RESOLVE)
@@ -34,9 +29,9 @@ it('resolves the promise', async () => {
 
 it('rejects the promise', async () => {
   const { promise, subscription } = makeSubscriptionPromise(
-    [RESOLVE_ON],
-    [REJECT_ON]
+    RESOLVE_ON,
+    REJECT_ON
   )
   subscription(REJECT)
-  await expect(promise).rejects.toEqual(REJECT)
+  await expect(promise).rejects.toEqual('error')
 })
