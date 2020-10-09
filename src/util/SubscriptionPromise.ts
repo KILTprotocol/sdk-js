@@ -8,7 +8,7 @@ import { ERROR_TIMEOUT } from '../errorhandling/SDKErrors'
  * as the reason in a rejected promise.
  */
 export interface Evaluator<SubscriptionType> {
-  (value: SubscriptionType): any
+  (value: SubscriptionType): boolean | any
 }
 
 /**
