@@ -68,6 +68,7 @@ export enum ErrorCode {
   ERROR_MESSAGE_TYPE = 40005,
 
   ERROR_UNKNOWN = -1,
+  ERROR_TIMEOUT = -2,
 }
 
 export class SDKError extends Error {
@@ -533,6 +534,10 @@ export const ERROR_MESSAGE_TYPE: (
 
 export const ERROR_UNKNOWN: () => SDKError = () => {
   return new SDKError(ErrorCode.ERROR_UNKNOWN, 'an unknown error ocurred')
+}
+
+export const ERROR_TIMEOUT: () => SDKError = () => {
+  return new SDKError(ErrorCode.ERROR_TIMEOUT, 'operation timed out')
 }
 
 export const ERROR_PE_VERIFICATION: (

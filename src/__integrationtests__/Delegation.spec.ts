@@ -7,7 +7,12 @@
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { Identity } from '..'
 import Attestation from '../attestation/Attestation'
-import { IBlockchainApi } from '../blockchain/Blockchain'
+import {
+  IS_IN_BLOCK,
+  IS_READY,
+  IBlockchainApi,
+  submitSignedTx,
+} from '../blockchain/Blockchain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import Credential from '../credential/Credential'
@@ -47,7 +52,9 @@ describe('when there is an account hierarchy', () => {
     attester = await wannabeAlice
 
     if (!(await CtypeOnChain(DriversLicense))) {
-      await DriversLicense.store(attester)
+      await DriversLicense.store(attester).then((tx) =>
+        submitSignedTx(tx, IS_READY)
+      )
     }
   }, 30_000)
 
@@ -57,7 +64,7 @@ describe('when there is an account hierarchy', () => {
       DriversLicense.hash,
       uncleSam.address
     )
-    await rootNode.store(uncleSam)
+    await rootNode.store(uncleSam).then((tx) => submitSignedTx(tx, IS_READY))
     const delegatedNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
@@ -66,7 +73,9 @@ describe('when there is an account hierarchy', () => {
       rootNode.id
     )
     const HashSignedByDelegate = attester.signStr(delegatedNode.generateHash())
-    await delegatedNode.store(uncleSam, HashSignedByDelegate)
+    await delegatedNode
+      .store(uncleSam, HashSignedByDelegate)
+      .then((tx) => submitSignedTx(tx, IS_IN_BLOCK))
     await Promise.all([
       expect(rootNode.verify()).resolves.toBeTruthy(),
       expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -92,8 +101,10 @@ describe('when there is an account hierarchy', () => {
         rootNode.id
       )
       HashSignedByDelegate = attester.signStr(delegatedNode.generateHash())
-      await rootNode.store(uncleSam)
-      await delegatedNode.store(uncleSam, HashSignedByDelegate)
+      await rootNode.store(uncleSam).then((tx) => submitSignedTx(tx, IS_READY))
+      await delegatedNode
+        .store(uncleSam, HashSignedByDelegate)
+        .then((tx) => submitSignedTx(tx, IS_IN_BLOCK))
       await Promise.all([
         expect(rootNode.verify()).resolves.toBeTruthy(),
         expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -122,8 +133,9 @@ describe('when there is an account hierarchy', () => {
         request,
         attester.getPublicIdentity()
       )
-      const result1 = await attestation.store(attester)
-      expect(result1.status.type).toBe('Finalized')
+      await attestation
+        .store(attester)
+        .then((tx) => submitSignedTx(tx, IS_IN_BLOCK))
 
       const attClaim = await Credential.fromRequestAndAttestation(
         claimer,
@@ -134,8 +146,10 @@ describe('when there is an account hierarchy', () => {
       await expect(attClaim.verify()).resolves.toBeTruthy()
 
       // revoke attestation through root
-      const result2 = await attClaim.attestation.revoke(uncleSam)
-      expect(result2.status.type).toBe('Finalized')
+      await attClaim.attestation
+        .revoke(uncleSam)
+        .then((tx) => submitSignedTx(tx, IS_IN_BLOCK))
+      await expect(attClaim.verify()).resolves.toBeFalsy()
     }, 75_000)
   })
 })

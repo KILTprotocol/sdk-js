@@ -1,9 +1,13 @@
 import { U8aFixed } from '@polkadot/types'
 import { Did, IDid } from '..'
+import { submitSignedTx } from '../blockchain'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
 } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import { ERROR_DID_IDENTIFIER_MISMATCH } from '../errorhandling/SDKErrors'
+import {
+  ERROR_DID_IDENTIFIER_MISMATCH,
+  ERROR_INVALID_DID_PREFIX,
+} from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import {
   getIdentifierFromAddress,
@@ -59,19 +63,21 @@ describe('DID', () => {
     } as IDid)
   })
 
-  it('query by identifier invalid identifier', async (done) => {
-    try {
-      await Did.queryByIdentifier('invalidIdentifier')
-      done.fail('should have detected an invalid DID')
-    } catch (err) {
-      done()
-    }
+  it('query by identifier invalid identifier', async () => {
+    const identifier = 'invalidIdentifier'
+    await expect(Did.queryByIdentifier(identifier)).rejects.toThrow(
+      ERROR_INVALID_DID_PREFIX(identifier)
+    )
   })
 
   it('store did', async () => {
     const alice = await Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(alice, 'http://myDID.kilt.io')
-    await expect(did.store(alice)).resolves.toHaveProperty('isFinalized', true)
+    const tx = await did.store(alice)
+    await expect(submitSignedTx(tx)).resolves.toHaveProperty(
+      'isFinalized',
+      true
+    )
   })
 
   it('creates default did document', async () => {

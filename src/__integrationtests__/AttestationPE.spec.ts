@@ -11,6 +11,8 @@ import {
 import { Claim, IBlockchainApi, IClaim, Message } from '..'
 import { Attester, Claimer, Verifier } from '../actor'
 import { ClaimerAttestationSession } from '../actor/Claimer'
+import { submitSignedTx } from '../blockchain'
+import { IS_IN_BLOCK } from '../blockchain/Blockchain'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Credential from '../credential'
 import Identity, { AttesterIdentity } from '../identity'
@@ -51,7 +53,9 @@ describe('Privacy enhanced claim, attestation, verification process', () => {
 
     // set up claim (ctype missing on fresh chain)
     if (!(await CtypeOnChain(DriversLicense))) {
-      await DriversLicense.store(attester)
+      await DriversLicense.store(attester).then((tx) =>
+        submitSignedTx(tx, IS_IN_BLOCK)
+      )
     }
     claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,

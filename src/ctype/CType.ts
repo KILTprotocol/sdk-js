@@ -10,7 +10,7 @@
  * @preferred
  */
 
-import { SubmittableResult } from '@polkadot/api'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import Identity from '../identity/Identity'
 import IClaim from '../types/Claim'
 import ICType, { CompressedCType, CTypeSchemaWithoutId } from '../types/CType'
@@ -87,9 +87,9 @@ export default class CType implements ICType {
    *
    * @param identity The identity which submits the blockchain transaction to store the [[CType]].
    *
-   * @returns A promise of a SubmittableResult .
+   * @returns A promise of a SubmittableExtrinsic .
    */
-  public async store(identity: Identity): Promise<SubmittableResult> {
+  public async store(identity: Identity): Promise<SubmittableExtrinsic> {
     return store(this, identity)
   }
 

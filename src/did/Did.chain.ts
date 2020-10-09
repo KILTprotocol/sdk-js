@@ -3,7 +3,6 @@
  * @ignore
  */
 
-import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Tuple } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
@@ -40,21 +39,23 @@ export async function queryByAddress(
   return decoded
 }
 
-export async function remove(identity: Identity): Promise<SubmittableResult> {
+export async function remove(
+  identity: Identity
+): Promise<SubmittableExtrinsic> {
   const blockchain = await getCached()
   const tx: SubmittableExtrinsic = blockchain.api.tx.did.remove()
-  return blockchain.submitTx(identity, tx)
+  return blockchain.signTx(identity, tx)
 }
 
 export async function store(
   did: IDid,
   identity: Identity
-): Promise<SubmittableResult> {
+): Promise<SubmittableExtrinsic> {
   const blockchain = await getCached()
   const tx: SubmittableExtrinsic = blockchain.api.tx.did.add(
     did.publicBoxKey,
     did.publicSigningKey,
     did.documentStore
   )
-  return blockchain.submitTx(identity, tx)
+  return blockchain.signTx(identity, tx)
 }

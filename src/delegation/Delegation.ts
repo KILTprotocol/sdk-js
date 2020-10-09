@@ -14,7 +14,7 @@
  * @preferred
  */
 
-import { SubmittableResult } from '@polkadot/api'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import Attestation from '../attestation/Attestation'
 import { query } from '../attestation/Attestation.chain'
 import Identity from '../identity/Identity'
@@ -99,7 +99,7 @@ export default abstract class DelegationBaseNode
   /**
    * Revokes this delegation node on chain.
    *
-   * @returns Promise containing the transaction status.
+   * @returns Promise containing a submittable transaction.
    */
-  public abstract revoke(identity: Identity): Promise<SubmittableResult>
+  public abstract revoke(identity: Identity): Promise<SubmittableExtrinsic>
 }

@@ -2,7 +2,6 @@
  * @packageDocumentation
  * @ignore
  */
-import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
@@ -18,7 +17,7 @@ const log = factory.getLogger('Attestation')
 export async function store(
   attestation: IAttestation,
   identity: Identity
-): Promise<SubmittableResult> {
+): Promise<SubmittableExtrinsic> {
   const txParams = {
     claimHash: attestation.claimHash,
     ctypeHash: attestation.cTypeHash,
@@ -33,7 +32,7 @@ export async function store(
     txParams.ctypeHash,
     txParams.delegationId
   )
-  return blockchain.submitTx(identity, tx)
+  return blockchain.signTx(identity, tx)
 }
 
 interface IChainAttestation extends Codec {
@@ -82,11 +81,11 @@ export async function query(claimHash: string): Promise<Attestation | null> {
 export async function revoke(
   claimHash: string,
   identity: Identity
-): Promise<SubmittableResult> {
+): Promise<SubmittableExtrinsic> {
   const blockchain = await getCached()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash
   )
-  return blockchain.submitTx(identity, tx)
+  return blockchain.signTx(identity, tx)
 }
