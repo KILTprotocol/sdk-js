@@ -3,7 +3,6 @@
  * @ignore
  */
 
-import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Tuple } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
@@ -22,7 +21,7 @@ export async function store(
   delegation: IDelegationNode,
   identity: Identity,
   signature: string
-): Promise<SubmittableResult> {
+): Promise<SubmittableExtrinsic> {
   const blockchain = await getCached()
   const includeParentId: boolean = delegation.parentId
     ? delegation.parentId !== delegation.rootId
@@ -35,7 +34,7 @@ export async function store(
     permissionsAsBitset(delegation),
     signature
   )
-  return blockchain.submitTx(identity, tx)
+  return blockchain.signTx(identity, tx)
 }
 
 export async function query(
@@ -64,12 +63,12 @@ export async function query(
 export async function revoke(
   delegationId: IDelegationNode['id'],
   identity: Identity
-): Promise<SubmittableResult> {
+): Promise<SubmittableExtrinsic> {
   const blockchain = await getCached()
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.revokeDelegation(
     delegationId
   )
-  return blockchain.submitTx(identity, tx)
+  return blockchain.signTx(identity, tx)
 }
 
 // function lives here to avoid circular imports between DelegationBaseNode and DelegationNode

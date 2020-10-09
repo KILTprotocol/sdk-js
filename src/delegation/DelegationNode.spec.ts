@@ -1,3 +1,4 @@
+import { submitSignedTx } from '../blockchain'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Identity from '../identity/Identity'
 import { Permission } from '../types/Delegation'
@@ -87,7 +88,10 @@ describe('Delegation', () => {
       'myAccount',
       []
     )
-    const revokeStatus = await aDelegationNode.revoke(identityAlice)
+    const revokeStatus = await aDelegationNode
+      .revoke(identityAlice)
+      .then((tx) => submitSignedTx(tx))
+
     expect(revokeStatus).toBeDefined()
   })
 

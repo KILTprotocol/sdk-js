@@ -1,3 +1,4 @@
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 /**
  * KILT enables top-down trust structures.
  * On the lowest level, a delegation structure is always a **tree**.
@@ -11,7 +12,6 @@
  * @preferred
  */
 
-import { SubmittableResult } from '@polkadot/api'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
 import { IDelegationRootNode } from '../types/Delegation'
@@ -69,9 +69,9 @@ export default class DelegationRootNode extends DelegationBaseNode
    * Stores the delegation root node on chain.
    *
    * @param identity The account used to store the delegation root node.
-   * @returns Promise containing the SubmittableResult.
+   * @returns Promise containing the SubmittableExtrinsic.
    */
-  public async store(identity: Identity): Promise<SubmittableResult> {
+  public async store(identity: Identity): Promise<SubmittableExtrinsic> {
     log.debug(`:: store(${this.id})`)
     return store(this, identity)
   }
@@ -81,7 +81,7 @@ export default class DelegationRootNode extends DelegationBaseNode
     return node !== null && !node.revoked
   }
 
-  public async revoke(identity: Identity): Promise<SubmittableResult> {
+  public async revoke(identity: Identity): Promise<SubmittableExtrinsic> {
     log.debug(`:: revoke(${this.id})`)
     return revoke(this, identity)
   }
