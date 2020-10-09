@@ -3,7 +3,6 @@
  * @ignore
  */
 
-import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Tuple } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
@@ -15,13 +14,13 @@ import DelegationRootNode from './DelegationRootNode'
 export async function store(
   delegation: IDelegationRootNode,
   identity: Identity
-): Promise<SubmittableResult> {
+): Promise<SubmittableExtrinsic> {
   const blockchain = await getCached()
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.createRoot(
     delegation.id,
     delegation.cTypeHash
   )
-  return blockchain.submitTx(identity, tx)
+  return blockchain.signTx(identity, tx)
 }
 
 export async function query(
@@ -46,10 +45,10 @@ export async function query(
 export async function revoke(
   delegation: IDelegationRootNode,
   identity: Identity
-): Promise<SubmittableResult> {
+): Promise<SubmittableExtrinsic> {
   const blockchain = await getCached()
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.revokeRoot(
     delegation.id
   )
-  return blockchain.submitTx(identity, tx)
+  return blockchain.signTx(identity, tx)
 }

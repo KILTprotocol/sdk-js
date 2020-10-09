@@ -3,7 +3,6 @@
  * @ignore
  */
 
-import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option } from '@polkadot/types'
 import { AccountId } from '@polkadot/types/interfaces'
@@ -19,11 +18,11 @@ const log = factory.getLogger('CType')
 export async function store(
   ctype: ICType,
   identity: Identity
-): Promise<SubmittableResult> {
+): Promise<SubmittableExtrinsic> {
   const blockchain = await getCached()
   log.debug(() => `Create tx for 'ctype.add'`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.ctype.add(ctype.hash)
-  return blockchain.submitTx(identity, tx)
+  return blockchain.signTx(identity, tx)
 }
 
 // decoding is not backwards compatible with mashnet-node 0.22 anymore

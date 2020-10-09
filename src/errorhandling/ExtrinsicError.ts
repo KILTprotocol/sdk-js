@@ -125,7 +125,7 @@ export const ERROR_ROOT_NOT_FOUND: ExtrinsicError = new ExtrinsicError(
 
 export const ERROR_UNKNOWN: ExtrinsicError = new ExtrinsicError(
   ErrorCode.ERROR_UNKNOWN,
-  'an unknown error ocurred'
+  'an unknown extrinsic error ocurred'
 )
 
 /**

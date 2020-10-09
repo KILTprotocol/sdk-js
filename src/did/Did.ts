@@ -1,3 +1,4 @@
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 /**
  * A Decentralized Identifier (DID) is a new type of identifier that is globally unique, resolvable with high availability, and cryptographically verifiable.
  * Although it's not mandatory in KILT, users can optionally create a DID and anchor it to the KILT blockchain.
@@ -11,7 +12,6 @@
  * @preferred
  */
 
-import { SubmittableResult } from '@polkadot/api'
 import { AnyJson } from '@polkadot/types/types'
 import { factory } from '../config/ConfigLog'
 import Identity from '../identity/Identity'
@@ -126,9 +126,9 @@ export default class Did implements IDid {
    * [ASYNC] Stores the [[Did]] object on-chain.
    *
    * @param identity The identity used to store the [[Did]] object on-chain.
-   * @returns A promise containing the SubmittableResult (transaction status).
+   * @returns A promise containing the SubmittableExtrinsic (transaction status).
    */
-  public async store(identity: Identity): Promise<SubmittableResult> {
+  public async store(identity: Identity): Promise<SubmittableExtrinsic> {
     log.debug(`Create tx for 'did.add'`)
     return store(this, identity)
   }
@@ -157,9 +157,11 @@ export default class Did implements IDid {
    * [STATIC] Removes the [[Did]] object attached to a given [[Identity]] from the chain.
    *
    * @param identity The identity for which to delete the [[Did]].
-   * @returns A promise containing the SubmittableResult (transaction status).
+   * @returns A promise containing a SubmittableExtrinsic (submittable transaction).
    */
-  public static async remove(identity: Identity): Promise<SubmittableResult> {
+  public static async remove(
+    identity: Identity
+  ): Promise<SubmittableExtrinsic> {
     log.debug(`Create tx for 'did.remove'`)
     return remove(identity)
   }

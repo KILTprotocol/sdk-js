@@ -79,16 +79,20 @@ class MockSubmittableExtrinsic {
     return this
   }
 
-  public send(callable: Function) {
+  public async send(callable: Function) {
     if (callable) {
       callable(this.result)
+      return () => {}
     }
+    return '0x123'
   }
 
-  public signAndSend(a: any, callable: Function) {
+  public async signAndSend(a: any, callable: Function) {
     if (callable) {
       callable(this.result)
+      return () => {}
     }
+    return '0x123'
   }
 }
 

@@ -34,6 +34,7 @@ import RequestForAttestation, {
 } from './requestforattestation'
 
 export { SubmittableResult } from '@polkadot/api'
+export { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 export * from './errorhandling'
 export * from './messaging'
 // ---- Types, which define the most basic KILT objects ----
