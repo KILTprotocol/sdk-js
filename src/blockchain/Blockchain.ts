@@ -111,7 +111,7 @@ export default class Blockchain implements IBlockchainApi {
 
   public static submitSignedTx(
     tx: SubmittableExtrinsic,
-    opts: SubscriptionPromiseOptions
+    opts: SubscriptionPromiseOptions = {}
   ): Promise<SubmittableResult> {
     return submitSignedTx(tx, opts.resolveOn, opts.rejectOn, opts.timeout)
   }
