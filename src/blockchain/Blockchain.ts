@@ -29,9 +29,11 @@ export type Stats = {
   nodeVersion: string
 }
 
+export type ResultEvaluator = Evaluator<SubmittableResult>
+
 export interface SubscriptionPromiseOptions {
-  resolveOn?: Evaluator<SubmittableResult>
-  rejectOn?: Evaluator<SubmittableResult>
+  resolveOn?: ResultEvaluator
+  rejectOn?: ResultEvaluator
   timeout?: number
 }
 
@@ -53,18 +55,15 @@ export interface IBlockchainApi {
   getNonce(accountAddress: string): Promise<Codec>
 }
 
-export const IS_READY: Evaluator<SubmittableResult> = (result) =>
-  result.status.isReady
-export const IS_IN_BLOCK: Evaluator<SubmittableResult> = (result) =>
-  result.isInBlock
-export const EXTRINSIC_EXECUTED: Evaluator<SubmittableResult> = (result) =>
+export const IS_READY: ResultEvaluator = (result) => result.status.isReady
+export const IS_IN_BLOCK: ResultEvaluator = (result) => result.isInBlock
+export const EXTRINSIC_EXECUTED: ResultEvaluator = (result) =>
   ErrorHandler.extrinsicSuccessful(result)
-export const IS_FINALIZED: Evaluator<SubmittableResult> = (result) =>
-  result.isFinalized
+export const IS_FINALIZED: ResultEvaluator = (result) => result.isFinalized
 
-export const IS_ERROR: Evaluator<SubmittableResult> = (result) =>
+export const IS_ERROR: ResultEvaluator = (result) =>
   result.isError && ERROR_UNKNOWN()
-export const EXTRINSIC_FAILED: Evaluator<SubmittableResult> = (result) =>
+export const EXTRINSIC_FAILED: ResultEvaluator = (result) =>
   ErrorHandler.extrinsicFailed(result) &&
   (ErrorHandler.getExtrinsicError(result) || UNKNOWN_EXTRINSIC_ERROR)
 
@@ -85,8 +84,8 @@ export const EXTRINSIC_FAILED: Evaluator<SubmittableResult> = (result) =>
  */
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,
-  resolveOn: Evaluator<SubmittableResult> = IS_FINALIZED,
-  rejectOn: Evaluator<SubmittableResult> = (result) =>
+  resolveOn: ResultEvaluator = IS_FINALIZED,
+  rejectOn: ResultEvaluator = (result) =>
     IS_ERROR(result) || EXTRINSIC_FAILED(result),
   timeout?: number
 ): Promise<SubmittableResult> {
