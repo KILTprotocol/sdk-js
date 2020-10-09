@@ -75,7 +75,7 @@ export function makeSubscriptionPromiseMulti<SubscriptionType>(
   subscription: (value: SubscriptionType) => void
 } {
   const promises: Array<Promise<SubscriptionType>> = []
-  let subscriptions: Array<(value: SubscriptionType) => void>
+  const subscriptions: Array<(value: SubscriptionType) => void> = []
   args.forEach(({ resolveOn, rejectOn, timeout }) => {
     const { promise, subscription } = makeSubscriptionPromise(
       resolveOn,
