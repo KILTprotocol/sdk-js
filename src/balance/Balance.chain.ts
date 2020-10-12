@@ -108,11 +108,11 @@ export async function listenToBalanceChanges(
  * const amount: BN = new BN(42)
  * const blockchain = await sdk.getCached()
  * sdk.Balance.makeTransfer(identity, address, amount)
- * .then(tx => blockchain.sendTx(tx))
- * .then(() => console.log('Successfully transferred ${amount.toNumber()} tokens'))
- * .catch(err => {
- * console.log('Transfer failed')
- * })
+ *   .then(tx => blockchain.sendTx(tx))
+ *   .then(() => console.log('Successfully transferred ${amount.toNumber()} tokens'))
+ *   .catch(err => {
+ *     console.log('Transfer failed')
+ *   })
  * ```
  */
 export async function makeTransfer(
@@ -120,7 +120,7 @@ export async function makeTransfer(
   accountAddressTo: IPublicIdentity['address'],
   amount: BN,
   exponent = -15
-): Promise<SubmittableResult> {
+): Promise<SubmittableExtrinsic> {
   const blockchain = await getCached()
   const cleanExponent =
     (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
@@ -130,5 +130,5 @@ export async function makeTransfer(
       ? amount
       : BalanceUtils.convertToTxUnit(amount, cleanExponent)
   )
-  return blockchain.submitTx(identity, transfer)
+  return blockchain.signTx(identity, transfer)
 }

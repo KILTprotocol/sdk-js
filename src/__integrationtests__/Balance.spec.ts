@@ -136,6 +136,24 @@ describe('When there are haves and have-nots', () => {
     expect(newBalance.lt(RichieBalance))
   }, 30_000)
 
+  it('should be able to make a new transaction once the last is ready', async () => {
+    const listener = jest.fn()
+    listenToBalanceChanges(faucet.address, listener)
+    await makeTransfer(faucet, richieRich.address, MIN_TRANSACTION).then((tx) =>
+      submitSignedTx(tx, IS_READY)
+    )
+    await makeTransfer(faucet, stormyD.address, MIN_TRANSACTION).then((tx) =>
+      submitSignedTx(tx, IS_IN_BLOCK)
+    )
+
+    expect(listener).toBeCalledWith(
+      faucet.address,
+      expect.anything(),
+      expect.anything()
+    )
+    expect(listener).toBeCalledTimes(2)
+  }, 30_000)
+
   xit('should be able to make multiple transactions at once', async () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)

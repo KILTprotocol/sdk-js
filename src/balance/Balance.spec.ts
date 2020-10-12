@@ -69,6 +69,7 @@ describe('Balance', () => {
       bob.address,
       new BN(100)
     ).then((tx) => submitSignedTx(tx))
+
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
@@ -104,6 +105,7 @@ describe('Balance', () => {
       bob.address,
       expectedAmount
     )
+
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
@@ -114,7 +116,12 @@ describe('Balance', () => {
       amount,
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
-    const status = await makeTransfer(alice, bob.address, amount, exponent)
+    const status = await makeTransfer(
+      alice,
+      bob.address,
+      amount,
+      exponent
+    ).then((tx) => submitSignedTx(tx))
     expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount

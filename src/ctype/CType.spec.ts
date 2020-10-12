@@ -1,6 +1,8 @@
 import { SubmittableResult } from '@polkadot/api'
 import { TypeRegistry } from '@polkadot/types'
 import { Option } from '@polkadot/types/codec'
+import { submitSignedTx } from '../blockchain'
+
 import Claim from '../claim/Claim'
 import {
   ERROR_ADDRESS_INVALID,
