@@ -9,10 +9,7 @@ import {
   makeTransfer,
 } from './Balance.chain'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-<<<<<<< HEAD
 import { submitSignedTx } from '../blockchain'
-=======
->>>>>>> 643f76b... Unit denomination and conversion (#301)
 import BalanceUtils from './Balance.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
@@ -67,7 +64,6 @@ describe('Balance', () => {
   })
 
   it('should make transfer', async () => {
-<<<<<<< HEAD
     const status = await makeTransfer(
       alice,
       bob.address,
@@ -93,9 +89,6 @@ describe('Balance', () => {
       bob.address,
       expectedAmount
     )
-=======
-    const status = await makeTransfer(alice, bob.address, new BN(100))
->>>>>>> 643f76b... Unit denomination and conversion (#301)
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
