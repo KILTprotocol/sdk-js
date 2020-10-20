@@ -27,11 +27,11 @@ export function errorCheck(input: IClaim): void {
     validateAddress(input.owner, 'Claim owner')
   }
   if (input.contents !== undefined) {
-    Object.entries(input.contents).forEach((entry) => {
+    Object.entries(input.contents).forEach(([key, value]) => {
       if (
-        !entry[0] ||
-        !entry[1] ||
-        !['string', 'number', 'boolean', 'object'].includes(typeof entry[1])
+        !key ||
+        typeof key !== 'string' ||
+        !['string', 'number', 'boolean', 'object'].includes(typeof value)
       ) {
         throw SDKErrors.ERROR_CLAIM_CONTENTS_MALFORMED()
       }
