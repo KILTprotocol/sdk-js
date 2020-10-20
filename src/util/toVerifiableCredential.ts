@@ -333,3 +333,68 @@ export async function verifyAttestedProof(
     return result
   }
 }
+
+export function verifyPropertyProof(
+  credential: VerifiableCredential,
+  proof: matchPropertyProof
+): VerificationResult {
+  const result: VerificationResult = { verified: true }
+  try {
+    // check proof
+    if (proof.type !== KILT_MATCH_PROPERTY_TYPE)
+      throw new Error('Proof type mismatch')
+    if (
+      typeof proof.nonces !== 'object' ||
+      typeof proof.protected !== 'object'
+    ) {
+      throw PROOF_MALFORMED_ERROR(
+        'proof must contain objects "protected" & "nonces"'
+      )
+    }
+    const { protected: protectedBody } = credential.credentialSubject
+    if (typeof protectedBody !== 'object' || !protectedBody)
+      throw CREDENTIAL_MALFORMED_ERROR('protected credential body missing')
+
+    const getNested = (
+      object: Record<string, any>,
+      path: string[]
+    ): any | null =>
+      path.reduce((indexable, nextIndex) => indexable?.[nextIndex], object)
+    const verificationQueue: string[][] = Object.entries(
+      proof.protected
+    ).map(([key]) => [key])
+    if (verificationQueue.length === 0)
+      throw PROOF_MALFORMED_ERROR('no verifiable properties given')
+    while (verificationQueue.length) {
+      // pop last element off array
+      const path = verificationQueue.pop() || []
+      const value = getNested(proof.protected, path)
+      if (typeof value === 'object' && value) {
+        // if first value is object, retrieve values and push to end of queue
+        verificationQueue.push(
+          ...Object.entries(value).map(([key]) => [...path, key])
+        )
+      } else {
+        const nonce = getNested(proof.nonces, path)
+        const hashInCredential = getNested(protectedBody, path)
+        const pathAsString = path.reduce((last, next) => `${last}.${next}`)
+        if (typeof nonce !== 'string')
+          throw PROOF_MALFORMED_ERROR(
+            `nonce missing/malformed for ${pathAsString}`
+          )
+        if (typeof hashInCredential !== 'string')
+          throw PROOF_MALFORMED_ERROR(`unrecognized property ${pathAsString}`)
+
+        const stringified =
+          typeof value !== 'string' ? JSON.stringify(value) : value
+        if (u8aToHex(hash(nonce + stringified)) !== hashInCredential)
+          throw new Error(`hash invalid for path ${pathAsString}`)
+      }
+    }
+    return result
+  } catch (e) {
+    result.verified = false
+    result.error = e
+    return result
+  }
+}
