@@ -56,6 +56,16 @@ describe('Claim', () => {
     expect(Claim.fromClaim(claimObj, testCType.schema)).toEqual(claim)
   })
 
+  it('allows falsy claim values', () => {
+    const claimWithFalsy: IClaim = {
+      ...claim,
+      contents: {
+        name: '',
+      },
+    }
+    expect(() => ClaimUtils.errorCheck(claimWithFalsy)).not.toThrow()
+  })
+
   it('compresses and decompresses the Claim object', () => {
     expect(ClaimUtils.compress(claim)).toEqual(compressedClaim)
 
