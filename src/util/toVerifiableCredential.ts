@@ -1,7 +1,9 @@
 import { decodeAddress } from '@polkadot/keyring'
-import { u8aToHex } from '@polkadot/util'
+import { hexToU8a, u8aConcat, u8aToHex } from '@polkadot/util'
+import { signatureVerify } from '@polkadot/util-crypto'
 import { IDidDocumentPublicKey } from '../did/Did'
-import { IAttestedClaim, Did, IPartialClaim } from '..'
+import { IAttestedClaim, Did, IPartialClaim, Attestation } from '..'
+import { hash } from '../crypto'
 
 /**
  * Constant for default context.
@@ -184,5 +186,150 @@ export default function attClaimToVC(
     issuer,
     issuanceDate,
     credentialStatus,
+  }
+}
+
+interface VerificationResult {
+  verified: boolean
+  error?: Error
+}
+
+const CREDENTIAL_MALFORMED_ERROR = (reason: string): Error =>
+  new Error(`Credential malformed: ${reason}`)
+
+const PROOF_MALFORMED_ERROR = (reason: string): Error =>
+  new Error(`Proof malformed: ${reason}`)
+
+export function verifySelfSignedProof(
+  credential: VerifiableCredential,
+  proof: selfSignedProof
+): VerificationResult {
+  const result: VerificationResult = { verified: true }
+  try {
+    // check proof
+    if (proof.type !== KILT_SELF_SIGNED_PROOF_TYPE)
+      throw new Error('Proof type mismatch')
+    if (!proof.signature) throw PROOF_MALFORMED_ERROR('signature missing')
+    let signerPubKey: string
+    const { verificationMethod } = proof
+    if (
+      typeof verificationMethod === 'object' &&
+      verificationMethod.publicKeyHex
+    ) {
+      if (verificationMethod.type !== 'Ed25519VerificationKey2018')
+        throw PROOF_MALFORMED_ERROR('signature missing')
+      signerPubKey = verificationMethod.publicKeyHex
+    } else {
+      throw PROOF_MALFORMED_ERROR(
+        'proof must contain public key; resolve did key references beforehand'
+      )
+    }
+
+    // collapse protected body to hash array, top to bottom
+    const { protected: protectedBody } = credential.credentialSubject
+    if (typeof protectedBody !== 'object' || !protectedBody)
+      throw CREDENTIAL_MALFORMED_ERROR('protected credential body missing')
+
+    const hashes: string[] = []
+    let queue = Object.values(protectedBody)
+    while (queue.length) {
+      // pop first element off array
+      const first = queue.shift()
+      if (typeof first === 'object') {
+        // if first element is object, retrieve values and push to BEGINNING of queue
+        queue = Object.values(first).concat(...queue)
+      } else if (typeof first === 'string') {
+        // if first element is hash, add to hash queue
+        hashes.push(first)
+      } else {
+        // array should only contain hashes
+        throw CREDENTIAL_MALFORMED_ERROR(
+          'protected credential body must contain string values'
+        )
+      }
+    }
+    // convert hex hashes to byte arrays & concatenate
+    const concatenated = u8aConcat(
+      ...hashes.map((hexHash) => hexToU8a(hexHash))
+    )
+    const rootHash = hash(concatenated)
+    // validate signature over root hash
+    if (!signatureVerify(rootHash, proof.signature, signerPubKey).isValid) {
+      throw new Error('signature could not be verified')
+    }
+    return result
+  } catch (e) {
+    result.verified = false
+    result.error = e
+    return result
+  }
+}
+
+export async function verifyAttestedProof(
+  credential: VerifiableCredential,
+  proof: attestedProof
+): Promise<VerificationResult> {
+  const result: VerificationResult = { verified: true }
+  try {
+    // check proof
+    if (proof.type !== KILT_ATTESTED_PROOF_TYPE)
+      throw new Error('Proof type mismatch')
+    let attesterAddress: string
+    if (typeof proof.attesterAddress === 'string') {
+      attesterAddress = proof.attesterAddress
+      // } else if (proof.attesterAddress === { $ref: '#/id' }) {
+      //   attesterAddress = credential.id
+    } else {
+      throw PROOF_MALFORMED_ERROR('attester address not understood')
+    }
+    let claimHash: string
+    if (typeof proof.credentialId === 'string') {
+      claimHash = proof.credentialId
+    } else if (
+      typeof proof.credentialId === 'object' &&
+      proof.credentialId.$ref === '#/id'
+    ) {
+      claimHash = credential.id
+    } else {
+      throw PROOF_MALFORMED_ERROR('credentialId reference not understood')
+    }
+    let delegationId: string | null
+    if (typeof proof.delegationId === 'undefined') {
+      delegationId = null
+    } else if (typeof proof.delegationId === 'string') {
+      delegationId = proof.delegationId
+    } else if (
+      typeof proof.delegationId === 'object' &&
+      proof.delegationId.$ref ===
+        '#/credentialSubject/protected/delegationId' &&
+      typeof (credential.credentialSubject as any).protected.delegationId ===
+        'string'
+    ) {
+      delegationId = (credential.credentialSubject as any).protected
+        .delegationId
+    } else {
+      throw PROOF_MALFORMED_ERROR('credentialId reference not understood')
+    }
+    const onChain = await Attestation.query(claimHash)
+    if (!onChain)
+      throw new Error(
+        `attestation for credential with id ${claimHash} not found`
+      )
+    if (
+      onChain.owner !== attesterAddress ||
+      onChain.delegationId !== delegationId
+    )
+      throw new Error(
+        `proof not matching on-chain data: proof ${{
+          attester: attesterAddress,
+          delegation: delegationId,
+        }}`
+      )
+    if (onChain.revoked) throw new Error('attestation revoked')
+    return result
+  } catch (e) {
+    result.verified = false
+    result.error = e
+    return result
   }
 }
