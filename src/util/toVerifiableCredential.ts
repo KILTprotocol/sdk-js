@@ -1,12 +1,12 @@
 import { decodeAddress } from '@polkadot/keyring'
 import { hexToU8a, u8aConcat, u8aToHex } from '@polkadot/util'
 import { signatureVerify } from '@polkadot/util-crypto'
-import CType from '../ctype'
 import { ERROR_CLAIM_CONTENTS_MALFORMED } from '../errorhandling/SDKErrors'
 import { IDidDocumentPublicKey } from '../did/Did'
-import { IAttestedClaim, Did, Attestation, IClaim } from '..'
+import { IAttestedClaim, Did, Attestation, IClaim, ICType } from '..'
 import { hash } from '../crypto'
 import IRequestForAttestation from '../types/RequestForAttestation'
+import { verifySchema } from '../ctype/CType.utils'
 
 /**
  * Constant for default context.
@@ -27,6 +27,8 @@ const KILT_ATTESTED_PROOF_TYPE = 'KILTAttestation2020'
 const KILT_REVEAL_PROPERTY_TYPE = 'KILTRevealProperties2020'
 
 const KILT_STATUS_TYPE = 'KILTProtocolStatus2020'
+
+const JSON_SCHEMA_TYPE = 'JsonSchemaValidator2018'
 
 interface JSONreference {
   $ref: string
@@ -68,6 +70,17 @@ interface KILTcredentialStatus {
   type: typeof KILT_STATUS_TYPE
 }
 
+interface CredentialSchema {
+  id: string
+  type: typeof JSON_SCHEMA_TYPE
+  schema: ICType['schema']
+  modelVersion?: string
+  name?: string
+  author?: string
+  authored?: string
+  proof?: proof
+}
+
 interface VerifiableCredential {
   '@context': [typeof DEFAULT_VERIFIABLECREDENTIAL_CONTEXT, ...string[]]
   // the credential types, which declare what data to expect in the credential
@@ -86,12 +99,14 @@ interface VerifiableCredential {
   proof: proof | proof[]
   nonTransferable?: boolean
   credentialStatus?: KILTcredentialStatus
+  credentialSchema?: CredentialSchema
   expirationDate?: any
 }
 
 export default function attClaimToVC(
   input: IAttestedClaim,
-  subjectDid = false
+  subjectDid = false,
+  ctype?: ICType
 ): VerifiableCredential {
   const {
     claimHashTree,
@@ -151,6 +166,19 @@ export default function attClaimToVC(
   // TODO: could we get this from block time or something?
   const issuanceDate = new Date().toISOString()
 
+  // if ctype is given, add as credential schema
+  let credentialSchema: CredentialSchema | undefined
+  if (ctype) {
+    const { schema, owner } = ctype
+    credentialSchema = {
+      id: schema.$id,
+      name: schema.title,
+      type: JSON_SCHEMA_TYPE,
+      schema,
+      author: owner || undefined,
+    }
+  }
+
   return {
     '@context': [DEFAULT_VERIFIABLECREDENTIAL_CONTEXT],
     type: [DEFAULT_VERIFIABLECREDENTIAL_TYPE],
@@ -160,6 +188,7 @@ export default function attClaimToVC(
     proof,
     issuer,
     issuanceDate,
+    credentialSchema,
   }
 }
 
@@ -375,7 +404,7 @@ function getByPath(object: Record<string, any>, path: string[]): any | null {
 export function verifyRevealPropertyProof(
   credential: VerifiableCredential,
   proof: revealPropertyProof,
-  schema?: CType
+  schema?: ICType['schema']
 ): VerificationResult {
   const result: VerificationResult = { verified: true }
   try {
@@ -395,7 +424,7 @@ export function verifyRevealPropertyProof(
       throw CREDENTIAL_MALFORMED_ERROR('protected credential body missing')
 
     // perform schema validation
-    if (schema && !schema.verifyClaimStructure(proof.protected.claim as IClaim))
+    if (schema && !verifySchema(proof.protected.claim, schema))
       throw ERROR_CLAIM_CONTENTS_MALFORMED()
 
     // iteratively hash nonce + value and compare to hash in credential
