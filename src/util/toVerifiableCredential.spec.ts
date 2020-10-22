@@ -105,6 +105,19 @@ it('exports credential to VC', () => {
   })
 })
 
+it('exports includes ctype as schema', () => {
+  expect(attClaimToVC(credential, undefined, ctype)).toMatchObject({
+    credentialSchema: {
+      id:
+        'kilt:ctype:0x2ea0486bf4a62423c644fb127226974a8c971da5ddd27ead23b9189161e8bcea',
+      name: 'AntiCov',
+      type: 'JsonSchemaValidator2018',
+      author: '5HDp5xMH6Xe5cNGczpQQPkpdEGXpZGuYeQDK4GseKkMVbQup',
+      schema: ctype.schema,
+    },
+  })
+})
+
 describe('proofs', () => {
   const VC = attClaimToVC(credential)
 
@@ -125,11 +138,18 @@ describe('proofs', () => {
   })
 
   it('it verifies credential and schema', () => {
+    const VCWithSchema = attClaimToVC(credential, undefined, ctype)
     const revealAll = makeRevealPropertiesProof(
       credential.request.claim,
       credential.request
     )
-    expect(verifyRevealPropertyProof(VC, revealAll, ctype)).toMatchObject({
+    expect(
+      verifyRevealPropertyProof(
+        VC,
+        revealAll,
+        VCWithSchema.credentialSchema?.schema
+      )
+    ).toMatchObject({
       verified: true,
     })
   })
