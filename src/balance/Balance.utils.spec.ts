@@ -10,34 +10,34 @@ describe('formatKiltBalance', () => {
   const TESTVALUE = new BN('123456789000')
   const baseValue = new BN('1')
   it('formats the given balance', async () => {
-    expect(formatKiltBalance(TESTVALUE)).toEqual('123.456 micro KILT')
+    expect(formatKiltBalance(TESTVALUE)).toEqual('123.4567 micro KILT')
     expect(formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(3))))).toEqual(
-      '1.000 pico KILT'
+      '1.0000 pico KILT'
     )
     expect(formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(6))))).toEqual(
-      '1.000 nano KILT'
+      '1.0000 nano KILT'
     )
     expect(formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(9))))).toEqual(
-      '1.000 micro KILT'
+      '1.0000 micro KILT'
     )
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(12))))
-    ).toEqual('1.000 milli KILT')
+    ).toEqual('1.0000 milli KILT')
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(15))))
-    ).toEqual('1.000 KILT')
+    ).toEqual('1.0000 KILT')
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(18))))
-    ).toEqual('1.000 Kilo KILT')
+    ).toEqual('1.0000 Kilo KILT')
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(21))))
-    ).toEqual('1.000 Mega KILT')
+    ).toEqual('1.0000 Mega KILT')
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(24))))
-    ).toEqual('1.000 Giga KILT')
+    ).toEqual('1.0000 Giga KILT')
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(27))))
-    ).toEqual('1.000 Tera KILT')
+    ).toEqual('1.0000 Tera KILT')
   })
 })
 describe('convertToTxUnit', () => {
@@ -90,6 +90,6 @@ describe('asFemtoKilt', () => {
 
 describe('TRANSACTION_FEE', () => {
   it('equals 125 nano KILT', () => {
-    expect(formatKiltBalance(TRANSACTION_FEE)).toEqual('125.000 nano KILT')
+    expect(formatKiltBalance(TRANSACTION_FEE)).toEqual('125.0000 nano KILT')
   })
 })
