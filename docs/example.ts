@@ -82,7 +82,9 @@ async function setup(): Promise<{
   // ! This costs tokens !
   // Also note, that the completely same ctype can only be stored once on the blockchain.
   try {
-    await ctype.store(attester).then((tx) => submitSignedTx(tx, IS_IN_BLOCK))
+    await ctype
+      .store(attester)
+      .then((tx) => submitSignedTx(tx, { resolveOn: IS_IN_BLOCK }))
   } catch (e) {
     console.log(
       'Error while storing CType. Probably either insufficient funds or ctype does already exist.',

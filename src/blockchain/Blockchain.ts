@@ -89,10 +89,10 @@ export const EXTRINSIC_FAILED: ResultEvaluator = (result) => {
   )
 }
 /**
- * Parses potentially incomplete or undefined opts and returns complete [[SubscriptionPromiseOptions]].
+ * Parses potentially incomplete or undefined options and returns complete [[SubscriptionPromiseOptions]].
  *
- * @param opts Potentially undefined opts to parse into complete SubscriptionPromiseOptions.
- * @returns Complete [[SubscriptionPromiseOptions]].
+ * @param opts Potentially undefined or partial [[SubscriptionPromiseOptions]] .
+ * @returns Complete [[SubscriptionPromiseOptions]], with potentially defaulted values.
  */
 export function parseSubscriptionOptions(
   opts?: Partial<SubscriptionPromiseOptions>
@@ -109,9 +109,6 @@ export function parseSubscriptionOptions(
  * [ASYNC] Submits a signed [[SubmittableExtrinsic]] and attaches a callback to monitor the inclusion status of the transaction
  * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
  * finalization and rejects any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters.
- *
- * This function will re-sign and try to resend the given transaction two times, if recoverable errors are encountered.
- * If the submitted extrinsic is usurped, this function will call itself.
  *
  * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
  *
@@ -158,13 +155,7 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   /**
-   *  [STATIC] [ASYNC] Submits a signed [[SubmittableExtrinsic]] and attaches a callback to monitor the inclusion status of the transaction
-   * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
-   * finalization and rejects any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters.
-   *
-   * This function will try to re-sign and resend the given transaction two times recursively, if recoverable errors are encountered.
-   *
-   * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
+   *  [STATIC] [ASYNC] Reroute of class function.
    *
    * @param identity The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
    * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
@@ -178,10 +169,7 @@ export default class Blockchain implements IBlockchainApi {
     opts?: SubscriptionPromiseOptions
   ): Promise<SubmittableResult> {
     const chain = await getCached()
-    const time = Date.now()
-    const result = await chain.submitSignedTx(identity, tx, opts)
-    log.error(`Timeframe: ${Date.now() - time}`)
-    return result
+    return chain.submitSignedTx(identity, tx, opts)
   }
 
   public api: ApiPromise
@@ -232,19 +220,16 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   /**
-   * [STATIC] [ASYNC] Submits a signed [[SubmittableExtrinsic]] and attaches a callback to monitor the inclusion status of the transaction
-   * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
-   * finalization and rejects any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters.
-   *
-   * This function will try to re-sign and resend the given transaction two times recursively, if recoverable errors are encountered.
+   * [ASYNC] Submits a signed [[SubmittableExtrinsic]] with exported function [[submitSignedTx]].
+   * Handles recoverable errors by re-signing and re-sending the tx up to two times.
    *
    * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
    *
-   * @param identity The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
+   * @param identity The [[Identity]] to potentially re-sign the Tx with.
    * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
    * @param opts Criteria for resolving/rejecting the promise.
    * @returns A promise which can be used to track transaction status.
-   * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+   * If resolved, this promise returns the eventually resolved [[SubmittableResult]].
    */
   public async submitSignedTx(
     identity: Identity,
@@ -270,10 +255,10 @@ export default class Blockchain implements IBlockchainApi {
   /**
    * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolving and rejection criteria.
    *
-   * @param identity The [[Identity]] that we retrieve the nonce for.
-   * @param tx The generated unsigned SubmittableExtrinsic to submit.
+   * @param identity The [[Identity]] that we sign and potentially re-sign the tx with.
+   * @param tx The generated unsigned [[SubmittableExtrinsic]] to submit.
    * @param opts Optional [[SubscriptionPromiseOptions]].
-   * @returns Promise Result of The Extrinsic.
+   * @returns Promise result of The Extrinsic.
    *
    */
   public async submitTx(
@@ -286,7 +271,7 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   /**
-   * [ASYNC] Retrieves the Nonce for Transaction signing for the specified account, and increments the in accountNonces mapped Index.
+   * [ASYNC] Retrieves the Nonce for Transaction signing for the specified account and increments the in accountNonces mapped Index.
    *
    * @param accountAddress The address of the identity that we retrieve the nonce for.
    * @param reset Specify whether the entry for the account is outdated and has to be reset.
@@ -309,7 +294,7 @@ export default class Blockchain implements IBlockchainApi {
       .accountNextIndex(accountAddress)
       .catch((reason) => {
         log.error(
-          `Onchain Nonce Retrieval failed for account ${accountAddress}\nwith Reason: ${reason}`
+          `On-chain nonce retrieval failed for account ${accountAddress}\nwith reason: ${reason}`
         )
         throw Error(`Chain failed to retrieve nonce for : ${accountAddress}`)
       })
@@ -328,11 +313,11 @@ export default class Blockchain implements IBlockchainApi {
       )
       return secondQuery
     }
-    throw Error(`Nonce Retrieval Failed for : ${accountAddress}`)
+    throw Error(`Nonce retrieval failed for : ${accountAddress}`)
   }
 
   /**
-   * [ASYNC] Re-signs the given SubmittableExtrinsic with an updated Nonce.
+   * [ASYNC] Re-signs the given [[SubmittableExtrinsic]] with an updated Nonce.
    *
    * @param identity The [[Identity]] to re-sign the Tx with.
    * @param tx The previously with recoverable Error failed Tx.
