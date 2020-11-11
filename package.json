@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest --coverage --group=-integration",
     "test:ci": "jest --ci -b --coverage --group=-integration",
-    "test:integration:run": "jest --group=integration -w 3",
+    "test:integration:run": "jest --group=integration -w 2",
     "test:integration": "if lsof -i :9944 > /dev/null; then yarn test:integration:run; else echo 'Can not connect to chain. Is it running?'; exit 1;fi",
     "test:watch": "yarn test --watch",
     "lint": "eslint 'src/**'",
