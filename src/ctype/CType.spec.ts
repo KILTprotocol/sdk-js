@@ -1,7 +1,7 @@
 import { SubmittableResult } from '@polkadot/api'
 import { TypeRegistry } from '@polkadot/types'
 import { Option } from '@polkadot/types/codec'
-import { submitSignedTx } from '../blockchain'
+import Blockchain from '../blockchain'
 import Claim from '../claim/Claim'
 import {
   ERROR_ADDRESS_INVALID,
@@ -102,7 +102,7 @@ describe('CType', () => {
     const ctype = CType.fromSchema(ctypeModel, identityAlice.address)
 
     const tx = await ctype.store(identityAlice)
-    const result = await submitSignedTx(tx)
+    const result = await Blockchain.submitSignedTx(identityAlice, tx)
     expect(result).toBeInstanceOf(SubmittableResult)
     expect(result.isFinalized).toBeTruthy()
     expect(result.isCompleted).toBeTruthy()

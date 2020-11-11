@@ -1,5 +1,5 @@
 import { Crypto, Identity } from '..'
-import { submitSignedTx } from '../blockchain'
+import Blockchain from '../blockchain'
 import getCached from '../blockchainApiConnection'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import DelegationRootNode from './DelegationRootNode'
@@ -40,7 +40,9 @@ describe('Delegation', () => {
       ctypeHash,
       identityAlice.address
     )
-    await rootDelegation.store(identityAlice).then((tx) => submitSignedTx(tx))
+    await rootDelegation
+      .store(identityAlice)
+      .then((tx) => Blockchain.submitSignedTx(identityAlice, tx))
 
     const rootNode = await DelegationRootNode.query(ROOT_IDENTIFIER)
     if (rootNode) {
@@ -103,7 +105,7 @@ describe('Delegation', () => {
     )
     const revokeStatus = await aDelegationRootNode
       .revoke(identityAlice)
-      .then((tx) => submitSignedTx(tx))
+      .then((tx) => Blockchain.submitSignedTx(identityAlice, tx))
     expect(blockchain.api.tx.delegation.revokeRoot).toBeCalledWith('myRootId')
     expect(revokeStatus).toBeDefined()
   })

@@ -9,6 +9,9 @@
 import { NonceHash } from '../types/RequestForAttestation'
 
 export enum ErrorCode {
+  ERROR_TRANSACTION_OUTDATED = 1010,
+  ERROR_TRANSACTION_PRIORITY = 1014,
+  ERROR_TRANSACTION_USURPED = 1015,
   // Data is missing
   ERROR_CTYPE_HASH_NOT_PROVIDED = 10001,
   ERROR_CLAIM_HASH_NOT_PROVIDED = 10002,
@@ -77,6 +80,24 @@ export class SDKError extends Error {
     super(message)
     this.errorCode = errorCode
   }
+}
+export const ERROR_TRANSACTION_PRIORITY: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_TRANSACTION_PRIORITY,
+    'Tx Priority too low to replace existing Tx with equal nonce'
+  )
+}
+export const ERROR_TRANSACTION_OUTDATED: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_TRANSACTION_OUTDATED,
+    'Tx was signed with outdated Nonce'
+  )
+}
+export const ERROR_TRANSACTION_USURPED: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_TRANSACTION_USURPED,
+    'Tx was replaced by another TX with the same Nonce and higher Priority'
+  )
 }
 export const ERROR_CTYPE_HASH_NOT_PROVIDED: () => SDKError = () => {
   return new SDKError(

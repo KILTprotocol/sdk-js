@@ -65,20 +65,43 @@ async function getCached(): Promise<Blockchain> {
 }
 
 const TxResultsQueue: SubmittableResult[] = []
-let defaultTxResult: SubmittableResult = __makeSubmittableResult(true)
+let defaultTxResult: SubmittableResult = __makeSubmittableResult({})
 
 class MockSubmittableExtrinsic {
   result: SubmittableResult
-  method: string = 'mock tx'
-
+  method = { toHex: () => '0x00' }
+  signature = {
+    signed: false,
+    toHuman: (): number | undefined => undefined,
+  }
+  nonce = { toHuman: (): number | undefined => undefined }
   constructor(result: SubmittableResult) {
     this.result = result
   }
 
-  public sign() {
+  public addSignature() {
+    const signature = this.signature.toHuman()
+      ? this.signature.toHuman()! + 1
+      : 0
+    this.signature = {
+      signed: true,
+      toHuman: () => signature,
+    }
+    const nonce = this.nonce.toHuman() ? this.nonce.toHuman()! + 1 : 0
+    this.nonce = { toHuman: () => nonce }
     return this
   }
+  public signAsync() {
+    const signature = this.signature.toHuman() ? this.signature.toHuman()! : 0
+    this.signature = {
+      signed: true,
+      toHuman: () => signature,
+    }
+    const nonce = this.nonce.toHuman() ? this.nonce.toHuman()! : 0
+    this.nonce = { toHuman: () => nonce }
 
+    return this
+  }
   public async send(callable: Function) {
     if (callable) {
       callable(this.result)
@@ -88,6 +111,13 @@ class MockSubmittableExtrinsic {
   }
 
   public async signAndSend(a: any, callable: Function) {
+    const signature = this.signature.toHuman() ? this.signature.toHuman()! : 0
+    this.signature = {
+      signed: true,
+      toHuman: () => signature,
+    }
+    const nonce = this.nonce.toHuman() ? this.nonce.toHuman()! : 0
+    this.nonce = { toHuman: () => nonce }
     if (callable) {
       callable(this.result)
       return () => {}
@@ -101,17 +131,20 @@ function __getMockSubmittableExtrinsic(): SubmittableExtrinsic {
   return (new MockSubmittableExtrinsic(result) as any) as SubmittableExtrinsic
 }
 
-function __makeSubmittableResult(success: boolean): SubmittableResult {
+function __makeSubmittableResult(
+  opts: Partial<ExtrinsicStatus>
+): SubmittableResult {
   const status: ExtrinsicStatus = {
-    type: success ? 'Finalized' : 'Invalid',
-    isFinalized: success,
+    isFinalized: !Object.keys(opts)[0],
     isDropped: false,
-    isInvalid: !success,
+    isInvalid: false,
     isUsurped: false,
     isFuture: false,
     isReady: true,
   } as any
-
+  for (const key in opts) {
+    status[key] = opts[key]
+  }
   return new SubmittableResult({
     status,
     events: [
@@ -136,14 +169,14 @@ function __makeSubmittableResult(success: boolean): SubmittableResult {
   })
 }
 
-function __queueResults(results: boolean[]) {
-  results.forEach((success) => {
-    TxResultsQueue.push(__makeSubmittableResult(success))
+function __queueResults(results: Partial<ExtrinsicStatus>[]) {
+  results.forEach((status) => {
+    TxResultsQueue.push(__makeSubmittableResult(status))
   })
 }
 
-function __setDefaultResult(success: boolean) {
-  defaultTxResult = __makeSubmittableResult(success)
+function __setDefaultResult(status: Partial<ExtrinsicStatus>) {
+  defaultTxResult = __makeSubmittableResult(status)
 }
 
 const __mocked_api: any = {
@@ -329,7 +362,7 @@ const __mocked_api: any = {
       modules: [],
     },
   },
-  registry: TYPE_REGISTRY
+  registry: TYPE_REGISTRY,
 }
 
 BlockchainApiConnection.getCached = getCached
