@@ -276,7 +276,7 @@ export default class Blockchain implements IBlockchainApi {
    *
    * @param accountAddress The address of the identity that we retrieve the nonce for.
    * @param reset Specify whether the entry for the account is outdated and has to be reset.
-   * @returns [[Index]] representation of the Tx nonce for the identity.
+   * @returns [[BN]] representation of the Tx nonce for the identity.
    *
    */
   public async getNonce(accountAddress: string, reset = false): Promise<BN> {
