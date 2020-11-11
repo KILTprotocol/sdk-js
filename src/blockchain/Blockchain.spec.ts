@@ -233,7 +233,33 @@ describe('Tx logic', () => {
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
-      tx.send = jest.fn().mockRejectedValue(Error('Priority'))
+      tx.send = jest
+        .fn()
+        .mockRejectedValue(Error('1014: Priority is too low: '))
+      await expect(
+        submitSignedTx(tx, parseSubscriptionOptions())
+      ).rejects.toThrow(Error('Recoverable'))
+    }, 20_000)
+    it('catches Already Imported error and rejects Promise with Error Reason "Recoverable"', async () => {
+      setDefault()
+      const chain = new Blockchain(api)
+      const tx = chain.api.tx.balances.transfer(bob.address, 100)
+      tx.signAsync(alice.signKeyringPair)
+      tx.send = jest.fn().mockRejectedValue(Error('Transaction Already'))
+      await expect(
+        submitSignedTx(tx, parseSubscriptionOptions())
+      ).rejects.toThrow(Error('Recoverable'))
+    }, 20_000)
+    it('catches Outdated/Stale Tx error and rejects Promise with Error Reason "Recoverable"', async () => {
+      setDefault()
+      const chain = new Blockchain(api)
+      const tx = chain.api.tx.balances.transfer(bob.address, 100)
+      tx.signAsync(alice.signKeyringPair)
+      tx.send = jest
+        .fn()
+        .mockRejectedValue(
+          Error('1010: Invalid Transaction: Transaction is outdated')
+        )
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
       ).rejects.toThrow(Error('Recoverable'))
