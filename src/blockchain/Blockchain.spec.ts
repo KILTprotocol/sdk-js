@@ -2,8 +2,9 @@
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { SubmittableResult } from '@polkadot/api/submittable'
 import { Text } from '@polkadot/types'
-import { Index, SignerPayload } from '@polkadot/types/interfaces/types'
+import { SignerPayload } from '@polkadot/types/interfaces/types'
 import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
+import BN from 'bn.js'
 import getCached from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Identity from '../identity/Identity'
@@ -59,7 +60,7 @@ describe('Tx logic', () => {
     .__mocked_api
   const setDefault = require('../blockchainApiConnection/BlockchainApiConnection')
     .__setDefaultResult
-  const dispatchNonceRetrieval = async (address: string): Promise<Index> => {
+  const dispatchNonceRetrieval = async (address: string): Promise<BN> => {
     const chain = await getCached()
     return chain.getNonce(address)
   }
@@ -77,7 +78,7 @@ describe('Tx logic', () => {
       )
     })
     it('should return incrementing nonces', async () => {
-      const promisedNonces: Array<Promise<Index>> = []
+      const promisedNonces: Array<Promise<BN>> = []
       const chain = new Blockchain(api)
       for (let i = 0; i < 25; i += 1) {
         promisedNonces.push(chain.getNonce(alice.address))
@@ -89,7 +90,7 @@ describe('Tx logic', () => {
       })
     })
     it('should return nonces from different closures', async () => {
-      const promisedNonces: Array<Promise<Index>> = []
+      const promisedNonces: Array<Promise<BN>> = []
       for (let i = 0; i < 10; i += 1) {
         promisedNonces.push(dispatchNonceRetrieval(alice.address))
         promisedNonces.push(dispatchNonceRetrieval(alice.address))
@@ -102,8 +103,8 @@ describe('Tx logic', () => {
     })
 
     it('should return separate incrementing nonces per account', async () => {
-      const alicePromisedNonces: Array<Promise<Index>> = []
-      const bobPromisedNonces: Array<Promise<Index>> = []
+      const alicePromisedNonces: Array<Promise<BN>> = []
+      const bobPromisedNonces: Array<Promise<BN>> = []
       const chain = new Blockchain(api)
       for (let i = 0; i < 50; i += 1) {
         if (i % 2 === 0) {
@@ -228,12 +229,22 @@ describe('Tx logic', () => {
       )
     })
   })
-  describe('submitSignedTx', () => {
+  describe('exported function submitSignedTx', () => {
     it('catches ERROR_TRANSACTION_USURPED and rejects Promise with Error Reason "Recoverable"', async () => {
       setDefault({ isUsurped: true })
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
+      await expect(
+        submitSignedTx(tx, parseSubscriptionOptions())
+      ).rejects.toThrow(Error('Recoverable'))
+    }, 20_000)
+    it('catches priority error and rejects Promise with Error Reason "Recoverable"', async () => {
+      setDefault()
+      const chain = new Blockchain(api)
+      const tx = chain.api.tx.balances.transfer(bob.address, 100)
+      tx.signAsync(alice.signKeyringPair)
+      tx.send = jest.fn().mockRejectedValue(Error('Priority'))
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
       ).rejects.toThrow(Error('Recoverable'))

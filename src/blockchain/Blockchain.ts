@@ -11,10 +11,11 @@
 import * as gabi from '@kiltprotocol/portablegabi'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Header, Index } from '@polkadot/types/interfaces/types'
+import { Header } from '@polkadot/types/interfaces/types'
 import { AnyJson, Codec } from '@polkadot/types/types'
 import { Text } from '@polkadot/types'
 import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
+import BN from 'bn.js'
 import { ERROR_TRANSACTION_USURPED } from '../errorhandling/SDKErrors'
 import {
   Evaluator,
@@ -58,7 +59,7 @@ export interface IBlockchainApi {
     tx: SubmittableExtrinsic,
     opts?: SubscriptionPromiseOptions
   ): Promise<SubmittableResult>
-  getNonce(accountAddress: string, reset?: boolean): Promise<Index>
+  getNonce(accountAddress: string, reset?: boolean): Promise<BN>
   reSignTx(
     identity: Identity,
     tx: SubmittableExtrinsic
@@ -174,12 +175,12 @@ export default class Blockchain implements IBlockchainApi {
 
   public api: ApiPromise
   public readonly portablegabi: gabi.Blockchain
-  private accountNonces: Map<Identity['address'], Index>
+  private accountNonces: Map<Identity['address'], BN>
 
   public constructor(api: ApiPromise) {
     this.api = api
     this.portablegabi = new gabi.Blockchain('portablegabi', this.api as any)
-    this.accountNonces = new Map<Identity['address'], Index>()
+    this.accountNonces = new Map<Identity['address'], BN>()
   }
 
   public async getStats(): Promise<Stats> {
@@ -278,42 +279,25 @@ export default class Blockchain implements IBlockchainApi {
    * @returns [[Index]] representation of the Tx nonce for the identity.
    *
    */
-  public async getNonce(accountAddress: string, reset = false): Promise<Index> {
+  public async getNonce(accountAddress: string, reset = false): Promise<BN> {
     if (reset) {
       this.accountNonces.delete(accountAddress)
     }
-    const initialQuery = this.accountNonces.get(accountAddress)
-    if (initialQuery) {
-      this.accountNonces.set(
-        accountAddress,
-        this.api.registry.createType('Index', initialQuery.addn(1))
-      )
-      return initialQuery
+    let nonce = this.accountNonces.get(accountAddress)
+    if (!nonce) {
+      const chainNonce = await this.api.rpc.system
+        .accountNextIndex(accountAddress)
+        .catch((reason) => {
+          log.error(
+            `On-chain nonce retrieval failed for account ${accountAddress}\nwith reason: ${reason}`
+          )
+          throw Error(`Chain failed to retrieve nonce for : ${accountAddress}`)
+        })
+      const secondQuery = this.accountNonces.get(accountAddress)
+      nonce = BN.max(chainNonce, secondQuery || new BN(0))
     }
-    const chainNonce = await this.api.rpc.system
-      .accountNextIndex(accountAddress)
-      .catch((reason) => {
-        log.error(
-          `On-chain nonce retrieval failed for account ${accountAddress}\nwith reason: ${reason}`
-        )
-        throw Error(`Chain failed to retrieve nonce for : ${accountAddress}`)
-      })
-    const secondQuery = this.accountNonces.get(accountAddress)
-    if (chainNonce && (!secondQuery || secondQuery.lte(chainNonce))) {
-      this.accountNonces.set(
-        accountAddress,
-        this.api.registry.createType('Index', chainNonce.addn(1))
-      )
-      return chainNonce
-    }
-    if (secondQuery) {
-      this.accountNonces.set(
-        accountAddress,
-        this.api.registry.createType('Index', secondQuery.addn(1))
-      )
-      return secondQuery
-    }
-    throw Error(`Nonce retrieval failed for : ${accountAddress}`)
+    this.accountNonces.set(accountAddress, nonce.addn(1))
+    return nonce
   }
 
   /**
@@ -328,7 +312,7 @@ export default class Blockchain implements IBlockchainApi {
     identity: Identity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic> {
-    const nonce: Index = await this.getNonce(identity.address, true)
+    const nonce: BN = await this.getNonce(identity.address, true)
     const signerPayload: SignerPayloadJSON = this.api
       .createType('SignerPayload', {
         method: tx.method.toHex(),
