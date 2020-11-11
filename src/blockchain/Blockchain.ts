@@ -59,7 +59,7 @@ export interface IBlockchainApi {
     tx: SubmittableExtrinsic,
     opts?: SubscriptionPromiseOptions
   ): Promise<SubmittableResult>
-  getNonce(accountAddress: string, reset?: boolean): Promise<BN>
+  getNonce(accountAddress: string): Promise<BN>
   reSignTx(
     identity: Identity,
     tx: SubmittableExtrinsic
@@ -275,14 +275,10 @@ export default class Blockchain implements IBlockchainApi {
    * [ASYNC] Retrieves the Nonce for Transaction signing for the specified account and increments the in accountNonces mapped Index.
    *
    * @param accountAddress The address of the identity that we retrieve the nonce for.
-   * @param reset Specify whether the entry for the account is outdated and has to be reset.
    * @returns [[BN]] representation of the Tx nonce for the identity.
    *
    */
-  public async getNonce(accountAddress: string, reset = false): Promise<BN> {
-    if (reset) {
-      this.accountNonces.delete(accountAddress)
-    }
+  public async getNonce(accountAddress: string): Promise<BN> {
     let nonce = this.accountNonces.get(accountAddress)
     if (!nonce) {
       const chainNonce = await this.api.rpc.system
@@ -312,7 +308,8 @@ export default class Blockchain implements IBlockchainApi {
     identity: Identity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic> {
-    const nonce: BN = await this.getNonce(identity.address, true)
+    this.accountNonces.delete(identity.address)
+    const nonce: BN = await this.getNonce(identity.address)
     const signerPayload: SignerPayloadJSON = this.api
       .createType('SignerPayload', {
         method: tx.method.toHex(),

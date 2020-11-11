@@ -128,7 +128,7 @@ describe('Tx logic', () => {
       const indexMap = jest
         .spyOn(chain['accountNonces'], 'get')
         .mockReturnValue(chain.api.registry.createType('Index', '1191220'))
-      const nonce = await chain.getNonce(alice.address, true)
+      const nonce = await chain.getNonce(alice.address)
 
       expect(nonce.toNumber()).toEqual(1191220)
       indexMap.mockRestore()
@@ -140,7 +140,7 @@ describe('Tx logic', () => {
         .spyOn(chain['accountNonces'], 'get')
         .mockReturnValue(chain.api.registry.createType('Index', '11912201'))
         .mockReturnValueOnce(undefined)
-      const nonce = await chain.getNonce(alice.address, true)
+      const nonce = await chain.getNonce(alice.address)
 
       expect(nonce.toNumber()).toEqual(11912201)
       indexMap.mockRestore()
@@ -155,7 +155,7 @@ describe('Tx logic', () => {
         .spyOn(chain['accountNonces'], 'get')
         .mockReturnValue(chain.api.registry.createType('Index', '11912201'))
         .mockReturnValueOnce(undefined)
-      const nonce = await chain.getNonce(alice.address, true)
+      const nonce = await chain.getNonce(alice.address)
 
       expect(nonce.toNumber()).toEqual(11912202)
       indexMap.mockRestore()
@@ -169,7 +169,7 @@ describe('Tx logic', () => {
       const indexMap = jest
         .spyOn(chain['accountNonces'], 'get')
         .mockReturnValue(undefined)
-      const nonce = await chain.getNonce(alice.address, true)
+      const nonce = await chain.getNonce(alice.address)
 
       expect(nonce.toNumber()).toEqual(11912203)
       indexMap.mockRestore()
@@ -180,19 +180,6 @@ describe('Tx logic', () => {
       await expect(chain.getNonce(alice.address)).rejects.toThrow(
         Error(`Chain failed to retrieve nonce for : ${alice.address}`)
       )
-    })
-    it('should reset the mapped index', async () => {
-      const chain = new Blockchain(api)
-      chain['accountNonces'].set(
-        alice.address,
-        chain.api.registry.createType('Index', 100)
-      )
-      api.rpc.system.accountNextIndex.mockResolvedValue(
-        chain.api.registry.createType('Index', 0)
-      )
-
-      const nonce = await chain.getNonce(alice.address, true)
-      expect(nonce.toNumber()).toEqual(0)
     })
   })
   describe('reSignTx', () => {
@@ -219,9 +206,11 @@ describe('Tx logic', () => {
       const getNonceSpy = jest
         .spyOn(chain, 'getNonce')
         .mockResolvedValue(chain.api.registry.createType('Index', 1))
+      const deleteEntrySpy = jest.spyOn(chain['accountNonces'], 'delete')
       const reSigned = await chain.reSignTx(alice, submittable)
+      expect(deleteEntrySpy).toHaveBeenCalledWith(alice.address)
       expect(reSigned.method.data).toEqual(submittable.method.data)
-      expect(getNonceSpy).toHaveBeenCalledWith(alice.address, true)
+      expect(getNonceSpy).toHaveBeenCalledWith(alice.address)
       expect(submittable.addSignature).toHaveBeenCalledWith(
         alice.address,
         expect.anything(),
