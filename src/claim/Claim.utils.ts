@@ -4,10 +4,97 @@
  * @preferred
  */
 
+import { AnyJson } from '@polkadot/types/types'
+import { v4 as uuid } from 'uuid'
+import { blake2AsHex } from '@polkadot/util-crypto'
 import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import { validateAddress, validateHash } from '../util/DataUtils'
+
+const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
+
+function JsonLDcontents(
+  claim: Partial<IClaim> & Pick<IClaim, 'cTypeHash'>,
+  expanded = true
+): Record<string, AnyJson> {
+  const { cTypeHash, contents, owner } = claim
+  if (!cTypeHash)
+    throw new Error('ctype hash is required for conversion to json-ld')
+  const vocabulary = `kilt:ctype:${cTypeHash}#`
+  const result: Record<string, any> = {}
+  if (claim.owner) result['@id'] = owner
+  if (!expanded) {
+    return {
+      ...result,
+      '@context': { '@vocab': vocabulary },
+      ...contents,
+    }
+  }
+  Object.entries(contents || {}).forEach(([key, value]) => {
+    result[vocabulary + key] = value
+  })
+  return result
+}
+
+export function toJsonLD(
+  claim: Partial<IClaim> & Pick<IClaim, 'cTypeHash'>,
+  expanded = true
+): Record<string, AnyJson> {
+  const credentialSubject = JsonLDcontents(claim, expanded)
+  const prefix = expanded ? VC_VOCAB : ''
+  const result = {
+    [`${prefix}credentialSubject`]: credentialSubject,
+  }
+  result[`${prefix}credentialSchema`] = {
+    '@id': `kilt:ctype:${claim.cTypeHash}`,
+  }
+  if (!expanded) result['@context'] = { '@vocab': VC_VOCAB }
+
+  return result
+}
+
+export interface Hasher {
+  (value: string, nonce?: string): string
+}
+
+export const defaultHasher: Hasher = (value, nonce) =>
+  blake2AsHex((nonce || '') + value)
+
+export function hashClaimContents(
+  claim: IClaim,
+  options: {
+    nonces?: Record<string, string> | ((key: string) => string)
+    hasher?: Hasher
+  } = {}
+): Array<{ key: string; nonce: string; hash: string }> {
+  const defaults = {
+    hasher: defaultHasher,
+    nonces: () => uuid(),
+  }
+  const { hasher, nonces } = { ...defaults, ...options }
+  const getNonce =
+    typeof nonces === 'function' ? nonces : (key: string) => nonces[key]
+  const normalized = JsonLDcontents(claim, true)
+  const statements = Object.entries(normalized).map(([key, value]) =>
+    JSON.stringify({ [key]: value })
+  )
+  return statements.map((statement) => {
+    const key = hasher(statement)
+    const nonce = getNonce(key)
+    if (!nonce)
+      // TODO: use sdk error module
+      throw new Error(
+        `could not retrieve nonce for statement ${statement} with hash key ${key}`
+      )
+    return {
+      key,
+      nonce,
+      // to simplify validation, the salted hash is computed over unsalted hash (nonce key) & nonce
+      hash: hasher(key, nonce),
+    }
+  })
+}
 
 /**
  *  Checks whether the input meets all the required criteria of an IClaim object.
