@@ -87,8 +87,12 @@ export function getHashForSchema(schema: schemaPropsForHashing): string {
   return Crypto.hashObjectAsStr(hashVal)
 }
 
+export function getIdForCTypeHash(hash: string) {
+  return `kilt:ctype:${hash}`
+}
+
 export function getIdForSchema(schema: schemaPropsForHashing): string {
-  return `kilt:ctype:${getHashForSchema(schema)}`
+  return getIdForCTypeHash(getHashForSchema(schema))
 }
 
 /**

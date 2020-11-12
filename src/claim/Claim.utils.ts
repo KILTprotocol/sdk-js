@@ -11,6 +11,7 @@ import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import { validateAddress, validateHash } from '../util/DataUtils'
+import { getIdForCTypeHash } from '../ctype/CType.utils'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 
@@ -21,7 +22,7 @@ function JsonLDcontents(
   const { cTypeHash, contents, owner } = claim
   if (!cTypeHash)
     throw new Error('ctype hash is required for conversion to json-ld')
-  const vocabulary = `kilt:ctype:${cTypeHash}#`
+  const vocabulary = `${getIdForCTypeHash(claim.cTypeHash)}#`
   const result: Record<string, any> = {}
   if (claim.owner) result['@id'] = owner
   if (!expanded) {
@@ -47,7 +48,7 @@ export function toJsonLD(
     [`${prefix}credentialSubject`]: credentialSubject,
   }
   result[`${prefix}credentialSchema`] = {
-    '@id': `kilt:ctype:${claim.cTypeHash}`,
+    '@id': getIdForCTypeHash(claim.cTypeHash),
   }
   if (!expanded) result['@context'] = { '@vocab': VC_VOCAB }
 
