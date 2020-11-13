@@ -7,6 +7,7 @@
 import { AnyJson } from '@polkadot/types/types'
 import { v4 as uuid } from 'uuid'
 import { blake2AsHex } from '@polkadot/util-crypto'
+import { hexToBn } from '@polkadot/util'
 import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import IClaim, { CompressedClaim } from '../types/Claim'
@@ -15,8 +16,13 @@ import { getIdForCTypeHash } from '../ctype/CType.utils'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 
+/**
+ * The minimal partial claim from which a JSON-LD representation can be built.
+ */
+export type PartialClaim = Partial<IClaim> & Pick<IClaim, 'cTypeHash'>
+
 function JsonLDcontents(
-  claim: Partial<IClaim> & Pick<IClaim, 'cTypeHash'>,
+  claim: PartialClaim,
   expanded = true
 ): Record<string, AnyJson> {
   const { cTypeHash, contents, owner } = claim
@@ -38,8 +44,16 @@ function JsonLDcontents(
   return result
 }
 
+/**
+ * Produces JSON-LD readable representations of KILT claims. This is done by implicitly or explicitely transforming property keys to globally unique predicates.
+ * Where possible these predicates are taken directly from the Verifiable Credentials vocabulary. Properties that are unique to a [[CType]] are transformed to predicates by prepending the [[CType]][schema][$id].
+ *
+ * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
+ * @param expanded Return an expaned instead of a compacted represenation. While property transformation is done explicitely in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving [[IClaim]][contents] property keys untouched.
+ * @returns An object which can be serialized into valid JSON-LD representing an [[IClaim]].
+ */
 export function toJsonLD(
-  claim: Partial<IClaim> & Pick<IClaim, 'cTypeHash'>,
+  claim: PartialClaim,
   expanded = true
 ): Record<string, AnyJson> {
   const credentialSubject = JsonLDcontents(claim, expanded)
@@ -51,50 +65,127 @@ export function toJsonLD(
     '@id': getIdForCTypeHash(claim.cTypeHash),
   }
   if (!expanded) result['@context'] = { '@vocab': VC_VOCAB }
-
   return result
+}
+
+export interface HashingOptions {
+  nonces?: Record<string, string>
+  nonceGenerator?: (key: string) => string
+  hasher?: Hasher
 }
 
 export interface Hasher {
   (value: string, nonce?: string): string
 }
 
-export const defaultHasher: Hasher = (value, nonce) =>
-  blake2AsHex((nonce || '') + value)
+const defaultHasher: Hasher = (value, nonce) =>
+  blake2AsHex((nonce || '') + value, 256)
 
-export function hashClaimContents(
-  claim: IClaim,
-  options: {
-    nonces?: Record<string, string> | ((key: string) => string)
-    hasher?: Hasher
-  } = {}
-): Array<{ key: string; nonce: string; hash: string }> {
-  const defaults = {
-    hasher: defaultHasher,
-    nonces: () => uuid(),
-  }
-  const { hasher, nonces } = { ...defaults, ...options }
-  const getNonce =
-    typeof nonces === 'function' ? nonces : (key: string) => nonces[key]
+function makeStatementsJsonLD(claim: PartialClaim): string[] {
   const normalized = JsonLDcontents(claim, true)
-  const statements = Object.entries(normalized).map(([key, value]) =>
+  return Object.entries(normalized).map(([key, value]) =>
     JSON.stringify({ [key]: value })
   )
-  return statements.map((statement) => {
-    const key = hasher(statement)
-    const nonce = getNonce(key)
-    if (!nonce)
-      // TODO: use sdk error module
-      throw new Error(
-        `could not retrieve nonce for statement ${statement} with hash key ${key}`
-      )
+}
+
+/**
+ * Configurable computation of salted or unsalted hashes over an array or map of statements. Can be used to validate/reproduce salted hashes
+ * by means of an optional nonce map.
+ *
+ * @param statements A map or array of statement strings to be hashed. Keys will be used to look up nonces or as input for the `nonceGenerator`.
+ * @param options Optional hasher arguments.
+ * @param options.nonces An optional map of nonces. If present, it must comprise all keys of `statements`, as those will be used map nonces to statements.
+ * @param options.nonceGenerator An optional nonce generator. Will be used if `options.nonces` is not defined to generate a (new) nonce for each statement. The statement key is passed as its first argument. If no `nonces` or `nonceGenerator` are given this function returns unsalted hashes.
+ * @param options.hasher The hasher to be used. Computes a hash from a statement and an optional nonce. Required but defaults to 256 bit blake2 over `${nonce}${statement}`.
+ * @returns An array of objects for each statement which contain the hash, nonce and statement key.
+ */
+export function hashStatements(
+  statements: string[] | Record<string, string>,
+  options: HashingOptions = {}
+): Array<{ key: string; hash: string; nonce?: string }> {
+  // apply defaults
+  const defaults = {
+    hasher: defaultHasher,
+  }
+  const { hasher, nonces, nonceGenerator } = { ...defaults, ...options }
+  // getNonce <- if nonces map then take from map, else use nonceGenerator function
+  // if no nonceGenerator given, unsalted hashes are returned
+  const getNonce: HashingOptions['nonceGenerator'] =
+    typeof nonces === 'object'
+      ? (key) => {
+          const nonce = nonces[key]
+          // nonce map must be exhaustive
+          // TODO: use sdk error module
+          if (!nonce)
+            throw new Error(
+              `no nonce given for statement with nonce key ${key}`
+            )
+          return nonce
+        }
+      : nonceGenerator
+  // map over statements, use key to retrieve nonce, then hash statement & nonce
+  return Object.entries(statements).map(([key, statement]) => {
+    const nonce = getNonce ? getNonce(key) : undefined
     return {
       key,
       nonce,
-      // to simplify validation, the salted hash is computed over unsalted hash (nonce key) & nonce
-      hash: hasher(key, nonce),
+      hash: hasher(statement, nonce),
     }
   })
+}
+
+/**
+ * Produces salted hashes of individual statements comprising a (partial) [[IClaim]] to enable selective disclosure of contents. Can also be used to reproduce hashes for the purpose of validation.
+ *
+ * @param claim Full or partial [[IClaim]] to produce statement hashes from.
+ * @param options Object containing optional parameters.
+ * @param options.canonicalisation Canonicalisation routine that produces an array of statement strings from the [IClaim]. Default produces individual `{"key":"value"}` JSON representations where keys are transformed to expanded JSON-LD.
+ * @param options.nonces Optional map of nonces as produced by this function.
+ * @param options.nonceGenerator Nonce generator as defined by [[hashStatements]] to be used if no `nonces` are given. Default produces random UUIDs (v4).
+ * @param options.hasher The hasher to be used. Required but defaults to 256 bit blake2 over `${nonce}${statement}`.
+ * @returns An array of salted `hashes` and a `nonceMap` where keys correspond to unsalted statement hashes.
+ */
+export function hashClaimContents(
+  claim: PartialClaim,
+  options: HashingOptions & {
+    canonicalisation?: (claim: PartialClaim) => string[]
+  } = {}
+): { hashes: string[]; nonceMap: Record<string, string> } {
+  // apply defaults
+  const defaults = {
+    hasher: defaultHasher,
+    nonceGenerator: () => uuid(),
+    canonicalisation: makeStatementsJsonLD,
+  }
+  const { hasher, nonces, nonceGenerator, canonicalisation } = {
+    ...defaults,
+    ...options,
+  }
+  // use canonicalisation algorithm to make hashable statement strings
+  const statements = canonicalisation(claim)
+  // generate unsalted hashes from statements as a first step
+  const unsalted = hashStatements(statements, {
+    hasher,
+    nonceGenerator: undefined,
+  })
+  // to simplify validation, the salted hash is computed over unsalted hash (nonce key) & nonce
+  // the unsalted hash will work has the nonce key later, so we feed a hash:hash map to the hasher
+  const salted = hashStatements(
+    unsalted.reduce<Record<string, string>>((map, { hash }) => {
+      return { ...map, [hash]: hash }
+    }, {}),
+    { hasher, nonces, nonceGenerator }
+  )
+  // produce array of salted hashes to add to credential (sorted to produce consistent outcomes)
+  const hashes = salted
+    .map(({ hash }) => hash)
+    .sort((a, b) => hexToBn(a).cmp(hexToBn(b)))
+  // produce nonce map, where each nonce is keyed with the unsalted hash
+  const nonceMap = {}
+  salted.forEach(({ key, nonce }) => {
+    if (nonce) nonceMap[key] = nonce
+  }, {})
+  return { hashes, nonceMap }
 }
 
 /**
