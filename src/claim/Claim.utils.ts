@@ -6,13 +6,13 @@
 
 import { AnyJson } from '@polkadot/types/types'
 import { v4 as uuid } from 'uuid'
-import { blake2AsHex } from '@polkadot/util-crypto'
 import { hexToBn } from '@polkadot/util'
 import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import IClaim, { CompressedClaim } from '../types/Claim'
 import { validateAddress, validateHash } from '../util/DataUtils'
 import { getIdForCTypeHash } from '../ctype/CType.utils'
+import { HashingOptions, hashStatements } from '../crypto/Crypto'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 
@@ -68,70 +68,11 @@ export function toJsonLD(
   return result
 }
 
-export interface HashingOptions {
-  nonces?: Record<string, string>
-  nonceGenerator?: (key: string) => string
-  hasher?: Hasher
-}
-
-export interface Hasher {
-  (value: string, nonce?: string): string
-}
-
-const defaultHasher: Hasher = (value, nonce) =>
-  blake2AsHex((nonce || '') + value, 256)
-
 function makeStatementsJsonLD(claim: PartialClaim): string[] {
   const normalized = JsonLDcontents(claim, true)
   return Object.entries(normalized).map(([key, value]) =>
     JSON.stringify({ [key]: value })
   )
-}
-
-/**
- * Configurable computation of salted or unsalted hashes over an array or map of statements. Can be used to validate/reproduce salted hashes
- * by means of an optional nonce map.
- *
- * @param statements A map or array of statement strings to be hashed. Keys will be used to look up nonces or as input for the `nonceGenerator`.
- * @param options Optional hasher arguments.
- * @param options.nonces An optional map of nonces. If present, it must comprise all keys of `statements`, as those will be used map nonces to statements.
- * @param options.nonceGenerator An optional nonce generator. Will be used if `options.nonces` is not defined to generate a (new) nonce for each statement. The statement key is passed as its first argument. If no `nonces` or `nonceGenerator` are given this function returns unsalted hashes.
- * @param options.hasher The hasher to be used. Computes a hash from a statement and an optional nonce. Required but defaults to 256 bit blake2 over `${nonce}${statement}`.
- * @returns An array of objects for each statement which contain the hash, nonce and statement key.
- */
-export function hashStatements(
-  statements: string[] | Record<string, string>,
-  options: HashingOptions = {}
-): Array<{ key: string; hash: string; nonce?: string }> {
-  // apply defaults
-  const defaults = {
-    hasher: defaultHasher,
-  }
-  const { hasher, nonces, nonceGenerator } = { ...defaults, ...options }
-  // getNonce <- if nonces map then take from map, else use nonceGenerator function
-  // if no nonceGenerator given, unsalted hashes are returned
-  const getNonce: HashingOptions['nonceGenerator'] =
-    typeof nonces === 'object'
-      ? (key) => {
-          const nonce = nonces[key]
-          // nonce map must be exhaustive
-          // TODO: use sdk error module
-          if (!nonce)
-            throw new Error(
-              `no nonce given for statement with nonce key ${key}`
-            )
-          return nonce
-        }
-      : nonceGenerator
-  // map over statements, use key to retrieve nonce, then hash statement & nonce
-  return Object.entries(statements).map(([key, statement]) => {
-    const nonce = getNonce ? getNonce(key) : undefined
-    return {
-      key,
-      nonce,
-      hash: hasher(statement, nonce),
-    }
-  })
 }
 
 /**
@@ -153,7 +94,6 @@ export function hashClaimContents(
 ): { hashes: string[]; nonceMap: Record<string, string> } {
   // apply defaults
   const defaults = {
-    hasher: defaultHasher,
     nonceGenerator: () => uuid(),
     canonicalisation: makeStatementsJsonLD,
   }
