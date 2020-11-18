@@ -8,7 +8,7 @@
  */
 import { checkAddress } from '@polkadot/util-crypto'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { hashObjectAsStr, verify } from '../crypto/Crypto'
+import { verify, Hasher } from '../crypto/Crypto'
 import {
   ERROR_ADDRESS_INVALID,
   ERROR_ADDRESS_TYPE,
@@ -22,7 +22,7 @@ import {
 } from '../errorhandling/SDKErrors'
 import PublicIdentity from '../identity/PublicIdentity'
 import IAttestedClaim from '../types/AttestedClaim'
-import { NonceHash } from '../types/RequestForAttestation'
+import { Hash } from '../types/RequestForAttestation'
 
 /**
  *  Validates an given address string against the External Address Format (SS58) with our Prefix of 42.
@@ -71,9 +71,11 @@ export function validateHash(hash: string, name: string): boolean {
 /**
  *  Validates the format via regex and the data integrity of the given blake2b nonceHash.
  *
- * @param nonceHash NonceHash to validate for correct format and data integrity.
+ * @param hash Hash to validate for correct format and data integrity.
+ * @param nonce (Optional) nonce used in hashing.
  * @param data String, object, number or boolean type data to verify the integrity.
  * @param name Contextual name of the address, e.g. "claim owner".
+ * @param hasher Hashing function used.
  * @throws When nonceHash is of wrong format or has incorrectly set properties.
  * @throws When the nonceHash does not validate against the given data.
  * @throws [[ERROR_NONCE_HASH_MALFORMED]], [[ERROR_NONCE_HASH_INVALID]].
@@ -81,19 +83,18 @@ export function validateHash(hash: string, name: string): boolean {
  * @returns Boolean whether the given NonceHash checks out against the Format and it's hashed data.
  */
 export function validateNonceHash(
-  nonceHash: NonceHash,
-  data: string | Record<string, any> | number | boolean,
-  name: string
+  hash: Hash,
+  nonce: string | null,
+  data: string,
+  name: string,
+  hasher: Hasher
 ): boolean {
-  if (!nonceHash || typeof nonceHash.hash !== 'string') {
+  if (typeof hash !== 'string' || typeof nonce !== 'string') {
     throw ERROR_NONCE_HASH_MALFORMED()
   }
-  validateHash(nonceHash.hash, name)
-  if (
-    nonceHash.nonce &&
-    nonceHash.hash !== hashObjectAsStr(data, nonceHash.nonce)
-  ) {
-    throw ERROR_NONCE_HASH_INVALID(nonceHash, name)
+  validateHash(hash, name)
+  if (hash !== hasher(data, nonce)) {
+    throw ERROR_NONCE_HASH_INVALID({ nonce, hash }, name)
   }
   return true
 }
