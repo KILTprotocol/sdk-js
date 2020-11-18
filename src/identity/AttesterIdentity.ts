@@ -8,7 +8,7 @@
 import * as gabi from '@kiltprotocol/portablegabi'
 import { KeyringPair } from '@polkadot/keyring/types'
 import * as u8aUtil from '@polkadot/util/u8a'
-import Blockchain, { IS_FINALIZED } from '../blockchain/Blockchain'
+import Blockchain from '../blockchain/Blockchain'
 import Attestation from '../attestation/Attestation'
 import getCached from '../blockchainApiConnection'
 import {
@@ -331,8 +331,6 @@ export default class AttesterIdentity extends Identity {
     }
     await new Attestation(handle.attestation)
       .revoke(this)
-      .then((tx) =>
-        Blockchain.submitSignedTx(this, tx, { resolveOn: IS_FINALIZED })
-      )
+      .then((tx) => Blockchain.submitSignedTx(this, tx))
   }
 }

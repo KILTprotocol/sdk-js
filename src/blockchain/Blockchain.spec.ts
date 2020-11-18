@@ -7,6 +7,7 @@ import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import getCached from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
+import { ERROR_TRANSACTION_RECOVERABLE } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import Blockchain, {
   EXTRINSIC_FAILED,
@@ -101,7 +102,6 @@ describe('Tx logic', () => {
         expect(value.toNumber()).toEqual(index)
       })
     })
-
     it('should return separate incrementing nonces per account', async () => {
       const alicePromisedNonces: Array<Promise<BN>> = []
       const bobPromisedNonces: Array<Promise<BN>> = []
@@ -122,38 +122,34 @@ describe('Tx logic', () => {
         expect(value.toNumber()).toEqual(index)
       })
     })
-
     it('should return the highest read Nonce (mapped Index 1st read)', async () => {
       const chain = new Blockchain(api)
       const indexMap = jest
         .spyOn(chain['accountNonces'], 'get')
-        .mockReturnValue(chain.api.registry.createType('Index', '1191220'))
+        .mockReturnValue(new BN(1191220))
       const nonce = await chain.getNonce(alice.address)
 
       expect(nonce.toNumber()).toEqual(1191220)
       indexMap.mockRestore()
     })
-
     it('should return the highest read Nonce (mapped Index 2nd read)', async () => {
       const chain = new Blockchain(api)
       const indexMap = jest
         .spyOn(chain['accountNonces'], 'get')
-        .mockReturnValue(chain.api.registry.createType('Index', '11912201'))
+        .mockReturnValue(new BN(11912201))
         .mockReturnValueOnce(undefined)
       const nonce = await chain.getNonce(alice.address)
 
       expect(nonce.toNumber()).toEqual(11912201)
       indexMap.mockRestore()
     })
-    it('should return the highest read Nonce (chain Index >= secondQuery)', async () => {
+    it('should return the highest read Nonce (chain Index > secondQuery)', async () => {
       const chain = new Blockchain(api)
-      api.rpc.system.accountNextIndex.mockResolvedValue(
-        chain.api.registry.createType('Index', '11912202')
-      )
+      api.rpc.system.accountNextIndex.mockResolvedValue(new BN(11912202))
 
       const indexMap = jest
         .spyOn(chain['accountNonces'], 'get')
-        .mockReturnValue(chain.api.registry.createType('Index', '11912201'))
+        .mockReturnValue(new BN(11912201))
         .mockReturnValueOnce(undefined)
       const nonce = await chain.getNonce(alice.address)
 
@@ -174,7 +170,7 @@ describe('Tx logic', () => {
       expect(nonce.toNumber()).toEqual(11912203)
       indexMap.mockRestore()
     })
-    it('should handle error when chain returns error', async () => {
+    it('should reject when chain returns error', async () => {
       api.rpc.system.accountNextIndex.mockRejectedValue('Reason')
       const chain = new Blockchain(api)
       await expect(chain.getNonce(alice.address)).rejects.toThrow(
@@ -183,14 +179,6 @@ describe('Tx logic', () => {
     })
   })
   describe('reSignTx', () => {
-    const submittable: SubmittableExtrinsic = ({
-      signature: {
-        toHuman: jest.fn(),
-      },
-      addSignature: jest.fn(),
-      nonce: { toHuman: jest.fn() },
-      method: { data: 'unchanged', toHex: jest.fn() },
-    } as unknown) as SubmittableExtrinsic
     it('fetches updated Nonce and applies updated signature to Extrinsic', async () => {
       api.createType = jest
         .fn()
@@ -203,6 +191,7 @@ describe('Tx logic', () => {
             .mockReturnValue(({} as unknown) as SignerPayloadJSON),
         } as unknown) as SignerPayload)
       const chain = new Blockchain(api)
+      const submittable = chain.api.tx.balances.transfer(bob.address, 100)
       const getNonceSpy = jest
         .spyOn(chain, 'getNonce')
         .mockResolvedValue(chain.api.registry.createType('Index', 1))
@@ -219,28 +208,26 @@ describe('Tx logic', () => {
     })
   })
   describe('exported function submitSignedTx', () => {
-    it('catches ERROR_TRANSACTION_USURPED and rejects Promise with Error Reason "Recoverable"', async () => {
+    it('catches ERROR_TRANSACTION_USURPED and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
       setDefault({ isUsurped: true })
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(Error('Recoverable'))
+      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
-    it('catches priority error and rejects Promise with Error Reason "Recoverable"', async () => {
+    it('catches priority error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
       setDefault()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
-      tx.send = jest
-        .fn()
-        .mockRejectedValue(Error('1014: Priority is too low: '))
+      tx.send = jest.fn().mockRejectedValue(Error('1014: Priority is too low:'))
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(Error('Recoverable'))
+      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
-    it('catches Already Imported error and rejects Promise with Error Reason "Recoverable"', async () => {
+    it('catches Already Imported error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
       setDefault()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
@@ -248,9 +235,9 @@ describe('Tx logic', () => {
       tx.send = jest.fn().mockRejectedValue(Error('Transaction Already'))
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(Error('Recoverable'))
+      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
-    it('catches Outdated/Stale Tx error and rejects Promise with Error Reason "Recoverable"', async () => {
+    it('catches Outdated/Stale Tx error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
       setDefault()
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
@@ -262,13 +249,31 @@ describe('Tx logic', () => {
         )
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(Error('Recoverable'))
+      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
+  })
+  describe('Blockchain class method submitSignedTx', () => {
+    it('Retries to send up to two times if recoverable error is caught', async () => {
+      setDefault({ isUsurped: true })
+      const chain = new Blockchain(api)
+      const tx = chain.api.tx.balances.transfer(bob.address, 100)
+      tx.signAsync(alice.signKeyringPair)
+      const reSignSpy = jest
+        .spyOn(chain, 'reSignTx')
+        .mockImplementation(async (id, Tx) => {
+          return Tx
+        })
+      await expect(chain.submitSignedTx(alice, tx)).rejects.toThrow(
+        ERROR_TRANSACTION_RECOVERABLE()
+      )
+
+      expect(reSignSpy).toHaveBeenCalledTimes(2)
+    })
   })
 })
 describe('parseSubscriptionOptions', () => {
   it('takes incomplete SubscriptionPromiseOptions and sets default values where needed', async () => {
-    const testfunction: ResultEvaluator = (result) => true
+    const testfunction: ResultEvaluator = () => true
     expect(JSON.stringify(parseSubscriptionOptions())).toEqual(
       JSON.stringify({
         resolveOn: IS_FINALIZED,

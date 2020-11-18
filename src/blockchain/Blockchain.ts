@@ -16,7 +16,10 @@ import { AnyJson, Codec } from '@polkadot/types/types'
 import { Text } from '@polkadot/types'
 import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
-import { ERROR_TRANSACTION_USURPED } from '../errorhandling/SDKErrors'
+import {
+  ERROR_TRANSACTION_RECOVERABLE,
+  ERROR_TRANSACTION_USURPED,
+} from '../errorhandling/SDKErrors'
 import {
   Evaluator,
   makeSubscriptionPromise,
@@ -66,8 +69,11 @@ export interface IBlockchainApi {
   ): Promise<SubmittableExtrinsic>
 }
 
+const TxOutdated = '1010: Invalid Transaction: Transaction is outdated'
+const TxPriority = '1014: Priority is too low:'
+const TxAlreadyImported = 'Transaction Already'
 export const IS_RELEVANT_ERROR: ErrorEvaluator = (err: Error) => {
-  return /Priority|Transaction Already|outdated/g.test(err.message)
+  return err.message.includes(TxOutdated || TxPriority || TxAlreadyImported)
 }
 export const IS_READY: ResultEvaluator = (result) => result.status.isReady
 export const IS_IN_BLOCK: ResultEvaluator = (result) => result.isInBlock
@@ -89,6 +95,7 @@ export const EXTRINSIC_FAILED: ResultEvaluator = (result) => {
     (ErrorHandler.getExtrinsicError(result) || UNKNOWN_EXTRINSIC_ERROR)
   )
 }
+
 /**
  * Parses potentially incomplete or undefined options and returns complete [[SubscriptionPromiseOptions]].
  *
@@ -106,6 +113,7 @@ export function parseSubscriptionOptions(
   } = { ...opts }
   return { resolveOn, rejectOn, timeout }
 }
+
 /**
  * [ASYNC] Submits a signed [[SubmittableExtrinsic]] and attaches a callback to monitor the inclusion status of the transaction
  * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
@@ -128,7 +136,7 @@ export async function submitSignedTx(
     .send(subscription)
     .catch(async (reason: Error) => {
       if (IS_RELEVANT_ERROR(reason)) {
-        return Promise.reject(Error('Recoverable'))
+        return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
       }
       return Promise.reject(reason)
     })
@@ -136,7 +144,7 @@ export async function submitSignedTx(
   const result = await promise
     .catch(async (reason: Error) => {
       if (reason.message === ERROR_TRANSACTION_USURPED().message) {
-        return Promise.reject(Error('Recoverable'))
+        return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
       }
       return Promise.reject(reason)
     })
@@ -156,18 +164,18 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   /**
-   *  [STATIC] [ASYNC] Reroute of class function.
+   *  [STATIC] [ASYNC] Reroute of class method.
    *
-   * @param identity The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
+   * @param identity The [[Identity]] to re-sign the tx on recoverable error.
    * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
-   * @param opts Criteria for resolving/rejecting the promise.
+   * @param opts Optional partial criteria for resolving/rejecting the promise.
    * @returns A promise which can be used to track transaction status.
    * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
    */
   public static async submitSignedTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
-    opts?: SubscriptionPromiseOptions
+    opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
     const chain = await getCached()
     return chain.submitSignedTx(identity, tx, opts)
@@ -223,49 +231,44 @@ export default class Blockchain implements IBlockchainApi {
   /**
    * [ASYNC] Submits a signed [[SubmittableExtrinsic]] with exported function [[submitSignedTx]].
    * Handles recoverable errors by re-signing and re-sending the tx up to two times.
+   * Uses parseSubscriptionPromise to provide complete potentially defaulted options to the called submitSignedTx.
    *
    * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
    *
    * @param identity The [[Identity]] to potentially re-sign the Tx with.
    * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
-   * @param opts Criteria for resolving/rejecting the promise.
+   * @param opts Partial optional criteria for resolving/rejecting the promise.
    * @returns A promise which can be used to track transaction status.
    * If resolved, this promise returns the eventually resolved [[SubmittableResult]].
    */
   public async submitSignedTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
-    opts?: SubscriptionPromiseOptions
+    opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
     const options = parseSubscriptionOptions(opts)
-    return submitSignedTx(tx, options)
-      .catch(async (reason: Error) => {
-        if (reason.message === 'Recoverable') {
-          return submitSignedTx(await this.reSignTx(identity, tx), options)
-        }
-        throw reason
-      })
-      .catch(async (reason: Error) => {
-        if (reason.message === 'Recoverable') {
-          return submitSignedTx(await this.reSignTx(identity, tx), options)
-        }
-        throw reason
-      })
+    const retry = async (reason: Error): Promise<SubmittableResult> => {
+      if (reason.message === ERROR_TRANSACTION_RECOVERABLE().message) {
+        return submitSignedTx(await this.reSignTx(identity, tx), options)
+      }
+      throw reason
+    }
+    return submitSignedTx(tx, options).catch(retry).catch(retry)
   }
 
   /**
-   * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolving and rejection criteria.
+   * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
    *
    * @param identity The [[Identity]] that we sign and potentially re-sign the tx with.
    * @param tx The generated unsigned [[SubmittableExtrinsic]] to submit.
-   * @param opts Optional [[SubscriptionPromiseOptions]].
+   * @param opts Partial optional criteria for resolving/rejecting the promise.
    * @returns Promise result of The Extrinsic.
    *
    */
   public async submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
-    opts?: SubscriptionPromiseOptions
+    opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
     return this.submitSignedTx(identity, signedTx, opts)
@@ -301,7 +304,7 @@ export default class Blockchain implements IBlockchainApi {
    *
    * @param identity The [[Identity]] to re-sign the Tx with.
    * @param tx The previously with recoverable Error failed Tx.
-   * @returns Original Tx, injected with updated signature payload.
+   * @returns Original Tx, injected with signature payload with updated nonce.
    *
    */
   public async reSignTx(
