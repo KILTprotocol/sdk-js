@@ -1,10 +1,10 @@
 /* eslint-disable dot-notation */
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { SubmittableResult } from '@polkadot/api/submittable'
 import { Text } from '@polkadot/types'
 import { SignerPayload } from '@polkadot/types/interfaces/types'
 import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
+import { SubmittableExtrinsic } from '..'
 import getCached from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import { ERROR_TRANSACTION_RECOVERABLE } from '../errorhandling/SDKErrors'
@@ -179,6 +179,14 @@ describe('Tx logic', () => {
     })
   })
   describe('reSignTx', () => {
+    const submittable: SubmittableExtrinsic = ({
+      signature: {
+        toHuman: jest.fn(),
+      },
+      addSignature: jest.fn(),
+      nonce: { toHuman: jest.fn() },
+      method: { data: 'unchanged', toHex: jest.fn() },
+    } as unknown) as SubmittableExtrinsic
     it('fetches updated Nonce and applies updated signature to Extrinsic', async () => {
       api.createType = jest
         .fn()
@@ -191,10 +199,9 @@ describe('Tx logic', () => {
             .mockReturnValue(({} as unknown) as SignerPayloadJSON),
         } as unknown) as SignerPayload)
       const chain = new Blockchain(api)
-      const submittable = chain.api.tx.balances.transfer(bob.address, 100)
       const getNonceSpy = jest
         .spyOn(chain, 'getNonce')
-        .mockResolvedValue(chain.api.registry.createType('Index', 1))
+        .mockResolvedValue(new BN(1))
       const deleteEntrySpy = jest.spyOn(chain['accountNonces'], 'delete')
       const reSigned = await chain.reSignTx(alice, submittable)
       expect(deleteEntrySpy).toHaveBeenCalledWith(alice.address)

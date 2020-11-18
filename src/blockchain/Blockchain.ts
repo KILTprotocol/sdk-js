@@ -68,12 +68,15 @@ export interface IBlockchainApi {
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic>
 }
-
 const TxOutdated = '1010: Invalid Transaction: Transaction is outdated'
 const TxPriority = '1014: Priority is too low:'
 const TxAlreadyImported = 'Transaction Already'
+
 export const IS_RELEVANT_ERROR: ErrorEvaluator = (err: Error) => {
-  return err.message.includes(TxOutdated || TxPriority || TxAlreadyImported)
+  return new RegExp(
+    `${TxAlreadyImported}|${TxOutdated}|${TxPriority}`,
+    'g'
+  ).test(err.message)
 }
 export const IS_READY: ResultEvaluator = (result) => result.status.isReady
 export const IS_IN_BLOCK: ResultEvaluator = (result) => result.isInBlock
