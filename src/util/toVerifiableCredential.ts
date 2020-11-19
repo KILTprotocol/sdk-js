@@ -1,12 +1,21 @@
 import { decodeAddress } from '@polkadot/keyring'
 import { hexToU8a, u8aConcat, u8aToHex } from '@polkadot/util'
-import { signatureVerify } from '@polkadot/util-crypto'
+import { blake2AsHex, signatureVerify } from '@polkadot/util-crypto'
+import { AnyJson } from '@polkadot/types/types'
+import jsonld from 'jsonld'
 import { ERROR_CLAIM_CONTENTS_MALFORMED } from '../errorhandling/SDKErrors'
 import { IDidDocumentPublicKey } from '../did/Did'
-import { IAttestedClaim, Did, Attestation, IClaim, ICType } from '..'
-import { hash } from '../crypto'
+import {
+  IAttestedClaim,
+  Did,
+  Attestation,
+  ICType,
+  // ClaimUtils,
+  CTypeUtils,
+} from '..'
+import { hash, Hasher } from '../crypto'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import { verifySchema } from '../ctype/CType.utils'
+import { hashClaimContents, PartialClaim, toJsonLD } from '../claim/Claim.utils'
 
 /**
  * Constant for default context.
@@ -58,12 +67,7 @@ interface attestedProof extends proof {
 
 interface revealPropertyProof extends proof {
   type: typeof KILT_REVEAL_PROPERTY_TYPE
-  protected: {
-    claim: Partial<IClaim>
-  }
-  nonces: {
-    claim: Partial<IClaim>
-  }
+  nonces: Record<string, string>
 }
 
 interface KILTcredentialStatus {
@@ -71,8 +75,8 @@ interface KILTcredentialStatus {
 }
 
 interface CredentialSchema {
-  id: string
-  type: typeof JSON_SCHEMA_TYPE
+  '@id': string
+  '@type': typeof JSON_SCHEMA_TYPE
   schema: ICType['schema']
   modelVersion?: string
   name?: string
@@ -86,15 +90,18 @@ interface VerifiableCredential {
   // the credential types, which declare what data to expect in the credential
   type: [typeof DEFAULT_VERIFIABLECREDENTIAL_TYPE, ...string[]]
   id: string
+  // claims about the subjects of the credential
+  credentialSubject: Record<string, AnyJson>
+  // salted hashes of statements in credentialSubject to allow selective disclosure
+  claimHashes: string[]
   // the entity that issued the credential
   issuer: string
   // when the credential was issued
   issuanceDate: string
-  // claims about the subjects of the credential
-  credentialSubject: {
-    protected: Record<string, unknown>
-    id?: string
-  }
+  // Ids / digests of claims that empower the issuer to provide judegment
+  legitimationIds: string[]
+  // Id / digest that represents a delegation of authority to the issuer
+  delegationId?: string
   // digital proof that makes the credential tamper-evident
   proof: proof | proof[]
   nonTransferable?: boolean
@@ -103,15 +110,39 @@ interface VerifiableCredential {
   expirationDate?: any
 }
 
+/**
+ * This proof is added to a credential to proove that revealed properties were attested in the original credential.
+ * For each property to be revealed, it contains an unsalted hash of the statement plus a nonce which is required to verify against the salted hash in the credential.
+ * Statements and nonces are mapped to each other through the unsalted hashes.
+ *
+ * @param partialClaim Claim object containing only the values you want to reveal.
+ * @param requestForAttestation The full [[IRequestForAttestation]] object from which necessary nonces are picked.
+ * @returns Proof object that can be included in a Verifiable Credential / Verifiable Presentation's proof section.
+ */
+export function makeRevealPropertiesProof(
+  partialClaim: PartialClaim,
+  requestForAttestation: IRequestForAttestation
+): revealPropertyProof {
+  const { claimNonceMap } = requestForAttestation
+  // recreate (partial) nonce map from partial claim and full nonce map
+  const { nonceMap: claimNonces } = hashClaimContents(partialClaim, {
+    nonces: claimNonceMap,
+  })
+
+  // return the proof containing nonces which can be mapped via an unsalted hash of the statement
+  return {
+    type: KILT_REVEAL_PROPERTY_TYPE,
+    nonces: claimNonces,
+  }
+}
+
 export default function attClaimToVC(
   input: IAttestedClaim,
   subjectDid = false,
   ctype?: ICType
 ): VerifiableCredential {
   const {
-    claimHashTree,
-    claimOwner,
-    cTypeHash,
+    claimHashes,
     legitimations,
     delegationId,
     rootHash,
@@ -122,26 +153,11 @@ export default function attClaimToVC(
   // write root hash to id
   const id = rootHash
 
-  // add credential body containing hash tree only
-  const contentHashes: Record<string, string> = {}
-  Object.keys(claimHashTree).forEach((key) => {
-    contentHashes[key] = claimHashTree[key].hash
-  })
-  const credentialSubject: VerifiableCredential['credentialSubject'] = {
-    protected: {
-      claim: {
-        owner: claimOwner.hash,
-        cTypeHash: cTypeHash.hash,
-        contents: contentHashes,
-      },
-      legitimations: legitimations.map(
-        (legitimation) => legitimation.attestation.claimHash
-      ),
-      delegationId,
-    },
-  }
-  if (subjectDid)
-    credentialSubject.id = Did.getIdentifierFromAddress(claim.owner)
+  // transform & annotate claim to be json-ld and VC conformant
+  const { credentialSubject } = toJsonLD(
+    { ...claim, owner: subjectDid ? `did:kilt:${claim.owner}` : claim.owner },
+    false
+  ) as Record<string, Record<string, AnyJson>>
 
   // add self-signed proof
   const proof: proof[] = []
@@ -162,6 +178,9 @@ export default function attClaimToVC(
     attesterAddress: attester,
   } as attestedProof)
 
+  // add hashed properties proof
+  proof.push(makeRevealPropertiesProof(claim, input.request))
+
   // add current date bc we have no issuance date on credential
   // TODO: could we get this from block time or something?
   const issuanceDate = new Date().toISOString()
@@ -171,63 +190,29 @@ export default function attClaimToVC(
   if (ctype) {
     const { schema, owner } = ctype
     credentialSchema = {
-      id: schema.$id,
+      '@id': schema.$id,
+      '@type': JSON_SCHEMA_TYPE,
       name: schema.title,
-      type: JSON_SCHEMA_TYPE,
       schema,
       author: owner || undefined,
     }
   }
+
+  const legitimationIds = legitimations.map((leg) => leg.request.rootHash)
 
   return {
     '@context': [DEFAULT_VERIFIABLECREDENTIAL_CONTEXT],
     type: [DEFAULT_VERIFIABLECREDENTIAL_TYPE],
     id,
     credentialSubject,
-    nonTransferable: true,
-    proof,
+    legitimationIds,
+    delegationId: delegationId || undefined,
+    claimHashes,
     issuer,
     issuanceDate,
+    nonTransferable: true,
+    proof,
     credentialSchema,
-  }
-}
-
-/**
- * This proof can be added to a credential to reveal selected properties to the verifier.
- * For each property to be revealed, it also contains a nonce which is required to verify against the hash in the credential.
- * Values, nonces and hashes are mapped to each through via identical data structures.
- *
- * @param partialClaim Claim object containing only the values you want to reveal.
- * @param requestForAttestation The full [[IRequestForAttestation]] object from which necessary nonces are picked.
- * @returns Proof object that can be included in a Verifiable Credential / Verifiable Presentation's proof section.
- */
-export function makeRevealPropertiesProof(
-  partialClaim: Partial<IClaim>,
-  requestForAttestation: IRequestForAttestation
-): revealPropertyProof {
-  const { claimHashTree, cTypeHash, claimOwner } = requestForAttestation
-  // pull nonce for each property in claim contents that has not been removed or nullified
-  const contentNonces: Record<string, string> = {}
-  if (partialClaim.contents) {
-    Object.entries(partialClaim.contents).forEach(([key, value]) => {
-      const { nonce } = claimHashTree[key]
-      if (nonce && typeof value !== 'undefined' && value !== null) {
-        contentNonces[key] = nonce
-      }
-    })
-  }
-  // compile object with structure identical to IClaim object
-  const claimNonces: Partial<IClaim> = {
-    contents: contentNonces,
-  }
-  // add nonces for cTypeHash & owner if not removed/nullified in claim
-  if (partialClaim.cTypeHash) claimNonces.cTypeHash = cTypeHash.nonce
-  if (partialClaim.owner) claimNonces.owner = claimOwner.nonce
-  // return the proof containing values and nonces in two objects of identical structure
-  return {
-    type: KILT_REVEAL_PROPERTY_TYPE,
-    protected: { claim: partialClaim },
-    nonces: { claim: claimNonces },
   }
 }
 
@@ -277,29 +262,11 @@ export function verifySelfSignedProof(
       )
     }
 
-    // collapse protected body to hash array, top to bottom
-    const { protected: protectedBody } = credential.credentialSubject
-    if (typeof protectedBody !== 'object' || !protectedBody)
-      throw CREDENTIAL_MALFORMED_ERROR('protected credential body missing')
-
-    const hashes: string[] = []
-    let queue = Object.values(protectedBody)
-    while (queue.length) {
-      // pop first element off array
-      const first = queue.shift()
-      if (typeof first === 'object' && first) {
-        // if first element is object, retrieve values and push to BEGINNING of queue
-        queue = Object.values(first).concat(...queue)
-      } else if (typeof first === 'string') {
-        // if first element is hash, add to hash queue
-        hashes.push(first)
-      } else {
-        // array should only contain hashes
-        throw CREDENTIAL_MALFORMED_ERROR(
-          'protected credential body must contain string values'
-        )
-      }
-    }
+    // collect hashes from hash array, legitimations & delegationId
+    const hashes: string[] = credential.claimHashes.concat(
+      credential.legitimationIds,
+      credential.delegationId || []
+    )
     // convert hex hashes to byte arrays & concatenate
     const concatenated = u8aConcat(
       ...hashes.map((hexHash) => hexToU8a(hexHash))
@@ -350,9 +317,9 @@ export async function verifyAttestedProof(
       )
     let delegationId: string | null
 
-    switch (typeof credential.credentialSubject.protected.delegationId) {
+    switch (typeof credential.delegationId) {
       case 'string':
-        delegationId = credential.credentialSubject.protected.delegationId
+        delegationId = credential.delegationId
         break
       case 'undefined':
         delegationId = null
@@ -388,81 +355,77 @@ export async function verifyAttestedProof(
   }
 }
 
-function getByPath(object: Record<string, any>, path: string[]): any | null {
-  return path.reduce((indexable, nextIndex) => indexable?.[nextIndex], object)
-}
-
 /**
  * Verifies a proof that reveals the content of selected properties to a verifier. This enables selective disclosure.
  * Values and nonces contained within this proof will be hashed, the result of which is expected to equal hashes on the credential.
  *
  * @param credential Verifiable Credential to verify proof against.
  * @param proof KILT self signed proof object.
- * @param schema If the CType for this credential is passed, the revealed properties will additionally be subjected to a schema validation.
+ * @param options Allows passing custom hasher.
+ * @param options.hasher A custom hasher. Defaults to hex(blake2-256('nonce'+'value')).
  * @returns Object indicating whether proof could be verified.
  */
-export function verifyRevealPropertyProof(
+export async function verifyRevealPropertyProof(
   credential: VerifiableCredential,
   proof: revealPropertyProof,
-  schema?: ICType['schema']
-): VerificationResult {
+  options: { hasher?: Hasher } = {}
+): Promise<VerificationResult> {
+  const {
+    hasher = (value, nonce?) => blake2AsHex((nonce || '') + value, 256),
+  } = options
   const result: VerificationResult = { verified: true }
   try {
     // check proof
     if (proof.type !== KILT_REVEAL_PROPERTY_TYPE)
       throw new Error('Proof type mismatch')
-    if (
-      typeof proof.nonces !== 'object' ||
-      typeof proof.protected !== 'object'
-    ) {
-      throw PROOF_MALFORMED_ERROR(
-        'proof must contain objects "protected" & "nonces"'
-      )
+    if (typeof proof.nonces !== 'object') {
+      throw PROOF_MALFORMED_ERROR('proof must contain object "nonces"')
     }
-    const { protected: protectedBody } = credential.credentialSubject
-    if (typeof protectedBody !== 'object' || !protectedBody)
-      throw CREDENTIAL_MALFORMED_ERROR('protected credential body missing')
+    if (typeof credential.credentialSubject !== 'object')
+      throw CREDENTIAL_MALFORMED_ERROR('credential subject missing')
 
-    // perform schema validation
-    if (schema && !verifySchema(proof.protected.claim, schema))
-      throw ERROR_CLAIM_CONTENTS_MALFORMED()
+    // expand credentialSubject keys by compacting with empty context credential to produce statements
+    const flattened = await jsonld.compact(credential.credentialSubject, {})
+    const statements = Object.entries(flattened).map(([key, value]) =>
+      JSON.stringify({ [key]: value })
+    )
+    const expectedUnsalted = Object.keys(proof.nonces)
 
-    // iteratively hash nonce + value and compare to hash in credential
-    const verificationQueue: string[][] = Object.entries(
-      proof.protected
-    ).map(([key]) => [key])
-    if (verificationQueue.length === 0)
-      throw PROOF_MALFORMED_ERROR('no verifiable properties given')
-    while (verificationQueue.length) {
-      // pop last element off array
-      const path = verificationQueue.pop() || []
-      const value = getByPath(proof.protected, path)
-      if (typeof value === 'object' && value) {
-        // if first value is object, retrieve values and push to end of queue
-        verificationQueue.push(
-          ...Object.entries(value).map(([key]) => [...path, key])
+    statements.forEach((stmt) => {
+      const unsalted = hasher(stmt)
+      if (!expectedUnsalted.includes(unsalted))
+        throw PROOF_MALFORMED_ERROR(
+          `Proof contains no digest for statement ${stmt}`
         )
-      } else {
-        const nonce = getByPath(proof.nonces, path)
-        const hashInCredential = getByPath(protectedBody, path)
-        const pathAsString = path.reduce((last, next) => `${last}.${next}`)
-        if (typeof nonce !== 'string')
-          throw PROOF_MALFORMED_ERROR(
-            `nonce missing/malformed for ${pathAsString}`
-          )
-        if (typeof hashInCredential !== 'string')
-          throw PROOF_MALFORMED_ERROR(`unrecognized property ${pathAsString}`)
-
-        const stringified =
-          typeof value !== 'string' ? JSON.stringify(value) : value
-        if (u8aToHex(hash(nonce + stringified)) !== hashInCredential)
-          throw new Error(`hash invalid for path ${pathAsString}`)
-      }
-    }
+      const nonce = proof.nonces[unsalted]
+      if (!credential.claimHashes.includes(hasher(unsalted, nonce)))
+        throw new Error(
+          `Proof for statement ${stmt} not valid against credential`
+        )
+    })
     return result
   } catch (e) {
     result.verified = false
     result.error = e
     return result
   }
+}
+
+export function validateSchema(
+  credential: VerifiableCredential
+): VerificationResult {
+  const result: VerificationResult = { verified: false }
+  try {
+    const { schema } = credential.credentialSchema || {}
+    // if present, perform schema validation
+    if (schema) {
+      // there's no rule against additional properties, so we can just validate the ones that are there
+      if (!CTypeUtils.verifySchema(credential.credentialSubject, schema))
+        throw ERROR_CLAIM_CONTENTS_MALFORMED()
+      return { verified: true }
+    }
+  } catch (e) {
+    result.error = e
+  }
+  return result
 }
