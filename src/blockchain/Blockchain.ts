@@ -287,6 +287,7 @@ export default class Blockchain implements IBlockchainApi {
   public async getNonce(accountAddress: string): Promise<BN> {
     let nonce = this.accountNonces.get(accountAddress)
     if (!nonce) {
+      // the account nonce is unknown, we will query it from chain
       const chainNonce = await this.api.rpc.system
         .accountNextIndex(accountAddress)
         .catch((reason) => {
@@ -295,6 +296,7 @@ export default class Blockchain implements IBlockchainApi {
           )
           throw Error(`Chain failed to retrieve nonce for : ${accountAddress}`)
         })
+      // ensure that the nonce we queried is still up to date and no newer nonce was queried during the await above
       const secondQuery = this.accountNonces.get(accountAddress)
       nonce = BN.max(chainNonce, secondQuery || new BN(0))
     }
