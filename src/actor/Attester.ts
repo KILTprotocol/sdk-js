@@ -92,7 +92,7 @@ export async function issueAttestation(
   }
   await attestation
     .store(attester)
-    .then((tx) => Blockchain.submitSignedTx(attester, tx))
+    .then((tx) => Blockchain.submitSignedTx(tx, attester))
 
   const revocationHandle: IRevocationHandle = {
     witness,

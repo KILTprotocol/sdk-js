@@ -42,7 +42,7 @@ describe('Delegation', () => {
     )
     await rootDelegation
       .store(identityAlice)
-      .then((tx) => Blockchain.submitSignedTx(identityAlice, tx))
+      .then((tx) => Blockchain.submitSignedTx(tx, identityAlice))
 
     const rootNode = await DelegationRootNode.query(ROOT_IDENTIFIER)
     if (rootNode) {
@@ -105,7 +105,7 @@ describe('Delegation', () => {
     )
     const revokeStatus = await aDelegationRootNode
       .revoke(identityAlice)
-      .then((tx) => Blockchain.submitSignedTx(identityAlice, tx))
+      .then((tx) => Blockchain.submitSignedTx(tx, identityAlice))
     expect(blockchain.api.tx.delegation.revokeRoot).toBeCalledWith('myRootId')
     expect(revokeStatus).toBeDefined()
   })

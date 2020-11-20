@@ -52,7 +52,7 @@ describe('when there is an account hierarchy', () => {
 
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester).then((tx) =>
-        Blockchain.submitSignedTx(attester, tx, { resolveOn: IS_READY })
+        Blockchain.submitSignedTx(tx, attester, { resolveOn: IS_READY })
       )
     }
   }, 30_000)
@@ -66,7 +66,7 @@ describe('when there is an account hierarchy', () => {
     await rootNode
       .store(uncleSam)
       .then((tx) =>
-        Blockchain.submitSignedTx(uncleSam, tx, { resolveOn: IS_READY })
+        Blockchain.submitSignedTx(tx, uncleSam, { resolveOn: IS_READY })
       )
     const delegatedNode = new DelegationNode(
       UUID.generate(),
@@ -79,7 +79,7 @@ describe('when there is an account hierarchy', () => {
     await delegatedNode
       .store(uncleSam, HashSignedByDelegate)
       .then((tx) =>
-        Blockchain.submitSignedTx(uncleSam, tx, { resolveOn: IS_IN_BLOCK })
+        Blockchain.submitSignedTx(tx, uncleSam, { resolveOn: IS_IN_BLOCK })
       )
     await Promise.all([
       expect(rootNode.verify()).resolves.toBeTruthy(),
@@ -109,12 +109,12 @@ describe('when there is an account hierarchy', () => {
       await rootNode
         .store(uncleSam)
         .then((tx) =>
-          Blockchain.submitSignedTx(uncleSam, tx, { resolveOn: IS_READY })
+          Blockchain.submitSignedTx(tx, uncleSam, { resolveOn: IS_READY })
         )
       await delegatedNode
         .store(uncleSam, HashSignedByDelegate)
         .then((tx) =>
-          Blockchain.submitSignedTx(uncleSam, tx, { resolveOn: IS_IN_BLOCK })
+          Blockchain.submitSignedTx(tx, uncleSam, { resolveOn: IS_IN_BLOCK })
         )
       await Promise.all([
         expect(rootNode.verify()).resolves.toBeTruthy(),
@@ -147,7 +147,7 @@ describe('when there is an account hierarchy', () => {
       await attestation
         .store(attester)
         .then((tx) =>
-          Blockchain.submitSignedTx(attester, tx, { resolveOn: IS_IN_BLOCK })
+          Blockchain.submitSignedTx(tx, attester, { resolveOn: IS_IN_BLOCK })
         )
 
       const attClaim = await Credential.fromRequestAndAttestation(
@@ -162,7 +162,7 @@ describe('when there is an account hierarchy', () => {
       await attClaim.attestation
         .revoke(uncleSam)
         .then((tx) =>
-          Blockchain.submitSignedTx(uncleSam, tx, { resolveOn: IS_IN_BLOCK })
+          Blockchain.submitSignedTx(tx, uncleSam, { resolveOn: IS_IN_BLOCK })
         )
       await expect(attClaim.verify()).resolves.toBeFalsy()
     }, 75_000)

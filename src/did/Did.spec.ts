@@ -74,7 +74,7 @@ describe('DID', () => {
     const alice = await Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(alice, 'http://myDID.kilt.io')
     const tx = await did.store(alice)
-    await expect(blockchain.submitSignedTx(alice, tx)).resolves.toHaveProperty(
+    await expect(blockchain.submitSignedTx(tx, alice)).resolves.toHaveProperty(
       'isFinalized',
       true
     )

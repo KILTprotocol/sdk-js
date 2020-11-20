@@ -331,6 +331,6 @@ export default class AttesterIdentity extends Identity {
     }
     await new Attestation(handle.attestation)
       .revoke(this)
-      .then((tx) => Blockchain.submitSignedTx(this, tx))
+      .then((tx) => Blockchain.submitSignedTx(tx, this))
   }
 }

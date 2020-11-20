@@ -53,8 +53,8 @@ export interface IBlockchainApi {
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic>
   submitSignedTx(
-    identity: Identity,
     tx: SubmittableExtrinsic,
+    identity?: Identity,
     opts?: SubscriptionPromiseOptions
   ): Promise<SubmittableResult>
   submitTx(
@@ -92,12 +92,9 @@ export const IS_ERROR: ResultEvaluator = (result) => {
     (result.status.isFinalityTimeout && Error('isFinalityTimeout'))
   )
 }
-export const EXTRINSIC_FAILED: ResultEvaluator = (result) => {
-  return (
-    ErrorHandler.extrinsicFailed(result) &&
-    (ErrorHandler.getExtrinsicError(result) || UNKNOWN_EXTRINSIC_ERROR)
-  )
-}
+export const EXTRINSIC_FAILED: ResultEvaluator = (result) =>
+  ErrorHandler.extrinsicFailed(result) &&
+  (ErrorHandler.getExtrinsicError(result) || UNKNOWN_EXTRINSIC_ERROR)
 
 /**
  * Parses potentially incomplete or undefined options and returns complete [[SubscriptionPromiseOptions]].
@@ -169,19 +166,19 @@ export default class Blockchain implements IBlockchainApi {
   /**
    *  [STATIC] [ASYNC] Reroute of class method.
    *
-   * @param identity The [[Identity]] to re-sign the tx on recoverable error.
    * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
+   * @param identity The [[Identity]] to re-sign the tx on recoverable error.
    * @param opts Optional partial criteria for resolving/rejecting the promise.
    * @returns A promise which can be used to track transaction status.
    * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
    */
   public static async submitSignedTx(
-    identity: Identity,
     tx: SubmittableExtrinsic,
+    identity?: Identity,
     opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
     const chain = await getCached()
-    return chain.submitSignedTx(identity, tx, opts)
+    return chain.submitSignedTx(tx, identity, opts)
   }
 
   public api: ApiPromise
@@ -233,25 +230,28 @@ export default class Blockchain implements IBlockchainApi {
 
   /**
    * [ASYNC] Submits a signed [[SubmittableExtrinsic]] with exported function [[submitSignedTx]].
-   * Handles recoverable errors by re-signing and re-sending the tx up to two times.
+   * Handles recoverable errors if identity is provided by re-signing and re-sending the tx up to two times.
    * Uses parseSubscriptionPromise to provide complete potentially defaulted options to the called submitSignedTx.
    *
    * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
    *
-   * @param identity The [[Identity]] to potentially re-sign the Tx with.
    * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
-   * @param opts Partial optional criteria for resolving/rejecting the promise.
+   * @param identity Optional [[Identity]] to potentially re-sign the Tx with.
+   * @param opts Optional partial criteria for resolving/rejecting the promise.
    * @returns A promise which can be used to track transaction status.
    * If resolved, this promise returns the eventually resolved [[SubmittableResult]].
    */
   public async submitSignedTx(
-    identity: Identity,
     tx: SubmittableExtrinsic,
+    identity?: Identity,
     opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
     const options = parseSubscriptionOptions(opts)
     const retry = async (reason: Error): Promise<SubmittableResult> => {
-      if (reason.message === ERROR_TRANSACTION_RECOVERABLE().message) {
+      if (
+        reason.message === ERROR_TRANSACTION_RECOVERABLE().message &&
+        identity
+      ) {
         return submitSignedTx(await this.reSignTx(identity, tx), options)
       }
       throw reason
@@ -274,7 +274,7 @@ export default class Blockchain implements IBlockchainApi {
     opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
-    return this.submitSignedTx(identity, signedTx, opts)
+    return this.submitSignedTx(signedTx, identity, opts)
   }
 
   /**

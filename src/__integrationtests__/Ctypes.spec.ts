@@ -51,7 +51,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
       ctype
         .store(bobbyBroke)
         .then((tx) =>
-          Blockchain.submitSignedTx(bobbyBroke, tx, { resolveOn: IS_IN_BLOCK })
+          Blockchain.submitSignedTx(tx, bobbyBroke, { resolveOn: IS_IN_BLOCK })
         )
     ).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
@@ -62,7 +62,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await ctype
       .store(ctypeCreator)
       .then((tx) =>
-        Blockchain.submitSignedTx(ctypeCreator, tx, { resolveOn: IS_IN_BLOCK })
+        Blockchain.submitSignedTx(tx, ctypeCreator, { resolveOn: IS_IN_BLOCK })
       )
     await Promise.all([
       expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.address),
@@ -77,11 +77,11 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await ctype
       .store(ctypeCreator)
       .then((tx) =>
-        Blockchain.submitSignedTx(ctypeCreator, tx, { resolveOn: IS_IN_BLOCK })
+        Blockchain.submitSignedTx(tx, ctypeCreator, { resolveOn: IS_IN_BLOCK })
       )
     await expect(
       ctype.store(ctypeCreator).then((tx) =>
-        Blockchain.submitSignedTx(ctypeCreator, tx, {
+        Blockchain.submitSignedTx(tx, ctypeCreator, {
           resolveOn: IS_IN_BLOCK,
         })
       )

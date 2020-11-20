@@ -270,7 +270,7 @@ describe('Tx logic', () => {
         .mockImplementation(async (id, Tx) => {
           return Tx
         })
-      await expect(chain.submitSignedTx(alice, tx)).rejects.toThrow(
+      await expect(chain.submitSignedTx(tx, alice)).rejects.toThrow(
         ERROR_TRANSACTION_RECOVERABLE()
       )
 

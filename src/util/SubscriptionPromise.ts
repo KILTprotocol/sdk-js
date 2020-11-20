@@ -25,12 +25,12 @@ export interface TerminationOptions<SubscriptionType> {
  * This promise is resolved with the value of latest update when a resolution criterion is met.
  * It is rejected with a custom error/reason if a rejection criterion is met or on timeout (optional). Rejection takes precedent.
  *
- * @param terminationOptions Object provides:
- * resolveOn: Resolution criterion. A function that evaluates an incoming update from the subscription.
+ * @param terminationOptions .
+ * @param terminationOptions.resolveOn Resolution criterion. A function that evaluates an incoming update from the subscription.
  * If it returns a truthy value, the promise is resolved with the value of the latest update.
- * optional rejectOn: Rejection criterion. A function that evaluates an incoming update from the subscription.
+ * @param terminationOptions.rejectOn Rejection criterion. A function that evaluates an incoming update from the subscription.
  * If it returns a truthy value, this value is used as rejection reason.
- * optional timeout: Timeout in ms. If set, the promise will reject if not resolved before the time is up.
+ * @param terminationOptions.timeout Timeout in ms. If set, the promise will reject if not resolved before the time is up.
  * @returns An object containing both a subscription callback
  * and a promise which resolves or rejects depending on the values pushed to the callback.
  */

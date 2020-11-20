@@ -10,7 +10,7 @@ import Kilt, {
   IRevocationHandle,
   PublicAttesterIdentity,
 } from '../src'
-import { IS_IN_BLOCK, submitSignedTx } from '../src/blockchain/Blockchain'
+import Blockchain, { IS_IN_BLOCK } from '../src/blockchain/Blockchain'
 import constants from '../src/test/constants'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
@@ -84,7 +84,9 @@ async function setup(): Promise<{
   try {
     await ctype
       .store(attester)
-      .then((tx) => submitSignedTx(tx, { resolveOn: IS_IN_BLOCK }))
+      .then((tx) =>
+        Blockchain.submitSignedTx(tx, attester, { resolveOn: IS_IN_BLOCK })
+      )
   } catch (e) {
     console.log(
       'Error while storing CType. Probably either insufficient funds or ctype does already exist.',
