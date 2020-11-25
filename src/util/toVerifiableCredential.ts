@@ -15,7 +15,7 @@ import {
 } from '..'
 import { hash, Hasher } from '../crypto'
 import IRequestForAttestation from '../types/RequestForAttestation'
-import { hashClaimContents, PartialClaim, toJsonLD } from '../claim/Claim.utils'
+import { toJsonLD } from '../claim/Claim.utils'
 
 /**
  * Constant for default context.
@@ -29,7 +29,7 @@ const DEFAULT_VERIFIABLECREDENTIAL_TYPE = 'VerifiableCredential'
 /**
  * Constant for default type.
  */
-// const DEFAULT_VERIFIABLEPRESENTATION_TYPE = 'VerifiablePresentation'
+const DEFAULT_VERIFIABLEPRESENTATION_TYPE = 'VerifiablePresentation'
 
 const KILT_SELF_SIGNED_PROOF_TYPE = 'KILTSelfSigned2020'
 const KILT_ATTESTED_PROOF_TYPE = 'KILTAttestation2020'
@@ -46,26 +46,26 @@ interface JSONreference {
 type publicKey = Partial<IDidDocumentPublicKey> &
   Pick<IDidDocumentPublicKey, 'publicKeyHex' | 'type'>
 
-interface proof {
+interface Proof {
   type: string
   created?: string
   proofPurpose?: string
   [key: string]: any
 }
 
-interface selfSignedProof extends proof {
+interface selfSignedProof extends Proof {
   type: typeof KILT_SELF_SIGNED_PROOF_TYPE
   verificationMethod: string | publicKey
   signature: string
 }
 
-interface attestedProof extends proof {
+interface attestedProof extends Proof {
   type: typeof KILT_ATTESTED_PROOF_TYPE
   attesterAddress: string | JSONreference
   delegationId?: string | JSONreference
 }
 
-interface revealPropertyProof extends proof {
+interface revealPropertyProof extends Proof {
   type: typeof KILT_REVEAL_PROPERTY_TYPE
   nonces: Record<string, string>
 }
@@ -82,10 +82,10 @@ interface CredentialSchema {
   name?: string
   author?: string
   authored?: string
-  proof?: proof
+  proof?: Proof
 }
 
-interface VerifiableCredential {
+export interface VerifiableCredential {
   '@context': [typeof DEFAULT_VERIFIABLECREDENTIAL_CONTEXT, ...string[]]
   // the credential types, which declare what data to expect in the credential
   type: [typeof DEFAULT_VERIFIABLECREDENTIAL_TYPE, ...string[]]
@@ -103,7 +103,7 @@ interface VerifiableCredential {
   // Id / digest that represents a delegation of authority to the issuer
   delegationId?: string
   // digital proof that makes the credential tamper-evident
-  proof: proof | proof[]
+  proof: Proof | Proof[]
   nonTransferable?: boolean
   credentialStatus?: KILTcredentialStatus
   credentialSchema?: CredentialSchema
@@ -115,18 +115,40 @@ interface VerifiableCredential {
  * For each property to be revealed, it contains an unsalted hash of the statement plus a nonce which is required to verify against the salted hash in the credential.
  * Statements and nonces are mapped to each other through the unsalted hashes.
  *
- * @param partialClaim Claim object containing only the values you want to reveal.
- * @param requestForAttestation The full [[IRequestForAttestation]] object from which necessary nonces are picked.
+ * @param credential VerifiableCredential object containing only the credentialSubject properties you want to reveal.
+ * @param claimNonceMap The nonce map used to derive nonces from; will be filtered. Can be taken from a VC or Kilt claim.
+ * @param options Options.
+ * @param options.hasher The hashing function used to generate digests for nonce map. Should be the one used in creating the original credential.
  * @returns Proof object that can be included in a Verifiable Credential / Verifiable Presentation's proof section.
  */
-export function makeRevealPropertiesProof(
-  partialClaim: PartialClaim,
-  requestForAttestation: IRequestForAttestation
-): revealPropertyProof {
-  const { claimNonceMap } = requestForAttestation
-  // recreate (partial) nonce map from partial claim and full nonce map
-  const { nonceMap: claimNonces } = hashClaimContents(partialClaim, {
-    nonces: claimNonceMap,
+async function makeRevealPropertiesProof(
+  credential: VerifiableCredential,
+  claimNonceMap: IRequestForAttestation['claimNonceMap'],
+  options: { hasher?: Hasher } = {}
+): Promise<revealPropertyProof> {
+  const {
+    hasher = (value, nonce?) => blake2AsHex((nonce || '') + value, 256),
+  } = options
+
+  // recreate statement digests from partial claim to identify required nonces
+  const claimNonces = {}
+  const expanded = await jsonld.compact(credential.credentialSubject, {})
+  const statements = Object.entries(expanded).map(([key, value]) =>
+    JSON.stringify({ [key]: value })
+  )
+  if (statements.length < 1)
+    throw new Error(
+      `no statements extracted from ${JSON.stringify(
+        credential.credentialSubject
+      )}`
+    )
+  statements.forEach((stmt) => {
+    const digest = hasher(stmt)
+    if (Object.keys(claimNonceMap).includes(digest)) {
+      claimNonces[digest] = claimNonceMap[digest]
+    } else {
+      throw new Error(`nonce missing for ${stmt}`)
+    }
   })
 
   // return the proof containing nonces which can be mapped via an unsalted hash of the statement
@@ -136,11 +158,11 @@ export function makeRevealPropertiesProof(
   }
 }
 
-export default function attClaimToVC(
+export default async function attClaimToVC(
   input: IAttestedClaim,
   subjectDid = false,
   ctype?: ICType
-): VerifiableCredential {
+): Promise<VerifiableCredential> {
   const {
     claimHashes,
     legitimations,
@@ -159,27 +181,7 @@ export default function attClaimToVC(
     false
   ) as Record<string, Record<string, AnyJson>>
 
-  // add self-signed proof
-  const proof: proof[] = []
-  proof.push({
-    type: KILT_SELF_SIGNED_PROOF_TYPE,
-    verificationMethod: {
-      type: 'Ed25519VerificationKey2018',
-      publicKeyHex: u8aToHex(decodeAddress(claim.owner)),
-    },
-    signature: claimerSignature,
-  } as selfSignedProof)
-
-  // add attestation proof
-  const attester = input.attestation.owner
-  const issuer = Did.getIdentifierFromAddress(attester)
-  proof.push({
-    type: KILT_ATTESTED_PROOF_TYPE,
-    attesterAddress: attester,
-  } as attestedProof)
-
-  // add hashed properties proof
-  proof.push(makeRevealPropertiesProof(claim, input.request))
+  const issuer = Did.getIdentifierFromAddress(input.attestation.owner)
 
   // add current date bc we have no issuance date on credential
   // TODO: could we get this from block time or something?
@@ -200,7 +202,9 @@ export default function attClaimToVC(
 
   const legitimationIds = legitimations.map((leg) => leg.request.rootHash)
 
-  return {
+  const proof: Proof[] = []
+
+  const VC: VerifiableCredential = {
     '@context': [DEFAULT_VERIFIABLECREDENTIAL_CONTEXT],
     type: [DEFAULT_VERIFIABLECREDENTIAL_TYPE],
     id,
@@ -214,8 +218,31 @@ export default function attClaimToVC(
     proof,
     credentialSchema,
   }
-}
 
+  // add self-signed proof
+  VC.proof.push({
+    type: KILT_SELF_SIGNED_PROOF_TYPE,
+    verificationMethod: {
+      type: 'Ed25519VerificationKey2018',
+      publicKeyHex: u8aToHex(decodeAddress(claim.owner)),
+    },
+    signature: claimerSignature,
+  } as selfSignedProof)
+
+  // add attestation proof
+  const attester = input.attestation.owner
+  VC.proof.push({
+    type: KILT_ATTESTED_PROOF_TYPE,
+    attesterAddress: attester,
+  } as attestedProof)
+
+  // add hashed properties proof
+  VC.proof.push(
+    await makeRevealPropertiesProof(VC, input.request.claimNonceMap)
+  )
+
+  return VC
+}
 interface VerificationResult {
   verified: boolean
   error?: Error
@@ -428,4 +455,45 @@ export function validateSchema(
     result.error = e
   }
   return result
+}
+
+export interface VerifiablePresentation {
+  '@context': [typeof DEFAULT_VERIFIABLECREDENTIAL_CONTEXT, ...string[]]
+  type: [typeof DEFAULT_VERIFIABLEPRESENTATION_TYPE, ...string[]]
+  verifiableCredential: VerifiableCredential | VerifiableCredential[]
+  holder?: string
+  proof: Proof | Proof[]
+}
+
+export async function makePresentation(
+  VC: VerifiableCredential,
+  showProperties: string[]
+): Promise<VerifiablePresentation> {
+  // copy credential
+  const copied: VerifiableCredential = JSON.parse(JSON.stringify(VC))
+  // remove non-revealed props
+  Object.keys(copied.credentialSubject).forEach((key) => {
+    if (!(key.startsWith('@') || showProperties.includes(key)))
+      delete copied.credentialSubject[key]
+  })
+  // find old proof
+  let proofs = copied.proof instanceof Array ? copied.proof : [copied.proof]
+  const oldClaimsProof = proofs.filter(
+    (p) => p.type === KILT_REVEAL_PROPERTY_TYPE
+  )
+  if (oldClaimsProof.length !== 1)
+    throw new Error(
+      `expected exactly one proof of type ${KILT_REVEAL_PROPERTY_TYPE}`
+    )
+  proofs = proofs.filter((p) => p.type !== KILT_REVEAL_PROPERTY_TYPE)
+  // compute new (reduced) proof
+  proofs.push(await makeRevealPropertiesProof(copied, oldClaimsProof[0].nonces))
+  copied.proof = proofs
+  return {
+    '@context': [DEFAULT_VERIFIABLECREDENTIAL_CONTEXT],
+    type: [DEFAULT_VERIFIABLEPRESENTATION_TYPE],
+    verifiableCredential: copied,
+    holder: copied.credentialSubject['@id'] as string,
+    proof: [],
+  }
 }

@@ -1,9 +1,10 @@
 import { Attestation, IRequestForAttestation } from '..'
 import AttestedClaim from '../attestedclaim'
-import { PartialClaim } from '../claim/Claim.utils'
 import CType from '../ctype'
 import attClaimToVC, {
+  makePresentation,
   validateSchema,
+  VerifiableCredential,
   verifyAttestedProof,
   verifyRevealPropertyProof,
   verifySelfSignedProof,
@@ -84,8 +85,8 @@ const credential = AttestedClaim.fromAttestedClaim({
   },
 })
 
-it('exports credential to VC', () => {
-  expect(attClaimToVC(credential)).toMatchObject({
+it('exports credential to VC', async () => {
+  await expect(attClaimToVC(credential)).resolves.toMatchObject({
     '@context': ['https://www.w3.org/2018/credentials/v1'],
     type: ['VerifiableCredential'],
     credentialSubject: {
@@ -102,8 +103,10 @@ it('exports credential to VC', () => {
   })
 })
 
-it('exports includes ctype as schema', () => {
-  expect(attClaimToVC(credential, undefined, ctype)).toMatchObject({
+it('exports includes ctype as schema', async () => {
+  await expect(
+    attClaimToVC(credential, undefined, ctype)
+  ).resolves.toMatchObject({
     credentialSchema: {
       '@id': ctype.schema.$id,
       name: ctype.schema.title,
@@ -115,7 +118,10 @@ it('exports includes ctype as schema', () => {
 })
 
 describe('proofs', () => {
-  const VC = attClaimToVC(credential)
+  let VC: VerifiableCredential
+  beforeAll(async () => {
+    VC = await attClaimToVC(credential)
+  })
 
   it('it verifies self-signed proof', () => {
     expect(verifySelfSignedProof(VC, VC.proof[0])).toMatchObject({
@@ -123,8 +129,8 @@ describe('proofs', () => {
     })
   })
 
-  it('it verifies schema', () => {
-    const VCWithSchema = attClaimToVC(credential, undefined, ctype)
+  it('it verifies schema', async () => {
+    const VCWithSchema = await attClaimToVC(credential, undefined, ctype)
     const result = validateSchema(VCWithSchema)
     expect(result.error).toBeUndefined()
     expect(result).toMatchObject({
@@ -133,24 +139,23 @@ describe('proofs', () => {
   })
 
   it('it verifies credential with all properties revealed', async () => {
+    expect(VC.proof[2].nonces).toMatchObject(credential.request.claimNonceMap)
+    expect(Object.entries(VC.proof[2].nonces)).toHaveLength(4)
     const result = await verifyRevealPropertyProof(VC, VC.proof[2])
     expect(result.error).toBeUndefined()
     expect(result).toMatchObject({
       verified: true,
     })
   })
+
   it('it verifies credential with selected properties revealed', async () => {
-    const { claim } = credential.request
-    const partialClaim: PartialClaim = {
-      ...claim,
-      contents: {},
-    }
-    const reducedRequest = {
-      ...credential.request,
-      claim: partialClaim,
-    } as IRequestForAttestation
+    const reducedRequest: IRequestForAttestation = JSON.parse(
+      JSON.stringify(credential.request)
+    )
+    delete reducedRequest.claim.contents.name
+    delete reducedRequest.claim.contents.birthday
     const reducedCredential = { ...credential, request: reducedRequest }
-    const reducedVC = attClaimToVC(reducedCredential)
+    const reducedVC = await attClaimToVC(reducedCredential)
 
     const result = await verifyRevealPropertyProof(
       reducedVC,
@@ -160,6 +165,27 @@ describe('proofs', () => {
     expect(result).toMatchObject({
       verified: true,
     })
+  })
+
+  it('makes presentation', async () => {
+    const presentation = await makePresentation(VC, ['name'])
+    const { contents, owner } = credential.request.claim
+    expect(presentation).toHaveProperty(
+      'verifiableCredential.credentialSubject',
+      {
+        '@context': expect.any(Object),
+        '@id': owner,
+        name: contents.name,
+      }
+    )
+    const VCfromPresentation = presentation.verifiableCredential as VerifiableCredential
+    const result = await verifyRevealPropertyProof(
+      VCfromPresentation,
+      VCfromPresentation.proof[2]
+    )
+    expect(result.error).toBeUndefined()
+    expect(result).toStrictEqual({ verified: true })
+    expect(Object.entries(VCfromPresentation.proof[2].nonces)).toHaveLength(2)
   })
 
   describe('on-chain proof', () => {
