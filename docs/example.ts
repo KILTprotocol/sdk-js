@@ -85,7 +85,7 @@ async function setup(): Promise<{
     await ctype
       .store(attester)
       .then((tx) =>
-        Blockchain.submitSignedTx(tx, attester, { resolveOn: IS_IN_BLOCK })
+        Blockchain.submitTxWithReSign(tx, attester, { resolveOn: IS_IN_BLOCK })
       )
   } catch (e) {
     console.log(
