@@ -850,13 +850,12 @@ __metadata:
     ts-jest: ^26.1.4
     ts-node: ^8.10.2
     tslib: ^2.0.0
+    tweetnacl: ^1.0.3
     typedoc: ^0.17.8
     typedoc-plugin-external-module-name: 3.1.0
     typescript: ^3.9.7
     typescript-logging: ^0.6.4
     uuid: ^8.1.0
-  peerDependencies:
-    tweetnacl: ^1.0.3
   languageName: unknown
   linkType: soft
 
