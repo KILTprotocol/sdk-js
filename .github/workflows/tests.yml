@@ -28,7 +28,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: yarn install, build and test
         run: |
-          yarn install --frozen-lockfile
+          yarn install --immutable
           yarn lint
           yarn test:ci
           yarn build
@@ -64,7 +64,7 @@ jobs:
           ECR_REPOSITORY: kilt/prototype-chain
           IMAGE_TAG: latest-develop
         run: |
-          yarn install --frozen-lockfile
+          yarn install --immutable
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
           sleep 5s
@@ -100,7 +100,7 @@ jobs:
           ECR_REPOSITORY: kilt/prototype-chain
           IMAGE_TAG: latest-develop
         run: |
-          yarn install --frozen-lockfile
+          yarn install --immutable
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
           sleep 5s
@@ -136,7 +136,7 @@ jobs:
           ECR_REPOSITORY: kilt/prototype-chain
           IMAGE_TAG: latest-develop
         run: |
-          yarn install --frozen-lockfile
+          yarn install --immutable
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
           sleep 5s
