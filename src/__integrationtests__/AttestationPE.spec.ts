@@ -54,7 +54,7 @@ describe('Privacy enhanced claim, attestation, verification process', () => {
     // set up claim (ctype missing on fresh chain)
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester).then((tx) =>
-        Blockchain.submitSignedTx(tx, attester, { resolveOn: IS_IN_BLOCK })
+        Blockchain.submitTxWithReSign(tx, attester, { resolveOn: IS_IN_BLOCK })
       )
     }
     claim = Claim.fromCTypeAndClaimContents(

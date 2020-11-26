@@ -24,7 +24,7 @@ it('records an unknown extrinsic error when transferring less than the existenti
   const to = await Identity.buildFromMnemonic('')
   await expect(
     makeTransfer(alice, to.address, new BN(1)).then((tx) =>
-      Blockchain.submitSignedTx(tx, alice, { resolveOn: IS_IN_BLOCK })
+      Blockchain.submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })
     )
   ).rejects.toThrow(ERROR_UNKNOWN)
 }, 30_000)
@@ -41,7 +41,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
   })
   const tx = await attestation.store(alice)
   await expect(
-    Blockchain.submitSignedTx(tx, alice, { resolveOn: IS_IN_BLOCK })
+    Blockchain.submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })
   ).rejects.toThrow(ERROR_CTYPE_NOT_FOUND)
 }, 30_000)
 

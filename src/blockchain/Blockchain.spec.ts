@@ -69,6 +69,7 @@ describe('Tx logic', () => {
     alice = await Identity.buildFromURI('//Alice')
     bob = await Identity.buildFromURI('//Bob')
   })
+
   describe('getNonce', () => {
     it('should increment nonce for account', async () => {
       const chain = new Blockchain(api)
@@ -78,6 +79,7 @@ describe('Tx logic', () => {
         initialNonce.toNumber() + 1
       )
     })
+
     it('should return incrementing nonces', async () => {
       const promisedNonces: Array<Promise<BN>> = []
       const chain = new Blockchain(api)
@@ -90,6 +92,7 @@ describe('Tx logic', () => {
         expect(value.toNumber()).toEqual(index)
       })
     })
+
     it('should return nonces from different closures', async () => {
       const promisedNonces: Array<Promise<BN>> = []
       for (let i = 0; i < 10; i += 1) {
@@ -102,6 +105,7 @@ describe('Tx logic', () => {
         expect(value.toNumber()).toEqual(index)
       })
     })
+
     it('should return separate incrementing nonces per account', async () => {
       const alicePromisedNonces: Array<Promise<BN>> = []
       const bobPromisedNonces: Array<Promise<BN>> = []
@@ -122,6 +126,7 @@ describe('Tx logic', () => {
         expect(value.toNumber()).toEqual(index)
       })
     })
+
     it('should return the highest read Nonce (mapped Index 1st read)', async () => {
       const chain = new Blockchain(api)
       const indexMap = jest
@@ -132,6 +137,7 @@ describe('Tx logic', () => {
       expect(nonce.toNumber()).toEqual(1191220)
       indexMap.mockRestore()
     })
+
     it('should return the highest read Nonce (mapped Index 2nd read)', async () => {
       const chain = new Blockchain(api)
       const indexMap = jest
@@ -143,6 +149,7 @@ describe('Tx logic', () => {
       expect(nonce.toNumber()).toEqual(11912201)
       indexMap.mockRestore()
     })
+
     it('should return the highest read Nonce (chain Index > secondQuery)', async () => {
       const chain = new Blockchain(api)
       api.rpc.system.accountNextIndex.mockResolvedValue(new BN(11912202))
@@ -156,6 +163,7 @@ describe('Tx logic', () => {
       expect(nonce.toNumber()).toEqual(11912202)
       indexMap.mockRestore()
     })
+
     it('should return the highest read Nonce (chain Index, !secondQuery)', async () => {
       const chain = new Blockchain(api)
       api.rpc.system.accountNextIndex.mockResolvedValue(
@@ -170,6 +178,7 @@ describe('Tx logic', () => {
       expect(nonce.toNumber()).toEqual(11912203)
       indexMap.mockRestore()
     })
+
     it('should reject when chain returns error', async () => {
       api.rpc.system.accountNextIndex.mockRejectedValue('Reason')
       const chain = new Blockchain(api)
@@ -178,6 +187,7 @@ describe('Tx logic', () => {
       )
     })
   })
+
   describe('reSignTx', () => {
     const submittable: SubmittableExtrinsic = ({
       signature: {
@@ -187,6 +197,7 @@ describe('Tx logic', () => {
       nonce: { toHuman: jest.fn() },
       method: { data: 'unchanged', toHex: jest.fn() },
     } as unknown) as SubmittableExtrinsic
+
     it('fetches updated Nonce and applies updated signature to Extrinsic', async () => {
       api.createType = jest
         .fn()
@@ -214,6 +225,7 @@ describe('Tx logic', () => {
       )
     })
   })
+
   describe('exported function submitSignedTx', () => {
     it('catches ERROR_TRANSACTION_USURPED and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
       setDefault({ isUsurped: true })
@@ -224,6 +236,7 @@ describe('Tx logic', () => {
         submitSignedTx(tx, parseSubscriptionOptions())
       ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
+
     it('catches priority error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
       setDefault()
       const chain = new Blockchain(api)
@@ -234,6 +247,7 @@ describe('Tx logic', () => {
         submitSignedTx(tx, parseSubscriptionOptions())
       ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
+
     it('catches Already Imported error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
       setDefault()
       const chain = new Blockchain(api)
@@ -244,6 +258,7 @@ describe('Tx logic', () => {
         submitSignedTx(tx, parseSubscriptionOptions())
       ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
+
     it('catches Outdated/Stale Tx error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
       setDefault()
       const chain = new Blockchain(api)
@@ -259,6 +274,7 @@ describe('Tx logic', () => {
       ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
   })
+
   describe('Blockchain class method submitSignedTx', () => {
     it('Retries to send up to two times if recoverable error is caught', async () => {
       setDefault({ isUsurped: true })
@@ -270,7 +286,7 @@ describe('Tx logic', () => {
         .mockImplementation(async (id, Tx) => {
           return Tx
         })
-      await expect(chain.submitSignedTx(tx, alice)).rejects.toThrow(
+      await expect(chain.submitTxWithReSign(tx, alice)).rejects.toThrow(
         ERROR_TRANSACTION_RECOVERABLE()
       )
 
@@ -278,6 +294,7 @@ describe('Tx logic', () => {
     })
   })
 })
+
 describe('parseSubscriptionOptions', () => {
   it('takes incomplete SubscriptionPromiseOptions and sets default values where needed', async () => {
     const testfunction: ResultEvaluator = () => true

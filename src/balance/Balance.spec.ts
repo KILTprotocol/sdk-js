@@ -68,7 +68,7 @@ describe('Balance', () => {
       alice,
       bob.address,
       new BN(100)
-    ).then((tx) => Blockchain.submitSignedTx(tx, alice))
+    ).then((tx) => Blockchain.submitTxWithReSign(tx, alice))
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
@@ -84,7 +84,7 @@ describe('Balance', () => {
       bob.address,
       amount,
       exponent
-    ).then((tx) => Blockchain.submitSignedTx(tx, alice))
+    ).then((tx) => Blockchain.submitTxWithReSign(tx, alice))
     expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount

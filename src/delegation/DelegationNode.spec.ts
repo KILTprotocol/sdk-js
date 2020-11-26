@@ -93,7 +93,7 @@ describe('Delegation', () => {
     )
     const revokeStatus = await aDelegationNode
       .revoke(identityAlice)
-      .then((tx) => Blockchain.submitSignedTx(tx, identityAlice))
+      .then((tx) => Blockchain.submitTxWithReSign(tx, identityAlice))
 
     expect(revokeStatus).toBeDefined()
   })

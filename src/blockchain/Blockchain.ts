@@ -52,7 +52,7 @@ export interface IBlockchainApi {
     identity: Identity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic>
-  submitSignedTx(
+  submitTxWithReSign(
     tx: SubmittableExtrinsic,
     identity?: Identity,
     opts?: SubscriptionPromiseOptions
@@ -105,13 +105,15 @@ export const EXTRINSIC_FAILED: ResultEvaluator = (result) =>
 export function parseSubscriptionOptions(
   opts?: Partial<SubscriptionPromiseOptions>
 ): SubscriptionPromiseOptions {
-  const {
-    resolveOn = IS_FINALIZED,
-    rejectOn = (result: SubmittableResult) =>
+  const defaults = {
+    resolveOn: IS_FINALIZED,
+    rejectOn: (result: SubmittableResult) =>
       IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
-    timeout,
-  } = { ...opts }
-  return { resolveOn, rejectOn, timeout }
+  }
+  return {
+    ...defaults,
+    ...opts,
+  }
 }
 
 /**
@@ -172,13 +174,13 @@ export default class Blockchain implements IBlockchainApi {
    * @returns A promise which can be used to track transaction status.
    * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
    */
-  public static async submitSignedTx(
+  public static async submitTxWithReSign(
     tx: SubmittableExtrinsic,
     identity?: Identity,
     opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
     const chain = await getCached()
-    return chain.submitSignedTx(tx, identity, opts)
+    return chain.submitTxWithReSign(tx, identity, opts)
   }
 
   public api: ApiPromise
@@ -241,11 +243,12 @@ export default class Blockchain implements IBlockchainApi {
    * @returns A promise which can be used to track transaction status.
    * If resolved, this promise returns the eventually resolved [[SubmittableResult]].
    */
-  public async submitSignedTx(
+  public async submitTxWithReSign(
     tx: SubmittableExtrinsic,
     identity?: Identity,
     opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
+    log.info(`Submitting ${tx.method}`)
     const options = parseSubscriptionOptions(opts)
     const retry = async (reason: Error): Promise<SubmittableResult> => {
       if (
@@ -274,7 +277,7 @@ export default class Blockchain implements IBlockchainApi {
     opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
-    return this.submitSignedTx(signedTx, identity, opts)
+    return this.submitTxWithReSign(signedTx, identity, opts)
   }
 
   /**

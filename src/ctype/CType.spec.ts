@@ -102,7 +102,7 @@ describe('CType', () => {
     const ctype = CType.fromSchema(ctypeModel, identityAlice.address)
 
     const tx = await ctype.store(identityAlice)
-    const result = await Blockchain.submitSignedTx(tx, identityAlice)
+    const result = await Blockchain.submitTxWithReSign(tx, identityAlice)
     expect(result).toBeInstanceOf(SubmittableResult)
     expect(result.isFinalized).toBeTruthy()
     expect(result.isCompleted).toBeTruthy()
