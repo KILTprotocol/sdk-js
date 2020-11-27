@@ -109,7 +109,7 @@ export function hashClaimContents(
     nonceGenerator: undefined,
   })
   // to simplify validation, the salted hash is computed over unsalted hash (nonce key) & nonce
-  // the unsalted hash will work has the nonce key later, so we feed a hash:hash map to the hasher
+  // the unsalted hash will work as the nonce key later, so we feed a hash:hash map to the hasher
   const salted = hashStatements(
     unsalted.reduce<Record<string, string>>((map, { hash }) => {
       return { ...map, [hash]: hash }
