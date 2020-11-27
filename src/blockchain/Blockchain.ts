@@ -11,15 +11,25 @@
 import * as gabi from '@kiltprotocol/portablegabi'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Text } from '@polkadot/types'
-import { Header, Index } from '@polkadot/types/interfaces/types'
+import { Header } from '@polkadot/types/interfaces/types'
 import { AnyJson, Codec } from '@polkadot/types/types'
-import { Evaluator, makeSubscriptionPromise } from '../util/SubscriptionPromise'
+import { Text } from '@polkadot/types'
+import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
+import BN from 'bn.js'
+import {
+  ERROR_TRANSACTION_RECOVERABLE,
+  ERROR_TRANSACTION_USURPED,
+} from '../errorhandling/SDKErrors'
+import {
+  Evaluator,
+  makeSubscriptionPromise,
+  TerminationOptions,
+} from '../util/SubscriptionPromise'
 import { factory as LoggerFactory } from '../config/ConfigLog'
 import { ErrorHandler } from '../errorhandling'
 import { ERROR_UNKNOWN as UNKNOWN_EXTRINSIC_ERROR } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
-import { ERROR_UNKNOWN } from '../errorhandling/SDKErrors'
+import getCached from '../blockchainApiConnection'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -30,13 +40,8 @@ export type Stats = {
 }
 
 export type ResultEvaluator = Evaluator<SubmittableResult>
-
-export interface SubscriptionPromiseOptions {
-  resolveOn?: ResultEvaluator
-  rejectOn?: ResultEvaluator
-  timeout?: number
-}
-
+export type ErrorEvaluator = Evaluator<Error>
+export type SubscriptionPromiseOptions = TerminationOptions<SubmittableResult>
 export interface IBlockchainApi {
   api: ApiPromise
   portablegabi: gabi.Blockchain
@@ -47,56 +52,108 @@ export interface IBlockchainApi {
     identity: Identity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic>
+  submitTxWithReSign(
+    tx: SubmittableExtrinsic,
+    identity?: Identity,
+    opts?: SubscriptionPromiseOptions
+  ): Promise<SubmittableResult>
   submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
     opts?: SubscriptionPromiseOptions
   ): Promise<SubmittableResult>
-  getNonce(accountAddress: string): Promise<Codec>
+  getNonce(accountAddress: string): Promise<BN>
+  reSignTx(
+    identity: Identity,
+    tx: SubmittableExtrinsic
+  ): Promise<SubmittableExtrinsic>
 }
+const TxOutdated = '1010: Invalid Transaction: Transaction is outdated'
+const TxPriority = '1014: Priority is too low:'
+const TxAlreadyImported = 'Transaction Already'
 
+export const IS_RELEVANT_ERROR: ErrorEvaluator = (err: Error) => {
+  return new RegExp(
+    `${TxAlreadyImported}|${TxOutdated}|${TxPriority}`,
+    'g'
+  ).test(err.message)
+}
 export const IS_READY: ResultEvaluator = (result) => result.status.isReady
 export const IS_IN_BLOCK: ResultEvaluator = (result) => result.isInBlock
 export const EXTRINSIC_EXECUTED: ResultEvaluator = (result) =>
   ErrorHandler.extrinsicSuccessful(result)
 export const IS_FINALIZED: ResultEvaluator = (result) => result.isFinalized
-
-export const IS_ERROR: ResultEvaluator = (result) =>
-  result.isError && ERROR_UNKNOWN()
+export const IS_USURPED: ResultEvaluator = (result) =>
+  result.status.isUsurped && ERROR_TRANSACTION_USURPED()
+export const IS_ERROR: ResultEvaluator = (result) => {
+  return (
+    (result.status.isDropped && Error('isDropped')) ||
+    (result.status.isInvalid && Error('isInvalid')) ||
+    (result.status.isFinalityTimeout && Error('isFinalityTimeout'))
+  )
+}
 export const EXTRINSIC_FAILED: ResultEvaluator = (result) =>
   ErrorHandler.extrinsicFailed(result) &&
   (ErrorHandler.getExtrinsicError(result) || UNKNOWN_EXTRINSIC_ERROR)
 
 /**
- * Submits a signed [[SubmittableExtrinsic]] and attaches a callback to monitor the inclusion status of the transaction
+ * Parses potentially incomplete or undefined options and returns complete [[SubscriptionPromiseOptions]].
+ *
+ * @param opts Potentially undefined or partial [[SubscriptionPromiseOptions]] .
+ * @returns Complete [[SubscriptionPromiseOptions]], with potentially defaulted values.
+ */
+export function parseSubscriptionOptions(
+  opts?: Partial<SubscriptionPromiseOptions>
+): SubscriptionPromiseOptions {
+  const defaults = {
+    resolveOn: IS_FINALIZED,
+    rejectOn: (result: SubmittableResult) =>
+      IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
+  }
+  return {
+    ...defaults,
+    ...opts,
+  }
+}
+
+/**
+ * [ASYNC] Submits a signed [[SubmittableExtrinsic]] and attaches a callback to monitor the inclusion status of the transaction
  * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
  * finalization and rejects any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters.
  *
  * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
  *
  * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
- * @param resolveOn A function which triggers the resolution of the promise. Defaults to resolution on finalization.
- * @param rejectOn A function which triggers the rejection of the promise and specifies the rejection reason.
- * Defaults to rejection if either the submission of the transaction failed or if the execution of extrinsics emitted an error event.
- * @param timeout Optional timeout in ms. If set, an unresolved promise will reject after this period of time.
+ * @param opts [[SubscriptionPromiseOptions]]: Criteria for resolving/rejecting the promise.
  * @returns A promise which can be used to track transaction status.
  * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
  */
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,
-  resolveOn: ResultEvaluator = IS_FINALIZED,
-  rejectOn: ResultEvaluator = (result) =>
-    IS_ERROR(result) || EXTRINSIC_FAILED(result),
-  timeout?: number
+  opts: SubscriptionPromiseOptions
 ): Promise<SubmittableResult> {
   log.info(`Submitting ${tx.method}`)
-  const { promise, subscription } = makeSubscriptionPromise(
-    resolveOn,
-    rejectOn,
-    timeout
-  )
-  const unsubscribe = await tx.send(subscription)
-  return promise.finally(() => unsubscribe())
+  const { promise, subscription } = makeSubscriptionPromise(opts)
+
+  const unsubscribe = await tx
+    .send(subscription)
+    .catch(async (reason: Error) => {
+      if (IS_RELEVANT_ERROR(reason)) {
+        return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
+      }
+      return Promise.reject(reason)
+    })
+
+  const result = await promise
+    .catch(async (reason: Error) => {
+      if (reason.message === ERROR_TRANSACTION_USURPED().message) {
+        return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
+      }
+      return Promise.reject(reason)
+    })
+    .finally(() => unsubscribe())
+
+  return result
 }
 
 // Code taken from
@@ -109,19 +166,32 @@ export default class Blockchain implements IBlockchainApi {
     return []
   }
 
-  public static submitSignedTx(
+  /**
+   *  [STATIC] [ASYNC] Reroute of class method.
+   *
+   * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
+   * @param identity The [[Identity]] to re-sign the tx on recoverable error.
+   * @param opts Optional partial criteria for resolving/rejecting the promise.
+   * @returns A promise which can be used to track transaction status.
+   * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+   */
+  public static async submitTxWithReSign(
     tx: SubmittableExtrinsic,
-    opts: SubscriptionPromiseOptions = {}
+    identity?: Identity,
+    opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
-    return submitSignedTx(tx, opts.resolveOn, opts.rejectOn, opts.timeout)
+    const chain = await getCached()
+    return chain.submitTxWithReSign(tx, identity, opts)
   }
 
   public api: ApiPromise
   public readonly portablegabi: gabi.Blockchain
+  private accountNonces: Map<Identity['address'], BN>
 
   public constructor(api: ApiPromise) {
     this.api = api
     this.portablegabi = new gabi.Blockchain('portablegabi', this.api as any)
+    this.accountNonces = new Map<Identity['address'], BN>()
   }
 
   public async getStats(): Promise<Stats> {
@@ -141,28 +211,135 @@ export default class Blockchain implements IBlockchainApi {
     return this.api.rpc.chain.subscribeNewHeads(listener)
   }
 
+  /**
+   * [ASYNC] Signs the SubmittableExtrinsic with the given identity.
+   *
+   * @param identity The [[Identity]] to sign the Tx with.
+   * @param tx The unsigned SubmittableExtrinsic.
+   * @returns Signed SubmittableExtrinsic.
+   *
+   */
   public async signTx(
     identity: Identity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic> {
     const nonce = await this.getNonce(identity.address)
-    const signed: SubmittableExtrinsic = identity.signSubmittableExtrinsic(
+    const signed: SubmittableExtrinsic = await identity.signSubmittableExtrinsic(
       tx,
-      nonce.toHex()
+      nonce
     )
     return signed
   }
 
+  /**
+   * [ASYNC] Submits a signed [[SubmittableExtrinsic]] with exported function [[submitSignedTx]].
+   * Handles recoverable errors if identity is provided by re-signing and re-sending the tx up to two times.
+   * Uses parseSubscriptionPromise to provide complete potentially defaulted options to the called submitSignedTx.
+   *
+   * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
+   *
+   * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
+   * @param identity Optional [[Identity]] to potentially re-sign the Tx with.
+   * @param opts Optional partial criteria for resolving/rejecting the promise.
+   * @returns A promise which can be used to track transaction status.
+   * If resolved, this promise returns the eventually resolved [[SubmittableResult]].
+   */
+  public async submitTxWithReSign(
+    tx: SubmittableExtrinsic,
+    identity?: Identity,
+    opts?: Partial<SubscriptionPromiseOptions>
+  ): Promise<SubmittableResult> {
+    const options = parseSubscriptionOptions(opts)
+    const retry = async (reason: Error): Promise<SubmittableResult> => {
+      if (
+        reason.message === ERROR_TRANSACTION_RECOVERABLE().message &&
+        identity
+      ) {
+        return submitSignedTx(await this.reSignTx(identity, tx), options)
+      }
+      throw reason
+    }
+    return submitSignedTx(tx, options).catch(retry).catch(retry)
+  }
+
+  /**
+   * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
+   *
+   * @param identity The [[Identity]] that we sign and potentially re-sign the tx with.
+   * @param tx The generated unsigned [[SubmittableExtrinsic]] to submit.
+   * @param opts Partial optional criteria for resolving/rejecting the promise.
+   * @returns Promise result of The Extrinsic.
+   *
+   */
   public async submitTx(
     identity: Identity,
     tx: SubmittableExtrinsic,
-    opts: SubscriptionPromiseOptions = {}
+    opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
-    return Blockchain.submitSignedTx(signedTx, opts)
+    return this.submitTxWithReSign(signedTx, identity, opts)
   }
 
-  public async getNonce(accountAddress: string): Promise<Index> {
-    return this.api.rpc.system.accountNextIndex(accountAddress)
+  /**
+   * [ASYNC] Retrieves the Nonce for Transaction signing for the specified account and increments the in accountNonces mapped Index.
+   *
+   * @param accountAddress The address of the identity that we retrieve the nonce for.
+   * @returns [[BN]] representation of the Tx nonce for the identity.
+   *
+   */
+  public async getNonce(accountAddress: string): Promise<BN> {
+    let nonce = this.accountNonces.get(accountAddress)
+    if (!nonce) {
+      // the account nonce is unknown, we will query it from chain
+      const chainNonce = await this.api.rpc.system
+        .accountNextIndex(accountAddress)
+        .catch((reason) => {
+          log.error(
+            `On-chain nonce retrieval failed for account ${accountAddress}\nwith reason: ${reason}`
+          )
+          throw Error(`Chain failed to retrieve nonce for : ${accountAddress}`)
+        })
+      // ensure that the nonce we queried is still up to date and no newer nonce was queried during the await above
+      const secondQuery = this.accountNonces.get(accountAddress)
+      nonce = BN.max(chainNonce, secondQuery || new BN(0))
+    }
+    this.accountNonces.set(accountAddress, nonce.addn(1))
+    return nonce
+  }
+
+  /**
+   * [ASYNC] Re-signs the given [[SubmittableExtrinsic]] with an updated Nonce.
+   *
+   * @param identity The [[Identity]] to re-sign the Tx with.
+   * @param tx The previously with recoverable Error failed Tx.
+   * @returns Original Tx, injected with signature payload with updated nonce.
+   *
+   */
+  public async reSignTx(
+    identity: Identity,
+    tx: SubmittableExtrinsic
+  ): Promise<SubmittableExtrinsic> {
+    this.accountNonces.delete(identity.address)
+    const nonce: BN = await this.getNonce(identity.address)
+    const signerPayload: SignerPayloadJSON = this.api
+      .createType('SignerPayload', {
+        method: tx.method.toHex(),
+        nonce,
+        genesisHash: this.api.genesisHash,
+        blockHash: this.api.genesisHash,
+        runtimeVersion: this.api.runtimeVersion,
+        version: this.api.extrinsicVersion,
+      })
+      .toPayload()
+    tx.addSignature(
+      identity.address,
+      this.api
+        .createType('ExtrinsicPayload', signerPayload, {
+          version: this.api.extrinsicVersion,
+        })
+        .sign(identity.signKeyringPair).signature,
+      signerPayload
+    )
+    return tx
   }
 }
