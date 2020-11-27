@@ -17,11 +17,13 @@ import { Claimer } from '@kiltprotocol/portablegabi'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
+import { Index } from '@polkadot/types/interfaces'
 import { mnemonicToMiniSecret } from '@polkadot/util-crypto'
 import generate from '@polkadot/util-crypto/mnemonic/generate'
 import validate from '@polkadot/util-crypto/mnemonic/validate'
 import { hexToU8a } from '@polkadot/util/hex'
 import * as u8aUtil from '@polkadot/util/u8a'
+import BN from 'bn.js'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
@@ -425,21 +427,21 @@ export default class Identity {
    * Signs a submittable extrinsic (transaction), in preparation to pushing it to the blockchain.
    *
    * @param submittableExtrinsic - A chain transaction.
-   * @param nonceAsHex - The nonce of the address operating the transaction.
+   * @param nonce - The nonce of the address operating the transaction.
    * @returns The signed SubmittableExtrinsic.
    * @example ```javascript
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const tx = await blockchain.api.tx.ctype.add(ctype.hash);
    * const nonce = await blockchain.api.rpc.system.accountNextIndex(alice.address);
-   * alice.signSubmittableExtrinsic(tx, nonce.toHex());
+   * alice.signSubmittableExtrinsic(tx, nonce);
    * ```
    */
-  public signSubmittableExtrinsic(
+  public async signSubmittableExtrinsic(
     submittableExtrinsic: SubmittableExtrinsic,
-    nonceAsHex: string
-  ): SubmittableExtrinsic {
-    return submittableExtrinsic.sign(this.signKeyringPair, {
-      nonce: nonceAsHex,
+    nonce: number | Index | BN
+  ): Promise<SubmittableExtrinsic> {
+    return submittableExtrinsic.signAsync(this.signKeyringPair, {
+      nonce,
     })
   }
 

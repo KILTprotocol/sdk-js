@@ -12,26 +12,35 @@ export interface Evaluator<SubscriptionType> {
 }
 
 /**
+ * Object to provide termination Criteria for the created Subscription Promise.
+ */
+export interface TerminationOptions<SubscriptionType> {
+  resolveOn: Evaluator<SubscriptionType>
+  rejectOn?: Evaluator<SubscriptionType>
+  timeout?: number
+}
+
+/**
  * Helps building a promise associated to a subscription callback through which updates can be pushed to the promise.
  * This promise is resolved with the value of latest update when a resolution criterion is met.
  * It is rejected with a custom error/reason if a rejection criterion is met or on timeout (optional). Rejection takes precedent.
  *
- * @param resolveOn Resolution criterion. A function that evaluates an incoming update from the subscription.
+ * @param terminationOptions .
+ * @param terminationOptions.resolveOn Resolution criterion. A function that evaluates an incoming update from the subscription.
  * If it returns a truthy value, the promise is resolved with the value of the latest update.
- * @param rejectOn Rejection criterion. A function that evaluates an incoming update from the subscription.
+ * @param terminationOptions.rejectOn Rejection criterion. A function that evaluates an incoming update from the subscription.
  * If it returns a truthy value, this value is used as rejection reason.
- * @param timeout Timeout in ms. If set, the promise will reject if not resolved before the time is up.
+ * @param terminationOptions.timeout Timeout in ms. If set, the promise will reject if not resolved before the time is up.
  * @returns An object containing both a subscription callback
  * and a promise which resolves or rejects depending on the values pushed to the callback.
  */
 export function makeSubscriptionPromise<SubscriptionType>(
-  resolveOn: Evaluator<SubscriptionType>,
-  rejectOn?: Evaluator<SubscriptionType>,
-  timeout?: number
+  terminationOptions: TerminationOptions<SubscriptionType>
 ): {
   promise: Promise<SubscriptionType>
   subscription: (value: SubscriptionType) => void
 } {
+  const { resolveOn, rejectOn, timeout } = { ...terminationOptions }
   let resolve: (value: SubscriptionType) => void
   let reject: (reason: any) => void
   const promise = new Promise<SubscriptionType>((res, rej) => {
@@ -65,23 +74,15 @@ export function makeSubscriptionPromise<SubscriptionType>(
  * and an array of promises which resolve or reject depending on the values pushed to the callback.
  */
 export function makeSubscriptionPromiseMulti<SubscriptionType>(
-  args: Array<{
-    resolveOn: Evaluator<SubscriptionType>
-    rejectOn?: Evaluator<SubscriptionType>
-    timeout?: number
-  }>
+  args: Array<TerminationOptions<SubscriptionType>>
 ): {
   promises: Array<Promise<SubscriptionType>>
   subscription: (value: SubscriptionType) => void
 } {
   const promises: Array<Promise<SubscriptionType>> = []
   const subscriptions: Array<(value: SubscriptionType) => void> = []
-  args.forEach(({ resolveOn, rejectOn, timeout }) => {
-    const { promise, subscription } = makeSubscriptionPromise(
-      resolveOn,
-      rejectOn,
-      timeout
-    )
+  args.forEach((options: TerminationOptions<SubscriptionType>) => {
+    const { promise, subscription } = makeSubscriptionPromise(options)
     promises.push(promise)
     subscriptions.push(subscription)
   })
