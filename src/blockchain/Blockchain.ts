@@ -132,6 +132,7 @@ export async function submitSignedTx(
   tx: SubmittableExtrinsic,
   opts: SubscriptionPromiseOptions
 ): Promise<SubmittableResult> {
+  log.info(`Submitting ${tx.method}`)
   const { promise, subscription } = makeSubscriptionPromise(opts)
 
   const unsubscribe = await tx
@@ -248,7 +249,6 @@ export default class Blockchain implements IBlockchainApi {
     identity?: Identity,
     opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
-    log.info(`Submitting ${tx.method}`)
     const options = parseSubscriptionOptions(opts)
     const retry = async (reason: Error): Promise<SubmittableResult> => {
       if (
