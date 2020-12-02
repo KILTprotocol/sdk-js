@@ -30,10 +30,18 @@ jobs:
           git add .
           git commit -m "ci: publish prerelease"
           git push
-      - name: Repository dispatch to workshop
+
+  dispatch:
+    needs: build
+    strategy:
+      matrix:
+        repo: ['KILTprotocol/kilt-workshop-101', 'KILTprotocol/demo-client']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository dispatch
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: KILTprotocol/kilt-workshop-101
+          repository: ${{ matrix.repo }}
           event-type: sdk-update
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "github": ${{ toJson(github) }}}'
