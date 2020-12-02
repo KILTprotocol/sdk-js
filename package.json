@@ -8,7 +8,7 @@
     "test": "jest --coverage --group=-integration",
     "test:ci": "jest --ci --coverage --group=-integration",
     "test:integration:run": "jest --group=integration -b -w 3 --silent",
-    "test:integration": "if lsof -i :9944 > /dev/null; then yarn test:integration:run; else echo 'Can not connect to chain. Is it running?'; exit 1;fi",
+    "test:integration": "{lsof -i :9944 > /dev/null && yarn test:integration:run;} || echo 'Can not connect to chain. Is it running?'; exit 1;fi",
     "test:watch": "yarn test --watch",
     "lint": "eslint 'src/**'",
     "lint:fix": "yarn lint --fix",
