@@ -3,25 +3,30 @@ on:
   push:
     branches:
       - develop
+      - tw-851-versioning
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: 10
-          registry-url: https://npm.pkg.github.com
-          scope: '@kiltprotocol'
       - run: yarn install --immutable
-      - run: yarn version --no-git-tag-version --prerelease --preid $(git rev-parse --short HEAD)
-      - run: npm publish
+      - run: yarn version prerelease
+      - run: yarn npm publish --access public --tag dev
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Repository dispatch to workshop
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: KILTprotocol/kilt-workshop-101
-          event-type: sdk-update
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "github": ${{ toJson(github) }}}'
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+      - run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "ci: publish prerelease"
+          git push
+      # - name: Repository dispatch to workshop
+      #   uses: peter-evans/repository-dispatch@v1
+      #   with:
+      #     token: ${{ secrets.REPO_ACCESS_TOKEN }}
+      #     repository: KILTprotocol/kilt-workshop-101
+      #     event-type: sdk-update
+      #     client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "github": ${{ toJson(github) }}}'
