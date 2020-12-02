@@ -16,7 +16,6 @@
     "style:fix": "yarn style --write",
     "build": "tsc --declaration",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
-    "buildAndPublish": "npm publish --access=public",
     "prepublishOnly": "yarn build"
   },
   "husky": {
