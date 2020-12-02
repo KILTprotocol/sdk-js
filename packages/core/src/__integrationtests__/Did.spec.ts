@@ -6,12 +6,13 @@
 
 import { Did, Identity } from '..'
 import { IBlockchainApi } from '../blockchain/Blockchain'
-import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
+import getCached from '../blockchainApiConnection'
+import { getNodeAddress } from '../config/ConfigService'
 import { queryByAddress, queryByIdentifier } from '../did/Did.chain'
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  blockchain = await getCached(getNodeAddress())
 })
 
 describe('querying DIDs that do not exist', () => {

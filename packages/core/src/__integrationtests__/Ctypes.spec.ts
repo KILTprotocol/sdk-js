@@ -7,7 +7,8 @@
 import { Identity } from '..'
 import { IBlockchainApi } from '../blockchain/Blockchain'
 import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
-import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
+import { getNodeAddress } from '../config/ConfigService'
+import getCached from '../blockchainApiConnection'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { ERROR_CTYPE_ALREADY_EXISTS } from '../errorhandling/ExtrinsicError'
@@ -16,7 +17,7 @@ import { wannabeFaucet } from './utils'
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  blockchain = await getCached(getNodeAddress())
 })
 
 describe('When there is an CtypeCreator and a verifier', () => {

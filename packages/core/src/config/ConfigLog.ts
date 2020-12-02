@@ -14,16 +14,12 @@ import {
   getLogControl,
   LogGroupControlSettings,
 } from 'typescript-logging'
+import { configuration } from './ConfigService'
 
 // Create options instance and specify 1 LogGroupRule:
 // * LogLevel Error on default, env DEBUG = 'true' changes Level to Debug.
 const options = new LoggerFactoryOptions().addLogGroupRule(
-  new LogGroupRule(
-    new RegExp('.+'),
-    process.env.DEBUG && process.env.DEBUG === 'true'
-      ? LogLevel.Debug
-      : LogLevel.Error
-  )
+  new LogGroupRule(new RegExp('.+'), configuration.LogLevel)
 )
 // Create a named loggerfactory and pass in the options and export the factory.
 // Named is since version 0.2.+ (it's recommended for future usage)

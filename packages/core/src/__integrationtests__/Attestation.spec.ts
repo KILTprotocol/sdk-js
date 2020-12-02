@@ -14,7 +14,8 @@ import {
   IS_READY,
   submitTxWithReSign,
 } from '../blockchain/Blockchain.utils'
-import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
+import { getNodeAddress } from '../config/ConfigService'
+import getCached from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
 import {
@@ -35,8 +36,13 @@ import {
 let blockchain: IBlockchainApi | undefined
 let alice: Identity
 beforeAll(async () => {
+<<<<<<< HEAD
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
   alice = Identity.buildFromURI('//Alice')
+=======
+  blockchain = await getCached(getNodeAddress())
+  alice = await Identity.buildFromURI('//Alice')
+>>>>>>> feat: added configservice, removed implicit connection
 })
 
 describe('handling attestations that do not exist', () => {

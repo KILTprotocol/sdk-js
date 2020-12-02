@@ -13,7 +13,8 @@ import {
   IS_READY,
   submitTxWithReSign,
 } from '../blockchain/Blockchain.utils'
-import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
+import { getNodeAddress } from '../config/ConfigService'
+import getCached from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import {
   fetchChildren,
@@ -36,7 +37,7 @@ import {
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  blockchain = await getCached(getNodeAddress())
 })
 
 describe('when there is an account hierarchy', () => {

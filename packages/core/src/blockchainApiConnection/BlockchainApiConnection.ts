@@ -11,9 +11,7 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { RegistryTypes } from '@polkadot/types/types'
 import Blockchain from '../blockchain/Blockchain'
-
-export const DEFAULT_WS_ADDRESS =
-  process.env.DEFAULT_WS_ADDRESS || 'ws://127.0.0.1:9944'
+import { getNodeAddress } from '../config/ConfigService'
 
 let instance: Promise<Blockchain> | null
 
@@ -32,7 +30,7 @@ export const CUSTOM_TYPES: RegistryTypes = {
 }
 
 export async function buildConnection(
-  host: string = DEFAULT_WS_ADDRESS
+  host: string | undefined = getNodeAddress()
 ): Promise<Blockchain> {
   const provider = new WsProvider(host)
   const api: ApiPromise = await ApiPromise.create({
@@ -43,7 +41,7 @@ export async function buildConnection(
 }
 
 export async function getCached(
-  host: string = DEFAULT_WS_ADDRESS
+  host: string | undefined = getNodeAddress()
 ): Promise<Blockchain> {
   if (!instance) {
     instance = buildConnection(host)

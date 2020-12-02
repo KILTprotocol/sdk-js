@@ -7,11 +7,12 @@
 
 import { Header } from '@polkadot/types/interfaces/types'
 import { IBlockchainApi } from '../blockchain/Blockchain'
-import { DEFAULT_WS_ADDRESS, getCached } from '../blockchainApiConnection'
+import { getCached } from '../blockchainApiConnection'
+import { getNodeAddress } from '../config/ConfigService'
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  blockchain = await getCached(getNodeAddress())
 })
 
 describe('Blockchain', () => {
