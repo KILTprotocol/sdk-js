@@ -14,12 +14,17 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10
-      - run: yarn install --immutable
-      - run: yarn version prerelease
-      - run: npm publish --access public --tag dev
+          registry-url: https://registry.npmjs.org/
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Set package version as prerelease
+        run: yarn version prerelease
+      - name: Publish to npm
+        run: npm publish --access public --tag dev
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
-      - run: |
+      - name: Commit and push changes
+        run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
