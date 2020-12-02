@@ -36,10 +36,6 @@
   "engines": {
     "node": ">=10.0"
   },
-  "publishConfig": {
-    "access": "restricted",
-    "registry": "https://registry.npmjs.org"
-  },
   "author": "",
   "license": "BSD-4-Clause",
   "bugs": {
