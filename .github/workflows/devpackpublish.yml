@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - develop
-      - fix-ghp-release
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,7 +15,7 @@ jobs:
           scope: '@kiltprotocol'
       - run: yarn install --immutable
       - run: npm version --no-git-tag-version prerelease --preid $(git rev-parse --short HEAD)
-      - run: npm version
+      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Repository dispatch to workshop
