@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - develop
-      - tw-851-versioning
 jobs:
   build:
     runs-on: ubuntu-latest
