@@ -34,11 +34,9 @@ export enum ErrorCode {
   ERROR_ADDRESS_TYPE = 20001,
   ERROR_HASH_TYPE = 20002,
   ERROR_HASH_MALFORMED = 20003,
-  ERROR_NONCE_HASH_TYPE = 20004,
   ERROR_SIGNATURE_DATA_TYPE = 20005,
   ERROR_CTYPE_OWNER_TYPE = 20006,
   ERROR_DELEGATION_ID_TYPE = 20007,
-  ERROR_NONCE_HASH_MALFORMED = 20008,
   ERROR_CLAIM_CONTENTS_MALFORMED = 20009,
   ERROR_CLAIM_HASHTREE_MALFORMED = 20010,
   ERROR_OBJECT_MALFORMED = 20011,
@@ -216,39 +214,7 @@ export const ERROR_HASH_MALFORMED: (
     `Provided hash invalid or malformed`
   )
 }
-export const ERROR_NONCE_HASH_TYPE: SDKError = new SDKError(
-  ErrorCode.ERROR_NONCE_HASH_TYPE,
-  'NonceHash of wrong type'
-)
 
-export const ERROR_NONCE_HASH_MALFORMED: (
-  nonceHash?: NonceHash,
-  type?: string
-) => SDKError = (nonceHash?: NonceHash, type?: string) => {
-  if (nonceHash && type) {
-    return new SDKError(
-      ErrorCode.ERROR_NONCE_HASH_MALFORMED,
-      `Provided ${type} NonceHash malformed \n
-      Hash: ${nonceHash.hash} \n
-      Nonce: ${nonceHash.nonce}`
-    )
-  }
-  if (nonceHash) {
-    return new SDKError(
-      ErrorCode.ERROR_NONCE_HASH_MALFORMED,
-      `Provided NonceHash malformed \nHash: ${JSON.stringify(
-        nonceHash,
-        null,
-        2
-      )}`
-    )
-  }
-
-  return new SDKError(
-    ErrorCode.ERROR_NONCE_HASH_MALFORMED,
-    `Provided hash malformed`
-  )
-}
 export const ERROR_DELEGATION_ID_TYPE: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_DELEGATION_ID_TYPE,
