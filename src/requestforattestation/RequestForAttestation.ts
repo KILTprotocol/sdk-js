@@ -15,7 +15,8 @@ import {
   AttesterPublicKey,
   ClaimerAttestationSession,
 } from '@kiltprotocol/portablegabi'
-import { hashClaimContents } from '../claim/Claim.utils'
+import { validateLegitimations } from '../util/DataUtils'
+import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { coToUInt8, hash, u8aConcat, u8aToHex, verify } from '../crypto/Crypto'
 import * as SDKErrors from '../errorhandling/SDKErrors'
@@ -28,7 +29,6 @@ import IRequestForAttestation, {
   CompressedRequestForAttestation,
   Hash,
 } from '../types/RequestForAttestation'
-import { validateLegitimations } from '../util/DataUtils'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 
 function verifyClaimerSignature(reqForAtt: IRequestForAttestation): boolean {
@@ -132,9 +132,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
       session = peSessionMessage.session
     }
 
-    const { hashes: claimHashes, nonceMap: claimNonceMap } = hashClaimContents(
-      claim
-    )
+    const {
+      hashes: claimHashes,
+      nonceMap: claimNonceMap,
+    } = ClaimUtils.hashClaimContents(claim)
 
     const rootHash = RequestForAttestation.calculateRootHash({
       legitimations,
@@ -241,7 +242,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     properties.forEach((key) => {
       delete this.claim.contents[key]
     })
-    this.claimNonceMap = hashClaimContents(this.claim, {
+    this.claimNonceMap = ClaimUtils.hashClaimContents(this.claim, {
       nonces: this.claimNonceMap,
     }).nonceMap
   }
@@ -260,7 +261,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
   public removeClaimOwner(): void {
     delete this.claim.owner
-    this.claimNonceMap = hashClaimContents(this.claim, {
+    this.claimNonceMap = ClaimUtils.hashClaimContents(this.claim, {
       nonces: this.claimNonceMap,
     }).nonceMap
   }
@@ -272,7 +273,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns Whether the data is valid.
    * @throws When any key of the claim contents could not be found in the claimHashTree.
    * @throws When either the rootHash or the signature are not verifiable.
-   * @throws [[ERROR_CLAIM_HASHTREE_MALFORMED]], [[ERROR_ROOT_HASH_UNVERIFIABLE]], [[ERROR_SIGNATURE_UNVERIFIABLE]].
+   * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]], [[ERROR_ROOT_HASH_UNVERIFIABLE]], [[ERROR_SIGNATURE_UNVERIFIABLE]].
    * @example ```javascript
    * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(claim, alice);
    * reqForAtt.verifyData(); // returns true if the data is correct
@@ -288,14 +289,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
       throw SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
     }
 
-    // check all hashes for provided claim properties
-    const { hashes } = hashClaimContents(input.claim, {
-      nonces: input.claimNonceMap,
-    })
-    if (hashes.some((i) => !input.claimHashes.includes(i))) {
-      // claims properties cannot be verified
-      throw SDKErrors.ERROR_NONCE_HASH_INVALID()
-    }
+    // verify properties against selective disclosure proof
+    const verificationResult = ClaimUtils.verifyDisclosedAttributes(
+      input.claim,
+      {
+        nonces: input.claimNonceMap,
+        hashes: input.claimHashes,
+      }
+    )
+    if (!verificationResult.verified) throw verificationResult.errors[0]
 
     // check legitimations
     validateLegitimations(input.legitimations)

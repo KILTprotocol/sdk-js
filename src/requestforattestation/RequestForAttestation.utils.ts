@@ -4,6 +4,7 @@
  * @preferred
  */
 
+import { validateHash } from '../util/DataUtils'
 import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
 import ClaimUtils from '../claim/Claim.utils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
@@ -20,7 +21,7 @@ import RequestForAttestation from './RequestForAttestation'
  * @param input - A potentially only partial [[IRequestForAttestation]].
  * @throws When either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type.
  * @throws When any of the input's claimHashTree's keys missing their hash.
- * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_HASHTREE_NOT_PROVIDED]], [[ERROR_CLAIM_HASHTREE_MALFORMED]], [[ERROR_DELEGATION_ID_TYPE]].
+ * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_MALFORMED]], [[ERROR_DELEGATION_ID_TYPE]].
  *
  */
 export function errorCheck(input: IRequestForAttestation): void {
@@ -34,7 +35,19 @@ export function errorCheck(input: IRequestForAttestation): void {
   }
 
   if (!input.claimNonceMap) {
-    throw SDKErrors.ERROR_CLAIM_HASHTREE_NOT_PROVIDED()
+    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED()
+  }
+  if (
+    typeof input.claimNonceMap !== 'object' ||
+    Object.entries(input.claimNonceMap).some(
+      ([digest, nonce]) =>
+        !digest ||
+        !validateHash(digest, 'statement digest') ||
+        typeof nonce !== 'string' ||
+        !nonce
+    )
+  ) {
+    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
   }
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
     throw SDKErrors.ERROR_DELEGATION_ID_TYPE

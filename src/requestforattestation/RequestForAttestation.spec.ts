@@ -3,15 +3,17 @@ import {
   AttesterAttestationSession,
   ClaimerAttestationSession,
 } from '@kiltprotocol/portablegabi'
+import { hexToU8a } from '@polkadot/util'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
+import { u8aToHex } from '../crypto'
 import CType from '../ctype/CType'
 import {
-  // ERROR_CLAIM_HASHTREE_MALFORMED,
+  ErrorCode,
   ERROR_LEGITIMATIONS_NOT_PROVIDED,
-  // ERROR_NONCE_HASH_INVALID,
   ERROR_ROOT_HASH_UNVERIFIABLE,
   ERROR_SIGNATURE_UNVERIFIABLE,
+  SDKError,
 } from '../errorhandling/SDKErrors'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
@@ -459,12 +461,11 @@ describe('RequestForAttestation', () => {
         []
       )),
     } as IRequestForAttestation
-    builtRequestMalformedSignature.claimerSignature = builtRequestMalformedSignature.claimerSignature.replace(
-      builtRequestMalformedSignature.claimerSignature.charAt(5),
-      builtRequestMalformedSignature.claimerSignature.charAt(5) === 'd'
-        ? 'e'
-        : 'd'
+    const signatureAsBytes = hexToU8a(
+      builtRequestMalformedSignature.claimerSignature
     )
+    signatureAsBytes[5] += 1
+    builtRequestMalformedSignature.claimerSignature = u8aToHex(signatureAsBytes)
     builtRequestMalformedSignature.rootHash = RequestForAttestation[
       'calculateRootHash'
     ](builtRequestMalformedSignature)
@@ -499,23 +500,35 @@ describe('RequestForAttestation', () => {
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
     ).toThrowError(ERROR_ROOT_HASH_UNVERIFIABLE())
-    expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
-    )
-      .toThrowError
-      // TODO: fix error type
-      // ERROR_CLAIM_HASHTREE_MALFORMED()
-      ()
+    expect(
+      (() => {
+        try {
+          RequestForAttestationUtils.errorCheck(
+            builtRequestIncompleteClaimHashTree
+          )
+        } catch (e) {
+          return e
+        }
+        return null
+      })()
+    ).toMatchObject<Partial<SDKError>>({
+      errorCode: ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT,
+    })
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
     ).toThrowError(ERROR_SIGNATURE_UNVERIFIABLE())
-    expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestMalformedHashes)
-    )
-      .toThrowError
-      // TODO: fix error type
-      // ERROR_NONCE_HASH_INVALID()
-      ()
+    expect(
+      (() => {
+        try {
+          RequestForAttestationUtils.errorCheck(builtRequestMalformedHashes)
+        } catch (e) {
+          return e
+        }
+        return null
+      })()
+    ).toMatchObject<Partial<SDKError>>({
+      errorCode: ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT,
+    })
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequest)
     ).not.toThrow()
