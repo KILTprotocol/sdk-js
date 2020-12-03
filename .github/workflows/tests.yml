@@ -19,6 +19,7 @@ jobs:
     if: "! startsWith(github.event.head_commit.message, '[CI Skip]') && github.repository == 'kiltprotocol/sdk-js'"
     steps:
     - name: Not Skipped
+      run: echo "Not Skipped"
 
   build:
     runs-on: ubuntu-latest
