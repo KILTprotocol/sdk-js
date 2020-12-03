@@ -3,13 +3,16 @@ on:
   push:
     branches:
       - develop
+      - tw-851-git-push
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: "! startsWith(github.event.head_commit.message, '[CI Skip]') && github.repository == 'kiltprotocol/sdk-js'"
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
       - uses: actions/setup-node@v1
         with:
           node-version: 10
@@ -22,13 +25,18 @@ jobs:
         run: npm publish --access public --tag dev
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
-      - name: Commit and push changes
+      - name: Commit files
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config --local user.name "Github Action"
+          git config --local user.email "action@github.com"
           git add .
-          git commit -m "ci: publish prerelease"
+          git commit -m "[CI Skip] ci: publish prerelease" -n
           git push
+      # - name: Push changes
+      #   uses: ad-m/github-push-action@master
+      #   with:
+      #     github_token: ${{ secrets.GH_PAT }}
+      #     branch: ${{ github.ref }}
 
   dispatch:
     needs: build
