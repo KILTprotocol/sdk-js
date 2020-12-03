@@ -9,6 +9,7 @@ import IClaim, { CompressedClaim } from '../types/Claim'
 import ICType from '../types/CType'
 import Claim from './Claim'
 import ClaimUtils from './Claim.utils'
+import '../errorhandling/test/jest.ErrorCodeMatcher'
 
 describe('Claim', () => {
   let identityAlice: Identity
@@ -128,15 +129,16 @@ describe('Claim', () => {
 
     expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
 
-    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowError(
+    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
       ERROR_CTYPE_HASH_NOT_PROVIDED()
     )
 
-    expect(() => ClaimUtils.errorCheck(malformedCTypeHash)).toThrowError(
-      ERROR_HASH_MALFORMED(malformedCTypeHash.cTypeHash, 'Claim CType')
-    )
-    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowError(
-      ERROR_ADDRESS_INVALID(malformedAddress.owner, 'Claim owner')
+    expect(() =>
+      ClaimUtils.errorCheck(malformedCTypeHash)
+    ).toThrowErrorWithCode(ERROR_HASH_MALFORMED())
+
+    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowErrorWithCode(
+      ERROR_ADDRESS_INVALID()
     )
   })
 })
