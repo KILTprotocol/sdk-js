@@ -123,8 +123,9 @@ await Kilt.connect(YOUR_CHAIN_ADDRESS)
 If you set a default address via environment variable DEFAULT_WS_ADDRESS or with the configurationService:
 
 ```typescript
-ConfigService.setConfiguration(YOUR_CHAIN_ADDRESS)
+Kilt.config({ host: YOUR_CHAIN_ADDRESS })
 ```
+
 the connection can be built implicitly.
 
 There are [three types](https://dev.kilt.io/#/?id=source-code-and-deployed-instances) of KILT chains which you can use, each one having a different address:

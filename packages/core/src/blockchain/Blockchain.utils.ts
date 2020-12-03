@@ -17,7 +17,7 @@ import {
 } from '../util/SubscriptionPromise'
 import { ErrorHandler } from '../errorhandling'
 import { ERROR_UNKNOWN as UNKNOWN_EXTRINSIC_ERROR } from '../errorhandling/ExtrinsicError'
-import { factory as LoggerFactory } from '../config/ConfigLog'
+import { factory as LoggerFactory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import getCached from '../blockchainApiConnection'
 

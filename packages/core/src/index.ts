@@ -15,20 +15,9 @@ import {
   DelegationNode,
   DelegationRootNode,
 } from './delegation'
-<<<<<<< HEAD
 import Did, { IDid, IDidDocument, IDidDocumentPublicKey } from './did'
 import { Identity, IURLResolver, PublicIdentity } from './identity'
-=======
-import Did, { IDid } from './did'
 import { ConfigService } from './config'
-import {
-  AttesterIdentity,
-  Identity,
-  IURLResolver,
-  PublicAttesterIdentity,
-  PublicIdentity,
-} from './identity'
->>>>>>> fix: improved export style for ease of use
 import Message from './messaging'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {

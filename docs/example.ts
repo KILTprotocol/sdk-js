@@ -16,7 +16,7 @@ async function setup(): Promise<{
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' SETUP ')
   )
-  ConfigService.setConfiguration(NODE_URL)
+  Kilt.config({ host: NODE_URL })
 
   // ------------------------- Attester ----------------------------------------
 
