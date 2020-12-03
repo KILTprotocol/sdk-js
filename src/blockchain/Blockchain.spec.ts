@@ -9,7 +9,8 @@ import getCached from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import { ERROR_TRANSACTION_RECOVERABLE } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import Blockchain, {
+import Blockchain from './Blockchain'
+import {
   EXTRINSIC_FAILED,
   IS_ERROR,
   IS_FINALIZED,
@@ -17,7 +18,7 @@ import Blockchain, {
   parseSubscriptionOptions,
   ResultEvaluator,
   submitSignedTx,
-} from './Blockchain'
+} from './Blockchain.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 

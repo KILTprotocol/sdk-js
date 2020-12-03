@@ -10,7 +10,7 @@ import Kilt, {
   IRevocationHandle,
   PublicAttesterIdentity,
 } from '../src'
-import Blockchain, { IS_IN_BLOCK } from '../src/blockchain/Blockchain'
+import { BlockchainUtils } from '../src/blockchain'
 import constants from '../src/test/constants'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
@@ -82,11 +82,11 @@ async function setup(): Promise<{
   // ! This costs tokens !
   // Also note, that the completely same ctype can only be stored once on the blockchain.
   try {
-    await ctype
-      .store(attester)
-      .then((tx) =>
-        Blockchain.submitTxWithReSign(tx, attester, { resolveOn: IS_IN_BLOCK })
-      )
+    await ctype.store(attester).then((tx) =>
+      BlockchainUtils.submitTxWithReSign(tx, attester, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    )
   } catch (e) {
     console.log(
       'Error while storing CType. Probably either insufficient funds or ctype does already exist.',
