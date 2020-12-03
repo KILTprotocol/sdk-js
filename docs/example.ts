@@ -16,7 +16,8 @@ async function setup(): Promise<{
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' SETUP ')
   )
-  setConfiguration(NODE_URL)
+  ConfigService.setConfiguration(NODE_URL)
+
   // ------------------------- Attester ----------------------------------------
 
   // To get an attestation, we need an Attester

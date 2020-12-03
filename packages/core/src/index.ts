@@ -15,8 +15,20 @@ import {
   DelegationNode,
   DelegationRootNode,
 } from './delegation'
+<<<<<<< HEAD
 import Did, { IDid, IDidDocument, IDidDocumentPublicKey } from './did'
 import { Identity, IURLResolver, PublicIdentity } from './identity'
+=======
+import Did, { IDid } from './did'
+import { ConfigService } from './config'
+import {
+  AttesterIdentity,
+  Identity,
+  IURLResolver,
+  PublicAttesterIdentity,
+  PublicIdentity,
+} from './identity'
+>>>>>>> fix: improved export style for ease of use
 import Message from './messaging'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {
@@ -28,7 +40,7 @@ export { SubmittableResult } from '@polkadot/api'
 export { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 export * from './errorhandling'
 export * from './messaging'
-export * from './config/ConfigService'
+
 // ---- Types, which define the most basic KILT objects ----
 export { default as IAttestation } from './types/Attestation'
 export * from './types/Attestation'
@@ -86,4 +98,5 @@ export {
   Quote,
   QuoteUtils,
   QuoteSchema,
+  ConfigService,
 }
