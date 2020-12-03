@@ -20,7 +20,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn lint && yarn style",
+      "pre-push": "yarn lint && yarn style",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
