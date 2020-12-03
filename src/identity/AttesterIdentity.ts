@@ -8,7 +8,6 @@
 import * as gabi from '@kiltprotocol/portablegabi'
 import { KeyringPair } from '@polkadot/keyring/types'
 import * as u8aUtil from '@polkadot/util/u8a'
-import Blockchain from '../blockchain/Blockchain'
 import Attestation from '../attestation/Attestation'
 import getCached from '../blockchainApiConnection'
 import {
@@ -20,6 +19,7 @@ import { IRevocationHandle } from '../types/Attestation'
 import IRequestForAttestation from '../types/RequestForAttestation'
 import Identity, { IdentityBuildOptions } from './Identity'
 import PublicAttesterIdentity from './PublicAttesterIdentity'
+import { BlockchainUtils } from '../blockchain'
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
 const DEFAULT_MAX_ATTRIBUTES = 70
@@ -331,6 +331,6 @@ export default class AttesterIdentity extends Identity {
     }
     await new Attestation(handle.attestation)
       .revoke(this)
-      .then((tx) => Blockchain.submitTxWithReSign(tx, this))
+      .then((tx) => BlockchainUtils.submitTxWithReSign(tx, this))
   }
 }
