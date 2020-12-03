@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @module AttestedClaimUtils
+ * @module BlockchchainUtils
  * @preferred
  */
 
