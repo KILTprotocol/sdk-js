@@ -1,6 +1,6 @@
 // import { ERROR_WS_ADDRESS_NOT_SET } from '../errorhandling/SDKErrors'
 import { LogLevel, Logger } from 'typescript-logging'
-import { ERROR_WS_ADDRESS_NOT_SET } from '../errorhandling/SDKErrors'
+import { ERROR_WS_ADDRESS_NOT_SET } from '../../packages/core/src/errorhandling/SDKErrors'
 import * as ConfigService from './ConfigService'
 
 describe('Log Configuration', () => {
