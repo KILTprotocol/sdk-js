@@ -3,7 +3,7 @@
  * @ignore
  */
 
-import * as ConfigLog from './ConfigLog'
+import * as ConfigService from './ConfigService'
 
 // eslint-disable-next-line import/prefer-default-export
-export { ConfigLog }
+export { ConfigService }

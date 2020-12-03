@@ -9,7 +9,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  * @preferred
  */
 
-import { factory } from '../config/ConfigLog'
+import { factory } from '../config/ConfigService'
 import Crypto from '../crypto'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import { ERROR_ROOT_NODE_QUERY } from '../errorhandling/SDKErrors'

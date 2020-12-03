@@ -28,6 +28,7 @@ export { SubmittableResult } from '@polkadot/api'
 export { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 export * from './errorhandling'
 export * from './messaging'
+export * from './config/ConfigService'
 // ---- Types, which define the most basic KILT objects ----
 export { default as IAttestation } from './types/Attestation'
 export * from './types/Attestation'

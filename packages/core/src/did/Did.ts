@@ -13,7 +13,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  */
 
 import { AnyJson } from '@polkadot/types/types'
-import { factory } from '../config/ConfigLog'
+import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import IPublicIdentity from '../types/PublicIdentity'
 import { queryByAddress, queryByIdentifier, remove, store } from './Did.chain'

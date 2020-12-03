@@ -12,7 +12,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  * @preferred
  */
 
-import { factory } from '../config/ConfigLog'
+import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import { IDelegationRootNode } from '../types/Delegation'
 import DelegationBaseNode from './Delegation'
