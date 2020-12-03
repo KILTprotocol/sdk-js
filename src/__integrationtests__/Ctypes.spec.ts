@@ -5,10 +5,8 @@
  */
 
 import { Identity } from '..'
-import Blockchain, {
-  IS_IN_BLOCK,
-  IBlockchainApi,
-} from '../blockchain/Blockchain'
+import { IBlockchainApi } from '../blockchain/Blockchain'
+import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
@@ -49,7 +47,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     )
     await expect(
       ctype.store(bobbyBroke).then((tx) =>
-        Blockchain.submitTxWithReSign(tx, bobbyBroke, {
+        submitTxWithReSign(tx, bobbyBroke, {
           resolveOn: IS_IN_BLOCK,
         })
       )
@@ -60,7 +58,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
     await ctype.store(ctypeCreator).then((tx) =>
-      Blockchain.submitTxWithReSign(tx, ctypeCreator, {
+      submitTxWithReSign(tx, ctypeCreator, {
         resolveOn: IS_IN_BLOCK,
       })
     )
@@ -75,13 +73,13 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
     await ctype.store(ctypeCreator).then((tx) =>
-      Blockchain.submitTxWithReSign(tx, ctypeCreator, {
+      submitTxWithReSign(tx, ctypeCreator, {
         resolveOn: IS_IN_BLOCK,
       })
     )
     await expect(
       ctype.store(ctypeCreator).then((tx) =>
-        Blockchain.submitTxWithReSign(tx, ctypeCreator, {
+        submitTxWithReSign(tx, ctypeCreator, {
           resolveOn: IS_IN_BLOCK,
         })
       )
