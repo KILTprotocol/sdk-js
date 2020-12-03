@@ -7,21 +7,40 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v1
         with:
           node-version: 10
-          registry-url: https://npm.pkg.github.com
-          scope: '@kiltprotocol'
-      - run: yarn install --immutable
-      - run: yarn version --no-git-tag-version --prerelease --preid $(git rev-parse --short HEAD)
-      - run: npm publish
+          registry-url: https://registry.npmjs.org/
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Set package version as prerelease
+        run: yarn version prerelease
+      - name: Publish to npm
+        run: npm publish --access public --tag dev
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Repository dispatch to workshop
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+      - name: Commit and push changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "ci: publish prerelease"
+          git push
+
+  dispatch:
+    needs: build
+    strategy:
+      matrix:
+        repo: ['KILTprotocol/kilt-workshop-101', 'KILTprotocol/demo-client']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository dispatch
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: KILTprotocol/kilt-workshop-101
+          repository: ${{ matrix.repo }}
           event-type: sdk-update
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "github": ${{ toJson(github) }}}'

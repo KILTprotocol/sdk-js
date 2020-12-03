@@ -4,6 +4,8 @@
 /src
 /yarn.lock
 /yarn-error.log
+/.yarn/
+/.yarnrc.yml
 /docs/
 /typedoc.js
 ## build helper
@@ -15,6 +17,7 @@
 /jest.env.js
 /tslint.json
 /.prettierrc
+/.prettierignore
 /coverage/
 /.eslintignore
 /.eslintrc*
@@ -22,3 +25,8 @@ __mocks__
 ## CI
 /.github/
 /buildspec*
+## Docker
+/.dockerignore
+/Dockerfile
+/docker-compose.yml
+/dc.build.node.yml
