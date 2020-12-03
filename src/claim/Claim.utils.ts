@@ -4,7 +4,6 @@
  * @preferred
  */
 
-import { AnyJson } from '@polkadot/types/types'
 import { hexToBn } from '@polkadot/util'
 import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
@@ -23,12 +22,11 @@ export type PartialClaim = Partial<IClaim> & Pick<IClaim, 'cTypeHash'>
 function JsonLDcontents(
   claim: PartialClaim,
   expanded = true
-): Record<string, AnyJson> {
+): Record<string, unknown> {
   const { cTypeHash, contents, owner } = claim
-  if (!cTypeHash)
-    throw new Error('ctype hash is required for conversion to json-ld')
+  if (!cTypeHash) SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   const vocabulary = `${getIdForCTypeHash(claim.cTypeHash)}#`
-  const result: Record<string, any> = {}
+  const result: Record<string, unknown> = {}
   if (claim.owner) result['@id'] = owner
   if (!expanded) {
     return {
@@ -54,7 +52,7 @@ function JsonLDcontents(
 export function toJsonLD(
   claim: PartialClaim,
   expanded = true
-): Record<string, AnyJson> {
+): Record<string, unknown> {
   const credentialSubject = JsonLDcontents(claim, expanded)
   const prefix = expanded ? VC_VOCAB : ''
   const result = {

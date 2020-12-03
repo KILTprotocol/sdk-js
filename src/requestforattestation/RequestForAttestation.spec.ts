@@ -184,11 +184,18 @@ describe('RequestForAttestation', () => {
 
     // just deleting a field will result in a wrong proof
     delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
-    expect(() => request.verifyData())
-      .toThrowError
-      // TODO: fix error type
-      // ERROR_ROOT_HASH_UNVERIFIABLE()
-      ()
+    expect(
+      (() => {
+        try {
+          request.verifyData()
+        } catch (e) {
+          return e
+        }
+        return null
+      })()
+    ).toMatchObject<Partial<SDKError>>({
+      errorCode: ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT,
+    })
   })
 
   it('verify request for attestation (PE)', async () => {
