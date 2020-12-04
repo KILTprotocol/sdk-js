@@ -85,16 +85,9 @@ describe('RequestForAttestation', () => {
           legitimation.request.claim.cTypeHash,
           legitimation.request.claim.owner,
         ],
-        {},
-        [
-          legitimation.request.claimOwner.hash,
-          legitimation.request.claimOwner.nonce,
-        ],
+        legitimation.request.claimNonceMap,
         legitimation.request.claimerSignature,
-        [
-          legitimation.request.cTypeHash.hash,
-          legitimation.request.cTypeHash.nonce,
-        ],
+        legitimation.request.claimHashes,
         legitimation.request.rootHash,
         [],
         legitimation.request.delegationId,

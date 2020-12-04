@@ -3,15 +3,17 @@ import {
   AttesterAttestationSession,
   ClaimerAttestationSession,
 } from '@kiltprotocol/portablegabi'
+import { hexToU8a } from '@polkadot/util'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
+import { u8aToHex } from '../crypto'
 import CType from '../ctype/CType'
 import {
-  ERROR_CLAIM_HASHTREE_MALFORMED,
+  ErrorCode,
   ERROR_LEGITIMATIONS_NOT_PROVIDED,
-  ERROR_NONCE_HASH_INVALID,
   ERROR_ROOT_HASH_UNVERIFIABLE,
   ERROR_SIGNATURE_UNVERIFIABLE,
+  SDKError,
 } from '../errorhandling/SDKErrors'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
@@ -181,12 +183,19 @@ describe('RequestForAttestation', () => {
     expect(request.verifyData()).toBeTruthy()
 
     // just deleting a field will result in a wrong proof
-    const propertyName = 'a'
-    delete request.claim.contents[propertyName]
-    delete request.claimHashTree[propertyName]
-    expect(() => request.verifyData()).toThrowError(
-      ERROR_ROOT_HASH_UNVERIFIABLE()
-    )
+    delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
+    expect(
+      (() => {
+        try {
+          request.verifyData()
+        } catch (e) {
+          return e
+        }
+        return null
+      })()
+    ).toMatchObject<Partial<SDKError>>({
+      errorCode: ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT,
+    })
   })
 
   it('verify request for attestation (PE)', async () => {
@@ -212,9 +221,7 @@ describe('RequestForAttestation', () => {
     expect(RequestForAttestation.verifyData(request)).toBeTruthy()
 
     // just deleting a field will result in a wrong proof
-    const propertyName = 'a'
-    delete request.claim.contents[propertyName]
-    delete request.claimHashTree[propertyName]
+    delete request.claimHashes[0]
     expect(() => request.verifyData()).toThrowError(
       ERROR_ROOT_HASH_UNVERIFIABLE()
     )
@@ -234,7 +241,7 @@ describe('RequestForAttestation', () => {
       []
     )
 
-    request.claimHashTree.a.nonce = '1234'
+    request.claimNonceMap[Object.keys(request.claimNonceMap)[0]] = '1234'
     expect(() => {
       RequestForAttestation.verifyData(request)
     }).toThrow()
@@ -243,7 +250,9 @@ describe('RequestForAttestation', () => {
   it('hides the claim owner', async () => {
     const request = await buildRequestForAttestation(identityBob, {}, [])
     request.removeClaimOwner()
-    expect(request.claimOwner.nonce).toBeUndefined()
+    expect(Object.keys(request.claimNonceMap)).toHaveLength(
+      request.claimHashes.length - 1
+    )
     expect(request.claim.owner).toBeUndefined()
   })
 
@@ -273,16 +282,9 @@ describe('RequestForAttestation', () => {
           legitimationCharlie.request.claim.cTypeHash,
           legitimationCharlie.request.claim.owner,
         ],
-        {},
-        [
-          legitimationCharlie.request.claimOwner.hash,
-          legitimationCharlie.request.claimOwner.nonce,
-        ],
+        legitimationCharlie.request.claimNonceMap,
         legitimationCharlie.request.claimerSignature,
-        [
-          legitimationCharlie.request.cTypeHash.hash,
-          legitimationCharlie.request.cTypeHash.nonce,
-        ],
+        legitimationCharlie.request.claimHashes,
         legitimationCharlie.request.rootHash,
         [],
         legitimationCharlie.request.delegationId,
@@ -304,16 +306,9 @@ describe('RequestForAttestation', () => {
           legitimationBob.request.claim.cTypeHash,
           legitimationBob.request.claim.owner,
         ],
-        {},
-        [
-          legitimationBob.request.claimOwner.hash,
-          legitimationBob.request.claimOwner.nonce,
-        ],
+        legitimationBob.request.claimNonceMap,
         legitimationBob.request.claimerSignature,
-        [
-          legitimationBob.request.cTypeHash.hash,
-          legitimationBob.request.cTypeHash.nonce,
-        ],
+        legitimationBob.request.claimHashes,
         legitimationBob.request.rootHash,
         [],
         legitimationBob.request.delegationId,
@@ -334,14 +329,9 @@ describe('RequestForAttestation', () => {
         reqForAtt.claim.cTypeHash,
         reqForAtt.claim.owner,
       ],
-      {
-        a: [reqForAtt.claimHashTree.a.hash, reqForAtt.claimHashTree.a.nonce],
-        b: [reqForAtt.claimHashTree.b.hash, reqForAtt.claimHashTree.b.nonce],
-        c: [reqForAtt.claimHashTree.c.hash, reqForAtt.claimHashTree.c.nonce],
-      },
-      [reqForAtt.claimOwner.hash, reqForAtt.claimOwner.nonce],
+      reqForAtt.claimNonceMap,
       reqForAtt.claimerSignature,
-      [reqForAtt.cTypeHash.hash, reqForAtt.cTypeHash.nonce],
+      reqForAtt.claimHashes,
       reqForAtt.rootHash,
       [compressedLegitimationCharlie, compressedLegitimationBob],
       reqForAtt.delegationId,
@@ -362,7 +352,7 @@ describe('RequestForAttestation', () => {
       reqForAtt
     )
     compressedReqForAtt.pop()
-    delete reqForAtt.claimOwner
+    delete reqForAtt.claim.owner
 
     expect(() => {
       RequestForAttestationUtils.compress(reqForAtt)
@@ -390,9 +380,12 @@ describe('RequestForAttestation', () => {
     request.removeClaimProperties(['a'])
 
     expect((request.claim.contents as any).a).toBeUndefined()
-    expect((request.claimHashTree as any).a.nonce).toBeUndefined()
+    expect(Object.keys(request.claimNonceMap)).toHaveLength(
+      request.claimHashes.length - 1
+    )
     expect((request.claim.contents as any).b).toBe('b')
-    expect((request.claimHashTree as any).b.nonce).toBeDefined()
+    expect(request.verifyData()).toBe(true)
+    expect(request.verifyRootHash()).toBe(true)
   })
 
   it('should throw error on faulty constructor input', async () => {
@@ -446,41 +439,6 @@ describe('RequestForAttestation', () => {
       ).toString(16),
       builtRequestMalformedRootHash.rootHash.slice(16),
     ].join('')
-    const builtRequestMalformedClaimOwner = {
-      ...(await buildRequestForAttestation(
-        identityBob,
-        {
-          a: 'a',
-          b: 'b',
-          c: 'c',
-        },
-        []
-      )),
-    } as IRequestForAttestation
-    builtRequestMalformedClaimOwner.claimOwner = {
-      hash: [
-        builtRequestMalformedClaimOwner.claimOwner.hash.slice(0, 15),
-        (
-          (parseInt(
-            builtRequestMalformedClaimOwner.claimOwner.hash.charAt(15),
-            16
-          ) +
-            1) %
-          16
-        ).toString(16),
-        builtRequestMalformedClaimOwner.claimOwner.hash.slice(16),
-      ].join(''),
-      nonce: builtRequestMalformedClaimOwner.claimOwner.nonce,
-    }
-    builtRequestMalformedClaimOwner.rootHash = RequestForAttestation[
-      'calculateRootHash'
-    ](
-      builtRequestMalformedClaimOwner.claimOwner,
-      builtRequestMalformedClaimOwner.cTypeHash,
-      builtRequestMalformedClaimOwner.claimHashTree,
-      builtRequestMalformedClaimOwner.legitimations,
-      builtRequestMalformedClaimOwner.delegationId
-    )
     const builtRequestIncompleteClaimHashTree = {
       ...(await buildRequestForAttestation(
         identityBob,
@@ -492,17 +450,13 @@ describe('RequestForAttestation', () => {
         []
       )),
     } as IRequestForAttestation
-    const deletedKey = 'a'
-    delete builtRequestIncompleteClaimHashTree.claimHashTree[deletedKey]
+    const deletedKey = Object.keys(
+      builtRequestIncompleteClaimHashTree.claimNonceMap
+    )[0]
+    delete builtRequestIncompleteClaimHashTree.claimNonceMap[deletedKey]
     builtRequestIncompleteClaimHashTree.rootHash = RequestForAttestation[
       'calculateRootHash'
-    ](
-      builtRequestIncompleteClaimHashTree.claimOwner,
-      builtRequestIncompleteClaimHashTree.cTypeHash,
-      builtRequestIncompleteClaimHashTree.claimHashTree,
-      builtRequestIncompleteClaimHashTree.legitimations,
-      builtRequestIncompleteClaimHashTree.delegationId
-    )
+    ](builtRequestIncompleteClaimHashTree)
     const builtRequestMalformedSignature = {
       ...(await buildRequestForAttestation(
         identityBob,
@@ -514,22 +468,15 @@ describe('RequestForAttestation', () => {
         []
       )),
     } as IRequestForAttestation
-    builtRequestMalformedSignature.claimerSignature = builtRequestMalformedSignature.claimerSignature.replace(
-      builtRequestMalformedSignature.claimerSignature.charAt(5),
-      builtRequestMalformedSignature.claimerSignature.charAt(5) === 'd'
-        ? 'e'
-        : 'd'
+    const signatureAsBytes = hexToU8a(
+      builtRequestMalformedSignature.claimerSignature
     )
+    signatureAsBytes[5] += 1
+    builtRequestMalformedSignature.claimerSignature = u8aToHex(signatureAsBytes)
     builtRequestMalformedSignature.rootHash = RequestForAttestation[
       'calculateRootHash'
-    ](
-      builtRequestMalformedSignature.claimOwner,
-      builtRequestMalformedSignature.cTypeHash,
-      builtRequestMalformedSignature.claimHashTree,
-      builtRequestMalformedSignature.legitimations,
-      builtRequestMalformedSignature.delegationId
-    )
-    const builtRequestMalformedCtypeHash = {
+    ](builtRequestMalformedSignature)
+    const builtRequestMalformedHashes = {
       ...(await buildRequestForAttestation(
         identityBob,
         {
@@ -540,58 +487,55 @@ describe('RequestForAttestation', () => {
         []
       )),
     } as IRequestForAttestation
-    builtRequestMalformedCtypeHash.cTypeHash = {
-      hash: [
-        builtRequestMalformedCtypeHash.cTypeHash.hash.slice(0, 15),
-        (
-          (parseInt(
-            builtRequestMalformedCtypeHash.cTypeHash.hash.charAt(15),
-            16
-          ) +
-            1) %
-          16
-        ).toString(16),
-        builtRequestMalformedCtypeHash.cTypeHash.hash.slice(16),
-      ].join(''),
-      nonce: builtRequestMalformedCtypeHash.cTypeHash.nonce,
-    }
-    builtRequestMalformedCtypeHash.rootHash = RequestForAttestation[
-      'calculateRootHash'
-    ](
-      builtRequestMalformedCtypeHash.claimOwner,
-      builtRequestMalformedCtypeHash.cTypeHash,
-      builtRequestMalformedCtypeHash.claimHashTree,
-      builtRequestMalformedCtypeHash.legitimations,
-      builtRequestMalformedCtypeHash.delegationId
+    Object.entries(builtRequestMalformedHashes.claimNonceMap).forEach(
+      ([hash, nonce]) => {
+        const scrambledHash = [
+          hash.slice(0, 15),
+          ((parseInt(hash.charAt(15), 16) + 1) % 16).toString(16),
+          hash.slice(16),
+        ].join('')
+        builtRequestMalformedHashes.claimNonceMap[scrambledHash] = nonce
+        delete builtRequestMalformedHashes.claimNonceMap[hash]
+      }
     )
+    builtRequestMalformedHashes.rootHash = RequestForAttestation[
+      'calculateRootHash'
+    ](builtRequestMalformedHashes)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
     ).toThrowError(ERROR_LEGITIMATIONS_NOT_PROVIDED())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
     ).toThrowError(ERROR_ROOT_HASH_UNVERIFIABLE())
-    expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestMalformedClaimOwner)
-    ).toThrowError(
-      ERROR_NONCE_HASH_INVALID(
-        builtRequestMalformedClaimOwner.claimOwner,
-        'Claim owner'
-      )
-    )
-    expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
-    ).toThrowError(ERROR_CLAIM_HASHTREE_MALFORMED())
+    expect(
+      (() => {
+        try {
+          RequestForAttestationUtils.errorCheck(
+            builtRequestIncompleteClaimHashTree
+          )
+        } catch (e) {
+          return e
+        }
+        return null
+      })()
+    ).toMatchObject<Partial<SDKError>>({
+      errorCode: ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT,
+    })
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
     ).toThrowError(ERROR_SIGNATURE_UNVERIFIABLE())
-    expect(() =>
-      RequestForAttestationUtils.errorCheck(builtRequestMalformedCtypeHash)
-    ).toThrowError(
-      ERROR_NONCE_HASH_INVALID(
-        builtRequestMalformedCtypeHash.cTypeHash,
-        'CType'
-      )
-    )
+    expect(
+      (() => {
+        try {
+          RequestForAttestationUtils.errorCheck(builtRequestMalformedHashes)
+        } catch (e) {
+          return e
+        }
+        return null
+      })()
+    ).toMatchObject<Partial<SDKError>>({
+      errorCode: ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT,
+    })
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequest)
     ).not.toThrow()

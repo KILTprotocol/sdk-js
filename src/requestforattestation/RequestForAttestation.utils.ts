@@ -4,17 +4,13 @@
  * @preferred
  */
 
-import jsonabc from '../util/jsonabc'
+import { validateHash } from '../util/DataUtils'
 import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
 import ClaimUtils from '../claim/Claim.utils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import IRequestForAttestation, {
-  CompressedNonceHash,
-  CompressedNonceHashTree,
   CompressedRequestForAttestation,
-  NonceHash,
-  NonceHashTree,
 } from '../types/RequestForAttestation'
 import RequestForAttestation from './RequestForAttestation'
 
@@ -25,7 +21,7 @@ import RequestForAttestation from './RequestForAttestation'
  * @param input - A potentially only partial [[IRequestForAttestation]].
  * @throws When either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type.
  * @throws When any of the input's claimHashTree's keys missing their hash.
- * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_HASHTREE_NOT_PROVIDED]], [[ERROR_CLAIM_HASHTREE_MALFORMED]], [[ERROR_DELEGATION_ID_TYPE]].
+ * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_MALFORMED]], [[ERROR_DELEGATION_ID_TYPE]].
  *
  */
 export function errorCheck(input: IRequestForAttestation): void {
@@ -38,98 +34,25 @@ export function errorCheck(input: IRequestForAttestation): void {
     throw SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
   }
 
-  if (!input.claimHashTree) {
-    throw SDKErrors.ERROR_CLAIM_HASHTREE_NOT_PROVIDED()
-  } else {
-    Object.keys(input.claimHashTree).forEach((key) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      if (!input.claimHashTree![key].hash) {
-        throw SDKErrors.ERROR_CLAIM_HASHTREE_MALFORMED()
-      }
-    })
+  if (!input.claimNonceMap) {
+    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED()
+  }
+  if (
+    typeof input.claimNonceMap !== 'object' ||
+    Object.entries(input.claimNonceMap).some(
+      ([digest, nonce]) =>
+        !digest ||
+        !validateHash(digest, 'statement digest') ||
+        typeof nonce !== 'string' ||
+        !nonce
+    )
+  ) {
+    throw SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED()
   }
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
     throw SDKErrors.ERROR_DELEGATION_ID_TYPE
   }
   RequestForAttestation.verifyData(input as IRequestForAttestation)
-}
-
-/**
- *  Compresses an nonce and hash from a [[NonceHashTree]] or [[RequestForAttestation]] properties.
- *
- * @param nonceHash A hash or a hash and nonce object that will be sorted and stripped for messaging or storage.
- * @throws When the nonceHash is missing it's hash (existence of nonce is ignored).
- * @throws [[ERROR_COMPRESS_OBJECT]].
- *
- * @returns An object compressing of a hash or a hash and nonce.
- */
-
-export function compressNonceAndHash(
-  nonceHash: NonceHash
-): CompressedNonceHash {
-  if (!nonceHash.hash) {
-    throw SDKErrors.ERROR_COMPRESS_OBJECT(nonceHash, 'Nonce Hash')
-  }
-  return [nonceHash.hash, nonceHash.nonce]
-}
-
-/**
- *  Decompresses an nonce and hash from a [[NonceHashTree]] or [[RequestForAttestation]] properties.
- *
- * @param nonceHash A compressed a hash or a hash and nonce array that is reverted back into an object.
- *
- * @returns An object compressing of a hash or a hash and nonce.
- */
-
-function decompressNonceAndHash(nonceHash: CompressedNonceHash): NonceHash {
-  if (nonceHash.length === 1) {
-    return {
-      hash: nonceHash[0],
-    }
-  }
-  return {
-    hash: nonceHash[0],
-    nonce: nonceHash[1],
-  }
-}
-
-/**
- *  Compresses a [[NonceHashTree]] within a [[RequestForAttestation]] object.
- *
- * @param reqForAtt A [[NonceHashTree]] object that will be sorted and stripped for messaging or storage.
- *
- * @returns An ordered array of an [[NonceHashTree]].
- */
-
-export function compressClaimHashTree(
-  claimHashTree: NonceHashTree
-): CompressedNonceHashTree {
-  const sortedClaimHashTree = jsonabc.sortObj(claimHashTree)
-  const result = {}
-
-  Object.keys(sortedClaimHashTree).forEach((entryKey) => {
-    result[entryKey] = compressNonceAndHash(sortedClaimHashTree[entryKey])
-  })
-  return result
-}
-
-/**
- *  Decompresses a claim hash tree from storage and/or message.
- *
- * @param reqForAtt A compressed claim hash tree array that is reverted back into an object.
- *
- * @returns An object that has the same properties as an claim hash tree.
- */
-
-export function decompressClaimHashTree(
-  compressedClaimHashTree: CompressedNonceHashTree
-): NonceHashTree {
-  const result = {}
-
-  Object.keys(compressedClaimHashTree).forEach((entryKey) => {
-    result[entryKey] = decompressNonceAndHash(compressedClaimHashTree[entryKey])
-  })
-  return result
 }
 
 /**
@@ -174,10 +97,9 @@ export function compress(
   errorCheck(reqForAtt)
   return [
     ClaimUtils.compress(reqForAtt.claim),
-    compressClaimHashTree(reqForAtt.claimHashTree),
-    compressNonceAndHash(reqForAtt.claimOwner),
+    reqForAtt.claimNonceMap,
     reqForAtt.claimerSignature,
-    compressNonceAndHash(reqForAtt.cTypeHash),
+    reqForAtt.claimHashes,
     reqForAtt.rootHash,
     compressLegitimation(reqForAtt.legitimations),
     reqForAtt.delegationId,
@@ -198,30 +120,25 @@ export function compress(
 export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
-  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 9) {
+  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 8) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }
   return {
     claim: ClaimUtils.decompress(reqForAtt[0]),
-    claimHashTree: decompressClaimHashTree(reqForAtt[1]),
-    claimOwner: decompressNonceAndHash(reqForAtt[2]),
-    claimerSignature: reqForAtt[3],
-    cTypeHash: decompressNonceAndHash(reqForAtt[4]),
-    rootHash: reqForAtt[5],
-    legitimations: decompressLegitimation(reqForAtt[6]),
-    delegationId: reqForAtt[7],
-    privacyEnhancement: reqForAtt[8],
+    claimNonceMap: reqForAtt[1],
+    claimerSignature: reqForAtt[2],
+    claimHashes: reqForAtt[3],
+    rootHash: reqForAtt[4],
+    legitimations: decompressLegitimation(reqForAtt[5]),
+    delegationId: reqForAtt[6],
+    privacyEnhancement: reqForAtt[7],
   }
 }
 
 export default {
   errorCheck,
   decompress,
-  decompressNonceAndHash,
   decompressLegitimation,
-  decompressClaimHashTree,
   compress,
-  compressClaimHashTree,
   compressLegitimation,
-  compressNonceAndHash,
 }
