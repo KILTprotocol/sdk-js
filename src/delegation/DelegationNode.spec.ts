@@ -1,4 +1,4 @@
-import Blockchain from '../blockchain'
+import { BlockchainUtils } from '../blockchain'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
 } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
@@ -93,7 +93,7 @@ describe('Delegation', () => {
     )
     const revokeStatus = await aDelegationNode
       .revoke(identityAlice)
-      .then((tx) => Blockchain.submitTxWithReSign(tx, identityAlice))
+      .then((tx) => BlockchainUtils.submitTxWithReSign(tx, identityAlice))
 
     expect(revokeStatus).toBeDefined()
   })

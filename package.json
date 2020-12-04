@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/sdk-js",
-  "version": "0.19.0",
+  "version": "0.19.1-9",
   "description": "",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -8,7 +8,7 @@
     "test": "jest --coverage --group=-integration",
     "test:ci": "jest --ci --coverage --group=-integration",
     "test:integration:run": "jest --group=integration -b -w 3 --silent",
-    "test:integration": "if lsof -i :9944 > /dev/null; then yarn test:integration:run; else echo 'Can not connect to chain. Is it running?'; exit 1;fi",
+    "test:integration": "{ lsof -i :9944 > /dev/null && yarn test:integration:run; } || echo 'Can not connect to chain. Is it running?'; exit 1;",
     "test:watch": "yarn test --watch",
     "lint": "eslint 'src/**'",
     "lint:fix": "yarn lint --fix",
@@ -16,12 +16,11 @@
     "style:fix": "yarn style --write",
     "build": "tsc --declaration",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
-    "buildAndPublish": "npm publish --access=public",
     "prepublishOnly": "yarn build"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn lint && yarn style",
+      "pre-push": "yarn lint && yarn style",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
@@ -36,10 +35,6 @@
   },
   "engines": {
     "node": ">=10.0"
-  },
-  "publishConfig": {
-    "access": "restricted",
-    "registry": "https://registry.npmjs.org"
   },
   "author": "",
   "license": "BSD-4-Clause",
@@ -85,10 +80,8 @@
     "@polkadot/util-crypto": "^3.5.1",
     "ajv": "^6.12.5",
     "bn.js": "^5.1.3",
+    "tweetnacl": "^1.0.3",
     "typescript-logging": "^0.6.4",
     "uuid": "^8.1.0"
-  },
-  "peerDependencies": {
-    "tweetnacl": "^1.0.3"
   }
 }

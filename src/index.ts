@@ -7,7 +7,7 @@ import { Attester, Claimer, Verifier } from './actor'
 import Attestation, { AttestationUtils } from './attestation'
 import AttestedClaim, { AttestedClaimUtils } from './attestedclaim'
 import { Balance, BalanceUtils } from './balance'
-import Blockchain, { IBlockchainApi } from './blockchain'
+import Blockchain, { IBlockchainApi, BlockchainUtils } from './blockchain'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import Claim, { ClaimUtils } from './claim'
 import Credential from './credential'
@@ -65,6 +65,7 @@ export { UUID } from './util'
 export {
   Blockchain,
   IBlockchainApi,
+  BlockchainUtils,
   BlockchainApiConnection,
   Balance,
   BalanceUtils,

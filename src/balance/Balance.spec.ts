@@ -9,7 +9,7 @@ import {
   makeTransfer,
 } from './Balance.chain'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import Blockchain from '../blockchain'
+import { BlockchainUtils } from '../blockchain'
 import BalanceUtils from './Balance.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
@@ -68,7 +68,7 @@ describe('Balance', () => {
       alice,
       bob.address,
       new BN(100)
-    ).then((tx) => Blockchain.submitTxWithReSign(tx, alice))
+    ).then((tx) => BlockchainUtils.submitTxWithReSign(tx, alice))
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
@@ -84,7 +84,7 @@ describe('Balance', () => {
       bob.address,
       amount,
       exponent
-    ).then((tx) => Blockchain.submitTxWithReSign(tx, alice))
+    ).then((tx) => BlockchainUtils.submitTxWithReSign(tx, alice))
     expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount

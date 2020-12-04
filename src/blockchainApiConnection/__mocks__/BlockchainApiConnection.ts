@@ -134,7 +134,7 @@ function __getMockSubmittableExtrinsic(): SubmittableExtrinsic {
 function __makeSubmittableResult(
   opts: Partial<ExtrinsicStatus>
 ): SubmittableResult {
-  const finalized = opts? !Object.keys(opts)[0]: true
+  const finalized = opts ? !Object.keys(opts)[0] : true
   const status: ExtrinsicStatus = {
     isFinalized: finalized,
     isDropped: false,
