@@ -3,7 +3,13 @@ on:
   push:
     branches:
       - develop
-      - tw-851-git-push
+    paths:
+      - '**/*.ts'
+      - 'package.json'
+      - '!**/*.spec.ts'
+      - '!**/__integrationtests__'
+      - '!**/__mocks__'
+      - '!docs/**'
 jobs:
   build:
     runs-on: ubuntu-latest
