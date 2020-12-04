@@ -16,7 +16,7 @@ export enum ErrorCode {
   // Data is missing
   ERROR_CTYPE_HASH_NOT_PROVIDED = 10001,
   ERROR_CLAIM_HASH_NOT_PROVIDED = 10002,
-  ERROR_CLAIM_HASHTREE_NOT_PROVIDED = 10003,
+  ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED = 10003,
   ERROR_CLAIM_NOT_PROVIDED = 10004,
   ERROR_OWNER_NOT_PROVIDED = 10005,
   ERROR_RFA_NOT_PROVIDED = 10006,
@@ -29,18 +29,17 @@ export enum ErrorCode {
   ERROR_CTYPE_ID_NOT_MATCHING = 10013,
   ERROR_PE_VERIFICATION = 10014,
   ERROR_IDENTITY_NOT_PE_ENABLED = 10014,
+  ERROR_NO_PROOF_FOR_STATEMENT = 10015,
 
   // Data type is wrong or malformed
   ERROR_ADDRESS_TYPE = 20001,
   ERROR_HASH_TYPE = 20002,
   ERROR_HASH_MALFORMED = 20003,
-  ERROR_NONCE_HASH_TYPE = 20004,
   ERROR_SIGNATURE_DATA_TYPE = 20005,
   ERROR_CTYPE_OWNER_TYPE = 20006,
   ERROR_DELEGATION_ID_TYPE = 20007,
-  ERROR_NONCE_HASH_MALFORMED = 20008,
   ERROR_CLAIM_CONTENTS_MALFORMED = 20009,
-  ERROR_CLAIM_HASHTREE_MALFORMED = 20010,
+  ERROR_CLAIM_NONCE_MAP_MALFORMED = 20010,
   ERROR_OBJECT_MALFORMED = 20011,
   ERROR_MNEMONIC_PHRASE_MALFORMED = 20012,
   ERROR_QUOTE_MALFORMED = 20013,
@@ -62,6 +61,7 @@ export enum ErrorCode {
   ERROR_IDENTITY_MISMATCH = 30009,
   ERROR_ROOT_HASH_UNVERIFIABLE = 30010,
   ERROR_NESTED_CLAIM_UNVERIFIABLE = 30011,
+  ERROR_INVALID_PROOF_FOR_STATEMENT = 30012,
 
   // Compression / Decompressions
   ERROR_DECOMPRESSION_ARRAY = 40001,
@@ -175,9 +175,9 @@ export const ERROR_PE_CREDENTIAL_MISSING: () => SDKError = () => {
     'Missing privacy enhanced credential.'
   )
 }
-export const ERROR_CLAIM_HASHTREE_NOT_PROVIDED: () => SDKError = () => {
+export const ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED: () => SDKError = () => {
   return new SDKError(
-    ErrorCode.ERROR_CLAIM_HASHTREE_NOT_PROVIDED,
+    ErrorCode.ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED,
     'Hashtree in Claim missing'
   )
 }
@@ -216,39 +216,7 @@ export const ERROR_HASH_MALFORMED: (
     `Provided hash invalid or malformed`
   )
 }
-export const ERROR_NONCE_HASH_TYPE: SDKError = new SDKError(
-  ErrorCode.ERROR_NONCE_HASH_TYPE,
-  'NonceHash of wrong type'
-)
 
-export const ERROR_NONCE_HASH_MALFORMED: (
-  nonceHash?: NonceHash,
-  type?: string
-) => SDKError = (nonceHash?: NonceHash, type?: string) => {
-  if (nonceHash && type) {
-    return new SDKError(
-      ErrorCode.ERROR_NONCE_HASH_MALFORMED,
-      `Provided ${type} NonceHash malformed \n
-      Hash: ${nonceHash.hash} \n
-      Nonce: ${nonceHash.nonce}`
-    )
-  }
-  if (nonceHash) {
-    return new SDKError(
-      ErrorCode.ERROR_NONCE_HASH_MALFORMED,
-      `Provided NonceHash malformed \nHash: ${JSON.stringify(
-        nonceHash,
-        null,
-        2
-      )}`
-    )
-  }
-
-  return new SDKError(
-    ErrorCode.ERROR_NONCE_HASH_MALFORMED,
-    `Provided hash malformed`
-  )
-}
 export const ERROR_DELEGATION_ID_TYPE: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_DELEGATION_ID_TYPE,
@@ -285,12 +253,19 @@ export const ERROR_QUOTE_MALFORMED: () => SDKError = () => {
     'Quote form is not verifiable'
   )
 }
-export const ERROR_CLAIM_HASHTREE_MALFORMED: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_CLAIM_HASHTREE_MALFORMED,
-    'Claim HashTree malformed'
-  )
+
+export const ERROR_CLAIM_NONCE_MAP_MALFORMED: (
+  statement?: string
+) => SDKError = (statement) => {
+  let message = ''
+  if (statement) {
+    message = `Nonce map malformed or incomplete: no nonce for statement "${statement}"`
+  } else {
+    message = `Nonce map malformed or incomplete`
+  }
+  return new SDKError(ErrorCode.ERROR_CLAIM_NONCE_MAP_MALFORMED, message)
 }
+
 export const ERROR_CLAIM_HASHTREE_MISMATCH: (key?: string) => SDKError = (
   key?: string
 ) => {
@@ -570,5 +545,23 @@ export const ERROR_PE_VERIFICATION: (
     \n\tMissing accumulators? ${accFailure}
     \n\tMissing attester public keys? ${keyFailure}
     `
+  )
+}
+
+export const ERROR_INVALID_PROOF_FOR_STATEMENT: (
+  statement: string
+) => SDKError = (statement) => {
+  return new SDKError(
+    ErrorCode.ERROR_INVALID_PROOF_FOR_STATEMENT,
+    `Proof could not be verified for statement\n${statement}`
+  )
+}
+
+export const ERROR_NO_PROOF_FOR_STATEMENT: (statement: string) => SDKError = (
+  statement
+) => {
+  return new SDKError(
+    ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT,
+    `No matching proof found for statement\n${statement}`
   )
 }

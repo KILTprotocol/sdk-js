@@ -15,16 +15,10 @@ import {
   AttesterPublicKey,
   ClaimerAttestationSession,
 } from '@kiltprotocol/portablegabi'
-import { v4 as uuid } from 'uuid'
+import { validateLegitimations } from '../util/DataUtils'
+import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import {
-  coToUInt8,
-  hash,
-  hashObjectAsStr,
-  u8aConcat,
-  u8aToHex,
-  verify,
-} from '../crypto/Crypto'
+import { coToUInt8, hash, u8aConcat, u8aToHex, verify } from '../crypto/Crypto'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import { IInitiateAttestation } from '../messaging/Message'
@@ -34,36 +28,8 @@ import { IDelegationBaseNode } from '../types/Delegation'
 import IRequestForAttestation, {
   CompressedRequestForAttestation,
   Hash,
-  NonceHash,
-  NonceHashTree,
 } from '../types/RequestForAttestation'
-import { validateLegitimations, validateNonceHash } from '../util/DataUtils'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
-
-function hashNonceValue(
-  nonce: string,
-  value: string | Record<string, unknown> | number | boolean
-): string {
-  return hashObjectAsStr(value, nonce)
-}
-
-function generateHash(value: string | Record<string, unknown>): NonceHash {
-  const nonce: string = uuid()
-  return {
-    nonce,
-    hash: hashNonceValue(nonce, value),
-  }
-}
-
-function generateHashTree(contents: IClaim['contents']): NonceHashTree {
-  const result: NonceHashTree = {}
-
-  Object.keys(contents).forEach((key) => {
-    result[key] = generateHash(contents[key].toString())
-  })
-
-  return result
-}
 
 function verifyClaimerSignature(reqForAtt: IRequestForAttestation): boolean {
   return verify(
@@ -166,29 +132,25 @@ export default class RequestForAttestation implements IRequestForAttestation {
       session = peSessionMessage.session
     }
 
-    const claimOwnerGenerated = generateHash(claim.owner)
-    const cTypeHashGenerated = generateHash(claim.cTypeHash)
-    const claimHashTreeGenerated = generateHashTree(claim.contents)
-    const calculatedRootHash = RequestForAttestation.calculateRootHash(
-      claimOwnerGenerated,
-      cTypeHashGenerated,
-      claimHashTreeGenerated,
-      legitimations || [],
-      delegationId || null
-    )
+    const {
+      hashes: claimHashes,
+      nonceMap: claimNonceMap,
+    } = ClaimUtils.hashClaimContents(claim)
+
+    const rootHash = RequestForAttestation.calculateRootHash({
+      legitimations,
+      claimHashes,
+      delegationId,
+    })
 
     return {
       message: new RequestForAttestation({
         claim,
         legitimations: legitimations || [],
-        claimOwner: claimOwnerGenerated,
-        claimHashTree: claimHashTreeGenerated,
-        cTypeHash: cTypeHashGenerated,
-        rootHash: calculatedRootHash,
-        claimerSignature: RequestForAttestation.sign(
-          identity,
-          calculatedRootHash
-        ),
+        claimHashes,
+        claimNonceMap,
+        rootHash,
+        claimerSignature: RequestForAttestation.sign(identity, rootHash),
         delegationId: delegationId || null,
         privacyEnhancement: peRequest,
       }),
@@ -216,10 +178,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
   public claim: IClaim
   public legitimations: AttestedClaim[]
-  public claimOwner: NonceHash
   public claimerSignature: string
-  public claimHashTree: NonceHashTree
-  public cTypeHash: NonceHash
+  public claimHashes: string[]
+  public claimNonceMap: Record<string, string>
   public rootHash: Hash
   public privacyEnhancement: AttestationRequest | null
   public delegationId: IDelegationBaseNode['id'] | null
@@ -236,8 +197,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public constructor(requestForAttestationInput: IRequestForAttestation) {
     RequestForAttestationUtils.errorCheck(requestForAttestationInput)
     this.claim = requestForAttestationInput.claim
-    this.claimOwner = requestForAttestationInput.claimOwner
-    this.cTypeHash = requestForAttestationInput.cTypeHash
+    this.claimHashes = requestForAttestationInput.claimHashes
+    this.claimNonceMap = requestForAttestationInput.claimNonceMap
     if (
       requestForAttestationInput.legitimations &&
       Array.isArray(requestForAttestationInput.legitimations) &&
@@ -250,7 +211,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
       this.legitimations = []
     }
     this.delegationId = requestForAttestationInput.delegationId
-    this.claimHashTree = requestForAttestationInput.claimHashTree
     this.rootHash = requestForAttestationInput.rootHash
     this.claimerSignature = requestForAttestationInput.claimerSignature
     this.verifySignature()
@@ -280,12 +240,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
   public removeClaimProperties(properties: string[]): void {
     properties.forEach((key) => {
-      if (!this.claimHashTree[key]) {
-        throw SDKErrors.ERROR_CLAIM_HASHTREE_MISMATCH(key)
-      }
       delete this.claim.contents[key]
-      delete this.claimHashTree[key].nonce
     })
+    this.claimNonceMap = ClaimUtils.hashClaimContents(this.claim, {
+      nonces: this.claimNonceMap,
+    }).nonceMap
   }
 
   /**
@@ -302,7 +261,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
   public removeClaimOwner(): void {
     delete this.claim.owner
-    delete this.claimOwner.nonce
+    this.claimNonceMap = ClaimUtils.hashClaimContents(this.claim, {
+      nonces: this.claimNonceMap,
+    }).nonceMap
   }
 
   /**
@@ -312,32 +273,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @returns Whether the data is valid.
    * @throws When any key of the claim contents could not be found in the claimHashTree.
    * @throws When either the rootHash or the signature are not verifiable.
-   * @throws [[ERROR_CLAIM_HASHTREE_MALFORMED]], [[ERROR_ROOT_HASH_UNVERIFIABLE]], [[ERROR_SIGNATURE_UNVERIFIABLE]].
+   * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]], [[ERROR_ROOT_HASH_UNVERIFIABLE]], [[ERROR_SIGNATURE_UNVERIFIABLE]].
    * @example ```javascript
    * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(claim, alice);
    * reqForAtt.verifyData(); // returns true if the data is correct
    * ```
    */
   public static verifyData(input: IRequestForAttestation): boolean {
-    // check claim owner hash
-    validateNonceHash(input.claimOwner, input.claim.owner, 'Claim owner')
-
-    // check cType hash
-    validateNonceHash(input.cTypeHash, input.claim.cTypeHash, 'CType')
-
-    // check all hashes for provided claim properties
-    Object.keys(input.claim.contents).forEach((key) => {
-      const value = input.claim.contents[key]
-      if (!input.claimHashTree[key]) {
-        throw SDKErrors.ERROR_CLAIM_HASHTREE_MALFORMED()
-      }
-      const hashed: NonceHash = input.claimHashTree[key]
-      validateNonceHash(hashed, value, `hash tree property ${key}`)
-    })
-
-    // check legitimations
-    validateLegitimations(input.legitimations)
-
     // check claim hash
     if (!RequestForAttestation.verifyRootHash(input)) {
       throw SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
@@ -346,6 +288,21 @@ export default class RequestForAttestation implements IRequestForAttestation {
     if (!RequestForAttestation.verifySignature(input)) {
       throw SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
     }
+
+    // verify properties against selective disclosure proof
+    const verificationResult = ClaimUtils.verifyDisclosedAttributes(
+      input.claim,
+      {
+        nonces: input.claimNonceMap,
+        hashes: input.claimHashes,
+      }
+    )
+    // TODO: how do we want to deal with multiple errors during claim verification?
+    if (!verificationResult.verified)
+      throw verificationResult.errors[0] || SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
+
+    // check legitimations
+    validateLegitimations(input.legitimations)
 
     return true
   }
@@ -376,16 +333,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   public static verifyRootHash(input: IRequestForAttestation): boolean {
-    return (
-      input.rootHash ===
-      RequestForAttestation.calculateRootHash(
-        input.claimOwner,
-        input.cTypeHash,
-        input.claimHashTree,
-        input.legitimations,
-        input.delegationId
-      )
-    )
+    return input.rootHash === RequestForAttestation.calculateRootHash(input)
   }
 
   public verifyRootHash(): boolean {
@@ -397,17 +345,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   private static getHashLeaves(
-    claimOwner: NonceHash,
-    cTypeHash: NonceHash,
-    claimHashTree: NonceHashTree,
+    claimHashes: Hash[],
     legitimations: IAttestedClaim[],
     delegationId: IDelegationBaseNode['id'] | null
   ): Uint8Array[] {
     const result: Uint8Array[] = []
-    result.push(coToUInt8(claimOwner.hash))
-    result.push(coToUInt8(cTypeHash.hash))
-    Object.keys(claimHashTree).forEach((key) => {
-      result.push(coToUInt8(claimHashTree[key].hash))
+    claimHashes.forEach((item) => {
+      result.push(coToUInt8(item))
     })
     if (legitimations) {
       legitimations.forEach((legitimation) => {
@@ -446,21 +390,14 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   private static calculateRootHash(
-    claimOwner: NonceHash,
-    cTypeHash: NonceHash,
-    claimHashTree: NonceHashTree,
-    legitimations: IAttestedClaim[],
-    delegationId: IDelegationBaseNode['id'] | null
+    request: Partial<IRequestForAttestation>
   ): Hash {
     const hashes: Uint8Array[] = RequestForAttestation.getHashLeaves(
-      claimOwner,
-      cTypeHash,
-      claimHashTree,
-      legitimations,
-      delegationId
+      request.claimHashes || [],
+      request.legitimations || [],
+      request.delegationId || null
     )
-    const root: Uint8Array =
-      hashes.length === 1 ? hashes[0] : getHashRoot(hashes)
+    const root: Uint8Array = getHashRoot(hashes)
     return u8aToHex(root)
   }
 }
