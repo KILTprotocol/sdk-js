@@ -248,13 +248,15 @@ export function hashStatements(
   saltedHash: string
   nonce: string
 }> {
-  // apply default hasher if undefined
-  const {
-    hasher = saltedBlake2b256,
-    nonceGenerator = () => uuid(),
-    nonces,
-  } = options
+  // apply defaults
+  const defaults = {
+    hasher: saltedBlake2b256,
+    nonceGenerator: () => uuid(),
+  }
+  const hasher = options.hasher || defaults.hasher
+  const nonceGenerator = options.nonceGenerator || defaults.nonceGenerator
   // set source for nonces
+  const { nonces } = options
   const getNonce: HashingOptions['nonceGenerator'] =
     typeof nonces === 'object' ? (key) => nonces[key] : nonceGenerator
   // iterate over statements to produce salted hashes

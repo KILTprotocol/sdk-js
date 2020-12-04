@@ -297,7 +297,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
         hashes: input.claimHashes,
       }
     )
-    if (!verificationResult.verified) throw verificationResult.errors[0]
+    // TODO: how do we want to deal with multiple errors during claim verification?
+    if (!verificationResult.verified)
+      throw verificationResult.errors[0] || SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
 
     // check legitimations
     validateLegitimations(input.legitimations)

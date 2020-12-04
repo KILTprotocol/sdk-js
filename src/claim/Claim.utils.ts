@@ -19,6 +19,15 @@ const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
  */
 export type PartialClaim = Partial<IClaim> & Pick<IClaim, 'cTypeHash'>
 
+/**
+ * Produces JSON-LD readable representations of [[IClaim]]['contents']. This is done by implicitly or explicitely transforming property keys to globally unique predicates.
+ * Where possible these predicates are taken directly from the Verifiable Credentials vocabulary. Properties that are unique to a [[CType]] are transformed to predicates by prepending the [[CType]][schema][$id].
+ *
+ * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
+ * @param expanded Return an expanded instead of a compacted represenation. While property transformation is done explicitely in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving [[IClaim]][contents] property keys untouched.
+ * @returns An object which can be serialized into valid JSON-LD representing an [[IClaim]]'s ['contents'].
+ * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] in case the claim's ['cTypeHash'] property is undefined.
+ */
 function JsonLDcontents(
   claim: PartialClaim,
   expanded = true
@@ -46,8 +55,9 @@ function JsonLDcontents(
  * Where possible these predicates are taken directly from the Verifiable Credentials vocabulary. Properties that are unique to a [[CType]] are transformed to predicates by prepending the [[CType]][schema][$id].
  *
  * @param claim A (partial) [[IClaim]] from to build a JSON-LD representation from. The `cTypeHash` property is required.
- * @param expanded Return an expaned instead of a compacted represenation. While property transformation is done explicitely in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving [[IClaim]][contents] property keys untouched.
+ * @param expanded Return an expanded instead of a compacted represenation. While property transformation is done explicitely in the expanded format, it is otherwise done implicitly via adding JSON-LD's reserved `@context` properties while leaving [[IClaim]][contents] property keys untouched.
  * @returns An object which can be serialized into valid JSON-LD representing an [[IClaim]].
+ * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] in case the claim's ['cTypeHash'] property is undefined.
  */
 export function toJsonLD(
   claim: PartialClaim,
@@ -82,6 +92,7 @@ function makeStatementsJsonLD(claim: PartialClaim): string[] {
  * @param options.nonceGenerator Nonce generator as defined by [[hashStatements]] to be used if no `nonces` are given. Default produces random UUIDs (v4).
  * @param options.hasher The hasher to be used. Required but defaults to 256 bit blake2 over `${nonce}${statement}`.
  * @returns An array of salted `hashes` and a `nonceMap` where keys correspond to unsalted statement hashes.
+ * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] if the nonceMap or the nonceGenerator was non-exhaustive for any statement.
  */
 export function hashClaimContents(
   claim: PartialClaim,
@@ -91,10 +102,10 @@ export function hashClaimContents(
 ): {
   hashes: string[]
   nonceMap: Record<string, string>
-  statements: string[]
 } {
   // apply defaults
-  const { canonicalisation = makeStatementsJsonLD } = options
+  const defaults = { canonicalisation: makeStatementsJsonLD }
+  const canonicalisation = options.canonicalisation || defaults.canonicalisation
   // use canonicalisation algorithm to make hashable statement strings
   const statements = canonicalisation(claim)
   // iterate over statements to produce salted hashes
@@ -110,7 +121,7 @@ export function hashClaimContents(
     if (!nonce) throw SDKErrors.ERROR_CLAIM_NONCE_MAP_MALFORMED(statement)
     nonceMap[digest] = nonce
   }, {})
-  return { hashes, nonceMap, statements }
+  return { hashes, nonceMap }
 }
 
 /**
@@ -136,7 +147,8 @@ export function verifyDisclosedAttributes(
   } = {}
 ): { verified: boolean; errors: SDKErrors.SDKError[] } {
   // apply defaults
-  const { canonicalisation = makeStatementsJsonLD } = options
+  const defaults = { canonicalisation: makeStatementsJsonLD }
+  const canonicalisation = options.canonicalisation || defaults.canonicalisation
   const { nonces } = proof
   // use canonicalisation algorithm to make hashable statement strings
   const statements = canonicalisation(claim)
