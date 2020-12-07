@@ -14,7 +14,7 @@ import {
   IS_READY,
   submitTxWithReSign,
 } from '../blockchain/Blockchain.utils'
-import { getNodeAddress } from '../config/ConfigService'
+import { configuration } from '../config/ConfigService'
 import getCached from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
@@ -31,16 +31,21 @@ import {
   wannabeAlice,
   wannabeBob,
   wannabeFaucet,
+  WS_ADDRESS,
 } from './utils'
 
 let blockchain: IBlockchainApi | undefined
 let alice: Identity
 beforeAll(async () => {
 <<<<<<< HEAD
+<<<<<<< HEAD
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
   alice = Identity.buildFromURI('//Alice')
 =======
   blockchain = await getCached(getNodeAddress())
+=======
+  blockchain = await getCached((configuration.host = WS_ADDRESS))
+>>>>>>> fix: requested changes, improved rerouting
   alice = await Identity.buildFromURI('//Alice')
 >>>>>>> feat: added configservice, removed implicit connection
 })

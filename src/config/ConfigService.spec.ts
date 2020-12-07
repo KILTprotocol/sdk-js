@@ -1,3 +1,4 @@
+/* eslint-disable dot-notation */
 // import { ERROR_WS_ADDRESS_NOT_SET } from '../errorhandling/SDKErrors'
 import { LogLevel, Logger } from 'typescript-logging'
 import { ERROR_WS_ADDRESS_NOT_SET } from '../../packages/core/src/errorhandling/SDKErrors'
@@ -8,11 +9,13 @@ describe('Log Configuration', () => {
   beforeEach(() => {
     testLogger = ConfigService.factory.getLogger('testLogger')
   })
+
   it('Tests the default Log Level', () => {
     if (process.env.DEBUG === 'true') {
       expect(testLogger.getLogLevel()).toEqual(LogLevel.Debug)
     } else expect(testLogger.getLogLevel()).toEqual(LogLevel.Error)
   })
+
   it('modifies the Log Level of all Loggers to the desired Level', () => {
     const initialLevel = testLogger.getLogLevel()
     ConfigService.modifyLogLevel(LogLevel.Info)
@@ -29,54 +32,49 @@ describe('Log Configuration', () => {
 })
 
 describe('Configuration Service', () => {
-  it('exports mutable object with defaulted ws address and logLevel', () => {
-    expect(ConfigService.configuration).toEqual({
-      address: undefined,
-      LogLevel: LogLevel.Error,
-    })
-    ConfigService.configuration.address = 'test'
-    expect(ConfigService.configuration).toEqual({
-      address: 'test',
-      LogLevel: LogLevel.Error,
-    })
+  it('exports instance of ConfigService with defaulted logLevel and undefined host address', () => {
+    expect(ConfigService.configuration['props'].logLevel).toEqual(
+      LogLevel.Error
+    )
+    expect(ConfigService.configuration['props'].address).toEqual(undefined)
   })
-  describe('setConfiguration', () => {
-    it('modifies exported configuration with passed arguments', () => {
-      ConfigService.configuration.address = 'test'
-      ConfigService.configuration.LogLevel = LogLevel.Error
+  describe('implements set methods for host address and logLevel', () => {
+    it('modifies exported instance config with passed arguments', () => {
+      ConfigService.configuration.host = 'host'
+      expect(ConfigService.configuration['props'].address).toEqual('host')
 
-      ConfigService.setConfiguration('modified', LogLevel.Info)
-      expect(ConfigService.configuration).toEqual({
-        address: 'modified',
-        LogLevel: LogLevel.Info,
-      })
-    })
-    it('throws error if no default address set and passed and does not change configuration', () => {
-      ConfigService.configuration.address = undefined
-      ConfigService.configuration.LogLevel = LogLevel.Error
-      expect(() => ConfigService.setConfiguration('', LogLevel.Info)).toThrow(
-        ERROR_WS_ADDRESS_NOT_SET()
+      ConfigService.configuration.logging = LogLevel.Warn
+      expect(ConfigService.configuration['props'].logLevel).toEqual(
+        LogLevel.Warn
       )
-      expect(ConfigService.configuration).toEqual({
-        address: undefined,
-        LogLevel: LogLevel.Error,
-      })
     })
   })
-  describe('getNodeAddress', () => {
-    it('returns exported configurations address property', () => {
-      ConfigService.configuration.address = 'test'
-      expect(ConfigService.getNodeAddress()).toEqual('test')
+  describe('implements get methods for host address and logLevel', () => {
+    it('returns address property', () => {
+      const test = new ConfigService.ConfigService({
+        address: 'testing',
+        logLevel: LogLevel.Warn,
+      })
+
+      expect(test.host).toEqual('testing')
     })
-    it('throws error if exported configurations address property is undefined or empty string', () => {
-      ConfigService.configuration.address = ''
-      expect(() => ConfigService.getNodeAddress()).toThrowError(
+    it('calling host get with no set host should throw error', () => {
+      ConfigService.configuration['props'].address = ''
+      expect(() => ConfigService.configuration.host).toThrowError(
         ERROR_WS_ADDRESS_NOT_SET()
       )
-      ConfigService.configuration.address = undefined
-      expect(() => ConfigService.getNodeAddress()).toThrowError(
+      ConfigService.configuration['props'].address = undefined
+      expect(() => ConfigService.configuration.host).toThrowError(
         ERROR_WS_ADDRESS_NOT_SET()
       )
+    })
+    it('returns logLevel property', () => {
+      const test = new ConfigService.ConfigService({
+        address: 'testing',
+        logLevel: LogLevel.Warn,
+      })
+
+      expect(test.logging).toEqual(LogLevel.Warn)
     })
   })
 })

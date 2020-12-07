@@ -9,27 +9,28 @@
  * @preferred
  */
 
-import { LogLevel } from 'typescript-logging'
-import { setConfiguration } from '../config/ConfigService'
+import { configuration, configOpts } from '../config/ConfigService'
 import Blockchain from '../blockchain/Blockchain'
 import { clearCache, getCached } from '../blockchainApiConnection'
 
-export function connect(host: string): Promise<Blockchain> {
+export function connect(
+  host: string = configuration.host
+): Promise<Blockchain> {
   return getCached(host)
 }
 
-export async function disconnect(host: string): Promise<void> {
+export async function disconnect(
+  host: string = configuration.host
+): Promise<void> {
   const cached = await getCached(host)
   cached.api.disconnect()
   clearCache()
 }
 
-export function config(configuration: {
-  host?: string
-  logLevel?: LogLevel
-}): void {
-  const { host, logLevel } = configuration
-  setConfiguration(host, logLevel)
+export function config(configs: Partial<configOpts>): void {
+  const { address, logLevel } = configs
+  if (address) configuration.host = address
+  if (logLevel) configuration.logging = logLevel
 }
 
 export default {

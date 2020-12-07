@@ -8,17 +8,23 @@ import BN from 'bn.js'
 import { Attestation, IBlockchainApi } from '..'
 import { makeTransfer } from '../balance/Balance.chain'
 import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
-import { getNodeAddress } from '../config/ConfigService'
+import { configuration } from '../config/ConfigService'
 import getCached from '../blockchainApiConnection'
 import { ERROR_CTYPE_NOT_FOUND, ERROR_UNKNOWN } from '../errorhandling'
 import Identity from '../identity'
+import { WS_ADDRESS } from './utils'
 
 let blockchain: IBlockchainApi | undefined
 let alice: Identity
 
 beforeAll(async () => {
+<<<<<<< HEAD
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
   alice = Identity.buildFromURI('//Alice')
+=======
+  blockchain = await getCached((configuration.host = WS_ADDRESS))
+  alice = await Identity.buildFromURI('//Alice')
+>>>>>>> fix: requested changes, improved rerouting
 })
 
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {

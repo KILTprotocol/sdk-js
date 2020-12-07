@@ -33,7 +33,7 @@ async function main(): Promise<void> {
   })
 
   /* To store the CTYPE on the blockchain, you have to call: */
-  Kilt.connect(NODE_URL)
+  Kilt.config({ address: NODE_URL })
   const identity = Kilt.Identity.buildFromMnemonic(
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   )
@@ -184,4 +184,4 @@ async function main(): Promise<void> {
   }
 }
 // execute
-main().finally(() => Kilt.disconnect(NODE_URL))
+main().finally(() => Kilt.disconnect())

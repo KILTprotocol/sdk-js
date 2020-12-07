@@ -16,7 +16,7 @@ async function setup(): Promise<{
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' SETUP ')
   )
-  Kilt.config({ host: NODE_URL })
+  Kilt.config({ address: NODE_URL })
 
   // ------------------------- Attester ----------------------------------------
 
@@ -265,13 +265,12 @@ async function example(): Promise<boolean> {
 
 // connect to the blockchain, execute the examples and then disconnect
 ;(async () => {
-  await Kilt.connect(NODE_URL)
   const done = await example()
   if (!done) {
     throw new Error('Example did not finish')
   }
 })()
-  .finally(() => Kilt.disconnect(NODE_URL))
+  .finally(() => Kilt.disconnect())
   .catch((e) => {
     console.error('Error Error Error!\n')
     setTimeout(() => {

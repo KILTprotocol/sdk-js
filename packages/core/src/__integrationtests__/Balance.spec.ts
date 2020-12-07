@@ -16,7 +16,7 @@ import {
   IS_READY,
   submitTxWithReSign,
 } from '../blockchain/Blockchain.utils'
-import { getNodeAddress } from '../config/ConfigService'
+import { configuration } from '../config/ConfigService'
 import getCached from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import {
@@ -24,11 +24,12 @@ import {
   wannabeAlice,
   wannabeBob,
   wannabeFaucet,
+  WS_ADDRESS,
 } from './utils'
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached(getNodeAddress())
+  blockchain = await getCached((configuration.host = WS_ADDRESS))
 })
 
 describe('when there is a dev chain with a faucet', () => {

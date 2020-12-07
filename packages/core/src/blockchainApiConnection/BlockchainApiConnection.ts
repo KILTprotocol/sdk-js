@@ -11,7 +11,7 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { RegistryTypes } from '@polkadot/types/types'
 import Blockchain from '../blockchain/Blockchain'
-import { getNodeAddress } from '../config/ConfigService'
+import { configuration } from '../config/ConfigService'
 
 let instance: Promise<Blockchain> | null
 
@@ -30,7 +30,7 @@ export const CUSTOM_TYPES: RegistryTypes = {
 }
 
 export async function buildConnection(
-  host: string | undefined = getNodeAddress()
+  host: string | undefined = configuration.host
 ): Promise<Blockchain> {
   const provider = new WsProvider(host)
   const api: ApiPromise = await ApiPromise.create({
@@ -41,7 +41,7 @@ export async function buildConnection(
 }
 
 export async function getCached(
-  host: string | undefined = getNodeAddress()
+  host: string | undefined = configuration.host
 ): Promise<Blockchain> {
   if (!instance) {
     instance = buildConnection(host)
