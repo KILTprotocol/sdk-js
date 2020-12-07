@@ -6,15 +6,27 @@
 
 import { Identity } from '..'
 import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
+<<<<<<< HEAD
+=======
+import { configuration } from '../config/ConfigService'
+import getCached from '../blockchainApiConnection'
+>>>>>>> fix: requested changes, improved rerouting
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { ERROR_CTYPE_ALREADY_EXISTS } from '../errorhandling/ExtrinsicError'
 import ICType from '../types/CType'
+<<<<<<< HEAD
 import { config, disconnect } from '../kilt'
+=======
+>>>>>>> fix: requested changes, improved rerouting
 import { wannabeFaucet, WS_ADDRESS } from './utils'
 
 beforeAll(async () => {
+<<<<<<< HEAD
   config({ address: WS_ADDRESS })
+=======
+  blockchain = await getCached((configuration.host = WS_ADDRESS))
+>>>>>>> fix: requested changes, improved rerouting
 })
 
 describe('When there is an CtypeCreator and a verifier', () => {

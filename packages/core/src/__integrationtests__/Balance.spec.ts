@@ -15,7 +15,12 @@ import {
   IS_READY,
   submitTxWithReSign,
 } from '../blockchain/Blockchain.utils'
+<<<<<<< HEAD
 import { config, disconnect } from '../kilt'
+=======
+import { configuration } from '../config/ConfigService'
+import getCached from '../blockchainApiConnection'
+>>>>>>> fix: requested changes, improved rerouting
 import Identity from '../identity/Identity'
 import {
   MIN_TRANSACTION,
@@ -26,7 +31,11 @@ import {
 } from './utils'
 
 beforeAll(async () => {
+<<<<<<< HEAD
   config({ address: WS_ADDRESS })
+=======
+  blockchain = await getCached((configuration.host = WS_ADDRESS))
+>>>>>>> fix: requested changes, improved rerouting
 })
 
 describe('when there is a dev chain with a faucet', () => {

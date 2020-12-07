@@ -13,7 +13,12 @@ import {
   IS_READY,
   submitTxWithReSign,
 } from '../blockchain/Blockchain.utils'
+<<<<<<< HEAD
 import { config, disconnect } from '../kilt'
+=======
+import { configuration } from '../config/ConfigService'
+import getCached from '../blockchainApiConnection'
+>>>>>>> fix: requested changes, improved rerouting
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
 import {
@@ -34,8 +39,17 @@ import {
 
 let alice: Identity
 beforeAll(async () => {
+<<<<<<< HEAD
   config({ address: WS_ADDRESS })
+=======
+<<<<<<< HEAD
+  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+>>>>>>> fix: requested changes, improved rerouting
   alice = Identity.buildFromURI('//Alice')
+=======
+  blockchain = await getCached((configuration.host = WS_ADDRESS))
+  alice = await Identity.buildFromURI('//Alice')
+>>>>>>> fix: requested changes, improved rerouting
 })
 
 describe('handling attestations that do not exist', () => {

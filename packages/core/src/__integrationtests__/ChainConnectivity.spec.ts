@@ -9,9 +9,18 @@ import { Header } from '@polkadot/types/interfaces/types'
 import { WS_ADDRESS } from './utils'
 import { config, disconnect } from '../kilt'
 import { getCached } from '../blockchainApiConnection'
+<<<<<<< HEAD
+=======
+import { configuration } from '../config/ConfigService'
+import { WS_ADDRESS } from './utils'
+>>>>>>> fix: requested changes, improved rerouting
 
 beforeAll(async () => {
+<<<<<<< HEAD
   config({ address: WS_ADDRESS })
+=======
+  blockchain = await getCached((configuration.host = WS_ADDRESS))
+>>>>>>> fix: requested changes, improved rerouting
 })
 
 describe('Blockchain', () => {
