@@ -1,0 +1,7 @@
+{
+  "repository": "https://github.com/kiltprotocol/sdk-js",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
+}

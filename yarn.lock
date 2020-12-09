@@ -800,23 +800,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kiltprotocol/portablegabi@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "@kiltprotocol/portablegabi@npm:0.4.0"
-  dependencies:
-    "@polkadot/api": ^2.0.1
-    "@polkadot/keyring": ^3.5.1
-    "@polkadot/rpc-provider": ^2.0.1
-    "@polkadot/types": ^2.0.1
-    "@polkadot/util": ^3.5.1
-    "@polkadot/util-crypto": ^3.5.1
-  checksum: 715d70be259ac841dd6406127ab952db4f451e329020be880af1790dfdb3df2903cfd709ff912720db7628c3d0c41cb84572530f830f6151cd667400d9ca3bb9
-  languageName: node
-  linkType: hard
-
-"@kiltprotocol/sdk-js@workspace:.":
+"@kiltprotocol/core@workspace:packages/core":
   version: 0.0.0-use.local
-  resolution: "@kiltprotocol/sdk-js@workspace:."
+  resolution: "@kiltprotocol/core@workspace:packages/core"
   dependencies:
     "@commitlint/cli": ^9.0.1
     "@commitlint/config-conventional": ^9.0.1
@@ -847,6 +833,7 @@ __metadata:
     jest-runner: ^26.2.0
     jest-runner-groups: ^2.0.1
     prettier: ^2.0.5
+    rimraf: ^3.0.2
     ts-jest: ^26.1.4
     ts-node: ^8.10.2
     tslib: ^2.0.0
@@ -858,6 +845,20 @@ __metadata:
     uuid: ^8.1.0
   languageName: unknown
   linkType: soft
+
+"@kiltprotocol/portablegabi@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "@kiltprotocol/portablegabi@npm:0.4.0"
+  dependencies:
+    "@polkadot/api": ^2.0.1
+    "@polkadot/keyring": ^3.5.1
+    "@polkadot/rpc-provider": ^2.0.1
+    "@polkadot/types": ^2.0.1
+    "@polkadot/util": ^3.5.1
+    "@polkadot/util-crypto": ^3.5.1
+  checksum: 715d70be259ac841dd6406127ab952db4f451e329020be880af1790dfdb3df2903cfd709ff912720db7628c3d0c41cb84572530f830f6151cd667400d9ca3bb9
+  languageName: node
+  linkType: hard
 
 "@polkadot/api-derive@npm:2.0.1":
   version: 2.0.1
@@ -6826,6 +6827,12 @@ fsevents@^2.1.2:
   checksum: e0370fbe779b1f15d74c3e7dffc0ce40b57b845fc7e431fab8a571958d5fd9c91eb0038a252604600e20786d117badea0cc4cf8816b8a6be6b9166b565ad6797
   languageName: node
   linkType: hard
+
+"root-workspace-0b6124@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "root-workspace-0b6124@workspace:."
+  languageName: unknown
+  linkType: soft
 
 "rsvp@npm:^4.8.4":
   version: 4.8.5
