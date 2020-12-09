@@ -33,6 +33,8 @@ module.exports = {
         tsx: 'never',
       },
     ],
+    // Taken care of by typescript
+    'import/no-unresolved': 'off',
     'prettier/prettier': 'error',
     semi: ['error', 'never'],
     'lines-between-class-members': [
