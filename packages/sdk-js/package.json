@@ -1,0 +1,37 @@
+{
+  "name": "@kiltprotocol/sdk-js",
+  "version": "0.19.1-8",
+  "description": "",
+  "main": "./index.js",
+  "typings": "./index.d.ts",
+  "scripts": {
+    "lint": "eslint 'src/**'",
+    "lint:fix": "yarn lint --fix",
+    "style": "prettier -l src/**/*.ts",
+    "style:fix": "yarn style --write",
+    "clean": "rimraf ./build",
+    "build": "yarn clean && yarn build:ts && yarn build:copypackage",
+    "build:ts": "tsc --declaration -p tsconfig.build.json",
+    "build:copypackage": "cp -f package.json build",
+    "prepublishOnly": "yarn build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KILTprotocol/sdk-js.git"
+  },
+  "engines": {
+    "node": ">=10.0"
+  },
+  "author": "",
+  "license": "BSD-4-Clause",
+  "bugs": {
+    "url": "https://github.com/KILTprotocol/sdk-js/issues"
+  },
+  "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
+  "devDependencies": {
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "@kiltprotocol/core": "workspace:*"
+  }
+}
