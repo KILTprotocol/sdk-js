@@ -1,5 +1,5 @@
 {
-  "name": "@kiltprotocol/sdk-js",
+  "name": "@kiltprotocol/core",
   "version": "0.19.1-8",
   "description": "",
   "main": "./build/index.js",
