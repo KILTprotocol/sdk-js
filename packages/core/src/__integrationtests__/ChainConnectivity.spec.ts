@@ -6,18 +6,17 @@
  */
 
 import { Header } from '@polkadot/types/interfaces/types'
-import { IBlockchainApi } from '../blockchain/Blockchain'
-import { getCached } from '../blockchainApiConnection'
-import { configuration } from '../config/ConfigService'
 import { WS_ADDRESS } from './utils'
+import { config, disconnect } from '../kilt'
+import { getCached } from '../blockchainApiConnection'
 
-let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached((configuration.host = WS_ADDRESS))
+  config({ address: WS_ADDRESS })
 })
 
 describe('Blockchain', () => {
   it('should get stats', async () => {
+    const blockchain = await getCached()
     expect(blockchain).not.toBeUndefined()
     const stats = await blockchain!.getStats()
 
@@ -29,6 +28,7 @@ describe('Blockchain', () => {
   })
 
   it('should listen to blocks', async (done) => {
+    const blockchain = await getCached()
     const listener = (header: Header): void => {
       // console.log(`Best block number ${header.number}`)
       expect(Number(header.number)).toBeGreaterThanOrEqual(0)
@@ -42,5 +42,5 @@ describe('Blockchain', () => {
 })
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })

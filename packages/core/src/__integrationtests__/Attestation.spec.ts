@@ -8,14 +8,12 @@ import { IAttestedClaim, IClaim } from '..'
 import Attestation from '../attestation/Attestation'
 import { revoke } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { IBlockchainApi } from '../blockchain/Blockchain'
 import {
   IS_IN_BLOCK,
   IS_READY,
   submitTxWithReSign,
 } from '../blockchain/Blockchain.utils'
-import { configuration } from '../config/ConfigService'
-import getCached from '../blockchainApiConnection'
+import { config, disconnect } from '../kilt'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
 import {
@@ -34,9 +32,9 @@ import {
   WS_ADDRESS,
 } from './utils'
 
-let blockchain: IBlockchainApi | undefined
 let alice: Identity
 beforeAll(async () => {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
@@ -46,6 +44,9 @@ beforeAll(async () => {
 =======
   blockchain = await getCached((configuration.host = WS_ADDRESS))
 >>>>>>> fix: requested changes, improved rerouting
+=======
+  config({ address: WS_ADDRESS })
+>>>>>>> feat: ci tests now set config and disconnect without explicit chain instance
   alice = await Identity.buildFromURI('//Alice')
 >>>>>>> feat: added configservice, removed implicit connection
 })
@@ -330,5 +331,5 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 })
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })

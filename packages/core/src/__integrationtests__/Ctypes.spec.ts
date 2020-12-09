@@ -5,19 +5,16 @@
  */
 
 import { Identity } from '..'
-import { IBlockchainApi } from '../blockchain/Blockchain'
 import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
-import { configuration } from '../config/ConfigService'
-import getCached from '../blockchainApiConnection'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { ERROR_CTYPE_ALREADY_EXISTS } from '../errorhandling/ExtrinsicError'
 import ICType from '../types/CType'
+import { config, disconnect } from '../kilt'
 import { wannabeFaucet, WS_ADDRESS } from './utils'
 
-let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached((configuration.host = WS_ADDRESS))
+  config({ address: WS_ADDRESS })
 })
 
 describe('When there is an CtypeCreator and a verifier', () => {
@@ -121,5 +118,5 @@ describe('When there is an CtypeCreator and a verifier', () => {
 })
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })

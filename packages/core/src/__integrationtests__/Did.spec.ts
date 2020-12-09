@@ -5,15 +5,12 @@
  */
 
 import { Did, Identity } from '..'
-import { IBlockchainApi } from '../blockchain/Blockchain'
-import getCached from '../blockchainApiConnection'
-import { configuration } from '../config/ConfigService'
 import { queryByAddress, queryByIdentifier } from '../did/Did.chain'
 import { WS_ADDRESS } from './utils'
+import { config, disconnect } from '../kilt'
 
-let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached((configuration.host = WS_ADDRESS))
+  config({ address: WS_ADDRESS })
 })
 
 describe('querying DIDs that do not exist', () => {
@@ -35,5 +32,5 @@ describe('querying DIDs that do not exist', () => {
 })
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })

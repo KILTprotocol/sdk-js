@@ -10,14 +10,12 @@ import {
   listenToBalanceChanges,
   makeTransfer,
 } from '../balance/Balance.chain'
-import { IBlockchainApi } from '../blockchain/Blockchain'
 import {
   IS_IN_BLOCK,
   IS_READY,
   submitTxWithReSign,
 } from '../blockchain/Blockchain.utils'
-import { configuration } from '../config/ConfigService'
-import getCached from '../blockchainApiConnection'
+import { config, disconnect } from '../kilt'
 import Identity from '../identity/Identity'
 import {
   MIN_TRANSACTION,
@@ -27,9 +25,8 @@ import {
   WS_ADDRESS,
 } from './utils'
 
-let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached((configuration.host = WS_ADDRESS))
+  config({ address: WS_ADDRESS })
 })
 
 describe('when there is a dev chain with a faucet', () => {
@@ -182,5 +179,5 @@ describe('When there are haves and have-nots', () => {
 })
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })

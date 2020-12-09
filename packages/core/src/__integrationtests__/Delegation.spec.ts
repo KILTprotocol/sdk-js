@@ -7,14 +7,12 @@
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { AttestedClaim, Identity } from '..'
 import Attestation from '../attestation/Attestation'
-import { IBlockchainApi } from '../blockchain/Blockchain'
 import {
   IS_IN_BLOCK,
   IS_READY,
   submitTxWithReSign,
 } from '../blockchain/Blockchain.utils'
-import { configuration } from '../config/ConfigService'
-import getCached from '../blockchainApiConnection'
+import { config, disconnect } from '../kilt'
 import Claim from '../claim/Claim'
 import {
   fetchChildren,
@@ -36,9 +34,8 @@ import {
   WS_ADDRESS,
 } from './utils'
 
-let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached((configuration.host = WS_ADDRESS))
+  config({ address: WS_ADDRESS })
 })
 
 describe('when there is an account hierarchy', () => {
@@ -197,5 +194,5 @@ describe('handling queries to data not on chain', () => {
 })
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })
