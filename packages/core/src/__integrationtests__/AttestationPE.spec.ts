@@ -8,21 +8,19 @@ import {
   Accumulator,
   AttesterAttestationSession,
 } from '@kiltprotocol/portablegabi'
-import { Claim, IBlockchainApi, IClaim, Message } from '..'
+import { Claim, IClaim, Message } from '..'
 import { Attester, Claimer, Verifier } from '../actor'
 import { ClaimerAttestationSession } from '../actor/Claimer'
 import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
-import { configuration } from '../config/ConfigService'
-import getCached from '../blockchainApiConnection'
+import { config, disconnect } from '../kilt'
 import Credential from '../credential'
 import Identity, { AttesterIdentity } from '../identity'
 import constants from '../test/constants'
 import { IRevocationHandle } from '../types/Attestation'
 import { CtypeOnChain, DriversLicense, FaucetSeed, WS_ADDRESS } from './utils'
 
-let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached((configuration.host = WS_ADDRESS))
+  config({ address: WS_ADDRESS })
 })
 
 describe('Privacy enhanced claim, attestation, verification process', () => {
@@ -315,5 +313,5 @@ describe('Privacy enhanced claim, attestation, verification process', () => {
 })
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })
