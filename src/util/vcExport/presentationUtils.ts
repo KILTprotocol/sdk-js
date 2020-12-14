@@ -63,8 +63,7 @@ export async function recreateRevealPropertiesProof(
  * Returns a copy of a KILT Verifiable Credential where all claims about the credential subject that are not whitelisted have been removed.
  *
  * @param VC The KILT Verifiable Credential as exported with the SDK utils.
- * @param showProperties An array of properties to keep on the credential.
- * @param whitelist
+ * @param whitelist An array of properties to keep on the credential.
  * @returns A Verifiable Credential containing the original proofs, but with non-whitelisted claims removed.
  */
 export async function removeProperties(
