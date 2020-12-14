@@ -1,16 +1,26 @@
-import { Attestation, IRequestForAttestation } from '..'
-import AttestedClaim from '../attestedclaim'
-import CType from '../ctype'
-import attClaimToVC, {
-  makePresentation,
-  validateSchema,
-  VerifiableCredential,
-  verifyAttestedProof,
-  verifyRevealPropertyProof,
-  verifySelfSignedProof,
-} from './toVerifiableCredential'
+import { Attestation, IRequestForAttestation } from '../..'
+import AttestedClaim from '../../attestedclaim'
+import CType from '../../ctype'
+import toVC from './exportToVerifiableCredential'
+import verificationUtils from './verificationUtils'
+import claimerUtils from './presentationUtils'
+import { VerifiableCredential } from './types'
 
-jest.mock('../attestation/Attestation.chain', () => {
+jest.mock('jsonld', () => {
+  return {
+    compact: (obj: Record<string, any>) => {
+      const prefix = obj['@context']['@vocab']
+      const compacted = {}
+      Object.entries(obj).forEach(([key, value]) => {
+        if (!key.startsWith('@')) compacted[prefix + key] = value
+        if (key === '@id') compacted[key] = value
+      })
+      return compacted
+    },
+  }
+})
+
+jest.mock('../../attestation/Attestation.chain', () => {
   return { query: jest.fn() }
 })
 
@@ -85,8 +95,8 @@ const credential = AttestedClaim.fromAttestedClaim({
   },
 })
 
-it('exports credential to VC', async () => {
-  await expect(attClaimToVC(credential)).resolves.toMatchObject({
+it('exports credential to VC', () => {
+  expect(toVC.fromAttestedClaim(credential)).toMatchObject({
     '@context': ['https://www.w3.org/2018/credentials/v1'],
     type: ['VerifiableCredential'],
     credentialSubject: {
@@ -103,10 +113,8 @@ it('exports credential to VC', async () => {
   })
 })
 
-it('exports includes ctype as schema', async () => {
-  await expect(
-    attClaimToVC(credential, undefined, ctype)
-  ).resolves.toMatchObject({
+it('exports includes ctype as schema', () => {
+  expect(toVC.fromAttestedClaim(credential, undefined, ctype)).toMatchObject({
     credentialSchema: {
       '@id': ctype.schema.$id,
       name: ctype.schema.title,
@@ -119,20 +127,22 @@ it('exports includes ctype as schema', async () => {
 
 describe('proofs', () => {
   let VC: VerifiableCredential
-  beforeAll(async () => {
-    VC = await attClaimToVC(credential)
+  beforeAll(() => {
+    VC = toVC.fromAttestedClaim(credential)
   })
 
   it('it verifies self-signed proof', () => {
-    expect(verifySelfSignedProof(VC, VC.proof[0])).toMatchObject({
+    expect(
+      verificationUtils.verifySelfSignedProof(VC, VC.proof[0])
+    ).toMatchObject({
       verified: true,
     })
   })
 
-  it('it verifies schema', async () => {
-    const VCWithSchema = await attClaimToVC(credential, undefined, ctype)
-    const result = validateSchema(VCWithSchema)
-    expect(result.error).toBeUndefined()
+  it('it verifies schema', () => {
+    const VCWithSchema = toVC.fromAttestedClaim(credential, undefined, ctype)
+    const result = verificationUtils.validateSchema(VCWithSchema)
+    expect(result.errors).toEqual([])
     expect(result).toMatchObject({
       verified: true,
     })
@@ -141,8 +151,11 @@ describe('proofs', () => {
   it('it verifies credential with all properties revealed', async () => {
     expect(VC.proof[2].nonces).toMatchObject(credential.request.claimNonceMap)
     expect(Object.entries(VC.proof[2].nonces)).toHaveLength(4)
-    const result = await verifyRevealPropertyProof(VC, VC.proof[2])
-    expect(result.error).toBeUndefined()
+    const result = await verificationUtils.verifyRevealPropertyProof(
+      VC,
+      VC.proof[2]
+    )
+    expect(result.errors).toEqual([])
     expect(result).toMatchObject({
       verified: true,
     })
@@ -155,20 +168,20 @@ describe('proofs', () => {
     delete reducedRequest.claim.contents.name
     delete reducedRequest.claim.contents.birthday
     const reducedCredential = { ...credential, request: reducedRequest }
-    const reducedVC = await attClaimToVC(reducedCredential)
+    const reducedVC = toVC.fromAttestedClaim(reducedCredential)
 
-    const result = await verifyRevealPropertyProof(
+    const result = await verificationUtils.verifyRevealPropertyProof(
       reducedVC,
       reducedVC.proof[2]
     )
-    expect(result.error).toBeUndefined()
+    expect(result.errors).toEqual([])
     expect(result).toMatchObject({
       verified: true,
     })
   })
 
   it('makes presentation', async () => {
-    const presentation = await makePresentation(VC, ['name'])
+    const presentation = await claimerUtils.makePresentation(VC, ['name'])
     const { contents, owner } = credential.request.claim
     expect(presentation).toHaveProperty(
       'verifiableCredential.credentialSubject',
@@ -179,23 +192,26 @@ describe('proofs', () => {
       }
     )
     const VCfromPresentation = presentation.verifiableCredential as VerifiableCredential
-    const result = await verifyRevealPropertyProof(
+    const result = await verificationUtils.verifyRevealPropertyProof(
       VCfromPresentation,
       VCfromPresentation.proof[2]
     )
-    expect(result.error).toBeUndefined()
-    expect(result).toStrictEqual({ verified: true })
+    expect(result.errors).toEqual([])
+    expect(result).toStrictEqual({ verified: true, errors: [] })
     expect(Object.entries(VCfromPresentation.proof[2].nonces)).toHaveLength(2)
   })
 
   describe('on-chain proof', () => {
-    require('../attestation/Attestation.chain').query.mockResolvedValue(
+    require('../../attestation/Attestation.chain').query.mockResolvedValue(
       Attestation.fromAttestation(credential.attestation)
     )
 
     it('verifies attestation proof', async () => {
-      const result = await verifyAttestedProof(VC, VC.proof[1])
-      expect(result.error).toBeUndefined()
+      const result = await verificationUtils.verifyAttestedProof(
+        VC,
+        VC.proof[1]
+      )
+      expect(result.errors).toEqual([])
       expect(result).toMatchObject({
         verified: true,
       })
