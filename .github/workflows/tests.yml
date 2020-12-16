@@ -7,19 +7,25 @@ on:
       - master
     tags:
       - '*'
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'dc.build.node.yml'
+      - '.github/workflows/*publish.yml'
   pull_request:
     branches:
       - develop
       - master
 
 jobs:
-
   check_skip:
     runs-on: ubuntu-latest
     if: "! startsWith(github.event.head_commit.message, '[CI Skip]') && github.repository == 'kiltprotocol/sdk-js'"
     steps:
-    - name: Not Skipped
-      run: echo "Not Skipped"
+      - name: Not Skipped
+        run: echo "Not Skipped"
 
   build:
     runs-on: ubuntu-latest

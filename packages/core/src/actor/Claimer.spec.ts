@@ -333,8 +333,8 @@ describe('Claimer', () => {
     )
     expect(Array.isArray(presentation.body.content)).toBe(true)
     const { content } = presentation.body as ISubmitClaimsForCTypesClassic
-    expect(Object.keys(content[0].request.claim.contents)).toEqual(
-      Object.keys(content[0].request.claimHashTree)
+    expect(Object.keys(content[0].request.claimHashes)).toHaveLength(
+      Object.keys(content[0].request.claim.contents).length + 1
     )
   })
   describe('Negative tests', () => {
