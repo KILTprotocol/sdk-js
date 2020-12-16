@@ -15,8 +15,7 @@ yarn-error.log*
 .pnp.*
 
 # testing
-/coverage
-/src/coverage
+coverage
 
 # production
 build
