@@ -1,6 +1,8 @@
 {
   "extends": "./tsconfig.build.json",
-
+  "exclude": [
+    "docs/**/*"
+  ],
   "compilerOptions": {
     "baseUrl": "./packages",
     "paths": {
@@ -8,5 +10,6 @@
       "@kiltprotocol/core": ["core/src"],
       "@kiltprotocol/core/*": ["core/src/*"]
     }
-  }
+  },
+  "skipLibCheck": true
 }

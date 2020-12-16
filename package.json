@@ -3,5 +3,42 @@
   "private": true,
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "build": "yarn workspaces foreach -pt --no-private run build",
+    "version": "yarn workspaces foreach -pt --no-private version",
+    "prepublishOnly": "yarn build",
+    "publish": "yarn workspaces foreach -pt --no-private npm publish",
+    "lint": "eslint packages --format=codeframe",
+    "lint:fix": "yarn lint --fix",
+    "style": "prettier -l packages",
+    "style:fix": "yarn style --write"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "yarn lint && yarn style",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^9.0.1",
+    "@commitlint/config-conventional": "^9.0.1",
+    "@typescript-eslint/eslint-plugin": "^3.7.1",
+    "@typescript-eslint/parser": "^3.7.1",
+    "eslint": "^7.5.0",
+    "eslint-config-airbnb-base": "14.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jsdoc": "^30.0.3",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-tsc": "^1.2.0",
+    "husky": "^4.2.5",
+    "prettier": "^2.0.5"
+  }
 }
