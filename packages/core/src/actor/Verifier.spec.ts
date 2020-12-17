@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/actor
+ * @ignore
+ */
+
 import {
   Attester,
   Claimer,

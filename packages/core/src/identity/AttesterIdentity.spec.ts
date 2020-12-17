@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/identity
+ * @ignore
+ */
+
 import * as gabi from '@kiltprotocol/portablegabi'
 import { hexToU8a } from '@polkadot/util'
 import Identity from '.'

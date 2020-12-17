@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/util
+ * @ignore
+ */
+
 import UUID from './UUID'
 
 describe('UUID', () => {

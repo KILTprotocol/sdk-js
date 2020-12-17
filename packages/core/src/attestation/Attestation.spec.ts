@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/attestation
+ * @ignore
+ */
+
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'

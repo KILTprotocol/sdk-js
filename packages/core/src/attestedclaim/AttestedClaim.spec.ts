@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/attestation
+ * @ignore
+ */
+
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'

@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/errorhandling
+ * @ignore
+ */
+
 import {
   ErrorCode,
   errorForCode,

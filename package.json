@@ -14,8 +14,8 @@
     "lint:fix": "yarn lint --fix",
     "style": "prettier -l packages",
     "style:fix": "yarn style --write",
-    "test": "jest --coverage --group=-integration",
-    "test:ci": "jest --ci --coverage --group=-integration",
+    "test": "jest --coverage --group=unit",
+    "test:ci": "yarn test --ci",
     "test:integration:run": "jest --group=integration -b -w 3 --silent",
     "test:integration": "{ lsof -i :9944 > /dev/null && yarn test:integration:run; } || echo 'Can not connect to chain. Is it running?'; exit 1;",
     "test:watch": "yarn test --watch"

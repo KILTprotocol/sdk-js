@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/identity
+ * @ignore
+ */
+
 import * as u8aUtil from '@polkadot/util/u8a'
 import { coToUInt8 } from '../crypto/Crypto'
 import constants from '../test/constants'

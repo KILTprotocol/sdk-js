@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/ctype
+ * @ignore
+ */
+
 import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
 import ICType from '../types/CType'
 import {

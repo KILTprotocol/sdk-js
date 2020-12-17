@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/errorhandling
+ * @ignore
+ */
+
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { SubmittableResult } from '@polkadot/api'
 import { Tuple } from '@polkadot/types'

@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/util
+ * @ignore
+ */
+
 import { ERROR_TIMEOUT } from '../errorhandling/SDKErrors'
 import { Evaluator, makeSubscriptionPromise } from './SubscriptionPromise'
 
