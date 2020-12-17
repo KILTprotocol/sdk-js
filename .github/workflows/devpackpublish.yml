@@ -4,12 +4,12 @@ on:
     branches:
       - develop
     paths:
-      - '**/*.ts'
-      - 'package.json'
-      - '!**/*.spec.ts'
-      - '!**/__integrationtests__'
-      - '!**/__mocks__'
-      - '!docs/**'
+      - "**/*.ts"
+      - "package.json"
+      - "!**/*.spec.ts"
+      - "!**/__integrationtests__"
+      - "!**/__mocks__"
+      - "!docs/**"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,7 +41,12 @@ jobs:
     needs: build
     strategy:
       matrix:
-        repo: ['KILTprotocol/kilt-workshop-101', 'KILTprotocol/demo-client']
+        repo:
+          [
+            "KILTprotocol/kilt-workshop-101",
+            "KILTprotocol/demo-client",
+            "KILTprotocol/prototype-services",
+          ]
     runs-on: ubuntu-latest
     steps:
       - name: Repository dispatch
