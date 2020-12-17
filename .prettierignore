@@ -1,2 +1,6 @@
-src/util/jsonabc.js
-src/util/jsonabc.d.ts
+jsonabc.js
+jsonabc.d.ts
+lib
+*.json
+jest.*
+coverage

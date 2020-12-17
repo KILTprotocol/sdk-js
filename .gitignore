@@ -1,7 +1,7 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
 # dependencies
-/node_modules 
+node_modules 
 
 # npm/yarn
 npm-debug.log*
@@ -15,11 +15,11 @@ yarn-error.log*
 .pnp.*
 
 # testing
-/coverage
-/src/coverage
+coverage
 
 # production
-/build
+build
+lib
 
 # tooling setup
 .DS_Store

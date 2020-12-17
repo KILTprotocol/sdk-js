@@ -1,0 +1,28 @@
+{
+  "extends": "../../tsconfig.build.json",
+
+  "compilerOptions": {
+    "outDir": "./lib"
+  },
+
+  "include": [
+    "src/**/*.ts", "src/**/*.js"
+  ],
+
+  "exclude": [
+    "node_modules",
+    "coverage",
+    "build",
+    "scripts",
+    "acceptance-tests",
+    "webpack",
+    "jest",
+    "src/setupTests.ts",
+    "jest.config.js",
+    "docs",
+    "**/*.spec.ts",
+    "src/__integrationtests__",
+    "**/__mocks__",
+    "**/test"
+  ]
+}

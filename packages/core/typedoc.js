@@ -5,6 +5,6 @@ module.exports = {
   excludePrivate: true,
   hideGenerator: true,
   listInvalidSymbolLinks: true,
-  tsconfig: 'tsconfig.json',
+  tsconfig: 'tsconfig.build.json',
   readme: 'README.md',
 }

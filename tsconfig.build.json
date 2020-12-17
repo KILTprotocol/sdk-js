@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "module": "none",
+    "target": "es2017",
+    "lib": ["es6"],
+    "sourceMap": false,
+    "strict": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "importHelpers": true,
+    "strictNullChecks": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true
+  },
+  "exclude": [
+    "node_modules",
+    "lib",
+  ]
+}

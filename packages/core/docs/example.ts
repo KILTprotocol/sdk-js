@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import Kilt, {
+import * as Kilt from '../src'
+import {
   AttesterIdentity,
   Claim,
   Credential,
