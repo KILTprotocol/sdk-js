@@ -13,11 +13,17 @@ module.exports = {
     },
   },
   collectCoverageFrom: [
-    '**/*.ts',
-    '!**/blockchain/**/*.ts',
-    '!index.ts',
-    '!**/__integrationtests__/*.ts',
+    '**/packages/src/**/*.ts',
+    '!**/index.ts',
+    '!**/__integrationtests__/**',
+    '!**/__mocks__/**',
+    '!**/__tests__/**',
+    '!**/lib/**',
   ],
-  rootDir: 'src',
-  coverageDirectory: '../coverage',
+  rootDir: 'packages',
+  coverageDirectory: 'coverage',
+  moduleDirectories: [
+    "node_modules",
+    "packages/*/src"
+  ]
 }
