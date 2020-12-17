@@ -1,16 +1,15 @@
-name: Publish package to github packages
+name: Publish prerelease package to npm
 on:
   push:
     branches:
       - develop
-      - tw-835-workspaces
-    # paths:
-    #   - '**/*.ts'
-    #   - 'package.json'
-    #   - '!**/*.spec.ts'
-    #   - '!**/__integrationtests__'
-    #   - '!**/__mocks__'
-    #   - '!docs/**'
+    paths:
+      - '**/*.ts'
+      - 'package.json'
+      - '!**/*.spec.ts'
+      - '!**/__integrationtests__'
+      - '!**/__mocks__'
+      - '!docs/**'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,12 +37,6 @@ jobs:
           git add .
           git commit -m "[CI Skip] ci: publish prerelease" -n
           git push
-      # - name: Push changes
-      #   uses: ad-m/github-push-action@master
-      #   with:
-      #     github_token: ${{ secrets.GH_PAT }}
-      #     branch: ${{ github.ref }}
-
   dispatch:
     needs: build
     strategy:
