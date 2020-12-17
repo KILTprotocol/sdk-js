@@ -7,7 +7,7 @@
   "license": "BSD-4-Clause",
   "scripts": {
     "build": "yarn workspaces foreach -pt --no-private run build",
-    "version": "yarn workspaces foreach -pt --no-private version",
+    "version": "yarn workspaces foreach version",
     "prepublishOnly": "yarn build",
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
     "lint": "eslint packages --format=codeframe",
@@ -41,5 +41,6 @@
     "eslint-plugin-tsc": "^1.2.0",
     "husky": "^4.2.5",
     "prettier": "^2.0.5"
-  }
+  },
+  "version": "0.19.1-14"
 }
