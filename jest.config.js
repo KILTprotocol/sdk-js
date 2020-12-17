@@ -13,7 +13,7 @@ module.exports = {
     },
   },
   collectCoverageFrom: [
-    '**/packages/src/**/*.ts',
+    '**/*/src/**/*.ts',
     '!**/index.ts',
     '!**/__integrationtests__/**',
     '!**/__mocks__/**',
