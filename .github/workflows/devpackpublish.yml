@@ -4,13 +4,13 @@ on:
     branches:
       - develop
       - tw-835-workspaces
-    paths:
-      - '**/*.ts'
-      - 'package.json'
-      - '!**/*.spec.ts'
-      - '!**/__integrationtests__'
-      - '!**/__mocks__'
-      - '!docs/**'
+    # paths:
+    #   - '**/*.ts'
+    #   - 'package.json'
+    #   - '!**/*.spec.ts'
+    #   - '!**/__integrationtests__'
+    #   - '!**/__mocks__'
+    #   - '!docs/**'
 jobs:
   build:
     runs-on: ubuntu-latest
