@@ -1,6 +1,6 @@
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: '../jest.env.js',
+  testEnvironment: 'node',
   clearMocks: true,
   runner: 'groups',
   testTimeout: 10000,
