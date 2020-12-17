@@ -4,6 +4,7 @@
   "workspaces": [
     "packages/*"
   ],
+  "license": "BSD-4-Clause",
   "scripts": {
     "build": "yarn workspaces foreach -pt --no-private run build",
     "version": "yarn workspaces foreach -pt --no-private version",
