@@ -28,10 +28,6 @@ jest.mock('jsonld', () => {
   }
 })
 
-jest.mock('@kiltprotocol/core/lib/attestation/Attestation.chain', () => {
-  return { query: jest.fn() }
-})
-
 const ctype = CType.fromCType({
   schema: {
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -210,9 +206,9 @@ describe('proofs', () => {
   })
 
   describe('on-chain proof', () => {
-    require('@kiltprotocol/core/lib/attestation/Attestation.chain').query.mockResolvedValue(
-      Attestation.fromAttestation(credential.attestation)
-    )
+    jest
+      .spyOn(Attestation, 'query')
+      .mockResolvedValue(Attestation.fromAttestation(credential.attestation))
 
     it('verifies attestation proof', async () => {
       const result = await verificationUtils.verifyAttestedProof(

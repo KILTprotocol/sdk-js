@@ -1,7 +1,6 @@
 import { blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
-import { IRequestForAttestation } from '@kiltprotocol/core'
-import { Hasher } from '@kiltprotocol/core/lib/crypto'
+import { IRequestForAttestation, Crypto } from '@kiltprotocol/core'
 import {
   VerifiableCredential,
   revealPropertyProof,
@@ -25,7 +24,7 @@ import {
 export async function recreateRevealPropertiesProof(
   credential: VerifiableCredential,
   claimNonceMap: IRequestForAttestation['claimNonceMap'],
-  options: { hasher?: Hasher } = {}
+  options: { hasher?: Crypto.Hasher } = {}
 ): Promise<revealPropertyProof> {
   const {
     hasher = (value, nonce?) => blake2AsHex((nonce || '') + value, 256),

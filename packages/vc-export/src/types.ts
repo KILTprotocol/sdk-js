@@ -1,6 +1,5 @@
 import { AnyJson } from '@polkadot/types/types'
-import { ICType } from '@kiltprotocol/core'
-import { IDidDocumentPublicKey } from '@kiltprotocol/core/lib/did/Did'
+import { ICType, IDidDocument } from '@kiltprotocol/core'
 
 /**
  * Constant for default context.
@@ -27,12 +26,15 @@ export const KILT_SELF_SIGNED_PROOF_TYPE = 'KILTSelfSigned2020'
 export const KILT_ATTESTED_PROOF_TYPE = 'KILTAttestation2020'
 export const KILT_REVEAL_PROPERTY_TYPE = 'KILTRevealProperties2020'
 
-export type publicKey = Partial<IDidDocumentPublicKey> &
+type ArrayElement<A> = A extends ReadonlyArray<infer T> ? T : never
+type IDidDocumentPublicKey = ArrayElement<IDidDocument['publicKey']>
+
+export type IPublicKeyRecord = Partial<IDidDocumentPublicKey> &
   Pick<IDidDocumentPublicKey, 'publicKeyHex' | 'type'>
 
 export interface selfSignedProof extends Proof {
   type: typeof KILT_SELF_SIGNED_PROOF_TYPE
-  verificationMethod: string | publicKey
+  verificationMethod: string | IPublicKeyRecord
   signature: string
 }
 export interface attestedProof extends Proof {

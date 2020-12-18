@@ -245,4 +245,5 @@ export default {
   errorCheck,
   hashClaimContents,
   verifyDisclosedAttributes,
+  toJsonLD,
 }

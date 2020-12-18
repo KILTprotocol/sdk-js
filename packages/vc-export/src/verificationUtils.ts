@@ -2,9 +2,7 @@ import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
 import { signatureVerify, blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
 import Ajv from 'ajv'
-import { Attestation } from '@kiltprotocol/core'
-import { hash, Hasher } from '@kiltprotocol/core/lib/crypto'
-import { CTypeModel } from '@kiltprotocol/core/lib/ctype/CTypeSchema'
+import { Attestation, Crypto, CTypeSchema } from '@kiltprotocol/core'
 import {
   VerifiableCredential,
   selfSignedProof,
@@ -53,7 +51,9 @@ export function verifySelfSignedProof(
       verificationMethod.publicKeyHex
     ) {
       if (verificationMethod.type !== 'Ed25519VerificationKey2018')
-        throw PROOF_MALFORMED_ERROR('signature missing')
+        throw PROOF_MALFORMED_ERROR(
+          `signature type unknown; expected "Ed25519VerificationKey2018", got "${verificationMethod.type}"`
+        )
       signerPubKey = verificationMethod.publicKeyHex
     } else {
       throw PROOF_MALFORMED_ERROR(
@@ -70,7 +70,7 @@ export function verifySelfSignedProof(
     const concatenated = u8aConcat(
       ...hashes.map((hexHash) => hexToU8a(hexHash))
     )
-    const rootHash = hash(concatenated)
+    const rootHash = Crypto.hash(concatenated)
 
     // throw if root hash does not match expected (=id)
     const expectedRootHash = credential.id
@@ -167,7 +167,7 @@ export async function verifyAttestedProof(
 export async function verifyRevealPropertyProof(
   credential: VerifiableCredential,
   proof: revealPropertyProof,
-  options: { hasher?: Hasher } = {}
+  options: { hasher?: Crypto.Hasher } = {}
 ): Promise<VerificationResult> {
   const {
     hasher = (value, nonce?) => blake2AsHex((nonce || '') + value, 256),
@@ -218,7 +218,7 @@ export function validateSchema(
   if (schema) {
     // there's no rule against additional properties, so we can just validate the ones that are there
     const ajv = new Ajv()
-    ajv.addMetaSchema(CTypeModel)
+    ajv.addMetaSchema(CTypeSchema.CTypeModel)
     const result = ajv.validate(schema, credential.credentialSubject)
     return {
       verified: typeof result === 'boolean' && result,

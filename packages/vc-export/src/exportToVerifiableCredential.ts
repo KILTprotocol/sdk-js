@@ -1,8 +1,7 @@
 import { decodeAddress } from '@polkadot/keyring'
 import { u8aToHex } from '@polkadot/util'
 import { AnyJson } from '@polkadot/types/types'
-import { IAttestedClaim, Did, ICType } from '@kiltprotocol/core'
-import { toJsonLD } from '@kiltprotocol/core/lib/claim/Claim.utils'
+import { IAttestedClaim, Did, ICType, ClaimUtils } from '@kiltprotocol/core'
 import {
   attestedProof,
   CredentialSchema,
@@ -35,7 +34,7 @@ export function fromAttestedClaim(
   const id = rootHash
 
   // transform & annotate claim to be json-ld and VC conformant
-  const { credentialSubject } = toJsonLD(
+  const { credentialSubject } = ClaimUtils.toJsonLD(
     { ...claim, owner: subjectDid ? `did:kilt:${claim.owner}` : claim.owner },
     false
   ) as Record<string, Record<string, AnyJson>>
