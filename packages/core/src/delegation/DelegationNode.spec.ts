@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/delegation
+ * @ignore
+ */
+
 import { BlockchainUtils } from '../blockchain'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,

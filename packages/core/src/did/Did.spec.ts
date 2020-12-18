@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/did
+ * @ignore
+ */
+
 import { U8aFixed } from '@polkadot/types'
 import { Did, IDid } from '..'
 import { BlockchainUtils } from '../blockchain'

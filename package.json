@@ -13,7 +13,12 @@
     "lint": "eslint packages --format=codeframe",
     "lint:fix": "yarn lint --fix",
     "style": "prettier -l packages",
-    "style:fix": "yarn style --write"
+    "style:fix": "yarn style --write",
+    "test": "jest --coverage --group=unit",
+    "test:ci": "yarn test --ci",
+    "test:integration:run": "jest --group=integration -b -w 3 --silent",
+    "test:integration": "{ lsof -i :9944 > /dev/null && yarn test:integration:run; } || echo 'Can not connect to chain. Is it running?'; exit 1;",
+    "test:watch": "yarn test --watch"
   },
   "husky": {
     "hooks": {
@@ -29,6 +34,7 @@
   "devDependencies": {
     "@commitlint/cli": "^9.0.1",
     "@commitlint/config-conventional": "^9.0.1",
+    "@types/jest": "^26.0.7",
     "@typescript-eslint/eslint-plugin": "^3.7.1",
     "@typescript-eslint/parser": "^3.7.1",
     "eslint": "^7.5.0",
@@ -40,7 +46,13 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-tsc": "^1.2.0",
     "husky": "^4.2.5",
-    "prettier": "^2.0.5"
+    "jest": "^26.2.0",
+    "jest-docblock": "^26.0.0",
+    "jest-runner": "^26.2.0",
+    "jest-runner-groups": "^2.0.1",
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.1.4",
+    "typescript": "^3.9.7"
   },
   "version": "0.19.1-15"
 }

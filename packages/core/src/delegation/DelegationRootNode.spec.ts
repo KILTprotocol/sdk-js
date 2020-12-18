@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/delegation
+ * @ignore
+ */
+
 import { Crypto, Identity } from '..'
 import { BlockchainUtils } from '../blockchain'
 import getCached from '../blockchainApiConnection'

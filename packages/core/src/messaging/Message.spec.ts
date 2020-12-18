@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/messaging
+ * @ignore
+ */
+
 import { IAttestedClaim, Verifier } from '..'
 import Crypto from '../crypto'
 import { EncryptedAsymmetricString } from '../crypto/Crypto'

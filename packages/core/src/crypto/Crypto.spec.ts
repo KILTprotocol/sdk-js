@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/crypto
+ * @ignore
+ */
+
 import * as string from '@polkadot/util/string'
 import Identity from '../identity/Identity'
 import Crypto from './index'

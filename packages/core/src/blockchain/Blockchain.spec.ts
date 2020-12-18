@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/blockchain
+ * @ignore
+ */
+
 /* eslint-disable dot-notation */
 import { SubmittableResult } from '@polkadot/api/submittable'
 import { Text } from '@polkadot/types'

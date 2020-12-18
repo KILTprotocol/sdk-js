@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/ctype
+ * @ignore
+ */
+
 import CType from './CType'
 import Identity from '../identity/Identity'
 import ICType from '../types/CType'
