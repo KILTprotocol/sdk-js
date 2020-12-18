@@ -1,7 +1,7 @@
 import { blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
-import { IRequestForAttestation } from '../..'
-import { Hasher } from '../../crypto'
+import { IRequestForAttestation } from '@kiltprotocol/core'
+import { Hasher } from '@kiltprotocol/core/lib/crypto'
 import {
   VerifiableCredential,
   revealPropertyProof,

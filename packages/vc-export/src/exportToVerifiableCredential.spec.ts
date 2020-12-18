@@ -1,6 +1,14 @@
-import { Attestation, IRequestForAttestation } from '../..'
-import AttestedClaim from '../../attestedclaim'
-import CType from '../../ctype'
+/**
+ * @packageDocumentation
+ * @group unit/vc-export
+ * @ignore
+ */
+import {
+  Attestation,
+  IRequestForAttestation,
+  AttestedClaim,
+  CType,
+} from '@kiltprotocol/core'
 import toVC from './exportToVerifiableCredential'
 import verificationUtils from './verificationUtils'
 import claimerUtils from './presentationUtils'
@@ -20,7 +28,7 @@ jest.mock('jsonld', () => {
   }
 })
 
-jest.mock('../../attestation/Attestation.chain', () => {
+jest.mock('@kiltprotocol/core/lib/attestation/Attestation.chain', () => {
   return { query: jest.fn() }
 })
 
@@ -202,7 +210,7 @@ describe('proofs', () => {
   })
 
   describe('on-chain proof', () => {
-    require('../../attestation/Attestation.chain').query.mockResolvedValue(
+    require('@kiltprotocol/core/lib/attestation/Attestation.chain').query.mockResolvedValue(
       Attestation.fromAttestation(credential.attestation)
     )
 

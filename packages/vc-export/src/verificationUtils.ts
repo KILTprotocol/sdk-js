@@ -2,7 +2,9 @@ import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
 import { signatureVerify, blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
 import Ajv from 'ajv'
-import { hash, Hasher } from '../../crypto'
+import { Attestation } from '@kiltprotocol/core'
+import { hash, Hasher } from '@kiltprotocol/core/lib/crypto'
+import { CTypeModel } from '@kiltprotocol/core/lib/ctype/CTypeSchema'
 import {
   VerifiableCredential,
   selfSignedProof,
@@ -12,8 +14,6 @@ import {
   revealPropertyProof,
   KILT_REVEAL_PROPERTY_TYPE,
 } from './types'
-import { Attestation } from '../..'
-import { CTypeModel } from '../../ctype/CTypeSchema'
 
 export interface VerificationResult {
   verified: boolean

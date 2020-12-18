@@ -1,8 +1,8 @@
 import { decodeAddress } from '@polkadot/keyring'
 import { u8aToHex } from '@polkadot/util'
 import { AnyJson } from '@polkadot/types/types'
-import { IAttestedClaim, Did, ICType } from '../..'
-import { toJsonLD } from '../../claim/Claim.utils'
+import { IAttestedClaim, Did, ICType } from '@kiltprotocol/core'
+import { toJsonLD } from '@kiltprotocol/core/lib/claim/Claim.utils'
 import {
   attestedProof,
   CredentialSchema,
