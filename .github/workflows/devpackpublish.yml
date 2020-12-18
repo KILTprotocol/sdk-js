@@ -1,15 +1,15 @@
-name: Publish package to github packages
+name: Publish prerelease package to npm
 on:
   push:
     branches:
       - develop
     paths:
-      - '**/*.ts'
-      - 'package.json'
-      - '!**/*.spec.ts'
-      - '!**/__integrationtests__'
-      - '!**/__mocks__'
-      - '!docs/**'
+      - "**/*.ts"
+      - "package.json"
+      - "!**/*.spec.ts"
+      - "!**/__integrationtests__"
+      - "!**/__mocks__"
+      - "!docs/**"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,18 +19,17 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT }}
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 10
-          registry-url: https://registry.npmjs.org/
       - name: Install dependencies
         run: yarn install --immutable
       - name: Set package version as prerelease
-        run: yarn version prerelease
+        run: yarn run version prerelease
       - name: Publish to npm
-        run: npm publish --access public --tag dev
+        run: yarn run publish --tag dev
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.npm_token }}
       - name: Commit files
         run: |
           git config --local user.name "Github Action"
@@ -38,17 +37,16 @@ jobs:
           git add .
           git commit -m "[CI Skip] ci: publish prerelease" -n
           git push
-      # - name: Push changes
-      #   uses: ad-m/github-push-action@master
-      #   with:
-      #     github_token: ${{ secrets.GH_PAT }}
-      #     branch: ${{ github.ref }}
-
   dispatch:
     needs: build
     strategy:
       matrix:
-        repo: ['KILTprotocol/kilt-workshop-101', 'KILTprotocol/demo-client']
+        repo:
+          [
+            "KILTprotocol/kilt-workshop-101",
+            "KILTprotocol/demo-client",
+            "KILTprotocol/prototype-services",
+          ]
     runs-on: ubuntu-latest
     steps:
       - name: Repository dispatch

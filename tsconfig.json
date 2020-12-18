@@ -1,40 +1,15 @@
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "outDir": "build",
-    "module": "none",
-    "target": "es2017",
-    "lib": ["es6"],
-    "sourceMap": false,
-    "strict": true,
-    "allowJs": true,
-    "esModuleInterop": true,
-    "jsx": "preserve",
-    "moduleResolution": "node",
-    "rootDir": "src",
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noImplicitAny": true,
-    "importHelpers": true,
-    "strictNullChecks": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": true
-  },
-  "include": ["./src/**/*.ts", "./src/**/*.js"],
+  "extends": "./tsconfig.build.json",
   "exclude": [
-    "node_modules",
-    "coverage",
-    "build",
-    "scripts",
-    "acceptance-tests",
-    "webpack",
-    "jest",
-    "src/setupTests.ts",
-    "jest.config.js",
-    "docs",
-    "**/*.spec.ts",
-    "src/__integrationtests__",
-    "**/__mocks__"
-  ]
+    "docs/**/*"
+  ],
+  "compilerOptions": {
+    "baseUrl": "./packages",
+    "paths": {
+      "@kiltprotocol/sdk-js": ["sdk-js/src"],
+      "@kiltprotocol/core": ["core/src"],
+      "@kiltprotocol/core/lib/*": ["core/src/*"]
+    }
+  },
+  "skipLibCheck": true
 }

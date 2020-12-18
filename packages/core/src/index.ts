@@ -26,13 +26,13 @@ import {
   PublicAttesterIdentity,
   PublicIdentity,
 } from './identity'
-import { connect, disconnect } from './kilt'
 import Message from './messaging'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {
   RequestForAttestationUtils,
 } from './requestforattestation'
 
+export { connect, disconnect } from './kilt'
 export { SubmittableResult } from '@polkadot/api'
 export { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 export * from './errorhandling'
@@ -102,31 +102,4 @@ export {
   Credential,
   QuoteUtils,
   QuoteSchema,
-}
-
-// ---- Default export for ease of use ----
-export default {
-  connect,
-  disconnect,
-  Balance,
-  Identity,
-  AttesterIdentity,
-  PublicIdentity,
-  PublicAttesterIdentity,
-  CType,
-  CTypeMetadata,
-  Claim,
-  RequestForAttestation,
-  Attestation,
-  AttestedClaim,
-  DelegationNode,
-  DelegationRootNode,
-  Did,
-  Message,
-  Verifier,
-  Claimer,
-  Accumulator,
-  CombinedPresentation,
-  Attester,
-  Credential,
 }
