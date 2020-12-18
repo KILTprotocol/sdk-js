@@ -46,8 +46,8 @@ jobs:
         run: |
           yarn install --immutable
           yarn lint
-          yarn test:ci
           yarn build
+          yarn test:ci
         env:
           CI: true
 
@@ -83,6 +83,7 @@ jobs:
           IMAGE_TAG: latest-develop
         run: |
           yarn install --immutable
+          yarn build
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
           sleep 5s
@@ -121,6 +122,7 @@ jobs:
           IMAGE_TAG: latest-develop
         run: |
           yarn install --immutable
+          yarn build
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
           sleep 5s
@@ -159,6 +161,7 @@ jobs:
           IMAGE_TAG: latest-develop
         run: |
           yarn install --immutable
+          yarn build
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
           sleep 5s
