@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/actor
+ * @ignore
+ */
+
 import * as gabi from '@kiltprotocol/portablegabi'
 import { stringToHex } from '@polkadot/util'
 import {

@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/delegation
+ * @ignore
+ */
+
 import { Identity } from '..'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import { hashStr } from '../crypto'

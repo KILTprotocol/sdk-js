@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/quote
+ * @ignore
+ */
+
 import { hashObjectAsStr, verify } from '../crypto/Crypto'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'

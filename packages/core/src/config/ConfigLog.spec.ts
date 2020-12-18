@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/config
+ * @ignore
+ */
+
 import { LogLevel, Logger } from 'typescript-logging'
 import { factory, modifyLogLevel } from './ConfigLog'
 

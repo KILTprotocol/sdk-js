@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/claim
+ * @ignore
+ */
+
 import { IClaim } from '..'
 import { hashClaimContents, toJsonLD } from './Claim.utils'
 

@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/credential
+ * @ignore
+ */
+
 import { AttesterIdentity } from '..'
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'

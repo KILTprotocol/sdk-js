@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/claim
+ * @ignore
+ */
+
 import CType from '../ctype/CType'
 import {
   ERROR_ADDRESS_INVALID,
