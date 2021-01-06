@@ -22,7 +22,7 @@ const DEFAULT_DEBUG_LEVEL =
     : LogLevel.Error
 
 export interface configOpts {
-  address?: string
+  address: string
   logLevel: LogLevel
 }
 
@@ -44,41 +44,47 @@ export function modifyLogLevel(level: LogLevel): LogLevel {
   return actualLevel
 }
 
-export class ConfigService {
-  private readonly props: configOpts
+let configuration: configOpts = {
+  logLevel: DEFAULT_DEBUG_LEVEL,
+  address: '',
+}
 
-  public constructor(config: configOpts) {
-    this.props = config
+function getAddress(): configOpts['address'] {
+  if (!configuration.address) {
+    throw ERROR_WS_ADDRESS_NOT_SET()
   }
+  return configuration.address
 
-  get host(): string {
-    if (!this.props.address) {
-      throw ERROR_WS_ADDRESS_NOT_SET()
-    }
-    return this.props.address
+}
+
+export function get<T = configOpts, K = keyof T>(configOpt: K): T[K] {
+  if (typeof configuration[configOpt] === 'undefined')
+    throw new Error(`GENERIC NOT CONFIGURED ERROR FOR ${configOpt}`)
+  if (configOpt === 'address') {
+    return getAddress()
   }
+  return configuration[configOpt]
+}
 
-  set host(address: string) {
-    this.props.address = address
-  }
-
-  get logging(): LogLevel {
-    return this.props.logLevel
-  }
-
-  set logging(level: LogLevel) {
-    this.props.logLevel = modifyLogLevel(level)
+function setLogLevel(logLevel: LogLevel | undefined): void {
+  if (logLevel || logLevel === 0) {
+    modifyLogLevel(logLevel)
   }
 }
 
-export const configuration = new ConfigService({
-  logLevel: DEFAULT_DEBUG_LEVEL,
-})
+function setAddress(address: Required<configOpts>['address']): void {
+  configuration.address = address
+}
+
+export function set<K extends Partial<configOpts>>(opts: K): void {
+  setLogLevel(opts.logLevel)
+  configuration = { ...configuration, ...opts }
+}
 
 // Create options instance and specify 1 LogGroupRule:
 // * LogLevel Error on default, env DEBUG = 'true' changes Level to Debug.throws
 const options = new LoggerFactoryOptions().addLogGroupRule(
-  new LogGroupRule(new RegExp('.+'), configuration.logging)
+  new LogGroupRule(new RegExp('.+'), get('logLevel'))
 )
 // Create a named loggerfactory and pass in the options and export the factory.
 // Named is since version 0.2.+ (it's recommended for future usage)
