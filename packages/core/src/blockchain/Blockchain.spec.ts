@@ -233,7 +233,7 @@ describe('Tx logic', () => {
     })
   })
 
-  describe('exported function submitSignedTx', () => {
+  describe('utils exported function submitSignedTx', () => {
     it('catches ERROR_TRANSACTION_USURPED and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
       setDefault({ isUsurped: true })
       const chain = new Blockchain(api)

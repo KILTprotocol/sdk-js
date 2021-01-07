@@ -90,7 +90,7 @@ export function parseSubscriptionOptions(
  * @returns A promise which can be used to track transaction status.
  * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
  */
-export async function submitSignedTx(
+export async function submitSignedTxRaw(
   tx: SubmittableExtrinsic,
   opts: SubscriptionPromiseOptions
 ): Promise<SubmittableResult> {
@@ -100,22 +100,31 @@ export async function submitSignedTx(
   const unsubscribe = await tx
     .send(subscription)
     .catch(async (reason: Error) => {
-      if (IS_RELEVANT_ERROR(reason)) {
-        return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
-      }
       return Promise.reject(reason)
     })
 
   const result = await promise
     .catch(async (reason: Error) => {
-      if (reason.message === ERROR_TRANSACTION_USURPED().message) {
-        return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
-      }
       return Promise.reject(reason)
     })
     .finally(() => unsubscribe())
 
   return result
+}
+
+export async function submitSignedTx(
+  tx: SubmittableExtrinsic,
+  opts: SubscriptionPromiseOptions
+): Promise<SubmittableResult> {
+  return submitSignedTxRaw(tx, opts).catch((reason: Error) => {
+    if (IS_RELEVANT_ERROR(reason)) {
+      return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
+    }
+    if (reason.message === ERROR_TRANSACTION_USURPED().message) {
+      return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
+    }
+    return Promise.reject(reason)
+  })
 }
 
 /**
