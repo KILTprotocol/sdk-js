@@ -93,6 +93,8 @@ describe('submitSignedTx checks for specific recoverable errors that are thrown 
       errorSignature,
       errorSigner.toPayload()
     )
-    expect(() => submitSignedTxRaw(errorTx, { resolveOn: IS_IN_BLOCK })).rejects.toThrow()
+    expect(() =>
+      submitSignedTxRaw(errorTx, { resolveOn: IS_IN_BLOCK })
+    ).rejects.toThrow('1010: Invalid Transaction: Transaction is outdated')
   })
 })
