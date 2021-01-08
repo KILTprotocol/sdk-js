@@ -80,7 +80,7 @@ describe('when there is a dev chain with a faucet', () => {
     expect(balanceBefore.sub(balanceAfter).gt(MIN_TRANSACTION)).toBeTruthy()
     expect(balanceIdent.toNumber()).toBe(MIN_TRANSACTION.toNumber())
     expect(funny).toBeCalled()
-  }, 30_000)
+  }, 60_000)
 })
 
 describe('When there are haves and have-nots', () => {
@@ -140,7 +140,7 @@ describe('When there are haves and have-nots', () => {
     ])
     expect(zeroBalance.toString()).toEqual('0')
     expect(newBalance.lt(RichieBalance))
-  }, 30_000)
+  }, 60_000)
 
   it('should be able to make a new transaction once the last is ready', async () => {
     const listener = jest.fn()
@@ -158,7 +158,7 @@ describe('When there are haves and have-nots', () => {
       expect.anything()
     )
     expect(listener).toBeCalledTimes(2)
-  }, 30_000)
+  }, 60_000)
 
   it('should be able to make multiple transactions at once', async () => {
     const listener = jest.fn()

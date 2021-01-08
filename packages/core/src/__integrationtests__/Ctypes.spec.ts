@@ -12,7 +12,7 @@ import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { ERROR_CTYPE_ALREADY_EXISTS } from '../errorhandling/ExtrinsicError'
 import ICType from '../types/CType'
-import { wannabeFaucet } from './utils'
+import { makeFaucet } from './utils'
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
@@ -37,7 +37,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }
 
   beforeAll(async () => {
-    ctypeCreator = await wannabeFaucet
+    ctypeCreator = await makeFaucet()
   })
 
   it('should not be possible to create a claim type w/o tokens', async () => {
