@@ -103,7 +103,6 @@ export function compress(
     reqForAtt.rootHash,
     compressLegitimation(reqForAtt.legitimations),
     reqForAtt.delegationId,
-    reqForAtt.privacyEnhancement,
   ]
 }
 
@@ -120,7 +119,7 @@ export function compress(
 export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
-  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 8) {
+  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 7) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }
   return {
@@ -131,7 +130,6 @@ export function decompress(
     rootHash: reqForAtt[4],
     legitimations: decompressLegitimation(reqForAtt[5]),
     delegationId: reqForAtt[6],
-    privacyEnhancement: reqForAtt[7],
   }
 }
 

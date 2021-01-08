@@ -10,18 +10,12 @@
  * @module RequestForAttestation
  * @preferred
  */
-import {
-  AttestationRequest,
-  AttesterPublicKey,
-  ClaimerAttestationSession,
-} from '@kiltprotocol/portablegabi'
 import { validateLegitimations } from '../util/DataUtils'
 import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { coToUInt8, hash, u8aConcat, u8aToHex, verify } from '../crypto/Crypto'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import { IInitiateAttestation } from '../messaging/Message'
 import IAttestedClaim from '../types/AttestedClaim'
 import IClaim from '../types/Claim'
 import { IDelegationBaseNode } from '../types/Delegation'
@@ -47,8 +41,6 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 export type Options = {
   legitimations?: AttestedClaim[]
   delegationId?: IDelegationBaseNode['id']
-  initiateAttestationMsg?: IInitiateAttestation
-  attesterPubKey?: AttesterPublicKey
 }
 
 export default class RequestForAttestation implements IRequestForAttestation {
@@ -91,45 +83,10 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public static async fromClaimAndIdentity(
     claim: IClaim,
     identity: Identity,
-    {
-      legitimations,
-      delegationId,
-      initiateAttestationMsg,
-      attesterPubKey,
-    }: Options = {}
-  ): Promise<{
-    message: RequestForAttestation
-    session: ClaimerAttestationSession | null
-  }> {
+    { legitimations, delegationId }: Options = {}
+  ): Promise<RequestForAttestation> {
     if (claim.owner !== identity.address) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH()
-    }
-
-    let peRequest: AttestationRequest | null = null
-    let session: ClaimerAttestationSession | null = null
-    if (
-      typeof initiateAttestationMsg !== 'undefined' &&
-      typeof attesterPubKey !== 'undefined'
-    ) {
-      const rawClaim: { [id: string]: any } = {
-        claim,
-      }
-      if (typeof legitimations !== 'undefined') {
-        rawClaim.legitimations = legitimations
-      }
-      if (typeof delegationId !== 'undefined') {
-        rawClaim.delegationId = delegationId
-      }
-      if (!identity.claimer) {
-        throw SDKErrors.ERROR_IDENTITY_NOT_PE_ENABLED()
-      }
-      const peSessionMessage = await identity.claimer.requestAttestation({
-        claim: rawClaim,
-        startAttestationMsg: initiateAttestationMsg.content,
-        attesterPubKey,
-      })
-      peRequest = peSessionMessage.message
-      session = peSessionMessage.session
     }
 
     const {
@@ -143,19 +100,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
       delegationId,
     })
 
-    return {
-      message: new RequestForAttestation({
-        claim,
-        legitimations: legitimations || [],
-        claimHashes,
-        claimNonceMap,
-        rootHash,
-        claimerSignature: RequestForAttestation.sign(identity, rootHash),
-        delegationId: delegationId || null,
-        privacyEnhancement: peRequest,
-      }),
-      session,
-    }
+    return new RequestForAttestation({
+      claim,
+      legitimations: legitimations || [],
+      claimHashes,
+      claimNonceMap,
+      rootHash,
+      claimerSignature: RequestForAttestation.sign(identity, rootHash),
+      delegationId: delegationId || null,
+    })
   }
 
   /**
@@ -182,7 +135,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public claimHashes: string[]
   public claimNonceMap: Record<string, string>
   public rootHash: Hash
-  public privacyEnhancement: AttestationRequest | null
   public delegationId: IDelegationBaseNode['id'] | null
 
   /**
@@ -215,7 +167,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.claimerSignature = requestForAttestationInput.claimerSignature
     this.verifySignature()
     this.verifyData()
-    this.privacyEnhancement = requestForAttestationInput.privacyEnhancement
   }
 
   /**
@@ -340,11 +291,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return RequestForAttestation.verifyRootHash(this)
   }
 
-  private static sign(identity: Identity, rootHash: Hash): string {
+  protected static sign(identity: Identity, rootHash: Hash): string {
     return identity.signStr(rootHash)
   }
 
-  private static getHashLeaves(
+  protected static getHashLeaves(
     claimHashes: Hash[],
     legitimations: IAttestedClaim[],
     delegationId: IDelegationBaseNode['id'] | null
@@ -389,7 +340,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return RequestForAttestation.fromRequest(decompressedRequestForAttestation)
   }
 
-  private static calculateRootHash(
+  protected static calculateRootHash(
     request: Partial<IRequestForAttestation>
   ): Hash {
     const hashes: Uint8Array[] = RequestForAttestation.getHashLeaves(

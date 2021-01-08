@@ -288,10 +288,10 @@ describe('blank ctypes', () => {
 
     expect(
       (await requestForAttestation.fromClaimAndIdentity(claimA1, identityAlice))
-        .message.rootHash
+        .rootHash
     ).not.toEqual(
       (await requestForAttestation.fromClaimAndIdentity(claimA2, identityAlice))
-        .message.rootHash
+        .rootHash
     )
   })
   it('typeguard returns true or false for complete or incomplete CTypes', () => {

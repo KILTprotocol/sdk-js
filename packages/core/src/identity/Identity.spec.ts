@@ -6,8 +6,6 @@
 
 import * as u8aUtil from '@polkadot/util/u8a'
 import { coToUInt8 } from '../crypto/Crypto'
-import constants from '../test/constants'
-import AttesterIdentity from './AttesterIdentity'
 import Identity from './Identity'
 import PublicIdentity from './PublicIdentity'
 
@@ -92,21 +90,5 @@ describe('Identity', () => {
     expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
       alice.boxKeyPair.publicKey
     )
-  })
-
-  it('should initiate attestation with gabi keys (PE)', async () => {
-    const alice = await AttesterIdentity.buildFromMnemonic(
-      Identity.generateMnemonic(),
-      {
-        key: {
-          publicKey: constants.PUBLIC_KEY.toString(),
-          privateKey: constants.PRIVATE_KEY.toString(),
-        },
-      }
-    )
-
-    const msgSession = await alice.initiateAttestation()
-    expect(msgSession.session).toBeDefined()
-    expect(msgSession.messageBody).toBeDefined()
   })
 })

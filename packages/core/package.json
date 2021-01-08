@@ -31,7 +31,6 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@kiltprotocol/portablegabi": "^0.4.0",
     "@polkadot/api": "^2.0.1",
     "@polkadot/keyring": "^3.5.1",
     "@polkadot/types": "^2.0.1",

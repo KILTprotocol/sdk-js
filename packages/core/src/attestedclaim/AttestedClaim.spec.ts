@@ -7,10 +7,8 @@
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
-import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import constants from '../test/constants'
 import { CompressedAttestedClaim } from '../types/AttestedClaim'
 import IClaim from '../types/Claim'
 import ICType from '../types/CType'
@@ -47,11 +45,13 @@ async function buildAttestedClaim(
     claimer.address
   )
   // build request for attestation with legitimations
-  const {
-    message: requestForAttestation,
-  } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
-    legitimations,
-  })
+  const requestForAttestation = await RequestForAttestation.fromClaimAndIdentity(
+    claim,
+    claimer,
+    {
+      legitimations,
+    }
+  )
   // build attestation
   const testAttestation = Attestation.fromRequestAndPublicIdentity(
     requestForAttestation,
@@ -66,19 +66,14 @@ async function buildAttestedClaim(
 }
 
 describe('RequestForAttestation', () => {
-  let identityAlice: AttesterIdentity
+  let identityAlice: Identity
   let identityBob: Identity
   let identityCharlie: Identity
   let legitimation: AttestedClaim
   let compressedLegitimation: CompressedAttestedClaim
 
   beforeAll(async () => {
-    identityAlice = await AttesterIdentity.buildFromURI('//Alice', {
-      key: {
-        publicKey: constants.PUBLIC_KEY.toString(),
-        privateKey: constants.PRIVATE_KEY.toString(),
-      },
-    })
+    identityAlice = await Identity.buildFromURI('//Alice')
 
     identityBob = await Identity.buildFromURI('//Bob')
     identityCharlie = await Identity.buildFromURI('//Charlie')
@@ -97,7 +92,6 @@ describe('RequestForAttestation', () => {
         legitimation.request.rootHash,
         [],
         legitimation.request.delegationId,
-        null,
       ],
       [
         legitimation.attestation.claimHash,

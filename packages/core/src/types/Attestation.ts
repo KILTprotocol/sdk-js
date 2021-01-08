@@ -2,7 +2,6 @@
  * @packageDocumentation
  * @module IAttestation
  */
-import * as gabi from '@kiltprotocol/portablegabi'
 import Attestation from '../attestation/Attestation'
 import ICType from './CType'
 import { IDelegationBaseNode } from './Delegation'
@@ -14,11 +13,6 @@ export default interface IAttestation {
   owner: IPublicIdentity['address']
   delegationId: IDelegationBaseNode['id'] | null
   revoked: boolean
-}
-
-export interface IRevocationHandle {
-  attestation: IAttestation
-  witness: gabi.Witness | null
 }
 
 export type CompressedAttestation = [

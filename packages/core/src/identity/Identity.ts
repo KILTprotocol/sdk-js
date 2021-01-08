@@ -13,7 +13,6 @@
  * @preferred
  */
 
-import { Claimer } from '@kiltprotocol/portablegabi'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
@@ -40,31 +39,6 @@ import PublicIdentity from './PublicIdentity'
 type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
   | Identity['boxKeyPair']['publicKey']
-
-/**
- * The minimal required length of the seed.
- */
-const MIN_SEED_LENGTH = 32
-
-function fillRight(
-  data: Uint8Array,
-  value: number,
-  length: number
-): Uint8Array {
-  // pad seed if needed for claimer
-  let paddedSeed = u8aUtil.u8aToU8a([...data])
-  if (paddedSeed.length < length) {
-    paddedSeed = u8aUtil.u8aToU8a([
-      ...paddedSeed,
-      ...new Array<number>(length - paddedSeed.length).fill(value),
-    ])
-  }
-  return paddedSeed
-}
-
-export type IdentityBuildOptions = {
-  peEnabled?: boolean
-}
 
 export default class Identity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
@@ -100,10 +74,7 @@ export default class Identity {
    * await Identity.buildFromMnemonic(mnemonic);
    * ```
    */
-  public static async buildFromMnemonic(
-    phraseArg: string,
-    { peEnabled = false }: IdentityBuildOptions = {}
-  ): Promise<Identity> {
+  public static async buildFromMnemonic(phraseArg: string): Promise<Identity> {
     let phrase = phraseArg
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
@@ -119,7 +90,7 @@ export default class Identity {
     }
 
     const seed = mnemonicToMiniSecret(phrase)
-    return Identity.buildFromSeed(seed, { peEnabled })
+    return Identity.buildFromSeed(seed)
   }
 
   /**
@@ -135,12 +106,9 @@ export default class Identity {
    * await Identity.buildFromSeedString(seed);
    * ```
    */
-  public static async buildFromSeedString(
-    seedArg: string,
-    { peEnabled = false }: IdentityBuildOptions = {}
-  ): Promise<Identity> {
+  public static async buildFromSeedString(seedArg: string): Promise<Identity> {
     const asU8a = hexToU8a(seedArg)
-    return Identity.buildFromSeed(asU8a, { peEnabled })
+    return Identity.buildFromSeed(asU8a)
   }
 
   /**
@@ -160,21 +128,10 @@ export default class Identity {
    * await Identity.buildFromSeed(seed);
    * ```
    */
-  public static async buildFromSeed(
-    seed: Uint8Array,
-    { peEnabled = false }: IdentityBuildOptions = {}
-  ): Promise<Identity> {
+  public static async buildFromSeed(seed: Uint8Array): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
     const keyringPair = keyring.addFromSeed(seed)
-
-    // pad seed if needed for claimer
-    const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
-    let claimer = null
-    if (peEnabled) {
-      claimer = await Claimer.buildFromSeed(paddedSeed)
-    }
-
-    return new Identity(seed, keyringPair, claimer)
+    return new Identity(seed, keyringPair)
   }
 
   /**
@@ -188,36 +145,21 @@ export default class Identity {
    * Identity.buildFromURI('//Bob');
    * ```
    */
-  public static async buildFromURI(
-    uri: string,
-    { peEnabled = false }: IdentityBuildOptions = {}
-  ): Promise<Identity> {
+  public static async buildFromURI(uri: string): Promise<Identity> {
     const keyring = new Keyring({ type: 'ed25519' })
     const derived = keyring.createFromUri(uri)
     const seed = u8aUtil.u8aToU8a(uri)
-
-    let claimer = null
-    if (peEnabled) {
-      const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
-      claimer = await Claimer.buildFromSeed(paddedSeed)
-    }
-
-    return new Identity(seed, derived, claimer)
+    return new Identity(seed, derived)
   }
 
   public readonly seed: Uint8Array
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
-  public readonly claimer: Claimer | null
   public readonly signKeyringPair: KeyringPair
   public readonly boxKeyPair: BoxKeyPair
   public serviceAddress?: string
 
-  protected constructor(
-    seed: Uint8Array,
-    signKeyringPair: KeyringPair,
-    claimer: Claimer | null
-  ) {
+  protected constructor(seed: Uint8Array, signKeyringPair: KeyringPair) {
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public
     // Maybe use BIP32 and BIP44
@@ -232,7 +174,6 @@ export default class Identity {
     this.signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyringPair.publicKey)
 
     this.boxKeyPair = boxKeyPair
-    this.claimer = claimer
   }
 
   /**

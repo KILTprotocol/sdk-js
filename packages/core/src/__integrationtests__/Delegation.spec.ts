@@ -5,7 +5,7 @@
  */
 
 import { cryptoWaitReady } from '@polkadot/util-crypto'
-import { Identity } from '..'
+import { AttestedClaim, Identity } from '..'
 import Attestation from '../attestation/Attestation'
 import { IBlockchainApi } from '../blockchain/Blockchain'
 import {
@@ -15,7 +15,6 @@ import {
 } from '../blockchain/Blockchain.utils'
 import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import Claim from '../claim/Claim'
-import Credential from '../credential/Credential'
 import {
   fetchChildren,
   getAttestationHashes,
@@ -129,11 +128,13 @@ describe('when there is an account hierarchy', () => {
         content,
         claimer.address
       )
-      const {
-        message: request,
-      } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
-        delegationId: delegatedNode.id,
-      })
+      const request = await RequestForAttestation.fromClaimAndIdentity(
+        claim,
+        claimer,
+        {
+          delegationId: delegatedNode.id,
+        }
+      )
       expect(request.verifyData()).toBeTruthy()
       expect(request.verifySignature()).toBeTruthy()
 
@@ -147,11 +148,10 @@ describe('when there is an account hierarchy', () => {
         })
       )
 
-      const attClaim = await Credential.fromRequestAndAttestation(
-        claimer,
+      const attClaim = AttestedClaim.fromRequestAndAttestation(
         request,
         attestation
-      ).then((c) => c.createPresentation([]))
+      )
       expect(attClaim.verifyData()).toBeTruthy()
       await expect(attClaim.verify()).resolves.toBeTruthy()
 
