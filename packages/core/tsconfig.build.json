@@ -22,7 +22,6 @@
     "docs",
     "**/*.spec.ts",
     "src/__integrationtests__",
-    "**/__mocks__",
     "**/test"
   ]
 }

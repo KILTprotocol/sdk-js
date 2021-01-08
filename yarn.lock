@@ -791,6 +791,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kiltprotocol/actors-api@workspace:packages/actors_api":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/actors-api@workspace:packages/actors_api"
+  dependencies:
+    "@kiltprotocol/core": "workspace:*"
+    rimraf: ^3.0.2
+    typescript: ^3.9.7
+  languageName: unknown
+  linkType: soft
+
 "@kiltprotocol/core@workspace:*, @kiltprotocol/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/core@workspace:packages/core"
