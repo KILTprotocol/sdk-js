@@ -27,7 +27,7 @@ import {
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  blockchain = await getCached(DEFAULT_WS_ADDRESS, true)
 })
 
 describe('when there is a dev chain with a faucet', () => {

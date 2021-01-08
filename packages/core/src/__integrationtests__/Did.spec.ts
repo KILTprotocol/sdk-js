@@ -11,7 +11,7 @@ import { queryByAddress, queryByIdentifier } from '../did/Did.chain'
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  blockchain = await getCached(DEFAULT_WS_ADDRESS, true)
 })
 
 describe('querying DIDs that do not exist', () => {

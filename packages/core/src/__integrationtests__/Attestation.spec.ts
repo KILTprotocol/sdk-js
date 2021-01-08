@@ -35,7 +35,7 @@ import {
 let blockchain: IBlockchainApi | undefined
 let alice: Identity
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  blockchain = await getCached(DEFAULT_WS_ADDRESS, true)
   alice = Identity.buildFromURI('//Alice')
 })
 

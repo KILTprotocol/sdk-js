@@ -11,7 +11,7 @@ import { DEFAULT_WS_ADDRESS, getCached } from '../blockchainApiConnection'
 
 let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  blockchain = await getCached(DEFAULT_WS_ADDRESS, true)
 })
 
 describe('Blockchain', () => {
@@ -20,8 +20,8 @@ describe('Blockchain', () => {
     const stats = await blockchain!.getStats()
 
     expect(stats).toMatchObject({
-      chain: 'Development',
-      nodeName: 'KILT Node',
+      chain: 'KILT Collator Local Testnet',
+      nodeName: 'KILT collator',
       nodeVersion: expect.stringMatching(/.+\..+\..+/),
     })
   })
