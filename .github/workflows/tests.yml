@@ -42,22 +42,67 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: yarn install, build and test
+      - name: cache build
+        uses: actions/cache@v2
+        with:
+          path: ~/
+          key: sdk-build-${ GITHUB_REF##*/ }-${{(git rev-parse --short "$GITHUB_SHA")}}
+          restore-keys: |
+            sdk-build-${ GITHUB_REF##*/ }-
+            sdk-build-
+      - name: yarn install & build
         run: |
           yarn install --immutable
-          yarn lint
-          yarn test:ci
           yarn build
+        env:
+          CI: true
+
+  lint:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+
+      - name: get cached build
+        uses: actions/cache@v2
+        with:
+          path: ~/
+          key: sdk-build-${ GITHUB_REF##*/ }-${{(git rev-parse --short "$GITHUB_SHA")}}
+      - name: lint
+        run: yarn lint
+        env:
+          CI: true
+
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+
+      - name: get cached build
+        uses: actions/cache@v2
+        with:
+          path: ~/
+          key: sdk-build-${ GITHUB_REF##*/ }-${{(git rev-parse --short "$GITHUB_SHA")}}
+      - name: unit tests
+        run: yarn test:ci
         env:
           CI: true
 
   integration_test:
     runs-on: ubuntu-latest
 
-    needs: check_skip
+    needs: build
 
     steps:
       - uses: actions/checkout@v1
+
+      - name: get cached build
+        uses: actions/cache@v2
+        with:
+          path: ~/
+          key: sdk-build-${ GITHUB_REF##*/ }-${{(git rev-parse --short "$GITHUB_SHA")}}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -70,19 +115,13 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Use Node.js 10
-        uses: actions/setup-node@v1
-        with:
-          node-version: 10
-
-      - name: yarn install and test
+      - name: run integration tests
         timeout-minutes: 60
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: kilt/prototype-chain
           IMAGE_TAG: latest-develop
         run: |
-          yarn install --immutable
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
           sleep 5s
@@ -92,10 +131,16 @@ jobs:
   run_example:
     runs-on: ubuntu-latest
 
-    needs: check_skip
+    needs: build
 
     steps:
       - uses: actions/checkout@v1
+
+      - name: get cached build
+        uses: actions/cache@v2
+        with:
+          path: ~/
+          key: sdk-build-${ GITHUB_REF##*/ }-${{(git rev-parse --short "$GITHUB_SHA")}}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -108,19 +153,13 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Use Node.js 10
-        uses: actions/setup-node@v1
-        with:
-          node-version: 10
-
-      - name: yarn install and test
+      - name: run example
         timeout-minutes: 10
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: kilt/prototype-chain
           IMAGE_TAG: latest-develop
         run: |
-          yarn install --immutable
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
           sleep 5s
@@ -130,10 +169,16 @@ jobs:
   run_getting-started:
     runs-on: ubuntu-latest
 
-    needs: check_skip
+    needs: build
 
     steps:
       - uses: actions/checkout@v1
+
+      - name: get cached build
+        uses: actions/cache@v2
+        with:
+          path: ~/
+          key: sdk-build-${ GITHUB_REF##*/ }-${{(git rev-parse --short "$GITHUB_SHA")}}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -146,19 +191,13 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Use Node.js 10
-        uses: actions/setup-node@v1
-        with:
-          node-version: 10
-
-      - name: yarn install and test
+      - name: run getting started
         timeout-minutes: 10
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: kilt/prototype-chain
           IMAGE_TAG: latest-develop
         run: |
-          yarn install --immutable
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
           sleep 5s
