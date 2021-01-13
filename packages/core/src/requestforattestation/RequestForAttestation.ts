@@ -71,8 +71,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param option Container for different options that can be passed to this method.
    * @param option.legitimations Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
-   * @param option.initiateAttestationMsg The message object which was created during the initiation of the attestation in [[initiateAttestation]].
-   * @param option.attesterPubKey The privacy enhanced public key of the Attester.
    * @throws When claimInput's owner address does not match the supplied identity's address.
    * @throws [[ERROR_IDENTITY_MISMATCH]].
    * @returns A new [[RequestForAttestation]] object.

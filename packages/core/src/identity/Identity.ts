@@ -60,8 +60,6 @@ export default class Identity {
    * [STATIC] Builds an identity object from a mnemonic string.
    *
    * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
-   * @param options The option object.
-   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: false).
    * @throws When phraseArg contains fewer than 12 correctly separated mnemonic words.
    * @throws When the phraseArg could not be validated.
    * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]], [[ERROR_MNEMONIC_PHRASE_INVALID]].
@@ -97,8 +95,6 @@ export default class Identity {
    * [STATIC] Builds an [[Identity]], generated from a seed hex string.
    *
    * @param seedArg - Seed as hex string (Starting with 0x).
-   * @param options The option object.
-   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: false).
    * @returns  An [[Identity]].
    * @example ```javascript
    * const seed =
@@ -115,8 +111,6 @@ export default class Identity {
    * [STATIC] Builds a new [[Identity]], generated from a seed (Secret Seed).
    *
    * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
-   * @param options The option object.
-   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: false).
    * @returns An [[Identity]].
    * @example ```javascript
    * // prettier-ignore
@@ -138,8 +132,6 @@ export default class Identity {
    * [STATIC] Builds a new [[Identity]], generated from a uniform resource identifier (URIs).
    *
    * @param uri - Standard identifiers.
-   * @param options The option object.
-   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: false).
    * @returns  An [[Identity]].
    * @example ```javascript
    * Identity.buildFromURI('//Bob');

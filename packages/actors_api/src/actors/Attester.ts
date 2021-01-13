@@ -91,8 +91,7 @@ export async function issueAttestation(
  * [ASYNC] Revokes an [[Attestation]] created in [[issueAttestation]].
  *
  * @param attester The [[AttesterIdentity]] which signed the [[Attestation]] in [[issueAttestation]].
- * @param attestation The unique witness for the [[Attestation]] which was created in [[issueAttestation]].
- * @param revocationHandle
+ * @param revocationHandle A reference to the [[Attestation]] which was created in [[issueAttestation]].
  */
 export async function revokeAttestation(
   attester: Identity,

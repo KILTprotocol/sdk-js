@@ -58,7 +58,6 @@ describe('Credential', () => {
 
   it('should build from reqForAtt and Attestation', async () => {
     const cred = await Credential.fromRequestAndAttestation(
-      claimer,
       reqForAtt,
       attestation
     )
@@ -73,7 +72,6 @@ describe('Credential', () => {
 
   it('should create AttestedClaim and exclude specific attributes', async () => {
     const cred = await Credential.fromRequestAndAttestation(
-      claimer,
       reqForAtt,
       attestation
     )
@@ -84,7 +82,6 @@ describe('Credential', () => {
 
   it('should get attribute keys', async () => {
     const cred = await Credential.fromRequestAndAttestation(
-      claimer,
       reqForAtt,
       attestation
     )

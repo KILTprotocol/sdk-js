@@ -13,7 +13,6 @@
 
 import {
   AttestedClaim,
-  Identity,
   IAttestation,
   IRequestForAttestation,
 } from '@kiltprotocol/core'
@@ -37,16 +36,12 @@ export default class Credential implements ICredential {
   /**
    * Build a [[Credential]] using an attestation. The credential can be used to create privacy enhanced presentations if a session and a privacy enhanced attestation is passed.
    *
-   * @param claimer The owner of the credential.
    * @param request The request for attestation that was sent over to the attester.
    * @param attestation The attestation received from the attester.
-   * @param session The session that was created while requesting the presentation.
-   * @param attestationPE The privacy enhanced attestation which was created by the attester.
    *
    * @returns A credential that can be used to create presentations.
    */
   public static async fromRequestAndAttestation(
-    claimer: Identity,
     request: IRequestForAttestation,
     attestation: IAttestation
   ): Promise<Credential> {

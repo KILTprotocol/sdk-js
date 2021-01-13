@@ -9,7 +9,6 @@ import {
   MessageBodyType,
   IPublicIdentity,
   IRequestForAttestation,
-  PublicIdentity,
 } from '@kiltprotocol/core'
 import { factory as LoggerFactory } from '@kiltprotocol/core/lib/config/ConfigLog'
 
@@ -83,7 +82,6 @@ export class PresentationRequestBuilder {
   /**
    * [ASYNC] Concludes the presentation request.
    *
-   * @param allowPE A boolean representing whether the verifier accepts a privacy enhanced presentation.
    * @param verifier The [[Identity]] of the verifier used to sign.
    * @param claimer The [[IPublicIdentity]] for which the message should be encrypted (note: the message will be return unencrypted. Use Message.getEncryptedMessage to encrypt the message).
    * @returns A session and a message object.
@@ -175,9 +173,6 @@ async function verifyPublicPresentation(
  *
  * @param message The Claimer's presentation of the [[Credential]]s that should be verified, the result of [[createPresentation]].
  * @param session The Verifier's private verification session created in [[finalize]].
- * @param _latestAccumulators The list of the latest accumulators for each Attester which signed a [[Credential]] of this presentation.
- * @param _attesterPubKeys The privacy enhanced public keys of all [[AttesterIdentity]]s which signed the [[Credential]]s.
- * @throws When either latestAccumulators or attesterPubKeys are undefined.
  * @throws [[ERROR_MESSAGE_TYPE]].
  * @returns An object containing the keys
  * **verified** (which describes whether the [[Credential]]s could be verified)
@@ -185,8 +180,7 @@ async function verifyPublicPresentation(
  */
 export async function verifyPresentation(
   message: IMessage,
-  session: IVerifierSession,
-  _attesterPubKeys?: PublicIdentity
+  session: IVerifierSession
 ): Promise<{
   verified: boolean
   claims: Array<Partial<IRequestForAttestation | IAttestedClaim>>
