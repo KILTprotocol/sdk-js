@@ -46,9 +46,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/
-          key: sdk-build-${{ matrix.node-version }}-${ GITHUB_REF##*/ }-${GITHUB_SHA}
+          key: sdk-build-${{ matrix.node-version }}-${{ GITHUB_REF##*/ }}-${{GITHUB_SHA}}
           restore-keys: |
-            sdk-build-${{ matrix.node-version }}-${ GITHUB_REF##*/ }-
+            sdk-build-${{ matrix.node-version }}-${{ GITHUB_REF##*/ }}-
             sdk-build-${{ matrix.node-version }}-
       - name: yarn install & build
         run: |
@@ -66,7 +66,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/
-          key: sdk-build-10-${ GITHUB_REF##*/ }-${GITHUB_SHA}
+          key: sdk-build-10.x-${{ GITHUB_REF##*/ }}-${{GITHUB_SHA}}
       - name: lint
         run: yarn lint
         env:
@@ -85,7 +85,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/
-          key: sdk-build-${{ matrix.node-version }}-${ GITHUB_REF##*/ }-${GITHUB_SHA}
+          key: sdk-build-${{ matrix.node-version }}-${{ GITHUB_REF##*/ }}-${{GITHUB_SHA}}
       - name: unit tests
         run: yarn test:ci
         env:
@@ -103,7 +103,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/
-          key: sdk-build-10-${ GITHUB_REF##*/ }-${GITHUB_SHA}
+          key: sdk-build-10.x-${{ GITHUB_REF##*/ }}-${{GITHUB_SHA}}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -141,7 +141,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/
-          key: sdk-build-10-${ GITHUB_REF##*/ }-${GITHUB_SHA}
+          key: sdk-build-10.x-${{ GITHUB_REF##*/ }}-${{GITHUB_SHA}}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -179,7 +179,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/
-          key: sdk-build-10-${ GITHUB_REF##*/ }-${GITHUB_SHA}
+          key: sdk-build-10.x-${{ GITHUB_REF##*/ }}-${{GITHUB_SHA}}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
