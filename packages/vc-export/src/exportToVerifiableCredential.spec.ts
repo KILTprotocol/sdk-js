@@ -155,7 +155,7 @@ describe('proofs', () => {
   it('it verifies credential with all properties revealed', async () => {
     expect(VC.proof[2].nonces).toMatchObject(credential.request.claimNonceMap)
     expect(Object.entries(VC.proof[2].nonces)).toHaveLength(4)
-    const result = await verificationUtils.verifyRevealPropertyProof(
+    const result = await verificationUtils.verifyCredentialDigestProof(
       VC,
       VC.proof[2]
     )
@@ -174,7 +174,7 @@ describe('proofs', () => {
     const reducedCredential = { ...credential, request: reducedRequest }
     const reducedVC = toVC.fromAttestedClaim(reducedCredential)
 
-    const result = await verificationUtils.verifyRevealPropertyProof(
+    const result = await verificationUtils.verifyCredentialDigestProof(
       reducedVC,
       reducedVC.proof[2]
     )
@@ -196,7 +196,7 @@ describe('proofs', () => {
       }
     )
     const VCfromPresentation = presentation.verifiableCredential as VerifiableCredential
-    const result = await verificationUtils.verifyRevealPropertyProof(
+    const result = await verificationUtils.verifyCredentialDigestProof(
       VCfromPresentation,
       VCfromPresentation.proof[2]
     )

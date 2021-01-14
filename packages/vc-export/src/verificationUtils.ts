@@ -5,12 +5,12 @@ import Ajv from 'ajv'
 import { Attestation, Crypto, CTypeSchema } from '@kiltprotocol/core'
 import {
   VerifiableCredential,
-  selfSignedProof,
+  SelfSignedProof,
   KILT_SELF_SIGNED_PROOF_TYPE,
-  attestedProof,
+  AttestedProof,
   KILT_ATTESTED_PROOF_TYPE,
-  revealPropertyProof,
-  KILT_REVEAL_PROPERTY_TYPE,
+  CredentialDigestProof,
+  KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
 } from './types'
 
 export interface VerificationResult {
@@ -36,7 +36,7 @@ const PROOF_MALFORMED_ERROR = (reason: string): Error =>
  */
 export function verifySelfSignedProof(
   credential: VerifiableCredential,
-  proof: selfSignedProof
+  proof: SelfSignedProof
 ): VerificationResult {
   const result: VerificationResult = { verified: true, errors: [] }
   try {
@@ -61,24 +61,8 @@ export function verifySelfSignedProof(
       )
     }
 
-    // collect hashes from hash array, legitimations & delegationId
-    const hashes: string[] = credential.claimHashes.concat(
-      credential.legitimationIds,
-      credential.delegationId || []
-    )
-    // convert hex hashes to byte arrays & concatenate
-    const concatenated = u8aConcat(
-      ...hashes.map((hexHash) => hexToU8a(hexHash))
-    )
-    const rootHash = Crypto.hash(concatenated)
-
-    // throw if root hash does not match expected (=id)
-    const expectedRootHash = credential.id
-    if (expectedRootHash !== u8aToHex(rootHash))
-      throw new Error('computed root hash does not match expected')
-
     // validate signature over root hash
-    if (!signatureVerify(rootHash, proof.signature, signerPubKey).isValid)
+    if (!signatureVerify(credential.id, proof.signature, signerPubKey).isValid)
       throw new Error('signature could not be verified')
     return result
   } catch (e) {
@@ -99,7 +83,7 @@ export function verifySelfSignedProof(
  */
 export async function verifyAttestedProof(
   credential: VerifiableCredential,
-  proof: attestedProof
+  proof: AttestedProof
 ): Promise<VerificationResult> {
   const result: VerificationResult = { verified: true, errors: [] }
   try {
@@ -164,9 +148,9 @@ export async function verifyAttestedProof(
  * @param options.hasher A custom hasher. Defaults to hex(blake2-256('nonce'+'value')).
  * @returns Object indicating whether proof could be verified.
  */
-export async function verifyRevealPropertyProof(
+export async function verifyCredentialDigestProof(
   credential: VerifiableCredential,
-  proof: revealPropertyProof,
+  proof: CredentialDigestProof,
   options: { hasher?: Crypto.Hasher } = {}
 ): Promise<VerificationResult> {
   const {
@@ -175,7 +159,7 @@ export async function verifyRevealPropertyProof(
   const result: VerificationResult = { verified: true, errors: [] }
   try {
     // check proof
-    if (proof.type !== KILT_REVEAL_PROPERTY_TYPE)
+    if (proof.type !== KILT_CREDENTIAL_DIGEST_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     if (typeof proof.nonces !== 'object') {
       throw PROOF_MALFORMED_ERROR('proof must contain object "nonces"')
@@ -183,6 +167,24 @@ export async function verifyRevealPropertyProof(
     if (typeof credential.credentialSubject !== 'object')
       throw CREDENTIAL_MALFORMED_ERROR('credential subject missing')
 
+    // 1: check credential digest against credential contents & claim property hashes in proof
+    // collect hashes from hash array, legitimations & delegationId
+    const hashes: string[] = proof.claimHashes.concat(
+      credential.legitimationIds,
+      credential.delegationId || []
+    )
+    // convert hex hashes to byte arrays & concatenate
+    const concatenated = u8aConcat(
+      ...hashes.map((hexHash) => hexToU8a(hexHash))
+    )
+    const rootHash = Crypto.hash(concatenated)
+
+    // throw if root hash does not match expected (=id)
+    const expectedRootHash = credential.id
+    if (expectedRootHash !== u8aToHex(rootHash))
+      throw new Error('computed root hash does not match expected')
+
+    // 2: check individual properties against claim hashes in proof
     // expand credentialSubject keys by compacting with empty context credential to produce statements
     const flattened = await jsonld.compact(credential.credentialSubject, {})
     const statements = Object.entries(flattened).map(([key, value]) =>
@@ -190,19 +192,34 @@ export async function verifyRevealPropertyProof(
     )
     const expectedUnsalted = Object.keys(proof.nonces)
 
-    statements.forEach((stmt) => {
-      const unsalted = hasher(stmt)
-      if (!expectedUnsalted.includes(unsalted))
-        throw PROOF_MALFORMED_ERROR(
-          `Proof contains no digest for statement ${stmt}`
-        )
-      const nonce = proof.nonces[unsalted]
-      if (!credential.claimHashes.includes(hasher(unsalted, nonce)))
-        throw new Error(
-          `Proof for statement ${stmt} not valid against credential`
-        )
-    })
-    return result
+    return statements.reduce<VerificationResult>(
+      (r, stmt) => {
+        const unsalted = hasher(stmt)
+        if (!expectedUnsalted.includes(unsalted))
+          return {
+            verified: false,
+            errors: [
+              ...r.errors,
+              PROOF_MALFORMED_ERROR(
+                `Proof contains no digest for statement ${stmt}`
+              ),
+            ],
+          }
+        const nonce = proof.nonces[unsalted]
+        if (!proof.claimHashes.includes(hasher(unsalted, nonce)))
+          return {
+            verified: false,
+            errors: [
+              ...r.errors,
+              new Error(
+                `Proof for statement ${stmt} not valid against claimHashes`
+              ),
+            ],
+          }
+        return r
+      },
+      { verified: true, errors: [] }
+    )
   } catch (e) {
     result.verified = false
     result.errors = [e]
@@ -230,7 +247,7 @@ export function validateSchema(
 
 export default {
   verifySelfSignedProof,
-  verifyRevealPropertyProof,
+  verifyCredentialDigestProof,
   verifyAttestedProof,
   validateSchema,
 }

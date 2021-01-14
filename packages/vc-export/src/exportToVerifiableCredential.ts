@@ -3,16 +3,17 @@ import { u8aToHex } from '@polkadot/util'
 import { AnyJson } from '@polkadot/types/types'
 import { IAttestedClaim, Did, ICType, ClaimUtils } from '@kiltprotocol/core'
 import {
-  attestedProof,
+  AttestedProof,
+  CredentialDigestProof,
   CredentialSchema,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
   JSON_SCHEMA_TYPE,
   KILT_ATTESTED_PROOF_TYPE,
-  KILT_REVEAL_PROPERTY_TYPE,
+  KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   KILT_SELF_SIGNED_PROOF_TYPE,
   Proof,
-  selfSignedProof,
+  SelfSignedProof,
   VerifiableCredential,
 } from './types'
 
@@ -69,7 +70,6 @@ export function fromAttestedClaim(
     credentialSubject,
     legitimationIds,
     delegationId: delegationId || undefined,
-    claimHashes,
     issuer,
     issuanceDate,
     nonTransferable: true,
@@ -78,27 +78,30 @@ export function fromAttestedClaim(
   }
 
   // add self-signed proof
-  VC.proof.push({
+  const sSProof: SelfSignedProof = {
     type: KILT_SELF_SIGNED_PROOF_TYPE,
     verificationMethod: {
       type: 'Ed25519VerificationKey2018',
       publicKeyHex: u8aToHex(decodeAddress(claim.owner)),
     },
     signature: claimerSignature,
-  } as selfSignedProof)
+  }
+  VC.proof.push(sSProof)
 
   // add attestation proof
-  const attester = input.attestation.owner
-  VC.proof.push({
+  const attProof: AttestedProof = {
     type: KILT_ATTESTED_PROOF_TYPE,
-    attesterAddress: attester,
-  } as attestedProof)
+    attesterAddress: input.attestation.owner,
+  }
+  VC.proof.push(attProof)
 
   // add hashed properties proof
-  VC.proof.push({
-    type: KILT_REVEAL_PROPERTY_TYPE,
+  const cDProof: CredentialDigestProof = {
+    type: KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
     nonces: input.request.claimNonceMap,
-  })
+    claimHashes,
+  }
+  VC.proof.push(cDProof)
 
   return VC
 }

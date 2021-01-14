@@ -24,7 +24,7 @@ export interface Proof {
 
 export const KILT_SELF_SIGNED_PROOF_TYPE = 'KILTSelfSigned2020'
 export const KILT_ATTESTED_PROOF_TYPE = 'KILTAttestation2020'
-export const KILT_REVEAL_PROPERTY_TYPE = 'KILTRevealProperties2020'
+export const KILT_CREDENTIAL_DIGEST_PROOF_TYPE = 'KILTCredentialDigest2020'
 
 type ArrayElement<A> = A extends ReadonlyArray<infer T> ? T : never
 type IDidDocumentPublicKey = ArrayElement<IDidDocument['publicKey']>
@@ -32,19 +32,22 @@ type IDidDocumentPublicKey = ArrayElement<IDidDocument['publicKey']>
 export type IPublicKeyRecord = Partial<IDidDocumentPublicKey> &
   Pick<IDidDocumentPublicKey, 'publicKeyHex' | 'type'>
 
-export interface selfSignedProof extends Proof {
+export interface SelfSignedProof extends Proof {
   type: typeof KILT_SELF_SIGNED_PROOF_TYPE
   verificationMethod: string | IPublicKeyRecord
   signature: string
 }
-export interface attestedProof extends Proof {
+export interface AttestedProof extends Proof {
   type: typeof KILT_ATTESTED_PROOF_TYPE
   attesterAddress: string
   delegationId?: string
 }
-export interface revealPropertyProof extends Proof {
-  type: typeof KILT_REVEAL_PROPERTY_TYPE
+export interface CredentialDigestProof extends Proof {
+  type: typeof KILT_CREDENTIAL_DIGEST_PROOF_TYPE
+  // map of unsalted property digests and nonces
   nonces: Record<string, string>
+  // salted hashes of statements in credentialSubject to allow selective disclosure.
+  claimHashes: string[]
 }
 
 export const KILT_STATUS_TYPE = 'KILTProtocolStatus2020'
@@ -73,8 +76,6 @@ export interface VerifiableCredential {
   id: string
   // claims about the subjects of the credential
   credentialSubject: Record<string, AnyJson>
-  // salted hashes of statements in credentialSubject to allow selective disclosure
-  claimHashes: string[]
   // the entity that issued the credential
   issuer: string
   // when the credential was issued

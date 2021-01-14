@@ -1,13 +1,13 @@
 import { blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
-import { IRequestForAttestation, Crypto } from '@kiltprotocol/core'
+import { Crypto } from '@kiltprotocol/core'
 import {
   VerifiableCredential,
-  revealPropertyProof,
-  KILT_REVEAL_PROPERTY_TYPE,
+  KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLEPRESENTATION_TYPE,
   VerifiablePresentation,
+  CredentialDigestProof,
 } from './types'
 
 /**
@@ -15,17 +15,17 @@ import {
  * For each property to be revealed, it contains an unsalted hash of the statement plus a nonce which is required to verify against the salted hash in the credential.
  * Statements and nonces are mapped to each other through the unsalted hashes.
  *
- * @param credential VerifiableCredential object containing only the credentialSubject properties you want to reveal.
- * @param claimNonceMap The nonce map used to derive nonces from; will be filtered. Can be taken from a VC or Kilt claim.
+ * @param credential [[VerifiableCredential]] object containing only the credentialSubject properties you want to reveal.
+ * @param proof The [[CredentialDigestProof]] to update.
  * @param options Options.
  * @param options.hasher The hashing function used to generate digests for nonce map. Should be the one used in creating the original credential.
  * @returns Proof object that can be included in a Verifiable Credential / Verifiable Presentation's proof section.
  */
-export async function recreateRevealPropertiesProof(
+export async function updateCredentialDigestProof(
   credential: VerifiableCredential,
-  claimNonceMap: IRequestForAttestation['claimNonceMap'],
+  proof: CredentialDigestProof,
   options: { hasher?: Crypto.Hasher } = {}
-): Promise<revealPropertyProof> {
+): Promise<CredentialDigestProof> {
   const {
     hasher = (value, nonce?) => blake2AsHex((nonce || '') + value, 256),
   } = options
@@ -44,18 +44,15 @@ export async function recreateRevealPropertiesProof(
     )
   statements.forEach((stmt) => {
     const digest = hasher(stmt)
-    if (Object.keys(claimNonceMap).includes(digest)) {
-      claimNonces[digest] = claimNonceMap[digest]
+    if (Object.keys(proof.nonces).includes(digest)) {
+      claimNonces[digest] = proof.nonces[digest]
     } else {
       throw new Error(`nonce missing for ${stmt}`)
     }
   })
 
   // return the proof containing nonces which can be mapped via an unsalted hash of the statement
-  return {
-    type: KILT_REVEAL_PROPERTY_TYPE,
-    nonces: claimNonces,
-  }
+  return { ...proof, nonces: claimNonces }
 }
 
 /**
@@ -69,27 +66,35 @@ export async function removeProperties(
   VC: VerifiableCredential,
   whitelist: string[]
 ): Promise<VerifiableCredential> {
+  // get property names
+  const propertyNames = Object.keys(VC.credentialSubject)
+  // check whitelist
+  const unknownProps = whitelist.filter((prop) => !propertyNames.includes(prop))
+  if (unknownProps.length > 0) {
+    throw new Error(
+      `whitelisted properties ${unknownProps} do not exist on this credential`
+    )
+  }
   // copy credential
   const copied: VerifiableCredential = JSON.parse(JSON.stringify(VC))
   // remove non-revealed props
-  Object.keys(copied.credentialSubject).forEach((key) => {
+  propertyNames.forEach((key) => {
     if (!(key.startsWith('@') || whitelist.includes(key)))
       delete copied.credentialSubject[key]
   })
   // find old proof
   let proofs = copied.proof instanceof Array ? copied.proof : [copied.proof]
   const oldClaimsProof = proofs.filter(
-    (p) => p.type === KILT_REVEAL_PROPERTY_TYPE
+    (p): p is CredentialDigestProof =>
+      p.type === KILT_CREDENTIAL_DIGEST_PROOF_TYPE
   )
   if (oldClaimsProof.length !== 1)
     throw new Error(
-      `expected exactly one proof of type ${KILT_REVEAL_PROPERTY_TYPE}`
+      `expected exactly one proof of type ${KILT_CREDENTIAL_DIGEST_PROOF_TYPE}`
     )
-  proofs = proofs.filter((p) => p.type !== KILT_REVEAL_PROPERTY_TYPE)
+  proofs = proofs.filter((p) => p.type !== KILT_CREDENTIAL_DIGEST_PROOF_TYPE)
   // compute new (reduced) proof
-  proofs.push(
-    await recreateRevealPropertiesProof(copied, oldClaimsProof[0].nonces)
-  )
+  proofs.push(await updateCredentialDigestProof(copied, oldClaimsProof[0]))
   copied.proof = proofs
   return copied
 }
@@ -118,5 +123,5 @@ export async function makePresentation(
 export default {
   makePresentation,
   removeProperties,
-  recreateRevealPropertiesProof,
+  updateCredentialDigestProof,
 }
