@@ -8,6 +8,7 @@ import {
   IRequestForAttestation,
   AttestedClaim,
   CType,
+  Did,
 } from '@kiltprotocol/core'
 import toVC from './exportToVerifiableCredential'
 import verificationUtils from './verificationUtils'
@@ -65,13 +66,13 @@ const credential = AttestedClaim.fromAttestedClaim({
         '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
     },
     claimHashes: [
-      '0x03ed47e8a767ce2cf8b00d38172cd68142656e4cc52e5a031b70a344f26a1a2d',
       '0x3856178f49d3c379e00793125678eeb8db61cfa4ed32cd7a4b67ac8e27714fc1',
       '0x683428497edeba0198f02a45a7015fc2c010fa75994bc1d1372349c25e793a10',
+      '0x795caba48a4a3e480695f5b54b1ab10196b331f21524426d2d31621f43a8b552',
       '0x8804cc546c4597b2ab0541dd3a6532e338b0b5b4d2458eb28b4d909a5d4caf4e',
     ],
     claimNonceMap: {
-      '0x4c40a046250a0ee4bc216929c5d71c6f75f318aaedc315599cc8a79e2c42b360':
+      '0x6633a58860b38a476d0020f30499c236bca3f454e50389e07830d29ec6e819a3':
         'eab8a98c-0ef3-4a33-a5c7-c9821b3bec45',
       '0x14a06c5955ebc9247c9f54b30e0f1714e6ebd54ae05ad7b16fa9a4643dff1dc2':
         'fda7a7d4-770c-4cae-9cd9-6deebdb3ed80',
@@ -83,14 +84,14 @@ const credential = AttestedClaim.fromAttestedClaim({
     legitimations: [],
     delegationId: null,
     rootHash:
-      '0x3331f1b1ae7aae0be78b7a60d1ea0d59e81520c3b3686fc2de7775cd8ad568b5',
+      '0xbcd6c154fe557e98080005b0b1109876522ddfaa355c2a2d9df63811ae675eb0',
     claimerSignature:
-      '0x0064081e98d3d065cb360aa20d0e9c21cf0ed9c2df96937a15827be8dc59ef685190b350059ddb2288ad5121bf642ee1c86eabd362e7f325c29281552a45bd800d',
+      '0x0067bff0552d43454c69a681390d81bb38c02cae1ebfcd0e91cd7f2c073f808dcd04967ef60fa1b9086a67f676612cf8b6c24a4f874a81f334266c5b37ecf8a70f',
     privacyEnhancement: null,
   },
   attestation: {
     claimHash:
-      '0x3331f1b1ae7aae0be78b7a60d1ea0d59e81520c3b3686fc2de7775cd8ad568b5',
+      '0xbcd6c154fe557e98080005b0b1109876522ddfaa355c2a2d9df63811ae675eb0',
     cTypeHash:
       '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
     delegationId: null,
@@ -104,12 +105,12 @@ it('exports credential to VC', () => {
     '@context': ['https://www.w3.org/2018/credentials/v1'],
     type: ['VerifiableCredential'],
     credentialSubject: {
-      '@id': '5DWXHLumDybaDHL1KAdXHSAsevJn397xXh7SitvdJmGhBvA2',
+      '@id': 'did:kilt:5DWXHLumDybaDHL1KAdXHSAsevJn397xXh7SitvdJmGhBvA2',
       birthday: '1991-01-01',
       name: 'Kurt',
       premium: true,
     },
-    id: '0x3331f1b1ae7aae0be78b7a60d1ea0d59e81520c3b3686fc2de7775cd8ad568b5',
+    id: '0xbcd6c154fe557e98080005b0b1109876522ddfaa355c2a2d9df63811ae675eb0',
     issuanceDate: expect.any(String),
     issuer: 'did:kilt:5D4FoyWD1y4Zn2UM4PiG8PAzmamUbCehpfFChiqyCXD7E2B4',
     legitimationIds: [],
@@ -118,14 +119,79 @@ it('exports credential to VC', () => {
 })
 
 it('exports includes ctype as schema', () => {
-  expect(toVC.fromAttestedClaim(credential, undefined, ctype)).toMatchObject({
+  expect(toVC.fromAttestedClaim(credential, ctype)).toMatchObject({
     credentialSchema: {
       '@id': ctype.schema.$id,
       name: ctype.schema.title,
       '@type': 'JsonSchemaValidator2018',
-      author: ctype.owner,
+      author: ctype.owner ? Did.getIdentifierFromAddress(ctype.owner) : null,
       schema: ctype.schema,
     },
+  })
+})
+
+it('VC has correct format (full example)', () => {
+  expect(toVC.fromAttestedClaim(credential, ctype)).toMatchObject({
+    '@context': ['https://www.w3.org/2018/credentials/v1'],
+    type: ['VerifiableCredential'],
+    credentialSchema: {
+      '@id': expect.any(String),
+      '@type': 'JsonSchemaValidator2018',
+      author: expect.any(String),
+      name: 'membership',
+      schema: {
+        $id: expect.any(String),
+        $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+        properties: {
+          birthday: {
+            format: 'date',
+            type: 'string',
+          },
+          name: {
+            type: 'string',
+          },
+          premium: {
+            type: 'boolean',
+          },
+        },
+        title: 'membership',
+        type: 'object',
+      },
+    },
+    credentialSubject: {
+      '@context': {
+        '@vocab': expect.any(String),
+      },
+      '@id': expect.any(String),
+      birthday: '1991-01-01',
+      name: 'Kurt',
+      premium: true,
+    },
+    delegationId: undefined,
+    id: expect.any(String),
+    issuanceDate: expect.any(String),
+    issuer: expect.any(String),
+    legitimationIds: [],
+    nonTransferable: true,
+    proof: [
+      {
+        signature: expect.any(String),
+        type: 'KILTSelfSigned2020',
+        verificationMethod: {
+          publicKeyHex: expect.any(String),
+          type: 'Ed25519VerificationKey2018',
+        },
+      },
+      {
+        attesterAddress: expect.any(String),
+        type: 'KILTAttestation2020',
+      },
+      {
+        claimHashes: expect.any(Array),
+        nonces: expect.any(Object),
+        type: 'KILTCredentialDigest2020',
+      },
+    ],
   })
 })
 
@@ -144,7 +210,7 @@ describe('proofs', () => {
   })
 
   it('it verifies schema', () => {
-    const VCWithSchema = toVC.fromAttestedClaim(credential, undefined, ctype)
+    const VCWithSchema = toVC.fromAttestedClaim(credential, ctype)
     const result = verificationUtils.validateSchema(VCWithSchema)
     expect(result.errors).toEqual([])
     expect(result).toMatchObject({
@@ -191,7 +257,7 @@ describe('proofs', () => {
       'verifiableCredential.credentialSubject',
       {
         '@context': expect.any(Object),
-        '@id': owner,
+        '@id': Did.getIdentifierFromAddress(owner),
         name: contents.name,
       }
     )

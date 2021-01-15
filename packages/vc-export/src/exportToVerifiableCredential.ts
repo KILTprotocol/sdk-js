@@ -19,7 +19,6 @@ import {
 
 export function fromAttestedClaim(
   input: IAttestedClaim,
-  subjectDid = false,
   ctype?: ICType
 ): VerifiableCredential {
   const {
@@ -35,10 +34,10 @@ export function fromAttestedClaim(
   const id = rootHash
 
   // transform & annotate claim to be json-ld and VC conformant
-  const { credentialSubject } = ClaimUtils.toJsonLD(
-    { ...claim, owner: subjectDid ? `did:kilt:${claim.owner}` : claim.owner },
-    false
-  ) as Record<string, Record<string, AnyJson>>
+  const { credentialSubject } = ClaimUtils.toJsonLD(claim, false) as Record<
+    string,
+    Record<string, AnyJson>
+  >
 
   const issuer = Did.getIdentifierFromAddress(input.attestation.owner)
 
@@ -55,7 +54,7 @@ export function fromAttestedClaim(
       '@type': JSON_SCHEMA_TYPE,
       name: schema.title,
       schema,
-      author: owner || undefined,
+      author: owner ? Did.getIdentifierFromAddress(owner) : undefined,
     }
   }
 
