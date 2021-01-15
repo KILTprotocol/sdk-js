@@ -11,23 +11,23 @@ import {
   Did,
 } from '@kiltprotocol/core'
 import toVC from './exportToVerifiableCredential'
-import verificationUtils from './verificationUtils'
-import claimerUtils from './presentationUtils'
+import verificationUtils, { AttestationStatus } from './verificationUtils'
+import claimerUtils, { makePresentation } from './presentationUtils'
 import { VerifiableCredential } from './types'
 
-jest.mock('jsonld', () => {
-  return {
-    compact: (obj: Record<string, any>) => {
-      const prefix = obj['@context']['@vocab']
-      const compacted = {}
-      Object.entries(obj).forEach(([key, value]) => {
-        if (!key.startsWith('@')) compacted[prefix + key] = value
-        if (key === '@id') compacted[key] = value
-      })
-      return compacted
-    },
-  }
-})
+// jest.mock('jsonld', () => {
+//   return {
+//     compact: (obj: Record<string, any>) => {
+//       const prefix = obj['@context']['@vocab']
+//       const compacted = {}
+//       Object.entries(obj).forEach(([key, value]) => {
+//         if (!key.startsWith('@')) compacted[prefix + key] = value
+//         if (key === '@id') compacted[key] = value
+//       })
+//       return compacted
+//     },
+//   }
+// })
 
 const ctype = CType.fromCType({
   schema: {
@@ -271,19 +271,153 @@ describe('proofs', () => {
     expect(Object.entries(VCfromPresentation.proof[2].nonces)).toHaveLength(2)
   })
 
-  describe('on-chain proof', () => {
+  it('verifies attestation proof on chain', async () => {
     jest
       .spyOn(Attestation, 'query')
       .mockResolvedValue(Attestation.fromAttestation(credential.attestation))
 
-    it('verifies attestation proof', async () => {
+    const result = await verificationUtils.verifyAttestedProof(VC, VC.proof[1])
+    expect(result.errors).toEqual([])
+    expect(result).toMatchObject({
+      verified: true,
+      status: AttestationStatus.valid,
+    })
+  })
+
+  describe('negative tests', () => {
+    beforeEach(() => {
+      VC = toVC.fromAttestedClaim(credential, ctype)
+    })
+
+    it('errors on proof mismatch', async () => {
+      expect(
+        verificationUtils.verifySelfSignedProof(VC, VC.proof[1])
+      ).toMatchObject({
+        verified: false,
+      })
+      await expect(
+        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[0])
+      ).resolves.toMatchObject({
+        verified: false,
+      })
+      await expect(
+        verificationUtils.verifyAttestedProof(VC, VC.proof[2])
+      ).resolves.toMatchObject({
+        verified: false,
+      })
+    })
+
+    it('rejects selecting non-existent properties for presentation', async () => {
+      await expect(
+        makePresentation(VC, ['name', 'age', 'profession'])
+      ).rejects.toThrow()
+
+      const presentation = await makePresentation(VC, ['name'])
+
+      await expect(
+        makePresentation(
+          presentation.verifiableCredential as VerifiableCredential,
+          ['premium']
+        )
+      ).rejects.toThrow()
+    })
+
+    it('it detects tampering with credential digest', () => {
+      VC.id = `1${VC.id.slice(1)}`
+      expect(
+        verificationUtils.verifySelfSignedProof(VC, VC.proof[0])
+      ).toMatchObject({
+        verified: false,
+      })
+      return expect(
+        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
+      ).resolves.toMatchObject({
+        verified: false,
+      })
+    })
+
+    it('it detects tampering with credential fields', async () => {
+      jest
+        .spyOn(Attestation, 'query')
+        .mockResolvedValue(Attestation.fromAttestation(credential.attestation))
+
+      VC.delegationId = '0x123'
+      await expect(
+        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
+      ).resolves.toMatchObject({
+        verified: false,
+      })
+      await expect(
+        verificationUtils.verifyAttestedProof(VC, VC.proof[1])
+      ).resolves.toMatchObject({
+        verified: false,
+        status: AttestationStatus.invalid,
+      })
+    })
+
+    it('it detects tampering on claimed properties', () => {
+      VC.credentialSubject.name = 'Kort'
+      return expect(
+        verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
+      ).resolves.toMatchObject({
+        verified: false,
+      })
+    })
+
+    it('it detects schema violations', () => {
+      VC.credentialSubject.name = 42
+      const result = verificationUtils.validateSchema(VC)
+      expect(result).toMatchObject({
+        verified: false,
+      })
+    })
+
+    it('fails if attestation not on chain', async () => {
+      jest.spyOn(Attestation, 'query').mockResolvedValue(null)
+
       const result = await verificationUtils.verifyAttestedProof(
         VC,
         VC.proof[1]
       )
-      expect(result.errors).toEqual([])
       expect(result).toMatchObject({
-        verified: true,
+        verified: false,
+        status: AttestationStatus.invalid,
+      })
+    })
+
+    it('fails if attestation on chain not identical', async () => {
+      jest.spyOn(Attestation, 'query').mockResolvedValue(
+        Attestation.fromAttestation({
+          ...credential.attestation,
+          owner: credential.request.claim.owner,
+        })
+      )
+
+      const result = await verificationUtils.verifyAttestedProof(
+        VC,
+        VC.proof[1]
+      )
+      expect(result).toMatchObject({
+        verified: false,
+        status: AttestationStatus.invalid,
+      })
+    })
+
+    it('fails if attestation revoked', async () => {
+      jest.spyOn(Attestation, 'query').mockResolvedValue(
+        Attestation.fromAttestation({
+          ...credential.attestation,
+          revoked: true,
+        })
+      )
+
+      const result = await verificationUtils.verifyAttestedProof(
+        VC,
+        VC.proof[1]
+      )
+      expect(result).toMatchObject({
+        verified: false,
+        status: AttestationStatus.revoked,
       })
     })
   })
