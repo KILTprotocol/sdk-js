@@ -815,7 +815,6 @@ __metadata:
     ajv: ^6.12.5
     bn.js: ^5.1.3
     rimraf: ^3.0.2
-    ts-node: ^8.10.2
     tslib: ^2.0.0
     tweetnacl: ^1.0.3
     typedoc: ^0.17.8
@@ -7593,26 +7592,6 @@ fsevents@^2.1.2:
   bin:
     ts-jest: cli.js
   checksum: e69d84f07e4c2fe8ccb7556c00ff5f72fa41c18cb0ba38544265a62702556309d1cea59cef6297a2deef8042b45dcbd8b8493e3f8449372db563f2c4cef5b1d6
-  languageName: node
-  linkType: hard
-
-"ts-node@npm:^8.10.2":
-  version: 8.10.2
-  resolution: "ts-node@npm:8.10.2"
-  dependencies:
-    arg: ^4.1.0
-    diff: ^4.0.1
-    make-error: ^1.1.1
-    source-map-support: ^0.5.17
-    yn: 3.1.1
-  peerDependencies:
-    typescript: ">=2.7"
-  bin:
-    ts-node: dist/bin.js
-    ts-node-script: dist/bin-script.js
-    ts-node-transpile-only: dist/bin-transpile.js
-    ts-script: dist/bin-script-deprecated.js
-  checksum: cd6e023e073d65ea346cf4a5b70bfd1e7c7f342c967a23a83038fd3462067558a4dda4fc8b238e6709db69aca3847590a93b4c52ae001e23ed9fef3b4fecbc71
   languageName: node
   linkType: hard
 
