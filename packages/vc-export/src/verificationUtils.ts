@@ -2,7 +2,7 @@ import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
 import { signatureVerify, blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
 import Ajv from 'ajv'
-import { Attestation, Crypto, CTypeSchema } from '@kiltprotocol/core'
+import { Attestation, Crypto, CTypeSchema, Did } from '@kiltprotocol/core'
 import {
   VerifiableCredential,
   SelfSignedProof,
@@ -104,6 +104,10 @@ export async function verifyAttestedProof(
     const { attesterAddress } = proof
     if (typeof attesterAddress !== 'string' || !attesterAddress)
       throw PROOF_MALFORMED_ERROR('attester address not understood')
+    if (attesterAddress !== Did.getAddressFromIdentifier(credential.issuer))
+      throw PROOF_MALFORMED_ERROR(
+        'attester address not matching credential issuer'
+      )
     const claimHash = credential.id
     if (typeof claimHash !== 'string' || !claimHash)
       throw CREDENTIAL_MALFORMED_ERROR(

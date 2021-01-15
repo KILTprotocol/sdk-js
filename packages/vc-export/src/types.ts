@@ -37,7 +37,6 @@ export interface SelfSignedProof extends Proof {
 export interface AttestedProof extends Proof {
   type: typeof KILT_ATTESTED_PROOF_TYPE
   attesterAddress: string
-  delegationId?: string
 }
 export interface CredentialDigestProof extends Proof {
   type: typeof KILT_CREDENTIAL_DIGEST_PROOF_TYPE
