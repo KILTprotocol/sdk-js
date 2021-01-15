@@ -12,7 +12,7 @@ import {
   RequestForAttestation,
   SDKErrors,
 } from '@kiltprotocol/core'
-import Credential from '../credential'
+import Credential from '../credential/Credential'
 
 /**
  * [ASYNC] Creates a presentation for an arbitrary amount of [[Credential]]s which can be verified in [[verifyPresentation]].

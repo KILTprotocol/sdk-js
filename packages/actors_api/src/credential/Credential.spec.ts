@@ -12,7 +12,7 @@ import {
   Identity,
   RequestForAttestation,
 } from '@kiltprotocol/core'
-import Credential from '.'
+import Credential from './Credential'
 
 describe('Credential', () => {
   let claimer: Identity

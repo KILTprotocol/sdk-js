@@ -13,7 +13,7 @@ import {
 } from '@kiltprotocol/core'
 import { mockChainQueryReturn } from '@kiltprotocol/core/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { Attester, Claimer, Verifier } from '..'
-import Credential from '../credential'
+import Credential from '../credential/Credential'
 
 jest.mock(
   '@kiltprotocol/core/lib/blockchainApiConnection/BlockchainApiConnection'
