@@ -52,6 +52,7 @@
     "jest-runner-groups": "^2.0.1",
     "prettier": "^2.0.5",
     "ts-jest": "^26.1.4",
+    "ts-node": "^9.1.1",
     "typescript": "^3.9.7"
   },
   "version": "0.19.1-17"
