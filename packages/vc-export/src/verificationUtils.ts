@@ -18,6 +18,17 @@ export interface VerificationResult {
   errors: Error[]
 }
 
+export enum AttestationStatus {
+  valid = 'valid',
+  invalid = 'invalid',
+  revoked = 'revoked',
+  unknown = 'unknown',
+}
+
+export interface AttestationVerificationResult extends VerificationResult {
+  status: AttestationStatus
+}
+
 const CREDENTIAL_MALFORMED_ERROR = (reason: string): Error =>
   new Error(`Credential malformed: ${reason}`)
 
@@ -84,8 +95,8 @@ export function verifySelfSignedProof(
 export async function verifyAttestedProof(
   credential: VerifiableCredential,
   proof: AttestedProof
-): Promise<VerificationResult> {
-  const result: VerificationResult = { verified: true, errors: [] }
+): Promise<AttestationVerificationResult> {
+  let status: AttestationStatus = AttestationStatus.unknown
   try {
     // check proof
     if (proof.type !== KILT_ATTESTED_PROOF_TYPE)
@@ -113,6 +124,7 @@ export async function verifyAttestedProof(
     // query on-chain data by credential id (= claim root hash)
     const onChain = await Attestation.query(claimHash)
     // if not found, credential has not been attested, proof is invalid
+    status = AttestationStatus.invalid
     if (!onChain)
       throw new Error(
         `attestation for credential with id ${claimHash} not found`
@@ -129,13 +141,18 @@ export async function verifyAttestedProof(
         }}`
       )
     // if proof data is valid but attestation is flagged as revoked, credential is no longer valid
-    if (onChain.revoked) throw new Error('attestation revoked')
-    return result
+    if (onChain.revoked) {
+      status = AttestationStatus.revoked
+      throw new Error('attestation revoked')
+    }
   } catch (e) {
-    result.verified = false
-    result.errors = [e]
-    return result
+    return {
+      verified: false,
+      errors: [e],
+      status,
+    }
   }
+  return { verified: true, errors: [], status: AttestationStatus.valid }
 }
 
 /**

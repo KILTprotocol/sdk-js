@@ -1,5 +1,5 @@
 import { AnyJson } from '@polkadot/types/types'
-import { ICType, IDidDocument } from '@kiltprotocol/core'
+import { ICType, IDidDocumentPublicKey } from '@kiltprotocol/core'
 
 /**
  * Constant for default context.
@@ -26,9 +26,6 @@ export const KILT_SELF_SIGNED_PROOF_TYPE = 'KILTSelfSigned2020'
 export const KILT_ATTESTED_PROOF_TYPE = 'KILTAttestation2020'
 export const KILT_CREDENTIAL_DIGEST_PROOF_TYPE = 'KILTCredentialDigest2020'
 
-type ArrayElement<A> = A extends ReadonlyArray<infer T> ? T : never
-type IDidDocumentPublicKey = ArrayElement<IDidDocument['publicKey']>
-
 export type IPublicKeyRecord = Partial<IDidDocumentPublicKey> &
   Pick<IDidDocumentPublicKey, 'publicKeyHex' | 'type'>
 
@@ -48,12 +45,6 @@ export interface CredentialDigestProof extends Proof {
   nonces: Record<string, string>
   // salted hashes of statements in credentialSubject to allow selective disclosure.
   claimHashes: string[]
-}
-
-export const KILT_STATUS_TYPE = 'KILTProtocolStatus2020'
-
-export interface KILTcredentialStatus {
-  type: typeof KILT_STATUS_TYPE
 }
 
 export const JSON_SCHEMA_TYPE = 'JsonSchemaValidator2018'
@@ -87,7 +78,6 @@ export interface VerifiableCredential {
   // digital proof that makes the credential tamper-evident
   proof: Proof | Proof[]
   nonTransferable?: boolean
-  credentialStatus?: KILTcredentialStatus
   credentialSchema?: CredentialSchema
   expirationDate?: any
 }

@@ -18,7 +18,7 @@ import {
   DelegationNode,
   DelegationRootNode,
 } from './delegation'
-import Did, { IDid, IDidDocument } from './did'
+import Did, { IDid, IDidDocument, IDidDocumentPublicKey } from './did'
 import {
   AttesterIdentity,
   Identity,
@@ -93,6 +93,7 @@ export {
   Did,
   IDid,
   IDidDocument,
+  IDidDocumentPublicKey,
   Message,
   Quote,
   Attester,

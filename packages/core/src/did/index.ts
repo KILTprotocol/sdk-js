@@ -3,7 +3,7 @@
  * @ignore
  */
 
-import Did, { IDid, IDidDocument } from './Did'
+import Did, { IDid, IDidDocument, IDidDocumentPublicKey } from './Did'
 
-export { Did, IDid, IDidDocument }
+export { Did, IDid, IDidDocument, IDidDocumentPublicKey }
 export default Did
