@@ -7,8 +7,11 @@
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import {
+  ERROR_TRANSACTION_OUTDATED,
+  ERROR_TRANSACTION_PRIORITY,
   ERROR_TRANSACTION_RECOVERABLE,
   ERROR_TRANSACTION_USURPED,
+  SDKError,
 } from '../errorhandling/SDKErrors'
 import {
   Evaluator,
@@ -27,15 +30,18 @@ export type SubscriptionPromiseOptions = TerminationOptions<SubmittableResult>
 
 const log = LoggerFactory.getLogger('Blockchain')
 
-const TxOutdated = '1010: Invalid Transaction: Transaction is outdated'
-const TxPriority = '1014: Priority is too low:'
-const TxAlreadyImported = 'Transaction Already'
+export const TxOutdated = 'Transaction is outdated'
+export const TxPriority = 'Priority is too low:'
+export const TxAlreadyImported = 'Transaction Already Imported'
 
-export const IS_RELEVANT_ERROR: ErrorEvaluator = (err: Error) => {
-  return new RegExp(
-    `${TxAlreadyImported}|${TxOutdated}|${TxPriority}`,
-    'g'
-  ).test(err.message)
+export const IS_RELEVANT_ERROR: ErrorEvaluator = (err: Error | SDKError) => {
+  const outdated = err.message.includes(ERROR_TRANSACTION_OUTDATED().message)
+
+  const priority = err.message.includes(ERROR_TRANSACTION_PRIORITY().message)
+
+  const usurped = err.message.includes(ERROR_TRANSACTION_USURPED().message)
+
+  return outdated || usurped || priority
 }
 export const IS_READY: ResultEvaluator = (result) => result.status.isReady
 export const IS_IN_BLOCK: ResultEvaluator = (result) => result.isInBlock
@@ -96,31 +102,40 @@ export async function submitSignedTxRaw(
 ): Promise<SubmittableResult> {
   log.info(`Submitting ${tx.method}`)
   const { promise, subscription } = makeSubscriptionPromise(opts)
+  const catcher = async (reason: Error): Promise<never> => {
+    return Promise.reject(reason)
+  }
+  const unsubscribe = await tx.send(subscription).catch(catcher)
 
-  const unsubscribe = await tx
-    .send(subscription)
-    .catch(async (reason: Error) => {
-      return Promise.reject(reason)
-    })
-
-  const result = await promise
-    .catch(async (reason: Error) => {
-      return Promise.reject(reason)
-    })
-    .finally(() => unsubscribe())
+  const result = await promise.catch(catcher).finally(() => unsubscribe())
 
   return result
+}
+
+async function submitSignedTxErrorMatched(
+  tx: SubmittableExtrinsic,
+  opts: SubscriptionPromiseOptions
+): Promise<SubmittableResult> {
+  return submitSignedTxRaw(tx, opts).catch((reason: Error) => {
+    switch (true) {
+      case reason.message.includes(TxOutdated):
+        return Promise.reject(ERROR_TRANSACTION_OUTDATED())
+        break
+      case reason.message.includes(TxPriority):
+        return Promise.reject(ERROR_TRANSACTION_PRIORITY())
+        break
+      default:
+        return Promise.reject(reason)
+    }
+  })
 }
 
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,
   opts: SubscriptionPromiseOptions
 ): Promise<SubmittableResult> {
-  return submitSignedTxRaw(tx, opts).catch((reason: Error) => {
+  return submitSignedTxErrorMatched(tx, opts).catch((reason: Error) => {
     if (IS_RELEVANT_ERROR(reason)) {
-      return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
-    }
-    if (reason.message === ERROR_TRANSACTION_USURPED().message) {
       return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
     }
     return Promise.reject(reason)

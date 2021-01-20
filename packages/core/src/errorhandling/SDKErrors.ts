@@ -11,6 +11,7 @@ import { NonceHash } from '@kiltprotocol/types'
 export enum ErrorCode {
   ERROR_TRANSACTION_RECOVERABLE = 1000,
   ERROR_TRANSACTION_OUTDATED = 1010,
+  ERROR_TRANSACTION_DUPLICATE = 1013,
   ERROR_TRANSACTION_PRIORITY = 1014,
   ERROR_TRANSACTION_USURPED = 1015,
   // Data is missing
@@ -93,6 +94,12 @@ export const ERROR_TRANSACTION_OUTDATED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_TRANSACTION_OUTDATED,
     'Tx was signed with outdated Nonce'
+  )
+}
+export const ERROR_TRANSACTION_DUPLICATE: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_TRANSACTION_DUPLICATE,
+    'Identical Tx was already imported to the pool'
   )
 }
 export const ERROR_TRANSACTION_PRIORITY: () => SDKError = () => {
