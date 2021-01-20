@@ -294,7 +294,6 @@ describe('Chain returns specific errors, that we check for', () => {
         resolveOn: IS_IN_BLOCK,
       })
     )
-    expect(new BN(100000).toNumber()).toEqual(100000)
   }, 60000)
 })
 
