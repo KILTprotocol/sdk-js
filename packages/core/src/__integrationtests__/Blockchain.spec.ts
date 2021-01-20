@@ -12,7 +12,7 @@ import {
   IS_IN_BLOCK,
   submitSignedTxRaw,
   submitTxWithReSign,
-  // TxOutdated,
+  TxOutdated,
   TxPriority,
   TxDuplicate,
   IS_READY,
@@ -109,7 +109,7 @@ describe('Chain returns specific errors, that we check for', () => {
           resolveOn: IS_IN_BLOCK,
         })
       )
-    ).rejects.toThrow('1010: Invalid Transaction: Transaction is outdated')
+    ).rejects.toThrow(TxOutdated)
   }, 60000)
   it(`throws '1014: Priority is too low' error if the nonce was already used for Tx in pool with higher or identical priority`, async () => {
     const tx = blockchain.api.tx.balances.transfer(

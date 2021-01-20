@@ -164,7 +164,7 @@ export async function submitSignedTx(
 }
 
 /**
- *  [STATIC] [ASYNC] Reroute of class method.
+ * [ASYNC] Reroute of class method.
  *
  * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
  * @param identity The [[Identity]] to re-sign the tx on recoverable error.
