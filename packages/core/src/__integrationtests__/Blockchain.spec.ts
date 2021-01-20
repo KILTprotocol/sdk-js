@@ -44,16 +44,16 @@ describe('Chain returns specific errors, that we check for', () => {
     await submitTxWithReSign(tx, faucet, {
       resolveOn: IS_FINALIZED,
     })
-  }, 60000)
+  }, 30000)
 
   it(`throws TxOutdated error if the nonce was already used for Tx in block`, async () => {
     const tx = blockchain.api.tx.balances.transfer(
       faucet.address,
-      new BN('1000000000000000000')
+      new BN('10000000000000000')
     )
     const errorTx = blockchain.api.tx.balances.transfer(
       faucet.address,
-      new BN('100000000000000000000')
+      new BN('1000000000000000')
     )
 
     const nonce = await blockchain.getNonce(testIdentity.address)
@@ -110,15 +110,15 @@ describe('Chain returns specific errors, that we check for', () => {
         })
       )
     ).rejects.toThrow(TxOutdated)
-  }, 60000)
+  }, 30000)
   it(`throws TxPriority error if the nonce was already used for Tx in pool with higher or identical priority`, async () => {
     const tx = blockchain.api.tx.balances.transfer(
       faucet.address,
-      new BN('1000000000000000000')
+      new BN('10000000000000000')
     )
     const errorTx = blockchain.api.tx.balances.transfer(
       faucet.address,
-      new BN('100000000000000000')
+      new BN('1000000000000000')
     )
 
     const nonce = await blockchain.getNonce(testIdentity.address)
@@ -175,15 +175,15 @@ describe('Chain returns specific errors, that we check for', () => {
         })
       )
     ).rejects.toThrow(TxPriority)
-  }, 60000)
+  }, 30000)
   it(`throws TxDuplicate error if identical Tx was already imported`, async () => {
     const tx = blockchain.api.tx.balances.transfer(
       faucet.address,
-      new BN('1000000000000000000')
+      new BN('1000000000000000')
     )
     const errorTx = blockchain.api.tx.balances.transfer(
       faucet.address,
-      new BN('1000000000000000000')
+      new BN('1000000000000000')
     )
 
     const nonce = await blockchain.getNonce(testIdentity.address)
@@ -228,15 +228,15 @@ describe('Chain returns specific errors, that we check for', () => {
     )
 
     await expect(errorTx.send()).rejects.toThrow(TxDuplicate)
-  }, 60000)
+  }, 30000)
   it(`throws 'ERROR_TRANSACTION_USURPED' error if separate Tx was imported with identical nonce but higher priority while Tx is in pool`, async () => {
     const tx = blockchain.api.tx.balances.transfer(
       faucet.address,
-      new BN('10000000000')
+      new BN('1000000000000000')
     )
     const errorTx = blockchain.api.tx.balances.transfer(
       faucet.address,
-      new BN('10000000000')
+      new BN('1000000000000000')
     )
 
     const nonce = await blockchain.getNonce(testIdentity.address)
@@ -275,7 +275,7 @@ describe('Chain returns specific errors, that we check for', () => {
           resolveOn: IS_IN_BLOCK,
         })
       )
-    ).rejects.toThrow(ERROR_TRANSACTION_USURPED().message)
+    ).rejects.toThrowErrorWithCode(ERROR_TRANSACTION_USURPED())
 
     const { signature: errorSignature } = blockchain.api
       .createType('ExtrinsicPayload', errorSigner.toPayload(), {
@@ -294,7 +294,7 @@ describe('Chain returns specific errors, that we check for', () => {
         resolveOn: IS_IN_BLOCK,
       })
     )
-  }, 60000)
+  }, 30000)
 })
 
 afterAll(() => {

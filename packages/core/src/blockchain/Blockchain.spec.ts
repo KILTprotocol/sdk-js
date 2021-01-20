@@ -241,7 +241,7 @@ describe('Tx logic', () => {
       tx.signAsync(alice.signKeyringPair)
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
+      ).rejects.toThrowErrorWithCode(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
 
     it('catches priority error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
@@ -252,7 +252,7 @@ describe('Tx logic', () => {
       tx.send = jest.fn().mockRejectedValue(Error('1014: Priority is too low:'))
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
+      ).rejects.toThrowErrorWithCode(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
 
     it('catches Already Imported error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
@@ -265,7 +265,7 @@ describe('Tx logic', () => {
         .mockRejectedValue(Error('Transaction Already Imported'))
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
+      ).rejects.toThrowErrorWithCode(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
 
     it('catches Outdated/Stale Tx error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
@@ -280,7 +280,7 @@ describe('Tx logic', () => {
         )
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
+      ).rejects.toThrowErrorWithCode(ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
   })
 
@@ -295,9 +295,9 @@ describe('Tx logic', () => {
         .mockImplementation(async (id, Tx) => {
           return Tx
         })
-      await expect(chain.submitTxWithReSign(tx, alice)).rejects.toThrow(
-        ERROR_TRANSACTION_RECOVERABLE()
-      )
+      await expect(
+        chain.submitTxWithReSign(tx, alice)
+      ).rejects.toThrowErrorWithCode(ERROR_TRANSACTION_RECOVERABLE())
 
       expect(reSignSpy).toHaveBeenCalledTimes(2)
     })
