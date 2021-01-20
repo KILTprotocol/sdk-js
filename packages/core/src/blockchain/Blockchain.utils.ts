@@ -42,7 +42,9 @@ export const IS_RELEVANT_ERROR: ErrorEvaluator = (err: Error | SDKError) => {
 
   const usurped = err.message.includes(ERROR_TRANSACTION_USURPED().message)
 
-  return outdated || usurped || priority
+  const duplicate = err.message.includes(ERROR_TRANSACTION_DUPLICATE().message)
+
+  return outdated || usurped || priority || duplicate
 }
 export const IS_READY: ResultEvaluator = (result) => result.status.isReady
 export const IS_IN_BLOCK: ResultEvaluator = (result) => result.isInBlock

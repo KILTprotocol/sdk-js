@@ -260,7 +260,9 @@ describe('Tx logic', () => {
       const chain = new Blockchain(api)
       const tx = chain.api.tx.balances.transfer(bob.address, 100)
       tx.signAsync(alice.signKeyringPair)
-      tx.send = jest.fn().mockRejectedValue(Error('Transaction Already'))
+      tx.send = jest
+        .fn()
+        .mockRejectedValue(Error('Transaction Already Imported'))
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
       ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())

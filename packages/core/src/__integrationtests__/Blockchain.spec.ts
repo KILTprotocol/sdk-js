@@ -46,7 +46,7 @@ describe('Chain returns specific errors, that we check for', () => {
     })
   }, 60000)
 
-  it(`throws '1010: Invalid Transaction: Transaction is outdated' error if the nonce was already used for Tx in block`, async () => {
+  it(`throws TxOutdated error if the nonce was already used for Tx in block`, async () => {
     const tx = blockchain.api.tx.balances.transfer(
       faucet.address,
       new BN('1000000000000000000')
@@ -111,7 +111,7 @@ describe('Chain returns specific errors, that we check for', () => {
       )
     ).rejects.toThrow(TxOutdated)
   }, 60000)
-  it(`throws '1014: Priority is too low' error if the nonce was already used for Tx in pool with higher or identical priority`, async () => {
+  it(`throws TxPriority error if the nonce was already used for Tx in pool with higher or identical priority`, async () => {
     const tx = blockchain.api.tx.balances.transfer(
       faucet.address,
       new BN('1000000000000000000')
@@ -176,7 +176,7 @@ describe('Chain returns specific errors, that we check for', () => {
       )
     ).rejects.toThrow(TxPriority)
   }, 60000)
-  it(`throws 'Transaction Already Imported' error if identical Tx was already imported`, async () => {
+  it(`throws TxDuplicate error if identical Tx was already imported`, async () => {
     const tx = blockchain.api.tx.balances.transfer(
       faucet.address,
       new BN('1000000000000000000')
