@@ -19,6 +19,9 @@ module.exports = {
     '!**/__mocks__/**',
     '!**/__tests__/**',
     '!**/lib/**',
+    '!**/test/**',
+    '!**/kilt/*',
+    '!**/blockchainApiConnection/*'
   ],
   rootDir: 'packages',
   coverageDirectory: 'coverage',
