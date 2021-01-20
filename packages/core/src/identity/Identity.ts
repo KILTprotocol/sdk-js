@@ -69,10 +69,10 @@ export default class Identity {
    * const mnemonic = Identity.generateMnemonic();
    * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    *
-   * await Identity.buildFromMnemonic(mnemonic);
+   * Identity.buildFromMnemonic(mnemonic);
    * ```
    */
-  public static async buildFromMnemonic(phraseArg: string): Promise<Identity> {
+  public static buildFromMnemonic(phraseArg: string): Identity {
     let phrase = phraseArg
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
@@ -99,10 +99,10 @@ export default class Identity {
    * @example ```javascript
    * const seed =
    *   '0x6ce9fd060c70165c0fc8da25810d249106d5df100aa980e0d9a11409d6b35261';
-   * await Identity.buildFromSeedString(seed);
+   * Identity.buildFromSeedString(seed);
    * ```
    */
-  public static async buildFromSeedString(seedArg: string): Promise<Identity> {
+  public static buildFromSeedString(seedArg: string): Identity {
     const asU8a = hexToU8a(seedArg)
     return Identity.buildFromSeed(asU8a)
   }
@@ -119,10 +119,10 @@ export default class Identity {
    *                                6, 213, 223, 16,  10, 169, 128, 224,
    *                              217, 161,  20,  9, 214, 179,  82,  97
    *                            ]);
-   * await Identity.buildFromSeed(seed);
+   * Identity.buildFromSeed(seed);
    * ```
    */
-  public static async buildFromSeed(seed: Uint8Array): Promise<Identity> {
+  public static buildFromSeed(seed: Uint8Array): Identity {
     const keyring = new Keyring({ type: 'ed25519' })
     const keyringPair = keyring.addFromSeed(seed)
     return new Identity(seed, keyringPair)
@@ -137,7 +137,7 @@ export default class Identity {
    * Identity.buildFromURI('//Bob');
    * ```
    */
-  public static async buildFromURI(uri: string): Promise<Identity> {
+  public static buildFromURI(uri: string): Identity {
     const keyring = new Keyring({ type: 'ed25519' })
     const derived = keyring.createFromUri(uri)
     const seed = u8aUtil.u8aToU8a(uri)
@@ -212,7 +212,7 @@ export default class Identity {
    * @returns The signed data.
    * @example  ```javascript
    * const mnemonic = Identity.generateMnemonic();
-   * const alice = await Identity.buildFromMnemonic(mnemonic);
+   * const alice = Identity.buildFromMnemonic(mnemonic);
    * const data = 'This is a test';
    * alice.sign(data);
    * // (output) Uint8Array [

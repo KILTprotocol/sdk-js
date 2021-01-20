@@ -28,8 +28,8 @@ describe('Messaging', () => {
   let date: Date
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
-    identityBob = await Identity.buildFromURI('//Bob')
+    identityAlice = Identity.buildFromURI('//Alice')
+    identityBob = Identity.buildFromURI('//Bob')
     date = new Date(2019, 11, 10)
   })
 
@@ -243,8 +243,8 @@ describe('Messaging', () => {
     let encryptedHash: string
 
     beforeAll(async () => {
-      identityAlice = await Identity.buildFromURI('//Alice')
-      identityBob = await Identity.buildFromURI('//Bob')
+      identityAlice = Identity.buildFromURI('//Alice')
+      identityBob = Identity.buildFromURI('//Bob')
 
       messageBody = {
         content: {

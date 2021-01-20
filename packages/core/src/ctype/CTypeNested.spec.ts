@@ -28,7 +28,7 @@ describe('Nested CTypes', () => {
   let nestedDeepData: Claim
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
 
     passportCType = {
       $id: 'kilt:ctype:0x1',

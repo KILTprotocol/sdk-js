@@ -34,7 +34,7 @@ async function buildRequestForAttestation(
 ): Promise<RequestForAttestation> {
   // create claim
 
-  const identityAlice = await Identity.buildFromURI('//Alice')
+  const identityAlice = Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
     $id: 'kilt:ctype:0x2',
@@ -78,9 +78,9 @@ describe('RequestForAttestation', () => {
   let legitimationCharlie: AttestedClaim
 
   beforeEach(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
-    identityBob = await Identity.buildFromURI('//Bob')
-    identityCharlie = await Identity.buildFromURI('//Charlie')
+    identityAlice = Identity.buildFromURI('//Alice')
+    identityBob = Identity.buildFromURI('//Bob')
+    identityCharlie = Identity.buildFromURI('//Charlie')
     legitimationRequest = await buildRequestForAttestation(
       identityAlice,
       {},

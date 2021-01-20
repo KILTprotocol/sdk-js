@@ -30,9 +30,9 @@ describe('Attester', () => {
   let rawCType: ICType['schema']
   let cType: CType
   beforeAll(async () => {
-    attester = await Identity.buildFromURI('//Alice')
+    attester = Identity.buildFromURI('//Alice')
 
-    claimer = await Identity.buildFromURI('//Bob')
+    claimer = Identity.buildFromURI('//Bob')
 
     rawCType = {
       $id: 'kilt:ctype:0x1',

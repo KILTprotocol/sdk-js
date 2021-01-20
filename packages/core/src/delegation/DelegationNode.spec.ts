@@ -18,7 +18,7 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 let identityAlice: Identity
 
 beforeAll(async () => {
-  identityAlice = await Identity.buildFromURI('//Alice')
+  identityAlice = Identity.buildFromURI('//Alice')
 })
 
 describe('Delegation', () => {

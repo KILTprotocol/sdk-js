@@ -73,8 +73,8 @@ describe('Tx logic', () => {
     return chain.getNonce(address)
   }
   beforeAll(async () => {
-    alice = await Identity.buildFromURI('//Alice')
-    bob = await Identity.buildFromURI('//Bob')
+    alice = Identity.buildFromURI('//Alice')
+    bob = Identity.buildFromURI('//Bob')
   })
 
   describe('getNonce', () => {

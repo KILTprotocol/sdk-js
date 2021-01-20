@@ -18,7 +18,7 @@ describe('Delegation', () => {
   let ROOT_IDENTIFIER: string
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
     ctypeHash = Crypto.hashStr('testCtype')
     require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
       mockChainQueryReturn('delegation', 'root', [

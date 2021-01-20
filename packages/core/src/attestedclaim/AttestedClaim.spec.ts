@@ -22,7 +22,7 @@ async function buildAttestedClaim(
   legitimations: AttestedClaim[]
 ): Promise<AttestedClaim> {
   // create claim
-  const identityAlice = await Identity.buildFromURI('//Alice')
+  const identityAlice = Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
     $id: 'kilt:ctype:0x1',
@@ -73,10 +73,10 @@ describe('RequestForAttestation', () => {
   let compressedLegitimation: CompressedAttestedClaim
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
 
-    identityBob = await Identity.buildFromURI('//Bob')
-    identityCharlie = await Identity.buildFromURI('//Charlie')
+    identityBob = Identity.buildFromURI('//Bob')
+    identityCharlie = Identity.buildFromURI('//Charlie')
 
     legitimation = await buildAttestedClaim(identityAlice, identityBob, {}, [])
     compressedLegitimation = [

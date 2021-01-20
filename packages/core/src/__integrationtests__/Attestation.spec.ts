@@ -36,7 +36,7 @@ let blockchain: IBlockchainApi | undefined
 let alice: Identity
 beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
-  alice = await Identity.buildFromURI('//Alice')
+  alice = Identity.buildFromURI('//Alice')
 })
 
 describe('handling attestations that do not exist', () => {
@@ -135,9 +135,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attester.getPublicIdentity()
     )
 
-    const bobbyBroke = await Identity.buildFromMnemonic(
-      Identity.generateMnemonic()
-    )
+    const bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     await expect(
       attestation.store(bobbyBroke).then((tx) =>

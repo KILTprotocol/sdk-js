@@ -25,7 +25,7 @@ describe('Claim', () => {
   let compressedClaim: CompressedClaim
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
 
     claimContents = {
       name: 'Bob',

@@ -29,8 +29,8 @@ describe('Attestation', () => {
     .__mocked_api
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
-    identityBob = await Identity.buildFromURI('//Bob')
+    identityAlice = Identity.buildFromURI('//Alice')
+    identityBob = Identity.buildFromURI('//Bob')
 
     rawCTypeSchema = {
       $id: 'kilt:ctype:0x1',

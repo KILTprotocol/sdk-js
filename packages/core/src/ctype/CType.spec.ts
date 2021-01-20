@@ -73,10 +73,10 @@ describe('CType', () => {
       type: 'object',
     }
 
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
 
     claimCtype = CType.fromSchema(rawCType, identityAlice.address)
-    identityBob = await Identity.buildFromURI('//Bob')
+    identityBob = Identity.buildFromURI('//Bob')
 
     claimContents = {
       name: 'Bob',
@@ -240,7 +240,7 @@ describe('blank ctypes', () => {
   let ctype2: CType
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
 
     ctypeSchema1 = {
       $id: 'kilt:ctype:0x3',

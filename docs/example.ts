@@ -19,7 +19,7 @@ async function setup(): Promise<{
   // we can generate a new keypair, which will take about 20 minutes:
   // const attester = await Kilt.AttesterIdentity.buildFromMnemonic("...")
   // or we just use unsafe precalculated keys (just for demo purposes!):
-  const attester = await Kilt.Identity.buildFromMnemonic(
+  const attester = Kilt.Identity.buildFromMnemonic(
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   )
   console.log(
@@ -76,7 +76,7 @@ async function setup(): Promise<{
   // ------------------------- Claimer  ----------------------------------------
   // How to generate an Identity
   // const mnemonic = Kilt.Identity.generateMnemonic()
-  const claimer = await Kilt.Identity.buildFromMnemonic(
+  const claimer = Kilt.Identity.buildFromMnemonic(
     'wish rather clinic rather connect culture frown like quote effort cart faculty'
   )
   // const address = claimer.address
@@ -206,7 +206,7 @@ async function doVerification(
     )
   )
   const verifierMnemonic = Kilt.Identity.generateMnemonic()
-  const verifier = await Kilt.Identity.buildFromMnemonic(verifierMnemonic)
+  const verifier = Kilt.Identity.buildFromMnemonic(verifierMnemonic)
   // ------------------------- Verifier ----------------------------------------
   const {
     session,

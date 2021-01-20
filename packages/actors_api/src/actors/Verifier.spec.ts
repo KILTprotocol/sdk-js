@@ -30,10 +30,10 @@ describe('Verifier', () => {
     .__mocked_api
 
   beforeAll(async () => {
-    attester = await Identity.buildFromURI('//Alice')
+    attester = Identity.buildFromURI('//Alice')
 
-    claimer = await Identity.buildFromURI('//bob')
-    verifier = await Identity.buildFromMnemonic(Identity.generateMnemonic())
+    claimer = Identity.buildFromURI('//bob')
+    verifier = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     const rawCType: ICType['schema'] = {
       $id: 'kilt:ctype:0x1',

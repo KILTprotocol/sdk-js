@@ -35,10 +35,10 @@ describe('Claimer', () => {
   let credentialPE: Credential
 
   beforeAll(async () => {
-    attester = await Identity.buildFromURI('//Alice')
+    attester = Identity.buildFromURI('//Alice')
 
-    claimer = await Identity.buildFromURI('//Bob')
-    verifier = await Identity.buildFromMnemonic(Identity.generateMnemonic())
+    claimer = Identity.buildFromURI('//Bob')
+    verifier = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     const rawCType: ICType['schema'] = {
       $id: 'kilt:ctype:0x1',

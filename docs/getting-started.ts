@@ -8,7 +8,7 @@ async function main(): Promise<void> {
   const claimerMnemonic = Kilt.Identity.generateMnemonic()
   // mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
   console.log('claimer mnemonic', claimerMnemonic)
-  const claimer = await Kilt.Identity.buildFromMnemonic(claimerMnemonic)
+  const claimer = Kilt.Identity.buildFromMnemonic(claimerMnemonic)
   // claimer.address: 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
   console.log('claimer address', claimer.address)
 
@@ -29,7 +29,7 @@ async function main(): Promise<void> {
 
   /* To store the CTYPE on the blockchain, you have to call: */
   Kilt.connect(NODE_URL)
-  const identity = await Kilt.Identity.buildFromMnemonic(
+  const identity = Kilt.Identity.buildFromMnemonic(
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   )
   await ctype.store(identity)
@@ -65,7 +65,7 @@ async function main(): Promise<void> {
   /* before we can send the request for an attestation to an Attester, we should first create an Attester identity like above */
   const attesterMnemonic =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-  const attester = await Kilt.Identity.buildFromMnemonic(attesterMnemonic)
+  const attester = Kilt.Identity.buildFromMnemonic(attesterMnemonic)
 
   /* First, we create the request for an attestation message in which the Claimer automatically encodes the message with the public key of the Attester: */
   const messageBody: Kilt.IRequestAttestationForClaim = {
@@ -141,7 +141,7 @@ async function main(): Promise<void> {
 
       /* As in the attestation, you need a second identity to act as the verifier: */
       const verifierMnemonic = Kilt.Identity.generateMnemonic()
-      const verifier = await Kilt.Identity.buildFromMnemonic(verifierMnemonic)
+      const verifier = Kilt.Identity.buildFromMnemonic(verifierMnemonic)
 
       /* 6.1.1. Without privacy enhancement */
       const {

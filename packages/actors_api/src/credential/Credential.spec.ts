@@ -22,8 +22,8 @@ describe('Credential', () => {
   let attestation: Attestation
 
   beforeAll(async () => {
-    attester = await Identity.buildFromMnemonic(Identity.generateMnemonic())
-    claimer = await Identity.buildFromMnemonic(Identity.generateMnemonic())
+    attester = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    claimer = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     const rawCType: ICType['schema'] = {
       $id: 'kilt:ctype:0x1',

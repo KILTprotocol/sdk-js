@@ -90,8 +90,8 @@ describe('CType registration verification', () => {
   } as ICType['schema']
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
-    identityBob = await Identity.buildFromURI('//Bob')
+    identityAlice = Identity.buildFromURI('//Alice')
+    identityBob = Identity.buildFromURI('//Bob')
   }, 30_000)
 
   describe('when CType is not registered', () => {
