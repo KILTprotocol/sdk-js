@@ -7,6 +7,7 @@
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import {
+  ERROR_TRANSACTION_DUPLICATE,
   ERROR_TRANSACTION_OUTDATED,
   ERROR_TRANSACTION_PRIORITY,
   ERROR_TRANSACTION_RECOVERABLE,
@@ -32,7 +33,7 @@ const log = LoggerFactory.getLogger('Blockchain')
 
 export const TxOutdated = 'Transaction is outdated'
 export const TxPriority = 'Priority is too low:'
-export const TxAlreadyImported = 'Transaction Already Imported'
+export const TxDuplicate = 'Transaction Already Imported'
 
 export const IS_RELEVANT_ERROR: ErrorEvaluator = (err: Error | SDKError) => {
   const outdated = err.message.includes(ERROR_TRANSACTION_OUTDATED().message)
@@ -112,6 +113,15 @@ export async function submitSignedTxRaw(
   return result
 }
 
+/**
+ * [ASYNC] Reroute to submitSignedTxRaw, this function matches the specific errors and returns the appropriate SDKErrors.
+ *
+ *
+ * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
+ * @param opts [[SubscriptionPromiseOptions]]: Criteria for resolving/rejecting the promise.
+ * @returns A promise which can be used to track transaction status.
+ * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ */
 async function submitSignedTxErrorMatched(
   tx: SubmittableExtrinsic,
   opts: SubscriptionPromiseOptions
@@ -124,12 +134,23 @@ async function submitSignedTxErrorMatched(
       case reason.message.includes(TxPriority):
         return Promise.reject(ERROR_TRANSACTION_PRIORITY())
         break
+      case reason.message.includes(TxDuplicate):
+        return Promise.reject(ERROR_TRANSACTION_DUPLICATE())
+        break
       default:
         return Promise.reject(reason)
     }
   })
 }
-
+/**
+ * [ASYNC] Uses submitSignedTxErrorMatched to reject with ERROR_TRANSACTION_RECOVERABLE if Tx can be re-signed.
+ *
+ * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
+ * @param opts [[SubscriptionPromiseOptions]]: Criteria for resolving/rejecting the promise.
+ * @returns A promise which can be used to track transaction status.
+ * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ *
+ */
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,
   opts: SubscriptionPromiseOptions
