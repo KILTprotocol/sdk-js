@@ -64,14 +64,17 @@ export const EXTRINSIC_FAILED: ResultEvaluator = (result) =>
 export function parseSubscriptionOptions(
   opts?: Partial<SubscriptionPromiseOptions>
 ): SubscriptionPromiseOptions {
-  const defaults = {
-    resolveOn: IS_FINALIZED,
-    rejectOn: (result: SubmittableResult) =>
+  const {
+    resolveOn = IS_FINALIZED,
+    rejectOn = (result: SubmittableResult) =>
       IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
-  }
+    timeout,
+  } = { ...opts }
+
   return {
-    ...defaults,
-    ...opts,
+    resolveOn,
+    rejectOn,
+    timeout,
   }
 }
 
