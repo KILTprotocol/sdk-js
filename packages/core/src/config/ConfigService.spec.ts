@@ -70,7 +70,7 @@ describe('Configuration Service', () => {
       expect(ConfigService.get('testProp')).toEqual('testing')
     })
     it('throws error if target prop does not exist or is undefined', () => {
-      expect(ConfigService.get('testinError')).toThrow(
+      expect(ConfigService.get('testingError')).toThrow(
         'GENERIC NOT CONFIGURED ERROR FOR testinError'
       )
     })
