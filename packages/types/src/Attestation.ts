@@ -5,9 +5,9 @@
 import Attestation from '../attestation/Attestation'
 import ICType from './CType'
 import { IDelegationBaseNode } from './Delegation'
-import { IPublicIdentity } from './PublicIdentity'
+import IPublicIdentity from './PublicIdentity'
 
-export interface IAttestation {
+export default interface IAttestation {
   claimHash: string
   cTypeHash: ICType['hash']
   owner: IPublicIdentity['address']

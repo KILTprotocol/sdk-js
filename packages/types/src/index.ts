@@ -3,21 +3,44 @@
  * @ignore
  */
 
-export * from './sdk-types/Attestation'
-export * from './sdk-types/AttestedClaim'
-export {
-  ICType,
+import ICType, {
   ICTypeSchema,
   CTypeSchemaWithoutId,
-  CompressedCType,
   CompressedCTypeSchema,
-} from './sdk-types/CType'
-export * from './sdk-types/CTypeMetadata'
-export * from './sdk-types/Claim'
-export * from './sdk-types/Credential'
-export * from './sdk-types/Delegation'
-export * from './sdk-types/PublicAttesterIdentity'
-export { IPublicIdentity } from './sdk-types/PublicIdentity'
-export * from './sdk-types/Quote'
-export * from './sdk-types/RequestForAttestation'
-export * from './sdk-types/Terms'
+  CompressedCType,
+} from './CType'
+import ICTypeMetadata, {
+  IMetadata,
+  IMetadataProperties,
+  IMultilangLabel,
+} from './CTypeMetadata'
+import IClaim, { IClaimContents, CompressedClaim } from './Claim'
+import ICredential from './Credential'
+import {
+  Permission,
+  IDelegationBaseNode,
+  IDelegationRootNode,
+  IDelegationNode,
+} from './Delegation'
+import IPublicAttesterIdentity from './PublicAttesterIdentity'
+import IPublicIdentity from './PublicIdentity'
+import {
+  ICostBreakdown,
+  IQuote,
+  IQuoteAttesterSigned,
+  IQuoteAgreement,
+  CompressedCostBreakdown,
+  CompressedQuote,
+  CompressedQuoteAttesterSigned,
+  CompressedQuoteAgreed,
+} from './Quote'
+import IRequestForAttestation, {
+  Hash,
+  NonceHash,
+  CompressedRequestForAttestation,
+} from './RequestForAttestation'
+import ITerms from './Terms'
+
+export * from './AttestedClaim'
+export { default as IAttestation } from './Attestation'
+export { ICTypeSchema }

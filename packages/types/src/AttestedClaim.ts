@@ -3,12 +3,12 @@
  * @module IAttestedClaim
  */
 
-import { IAttestation, CompressedAttestation } from './Attestation'
+import IAttestation, { CompressedAttestation } from './Attestation'
 import IRequestForAttestation, {
   CompressedRequestForAttestation,
 } from './RequestForAttestation'
 
-export interface IAttestedClaim {
+export default interface IAttestedClaim {
   attestation: IAttestation
   request: IRequestForAttestation
 }

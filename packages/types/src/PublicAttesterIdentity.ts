@@ -5,7 +5,7 @@ import IPublicIdentity from './PublicIdentity'
  * @packageDocumentation
  * @module IPublicAttesterIdentity
  */
-export interface IPublicAttesterIdentity extends IPublicIdentity {
+export default interface IPublicAttesterIdentity extends IPublicIdentity {
   publicGabiKey?: gabi.AttesterPublicKey
   accumulator?: gabi.Accumulator
 }

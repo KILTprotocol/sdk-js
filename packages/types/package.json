@@ -1,5 +1,27 @@
 {
   "name": "@kiltprotocol/types",
+  "version": "0.19.1-18",
+  "description": "",
+  "main": "./lib/index.js",
+  "typings": "./lib/index.d.ts",
+  "scripts": {
+    "clean": "rimraf ./lib",
+    "build": "yarn clean && yarn build:ts",
+    "build:ts": "tsc --declaration -p tsconfig.build.json",
+    "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll"
+  },
+  "repository": "github:kiltprotocol/sdk-js",
+  "engines": {
+    "node": ">=10.0"
+  },
+  "author": "",
+  "license": "BSD-4-Clause",
+  "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
+  "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
+  "devDependencies": {
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
+  },
   "dependencies": {
     "@kiltprotocol/portablegabi": "^0.4.0"
   }
