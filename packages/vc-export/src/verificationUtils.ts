@@ -128,22 +128,25 @@ export async function verifyAttestedProof(
     // query on-chain data by credential id (= claim root hash)
     const onChain = await Attestation.query(claimHash)
     // if not found, credential has not been attested, proof is invalid
-    status = AttestationStatus.invalid
-    if (!onChain)
+    if (!onChain) {
+      status = AttestationStatus.invalid
       throw new Error(
         `attestation for credential with id ${claimHash} not found`
       )
+    }
     // if data on proof does not correspond to data on chain, proof is incorrect
     if (
       onChain.owner !== attesterAddress ||
       onChain.delegationId !== delegationId
-    )
+    ) {
+      status = AttestationStatus.invalid
       throw new Error(
         `proof not matching on-chain data: proof ${{
           attester: attesterAddress,
           delegation: delegationId,
         }}`
       )
+    }
     // if proof data is valid but attestation is flagged as revoked, credential is no longer valid
     if (onChain.revoked) {
       status = AttestationStatus.revoked
