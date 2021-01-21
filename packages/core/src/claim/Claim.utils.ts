@@ -11,6 +11,7 @@ import IClaim, { CompressedClaim } from '../types/Claim'
 import { validateAddress, validateHash } from '../util/DataUtils'
 import { getIdForCTypeHash } from '../ctype/CType.utils'
 import { HashingOptions, hashStatements } from '../crypto/Crypto'
+import Did from '../did'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 
@@ -34,9 +35,9 @@ function JsonLDcontents(
 ): Record<string, unknown> {
   const { cTypeHash, contents, owner } = claim
   if (!cTypeHash) SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
-  const vocabulary = `${getIdForCTypeHash(claim.cTypeHash)}#`
+  const vocabulary = `${getIdForCTypeHash(cTypeHash)}#`
   const result: Record<string, unknown> = {}
-  if (claim.owner) result['@id'] = owner
+  if (owner) result['@id'] = Did.getIdentifierFromAddress(owner)
   if (!expanded) {
     return {
       ...result,
@@ -245,4 +246,5 @@ export default {
   errorCheck,
   hashClaimContents,
   verifyDisclosedAttributes,
+  toJsonLD,
 }

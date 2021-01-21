@@ -55,7 +55,9 @@ export function decodeDid(
 export function getIdentifierFromAddress(
   address: IPublicIdentity['address']
 ): IDid['identifier'] {
-  return IDENTIFIER_PREFIX + address
+  return address.startsWith(IDENTIFIER_PREFIX)
+    ? address
+    : IDENTIFIER_PREFIX + address
 }
 
 /**
