@@ -5,9 +5,9 @@
 import Attestation from '../attestation/Attestation'
 import ICType from './CType'
 import { IDelegationBaseNode } from './Delegation'
-import IPublicIdentity from './PublicIdentity'
+import { IPublicIdentity } from './PublicIdentity'
 
-export default interface IAttestation {
+export interface IAttestation {
   claimHash: string
   cTypeHash: ICType['hash']
   owner: IPublicIdentity['address']
@@ -16,9 +16,9 @@ export default interface IAttestation {
 }
 
 export type CompressedAttestation = [
-  Attestation['claimHash'],
-  Attestation['cTypeHash'],
-  Attestation['owner'],
-  Attestation['revoked'],
-  Attestation['delegationId']
+  IAttestation['claimHash'],
+  IAttestation['cTypeHash'],
+  IAttestation['owner'],
+  IAttestation['revoked'],
+  IAttestation['delegationId']
 ]

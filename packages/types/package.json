@@ -1,0 +1,6 @@
+{
+  "name": "@kiltprotocol/types",
+  "dependencies": {
+    "@kiltprotocol/portablegabi": "^0.4.0"
+  }
+}

@@ -30,6 +30,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
+    "@kiltprotocol/types": "workspace:*",
     "@polkadot/api": "^3.5.1",
     "@polkadot/keyring": "^5.3.1",
     "@polkadot/types": "^3.5.1",

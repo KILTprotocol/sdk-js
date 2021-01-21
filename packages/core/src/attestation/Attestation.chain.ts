@@ -5,10 +5,10 @@
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
+import IAttestation from '@kiltprotocol/types'
 import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
-import IAttestation from '../types/Attestation'
 import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 import Attestation from './Attestation'
 

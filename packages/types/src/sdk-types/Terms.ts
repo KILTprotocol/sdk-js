@@ -3,16 +3,16 @@
  * @module ITerms
  */
 
-import DelegationNode from '../delegation/DelegationNode'
-import { IPartialClaim } from '../messaging/Message'
 import IAttestedClaim from './AttestedClaim'
+import IClaim from './Claim'
 import ICType from './CType'
+import { IDelegationBaseNode } from './Delegation'
 import { IQuoteAttesterSigned } from './Quote'
 
 export default interface ITerms {
-  claim: IPartialClaim
+  claim: Partial<IClaim>
   legitimations: IAttestedClaim[]
-  delegationId?: DelegationNode['id']
+  delegationId?: IDelegationBaseNode['id']
   quote?: IQuoteAttesterSigned
   prerequisiteClaims?: ICType['hash']
 }

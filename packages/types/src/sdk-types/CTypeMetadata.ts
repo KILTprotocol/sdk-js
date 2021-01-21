@@ -2,7 +2,7 @@
  * @packageDocumentation
  * @module ICTypeMetadata
  */
-export default interface ICTypeMetadata {
+export interface ICTypeMetadata {
   metadata: IMetadata
   ctypeHash: string | null
 }

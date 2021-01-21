@@ -9,7 +9,7 @@ export type IClaimContents = Record<
   string,
   Record<string, unknown> | string | number | boolean
 >
-export default interface IClaim {
+export interface IClaim {
   cTypeHash: ICType['hash']
   contents: IClaimContents
   owner: IPublicIdentity['address']
