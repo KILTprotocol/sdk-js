@@ -1,5 +1,6 @@
 /**
- * Config is used to configure logging.
+ * The ConfigService is used for setting up the node address,
+ * the logging level as well as storing custom configuration options.
  *
  * @packageDocumentation
  * @ignore
