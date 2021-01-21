@@ -21,10 +21,10 @@ const DEFAULT_DEBUG_LEVEL =
     ? LogLevel.Debug
     : LogLevel.Error
 
-export interface configOpts {
+export type configOpts = {
   address: string
   logLevel: LogLevel
-}
+} & { [key: string]: any }
 
 /**
  *  Changes all existing Loggers of our default Factory with id 0 to the intended Level.
@@ -49,19 +49,20 @@ let configuration: configOpts = {
   address: '',
 }
 
-function getAddress(): configOpts['address'] {
+function checkAddress(): void {
   if (!configuration.address) {
     throw ERROR_WS_ADDRESS_NOT_SET()
   }
-  return configuration.address
-
 }
 
-export function get<T = configOpts, K = keyof T>(configOpt: K): T[K] {
+export function get<K extends keyof configOpts>(configOpt: K): configOpts[K] {
   if (typeof configuration[configOpt] === 'undefined')
     throw new Error(`GENERIC NOT CONFIGURED ERROR FOR ${configOpt}`)
-  if (configOpt === 'address') {
-    return getAddress()
+  switch (configOpt) {
+    case 'address':
+      checkAddress()
+      break
+    default:
   }
   return configuration[configOpt]
 }
@@ -70,10 +71,6 @@ function setLogLevel(logLevel: LogLevel | undefined): void {
   if (logLevel || logLevel === 0) {
     modifyLogLevel(logLevel)
   }
-}
-
-function setAddress(address: Required<configOpts>['address']): void {
-  configuration.address = address
 }
 
 export function set<K extends Partial<configOpts>>(opts: K): void {

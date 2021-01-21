@@ -32,49 +32,47 @@ describe('Log Configuration', () => {
 })
 
 describe('Configuration Service', () => {
-  it('exports instance of ConfigService with defaulted logLevel and undefined host address', () => {
-    expect(ConfigService.configuration['props'].logLevel).toEqual(
-      LogLevel.Error
-    )
-    expect(ConfigService.configuration['props'].address).toEqual(undefined)
+  it('has configuration Object with default values', () => {
+    expect(ConfigService.get('logLevel')).toEqual(LogLevel.Error)
+    expect(ConfigService.get('address')).toEqual(undefined)
   })
-  describe('implements set methods for host address and logLevel', () => {
-    it('modifies exported instance config with passed arguments', () => {
-      ConfigService.configuration.host = 'host'
-      expect(ConfigService.configuration['props'].address).toEqual('host')
-
-      ConfigService.configuration.logging = LogLevel.Warn
-      expect(ConfigService.configuration['props'].logLevel).toEqual(
-        LogLevel.Warn
-      )
+  describe('set function for host address, logLevel and any custom configuration prop', () => {
+    it('host address', () => {
+      ConfigService.set({ address: 'host' })
+      expect(ConfigService.get('address')).toEqual('host')
+    })
+    it('logLevel setting', () => {
+      ConfigService.set({ logLevel: LogLevel.Warn })
+      expect(ConfigService.get('logLevel')).toEqual(LogLevel.Warn)
+    })
+    it('custom config prop', () => {
+      ConfigService.set({ testProp: 'test' })
+      expect(ConfigService.get('testProp')).toEqual('test')
     })
   })
-  describe('implements get methods for host address and logLevel', () => {
+  describe('get function for host address, logLevel and any other injected configuration prop', () => {
     it('returns address property', () => {
-      const test = new ConfigService.ConfigService({
-        address: 'testing',
-        logLevel: LogLevel.Warn,
-      })
-
-      expect(test.host).toEqual('testing')
+      ConfigService.set({ address: 'host' })
+      expect(ConfigService.get('address')).toEqual('host')
     })
-    it('calling host get with no set host should throw error', () => {
-      ConfigService.configuration['props'].address = ''
-      expect(() => ConfigService.configuration.host).toThrowError(
-        ERROR_WS_ADDRESS_NOT_SET()
-      )
-      ConfigService.configuration['props'].address = undefined
-      expect(() => ConfigService.configuration.host).toThrowError(
-        ERROR_WS_ADDRESS_NOT_SET()
-      )
+    it('throws if address not set', () => {
+      ConfigService.set({ address: '' })
+      expect(ConfigService.get('address')).toThrow(ERROR_WS_ADDRESS_NOT_SET())
+      ConfigService.set({ address: undefined })
+      expect(ConfigService.get('address')).toThrow(ERROR_WS_ADDRESS_NOT_SET())
     })
     it('returns logLevel property', () => {
-      const test = new ConfigService.ConfigService({
-        address: 'testing',
-        logLevel: LogLevel.Warn,
-      })
-
-      expect(test.logging).toEqual(LogLevel.Warn)
+      ConfigService.set({ logLevel: LogLevel.Info })
+      expect(ConfigService.get('logLevel')).toEqual(LogLevel.Info)
+    })
+    it('gets custom configuration prop', () => {
+      ConfigService.set({ testProp: 'testing' })
+      expect(ConfigService.get('testProp')).toEqual('testing')
+    })
+    it('throws error if target prop does not exist or is undefined', () => {
+      expect(ConfigService.get('testinError')).toThrow(
+        'GENERIC NOT CONFIGURED ERROR FOR testinError'
+      )
     })
   })
 })

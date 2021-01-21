@@ -9,28 +9,22 @@
  * @preferred
  */
 
-import { configuration, configOpts } from '../config/ConfigService'
+import { configOpts, get, set } from '../config/ConfigService'
 import Blockchain from '../blockchain/Blockchain'
 import { clearCache, getCached } from '../blockchainApiConnection'
 
-export function connect(
-  host: string = configuration.host
-): Promise<Blockchain> {
+export function connect(host: string = get('address')): Promise<Blockchain> {
   return getCached(host)
 }
 
-export async function disconnect(
-  host: string = configuration.host
-): Promise<void> {
+export async function disconnect(host: string = get('address')): Promise<void> {
   const cached = await getCached(host)
   cached.api.disconnect()
   clearCache()
 }
 
-export function config(configs: Partial<configOpts>): void {
-  const { address, logLevel } = configs
-  if (address) configuration.host = address
-  if (logLevel) configuration.logging = logLevel
+export function config<K extends Partial<configOpts>>(configs: K): void {
+  set(configs)
 }
 
 export default {
