@@ -123,7 +123,7 @@ export default class Identity {
    * ```
    */
   public static buildFromSeed(seed: Uint8Array): Identity {
-    const keyring = new Keyring({ type: 'ed25519' })
+    const keyring = new Keyring({ type: 'sr25519' })
     const keyringPair = keyring.addFromSeed(seed)
     return new Identity(seed, keyringPair)
   }
