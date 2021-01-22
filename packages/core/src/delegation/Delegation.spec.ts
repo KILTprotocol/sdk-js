@@ -23,7 +23,7 @@ const ctypeHash = hashStr('testCtype')
 describe('Delegation', () => {
   let identityAlice: Identity
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
 
     blockchainApi.query.attestation.delegatedAttestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'delegatedAttestations', [

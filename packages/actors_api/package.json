@@ -1,5 +1,5 @@
 {
-  "name": "@kiltprotocol/sdk-js",
+  "name": "@kiltprotocol/actors-api",
   "version": "0.19.1-18",
   "description": "",
   "main": "./lib/index.js",
@@ -10,7 +10,8 @@
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
-    "build:ts": "tsc --declaration -p tsconfig.build.json"
+    "build:ts": "tsc --declaration -p tsconfig.build.json",
+    "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
@@ -25,7 +26,6 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@kiltprotocol/actors-api": "workspace:*",
     "@kiltprotocol/core": "workspace:*"
   }
 }

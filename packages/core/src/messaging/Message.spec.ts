@@ -4,7 +4,7 @@
  * @ignore
  */
 
-import { IAttestedClaim, Verifier } from '..'
+import { IAttestedClaim } from '..'
 import Crypto from '../crypto'
 import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import * as SDKErrors from '../errorhandling/SDKErrors'
@@ -28,19 +28,20 @@ describe('Messaging', () => {
   let date: Date
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
-    identityBob = await Identity.buildFromURI('//Bob')
+    identityAlice = Identity.buildFromURI('//Alice')
+    identityBob = Identity.buildFromURI('//Bob')
     date = new Date(2019, 11, 10)
   })
 
   it('verify message encryption and signing', async () => {
-    const { message } = await Verifier.newRequestBuilder()
-      .requestPresentationForCtype({
-        ctypeHash: '0x12345678',
-        properties: ['age'],
-      })
-      .finalize(false, identityAlice, identityBob.getPublicIdentity())
-
+    const message = new Message(
+      {
+        type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        content: { ctypes: ['0x12345678'] },
+      },
+      identityAlice,
+      identityBob.getPublicIdentity()
+    )
     const encryptedMessage = message.encrypt()
 
     const decryptedMessage = Message.decrypt(encryptedMessage, identityBob)
@@ -129,7 +130,6 @@ describe('Messaging', () => {
       claimHashes: ['0x12345678'],
       rootHash: '0x12345678',
       claimerSignature: '0x12345678',
-      privacyEnhancement: null,
     } as IRequestForAttestation
 
     const quoteData: IQuote = {
@@ -216,7 +216,7 @@ describe('Messaging', () => {
 
     const submitClaimsForCTypeBody: ISubmitClaimsForCTypes = {
       content: [attestedClaim],
-      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC,
+      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
     }
 
     Message.ensureOwnerIsSender(
@@ -242,14 +242,12 @@ describe('Messaging', () => {
     let encryptedHash: string
 
     beforeAll(async () => {
-      identityAlice = await Identity.buildFromURI('//Alice')
-      identityBob = await Identity.buildFromURI('//Bob')
+      identityAlice = Identity.buildFromURI('//Alice')
+      identityBob = Identity.buildFromURI('//Bob')
 
       messageBody = {
         content: {
           ctypes: ['0x12345678'],
-          peRequest: {} as any,
-          allowPE: false,
         },
         type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
       }

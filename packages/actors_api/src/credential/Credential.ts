@@ -11,15 +11,18 @@
  * @preferred
  */
 
-import * as gabi from '@kiltprotocol/portablegabi'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
-import Identity from '../identity/Identity'
-import IAttestation from '../types/Attestation'
-import ICredential from '../types/Credential'
-import IRequestForAttestation from '../types/RequestForAttestation'
-import { ERROR_IDENTITY_NOT_PE_ENABLED } from '../errorhandling/SDKErrors'
+import {
+  AttestedClaim,
+  IAttestation,
+  IRequestForAttestation,
+} from '@kiltprotocol/core'
 
-export default class Credential {
+export interface ICredential {
+  readonly reqForAtt: IRequestForAttestation
+  readonly attestation: IAttestation
+}
+
+export default class Credential implements ICredential {
   /**
    * The request that was sent to the attester.
    */
@@ -31,58 +34,29 @@ export default class Credential {
   public readonly attestation: IAttestation
 
   /**
-   * The privacy enhanced credential. This property is null, if no privacy enhanced attestation was issued by the attester.
-   */
-  public readonly privacyCredential: gabi.Credential | null
-
-  /**
    * Build a [[Credential]] using an attestation. The credential can be used to create privacy enhanced presentations if a session and a privacy enhanced attestation is passed.
    *
-   * @param claimer The owner of the credential.
    * @param request The request for attestation that was sent over to the attester.
    * @param attestation The attestation received from the attester.
-   * @param session The session that was created while requesting the presentation.
-   * @param attestationPE The privacy enhanced attestation which was created by the attester.
    *
    * @returns A credential that can be used to create presentations.
    */
-  public static async fromRequestAndAttestation(
-    claimer: Identity,
+  public static fromRequestAndAttestation(
     request: IRequestForAttestation,
-    attestation: IAttestation,
-    session: gabi.ClaimerAttestationSession | null = null,
-    attestationPE: gabi.Attestation | null = null
-  ): Promise<Credential> {
-    let privacyCredential: gabi.Credential | null = null
-
-    if (session !== null && attestationPE !== null) {
-      if (!claimer.claimer) {
-        throw ERROR_IDENTITY_NOT_PE_ENABLED()
-      }
-      privacyCredential = await claimer.claimer.buildCredential({
-        claimerSession: session,
-        attestation: attestationPE,
-      })
-    }
+    attestation: IAttestation
+  ): Credential {
     const copiedReq: IRequestForAttestation = {
       ...request,
-      privacyEnhancement: null,
     }
     return new Credential({
       reqForAtt: copiedReq,
       attestation,
-      privacyCredential,
     })
   }
 
-  protected constructor({
-    reqForAtt,
-    attestation,
-    privacyCredential,
-  }: ICredential) {
+  protected constructor({ reqForAtt, attestation }: ICredential) {
     this.reqForAtt = reqForAtt
     this.attestation = attestation
-    this.privacyCredential = privacyCredential
   }
 
   /**

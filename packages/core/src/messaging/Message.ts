@@ -13,12 +13,6 @@
 
 import { AnyJson } from '@polkadot/types/types'
 import {
-  Attestation as AttestationPE,
-  CombinedPresentation,
-  CombinedPresentationRequest,
-  InitiateAttestationRequest,
-} from '@kiltprotocol/portablegabi'
-import {
   Claim,
   DelegationNode,
   IAttestedClaim,
@@ -94,8 +88,7 @@ export enum MessageBodyType {
   REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
 
   REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
-  SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC = 'submit-claims-for-ctypes-classic',
-  SUBMIT_CLAIMS_FOR_CTYPES_PE = 'submit-claims-for-ctypes-pe',
+  SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes-classic',
   ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
   REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
 
@@ -137,9 +130,9 @@ export default class Message implements IMessage {
           }
         }
         break
-      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC:
+      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES:
         {
-          const submitClaimsForCtype: ISubmitClaimsForCTypesClassic = body
+          const submitClaimsForCtype: ISubmitClaimsForCTypes = body
           submitClaimsForCtype.content.forEach((claim) => {
             if (claim.request.claim.owner !== senderAddress) {
               throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
@@ -309,11 +302,6 @@ export interface IRejectTerms extends IMessageBodyBase {
   type: MessageBodyType.REJECT_TERMS
 }
 
-export interface IInitiateAttestation extends IMessageBodyBase {
-  content: InitiateAttestationRequest
-  type: MessageBodyType.INITIATE_ATTESTATION
-}
-
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
   content: {
     requestForAttestation: IRequestForAttestation
@@ -325,7 +313,6 @@ export interface IRequestAttestationForClaim extends IMessageBodyBase {
 export interface ISubmitAttestationForClaim extends IMessageBodyBase {
   content: {
     attestation: IAttestation
-    attestationPE?: AttestationPE
   }
   type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
 }
@@ -336,26 +323,14 @@ export interface IRejectAttestationForClaim extends IMessageBodyBase {
 
 export interface IRequestClaimsForCTypes extends IMessageBodyBase {
   content: {
-    // Entries in the ctype hash array can be null, because ctypes are optional for portablegabi.
-    ctypes: Array<ICType['hash'] | null>
-    peRequest?: CombinedPresentationRequest
-    allowPE: boolean
+    ctypes: Array<ICType['hash']>
   }
   type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
 }
 
-export type ISubmitClaimsForCTypes =
-  | ISubmitClaimsForCTypesClassic
-  | ISubmitClaimsForCTypesPE
-
-export interface ISubmitClaimsForCTypesClassic extends IMessageBodyBase {
+export interface ISubmitClaimsForCTypes extends IMessageBodyBase {
   content: IAttestedClaim[]
-  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC
-}
-
-export interface ISubmitClaimsForCTypesPE extends IMessageBodyBase {
-  content: CombinedPresentation
-  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_PE
+  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
 }
 
 export interface IAcceptClaimsForCTypes extends IMessageBodyBase {
@@ -414,14 +389,12 @@ export type MessageBody =
   | ISubmitTerms
   | IRejectTerms
   //
-  | IInitiateAttestation
   | IRequestAttestationForClaim
   | ISubmitAttestationForClaim
   | IRejectAttestationForClaim
   //
   | IRequestClaimsForCTypes
-  | ISubmitClaimsForCTypesClassic
-  | ISubmitClaimsForCTypesPE
+  | ISubmitClaimsForCTypes
   | IAcceptClaimsForCTypes
   | IRejectClaimsForCTypes
   //

@@ -16,8 +16,8 @@ describe('Crypto', () => {
   let message: Uint8Array
 
   beforeAll(async () => {
-    alice = await Identity.buildFromMnemonic(Identity.generateMnemonic())
-    bob = await Identity.buildFromMnemonic(Identity.generateMnemonic())
+    alice = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    bob = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     messageStr = 'This is a test'
     message = new Uint8Array(string.stringToU8a(messageStr))

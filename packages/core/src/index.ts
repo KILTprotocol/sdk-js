@@ -2,15 +2,12 @@
  * @packageDocumentation
  * @ignore
  */
-import { Accumulator, CombinedPresentation } from '@kiltprotocol/portablegabi'
-import { Attester, Claimer, Verifier } from './actor'
 import Attestation, { AttestationUtils } from './attestation'
 import AttestedClaim, { AttestedClaimUtils } from './attestedclaim'
 import { Balance, BalanceUtils } from './balance'
 import Blockchain, { IBlockchainApi, BlockchainUtils } from './blockchain'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import Claim, { ClaimUtils } from './claim'
-import Credential from './credential'
 import Crypto from './crypto'
 import { CType, CTypeMetadata, CTypeSchema, CTypeUtils } from './ctype'
 import {
@@ -19,13 +16,7 @@ import {
   DelegationRootNode,
 } from './delegation'
 import Did, { IDid, IDidDocument, IDidDocumentPublicKey } from './did'
-import {
-  AttesterIdentity,
-  Identity,
-  IURLResolver,
-  PublicAttesterIdentity,
-  PublicIdentity,
-} from './identity'
+import { Identity, IURLResolver, PublicIdentity } from './identity'
 import Message from './messaging'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {
@@ -42,7 +33,6 @@ export { default as IAttestation } from './types/Attestation'
 export * from './types/Attestation'
 export { default as IAttestedClaim } from './types/AttestedClaim'
 export { default as IClaim } from './types/Claim'
-export { default as ICredential } from './types/Credential'
 export { default as ICType, CTypeSchemaWithoutId } from './types/CType'
 export { default as ICTypeMetadata } from './types/CTypeMetadata'
 export {
@@ -51,7 +41,6 @@ export {
   IDelegationRootNode,
   Permission,
 } from './types/Delegation'
-export { default as IPublicAttesterIdentity } from './types/PublicAttesterIdentity'
 export { default as IPublicIdentity } from './types/PublicIdentity'
 export {
   ICostBreakdown,
@@ -71,9 +60,7 @@ export {
   BalanceUtils,
   Crypto,
   Identity,
-  AttesterIdentity,
   PublicIdentity,
-  PublicAttesterIdentity,
   IURLResolver,
   CType,
   CTypeMetadata,
@@ -96,12 +83,6 @@ export {
   IDidDocumentPublicKey,
   Message,
   Quote,
-  Attester,
-  Claimer,
-  Verifier,
-  Accumulator,
-  CombinedPresentation,
-  Credential,
   QuoteUtils,
   QuoteSchema,
 }

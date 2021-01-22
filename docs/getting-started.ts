@@ -1,21 +1,19 @@
 /* eslint-disable no-console */
-import * as Kilt from '../src'
-import {
+import Kilt from '@kiltprotocol/sdk-js'
+import type {
   IRequestAttestationForClaim,
-  Message,
-  MessageBodyType,
   ISubmitAttestationForClaim,
-  ISubmitClaimsForCTypesClassic,
-  Identity,
-} from '../src'
-import { DEFAULT_WS_ADDRESS } from '../src/blockchainApiConnection'
+  ISubmitClaimsForCTypes,
+} from '@kiltprotocol/sdk-js'
+
+const NODE_URL = 'ws://127.0.0.1:9944'
 
 async function main(): Promise<void> {
   /* 2. How to generate an Identity */
   const claimerMnemonic = Kilt.Identity.generateMnemonic()
   // mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
   console.log('claimer mnemonic', claimerMnemonic)
-  const claimer = await Kilt.Identity.buildFromMnemonic(claimerMnemonic)
+  const claimer = Kilt.Identity.buildFromMnemonic(claimerMnemonic)
   // claimer.address: 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
   console.log('claimer address', claimer.address)
 
@@ -35,8 +33,8 @@ async function main(): Promise<void> {
   })
 
   /* To store the CTYPE on the blockchain, you have to call: */
-  Kilt.connect(DEFAULT_WS_ADDRESS)
-  const identity = await Kilt.Identity.buildFromMnemonic(
+  Kilt.connect(NODE_URL)
+  const identity = Kilt.Identity.buildFromMnemonic(
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   )
   await ctype.store(identity)
@@ -61,9 +59,10 @@ async function main(): Promise<void> {
   console.log(claim)
 
   /* 5.1.1. Requesting an Attestation */
-  const {
-    message: requestForAttestation,
-  } = await Kilt.RequestForAttestation.fromClaimAndIdentity(claim, claimer)
+  const requestForAttestation = Kilt.RequestForAttestation.fromClaimAndIdentity(
+    claim,
+    claimer
+  )
 
   /* The `requestForAttestation` object looks like this: */
   console.log(requestForAttestation)
@@ -71,12 +70,12 @@ async function main(): Promise<void> {
   /* before we can send the request for an attestation to an Attester, we should first create an Attester identity like above */
   const attesterMnemonic =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-  const attester = await Kilt.Identity.buildFromMnemonic(attesterMnemonic)
+  const attester = Kilt.Identity.buildFromMnemonic(attesterMnemonic)
 
   /* First, we create the request for an attestation message in which the Claimer automatically encodes the message with the public key of the Attester: */
   const messageBody: IRequestAttestationForClaim = {
     content: { requestForAttestation },
-    type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+    type: Kilt.MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
   }
   const message = new Kilt.Message(
     messageBody,
@@ -94,7 +93,9 @@ async function main(): Promise<void> {
   const decrypted = Kilt.Message.decrypt(encrypted, attester)
 
   /* At this point the Attester has the original request for attestation object: */
-  if (decrypted.body.type === MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
+  if (
+    decrypted.body.type === Kilt.MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+  ) {
     const extractedRequestForAttestation: IRequestAttestationForClaim =
       decrypted.body
 
@@ -121,9 +122,9 @@ async function main(): Promise<void> {
     /* The Attester has to send the `attestedClaim` object back to the Claimer in the following message: */
     const messageBodyBack: ISubmitAttestationForClaim = {
       content: attestedClaim,
-      type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      type: Kilt.MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
     }
-    const messageBack = new Message(
+    const messageBack = new Kilt.Message(
       messageBodyBack,
       attester,
       claimer.getPublicIdentity()
@@ -134,7 +135,8 @@ async function main(): Promise<void> {
 
     /* After receiving the message, the Claimer just needs to save it and can use it later for verification: */
     if (
-      messageBack.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+      messageBack.body.type ===
+      Kilt.MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
     ) {
       const myAttestedClaim = Kilt.AttestedClaim.fromAttestedClaim({
         ...messageBack.body.content,
@@ -143,28 +145,24 @@ async function main(): Promise<void> {
       console.log(myAttestedClaim)
 
       /* As in the attestation, you need a second identity to act as the verifier: */
-      const verifierMnemonic = Identity.generateMnemonic()
-      const verifier = await Kilt.Identity.buildFromMnemonic(verifierMnemonic)
+      const verifierMnemonic = Kilt.Identity.generateMnemonic()
+      const verifier = Kilt.Identity.buildFromMnemonic(verifierMnemonic)
 
       /* 6.1.1. Without privacy enhancement */
       const {
         session: verifierSession,
-      } = await Kilt.Verifier.newRequestBuilder()
+      } = Kilt.Actors.Verifier.newRequestBuilder()
         .requestPresentationForCtype({
           ctypeHash: ctype.hash,
           requestUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available
           properties: ['age', 'name'], // publicly shown to the verifier
         })
-        .finalize(
-          false, // don't allow privacy enhanced verification
-          verifier,
-          claimer.getPublicIdentity()
-        )
+        .finalize(verifier, claimer.getPublicIdentity())
 
       /* Now the claimer can send a message to verifier including the attested claim: */
-      const messageBodyForVerifier: ISubmitClaimsForCTypesClassic = {
+      const messageBodyForVerifier: ISubmitClaimsForCTypes = {
         content: [myAttestedClaim],
-        type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC,
+        type: Kilt.MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
       }
       const messageForVerifier = new Kilt.Message(
         messageBodyForVerifier,
@@ -176,7 +174,7 @@ async function main(): Promise<void> {
       const {
         verified: isValid, // whether the presented attested claim(s) are valid
         claims, // the attested claims (potentially only with requested properties)
-      } = await Kilt.Verifier.verifyPresentation(
+      } = await Kilt.Actors.Verifier.verifyPresentation(
         messageForVerifier,
         verifierSession
       )
@@ -186,4 +184,4 @@ async function main(): Promise<void> {
   }
 }
 // execute
-main().finally(() => Kilt.disconnect(DEFAULT_WS_ADDRESS))
+main().finally(() => Kilt.disconnect(NODE_URL))

@@ -52,8 +52,8 @@ describe('Balance', () => {
     }
   )
   beforeAll(async () => {
-    alice = await Identity.buildFromURI('//Alice')
-    bob = await Identity.buildFromURI('//Bob')
+    alice = Identity.buildFromURI('//Alice')
+    bob = Identity.buildFromURI('//Bob')
   })
   it('should listen to balance changes', async (done) => {
     const listener = (account: string, balance: BN, change: BN): void => {

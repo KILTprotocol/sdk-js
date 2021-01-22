@@ -4,34 +4,26 @@
  * @ignore
  */
 
-import { AttesterIdentity } from '..'
-import Attestation from '../attestation/Attestation'
-import Claim from '../claim/Claim'
-import CType from '../ctype/CType'
-import Identity from '../identity/Identity'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import constants from '../test/constants'
-import ICType from '../types/CType'
+import {
+  Attestation,
+  Claim,
+  CType,
+  ICType,
+  Identity,
+  RequestForAttestation,
+} from '@kiltprotocol/core'
 import Credential from './Credential'
 
 describe('Credential', () => {
   let claimer: Identity
-  let attester: AttesterIdentity
+  let attester: Identity
   let ctype: CType
   let reqForAtt: RequestForAttestation
   let attestation: Attestation
 
   beforeAll(async () => {
-    attester = await AttesterIdentity.buildFromMnemonic(
-      Identity.generateMnemonic(),
-      {
-        key: {
-          publicKey: constants.PUBLIC_KEY.toString(),
-          privateKey: constants.PRIVATE_KEY.toString(),
-        },
-      }
-    )
-    claimer = await Identity.buildFromMnemonic(Identity.generateMnemonic())
+    attester = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    claimer = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     const rawCType: ICType['schema'] = {
       $id: 'kilt:ctype:0x1',
@@ -46,7 +38,7 @@ describe('Credential', () => {
     ctype = CType.fromSchema(rawCType, claimer.address)
 
     // cannot be used since the variable needs to be established in the outer scope
-    ;({ message: reqForAtt } = await RequestForAttestation.fromClaimAndIdentity(
+    reqForAtt = RequestForAttestation.fromClaimAndIdentity(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
@@ -56,7 +48,7 @@ describe('Credential', () => {
         claimer.address
       ),
       claimer
-    ))
+    )
 
     attestation = Attestation.fromRequestAndPublicIdentity(
       reqForAtt,
@@ -66,12 +58,10 @@ describe('Credential', () => {
 
   it('should build from reqForAtt and Attestation', async () => {
     const cred = await Credential.fromRequestAndAttestation(
-      claimer,
       reqForAtt,
       attestation
     )
     expect(cred).toBeDefined()
-    expect(cred.privacyCredential).toBeNull()
   })
 
   // should be tested here, but the setup for the privacy enhanced credentials is pretty big
@@ -82,7 +72,6 @@ describe('Credential', () => {
 
   it('should create AttestedClaim and exclude specific attributes', async () => {
     const cred = await Credential.fromRequestAndAttestation(
-      claimer,
       reqForAtt,
       attestation
     )
@@ -93,7 +82,6 @@ describe('Credential', () => {
 
   it('should get attribute keys', async () => {
     const cred = await Credential.fromRequestAndAttestation(
-      claimer,
       reqForAtt,
       attestation
     )

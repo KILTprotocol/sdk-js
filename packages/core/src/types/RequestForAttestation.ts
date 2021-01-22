@@ -3,7 +3,6 @@
  * @module IRequestForAttestation
  */
 
-import { AttestationRequest } from '@kiltprotocol/portablegabi'
 import IAttestedClaim, { CompressedAttestedClaim } from './AttestedClaim'
 import IClaim, { CompressedClaim } from './Claim'
 import { IDelegationBaseNode } from './Delegation'
@@ -21,7 +20,6 @@ export default interface IRequestForAttestation {
   claimHashes: Hash[]
   claimerSignature: string
   delegationId: IDelegationBaseNode['id'] | null
-  privacyEnhancement: AttestationRequest | null
   legitimations: IAttestedClaim[]
   rootHash: Hash
 }
@@ -33,6 +31,5 @@ export type CompressedRequestForAttestation = [
   IRequestForAttestation['claimHashes'],
   IRequestForAttestation['rootHash'],
   CompressedAttestedClaim[],
-  IRequestForAttestation['delegationId'],
-  IRequestForAttestation['privacyEnhancement']
+  IRequestForAttestation['delegationId']
 ]

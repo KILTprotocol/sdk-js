@@ -77,7 +77,7 @@ describe('DID', () => {
   })
 
   it('store did', async () => {
-    const alice = await Identity.buildFromURI('//Alice')
+    const alice = Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(alice, 'http://myDID.kilt.io')
     const tx = await did.store(alice)
     await expect(
@@ -87,7 +87,7 @@ describe('DID', () => {
 
   it('creates default did document', async () => {
     const did = Did.fromIdentity(
-      await Identity.buildFromURI('//Alice'),
+      Identity.buildFromURI('//Alice'),
       'http://myDID.kilt.io'
     )
     expect(
@@ -131,7 +131,7 @@ describe('DID', () => {
   })
 
   it('creates default did document (static)', async () => {
-    const alice = await Identity.buildFromURI('//Alice')
+    const alice = Identity.buildFromURI('//Alice')
     expect(
       Did.createDefaultDidDocument(
         Did.getIdentifierFromAddress(alice.address),
@@ -178,9 +178,9 @@ describe('DID', () => {
   })
 
   it('verifies the did document signature (untampered data)', async () => {
-    const identity = await Identity.buildFromURI('//Alice')
+    const identity = Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(
-      await Identity.buildFromURI('//Alice'),
+      Identity.buildFromURI('//Alice'),
       'http://myDID.kilt.io'
     )
     const didDocument = did.createDefaultDidDocument(
@@ -196,7 +196,7 @@ describe('DID', () => {
   })
 
   it('verifies the did document signature (tampered data)', async () => {
-    const identity = await Identity.buildFromURI('//Alice')
+    const identity = Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(identity, 'http://myDID.kilt.io')
     const didDocument = did.createDefaultDidDocument(
       'http://myDID.kilt.io/service'
@@ -220,13 +220,13 @@ describe('DID', () => {
   })
 
   it("throws when verifying the did document signature if identifiers don't match", async () => {
-    const identityAlice = await Identity.buildFromURI('//Alice')
+    const identityAlice = Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(identityAlice, 'http://myDID.kilt.io')
     const didDocument = did.createDefaultDidDocument(
       'http://myDID.kilt.io/service'
     )
     const signedDidDocument = Did.signDidDocument(didDocument, identityAlice)
-    const identityBob = await Identity.buildFromURI('//Bob')
+    const identityBob = Identity.buildFromURI('//Bob')
     const id = getIdentifierFromAddress(identityBob.address)
 
     expect(() =>

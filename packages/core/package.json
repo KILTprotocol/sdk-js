@@ -24,14 +24,12 @@
   "devDependencies": {
     "@types/uuid": "^8.0.0",
     "rimraf": "^3.0.2",
-    "ts-node": "^8.10.2",
     "tslib": "^2.0.0",
     "typedoc": "^0.17.8",
     "typedoc-plugin-external-module-name": "3.1.0",
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@kiltprotocol/portablegabi": "^0.4.0",
     "@polkadot/api": "^2.0.1",
     "@polkadot/keyring": "^3.5.1",
     "@polkadot/types": "^2.0.1",

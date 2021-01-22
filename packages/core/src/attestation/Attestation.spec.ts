@@ -29,8 +29,8 @@ describe('Attestation', () => {
     .__mocked_api
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
-    identityBob = await Identity.buildFromURI('//Bob')
+    identityAlice = Identity.buildFromURI('//Alice')
+    identityBob = Identity.buildFromURI('//Bob')
 
     rawCTypeSchema = {
       $id: 'kilt:ctype:0x1',
@@ -50,12 +50,10 @@ describe('Attestation', () => {
       testcontents,
       identityBob.address
     )
-    ;({
-      message: requestForAttestation,
-    } = await RequestForAttestation.fromClaimAndIdentity(
+    requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
       testClaim,
       identityBob
-    ))
+    )
   })
 
   it('stores attestation', async () => {

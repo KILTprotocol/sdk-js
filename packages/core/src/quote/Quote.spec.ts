@@ -44,8 +44,8 @@ describe('Claim', () => {
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
   beforeAll(async () => {
-    claimerIdentity = await Identity.buildFromURI('//Alice')
-    attesterIdentity = await Identity.buildFromURI('//Bob')
+    claimerIdentity = Identity.buildFromURI('//Alice')
+    attesterIdentity = Identity.buildFromURI('//Bob')
     invalidCost = ({
       gross: 233,
       tax: { vat: 3.3 },
@@ -71,10 +71,7 @@ describe('Claim', () => {
     }
 
     // build request for attestation with legitimations
-    ;({ message: request } = await RequestForAttestation.fromClaimAndIdentity(
-      claim,
-      claimerIdentity
-    ))
+    request = RequestForAttestation.fromClaimAndIdentity(claim, claimerIdentity)
 
     invalidCostQuoteData = {
       cTypeHash: '0x12345678',

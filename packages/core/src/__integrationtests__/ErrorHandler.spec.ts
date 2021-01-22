@@ -17,11 +17,11 @@ let alice: Identity
 
 beforeAll(async () => {
   blockchain = await getCached(DEFAULT_WS_ADDRESS)
-  alice = await Identity.buildFromURI('//Alice')
+  alice = Identity.buildFromURI('//Alice')
 })
 
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
-  const to = await Identity.buildFromMnemonic('')
+  const to = Identity.buildFromMnemonic('')
   await expect(
     makeTransfer(alice, to.address, new BN(1)).then((tx) =>
       submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })

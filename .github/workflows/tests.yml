@@ -126,7 +126,7 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
           sleep 5s
-          yarn workspace @kiltprotocol/core ts-node docs/example.ts
+          yarn ts-node docs/example.ts
           docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
 
   run_getting-started:
@@ -165,5 +165,5 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./target/release/mashnet-node --dev --ws-port 9944 --ws-external
           sleep 5s
-          yarn workspace @kiltprotocol/core ts-node docs/getting-started.ts
+          yarn ts-node docs/getting-started.ts
           docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)

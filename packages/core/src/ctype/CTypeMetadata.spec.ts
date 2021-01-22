@@ -21,7 +21,7 @@ describe('CType', () => {
   let metadata: CTypeMetadata
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
 
     rawCType = {
       $id: 'kilt:ctype:0x1',

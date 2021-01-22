@@ -8,7 +8,6 @@
  * @preferred
  */
 
-import * as gabi from '@kiltprotocol/portablegabi'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
@@ -35,7 +34,6 @@ export type Stats = {
 
 export interface IBlockchainApi {
   api: ApiPromise
-  portablegabi: gabi.Blockchain
 
   getStats(): Promise<Stats>
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
@@ -71,12 +69,10 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public api: ApiPromise
-  public readonly portablegabi: gabi.Blockchain
   private accountNonces: Map<Identity['address'], BN>
 
   public constructor(api: ApiPromise) {
     this.api = api
-    this.portablegabi = new gabi.Blockchain('portablegabi', this.api as any)
     this.accountNonces = new Map<Identity['address'], BN>()
   }
 

@@ -1,4 +1,13 @@
-import * as Kilt from '@kiltprotocol/core'
+import * as core from '@kiltprotocol/core'
+import * as Actors from '@kiltprotocol/actors-api'
+import {
+  Credential,
+  Claimer,
+  Attester,
+  Verifier,
+} from '@kiltprotocol/actors-api'
 
 export * from '@kiltprotocol/core'
-export default Kilt
+export { Actors }
+
+export default { ...core, Actors, Credential, Claimer, Attester, Verifier }
