@@ -41,10 +41,10 @@ export default class Credential implements ICredential {
    *
    * @returns A credential that can be used to create presentations.
    */
-  public static async fromRequestAndAttestation(
+  public static fromRequestAndAttestation(
     request: IRequestForAttestation,
     attestation: IAttestation
-  ): Promise<Credential> {
+  ): Credential {
     const copiedReq: IRequestForAttestation = {
       ...request,
     }

@@ -32,7 +32,7 @@ describe('Claimer', () => {
   let verifier: Identity
   let cType: CType
   let claim: IClaim
-  let credentialPE: Credential
+  let credential: Credential
 
   beforeAll(async () => {
     attester = Identity.buildFromURI('//Alice')
@@ -83,11 +83,7 @@ describe('Claimer', () => {
     const {
       message: requestAttestation,
       session: claimerSession,
-    } = await Claimer.requestAttestation(
-      claim,
-      claimer,
-      attester.getPublicIdentity()
-    )
+    } = Claimer.requestAttestation(claim, claimer, attester.getPublicIdentity())
     expect(requestAttestation.body.type).toEqual(
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
@@ -97,7 +93,7 @@ describe('Claimer', () => {
       claimer.getPublicIdentity()
     )
 
-    credentialPE = await Claimer.buildCredential(
+    credential = Claimer.buildCredential(
       claimer,
       attestationMessage,
       claimerSession
@@ -117,11 +113,7 @@ describe('Claimer', () => {
     const {
       message: requestAttestation,
       session: claimerSession,
-    } = await Claimer.requestAttestation(
-      claim,
-      claimer,
-      attester.getPublicIdentity()
-    )
+    } = Claimer.requestAttestation(claim, claimer, attester.getPublicIdentity())
 
     expect(requestAttestation.body.type).toEqual(
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
@@ -132,22 +124,22 @@ describe('Claimer', () => {
       claimer.getPublicIdentity()
     )
 
-    await Claimer.buildCredential(claimer, attestationMessage, claimerSession)
+    Claimer.buildCredential(claimer, attestationMessage, claimerSession)
   })
 
   it('create public presentation', async () => {
-    const { message: request } = await Verifier.newRequestBuilder()
+    const { message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(verifier, claimer.getPublicIdentity())
 
-    const presentation = await Claimer.createPresentation(
+    const presentation = Claimer.createPresentation(
       claimer,
       request,
       verifier.getPublicIdentity(),
-      [credentialPE]
+      [credential]
     )
     expect(presentation.body.type).toEqual(
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
@@ -163,11 +155,11 @@ describe('Claimer', () => {
     }
     const request = new Message(body, verifier, claimer.getPublicIdentity())
 
-    const presentation = await Claimer.createPresentation(
+    const presentation = Claimer.createPresentation(
       claimer,
       request,
       verifier.getPublicIdentity(),
-      [credentialPE]
+      [credential]
     )
     expect(presentation.body.type).toEqual(
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
@@ -189,7 +181,7 @@ describe('Claimer', () => {
         messageBody?: MessageBodyType
         allowPE?: boolean
         credentials?: Credential[]
-      }): Promise<Message> => {
+      }): Message => {
         return Claimer.createPresentation(
           claimer,
           ({
@@ -203,11 +195,11 @@ describe('Claimer', () => {
         )
       }
       it('Should throw when message body type does not match', () => {
-        return expect(
+        return expect(() =>
           fakePresentation({
             messageBody: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
           })
-        ).rejects.toThrowError(
+        ).toThrowError(
           SDKErrors.ERROR_MESSAGE_TYPE(
             MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
             MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
@@ -215,7 +207,7 @@ describe('Claimer', () => {
         )
       })
       it('Should throw when message body type does not match in buildCredential', () => {
-        return expect(
+        return expect(() =>
           Claimer.buildCredential(
             attester,
             {
@@ -225,7 +217,7 @@ describe('Claimer', () => {
             } as Message,
             {} as ClaimerAttestationSession
           )
-        ).rejects.toThrowError(
+        ).toThrowError(
           SDKErrors.ERROR_MESSAGE_TYPE(
             MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
             MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM

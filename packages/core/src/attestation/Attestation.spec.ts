@@ -50,7 +50,7 @@ describe('Attestation', () => {
       testcontents,
       identityBob.address
     )
-    requestForAttestation = await RequestForAttestation.fromClaimAndIdentity(
+    requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
       testClaim,
       identityBob
     )

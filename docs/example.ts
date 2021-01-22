@@ -140,14 +140,14 @@ async function doAttestation(
   const {
     message: reqAttestation,
     session: claimerSession,
-  } = await Kilt.Actors.Claimer.requestAttestation(
-    claim,
-    claimer,
-    attester.getPublicIdentity()
-    // {
-    //   initiateAttestationMsg: initiateAttestationMessage,
-    // }
-  )
+  } = Kilt.Actors.Claimer.requestAttestation(
+      claim,
+      claimer,
+      attester.getPublicIdentity()
+      // {
+      //   initiateAttestationMsg: initiateAttestationMessage,
+      // }
+    )
 
   // The message can be encrypted as follows
   const reqAttestationEnc = reqAttestation.encrypt()
@@ -187,7 +187,7 @@ async function doAttestation(
     claimer
   )
 
-  const credential = await Kilt.Actors.Claimer.buildCredential(
+  const credential = Kilt.Actors.Claimer.buildCredential(
     claimer,
     submitAttestationDec,
     claimerSession
@@ -218,16 +218,16 @@ async function doVerification(
   const {
     session,
     message: request,
-  } = await Kilt.Actors.Verifier.newRequestBuilder()
-    .requestPresentationForCtype({
-      ctypeHash: credential.attestation.cTypeHash,
-      requestUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available
-      properties: ['age'],
-    })
-    .finalize(verifier, claimer.getPublicIdentity())
+  } = Kilt.Actors.Verifier.newRequestBuilder()
+      .requestPresentationForCtype({
+        ctypeHash: credential.attestation.cTypeHash,
+        requestUpdatedAfter: new Date(),
+        properties: ['age'],
+      })
+      .finalize(verifier, claimer.getPublicIdentity())
 
   // ------------------------- Claimer -----------------------------------------
-  const presentation = await Kilt.Actors.Claimer.createPresentation(
+  const presentation = Kilt.Actors.Claimer.createPresentation(
     claimer,
     request,
     verifier.getPublicIdentity(),

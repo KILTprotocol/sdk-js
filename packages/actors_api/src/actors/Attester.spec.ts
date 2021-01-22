@@ -79,7 +79,7 @@ describe('Attester', () => {
       },
       owner: claimer.address,
     }
-    const { message: requestAttestation } = await Claimer.requestAttestation(
+    const { message: requestAttestation } = Claimer.requestAttestation(
       claim,
       claimer,
       attester.getPublicIdentity()
@@ -118,7 +118,7 @@ describe('Attester', () => {
       },
       owner: claimer.getPublicIdentity().address,
     }
-    const { message: requestAttestation } = await Claimer.requestAttestation(
+    const { message: requestAttestation } = Claimer.requestAttestation(
       claim,
       claimer,
       attester.getPublicIdentity()
@@ -153,7 +153,7 @@ describe('Attester', () => {
       },
       owner: claimer.getPublicIdentity().address,
     }
-    const { message: requestAttestation } = await Claimer.requestAttestation(
+    const { message: requestAttestation } = Claimer.requestAttestation(
       claim,
       claimer,
       attester.getPublicIdentity()

@@ -27,11 +27,11 @@ import RequestForAttestation from './RequestForAttestation'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 import '../errorhandling/test/jest.ErrorCodeMatcher'
 
-async function buildRequestForAttestation(
+function buildRequestForAttestation(
   claimer: Identity,
   contents: IClaimContents,
   legitimations: AttestedClaim[]
-): Promise<RequestForAttestation> {
+): RequestForAttestation {
   // create claim
 
   const identityAlice = Identity.buildFromURI('//Alice')
@@ -57,13 +57,9 @@ async function buildRequestForAttestation(
     owner: claimer.address,
   }
   // build request for attestation with legitimations
-  const request = await RequestForAttestation.fromClaimAndIdentity(
-    claim,
-    claimer,
-    {
-      legitimations,
-    }
-  )
+  const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
+    legitimations,
+  })
   return request
 }
 
@@ -81,11 +77,7 @@ describe('RequestForAttestation', () => {
     identityAlice = Identity.buildFromURI('//Alice')
     identityBob = Identity.buildFromURI('//Bob')
     identityCharlie = Identity.buildFromURI('//Charlie')
-    legitimationRequest = await buildRequestForAttestation(
-      identityAlice,
-      {},
-      []
-    )
+    legitimationRequest = buildRequestForAttestation(identityAlice, {}, [])
     // build attestation
     legitimationAttestation = Attestation.fromRequestAndPublicIdentity(
       legitimationRequest,
@@ -110,7 +102,7 @@ describe('RequestForAttestation', () => {
   })
 
   it('verify request for attestation', async () => {
-    const request = await buildRequestForAttestation(
+    const request = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',
@@ -130,7 +122,7 @@ describe('RequestForAttestation', () => {
   })
 
   it('throws on wrong hash in claim hash tree', async () => {
-    const request = await buildRequestForAttestation(
+    const request = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',
@@ -147,7 +139,7 @@ describe('RequestForAttestation', () => {
   })
 
   it('hides the claim owner', async () => {
-    const request = await buildRequestForAttestation(identityBob, {}, [])
+    const request = buildRequestForAttestation(identityBob, {}, [])
     request.removeClaimOwner()
     expect(Object.keys(request.claimNonceMap)).toHaveLength(
       request.claimHashes.length - 1
@@ -164,7 +156,7 @@ describe('RequestForAttestation', () => {
       request: legitimationRequest,
       attestation: legitimationAttestationBob,
     })
-    const reqForAtt = await buildRequestForAttestation(
+    const reqForAtt = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',
@@ -268,7 +260,7 @@ describe('RequestForAttestation', () => {
   })
 
   it('hides claim properties', async () => {
-    const request = await buildRequestForAttestation(
+    const request = buildRequestForAttestation(
       identityBob,
       { a: 'a', b: 'b' },
       []
@@ -285,7 +277,7 @@ describe('RequestForAttestation', () => {
   })
 
   it('should throw error on faulty constructor input', async () => {
-    const builtRequest = await buildRequestForAttestation(
+    const builtRequest = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',
@@ -294,7 +286,7 @@ describe('RequestForAttestation', () => {
       },
       []
     )
-    const builtRequestWithLegitimation = (await buildRequestForAttestation(
+    const builtRequestWithLegitimation = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',
@@ -302,9 +294,9 @@ describe('RequestForAttestation', () => {
         c: 'c',
       },
       [legitimationCharlie]
-    )) as IRequestForAttestation
+    ) as IRequestForAttestation
     const builtRequestNoLegitimations = {
-      ...(await buildRequestForAttestation(
+      ...buildRequestForAttestation(
         identityBob,
         {
           a: 'a',
@@ -312,12 +304,12 @@ describe('RequestForAttestation', () => {
           c: 'c',
         },
         []
-      )),
+      ),
     } as IRequestForAttestation
     delete builtRequestNoLegitimations.legitimations
 
     const builtRequestMalformedRootHash = {
-      ...(await buildRequestForAttestation(
+      ...buildRequestForAttestation(
         identityBob,
         {
           a: 'a',
@@ -325,7 +317,7 @@ describe('RequestForAttestation', () => {
           c: 'c',
         },
         []
-      )),
+      ),
     } as IRequestForAttestation
     builtRequestMalformedRootHash.rootHash = [
       builtRequestMalformedRootHash.rootHash.slice(0, 15),
@@ -336,7 +328,7 @@ describe('RequestForAttestation', () => {
       builtRequestMalformedRootHash.rootHash.slice(16),
     ].join('')
     const builtRequestIncompleteClaimHashTree = {
-      ...(await buildRequestForAttestation(
+      ...buildRequestForAttestation(
         identityBob,
         {
           a: 'a',
@@ -344,7 +336,7 @@ describe('RequestForAttestation', () => {
           c: 'c',
         },
         []
-      )),
+      ),
     } as IRequestForAttestation
     const deletedKey = Object.keys(
       builtRequestIncompleteClaimHashTree.claimNonceMap
@@ -354,7 +346,7 @@ describe('RequestForAttestation', () => {
       'calculateRootHash'
     ](builtRequestIncompleteClaimHashTree)
     const builtRequestMalformedSignature = {
-      ...(await buildRequestForAttestation(
+      ...buildRequestForAttestation(
         identityBob,
         {
           a: 'a',
@@ -362,7 +354,7 @@ describe('RequestForAttestation', () => {
           c: 'c',
         },
         []
-      )),
+      ),
     } as IRequestForAttestation
     const signatureAsBytes = hexToU8a(
       builtRequestMalformedSignature.claimerSignature
@@ -373,7 +365,7 @@ describe('RequestForAttestation', () => {
       'calculateRootHash'
     ](builtRequestMalformedSignature)
     const builtRequestMalformedHashes = {
-      ...(await buildRequestForAttestation(
+      ...buildRequestForAttestation(
         identityBob,
         {
           a: 'a',
@@ -381,7 +373,7 @@ describe('RequestForAttestation', () => {
           c: 'c',
         },
         []
-      )),
+      ),
     } as IRequestForAttestation
     Object.entries(builtRequestMalformedHashes.claimNonceMap).forEach(
       ([hash, nonce]) => {
@@ -420,7 +412,7 @@ describe('RequestForAttestation', () => {
     }).not.toThrow()
   })
   it('checks Object instantiation', async () => {
-    const builtRequest = await buildRequestForAttestation(
+    const builtRequest = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',

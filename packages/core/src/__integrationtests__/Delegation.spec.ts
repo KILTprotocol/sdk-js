@@ -46,9 +46,9 @@ describe('when there is an account hierarchy', () => {
 
   beforeAll(async () => {
     await cryptoWaitReady()
-    uncleSam = await wannabeFaucet
-    claimer = await wannabeBob
-    attester = await wannabeAlice
+    uncleSam = wannabeFaucet
+    claimer = wannabeBob
+    attester = wannabeAlice
 
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester).then((tx) =>
@@ -128,7 +128,7 @@ describe('when there is an account hierarchy', () => {
         content,
         claimer.address
       )
-      const request = await RequestForAttestation.fromClaimAndIdentity(
+      const request = RequestForAttestation.fromClaimAndIdentity(
         claim,
         claimer,
         {

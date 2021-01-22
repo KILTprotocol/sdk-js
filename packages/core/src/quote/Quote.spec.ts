@@ -71,10 +71,7 @@ describe('Claim', () => {
     }
 
     // build request for attestation with legitimations
-    request = await RequestForAttestation.fromClaimAndIdentity(
-      claim,
-      claimerIdentity
-    )
+    request = RequestForAttestation.fromClaimAndIdentity(claim, claimerIdentity)
 
     invalidCostQuoteData = {
       cTypeHash: '0x12345678',

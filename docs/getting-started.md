@@ -53,7 +53,7 @@ yarn add @kiltprotocol/sdk-js
 
 ### Note <!-- omit in toc -->
 
-In version [0.19.0](https://github.com/KILTprotocol/sdk-js/releases/tag/0.19.0) we added the privacy feature among other things. Unfortunately, this made some calls (like creating an identity) asynchronous. Therefore, you have to wrap your functions inside an `async` function to execute them properly:
+Some calls in this example are made to asynchronous functions. Therefore, you have to wrap your functions inside an `async` function to execute them properly:
 
 ```javascript
 async function main() {
@@ -77,7 +77,7 @@ import Kilt from '@kiltprotocol/sdk-js'
 const claimerMnemonic = Kilt.Identity.generateMnemonic()
 // mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
 console.log('claimer mnemonic', claimerMnemonic)
-const claimer = await Kilt.Identity.buildFromMnemonic(claimerMnemonic)
+const claimer = Kilt.Identity.buildFromMnemonic(claimerMnemonic)
 // claimer.address: 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
 console.log('claimer address', claimer.address)
 ```
@@ -136,7 +136,7 @@ To store the CTYPE on the blockchain, you have to call:
 
 ```typescript
 // the account behind this mnemonic already has tokens
-const identity = await Kilt.Identity.buildFromMnemonic(
+const identity = Kilt.Identity.buildFromMnemonic(
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 )
 await ctype.store(identity)
@@ -206,9 +206,7 @@ First, we need to build a request for an attestation, which has to include a cla
 ```typescript
 import Kilt from '@kiltprotocol/sdk-js'
 
-const {
-  message: requestForAttestation,
-} = await Kilt.RequestForAttestation.fromClaimAndIdentity(claim, claimer)
+const requestForAttestation = Kilt.RequestForAttestation.fromClaimAndIdentity(claim, claimer)
 ```
 
 The `requestForAttestation` object looks like this:
@@ -253,7 +251,7 @@ Before we can send the request for an attestation to an Attester, we should firs
 ```typescript
 const attesterMnemonic = Kilt.Identity.generateMnemonic()
 // mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
-const attester = await Kilt.Identity.buildFromMnemonic(mnemonic)
+const attester = Kilt.Identity.buildFromMnemonic(mnemonic)
 // attester.address: 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
 ```
 
@@ -442,7 +440,7 @@ if (messageBack.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
 As in the attestation, you need a second identity to act as the verifier:
 
 ```typescript
-const verifier = await Kilt.Identity.buildFromMnemonic()
+const verifier = Kilt.Identity.buildFromMnemonic()
 ```
 
 Before a claimer sends any data to a verifier, the verifier needs to initiate the verification process by requesting a presentation for a specific CTYPE.
@@ -460,7 +458,7 @@ _Note_ that it is possible to verify multiple claims in one verification session
 #### 6.1.1. Without privacy enhancement
 
 ```typescript
-const { session: verifierSession } = await Kilt.Verifier.newRequestBuilder()
+const { session: verifierSession } = Kilt.Verifier.newRequestBuilder()
   .requestPresentationForCtype({
     ctypeHash: ctype.hash,
     requestUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available

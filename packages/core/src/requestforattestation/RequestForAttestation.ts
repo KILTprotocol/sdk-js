@@ -64,7 +64,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * [STATIC] [ASYNC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
+   * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
    *
    * @param claim An `IClaim` object the request for attestation is built for.
    * @param identity The Claimer's [[Identity]].
@@ -78,11 +78,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * const input = RequestForAttestation.fromClaimAndIdentity(claim, alice);
    * ```
    */
-  public static async fromClaimAndIdentity(
+  public static fromClaimAndIdentity(
     claim: IClaim,
     identity: Identity,
     { legitimations, delegationId }: Options = {}
-  ): Promise<RequestForAttestation> {
+  ): RequestForAttestation {
     if (claim.owner !== identity.address) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH()
     }

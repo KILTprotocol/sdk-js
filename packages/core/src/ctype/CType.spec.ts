@@ -287,10 +287,10 @@ describe('blank ctypes', () => {
     )
 
     expect(
-      (await requestForAttestation.fromClaimAndIdentity(claimA1, identityAlice))
+      requestForAttestation.fromClaimAndIdentity(claimA1, identityAlice)
         .rootHash
     ).not.toEqual(
-      (await requestForAttestation.fromClaimAndIdentity(claimA2, identityAlice))
+      requestForAttestation.fromClaimAndIdentity(claimA2, identityAlice)
         .rootHash
     )
   })

@@ -59,7 +59,7 @@ async function main(): Promise<void> {
   console.log(claim)
 
   /* 5.1.1. Requesting an Attestation */
-  const requestForAttestation = await Kilt.RequestForAttestation.fromClaimAndIdentity(
+  const requestForAttestation = Kilt.RequestForAttestation.fromClaimAndIdentity(
     claim,
     claimer
   )
@@ -151,7 +151,7 @@ async function main(): Promise<void> {
       /* 6.1.1. Without privacy enhancement */
       const {
         session: verifierSession,
-      } = await Kilt.Actors.Verifier.newRequestBuilder()
+      } = Kilt.Actors.Verifier.newRequestBuilder()
         .requestPresentationForCtype({
           ctypeHash: ctype.hash,
           requestUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available

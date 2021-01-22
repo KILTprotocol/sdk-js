@@ -38,7 +38,7 @@ describe('Credential', () => {
     ctype = CType.fromSchema(rawCType, claimer.address)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = await RequestForAttestation.fromClaimAndIdentity(
+    reqForAtt = RequestForAttestation.fromClaimAndIdentity(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {

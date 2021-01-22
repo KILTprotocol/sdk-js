@@ -80,7 +80,7 @@ export class PresentationRequestBuilder {
   }
 
   /**
-   * [ASYNC] Concludes the presentation request.
+   * Concludes the presentation request.
    *
    * @param verifier The [[Identity]] of the verifier used to sign.
    * @param claimer The [[IPublicIdentity]] for which the message should be encrypted (note: the message will be return unencrypted. Use Message.getEncryptedMessage to encrypt the message).
@@ -88,13 +88,13 @@ export class PresentationRequestBuilder {
    * The **session** object will be used in [[verifyPresentation]] and should be kept private by the verifier.
    * The **message** object should be sent to the Claimer and used in [[createPresentation]].
    */
-  public async finalize(
+  public finalize(
     verifier: Identity,
     claimer: IPublicIdentity
-  ): Promise<{
+  ): {
     session: IVerifierSession
     message: Message
-  }> {
+  } {
     return {
       session: {
         requestedProperties: this.partialReq,
@@ -123,7 +123,7 @@ export function newRequestBuilder(): PresentationRequestBuilder {
 }
 
 /**
- * Check that the submitted attestations fulfil our requested.
+ * [ASYNC] Check that the submitted attestations fulfil our requested.
  *
  * @param attestedClaims The attested claims submitted by the claimer.
  * @param session The stored session object.

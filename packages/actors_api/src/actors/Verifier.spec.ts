@@ -25,7 +25,7 @@ describe('Verifier', () => {
   let verifier: Identity
   let cType: CType
   let claim: IClaim
-  let credentialPE: Credential
+  let credential: Credential
   const blockchainApi = require('@kiltprotocol/core/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
@@ -78,11 +78,7 @@ describe('Verifier', () => {
     const {
       message: requestAttestation,
       session: claimerSession,
-    } = await Claimer.requestAttestation(
-      claim,
-      claimer,
-      attester.getPublicIdentity()
-    )
+    } = Claimer.requestAttestation(claim, claimer, attester.getPublicIdentity())
     expect(requestAttestation.body.type).toEqual(
       MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
@@ -96,7 +92,7 @@ describe('Verifier', () => {
         claimer.getPublicIdentity()
       )
 
-      credentialPE = await Claimer.buildCredential(
+      credential = Claimer.buildCredential(
         claimer,
         attestationMessage,
         claimerSession
@@ -105,7 +101,7 @@ describe('Verifier', () => {
   })
 
   it('request public presentation', async () => {
-    const { session, message: request } = await Verifier.newRequestBuilder()
+    const { session, message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
@@ -119,18 +115,18 @@ describe('Verifier', () => {
   })
 
   it('verify public-only presentation all good', async () => {
-    const { session, message: request } = await Verifier.newRequestBuilder()
+    const { session, message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(verifier, claimer.getPublicIdentity())
 
-    const presentation = await Claimer.createPresentation(
+    const presentation = Claimer.createPresentation(
       claimer,
       request,
       verifier.getPublicIdentity(),
-      [credentialPE]
+      [credential]
     )
     expect(presentation.body.type).toEqual(
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
@@ -147,18 +143,18 @@ describe('Verifier', () => {
   })
 
   it('verify public-only presentation missing property', async () => {
-    const { session, message: request } = await Verifier.newRequestBuilder()
+    const { session, message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
         ctypeHash: 'this is a ctype hash',
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(verifier, claimer.getPublicIdentity())
 
-    const presentation = await Claimer.createPresentation(
+    const presentation = Claimer.createPresentation(
       claimer,
       request,
       verifier.getPublicIdentity(),
-      [credentialPE]
+      [credential]
     )
     expect(presentation.body.type).toEqual(
       MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES

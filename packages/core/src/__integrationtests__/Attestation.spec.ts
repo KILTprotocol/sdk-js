@@ -59,9 +59,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   let claimer: Identity
 
   beforeAll(async () => {
-    faucet = await wannabeFaucet
-    attester = await wannabeAlice
-    claimer = await wannabeBob
+    faucet = wannabeFaucet
+    attester = wannabeAlice
+    claimer = wannabeBob
 
     const ctypeExists = await CtypeOnChain(DriversLicense)
     // console.log(`ctype exists: ${ctypeExists}`)
@@ -80,10 +80,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.address
     )
-    const request = await RequestForAttestation.fromClaimAndIdentity(
-      claim,
-      claimer
-    )
+    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
     expect(request.verifyData()).toBeTruthy()
     expect(request.claim.contents).toMatchObject(content)
   })
@@ -96,10 +93,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.address
     )
-    const request = await RequestForAttestation.fromClaimAndIdentity(
-      claim,
-      claimer
-    )
+    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
     expect(request.verifyData()).toBeTruthy()
     expect(request.verifySignature()).toBeTruthy()
     const attestation = Attestation.fromRequestAndPublicIdentity(
@@ -124,10 +118,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.address
     )
-    const request = await RequestForAttestation.fromClaimAndIdentity(
-      claim,
-      claimer
-    )
+    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
     expect(request.verifyData()).toBeTruthy()
     expect(request.verifySignature()).toBeTruthy()
     const attestation = Attestation.fromRequestAndPublicIdentity(
@@ -171,10 +162,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.address
     )
-    const request = await RequestForAttestation.fromClaimAndIdentity(
-      claim,
-      claimer
-    )
+    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
     const attestation = Attestation.fromRequestAndPublicIdentity(
       request,
       attester.getPublicIdentity()
@@ -198,10 +186,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         content,
         claimer.address
       )
-      const request = await RequestForAttestation.fromClaimAndIdentity(
-        claim,
-        claimer
-      )
+      const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
       const attestation = Attestation.fromRequestAndPublicIdentity(
         request,
         attester.getPublicIdentity()
@@ -232,10 +217,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         content,
         claimer.address
       )
-      const request = await RequestForAttestation.fromClaimAndIdentity(
-        claim,
-        claimer
-      )
+      const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
       const fakeAttClaim: IAttestedClaim = {
         request,
         attestation: attClaim.attestation,
@@ -284,7 +266,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         },
         attester.address
       )
-      const request1 = await RequestForAttestation.fromClaimAndIdentity(
+      const request1 = RequestForAttestation.fromClaimAndIdentity(
         licenseAuthorization,
         attester
       )
@@ -303,7 +285,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         { name: 'Dominic Toretto', age: 52 },
         claimer.address
       )
-      const request2 = await RequestForAttestation.fromClaimAndIdentity(
+      const request2 = RequestForAttestation.fromClaimAndIdentity(
         iBelieveICanDrive,
         claimer,
         {

@@ -15,7 +15,7 @@ import {
 import Credential from '../credential/Credential'
 
 /**
- * [ASYNC] Creates a presentation for an arbitrary amount of [[Credential]]s which can be verified in [[verifyPresentation]].
+ * Creates a presentation for an arbitrary amount of [[Credential]]s which can be verified in [[verifyPresentation]].
  *
  * @param identity The Claimer [[Identity]] which owns the [[Credential]]s.
  * @param message The message which represents multiple [[CType]]s, [[IRequestClaimsForCTypes]]s and whether privacy
@@ -26,12 +26,12 @@ import Credential from '../credential/Credential'
  * @returns A message which represents either an array of [[AttestedClaim]]s if privacy enhancement is not supported
  * or a CombinedPresentation. Both of these options can be verified.
  */
-export async function createPresentation(
+export function createPresentation(
   identity: Identity,
   message: IMessage,
   verifier: IPublicIdentity,
   credentials: Credential[]
-): Promise<Message> {
+): Message {
   // did we get the right message type?
   if (message.body.type !== MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
     throw SDKErrors.ERROR_MESSAGE_TYPE(
@@ -79,7 +79,7 @@ export type ClaimerAttestationSession = {
 }
 
 /**
- * [ASYNC] Creates an [[IRequestAttestationForClaim]] using the provided [[IInitiateAttestation]].
+ * Creates an [[IRequestAttestationForClaim]] using the provided [[IInitiateAttestation]].
  *
  * @param claim The [[Claim]] which should get attested.
  * @param identity The Claimer's [[Identity]] which owns the [[Claim]].
@@ -91,7 +91,7 @@ export type ClaimerAttestationSession = {
  * @returns An [[IRequestAttestationForClaim]] and a ClaimerAttestationSession which together with an [[ISubmitAttestationForClaim]]
  * object can be used to create a [[Credential]].
  */
-export async function requestAttestation(
+export function requestAttestation(
   claim: IClaim,
   identity: Identity,
   attesterPublicIdentity: IPublicIdentity,
@@ -99,11 +99,11 @@ export async function requestAttestation(
     legitimations?: AttestedClaim[]
     delegationId?: IDelegationBaseNode['id']
   } = {}
-): Promise<{
+): {
   message: Message
   session: ClaimerAttestationSession
-}> {
-  const request = await RequestForAttestation.fromClaimAndIdentity(
+} {
+  const request = RequestForAttestation.fromClaimAndIdentity(
     claim,
     identity,
     option
@@ -121,19 +121,20 @@ export async function requestAttestation(
   }
 }
 
+// TODO: remove identity parameter if not needed.
 /**
- * [ASYNC] Builds a [[Credential]] which can be verified when used in [[createPresentation]].
+ * Builds a [[Credential]] which can be verified when used in [[createPresentation]].
  *
- * @param identity The Claimer's [[Identity]] which owns the [[AttestedClaim]].
+ * @param _identity The Claimer's [[Identity]] which owns the [[AttestedClaim]].
  * @param message The session object corresponding to the [[ISubmitAttestationForClaim]].
  * @param session The ClaimerAttestationSession which corresponds to the message and [[AttestedClaim]].
  * @returns A signed and valid [[Credential]].
  */
-export async function buildCredential(
-  identity: Identity,
+export function buildCredential(
+  _identity: Identity,
   message: IMessage,
   session: ClaimerAttestationSession
-): Promise<Credential> {
+): Credential {
   if (message.body.type !== MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
     throw SDKErrors.ERROR_MESSAGE_TYPE(
       message.body.type,
