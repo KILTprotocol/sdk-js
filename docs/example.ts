@@ -1,14 +1,21 @@
 /* eslint-disable no-console */
-import * as Kilt from '@kiltprotocol/sdk-js'
+import Kilt from '@kiltprotocol/sdk-js'
+import type {
+  Actors,
+  Claim,
+  CType,
+  ICType,
+  Identity,
+} from '@kiltprotocol/sdk-js'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
 const SEP = '_'
 
 async function setup(): Promise<{
-  claimer: Kilt.Identity
-  attester: Kilt.Identity
-  claim: Kilt.Claim
-  ctype: Kilt.CType
+  claimer: Identity
+  attester: Identity
+  claim: Claim
+  ctype: CType
 }> {
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' SETUP ')
@@ -29,7 +36,7 @@ async function setup(): Promise<{
 
   // ------------------------- CType    ----------------------------------------
   // First build a schema
-  const ctypeSchema: Kilt.ICType['schema'] = {
+  const ctypeSchema: ICType['schema'] = {
     $id:
       'kilt:ctype:0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -48,7 +55,7 @@ async function setup(): Promise<{
   const ctypeHash = Kilt.CTypeUtils.getHashForSchema(ctypeSchema)
 
   // Put everything together
-  const rawCtype: Kilt.ICType = {
+  const rawCtype: ICType = {
     schema: ctypeSchema,
     hash: ctypeHash,
     owner: attester.address,
@@ -110,12 +117,12 @@ async function setup(): Promise<{
 }
 
 async function doAttestation(
-  claimer: Kilt.Identity,
-  attester: Kilt.Identity,
-  claim: Kilt.Claim
+  claimer: Identity,
+  attester: Identity,
+  claim: Claim
 ): Promise<{
-  credential: Kilt.Actors.Credential
-  revocationHandle: Kilt.Actors.types.IRevocationHandle
+  credential: Actors.Credential
+  revocationHandle: Actors.types.IRevocationHandle
 }> {
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' ATTESTATION ')
@@ -197,8 +204,8 @@ async function doAttestation(
 }
 
 async function doVerification(
-  claimer: Kilt.Identity,
-  credential: Kilt.Actors.Credential
+  claimer: Identity,
+  credential: Actors.Credential
 ): Promise<void> {
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(

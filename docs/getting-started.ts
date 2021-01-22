@@ -1,5 +1,10 @@
 /* eslint-disable no-console */
-import * as Kilt from '@kiltprotocol/sdk-js'
+import Kilt from '@kiltprotocol/sdk-js'
+import type {
+  IRequestAttestationForClaim,
+  ISubmitAttestationForClaim,
+  ISubmitClaimsForCTypes,
+} from '@kiltprotocol/sdk-js'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
 
@@ -68,7 +73,7 @@ async function main(): Promise<void> {
   const attester = Kilt.Identity.buildFromMnemonic(attesterMnemonic)
 
   /* First, we create the request for an attestation message in which the Claimer automatically encodes the message with the public key of the Attester: */
-  const messageBody: Kilt.IRequestAttestationForClaim = {
+  const messageBody: IRequestAttestationForClaim = {
     content: { requestForAttestation },
     type: Kilt.MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
   }
@@ -91,7 +96,7 @@ async function main(): Promise<void> {
   if (
     decrypted.body.type === Kilt.MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
   ) {
-    const extractedRequestForAttestation: Kilt.IRequestAttestationForClaim =
+    const extractedRequestForAttestation: IRequestAttestationForClaim =
       decrypted.body
 
     /* The Attester creates the attestation based on the IRequestForAttestation object she received: */
@@ -115,7 +120,7 @@ async function main(): Promise<void> {
     console.log(attestedClaim)
 
     /* The Attester has to send the `attestedClaim` object back to the Claimer in the following message: */
-    const messageBodyBack: Kilt.ISubmitAttestationForClaim = {
+    const messageBodyBack: ISubmitAttestationForClaim = {
       content: attestedClaim,
       type: Kilt.MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
     }
@@ -155,7 +160,7 @@ async function main(): Promise<void> {
         .finalize(verifier, claimer.getPublicIdentity())
 
       /* Now the claimer can send a message to verifier including the attested claim: */
-      const messageBodyForVerifier: Kilt.ISubmitClaimsForCTypes = {
+      const messageBodyForVerifier: ISubmitClaimsForCTypes = {
         content: [myAttestedClaim],
         type: Kilt.MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
       }
