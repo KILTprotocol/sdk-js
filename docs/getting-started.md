@@ -206,7 +206,10 @@ First, we need to build a request for an attestation, which has to include a cla
 ```typescript
 import Kilt from '@kiltprotocol/sdk-js'
 
-const requestForAttestation = Kilt.RequestForAttestation.fromClaimAndIdentity(claim, claimer)
+const requestForAttestation = Kilt.RequestForAttestation.fromClaimAndIdentity(
+  claim,
+  claimer
+)
 ```
 
 The `requestForAttestation` object looks like this:
@@ -240,7 +243,6 @@ RequestForAttestation {
   },
   rootHash: '0xb672fe6fb46985459ee5efe67f6610056a85b3b4283cc4ead6bf07e9fd1c27e6',
   claimerSignature: '0x0043f4a404ea3930cffa4d74d00aacddf8f4f10c1af281c792d9f0e49153a40cf96f35f18ee2676279a2c96173ee183a2a032c2e30feac1ac9fbc64c535491e306',
-  privacyEnhancement: null
 }
 ```
 

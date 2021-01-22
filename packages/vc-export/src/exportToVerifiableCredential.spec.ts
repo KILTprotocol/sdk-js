@@ -87,7 +87,6 @@ const credential = AttestedClaim.fromAttestedClaim({
       '0xbcd6c154fe557e98080005b0b1109876522ddfaa355c2a2d9df63811ae675eb0',
     claimerSignature:
       '0x0067bff0552d43454c69a681390d81bb38c02cae1ebfcd0e91cd7f2c073f808dcd04967ef60fa1b9086a67f676612cf8b6c24a4f874a81f334266c5b37ecf8a70f',
-    privacyEnhancement: null,
   },
   attestation: {
     claimHash:

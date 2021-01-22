@@ -130,7 +130,6 @@ describe('Messaging', () => {
       claimHashes: ['0x12345678'],
       rootHash: '0x12345678',
       claimerSignature: '0x12345678',
-      privacyEnhancement: null,
     } as IRequestForAttestation
 
     const quoteData: IQuote = {
