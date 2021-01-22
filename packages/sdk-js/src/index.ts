@@ -1,4 +1,5 @@
 import * as core from '@kiltprotocol/core'
+import * as Actors from '@kiltprotocol/actors-api'
 import {
   Credential,
   Claimer,
@@ -7,6 +8,6 @@ import {
 } from '@kiltprotocol/actors-api'
 
 export * from '@kiltprotocol/core'
-export * as Actors from '@kiltprotocol/actors-api'
+export { Actors }
 
-export default { ...core, Credential, Claimer, Attester, Verifier }
+export default { ...core, Actors, Credential, Claimer, Attester, Verifier }

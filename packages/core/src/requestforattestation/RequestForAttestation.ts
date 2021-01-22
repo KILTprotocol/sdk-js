@@ -289,11 +289,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return RequestForAttestation.verifyRootHash(this)
   }
 
-  protected static sign(identity: Identity, rootHash: Hash): string {
+  private static sign(identity: Identity, rootHash: Hash): string {
     return identity.signStr(rootHash)
   }
 
-  protected static getHashLeaves(
+  private static getHashLeaves(
     claimHashes: Hash[],
     legitimations: IAttestedClaim[],
     delegationId: IDelegationBaseNode['id'] | null
@@ -338,7 +338,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return RequestForAttestation.fromRequest(decompressedRequestForAttestation)
   }
 
-  protected static calculateRootHash(
+  private static calculateRootHash(
     request: Partial<IRequestForAttestation>
   ): Hash {
     const hashes: Uint8Array[] = RequestForAttestation.getHashLeaves(

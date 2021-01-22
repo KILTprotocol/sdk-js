@@ -185,15 +185,15 @@ export async function verifyPresentation(
   verified: boolean
   claims: Array<Partial<IRequestForAttestation | IAttestedClaim>>
 }> {
-  // If we got a public presentation, check that the attestation is valid
-  if (message.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES) {
-    const attestedClaims = message.body.content.map(
-      AttestedClaim.fromAttestedClaim
+  // Must be SUBMIT_CLAIMS_FOR_CTYPES message type
+  if (message.body.type !== MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES)
+    throw SDKErrors.ERROR_MESSAGE_TYPE(
+      message.body.type,
+      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
     )
-    return verifyPublicPresentation(attestedClaims, session)
-  }
-  throw SDKErrors.ERROR_MESSAGE_TYPE(
-    message.body.type,
-    MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
+  const attestedClaims = message.body.content.map(
+    AttestedClaim.fromAttestedClaim
   )
+  // currently only supporting id-ed credentials
+  return verifyPublicPresentation(attestedClaims, session)
 }
