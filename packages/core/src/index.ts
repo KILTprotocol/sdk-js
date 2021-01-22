@@ -15,7 +15,7 @@ import {
   DelegationNode,
   DelegationRootNode,
 } from './delegation'
-import Did, { IDid } from './did'
+import Did, { IDid, IDidDocument, IDidDocumentPublicKey } from './did'
 import { Identity, IURLResolver, PublicIdentity } from './identity'
 import Message from './messaging'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
@@ -79,6 +79,8 @@ export {
   DelegationRootNode,
   Did,
   IDid,
+  IDidDocument,
+  IDidDocumentPublicKey,
   Message,
   Quote,
   QuoteUtils,

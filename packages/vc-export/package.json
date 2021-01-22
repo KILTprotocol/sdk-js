@@ -1,16 +1,14 @@
 {
-  "name": "@kiltprotocol/sdk-js",
+  "name": "@kiltprotocol/vc-export",
   "version": "0.19.1-18",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
-  "files": [
-    "lib/**/*"
-  ],
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
-    "build:ts": "tsc --declaration -p tsconfig.build.json"
+    "build:ts": "tsc --declaration -p tsconfig.build.json",
+    "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
@@ -21,11 +19,18 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
+    "@types/jsonld": "^1.5.1",
     "rimraf": "^3.0.2",
+    "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@kiltprotocol/actors-api": "workspace:*",
-    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/core": "workspace:*",
+    "@polkadot/keyring": "^3.5.1",
+    "@polkadot/types": "^2.0.1",
+    "@polkadot/util": "^3.5.1",
+    "@polkadot/util-crypto": "^3.5.1",
+    "ajv": "^6.12.5",
+    "jsonld": "^3.2.0"
   }
 }
