@@ -121,17 +121,14 @@ export function requestAttestation(
   }
 }
 
-// TODO: remove identity parameter if not needed.
 /**
  * Builds a [[Credential]] which can be verified when used in [[createPresentation]].
  *
- * @param _identity The Claimer's [[Identity]] which owns the [[AttestedClaim]].
  * @param message The session object corresponding to the [[ISubmitAttestationForClaim]].
  * @param session The ClaimerAttestationSession which corresponds to the message and [[AttestedClaim]].
  * @returns A signed and valid [[Credential]].
  */
 export function buildCredential(
-  _identity: Identity,
   message: IMessage,
   session: ClaimerAttestationSession
 ): Credential {

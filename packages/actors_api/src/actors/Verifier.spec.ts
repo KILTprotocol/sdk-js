@@ -92,11 +92,7 @@ describe('Verifier', () => {
         claimer.getPublicIdentity()
       )
 
-      credential = Claimer.buildCredential(
-        claimer,
-        attestationMessage,
-        claimerSession
-      )
+      credential = Claimer.buildCredential(attestationMessage, claimerSession)
     }
   })
 

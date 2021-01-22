@@ -93,11 +93,7 @@ describe('Claimer', () => {
       claimer.getPublicIdentity()
     )
 
-    credential = Claimer.buildCredential(
-      claimer,
-      attestationMessage,
-      claimerSession
-    )
+    credential = Claimer.buildCredential(attestationMessage, claimerSession)
   })
 
   it('request only public attestation', async () => {
@@ -124,7 +120,7 @@ describe('Claimer', () => {
       claimer.getPublicIdentity()
     )
 
-    Claimer.buildCredential(claimer, attestationMessage, claimerSession)
+    Claimer.buildCredential(attestationMessage, claimerSession)
   })
 
   it('create public presentation', async () => {
@@ -209,7 +205,6 @@ describe('Claimer', () => {
       it('Should throw when message body type does not match in buildCredential', () => {
         return expect(() =>
           Claimer.buildCredential(
-            attester,
             {
               body: {
                 type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
