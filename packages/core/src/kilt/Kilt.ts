@@ -21,14 +21,6 @@ export function connect(
   return BlockchainApiConnection.getCached(host)
 }
 
-export async function disconnect(
-  host: string = ConfigService.get('address')
-): Promise<void> {
-  const cached = await BlockchainApiConnection.getCached(host)
-  cached.api.disconnect()
-  BlockchainApiConnection.clearCache()
-}
-
 export function config<K extends Partial<ConfigService.configOpts>>(
   configs: K
 ): void {
@@ -37,6 +29,6 @@ export function config<K extends Partial<ConfigService.configOpts>>(
 
 export default {
   connect,
-  disconnect,
+  disconnect: BlockchainApiConnection.disconnect,
   config,
 }
