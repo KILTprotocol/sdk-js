@@ -37,13 +37,13 @@ describe('formatKiltBalance', () => {
     ).toEqual('1.0000 Kilo KILT')
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(21))))
-    ).toEqual('1.0000 Mega KILT')
+    ).toEqual('1.0000 Mill KILT')
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(24))))
-    ).toEqual('1.0000 Giga KILT')
+    ).toEqual('1.0000 Bill KILT')
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(27))))
-    ).toEqual('1.0000 Tera KILT')
+    ).toEqual('1.0000 Tril KILT')
   })
 })
 describe('convertToTxUnit', () => {

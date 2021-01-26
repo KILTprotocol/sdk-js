@@ -1,15 +1,15 @@
 import {
+  Bool,
   Bytes,
   Option,
   Tuple,
   TypeRegistry,
   U8aFixed,
+  U64,
   Vec,
+  U8,
 } from '@polkadot/types'
-import AccountId from '@polkadot/types/generic/AccountId'
-import Bool from '@polkadot/types/primitive/Bool'
-import U64 from '@polkadot/types/primitive/U64'
-import U8 from '@polkadot/types/primitive/U8'
+import { GenericAccountId as AccountId } from '@polkadot/types/generic/AccountId'
 import { Codec } from '@polkadot/types/types'
 import { Constructor } from '@polkadot/util/types'
 import { CUSTOM_TYPES } from '../BlockchainApiConnection'

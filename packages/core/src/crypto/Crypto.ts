@@ -19,9 +19,9 @@ import {
   u8aToU8a,
 } from '@polkadot/util'
 import { blake2AsHex, signatureVerify } from '@polkadot/util-crypto'
-import blake2AsU8a from '@polkadot/util-crypto/blake2/asU8a'
-import naclDecrypt from '@polkadot/util-crypto/nacl/decrypt'
-import naclEncrypt from '@polkadot/util-crypto/nacl/encrypt'
+import { blake2AsU8a } from '@polkadot/util-crypto/blake2/asU8a'
+import { naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
+import { naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import jsonabc from '../util/jsonabc'
