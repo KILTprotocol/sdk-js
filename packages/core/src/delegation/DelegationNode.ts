@@ -9,12 +9,12 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  * @preferred
  */
 
+import { IDelegationNode } from '@kiltprotocol/types'
 import { factory } from '../config/ConfigService'
 import Crypto from '../crypto'
 import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
 import { ERROR_ROOT_NODE_QUERY } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import { IDelegationNode } from '../types/Delegation'
 import DelegationBaseNode from './Delegation'
 import { getChildren, query, revoke, store } from './DelegationNode.chain'
 import permissionsAsBitset from './DelegationNode.utils'

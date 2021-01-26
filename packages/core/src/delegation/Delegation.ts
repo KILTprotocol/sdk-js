@@ -15,10 +15,10 @@
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import { IDelegationBaseNode } from '@kiltprotocol/types'
 import Attestation from '../attestation/Attestation'
 import { query } from '../attestation/Attestation.chain'
 import Identity from '../identity/Identity'
-import { IDelegationBaseNode } from '../types/Delegation'
 import { getAttestationHashes } from './Delegation.chain'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
@@ -62,7 +62,7 @@ export default abstract class DelegationBaseNode
    *
    * @returns Promise containing the resolved children nodes.
    */
-  public abstract async getChildren(): Promise<DelegationNode[]>
+  public abstract getChildren(): Promise<DelegationNode[]>
 
   /**
    * Fetches and resolves all attestations attested with this delegation node.

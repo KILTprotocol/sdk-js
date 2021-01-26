@@ -4,10 +4,10 @@
  * @ignore
  */
 
+import { Permission } from '@kiltprotocol/types'
 import { Identity } from '..'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import { hashStr } from '../crypto'
-import { Permission } from '../types/Delegation'
 import { getAttestationHashes } from './Delegation.chain'
 import DelegationNode from './DelegationNode'
 

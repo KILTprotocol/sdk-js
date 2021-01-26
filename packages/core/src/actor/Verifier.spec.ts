@@ -4,22 +4,14 @@
  * @ignore
  */
 
-import {
-  Attester,
-  Claimer,
-  CombinedPresentation,
-  CType,
-  ICType,
-  IRequestForAttestation,
-  Verifier,
-} from '..'
+import { ICType, IRequestForAttestation, IClaim } from '@kiltprotocol/types'
+import { Attester, Claimer, CombinedPresentation, CType, Verifier } from '..'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Credential from '../credential/Credential'
 import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
 import Message, { MessageBodyType } from '../messaging/Message'
 import constants from '../test/constants'
-import IClaim from '../types/Claim'
 import {
   ERROR_PE_VERIFICATION,
   ERROR_MESSAGE_TYPE,

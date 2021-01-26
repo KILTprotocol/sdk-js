@@ -4,6 +4,7 @@
  * @ignore
  */
 
+import { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
 import CType from '../ctype/CType'
 import {
   ERROR_ADDRESS_INVALID,
@@ -11,8 +12,6 @@ import {
   ERROR_HASH_MALFORMED,
 } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import IClaim, { CompressedClaim } from '../types/Claim'
-import ICType from '../types/CType'
 import Claim from './Claim'
 import ClaimUtils from './Claim.utils'
 

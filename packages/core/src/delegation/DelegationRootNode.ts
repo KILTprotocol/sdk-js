@@ -12,9 +12,9 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  * @preferred
  */
 
+import { IDelegationRootNode } from '@kiltprotocol/types'
 import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
-import { IDelegationRootNode } from '../types/Delegation'
 import DelegationBaseNode from './Delegation'
 import DelegationNode from './DelegationNode'
 import { getChildren } from './DelegationNode.chain'

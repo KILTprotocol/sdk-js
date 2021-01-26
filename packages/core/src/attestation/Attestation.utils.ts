@@ -4,8 +4,8 @@
  * @preferred
  */
 
+import { IAttestation, CompressedAttestation } from '@kiltprotocol/types'
 import * as SDKErrors from '../errorhandling/SDKErrors'
-import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { validateAddress, validateHash } from '../util/DataUtils'
 
 /**

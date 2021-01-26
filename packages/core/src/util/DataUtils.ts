@@ -7,6 +7,7 @@
  * Dummy comment needed for correct doc display, do not remove.
  */
 import { checkAddress } from '@polkadot/util-crypto'
+import { IAttestedClaim } from '@kiltprotocol/types'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { verify } from '../crypto/Crypto'
 import {
@@ -19,7 +20,6 @@ import {
   ERROR_SIGNATURE_UNVERIFIABLE,
 } from '../errorhandling/SDKErrors'
 import PublicIdentity from '../identity/PublicIdentity'
-import IAttestedClaim from '../types/AttestedClaim'
 
 /**
  *  Validates an given address string against the External Address Format (SS58) with our Prefix of 42.

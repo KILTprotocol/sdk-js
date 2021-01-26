@@ -5,7 +5,8 @@
  */
 
 import { cryptoWaitReady } from '@polkadot/util-crypto'
-import { AttestedClaim, Identity } from '..'
+import { Permission } from '@kiltprotocol/types'
+import { Identity } from '..'
 import Attestation from '../attestation/Attestation'
 import {
   IS_IN_BLOCK,
@@ -23,7 +24,6 @@ import { decodeDelegationNode } from '../delegation/DelegationDecoder'
 import DelegationNode from '../delegation/DelegationNode'
 import DelegationRootNode from '../delegation/DelegationRootNode'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import { Permission } from '../types/Delegation'
 import UUID from '../util/UUID'
 import {
   CtypeOnChain,

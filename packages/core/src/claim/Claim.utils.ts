@@ -5,9 +5,9 @@
  */
 
 import { hexToBn } from '@polkadot/util'
+import { IClaim, CompressedClaim } from '@kiltprotocol/types'
 import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
-import IClaim, { CompressedClaim } from '../types/Claim'
 import { validateAddress, validateHash } from '../util/DataUtils'
 import { getIdForCTypeHash } from '../ctype/CType.utils'
 import { HashingOptions, hashStatements } from '../crypto/Crypto'

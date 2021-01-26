@@ -4,14 +4,16 @@
  * @preferred
  */
 
+import {
+  IAttestedClaim,
+  CompressedAttestedClaim,
+  CompressedRequestForAttestation,
+  IRequestForAttestation,
+} from '@kiltprotocol/types'
 import { validateHash } from '../util/DataUtils'
 import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
 import ClaimUtils from '../claim/Claim.utils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
-import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
-import IRequestForAttestation, {
-  CompressedRequestForAttestation,
-} from '../types/RequestForAttestation'
 import RequestForAttestation from './RequestForAttestation'
 
 /**

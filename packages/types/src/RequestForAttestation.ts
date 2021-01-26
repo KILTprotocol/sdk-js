@@ -3,8 +3,8 @@
  * @module IRequestForAttestation
  */
 
-import IAttestedClaim, { CompressedAttestedClaim } from './AttestedClaim'
-import IClaim, { CompressedClaim } from './Claim'
+import { IAttestedClaim, CompressedAttestedClaim } from './AttestedClaim'
+import { IClaim, CompressedClaim } from './Claim'
 import { IDelegationBaseNode } from './Delegation'
 
 export type Hash = string
@@ -14,7 +14,7 @@ export type NonceHash = {
   nonce?: string
 }
 
-export default interface IRequestForAttestation {
+export interface IRequestForAttestation {
   claim: IClaim
   claimNonceMap: Record<Hash, string>
   claimHashes: Hash[]

@@ -5,10 +5,10 @@
  */
 
 import { U8aFixed } from '@polkadot/types'
+import { IPublicIdentity } from '@kiltprotocol/types'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
 } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import IPublicIdentity from '../types/PublicIdentity'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')

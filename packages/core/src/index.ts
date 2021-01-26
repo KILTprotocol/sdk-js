@@ -23,6 +23,7 @@ import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {
   RequestForAttestationUtils,
 } from './requestforattestation'
+import * as ConfigService from './config'
 
 export { connect, disconnect, config } from './kilt'
 export { SubmittableResult } from '@polkadot/api'
@@ -30,28 +31,6 @@ export { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 export * from './errorhandling'
 export * from './messaging'
 
-// ---- Types, which define the most basic KILT objects ----
-export { default as IAttestation } from './types/Attestation'
-export * from './types/Attestation'
-export { default as IAttestedClaim } from './types/AttestedClaim'
-export { default as IClaim } from './types/Claim'
-export { default as ICType, CTypeSchemaWithoutId } from './types/CType'
-export { default as ICTypeMetadata } from './types/CTypeMetadata'
-export {
-  IDelegationBaseNode,
-  IDelegationNode,
-  IDelegationRootNode,
-  Permission,
-} from './types/Delegation'
-export { default as IPublicIdentity } from './types/PublicIdentity'
-export {
-  ICostBreakdown,
-  IQuote,
-  IQuoteAgreement,
-  IQuoteAttesterSigned,
-} from './types/Quote'
-export { default as IRequestForAttestation } from './types/RequestForAttestation'
-export { default as ITerms } from './types/Terms'
 export { UUID } from './util'
 export {
   Blockchain,

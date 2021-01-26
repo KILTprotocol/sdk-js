@@ -4,7 +4,7 @@
  * @ignore
  */
 
-import { IClaim } from '..'
+import { IClaim } from '@kiltprotocol/types'
 import { hashClaimContents, toJsonLD } from './Claim.utils'
 
 const claim: IClaim = {

@@ -3,7 +3,7 @@
  * @module IQuote
  */
 
-import ICType from './CType'
+import { ICType } from './CType'
 
 export interface ICostBreakdown {
   tax: Record<string, unknown>

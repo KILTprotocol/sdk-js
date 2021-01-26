@@ -3,13 +3,8 @@
  * @group unit/vc-export
  * @ignore
  */
-import {
-  Attestation,
-  IRequestForAttestation,
-  AttestedClaim,
-  CType,
-  Did,
-} from '@kiltprotocol/core'
+import { IRequestForAttestation } from '@kiltprotocol/types'
+import { Attestation, AttestedClaim, CType, Did } from '@kiltprotocol/core'
 import toVC from './exportToVerifiableCredential'
 import verificationUtils, { AttestationStatus } from './verificationUtils'
 import claimerUtils, { makePresentation } from './presentationUtils'

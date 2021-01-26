@@ -4,12 +4,12 @@
  * @ignore
  */
 
+import { Permission } from '@kiltprotocol/types'
 import { BlockchainUtils } from '../blockchain'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
 } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Identity from '../identity/Identity'
-import { Permission } from '../types/Delegation'
 import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
 

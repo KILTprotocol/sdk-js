@@ -11,11 +11,8 @@
  * @preferred
  */
 
-import {
-  AttestedClaim,
-  IAttestation,
-  IRequestForAttestation,
-} from '@kiltprotocol/core'
+import { AttestedClaim } from '@kiltprotocol/core'
+import { IAttestation, IRequestForAttestation } from '@kiltprotocol/types'
 
 export interface ICredential {
   readonly reqForAtt: IRequestForAttestation

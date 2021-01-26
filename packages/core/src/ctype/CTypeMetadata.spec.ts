@@ -4,9 +4,8 @@
  * @ignore
  */
 
+import { ICType, ICTypeMetadata } from '@kiltprotocol/types'
 import Identity from '../identity/Identity'
-import ICType from '../types/CType'
-import ICTypeMetadata from '../types/CTypeMetadata'
 import CType from './CType'
 import CTypeUtils from './CType.utils'
 import CTypeMetadata from './CTypeMetadata'

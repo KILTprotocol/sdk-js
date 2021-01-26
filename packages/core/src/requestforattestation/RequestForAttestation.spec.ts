@@ -6,6 +6,14 @@
 
 /* eslint-disable dot-notation */
 import { hexToU8a } from '@polkadot/util'
+import {
+  IClaim,
+  IClaimContents,
+  CompressedAttestedClaim,
+  ICType,
+  CompressedRequestForAttestation,
+  IRequestForAttestation,
+} from '@kiltprotocol/types'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { u8aToHex } from '../crypto'
@@ -17,12 +25,8 @@ import {
   ERROR_SIGNATURE_UNVERIFIABLE,
 } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import { CompressedAttestedClaim } from '../types/AttestedClaim'
-import IClaim, { IClaimContents } from '../types/Claim'
-import ICType from '../types/CType'
-import IRequestForAttestation, {
-  CompressedRequestForAttestation,
-} from '../types/RequestForAttestation'
+import constants from '../test/constants'
+
 import RequestForAttestation from './RequestForAttestation'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 import '../errorhandling/test/jest.ErrorCodeMatcher'

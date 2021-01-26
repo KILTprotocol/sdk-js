@@ -8,7 +8,8 @@ import {
   Accumulator,
   AttesterAttestationSession,
 } from '@kiltprotocol/portablegabi'
-import { Claim, IClaim, Message } from '..'
+import { IClaim } from '@kiltprotocol/types'
+import { Claim, Message } from '..'
 import { Attester, Claimer, Verifier } from '../actor'
 import { ClaimerAttestationSession } from '../actor/Claimer'
 import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
@@ -16,7 +17,7 @@ import { config, disconnect } from '../kilt'
 import Credential from '../credential'
 import Identity, { AttesterIdentity } from '../identity'
 import constants from '../test/constants'
-import { IRevocationHandle } from '../types/Attestation'
+import { IRevocationHandle } from '@kiltprotocol/types'
 import { CtypeOnChain, DriversLicense, FaucetSeed, WS_ADDRESS } from './utils'
 
 beforeAll(async () => {

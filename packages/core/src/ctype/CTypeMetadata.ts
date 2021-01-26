@@ -4,8 +4,8 @@
  * @preferred
  */
 
+import { ICTypeMetadata } from '@kiltprotocol/types'
 import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
-import ICTypeMetadata from '../types/CTypeMetadata'
 import CTypeUtils from './CType.utils'
 import { MetadataModel } from './CTypeSchema'
 

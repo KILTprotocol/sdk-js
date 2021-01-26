@@ -49,7 +49,7 @@ import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { AccountInfo, ExtrinsicStatus, Index } from '@polkadot/types/interfaces'
 import { GenericEventData, U64 } from '@polkadot/types'
-import IPublicIdentity from '../../types/PublicIdentity'
+import { IPublicIdentity } from '@kiltprotocol/types'
 import TYPE_REGISTRY, { mockChainQueryReturn } from './BlockchainQuery'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')

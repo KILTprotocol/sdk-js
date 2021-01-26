@@ -4,7 +4,6 @@
  * @preferred
  */
 
-import * as SDKErrors from '../errorhandling/SDKErrors'
 import {
   CompressedCostBreakdown,
   CompressedQuote,
@@ -14,7 +13,8 @@ import {
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
-} from '../types/Quote'
+} from '@kiltprotocol/types'
+import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  *  Compresses the cost from a [[Quote]] object.

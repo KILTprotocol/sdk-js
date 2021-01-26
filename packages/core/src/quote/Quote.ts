@@ -11,10 +11,14 @@
  */
 
 import Ajv from 'ajv'
+import {
+  IQuote,
+  IQuoteAgreement,
+  IQuoteAttesterSigned,
+} from '@kiltprotocol/types'
 import { hashObjectAsStr } from '../crypto/Crypto'
 import { ERROR_QUOTE_MALFORMED } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import { IQuote, IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
 import { validateSignature } from '../util/DataUtils'
 import QuoteSchema from './QuoteSchema'
 

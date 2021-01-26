@@ -4,13 +4,11 @@
  * @ignore
  */
 
+import { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
 import CType from './CType'
 import Identity from '../identity/Identity'
-import ICType from '../types/CType'
 import Claim from '../claim/Claim'
 import CTypeUtils from './CType.utils'
-import { IClaim } from '..'
-import { IClaimContents } from '../types/Claim'
 
 describe('Nested CTypes', () => {
   let identityAlice: Identity
