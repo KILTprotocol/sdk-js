@@ -30,7 +30,7 @@ export const CUSTOM_TYPES: RegistryTypes = {
 }
 
 export async function buildConnection(
-  host: string | undefined = get('address')
+  host: string = get('address')
 ): Promise<Blockchain> {
   const provider = new WsProvider(host)
   const api: ApiPromise = await ApiPromise.create({
@@ -41,7 +41,7 @@ export async function buildConnection(
 }
 
 export async function getCached(
-  host: string | undefined = get('address')
+  host: string = get('address')
 ): Promise<Blockchain> {
   if (!instance) {
     instance = buildConnection(host)
