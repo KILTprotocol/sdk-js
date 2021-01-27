@@ -48,7 +48,7 @@ import Blockchain from '../../blockchain/Blockchain'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { AccountInfo, ExtrinsicStatus, Index } from '@polkadot/types/interfaces'
-import U64 from '@polkadot/types/primitive/U64'
+import { GenericEventData, U64 } from '@polkadot/types'
 import IPublicIdentity from '../../types/PublicIdentity'
 import TYPE_REGISTRY, { mockChainQueryReturn } from './BlockchainQuery'
 
@@ -146,6 +146,15 @@ function __makeSubmittableResult(
   for (const key in opts) {
     status[key] = opts[key]
   }
+  const eventData = new GenericEventData(
+    TYPE_REGISTRY,
+    new Uint8Array([0]),
+    undefined,
+    undefined,
+    {} as any,
+    'system',
+    'ExtrinsicSuccess'
+  )
   return new SubmittableResult({
     status,
     events: [
@@ -157,6 +166,7 @@ function __makeSubmittableResult(
         },
         event: {
           section: 'system',
+          data: eventData,
           index: {
             toHex: jest.fn(() => {
               return '0x0000'
@@ -268,7 +278,7 @@ const __mocked_api: any = {
         Tuple.with(['Hash', AccountId, 'Option<Hash>', Bool]),
         [
           '0x1234',                                            // ctype hash
-          '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',  // Account
+          '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',  // Account
           null,                                                // delegation-id?
           true,                                                // revoked flag
         ]
@@ -292,7 +302,7 @@ const __mocked_api: any = {
         Tuple.with(['Hash', AccountId, Bool]),
         [
           '0x1234',                                            // ctype hash
-          '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',  // Account
+          '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',  // Account
           false,                                               // revoked flag
         ]
       )
@@ -309,7 +319,7 @@ const __mocked_api: any = {
         [
           '0x1234',                                            // root-id
           null,                                                // parent-id?
-          '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu',  // Account
+          '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',  // Account
           0,                                                   // permissions
           false,                                               // revoked flag
         ]

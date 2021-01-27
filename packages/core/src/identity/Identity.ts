@@ -18,8 +18,8 @@ import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { Index } from '@polkadot/types/interfaces'
 import { mnemonicToMiniSecret } from '@polkadot/util-crypto'
-import generate from '@polkadot/util-crypto/mnemonic/generate'
-import validate from '@polkadot/util-crypto/mnemonic/validate'
+import { mnemonicGenerate as generate } from '@polkadot/util-crypto/mnemonic/generate'
+import { mnemonicValidate as validate } from '@polkadot/util-crypto/mnemonic/validate'
 import { hexToU8a } from '@polkadot/util/hex'
 import * as u8aUtil from '@polkadot/util/u8a'
 import BN from 'bn.js'
@@ -107,6 +107,14 @@ export default class Identity {
     return Identity.buildFromSeed(asU8a)
   }
 
+  private static createKeyring(): Keyring {
+    return new Keyring({
+      type: 'ed25519',
+      // KILT has registered the ss58 prefix 38
+      ss58Format: 38,
+    })
+  }
+
   /**
    * [STATIC] Builds a new [[Identity]], generated from a seed (Secret Seed).
    *
@@ -123,7 +131,7 @@ export default class Identity {
    * ```
    */
   public static buildFromSeed(seed: Uint8Array): Identity {
-    const keyring = new Keyring({ type: 'ed25519' })
+    const keyring = Identity.createKeyring()
     const keyringPair = keyring.addFromSeed(seed)
     return new Identity(seed, keyringPair)
   }
@@ -138,7 +146,7 @@ export default class Identity {
    * ```
    */
   public static buildFromURI(uri: string): Identity {
-    const keyring = new Keyring({ type: 'ed25519' })
+    const keyring = Identity.createKeyring()
     const derived = keyring.createFromUri(uri)
     const seed = u8aUtil.u8aToU8a(uri)
     return new Identity(seed, derived)

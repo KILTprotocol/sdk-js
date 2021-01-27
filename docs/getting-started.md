@@ -78,7 +78,7 @@ const claimerMnemonic = Kilt.Identity.generateMnemonic()
 // mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
 console.log('claimer mnemonic', claimerMnemonic)
 const claimer = Kilt.Identity.buildFromMnemonic(claimerMnemonic)
-// claimer.address: 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
+// claimer.address: 4p2r9wfivvHvAkBk9DE4rqUNpLjxZRYkqKFseu8FewjxGaf2
 console.log('claimer address', claimer.address)
 ```
 
@@ -189,7 +189,7 @@ Claim {
   cType:
    '0x5a9d939af9fb5423e3e283f16996438da635de8dc152b13d3a67f01e3d6b0fc0',
   contents: { name: 'Alice', age: 29 },
-  owner: '5EvSHoZF23mZS4XKQBLdqMv7a7CRSANJmxn7XDu6hwoiK4Wz' }
+  owner: '4p2r9wfivvHvAkBk9DE4rqUNpLjxZRYkqKFseu8FewjxGaf2' }
 ```
 
 ## 5. How to request, create and send an Attestation
@@ -219,7 +219,7 @@ RequestForAttestation {
   claim: Claim {
     cTypeHash: '0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5',
     contents: { name: 'Alice', age: 29 },
-    owner: '5HTEzvVT5bQxJTYPiDhRUw4GHarQVs66sFQEpQDUNT6MyoJr'
+    owner: '4p2r9wfivvHvAkBk9DE4rqUNpLjxZRYkqKFseu8FewjxGaf2'
   },
   claimOwner: {
     nonce: '4ef65c7b-ee10-4068-a53e-f6a1bf8bc5f1',
@@ -252,9 +252,9 @@ Before we can send the request for an attestation to an Attester, we should firs
 
 ```typescript
 const attesterMnemonic = Kilt.Identity.generateMnemonic()
-// mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
+// mnemonic: prepare neither execute excuse return visit claim hill around riot valid humor
 const attester = Kilt.Identity.buildFromMnemonic(mnemonic)
-// attester.address: 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
+// attester.address: 4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F
 ```
 
 If the Attester doesn't live on the same machine, we need to send them a message with the request.
@@ -288,8 +288,8 @@ The complete `message` looks as follows:
     type: 'request-attestation-for-claim'
   },
   createdAt: 1595252779597,
-  receiverAddress: '5HTEzvVT5bQxJTYPiDhRUw4GHarQVs66sFQEpQDUNT6MyoJr',
-  senderAddress: '5EoUcwSZm4KgtLCN8SBYoXXv5p3b9gKS58tiRbtJidrhMp3b',
+  receiverAddress: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
+  senderAddress: '4p2r9wfivvHvAkBk9DE4rqUNpLjxZRYkqKFseu8FewjxGaf2',
   senderBoxPublicKey: '0x9e5869608be42588504aaa4c55cb24c17ad1af38c37f821695a93e74049aa112',
   message: '0xFEED....CAFE',
   nonce: '0xef8fe5c201e96c68579f1da5db5cad09957ad672688f9fdc',
@@ -337,7 +337,7 @@ Attestation {
   claimHash: '0x3869eeef85544dc83da1e7065076149af936204db009bfd55dbf9fa1570e70aa',
   cTypeHash: '0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5',
   delegationId: null,
-  owner: '5HTEzvVT5bQxJTYPiDhRUw4GHarQVs66sFQEpQDUNT6MyoJr',
+  owner: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
   revoked: false
 }
 ```
@@ -368,7 +368,7 @@ AttestedClaim {
         cType:
          '0x5a9d939af9fb5423e3e283f16996438da635de8dc152b13d3a67f01e3d6b0fc0',
         contents: [Object],
-        owner: '5EvSHoZF23mZS4XKQBLdqMv7a7CRSANJmxn7XDu6hwoiK4Wz' },
+        owner: '4p2r9wfivvHvAkBk9DE4rqUNpLjxZRYkqKFseu8FewjxGaf2' },
      ctypeHash:
       { nonce: '1f81c5b4-6765-461f-8748-cc6682ea0dcb',
         hash:
@@ -415,8 +415,8 @@ Message {
     type: 'submit-attestation-for-claim'
   },
   createdAt: 1595254601814,
-  receiverAddress: '5DdAxEsEvAzdGTAPjGaQzrWxyYGThpbYzTDFTN6rMZkM88rF',
-  senderAddress: '5HTEzvVT5bQxJTYPiDhRUw4GHarQVs66sFQEpQDUNT6MyoJr',
+  receiverAddress: '4p2r9wfivvHvAkBk9DE4rqUNpLjxZRYkqKFseu8FewjxGaf2',
+  senderAddress: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
   senderBoxPublicKey: '0x97a9f05a70fe934b365d8b63dea7424b4070d49f64f2baa70e74d984da797d2d',
   message: '0xFEED...CAFE',
   nonce: '0x3073029bda4d7496012d702fa72c9fe45d200304fb2268cf',

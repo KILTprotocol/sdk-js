@@ -5,7 +5,7 @@
  */
 
 import { SubmittableResult } from '@polkadot/api'
-import AccountIndex from '@polkadot/types/generic/AccountIndex'
+import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
 import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
 import Identity from '../identity/Identity'

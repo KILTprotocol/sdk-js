@@ -129,7 +129,7 @@ describe('Claim', () => {
     const malformedAddress = {
       cTypeHash,
       contents: claimContents,
-      owner: ownerAddress.replace('7', 'D'),
+      owner: ownerAddress.replace('8', 'D'),
     } as IClaim
 
     expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()

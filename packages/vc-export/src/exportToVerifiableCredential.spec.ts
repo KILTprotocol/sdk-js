@@ -49,7 +49,7 @@ const ctype = CType.fromCType({
     $id:
       'kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
   },
-  owner: '5D4FoyWD1y4Zn2UM4PiG8PAzmamUbCehpfFChiqyCXD7E2B4',
+  owner: '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   hash: '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
 })
 
@@ -61,18 +61,18 @@ const credential = AttestedClaim.fromAttestedClaim({
         name: 'Kurt',
         premium: true,
       },
-      owner: '5DWXHLumDybaDHL1KAdXHSAsevJn397xXh7SitvdJmGhBvA2',
+      owner: '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
       cTypeHash:
         '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
     },
     claimHashes: [
+      '0x0586412d7b8adf811c288211c9c704b3331bb3adb61fba6448c89453568180f6',
       '0x3856178f49d3c379e00793125678eeb8db61cfa4ed32cd7a4b67ac8e27714fc1',
       '0x683428497edeba0198f02a45a7015fc2c010fa75994bc1d1372349c25e793a10',
-      '0x795caba48a4a3e480695f5b54b1ab10196b331f21524426d2d31621f43a8b552',
       '0x8804cc546c4597b2ab0541dd3a6532e338b0b5b4d2458eb28b4d909a5d4caf4e',
     ],
     claimNonceMap: {
-      '0x6633a58860b38a476d0020f30499c236bca3f454e50389e07830d29ec6e819a3':
+      '0xe5a099ea4f8be89227af8a5d74b0371e1c13232978c8b8edce1ecec698eb2665':
         'eab8a98c-0ef3-4a33-a5c7-c9821b3bec45',
       '0x14a06c5955ebc9247c9f54b30e0f1714e6ebd54ae05ad7b16fa9a4643dff1dc2':
         'fda7a7d4-770c-4cae-9cd9-6deebdb3ed80',
@@ -84,17 +84,17 @@ const credential = AttestedClaim.fromAttestedClaim({
     legitimations: [],
     delegationId: null,
     rootHash:
-      '0xbcd6c154fe557e98080005b0b1109876522ddfaa355c2a2d9df63811ae675eb0',
+      '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
     claimerSignature:
-      '0x0067bff0552d43454c69a681390d81bb38c02cae1ebfcd0e91cd7f2c073f808dcd04967ef60fa1b9086a67f676612cf8b6c24a4f874a81f334266c5b37ecf8a70f',
+      '0x00c374b5314d7192224bd620047f740c029af118eb5645a4662f76a2e3d70a877290f9a96cb9ee9ccc6c6bce24a0cf132a07edb603d0d0632f84210d528d2a7701',
   },
   attestation: {
     claimHash:
-      '0xbcd6c154fe557e98080005b0b1109876522ddfaa355c2a2d9df63811ae675eb0',
+      '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
     cTypeHash:
       '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
     delegationId: null,
-    owner: '5D4FoyWD1y4Zn2UM4PiG8PAzmamUbCehpfFChiqyCXD7E2B4',
+    owner: '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     revoked: false,
   },
 })
@@ -104,14 +104,14 @@ it('exports credential to VC', () => {
     '@context': ['https://www.w3.org/2018/credentials/v1'],
     type: ['VerifiableCredential'],
     credentialSubject: {
-      '@id': 'did:kilt:5DWXHLumDybaDHL1KAdXHSAsevJn397xXh7SitvdJmGhBvA2',
+      '@id': 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
       birthday: '1991-01-01',
       name: 'Kurt',
       premium: true,
     },
-    id: '0xbcd6c154fe557e98080005b0b1109876522ddfaa355c2a2d9df63811ae675eb0',
+    id: '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
     issuanceDate: expect.any(String),
-    issuer: 'did:kilt:5D4FoyWD1y4Zn2UM4PiG8PAzmamUbCehpfFChiqyCXD7E2B4',
+    issuer: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     legitimationIds: [],
     nonTransferable: true,
   })

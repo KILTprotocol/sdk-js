@@ -38,7 +38,8 @@ export function validateAddress(
   if (typeof address !== 'string') {
     throw ERROR_ADDRESS_TYPE()
   }
-  if (!checkAddress(address, 42)[0]) {
+  // KILT has registered ss58 prefix 38
+  if (!checkAddress(address, 38)[0]) {
     throw ERROR_ADDRESS_INVALID(address, name)
   }
   return true
