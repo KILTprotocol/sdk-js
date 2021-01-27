@@ -5,4 +5,5 @@
 
 import * as ConfigService from './ConfigService'
 
-export default ConfigService
+// eslint-disable-next-line import/prefer-default-export
+export { ConfigService }
