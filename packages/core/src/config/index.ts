@@ -3,4 +3,6 @@
  * @ignore
  */
 
-export * from './ConfigService'
+import * as ConfigService from './ConfigService'
+
+export default ConfigService

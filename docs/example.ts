@@ -1,7 +1,12 @@
 /* eslint-disable no-console */
 import Kilt from '@kiltprotocol/sdk-js'
-import type { Actors, Claim, CType, Identity } from '@kiltprotocol/sdk-js'
-import { ICType } from '@kiltprotocol/types'
+import type {
+  Actors,
+  Claim,
+  CType,
+  ICType,
+  Identity,
+} from '@kiltprotocol/sdk-js'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
 const SEP = '_'
