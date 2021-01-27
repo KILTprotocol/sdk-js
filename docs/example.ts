@@ -2,7 +2,6 @@
 import Kilt from '@kiltprotocol/sdk-js'
 import type { Actors, Claim, CType, Identity } from '@kiltprotocol/sdk-js'
 import { ICType } from '@kiltprotocol/types'
-import { setConfiguration } from '../src/config/ConfigService'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
 const SEP = '_'

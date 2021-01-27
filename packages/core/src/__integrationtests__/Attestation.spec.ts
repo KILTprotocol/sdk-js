@@ -34,21 +34,8 @@ import {
 
 let alice: Identity
 beforeAll(async () => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
-  alice = Identity.buildFromURI('//Alice')
-=======
-  blockchain = await getCached(getNodeAddress())
-=======
-  blockchain = await getCached((configuration.host = WS_ADDRESS))
->>>>>>> fix: requested changes, improved rerouting
-=======
   config({ address: WS_ADDRESS })
->>>>>>> feat: ci tests now set config and disconnect without explicit chain instance
-  alice = await Identity.buildFromURI('//Alice')
->>>>>>> feat: added configservice, removed implicit connection
+  alice = Identity.buildFromURI('//Alice')
 })
 
 describe('handling attestations that do not exist', () => {

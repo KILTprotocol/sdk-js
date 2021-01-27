@@ -17,7 +17,7 @@ import {
 } from './delegation'
 import Did, { IDid, IDidDocument, IDidDocumentPublicKey } from './did'
 import { Identity, IURLResolver, PublicIdentity } from './identity'
-import { ConfigService } from './config'
+import * as ConfigService from './config'
 import Message from './messaging'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {

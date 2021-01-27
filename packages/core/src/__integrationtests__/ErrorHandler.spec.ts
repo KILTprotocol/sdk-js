@@ -16,17 +16,8 @@ import { WS_ADDRESS } from './utils'
 let alice: Identity
 
 beforeAll(async () => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
-  alice = Identity.buildFromURI('//Alice')
-=======
-  blockchain = await getCached((configuration.host = WS_ADDRESS))
-=======
   config({ address: WS_ADDRESS })
->>>>>>> feat: ci tests now set config and disconnect without explicit chain instance
-  alice = await Identity.buildFromURI('//Alice')
->>>>>>> fix: requested changes, improved rerouting
+  alice = Identity.buildFromURI('//Alice')
 })
 
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
