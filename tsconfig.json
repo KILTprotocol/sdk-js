@@ -9,7 +9,6 @@
       "@kiltprotocol/sdk-js": ["sdk-js/src"],
       "@kiltprotocol/core": ["core/src"],
       "@kiltprotocol/types": ["types/src"],
-      "@kiltprotocol/actors-api*": ["actors-api/src/*"],
       "@kiltprotocol/core/lib/*": ["core/src/*"]
     }
   },

@@ -1,8 +1,14 @@
+/**
+ * @packageDocumentation
+ * @group unit/ConfigService
+ * @ignore
+ */
+
 /* eslint-disable dot-notation */
-// import { ERROR_WS_ADDRESS_NOT_SET } from '../errorhandling/SDKErrors'
 import { LogLevel, Logger } from 'typescript-logging'
-import { ERROR_WS_ADDRESS_NOT_SET } from '../errorhandling/SDKErrors'
+import { ErrorCode } from '../errorhandling/SDKErrors'
 import * as ConfigService from './ConfigService'
+import '../errorhandling/test/jest.ErrorCodeMatcher'
 
 describe('Log Configuration', () => {
   let testLogger: Logger
@@ -34,7 +40,9 @@ describe('Log Configuration', () => {
 describe('Configuration Service', () => {
   it('has configuration Object with default values', () => {
     expect(ConfigService.get('logLevel')).toEqual(LogLevel.Error)
-    expect(ConfigService.get('address')).toEqual(undefined)
+    expect(() => ConfigService.get('address')).toThrowErrorWithCode(
+      ErrorCode.ERROR_WS_ADDRESS_NOT_SET
+    )
   })
   describe('set function for host address, logLevel and any custom configuration prop', () => {
     it('host address', () => {
@@ -57,9 +65,13 @@ describe('Configuration Service', () => {
     })
     it('throws if address not set', () => {
       ConfigService.set({ address: '' })
-      expect(ConfigService.get('address')).toThrow(ERROR_WS_ADDRESS_NOT_SET())
+      expect(() => ConfigService.get('address')).toThrowErrorWithCode(
+        ErrorCode.ERROR_WS_ADDRESS_NOT_SET
+      )
       ConfigService.set({ address: undefined })
-      expect(ConfigService.get('address')).toThrow(ERROR_WS_ADDRESS_NOT_SET())
+      expect(() => ConfigService.get('address')).toThrowErrorWithCode(
+        ErrorCode.ERROR_WS_ADDRESS_NOT_SET
+      )
     })
     it('returns logLevel property', () => {
       ConfigService.set({ logLevel: LogLevel.Info })
@@ -70,8 +82,8 @@ describe('Configuration Service', () => {
       expect(ConfigService.get('testProp')).toEqual('testing')
     })
     it('throws error if target prop does not exist or is undefined', () => {
-      expect(ConfigService.get('testingError')).toThrow(
-        'GENERIC NOT CONFIGURED ERROR FOR testingError'
+      expect(() => ConfigService.get('testingError')).toThrow(
+        'GENERIC NOT CONFIGURED ERROR FOR KEY: "testingError"'
       )
     })
   })
