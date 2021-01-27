@@ -1,17 +1,19 @@
 import {
   AttestedClaim,
-  IClaim,
-  IDelegationBaseNode,
   Identity,
   IMessage,
-  IPublicIdentity,
   IRequestAttestationForClaim,
-  IRequestForAttestation,
   Message,
   MessageBodyType,
   RequestForAttestation,
   SDKErrors,
 } from '@kiltprotocol/core'
+import {
+  IClaim,
+  IDelegationBaseNode,
+  IPublicIdentity,
+  IRequestForAttestation,
+} from '@kiltprotocol/types'
 import Credential from '../credential/Credential'
 
 /**

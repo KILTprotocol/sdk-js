@@ -4,13 +4,8 @@
  * @ignore
  */
 
-import {
-  CType,
-  IClaim,
-  ICType,
-  Identity,
-  MessageBodyType,
-} from '@kiltprotocol/core'
+import { CType, Identity, MessageBodyType } from '@kiltprotocol/core'
+import { IClaim, ICType } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from '@kiltprotocol/core/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { Attester, Claimer, Verifier } from '..'
 import Credential from '../credential/Credential'
