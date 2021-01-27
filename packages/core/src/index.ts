@@ -23,7 +23,6 @@ import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {
   RequestForAttestationUtils,
 } from './requestforattestation'
-import * as ConfigService from './config'
 
 export { connect, disconnect, config } from './kilt'
 export { SubmittableResult } from '@polkadot/api'
