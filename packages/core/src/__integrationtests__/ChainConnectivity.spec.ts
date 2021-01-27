@@ -10,7 +10,6 @@ import { WS_ADDRESS } from './utils'
 import { config, disconnect } from '../kilt'
 import { getCached } from '../blockchainApiConnection'
 
-
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
 })
