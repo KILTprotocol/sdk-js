@@ -9,7 +9,6 @@ import {
   Vec,
   U8,
 } from '@polkadot/types'
-import { GenericAccountId as AccountId } from '@polkadot/types/generic/AccountId'
 import { Codec } from '@polkadot/types/types'
 import { Constructor } from '@polkadot/util/types'
 import { CUSTOM_TYPES } from '../BlockchainApiConnection'
@@ -17,9 +16,14 @@ import { CUSTOM_TYPES } from '../BlockchainApiConnection'
 const TYPE_REGISTRY = new TypeRegistry()
 TYPE_REGISTRY.register({
   ...CUSTOM_TYPES,
-  GenericAccountId: 'AccountId',
 })
+const chainProperties = TYPE_REGISTRY.createType('ChainProperties', {
+  ss58Format: 38,
+})
+TYPE_REGISTRY.setChainProperties(chainProperties)
 export default TYPE_REGISTRY
+
+const AccountId = TYPE_REGISTRY.getOrThrow('AccountId')
 
 type ChainQueryTypes = {
   attestation: 'attestations' | 'delegatedAttestations'

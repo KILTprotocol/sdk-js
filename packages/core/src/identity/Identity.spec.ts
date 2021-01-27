@@ -18,7 +18,7 @@ describe('Identity', () => {
     expect(alice.seedAsHex).toEqual('0x2f2f416c696365')
 
     expect(alice.address).toEqual(
-      '5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu'
+      '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
     )
 
     expect(u8aUtil.u8aToHex(alice.signKeyringPair.publicKey)).toEqual(

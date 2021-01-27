@@ -140,7 +140,7 @@ describe('CType', () => {
     const invalidAddressCtype: ICType = {
       ...claimCtype,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      owner: claimCtype.owner!.replace('7', 'D'),
+      owner: claimCtype.owner!.replace('8', 'D'),
     }
 
     // This tst is not possible as it throws the error for malformed object first

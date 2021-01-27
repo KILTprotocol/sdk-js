@@ -229,7 +229,7 @@ describe('Attestation', () => {
     const malformedAddress = {
       claimHash,
       cTypeHash,
-      owner: identityAlice.signKeyringPair.address.replace('7', 'D'),
+      owner: identityAlice.signKeyringPair.address.replace('8', 'D'),
       revoked: false,
       delegationId: null,
     } as IAttestation
