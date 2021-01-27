@@ -25,7 +25,6 @@ import {
   ERROR_SIGNATURE_UNVERIFIABLE,
 } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import constants from '../test/constants'
 
 import RequestForAttestation from './RequestForAttestation'
 import RequestForAttestationUtils from './RequestForAttestation.utils'

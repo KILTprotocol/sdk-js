@@ -6,7 +6,7 @@
 
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { Permission } from '@kiltprotocol/types'
-import { Identity } from '..'
+import { AttestedClaim, Identity } from '..'
 import Attestation from '../attestation/Attestation'
 import {
   IS_IN_BLOCK,

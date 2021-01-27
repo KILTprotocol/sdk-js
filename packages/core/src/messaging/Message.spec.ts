@@ -10,7 +10,6 @@ import {
   IQuote,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { Verifier } from '..'
 import Crypto from '../crypto'
 import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import * as SDKErrors from '../errorhandling/SDKErrors'

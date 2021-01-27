@@ -35,15 +35,8 @@ import {
 
 let alice: Identity
 beforeAll(async () => {
-<<<<<<< HEAD
   config({ address: WS_ADDRESS })
   alice = Identity.buildFromURI('//Alice')
-=======
-  alice = Identity.buildFromURI('//Alice')
-
-  config({ address: WS_ADDRESS })
-
->>>>>>> chore: split types
 })
 
 describe('handling attestations that do not exist', () => {

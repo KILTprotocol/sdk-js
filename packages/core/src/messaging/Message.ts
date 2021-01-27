@@ -24,12 +24,6 @@ import {
   ITerms,
   IQuoteAgreement,
 } from '@kiltprotocol/types'
-import {
-  Attestation as AttestationPE,
-  CombinedPresentation,
-  CombinedPresentationRequest,
-  InitiateAttestationRequest,
-} from '@kiltprotocol/portablegabi'
 import { Claim, DelegationNode, Identity } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
 

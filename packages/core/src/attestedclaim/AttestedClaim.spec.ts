@@ -10,7 +10,6 @@ import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import constants from '../test/constants'
 import AttestedClaim from './AttestedClaim'
 import AttestedClaimUtils from './AttestedClaim.utils'
 
