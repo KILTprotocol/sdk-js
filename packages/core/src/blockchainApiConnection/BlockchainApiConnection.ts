@@ -25,12 +25,10 @@ export const CUSTOM_TYPES: RegistryTypes = {
   ErrorCode: 'u16',
   Signature: 'MultiSignature',
   Address: 'AccountId',
-  LookupSource: 'Address',
+  LookupSource: 'AccountId',
   BlockNumber: 'u64',
   Index: 'u64',
   RefCount: 'u32',
-  AccountIndex: 'u32',
-  Hash: 'H256',
 }
 
 export async function buildConnection(
