@@ -9,10 +9,10 @@ import {
   MessageBodyType,
   IPublicIdentity,
   IRequestForAttestation,
+  ConfigService,
 } from '@kiltprotocol/core'
-import { factory as LoggerFactory } from '@kiltprotocol/core/lib/config/ConfigLog'
 
-const log = LoggerFactory.getLogger('Verifier')
+const log = ConfigService.factory.getLogger('Verifier')
 
 export interface IPresentationReq {
   properties: string[]

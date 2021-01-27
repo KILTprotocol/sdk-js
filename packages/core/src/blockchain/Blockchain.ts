@@ -16,7 +16,7 @@ import { Text } from '@polkadot/types'
 import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import { ERROR_TRANSACTION_RECOVERABLE } from '../errorhandling/SDKErrors'
-import { factory as LoggerFactory } from '../config/ConfigLog'
+import { factory as LoggerFactory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import {
   parseSubscriptionOptions,

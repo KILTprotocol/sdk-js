@@ -6,7 +6,7 @@
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Tuple } from '@polkadot/types'
 import { getCached } from '../blockchainApiConnection'
-import { factory } from '../config/ConfigLog'
+import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import { IDelegationNode } from '../types/Delegation'
 import DelegationBaseNode from './Delegation'

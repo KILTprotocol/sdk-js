@@ -114,10 +114,19 @@ const ctype = Kilt.CType.fromSchema(
 ### 3.2. Storing a CTYPE
 
 Before you can store the CTYPE on the blockchain, you have to connect to it.
+Either Explicitly:
 
 ```typescript
 await Kilt.connect(YOUR_CHAIN_ADDRESS)
 ```
+
+Or by setting a default address in the configuration, connecting implicitly.
+
+```typescript
+Kilt.config({ address: YOUR_CHAIN_ADDRESS })
+```
+
+the connection can be built implicitly.
 
 There are [three types](https://dev.kilt.io/#/?id=source-code-and-deployed-instances) of KILT chains which you can use, each one having a different address:
 

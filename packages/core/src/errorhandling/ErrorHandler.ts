@@ -7,7 +7,7 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types/interfaces'
-import { factory as LoggerFactory } from '../config/ConfigLog'
+import { factory as LoggerFactory } from '../config/ConfigService'
 import { errorForCode, ExtrinsicError } from './ExtrinsicError'
 
 const log = LoggerFactory.getLogger('Blockchain')

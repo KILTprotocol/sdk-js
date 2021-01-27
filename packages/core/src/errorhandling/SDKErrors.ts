@@ -28,8 +28,9 @@ export enum ErrorCode {
   ERROR_PE_CREDENTIAL_MISSING = 10012,
   ERROR_CTYPE_ID_NOT_MATCHING = 10013,
   ERROR_PE_VERIFICATION = 10014,
-  ERROR_IDENTITY_NOT_PE_ENABLED = 10014,
   ERROR_NO_PROOF_FOR_STATEMENT = 10015,
+  ERROR_IDENTITY_NOT_PE_ENABLED = 10016,
+  ERROR_WS_ADDRESS_NOT_SET = 10017,
 
   // Data type is wrong or malformed
   ERROR_ADDRESS_TYPE = 20001,
@@ -437,6 +438,12 @@ export const ERROR_IDENTITY_NOT_PE_ENABLED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_IDENTITY_NOT_PE_ENABLED,
     'Identity is not privacy enhaced'
+  )
+}
+export const ERROR_WS_ADDRESS_NOT_SET: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_WS_ADDRESS_NOT_SET,
+    'Node address to connect to not configured!'
   )
 }
 

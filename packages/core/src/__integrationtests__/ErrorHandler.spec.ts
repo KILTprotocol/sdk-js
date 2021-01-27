@@ -5,18 +5,18 @@
  */
 
 import BN from 'bn.js'
-import { Attestation, IBlockchainApi } from '..'
+import { Attestation } from '..'
 import { makeTransfer } from '../balance/Balance.chain'
 import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
-import { DEFAULT_WS_ADDRESS, getCached } from '../blockchainApiConnection'
 import { ERROR_CTYPE_NOT_FOUND, ERROR_UNKNOWN } from '../errorhandling'
 import Identity from '../identity'
+import { config, disconnect } from '../kilt'
+import { WS_ADDRESS } from './utils'
 
-let blockchain: IBlockchainApi | undefined
 let alice: Identity
 
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  config({ address: WS_ADDRESS })
   alice = Identity.buildFromURI('//Alice')
 })
 
@@ -46,5 +46,5 @@ it('records an extrinsic error when ctype does not exist', async () => {
 }, 30_000)
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })
