@@ -8,6 +8,7 @@
 import { LogLevel, Logger } from 'typescript-logging'
 import { ErrorCode } from '../errorhandling/SDKErrors'
 import * as ConfigService from './ConfigService'
+import '../errorhandling/test/jest.ErrorCodeMatcher'
 
 describe('Log Configuration', () => {
   let testLogger: Logger
