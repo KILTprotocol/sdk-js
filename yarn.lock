@@ -849,26 +849,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@kiltprotocol/utils@workspace:*, @kiltprotocol/utils@workspace:packages/utils":
-=======
-"@kiltprotocol/utils@workspace:packages/utils":
->>>>>>> feat: utils package
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/utils@workspace:packages/utils"
   dependencies:
     "@kiltprotocol/types": "workspace:*"
-<<<<<<< HEAD
     "@polkadot/keyring": ^5.4.4
     "@polkadot/types": ^3.6.4
     "@polkadot/util": ^5.4.4
     "@polkadot/util-crypto": ^5.4.4
-=======
-    "@polkadot/keyring": ^5.3.1
-    "@polkadot/types": ^3.5.1
-    "@polkadot/util": ^5.3.1
-    "@polkadot/util-crypto": ^5.3.1
->>>>>>> feat: utils package
     rimraf: ^3.0.2
     tweetnacl: ^1.0.3
     typescript: ^3.9.7
