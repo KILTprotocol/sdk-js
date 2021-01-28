@@ -823,7 +823,6 @@ __metadata:
     typedoc-plugin-external-module-name: 3.1.0
     typescript: ^3.9.7
     typescript-logging: ^0.6.4
-    uuid: ^8.1.0
   languageName: unknown
   linkType: soft
 
@@ -846,6 +845,22 @@ __metadata:
     rimraf: ^3.0.2
     ts-node: ^8.10.2
     typescript: ^3.9.7
+  languageName: unknown
+  linkType: soft
+
+"@kiltprotocol/utils@workspace:packages/utils":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/utils@workspace:packages/utils"
+  dependencies:
+    "@kiltprotocol/types": "workspace:*"
+    "@polkadot/keyring": ^5.3.1
+    "@polkadot/types": ^3.5.1
+    "@polkadot/util": ^5.3.1
+    "@polkadot/util-crypto": ^5.3.1
+    rimraf: ^3.0.2
+    tweetnacl: ^1.0.3
+    typescript: ^3.9.7
+    uuid: ^8.1.0
   languageName: unknown
   linkType: soft
 

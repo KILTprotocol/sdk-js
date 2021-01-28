@@ -17,6 +17,7 @@ import {
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 import Attestation from '../attestation/Attestation'
+import { SDKErrors } from '../errorhandling'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import AttestedClaimUtils from './AttestedClaim.utils'
 
@@ -148,6 +149,26 @@ export default class AttestedClaim implements IAttestedClaim {
 
   public verifyData(): boolean {
     return AttestedClaim.verifyData(this)
+  }
+
+  /**
+   *  [STATIC] Verifies the data of each element of the given Array of IAttestedClaims.
+   *
+   * @param legitimations Array of IAttestedClaims to validate.
+   * @throws When one of the IAttestedClaims data is unable to be verified.
+   * @throws [[ERROR_LEGITIMATIONS_UNVERIFIABLE]].
+   *
+   * @returns Boolean whether each element of the given Array of IAttestedClaims is verifiable.
+   */
+  public static validateLegitimations(
+    legitimations: IAttestedClaim[]
+  ): boolean {
+    legitimations.forEach((legitimation: IAttestedClaim) => {
+      if (!AttestedClaim.verifyData(legitimation)) {
+        throw SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
+      }
+    })
+    return true
   }
 
   /**

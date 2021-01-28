@@ -24,7 +24,7 @@ import { naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
 import { naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
-import jsonabc from '../util/jsonabc'
+import jsonabc from './jsonabc'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 

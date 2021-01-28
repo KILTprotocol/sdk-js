@@ -5,26 +5,35 @@
  */
 
 import * as string from '@polkadot/util/string'
-import Identity from '../identity/Identity'
-import Crypto from './index'
+import { Keyring } from '@polkadot/keyring'
+import { KeyringPair } from '@polkadot/keyring/types'
+import { u8aToHex } from '@polkadot/util'
+import nacl from 'tweetnacl'
+import * as Crypto from './Crypto'
 
-describe('Crypto', () => {
-  // TODO: create static objects for testing
-  let alice: Identity
-  let bob: Identity
-  let messageStr: string
-  let message: Uint8Array
+const messageStr = 'This is a test'
+const message = new Uint8Array(string.stringToU8a(messageStr))
+
+describe('Symmetric Crypto', () => {
+  let alice: KeyringPair
+  let alicePubKey: string
+  let bob: KeyringPair
+  let bobPubKey: string
 
   beforeAll(async () => {
-    alice = Identity.buildFromMnemonic(Identity.generateMnemonic())
-    bob = Identity.buildFromMnemonic(Identity.generateMnemonic())
-
-    messageStr = 'This is a test'
-    message = new Uint8Array(string.stringToU8a(messageStr))
+    const keyring = new Keyring({
+      type: 'ed25519',
+      // KILT has registered the ss58 prefix 38
+      ss58Format: 38,
+    })
+    alice = keyring.addFromUri('//Alice')
+    alicePubKey = u8aToHex(alice.publicKey)
+    bob = keyring.addFromUri('//Bob')
+    bobPubKey = u8aToHex(bob.publicKey)
   })
 
   it('should sign and verify (UInt8Array)', () => {
-    const signature = Crypto.sign(message, alice.signKeyringPair)
+    const signature = Crypto.sign(message, alice)
     expect(signature).not.toBeFalsy()
     expect(Crypto.verify(message, signature, alice.address)).toBe(true)
 
@@ -35,18 +44,12 @@ describe('Crypto', () => {
   })
 
   it('should sign and verify (string)', () => {
-    const signature = Crypto.signStr(messageStr, alice.signKeyringPair)
+    const signature = Crypto.signStr(messageStr, alice)
     expect(signature).not.toBeFalsy()
-    expect(Crypto.verify(messageStr, signature, alice.signPublicKeyAsHex)).toBe(
-      true
-    )
+    expect(Crypto.verify(messageStr, signature, alicePubKey)).toBe(true)
 
-    expect(Crypto.verify(messageStr, signature, bob.signPublicKeyAsHex)).toBe(
-      false
-    )
-    expect(Crypto.verify('0x000000', signature, alice.signPublicKeyAsHex)).toBe(
-      false
-    )
+    expect(Crypto.verify(messageStr, signature, bobPubKey)).toBe(false)
+    expect(Crypto.verify('0x000000', signature, alicePubKey)).toBe(false)
   })
 
   // https://polkadot.js.org/common/examples/util-crypto/01_encrypt_decrypt_message_nacl/
@@ -127,41 +130,48 @@ describe('Crypto', () => {
     expect(Crypto.hash('123')).not.toEqual(Crypto.hash(message))
     expect(Crypto.hashStr('123')).not.toEqual(Crypto.hashStr(message))
   })
+})
+
+describe('asymmetric crypto', () => {
+  let alice: nacl.BoxKeyPair
+  let bob: nacl.BoxKeyPair
+
+  beforeAll(() => {
+    alice = nacl.box.keyPair()
+    bob = nacl.box.keyPair()
+  })
 
   it('should encrypt and decrypt asymmetrical (string)', () => {
     const encrypted = Crypto.encryptAsymmetricAsStr(
       messageStr,
-      alice.getBoxPublicKey(),
-      bob.boxKeyPair.secretKey
+      alice.publicKey,
+      bob.secretKey
     )
     expect(encrypted).not.toEqual(messageStr)
-
     const decrypted = Crypto.decryptAsymmetricAsStr(
       encrypted,
-      bob.getBoxPublicKey(),
-      alice.boxKeyPair.secretKey
+      bob.publicKey,
+      alice.secretKey
     )
     expect(decrypted).toEqual(messageStr)
     const decryptedFalse = Crypto.decryptAsymmetricAsStr(
       encrypted,
-      bob.getBoxPublicKey(),
-      bob.boxKeyPair.secretKey
+      bob.publicKey,
+      bob.secretKey
     )
     expect(decryptedFalse).toEqual(false)
   })
-
   it('should encrypt and decrypt asymmetrical (UInt8Array)', () => {
     const encrypted = Crypto.encryptAsymmetric(
       message,
-      alice.boxKeyPair.publicKey,
-      bob.boxKeyPair.secretKey
+      alice.publicKey,
+      bob.secretKey
     )
     expect(encrypted).not.toEqual(message)
-
     const decrypted = Crypto.decryptAsymmetric(
       encrypted,
-      bob.boxKeyPair.publicKey,
-      alice.boxKeyPair.secretKey
+      bob.publicKey,
+      alice.secretKey
     )
     expect(decrypted).toEqual(message)
   })

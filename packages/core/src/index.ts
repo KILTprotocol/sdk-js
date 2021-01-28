@@ -8,7 +8,6 @@ import { Balance, BalanceUtils } from './balance'
 import Blockchain, { IBlockchainApi, BlockchainUtils } from './blockchain'
 import * as BlockchainApiConnection from './blockchainApiConnection'
 import Claim, { ClaimUtils } from './claim'
-import Crypto from './crypto'
 import { CType, CTypeMetadata, CTypeSchema, CTypeUtils } from './ctype'
 import {
   DelegationBaseNode,
@@ -30,7 +29,6 @@ export { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 export * from './errorhandling'
 export * from './messaging'
 
-export { UUID } from './util'
 export {
   Blockchain,
   IBlockchainApi,
@@ -38,7 +36,6 @@ export {
   BlockchainApiConnection,
   Balance,
   BalanceUtils,
-  Crypto,
   Identity,
   PublicIdentity,
   IURLResolver,
