@@ -19,16 +19,15 @@ import {
   IClaim,
   IAttestedClaim,
 } from '@kiltprotocol/types'
-import { validateLegitimations } from '../util/DataUtils'
+import { Crypto } from '@kiltprotocol/utils'
 import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { coToUInt8, hash, u8aConcat, u8aToHex, verify } from '../crypto/Crypto'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 
 function verifyClaimerSignature(reqForAtt: IRequestForAttestation): boolean {
-  return verify(
+  return Crypto.verify(
     reqForAtt.rootHash,
     reqForAtt.claimerSignature,
     reqForAtt.claim.owner
@@ -36,8 +35,8 @@ function verifyClaimerSignature(reqForAtt: IRequestForAttestation): boolean {
 }
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
-  const result = u8aConcat(...leaves)
-  return hash(result)
+  const result = Crypto.u8aConcat(...leaves)
+  return Crypto.hash(result)
 }
 
 export type Options = {
@@ -253,7 +252,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       throw verificationResult.errors[0] || SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
 
     // check legitimations
-    validateLegitimations(input.legitimations)
+    AttestedClaim.validateLegitimations(input.legitimations)
 
     return true
   }
@@ -302,15 +301,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
   ): Uint8Array[] {
     const result: Uint8Array[] = []
     claimHashes.forEach((item) => {
-      result.push(coToUInt8(item))
+      result.push(Crypto.coToUInt8(item))
     })
     if (legitimations) {
       legitimations.forEach((legitimation) => {
-        result.push(coToUInt8(legitimation.attestation.claimHash))
+        result.push(Crypto.coToUInt8(legitimation.attestation.claimHash))
       })
     }
     if (delegationId) {
-      result.push(coToUInt8(delegationId))
+      result.push(Crypto.coToUInt8(delegationId))
     }
 
     return result
@@ -349,6 +348,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
       request.delegationId || null
     )
     const root: Uint8Array = getHashRoot(hashes)
-    return u8aToHex(root)
+    return Crypto.u8aToHex(root)
   }
 }

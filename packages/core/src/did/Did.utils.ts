@@ -7,13 +7,12 @@ import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { hexToString, isHex } from '@polkadot/util'
 import { IPublicIdentity } from '@kiltprotocol/types'
-import Crypto from '../crypto'
+import { Crypto, DecoderUtils } from '@kiltprotocol/utils'
 import {
   ERROR_DID_IDENTIFIER_MISMATCH,
   ERROR_INVALID_DID_PREFIX,
 } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 import {
   CONTEXT,
   IDENTIFIER_PREFIX,
@@ -34,21 +33,20 @@ export function decodeDid(
   identifier: string,
   encoded: Option<Tuple>
 ): IDid | null {
-  assertCodecIsType(encoded, [
+  DecoderUtils.assertCodecIsType(encoded, [
     'Option<(PublicSigningKey,PublicBoxKey,Option<Bytes>)>',
   ])
-  if (encoded instanceof Option || hasNonNullByte(encoded)) {
-    const decoded = (encoded as IEncodedDid).toJSON()
-    if (decoded) {
-      const documentStore = isHex(decoded[2]) ? hexToString(decoded[2]) : null
-      return {
-        identifier,
-        publicSigningKey: decoded[0],
-        publicBoxKey: decoded[1],
-        documentStore,
-      }
+  const decoded = (encoded as IEncodedDid).toJSON()
+  if (decoded) {
+    const documentStore = isHex(decoded[2]) ? hexToString(decoded[2]) : null
+    return {
+      identifier,
+      publicSigningKey: decoded[0],
+      publicBoxKey: decoded[1],
+      documentStore,
     }
   }
+
   return null
 }
 

@@ -14,9 +14,9 @@ import {
   CompressedRequestForAttestation,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { u8aToHex } from '../crypto'
 import CType from '../ctype/CType'
 import {
   ErrorCode,
@@ -363,7 +363,9 @@ describe('RequestForAttestation', () => {
       builtRequestMalformedSignature.claimerSignature
     )
     signatureAsBytes[5] += 1
-    builtRequestMalformedSignature.claimerSignature = u8aToHex(signatureAsBytes)
+    builtRequestMalformedSignature.claimerSignature = Crypto.u8aToHex(
+      signatureAsBytes
+    )
     builtRequestMalformedSignature.rootHash = RequestForAttestation[
       'calculateRootHash'
     ](builtRequestMalformedSignature)

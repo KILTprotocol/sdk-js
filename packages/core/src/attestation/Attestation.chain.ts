@@ -6,10 +6,10 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { IAttestation } from '@kiltprotocol/types'
+import { DecoderUtils } from '@kiltprotocol/utils'
 import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
-import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 import Attestation from './Attestation'
 
 const log = factory.getLogger('Attestation')
@@ -39,26 +39,21 @@ interface IChainAttestation extends Codec {
   toJSON: () => [string, string, string | null, boolean] | null
 }
 
-function decode(
-  encoded: Option<Tuple>,
-  claimHash: string // all the other decoders do not use extra data; they just return partial types
-): Attestation | null {
-  assertCodecIsType(encoded, [
+function decode(encoded: Option<Tuple>, claimHash: string): Attestation | null {
+  DecoderUtils.assertCodecIsType(encoded, [
     'Option<(Hash,AccountId,Option<DelegationNodeId>,bool)>',
   ])
-  if (encoded instanceof Option || hasNonNullByte(encoded)) {
-    const attestationTuple = (encoded as IChainAttestation).toJSON()
-    if (attestationTuple instanceof Array) {
-      const attestation: IAttestation = {
-        claimHash,
-        cTypeHash: attestationTuple[0],
-        owner: attestationTuple[1],
-        delegationId: attestationTuple[2],
-        revoked: attestationTuple[3],
-      }
-      log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
-      return Attestation.fromAttestation(attestation)
+  const attestationTuple = (encoded as IChainAttestation).toJSON()
+  if (attestationTuple instanceof Array) {
+    const attestation: IAttestation = {
+      claimHash,
+      cTypeHash: attestationTuple[0],
+      owner: attestationTuple[1],
+      delegationId: attestationTuple[2],
+      revoked: attestationTuple[3],
     }
+    log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
+    return Attestation.fromAttestation(attestation)
   }
   return null
 }

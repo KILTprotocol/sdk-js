@@ -7,10 +7,10 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option } from '@polkadot/types'
 import { AccountId } from '@polkadot/types/interfaces'
 import { ICType, IPublicIdentity } from '@kiltprotocol/types'
+import { DecoderUtils } from '@kiltprotocol/utils'
 import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
-import { assertCodecIsType } from '../util/Decode'
 
 const log = factory.getLogger('CType')
 
@@ -28,7 +28,7 @@ export async function store(
 export function decode(
   encoded: Option<AccountId>
 ): IPublicIdentity['address'] | null {
-  assertCodecIsType(encoded, ['Option<AccountId>'])
+  DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId>'])
   return !encoded.isEmpty ? encoded.toString() : null
 }
 

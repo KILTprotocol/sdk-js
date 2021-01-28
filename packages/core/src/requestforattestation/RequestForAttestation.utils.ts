@@ -10,7 +10,7 @@ import {
   CompressedRequestForAttestation,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { validateHash } from '../util/DataUtils'
+import { DataUtils } from '@kiltprotocol/utils'
 import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
 import ClaimUtils from '../claim/Claim.utils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
@@ -44,7 +44,7 @@ export function errorCheck(input: IRequestForAttestation): void {
     Object.entries(input.claimNonceMap).some(
       ([digest, nonce]) =>
         !digest ||
-        !validateHash(digest, 'statement digest') ||
+        !DataUtils.validateHash(digest, 'statement digest') ||
         typeof nonce !== 'string' ||
         !nonce
     )

@@ -16,10 +16,9 @@ import {
   IQuoteAgreement,
   IQuoteAttesterSigned,
 } from '@kiltprotocol/types'
-import { hashObjectAsStr } from '../crypto/Crypto'
+import { Crypto, DataUtils } from '@kiltprotocol/utils'
 import { ERROR_QUOTE_MALFORMED } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import { validateSignature } from '../util/DataUtils'
 import QuoteSchema from './QuoteSchema'
 
 /**
@@ -69,8 +68,8 @@ export function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   const { attesterSignature, ...basicQuote } = deserializedQuote
-  validateSignature(
-    hashObjectAsStr(basicQuote),
+  DataUtils.validateSignature(
+    Crypto.hashObjectAsStr(basicQuote),
     attesterSignature,
     deserializedQuote.attesterAddress
   )
@@ -97,7 +96,7 @@ export function createAttesterSignature(
   quoteInput: IQuote,
   attesterIdentity: Identity
 ): IQuoteAttesterSigned {
-  const signature = attesterIdentity.signStr(hashObjectAsStr(quoteInput))
+  const signature = attesterIdentity.signStr(Crypto.hashObjectAsStr(quoteInput))
   return {
     ...quoteInput,
     attesterSignature: signature,
@@ -141,13 +140,13 @@ export function createQuoteAgreement(
   requestRootHash: string
 ): IQuoteAgreement {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
-  validateSignature(
-    hashObjectAsStr(basicQuote),
+  DataUtils.validateSignature(
+    Crypto.hashObjectAsStr(basicQuote),
     attesterSignature,
     attesterSignedQuote.attesterAddress
   )
   const signature = claimerIdentity.signStr(
-    hashObjectAsStr(attesterSignedQuote)
+    Crypto.hashObjectAsStr(attesterSignedQuote)
   )
   return {
     ...attesterSignedQuote,

@@ -24,10 +24,9 @@ import {
   ITerms,
   IQuoteAgreement,
 } from '@kiltprotocol/types'
+import { Crypto, DataUtils } from '@kiltprotocol/utils'
 import { Claim, DelegationNode, Identity } from '..'
-import Crypto, { EncryptedAsymmetricString } from '../crypto'
 
-import { validateSignature } from '../util/DataUtils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
@@ -166,7 +165,11 @@ export default class Message implements IMessage {
         'Message'
       )
     }
-    validateSignature(encrypted.hash, encrypted.signature, senderAddress)
+    DataUtils.validateSignature(
+      encrypted.hash,
+      encrypted.signature,
+      senderAddress
+    )
   }
 
   /**
@@ -188,7 +191,7 @@ export default class Message implements IMessage {
     // check validity of the message
     Message.ensureHashAndSignature(encrypted, encrypted.senderAddress)
 
-    const ea: EncryptedAsymmetricString = {
+    const ea: Crypto.EncryptedAsymmetricString = {
       box: encrypted.message,
       nonce: encrypted.nonce,
     }
@@ -241,7 +244,7 @@ export default class Message implements IMessage {
     this.senderAddress = sender.address
     this.senderBoxPublicKey = sender.getBoxPublicKey()
 
-    const encryptedMessage: EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(
+    const encryptedMessage: Crypto.EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(
       JSON.stringify(body),
       receiver.boxPublicKeyAsHex
     )

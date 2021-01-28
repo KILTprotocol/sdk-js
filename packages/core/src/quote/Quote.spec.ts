@@ -15,7 +15,7 @@ import {
   IQuoteAgreement,
   IQuoteAttesterSigned,
 } from '@kiltprotocol/types'
-import { hashObjectAsStr, verify } from '../crypto/Crypto'
+import { Crypto } from '@kiltprotocol/utils'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
@@ -164,11 +164,11 @@ describe('Claim', () => {
   it('tests created quote data against given data', () => {
     expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
     expect(quoteBothAgreed.claimerSignature).toEqual(
-      claimerIdentity.signStr(hashObjectAsStr(validAttesterSignedQuote))
+      claimerIdentity.signStr(Crypto.hashObjectAsStr(validAttesterSignedQuote))
     )
     expect(
-      verify(
-        hashObjectAsStr({
+      Crypto.verify(
+        Crypto.hashObjectAsStr({
           attesterAddress: validQuoteData.attesterAddress,
           cTypeHash: validQuoteData.cTypeHash,
           cost: validQuoteData.cost,

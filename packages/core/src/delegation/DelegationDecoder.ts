@@ -14,9 +14,8 @@
 import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { IDelegationRootNode, Permission } from '@kiltprotocol/types'
+import { Crypto, DecoderUtils } from '@kiltprotocol/utils'
 import { DelegationNode } from '..'
-import { coToUInt8 } from '../crypto/Crypto'
-import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 
 export type CodecWithId = {
   id: string
@@ -35,15 +34,13 @@ interface IChainRootDelegation extends Codec {
 export function decodeRootDelegation(
   encoded: Option<Tuple>
 ): RootDelegationRecord | null {
-  assertCodecIsType(encoded, ['Option<(Hash,AccountId,bool)>'])
-  if (encoded instanceof Option || hasNonNullByte(encoded)) {
-    const json = (encoded as IChainRootDelegation).toJSON()
-    if (json instanceof Array) {
-      return {
-        cTypeHash: json[0],
-        account: json[1],
-        revoked: json[2],
-      }
+  DecoderUtils.assertCodecIsType(encoded, ['Option<(Hash,AccountId,bool)>'])
+  const json = (encoded as IChainRootDelegation).toJSON()
+  if (json instanceof Array) {
+    return {
+      cTypeHash: json[0],
+      account: json[1],
+      revoked: json[2],
     }
   }
   return null
@@ -76,7 +73,7 @@ function decodePermissions(bitset: number): Permission[] {
  * @returns Whether the root is set.
  */
 function verifyRoot(rootId: string): boolean {
-  const rootU8: Uint8Array = coToUInt8(rootId)
+  const rootU8: Uint8Array = Crypto.coToUInt8(rootId)
   return (
     rootU8.reduce((accumulator, currentValue) => accumulator + currentValue) > 0
   )
@@ -94,26 +91,23 @@ interface IChainDelegationNode extends Codec {
 export function decodeDelegationNode(
   encoded: Option<Tuple>
 ): DelegationNodeRecord | null {
-  assertCodecIsType(encoded, [
+  DecoderUtils.assertCodecIsType(encoded, [
     'Option<(DelegationNodeId,Option<DelegationNodeId>,AccountId,Permissions,bool)>',
   ])
-  if (encoded instanceof Option || hasNonNullByte(encoded)) {
-    const json = (encoded as IChainDelegationNode).toJSON()
-    if (json instanceof Array) {
-      if (typeof json[0] !== 'string' || typeof json[3] !== 'number')
-        return null
-      if (!verifyRoot(json[0])) {
-        // Query returns 0x0 for rootId if queried for a root id instead of a node id.
-        // A node without a root node is therefore interpreted as invalid.
-        return null
-      }
-      return {
-        rootId: json[0],
-        parentId: json[1] || undefined, // optional
-        account: json[2],
-        permissions: decodePermissions(json[3]),
-        revoked: json[4],
-      }
+  const json = (encoded as IChainDelegationNode).toJSON()
+  if (json instanceof Array) {
+    if (typeof json[0] !== 'string' || typeof json[3] !== 'number') return null
+    if (!verifyRoot(json[0])) {
+      // Query returns 0x0 for rootId if queried for a root id instead of a node id.
+      // A node without a root node is therefore interpreted as invalid.
+      return null
+    }
+    return {
+      rootId: json[0],
+      parentId: json[1] || undefined, // optional
+      account: json[2],
+      permissions: decodePermissions(json[3]),
+      revoked: json[4],
     }
   }
   return null

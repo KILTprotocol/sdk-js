@@ -5,9 +5,9 @@
  */
 
 import { Permission } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
 import { Identity } from '..'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import { hashStr } from '../crypto'
 import { getAttestationHashes } from './Delegation.chain'
 import DelegationNode from './DelegationNode'
 
@@ -16,9 +16,9 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
   .__mocked_api
 
-const rootId = hashStr('rootId')
-const nodeId = hashStr('myNodeId')
-const ctypeHash = hashStr('testCtype')
+const rootId = Crypto.Crypto.hashStr('rootId')
+const nodeId = Crypto.Crypto.hashStr('myNodeId')
+const ctypeHash = Crypto.Crypto.hashStr('testCtype')
 
 describe('Delegation', () => {
   let identityAlice: Identity
@@ -28,8 +28,8 @@ describe('Delegation', () => {
     blockchainApi.query.attestation.delegatedAttestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'delegatedAttestations', [
         ctypeHash,
-        hashStr('secondTest'),
-        hashStr('thirdTest'),
+        Crypto.hashStr('secondTest'),
+        Crypto.hashStr('thirdTest'),
       ])
     )
     blockchainApi.query.delegation.root.mockReturnValue(
@@ -79,9 +79,9 @@ describe('Delegation', () => {
 
     blockchainApi.query.delegation.children.mockResolvedValue(
       mockChainQueryReturn('delegation', 'children', [
-        hashStr('firstChild'),
-        hashStr('secondChild'),
-        hashStr('thirdChild'),
+        Crypto.hashStr('firstChild'),
+        Crypto.hashStr('secondChild'),
+        Crypto.hashStr('thirdChild'),
       ])
     )
   })
@@ -97,7 +97,7 @@ describe('Delegation', () => {
     const children: DelegationNode[] = await myDelegation.getChildren()
     expect(children).toHaveLength(3)
     expect(children[0]).toEqual({
-      id: hashStr('firstChild'),
+      id: Crypto.hashStr('firstChild'),
       rootId,
       parentId: nodeId,
       account: identityAlice.getPublicIdentity().address,
@@ -105,7 +105,7 @@ describe('Delegation', () => {
       revoked: false,
     })
     expect(children[1]).toEqual({
-      id: hashStr('secondChild'),
+      id: Crypto.hashStr('secondChild'),
       rootId,
       parentId: nodeId,
       account: identityAlice.getPublicIdentity().address,
@@ -113,7 +113,7 @@ describe('Delegation', () => {
       revoked: false,
     })
     expect(children[2]).toEqual({
-      id: hashStr('thirdChild'),
+      id: Crypto.hashStr('thirdChild'),
       rootId,
       parentId: nodeId,
       account: identityAlice.getPublicIdentity().address,

@@ -5,8 +5,8 @@
  */
 
 import { IAttestation, CompressedAttestation } from '@kiltprotocol/types'
+import { DataUtils } from '@kiltprotocol/utils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
-import { validateAddress, validateHash } from '../util/DataUtils'
 
 /**
  *  Checks whether the input meets all the required criteria of an IAttestation object.
@@ -22,18 +22,18 @@ import { validateAddress, validateHash } from '../util/DataUtils'
 export function errorCheck(input: IAttestation): void {
   if (!input.cTypeHash) {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
-  } else validateHash(input.cTypeHash, 'CType')
+  } else DataUtils.validateHash(input.cTypeHash, 'CType')
 
   if (!input.claimHash) {
     throw SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
-  } else validateHash(input.claimHash, 'Claim')
+  } else DataUtils.validateHash(input.claimHash, 'Claim')
 
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
     throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
   if (!input.owner) {
     throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
-  } else validateAddress(input.owner, 'owner')
+  } else DataUtils.validateAddress(input.owner, 'owner')
 
   if (typeof input.revoked !== 'boolean') {
     throw SDKErrors.ERROR_REVOCATION_BIT_MISSING()

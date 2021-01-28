@@ -6,12 +6,12 @@
 import { Option, Tuple, Vec } from '@polkadot/types'
 import { H256 } from '@polkadot/types/interfaces'
 import { IDelegationBaseNode } from '@kiltprotocol/types'
+import { DecoderUtils } from '@kiltprotocol/utils'
 import { getCached } from '../blockchainApiConnection'
-import { assertCodecIsType } from '../util/Decode'
 import { CodecWithId } from './DelegationDecoder'
 
 function decodeDelegatedAttestations(queryResult: Vec<H256>): string[] {
-  assertCodecIsType(queryResult, ['Vec<Hash>'])
+  DecoderUtils.assertCodecIsType(queryResult, ['Vec<Hash>'])
   return queryResult.map((hash) => hash.toString())
 }
 
@@ -30,7 +30,7 @@ export async function getChildIds(
 ): Promise<string[]> {
   const blockchain = await getCached()
   const childIds = await blockchain.api.query.delegation.children<Vec<H256>>(id)
-  assertCodecIsType(childIds, ['Vec<DelegationNodeId>'])
+  DecoderUtils.assertCodecIsType(childIds, ['Vec<DelegationNodeId>'])
   return childIds.map((hash) => hash.toString())
 }
 

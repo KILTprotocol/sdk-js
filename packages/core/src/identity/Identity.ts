@@ -27,12 +27,7 @@ import BN from 'bn.js'
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair } from 'tweetnacl'
-import Crypto from '../crypto'
-import {
-  CryptoInput,
-  EncryptedAsymmetric,
-  EncryptedAsymmetricString,
-} from '../crypto/Crypto'
+import { Crypto } from '@kiltprotocol/utils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import PublicIdentity from './PublicIdentity'
 
@@ -228,7 +223,7 @@ export default class Identity {
    * //          ]
    * ```
    */
-  public sign(cryptoInput: CryptoInput): Uint8Array {
+  public sign(cryptoInput: Crypto.CryptoInput): Uint8Array {
     return Crypto.sign(cryptoInput, this.signKeyringPair)
   }
 
@@ -241,7 +236,7 @@ export default class Identity {
    * identity.signStr(data);
    * ```
    */
-  public signStr(cryptoInput: CryptoInput): string {
+  public signStr(cryptoInput: Crypto.CryptoInput): string {
     return Crypto.signStr(cryptoInput, this.signKeyringPair)
   }
 
@@ -264,7 +259,7 @@ export default class Identity {
    * ```
    */
   public encryptAsymmetricAsStr(
-    cryptoInput: CryptoInput,
+    cryptoInput: Crypto.CryptoInput,
     boxPublicKey: BoxPublicKey
   ): Crypto.EncryptedAsymmetricString {
     return Crypto.encryptAsymmetricAsStr(
@@ -294,7 +289,7 @@ export default class Identity {
    * ```
    */
   public decryptAsymmetricAsStr(
-    encrypted: EncryptedAsymmetric | EncryptedAsymmetricString,
+    encrypted: Crypto.EncryptedAsymmetric | Crypto.EncryptedAsymmetricString,
     boxPublicKey: BoxPublicKey
   ): string | false {
     return Crypto.decryptAsymmetricAsStr(
@@ -324,7 +319,7 @@ export default class Identity {
    * ```
    */
   public encryptAsymmetric(
-    input: CryptoInput,
+    input: Crypto.CryptoInput,
     boxPublicKey: BoxPublicKey
   ): Crypto.EncryptedAsymmetric {
     return Crypto.encryptAsymmetric(
@@ -354,7 +349,7 @@ export default class Identity {
    * ```
    */
   public decryptAsymmetric(
-    encrypted: EncryptedAsymmetric | EncryptedAsymmetricString,
+    encrypted: Crypto.EncryptedAsymmetric | Crypto.EncryptedAsymmetricString,
     boxPublicKey: BoxPublicKey
   ): false | Uint8Array {
     return Crypto.decryptAsymmetric(
