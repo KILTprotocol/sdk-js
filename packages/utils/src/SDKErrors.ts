@@ -8,6 +8,8 @@
 
 import { NonceHash } from '@kiltprotocol/types'
 
+export * as _jestErrorCodeMatcher from './jestErrorCodeMatcher'
+
 export enum ErrorCode {
   ERROR_TRANSACTION_RECOVERABLE = 1000,
   ERROR_TRANSACTION_OUTDATED = 1010,
