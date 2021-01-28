@@ -579,3 +579,12 @@ export const ERROR_NO_PROOF_FOR_STATEMENT: (statement: string) => SDKError = (
     `No matching proof found for statement\n${statement}`
   )
 }
+
+export function isSDKError(input: Error | SDKError): input is SDKError {
+  const test: SDKError = input as SDKError
+  return (
+    test instanceof Error &&
+    test.errorCode !== undefined &&
+    test.errorCode in ErrorCode
+  )
+}

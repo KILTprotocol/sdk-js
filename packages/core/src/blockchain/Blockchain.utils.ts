@@ -7,11 +7,13 @@
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import {
+  ErrorCode,
   ERROR_TRANSACTION_DUPLICATE,
   ERROR_TRANSACTION_OUTDATED,
   ERROR_TRANSACTION_PRIORITY,
   ERROR_TRANSACTION_RECOVERABLE,
   ERROR_TRANSACTION_USURPED,
+  isSDKError,
   SDKError,
 } from '../errorhandling/SDKErrors'
 import {
@@ -34,17 +36,14 @@ const log = LoggerFactory.getLogger('Blockchain')
 export const TxOutdated = 'Transaction is outdated'
 export const TxPriority = 'Priority is too low:'
 export const TxDuplicate = 'Transaction Already Imported'
-
+export const RelevantSDKErrors = [
+  ErrorCode.ERROR_TRANSACTION_DUPLICATE,
+  ErrorCode.ERROR_TRANSACTION_OUTDATED,
+  ErrorCode.ERROR_TRANSACTION_PRIORITY,
+  ErrorCode.ERROR_TRANSACTION_USURPED,
+]
 export const IS_RELEVANT_ERROR: ErrorEvaluator = (err: Error | SDKError) => {
-  const outdated = err.message.includes(ERROR_TRANSACTION_OUTDATED().message)
-
-  const priority = err.message.includes(ERROR_TRANSACTION_PRIORITY().message)
-
-  const usurped = err.message.includes(ERROR_TRANSACTION_USURPED().message)
-
-  const duplicate = err.message.includes(ERROR_TRANSACTION_DUPLICATE().message)
-
-  return outdated || usurped || priority || duplicate
+  return isSDKError(err) && RelevantSDKErrors.includes(err.errorCode)
 }
 export const IS_READY: ResultEvaluator = (result) => result.status.isReady
 export const IS_IN_BLOCK: ResultEvaluator = (result) => result.isInBlock
@@ -105,12 +104,10 @@ export async function submitSignedTxRaw(
 ): Promise<SubmittableResult> {
   log.info(`Submitting ${tx.method}`)
   const { promise, subscription } = makeSubscriptionPromise(opts)
-  const catcher = async (reason: Error): Promise<never> => {
-    return Promise.reject(reason)
-  }
-  const unsubscribe = await tx.send(subscription).catch(catcher)
 
-  const result = await promise.catch(catcher).finally(() => unsubscribe())
+  const unsubscribe = await tx.send(subscription)
+
+  const result = await promise.finally(() => unsubscribe())
 
   return result
 }
