@@ -3,3 +3,4 @@ undecided:
   - "@kiltprotocol/actors-api"
   - "@kiltprotocol/core"
   - "@kiltprotocol/sdk-js"
+  - "@kiltprotocol/types"
