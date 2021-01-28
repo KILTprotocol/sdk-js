@@ -4,12 +4,12 @@
  * @ignore
  */
 
+import { ICType } from '@kiltprotocol/types'
 import { Identity } from '..'
 import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import { ERROR_CTYPE_ALREADY_EXISTS } from '../errorhandling/ExtrinsicError'
-import ICType from '../types/CType'
 import { config, disconnect } from '../kilt'
 import { wannabeFaucet, WS_ADDRESS } from './utils'
 

@@ -1,16 +1,14 @@
 {
-  "name": "@kiltprotocol/sdk-js",
-  "version": "0.19.1-21",
+  "name": "@kiltprotocol/types",
+  "version": "0.19.1-18",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
-  "files": [
-    "lib/**/*"
-  ],
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
-    "build:ts": "tsc --declaration -p tsconfig.build.json"
+    "build:ts": "tsc --declaration -p tsconfig.build.json",
+    "build:docs": "typedoc --theme  --out docs/api && touch docs/.nojekyll"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
@@ -22,11 +20,7 @@
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
     "rimraf": "^3.0.2",
+    "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
-  },
-  "dependencies": {
-    "@kiltprotocol/actors-api": "workspace:*",
-    "@kiltprotocol/core": "workspace:*",
-    "@kiltprotocol/types": "workspace:*"
   }
 }

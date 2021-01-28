@@ -7,6 +7,13 @@
 import { SubmittableResult } from '@polkadot/api'
 import { TypeRegistry } from '@polkadot/types'
 import { Option } from '@polkadot/types/codec'
+import {
+  ICType,
+  CompressedCType,
+  CTypeSchemaWithoutId,
+  ICTypeSchema,
+  CompressedCTypeSchema,
+} from '@kiltprotocol/types'
 import { BlockchainUtils } from '../blockchain'
 import Claim from '../claim/Claim'
 import {
@@ -17,12 +24,6 @@ import {
 } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
-import ICType, {
-  CompressedCType,
-  CTypeSchemaWithoutId,
-  ICTypeSchema,
-  CompressedCTypeSchema,
-} from '../types/CType'
 import CType from './CType'
 import CTypeUtils, { getIdForSchema } from './CType.utils'
 

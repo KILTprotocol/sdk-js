@@ -12,11 +12,14 @@
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import IRequestForAttestation from '../types/RequestForAttestation'
+import {
+  IPublicIdentity,
+  IAttestation,
+  IRequestForAttestation,
+  CompressedAttestation,
+} from '@kiltprotocol/types'
 import Identity from '../identity/Identity'
-import IAttestation, { CompressedAttestation } from '../types/Attestation'
 import { revoke, query, store } from './Attestation.chain'
-import IPublicIdentity from '../types/PublicIdentity'
 import AttestationUtils from './Attestation.utils'
 import DelegationRootNode from '../delegation/DelegationRootNode'
 import DelegationNode from '../delegation/DelegationNode'

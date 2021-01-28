@@ -5,11 +5,15 @@
  */
 
 import Ajv from 'ajv'
+import {
+  ICType,
+  IClaim,
+  CompressedCType,
+  CompressedCTypeSchema,
+} from '@kiltprotocol/types'
 import jsonabc from '../util/jsonabc'
 import Crypto from '../crypto'
 import * as SDKErrors from '../errorhandling/SDKErrors'
-import IClaim from '../types/Claim'
-import ICType, { CompressedCType, CompressedCTypeSchema } from '../types/CType'
 import { validateAddress } from '../util/DataUtils'
 import { getOwner } from './CType.chain'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'

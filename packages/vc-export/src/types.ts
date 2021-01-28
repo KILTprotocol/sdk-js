@@ -1,5 +1,6 @@
 import { AnyJson } from '@polkadot/types/types'
-import { ICType, IDidDocumentPublicKey } from '@kiltprotocol/core'
+import { IDidDocumentPublicKey } from '@kiltprotocol/core'
+import { ICType } from '@kiltprotocol/types'
 
 /**
  * Constant for default context.

@@ -8,8 +8,8 @@ import {
   PublicIdentity,
   SDKErrors,
   Identity,
-  IAttestation,
 } from '@kiltprotocol/core'
+import { IAttestation } from '@kiltprotocol/types'
 
 export interface IRevocationHandle {
   claimHash: IAttestation['claimHash']

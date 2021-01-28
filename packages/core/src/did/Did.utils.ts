@@ -6,13 +6,13 @@
 import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { hexToString, isHex } from '@polkadot/util'
+import { IPublicIdentity } from '@kiltprotocol/types'
 import Crypto from '../crypto'
 import {
   ERROR_DID_IDENTIFIER_MISMATCH,
   ERROR_INVALID_DID_PREFIX,
 } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import IPublicIdentity from '../types/PublicIdentity'
 import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 import {
   CONTEXT,

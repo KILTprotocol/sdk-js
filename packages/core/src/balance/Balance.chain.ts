@@ -12,9 +12,9 @@
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { UnsubscribePromise } from '@polkadot/api/types'
 import BN from 'bn.js'
+import { IPublicIdentity } from '@kiltprotocol/types'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
-import IPublicIdentity from '../types/PublicIdentity'
 import BalanceUtils from './Balance.utils'
 
 /**

@@ -3,7 +3,7 @@
  * @ignore
  */
 
-import { IDelegationNode } from '../types/Delegation'
+import { IDelegationNode } from '@kiltprotocol/types'
 
 /**
  * Creates a bitset from the permissions in the array where each enum value

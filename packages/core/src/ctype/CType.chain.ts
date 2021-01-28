@@ -6,11 +6,10 @@
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option } from '@polkadot/types'
 import { AccountId } from '@polkadot/types/interfaces'
+import { ICType, IPublicIdentity } from '@kiltprotocol/types'
 import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
-import ICType from '../types/CType'
-import IPublicIdentity from '../types/PublicIdentity'
 import { assertCodecIsType } from '../util/Decode'
 
 const log = factory.getLogger('CType')

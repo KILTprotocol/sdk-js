@@ -1,16 +1,18 @@
 import {
   AttestedClaim,
-  IAttestedClaim,
   CType,
   SDKErrors,
   Identity,
   Message,
   IMessage,
   MessageBodyType,
-  IPublicIdentity,
-  IRequestForAttestation,
   ConfigService,
 } from '@kiltprotocol/core'
+import {
+  IPublicIdentity,
+  IAttestedClaim,
+  IRequestForAttestation,
+} from '@kiltprotocol/types'
 
 const log = ConfigService.factory.getLogger('Verifier')
 

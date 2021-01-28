@@ -10,11 +10,14 @@
  * @preferred
  */
 
+import {
+  IAttestedClaim,
+  CompressedAttestedClaim,
+  IAttestation,
+  IRequestForAttestation,
+} from '@kiltprotocol/types'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import IAttestation from '../types/Attestation'
-import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
-import IRequestForAttestation from '../types/RequestForAttestation'
 import AttestedClaimUtils from './AttestedClaim.utils'
 
 export default class AttestedClaim implements IAttestedClaim {

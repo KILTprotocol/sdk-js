@@ -6,8 +6,18 @@ import {
   Attester,
   Verifier,
 } from '@kiltprotocol/actors-api'
+import * as types from '@kiltprotocol/types'
 
+export * from '@kiltprotocol/types'
 export * from '@kiltprotocol/core'
 export { Actors }
 
-export default { ...core, Actors, Credential, Claimer, Attester, Verifier }
+export default {
+  types,
+  ...core,
+  Actors,
+  Credential,
+  Claimer,
+  Attester,
+  Verifier,
+}

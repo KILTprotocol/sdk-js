@@ -4,8 +4,8 @@
  * @ignore
  */
 
+import { ICType } from '@kiltprotocol/types'
 import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
-import ICType from '../types/CType'
 import {
   verifyClaimStructure,
   verifySchema,

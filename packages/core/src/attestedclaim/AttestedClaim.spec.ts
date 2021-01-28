@@ -4,14 +4,12 @@
  * @ignore
  */
 
+import { IClaim, CompressedAttestedClaim, ICType } from '@kiltprotocol/types'
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import { CompressedAttestedClaim } from '../types/AttestedClaim'
-import IClaim from '../types/Claim'
-import ICType from '../types/CType'
 import AttestedClaim from './AttestedClaim'
 import AttestedClaimUtils from './AttestedClaim.utils'
 

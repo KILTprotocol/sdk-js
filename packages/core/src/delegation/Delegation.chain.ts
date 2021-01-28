@@ -5,8 +5,8 @@
 
 import { Option, Tuple, Vec } from '@polkadot/types'
 import { H256 } from '@polkadot/types/interfaces'
+import { IDelegationBaseNode } from '@kiltprotocol/types'
 import { getCached } from '../blockchainApiConnection'
-import { IDelegationBaseNode } from '../types/Delegation'
 import { assertCodecIsType } from '../util/Decode'
 import { CodecWithId } from './DelegationDecoder'
 

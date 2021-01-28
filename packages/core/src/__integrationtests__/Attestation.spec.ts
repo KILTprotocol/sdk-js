@@ -4,7 +4,7 @@
  * @ignore
  */
 
-import { IAttestedClaim, IClaim } from '..'
+import { IAttestedClaim, IClaim } from '@kiltprotocol/types'
 import Attestation from '../attestation/Attestation'
 import { revoke } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
@@ -13,6 +13,7 @@ import {
   IS_READY,
   submitTxWithReSign,
 } from '../blockchain/Blockchain.utils'
+
 import { config, disconnect } from '../kilt'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'

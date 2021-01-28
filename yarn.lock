@@ -796,6 +796,7 @@ __metadata:
   resolution: "@kiltprotocol/actors-api@workspace:packages/actors_api"
   dependencies:
     "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/types": "workspace:*"
     rimraf: ^3.0.2
     typescript: ^3.9.7
   languageName: unknown
@@ -805,6 +806,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/core@workspace:packages/core"
   dependencies:
+    "@kiltprotocol/types": "workspace:*"
     "@polkadot/api": ^3.5.1
     "@polkadot/keyring": ^5.3.1
     "@polkadot/types": ^3.5.1
@@ -831,7 +833,18 @@ __metadata:
   dependencies:
     "@kiltprotocol/actors-api": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/types": "workspace:*"
     rimraf: ^3.0.2
+    typescript: ^3.9.7
+  languageName: unknown
+  linkType: soft
+
+"@kiltprotocol/types@workspace:*, @kiltprotocol/types@workspace:packages/types":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/types@workspace:packages/types"
+  dependencies:
+    rimraf: ^3.0.2
+    ts-node: ^8.10.2
     typescript: ^3.9.7
   languageName: unknown
   linkType: soft
@@ -841,6 +854,7 @@ __metadata:
   resolution: "@kiltprotocol/vc-export@workspace:packages/vc-export"
   dependencies:
     "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/types": "workspace:*"
     "@polkadot/keyring": ^5.3.1
     "@polkadot/types": ^3.5.1
     "@polkadot/util": ^5.3.1

@@ -11,9 +11,13 @@
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import {
+  IClaim,
+  ICType,
+  CompressedCType,
+  CTypeSchemaWithoutId,
+} from '@kiltprotocol/types'
 import Identity from '../identity/Identity'
-import IClaim from '../types/Claim'
-import ICType, { CompressedCType, CTypeSchemaWithoutId } from '../types/CType'
 import { store } from './CType.chain'
 import CTypeUtils from './CType.utils'
 

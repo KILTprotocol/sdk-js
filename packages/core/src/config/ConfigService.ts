@@ -57,14 +57,14 @@ function checkAddress(): void {
 }
 
 export function get<K extends keyof configOpts>(configOpt: K): configOpts[K] {
-  if (typeof configuration[configOpt] === 'undefined')
-    throw new Error(`GENERIC NOT CONFIGURED ERROR FOR ${configOpt}`)
   switch (configOpt) {
     case 'address':
       checkAddress()
       break
     default:
   }
+  if (typeof configuration[configOpt] === 'undefined')
+    throw new Error(`GENERIC NOT CONFIGURED ERROR FOR KEY: "${configOpt}"`)
   return configuration[configOpt]
 }
 

@@ -13,9 +13,9 @@
  */
 import { Option, Tuple } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
+import { IDelegationRootNode, Permission } from '@kiltprotocol/types'
 import { DelegationNode } from '..'
 import { coToUInt8 } from '../crypto/Crypto'
-import { IDelegationRootNode, Permission } from '../types/Delegation'
 import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 
 export type CodecWithId = {

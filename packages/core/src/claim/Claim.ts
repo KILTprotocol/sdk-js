@@ -12,11 +12,10 @@
  * @preferred
  */
 
+import { IClaim, CompressedClaim, IPublicIdentity } from '@kiltprotocol/types'
 import ICType from '../ctype/CType'
 import CTypeUtils from '../ctype/CType.utils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
-import IClaim, { CompressedClaim } from '../types/Claim'
-import IPublicIdentity from '../types/PublicIdentity'
 import ClaimUtils from './Claim.utils'
 
 function verifyClaim(

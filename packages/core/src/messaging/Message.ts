@@ -13,21 +13,20 @@
 
 import { AnyJson } from '@polkadot/types/types'
 import {
-  Claim,
-  DelegationNode,
   IAttestedClaim,
   IClaim,
   IDelegationBaseNode,
   IDelegationNode,
-  Identity,
   IPublicIdentity,
   IRequestForAttestation,
   IAttestation,
   ICType,
-} from '..'
+  ITerms,
+  IQuoteAgreement,
+} from '@kiltprotocol/types'
+import { Claim, DelegationNode, Identity } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
-import ITerms from '../types/Terms'
-import { IQuoteAgreement } from '../types/Quote'
+
 import { validateSignature } from '../util/DataUtils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 

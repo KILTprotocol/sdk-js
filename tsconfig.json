@@ -8,6 +8,7 @@
     "paths": {
       "@kiltprotocol/sdk-js": ["sdk-js/src"],
       "@kiltprotocol/core": ["core/src"],
+      "@kiltprotocol/types": ["types/src"],
       "@kiltprotocol/core/lib/*": ["core/src/*"]
     }
   },

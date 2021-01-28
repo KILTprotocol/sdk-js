@@ -4,13 +4,9 @@
  * @ignore
  */
 
-import { hashObjectAsStr, verify } from '../crypto/Crypto'
-import CType from '../ctype/CType'
-import Identity from '../identity/Identity'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import IClaim from '../types/Claim'
-import ICType from '../types/CType'
 import {
+  IClaim,
+  ICType,
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
@@ -18,7 +14,11 @@ import {
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
-} from '../types/Quote'
+} from '@kiltprotocol/types'
+import { hashObjectAsStr, verify } from '../crypto/Crypto'
+import CType from '../ctype/CType'
+import Identity from '../identity/Identity'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import * as Quote from './Quote'
 import QuoteUtils from './Quote.utils'
 import QuoteSchema from './QuoteSchema'

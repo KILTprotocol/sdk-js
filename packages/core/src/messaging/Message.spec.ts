@@ -4,15 +4,17 @@
  * @ignore
  */
 
-import { IAttestedClaim } from '..'
+import {
+  IAttestedClaim,
+  IClaim,
+  IQuote,
+  IRequestForAttestation,
+} from '@kiltprotocol/types'
 import Crypto from '../crypto'
 import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import * as Quote from '../quote/Quote'
-import IClaim from '../types/Claim'
-import { IQuote } from '../types/Quote'
-import IRequestForAttestation from '../types/RequestForAttestation'
 import Message, {
   IEncryptedMessage,
   IRequestAttestationForClaim,

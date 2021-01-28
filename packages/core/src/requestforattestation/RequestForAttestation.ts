@@ -10,19 +10,21 @@
  * @module RequestForAttestation
  * @preferred
  */
+
+import {
+  IRequestForAttestation,
+  CompressedRequestForAttestation,
+  Hash,
+  IDelegationBaseNode,
+  IClaim,
+  IAttestedClaim,
+} from '@kiltprotocol/types'
 import { validateLegitimations } from '../util/DataUtils'
 import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { coToUInt8, hash, u8aConcat, u8aToHex, verify } from '../crypto/Crypto'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import IAttestedClaim from '../types/AttestedClaim'
-import IClaim from '../types/Claim'
-import { IDelegationBaseNode } from '../types/Delegation'
-import IRequestForAttestation, {
-  CompressedRequestForAttestation,
-  Hash,
-} from '../types/RequestForAttestation'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 
 function verifyClaimerSignature(reqForAtt: IRequestForAttestation): boolean {
