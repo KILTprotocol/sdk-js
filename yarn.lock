@@ -871,6 +871,7 @@ __metadata:
   dependencies:
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*"
     "@polkadot/keyring": ^5.3.1
     "@polkadot/types": ^3.5.1
     "@polkadot/util": ^5.3.1
