@@ -9,10 +9,10 @@ import {
   CompressedAttestation,
   ICType,
 } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
-import * as SDKErrors from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from './Attestation'

@@ -10,9 +10,8 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  */
 
 import { IDelegationNode } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { factory } from '../config/ConfigService'
-import { ERROR_ROOT_NODE_QUERY } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
 import { getChildren, query, revoke, store } from './DelegationNode.chain'
@@ -109,7 +108,7 @@ export default class DelegationNode extends DelegationBaseNode
   public async getRoot(): Promise<DelegationRootNode> {
     const rootNode = await queryRoot(this.rootId)
     if (!rootNode) {
-      throw ERROR_ROOT_NODE_QUERY(this.rootId)
+      throw SDKErrors.ERROR_ROOT_NODE_QUERY(this.rootId)
     }
     return rootNode
   }

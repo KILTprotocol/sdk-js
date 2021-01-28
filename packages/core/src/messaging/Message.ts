@@ -24,10 +24,8 @@ import {
   ITerms,
   IQuoteAgreement,
 } from '@kiltprotocol/types'
-import { Crypto, DataUtils } from '@kiltprotocol/utils'
+import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Claim, DelegationNode, Identity } from '..'
-
-import * as SDKErrors from '../errorhandling/SDKErrors'
 
 /**
  * - `body` - The body of the message, see [[MessageBody]].

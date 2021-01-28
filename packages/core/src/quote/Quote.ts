@@ -16,8 +16,7 @@ import {
   IQuoteAgreement,
   IQuoteAttesterSigned,
 } from '@kiltprotocol/types'
-import { Crypto, DataUtils } from '@kiltprotocol/utils'
-import { ERROR_QUOTE_MALFORMED } from '../errorhandling/SDKErrors'
+import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import Identity from '../identity/Identity'
 import QuoteSchema from './QuoteSchema'
 
@@ -74,7 +73,7 @@ export function fromAttesterSignedInput(
     deserializedQuote.attesterAddress
   )
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
-    throw ERROR_QUOTE_MALFORMED()
+    throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
 
   return {
@@ -119,7 +118,7 @@ export function fromQuoteDataAndIdentity(
   identity: Identity
 ): IQuoteAttesterSigned {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
-    throw ERROR_QUOTE_MALFORMED()
+    throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
   return createAttesterSignature(quoteInput, identity)
 }

@@ -6,10 +6,7 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import {
-  ERROR_TRANSACTION_RECOVERABLE,
-  ERROR_TRANSACTION_USURPED,
-} from '../errorhandling/SDKErrors'
+import { SDKErrors } from '@kiltprotocol/utils'
 import {
   Evaluator,
   makeSubscriptionPromise,
@@ -43,7 +40,7 @@ export const EXTRINSIC_EXECUTED: ResultEvaluator = (result) =>
   ErrorHandler.extrinsicSuccessful(result)
 export const IS_FINALIZED: ResultEvaluator = (result) => result.isFinalized
 export const IS_USURPED: ResultEvaluator = (result) =>
-  result.status.isUsurped && ERROR_TRANSACTION_USURPED()
+  result.status.isUsurped && SDKErrors.ERROR_TRANSACTION_USURPED()
 export const IS_ERROR: ResultEvaluator = (result) => {
   return (
     (result.status.isDropped && Error('isDropped')) ||
@@ -101,15 +98,15 @@ export async function submitSignedTx(
     .send(subscription)
     .catch(async (reason: Error) => {
       if (IS_RELEVANT_ERROR(reason)) {
-        return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
+        return Promise.reject(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
       }
       return Promise.reject(reason)
     })
 
   const result = await promise
     .catch(async (reason: Error) => {
-      if (reason.message === ERROR_TRANSACTION_USURPED().message) {
-        return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
+      if (reason.message === SDKErrors.ERROR_TRANSACTION_USURPED().message) {
+        return Promise.reject(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
       }
       return Promise.reject(reason)
     })

@@ -2,11 +2,13 @@
  * SDKErrors are KILT-specific errors, with associated codes and descriptions.
  *
  * @packageDocumentation
- * @module SDKError
+ * @module SDKErrors
  * @preferred
  */
 
 import { NonceHash } from '@kiltprotocol/types'
+
+export * as _jestErrorCodeMatcher from './jestErrorCodeMatcher'
 
 export enum ErrorCode {
   ERROR_TRANSACTION_RECOVERABLE = 1000,

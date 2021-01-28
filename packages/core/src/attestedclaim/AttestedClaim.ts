@@ -16,8 +16,8 @@ import {
   IAttestation,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
-import { SDKErrors } from '../errorhandling'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import AttestedClaimUtils from './AttestedClaim.utils'
 

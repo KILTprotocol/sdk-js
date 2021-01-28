@@ -27,8 +27,7 @@ import BN from 'bn.js'
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair } from 'tweetnacl'
-import { Crypto } from '@kiltprotocol/utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import PublicIdentity from './PublicIdentity'
 
 type BoxPublicKey =

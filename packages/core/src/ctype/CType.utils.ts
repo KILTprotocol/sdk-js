@@ -11,8 +11,7 @@ import {
   CompressedCType,
   CompressedCTypeSchema,
 } from '@kiltprotocol/types'
-import { jsonabc, Crypto, DataUtils } from '@kiltprotocol/utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
+import { jsonabc, Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { getOwner } from './CType.chain'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 

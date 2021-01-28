@@ -19,10 +19,9 @@ import {
   IClaim,
   IAttestedClaim,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import * as SDKErrors from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 

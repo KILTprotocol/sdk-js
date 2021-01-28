@@ -6,9 +6,8 @@
 
 /* eslint-disable dot-notation */
 import { LogLevel, Logger } from 'typescript-logging'
-import { ErrorCode } from '../errorhandling/SDKErrors'
+import { SDKErrors } from '@kiltprotocol/utils'
 import * as ConfigService from './ConfigService'
-import '../errorhandling/test/jest.ErrorCodeMatcher'
 
 describe('Log Configuration', () => {
   let testLogger: Logger
@@ -41,7 +40,7 @@ describe('Configuration Service', () => {
   it('has configuration Object with default values', () => {
     expect(ConfigService.get('logLevel')).toEqual(LogLevel.Error)
     expect(() => ConfigService.get('address')).toThrowErrorWithCode(
-      ErrorCode.ERROR_WS_ADDRESS_NOT_SET
+      SDKErrors.ErrorCode.ERROR_WS_ADDRESS_NOT_SET
     )
   })
   describe('set function for host address, logLevel and any custom configuration prop', () => {
@@ -66,11 +65,11 @@ describe('Configuration Service', () => {
     it('throws if address not set', () => {
       ConfigService.set({ address: '' })
       expect(() => ConfigService.get('address')).toThrowErrorWithCode(
-        ErrorCode.ERROR_WS_ADDRESS_NOT_SET
+        SDKErrors.ErrorCode.ERROR_WS_ADDRESS_NOT_SET
       )
       ConfigService.set({ address: undefined })
       expect(() => ConfigService.get('address')).toThrowErrorWithCode(
-        ErrorCode.ERROR_WS_ADDRESS_NOT_SET
+        SDKErrors.ErrorCode.ERROR_WS_ADDRESS_NOT_SET
       )
     })
     it('returns logLevel property', () => {

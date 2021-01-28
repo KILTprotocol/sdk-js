@@ -14,21 +14,14 @@ import {
   CompressedRequestForAttestation,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import CType from '../ctype/CType'
-import {
-  ErrorCode,
-  ERROR_LEGITIMATIONS_NOT_PROVIDED,
-  ERROR_ROOT_HASH_UNVERIFIABLE,
-  ERROR_SIGNATURE_UNVERIFIABLE,
-} from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 
 import RequestForAttestation from './RequestForAttestation'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
-import '../errorhandling/test/jest.ErrorCodeMatcher'
 
 function buildRequestForAttestation(
   claimer: Identity,
@@ -120,7 +113,7 @@ describe('RequestForAttestation', () => {
     // just deleting a field will result in a wrong proof
     delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
     expect(() => request.verifyData()).toThrowErrorWithCode(
-      ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT
+      SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT
     )
   })
 
@@ -396,19 +389,19 @@ describe('RequestForAttestation', () => {
     ](builtRequestMalformedHashes)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
-    ).toThrowError(ERROR_LEGITIMATIONS_NOT_PROVIDED())
+    ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
-    ).toThrowError(ERROR_ROOT_HASH_UNVERIFIABLE())
+    ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
-    ).toThrowErrorWithCode(ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
-    ).toThrowError(ERROR_SIGNATURE_UNVERIFIABLE())
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedHashes)
-    ).toThrowErrorWithCode(ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequest)
     ).not.toThrow()

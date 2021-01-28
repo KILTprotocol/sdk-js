@@ -6,6 +6,7 @@
 
 /* eslint-disable dot-notation */
 import { SubmittableResult } from '@polkadot/api/submittable'
+import { SDKErrors } from '@kiltprotocol/utils'
 import { Text } from '@polkadot/types'
 import { SignerPayload } from '@polkadot/types/interfaces/types'
 import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
@@ -13,7 +14,6 @@ import BN from 'bn.js'
 import { SubmittableExtrinsic } from '..'
 import getCached from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import { ERROR_TRANSACTION_RECOVERABLE } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import Blockchain from './Blockchain'
 import {
@@ -241,7 +241,7 @@ describe('Tx logic', () => {
       tx.signAsync(alice.signKeyringPair)
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
+      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
 
     it('catches priority error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
@@ -252,7 +252,7 @@ describe('Tx logic', () => {
       tx.send = jest.fn().mockRejectedValue(Error('1014: Priority is too low:'))
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
+      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
 
     it('catches Already Imported error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
@@ -263,7 +263,7 @@ describe('Tx logic', () => {
       tx.send = jest.fn().mockRejectedValue(Error('Transaction Already'))
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
+      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
 
     it('catches Outdated/Stale Tx error and rejects Promise with ERROR_TRANSACTION_RECOVERABLE', async () => {
@@ -278,7 +278,7 @@ describe('Tx logic', () => {
         )
       await expect(
         submitSignedTx(tx, parseSubscriptionOptions())
-      ).rejects.toThrow(ERROR_TRANSACTION_RECOVERABLE())
+      ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
   })
 
@@ -294,7 +294,7 @@ describe('Tx logic', () => {
           return Tx
         })
       await expect(chain.submitTxWithReSign(tx, alice)).rejects.toThrow(
-        ERROR_TRANSACTION_RECOVERABLE()
+        SDKErrors.ERROR_TRANSACTION_RECOVERABLE()
       )
 
       expect(reSignSpy).toHaveBeenCalledTimes(2)

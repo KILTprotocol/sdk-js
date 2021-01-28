@@ -5,8 +5,7 @@
  */
 
 import { IAttestation, CompressedAttestation } from '@kiltprotocol/types'
-import { DataUtils } from '@kiltprotocol/utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
+import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 
 /**
  *  Checks whether the input meets all the required criteria of an IAttestation object.

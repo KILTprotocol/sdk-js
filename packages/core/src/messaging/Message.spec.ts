@@ -10,8 +10,7 @@ import {
   IQuote,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import Identity from '../identity/Identity'
 import * as Quote from '../quote/Quote'
 import Message, {

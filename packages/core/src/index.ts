@@ -29,6 +29,8 @@ export { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 export * from './errorhandling'
 export * from './messaging'
 
+export { SDKErrors } from '@kiltprotocol/utils'
+
 export {
   Blockchain,
   IBlockchainApi,

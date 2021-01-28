@@ -16,9 +16,9 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
   .__mocked_api
 
-const rootId = Crypto.Crypto.hashStr('rootId')
-const nodeId = Crypto.Crypto.hashStr('myNodeId')
-const ctypeHash = Crypto.Crypto.hashStr('testCtype')
+const rootId = Crypto.hashStr('rootId')
+const nodeId = Crypto.hashStr('myNodeId')
+const ctypeHash = Crypto.hashStr('testCtype')
 
 describe('Delegation', () => {
   let identityAlice: Identity

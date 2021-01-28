@@ -6,8 +6,7 @@
 
 import { hexToBn } from '@polkadot/util'
 import { IClaim, CompressedClaim } from '@kiltprotocol/types'
-import { jsonabc, DataUtils, Crypto } from '@kiltprotocol/utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
+import { jsonabc, DataUtils, Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { getIdForCTypeHash } from '../ctype/CType.utils'
 import Did from '../did'
 

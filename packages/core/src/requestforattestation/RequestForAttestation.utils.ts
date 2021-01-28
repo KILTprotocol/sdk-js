@@ -10,10 +10,9 @@ import {
   CompressedRequestForAttestation,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
-import { DataUtils } from '@kiltprotocol/utils'
+import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
 import ClaimUtils from '../claim/Claim.utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
 import RequestForAttestation from './RequestForAttestation'
 
 /**

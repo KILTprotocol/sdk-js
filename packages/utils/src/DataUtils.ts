@@ -6,9 +6,9 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
-import { SDKErrors } from '@kiltprotocol/errorhandling'
 import { IPublicIdentity } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
+import { SDKErrors } from '.'
 import { verify } from './Crypto'
 
 /**

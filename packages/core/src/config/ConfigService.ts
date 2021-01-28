@@ -15,7 +15,7 @@ import {
   getLogControl,
   LogGroupControlSettings,
 } from 'typescript-logging'
-import { ERROR_WS_ADDRESS_NOT_SET } from '../errorhandling/SDKErrors'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 const DEFAULT_DEBUG_LEVEL =
   process.env.DEBUG && process.env.DEBUG === 'true'
@@ -52,7 +52,7 @@ let configuration: configOpts = {
 
 function checkAddress(): void {
   if (!configuration.address) {
-    throw ERROR_WS_ADDRESS_NOT_SET()
+    throw SDKErrors.ERROR_WS_ADDRESS_NOT_SET()
   }
 }
 
