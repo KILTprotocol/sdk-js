@@ -827,7 +827,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/sdk-js@workspace:packages/sdk-js":
+"@kiltprotocol/sdk-js@workspace:*, @kiltprotocol/sdk-js@workspace:packages/sdk-js":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
@@ -854,6 +854,7 @@ __metadata:
   resolution: "@kiltprotocol/vc-export@workspace:packages/vc-export"
   dependencies:
     "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/sdk-js": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@polkadot/keyring": ^5.4.4
     "@polkadot/types": ^3.6.4
