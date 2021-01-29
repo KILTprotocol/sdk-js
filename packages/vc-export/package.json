@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@kiltprotocol/core": "workspace:*",
-    "@kiltprotocol/sdk-js": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@polkadot/keyring": "^5.4.4",
     "@polkadot/types": "^3.6.4",
