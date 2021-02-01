@@ -6,6 +6,7 @@ on:
     paths:
       - "**/*.ts"
       - "package.json"
+      - "**/package.json"
       - "!**/*.spec.ts"
       - "!**/__integrationtests__"
       - "!**/__mocks__"
