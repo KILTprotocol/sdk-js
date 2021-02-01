@@ -8,7 +8,6 @@
   "scripts": {
     "build": "yarn workspaces foreach -pt --no-private run build",
     "version": "yarn workspaces foreach version",
-    "prepublishOnly": "yarn build",
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
     "lint": "eslint packages --format=codeframe",
     "lint:fix": "yarn lint --fix",
