@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/core",
-  "version": "0.19.1-22",
+  "version": "0.19.1-23",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
