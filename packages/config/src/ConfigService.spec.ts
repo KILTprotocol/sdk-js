@@ -14,7 +14,7 @@ import '../../../../testingTools/jestErrorCodeMatcher'
 describe('Log Configuration', () => {
   let testLogger: Logger
   beforeEach(() => {
-    testLogger = ConfigService.factory.getLogger('testLogger')
+    testLogger = ConfigService.LogFactory.getLogger('testLogger')
   })
 
   it('Tests the default Log Level', () => {
@@ -27,7 +27,7 @@ describe('Log Configuration', () => {
     const initialLevel = testLogger.getLogLevel()
     ConfigService.modifyLogLevel(LogLevel.Info)
     expect(testLogger.getLogLevel()).toEqual(LogLevel.Info)
-    expect(ConfigService.factory.getLogger('test1').getLogLevel()).toEqual(
+    expect(ConfigService.LogFactory.getLogger('test1').getLogLevel()).toEqual(
       LogLevel.Info
     )
 

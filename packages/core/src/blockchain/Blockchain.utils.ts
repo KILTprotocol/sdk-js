@@ -7,6 +7,7 @@
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
 import {
   Evaluator,
   makeSubscriptionPromise,
@@ -14,7 +15,6 @@ import {
 } from '../util/SubscriptionPromise'
 import { ErrorHandler } from '../errorhandling'
 import { ERROR_UNKNOWN as UNKNOWN_EXTRINSIC_ERROR } from '../errorhandling/ExtrinsicError'
-import { factory as LoggerFactory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import getCached from '../blockchainApiConnection'
 
@@ -22,7 +22,7 @@ export type ResultEvaluator = Evaluator<SubmittableResult>
 export type ErrorEvaluator = Evaluator<Error>
 export type SubscriptionPromiseOptions = TerminationOptions<SubmittableResult>
 
-const log = LoggerFactory.getLogger('Blockchain')
+const log = ConfigService.LogFactory.getLogger('Blockchain')
 
 export const TxOutdated = 'Transaction is outdated'
 export const TxPriority = 'Priority is too low:'

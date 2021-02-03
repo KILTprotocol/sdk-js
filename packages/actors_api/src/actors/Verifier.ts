@@ -6,15 +6,15 @@ import {
   Message,
   IMessage,
   MessageBodyType,
-  ConfigService,
 } from '@kiltprotocol/core'
+import { ConfigService } from '@kiltprotocol/config'
 import {
   IPublicIdentity,
   IAttestedClaim,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 
-const log = ConfigService.factory.getLogger('Verifier')
+const log = ConfigService.LogFactory.getLogger('Verifier')
 
 export interface IPresentationReq {
   properties: string[]

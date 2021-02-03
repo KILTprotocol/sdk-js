@@ -8,11 +8,11 @@ import { Option } from '@polkadot/types'
 import { AccountId } from '@polkadot/types/interfaces'
 import { ICType, IPublicIdentity } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
 import { getCached } from '../blockchainApiConnection'
-import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 
-const log = factory.getLogger('CType')
+const log = ConfigService.LogFactory.getLogger('CType')
 
 export async function store(
   ctype: ICType,

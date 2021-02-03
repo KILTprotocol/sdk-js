@@ -16,7 +16,7 @@ import { Text } from '@polkadot/types'
 import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { factory as LoggerFactory } from '../config/ConfigService'
+import { ConfigService } from '@kiltprotocol/config'
 import Identity from '../identity/Identity'
 import {
   parseSubscriptionOptions,
@@ -24,7 +24,7 @@ import {
   SubscriptionPromiseOptions,
 } from './Blockchain.utils'
 
-const log = LoggerFactory.getLogger('Blockchain')
+const log = ConfigService.LogFactory.getLogger('Blockchain')
 
 export type Stats = {
   chain: string

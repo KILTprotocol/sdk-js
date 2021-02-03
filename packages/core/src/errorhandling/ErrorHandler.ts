@@ -7,10 +7,10 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types/interfaces'
-import { factory as LoggerFactory } from '../config/ConfigService'
+import { ConfigService } from '@kiltprotocol/config'
 import { errorForCode, ExtrinsicError } from './ExtrinsicError'
 
-const log = LoggerFactory.getLogger('Blockchain')
+const log = ConfigService.LogFactory.getLogger('Blockchain')
 
 export enum SystemEvent {
   ExtrinsicSuccess = '0x0000',

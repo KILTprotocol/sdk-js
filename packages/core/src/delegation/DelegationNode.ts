@@ -11,7 +11,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 import { IDelegationNode } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { factory } from '../config/ConfigService'
+import { ConfigService } from '@kiltprotocol/config'
 import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
 import { getChildren, query, revoke, store } from './DelegationNode.chain'
@@ -19,7 +19,7 @@ import permissionsAsBitset from './DelegationNode.utils'
 import DelegationRootNode from './DelegationRootNode'
 import { query as queryRoot } from './DelegationRootNode.chain'
 
-const log = factory.getLogger('DelegationNode')
+const log = ConfigService.LogFactory.getLogger('DelegationNode')
 
 export default class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
