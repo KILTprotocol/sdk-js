@@ -1,9 +1,12 @@
 {
   "name": "@kiltprotocol/vc-export",
-  "version": "0.19.1-22",
+  "version": "0.19.1-23",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
@@ -28,10 +31,10 @@
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/keyring": "^5.3.1",
-    "@polkadot/types": "^3.5.1",
-    "@polkadot/util": "^5.3.1",
-    "@polkadot/util-crypto": "^5.3.1",
+    "@polkadot/keyring": "^5.4.4",
+    "@polkadot/types": "^3.6.4",
+    "@polkadot/util": "^5.4.4",
+    "@polkadot/util-crypto": "^5.4.4",
     "ajv": "^6.12.5",
     "jsonld": "^3.2.0"
   }

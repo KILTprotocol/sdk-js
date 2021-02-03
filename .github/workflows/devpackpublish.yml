@@ -6,6 +6,7 @@ on:
     paths:
       - "**/*.ts"
       - "package.json"
+      - "**/package.json"
       - "!**/*.spec.ts"
       - "!**/__integrationtests__"
       - "!**/__mocks__"
@@ -26,6 +27,8 @@ jobs:
         run: yarn install --immutable
       - name: Set package version as prerelease
         run: yarn run version prerelease
+      - name: Build packages
+        run: yarn run build
       - name: Publish to npm
         run: yarn run publish --tag dev
         env:
