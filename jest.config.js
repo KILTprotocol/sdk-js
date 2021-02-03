@@ -22,7 +22,8 @@ module.exports = {
     '!**/test/**',
     '!**/kilt/*',
     '!**/blockchainApiConnection/*',
-    '!**/types/**/*'
+    '!**/types/**/*',
+    '!**/SDKErrors.ts'
   ],
   rootDir: 'packages',
   coverageDirectory: 'coverage',
