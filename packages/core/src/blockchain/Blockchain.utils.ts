@@ -6,16 +6,13 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import {
-  ERROR_TRANSACTION_RECOVERABLE,
-  ERROR_TRANSACTION_USURPED,
-} from '../errorhandling/SDKErrors'
+import { ErrorCode, isSDKError, SDKError } from '../errorhandling/SDKErrors'
 import {
   Evaluator,
   makeSubscriptionPromise,
   TerminationOptions,
 } from '../util/SubscriptionPromise'
-import { ErrorHandler } from '../errorhandling'
+import { ErrorHandler, SDKErrors } from '../errorhandling'
 import { ERROR_UNKNOWN as UNKNOWN_EXTRINSIC_ERROR } from '../errorhandling/ExtrinsicError'
 import { factory as LoggerFactory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
@@ -27,15 +24,17 @@ export type SubscriptionPromiseOptions = TerminationOptions<SubmittableResult>
 
 const log = LoggerFactory.getLogger('Blockchain')
 
-const TxOutdated = '1010: Invalid Transaction: Transaction is outdated'
-const TxPriority = '1014: Priority is too low:'
-const TxAlreadyImported = 'Transaction Already'
-
-export const IS_RELEVANT_ERROR: ErrorEvaluator = (err: Error) => {
-  return new RegExp(
-    `${TxAlreadyImported}|${TxOutdated}|${TxPriority}`,
-    'g'
-  ).test(err.message)
+export const TxOutdated = 'Transaction is outdated'
+export const TxPriority = 'Priority is too low:'
+export const TxDuplicate = 'Transaction Already Imported'
+export const RelevantSDKErrors = [
+  ErrorCode.ERROR_TRANSACTION_DUPLICATE,
+  ErrorCode.ERROR_TRANSACTION_OUTDATED,
+  ErrorCode.ERROR_TRANSACTION_PRIORITY,
+  ErrorCode.ERROR_TRANSACTION_USURPED,
+]
+export const IS_RELEVANT_ERROR: ErrorEvaluator = (err: Error | SDKError) => {
+  return isSDKError(err) && RelevantSDKErrors.includes(err.errorCode)
 }
 export const IS_READY: ResultEvaluator = (result) => result.status.isReady
 export const IS_IN_BLOCK: ResultEvaluator = (result) => result.isInBlock
@@ -43,7 +42,7 @@ export const EXTRINSIC_EXECUTED: ResultEvaluator = (result) =>
   ErrorHandler.extrinsicSuccessful(result)
 export const IS_FINALIZED: ResultEvaluator = (result) => result.isFinalized
 export const IS_USURPED: ResultEvaluator = (result) =>
-  result.status.isUsurped && ERROR_TRANSACTION_USURPED()
+  result.status.isUsurped && SDKErrors.ERROR_TRANSACTION_USURPED()
 export const IS_ERROR: ResultEvaluator = (result) => {
   return (
     (result.status.isDropped && Error('isDropped')) ||
@@ -90,36 +89,70 @@ export function parseSubscriptionOptions(
  * @returns A promise which can be used to track transaction status.
  * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
  */
-export async function submitSignedTx(
+export async function submitSignedTxRaw(
   tx: SubmittableExtrinsic,
   opts: SubscriptionPromiseOptions
 ): Promise<SubmittableResult> {
   log.info(`Submitting ${tx.method}`)
   const { promise, subscription } = makeSubscriptionPromise(opts)
 
-  const unsubscribe = await tx
-    .send(subscription)
-    .catch(async (reason: Error) => {
-      if (IS_RELEVANT_ERROR(reason)) {
-        return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
-      }
-      return Promise.reject(reason)
-    })
+  const unsubscribe = await tx.send(subscription)
 
-  const result = await promise
-    .catch(async (reason: Error) => {
-      if (reason.message === ERROR_TRANSACTION_USURPED().message) {
-        return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
-      }
-      return Promise.reject(reason)
-    })
-    .finally(() => unsubscribe())
-
-  return result
+  return promise.finally(() => unsubscribe())
 }
 
 /**
- *  [STATIC] [ASYNC] Reroute of class method.
+ * [ASYNC] Reroute to submitSignedTxRaw, this function matches the specific errors and returns the appropriate SDKErrors.
+ *
+ *
+ * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
+ * @param opts [[SubscriptionPromiseOptions]]: Criteria for resolving/rejecting the promise.
+ * @returns A promise which can be used to track transaction status.
+ * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ */
+async function submitSignedTxErrorMatched(
+  tx: SubmittableExtrinsic,
+  opts: SubscriptionPromiseOptions
+): Promise<SubmittableResult> {
+  return submitSignedTxRaw(tx, opts).catch((reason: Error) => {
+    switch (true) {
+      case reason.message.includes(TxOutdated):
+        return Promise.reject(SDKErrors.ERROR_TRANSACTION_OUTDATED())
+        break
+      case reason.message.includes(TxPriority):
+        return Promise.reject(SDKErrors.ERROR_TRANSACTION_PRIORITY())
+        break
+      case reason.message.includes(TxDuplicate):
+        return Promise.reject(SDKErrors.ERROR_TRANSACTION_DUPLICATE())
+        break
+      default:
+        return Promise.reject(reason)
+    }
+  })
+}
+/**
+ * [ASYNC] Uses submitSignedTxErrorMatched to reject with ERROR_TRANSACTION_RECOVERABLE if Tx can be re-signed.
+ *
+ * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
+ * @param opts [[SubscriptionPromiseOptions]]: Criteria for resolving/rejecting the promise.
+ * @returns A promise which can be used to track transaction status.
+ * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ *
+ */
+export async function submitSignedTx(
+  tx: SubmittableExtrinsic,
+  opts: SubscriptionPromiseOptions
+): Promise<SubmittableResult> {
+  return submitSignedTxErrorMatched(tx, opts).catch((reason: Error) => {
+    if (IS_RELEVANT_ERROR(reason)) {
+      return Promise.reject(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
+    }
+    return Promise.reject(reason)
+  })
+}
+
+/**
+ * [ASYNC] Reroute of class method.
  *
  * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
  * @param identity The [[Identity]] to re-sign the tx on recoverable error.
