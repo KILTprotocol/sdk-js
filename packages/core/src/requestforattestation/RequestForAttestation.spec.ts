@@ -23,6 +23,8 @@ import Identity from '../identity/Identity'
 import RequestForAttestation from './RequestForAttestation'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 
+import '../../../../testingTools/jestErrorCodeMatcher'
+
 function buildRequestForAttestation(
   claimer: Identity,
   contents: IClaimContents,
