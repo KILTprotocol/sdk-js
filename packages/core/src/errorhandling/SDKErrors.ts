@@ -76,6 +76,16 @@ export enum ErrorCode {
   ERROR_TIMEOUT = -2,
 }
 
+export function isSDKError(input: unknown): input is SDKError {
+  return (
+    ((i: unknown): i is Error & Partial<SDKError> => i instanceof Error)(
+      input
+    ) &&
+    input.errorCode !== undefined &&
+    input.errorCode in ErrorCode
+  )
+}
+
 export class SDKError extends Error {
   public errorCode: ErrorCode
 
@@ -84,6 +94,7 @@ export class SDKError extends Error {
     this.errorCode = errorCode
   }
 }
+
 export const ERROR_TRANSACTION_RECOVERABLE: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_TRANSACTION_RECOVERABLE,
@@ -577,14 +588,5 @@ export const ERROR_NO_PROOF_FOR_STATEMENT: (statement: string) => SDKError = (
   return new SDKError(
     ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT,
     `No matching proof found for statement\n${statement}`
-  )
-}
-
-export function isSDKError(input: Error | SDKError): input is SDKError {
-  const test: SDKError = input as SDKError
-  return (
-    test instanceof Error &&
-    test.errorCode !== undefined &&
-    test.errorCode in ErrorCode
   )
 }
