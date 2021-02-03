@@ -12,7 +12,7 @@ import { SDKErrors } from '.'
 import { verify } from './Crypto'
 
 /**
- *  Validates an given address string against the External Address Format (SS58) with our Prefix of 42.
+ *  Validates an given address string against the External Address Format (SS58) with our Prefix of 38.
  *
  * @param address Address string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
