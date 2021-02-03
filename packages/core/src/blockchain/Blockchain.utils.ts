@@ -6,22 +6,13 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import {
-  ErrorCode,
-  ERROR_TRANSACTION_DUPLICATE,
-  ERROR_TRANSACTION_OUTDATED,
-  ERROR_TRANSACTION_PRIORITY,
-  ERROR_TRANSACTION_RECOVERABLE,
-  ERROR_TRANSACTION_USURPED,
-  isSDKError,
-  SDKError,
-} from '../errorhandling/SDKErrors'
+import { ErrorCode, isSDKError, SDKError } from '../errorhandling/SDKErrors'
 import {
   Evaluator,
   makeSubscriptionPromise,
   TerminationOptions,
 } from '../util/SubscriptionPromise'
-import { ErrorHandler } from '../errorhandling'
+import { ErrorHandler, SDKErrors } from '../errorhandling'
 import { ERROR_UNKNOWN as UNKNOWN_EXTRINSIC_ERROR } from '../errorhandling/ExtrinsicError'
 import { factory as LoggerFactory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
@@ -51,7 +42,7 @@ export const EXTRINSIC_EXECUTED: ResultEvaluator = (result) =>
   ErrorHandler.extrinsicSuccessful(result)
 export const IS_FINALIZED: ResultEvaluator = (result) => result.isFinalized
 export const IS_USURPED: ResultEvaluator = (result) =>
-  result.status.isUsurped && ERROR_TRANSACTION_USURPED()
+  result.status.isUsurped && SDKErrors.ERROR_TRANSACTION_USURPED()
 export const IS_ERROR: ResultEvaluator = (result) => {
   return (
     (result.status.isDropped && Error('isDropped')) ||
@@ -107,9 +98,7 @@ export async function submitSignedTxRaw(
 
   const unsubscribe = await tx.send(subscription)
 
-  const result = await promise.finally(() => unsubscribe())
-
-  return result
+  return promise.finally(() => unsubscribe())
 }
 
 /**
@@ -128,13 +117,13 @@ async function submitSignedTxErrorMatched(
   return submitSignedTxRaw(tx, opts).catch((reason: Error) => {
     switch (true) {
       case reason.message.includes(TxOutdated):
-        return Promise.reject(ERROR_TRANSACTION_OUTDATED())
+        return Promise.reject(SDKErrors.ERROR_TRANSACTION_OUTDATED())
         break
       case reason.message.includes(TxPriority):
-        return Promise.reject(ERROR_TRANSACTION_PRIORITY())
+        return Promise.reject(SDKErrors.ERROR_TRANSACTION_PRIORITY())
         break
       case reason.message.includes(TxDuplicate):
-        return Promise.reject(ERROR_TRANSACTION_DUPLICATE())
+        return Promise.reject(SDKErrors.ERROR_TRANSACTION_DUPLICATE())
         break
       default:
         return Promise.reject(reason)
@@ -156,7 +145,7 @@ export async function submitSignedTx(
 ): Promise<SubmittableResult> {
   return submitSignedTxErrorMatched(tx, opts).catch((reason: Error) => {
     if (IS_RELEVANT_ERROR(reason)) {
-      return Promise.reject(ERROR_TRANSACTION_RECOVERABLE())
+      return Promise.reject(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
     }
     return Promise.reject(reason)
   })
