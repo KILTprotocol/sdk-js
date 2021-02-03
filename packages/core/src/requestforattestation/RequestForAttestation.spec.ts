@@ -172,9 +172,9 @@ describe('RequestForAttestation', () => {
     const compressedLegitimationCharlie: CompressedAttestedClaim = [
       [
         [
-          legitimationCharlie.request.claim.contents,
           legitimationCharlie.request.claim.cTypeHash,
           legitimationCharlie.request.claim.owner,
+          legitimationCharlie.request.claim.contents,
         ],
         legitimationCharlie.request.claimNonceMap,
         legitimationCharlie.request.claimerSignature,
@@ -195,9 +195,9 @@ describe('RequestForAttestation', () => {
     const compressedLegitimationBob: CompressedAttestedClaim = [
       [
         [
-          legitimationBob.request.claim.contents,
           legitimationBob.request.claim.cTypeHash,
           legitimationBob.request.claim.owner,
+          legitimationBob.request.claim.contents,
         ],
         legitimationBob.request.claimNonceMap,
         legitimationBob.request.claimerSignature,
@@ -217,9 +217,9 @@ describe('RequestForAttestation', () => {
 
     const compressedReqForAtt: CompressedRequestForAttestation = [
       [
-        reqForAtt.claim.contents,
         reqForAtt.claim.cTypeHash,
         reqForAtt.claim.owner,
+        reqForAtt.claim.contents,
       ],
       reqForAtt.claimNonceMap,
       reqForAtt.claimerSignature,

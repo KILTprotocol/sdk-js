@@ -12,6 +12,7 @@ import { validateAddress, validateHash } from '../util/DataUtils'
 import { getIdForCTypeHash } from '../ctype/CType.utils'
 import { HashingOptions, hashStatements } from '../crypto/Crypto'
 import Did from '../did'
+import { IPartialClaim } from '../messaging/Message'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 
@@ -187,7 +188,7 @@ export function verifyDisclosedAttributes(
  * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_CONTENTS_MALFORMED]].
  *
  */
-export function errorCheck(input: IClaim): void {
+export function errorCheck(input: IClaim | IPartialClaim): void {
   if (!input.cTypeHash) {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
@@ -209,34 +210,60 @@ export function errorCheck(input: IClaim): void {
 }
 
 /**
- *  Compresses the [[Claim]] for storage and/or messaging.
+ *  Compresses the [[IClaim]] for storage and/or messaging.
  *
- * @param claim A [[Claim]] object that will be sorted and stripped for messaging or storage.
+ * @param claim An [[IClaim]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of a [[Claim]].
+ * @returns An ordered array of a [[CompressedClaim]].
  */
-export function compress(claim: IClaim): CompressedClaim {
+export function compress(claim: IClaim): CompressedClaim
+/**
+ *  Compresses the [[IPartialClaim]] for storage and/or messaging.
+ *
+ * @param claim An [[IPartialClaim]] object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of an [[IPartialCompressedClaim]].
+ */
+export function compress(claim: IPartialClaim): CompressedPartialClaim
+export function compress(
+  claim: IClaim | IPartialClaim
+): CompressedClaim | CompressedPartialClaim {
   errorCheck(claim)
-  const sortedContents = jsonabc.sortObj(claim.contents)
-  return [sortedContents, claim.cTypeHash, claim.owner]
+  let sortedContents
+  if (claim.contents) {
+    sortedContents = jsonabc.sortObj(claim.contents)
+  }
+  return [claim.cTypeHash, claim.owner, sortedContents]
 }
 
 /**
- *  Decompresses the [[Claim]] from storage and/or message.
+ *  Decompresses the [[IClaim]] from storage and/or message.
  *
- * @param claim A compressed [[Claim]] array that is reverted back into an object.
- * @throws When [[Claim]] is not an Array or it's length is unequal 3.
+ * @param claim An [[CompressedClaim]] array that is reverted back into an object.
+ * @throws When an [[CompressedClaim]] is not an Array or it's length is unequal 3.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]].
- * @returns An object that has the same properties as the [[Claim]].
+ * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
  */
-export function decompress(claim: CompressedClaim): IClaim {
+export function decompress(claim: CompressedClaim): IClaim
+/**
+ *  Decompresses the Partial [[IClaim]] from storage and/or message.
+ *
+ * @param claim An [[IPartialCompressedClaim]] array that is reverted back into an object.
+ * @throws When an [[IPartialCompressedClaim]] is not an Array or it's length is unequal 3.
+ *  @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @returns An [[IPartialClaim]] object that has the same properties as the [[IPartialCompressedClaim]].
+ */
+export function decompress(claim: CompressedPartialClaim): IPartialClaim
+export function decompress(
+  claim: CompressedClaim | CompressedPartialClaim
+): IClaim | IPartialClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }
   return {
-    contents: claim[0],
-    cTypeHash: claim[1],
-    owner: claim[2],
+    cTypeHash: claim[0],
+    owner: claim[1],
+    contents: claim[2],
   }
 }
 

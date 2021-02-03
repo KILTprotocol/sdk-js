@@ -3,11 +3,12 @@
  * @module ITerms
  */
 
-import { IAttestedClaim } from './AttestedClaim'
+import { IAttestedClaim, CompressedAttestedClaim } from './AttestedClaim'
 import { IClaim } from './Claim'
 import { ICType } from './CType'
 import { IDelegationBaseNode } from './Delegation'
-import { IQuoteAttesterSigned } from './Quote'
+import { IQuoteAttesterSigned, CompressedQuoteAttesterSigned } from './Quote'
+import { CompressedPartialClaim } from './Message'
 
 export interface ITerms {
   claim: Partial<IClaim>
@@ -16,3 +17,11 @@ export interface ITerms {
   quote?: IQuoteAttesterSigned
   prerequisiteClaims?: ICType['hash']
 }
+
+export type CompressedTerms = [
+  CompressedPartialClaim,
+  CompressedAttestedClaim[],
+  IDelegationBaseNode['id'] | undefined,
+  CompressedQuoteAttesterSigned | undefined,
+  ICType['hash'] | undefined
+]
