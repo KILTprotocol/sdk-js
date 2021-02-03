@@ -78,7 +78,6 @@ export default class DelegationRootNode extends DelegationBaseNode
 
   public async verify(): Promise<boolean> {
     const node = await query(this.id)
-    console.log('######', node)
     return node !== null && !node.revoked
   }
 

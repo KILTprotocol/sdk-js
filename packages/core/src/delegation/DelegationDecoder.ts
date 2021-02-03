@@ -45,7 +45,7 @@ export function decodeRootDelegation(
     return {
       cTypeHash: delegationRoot.ctypeHash.toString(),
       account: delegationRoot.owner.toString(),
-      revoked: delegationRoot.revoked,
+      revoked: delegationRoot.revoked.valueOf(),
     }
   }
   return null
@@ -100,7 +100,7 @@ export function decodeDelegationNode(
         : undefined,
       account: delegationNode.owner.toString(),
       permissions: decodePermissions(delegationNode.permissions.toNumber()),
-      revoked: delegationNode.revoked,
+      revoked: delegationNode.revoked.valueOf(),
     }
   }
   return null
