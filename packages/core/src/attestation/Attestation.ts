@@ -45,6 +45,7 @@ export default class Attestation implements IAttestation {
    *
    * @param claimHash - The hash of the claim that corresponds to the attestation to revoke.
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
+   * @param maxDepth - The number of levels to walk up the delegation hirarchy until the delegation node of identity is found.
    * @returns A promise containing the SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
    * Attestation.revoke('0xd8024cdc147c4fa9221cd177').then(() => {
@@ -54,9 +55,10 @@ export default class Attestation implements IAttestation {
    */
   public static async revoke(
     claimHash: string,
-    identity: Identity
+    identity: Identity,
+    maxDepth: number
   ): Promise<SubmittableExtrinsic> {
-    return revoke(claimHash, identity)
+    return revoke(claimHash, identity, maxDepth)
   }
 
   /**
@@ -181,6 +183,7 @@ export default class Attestation implements IAttestation {
    * [ASYNC] Revokes the attestation. Also available as a static method.
    *
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
+   * @param maxDepth - The number of levels to walk up the delegation hirarchy until the delegation node of identity is found.
    * @returns A promise containing the SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
    * attestation.revoke(identity).then(() => {
@@ -188,8 +191,11 @@ export default class Attestation implements IAttestation {
    * });
    * ```
    */
-  public async revoke(identity: Identity): Promise<SubmittableExtrinsic> {
-    return revoke(this.claimHash, identity)
+  public async revoke(
+    identity: Identity,
+    maxDepth: number
+  ): Promise<SubmittableExtrinsic> {
+    return revoke(this.claimHash, identity, maxDepth)
   }
 
   /**

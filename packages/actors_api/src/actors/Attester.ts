@@ -8,6 +8,7 @@ import {
   PublicIdentity,
   SDKErrors,
   Identity,
+  DelegationNode,
 } from '@kiltprotocol/core'
 import { IAttestation } from '@kiltprotocol/types'
 
@@ -97,7 +98,31 @@ export async function revokeAttestation(
   attester: Identity,
   revocationHandle: IRevocationHandle
 ): Promise<void> {
-  await Attestation.revoke(revocationHandle.claimHash, attester).then((tx) =>
-    BlockchainUtils.submitTxWithReSign(tx, attester)
-  )
+  const attestation = await Attestation.query(revocationHandle.claimHash)
+
+  // steps needed to find the delegation node of the revoking party
+  let delegationTreeTraversalSteps = 0
+
+  // if the attestation is delegated and we are not the attester, check if we have delegated rights
+  const delegationId = attestation?.delegationId
+  if (typeof delegationId !== 'undefined' && delegationId !== null) {
+    delegationTreeTraversalSteps += 1
+    let delegationNode = await DelegationNode.query(delegationId)
+
+    // while there is a parent and we have a node but not the right node do ...
+    while (
+      delegationNode !== null &&
+      typeof delegationNode.parentId !== 'undefined' &&
+      delegationNode?.account !== attester.address
+    ) {
+      delegationTreeTraversalSteps += 1
+      // eslint-disable-next-line no-await-in-loop
+      delegationNode = await DelegationNode.query(delegationNode.parentId)
+    }
+  }
+  await Attestation.revoke(
+    revocationHandle.claimHash,
+    attester,
+    delegationTreeTraversalSteps
+  ).then((tx) => BlockchainUtils.submitTxWithReSign(tx, attester))
 }

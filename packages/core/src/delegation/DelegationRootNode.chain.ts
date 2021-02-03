@@ -4,11 +4,15 @@
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Tuple } from '@polkadot/types'
+import { Option } from '@polkadot/types'
 import { IDelegationRootNode } from '@kiltprotocol/types'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
-import { decodeRootDelegation, RootDelegationRecord } from './DelegationDecoder'
+import {
+  decodeRootDelegation,
+  DelegationRoot,
+  RootDelegationRecord,
+} from './DelegationDecoder'
 import DelegationRootNode from './DelegationRootNode'
 
 export async function store(
@@ -28,7 +32,9 @@ export async function query(
 ): Promise<DelegationRootNode | null> {
   const blockchain = await getCached()
   const decoded: RootDelegationRecord | null = decodeRootDelegation(
-    await blockchain.api.query.delegation.root<Option<Tuple>>(delegationId)
+    await blockchain.api.query.delegation.root<Option<DelegationRoot>>(
+      delegationId
+    )
   )
   if (decoded) {
     const root = new DelegationRootNode(

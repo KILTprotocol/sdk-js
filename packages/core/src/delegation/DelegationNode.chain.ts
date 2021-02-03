@@ -4,15 +4,19 @@
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Tuple } from '@polkadot/types'
+import { Option } from '@polkadot/types'
 import { IDelegationNode } from '@kiltprotocol/types'
 import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
 import { fetchChildren, getChildIds } from './Delegation.chain'
-import { CodecWithId, decodeDelegationNode } from './DelegationDecoder'
-import DelegationNode from './DelegationNode'
+import {
+  CodecWithId,
+  decodeDelegationNode,
+  DelegationNode,
+} from './DelegationDecoder'
+import KILTDelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
 
 const log = factory.getLogger('DelegationBaseNode')
@@ -39,15 +43,15 @@ export async function store(
 
 export async function query(
   delegationId: IDelegationNode['id']
-): Promise<DelegationNode | null> {
+): Promise<KILTDelegationNode | null> {
   const blockchain = await getCached()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegations<Option<Tuple>>(
+    await blockchain.api.query.delegation.delegations<Option<DelegationNode>>(
       delegationId
     )
   )
   if (decoded) {
-    const root = new DelegationNode(
+    const root = new KILTDelegationNode(
       delegationId,
       decoded.rootId,
       decoded.account,
@@ -74,15 +78,17 @@ export async function revoke(
 // function lives here to avoid circular imports between DelegationBaseNode and DelegationNode
 export async function getChildren(
   delegationNodeId: DelegationBaseNode['id']
-): Promise<DelegationNode[]> {
+): Promise<KILTDelegationNode[]> {
   log.info(` :: getChildren('${delegationNodeId}')`)
   const childIds: string[] = await getChildIds(delegationNodeId)
-  const queryResults: CodecWithId[] = await fetchChildren(childIds)
-  const children: DelegationNode[] = queryResults
-    .map((codec: CodecWithId) => {
+  const queryResults: Array<CodecWithId<
+    Option<DelegationNode>
+  >> = await fetchChildren(childIds)
+  const children: KILTDelegationNode[] = queryResults
+    .map((codec: CodecWithId<Option<DelegationNode>>) => {
       const decoded = decodeDelegationNode(codec.codec)
       if (decoded) {
-        const child = new DelegationNode(
+        const child = new KILTDelegationNode(
           codec.id,
           decoded.rootId,
           decoded.account,
@@ -94,7 +100,7 @@ export async function getChildren(
       }
       return null
     })
-    .filter((value): value is DelegationNode => {
+    .filter((value): value is KILTDelegationNode => {
       return value !== null
     })
   log.info(`children: ${JSON.stringify(children)}`)

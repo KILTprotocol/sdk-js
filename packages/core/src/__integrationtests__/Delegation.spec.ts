@@ -51,7 +51,7 @@ describe('when there is an account hierarchy', () => {
 
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester).then((tx) =>
-        submitTxWithReSign(tx, attester, { resolveOn: IS_READY })
+        submitTxWithReSign(tx, attester, { resolveOn: IS_IN_BLOCK })
       )
     }
   }, 30_000)
@@ -64,7 +64,9 @@ describe('when there is an account hierarchy', () => {
     )
     await rootNode
       .store(uncleSam)
-      .then((tx) => submitTxWithReSign(tx, uncleSam, { resolveOn: IS_READY }))
+      .then((tx) =>
+        submitTxWithReSign(tx, uncleSam, { resolveOn: IS_IN_BLOCK })
+      )
     const delegatedNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
@@ -155,7 +157,7 @@ describe('when there is an account hierarchy', () => {
       await expect(attClaim.verify()).resolves.toBeTruthy()
 
       // revoke attestation through root
-      await attClaim.attestation.revoke(uncleSam).then((tx) =>
+      await attClaim.attestation.revoke(uncleSam, 1).then((tx) =>
         submitTxWithReSign(tx, uncleSam, {
           resolveOn: IS_IN_BLOCK,
         })

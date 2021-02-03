@@ -27,6 +27,18 @@ export const CUSTOM_TYPES: RegistryTypes = {
   BlockNumber: 'u64',
   Index: 'u64',
   RefCount: 'u32',
+  DelegationNode: {
+    rootId: 'DelegationNodeId',
+    parent: 'Option<DelegationNodeId>',
+    owner: 'AccountId',
+    permissions: 'Permissions',
+    revoked: 'bool',
+  },
+  DelegationRoot: {
+    ctypeHash: 'Hash',
+    owner: 'AccountId',
+    revoked: 'bool',
+  },
 }
 
 export async function buildConnection(

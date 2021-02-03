@@ -80,12 +80,14 @@ export async function query(claimHash: string): Promise<Attestation | null> {
 
 export async function revoke(
   claimHash: string,
-  identity: Identity
+  identity: Identity,
+  maxDepth: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await getCached()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
-    claimHash
+    claimHash,
+    maxDepth
   )
   return blockchain.signTx(identity, tx)
 }
