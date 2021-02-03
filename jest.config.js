@@ -21,7 +21,8 @@ module.exports = {
     '!**/lib/**',
     '!**/test/**',
     '!**/kilt/*',
-    '!**/blockchainApiConnection/*'
+    '!**/blockchainApiConnection/*',
+    '!**/types/**/*'
   ],
   rootDir: 'packages',
   coverageDirectory: 'coverage',
