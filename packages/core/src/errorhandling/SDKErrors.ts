@@ -14,6 +14,10 @@ export enum ErrorCode {
   ERROR_TRANSACTION_DUPLICATE = 1013,
   ERROR_TRANSACTION_PRIORITY = 1014,
   ERROR_TRANSACTION_USURPED = 1015,
+
+  ERROR_UNAUTHORIZED = 1016,
+  ERROR_NOT_FOUND = 1017,
+
   // Data is missing
   ERROR_CTYPE_HASH_NOT_PROVIDED = 10001,
   ERROR_CLAIM_HASH_NOT_PROVIDED = 10002,
@@ -125,6 +129,13 @@ export const ERROR_TRANSACTION_USURPED: () => SDKError = () => {
     'Tx was replaced by another TX with the same Nonce and higher Priority'
   )
 }
+export const ERROR_UNAUTHORIZED: (msg: string) => SDKError = (msg: string) => {
+  return new SDKError(ErrorCode.ERROR_UNAUTHORIZED, msg)
+}
+export const ERROR_NOT_FOUND: (msg: string) => SDKError = (msg: string) => {
+  return new SDKError(ErrorCode.ERROR_NOT_FOUND, msg)
+}
+
 export const ERROR_CTYPE_HASH_NOT_PROVIDED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CTYPE_HASH_NOT_PROVIDED,

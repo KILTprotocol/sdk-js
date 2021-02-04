@@ -10,11 +10,7 @@ import {
   listenToBalanceChanges,
   makeTransfer,
 } from '../balance/Balance.chain'
-import {
-  IS_IN_BLOCK,
-  IS_READY,
-  submitTxWithReSign,
-} from '../blockchain/Blockchain.utils'
+import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
 import { config, disconnect } from '../kilt'
 import Identity from '../identity/Identity'
 import {
@@ -145,7 +141,7 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
     await makeTransfer(faucet, richieRich.address, MIN_TRANSACTION).then((tx) =>
-      submitTxWithReSign(tx, faucet, { resolveOn: IS_READY })
+      submitTxWithReSign(tx, faucet, { resolveOn: IS_IN_BLOCK })
     )
     await makeTransfer(faucet, stormyD.address, MIN_TRANSACTION).then((tx) =>
       submitTxWithReSign(tx, faucet, { resolveOn: IS_IN_BLOCK })
@@ -156,7 +152,7 @@ describe('When there are haves and have-nots', () => {
       expect.anything(),
       expect.anything()
     )
-    expect(listener).toBeCalledTimes(2)
+    expect(listener).toBeCalledTimes(3)
   }, 30_000)
 
   it('should be able to make multiple transactions at once', async () => {
