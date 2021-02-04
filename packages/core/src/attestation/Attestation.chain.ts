@@ -10,7 +10,7 @@ import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import { assertCodecIsType } from '../util/Decode'
-import KILTAttestation from './Attestation'
+import Attestation from './Attestation'
 import { DelegationNodeId } from '../delegation/DelegationDecoder'
 
 const log = factory.getLogger('Attestation')
@@ -36,7 +36,7 @@ export async function store(
   return blockchain.signTx(identity, tx)
 }
 
-export interface Attestation extends Struct {
+export interface IChainAttestation extends Struct {
   readonly ctypeHash: Hash
   readonly attester: AccountId
   readonly delegationId: Option<DelegationNodeId>
@@ -44,9 +44,9 @@ export interface Attestation extends Struct {
 }
 
 function decode(
-  encoded: Option<Attestation>,
+  encoded: Option<IChainAttestation>,
   claimHash: string // all the other decoders do not use extra data; they just return partial types
-): KILTAttestation | null {
+): Attestation | null {
   assertCodecIsType(encoded, ['Option<Attestation>'])
   if (encoded.isSome) {
     const chainAttestation = encoded.unwrap()
@@ -59,24 +59,22 @@ function decode(
       revoked: chainAttestation.revoked.valueOf(),
     }
     log.info(`Decoded attestation: ${JSON.stringify(attestation)}`)
-    return KILTAttestation.fromAttestation(attestation)
+    return Attestation.fromAttestation(attestation)
   }
   return null
 }
 
 // return types reflect backwards compatibility with mashnet-node v 0.22
-async function queryRaw(claimHash: string): Promise<Option<Attestation>> {
+async function queryRaw(claimHash: string): Promise<Option<IChainAttestation>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await getCached()
   const result = await blockchain.api.query.attestation.attestations<
-    Option<Attestation>
+    Option<IChainAttestation>
   >(claimHash)
   return result
 }
 
-export async function query(
-  claimHash: string
-): Promise<KILTAttestation | null> {
+export async function query(claimHash: string): Promise<Attestation | null> {
   const encoded = await queryRaw(claimHash)
   return decode(encoded, claimHash)
 }

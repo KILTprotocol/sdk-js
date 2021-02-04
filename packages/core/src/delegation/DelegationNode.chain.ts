@@ -14,9 +14,9 @@ import { fetchChildren, getChildIds } from './Delegation.chain'
 import {
   CodecWithId,
   decodeDelegationNode,
-  DelegationNode,
+  IChainDelegationNode,
 } from './DelegationDecoder'
-import KILTDelegationNode from './DelegationNode'
+import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
 
 const log = factory.getLogger('DelegationBaseNode')
@@ -43,15 +43,15 @@ export async function store(
 
 export async function query(
   delegationId: IDelegationNode['id']
-): Promise<KILTDelegationNode | null> {
+): Promise<DelegationNode | null> {
   const blockchain = await getCached()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegations<Option<DelegationNode>>(
+    await blockchain.api.query.delegation.delegations<Option<IChainDelegationNode>>(
       delegationId
     )
   )
   if (decoded) {
-    const root = new KILTDelegationNode(
+    const root = new DelegationNode(
       delegationId,
       decoded.rootId,
       decoded.account,
@@ -78,17 +78,17 @@ export async function revoke(
 // function lives here to avoid circular imports between DelegationBaseNode and DelegationNode
 export async function getChildren(
   delegationNodeId: DelegationBaseNode['id']
-): Promise<KILTDelegationNode[]> {
+): Promise<DelegationNode[]> {
   log.info(` :: getChildren('${delegationNodeId}')`)
   const childIds: string[] = await getChildIds(delegationNodeId)
   const queryResults: Array<CodecWithId<
-    Option<DelegationNode>
+    Option<IChainDelegationNode>
   >> = await fetchChildren(childIds)
-  const children: KILTDelegationNode[] = queryResults
-    .map((codec: CodecWithId<Option<DelegationNode>>) => {
+  const children: DelegationNode[] = queryResults
+    .map((codec: CodecWithId<Option<IChainDelegationNode>>) => {
       const decoded = decodeDelegationNode(codec.codec)
       if (decoded) {
-        const child = new KILTDelegationNode(
+        const child = new DelegationNode(
           codec.id,
           decoded.rootId,
           decoded.account,
@@ -100,7 +100,7 @@ export async function getChildren(
       }
       return null
     })
-    .filter((value): value is KILTDelegationNode => {
+    .filter((value): value is DelegationNode => {
       return value !== null
     })
   log.info(`children: ${JSON.stringify(children)}`)

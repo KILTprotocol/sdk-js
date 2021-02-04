@@ -16,7 +16,7 @@ import { IDelegationRootNode, Permission } from '@kiltprotocol/types'
 import { Struct } from '@polkadot/types/codec'
 import { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
 import { u32 } from '@polkadot/types/primitive'
-import { DelegationNode as KILTDelegationNode } from '..'
+import { DelegationNode } from '..'
 import { assertCodecIsType } from '../util/Decode'
 
 export type CodecWithId<C> = {
@@ -29,14 +29,14 @@ export type RootDelegationRecord = Pick<
   'cTypeHash' | 'account' | 'revoked'
 >
 
-export interface DelegationRoot extends Struct {
+export interface IChainDelegationRoot extends Struct {
   readonly ctypeHash: Hash
   readonly owner: AccountId
   readonly revoked: boolean
 }
 
 export function decodeRootDelegation(
-  encoded: Option<DelegationRoot>
+  encoded: Option<IChainDelegationRoot>
 ): RootDelegationRecord | null {
   assertCodecIsType(encoded, ['Option<DelegationRoot>'])
   if (encoded instanceof Option && encoded.isSome) {
@@ -72,13 +72,13 @@ function decodePermissions(bitset: number): Permission[] {
 }
 
 export type DelegationNodeRecord = Pick<
-  KILTDelegationNode,
+  DelegationNode,
   'rootId' | 'parentId' | 'account' | 'permissions' | 'revoked'
 >
 
 export type DelegationNodeId = Hash
 
-export interface DelegationNode extends Struct {
+export interface IChainDelegationNode extends Struct {
   readonly rootId: DelegationNodeId
   readonly parent: Option<DelegationNodeId>
   readonly owner: AccountId
@@ -87,7 +87,7 @@ export interface DelegationNode extends Struct {
 }
 
 export function decodeDelegationNode(
-  encoded: Option<DelegationNode>
+  encoded: Option<IChainDelegationNode>
 ): DelegationNodeRecord | null {
   assertCodecIsType(encoded, ['Option<DelegationNode>'])
   if (encoded instanceof Option && encoded.isSome) {

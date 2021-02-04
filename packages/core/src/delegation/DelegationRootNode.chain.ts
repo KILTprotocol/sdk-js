@@ -10,7 +10,7 @@ import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 import {
   decodeRootDelegation,
-  DelegationRoot,
+  IChainDelegationRoot,
   RootDelegationRecord,
 } from './DelegationDecoder'
 import DelegationRootNode from './DelegationRootNode'
@@ -32,7 +32,7 @@ export async function query(
 ): Promise<DelegationRootNode | null> {
   const blockchain = await getCached()
   const decoded: RootDelegationRecord | null = decodeRootDelegation(
-    await blockchain.api.query.delegation.root<Option<DelegationRoot>>(
+    await blockchain.api.query.delegation.root<Option<IChainDelegationRoot>>(
       delegationId
     )
   )
