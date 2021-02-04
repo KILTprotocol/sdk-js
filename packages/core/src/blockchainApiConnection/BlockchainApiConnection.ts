@@ -16,17 +16,18 @@ import { get } from '../config/ConfigService'
 let instance: Promise<Blockchain> | null
 
 export const CUSTOM_TYPES: RegistryTypes = {
-  DelegationNodeId: 'Hash',
   PublicSigningKey: 'Hash',
   PublicBoxKey: 'Hash',
-  Permissions: 'u32',
-  ErrorCode: 'u16',
   Signature: 'MultiSignature',
   Address: 'AccountId',
   LookupSource: 'AccountId',
   BlockNumber: 'u64',
   Index: 'u64',
   RefCount: 'u32',
+
+  ErrorCode: 'u16',
+  Permissions: 'u32',
+  DelegationNodeId: 'Hash',
   DelegationNode: {
     rootId: 'DelegationNodeId',
     parent: 'Option<DelegationNodeId>',
@@ -37,6 +38,12 @@ export const CUSTOM_TYPES: RegistryTypes = {
   DelegationRoot: {
     ctypeHash: 'Hash',
     owner: 'AccountId',
+    revoked: 'bool',
+  },
+  Attestation: {
+    ctypeHash: 'Hash',
+    attester: 'AccountId',
+    delegationId: 'Option<DelegationNodeId>',
     revoked: 'bool',
   },
 }
