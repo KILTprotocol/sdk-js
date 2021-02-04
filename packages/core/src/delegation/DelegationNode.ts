@@ -127,6 +127,41 @@ export default class DelegationNode extends DelegationBaseNode
     return query(this.parentId)
   }
 
+  public async findParent(
+    address: string
+  ): Promise<{
+    steps: number
+    node: DelegationNode | null
+  }> {
+    if (typeof this.parentId === 'undefined') {
+      return {
+        steps: 0,
+        node: null,
+      }
+    }
+
+    let delegationTreeTraversalSteps = 0
+    let delegationNode = await DelegationNode.query(this.parentId)
+
+    // while there is a parent and we have a node but not the right node ...
+    while (
+      delegationNode !== null &&
+      typeof delegationNode.parentId !== 'undefined' &&
+      delegationNode?.account !== address
+    ) {
+      delegationTreeTraversalSteps += 1
+
+      // this 'await in loop' is unavoidable because we need the node for the next await
+      // eslint-disable-next-line no-await-in-loop
+      delegationNode = await DelegationNode.query(delegationNode.parentId)
+    }
+
+    return {
+      steps: delegationTreeTraversalSteps,
+      node: delegationNode,
+    }
+  }
+
   /**
    * [ASYNC] Stores the delegation node on chain.
    *

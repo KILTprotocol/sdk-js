@@ -8,11 +8,7 @@ import { IAttestedClaim, IClaim } from '@kiltprotocol/types'
 import Attestation from '../attestation/Attestation'
 import { revoke } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import {
-  IS_IN_BLOCK,
-  IS_READY,
-  submitTxWithReSign,
-} from '../blockchain/Blockchain.utils'
+import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
 
 import { config, disconnect } from '../kilt'
 import Claim from '../claim/Claim'
@@ -46,7 +42,7 @@ describe('handling attestations that do not exist', () => {
 
   it('Attestation.revoke', async () => {
     return expect(
-      Attestation.revoke('0x012012012', alice).then((tx) =>
+      Attestation.revoke('0x012012012', alice, 0).then((tx) =>
         submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })
       )
     ).rejects.toThrow()
@@ -68,7 +64,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     // console.log(`verify stored: ${await DriversLicense.verifyStored()}`)
     if (!ctypeExists) {
       await DriversLicense.store(attester).then((tx) =>
-        submitTxWithReSign(tx, attester, { resolveOn: IS_READY })
+        submitTxWithReSign(tx, attester, { resolveOn: IS_IN_BLOCK })
       )
     }
   }, 60_000)
@@ -228,7 +224,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(
-        revoke(attClaim.getHash(), claimer).then((tx) =>
+        revoke(attClaim.getHash(), claimer, 0).then((tx) =>
           submitTxWithReSign(tx, claimer, { resolveOn: IS_IN_BLOCK })
         )
       ).rejects.toThrowError('not permitted')
@@ -237,7 +233,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should be possible for the attester to revoke an attestation', async () => {
       await expect(attClaim.verify()).resolves.toBeTruthy()
-      await revoke(attClaim.getHash(), attester).then((tx) =>
+      await revoke(attClaim.getHash(), attester, 0).then((tx) =>
         submitTxWithReSign(tx, attester, { resolveOn: IS_IN_BLOCK })
       )
       await expect(attClaim.verify()).resolves.toBeFalsy()
