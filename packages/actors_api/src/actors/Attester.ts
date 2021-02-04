@@ -100,26 +100,35 @@ export async function revokeAttestation(
 ): Promise<void> {
   const attestation = await Attestation.query(revocationHandle.claimHash)
 
-  // steps needed to find the delegation node of the revoking party
+  if (attestation === null) {
+    throw new Error('Attestation not found')
+  }
+  // count the number of steps we have to go up the delegation tree for calculating the transaction weight
   let delegationTreeTraversalSteps = 0
 
-  // if the attestation is delegated and we are not the attester, check if we have delegated rights
-  const delegationId = attestation?.delegationId
-  if (typeof delegationId !== 'undefined' && delegationId !== null) {
+  // if the attester is not the owner, we need to check the delegatoin tree
+  if (
+    attestation.owner !== attester.address &&
+    attestation.delegationId !== null
+  ) {
     delegationTreeTraversalSteps += 1
-    let delegationNode = await DelegationNode.query(delegationId)
+    const delegationNode = await DelegationNode.query(attestation.delegationId)
 
-    // while there is a parent and we have a node but not the right node do ...
-    while (
-      delegationNode !== null &&
-      typeof delegationNode.parentId !== 'undefined' &&
-      delegationNode?.account !== attester.address
-    ) {
-      delegationTreeTraversalSteps += 1
-      // eslint-disable-next-line no-await-in-loop
-      delegationNode = await DelegationNode.query(delegationNode.parentId)
+    if (typeof delegationNode !== 'undefined' && delegationNode !== null) {
+      const { steps, node } = await delegationNode.findParent(attester.address)
+      delegationTreeTraversalSteps += steps
+      if (node === null) {
+        throw new Error(
+          'Attester is not athorized to revoke this attestation. (attester not in delegation tree)'
+        )
+      }
     }
+  } else if (attestation.owner !== attester.address) {
+    throw new Error(
+      'Attester is not athorized to revoke this attestation. (not the owner, no delegations)'
+    )
   }
+
   await Attestation.revoke(
     revocationHandle.claimHash,
     attester,
