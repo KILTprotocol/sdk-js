@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * @group unit/messaging
+ * @ignore
+ */
+
 import {
   CompressedQuoteAttesterSigned,
   CompressedQuoteAgreed,
