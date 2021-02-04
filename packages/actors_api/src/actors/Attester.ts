@@ -107,7 +107,7 @@ export async function revokeAttestation(
   // count the number of steps we have to go up the delegation tree for calculating the transaction weight
   let delegationTreeTraversalSteps = 0
 
-  // if the attester is not the owner, we need to check the delegatoin tree
+  // if the attester is not the owner, we need to check the delegation tree
   if (
     attestation.owner !== attester.address &&
     attestation.delegationId !== null
