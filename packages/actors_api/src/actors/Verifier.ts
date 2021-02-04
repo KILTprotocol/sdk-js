@@ -4,14 +4,14 @@ import {
   SDKErrors,
   Identity,
   Message,
-  IMessage,
-  MessageBodyType,
   ConfigService,
 } from '@kiltprotocol/core'
 import {
   IPublicIdentity,
   IAttestedClaim,
   IRequestForAttestation,
+  IMessage,
+  MessageBodyType,
 } from '@kiltprotocol/types'
 
 const log = ConfigService.factory.getLogger('Verifier')

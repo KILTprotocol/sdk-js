@@ -7,7 +7,6 @@ import {
   IQuoteAttesterSigned,
   IQuoteAgreement,
   IRequestTerms,
-  IPartialClaim,
   ISubmitTerms,
   ITerms,
   IRejectTerms,
@@ -51,6 +50,7 @@ import {
   CompressedSubmitClaimsForCTypes,
   ISubmitClaimsForCTypes,
   CompressedAttestation,
+  PartialClaim,
 } from '@kiltprotocol/types'
 import Identity from '../identity'
 
@@ -78,7 +78,7 @@ describe('Messaging Utilities', () => {
   let legitimation: AttestedClaim
   let compressedQuoteAgreement: CompressedQuoteAgreed
   let requestTermsBody: IRequestTerms
-  let requestTermsContent: IPartialClaim
+  let requestTermsContent: PartialClaim
   let compressedRequestTermsBody: CompressedRequestTerms
   let compressedRequestTermsContent: CompressedPartialClaim
   let submitTermsBody: ISubmitTerms
@@ -160,20 +160,12 @@ describe('Messaging Utilities', () => {
           legitimation.request.claim.owner,
           legitimation.request.claim.contents,
         ],
-        {},
-        [
-          legitimation.request.claimOwner.hash,
-          legitimation.request.claimOwner.nonce,
-        ],
+        legitimation.request.claimNonceMap,
         legitimation.request.claimerSignature,
-        [
-          legitimation.request.cTypeHash.hash,
-          legitimation.request.cTypeHash.nonce,
-        ],
+        legitimation.request.claimHashes,
         legitimation.request.rootHash,
         [],
         legitimation.request.delegationId,
-        null,
       ],
       [
         legitimation.attestation.claimHash,
@@ -286,20 +278,12 @@ describe('Messaging Utilities', () => {
           legitimation.request.claim.owner,
           legitimation.request.claim.contents,
         ],
-        {},
-        [
-          legitimation.request.claimOwner.hash,
-          legitimation.request.claimOwner.nonce,
-        ],
+        legitimation.request.claimNonceMap,
         legitimation.request.claimerSignature,
-        [
-          legitimation.request.cTypeHash.hash,
-          legitimation.request.cTypeHash.nonce,
-        ],
+        legitimation.request.claimHashes,
         legitimation.request.rootHash,
         [],
         legitimation.request.delegationId,
-        null,
       ],
       compressedQuoteAgreement,
       undefined,
@@ -318,25 +302,18 @@ describe('Messaging Utilities', () => {
 
     // Compressed Submit Attestation content
     compressedSubmitAttestationContent = [
-      [
-        submitAttestationContent.attestation.claimHash,
-        submitAttestationContent.attestation.cTypeHash,
-        submitAttestationContent.attestation.owner,
-        submitAttestationContent.attestation.revoked,
-        submitAttestationContent.attestation.delegationId,
-      ],
-      undefined,
+      submitAttestationContent.attestation.claimHash,
+      submitAttestationContent.attestation.cTypeHash,
+      submitAttestationContent.attestation.owner,
+      submitAttestationContent.attestation.revoked,
+      submitAttestationContent.attestation.delegationId,
     ]
     // Request Claims for CTypes content
     requestClaimsForCTypesContent = {
       ctypes: [claim.cTypeHash],
     }
     // Compressed Request claims for CType content
-    compressedRequestClaimsForCTypesContent = [
-      [claim.cTypeHash],
-      undefined,
-      false,
-    ]
+    compressedRequestClaimsForCTypesContent = [claim.cTypeHash]
     // Submit claims for CType content
     submitClaimsForCTypesContent = [legitimation]
     // Compressed Submit claims for CType content

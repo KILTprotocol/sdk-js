@@ -7,22 +7,21 @@
 import {
   IAttestedClaim,
   IClaim,
+  IEncryptedMessage,
   IQuote,
   IRequestForAttestation,
+  MessageBodyType,
+  IRequestAttestationForClaim,
+  ISubmitAttestationForClaim,
+  IRequestClaimsForCTypes,
+  ISubmitClaimsForCTypes,
 } from '@kiltprotocol/types'
 import Crypto from '../crypto'
 import { EncryptedAsymmetricString } from '../crypto/Crypto'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import * as Quote from '../quote/Quote'
-import Message, {
-  IEncryptedMessage,
-  IRequestAttestationForClaim,
-  IRequestClaimsForCTypes,
-  ISubmitAttestationForClaim,
-  ISubmitClaimsForCTypes,
-  MessageBodyType,
-} from './Message'
+import Message from './Message'
 
 describe('Messaging', () => {
   let identityAlice: Identity

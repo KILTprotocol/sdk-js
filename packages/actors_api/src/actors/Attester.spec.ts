@@ -4,15 +4,8 @@
  * @ignore
  */
 
-import {
-  CType,
-  Identity,
-  MessageBodyType,
-  Message,
-  SDKErrors,
-  IMessage,
-} from '@kiltprotocol/core'
-import { ICType, IClaim } from '@kiltprotocol/types'
+import { CType, Identity, Message, SDKErrors } from '@kiltprotocol/core'
+import { ICType, IClaim, IMessage, MessageBodyType } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from '@kiltprotocol/core/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { Attester, Claimer } from '..'
 import { issueAttestation } from './Attester'

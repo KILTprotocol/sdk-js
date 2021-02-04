@@ -1,7 +1,7 @@
 import { AnyJson } from '@polkadot/types/types'
 import { CompressedAttestation, IAttestation } from './Attestation'
 import { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'
-import { CompressedClaim, IClaim, IClaimContents } from './Claim'
+import { CompressedClaim, IClaim, IClaimContents, PartialClaim } from './Claim'
 import { ICType } from './CType'
 import { IDelegationBaseNode, IDelegationNode } from './Delegation'
 import { IPublicIdentity } from './PublicIdentity'
@@ -83,7 +83,7 @@ interface IMessageBodyBase {
 }
 
 export interface IRequestTerms extends IMessageBodyBase {
-  content: Pick<ITerms, 'claim' | 'legitimations' | 'delegationId'>
+  content: PartialClaim
   type: MessageBodyType.REQUEST_TERMS
 }
 export interface ISubmitTerms extends IMessageBodyBase {
@@ -92,7 +92,7 @@ export interface ISubmitTerms extends IMessageBodyBase {
 }
 export interface IRejectTerms extends IMessageBodyBase {
   content: {
-    claim: IPartialClaim
+    claim: PartialClaim
     legitimations: IAttestedClaim[]
     delegationId?: IDelegationBaseNode['id']
   }
@@ -205,14 +205,10 @@ export type CompressedInformCreateDelegation = [
   CompressedInformDelegationCreation
 ]
 
-export interface IPartialClaim extends Partial<IClaim> {
-  cTypeHash: IClaim['cTypeHash']
-}
-
 export interface IRequestAttestationForClaimContent {
   requestForAttestation: IRequestForAttestation
   quote?: IQuoteAgreement
-  prerequisiteClaims?: Array<IClaim | IPartialClaim>
+  prerequisiteClaims?: Array<IClaim | PartialClaim>
 }
 // Seems this can be removed
 export interface ISubmitAttestationForClaimContent {

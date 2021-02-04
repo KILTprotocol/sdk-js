@@ -5,21 +5,20 @@
  */
 
 import { hexToBn } from '@polkadot/util'
-import { IClaim, CompressedClaim } from '@kiltprotocol/types'
+import {
+  IClaim,
+  CompressedClaim,
+  CompressedPartialClaim,
+  PartialClaim,
+} from '@kiltprotocol/types'
 import jsonabc from '../util/jsonabc'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 import { validateAddress, validateHash } from '../util/DataUtils'
 import { getIdForCTypeHash } from '../ctype/CType.utils'
 import { HashingOptions, hashStatements } from '../crypto/Crypto'
 import Did from '../did'
-import { IPartialClaim } from '../messaging/Message'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
-
-/**
- * The minimal partial claim from which a JSON-LD representation can be built.
- */
-export type PartialClaim = Partial<IClaim> & Pick<IClaim, 'cTypeHash'>
 
 /**
  * Produces JSON-LD readable representations of [[IClaim]]['contents']. This is done by implicitly or explicitely transforming property keys to globally unique predicates.
@@ -188,7 +187,7 @@ export function verifyDisclosedAttributes(
  * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_CONTENTS_MALFORMED]].
  *
  */
-export function errorCheck(input: IClaim | IPartialClaim): void {
+export function errorCheck(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
@@ -218,15 +217,15 @@ export function errorCheck(input: IClaim | IPartialClaim): void {
  */
 export function compress(claim: IClaim): CompressedClaim
 /**
- *  Compresses the [[IPartialClaim]] for storage and/or messaging.
+ *  Compresses the [[PartialClaim]] for storage and/or messaging.
  *
- * @param claim An [[IPartialClaim]] object that will be sorted and stripped for messaging or storage.
+ * @param claim An [[PartialClaim]] object that will be sorted and stripped for messaging or storage.
  *
  * @returns An ordered array of an [[IPartialCompressedClaim]].
  */
-export function compress(claim: IPartialClaim): CompressedPartialClaim
+export function compress(claim: PartialClaim): CompressedPartialClaim
 export function compress(
-  claim: IClaim | IPartialClaim
+  claim: IClaim | PartialClaim
 ): CompressedClaim | CompressedPartialClaim {
   errorCheck(claim)
   let sortedContents
@@ -251,12 +250,12 @@ export function decompress(claim: CompressedClaim): IClaim
  * @param claim An [[IPartialCompressedClaim]] array that is reverted back into an object.
  * @throws When an [[IPartialCompressedClaim]] is not an Array or it's length is unequal 3.
  *  @throws [[ERROR_DECOMPRESSION_ARRAY]].
- * @returns An [[IPartialClaim]] object that has the same properties as the [[IPartialCompressedClaim]].
+ * @returns An [[PartialClaim]] object that has the same properties as the [[IPartialCompressedClaim]].
  */
-export function decompress(claim: CompressedPartialClaim): IPartialClaim
+export function decompress(claim: CompressedPartialClaim): PartialClaim
 export function decompress(
   claim: CompressedClaim | CompressedPartialClaim
-): IClaim | IPartialClaim {
+): IClaim | PartialClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }

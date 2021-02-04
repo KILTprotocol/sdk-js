@@ -4,14 +4,14 @@
  */
 
 import { IAttestedClaim, CompressedAttestedClaim } from './AttestedClaim'
-import { IClaim } from './Claim'
 import { ICType } from './CType'
 import { IDelegationBaseNode } from './Delegation'
 import { IQuoteAttesterSigned, CompressedQuoteAttesterSigned } from './Quote'
 import { CompressedPartialClaim } from './Message'
+import { PartialClaim } from './Claim'
 
 export interface ITerms {
-  claim: Partial<IClaim>
+  claim: PartialClaim
   legitimations: IAttestedClaim[]
   delegationId?: IDelegationBaseNode['id']
   quote?: IQuoteAttesterSigned

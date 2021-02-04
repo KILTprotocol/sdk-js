@@ -14,7 +14,6 @@ import {
   CompressedSubmitDelegationApproval,
   IDelegationData,
   IInformDelegationCreation,
-  IPartialClaim,
   IRequestAttestationForClaimContent,
   IRequestClaimsForCTypesContent,
   IRequestDelegationApproval,
@@ -31,7 +30,6 @@ import {
   RequestForAttestationUtils,
 } from '..'
 import * as SDKErrors from '../errorhandling/SDKErrors'
-import {} from './Message'
 
 /**
  * [STATIC] Compresses a [[Message]] depending on the message body type.
@@ -89,13 +87,13 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       return [body.type, compressedContents]
     }
     case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
-      const compressedContents: CompressedAttestation = [
-        AttestationUtils.compress(body.content.attestation),
-      ]
+      const compressedContents: CompressedAttestation = AttestationUtils.compress(
+        body.content.attestation
+      )
       return [body.type, compressedContents]
     }
     case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      const compressedContents: Array<ICType['hash']> = [body.content.ctypes]
+      const compressedContents: Array<ICType['hash']> = body.content.ctypes
       return [body.type, compressedContents]
     }
     case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
@@ -170,7 +168,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
   // Each index matches the object keys from the given [[MessageBodyType]].
   switch (body[0]) {
     case MessageBodyType.REQUEST_TERMS: {
-      const decompressedContents: IPartialClaim = ClaimUtils.decompress(body[1])
+      const decompressedContents = ClaimUtils.decompress(body[1])
       return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.SUBMIT_TERMS: {
@@ -221,15 +219,13 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
     }
     case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
       const decompressedContents: ISubmitAttestationForClaimContent = {
-        attestation: AttestationUtils.decompress(body[1][0]),
+        attestation: AttestationUtils.decompress(body[1]),
       }
       return { type: body[0], content: decompressedContents }
     }
     case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
       const decompressedContents: IRequestClaimsForCTypesContent = {
-        ctypes: body[1][0],
-        peRequest: body[1][1],
-        allowPE: body[1][2],
+        ctypes: body[1],
       }
       return { type: body[0], content: decompressedContents }
     }

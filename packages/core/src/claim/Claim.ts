@@ -12,8 +12,12 @@
  * @preferred
  */
 
-import { IClaim, CompressedClaim, IPublicIdentity } from '@kiltprotocol/types'
-import { IPartialClaim } from '../messaging/Message'
+import {
+  IClaim,
+  CompressedClaim,
+  IPublicIdentity,
+  PartialClaim,
+} from '@kiltprotocol/types'
 import ICType from '../ctype/CType'
 import CTypeUtils from '../ctype/CType.utils'
 import * as SDKErrors from '../errorhandling/SDKErrors'
@@ -154,9 +158,9 @@ export default class Claim implements IClaim {
 
   public static decompress(
     compressedClaim: CompressedClaim
-  ): Claim | IPartialClaim {
+  ): Claim | PartialClaim {
     if (!compressedClaim[1] || !compressedClaim[2]) {
-      const decompressedClaim: IPartialClaim = ClaimUtils.decompress(
+      const decompressedClaim: PartialClaim = ClaimUtils.decompress(
         compressedClaim
       )
       return decompressedClaim

@@ -1,15 +1,17 @@
 import {
   BlockchainUtils,
   Attestation,
-  IMessage,
-  IRequestAttestationForClaim,
   Message,
-  MessageBodyType,
   PublicIdentity,
   SDKErrors,
   Identity,
 } from '@kiltprotocol/core'
-import { IAttestation } from '@kiltprotocol/types'
+import {
+  IAttestation,
+  IMessage,
+  IRequestAttestationForClaim,
+  MessageBodyType,
+} from '@kiltprotocol/types'
 
 export interface IRevocationHandle {
   claimHash: IAttestation['claimHash']

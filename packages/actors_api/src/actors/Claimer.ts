@@ -1,15 +1,15 @@
 import {
   AttestedClaim,
   Identity,
-  IMessage,
-  IRequestAttestationForClaim,
   Message,
-  MessageBodyType,
   RequestForAttestation,
   SDKErrors,
 } from '@kiltprotocol/core'
 import {
   IClaim,
+  IMessage,
+  IRequestAttestationForClaim,
+  MessageBodyType,
   IDelegationBaseNode,
   IPublicIdentity,
   IRequestForAttestation,
