@@ -11,8 +11,13 @@ import { NonceHash } from '@kiltprotocol/types'
 export enum ErrorCode {
   ERROR_TRANSACTION_RECOVERABLE = 1000,
   ERROR_TRANSACTION_OUTDATED = 1010,
+  ERROR_TRANSACTION_DUPLICATE = 1013,
   ERROR_TRANSACTION_PRIORITY = 1014,
   ERROR_TRANSACTION_USURPED = 1015,
+
+  ERROR_UNAUTHORIZED = 1016,
+  ERROR_NOT_FOUND = 1017,
+
   // Data is missing
   ERROR_CTYPE_HASH_NOT_PROVIDED = 10001,
   ERROR_CLAIM_HASH_NOT_PROVIDED = 10002,
@@ -76,6 +81,16 @@ export enum ErrorCode {
   ERROR_TIMEOUT = -2,
 }
 
+export function isSDKError(input: unknown): input is SDKError {
+  return (
+    ((i: unknown): i is Error & Partial<SDKError> => i instanceof Error)(
+      input
+    ) &&
+    input.errorCode !== undefined &&
+    input.errorCode in ErrorCode
+  )
+}
+
 export class SDKError extends Error {
   public errorCode: ErrorCode
 
@@ -84,6 +99,7 @@ export class SDKError extends Error {
     this.errorCode = errorCode
   }
 }
+
 export const ERROR_TRANSACTION_RECOVERABLE: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_TRANSACTION_RECOVERABLE,
@@ -94,6 +110,12 @@ export const ERROR_TRANSACTION_OUTDATED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_TRANSACTION_OUTDATED,
     'Tx was signed with outdated Nonce'
+  )
+}
+export const ERROR_TRANSACTION_DUPLICATE: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_TRANSACTION_DUPLICATE,
+    'Identical Tx was already imported to the pool'
   )
 }
 export const ERROR_TRANSACTION_PRIORITY: () => SDKError = () => {
@@ -108,6 +130,13 @@ export const ERROR_TRANSACTION_USURPED: () => SDKError = () => {
     'Tx was replaced by another TX with the same Nonce and higher Priority'
   )
 }
+export const ERROR_UNAUTHORIZED: (msg: string) => SDKError = (msg: string) => {
+  return new SDKError(ErrorCode.ERROR_UNAUTHORIZED, msg)
+}
+export const ERROR_NOT_FOUND: (msg: string) => SDKError = (msg: string) => {
+  return new SDKError(ErrorCode.ERROR_NOT_FOUND, msg)
+}
+
 export const ERROR_CTYPE_HASH_NOT_PROVIDED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CTYPE_HASH_NOT_PROVIDED,

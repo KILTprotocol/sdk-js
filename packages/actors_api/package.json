@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/actors-api",
-  "version": "0.19.1-23",
+  "version": "0.19.1-25",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
