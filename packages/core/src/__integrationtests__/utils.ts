@@ -20,6 +20,7 @@ export const FaucetSeed =
 export const wannabeFaucet = Identity.buildFromURI(FaucetSeed)
 export const wannabeAlice = Identity.buildFromURI('//Alice')
 export const wannabeBob = Identity.buildFromURI('//Bob')
+export const wannabeCharlie = Identity.buildFromURI('//Charlie')
 
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)
