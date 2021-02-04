@@ -120,22 +120,22 @@ describe('When there are haves and have-nots', () => {
     expect(zeroBalance.toNumber()).toBe(0)
   }, 50_000)
 
-  // it('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
-  //   const RichieBalance = await getBalance(richieRich.address)
-  //   await expect(
-  //     makeTransfer(richieRich, bobbyBroke.address, RichieBalance).then((tx) =>
-  //       submitTxWithReSign(tx, richieRich, {
-  //         resolveOn: IS_IN_BLOCK,
-  //       })
-  //     )
-  //   ).rejects.toThrowError()
-  //   const [newBalance, zeroBalance] = await Promise.all([
-  //     getBalance(richieRich.address),
-  //     getBalance(bobbyBroke.address),
-  //   ])
-  //   expect(zeroBalance.toString()).toEqual('0')
-  //   expect(newBalance.lt(RichieBalance))
-  // }, 30_000)
+  it('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
+    const RichieBalance = await getBalance(richieRich.address)
+    await expect(
+      makeTransfer(richieRich, bobbyBroke.address, RichieBalance).then((tx) =>
+        submitTxWithReSign(tx, richieRich, {
+          resolveOn: IS_IN_BLOCK,
+        })
+      )
+    ).rejects.toThrowError()
+    const [newBalance, zeroBalance] = await Promise.all([
+      getBalance(richieRich.address),
+      getBalance(bobbyBroke.address),
+    ])
+    expect(zeroBalance.toString()).toEqual('0')
+    expect(newBalance.lt(RichieBalance))
+  }, 30_000)
 
   it('should be able to make a new transaction once the last is ready', async () => {
     const listener = jest.fn()
