@@ -93,6 +93,7 @@ export async function issueAttestation(
  *
  * @param attester The [[AttesterIdentity]] which signed the [[Attestation]] in [[issueAttestation]].
  * @param revocationHandle A reference to the [[Attestation]] which was created in [[issueAttestation]].
+ * @throws [[ERROR_MESSAGE_TYPE]].
  */
 export async function revokeAttestation(
   attester: Identity,
@@ -101,7 +102,7 @@ export async function revokeAttestation(
   const attestation = await Attestation.query(revocationHandle.claimHash)
 
   if (attestation === null) {
-    throw new Error('Attestation not found')
+    throw SDKErrors.ERROR_NOT_FOUND('Attestation not on chain')
   }
   // count the number of steps we have to go up the delegation tree for calculating the transaction weight
   let delegationTreeTraversalSteps = 0
@@ -118,13 +119,13 @@ export async function revokeAttestation(
       const { steps, node } = await delegationNode.findParent(attester.address)
       delegationTreeTraversalSteps += steps
       if (node === null) {
-        throw new Error(
+        throw SDKErrors.ERROR_UNAUTHORIZED(
           'Attester is not athorized to revoke this attestation. (attester not in delegation tree)'
         )
       }
     }
   } else if (attestation.owner !== attester.address) {
-    throw new Error(
+    throw SDKErrors.ERROR_UNAUTHORIZED(
       'Attester is not athorized to revoke this attestation. (not the owner, no delegations)'
     )
   }
