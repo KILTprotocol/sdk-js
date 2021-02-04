@@ -5,7 +5,7 @@
 import Keyring, { encodeAddress } from '@polkadot/keyring'
 import { validateAddress, validateHash, validateSignature } from './DataUtils'
 import { ErrorCode } from './SDKErrors'
-import { Crypto } from '..'
+import * as Crypto from './Crypto'
 
 import '../../../testingTools/jestErrorCodeMatcher'
 
