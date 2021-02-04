@@ -93,7 +93,7 @@ export async function issueAttestation(
  *
  * @param attester The [[AttesterIdentity]] which signed the [[Attestation]] in [[issueAttestation]].
  * @param revocationHandle A reference to the [[Attestation]] which was created in [[issueAttestation]].
- * @throws [[ERROR_MESSAGE_TYPE]].
+ * @throws [[ERROR_UNAUTHORIZED]], [[ERROR_NOT_FOUND]].
  */
 export async function revokeAttestation(
   attester: Identity,
