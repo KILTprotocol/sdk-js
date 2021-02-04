@@ -39,7 +39,7 @@ export function decodeRootDelegation(
   encoded: Option<IChainDelegationRoot>
 ): RootDelegationRecord | null {
   assertCodecIsType(encoded, ['Option<DelegationRoot>'])
-  if (encoded instanceof Option && encoded.isSome) {
+  if (encoded.isSome) {
     const delegationRoot = encoded.unwrap()
     // TODO: check that root is none
     return {
@@ -90,7 +90,7 @@ export function decodeDelegationNode(
   encoded: Option<IChainDelegationNode>
 ): DelegationNodeRecord | null {
   assertCodecIsType(encoded, ['Option<DelegationNode>'])
-  if (encoded instanceof Option && encoded.isSome) {
+  if (encoded.isSome) {
     const delegationNode = encoded.unwrap()
 
     return {
