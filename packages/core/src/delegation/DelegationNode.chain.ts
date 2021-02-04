@@ -46,9 +46,9 @@ export async function query(
 ): Promise<DelegationNode | null> {
   const blockchain = await getCached()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegations<Option<IChainDelegationNode>>(
-      delegationId
-    )
+    await blockchain.api.query.delegation.delegations<
+      Option<IChainDelegationNode>
+    >(delegationId)
   )
   if (decoded) {
     const root = new DelegationNode(

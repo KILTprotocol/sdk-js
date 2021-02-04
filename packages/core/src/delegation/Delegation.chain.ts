@@ -38,7 +38,9 @@ export async function fetchChildren(
   childIds: string[]
 ): Promise<Array<CodecWithId<Option<IChainDelegationNode>>>> {
   const blockchain = await getCached()
-  const val: Array<CodecWithId<Option<IChainDelegationNode>>> = await Promise.all(
+  const val: Array<CodecWithId<
+    Option<IChainDelegationNode>
+  >> = await Promise.all(
     childIds.map(async (childId: string) => {
       const queryResult = await blockchain.api.query.delegation.delegations<
         Option<IChainDelegationNode>
