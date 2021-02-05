@@ -23,9 +23,6 @@ import * as SDKErrors from '../errorhandling/SDKErrors'
  */
 
 export function compressMessage(body: MessageBody): CompressedMessageBody {
-  // body[0] is the [[MessageBodyType]] being sent.
-  // body[1] is the content order of the [[compressMessage]] for each [[MessageBodyType]].
-  // Each index matches the object keys from the given [[MessageBodyType]].
   let compressedContents: CompressedMessageBody[1]
   switch (body.type) {
     case MessageBodyType.REQUEST_TERMS: {
