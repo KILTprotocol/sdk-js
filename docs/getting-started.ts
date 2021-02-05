@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import Kilt from '@kiltprotocol/sdk-js'
+import Kilt, { MessageBodyType } from '@kiltprotocol/sdk-js'
 import type {
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
@@ -75,7 +75,7 @@ async function main(): Promise<void> {
   /* First, we create the request for an attestation message in which the Claimer automatically encodes the message with the public key of the Attester: */
   const messageBody: IRequestAttestationForClaim = {
     content: { requestForAttestation },
-    type: Kilt.MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+    type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
   }
   const message = new Kilt.Message(
     messageBody,
@@ -93,9 +93,7 @@ async function main(): Promise<void> {
   const decrypted = Kilt.Message.decrypt(encrypted, attester)
 
   /* At this point the Attester has the original request for attestation object: */
-  if (
-    decrypted.body.type === Kilt.MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
-  ) {
+  if (decrypted.body.type === MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
     const extractedRequestForAttestation: IRequestAttestationForClaim =
       decrypted.body
 
@@ -122,7 +120,7 @@ async function main(): Promise<void> {
     /* The Attester has to send the `attestedClaim` object back to the Claimer in the following message: */
     const messageBodyBack: ISubmitAttestationForClaim = {
       content: attestedClaim,
-      type: Kilt.MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
     }
     const messageBack = new Kilt.Message(
       messageBodyBack,
@@ -135,8 +133,7 @@ async function main(): Promise<void> {
 
     /* After receiving the message, the Claimer just needs to save it and can use it later for verification: */
     if (
-      messageBack.body.type ===
-      Kilt.MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+      messageBack.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
     ) {
       const myAttestedClaim = Kilt.AttestedClaim.fromAttestedClaim({
         ...messageBack.body.content,
@@ -162,7 +159,7 @@ async function main(): Promise<void> {
       /* Now the claimer can send a message to verifier including the attested claim: */
       const messageBodyForVerifier: ISubmitClaimsForCTypes = {
         content: [myAttestedClaim],
-        type: Kilt.MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+        type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
       }
       const messageForVerifier = new Kilt.Message(
         messageBodyForVerifier,
