@@ -15,7 +15,10 @@
       "@kiltprotocol/vc-export": ["vc-export/src"],
       "@kiltprotocol/did": ["did/src"],
       "@kiltprotocol/docs": ["docs/src"],
-      "@kiltprotocol/testing": ["testing/src"]
+      "@kiltprotocol/testing": ["testing/src"],
+      "@kiltprotocol/types/*": ["types/src/*"],
+      "@polkadot/api/augment": ["types/src/interfaces/augment-api.ts"],
+      "@polkadot/types/augment": ["types/src/interfaces/augment-types.ts"]
     }
   },
   "skipLibCheck": true,
