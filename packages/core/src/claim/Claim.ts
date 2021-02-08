@@ -153,12 +153,12 @@ export default class Claim implements IClaim {
   /**
    * [STATIC] Builds an [[Claim]] from the decompressed array.
    *
-   * @returns A new [[Claim]] object.
+   * @returns A [[Claim]] object.
    */
 
   public static decompress(
     compressedClaim: CompressedClaim
-  ): Claim | PartialClaim {
+  ): IClaim | PartialClaim {
     if (!compressedClaim[1] || !compressedClaim[2]) {
       const decompressedClaim: PartialClaim = ClaimUtils.decompress(
         compressedClaim
@@ -166,6 +166,6 @@ export default class Claim implements IClaim {
       return decompressedClaim
     }
     const decompressedClaim: IClaim = ClaimUtils.decompress(compressedClaim)
-    return new Claim(decompressedClaim)
+    return decompressedClaim
   }
 }
