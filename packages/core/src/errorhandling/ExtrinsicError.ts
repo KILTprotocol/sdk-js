@@ -1,36 +1,57 @@
 /**
  * ExtrinsicErrors are KILT-specific errors, with associated codes and descriptions.
+ * Note: These codes are not used on chain anymore.
  *
  * @packageDocumentation
  * @module ExtrinsicErrors
  * @preferred
  */
 
+import { ModuleError } from './ErrorHandler'
+
 export enum ErrorCode {
-  ERROR_CTYPE_NOT_FOUND = 1001,
-  ERROR_CTYPE_ALREADY_EXISTS = 1002,
+  ERROR_CTYPE_NOT_FOUND = '11_00',
+  ERROR_CTYPE_ALREADY_EXISTS = '11_01',
+  UNKNOWN_CTYPE_ERROR = '11_02',
 
-  ERROR_ALREADY_ATTESTED = 2001,
-  ERROR_ALREADY_REVOKED = 2002,
-  ERROR_ATTESTATION_NOT_FOUND = 2003,
-  ERROR_DELEGATION_REVOKED = 2004,
-  ERROR_NOT_DELEGATED_TO_ATTESTER = 2005,
-  ERROR_DELEGATION_NOT_AUTHORIZED_TO_ATTEST = 2006,
-  ERROR_CTYPE_OF_DELEGATION_NOT_MATCHING = 2007,
-  ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION = 2008,
+  ERROR_ALREADY_ATTESTED = '12_00',
+  ERROR_ALREADY_REVOKED = '12_01',
+  ERROR_ATTESTATION_NOT_FOUND = '12_02',
+  ERROR_CTYPE_OF_DELEGATION_NOT_MATCHING = '12_03',
+  ERROR_DELEGATION_NOT_AUTHORIZED_TO_ATTEST = '12_04',
+  ERROR_DELEGATION_REVOKED = '12_05',
+  ERROR_NOT_DELEGATED_TO_ATTESTER = '12_06',
+  ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION = '12_07',
+  UNKNOWN_ATTESTATION_ERROR = '12_08',
 
-  ERROR_ROOT_ALREADY_EXISTS = 3001,
-  ERROR_NOT_PERMITTED_TO_REVOKE = 3002,
-  ERROR_DELEGATION_NOT_FOUND = 3003,
-  ERROR_DELEGATION_ALREADY_EXISTS = 3004,
-  ERROR_BAD_DELEGATION_SIGNATURE = 3005,
-  ERROR_NOT_OWNER_OF_PARENT = 3006,
-  ERROR_NOT_AUTHORIZED_TO_DELEGATE = 3007,
-  ERROR_PARENT_NOT_FOUND = 3008,
-  ERROR_NOT_OWNER_OF_ROOT = 3009,
-  ERROR_ROOT_NOT_FOUND = 3100,
+  ERROR_DELEGATION_ALREADY_EXISTS = '13_00',
+  ERROR_BAD_DELEGATION_SIGNATURE = '13_01',
+  ERROR_DELEGATION_NOT_FOUND = '13_02',
+  ERROR_ROOT_ALREADY_EXISTS = '13_03',
+  ERROR_ROOT_NOT_FOUND = '13_04',
+  ERROR_MAX_DELEGATION_SEARCH_DEPTH_REACHED = '13_05',
+  ERROR_NOT_OWNER_OF_PARENT = '13_06',
+  ERROR_NOT_OWNER_OF_ROOT = '13_07',
+  ERROR_PARENT_NOT_FOUND = '13_08',
+  ERROR_NOT_PERMITTED_TO_REVOKE = '13_09',
+  ERROR_NOT_AUTHORIZED_TO_DELEGATE = '13_10',
+  UNKNOWN_DELEGATION_ERROR = '13_11',
 
-  ERROR_UNKNOWN = -1,
+  ERROR_UNKNOWN = '-1',
+}
+
+/**
+ * PalletIndex reflects the numerical index of a pallet assigned in the chain's metadata.
+ *
+ * @packageDocumentation
+ * @module PalletIndex
+ * @preferred
+ */
+export enum PalletIndex {
+  CType = 11,
+  Attestation = 12,
+  Delegation = 13,
+  DID = 14,
 }
 
 export class ExtrinsicError extends Error {
@@ -42,6 +63,12 @@ export class ExtrinsicError extends Error {
   }
 }
 
+// CType
+export const UNKNOWN_CTYPE_ERROR = (index: number): ExtrinsicError =>
+  new ExtrinsicError(
+    ErrorCode.UNKNOWN_CTYPE_ERROR,
+    `unknown CTYPE module error with index ${index} occured, please contact support`
+  )
 export const ERROR_CTYPE_NOT_FOUND: ExtrinsicError = new ExtrinsicError(
   ErrorCode.ERROR_CTYPE_NOT_FOUND,
   'CTYPE not found'
@@ -50,6 +77,14 @@ export const ERROR_CTYPE_ALREADY_EXISTS: ExtrinsicError = new ExtrinsicError(
   ErrorCode.ERROR_CTYPE_ALREADY_EXISTS,
   'CTYPE already exists'
 )
+
+// Attestation
+export const UNKNOWN_ATTESTATION_ERROR = (index: number): ExtrinsicError =>
+  new ExtrinsicError(
+    ErrorCode.UNKNOWN_ATTESTATION_ERROR,
+    `unknown attestation module error with index ${index} occured, please contact support`
+  )
+
 export const ERROR_ALREADY_ATTESTED: ExtrinsicError = new ExtrinsicError(
   ErrorCode.ERROR_ALREADY_ATTESTED,
   'already attested'
@@ -82,6 +117,13 @@ export const ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION: ExtrinsicError = new Ext
   ErrorCode.ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION,
   'not permitted to revoke attestation'
 )
+
+// Delegation
+export const UNKNOWN_DELEGATION_ERROR = (index: number): ExtrinsicError =>
+  new ExtrinsicError(
+    ErrorCode.UNKNOWN_DELEGATION_ERROR,
+    `unknown delegation module error with index ${index} occured, please contact support`
+  )
 export const ERROR_ROOT_ALREADY_EXISTS: ExtrinsicError = new ExtrinsicError(
   ErrorCode.ERROR_ROOT_ALREADY_EXISTS,
   'root already exist'
@@ -122,56 +164,101 @@ export const ERROR_ROOT_NOT_FOUND: ExtrinsicError = new ExtrinsicError(
   ErrorCode.ERROR_ROOT_NOT_FOUND,
   'root not found'
 )
-
+export const ERROR_MAX_DELEGATION_SEARCH_DEPTH_REACHED: ExtrinsicError = new ExtrinsicError(
+  ErrorCode.ERROR_MAX_DELEGATION_SEARCH_DEPTH_REACHED,
+  'maximum delegation search depth reached'
+)
 export const ERROR_UNKNOWN: ExtrinsicError = new ExtrinsicError(
   ErrorCode.ERROR_UNKNOWN,
   'an unknown extrinsic error ocurred'
 )
 
 /**
- * A dictionary in which each key is an error code of an [[ExtrinsicError]] and the value the corresponding error.
+ * Maps an error code to its corresponding [[ModuleError]].
+ *
+ * @param code The KILT specific error code.
+ *
+ * @returns The [[ModuleError]] as in the chain's metadata for the KILT specific error code.
  */
-export const errorsByCode: { [code: number]: ExtrinsicError } = {}
-
-// fill dictionary
-;[
-  ERROR_CTYPE_NOT_FOUND,
-  ERROR_CTYPE_ALREADY_EXISTS,
-
-  ERROR_ALREADY_ATTESTED,
-  ERROR_ERROR_ALREADY_REVOKED,
-  ERROR_ATTESTATION_NOT_FOUND,
-  ERROR_DELEGATION_REVOKED,
-  ERROR_NOT_DELEGATED_TO_ATTESTER,
-  ERROR_DELEGATION_NOT_AUTHORIZED_TO_ATTEST,
-  ERROR_CTYPE_OF_DELEGATION_NOT_MATCHING,
-  ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION,
-
-  ERROR_ROOT_ALREADY_EXISTS,
-  ERROR_NOT_PERMITTED_TO_REVOKE,
-  ERROR_DELEGATION_NOT_FOUND,
-  ERROR_DELEGATION_ALREADY_EXISTS,
-  ERROR_BAD_DELEGATION_SIGNATURE,
-  ERROR_NOT_OWNER_OF_PARENT,
-  ERROR_NOT_AUTHORIZED_TO_DELEGATE,
-  ERROR_PARENT_NOT_FOUND,
-  ERROR_NOT_OWNER_OF_ROOT,
-  ERROR_ROOT_NOT_FOUND,
-
-  ERROR_UNKNOWN,
-].forEach((value) => {
-  errorsByCode[value.errorCode] = value
-})
+export function errorCodeToModuleError(code: ErrorCode): ModuleError['Module'] {
+  const [index, error] = code
+    .split('_')
+    .map((s: string) => Number.parseInt(s, 10))
+  return { index, error }
+}
 
 /**
- * Maps an error code to its corresponding [[ExtrinsicError]].
+ * Maps a [[ModuleError]] to its corresponding [[ExtrinsicError]].
  *
- * @param errorCode A number which can be mapped to an [[ExtrinsicError]].
+ * @param p The parameter object.
+ * @param p.index The index of the KILT pallet in the metadata.
+ * @param p.error The index of the position of the pallet's error definition inside the chain code.
  *
  * @returns The [[ExtrinsicError]] for the committed key.
  */
-export function errorForCode(
-  errorCode: keyof typeof errorsByCode
-): ExtrinsicError {
-  return errorsByCode[errorCode]
+export function errorForModule({
+  index: moduleIndex,
+  error: errorCode,
+}: ModuleError['Module']): ExtrinsicError {
+  switch (moduleIndex) {
+    case PalletIndex.CType:
+      switch (errorCode) {
+        case 0:
+          return ERROR_CTYPE_NOT_FOUND
+        case 1:
+          return ERROR_CTYPE_ALREADY_EXISTS
+        default:
+          return UNKNOWN_CTYPE_ERROR(errorCode)
+      }
+    case PalletIndex.Attestation:
+      switch (errorCode) {
+        case 0:
+          return ERROR_ALREADY_ATTESTED
+        case 1:
+          return ERROR_ERROR_ALREADY_REVOKED
+        case 2:
+          return ERROR_ATTESTATION_NOT_FOUND
+        case 3:
+          return ERROR_CTYPE_OF_DELEGATION_NOT_MATCHING
+        case 4:
+          return ERROR_DELEGATION_NOT_AUTHORIZED_TO_ATTEST
+        case 5:
+          return ERROR_DELEGATION_REVOKED
+        case 6:
+          return ERROR_NOT_DELEGATED_TO_ATTESTER
+        case 7:
+          return ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION
+        default:
+          return UNKNOWN_ATTESTATION_ERROR(errorCode)
+      }
+    case PalletIndex.Delegation:
+      switch (errorCode) {
+        case 0:
+          return ERROR_DELEGATION_ALREADY_EXISTS
+        case 1:
+          return ERROR_BAD_DELEGATION_SIGNATURE
+        case 2:
+          return ERROR_DELEGATION_NOT_FOUND
+        case 3:
+          return ERROR_ROOT_ALREADY_EXISTS
+        case 4:
+          return ERROR_ROOT_NOT_FOUND
+        case 5:
+          return ERROR_MAX_DELEGATION_SEARCH_DEPTH_REACHED
+        case 6:
+          return ERROR_NOT_OWNER_OF_PARENT
+        case 7:
+          return ERROR_NOT_OWNER_OF_ROOT
+        case 8:
+          return ERROR_PARENT_NOT_FOUND
+        case 9:
+          return ERROR_NOT_PERMITTED_TO_REVOKE
+        case 10:
+          return ERROR_NOT_AUTHORIZED_TO_DELEGATE
+        default:
+          return UNKNOWN_DELEGATION_ERROR(errorCode)
+      }
+    default:
+      return ERROR_UNKNOWN
+  }
 }
