@@ -8,7 +8,7 @@ import { ModuleError } from './ErrorHandler'
 import {
   ErrorCode,
   errorCodeToModuleError,
-  errorForModule,
+  errorForPallet,
   ExtrinsicError,
 } from './ExtrinsicError'
 
@@ -18,7 +18,7 @@ describe('ExtrinsicError', () => {
     ErrorCode
   ).map((code) => errorCodeToModuleError(code))
   it.each(errorCodes)('should return error for code %s', (errorCode) => {
-    expect(errorForModule(errorCode)).toBeDefined()
-    expect(errorForModule(errorCode)).toBeInstanceOf(ExtrinsicError)
+    expect(errorForPallet(errorCode)).toBeDefined()
+    expect(errorForPallet(errorCode)).toBeInstanceOf(ExtrinsicError)
   })
 })

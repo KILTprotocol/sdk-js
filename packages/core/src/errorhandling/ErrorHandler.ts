@@ -8,7 +8,7 @@
 import { SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types/interfaces'
 import { factory as LoggerFactory } from '../config/ConfigService'
-import { errorForModule, ExtrinsicError } from './ExtrinsicError'
+import { errorForPallet, ExtrinsicError } from './ExtrinsicError'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -91,7 +91,7 @@ export function getExtrinsicError(
         Module: { index, error },
       } = (moduleError as unknown) as ModuleError
       if (index >= 0 && error >= 0) {
-        return errorForModule({ index, error })
+        return errorForPallet({ index, error })
       }
     }
     log.warn(`error event doesn't have a valid error structure: ${data}`)

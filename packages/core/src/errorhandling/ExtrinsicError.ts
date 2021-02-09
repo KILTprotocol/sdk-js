@@ -196,7 +196,7 @@ export function errorCodeToModuleError(code: ErrorCode): ModuleError['Module'] {
  *
  * @returns The [[ExtrinsicError]] for the committed key.
  */
-export function errorForModule({
+export function errorForPallet({
   index: moduleIndex,
   error: errorCode,
 }: ModuleError['Module']): ExtrinsicError {
