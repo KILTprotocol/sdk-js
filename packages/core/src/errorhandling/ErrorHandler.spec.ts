@@ -7,8 +7,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { SubmittableResult } from '@polkadot/api'
 import { Tuple } from '@polkadot/types'
-import { ErrorHandler } from '.'
-import { ErrorCode, ERROR_CTYPE_NOT_FOUND } from './ExtrinsicError'
+import { ErrorHandler, PalletIndex } from '.'
+import { ERROR_CTYPE_NOT_FOUND } from './ExtrinsicError'
 
 describe('ErrorHandler', () => {
   it('test extrinsic failed', () => {
@@ -62,7 +62,12 @@ describe('ErrorHandler', () => {
     const errorCode: Tuple = {
       // @ts-ignore
       toJSON: jest.fn(() => {
-        return ErrorCode.ERROR_CTYPE_NOT_FOUND
+        return {
+          Module: {
+            index: PalletIndex.CType,
+            error: 0,
+          },
+        }
       }),
     }
     const errorEventRecord = {
@@ -72,7 +77,7 @@ describe('ErrorHandler', () => {
         },
       },
       event: {
-        section: 'error',
+        section: 'system',
         data: [errorCode],
       },
     }
