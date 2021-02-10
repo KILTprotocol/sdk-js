@@ -35,3 +35,9 @@ export * from './DidDetails.js'
 export * from './Keystore.js'
 export * from './DidResolver.js'
 export * from './DidDocumentExporter.js'
+
+import { Kilt } from './chainTypes/definitions'
+
+export const apiConstructorTypes = Kilt.types
+
+import './chainTypes/augment-api'

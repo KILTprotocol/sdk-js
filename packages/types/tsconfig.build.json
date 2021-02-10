@@ -5,9 +5,10 @@
     "module": "CommonJS",
     "outDir": "./lib/cjs",
     "paths": {
+    "@kiltprotocol/types": ["src"],
     "@kiltprotocol/types/*": ["src/*"],
-    "@polkadot/api/augment": ["src/chainTypes/augment-api.ts"],
-    "@polkadot/types/augment": ["src/chainTypes/augment-types.ts"]
+    //"@polkadot/api/augment": ["src/chainTypes/augment-api.ts"],
+    //"@polkadot/types/augment": ["src/chainTypes/augment-types.ts"]
     },
   },
 
@@ -18,6 +19,6 @@
   "exclude": [
     "coverage",
     "**/*.spec.ts",
-    "**/definitions.ts"
+    "src/**/definitions.ts",
   ]
 }
