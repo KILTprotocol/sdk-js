@@ -24,7 +24,6 @@ import {
   ISubmitAcceptDelegation,
   IRejectAcceptDelegation,
   IInformCreateDelegation,
-  MessageBodyType,
   MessageBody,
   CompressedRequestTerms,
   CompressedPartialClaim,
@@ -67,6 +66,7 @@ import Claim from '../claim'
 import CType from '../ctype'
 import AttestedClaim from '../attestedclaim'
 import buildAttestedClaim from '../attestedclaim/AttestedClaim.spec'
+import Message from './Message'
 
 describe('Messaging Utilities', () => {
   let identityAlice: Identity
@@ -404,111 +404,111 @@ describe('Messaging Utilities', () => {
 
     requestTermsBody = {
       content: requestTermsContent,
-      type: MessageBodyType.REQUEST_TERMS,
+      type: Message.BodyType.REQUEST_TERMS,
     }
 
     compressedRequestTermsBody = [
-      MessageBodyType.REQUEST_TERMS,
+      Message.BodyType.REQUEST_TERMS,
       compressedRequestTermsContent,
     ]
 
     submitTermsBody = {
       content: submitTermsContent,
-      type: MessageBodyType.SUBMIT_TERMS,
+      type: Message.BodyType.SUBMIT_TERMS,
     }
 
     compressedSubmitTermsBody = [
-      MessageBodyType.SUBMIT_TERMS,
+      Message.BodyType.SUBMIT_TERMS,
       compressedSubmitTermsContent,
     ]
 
     rejectTermsBody = {
       content: rejectTermsContent,
-      type: MessageBodyType.REJECT_TERMS,
+      type: Message.BodyType.REJECT_TERMS,
     }
 
     compressedRejectTermsBody = [
-      MessageBodyType.REJECT_TERMS,
+      Message.BodyType.REJECT_TERMS,
       compressedRejectTermsContent,
     ]
 
     requestAttestationBody = {
       content: requestAttestationContent,
-      type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
     }
 
     compressedRequestAttestationBody = [
-      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
       compressedRequestAttestationContent,
     ]
 
     submitAttestationBody = {
       content: submitAttestationContent,
-      type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
     }
 
     compressedSubmitAttestationBody = [
-      MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
       compressedSubmitAttestationContent,
     ]
 
     requestClaimsForCTypesBody = {
       content: requestClaimsForCTypesContent,
-      type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
     }
 
     compressedRequestClaimsForCTypesBody = [
-      MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+      Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
       compressedRequestClaimsForCTypesContent,
     ]
 
     submitClaimsForCTypesBody = {
       content: submitClaimsForCTypesContent,
-      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
     }
 
     compressedSubmitClaimsForCTypesBody = [
-      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
       compressedSubmitClaimsForCTypesContent,
     ]
 
     requestAcceptDelegationBody = {
       content: requestAcceptDelegationContent,
-      type: MessageBodyType.REQUEST_ACCEPT_DELEGATION,
+      type: Message.BodyType.REQUEST_ACCEPT_DELEGATION,
     }
 
     compressedRequestAcceptDelegationBody = [
-      MessageBodyType.REQUEST_ACCEPT_DELEGATION,
+      Message.BodyType.REQUEST_ACCEPT_DELEGATION,
       compressedRequestAcceptDelegationContent,
     ]
 
     submitAcceptDelegationBody = {
       content: submitAcceptDelegationContent,
-      type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION,
+      type: Message.BodyType.SUBMIT_ACCEPT_DELEGATION,
     }
 
     compressedSubmitAcceptDelegationBody = [
-      MessageBodyType.SUBMIT_ACCEPT_DELEGATION,
+      Message.BodyType.SUBMIT_ACCEPT_DELEGATION,
       compressedSubmitAcceptDelegationContent,
     ]
 
     rejectAcceptDelegationBody = {
       content: rejectAcceptDelegationContent,
-      type: MessageBodyType.REJECT_ACCEPT_DELEGATION,
+      type: Message.BodyType.REJECT_ACCEPT_DELEGATION,
     }
 
     compressedRejectAcceptDelegationBody = [
-      MessageBodyType.REJECT_ACCEPT_DELEGATION,
+      Message.BodyType.REJECT_ACCEPT_DELEGATION,
       compressedRejectAcceptDelegationContent,
     ]
 
     informCreateDelegationBody = {
       content: informCreateDelegationContent,
-      type: MessageBodyType.INFORM_CREATE_DELEGATION,
+      type: Message.BodyType.INFORM_CREATE_DELEGATION,
     }
 
     compressedInformCreateDelegationBody = [
-      MessageBodyType.INFORM_CREATE_DELEGATION,
+      Message.BodyType.INFORM_CREATE_DELEGATION,
       compressedInformCreateDelegationContent,
     ]
   })
@@ -621,7 +621,7 @@ describe('Messaging Utilities', () => {
 
     const malformed = ({
       content: '',
-      type: 'MessageBodyType',
+      type: 'Message.BodyType',
     } as unknown) as MessageBody
 
     expect(() => MessageUtils.compressMessage(malformed)).toThrowError(

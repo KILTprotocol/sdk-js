@@ -11,7 +11,6 @@ import {
   IAttestedClaim,
   IRequestForAttestation,
   IMessage,
-  MessageBodyType,
 } from '@kiltprotocol/types'
 
 const log = ConfigService.factory.getLogger('Verifier')
@@ -103,7 +102,7 @@ export class PresentationRequestBuilder {
       },
       message: new Message(
         {
-          type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+          type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
           content: {
             ctypes: this.partialReq.map((pr) => pr.ctype),
           },
@@ -188,10 +187,10 @@ export async function verifyPresentation(
   claims: Array<Partial<IRequestForAttestation | IAttestedClaim>>
 }> {
   // Must be SUBMIT_CLAIMS_FOR_CTYPES message type
-  if (message.body.type !== MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES)
+  if (message.body.type !== Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES)
     throw SDKErrors.ERROR_MESSAGE_TYPE(
       message.body.type,
-      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
+      Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
     )
   const attestedClaims = message.body.content.map(
     AttestedClaim.fromAttestedClaim

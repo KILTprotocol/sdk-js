@@ -10,7 +10,6 @@ import {
   IEncryptedMessage,
   IQuote,
   IRequestForAttestation,
-  MessageBodyType,
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
   IRequestClaimsForCTypes,
@@ -37,7 +36,7 @@ describe('Messaging', () => {
   it('verify message encryption and signing', async () => {
     const message = new Message(
       {
-        type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
         content: { ctypes: ['0x12345678'] },
       },
       identityAlice,
@@ -160,7 +159,7 @@ describe('Messaging', () => {
         quote: bothSigned,
         prerequisiteClaims: [] as IClaim[],
       },
-      type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
     }
 
     Message.ensureOwnerIsSender(
@@ -191,7 +190,7 @@ describe('Messaging', () => {
           revoked: false,
         },
       },
-      type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
     }
     expect(() =>
       Message.ensureOwnerIsSender(
@@ -217,7 +216,7 @@ describe('Messaging', () => {
 
     const submitClaimsForCTypeBody: ISubmitClaimsForCTypes = {
       content: [attestedClaim],
-      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
     }
 
     Message.ensureOwnerIsSender(
@@ -250,7 +249,7 @@ describe('Messaging', () => {
         content: {
           ctypes: ['0x12345678'],
         },
-        type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
       }
       encrypted = new Message(
         messageBody,

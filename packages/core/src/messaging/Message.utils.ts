@@ -3,7 +3,6 @@ import {
   CompressedAttestedClaim,
   CompressedMessageBody,
   MessageBody,
-  MessageBodyType,
 } from '@kiltprotocol/types'
 import {
   QuoteUtils,
@@ -11,6 +10,7 @@ import {
   AttestedClaimUtils,
   AttestationUtils,
   RequestForAttestationUtils,
+  Message,
 } from '..'
 import * as SDKErrors from '../errorhandling/SDKErrors'
 
@@ -25,11 +25,11 @@ import * as SDKErrors from '../errorhandling/SDKErrors'
 export function compressMessage(body: MessageBody): CompressedMessageBody {
   let compressedContents: CompressedMessageBody[1]
   switch (body.type) {
-    case MessageBodyType.REQUEST_TERMS: {
+    case Message.BodyType.REQUEST_TERMS: {
       compressedContents = ClaimUtils.compress(body.content)
       break
     }
-    case MessageBodyType.SUBMIT_TERMS: {
+    case Message.BodyType.SUBMIT_TERMS: {
       compressedContents = [
         ClaimUtils.compress(body.content.claim),
         body.content.legitimations.map(
@@ -46,7 +46,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case MessageBodyType.REJECT_TERMS: {
+    case Message.BodyType.REJECT_TERMS: {
       compressedContents = [
         ClaimUtils.compress(body.content.claim),
         body.content.legitimations.map((val) =>
@@ -56,7 +56,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
       compressedContents = [
         RequestForAttestationUtils.compress(body.content.requestForAttestation),
         body.content.quote
@@ -70,15 +70,15 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
       compressedContents = AttestationUtils.compress(body.content.attestation)
       break
     }
-    case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
       compressedContents = body.content.ctypes
       break
     }
-    case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
       compressedContents = body.content.map(
         (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
           Array.isArray(attestedClaim)
@@ -87,7 +87,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       )
       break
     }
-    case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
+    case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
       compressedContents = [
         [
           body.content.delegationData.account,
@@ -101,7 +101,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
+    case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
       compressedContents = [
         [
           body.content.delegationData.account,
@@ -114,7 +114,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case MessageBodyType.REJECT_ACCEPT_DELEGATION: {
+    case Message.BodyType.REJECT_ACCEPT_DELEGATION: {
       compressedContents = [
         body.content.account,
         body.content.id,
@@ -124,7 +124,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case MessageBodyType.INFORM_CREATE_DELEGATION: {
+    case Message.BodyType.INFORM_CREATE_DELEGATION: {
       compressedContents = [body.content.delegationId, body.content.isPCR]
       break
     }
@@ -148,11 +148,11 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
   // Each index matches the object keys from the given [[MessageBodyType]].
   let decompressedContents: MessageBody['content']
   switch (body[0]) {
-    case MessageBodyType.REQUEST_TERMS: {
+    case Message.BodyType.REQUEST_TERMS: {
       decompressedContents = ClaimUtils.decompress(body[1])
       break
     }
-    case MessageBodyType.SUBMIT_TERMS: {
+    case Message.BodyType.SUBMIT_TERMS: {
       decompressedContents = {
         claim: ClaimUtils.decompress(body[1][0]),
         legitimations: body[1][1].map(
@@ -170,7 +170,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
 
       break
     }
-    case MessageBodyType.REJECT_TERMS: {
+    case Message.BodyType.REJECT_TERMS: {
       decompressedContents = {
         claim: ClaimUtils.decompress(body[1][0]),
         legitimations: body[1][1].map((val) =>
@@ -180,7 +180,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       }
       break
     }
-    case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
       decompressedContents = {
         requestForAttestation: RequestForAttestationUtils.decompress(
           body[1][0]
@@ -195,19 +195,19 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
 
       break
     }
-    case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
       decompressedContents = {
         attestation: AttestationUtils.decompress(body[1]),
       }
       break
     }
-    case MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
       decompressedContents = {
         ctypes: body[1],
       }
       break
     }
-    case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
       decompressedContents = body[1].map(
         (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
           !Array.isArray(attestedClaim)
@@ -217,7 +217,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
 
       break
     }
-    case MessageBodyType.REQUEST_ACCEPT_DELEGATION: {
+    case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
       decompressedContents = {
         delegationData: {
           account: body[1][0][0],
@@ -231,7 +231,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       }
       break
     }
-    case MessageBodyType.SUBMIT_ACCEPT_DELEGATION: {
+    case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
       decompressedContents = {
         delegationData: {
           account: body[1][0][0],
@@ -247,7 +247,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       }
       break
     }
-    case MessageBodyType.REJECT_ACCEPT_DELEGATION: {
+    case Message.BodyType.REJECT_ACCEPT_DELEGATION: {
       decompressedContents = {
         account: body[1][0],
         id: body[1][1],
@@ -257,7 +257,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       }
       break
     }
-    case MessageBodyType.INFORM_CREATE_DELEGATION: {
+    case Message.BodyType.INFORM_CREATE_DELEGATION: {
       decompressedContents = {
         delegationId: body[1][0],
         isPCR: body[1][1],

@@ -5,7 +5,7 @@
  */
 
 import { CType, Identity, Message, SDKErrors } from '@kiltprotocol/core'
-import { ICType, IClaim, IMessage, MessageBodyType } from '@kiltprotocol/types'
+import { ICType, IClaim, IMessage } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from '@kiltprotocol/core/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { Attester, Claimer } from '..'
 import { issueAttestation } from './Attester'
@@ -57,7 +57,7 @@ describe('Attester', () => {
     //   claimer.getPublicIdentity()
     // )
     // expect(initAttestation.body.type).toEqual(
-    //   MessageBodyType.INITIATE_ATTESTATION
+    //   Message.BodyType.INITIATE_ATTESTATION
     // )
     // expect(initAttestation.body.content).toBeDefined()
 
@@ -83,9 +83,9 @@ describe('Attester', () => {
       claimer.getPublicIdentity()
     )
     expect(message.body.type).toEqual(
-      MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+      Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM
     )
-    if (message.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
+    if (message.body.type === Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
       expect(message.body.content.attestation).toBeDefined()
     }
   })
@@ -122,9 +122,9 @@ describe('Attester', () => {
       claimer.getPublicIdentity()
     )
     expect(message.body.type).toEqual(
-      MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+      Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM
     )
-    if (message.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
+    if (message.body.type === Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
       expect(message.body.content.attestation).toBeDefined()
     }
   })
@@ -163,7 +163,7 @@ describe('Attester', () => {
     it('Should throw when message body type does not match', async () => {
       // const { messageBody } = await attester.initiateAttestation()
       const messageBody: IMessage['body'] = {
-        type: MessageBodyType.REQUEST_TERMS,
+        type: Message.BodyType.REQUEST_TERMS,
         content: { cTypeHash: '0xabc' },
       }
       await expect(
@@ -175,7 +175,7 @@ describe('Attester', () => {
       ).rejects.toThrowError(
         SDKErrors.ERROR_MESSAGE_TYPE(
           messageBody.type,
-          MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+          Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
         )
       )
     })

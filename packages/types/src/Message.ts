@@ -12,6 +12,26 @@ import {
 } from './RequestForAttestation'
 import { CompressedTerms, ITerms } from './Terms'
 
+export enum MessageBodyType {
+  REQUEST_TERMS = 'request-terms',
+  SUBMIT_TERMS = 'submit-terms',
+  REJECT_TERMS = 'reject-terms',
+
+  REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
+  SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
+  REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
+
+  REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
+  SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes-classic',
+  ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
+  REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
+
+  REQUEST_ACCEPT_DELEGATION = 'request-accept-delegation',
+  SUBMIT_ACCEPT_DELEGATION = 'submit-accept-delegation',
+  REJECT_ACCEPT_DELEGATION = 'reject-accept-delegation',
+  INFORM_CREATE_DELEGATION = 'inform-create-delegation',
+}
+
 /**
  * - `body` - The body of the message, see [[MessageBody]].
  * - `createdAt` - The timestamp of the message construction.
@@ -56,27 +76,6 @@ export type IEncryptedMessage = Pick<
   hash: string
   signature: string
 }
-
-export enum MessageBodyType {
-  REQUEST_TERMS = 'request-terms',
-  SUBMIT_TERMS = 'submit-terms',
-  REJECT_TERMS = 'reject-terms',
-
-  REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
-  SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
-  REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
-
-  REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
-  SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes-classic',
-  ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
-  REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
-
-  REQUEST_ACCEPT_DELEGATION = 'request-accept-delegation',
-  SUBMIT_ACCEPT_DELEGATION = 'submit-accept-delegation',
-  REJECT_ACCEPT_DELEGATION = 'reject-accept-delegation',
-  INFORM_CREATE_DELEGATION = 'inform-create-delegation',
-}
-
 interface IMessageBodyBase {
   content: any
   type: MessageBodyType

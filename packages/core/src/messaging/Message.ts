@@ -15,10 +15,10 @@ import {
   IPublicIdentity,
   CompressedMessageBody,
   IMessage,
-  MessageBodyType,
   ISubmitClaimsForCTypes,
   IEncryptedMessage,
   MessageBody,
+  MessageBodyType,
 } from '@kiltprotocol/types'
 import { Identity } from '..'
 import Crypto, { EncryptedAsymmetricString } from '../crypto'
@@ -29,10 +29,15 @@ import * as SDKErrors from '../errorhandling/SDKErrors'
 
 export default class Message implements IMessage {
   /**
+   * [STATIC] Lists all possible body types of [[Message]].
+   */
+  public static readonly BodyType = MessageBodyType
+
+  /**
    * [STATIC] Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's public keys match.
    *
    * @param message The [[Message]] object which needs to be decrypted.
-   * @param message.body The body of the [[Message]] which depends on the [[MessageBodyType]].
+   * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
    * @param message.senderAddress The sender's public SS58 address of the [[Message]].
    * @throws When the sender does not match the owner of the in the Message supplied Object.
    * @throws [[SUBMIT_ATTESTATION_FOR_CLAIM]], [[SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC]], [[ERROR_IDENTITY_MISMATCH]].
@@ -40,7 +45,7 @@ export default class Message implements IMessage {
    */
   public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
     switch (body.type) {
-      case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM:
+      case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM:
         {
           const requestAttestation = body
           if (
@@ -51,7 +56,7 @@ export default class Message implements IMessage {
           }
         }
         break
-      case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
+      case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
         {
           const submitAttestation = body
           if (submitAttestation.content.attestation.owner !== senderAddress) {
@@ -59,7 +64,7 @@ export default class Message implements IMessage {
           }
         }
         break
-      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES:
+      case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES:
         {
           const submitClaimsForCtype: ISubmitClaimsForCTypes = body
           submitClaimsForCtype.content.forEach((claim) => {

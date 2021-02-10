@@ -9,7 +9,6 @@ import {
   IClaim,
   IMessage,
   IRequestAttestationForClaim,
-  MessageBodyType,
   IDelegationBaseNode,
   IPublicIdentity,
   IRequestForAttestation,
@@ -35,10 +34,10 @@ export function createPresentation(
   credentials: Credential[]
 ): Message {
   // did we get the right message type?
-  if (message.body.type !== MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
+  if (message.body.type !== Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES) {
     throw SDKErrors.ERROR_MESSAGE_TYPE(
       message.body.type,
-      MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
+      Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES
     )
   }
 
@@ -57,7 +56,7 @@ export function createPresentation(
 
   return new Message(
     {
-      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
       content: attestedClaims,
     },
     identity,
@@ -114,7 +113,7 @@ export function requestAttestation(
     content: {
       requestForAttestation: request,
     },
-    type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+    type: Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
   }
 
   return {
@@ -134,10 +133,10 @@ export function buildCredential(
   message: IMessage,
   session: ClaimerAttestationSession
 ): Credential {
-  if (message.body.type !== MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
+  if (message.body.type !== Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
     throw SDKErrors.ERROR_MESSAGE_TYPE(
       message.body.type,
-      MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+      Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM
     )
   }
   return Credential.fromRequestAndAttestation(
