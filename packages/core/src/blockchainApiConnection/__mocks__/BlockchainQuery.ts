@@ -1,5 +1,4 @@
 import {
-  Bool,
   Bytes,
   Option,
   Tuple,
@@ -50,26 +49,15 @@ const chainQueryReturnTuples: {
   },
   delegation: {
     // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-    root: Tuple.with(['Hash', AccountId, Bool]),
+    root: TYPE_REGISTRY.getOrUnknown('DelegationRoot'),
     // Delegations: delegation-id -> (root-id, parent-id?, account, permissions, revoked)?
-    delegations: Tuple.with([
-      TYPE_REGISTRY.getOrUnknown('DelegationNodeId'),
-      Option.with(TYPE_REGISTRY.getOrUnknown('DelegationNodeId')),
-      AccountId,
-      TYPE_REGISTRY.getOrUnknown('Permissions'),
-      Bool,
-    ]),
+    delegations: TYPE_REGISTRY.getOrUnknown('DelegationNode'),
     // Children: root-or-delegation-id -> [delegation-id]
     children: TYPE_REGISTRY.getOrUnknown('DelegationNodeId'),
   },
   attestation: {
     // Attestations: claim-hash -> (ctype-hash, attester-account, delegation-id?, revoked)?
-    attestations: Tuple.with([
-      'Hash',
-      AccountId,
-      Option.with(TYPE_REGISTRY.getOrUnknown('DelegationNodeId')),
-      Bool,
-    ]),
+    attestations: TYPE_REGISTRY.getOrUnknown('Attestation'),
     // DelegatedAttestations: delegation-id -> [claim-hash]
     delegatedAttestations: TYPE_REGISTRY.getOrUnknown('Hash'),
   },
