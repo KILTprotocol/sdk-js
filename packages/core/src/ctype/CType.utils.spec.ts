@@ -5,7 +5,7 @@
  */
 
 import { ICType } from '@kiltprotocol/types'
-import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
+import { SDKErrors } from '@kiltprotocol/utils'
 import {
   verifyClaimStructure,
   verifySchema,
@@ -66,7 +66,7 @@ describe('CTypeUtils', () => {
     expect(verifySchemaWithErrors(badClaim, CTypeWrapperModel, [])).toBeFalsy()
     expect(() => {
       verifyClaimStructure(badClaim, ctypeInput)
-    }).toThrow(ERROR_OBJECT_MALFORMED())
+    }).toThrow(SDKErrors.ERROR_OBJECT_MALFORMED())
   })
   it('verifies ctypes', () => {
     expect(verifySchema(ctypeWrapperModel, CTypeModel)).toBeTruthy()

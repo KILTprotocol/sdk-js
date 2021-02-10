@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @group unit/util
+ * @group unit/utils
  * @ignore
  */
 

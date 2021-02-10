@@ -10,10 +10,8 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  */
 
 import { IDelegationNode } from '@kiltprotocol/types'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { factory } from '../config/ConfigService'
-import Crypto from '../crypto'
-import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
-import { ERROR_ROOT_NODE_QUERY } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
 import { getChildren, query, revoke, store } from './DelegationNode.chain'
@@ -90,11 +88,11 @@ export default class DelegationNode extends DelegationBaseNode
       propsToHash.push(this.parentId)
     }
     const uint8Props: Uint8Array[] = propsToHash.map((value) => {
-      return coToUInt8(value)
+      return Crypto.coToUInt8(value)
     })
     uint8Props.push(permissionsAsBitset(this))
-    const generated: string = u8aToHex(
-      Crypto.hash(u8aConcat(...uint8Props), 256)
+    const generated: string = Crypto.u8aToHex(
+      Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
     )
     log.debug(`generateHash(): ${generated}`)
     return generated
@@ -110,7 +108,7 @@ export default class DelegationNode extends DelegationBaseNode
   public async getRoot(): Promise<DelegationRootNode> {
     const rootNode = await queryRoot(this.rootId)
     if (!rootNode) {
-      throw ERROR_ROOT_NODE_QUERY(this.rootId)
+      throw SDKErrors.ERROR_ROOT_NODE_QUERY(this.rootId)
     }
     return rootNode
   }

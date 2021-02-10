@@ -807,6 +807,7 @@ __metadata:
   resolution: "@kiltprotocol/core@workspace:packages/core"
   dependencies:
     "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^3.7.3
     "@polkadot/keyring": ^5.5.2
     "@polkadot/types": ^3.7.3
@@ -823,7 +824,6 @@ __metadata:
     typedoc-plugin-external-module-name: 3.1.0
     typescript: ^3.9.7
     typescript-logging: ^0.6.4
-    uuid: ^8.1.0
   languageName: unknown
   linkType: soft
 
@@ -849,12 +849,29 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@kiltprotocol/utils@workspace:*, @kiltprotocol/utils@workspace:packages/utils":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/utils@workspace:packages/utils"
+  dependencies:
+    "@kiltprotocol/types": "workspace:*"
+    "@polkadot/keyring": ^5.4.4
+    "@polkadot/types": ^3.6.4
+    "@polkadot/util": ^5.4.4
+    "@polkadot/util-crypto": ^5.4.4
+    rimraf: ^3.0.2
+    tweetnacl: ^1.0.3
+    typescript: ^3.9.7
+    uuid: ^8.1.0
+  languageName: unknown
+  linkType: soft
+
 "@kiltprotocol/vc-export@workspace:packages/vc-export":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/vc-export@workspace:packages/vc-export"
   dependencies:
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*"
     "@polkadot/keyring": ^5.5.2
     "@polkadot/types": ^3.7.3
     "@polkadot/util": ^5.5.2
@@ -905,7 +922,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/keyring@npm:^5.5.2":
+"@polkadot/keyring@npm:^5.4.4, @polkadot/keyring@npm:^5.5.2":
   version: 5.5.2
   resolution: "@polkadot/keyring@npm:5.5.2"
   dependencies:
@@ -986,7 +1003,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:3.7.3, @polkadot/types@npm:^3.7.3":
+"@polkadot/types@npm:3.7.3, @polkadot/types@npm:^3.6.4, @polkadot/types@npm:^3.7.3":
   version: 3.7.3
   resolution: "@polkadot/types@npm:3.7.3"
   dependencies:
@@ -1001,7 +1018,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/util-crypto@npm:5.5.2, @polkadot/util-crypto@npm:^5.5.2":
+"@polkadot/util-crypto@npm:5.5.2, @polkadot/util-crypto@npm:^5.4.4, @polkadot/util-crypto@npm:^5.5.2":
   version: 5.5.2
   resolution: "@polkadot/util-crypto@npm:5.5.2"
   dependencies:
@@ -1026,7 +1043,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/util@npm:5.5.2, @polkadot/util@npm:^5.5.2":
+"@polkadot/util@npm:5.5.2, @polkadot/util@npm:^5.4.4, @polkadot/util@npm:^5.5.2":
   version: 5.5.2
   resolution: "@polkadot/util@npm:5.5.2"
   dependencies:

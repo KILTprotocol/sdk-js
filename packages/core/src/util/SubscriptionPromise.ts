@@ -1,4 +1,4 @@
-import { ERROR_TIMEOUT } from '../errorhandling/SDKErrors'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 /**
  * A function that determines whether a new incoming value should reject or resolve the promise.
@@ -61,7 +61,7 @@ export function makeSubscriptionPromise<SubscriptionType>(
         }
   if (timeout)
     setTimeout(() => {
-      reject(ERROR_TIMEOUT())
+      reject(SDKErrors.ERROR_TIMEOUT())
     }, timeout)
   return { promise, subscription }
 }

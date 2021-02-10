@@ -5,7 +5,7 @@
  */
 
 import * as u8aUtil from '@polkadot/util/u8a'
-import { coToUInt8 } from '../crypto/Crypto'
+import { Crypto } from '@kiltprotocol/utils'
 import Identity from './Identity'
 import PublicIdentity from './PublicIdentity'
 
@@ -66,7 +66,7 @@ describe('Identity', () => {
 
   it('should have different keys for signing and boxing', () => {
     const alice = Identity.buildFromMnemonic(Identity.generateMnemonic())
-    expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
+    expect(Crypto.coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
       alice.boxKeyPair.publicKey
     )
   })
@@ -85,7 +85,7 @@ describe('Identity', () => {
 
   it('should have different keys for signing and boxing', () => {
     const alice = Identity.buildFromMnemonic(Identity.generateMnemonic())
-    expect(coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
+    expect(Crypto.coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
       alice.boxKeyPair.publicKey
     )
   })
