@@ -4,14 +4,18 @@
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Tuple } from '@polkadot/types'
+import { Option } from '@polkadot/types'
 import { IDelegationNode } from '@kiltprotocol/types'
 import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
 import { fetchChildren, getChildIds } from './Delegation.chain'
-import { CodecWithId, decodeDelegationNode } from './DelegationDecoder'
+import {
+  CodecWithId,
+  decodeDelegationNode,
+  IChainDelegationNode,
+} from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
 
@@ -42,9 +46,9 @@ export async function query(
 ): Promise<DelegationNode | null> {
   const blockchain = await getCached()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegations<Option<Tuple>>(
-      delegationId
-    )
+    await blockchain.api.query.delegation.delegations<
+      Option<IChainDelegationNode>
+    >(delegationId)
   )
   if (decoded) {
     const root = new DelegationNode(
@@ -77,9 +81,11 @@ export async function getChildren(
 ): Promise<DelegationNode[]> {
   log.info(` :: getChildren('${delegationNodeId}')`)
   const childIds: string[] = await getChildIds(delegationNodeId)
-  const queryResults: CodecWithId[] = await fetchChildren(childIds)
+  const queryResults: Array<CodecWithId<
+    Option<IChainDelegationNode>
+  >> = await fetchChildren(childIds)
   const children: DelegationNode[] = queryResults
-    .map((codec: CodecWithId) => {
+    .map((codec: CodecWithId<Option<IChainDelegationNode>>) => {
       const decoded = decodeDelegationNode(codec.codec)
       if (decoded) {
         const child = new DelegationNode(
