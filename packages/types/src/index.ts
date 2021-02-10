@@ -11,6 +11,10 @@
 
 import '@polkadot/api-augment'
 
+import { Kilt } from './chainTypes/definitions'
+
+import './chainTypes/augment-api'
+
 export type { ISubmittableResult } from '@polkadot/types/types'
 export type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 export type { KeyringPair } from '@polkadot/keyring/types'
@@ -36,8 +40,4 @@ export * from './Keystore.js'
 export * from './DidResolver.js'
 export * from './DidDocumentExporter.js'
 
-import { Kilt } from './chainTypes/definitions'
-
 export const apiConstructorTypes = Kilt.types
-
-import './chainTypes/augment-api'
