@@ -28,6 +28,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
+    "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",

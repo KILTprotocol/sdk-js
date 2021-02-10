@@ -12,7 +12,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { getCached } from '../blockchainApiConnection'
 import Identity from '../identity/Identity'
 
-const log = ConfigService.LogFactory.getLogger('CType')
+const log = ConfigService.LoggingFactory.getLogger('CType')
 
 export async function store(
   ctype: ICType,

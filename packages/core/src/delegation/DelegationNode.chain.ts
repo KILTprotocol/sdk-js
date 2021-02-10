@@ -19,7 +19,7 @@ import {
 import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
 
-const log = ConfigService.LogFactory.getLogger('DelegationBaseNode')
+const log = ConfigService.LoggingFactory.getLogger('DelegationBaseNode')
 
 export async function store(
   delegation: IDelegationNode,

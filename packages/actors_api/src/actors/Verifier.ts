@@ -14,7 +14,7 @@ import {
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 
-const log = ConfigService.LogFactory.getLogger('Verifier')
+const log = ConfigService.LoggingFactory.getLogger('Verifier')
 
 export interface IPresentationReq {
   properties: string[]

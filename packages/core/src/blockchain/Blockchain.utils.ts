@@ -22,7 +22,7 @@ export type ResultEvaluator = Evaluator<SubmittableResult>
 export type ErrorEvaluator = Evaluator<Error>
 export type SubscriptionPromiseOptions = TerminationOptions<SubmittableResult>
 
-const log = ConfigService.LogFactory.getLogger('Blockchain')
+const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
 export const TxOutdated = 'Transaction is outdated'
 export const TxPriority = 'Priority is too low:'

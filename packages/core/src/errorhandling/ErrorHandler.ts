@@ -10,7 +10,7 @@ import { EventRecord } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { errorForCode, ExtrinsicError } from './ExtrinsicError'
 
-const log = ConfigService.LogFactory.getLogger('Blockchain')
+const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
 export enum SystemEvent {
   ExtrinsicSuccess = '0x0000',

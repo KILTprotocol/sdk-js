@@ -807,6 +807,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/config@workspace:packages/config"
   dependencies:
+    "@kiltprotocol/utils": "workspace:*"
     rimraf: ^3.0.2
     typescript: ^3.9.7
     typescript-logging: ^0.6.4
@@ -844,6 +845,7 @@ __metadata:
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
     "@kiltprotocol/actors-api": "workspace:*"
+    "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     rimraf: ^3.0.2
@@ -881,6 +883,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/vc-export@workspace:packages/vc-export"
   dependencies:
+    "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"

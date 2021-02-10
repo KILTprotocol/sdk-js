@@ -25,7 +25,7 @@ import {
   verifyDidDocumentSignature,
 } from './Did.utils'
 
-const log = ConfigService.LogFactory.getLogger('DID')
+const log = ConfigService.LoggingFactory.getLogger('DID')
 
 export const IDENTIFIER_PREFIX = 'did:kilt:'
 export const SERVICE_KILT_MESSAGING = 'KiltMessagingService'

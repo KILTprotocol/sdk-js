@@ -24,7 +24,7 @@ import {
   SubscriptionPromiseOptions,
 } from './Blockchain.utils'
 
-const log = ConfigService.LogFactory.getLogger('Blockchain')
+const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
 export type Stats = {
   chain: string

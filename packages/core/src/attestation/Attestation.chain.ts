@@ -13,7 +13,7 @@ import Identity from '../identity/Identity'
 import Attestation from './Attestation'
 import { DelegationNodeId } from '../delegation/DelegationDecoder'
 
-const log = ConfigService.LogFactory.getLogger('Attestation')
+const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
 export async function store(
   attestation: IAttestation,

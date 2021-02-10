@@ -20,7 +20,7 @@ import DelegationNode from './DelegationNode'
 import { getChildren } from './DelegationNode.chain'
 import { query, revoke, store } from './DelegationRootNode.chain'
 
-const log = ConfigService.LogFactory.getLogger('DelegationRootNode')
+const log = ConfigService.LoggingFactory.getLogger('DelegationRootNode')
 
 export default class DelegationRootNode extends DelegationBaseNode
   implements IDelegationRootNode {

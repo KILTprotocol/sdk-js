@@ -19,7 +19,7 @@ import permissionsAsBitset from './DelegationNode.utils'
 import DelegationRootNode from './DelegationRootNode'
 import { query as queryRoot } from './DelegationRootNode.chain'
 
-const log = ConfigService.LogFactory.getLogger('DelegationNode')
+const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
 export default class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
