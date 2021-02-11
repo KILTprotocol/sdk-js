@@ -8,17 +8,13 @@ import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
+import { IIdentity } from '@kiltprotocol/types'
+import { ErrorHandler, ExtrinsicError, ExtrinsicErrors } from '../errorhandling'
 import {
   Evaluator,
   makeSubscriptionPromise,
   TerminationOptions,
-} from '../util/SubscriptionPromise'
-import {
-  ExtrinsicError,
-  ExtrinsicErrors,
-} from '../errorhandling/ExtrinsicError'
-import { ErrorHandler } from '../errorhandling'
-import Identity from '../identity/Identity'
+} from './SubscriptionPromise'
 import getCached from '../blockchainApiConnection'
 
 export type ResultEvaluator = Evaluator<SubmittableResult>
@@ -171,7 +167,7 @@ export async function submitSignedTx(
  */
 export async function submitTxWithReSign(
   tx: SubmittableExtrinsic,
-  identity?: Identity,
+  identity?: IIdentity,
   opts?: Partial<SubscriptionPromiseOptions>
 ): Promise<SubmittableResult> {
   const chain = await getCached()

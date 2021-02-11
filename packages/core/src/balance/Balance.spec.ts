@@ -8,25 +8,29 @@ import { SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
 import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
+import TYPE_REGISTRY from '@kiltprotocol/chain-helpers/src/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'
 import {
   getBalance,
   listenToBalanceChanges,
   makeTransfer,
 } from './Balance.chain'
-import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import { BlockchainUtils } from '../blockchain'
 import BalanceUtils from './Balance.utils'
+import Kilt from '../kilt/Kilt'
 
-jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+jest.mock(
+  '@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection'
+)
 
 const BALANCE = 42
 const FEE = 30
 
 describe('Balance', () => {
+  Kilt.config({ address: 'ws://testSting' })
   let alice: Identity
   let bob: Identity
-  const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
   const accountInfo = (balance: number): AccountInfo => {

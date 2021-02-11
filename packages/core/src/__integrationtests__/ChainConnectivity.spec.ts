@@ -6,9 +6,9 @@
  */
 
 import { Header } from '@polkadot/types/interfaces/types'
+import { blockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { WS_ADDRESS } from './utils'
 import { config, disconnect } from '../kilt'
-import { getCached } from '../blockchainApiConnection'
 
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
@@ -16,7 +16,7 @@ beforeAll(async () => {
 
 describe('Blockchain', () => {
   it('should get stats', async () => {
-    const blockchain = await getCached()
+    const blockchain = await blockchainApiConnection.getCached()
     expect(blockchain).not.toBeUndefined()
     const stats = await blockchain!.getStats()
 
@@ -28,7 +28,7 @@ describe('Blockchain', () => {
   })
 
   it('should listen to blocks', async (done) => {
-    const blockchain = await getCached()
+    const blockchain = await blockchainApiConnection.getCached()
     const listener = (header: Header): void => {
       // console.log(`Best block number ${header.number}`)
       expect(Number(header.number)).toBeGreaterThanOrEqual(0)

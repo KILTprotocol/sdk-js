@@ -17,7 +17,7 @@ import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import Identity from '../identity/Identity'
+import { IIdentity } from '@kiltprotocol/types'
 import {
   parseSubscriptionOptions,
   submitSignedTx,
@@ -38,22 +38,22 @@ export interface IBlockchainApi {
   getStats(): Promise<Stats>
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
   signTx(
-    identity: Identity,
+    identity: IIdentity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic>
   submitTxWithReSign(
     tx: SubmittableExtrinsic,
-    identity?: Identity,
+    identity?: IIdentity,
     opts?: SubscriptionPromiseOptions
   ): Promise<SubmittableResult>
   submitTx(
-    identity: Identity,
+    identity: IIdentity,
     tx: SubmittableExtrinsic,
     opts?: SubscriptionPromiseOptions
   ): Promise<SubmittableResult>
   getNonce(accountAddress: string): Promise<BN>
   reSignTx(
-    identity: Identity,
+    identity: IIdentity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic>
 }
@@ -69,11 +69,11 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public api: ApiPromise
-  private accountNonces: Map<Identity['address'], BN>
+  private accountNonces: Map<IIdentity['address'], BN>
 
   public constructor(api: ApiPromise) {
     this.api = api
-    this.accountNonces = new Map<Identity['address'], BN>()
+    this.accountNonces = new Map<IIdentity['address'], BN>()
   }
 
   public async getStats(): Promise<Stats> {
@@ -102,7 +102,7 @@ export default class Blockchain implements IBlockchainApi {
    *
    */
   public async signTx(
-    identity: Identity,
+    identity: IIdentity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic> {
     const nonce = await this.getNonce(identity.address)
@@ -128,7 +128,7 @@ export default class Blockchain implements IBlockchainApi {
    */
   public async submitTxWithReSign(
     tx: SubmittableExtrinsic,
-    identity?: Identity,
+    identity?: IIdentity,
     opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
     const options = parseSubscriptionOptions(opts)
@@ -154,7 +154,7 @@ export default class Blockchain implements IBlockchainApi {
    *
    */
   public async submitTx(
-    identity: Identity,
+    identity: IIdentity,
     tx: SubmittableExtrinsic,
     opts?: Partial<SubscriptionPromiseOptions>
   ): Promise<SubmittableResult> {
@@ -198,7 +198,7 @@ export default class Blockchain implements IBlockchainApi {
    *
    */
   public async reSignTx(
-    identity: Identity,
+    identity: IIdentity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic> {
     this.accountNonces.delete(identity.address)

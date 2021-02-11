@@ -7,21 +7,13 @@
 import { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import BN from 'bn.js/'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { BlockchainUtils, Chain } from '@kiltprotocol/chain-helpers'
 import { makeTransfer } from '../balance/Balance.chain'
-import {
-  IS_FINALIZED,
-  IS_IN_BLOCK,
-  submitSignedTxRaw,
-  submitTxWithReSign,
-  TxOutdated,
-  parseSubscriptionOptions,
-} from '../blockchain/Blockchain.utils'
 import Identity from '../identity/Identity'
 import { wannabeFaucet, wannabeCharlie, WS_ADDRESS } from './utils'
-import { IBlockchainApi } from '../blockchain/Blockchain'
 import { config, connect, disconnect } from '../kilt'
 
-let blockchain: IBlockchainApi
+let blockchain: Chain.IBlockchainApi
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
   blockchain = await connect()
@@ -41,8 +33,8 @@ describe('Chain returns specific errors, that we check for', () => {
       new BN(10000),
       0
     )
-    await submitTxWithReSign(tx, charlie, {
-      resolveOn: IS_FINALIZED,
+    await BlockchainUtils.submitTxWithReSign(tx, charlie, {
+      resolveOn: BlockchainUtils.IS_FINALIZED,
     })
   }, 40000)
 
@@ -84,10 +76,10 @@ describe('Chain returns specific errors, that we check for', () => {
         version: blockchain.api.extrinsicVersion,
       }
     )
-    await submitSignedTxRaw(
+    await BlockchainUtils.submitSignedTxRaw(
       tx,
-      parseSubscriptionOptions({
-        resolveOn: IS_IN_BLOCK,
+      BlockchainUtils.parseSubscriptionOptions({
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     )
 
@@ -103,13 +95,13 @@ describe('Chain returns specific errors, that we check for', () => {
     )
 
     await expect(
-      submitSignedTxRaw(
+      BlockchainUtils.submitSignedTxRaw(
         errorTx,
-        parseSubscriptionOptions({
-          resolveOn: IS_IN_BLOCK,
+        BlockchainUtils.parseSubscriptionOptions({
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
-    ).rejects.toThrow(TxOutdated)
+    ).rejects.toThrow(BlockchainUtils.TxOutdated)
   }, 40000)
 
   it(`throws 'ERROR_TRANSACTION_USURPED' error if separate Tx was imported with identical nonce but higher priority while Tx is in pool`, async () => {
@@ -152,10 +144,10 @@ describe('Chain returns specific errors, that we check for', () => {
       }
     )
     expect(
-      submitSignedTxRaw(
+      BlockchainUtils.submitSignedTxRaw(
         tx,
-        parseSubscriptionOptions({
-          resolveOn: IS_IN_BLOCK,
+        BlockchainUtils.parseSubscriptionOptions({
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
     ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_USURPED())
@@ -171,10 +163,10 @@ describe('Chain returns specific errors, that we check for', () => {
       errorSigner.toPayload()
     )
 
-    await submitSignedTxRaw(
+    await BlockchainUtils.submitSignedTxRaw(
       errorTx,
-      parseSubscriptionOptions({
-        resolveOn: IS_IN_BLOCK,
+      BlockchainUtils.parseSubscriptionOptions({
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     )
   }, 40000)

@@ -7,7 +7,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option } from '@polkadot/types'
 import { IDelegationNode } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
-import { getCached } from '../blockchainApiConnection'
+import { blockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
 import { fetchChildren, getChildIds } from './Delegation.chain'
@@ -26,7 +26,7 @@ export async function store(
   identity: Identity,
   signature: string
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await getCached()
+  const blockchain = await blockchainApiConnection.getCached()
   const includeParentId: boolean = delegation.parentId
     ? delegation.parentId !== delegation.rootId
     : false
@@ -44,7 +44,7 @@ export async function store(
 export async function query(
   delegationId: IDelegationNode['id']
 ): Promise<DelegationNode | null> {
-  const blockchain = await getCached()
+  const blockchain = await blockchainApiConnection.getCached()
   const decoded = decodeDelegationNode(
     await blockchain.api.query.delegation.delegations<
       Option<IChainDelegationNode>
@@ -68,7 +68,7 @@ export async function revoke(
   delegationId: IDelegationNode['id'],
   identity: Identity
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await getCached()
+  const blockchain = await blockchainApiConnection.getCached()
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.revokeDelegation(
     delegationId
   )

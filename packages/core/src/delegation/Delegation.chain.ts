@@ -7,7 +7,7 @@ import { Option, Vec } from '@polkadot/types'
 import { H256 } from '@polkadot/types/interfaces'
 import { IDelegationBaseNode } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import { getCached } from '../blockchainApiConnection'
+import { blockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { CodecWithId, IChainDelegationNode } from './DelegationDecoder'
 
 function decodeDelegatedAttestations(queryResult: Vec<H256>): string[] {
@@ -18,7 +18,7 @@ function decodeDelegatedAttestations(queryResult: Vec<H256>): string[] {
 export async function getAttestationHashes(
   id: IDelegationBaseNode['id']
 ): Promise<string[]> {
-  const blockchain = await getCached()
+  const blockchain = await blockchainApiConnection.getCached()
   const encodedHashes = await blockchain.api.query.attestation.delegatedAttestations<
     Vec<H256>
   >(id)
@@ -28,7 +28,7 @@ export async function getAttestationHashes(
 export async function getChildIds(
   id: IDelegationBaseNode['id']
 ): Promise<string[]> {
-  const blockchain = await getCached()
+  const blockchain = await blockchainApiConnection.getCached()
   const childIds = await blockchain.api.query.delegation.children<Vec<H256>>(id)
   DecoderUtils.assertCodecIsType(childIds, ['Vec<DelegationNodeId>'])
   return childIds.map((hash) => hash.toString())
@@ -37,7 +37,7 @@ export async function getChildIds(
 export async function fetchChildren(
   childIds: string[]
 ): Promise<Array<CodecWithId<Option<IChainDelegationNode>>>> {
-  const blockchain = await getCached()
+  const blockchain = await blockchainApiConnection.getCached()
   const val: Array<CodecWithId<
     Option<IChainDelegationNode>
   >> = await Promise.all(

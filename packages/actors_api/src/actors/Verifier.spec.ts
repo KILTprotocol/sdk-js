@@ -6,13 +6,13 @@
 
 import { CType, Identity } from '@kiltprotocol/core'
 import { IClaim, ICType } from '@kiltprotocol/types'
-import { mockChainQueryReturn } from '@kiltprotocol/core/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import Message from '@kiltprotocol/messaging'
 import { Attester, Claimer, Verifier } from '..'
 import Credential from '../credential/Credential'
 
 jest.mock(
-  '@kiltprotocol/core/lib/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
 )
 
 describe('Verifier', () => {
@@ -22,7 +22,7 @@ describe('Verifier', () => {
   let cType: CType
   let claim: IClaim
   let credential: Credential
-  const blockchainApi = require('@kiltprotocol/core/lib/blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
   beforeAll(async () => {

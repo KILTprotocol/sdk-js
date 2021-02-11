@@ -28,13 +28,14 @@ import BN from 'bn.js'
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair } from 'tweetnacl'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { IIdentity } from '@kiltprotocol/types'
 import PublicIdentity from './PublicIdentity'
 
 type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
   | Identity['boxKeyPair']['publicKey']
 
-export default class Identity {
+export default class Identity implements IIdentity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
 
   /**

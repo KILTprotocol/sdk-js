@@ -1,10 +1,10 @@
 import {
-  BlockchainUtils,
   Attestation,
   PublicIdentity,
   SDKErrors,
   Identity,
   DelegationNodeUtils,
+  SubmittableExtrinsic,
 } from '@kiltprotocol/core'
 import {
   IAttestation,
@@ -12,6 +12,7 @@ import {
   IRequestAttestationForClaim,
 } from '@kiltprotocol/types'
 import Message from '@kiltprotocol/messaging'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 
 export interface IRevocationHandle {
   claimHash: IAttestation['claimHash']
@@ -115,5 +116,7 @@ export async function revokeAttestation(
     revocationHandle.claimHash,
     attester,
     delegationTreeTraversalSteps
-  ).then((tx) => BlockchainUtils.submitTxWithReSign(tx, attester))
+  ).then((tx: SubmittableExtrinsic) =>
+    BlockchainUtils.submitTxWithReSign(tx, attester)
+  )
 }
