@@ -8,14 +8,11 @@ import { hexToBn } from '@polkadot/util'
 import {
   IClaim,
   CompressedClaim,
-  CompressedPartialClaim,
   PartialClaim,
+  CompressedPartialClaim,
 } from '@kiltprotocol/types'
-import jsonabc from '../util/jsonabc'
-import * as SDKErrors from '../errorhandling/SDKErrors'
-import { validateAddress, validateHash } from '../util/DataUtils'
+import { jsonabc, DataUtils, Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { getIdForCTypeHash } from '../ctype/CType.utils'
-import { HashingOptions, hashStatements } from '../crypto/Crypto'
 import Did from '../did'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
@@ -97,7 +94,7 @@ function makeStatementsJsonLD(claim: PartialClaim): string[] {
  */
 export function hashClaimContents(
   claim: PartialClaim,
-  options: HashingOptions & {
+  options: Crypto.HashingOptions & {
     canonicalisation?: (claim: PartialClaim) => string[]
   } = {}
 ): {
@@ -110,7 +107,7 @@ export function hashClaimContents(
   // use canonicalisation algorithm to make hashable statement strings
   const statements = canonicalisation(claim)
   // iterate over statements to produce salted hashes
-  const processed = hashStatements(statements, options)
+  const processed = Crypto.hashStatements(statements, options)
   // produce array of salted hashes to add to credential
   const hashes = processed
     .map(({ saltedHash }) => saltedHash)
@@ -143,7 +140,7 @@ export function verifyDisclosedAttributes(
     nonces: Record<string, string>
     hashes: string[]
   },
-  options: Pick<HashingOptions, 'hasher'> & {
+  options: Pick<Crypto.HashingOptions, 'hasher'> & {
     canonicalisation?: (claim: PartialClaim) => string[]
   } = {}
 ): { verified: boolean; errors: SDKErrors.SDKError[] } {
@@ -154,7 +151,7 @@ export function verifyDisclosedAttributes(
   // use canonicalisation algorithm to make hashable statement strings
   const statements = canonicalisation(claim)
   // iterate over statements to produce salted hashes
-  const hashed = hashStatements(statements, { ...options, nonces })
+  const hashed = Crypto.hashStatements(statements, { ...options, nonces })
   // check resulting hashes
   const digestsInProof = Object.keys(nonces)
   return hashed.reduce<{ verified: boolean; errors: SDKErrors.SDKError[] }>(
@@ -192,7 +189,7 @@ export function errorCheck(input: IClaim | PartialClaim): void {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
   if (input.owner) {
-    validateAddress(input.owner, 'Claim owner')
+    DataUtils.validateAddress(input.owner, 'Claim owner')
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {
@@ -205,7 +202,7 @@ export function errorCheck(input: IClaim | PartialClaim): void {
       }
     })
   }
-  validateHash(input.cTypeHash, 'Claim CType')
+  DataUtils.validateHash(input.cTypeHash, 'Claim CType')
 }
 
 /**

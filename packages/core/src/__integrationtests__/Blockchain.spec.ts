@@ -6,6 +6,7 @@
 
 import { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import BN from 'bn.js/'
+import { SDKErrors } from '@kiltprotocol/utils'
 import { makeTransfer } from '../balance/Balance.chain'
 import {
   IS_FINALIZED,
@@ -15,7 +16,6 @@ import {
   TxOutdated,
   parseSubscriptionOptions,
 } from '../blockchain/Blockchain.utils'
-import { ERROR_TRANSACTION_USURPED } from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import { wannabeFaucet, wannabeCharlie, WS_ADDRESS } from './utils'
 import { IBlockchainApi } from '../blockchain/Blockchain'
@@ -158,7 +158,7 @@ describe('Chain returns specific errors, that we check for', () => {
           resolveOn: IS_IN_BLOCK,
         })
       )
-    ).rejects.toThrow(ERROR_TRANSACTION_USURPED())
+    ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_USURPED())
 
     const { signature: errorSignature } = blockchain.api
       .createType('ExtrinsicPayload', errorSigner.toPayload(), {

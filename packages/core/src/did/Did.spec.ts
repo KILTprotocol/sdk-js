@@ -5,15 +5,12 @@
  */
 
 import { U8aFixed } from '@polkadot/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import { Did, IDid } from '..'
 import { BlockchainUtils } from '../blockchain'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
 } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import {
-  ERROR_DID_IDENTIFIER_MISMATCH,
-  ERROR_INVALID_DID_PREFIX,
-} from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import {
   getIdentifierFromAddress,
@@ -72,7 +69,7 @@ describe('DID', () => {
   it('query by identifier invalid identifier', async () => {
     const identifier = 'invalidIdentifier'
     await expect(Did.queryByIdentifier(identifier)).rejects.toThrow(
-      ERROR_INVALID_DID_PREFIX(identifier)
+      SDKErrors.ERROR_INVALID_DID_PREFIX(identifier)
     )
   })
 
@@ -231,7 +228,9 @@ describe('DID', () => {
 
     expect(() =>
       verifyDidDocumentSignature(signedDidDocument, id)
-    ).toThrowError(ERROR_DID_IDENTIFIER_MISMATCH(id, signedDidDocument.id))
+    ).toThrowError(
+      SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(id, signedDidDocument.id)
+    )
   })
 
   it('gets identifier from address', () => {

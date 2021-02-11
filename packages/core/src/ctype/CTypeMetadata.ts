@@ -5,7 +5,7 @@
  */
 
 import { ICTypeMetadata } from '@kiltprotocol/types'
-import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
+import { SDKErrors } from '@kiltprotocol/utils'
 import CTypeUtils from './CType.utils'
 import { MetadataModel } from './CTypeSchema'
 
@@ -23,7 +23,7 @@ export default class CTypeMetadata implements ICTypeMetadata {
    */
   public constructor(metadata: ICTypeMetadata) {
     if (!CTypeUtils.verifySchema(metadata, MetadataModel)) {
-      throw ERROR_OBJECT_MALFORMED()
+      throw SDKErrors.ERROR_OBJECT_MALFORMED()
     }
     this.metadata = metadata.metadata
     this.ctypeHash = metadata.ctypeHash

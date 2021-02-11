@@ -8,7 +8,7 @@
  */
 
 import { v4 as uuid } from 'uuid'
-import { hashStr } from '../crypto'
+import { hashStr } from './Crypto'
 
 /**
  * Generates a H256 compliant UUID.

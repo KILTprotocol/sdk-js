@@ -16,8 +16,8 @@ import { IDelegationRootNode, Permission } from '@kiltprotocol/types'
 import { Struct } from '@polkadot/types/codec'
 import { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
 import { u32 } from '@polkadot/types/primitive'
+import { DecoderUtils } from '@kiltprotocol/utils'
 import { DelegationNode } from '..'
-import { assertCodecIsType } from '../util/Decode'
 
 export type CodecWithId<C> = {
   id: string
@@ -38,7 +38,7 @@ export interface IChainDelegationRoot extends Struct {
 export function decodeRootDelegation(
   encoded: Option<IChainDelegationRoot>
 ): RootDelegationRecord | null {
-  assertCodecIsType(encoded, ['Option<DelegationRoot>'])
+  DecoderUtils.assertCodecIsType(encoded, ['Option<DelegationRoot>'])
   if (encoded.isSome) {
     const delegationRoot = encoded.unwrap()
     // TODO: check that root is none
@@ -89,7 +89,7 @@ export interface IChainDelegationNode extends Struct {
 export function decodeDelegationNode(
   encoded: Option<IChainDelegationNode>
 ): DelegationNodeRecord | null {
-  assertCodecIsType(encoded, ['Option<DelegationNode>'])
+  DecoderUtils.assertCodecIsType(encoded, ['Option<DelegationNode>'])
   if (encoded.isSome) {
     const delegationNode = encoded.unwrap()
 

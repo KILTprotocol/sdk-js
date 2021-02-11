@@ -2,7 +2,7 @@
  * SDKErrors are KILT-specific errors, with associated codes and descriptions.
  *
  * @packageDocumentation
- * @module SDKError
+ * @module SDKErrors
  * @preferred
  */
 

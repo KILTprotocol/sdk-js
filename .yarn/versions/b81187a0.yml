@@ -4,3 +4,4 @@ undecided:
   - "@kiltprotocol/core"
   - "@kiltprotocol/sdk-js"
   - "@kiltprotocol/types"
+  - "@kiltprotocol/utils"

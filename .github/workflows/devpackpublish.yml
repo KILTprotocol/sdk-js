@@ -25,8 +25,12 @@ jobs:
           node-version: 10
       - name: Install dependencies
         run: yarn install --immutable
-      - name: Set package version as prerelease
-        run: yarn run version prerelease
+      - name: Bump prerelease version of root package
+        run: yarn version prerelease
+      - name: Get current package version
+        run: package_version="$(node -pe "require('./package.json').version")"
+      - name: Set all other packages to same version
+        run: yarn run version $package_version
       - name: Build packages
         run: yarn run build
       - name: Publish to npm

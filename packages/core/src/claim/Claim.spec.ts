@@ -4,13 +4,9 @@
  * @ignore
  */
 
+import { SDKErrors } from '@kiltprotocol/utils'
 import { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
 import CType from '../ctype/CType'
-import {
-  ERROR_ADDRESS_INVALID,
-  ERROR_CTYPE_HASH_NOT_PROVIDED,
-  ERROR_HASH_MALFORMED,
-} from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import Claim from './Claim'
 import ClaimUtils from './Claim.utils'
@@ -134,14 +130,17 @@ describe('Claim', () => {
     expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
 
     expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowError(
-      ERROR_CTYPE_HASH_NOT_PROVIDED()
+      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
     )
 
     expect(() => ClaimUtils.errorCheck(malformedCTypeHash)).toThrowError(
-      ERROR_HASH_MALFORMED(malformedCTypeHash.cTypeHash, 'Claim CType')
+      SDKErrors.ERROR_HASH_MALFORMED(
+        malformedCTypeHash.cTypeHash,
+        'Claim CType'
+      )
     )
     expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowError(
-      ERROR_ADDRESS_INVALID(malformedAddress.owner, 'Claim owner')
+      SDKErrors.ERROR_ADDRESS_INVALID(malformedAddress.owner, 'Claim owner')
     )
   })
 })

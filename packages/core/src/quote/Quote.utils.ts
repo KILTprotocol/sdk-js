@@ -14,7 +14,7 @@ import {
   IQuoteAgreement,
   IQuoteAttesterSigned,
 } from '@kiltprotocol/types'
-import * as SDKErrors from '../errorhandling/SDKErrors'
+import { SDKErrors } from '@kiltprotocol/utils'
 
 /**
  *  Compresses the cost from a [[Quote]] object.

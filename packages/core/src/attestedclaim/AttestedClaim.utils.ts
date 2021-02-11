@@ -5,8 +5,8 @@
  */
 
 import { IAttestedClaim, CompressedAttestedClaim } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import AttestationUtils from '../attestation/Attestation.utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
 import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
 import AttestedClaim from './AttestedClaim'
 

@@ -9,19 +9,6 @@ import { Codec } from '@polkadot/types/types'
  */
 
 /**
- * Checks for a non-null byte in the Uint8Array representation
- * of the codec. This is a pretty sound indicator that the
- * codec does not hold an empty default value. The reverse inference
- * does not apply! Valid values could be encoded only with 0 bytes.
- *
- * @param codec The codec type to check for non-empty bytes.
- * @returns Whether the codec is evidently non-empty. In case of `false` it *may* be empty.
- */
-export function hasNonNullByte(codec: Codec): boolean {
-  return !codec.toU8a().some((e) => e !== 0)
-}
-
-/**
  * Checks nested codec types against a type description string. Uses `codec.toRawType()` internally.
  *
  * @param codec The codec to type check.
@@ -45,5 +32,3 @@ export function assertCodecIsType(codec: Codec, types: string[]): void {
       `expected Codec type(s) ${types}, got ${codec.toRawType()}`
     )
 }
-
-export default hasNonNullByte

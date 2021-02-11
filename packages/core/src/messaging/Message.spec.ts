@@ -15,9 +15,7 @@ import {
   IRequestClaimsForCTypes,
   ISubmitClaimsForCTypes,
 } from '@kiltprotocol/types'
-import Crypto from '../crypto'
-import { EncryptedAsymmetricString } from '../crypto/Crypto'
-import * as SDKErrors from '../errorhandling/SDKErrors'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import Identity from '../identity/Identity'
 import * as Quote from '../quote/Quote'
 import Message from './Message'
@@ -94,7 +92,7 @@ describe('Messaging', () => {
       Message.decrypt(encryptedMessageWrongContent, identityBob)
     ).toThrowError(SDKErrors.ERROR_DECODING_MESSAGE())
 
-    const encryptedWrongBody: EncryptedAsymmetricString = identityAlice.encryptAsymmetricAsStr(
+    const encryptedWrongBody: Crypto.EncryptedAsymmetricString = identityAlice.encryptAsymmetricAsStr(
       '{ wrong JSON',
       identityBob.getBoxPublicKey()
     )

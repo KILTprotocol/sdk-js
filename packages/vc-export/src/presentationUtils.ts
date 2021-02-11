@@ -1,6 +1,6 @@
 import { blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
-import { Crypto } from '@kiltprotocol/core'
+import { Crypto } from '@kiltprotocol/utils'
 import {
   VerifiableCredential,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,

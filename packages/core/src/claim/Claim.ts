@@ -16,12 +16,12 @@ import {
   IClaim,
   CompressedClaim,
   IPublicIdentity,
-  PartialClaim,
   CompressedPartialClaim,
+  PartialClaim,
 } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import ICType from '../ctype/CType'
 import CTypeUtils from '../ctype/CType.utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
 import ClaimUtils from './Claim.utils'
 
 function verifyClaim(

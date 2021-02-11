@@ -2,7 +2,8 @@ import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
 import { signatureVerify, blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
 import Ajv from 'ajv'
-import { Attestation, Crypto, CTypeSchema, Did } from '@kiltprotocol/core'
+import { Attestation, CTypeSchema, Did } from '@kiltprotocol/core'
+import { Crypto } from '@kiltprotocol/utils'
 import {
   VerifiableCredential,
   SelfSignedProof,
