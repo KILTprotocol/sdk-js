@@ -86,6 +86,10 @@ export const extrinsicErrorDict = {
       3010,
       'not authorized to delegate'
     ),
+    ERROR_EXCEEDED_REVOCATION_BOUNDS: new ExtrinsicError(
+      3011,
+      'exceeded revocation bounds'
+    ),
     UNKNOWN_ERROR: new ExtrinsicError(
       3100,
       'an unknown delegation module error occured'
