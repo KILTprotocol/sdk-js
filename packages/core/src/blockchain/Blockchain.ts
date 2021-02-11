@@ -15,7 +15,7 @@ import { AnyJson, Codec } from '@polkadot/types/types'
 import { Text } from '@polkadot/types'
 import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
-import { ERROR_TRANSACTION_RECOVERABLE } from '../errorhandling/SDKErrors'
+import { SDKErrors } from '@kiltprotocol/utils'
 import { factory as LoggerFactory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import {
@@ -134,7 +134,7 @@ export default class Blockchain implements IBlockchainApi {
     const options = parseSubscriptionOptions(opts)
     const retry = async (reason: Error): Promise<SubmittableResult> => {
       if (
-        reason.message === ERROR_TRANSACTION_RECOVERABLE().message &&
+        reason.message === SDKErrors.ERROR_TRANSACTION_RECOVERABLE().message &&
         identity
       ) {
         return submitSignedTx(await this.reSignTx(identity, tx), options)

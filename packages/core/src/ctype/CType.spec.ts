@@ -7,6 +7,7 @@
 import { SubmittableResult } from '@polkadot/api'
 import { TypeRegistry } from '@polkadot/types'
 import { Option } from '@polkadot/types/codec'
+import { SDKErrors } from '@kiltprotocol/utils'
 import {
   ICType,
   CompressedCType,
@@ -16,12 +17,6 @@ import {
 } from '@kiltprotocol/types'
 import { BlockchainUtils } from '../blockchain'
 import Claim from '../claim/Claim'
-import {
-  ERROR_ADDRESS_INVALID,
-  ERROR_HASH_MALFORMED,
-  ERROR_OBJECT_MALFORMED,
-  ERROR_CTYPE_ID_NOT_MATCHING,
-} from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
 import CType from './CType'
@@ -160,21 +155,24 @@ describe('CType', () => {
       },
     }
     expect(() => CType.fromCType(wrongHashCtype)).toThrowError(
-      ERROR_HASH_MALFORMED(wrongHashCtype.hash, 'CType')
+      SDKErrors.ERROR_HASH_MALFORMED(wrongHashCtype.hash, 'CType')
     )
     expect(() => CType.fromCType(faultySchemaCtype)).toThrowError(
-      ERROR_OBJECT_MALFORMED()
+      SDKErrors.ERROR_OBJECT_MALFORMED()
     )
     expect(() => CType.fromCType(invalidAddressCtype)).toThrowError(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      ERROR_ADDRESS_INVALID(invalidAddressCtype.owner!, 'CType owner')
+      SDKErrors.ERROR_ADDRESS_INVALID(invalidAddressCtype.owner!, 'CType owner')
     )
     expect(() => CType.fromCType(faultyAddressTypeCType)).toThrowError(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      ERROR_ADDRESS_INVALID(faultyAddressTypeCType.owner!, 'CType owner')
+      SDKErrors.ERROR_ADDRESS_INVALID(
+        faultyAddressTypeCType.owner!,
+        'CType owner'
+      )
     )
     expect(() => CType.fromCType(wrongSchemaIdCType)).toThrowError(
-      ERROR_CTYPE_ID_NOT_MATCHING(
+      SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING(
         getIdForSchema(wrongSchemaIdCType.schema),
         wrongSchemaIdCType.schema.$id
       )

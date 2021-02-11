@@ -4,7 +4,7 @@
  * @ignore
  */
 
-import { ERROR_TIMEOUT } from '../errorhandling/SDKErrors'
+import { SDKErrors } from '@kiltprotocol/utils'
 import { Evaluator, makeSubscriptionPromise } from './SubscriptionPromise'
 
 const RESOLVE = 'resolve'
@@ -21,7 +21,7 @@ it('rejects promise on timeout', async () => {
     timeout: 500,
   })
   subscription('something else')
-  await expect(promise).rejects.toThrow(ERROR_TIMEOUT())
+  await expect(promise).rejects.toThrow(SDKErrors.ERROR_TIMEOUT())
 })
 
 it('resolves the promise', async () => {

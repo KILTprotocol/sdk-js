@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/vc-export",
-  "version": "0.19.1-25",
+  "version": "0.19.1-26",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
@@ -30,6 +30,7 @@
   "dependencies": {
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
+    "@kiltprotocol/utils": "workspace:*",
     "@polkadot/keyring": "^5.5.2",
     "@polkadot/types": "^3.7.3",
     "@polkadot/util": "^5.5.2",

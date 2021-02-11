@@ -4,7 +4,8 @@
  * @ignore
  */
 
-import { Crypto, Identity } from '..'
+import { Crypto } from '@kiltprotocol/utils'
+import { Identity } from '..'
 import { BlockchainUtils } from '../blockchain'
 import getCached from '../blockchainApiConnection'
 import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'

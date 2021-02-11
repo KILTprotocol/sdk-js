@@ -5,11 +5,11 @@
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Struct } from '@polkadot/types'
 import { IAttestation } from '@kiltprotocol/types'
+import { DecoderUtils } from '@kiltprotocol/utils'
 import { AccountId, Hash } from '@polkadot/types/interfaces'
 import { getCached } from '../blockchainApiConnection'
 import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
-import { assertCodecIsType } from '../util/Decode'
 import Attestation from './Attestation'
 import { DelegationNodeId } from '../delegation/DelegationDecoder'
 
@@ -47,7 +47,7 @@ function decode(
   encoded: Option<IChainAttestation>,
   claimHash: string // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
-  assertCodecIsType(encoded, ['Option<Attestation>'])
+  DecoderUtils.assertCodecIsType(encoded, ['Option<Attestation>'])
   if (encoded.isSome) {
     const chainAttestation = encoded.unwrap()
     const attestation: IAttestation = {

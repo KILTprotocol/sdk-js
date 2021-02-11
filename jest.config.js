@@ -21,7 +21,9 @@ module.exports = {
     '!**/lib/**',
     '!**/test/**',
     '!**/kilt/*',
-    '!**/blockchainApiConnection/*'
+    '!**/blockchainApiConnection/*',
+    '!**/types/**/*',
+    '!**/SDKErrors.ts'
   ],
   rootDir: 'packages',
   coverageDirectory: 'coverage',

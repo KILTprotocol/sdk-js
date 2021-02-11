@@ -16,10 +16,8 @@ import {
   IQuoteAgreement,
   IQuoteAttesterSigned,
 } from '@kiltprotocol/types'
-import { hashObjectAsStr } from '../crypto/Crypto'
-import { ERROR_QUOTE_MALFORMED } from '../errorhandling/SDKErrors'
+import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import Identity from '../identity/Identity'
-import { validateSignature } from '../util/DataUtils'
 import QuoteSchema from './QuoteSchema'
 
 /**
@@ -69,13 +67,13 @@ export function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   const { attesterSignature, ...basicQuote } = deserializedQuote
-  validateSignature(
-    hashObjectAsStr(basicQuote),
+  DataUtils.validateSignature(
+    Crypto.hashObjectAsStr(basicQuote),
     attesterSignature,
     deserializedQuote.attesterAddress
   )
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
-    throw ERROR_QUOTE_MALFORMED()
+    throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
 
   return {
@@ -97,7 +95,7 @@ export function createAttesterSignature(
   quoteInput: IQuote,
   attesterIdentity: Identity
 ): IQuoteAttesterSigned {
-  const signature = attesterIdentity.signStr(hashObjectAsStr(quoteInput))
+  const signature = attesterIdentity.signStr(Crypto.hashObjectAsStr(quoteInput))
   return {
     ...quoteInput,
     attesterSignature: signature,
@@ -120,7 +118,7 @@ export function fromQuoteDataAndIdentity(
   identity: Identity
 ): IQuoteAttesterSigned {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
-    throw ERROR_QUOTE_MALFORMED()
+    throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
   return createAttesterSignature(quoteInput, identity)
 }
@@ -141,13 +139,13 @@ export function createQuoteAgreement(
   requestRootHash: string
 ): IQuoteAgreement {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
-  validateSignature(
-    hashObjectAsStr(basicQuote),
+  DataUtils.validateSignature(
+    Crypto.hashObjectAsStr(basicQuote),
     attesterSignature,
     attesterSignedQuote.attesterAddress
   )
   const signature = claimerIdentity.signStr(
-    hashObjectAsStr(attesterSignedQuote)
+    Crypto.hashObjectAsStr(attesterSignedQuote)
   )
   return {
     ...attesterSignedQuote,

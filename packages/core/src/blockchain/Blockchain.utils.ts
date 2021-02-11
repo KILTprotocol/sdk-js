@@ -6,14 +6,14 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { ErrorCode, isSDKError, SDKError } from '../errorhandling/SDKErrors'
+import { SDKErrors } from '@kiltprotocol/utils'
 import {
   Evaluator,
   makeSubscriptionPromise,
   TerminationOptions,
 } from '../util/SubscriptionPromise'
-import { ErrorHandler, SDKErrors } from '../errorhandling'
 import { extrinsicErrorDict } from '../errorhandling/ExtrinsicError'
+import { ErrorHandler } from '../errorhandling'
 import { factory as LoggerFactory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import getCached from '../blockchainApiConnection'
@@ -28,13 +28,15 @@ export const TxOutdated = 'Transaction is outdated'
 export const TxPriority = 'Priority is too low:'
 export const TxDuplicate = 'Transaction Already Imported'
 export const RelevantSDKErrors = [
-  ErrorCode.ERROR_TRANSACTION_DUPLICATE,
-  ErrorCode.ERROR_TRANSACTION_OUTDATED,
-  ErrorCode.ERROR_TRANSACTION_PRIORITY,
-  ErrorCode.ERROR_TRANSACTION_USURPED,
+  SDKErrors.ErrorCode.ERROR_TRANSACTION_DUPLICATE,
+  SDKErrors.ErrorCode.ERROR_TRANSACTION_OUTDATED,
+  SDKErrors.ErrorCode.ERROR_TRANSACTION_PRIORITY,
+  SDKErrors.ErrorCode.ERROR_TRANSACTION_USURPED,
 ]
-export const IS_RELEVANT_ERROR: ErrorEvaluator = (err: Error | SDKError) => {
-  return isSDKError(err) && RelevantSDKErrors.includes(err.errorCode)
+export const IS_RELEVANT_ERROR: ErrorEvaluator = (
+  err: Error | SDKErrors.SDKError
+) => {
+  return SDKErrors.isSDKError(err) && RelevantSDKErrors.includes(err.errorCode)
 }
 export const IS_READY: ResultEvaluator = (result) => result.status.isReady
 export const IS_IN_BLOCK: ResultEvaluator = (result) => result.isInBlock

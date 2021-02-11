@@ -24,10 +24,13 @@ import { naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
 import { naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
 import nacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
-import jsonabc from '../util/jsonabc'
+import jsonabc from './jsonabc'
 
 export { encodeAddress, decodeAddress, u8aToHex, u8aConcat }
 
+/**
+ * Types accepted by hashing and crypto functions.
+ */
 export type CryptoInput = Buffer | Uint8Array | string
 
 export type Address = string
@@ -52,16 +55,30 @@ export type EncryptedAsymmetricString = {
   nonce: string
 }
 
+/**
+ * Creates a Uint8Array value from a Uint8Array, Buffer, string or hex input.
+ *
+ * @param input Input array or string. Null or undefined result in an empty array.
+ * @param hexAsString Whether or not a hex string is encoded as a string instead of a number.
+ * @returns A (possibly empty) Uint8Array.
+ */
 export function coToUInt8(
-  input: CryptoInput,
-  rawConvert?: boolean
+  input: CryptoInput | null | undefined,
+  hexAsString = false
 ): Uint8Array {
-  if (rawConvert && isString(input)) {
+  if (hexAsString && isString(input)) {
     return stringToU8a(input)
   }
   return u8aToU8a(input)
 }
 
+/**
+ * Signs a message.
+ *
+ * @param message String or byte array to be signed.
+ * @param signKeyPair KeyringPair used for signing.
+ * @returns Signature over message as byte array.
+ */
 export function sign(
   message: CryptoInput,
   signKeyPair: KeyringPair
@@ -69,6 +86,13 @@ export function sign(
   return signKeyPair.sign(coToUInt8(message), { withType: true })
 }
 
+/**
+ * Signs a message. Returns signature string.
+ *
+ * @param message String or byte array to be signed.
+ * @param signKeyPair KeyringPair used for signing.
+ * @returns Signature over message as hex string.
+ */
 export function signStr(
   message: CryptoInput,
   signKeyPair: KeyringPair
@@ -76,6 +100,14 @@ export function signStr(
   return u8aToHex(sign(message, signKeyPair))
 }
 
+/**
+ * Verifies a signature over a message.
+ *
+ * @param message Original signed message to be verified.
+ * @param signature Signature as hex string or byte array.
+ * @param address Substrate address or public key of the signer.
+ * @returns Whether the signature could be verified.
+ */
 export function verify(
   message: CryptoInput,
   signature: CryptoInput,
@@ -84,6 +116,14 @@ export function verify(
   return signatureVerify(message, signature, address).isValid === true
 }
 
+/**
+ * Encrypts a with a secret/key, which can be decrypted using the same key.
+ *
+ * @param message Message to be encrypted.
+ * @param secret Secret key for encryption & decryption.
+ * @param nonce Random nonce to obscure message contents when encrypted. Will be auto-generated if not supplied.
+ * @returns Encrypted message & nonce used for encryption. Both are needed for decryption.
+ */
 export function encryptSymmetric(
   message: CryptoInput,
   secret: CryptoInput,
@@ -96,6 +136,14 @@ export function encryptSymmetric(
   )
 }
 
+/**
+ * Encrypts a with a secret/key, which can be decrypted using the same key.
+ *
+ * @param message Message to be encrypted.
+ * @param secret Secret key for encryption & decryption.
+ * @param inputNonce Random nonce to obscure message contents that could otherwise be guessed or inferred. Will be auto-generated if not supplied.
+ * @returns Encrypted message as string & nonce used for encryption as hex strings. Both are needed for decryption.
+ */
 export function encryptSymmetricAsStr(
   message: CryptoInput,
   secret: CryptoInput,
@@ -111,6 +159,13 @@ export function encryptSymmetricAsStr(
   return { encrypted, nonce }
 }
 
+/**
+ * Takes a nonce & secret to decrypt a message.
+ *
+ * @param data Object containing encrypted message and the nonce used for encryption.
+ * @param secret Secret key for encryption & decryption.
+ * @returns Decrypted message as byte array.
+ */
 export function decryptSymmetric(
   data: EncryptedSymmetric | EncryptedSymmetricString,
   secret: CryptoInput
@@ -122,6 +177,13 @@ export function decryptSymmetric(
   )
 }
 
+/**
+ * Takes a nonce & secret to decrypt a message.
+ *
+ * @param data Object containing encrypted message and the nonce used for encryption.
+ * @param secret Secret key for encryption & decryption.
+ * @returns Decrypted message as string.
+ */
 export function decryptSymmetricStr(
   data: EncryptedSymmetric | EncryptedSymmetricString,
   secret: CryptoInput
@@ -134,14 +196,34 @@ export function decryptSymmetricStr(
   return result ? u8aToString(result) : null
 }
 
+/**
+ * Create the blake2b and return the result as a u8a with the specified `bitLength`.
+ *
+ * @param value Value to be hashed.
+ * @param bitLength Bit length of hash.
+ * @returns Blake2b hash byte array.
+ */
 export function hash(value: CryptoInput, bitLength?: number): Uint8Array {
   return blake2AsU8a(value, bitLength)
 }
 
+/**
+ * Create the blake2b and return the result as a hex string.
+ *
+ * @param value Value to be hashed.
+ * @returns Blake2b hash as hex string.
+ */
 export function hashStr(value: CryptoInput): string {
   return u8aToHex(hash(value))
 }
 
+/**
+ * Hashes numbers, booleans, and objects by stringifying them. Object keys are sorted to yield consistent hashing.
+ *
+ * @param value Object or value to be hashed.
+ * @param nonce Optional nonce to obscure hashed values that could be guessed.
+ * @returns Blake2b hash as hex string.
+ */
 export function hashObjectAsStr(
   value: Record<string, any> | string | number | boolean,
   nonce?: string
@@ -162,6 +244,14 @@ export function hashObjectAsStr(
   return hashStr(input)
 }
 
+/**
+ * Wrapper around nacl.box. Authenticated encryption of a message for a recipient's public key.
+ *
+ * @param message String or byte array to be enrypted.
+ * @param publicKeyA Public key of the recipient. The owner will be able to decrypt the message.
+ * @param secretKeyB Private key of the sender. Necessary to authenticate the message during decryption.
+ * @returns Encrypted message and nonce used for encryption.
+ */
 export function encryptAsymmetric(
   message: CryptoInput,
   publicKeyA: CryptoInput,
@@ -177,6 +267,14 @@ export function encryptAsymmetric(
   return { box, nonce }
 }
 
+/**
+ * Wrapper around nacl.box. Authenticated encryption of a message for a recipient's public key.
+ *
+ * @param message String or byte array to be enrypted.
+ * @param publicKeyA Public key of the recipient. The owner will be able to decrypt the message.
+ * @param secretKeyB Private key of the sender. Necessary to authenticate the message during decryption.
+ * @returns Encrypted message and nonce used for encryption as hex strings.
+ */
 export function encryptAsymmetricAsStr(
   message: CryptoInput,
   publicKeyA: CryptoInput,
@@ -188,6 +286,14 @@ export function encryptAsymmetricAsStr(
   return { box, nonce }
 }
 
+/**
+ * Wrapper around nacl.box.open. Authenticated decryption of an encrypted message.
+ *
+ * @param data Object containing encrypted message and nonce used for encryption.
+ * @param publicKeyB Public key of the sender. Necessary to authenticate the message during decryption.
+ * @param secretKeyA Private key of the recipient. Required for decryption.
+ * @returns Decrypted message or false if decryption is unsuccessful.
+ */
 export function decryptAsymmetric(
   data: EncryptedAsymmetric | EncryptedAsymmetricString,
   publicKeyB: CryptoInput,
@@ -202,6 +308,14 @@ export function decryptAsymmetric(
   return decrypted || false
 }
 
+/**
+ * Wrapper around nacl.box.open. Authenticated decryption of an encrypted message.
+ *
+ * @param data Object containing encrypted message and nonce used for encryption.
+ * @param publicKeyB Public key of the sender. Necessary to authenticate the message during decryption.
+ * @param secretKeyA Private key of the recipient. Required for decryption.
+ * @returns Decrypted message as string or false if decryption is unsuccessful.
+ */
 export function decryptAsymmetricAsStr(
   data: EncryptedAsymmetric | EncryptedAsymmetricString,
   publicKeyB: CryptoInput,
@@ -215,16 +329,33 @@ export function decryptAsymmetricAsStr(
   return result ? u8aToString(result) : false
 }
 
+/**
+ * Signature of hashing function accepted by [[hashStatements]].
+ *
+ * @param value String to be hashed.
+ * @param nonce Optional nonce (as string) used to obscure hashed contents.
+ * @returns String representation of hash.
+ */
 export interface Hasher {
   (value: string, nonce?: string): string
 }
 
+/**
+ * Additional options for [[hashStatements]].
+ */
 export interface HashingOptions {
   nonces?: Record<string, string>
   nonceGenerator?: (key: string) => string
   hasher?: Hasher
 }
 
+/**
+ * Default hasher for [[hashStatements]].
+ *
+ * @param value String to be hashed.
+ * @param nonce Optional nonce (as string) used to obscure hashed contents.
+ * @returns 256 bit blake2 hash as hex string.
+ */
 export const saltedBlake2b256: Hasher = (value, nonce) =>
   blake2AsHex((nonce || '') + value, 256)
 
