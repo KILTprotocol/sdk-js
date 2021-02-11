@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@kiltprotocol/actors-api": "workspace:*",
-    "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/types": "workspace:*"
   }
