@@ -57,9 +57,9 @@ import {
   CompressedAttestation,
   PartialClaim,
 } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import Identity from '../identity'
 
-import * as SDKErrors from '../errorhandling/SDKErrors'
 import * as MessageUtils from './Message.utils'
 import Quote from '../quote'
 import Claim from '../claim'
