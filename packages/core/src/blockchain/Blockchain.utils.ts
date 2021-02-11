@@ -12,7 +12,7 @@ import {
   makeSubscriptionPromise,
   TerminationOptions,
 } from '../util/SubscriptionPromise'
-import { extrinsicErrorDict } from '../errorhandling/ExtrinsicError'
+import { ExtrinsicErrors } from '../errorhandling/ExtrinsicError'
 import { ErrorHandler } from '../errorhandling'
 import { factory as LoggerFactory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
@@ -54,7 +54,7 @@ export const IS_ERROR: ResultEvaluator = (result) => {
 }
 export const EXTRINSIC_FAILED: ResultEvaluator = (result) =>
   ErrorHandler.extrinsicFailed(result) &&
-  (ErrorHandler.getExtrinsicError(result) || extrinsicErrorDict.UNKNOWN_ERROR)
+  (ErrorHandler.getExtrinsicError(result) || ExtrinsicErrors.UNKNOWN_ERROR)
 
 /**
  * Parses potentially incomplete or undefined options and returns complete [[SubscriptionPromiseOptions]].

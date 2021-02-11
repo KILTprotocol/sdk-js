@@ -8,7 +8,7 @@
 import { SubmittableResult } from '@polkadot/api'
 import { Tuple } from '@polkadot/types'
 import { ErrorHandler, PalletIndex } from '.'
-import { extrinsicErrorDict } from './ExtrinsicError'
+import { ExtrinsicErrors } from './ExtrinsicError'
 
 describe('ErrorHandler', () => {
   it('test extrinsic failed', () => {
@@ -88,7 +88,7 @@ describe('ErrorHandler', () => {
 
     // @ts-ignore
     expect(ErrorHandler.getExtrinsicError(submittableResult)).toBe(
-      extrinsicErrorDict.CType.ERROR_CTYPE_NOT_FOUND
+      ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND
     )
   })
 })

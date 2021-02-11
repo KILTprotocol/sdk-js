@@ -9,7 +9,7 @@ import { Identity } from '..'
 import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
-import { extrinsicErrorDict } from '../errorhandling/ExtrinsicError'
+import { ExtrinsicErrors } from '../errorhandling/ExtrinsicError'
 import { config, disconnect } from '../kilt'
 import { wannabeFaucet, WS_ADDRESS } from './utils'
 
@@ -79,7 +79,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
           resolveOn: IS_IN_BLOCK,
         })
       )
-    ).rejects.toThrowError(extrinsicErrorDict.CType.ERROR_CTYPE_ALREADY_EXISTS)
+    ).rejects.toThrowError(ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS)
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.address)
   }, 45_000)

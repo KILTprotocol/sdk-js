@@ -8,7 +8,7 @@ import { ModuleError } from './ErrorHandler'
 import {
   errorForPallet,
   ExtrinsicError,
-  extrinsicErrorDict,
+  ExtrinsicErrors,
   PalletIndex,
 } from './ExtrinsicError'
 
@@ -20,7 +20,7 @@ describe('ExtrinsicError', () => {
       if (typeof palletName === 'string') {
         // iterate defined errors for each pallet
         const errorsForPallet: Array<ModuleError['Module']> = Object.keys(
-          extrinsicErrorDict[palletName]
+          ExtrinsicErrors[palletName]
         ).map((_, index) => ({
           // numerical index of respective pallet
           index: PalletIndex[palletName],
@@ -38,17 +38,13 @@ describe('ExtrinsicError', () => {
     expect(errorForPallet(errorCode)).toBeDefined()
     expect(errorForPallet(errorCode)).toBeInstanceOf(ExtrinsicError)
 
-    const errorsForPallet = extrinsicErrorDict[PalletIndex[errorCode.index]]
+    const errorsForPallet = ExtrinsicErrors[PalletIndex[errorCode.index]]
     if (Object.keys(errorsForPallet).length) {
       expect(errorForPallet(errorCode)).toBe(
-        errorsForPallet[
-          Object.keys(extrinsicErrorDict[PalletIndex[errorCode.index]])[
-            errorCode.error
-          ]
-        ]
+        errorsForPallet[Object.keys(errorsForPallet)[errorCode.error]]
       )
     } else {
-      expect(errorForPallet(errorCode)).toBe(extrinsicErrorDict.UNKNOWN_ERROR)
+      expect(errorForPallet(errorCode)).toBe(ExtrinsicErrors.UNKNOWN_ERROR)
     }
   })
 })

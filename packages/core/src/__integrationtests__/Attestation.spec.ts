@@ -13,7 +13,7 @@ import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
 import { config, disconnect } from '../kilt'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
-import { extrinsicErrorDict } from '../errorhandling/ExtrinsicError'
+import { ExtrinsicErrors } from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import {
@@ -166,7 +166,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           resolveOn: IS_IN_BLOCK,
         })
       )
-    ).rejects.toThrowError(extrinsicErrorDict.CType.ERROR_CTYPE_NOT_FOUND)
+    ).rejects.toThrowError(ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND)
   }, 60_000)
 
   describe('when there is an attested claim on-chain', () => {
@@ -200,9 +200,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             resolveOn: IS_IN_BLOCK,
           })
         )
-      ).rejects.toThrowError(
-        extrinsicErrorDict.Attestation.ERROR_ALREADY_ATTESTED
-      )
+      ).rejects.toThrowError(ExtrinsicErrors.Attestation.ERROR_ALREADY_ATTESTED)
     }, 15_000)
 
     it('should not be possible to use attestation for different claim', async () => {

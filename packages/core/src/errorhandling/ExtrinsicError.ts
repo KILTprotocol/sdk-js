@@ -1,6 +1,5 @@
 /**
  * ExtrinsicErrors are KILT-specific errors, with associated codes and descriptions.
- * Note: These codes are not used on chain anymore.
  *
  * @packageDocumentation
  * @module ExtrinsicErrors
@@ -18,7 +17,14 @@ export class ExtrinsicError extends Error {
   }
 }
 
-export const extrinsicErrorDict = {
+/**
+ * This dictionary holds all [[ExtrinsicError]]s, divided by pallets.
+ *
+ * @packageDocumentation
+ * @module ExtrinsicErrors
+ * @preferred
+ */
+export const ExtrinsicErrors = {
   CType: {
     ERROR_CTYPE_NOT_FOUND: new ExtrinsicError(2000, 'CType not found'),
     ERROR_CTYPE_ALREADY_EXISTS: new ExtrinsicError(
@@ -108,7 +114,7 @@ export const extrinsicErrorDict = {
  * PalletIndex reflects the numerical index of a pallet assigned in the chain's metadata.
  *
  * @packageDocumentation
- * @module PalletIndex
+ * @module ExtrinsicErrors
  * @preferred
  */
 export enum PalletIndex {
@@ -135,14 +141,14 @@ export function errorForPallet({
   const [moduleName] = Object.entries(PalletIndex).find(
     ([, value]) => value === moduleIndex
   ) || ['UNKNOWN_ERROR']
-  if (moduleName !== 'UNKNOWN_ERROR' && moduleName in extrinsicErrorDict) {
+  if (moduleName !== 'UNKNOWN_ERROR' && moduleName in ExtrinsicErrors) {
     // get error name for index
-    const errorName = Object.keys(extrinsicErrorDict[moduleName])[errorCode]
+    const errorName = Object.keys(ExtrinsicErrors[moduleName])[errorCode]
     // return unknown module error if index is out of bounds
     return errorName
-      ? extrinsicErrorDict[moduleName][errorName]
-      : extrinsicErrorDict[moduleName].UNKNOWN_ERROR
+      ? ExtrinsicErrors[moduleName][errorName]
+      : ExtrinsicErrors[moduleName].UNKNOWN_ERROR
   }
   // return unknown error per default
-  return extrinsicErrorDict.UNKNOWN_ERROR
+  return ExtrinsicErrors.UNKNOWN_ERROR
 }
