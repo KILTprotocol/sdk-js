@@ -79,7 +79,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
           resolveOn: IS_IN_BLOCK,
         })
       )
-    ).rejects.toThrowError(ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS)
+    ).rejects.toThrowErrorWithCode(
+      ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS.code
+    )
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.address)
   }, 45_000)

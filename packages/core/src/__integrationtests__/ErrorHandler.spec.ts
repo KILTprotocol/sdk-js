@@ -26,7 +26,7 @@ it('records an unknown extrinsic error when transferring less than the existenti
     makeTransfer(alice, to.address, new BN(1)).then((tx) =>
       submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })
     )
-  ).rejects.toThrow(ExtrinsicErrors.UNKNOWN_ERROR)
+  ).rejects.toThrowErrorWithCode(ExtrinsicErrors.UNKNOWN_ERROR.code)
 }, 30_000)
 
 it('records an extrinsic error when ctype does not exist', async () => {
@@ -42,7 +42,9 @@ it('records an extrinsic error when ctype does not exist', async () => {
   const tx = await attestation.store(alice)
   await expect(
     submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })
-  ).rejects.toThrow(ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND)
+  ).rejects.toThrowErrorWithCode(
+    ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS.code
+  )
 }, 30_000)
 
 afterAll(() => {
