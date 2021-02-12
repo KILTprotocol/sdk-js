@@ -1,16 +1,17 @@
 import {
   BlockchainUtils,
   Attestation,
-  IMessage,
-  IRequestAttestationForClaim,
   Message,
-  MessageBodyType,
   PublicIdentity,
   SDKErrors,
   Identity,
   DelegationNode,
 } from '@kiltprotocol/core'
-import { IAttestation } from '@kiltprotocol/types'
+import {
+  IAttestation,
+  IMessage,
+  IRequestAttestationForClaim,
+} from '@kiltprotocol/types'
 
 export interface IRevocationHandle {
   claimHash: IAttestation['claimHash']
@@ -54,10 +55,10 @@ export async function issueAttestation(
   revocationHandle: IRevocationHandle
   message: Message
 }> {
-  if (message.body.type !== MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
+  if (message.body.type !== Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
     throw SDKErrors.ERROR_MESSAGE_TYPE(
       message.body.type,
-      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+      Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
   }
 
@@ -79,7 +80,7 @@ export async function issueAttestation(
         content: {
           attestation,
         },
-        type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+        type: Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
       },
       attester,
       claimer

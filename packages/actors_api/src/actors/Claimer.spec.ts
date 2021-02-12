@@ -4,16 +4,14 @@
  * @ignore
  */
 
+import { CType, Identity, Message, SDKErrors } from '@kiltprotocol/core'
 import {
-  CType,
-  Identity,
+  IClaim,
+  ICType,
   IRequestClaimsForCTypes,
   ISubmitClaimsForCTypes,
-  Message,
   MessageBodyType,
-  SDKErrors,
-} from '@kiltprotocol/core'
-import { IClaim, ICType } from '@kiltprotocol/types'
+} from '@kiltprotocol/types'
 import { mockChainQueryReturn } from '@kiltprotocol/core/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { Attester, Claimer, Verifier } from '..'
 import Credential from '../credential/Credential'
@@ -84,7 +82,7 @@ describe('Claimer', () => {
       session: claimerSession,
     } = Claimer.requestAttestation(claim, claimer, attester.getPublicIdentity())
     expect(requestAttestation.body.type).toEqual(
-      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+      Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
     const { message: attestationMessage } = await Attester.issueAttestation(
       attester,
@@ -111,7 +109,7 @@ describe('Claimer', () => {
     } = Claimer.requestAttestation(claim, claimer, attester.getPublicIdentity())
 
     expect(requestAttestation.body.type).toEqual(
-      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+      Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
     const { message: attestationMessage } = await Attester.issueAttestation(
       attester,
@@ -137,13 +135,13 @@ describe('Claimer', () => {
       [credential]
     )
     expect(presentation.body.type).toEqual(
-      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
+      Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
     )
     expect(Array.isArray(presentation.body.content)).toBe(true)
   })
   it('create public presentation from request without peRequest', async () => {
     const body: IRequestClaimsForCTypes = {
-      type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
       content: {
         ctypes: ['this is a ctype hash'],
       },
@@ -157,7 +155,7 @@ describe('Claimer', () => {
       [credential]
     )
     expect(presentation.body.type).toEqual(
-      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
+      Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
     )
     expect(Array.isArray(presentation.body.content)).toBe(true)
     const { content } = presentation.body as ISubmitClaimsForCTypes
@@ -169,7 +167,7 @@ describe('Claimer', () => {
     describe('create presentation', () => {
       // fakes the input for Claimer.createPresentation
       const fakePresentation = ({
-        messageBody = MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        messageBody = Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
         allowPE = false,
         credentials = [],
       }: {
@@ -192,12 +190,12 @@ describe('Claimer', () => {
       it('Should throw when message body type does not match', () => {
         return expect(() =>
           fakePresentation({
-            messageBody: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
+            messageBody: Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM,
           })
         ).toThrowError(
           SDKErrors.ERROR_MESSAGE_TYPE(
-            MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
-            MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
+            Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM,
+            Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES
           )
         )
       })
@@ -206,15 +204,15 @@ describe('Claimer', () => {
           Claimer.buildCredential(
             {
               body: {
-                type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
+                type: Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM,
               },
             } as Message,
             {} as ClaimerAttestationSession
           )
         ).toThrowError(
           SDKErrors.ERROR_MESSAGE_TYPE(
-            MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
-            MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+            Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM,
+            Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM
           )
         )
       })

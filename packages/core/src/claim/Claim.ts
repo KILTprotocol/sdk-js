@@ -12,7 +12,13 @@
  * @preferred
  */
 
-import { IClaim, CompressedClaim, IPublicIdentity } from '@kiltprotocol/types'
+import {
+  IClaim,
+  CompressedClaim,
+  IPublicIdentity,
+  CompressedPartialClaim,
+  PartialClaim,
+} from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import ICType from '../ctype/CType'
 import CTypeUtils from '../ctype/CType.utils'
@@ -136,7 +142,7 @@ export default class Claim implements IClaim {
   }
 
   /**
-   * Compresses an [[Claim]] object from the [[CompressedClaim]].
+   * Compresses the [[Claim]] object to a [[CompressedClaim]].
    *
    * @returns An array that contains the same properties of an [[Claim]].
    */
@@ -146,13 +152,26 @@ export default class Claim implements IClaim {
   }
 
   /**
-   * [STATIC] Builds an [[Claim]] from the decompressed array.
+   *  Decompresses the [[IClaim]] from storage and/or message.
    *
-   * @returns A new [[Claim]] object.
+   * @param claim A [[CompressedClaim]] array that is reverted back into an object.
+   * @throws When an [[CompressedClaim]] is not an Array or it's length is unequal 3.
+   * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+   * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
    */
-
-  public static decompress(compressedClaim: CompressedClaim): Claim {
-    const decompressedClaim = ClaimUtils.decompress(compressedClaim)
-    return new Claim(decompressedClaim)
+  public static decompress(claim: CompressedClaim): IClaim
+  /**
+   *  Decompresses the Partial [[IClaim]] from storage and/or message.
+   *
+   * @param claim An [[CompressedPartialClaim]] array that is reverted back into an object.
+   * @throws When an [[CompressedPartialClaim]] is not an Array or it's length is unequal 3.
+   * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+   * @returns An [[PartialClaim]] object that has the same properties as the [[CompressedPartialClaim]].
+   */
+  public static decompress(claim: CompressedPartialClaim): PartialClaim
+  public static decompress(
+    compressedClaim: CompressedClaim | CompressedPartialClaim
+  ): IClaim | PartialClaim {
+    return ClaimUtils.decompress(compressedClaim)
   }
 }
