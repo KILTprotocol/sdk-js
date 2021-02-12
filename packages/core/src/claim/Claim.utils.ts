@@ -218,7 +218,7 @@ export function compress(claim: IClaim): CompressedClaim
  *
  * @param claim A [[PartialClaim]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of an [[CompressedPartialClaim]].
+ * @returns An ordered array of a [[CompressedPartialClaim]].
  */
 export function compress(claim: PartialClaim): CompressedPartialClaim
 export function compress(
