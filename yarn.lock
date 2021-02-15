@@ -796,7 +796,9 @@ __metadata:
   resolution: "@kiltprotocol/actors-api@workspace:packages/actors_api"
   dependencies:
     "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/messaging": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*"
     rimraf: ^3.0.2
     typescript: ^3.9.7
   languageName: unknown
@@ -827,12 +829,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@kiltprotocol/messaging@workspace:*, @kiltprotocol/messaging@workspace:packages/messaging":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/messaging@workspace:packages/messaging"
+  dependencies:
+    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*"
+    rimraf: ^3.0.2
+    typescript: ^3.9.7
+  languageName: unknown
+  linkType: soft
+
 "@kiltprotocol/sdk-js@workspace:packages/sdk-js":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
     "@kiltprotocol/actors-api": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/messaging": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     rimraf: ^3.0.2
     typescript: ^3.9.7
