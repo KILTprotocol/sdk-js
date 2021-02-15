@@ -843,6 +843,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/types@workspace:packages/types"
   dependencies:
+    "@polkadot/types": ^3.6.4
     rimraf: ^3.0.2
     ts-node: ^8.10.2
     typescript: ^3.9.7
