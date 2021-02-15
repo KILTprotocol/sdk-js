@@ -4,47 +4,48 @@
  * @ignore
  */
 
-import { ModuleError } from './ErrorHandler'
 import {
   errorForPallet,
   ExtrinsicError,
-  ExtrinsicErrors,
-  PalletIndex,
+  PalletToExtrinsicErrors,
 } from './ExtrinsicError'
 
 describe('ExtrinsicError', () => {
-  // reconstruct error codes as in chain meta data
-  const errorCodes = Object.values(PalletIndex).reduce(
-    (acc: Array<ModuleError['Module']>, palletName) => {
-      // keys/values of an enum include both sides, thus check for string
-      if (typeof palletName === 'string') {
-        // iterate defined errors for each pallet
-        const errorsForPallet: Array<ModuleError['Module']> = Object.keys(
-          ExtrinsicErrors[palletName]
-        ).map((_, index) => ({
-          // numerical index of respective pallet
-          index: PalletIndex[palletName],
-          error: index,
-        }))
-        // append to errors of other pallets
-        return [...acc, ...errorsForPallet]
-      }
-      return acc
+  const errorCodes = Object.keys(PalletToExtrinsicErrors).reduce(
+    (
+      acc: Array<{
+        index: number
+        errorIndex: number
+        error: { code: number; message: string }
+      }>,
+      palletIndex
+    ) => {
+      const errorIndices = Object.keys(PalletToExtrinsicErrors[palletIndex])
+      const pairs: Array<{
+        index: number
+        errorIndex: number
+        error: { code: number; message: string }
+      }> = errorIndices.map((error) => ({
+        index: Number.parseInt(palletIndex, 10),
+        errorIndex: Number.parseInt(error, 10),
+        error: PalletToExtrinsicErrors[palletIndex][error],
+      }))
+
+      return [...acc, ...pairs]
     },
     []
   )
 
-  it.each(errorCodes)('should return error for code %s', (errorCode) => {
-    expect(errorForPallet(errorCode)).toBeDefined()
-    expect(errorForPallet(errorCode)).toBeInstanceOf(ExtrinsicError)
-
-    const errorsForPallet = ExtrinsicErrors[PalletIndex[errorCode.index]]
-    if (Object.keys(errorsForPallet).length) {
-      expect(errorForPallet(errorCode)).toBe(
-        errorsForPallet[Object.keys(errorsForPallet)[errorCode.error]]
+  it.each(errorCodes)(
+    'should return error for code %s',
+    ({ index, errorIndex, error }) => {
+      expect(errorForPallet({ index, error: errorIndex })).toBeDefined()
+      expect(errorForPallet({ index, error: errorIndex })).toBeInstanceOf(
+        ExtrinsicError
       )
-    } else {
-      expect(errorForPallet(errorCode)).toBe(ExtrinsicErrors.UNKNOWN_ERROR)
+      expect(errorForPallet({ index, error: errorIndex })).toStrictEqual(
+        new ExtrinsicError(error.code, error.message)
+      )
     }
-  })
+  )
 })

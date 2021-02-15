@@ -124,7 +124,7 @@ interface IPalletToExtrinsicErrors {
 /**
  * This dictionary holds all [[ExtrinsicError]]s, divided by pallets.
  */
-const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
+export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
   [PalletIndex.CType]: {
     0: ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND,
     1: ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS,
