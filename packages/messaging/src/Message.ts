@@ -11,6 +11,7 @@
  * @preferred
  */
 
+import { Identity } from '@kiltprotocol/core'
 import {
   IPublicIdentity,
   CompressedMessageBody,
@@ -22,7 +23,6 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { compressMessage, decompressMessage } from './Message.utils'
-import { Identity } from '..'
 
 export default class Message implements IMessage {
   /**

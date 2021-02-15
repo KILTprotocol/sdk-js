@@ -1,5 +1,6 @@
 import * as core from '@kiltprotocol/core'
 import * as Actors from '@kiltprotocol/actors-api'
+import Message, * as Messaging from '@kiltprotocol/messaging'
 import {
   Credential,
   Claimer,
@@ -15,6 +16,8 @@ export { Actors }
 export default {
   types,
   ...core,
+  Message,
+  Messaging,
   Actors,
   Credential,
   Claimer,

@@ -1,7 +1,6 @@
 import {
   AttestedClaim,
   Identity,
-  Message,
   RequestForAttestation,
   SDKErrors,
 } from '@kiltprotocol/core'
@@ -13,6 +12,7 @@ import {
   IPublicIdentity,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
+import Message from '@kiltprotocol/messaging'
 import Credential from '../credential/Credential'
 
 /**

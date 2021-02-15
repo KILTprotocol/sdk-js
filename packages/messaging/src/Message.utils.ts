@@ -1,4 +1,11 @@
 import {
+  AttestationUtils,
+  AttestedClaimUtils,
+  ClaimUtils,
+  QuoteUtils,
+  RequestForAttestationUtils,
+} from '@kiltprotocol/core'
+import {
   IAttestedClaim,
   CompressedAttestedClaim,
   CompressedMessageBody,
@@ -6,11 +13,6 @@ import {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import Message from '.'
-import AttestationUtils from '../attestation/Attestation.utils'
-import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
-import ClaimUtils from '../claim/Claim.utils'
-import QuoteUtils from '../quote/Quote.utils'
-import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
 
 /**
  * [STATIC] Compresses a [[Message]] depending on the message body type.

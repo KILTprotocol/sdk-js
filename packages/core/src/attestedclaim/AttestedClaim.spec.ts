@@ -193,5 +193,3 @@ describe('RequestForAttestation', () => {
     )
   })
 })
-
-export default buildAttestedClaim

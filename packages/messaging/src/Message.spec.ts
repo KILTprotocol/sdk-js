@@ -16,8 +16,7 @@ import {
   ISubmitClaimsForCTypes,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import Identity from '../identity/Identity'
-import * as Quote from '../quote/Quote'
+import { Identity, Quote } from '@kiltprotocol/core'
 import Message from './Message'
 
 describe('Messaging', () => {
