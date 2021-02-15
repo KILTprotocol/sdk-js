@@ -5,32 +5,47 @@
  */
 
 import {
-  ErrorCode,
-  errorForCode,
-  errorsByCode,
+  errorForPallet,
   ExtrinsicError,
+  PalletToExtrinsicErrors,
 } from './ExtrinsicError'
 
 describe('ExtrinsicError', () => {
-  // get all error codes from ErrorCode enum
-  // Object.keys() returns both the integers as well as the strings
-  const errorCodes: number[] = Object.keys(ErrorCode).reduce(
-    (codes: number[], value: string) => {
-      // either an integer error code or NaN
-      const num = Number.parseInt(value, 10)
-      // check for NaN case
-      if (Number.isInteger(num)) {
-        return [...codes, num]
-      }
-      return codes
+  const errorCodes = Object.keys(PalletToExtrinsicErrors).reduce(
+    (
+      acc: Array<{
+        index: number
+        errorIndex: number
+        error: { code: number; message: string }
+      }>,
+      palletIndex
+    ) => {
+      const errorIndices = Object.keys(PalletToExtrinsicErrors[palletIndex])
+      const pairs: Array<{
+        index: number
+        errorIndex: number
+        error: { code: number; message: string }
+      }> = errorIndices.map((error) => ({
+        index: Number.parseInt(palletIndex, 10),
+        errorIndex: Number.parseInt(error, 10),
+        error: PalletToExtrinsicErrors[palletIndex][error],
+      }))
+
+      return [...acc, ...pairs]
     },
     []
   )
-  it('checks whether errorsByCode includes all errors', () => {
-    expect(Object.keys(errorsByCode).length).toBe(errorCodes.length)
-  })
-  it.each(errorCodes)('should return error for code %s', (errorCode) => {
-    expect(errorForCode(errorCode)).toBeDefined()
-    expect(errorForCode(errorCode)).toBeInstanceOf(ExtrinsicError)
-  })
+
+  it.each(errorCodes)(
+    'should return error for code %s',
+    ({ index, errorIndex, error }) => {
+      expect(errorForPallet({ index, error: errorIndex })).toBeDefined()
+      expect(errorForPallet({ index, error: errorIndex })).toBeInstanceOf(
+        ExtrinsicError
+      )
+      expect(errorForPallet({ index, error: errorIndex })).toStrictEqual(
+        new ExtrinsicError(error.code, error.message)
+      )
+    }
+  )
 })

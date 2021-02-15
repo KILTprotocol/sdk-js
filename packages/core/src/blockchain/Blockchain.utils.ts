@@ -12,8 +12,11 @@ import {
   makeSubscriptionPromise,
   TerminationOptions,
 } from '../util/SubscriptionPromise'
+import {
+  ExtrinsicError,
+  ExtrinsicErrors,
+} from '../errorhandling/ExtrinsicError'
 import { ErrorHandler } from '../errorhandling'
-import { ERROR_UNKNOWN as UNKNOWN_EXTRINSIC_ERROR } from '../errorhandling/ExtrinsicError'
 import { factory as LoggerFactory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import getCached from '../blockchainApiConnection'
@@ -54,7 +57,11 @@ export const IS_ERROR: ResultEvaluator = (result) => {
 }
 export const EXTRINSIC_FAILED: ResultEvaluator = (result) =>
   ErrorHandler.extrinsicFailed(result) &&
-  (ErrorHandler.getExtrinsicError(result) || UNKNOWN_EXTRINSIC_ERROR)
+  (ErrorHandler.getExtrinsicError(result) ||
+    new ExtrinsicError(
+      ExtrinsicErrors.UNKNOWN_ERROR.code,
+      ExtrinsicErrors.UNKNOWN_ERROR.message
+    ))
 
 /**
  * Parses potentially incomplete or undefined options and returns complete [[SubscriptionPromiseOptions]].

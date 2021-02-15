@@ -8,7 +8,7 @@
 import { SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types/interfaces'
 import { factory as LoggerFactory } from '../config/ConfigService'
-import { errorForCode, ExtrinsicError } from './ExtrinsicError'
+import { errorForPallet, ExtrinsicError } from './ExtrinsicError'
 
 const log = LoggerFactory.getLogger('Blockchain')
 
@@ -16,8 +16,11 @@ export enum SystemEvent {
   ExtrinsicSuccess = '0x0000',
   ExtrinsicFailed = '0x0001',
 }
+export interface ModuleError {
+  Module: { index: number; error: number }
+}
 
-const ERROR_MODULE_NAME = 'error'
+const ERROR_MODULE_NAME = 'system'
 
 /**
  * Checks if there is `SystemEvent.ExtrinsicFailed` in the list of
@@ -72,13 +75,26 @@ export function getExtrinsicError(
       eventRecord.event.section === ERROR_MODULE_NAME
     )
   })
+
   if (errorEvent) {
     const { data } = errorEvent.event
-    const errorCode = data && !data.isEmpty ? data[0].toJSON() : null
-    if (errorCode && typeof errorCode === 'number') {
-      return errorForCode(errorCode)
+    const moduleError = data && !data.isEmpty ? data[0].toJSON() : null
+
+    // TODO: Can this be accomplished in a prettier way using SDK functionality like constructor input checks?
+    // Note: Not all instances of `moduleError` have this specific structure!
+    if (
+      moduleError &&
+      typeof moduleError === 'object' &&
+      Object.keys(moduleError).includes('Module')
+    ) {
+      const {
+        Module: { index, error },
+      } = (moduleError as unknown) as ModuleError
+      if (index >= 0 && error >= 0) {
+        return errorForPallet({ index, error })
+      }
     }
-    log.warn(`error event doesn't have a valid error code: ${data}`)
+    log.warn(`error event doesn't have a valid error structure: ${data}`)
   } else {
     log.warn('no error event found in transaction result')
   }
