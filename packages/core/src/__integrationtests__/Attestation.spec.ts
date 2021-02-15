@@ -166,7 +166,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           resolveOn: IS_IN_BLOCK,
         })
       )
-    ).rejects.toThrowError(ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND)
+    ).rejects.toThrowErrorWithCode(
+      ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code
+    )
   }, 60_000)
 
   describe('when there is an attested claim on-chain', () => {
@@ -200,7 +202,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             resolveOn: IS_IN_BLOCK,
           })
         )
-      ).rejects.toThrowError(ExtrinsicErrors.Attestation.ERROR_ALREADY_ATTESTED)
+      ).rejects.toThrowErrorWithCode(
+        ExtrinsicErrors.Attestation.ERROR_ALREADY_ATTESTED.code
+      )
     }, 15_000)
 
     it('should not be possible to use attestation for different claim', async () => {
