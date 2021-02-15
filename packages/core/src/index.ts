@@ -13,6 +13,7 @@ import {
   DelegationBaseNode,
   DelegationNode,
   DelegationRootNode,
+  DelegationNodeUtils,
 } from './delegation'
 import Did, { IDid, IDidDocument, IDidDocumentPublicKey } from './did'
 import { Identity, IURLResolver, PublicIdentity } from './identity'
@@ -53,6 +54,7 @@ export {
   AttestedClaimUtils,
   DelegationBaseNode,
   DelegationNode,
+  DelegationNodeUtils,
   DelegationRootNode,
   Did,
   IDid,

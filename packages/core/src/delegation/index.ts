@@ -6,11 +6,11 @@
 import DelegationBaseNode from './Delegation'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
-import { checkTraversalStepsToParent } from './DelegationNode.utils'
+import * as DelegationNodeUtils from './DelegationNode.utils'
 
 export {
   DelegationBaseNode,
   DelegationNode,
   DelegationRootNode,
-  checkTraversalStepsToParent,
+  DelegationNodeUtils,
 }
