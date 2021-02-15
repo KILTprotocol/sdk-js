@@ -32,7 +32,7 @@ export default function permissionsAsBitset(
   return uint8
 }
 
-export async function checkTraversalStepsToParent(
+export async function countNodeDepth(
   attester: Identity,
   attestation: IAttestation
 ): Promise<number> {

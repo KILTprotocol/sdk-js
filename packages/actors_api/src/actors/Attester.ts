@@ -106,7 +106,7 @@ export async function revokeAttestation(
     throw SDKErrors.ERROR_NOT_FOUND('Attestation not on chain')
   }
   // count the number of steps we have to go up the delegation tree for calculating the transaction weight
-  const delegationTreeTraversalSteps = await DelegationNodeUtils.checkTraversalStepsToParent(
+  const delegationTreeTraversalSteps = await DelegationNodeUtils.countNodeDepth(
     attester,
     attestation
   )
