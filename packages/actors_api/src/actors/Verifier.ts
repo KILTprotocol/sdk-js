@@ -3,7 +3,6 @@ import {
   CType,
   SDKErrors,
   Identity,
-  Message,
   ConfigService,
 } from '@kiltprotocol/core'
 import {
@@ -12,6 +11,7 @@ import {
   IRequestForAttestation,
   IMessage,
 } from '@kiltprotocol/types'
+import Message from '@kiltprotocol/messaging'
 
 const log = ConfigService.factory.getLogger('Verifier')
 

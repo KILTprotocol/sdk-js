@@ -1,7 +1,6 @@
 import {
   BlockchainUtils,
   Attestation,
-  Message,
   PublicIdentity,
   SDKErrors,
   Identity,
@@ -12,6 +11,7 @@ import {
   IMessage,
   IRequestAttestationForClaim,
 } from '@kiltprotocol/types'
+import Message from '@kiltprotocol/messaging'
 
 export interface IRevocationHandle {
   claimHash: IAttestation['claimHash']
