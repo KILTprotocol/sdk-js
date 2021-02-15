@@ -58,15 +58,69 @@ import {
   PartialClaim,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import Identity from '../identity'
-
+import {
+  Attestation,
+  AttestedClaim,
+  Claim,
+  CType,
+  Identity,
+  Quote,
+  RequestForAttestation,
+} from '@kiltprotocol/core'
 import * as MessageUtils from './Message.utils'
-import Quote from '../quote'
-import Claim from '../claim'
-import CType from '../ctype'
-import AttestedClaim from '../attestedclaim'
-import buildAttestedClaim from '../attestedclaim/AttestedClaim.spec'
+
 import Message from './Message'
+
+// TODO: Duplicated code, would be nice to have as a seperated test package with similar helpers
+async function buildAttestedClaim(
+  claimer: Identity,
+  attester: Identity,
+  contents: IClaim['contents'],
+  legitimations: AttestedClaim[]
+): Promise<AttestedClaim> {
+  // create claim
+  const identityAlice = Identity.buildFromURI('//Alice')
+
+  const rawCType: ICType['schema'] = {
+    $id: 'kilt:ctype:0x1',
+    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    title: 'Attested Claim',
+    properties: {
+      name: { type: 'string' },
+    },
+    type: 'object',
+  }
+
+  const testCType: CType = CType.fromSchema(
+    rawCType,
+    identityAlice.signKeyringPair.address
+  )
+
+  const claim = Claim.fromCTypeAndClaimContents(
+    testCType,
+    contents,
+    claimer.address
+  )
+  // build request for attestation with legitimations
+  const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
+    claim,
+    claimer,
+    {
+      legitimations,
+    }
+  )
+  // build attestation
+  const testAttestation = Attestation.fromRequestAndPublicIdentity(
+    requestForAttestation,
+    attester.getPublicIdentity()
+  )
+  // combine to attested claim
+  const attestedClaim = AttestedClaim.fromRequestAndAttestation(
+    requestForAttestation,
+    testAttestation
+  )
+  return attestedClaim
+}
 
 describe('Messaging Utilities', () => {
   let identityAlice: Identity

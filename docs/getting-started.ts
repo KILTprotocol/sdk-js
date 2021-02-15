@@ -93,7 +93,9 @@ async function main(): Promise<void> {
   const decrypted = Kilt.Message.decrypt(encrypted, attester)
 
   /* At this point the Attester has the original request for attestation object: */
-  if (decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
+  if (
+    decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
+  ) {
     const extractedRequestForAttestation: IRequestAttestationForClaim =
       decrypted.body
 
@@ -133,7 +135,8 @@ async function main(): Promise<void> {
 
     /* After receiving the message, the Claimer just needs to save it and can use it later for verification: */
     if (
-      messageBack.body.type === Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+      messageBack.body.type ===
+      Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM
     ) {
       const myAttestedClaim = Kilt.AttestedClaim.fromAttestedClaim({
         ...messageBack.body.content,
