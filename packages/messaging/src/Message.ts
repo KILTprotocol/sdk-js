@@ -11,95 +11,30 @@
  * @preferred
  */
 
-import { AnyJson } from '@polkadot/types/types'
+import { Identity } from '@kiltprotocol/core'
 import {
-  IAttestedClaim,
-  IClaim,
-  IDelegationBaseNode,
-  IDelegationNode,
   IPublicIdentity,
-  IRequestForAttestation,
-  IAttestation,
-  ICType,
-  ITerms,
-  IQuoteAgreement,
+  CompressedMessageBody,
+  IMessage,
+  ISubmitClaimsForCTypes,
+  IEncryptedMessage,
+  MessageBody,
+  MessageBodyType,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { Claim, DelegationNode, Identity } from '..'
-
-/**
- * - `body` - The body of the message, see [[MessageBody]].
- * - `createdAt` - The timestamp of the message construction.
- * - `receiverAddress` - The public SS58 address of the receiver.
- * - `senderAddress` - The public SS58 address of the sender.
- * - `senderBoxPublicKex` - The public encryption key of the sender.
- * - `messageId` - The message id.
- * - `inReplyTo` - The id of the parent-message.
- * - `references` - The references or the in-reply-to of the parent-message followed by the message-id of the parent-message.
- */
-export interface IMessage {
-  body: MessageBody
-  createdAt: number
-  receiverAddress: IPublicIdentity['address']
-  senderAddress: IPublicIdentity['address']
-  senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
-  messageId?: string
-  receivedAt?: number
-  inReplyTo?: IMessage['messageId']
-  references?: Array<IMessage['messageId']>
-}
-
-/**
- * Removes the [[MessageBody]], parent-id and references from the [[Message]] and adds
- * four new fields: message, nonce, hash and signature.
- * - `message` - The encrypted body of the message.
- * - `nonce` - The encryption nonce.
- * - `hash` - The hash of the concatenation of message + nonce + createdAt.
- * - `signature` - The sender's signature on the hash.
- */
-export type IEncryptedMessage = Pick<
-  IMessage,
-  | 'createdAt'
-  | 'receiverAddress'
-  | 'senderAddress'
-  | 'senderBoxPublicKey'
-  | 'messageId'
-  | 'receivedAt'
-> & {
-  message: string
-  nonce: string
-  hash: string
-  signature: string
-}
-
-export enum MessageBodyType {
-  REQUEST_TERMS = 'request-terms',
-  SUBMIT_TERMS = 'submit-terms',
-  REJECT_TERMS = 'reject-terms',
-
-  INITIATE_ATTESTATION = 'initiate-attestation',
-
-  REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
-  SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
-  REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
-
-  REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
-  SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes-classic',
-  ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
-  REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
-
-  REQUEST_ACCEPT_DELEGATION = 'request-accept-delegation',
-  SUBMIT_ACCEPT_DELEGATION = 'submit-accept-delegation',
-  REJECT_ACCEPT_DELEGATION = 'reject-accept-delegation',
-  INFORM_CREATE_DELEGATION = 'inform-create-delegation',
-}
+import { compressMessage, decompressMessage } from './Message.utils'
 
 export default class Message implements IMessage {
+  /**
+   * [STATIC] Lists all possible body types of [[Message]].
+   */
+  public static readonly BodyType = MessageBodyType
+
   /**
    * [STATIC] Verifies that the sender of a [[Message]] is also the owner of it, e.g the owner's and sender's public keys match.
    *
    * @param message The [[Message]] object which needs to be decrypted.
-   * @param message.body The body of the [[Message]] which depends on the [[MessageBodyType]].
+   * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
    * @param message.senderAddress The sender's public SS58 address of the [[Message]].
    * @throws When the sender does not match the owner of the in the Message supplied Object.
    * @throws [[SUBMIT_ATTESTATION_FOR_CLAIM]], [[SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC]], [[ERROR_IDENTITY_MISMATCH]].
@@ -107,7 +42,7 @@ export default class Message implements IMessage {
    */
   public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
     switch (body.type) {
-      case MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM:
+      case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM:
         {
           const requestAttestation = body
           if (
@@ -118,7 +53,7 @@ export default class Message implements IMessage {
           }
         }
         break
-      case MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
+      case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
         {
           const submitAttestation = body
           if (submitAttestation.content.attestation.owner !== senderAddress) {
@@ -126,7 +61,7 @@ export default class Message implements IMessage {
           }
         }
         break
-      case MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES:
+      case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES:
         {
           const submitClaimsForCtype: ISubmitClaimsForCTypes = body
           submitClaimsForCtype.content.forEach((claim) => {
@@ -232,11 +167,15 @@ export default class Message implements IMessage {
    * @param receiver The [[PublicIdentity]] of the receiver.
    */
   public constructor(
-    body: MessageBody,
+    body: MessageBody | CompressedMessageBody,
     sender: Identity,
     receiver: IPublicIdentity
   ) {
-    this.body = body
+    if (Array.isArray(body)) {
+      this.body = decompressMessage(body)
+    } else {
+      this.body = body
+    }
     this.createdAt = Date.now()
     this.receiverAddress = receiver.address
     this.senderAddress = sender.address
@@ -278,127 +217,8 @@ export default class Message implements IMessage {
       senderBoxPublicKey: this.senderBoxPublicKey,
     }
   }
-}
 
-interface IMessageBodyBase {
-  content: any
-  type: MessageBodyType
-}
-
-export interface IRequestTerms extends IMessageBodyBase {
-  content: IPartialClaim
-  type: MessageBodyType.REQUEST_TERMS
-}
-export interface ISubmitTerms extends IMessageBodyBase {
-  content: ITerms
-  type: MessageBodyType.SUBMIT_TERMS
-}
-export interface IRejectTerms extends IMessageBodyBase {
-  content: {
-    claim: IPartialClaim
-    legitimations: IAttestedClaim[]
-    delegationId?: DelegationNode['id']
+  public compress(): CompressedMessageBody {
+    return compressMessage(this.body)
   }
-  type: MessageBodyType.REJECT_TERMS
 }
-
-export interface IRequestAttestationForClaim extends IMessageBodyBase {
-  content: {
-    requestForAttestation: IRequestForAttestation
-    quote?: IQuoteAgreement
-    prerequisiteClaims?: IClaim[]
-  }
-  type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
-}
-export interface ISubmitAttestationForClaim extends IMessageBodyBase {
-  content: {
-    attestation: IAttestation
-  }
-  type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
-}
-export interface IRejectAttestationForClaim extends IMessageBodyBase {
-  content: IRequestForAttestation['rootHash']
-  type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM
-}
-
-export interface IRequestClaimsForCTypes extends IMessageBodyBase {
-  content: {
-    ctypes: Array<ICType['hash']>
-  }
-  type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
-}
-
-export interface ISubmitClaimsForCTypes extends IMessageBodyBase {
-  content: IAttestedClaim[]
-  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
-}
-
-export interface IAcceptClaimsForCTypes extends IMessageBodyBase {
-  content: Array<ICType['hash']>
-  type: MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES
-}
-export interface IRejectClaimsForCTypes extends IMessageBodyBase {
-  content: Array<ICType['hash']>
-  type: MessageBodyType.REJECT_CLAIMS_FOR_CTYPES
-}
-
-export interface IRequestAcceptDelegation extends IMessageBodyBase {
-  content: {
-    delegationData: {
-      account: IDelegationBaseNode['account']
-      id: IDelegationBaseNode['id']
-      parentId: IDelegationNode['id']
-      permissions: IDelegationNode['permissions']
-      isPCR: boolean
-    }
-    metaData?: AnyJson
-    signatures: {
-      inviter: string
-    }
-  }
-  type: MessageBodyType.REQUEST_ACCEPT_DELEGATION
-}
-export interface ISubmitAcceptDelegation extends IMessageBodyBase {
-  content: {
-    delegationData: IRequestAcceptDelegation['content']['delegationData']
-    signatures: {
-      inviter: string
-      invitee: string
-    }
-  }
-  type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION
-}
-export interface IRejectAcceptDelegation extends IMessageBodyBase {
-  content: IRequestAcceptDelegation['content']
-  type: MessageBodyType.REJECT_ACCEPT_DELEGATION
-}
-export interface IInformCreateDelegation extends IMessageBodyBase {
-  content: {
-    delegationId: IDelegationBaseNode['id']
-    isPCR: boolean
-  }
-  type: MessageBodyType.INFORM_CREATE_DELEGATION
-}
-
-export interface IPartialClaim extends Partial<IClaim> {
-  cTypeHash: Claim['cTypeHash']
-}
-
-export type MessageBody =
-  | IRequestTerms
-  | ISubmitTerms
-  | IRejectTerms
-  //
-  | IRequestAttestationForClaim
-  | ISubmitAttestationForClaim
-  | IRejectAttestationForClaim
-  //
-  | IRequestClaimsForCTypes
-  | ISubmitClaimsForCTypes
-  | IAcceptClaimsForCTypes
-  | IRejectClaimsForCTypes
-  //
-  | IRequestAcceptDelegation
-  | ISubmitAcceptDelegation
-  | IRejectAcceptDelegation
-  | IInformCreateDelegation

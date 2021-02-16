@@ -6,172 +6,189 @@
  * @preferred
  */
 
-export enum ErrorCode {
-  ERROR_CTYPE_NOT_FOUND = 1001,
-  ERROR_CTYPE_ALREADY_EXISTS = 1002,
-
-  ERROR_ALREADY_ATTESTED = 2001,
-  ERROR_ALREADY_REVOKED = 2002,
-  ERROR_ATTESTATION_NOT_FOUND = 2003,
-  ERROR_DELEGATION_REVOKED = 2004,
-  ERROR_NOT_DELEGATED_TO_ATTESTER = 2005,
-  ERROR_DELEGATION_NOT_AUTHORIZED_TO_ATTEST = 2006,
-  ERROR_CTYPE_OF_DELEGATION_NOT_MATCHING = 2007,
-  ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION = 2008,
-
-  ERROR_ROOT_ALREADY_EXISTS = 3001,
-  ERROR_NOT_PERMITTED_TO_REVOKE = 3002,
-  ERROR_DELEGATION_NOT_FOUND = 3003,
-  ERROR_DELEGATION_ALREADY_EXISTS = 3004,
-  ERROR_BAD_DELEGATION_SIGNATURE = 3005,
-  ERROR_NOT_OWNER_OF_PARENT = 3006,
-  ERROR_NOT_AUTHORIZED_TO_DELEGATE = 3007,
-  ERROR_PARENT_NOT_FOUND = 3008,
-  ERROR_NOT_OWNER_OF_ROOT = 3009,
-  ERROR_ROOT_NOT_FOUND = 3100,
-
-  ERROR_UNKNOWN = -1,
-}
+import { ModuleError } from './ErrorHandler'
 
 export class ExtrinsicError extends Error {
-  public errorCode: ErrorCode
+  public errorCode: number
 
-  public constructor(errorCode: ErrorCode, message: string) {
+  public constructor(errorCode: number, message: string) {
     super(message)
     this.errorCode = errorCode
   }
 }
 
-export const ERROR_CTYPE_NOT_FOUND: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_CTYPE_NOT_FOUND,
-  'CTYPE not found'
-)
-export const ERROR_CTYPE_ALREADY_EXISTS: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_CTYPE_ALREADY_EXISTS,
-  'CTYPE already exists'
-)
-export const ERROR_ALREADY_ATTESTED: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_ALREADY_ATTESTED,
-  'already attested'
-)
-export const ERROR_ERROR_ALREADY_REVOKED: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_ALREADY_REVOKED,
-  'already revoked'
-)
-export const ERROR_ATTESTATION_NOT_FOUND: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_ATTESTATION_NOT_FOUND,
-  'attestation not found'
-)
-export const ERROR_DELEGATION_REVOKED: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_DELEGATION_REVOKED,
-  'delegation is revoked'
-)
-export const ERROR_NOT_DELEGATED_TO_ATTESTER: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_NOT_DELEGATED_TO_ATTESTER,
-  'not delegated to attester'
-)
-export const ERROR_DELEGATION_NOT_AUTHORIZED_TO_ATTEST: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_DELEGATION_NOT_AUTHORIZED_TO_ATTEST,
-  'delegation not authorized to attest'
-)
-export const ERROR_CTYPE_OF_DELEGATION_NOT_MATCHING: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_CTYPE_OF_DELEGATION_NOT_MATCHING,
-  'CTYPE of delegation does not match'
-)
-export const ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION,
-  'not permitted to revoke attestation'
-)
-export const ERROR_ROOT_ALREADY_EXISTS: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_ROOT_ALREADY_EXISTS,
-  'root already exist'
-)
-export const ERROR_NOT_PERMITTED_TO_REVOKE: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_NOT_PERMITTED_TO_REVOKE,
-  'not permitted to revoke'
-)
-export const ERROR_DELEGATION_NOT_FOUND: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_DELEGATION_NOT_FOUND,
-  'delegation not found'
-)
-export const ERROR_DELEGATION_ALREADY_EXISTS: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_DELEGATION_ALREADY_EXISTS,
-  'delegation already exist'
-)
-export const ERROR_BAD_DELEGATION_SIGNATURE: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_BAD_DELEGATION_SIGNATURE,
-  'bad delegate signature'
-)
-export const ERROR_NOT_OWNER_OF_PARENT: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_NOT_OWNER_OF_PARENT,
-  'not owner of parent'
-)
-export const ERROR_NOT_AUTHORIZED_TO_DELEGATE: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_NOT_AUTHORIZED_TO_DELEGATE,
-  'not authorized to delegate'
-)
-export const ERROR_PARENT_NOT_FOUND: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_PARENT_NOT_FOUND,
-  'parent not found'
-)
-export const ERROR_NOT_OWNER_OF_ROOT: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_NOT_OWNER_OF_ROOT,
-  'not owner of root'
-)
-export const ERROR_ROOT_NOT_FOUND: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_ROOT_NOT_FOUND,
-  'root not found'
-)
-
-export const ERROR_UNKNOWN: ExtrinsicError = new ExtrinsicError(
-  ErrorCode.ERROR_UNKNOWN,
-  'an unknown extrinsic error ocurred'
-)
-
-/**
- * A dictionary in which each key is an error code of an [[ExtrinsicError]] and the value the corresponding error.
- */
-export const errorsByCode: { [code: number]: ExtrinsicError } = {}
-
-// fill dictionary
-;[
-  ERROR_CTYPE_NOT_FOUND,
-  ERROR_CTYPE_ALREADY_EXISTS,
-
-  ERROR_ALREADY_ATTESTED,
-  ERROR_ERROR_ALREADY_REVOKED,
-  ERROR_ATTESTATION_NOT_FOUND,
-  ERROR_DELEGATION_REVOKED,
-  ERROR_NOT_DELEGATED_TO_ATTESTER,
-  ERROR_DELEGATION_NOT_AUTHORIZED_TO_ATTEST,
-  ERROR_CTYPE_OF_DELEGATION_NOT_MATCHING,
-  ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION,
-
-  ERROR_ROOT_ALREADY_EXISTS,
-  ERROR_NOT_PERMITTED_TO_REVOKE,
-  ERROR_DELEGATION_NOT_FOUND,
-  ERROR_DELEGATION_ALREADY_EXISTS,
-  ERROR_BAD_DELEGATION_SIGNATURE,
-  ERROR_NOT_OWNER_OF_PARENT,
-  ERROR_NOT_AUTHORIZED_TO_DELEGATE,
-  ERROR_PARENT_NOT_FOUND,
-  ERROR_NOT_OWNER_OF_ROOT,
-  ERROR_ROOT_NOT_FOUND,
-
-  ERROR_UNKNOWN,
-].forEach((value) => {
-  errorsByCode[value.errorCode] = value
-})
+export const ExtrinsicErrors = {
+  CType: {
+    ERROR_CTYPE_NOT_FOUND: { code: 11000, message: 'CType not found' },
+    ERROR_CTYPE_ALREADY_EXISTS: {
+      code: 11001,
+      message: 'CType already exists',
+    },
+    UNKNOWN_ERROR: { code: 11100, message: 'an  unknown CType error occured' },
+  },
+  Attestation: {
+    ERROR_ALREADY_ATTESTED: { code: 12000, message: 'already attested' },
+    ERROR_ALREADY_REVOKED: { code: 12001, message: 'already revoked' },
+    ERROR_ATTESTATION_NOT_FOUND: {
+      code: 12002,
+      message: 'attestation not found',
+    },
+    ERROR_CTYPE_OF_DELEGATION_NOT_MATCHING: {
+      code: 12003,
+      message: 'CType of delegation does not match',
+    },
+    ERROR_DELEGATION_NOT_AUTHORIZED_TO_ATTEST: {
+      code: 12004,
+      message: 'delegation not authorized to attest',
+    },
+    ERROR_DELEGATION_REVOKED: { code: 12005, message: 'delegation is revoked' },
+    ERROR_NOT_DELEGATED_TO_ATTESTER: {
+      code: 12006,
+      message: 'not delegated to attester',
+    },
+    ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION: {
+      code: 12007,
+      message: 'not permitted to revoke attestation',
+    },
+    UNKNOWN_ERROR: {
+      code: 12100,
+      message: 'an unknown attestation module error occured',
+    },
+  },
+  Delegation: {
+    ERROR_DELEGATION_ALREADY_EXISTS: {
+      code: 13000,
+      message: 'delegation already exists',
+    },
+    ERROR_BAD_DELEGATION_SIGNATURE: {
+      code: 13001,
+      message: 'bad delegate signature',
+    },
+    ERROR_DELEGATION_NOT_FOUND: {
+      code: 13002,
+      message: 'delegation not found',
+    },
+    ERROR_ROOT_ALREADY_EXISTS: { code: 13003, message: 'root already exist' },
+    ERROR_ROOT_NOT_FOUND: { code: 13004, message: 'root not found' },
+    ERROR_MAX_DELEGATION_SEARCH_DEPTH_REACHED: {
+      code: 13005,
+      message: 'maximum delegation search depth reached',
+    },
+    ERROR_NOT_OWNER_OF_PARENT: { code: 13006, message: 'not owner of parent' },
+    ERROR_NOT_OWNER_OF_ROOT: { code: 13007, message: 'not owner of root' },
+    ERROR_PARENT_NOT_FOUND: { code: 13008, message: 'parent not found' },
+    ERROR_NOT_PERMITTED_TO_REVOKE: {
+      code: 13009,
+      message: 'not permitted to revoke',
+    },
+    ERROR_NOT_AUTHORIZED_TO_DELEGATE: {
+      code: 13010,
+      message: 'not authorized to delegate',
+    },
+    ERROR_EXCEEDED_REVOCATION_BOUNDS: {
+      code: 13011,
+      message: 'exceeded revocation bounds',
+    },
+    UNKNOWN_ERROR: {
+      code: 13100,
+      message: 'an unknown delegation module error occured',
+    },
+  },
+  DID: {
+    UNKNOWN_ERROR: {
+      code: 14100,
+      message: 'an unknown DID module error occured',
+    },
+  },
+  UNKNOWN_ERROR: { code: -1, message: 'an unknown extrinsic error ocurred' },
+}
 
 /**
- * Maps an error code to its corresponding [[ExtrinsicError]].
- *
- * @param errorCode A number which can be mapped to an [[ExtrinsicError]].
- *
- * @returns The [[ExtrinsicError]] for the committed key.
+ * PalletIndex reflects the numerical index of a pallet assigned in the chain's metadata.
  */
-export function errorForCode(
-  errorCode: keyof typeof errorsByCode
-): ExtrinsicError {
-  return errorsByCode[errorCode]
+export enum PalletIndex {
+  CType = 11,
+  Attestation = 12,
+  Delegation = 13,
+  DID = 14,
+}
+export interface IPalletToExtrinsicErrors {
+  [key: number]: {
+    [key: number]: {
+      code: number
+      message: string
+    }
+  }
+}
+
+/**
+ * This dictionary holds all [[ExtrinsicError]]s, divided by pallets.
+ */
+export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
+  [PalletIndex.CType]: {
+    0: ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND,
+    1: ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS,
+    [-1]: ExtrinsicErrors.CType.UNKNOWN_ERROR,
+  },
+  [PalletIndex.Attestation]: {
+    0: ExtrinsicErrors.Attestation.ERROR_ALREADY_ATTESTED,
+    1: ExtrinsicErrors.Attestation.ERROR_ALREADY_REVOKED,
+    2: ExtrinsicErrors.Attestation.ERROR_ATTESTATION_NOT_FOUND,
+    3: ExtrinsicErrors.Attestation.ERROR_CTYPE_OF_DELEGATION_NOT_MATCHING,
+    4: ExtrinsicErrors.Attestation.ERROR_DELEGATION_NOT_AUTHORIZED_TO_ATTEST,
+    5: ExtrinsicErrors.Attestation.ERROR_DELEGATION_REVOKED,
+    6: ExtrinsicErrors.Attestation.ERROR_NOT_DELEGATED_TO_ATTESTER,
+    7: ExtrinsicErrors.Attestation.ERROR_NOT_PERMITTED_TO_REVOKE_ATTESTATION,
+    [-1]: ExtrinsicErrors.Attestation.UNKNOWN_ERROR,
+  },
+  [PalletIndex.Delegation]: {
+    0: ExtrinsicErrors.Delegation.ERROR_DELEGATION_ALREADY_EXISTS,
+    1: ExtrinsicErrors.Delegation.ERROR_BAD_DELEGATION_SIGNATURE,
+    2: ExtrinsicErrors.Delegation.ERROR_DELEGATION_NOT_FOUND,
+    3: ExtrinsicErrors.Delegation.ERROR_ROOT_ALREADY_EXISTS,
+    4: ExtrinsicErrors.Delegation.ERROR_ROOT_NOT_FOUND,
+    5: ExtrinsicErrors.Delegation.ERROR_MAX_DELEGATION_SEARCH_DEPTH_REACHED,
+    6: ExtrinsicErrors.Delegation.ERROR_NOT_OWNER_OF_PARENT,
+    7: ExtrinsicErrors.Delegation.ERROR_NOT_OWNER_OF_ROOT,
+    8: ExtrinsicErrors.Delegation.ERROR_PARENT_NOT_FOUND,
+    9: ExtrinsicErrors.Delegation.ERROR_NOT_PERMITTED_TO_REVOKE,
+    10: ExtrinsicErrors.Delegation.ERROR_NOT_AUTHORIZED_TO_DELEGATE,
+    11: ExtrinsicErrors.Delegation.ERROR_EXCEEDED_REVOCATION_BOUNDS,
+    [-1]: ExtrinsicErrors.Delegation.UNKNOWN_ERROR,
+  },
+  [PalletIndex.DID]: {
+    [-1]: ExtrinsicErrors.DID.UNKNOWN_ERROR,
+  },
+}
+
+/**
+ * Maps a [[ModuleError]] to its corresponding [[ExtrinsicError]].
+ *
+ * @param p The parameter object.
+ * @param p.index The index of the KILT pallet in the metadata.
+ * @param p.error The index of the position of the pallet's error definition inside the chain code.
+ *
+ * @returns A new corresponding [[ExtrinsicError]].
+ */
+export function errorForPallet({
+  index: moduleIndex,
+  error: errorCode,
+}: ModuleError['Module']): ExtrinsicError {
+  if (!PalletToExtrinsicErrors[moduleIndex]) {
+    return new ExtrinsicError(
+      ExtrinsicErrors.UNKNOWN_ERROR.code,
+      ExtrinsicErrors.UNKNOWN_ERROR.message
+    )
+  }
+  if (!PalletToExtrinsicErrors[moduleIndex][errorCode]) {
+    return new ExtrinsicError(
+      PalletToExtrinsicErrors[moduleIndex][-1].code,
+      PalletToExtrinsicErrors[moduleIndex][-1].message
+    )
+  }
+
+  return new ExtrinsicError(
+    PalletToExtrinsicErrors[moduleIndex][errorCode].code,
+    PalletToExtrinsicErrors[moduleIndex][errorCode].message
+  )
 }

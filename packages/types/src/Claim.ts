@@ -5,6 +5,11 @@
 import { ICType } from './CType'
 import { IPublicIdentity } from './PublicIdentity'
 
+/**
+ * The minimal partial claim from which a JSON-LD representation can be built.
+ */
+export type PartialClaim = Partial<IClaim> & Pick<IClaim, 'cTypeHash'>
+
 export type IClaimContents = Record<
   string,
   Record<string, unknown> | string | number | boolean
@@ -16,7 +21,7 @@ export interface IClaim {
 }
 
 export type CompressedClaim = [
-  IClaimContents,
   IClaim['cTypeHash'],
-  IClaim['owner']
+  IClaim['owner'],
+  IClaimContents
 ]

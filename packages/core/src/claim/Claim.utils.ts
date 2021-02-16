@@ -5,17 +5,17 @@
  */
 
 import { hexToBn } from '@polkadot/util'
-import { IClaim, CompressedClaim } from '@kiltprotocol/types'
+import {
+  IClaim,
+  CompressedClaim,
+  PartialClaim,
+  CompressedPartialClaim,
+} from '@kiltprotocol/types'
 import { jsonabc, DataUtils, Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { getIdForCTypeHash } from '../ctype/CType.utils'
 import Did from '../did'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
-
-/**
- * The minimal partial claim from which a JSON-LD representation can be built.
- */
-export type PartialClaim = Partial<IClaim> & Pick<IClaim, 'cTypeHash'>
 
 /**
  * Produces JSON-LD readable representations of [[IClaim]]['contents']. This is done by implicitly or explicitely transforming property keys to globally unique predicates.
@@ -184,7 +184,7 @@ export function verifyDisclosedAttributes(
  * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_CONTENTS_MALFORMED]].
  *
  */
-export function errorCheck(input: IClaim): void {
+export function errorCheck(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
@@ -206,34 +206,60 @@ export function errorCheck(input: IClaim): void {
 }
 
 /**
- *  Compresses the [[Claim]] for storage and/or messaging.
+ *  Compresses the [[IClaim]] for storage and/or messaging.
  *
- * @param claim A [[Claim]] object that will be sorted and stripped for messaging or storage.
+ * @param claim An [[IClaim]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of a [[Claim]].
+ * @returns An ordered array of a [[CompressedClaim]].
  */
-export function compress(claim: IClaim): CompressedClaim {
+export function compress(claim: IClaim): CompressedClaim
+/**
+ *  Compresses the [[PartialClaim]] for storage and/or messaging.
+ *
+ * @param claim A [[PartialClaim]] object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of a [[CompressedPartialClaim]].
+ */
+export function compress(claim: PartialClaim): CompressedPartialClaim
+export function compress(
+  claim: IClaim | PartialClaim
+): CompressedClaim | CompressedPartialClaim {
   errorCheck(claim)
-  const sortedContents = jsonabc.sortObj(claim.contents)
-  return [sortedContents, claim.cTypeHash, claim.owner]
+  let sortedContents
+  if (claim.contents) {
+    sortedContents = jsonabc.sortObj(claim.contents)
+  }
+  return [claim.cTypeHash, claim.owner, sortedContents]
 }
 
 /**
- *  Decompresses the [[Claim]] from storage and/or message.
+ *  Decompresses the [[IClaim]] from storage and/or message.
  *
- * @param claim A compressed [[Claim]] array that is reverted back into an object.
- * @throws When [[Claim]] is not an Array or it's length is unequal 3.
+ * @param claim A [[CompressedClaim]] array that is reverted back into an object.
+ * @throws When a [[CompressedClaim]] is not an Array or it's length is unequal 3.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]].
- * @returns An object that has the same properties as the [[Claim]].
+ * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
  */
-export function decompress(claim: CompressedClaim): IClaim {
+export function decompress(claim: CompressedClaim): IClaim
+/**
+ *  Decompresses the Partial [[IClaim]] from storage and/or message.
+ *
+ * @param claim A [[CompressedPartialClaim]] array that is reverted back into an object.
+ * @throws When a [[CompressedPartialClaim]] is not an Array or it's length is unequal 3.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @returns A [[PartialClaim]] object that has the same properties as the [[CompressedPartialClaim]].
+ */
+export function decompress(claim: CompressedPartialClaim): PartialClaim
+export function decompress(
+  claim: CompressedClaim | CompressedPartialClaim
+): IClaim | PartialClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }
   return {
-    contents: claim[0],
-    cTypeHash: claim[1],
-    owner: claim[2],
+    cTypeHash: claim[0],
+    owner: claim[1],
+    contents: claim[2],
   }
 }
 

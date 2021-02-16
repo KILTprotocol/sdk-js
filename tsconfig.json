@@ -11,6 +11,7 @@
       "@kiltprotocol/core": ["core/src"],
       "@kiltprotocol/types": ["types/src"],
       "@kiltprotocol/utils": ["utils/src"],
+      "@kiltprotocol/messaging": ["messaging/src"],
     }
   },
   "skipLibCheck": true

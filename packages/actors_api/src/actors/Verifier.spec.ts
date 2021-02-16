@@ -4,9 +4,10 @@
  * @ignore
  */
 
-import { CType, Identity, MessageBodyType } from '@kiltprotocol/core'
+import { CType, Identity } from '@kiltprotocol/core'
 import { IClaim, ICType } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from '@kiltprotocol/core/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
+import Message from '@kiltprotocol/messaging'
 import { Attester, Claimer, Verifier } from '..'
 import Credential from '../credential/Credential'
 
@@ -75,11 +76,11 @@ describe('Verifier', () => {
       session: claimerSession,
     } = Claimer.requestAttestation(claim, claimer, attester.getPublicIdentity())
     expect(requestAttestation.body.type).toEqual(
-      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+      Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
     if (
       requestAttestation.body.type ===
-      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+      Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
     ) {
       const { message: attestationMessage } = await Attester.issueAttestation(
         attester,
@@ -99,8 +100,10 @@ describe('Verifier', () => {
       })
       .finalize(verifier, claimer.getPublicIdentity())
     expect(session).toBeDefined()
-    expect(request.body.type).toEqual(MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES)
-    if (request.body.type === MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES) {
+    expect(request.body.type).toEqual(
+      Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES
+    )
+    if (request.body.type === Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES) {
       expect(request.body.content.ctypes).toEqual(['this is a ctype hash'])
     }
   })
@@ -120,7 +123,7 @@ describe('Verifier', () => {
       [credential]
     )
     expect(presentation.body.type).toEqual(
-      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
+      Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
     )
     expect(Array.isArray(presentation.body.content)).toBeTruthy()
 
@@ -148,10 +151,10 @@ describe('Verifier', () => {
       [credential]
     )
     expect(presentation.body.type).toEqual(
-      MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
+      Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
     )
     expect(Array.isArray(presentation.body.content)).toBeTruthy()
-    if (presentation.body.type === MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES) {
+    if (presentation.body.type === Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES) {
       delete presentation.body.content[0].request.claim.contents.name
       const { verified: ok, claims } = await Verifier.verifyPresentation(
         presentation,

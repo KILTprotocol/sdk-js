@@ -1,16 +1,17 @@
 import {
   BlockchainUtils,
   Attestation,
-  IMessage,
-  IRequestAttestationForClaim,
-  Message,
-  MessageBodyType,
   PublicIdentity,
   SDKErrors,
   Identity,
-  DelegationNode,
+  DelegationNodeUtils,
 } from '@kiltprotocol/core'
-import { IAttestation } from '@kiltprotocol/types'
+import {
+  IAttestation,
+  IMessage,
+  IRequestAttestationForClaim,
+} from '@kiltprotocol/types'
+import Message from '@kiltprotocol/messaging'
 
 export interface IRevocationHandle {
   claimHash: IAttestation['claimHash']
@@ -54,10 +55,10 @@ export async function issueAttestation(
   revocationHandle: IRevocationHandle
   message: Message
 }> {
-  if (message.body.type !== MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
+  if (message.body.type !== Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
     throw SDKErrors.ERROR_MESSAGE_TYPE(
       message.body.type,
-      MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+      Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
     )
   }
 
@@ -79,7 +80,7 @@ export async function issueAttestation(
         content: {
           attestation,
         },
-        type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+        type: Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
       },
       attester,
       claimer
@@ -105,30 +106,10 @@ export async function revokeAttestation(
     throw SDKErrors.ERROR_NOT_FOUND('Attestation not on chain')
   }
   // count the number of steps we have to go up the delegation tree for calculating the transaction weight
-  let delegationTreeTraversalSteps = 0
-
-  // if the attester is not the owner, we need to check the delegation tree
-  if (
-    attestation.owner !== attester.address &&
-    attestation.delegationId !== null
-  ) {
-    delegationTreeTraversalSteps += 1
-    const delegationNode = await DelegationNode.query(attestation.delegationId)
-
-    if (typeof delegationNode !== 'undefined' && delegationNode !== null) {
-      const { steps, node } = await delegationNode.findParent(attester.address)
-      delegationTreeTraversalSteps += steps
-      if (node === null) {
-        throw SDKErrors.ERROR_UNAUTHORIZED(
-          'Attester is not athorized to revoke this attestation. (attester not in delegation tree)'
-        )
-      }
-    }
-  } else if (attestation.owner !== attester.address) {
-    throw SDKErrors.ERROR_UNAUTHORIZED(
-      'Attester is not athorized to revoke this attestation. (not the owner, no delegations)'
-    )
-  }
+  const delegationTreeTraversalSteps = await DelegationNodeUtils.countNodeDepth(
+    attester,
+    attestation
+  )
 
   await Attestation.revoke(
     revocationHandle.claimHash,

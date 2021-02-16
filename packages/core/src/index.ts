@@ -13,10 +13,15 @@ import {
   DelegationBaseNode,
   DelegationNode,
   DelegationRootNode,
+  DelegationNodeUtils,
 } from './delegation'
-import Did, { IDid, IDidDocument, IDidDocumentPublicKey } from './did'
+import Did, {
+  IDid,
+  IDidDocument,
+  IDidDocumentPublicKey,
+  IDidDocumentSigned,
+} from './did'
 import { Identity, IURLResolver, PublicIdentity } from './identity'
-import Message from './messaging'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {
   RequestForAttestationUtils,
@@ -26,7 +31,6 @@ export { connect, disconnect, config } from './kilt'
 export { SubmittableResult } from '@polkadot/api'
 export { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 export * from './errorhandling'
-export * from './messaging'
 
 export { SDKErrors } from '@kiltprotocol/utils'
 
@@ -54,12 +58,13 @@ export {
   AttestedClaimUtils,
   DelegationBaseNode,
   DelegationNode,
+  DelegationNodeUtils,
   DelegationRootNode,
   Did,
   IDid,
   IDidDocument,
   IDidDocumentPublicKey,
-  Message,
+  IDidDocumentSigned,
   Quote,
   QuoteUtils,
   QuoteSchema,

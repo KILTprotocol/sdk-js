@@ -7,20 +7,17 @@
 import {
   IAttestedClaim,
   IClaim,
+  IEncryptedMessage,
   IQuote,
   IRequestForAttestation,
+  IRequestAttestationForClaim,
+  ISubmitAttestationForClaim,
+  IRequestClaimsForCTypes,
+  ISubmitClaimsForCTypes,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import Identity from '../identity/Identity'
-import * as Quote from '../quote/Quote'
-import Message, {
-  IEncryptedMessage,
-  IRequestAttestationForClaim,
-  IRequestClaimsForCTypes,
-  ISubmitAttestationForClaim,
-  ISubmitClaimsForCTypes,
-  MessageBodyType,
-} from './Message'
+import { Identity, Quote } from '@kiltprotocol/core'
+import Message from './Message'
 
 describe('Messaging', () => {
   let identityAlice: Identity
@@ -36,7 +33,7 @@ describe('Messaging', () => {
   it('verify message encryption and signing', async () => {
     const message = new Message(
       {
-        type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
         content: { ctypes: ['0x12345678'] },
       },
       identityAlice,
@@ -159,7 +156,7 @@ describe('Messaging', () => {
         quote: bothSigned,
         prerequisiteClaims: [] as IClaim[],
       },
-      type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
     }
 
     Message.ensureOwnerIsSender(
@@ -190,7 +187,7 @@ describe('Messaging', () => {
           revoked: false,
         },
       },
-      type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
     }
     expect(() =>
       Message.ensureOwnerIsSender(
@@ -216,7 +213,7 @@ describe('Messaging', () => {
 
     const submitClaimsForCTypeBody: ISubmitClaimsForCTypes = {
       content: [attestedClaim],
-      type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
     }
 
     Message.ensureOwnerIsSender(
@@ -249,7 +246,7 @@ describe('Messaging', () => {
         content: {
           ctypes: ['0x12345678'],
         },
-        type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
       }
       encrypted = new Message(
         messageBody,
