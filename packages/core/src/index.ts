@@ -15,7 +15,12 @@ import {
   DelegationRootNode,
   DelegationNodeUtils,
 } from './delegation'
-import Did, { IDid, IDidDocument, IDidDocumentPublicKey } from './did'
+import Did, {
+  IDid,
+  IDidDocument,
+  IDidDocumentPublicKey,
+  IDidDocumentSigned,
+} from './did'
 import { Identity, IURLResolver, PublicIdentity } from './identity'
 import { ConfigService } from './config'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
@@ -60,6 +65,7 @@ export {
   IDid,
   IDidDocument,
   IDidDocumentPublicKey,
+  IDidDocumentSigned,
   Quote,
   QuoteUtils,
   QuoteSchema,
