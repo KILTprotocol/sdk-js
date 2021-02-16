@@ -28,10 +28,11 @@ jobs:
       - name: Bump prerelease version of root package
         run: yarn version prerelease
       - name: Get current package version
+        id: package_version
         run: echo "::set-output name=package_version::$(node -pe "require('./package.json').version")"
       - name: Set all other packages to same version
         env:
-          PACKAGE_VERSION: ${{ steps.vars.outputs.package_version }}
+          PACKAGE_VERSION: ${{ steps.package_version.outputs.package_version }}
         run: yarn run version $PACKAGE_VERSION
       - name: Build packages
         run: yarn run build
