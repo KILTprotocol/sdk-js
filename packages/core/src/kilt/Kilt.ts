@@ -9,7 +9,7 @@
  * @preferred
  */
 
-import { ConfigService } from '../config'
+import { ConfigService } from '@kiltprotocol/config'
 import Blockchain from '../blockchain/Blockchain'
 import { clearCache, getCached } from '../blockchainApiConnection'
 

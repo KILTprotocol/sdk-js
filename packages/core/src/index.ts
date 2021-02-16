@@ -22,7 +22,6 @@ import Did, {
   IDidDocumentSigned,
 } from './did'
 import { Identity, IURLResolver, PublicIdentity } from './identity'
-import { ConfigService } from './config'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {
   RequestForAttestationUtils,
@@ -69,5 +68,4 @@ export {
   Quote,
   QuoteUtils,
   QuoteSchema,
-  ConfigService,
 }

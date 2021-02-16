@@ -1,6 +1,6 @@
 {
-  "name": "@kiltprotocol/actors-api",
-  "version": "0.19.1-27",
+  "name": "@kiltprotocol/config",
+  "version": "0.19.1-26",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
@@ -10,8 +10,7 @@
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
-    "build:ts": "tsc --declaration -p tsconfig.build.json",
-    "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll"
+    "build:ts": "tsc --declaration -p tsconfig.build.json"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
@@ -26,10 +25,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@kiltprotocol/config": "workspace:*",
-    "@kiltprotocol/core": "workspace:*",
-    "@kiltprotocol/messaging": "workspace:*",
-    "@kiltprotocol/types": "workspace:*",
-    "@kiltprotocol/utils": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*",
+    "typescript-logging": "^0.6.4"
   }
 }

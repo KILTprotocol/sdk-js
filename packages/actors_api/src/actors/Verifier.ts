@@ -1,10 +1,5 @@
-import {
-  AttestedClaim,
-  CType,
-  SDKErrors,
-  Identity,
-  ConfigService,
-} from '@kiltprotocol/core'
+import { AttestedClaim, CType, SDKErrors, Identity } from '@kiltprotocol/core'
+import { ConfigService } from '@kiltprotocol/config'
 import {
   IPublicIdentity,
   IAttestedClaim,
@@ -13,7 +8,7 @@ import {
 } from '@kiltprotocol/types'
 import Message from '@kiltprotocol/messaging'
 
-const log = ConfigService.factory.getLogger('Verifier')
+const log = ConfigService.LoggingFactory.getLogger('Verifier')
 
 export interface IPresentationReq {
   properties: string[]

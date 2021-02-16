@@ -7,13 +7,13 @@ import { Option, Struct } from '@polkadot/types'
 import { IAttestation } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { AccountId, Hash } from '@polkadot/types/interfaces'
+import { ConfigService } from '@kiltprotocol/config'
 import { getCached } from '../blockchainApiConnection'
-import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
 import { DelegationNodeId } from '../delegation/DelegationDecoder'
 
-const log = factory.getLogger('Attestation')
+const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
 export async function store(
   attestation: IAttestation,

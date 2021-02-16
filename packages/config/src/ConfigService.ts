@@ -75,8 +75,8 @@ function setLogLevel(logLevel: LogLevel | undefined): void {
 }
 
 export function set<K extends Partial<configOpts>>(opts: K): void {
-  setLogLevel(opts.logLevel)
   configuration = { ...configuration, ...opts }
+  setLogLevel(configuration.logLevel)
 }
 
 // Create options instance and specify 1 LogGroupRule:
@@ -87,7 +87,7 @@ const options = new LoggerFactoryOptions().addLogGroupRule(
 // Create a named loggerfactory and pass in the options and export the factory.
 // Named is since version 0.2.+ (it's recommended for future usage)
 // eslint-disable-next-line import/prefer-default-export
-export const factory = LFService.createNamedLoggerFactory(
+export const LoggingFactory = LFService.createNamedLoggerFactory(
   'LoggerFactory',
   options
 )
