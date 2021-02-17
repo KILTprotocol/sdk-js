@@ -45,7 +45,7 @@ export interface IRevocationHandle {
  * @param claimer The [[PublicIdentity]] of the claimer. This is also the receiver of the returned message.
  * @throws [[ERROR_MESSAGE_TYPE]].
  * @returns The [[Attestation]] object which should be sent to the Claimer and
- * a witness which can be used to revoke the [[Attestation]] in [[revokeAttestation]].
+ * a handle which can be used to revoke the [[Attestation]] in [[revokeAttestation]].
  */
 export async function issueAttestation(
   attester: Identity,
