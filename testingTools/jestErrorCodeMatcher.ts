@@ -13,32 +13,45 @@ declare global {
 }
 
 expect.extend({
-  toThrowErrorWithCode(received, errorOrCode: number | CodedError) {
-    expect(received).toBeInstanceOf(Function)
+  toThrowErrorWithCode(
+    received: Error | (() => any),
+    errorOrCode: number | CodedError
+  ) {
     const not = this.isNot
-    const errorCode =
+    const expectedErrorCode =
       typeof errorOrCode === 'object'
         ? (errorOrCode.errorCode as number)
         : errorOrCode
-    try {
-      received()
-      return { pass: false, message: () => 'Received function did not throw' }
-    } catch (error) {
-      const message = (): string =>
-        not
-          ? `Expected: Not ${this.utils.printExpected(
-              `error code ${errorCode}`
-            )}\n` +
-            `Received: ${this.utils.printReceived(
-              `error code ${error.errorCode}`
-            )}`
-          : `Expected: ${this.utils.printExpected(
-              `error code ${errorCode}`
-            )}\n` +
-            `Received: ${this.utils.printReceived(
-              `error code ${error.errorCode}`
-            )}`
-      return { pass: errorCode === error.errorCode, message }
+    let error: any
+    if (received instanceof Function) {
+      try {
+        received()
+        return { pass: false, message: () => 'Received function did not throw' }
+      } catch (e) {
+        error = e
+      }
+    } else if (received instanceof Error) {
+      error = received
+    } else {
+      throw new TypeError(
+        `expect.toThrowErrorWithCode expects a Function or Error, received: ${typeof received}`
+      )
     }
+    const receivedErrorCode: Number | undefined = error.errorCode
+    const message = (): string =>
+      not
+        ? `Expected: error.errorCode ${this.utils.printExpected(
+            `!= ${expectedErrorCode}`
+          )}\n` +
+          `Received: error.errorCode ${this.utils.printExpected(
+            `= ${expectedErrorCode}`
+          )}`
+        : `Expected: error.errorCode = ${this.utils.printExpected(
+            expectedErrorCode
+          )}\n` +
+          `Received: error.errorCode = ${this.utils.printReceived(
+            receivedErrorCode
+          )}`
+    return { pass: expectedErrorCode === receivedErrorCode, message }
   },
 })
