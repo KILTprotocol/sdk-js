@@ -4,6 +4,7 @@ module.exports = {
   clearMocks: true,
   runner: 'groups',
   testTimeout: 10000,
+  setupFilesAfterEnv: ['../testingTools/setup.ts'],
   coverageThreshold: {
     global: {
       branches: 70,

@@ -17,7 +17,11 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { Index } from '@polkadot/types/interfaces'
-import { mnemonicToMiniSecret } from '@polkadot/util-crypto'
+import {
+  cryptoIsReady,
+  cryptoWaitReady,
+  mnemonicToMiniSecret,
+} from '@polkadot/util-crypto'
 import { mnemonicGenerate as generate } from '@polkadot/util-crypto/mnemonic/generate'
 import { mnemonicValidate as validate } from '@polkadot/util-crypto/mnemonic/validate'
 import { hexToU8a } from '@polkadot/util/hex'
@@ -28,6 +32,7 @@ import BN from 'bn.js'
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair } from 'tweetnacl'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { KeypairType } from '@polkadot/util-crypto/types'
 import PublicIdentity from './PublicIdentity'
 
 type BoxPublicKey =
@@ -36,6 +41,14 @@ type BoxPublicKey =
 
 export default class Identity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
+
+  public static async waitReady(): Promise<boolean> {
+    return cryptoWaitReady()
+  }
+
+  public static get ready(): boolean {
+    return cryptoIsReady()
+  }
 
   /**
    * [STATIC] Generates Mnemonic phrase used to create identities from phrase seed.
@@ -54,11 +67,11 @@ export default class Identity {
    * [STATIC] Builds an identity object from a mnemonic string.
    *
    * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
+   * @param keyType The signature key type to be used for this identity. Default is `sr25519`.
    * @throws When phraseArg contains fewer than 12 correctly separated mnemonic words.
    * @throws When the phraseArg could not be validated.
    * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]], [[ERROR_MNEMONIC_PHRASE_INVALID]].
    * @returns An [[Identity]].
-   *
    * @example ```javascript
    * const mnemonic = Identity.generateMnemonic();
    * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
@@ -66,7 +79,10 @@ export default class Identity {
    * Identity.buildFromMnemonic(mnemonic);
    * ```
    */
-  public static buildFromMnemonic(phraseArg: string): Identity {
+  public static buildFromMnemonic(
+    phraseArg: string,
+    keyType?: KeypairType
+  ): Identity {
     let phrase = phraseArg
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
@@ -82,13 +98,14 @@ export default class Identity {
     }
 
     const seed = mnemonicToMiniSecret(phrase)
-    return Identity.buildFromSeed(seed)
+    return Identity.buildFromSeed(seed, keyType)
   }
 
   /**
    * [STATIC] Builds an [[Identity]], generated from a seed hex string.
    *
    * @param seedArg - Seed as hex string (Starting with 0x).
+   * @param keyType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns  An [[Identity]].
    * @example ```javascript
    * const seed =
@@ -96,14 +113,17 @@ export default class Identity {
    * Identity.buildFromSeedString(seed);
    * ```
    */
-  public static buildFromSeedString(seedArg: string): Identity {
+  public static buildFromSeedString(
+    seedArg: string,
+    keyType?: KeypairType
+  ): Identity {
     const asU8a = hexToU8a(seedArg)
-    return Identity.buildFromSeed(asU8a)
+    return Identity.buildFromSeed(asU8a, keyType)
   }
 
-  private static createKeyring(): Keyring {
+  private static createKeyring(type: KeypairType = 'sr25519'): Keyring {
     return new Keyring({
-      type: 'ed25519',
+      type,
       // KILT has registered the ss58 prefix 38
       ss58Format: 38,
     })
@@ -113,19 +133,23 @@ export default class Identity {
    * [STATIC] Builds a new [[Identity]], generated from a seed (Secret Seed).
    *
    * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
+   * @param keyType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns An [[Identity]].
    * @example ```javascript
    * // prettier-ignore
    * const seed = new Uint8Array([108, 233, 253,  6,  12, 112,  22,  92,
-   *                               15, 200, 218, 37, 129,  13,  36, 145,
-   *                                6, 213, 223, 16,  10, 169, 128, 224,
-   *                              217, 161,  20,  9, 214, 179,  82,  97
-   *                            ]);
+   * 15, 200, 218, 37, 129,  13,  36, 145,
+   * 6, 213, 223, 16,  10, 169, 128, 224,
+   * 217, 161,  20,  9, 214, 179,  82,  97
+   * ]);
    * Identity.buildFromSeed(seed);
    * ```
    */
-  public static buildFromSeed(seed: Uint8Array): Identity {
-    const keyring = Identity.createKeyring()
+  public static buildFromSeed(
+    seed: Uint8Array,
+    keyType?: KeypairType
+  ): Identity {
+    const keyring = Identity.createKeyring(keyType)
     const keyringPair = keyring.addFromSeed(seed)
     return new Identity(seed, keyringPair)
   }
@@ -134,13 +158,14 @@ export default class Identity {
    * [STATIC] Builds a new [[Identity]], generated from a uniform resource identifier (URIs).
    *
    * @param uri - Standard identifiers.
+   * @param keyType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns  An [[Identity]].
    * @example ```javascript
    * Identity.buildFromURI('//Bob');
    * ```
    */
-  public static buildFromURI(uri: string): Identity {
-    const keyring = Identity.createKeyring()
+  public static buildFromURI(uri: string, keyType?: KeypairType): Identity {
+    const keyring = Identity.createKeyring(keyType)
     const derived = keyring.createFromUri(uri)
     const seed = u8aUtil.u8aToU8a(uri)
     return new Identity(seed, derived)
@@ -168,6 +193,10 @@ export default class Identity {
     this.signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyringPair.publicKey)
 
     this.boxKeyPair = boxKeyPair
+  }
+
+  public get signingKeyType(): KeypairType {
+    return this.signKeyringPair.type
   }
 
   /**
