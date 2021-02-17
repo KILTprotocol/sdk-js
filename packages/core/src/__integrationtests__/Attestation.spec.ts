@@ -26,6 +26,8 @@ import {
   WS_ADDRESS,
 } from './utils'
 
+import '../../../../testingTools/jestErrorCodeMatcher'
+
 let alice: Identity
 beforeAll(async () => {
   config({ address: WS_ADDRESS })

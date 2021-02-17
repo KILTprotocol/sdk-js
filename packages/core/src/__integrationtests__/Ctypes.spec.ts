@@ -13,6 +13,8 @@ import { ExtrinsicErrors } from '../errorhandling/ExtrinsicError'
 import { config, disconnect } from '../kilt'
 import { wannabeFaucet, WS_ADDRESS } from './utils'
 
+import '../../../../testingTools/jestErrorCodeMatcher'
+
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
 })
@@ -35,7 +37,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }
 
   beforeAll(async () => {
-    ctypeCreator = await wannabeFaucet
+    ctypeCreator = wannabeFaucet
   })
 
   it('should not be possible to create a claim type w/o tokens', async () => {

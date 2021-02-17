@@ -13,6 +13,8 @@ import Identity from '../identity'
 import { config, disconnect } from '../kilt'
 import { WS_ADDRESS } from './utils'
 
+import '../../../../testingTools/jestErrorCodeMatcher'
+
 let alice: Identity
 
 beforeAll(async () => {
@@ -43,7 +45,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
   await expect(
     submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })
   ).rejects.toThrowErrorWithCode(
-    ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS.code
+    ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code
   )
 }, 30_000)
 

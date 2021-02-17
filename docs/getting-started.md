@@ -138,7 +138,7 @@ In case you go with option #1 or #2, you have to request test money ([prod-net](
 However, **we recommend to start your local node** and use a mnemonic which already has tokens by using our docker image
 
 ```
-docker run -p 9944:9944 kiltprotocol/mashnet-node:develop ./target/release/mashnet-node --dev --ws-port 9944 --ws-external --rpc-external
+docker run -p 9944:9944 kiltprotocol/mashnet-node:develop --dev --ws-port 9944 --ws-external --rpc-external
 ```
 
 To store the CTYPE on the blockchain, you have to call:
