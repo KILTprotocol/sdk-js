@@ -14,7 +14,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 import { AnyJson } from '@polkadot/types/types'
 import { IPublicIdentity } from '@kiltprotocol/types'
-import { factory } from '../config/ConfigService'
+import { ConfigService } from '@kiltprotocol/config'
 import Identity from '../identity/Identity'
 import { queryByAddress, queryByIdentifier, remove, store } from './Did.chain'
 import {
@@ -25,7 +25,7 @@ import {
   verifyDidDocumentSignature,
 } from './Did.utils'
 
-const log = factory.getLogger('DID')
+const log = ConfigService.LoggingFactory.getLogger('DID')
 
 export const IDENTIFIER_PREFIX = 'did:kilt:'
 export const SERVICE_KILT_MESSAGING = 'KiltMessagingService'

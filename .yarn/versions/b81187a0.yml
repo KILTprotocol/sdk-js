@@ -1,7 +1,9 @@
 undecided:
   - root-workspace-0b6124
   - "@kiltprotocol/actors-api"
+  - "@kiltprotocol/config"
   - "@kiltprotocol/core"
+  - "@kiltprotocol/messaging"
   - "@kiltprotocol/sdk-js"
   - "@kiltprotocol/types"
   - "@kiltprotocol/utils"

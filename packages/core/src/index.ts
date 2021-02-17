@@ -13,10 +13,15 @@ import {
   DelegationBaseNode,
   DelegationNode,
   DelegationRootNode,
+  DelegationNodeUtils,
 } from './delegation'
-import Did, { IDid, IDidDocument, IDidDocumentPublicKey } from './did'
+import Did, {
+  IDid,
+  IDidDocument,
+  IDidDocumentPublicKey,
+  IDidDocumentSigned,
+} from './did'
 import { Identity, IURLResolver, PublicIdentity } from './identity'
-import { ConfigService } from './config'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {
   RequestForAttestationUtils,
@@ -53,13 +58,14 @@ export {
   AttestedClaimUtils,
   DelegationBaseNode,
   DelegationNode,
+  DelegationNodeUtils,
   DelegationRootNode,
   Did,
   IDid,
   IDidDocument,
   IDidDocumentPublicKey,
+  IDidDocumentSigned,
   Quote,
   QuoteUtils,
   QuoteSchema,
-  ConfigService,
 }

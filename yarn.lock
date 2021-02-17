@@ -795,6 +795,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/actors-api@workspace:packages/actors_api"
   dependencies:
+    "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/messaging": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
@@ -804,10 +805,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@kiltprotocol/config@workspace:*, @kiltprotocol/config@workspace:packages/config":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/config@workspace:packages/config"
+  dependencies:
+    "@kiltprotocol/utils": "workspace:*"
+    rimraf: ^3.0.2
+    typescript: ^3.9.7
+    typescript-logging: ^0.6.4
+  languageName: unknown
+  linkType: soft
+
 "@kiltprotocol/core@workspace:*, @kiltprotocol/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/core@workspace:packages/core"
   dependencies:
+    "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^3.7.3
@@ -885,6 +898,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/vc-export@workspace:packages/vc-export"
   dependencies:
+    "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"

@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/actors-api",
-  "version": "0.19.1-26",
+  "version": "0.19.1-28",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
@@ -26,6 +26,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
+    "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/messaging": "workspace:*",
     "@kiltprotocol/types": "workspace:*",

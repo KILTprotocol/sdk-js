@@ -6,8 +6,8 @@
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option } from '@polkadot/types'
 import { IDelegationNode } from '@kiltprotocol/types'
+import { ConfigService } from '@kiltprotocol/config'
 import { getCached } from '../blockchainApiConnection'
-import { factory } from '../config/ConfigService'
 import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
 import { fetchChildren, getChildIds } from './Delegation.chain'
@@ -19,7 +19,7 @@ import {
 import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
 
-const log = factory.getLogger('DelegationBaseNode')
+const log = ConfigService.LoggingFactory.getLogger('DelegationBaseNode')
 
 export async function store(
   delegation: IDelegationNode,

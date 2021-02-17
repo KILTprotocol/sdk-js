@@ -112,7 +112,7 @@ export enum PalletIndex {
   Delegation = 13,
   DID = 14,
 }
-interface IPalletToExtrinsicErrors {
+export interface IPalletToExtrinsicErrors {
   [key: number]: {
     [key: number]: {
       code: number
