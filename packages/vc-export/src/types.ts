@@ -89,3 +89,9 @@ export interface VerifiablePresentation {
   holder?: string
   proof: Proof | Proof[]
 }
+
+export const KeyTypesMap = {
+  ed25519: 'Ed25519VerificationKey2018',
+  sr25519: 'Sr25519VerificationKey2020',
+  ecdsa: 'EcdsaSecp256k1VerificationKey2019',
+}
