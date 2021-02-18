@@ -19,11 +19,11 @@ let alice: Identity
 
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
-  alice = Identity.buildFromURI('//Alice', 'ed25519')
+  alice = Identity.buildFromURI('//Alice', { signingKeyPairType: 'ed25519' })
 })
 
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
-  const to = Identity.buildFromMnemonic('', 'ed25519')
+  const to = Identity.buildFromMnemonic('', { signingKeyPairType: 'ed25519' })
   await expect(
     makeTransfer(alice, to.address, new BN(1)).then((tx) =>
       submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })

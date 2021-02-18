@@ -67,7 +67,8 @@ export default class Identity {
    * [STATIC] Builds an identity object from a mnemonic string.
    *
    * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
-   * @param keyType The signature key type to be used for this identity. Default is `sr25519`.
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
    * @throws When phraseArg contains fewer than 12 correctly separated mnemonic words.
    * @throws When the phraseArg could not be validated.
    * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]], [[ERROR_MNEMONIC_PHRASE_INVALID]].
@@ -81,7 +82,7 @@ export default class Identity {
    */
   public static buildFromMnemonic(
     phraseArg: string,
-    keyType?: KeypairType
+    options: { signingKeyPairType?: KeypairType } = {}
   ): Identity {
     let phrase = phraseArg
     if (phrase) {
@@ -98,14 +99,15 @@ export default class Identity {
     }
 
     const seed = mnemonicToMiniSecret(phrase)
-    return Identity.buildFromSeed(seed, keyType)
+    return Identity.buildFromSeed(seed, options)
   }
 
   /**
    * [STATIC] Builds an [[Identity]], generated from a seed hex string.
    *
    * @param seedArg - Seed as hex string (Starting with 0x).
-   * @param keyType The signature key type to be used for this identity. Default is `sr25519`.
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns  An [[Identity]].
    * @example ```javascript
    * const seed =
@@ -115,10 +117,10 @@ export default class Identity {
    */
   public static buildFromSeedString(
     seedArg: string,
-    keyType?: KeypairType
+    options: { signingKeyPairType?: KeypairType } = {}
   ): Identity {
     const asU8a = hexToU8a(seedArg)
-    return Identity.buildFromSeed(asU8a, keyType)
+    return Identity.buildFromSeed(asU8a, options)
   }
 
   private static createKeyring(type: KeypairType = 'sr25519'): Keyring {
@@ -133,7 +135,8 @@ export default class Identity {
    * [STATIC] Builds a new [[Identity]], generated from a seed (Secret Seed).
    *
    * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
-   * @param keyType The signature key type to be used for this identity. Default is `sr25519`.
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns An [[Identity]].
    * @example ```javascript
    * // prettier-ignore
@@ -147,9 +150,9 @@ export default class Identity {
    */
   public static buildFromSeed(
     seed: Uint8Array,
-    keyType?: KeypairType
+    options: { signingKeyPairType?: KeypairType } = {}
   ): Identity {
-    const keyring = Identity.createKeyring(keyType)
+    const keyring = Identity.createKeyring(options.signingKeyPairType)
     const keyringPair = keyring.addFromSeed(seed)
     return new Identity(seed, keyringPair)
   }
@@ -158,14 +161,18 @@ export default class Identity {
    * [STATIC] Builds a new [[Identity]], generated from a uniform resource identifier (URIs).
    *
    * @param uri - Standard identifiers.
-   * @param keyType The signature key type to be used for this identity. Default is `sr25519`.
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns  An [[Identity]].
    * @example ```javascript
    * Identity.buildFromURI('//Bob');
    * ```
    */
-  public static buildFromURI(uri: string, keyType?: KeypairType): Identity {
-    const keyring = Identity.createKeyring(keyType)
+  public static buildFromURI(
+    uri: string,
+    options: { signingKeyPairType?: KeypairType } = {}
+  ): Identity {
+    const keyring = Identity.createKeyring(options.signingKeyPairType)
     const derived = keyring.createFromUri(uri)
     const seed = u8aUtil.u8aToU8a(uri)
     return new Identity(seed, derived)

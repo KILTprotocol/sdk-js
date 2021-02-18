@@ -42,10 +42,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
-    const bobbyBroke = Identity.buildFromMnemonic(
-      Identity.generateMnemonic(),
-      'ed25519'
-    )
+    const bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic(), {
+      signingKeyPairType: 'ed25519',
+    })
     await expect(
       ctype.store(bobbyBroke).then((tx) =>
         submitTxWithReSign(tx, bobbyBroke, {
