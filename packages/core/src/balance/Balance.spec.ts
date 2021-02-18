@@ -8,7 +8,7 @@ import { SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
 import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
-import TYPE_REGISTRY from '@kiltprotocol/chain-helpers/src/blockchainApiConnection/__mocks__/BlockchainQuery'
+import TYPE_REGISTRY from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'
 import {
@@ -19,8 +19,10 @@ import {
 import BalanceUtils from './Balance.utils'
 import Kilt from '../kilt/Kilt'
 
+// Seems like there is an issue with how this mock is imported or used, does not function.
+// TODO: Look into how the mocked api should be set instead.
 jest.mock(
-  '@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
 )
 
 const BALANCE = 42
@@ -30,7 +32,7 @@ describe('Balance', () => {
   Kilt.config({ address: 'ws://testSting' })
   let alice: Identity
   let bob: Identity
-  const blockchainApi = require('@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
   const accountInfo = (balance: number): AccountInfo => {
