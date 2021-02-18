@@ -26,9 +26,9 @@
   },
   "dependencies": {
     "@kiltprotocol/actors-api": "workspace:*",
+    "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/messaging": "workspace:*",
-    "@kiltprotocol/types": "workspace:*",
-    "@kiltprotocol/chain-helpers": "workspace:*"
+    "@kiltprotocol/types": "workspace:*"
   }
 }
