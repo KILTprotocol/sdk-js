@@ -17,10 +17,10 @@ export const WS_ADDRESS = 'ws://127.0.0.1:9944'
 export const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 
-export const wannabeFaucet = Identity.buildFromURI(FaucetSeed)
-export const wannabeAlice = Identity.buildFromURI('//Alice')
-export const wannabeBob = Identity.buildFromURI('//Bob')
-export const wannabeCharlie = Identity.buildFromURI('//Charlie')
+export const wannabeFaucet = Identity.buildFromURI(FaucetSeed, 'ed25519')
+export const wannabeAlice = Identity.buildFromURI('//Alice', 'ed25519')
+export const wannabeBob = Identity.buildFromURI('//Bob', 'ed25519')
+export const wannabeCharlie = Identity.buildFromURI('//Charlie', 'ed25519')
 
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)

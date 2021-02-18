@@ -31,7 +31,7 @@ import '../../../../testingTools/jestErrorCodeMatcher'
 let alice: Identity
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
-  alice = Identity.buildFromURI('//Alice')
+  alice = Identity.buildFromURI('//Alice', 'ed25519')
 })
 
 describe('handling attestations that do not exist', () => {
@@ -121,7 +121,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attester.getPublicIdentity()
     )
 
-    const bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    const bobbyBroke = Identity.buildFromMnemonic(
+      Identity.generateMnemonic(),
+      'ed25519'
+    )
 
     await expect(
       attestation.store(bobbyBroke).then((tx) =>
