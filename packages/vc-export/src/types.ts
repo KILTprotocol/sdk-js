@@ -91,7 +91,9 @@ export interface VerifiablePresentation {
 }
 
 export const KeyTypesMap = {
-  ed25519: 'Ed25519VerificationKey2018',
+  // proposed and used by dock.io, e.g. https://github.com/w3c-ccg/security-vocab/issues/32, https://github.com/docknetwork/sdk/blob/9c818b03bfb4fdf144c20678169c7aad3935ad96/src/utils/vc/contexts/security_context.js
   sr25519: 'Sr25519VerificationKey2020',
+  // these are part of current w3 security vocab, see e.g. https://www.w3.org/ns/did/v1
+  ed25519: 'Ed25519VerificationKey2018',
   ecdsa: 'EcdsaSecp256k1VerificationKey2019',
 }
