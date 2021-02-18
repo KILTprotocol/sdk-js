@@ -4,15 +4,25 @@
  */
 
 import { ExtrinsicError, ExtrinsicErrors, PalletIndex } from './errorhandling'
-import * as Chain from './blockchain'
-import * as blockchainApiConnection from './blockchainApiConnection'
-import { BlockchainUtils } from './blockchain'
+import { BlockchainApiConnection } from './blockchainApiConnection'
+import {
+  Blockchain,
+  IBlockchainApi,
+  BlockchainUtils,
+  SubscriptionPromise,
+  Evaluator,
+  TerminationOptions,
+} from './blockchain'
 
 export {
-  Chain,
+  Blockchain,
+  IBlockchainApi,
+  BlockchainUtils,
+  SubscriptionPromise,
+  Evaluator,
+  TerminationOptions,
   ExtrinsicError,
   ExtrinsicErrors,
   PalletIndex,
-  blockchainApiConnection,
-  BlockchainUtils,
+  BlockchainApiConnection,
 }

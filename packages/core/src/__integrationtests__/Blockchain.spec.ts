@@ -7,13 +7,13 @@
 import { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import BN from 'bn.js/'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { BlockchainUtils, Chain } from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils, IBlockchainApi } from '@kiltprotocol/chain-helpers'
 import { makeTransfer } from '../balance/Balance.chain'
 import Identity from '../identity/Identity'
 import { wannabeFaucet, wannabeCharlie, WS_ADDRESS } from './utils'
 import { config, connect, disconnect } from '../kilt'
 
-let blockchain: Chain.IBlockchainApi
+let blockchain: IBlockchainApi
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
   blockchain = await connect()

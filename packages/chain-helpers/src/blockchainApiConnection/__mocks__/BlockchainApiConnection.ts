@@ -383,4 +383,3 @@ BlockchainApiConnection.__mocked_api = __mocked_api
 BlockchainApiConnection.mockChainQueryReturn = mockChainQueryReturn
 
 module.exports = BlockchainApiConnection
-module.exports.default = BlockchainApiConnection.getCached

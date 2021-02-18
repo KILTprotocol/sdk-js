@@ -13,7 +13,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { UnsubscribePromise } from '@polkadot/api/types'
 import BN from 'bn.js'
 import { IPublicIdentity } from '@kiltprotocol/types'
-import { blockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'
 import BalanceUtils from './Balance.utils'
 
@@ -40,7 +40,7 @@ import BalanceUtils from './Balance.utils'
 export async function getBalance(
   accountAddress: IPublicIdentity['address']
 ): Promise<BN> {
-  const blockchain = await blockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getCached()
   return (await blockchain.api.query.system.account(accountAddress)).data.free
 }
 
@@ -75,7 +75,7 @@ export async function listenToBalanceChanges(
     change: BN
   ) => void
 ): Promise<UnsubscribePromise> {
-  const blockchain = await blockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getCached()
   let previous = await getBalance(accountAddress)
 
   return blockchain.api.query.system.account(
@@ -122,7 +122,7 @@ export async function makeTransfer(
   amount: BN,
   exponent = -15
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await blockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getCached()
   const cleanExponent =
     (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
   const transfer = blockchain.api.tx.balances.transfer(

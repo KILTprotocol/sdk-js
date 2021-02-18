@@ -10,20 +10,23 @@
  */
 
 import { ConfigService } from '@kiltprotocol/config'
-import { blockchainApiConnection, Chain } from '@kiltprotocol/chain-helpers'
+import {
+  BlockchainApiConnection,
+  Blockchain,
+} from '@kiltprotocol/chain-helpers'
 
 export function connect(
   host: string = ConfigService.get('address')
-): Promise<Chain.Blockchain> {
-  return blockchainApiConnection.getCached(host)
+): Promise<Blockchain> {
+  return BlockchainApiConnection.getCached(host)
 }
 
 export async function disconnect(
   host: string = ConfigService.get('address')
 ): Promise<void> {
-  const cached = await blockchainApiConnection.getCached(host)
+  const cached = await BlockchainApiConnection.getCached(host)
   cached.api.disconnect()
-  blockchainApiConnection.clearCache()
+  BlockchainApiConnection.clearCache()
 }
 
 export function config<K extends Partial<ConfigService.configOpts>>(

@@ -14,7 +14,7 @@ import BN from 'bn.js'
 import { Keyring } from '@polkadot/keyring'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { IIdentity } from '@kiltprotocol/types'
-import getCached from '../blockchainApiConnection/BlockchainApiConnection'
+import { getCached } from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Blockchain from './Blockchain'
 import {

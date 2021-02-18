@@ -3,5 +3,4 @@
  * @ignore
  */
 
-export * from './BlockchainApiConnection'
-export { default } from './BlockchainApiConnection'
+export * as BlockchainApiConnection from './BlockchainApiConnection'

@@ -15,7 +15,7 @@ import {
   makeSubscriptionPromise,
   TerminationOptions,
 } from './SubscriptionPromise'
-import getCached from '../blockchainApiConnection'
+import { getCached } from '../blockchainApiConnection/BlockchainApiConnection'
 
 export type ResultEvaluator = Evaluator<SubmittableResult>
 export type ErrorEvaluator = Evaluator<Error>
