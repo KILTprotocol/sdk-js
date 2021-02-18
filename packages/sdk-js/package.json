@@ -28,6 +28,7 @@
     "@kiltprotocol/actors-api": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/messaging": "workspace:*",
-    "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/types": "workspace:*",
+    "@kiltprotocol/chain-helpers": "workspace:*"
   }
 }
