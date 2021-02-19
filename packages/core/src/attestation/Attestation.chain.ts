@@ -25,7 +25,7 @@ export async function store(
   }
   log.debug(() => `Create tx for 'attestation.add'`)
 
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
   const tx = blockchain.api.tx.attestation.add(
     txParams.claimHash,
@@ -66,7 +66,7 @@ function decode(
 // return types reflect backwards compatibility with mashnet-node v 0.22
 async function queryRaw(claimHash: string): Promise<Option<IChainAttestation>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const result = await blockchain.api.query.attestation.attestations<
     Option<IChainAttestation>
   >(claimHash)
@@ -83,7 +83,7 @@ export async function revoke(
   identity: Identity,
   maxDepth: number
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash,

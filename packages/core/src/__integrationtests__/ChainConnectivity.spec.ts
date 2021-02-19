@@ -16,7 +16,7 @@ beforeAll(async () => {
 
 describe('Blockchain', () => {
   it('should get stats', async () => {
-    const blockchain = await BlockchainApiConnection.getCached()
+    const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
     expect(blockchain).not.toBeUndefined()
     const stats = await blockchain!.getStats()
 
@@ -28,7 +28,7 @@ describe('Blockchain', () => {
   })
 
   it('should listen to blocks', async (done) => {
-    const blockchain = await BlockchainApiConnection.getCached()
+    const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
     const listener = (header: Header): void => {
       // console.log(`Best block number ${header.number}`)
       expect(Number(header.number)).toBeGreaterThanOrEqual(0)

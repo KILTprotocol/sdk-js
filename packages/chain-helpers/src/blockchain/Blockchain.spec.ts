@@ -17,7 +17,7 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { getCached } from '../blockchainApiConnection/BlockchainApiConnection'
+import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Blockchain from './Blockchain'
 import {
@@ -46,7 +46,7 @@ describe('queries', () => {
   })
 
   it('should get stats', async () => {
-    const blockchain = await getCached()
+    const blockchain = await getConnectionOrConnect()
 
     await expect(blockchain.getStats()).resolves.toMatchObject({
       chain: 'mockchain',
@@ -57,7 +57,7 @@ describe('queries', () => {
 
   it('should listen to blocks', async () => {
     const listener = jest.fn()
-    const blockchain = await getCached()
+    const blockchain = await getConnectionOrConnect()
     const unsubscribe = await blockchain.listenToBlocks(listener)
     expect(listener).toBeCalledWith('mockHead')
     expect(unsubscribe()).toBeUndefined()
@@ -72,7 +72,7 @@ describe('Tx logic', () => {
   const setDefault = require('../blockchainApiConnection/BlockchainApiConnection')
     .__setDefaultResult
   const dispatchNonceRetrieval = async (address: string): Promise<BN> => {
-    const chain = await getCached()
+    const chain = await getConnectionOrConnect()
     return chain.getNonce(address)
   }
   beforeAll(async () => {

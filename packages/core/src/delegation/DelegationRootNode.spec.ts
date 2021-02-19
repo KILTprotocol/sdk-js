@@ -110,7 +110,7 @@ describe('Delegation', () => {
   })
 
   it('root delegation verify', async () => {
-    const blockchain = await BlockchainApiConnection.getCached()
+    const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
     const aDelegationRootNode = new DelegationRootNode(
       'myRootId',

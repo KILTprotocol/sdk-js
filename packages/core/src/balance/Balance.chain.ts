@@ -39,7 +39,7 @@ import BalanceUtils from './Balance.utils'
 export async function getBalance(
   accountAddress: IPublicIdentity['address']
 ): Promise<BN> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   return (await blockchain.api.query.system.account(accountAddress)).data.free
 }
 
@@ -74,7 +74,7 @@ export async function listenToBalanceChanges(
     change: BN
   ) => void
 ): Promise<UnsubscribePromise> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   let previous = await getBalance(accountAddress)
 
   return blockchain.api.query.system.account(
@@ -106,7 +106,7 @@ export async function listenToBalanceChanges(
  * const identity = ...
  * const address = ...
  * const amount: BN = new BN(42)
- * const blockchain = await sdk.getCached()
+ * const blockchain = await sdk.getConnectionOrConnect()
  * sdk.Balance.makeTransfer(identity, address, amount)
  *   .then(tx => blockchain.sendTx(tx))
  *   .then(() => console.log('Successfully transferred ${amount.toNumber()} tokens'))
@@ -121,7 +121,7 @@ export async function makeTransfer(
   amount: BN,
   exponent = -15
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const cleanExponent =
     (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
   const transfer = blockchain.api.tx.balances.transfer(
