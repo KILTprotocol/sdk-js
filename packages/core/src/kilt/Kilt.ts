@@ -15,10 +15,8 @@ import {
   Blockchain,
 } from '@kiltprotocol/chain-helpers'
 
-export function connect(
-  host: string = ConfigService.get('address')
-): Promise<Blockchain> {
-  return BlockchainApiConnection.getCached(host)
+export function connect(): Promise<Blockchain> {
+  return BlockchainApiConnection.getConnectionOrConnect()
 }
 
 export function config<K extends Partial<ConfigService.configOpts>>(
@@ -27,8 +25,10 @@ export function config<K extends Partial<ConfigService.configOpts>>(
   ConfigService.set(configs)
 }
 
+export const { disconnect } = BlockchainApiConnection
+
 export default {
   connect,
-  disconnect: BlockchainApiConnection.disconnect,
+  disconnect,
   config,
 }
