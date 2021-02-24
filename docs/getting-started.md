@@ -317,7 +317,7 @@ At this point the Attester has the original request for attestation object:
 ```typescript
 if (decrypted.body.type === MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM) {
   const extractedRequestForAttestation: IRequestForAttestation =
-    decrypted.body.content
+    decrypted.body.content.requestForAttestation
 }
 ```
 
@@ -325,7 +325,7 @@ The Attester creates the attestation based on the IRequestForAttestation object 
 
 ```typescript
 const attestation = Kilt.Attestation.fromRequestAndPublicIdentity(
-  extractedRequestForAttestation.content.requestForAttestation,
+  extractedRequestForAttestation,
   attester.getPublicIdentity()
 )
 ```
@@ -351,7 +351,7 @@ await attestation.store(attester)
 The request for attestation is fulfilled with the attestation, but it needs to be combined into the `AttestedClaim` object before sending it back to the Claimer:
 
 ```typescript
-const attestedClaim = new Kilt.AttestedClaim(
+const attestedClaim = Kilt.AttestedClaim.fromRequestAndAttestation(
   extractedRequestForAttestation,
   attestation
 )
@@ -400,7 +400,11 @@ const messageBodyBack: ISubmitAttestationForClaim = {
   content: attestedClaim,
   type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
 }
-const messageBack = new Message(messageBodyBack, attester, claimer)
+const messageBack = new Kilt.Message(
+  messageBodyBack,
+  attester,
+  claimer.getPublicIdentity()
+)
 ```
 
 The complete `messageBack` message then looks as follows:
@@ -442,7 +446,8 @@ if (messageBack.body.type === MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM) {
 As in the attestation, you need a second identity to act as the verifier:
 
 ```typescript
-const verifier = await Kilt.Identity.buildFromMnemonic()
+const verifierMnemonic = Kilt.Identity.generateMnemonic()
+const verifier = await Kilt.Identity.buildFromMnemonic(verifierMnemonic)
 ```
 
 Before a claimer sends any data to a verifier, the verifier needs to initiate the verification process by requesting a presentation for a specific CTYPE.
