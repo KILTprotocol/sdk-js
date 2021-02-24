@@ -10,6 +10,7 @@
  */
 
 import { ConfigService } from '@kiltprotocol/config'
+import { cryptoWaitReady } from '@polkadot/util-crypto'
 import Blockchain from '../blockchain/Blockchain'
 import { clearCache, getCached } from '../blockchainApiConnection'
 
@@ -33,8 +34,22 @@ export function config<K extends Partial<ConfigService.configOpts>>(
   ConfigService.set(configs)
 }
 
+/**
+ * Prepares crypto modules (required e.g. For identity creation) and calls Kilt.config().
+ *
+ * @param configs Arguments to pass on to Kilt.config().
+ * @returns Promise that must be awaited to assure crypto is ready.
+ */
+export async function init<K extends Partial<ConfigService.configOpts>>(
+  configs?: K
+): Promise<void> {
+  config(configs || {})
+  await cryptoWaitReady()
+}
+
 export default {
   connect,
   disconnect,
   config,
+  init,
 }
