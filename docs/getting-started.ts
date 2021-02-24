@@ -1,10 +1,8 @@
 /* eslint-disable no-console */
-import Kilt, {
-  IRequestForAttestation,
-  SubmittableExtrinsic,
-  BlockchainUtils,
-} from '@kiltprotocol/sdk-js'
+import Kilt from '@kiltprotocol/sdk-js'
 import type {
+  SubmittableExtrinsic,
+  IRequestForAttestation,
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
   ISubmitClaimsForCTypes,
@@ -48,8 +46,8 @@ async function main(): Promise<void> {
     { signingKeyPairType: 'ed25519' }
   )
   tx = await ctype.store(identity)
-  await BlockchainUtils.submitSignedTx(tx, {
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  await Kilt.BlockchainUtils.submitSignedTx(tx, {
+    resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
   })
 
   /* At the end of the process, the `CType` object should contain the following. */
@@ -127,8 +125,8 @@ async function main(): Promise<void> {
 
     /* Now the Attester can store the attestation on the blockchain, which also costs tokens: */
     tx = await attestation.store(attester)
-    await BlockchainUtils.submitSignedTx(tx, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    await Kilt.BlockchainUtils.submitSignedTx(tx, {
+      resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
     })
 
     /* The request for attestation is fulfilled with the attestation, but it needs to be combined into the `AttestedClaim` object before sending it back to the Claimer: */

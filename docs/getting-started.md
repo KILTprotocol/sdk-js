@@ -174,8 +174,8 @@ const identity = Kilt.Identity.buildFromMnemonic(
   { signingKeyPairType: 'ed25519' }
 )
 tx = await ctype.store(identity)
-await BlockchainUtils.submitSignedTx(tx, {
-  resolveOn: BlockchainUtils.IS_IN_BLOCK,
+await Kilt.BlockchainUtils.submitSignedTx(tx, {
+  resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
 })
 ```
 
@@ -374,8 +374,8 @@ Now the Attester can store the attestation on the blockchain, which also costs t
 
 ```typescript
 const tx = await attestation.store(attester)
-await BlockchainUtils.submitSignedTx(tx, {
-  resolveOn: BlockchainUtils.IS_IN_BLOCK,
+await Kilt.BlockchainUtils.submitSignedTx(tx, {
+  resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
 })
 ```
 
