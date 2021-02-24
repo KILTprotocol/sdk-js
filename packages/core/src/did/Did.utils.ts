@@ -141,7 +141,7 @@ export function verifyDidDocumentSignature(
   if (identifier !== id) {
     throw SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(identifier, id)
   }
-  const unsignedDidDocument = { ...didDocument }
+  const unsignedDidDocument = { ...didDocument, signature: undefined }
   delete unsignedDidDocument.signature
   return Crypto.verify(
     Crypto.hashObjectAsStr(unsignedDidDocument),
