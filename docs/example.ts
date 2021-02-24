@@ -20,8 +20,7 @@ async function setup(): Promise<{
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' SETUP ')
   )
-  Kilt.config({ address: NODE_URL })
-  await Kilt.Identity.waitReady()
+  await Kilt.init({ address: NODE_URL })
 
   // ------------------------- Attester ----------------------------------------
 

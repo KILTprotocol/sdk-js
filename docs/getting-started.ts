@@ -1,5 +1,9 @@
 /* eslint-disable no-console */
-import Kilt from '@kiltprotocol/sdk-js'
+import Kilt, {
+  IRequestForAttestation,
+  SubmittableExtrinsic,
+  BlockchainUtils,
+} from '@kiltprotocol/sdk-js'
 import type {
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
@@ -8,13 +12,18 @@ import type {
 
 const NODE_URL = 'ws://127.0.0.1:9944'
 
+let tx: SubmittableExtrinsic
+
 async function main(): Promise<void> {
+  /* 1. Initialize KILT SDK and set up node endpoint */
+  await Kilt.init({ address: NODE_URL })
+
   /* 2. How to generate an Identity */
   const claimerMnemonic = Kilt.Identity.generateMnemonic()
   // mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
   console.log('claimer mnemonic', claimerMnemonic)
   const claimer = Kilt.Identity.buildFromMnemonic(claimerMnemonic)
-  // claimer.address: 5HXfLqrqbKoKyi61YErwUrWEa1PWxikEojV7PCnLJgxrWd6W
+  // claimer.address: 4rjPNrzFDMrp9BudjmAV8ED7vzFBaF1Dgf8FwUjmWbso4Eyd
   console.log('claimer address', claimer.address)
 
   /* 3.1. Building a CTYPE */
@@ -33,11 +42,15 @@ async function main(): Promise<void> {
   })
 
   /* To store the CTYPE on the blockchain, you have to call: */
-  Kilt.config({ address: NODE_URL })
   const identity = Kilt.Identity.buildFromMnemonic(
-    'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
+    'receive clutch item involve chaos clutch furnace arrest claw isolate okay together',
+    // using ed25519 as key type because this is how the endowed identity is set up
+    { signingKeyPairType: 'ed25519' }
   )
-  await ctype.store(identity)
+  tx = await ctype.store(identity)
+  await BlockchainUtils.submitSignedTx(tx, {
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  })
 
   /* At the end of the process, the `CType` object should contain the following. */
   console.log(ctype)
@@ -70,7 +83,11 @@ async function main(): Promise<void> {
   /* before we can send the request for an attestation to an Attester, we should first create an Attester identity like above */
   const attesterMnemonic =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-  const attester = Kilt.Identity.buildFromMnemonic(attesterMnemonic)
+  const attester = Kilt.Identity.buildFromMnemonic(
+    attesterMnemonic,
+    // using ed25519 as this is an identity that has funds by default
+    { signingKeyPairType: 'ed25519' }
+  )
 
   /* First, we create the request for an attestation message in which the Claimer automatically encodes the message with the public key of the Attester: */
   const messageBody: IRequestAttestationForClaim = {
@@ -96,12 +113,12 @@ async function main(): Promise<void> {
   if (
     decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
   ) {
-    const extractedRequestForAttestation: IRequestAttestationForClaim =
-      decrypted.body
+    const extractedRequestForAttestation: IRequestForAttestation =
+      decrypted.body.content.requestForAttestation
 
     /* The Attester creates the attestation based on the IRequestForAttestation object she received: */
     const attestation = Kilt.Attestation.fromRequestAndPublicIdentity(
-      extractedRequestForAttestation.content.requestForAttestation,
+      extractedRequestForAttestation,
       attester.getPublicIdentity()
     )
 
@@ -109,11 +126,14 @@ async function main(): Promise<void> {
     console.log(attestation)
 
     /* Now the Attester can store the attestation on the blockchain, which also costs tokens: */
-    await attestation.store(attester)
+    tx = await attestation.store(attester)
+    await BlockchainUtils.submitSignedTx(tx, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    })
 
     /* The request for attestation is fulfilled with the attestation, but it needs to be combined into the `AttestedClaim` object before sending it back to the Claimer: */
     const attestedClaim = Kilt.AttestedClaim.fromRequestAndAttestation(
-      requestForAttestation,
+      extractedRequestForAttestation,
       attestation
     )
     /* The complete `attestedClaim` object looks as follows: */
@@ -148,7 +168,6 @@ async function main(): Promise<void> {
       const verifierMnemonic = Kilt.Identity.generateMnemonic()
       const verifier = Kilt.Identity.buildFromMnemonic(verifierMnemonic)
 
-      /* 6.1.1. Without privacy enhancement */
       const {
         session: verifierSession,
       } = Kilt.Actors.Verifier.newRequestBuilder()
