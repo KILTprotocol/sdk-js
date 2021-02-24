@@ -30,7 +30,7 @@ export function decodeDid(
   identifier: string,
   encoded: Option<IEncodedDidRecord>
 ): IDid | null {
-  DecoderUtils.assertCodecIsType(encoded, ['Option<Did>'])
+  DecoderUtils.assertCodecIsType(encoded, ['Option<DidRecord>'])
   if (encoded.isSome) {
     const did = encoded.unwrap()
     return {

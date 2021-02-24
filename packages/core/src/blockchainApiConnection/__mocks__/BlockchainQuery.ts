@@ -61,7 +61,7 @@ const chainQueryReturnTuples: {
   },
   did: {
     // DID: account-id -> (public-signing-key, public-encryption-key, did-reference?)?
-    dIDs: TYPE_REGISTRY.getOrUnknown('Did'),
+    dIDs: TYPE_REGISTRY.getOrUnknown('DidRecord'),
   },
   portablegabi: {
     // AccumulatorList: account-id -> [accumulators]?
