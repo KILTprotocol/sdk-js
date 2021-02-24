@@ -3,11 +3,10 @@
  * @ignore
  */
 
-import { Option, Tuple } from '@polkadot/types'
-import { Codec } from '@polkadot/types/types'
-import { hexToString, isHex } from '@polkadot/util'
+import { Option, Struct, u8, Vec } from '@polkadot/types'
 import { IPublicIdentity } from '@kiltprotocol/types'
 import { Crypto, DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
+import { Hash } from '@polkadot/types/interfaces'
 import Identity from '../identity/Identity'
 import {
   CONTEXT,
@@ -21,25 +20,24 @@ import {
   SERVICE_KILT_MESSAGING,
 } from './Did'
 
-interface IEncodedDid extends Codec {
-  toJSON: () => [string, string, string | null] | null
+export interface IEncodedDid extends Struct {
+  readonly signKey: Hash
+  readonly boxKey: Hash
+  readonly docRef: Option<Vec<u8>>
 }
 
 export function decodeDid(
   identifier: string,
-  encoded: Option<Tuple>
+  encoded: Option<IEncodedDid>
 ): IDid | null {
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<(PublicSigningKey,PublicBoxKey,Option<Bytes>)>',
-  ])
-  const decoded = (encoded as IEncodedDid).toJSON()
-  if (decoded) {
-    const documentStore = isHex(decoded[2]) ? hexToString(decoded[2]) : null
+  DecoderUtils.assertCodecIsType(encoded, ['Option<Did>'])
+  if (encoded.isSome) {
+    const did = encoded.unwrap()
     return {
       identifier,
-      publicSigningKey: decoded[0],
-      publicBoxKey: decoded[1],
-      documentStore,
+      publicSigningKey: did.signKey.toString(),
+      publicBoxKey: did.boxKey.toString(),
+      documentStore: did.docRef.unwrapOrDefault().toHuman()?.toString(),
     }
   }
 

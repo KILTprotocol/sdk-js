@@ -32,7 +32,7 @@ describe('DID', () => {
           '0x687474703a2f2f6d794449442e6b696c742e696f',
         ])
       }
-      return mockChainQueryReturn('did', 'dIDs', [key1, key2, null])
+      return mockChainQueryReturn('did', 'dIDs', [key1, key2, ''])
     }
   )
 
@@ -52,7 +52,7 @@ describe('DID', () => {
       identifier: 'did:kilt:w/oDocumentStore',
       publicBoxKey: key2.toString(),
       publicSigningKey: key1.toString(),
-      documentStore: null,
+      documentStore: '',
     } as IDid)
   })
 
@@ -62,7 +62,7 @@ describe('DID', () => {
       identifier: 'did:kilt:w/oDocumentStore',
       publicBoxKey: key2.toString(),
       publicSigningKey: key1.toString(),
-      documentStore: null,
+      documentStore: '',
     } as IDid)
   })
 

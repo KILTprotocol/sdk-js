@@ -50,9 +50,8 @@ export interface IDid {
   /**
    * The document store reference, usually a URL.
    */
-  documentStore: string | null
+  documentStore: string | undefined
 }
-
 export interface IDidDocumentCore {
   // id and context are the only mandatory properties, described as "MUST"s in the w3c spec https://w3c.github.io/did-core/
   id: string
@@ -91,13 +90,13 @@ export default class Did implements IDid {
   public readonly identifier: string
   public readonly publicBoxKey: string
   public readonly publicSigningKey: string
-  public readonly documentStore: string | null
+  public readonly documentStore: string | undefined
 
   private constructor(
     identifier: string,
     publicBoxKey: string,
     publicSigningKey: string,
-    documentStore: string | null = null
+    documentStore?: string
   ) {
     this.identifier = identifier
     this.publicBoxKey = publicBoxKey

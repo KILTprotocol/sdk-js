@@ -1,7 +1,5 @@
 import {
-  Bytes,
   Option,
-  Tuple,
   TypeRegistry,
   U8aFixed,
   U64,
@@ -63,11 +61,7 @@ const chainQueryReturnTuples: {
   },
   did: {
     // DID: account-id -> (public-signing-key, public-encryption-key, did-reference?)?
-    dIDs: Tuple.with([
-      TYPE_REGISTRY.getOrUnknown('PublicSigningKey'),
-      TYPE_REGISTRY.getOrUnknown('PublicBoxKey'),
-      Option.with(Bytes),
-    ]),
+    dIDs: TYPE_REGISTRY.getOrUnknown('Did'),
   },
   portablegabi: {
     // AccumulatorList: account-id -> [accumulators]?
