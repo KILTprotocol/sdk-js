@@ -46,7 +46,7 @@ export const CUSTOM_TYPES: RegistryTypes = {
     delegationId: 'Option<DelegationNodeId>',
     revoked: 'bool',
   },
-  Did: {
+  DidRecord: {
     signKey: 'Hash',
     boxKey: 'Hash',
     docRef: 'Option<Vec<u8>>',

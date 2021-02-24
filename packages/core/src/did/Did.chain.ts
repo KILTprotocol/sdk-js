@@ -13,7 +13,7 @@ import {
   decodeDid,
   getAddressFromIdentifier,
   getIdentifierFromAddress,
-  IEncodedDid,
+  IEncodedDidRecord,
 } from './Did.utils'
 
 export async function queryByIdentifier(
@@ -23,7 +23,7 @@ export async function queryByIdentifier(
   const address = getAddressFromIdentifier(identifier)
   const decoded = decodeDid(
     identifier,
-    await blockchain.api.query.did.dIDs<Option<IEncodedDid>>(address)
+    await blockchain.api.query.did.dIDs<Option<IEncodedDidRecord>>(address)
   )
   return decoded
 }
@@ -35,7 +35,7 @@ export async function queryByAddress(
   const identifier = getIdentifierFromAddress(address)
   const decoded = decodeDid(
     identifier,
-    await blockchain.api.query.did.dIDs<Option<IEncodedDid>>(address)
+    await blockchain.api.query.did.dIDs<Option<IEncodedDidRecord>>(address)
   )
   return decoded
 }

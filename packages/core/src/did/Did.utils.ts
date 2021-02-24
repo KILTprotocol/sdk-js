@@ -20,7 +20,7 @@ import {
   SERVICE_KILT_MESSAGING,
 } from './Did'
 
-export interface IEncodedDid extends Struct {
+export interface IEncodedDidRecord extends Struct {
   readonly signKey: Hash
   readonly boxKey: Hash
   readonly docRef: Option<Vec<u8>>
@@ -28,7 +28,7 @@ export interface IEncodedDid extends Struct {
 
 export function decodeDid(
   identifier: string,
-  encoded: Option<IEncodedDid>
+  encoded: Option<IEncodedDidRecord>
 ): IDid | null {
   DecoderUtils.assertCodecIsType(encoded, ['Option<Did>'])
   if (encoded.isSome) {
