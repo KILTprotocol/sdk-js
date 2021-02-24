@@ -17,6 +17,8 @@ export const WS_ADDRESS = 'ws://127.0.0.1:9944'
 export const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 
+// endowed accounts on development chain spec
+// ids are ed25519 because the endowed accounts are
 export const wannabeFaucet = Identity.buildFromURI(FaucetSeed, {
   signingKeyPairType: 'ed25519',
 })

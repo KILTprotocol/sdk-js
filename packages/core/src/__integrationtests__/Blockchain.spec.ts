@@ -33,9 +33,7 @@ describe('Chain returns specific errors, that we check for', () => {
   let charlie: Identity
   beforeAll(async () => {
     faucet = wannabeFaucet
-    testIdentity = Identity.buildFromURI(Identity.generateMnemonic(), {
-      signingKeyPairType: 'ed25519',
-    })
+    testIdentity = Identity.buildFromURI(Identity.generateMnemonic())
     charlie = wannabeCharlie
     const tx = await makeTransfer(
       faucet,

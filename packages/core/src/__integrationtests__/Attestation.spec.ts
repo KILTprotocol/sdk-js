@@ -9,7 +9,6 @@ import Attestation from '../attestation/Attestation'
 import { revoke } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
-
 import { config, disconnect } from '../kilt'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
@@ -31,7 +30,7 @@ import '../../../../testingTools/jestErrorCodeMatcher'
 let alice: Identity
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
-  alice = Identity.buildFromURI('//Alice', { signingKeyPairType: 'ed25519' })
+  alice = wannabeAlice
 })
 
 describe('handling attestations that do not exist', () => {
@@ -121,9 +120,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attester.getPublicIdentity()
     )
 
-    const bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic(), {
-      signingKeyPairType: 'ed25519',
-    })
+    const bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     await expect(
       attestation.store(bobbyBroke).then((tx) =>

@@ -11,7 +11,7 @@ import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
 import { ExtrinsicErrors } from '../errorhandling'
 import Identity from '../identity'
 import { config, disconnect } from '../kilt'
-import { WS_ADDRESS } from './utils'
+import { wannabeAlice, WS_ADDRESS } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
@@ -19,11 +19,11 @@ let alice: Identity
 
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
-  alice = Identity.buildFromURI('//Alice', { signingKeyPairType: 'ed25519' })
+  alice = wannabeAlice
 })
 
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
-  const to = Identity.buildFromMnemonic('', { signingKeyPairType: 'ed25519' })
+  const to = Identity.buildFromMnemonic('')
   await expect(
     makeTransfer(alice, to.address, new BN(1)).then((tx) =>
       submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })
