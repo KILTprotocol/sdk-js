@@ -13,7 +13,7 @@ import { RegistryTypes } from '@polkadot/types/types'
 import { ConfigService } from '@kiltprotocol/config'
 import Blockchain from '../blockchain/Blockchain'
 
-let instance: Blockchain | null
+let instance: Promise<Blockchain> | null
 
 export const CUSTOM_TYPES: RegistryTypes = {
   PublicSigningKey: 'Hash',
@@ -78,7 +78,7 @@ export async function buildConnection(
  *
  * @param connectionInstance The Blockchain instance, which should be cached.
  */
-export function setConnection(connectionInstance: Blockchain): void {
+export function setConnection(connectionInstance: Promise<Blockchain>): void {
   instance = connectionInstance
 }
 
@@ -87,7 +87,7 @@ export function setConnection(connectionInstance: Blockchain): void {
  *
  * @returns Cached blockchain connection.
  */
-export function getConnection(): Blockchain | null {
+export function getConnection(): Promise<Blockchain> | null {
   return instance
 }
 
@@ -98,7 +98,7 @@ export function getConnection(): Blockchain | null {
  */
 export async function getConnectionOrConnect(): Promise<Blockchain> {
   if (!instance) {
-    instance = await buildConnection()
+    instance = buildConnection()
   }
   return instance
 }
@@ -117,7 +117,9 @@ export function clearCache(): void {
  * @returns If there is a cached connection and it is currently connected.
  */
 export async function connected(): Promise<boolean> {
-  return !!instance && instance.api.isConnected
+  if (!instance) return false
+  const resolved = await instance
+  return resolved.api.isConnected
 }
 
 /**
@@ -128,7 +130,8 @@ export async function connected(): Promise<boolean> {
 export async function disconnect(): Promise<boolean> {
   const isConnected = await connected()
   if (isConnected) {
-    await instance?.api.disconnect()
+    const resolved = await instance
+    await resolved?.api.disconnect()
   }
   clearCache()
   return isConnected
