@@ -7,6 +7,7 @@ import { Option, Struct, u8, Vec } from '@polkadot/types'
 import { IPublicIdentity } from '@kiltprotocol/types'
 import { Crypto, DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import { Hash } from '@polkadot/types/interfaces'
+import { hexToString } from '@polkadot/util'
 import Identity from '../identity/Identity'
 import {
   CONTEXT,
@@ -37,7 +38,7 @@ export function decodeDid(
       identifier,
       publicSigningKey: did.signKey.toString(),
       publicBoxKey: did.boxKey.toString(),
-      documentStore: did.docRef.unwrapOrDefault().toHuman()?.toString(),
+      documentStore: hexToString(did.docRef.unwrapOrDefault().toHex()),
     }
   }
 
