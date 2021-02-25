@@ -29,8 +29,21 @@ describe('DID', () => {
   const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
+  beforeAll(() => {
+    blockchainApi.query.did.dIDs.mockImplementation(async (address: string) => {
+      if (address === 'withDocumentStore') {
+        return mockChainQueryReturn('did', 'dIDs', [
+          key2,
+          key1,
+          '0x687474703a2f2f6d794449442e6b696c742e696f',
+        ])
+      }
+      return mockChainQueryReturn('did', 'dIDs', [key1, key2, null])
+    })
+  })
+
   it('query by address with documentStore', async () => {
-    blockchainApi.query.did.dIDs.mockReturnValue(
+    blockchainApi.query.did.dIDs.mockReturnValueOnce(
       mockChainQueryReturn('did', 'dIDs', [
         key2,
         key1,
@@ -47,16 +60,6 @@ describe('DID', () => {
   })
 
   it('query by address w/o documentStore', async () => {
-    blockchainApi.query.did.dIDs.mockImplementation(async (address: string) => {
-      if (address === 'withDocumentStore') {
-        return mockChainQueryReturn('did', 'dIDs', [
-          key2,
-          key1,
-          '0x687474703a2f2f6d794449442e6b696c742e696f',
-        ])
-      }
-      return mockChainQueryReturn('did', 'dIDs', [key1, key2, null])
-    })
     const did = await Did.queryByAddress('w/oDocumentStore')
     expect(did).toEqual({
       identifier: 'did:kilt:w/oDocumentStore',
@@ -67,16 +70,6 @@ describe('DID', () => {
   })
 
   it('query by identifier w/o documentStore', async () => {
-    blockchainApi.query.did.dIDs.mockImplementation(async (address: string) => {
-      if (address === 'withDocumentStore') {
-        return mockChainQueryReturn('did', 'dIDs', [
-          key2,
-          key1,
-          '0x687474703a2f2f6d794449442e6b696c742e696f',
-        ])
-      }
-      return mockChainQueryReturn('did', 'dIDs', [key1, key2, null])
-    })
     const did = await Did.queryByIdentifier('did:kilt:w/oDocumentStore')
     expect(did).toEqual({
       identifier: 'did:kilt:w/oDocumentStore',
