@@ -9,7 +9,6 @@
  */
 
 import { ApiPromise } from '@polkadot/api'
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
 import { AnyJson, Codec } from '@polkadot/types/types'
 import { Text } from '@polkadot/types'
@@ -17,7 +16,11 @@ import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import type { IIdentity, ISubmittableResult } from '@kiltprotocol/types'
+import type {
+  IIdentity,
+  ISubmittableResult,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import {
   parseSubscriptionOptions,
   submitSignedTx,

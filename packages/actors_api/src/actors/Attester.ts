@@ -4,12 +4,12 @@ import {
   SDKErrors,
   Identity,
   DelegationNodeUtils,
-  SubmittableExtrinsic,
 } from '@kiltprotocol/core'
-import {
+import type {
   IAttestation,
   IMessage,
   IRequestAttestationForClaim,
+  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import Message from '@kiltprotocol/messaging'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'

@@ -26,7 +26,6 @@ import RequestForAttestation, {
 } from './requestforattestation'
 
 export { connect, disconnect, config } from './kilt'
-export { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 export { SDKErrors } from '@kiltprotocol/utils'
 

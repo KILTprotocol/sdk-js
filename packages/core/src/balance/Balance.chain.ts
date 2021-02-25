@@ -9,10 +9,9 @@
  * @preferred
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { UnsubscribePromise } from '@polkadot/api/types'
 import BN from 'bn.js'
-import { IPublicIdentity } from '@kiltprotocol/types'
+import type { IPublicIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'
 import BalanceUtils from './Balance.utils'

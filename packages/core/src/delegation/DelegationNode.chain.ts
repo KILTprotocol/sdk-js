@@ -3,9 +3,8 @@
  * @ignore
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option } from '@polkadot/types'
-import { IDelegationNode } from '@kiltprotocol/types'
+import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'

@@ -13,7 +13,6 @@
  * @preferred
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { Index } from '@polkadot/types/interfaces'
@@ -28,7 +27,7 @@ import BN from 'bn.js'
 // and not for box keypair, we use TweetNaCl directly
 import nacl, { BoxKeyPair } from 'tweetnacl'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { IIdentity } from '@kiltprotocol/types'
+import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
 import PublicIdentity from './PublicIdentity'
 
 type BoxPublicKey =

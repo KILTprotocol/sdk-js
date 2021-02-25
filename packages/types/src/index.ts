@@ -4,6 +4,7 @@
  */
 
 export type { ISubmittableResult } from '@polkadot/types/types'
+export type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 export * from './AttestedClaim'
 export * from './Attestation'

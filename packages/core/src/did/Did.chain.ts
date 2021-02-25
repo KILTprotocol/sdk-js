@@ -3,9 +3,8 @@
  * @ignore
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Tuple } from '@polkadot/types'
-import { IPublicIdentity } from '@kiltprotocol/types'
+import type { IPublicIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'
 import { IDid } from './Did'

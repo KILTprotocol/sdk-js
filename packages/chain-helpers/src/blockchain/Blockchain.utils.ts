@@ -4,10 +4,13 @@
  * @preferred
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import type { IIdentity, ISubmittableResult } from '@kiltprotocol/types'
+import type {
+  IIdentity,
+  ISubmittableResult,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { ErrorHandler, ExtrinsicError, ExtrinsicErrors } from '../errorhandling'
 import {
   Evaluator,

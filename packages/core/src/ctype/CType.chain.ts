@@ -3,10 +3,13 @@
  * @ignore
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option } from '@polkadot/types'
 import { AccountId } from '@polkadot/types/interfaces'
-import { ICType, IPublicIdentity } from '@kiltprotocol/types'
+import type {
+  ICType,
+  IPublicIdentity,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'

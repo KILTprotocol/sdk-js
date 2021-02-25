@@ -11,8 +11,11 @@ import { SignerPayload } from '@polkadot/types/interfaces/types'
 import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import { Keyring } from '@polkadot/keyring'
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import type { IIdentity, ISubmittableResult } from '@kiltprotocol/types'
+import type {
+  IIdentity,
+  ISubmittableResult,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { getCached } from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Blockchain from './Blockchain'

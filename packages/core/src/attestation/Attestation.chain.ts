@@ -2,9 +2,8 @@
  * @packageDocumentation
  * @ignore
  */
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Struct } from '@polkadot/types'
-import { IAttestation } from '@kiltprotocol/types'
+import type { IAttestation, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { AccountId, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
