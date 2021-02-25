@@ -3,11 +3,11 @@
  * @ignore
  */
 
-import { Option, Tuple } from '@polkadot/types'
-import { Codec } from '@polkadot/types/types'
-import { hexToString, isHex } from '@polkadot/util'
+import { Option, Struct, u8, Vec } from '@polkadot/types'
 import { IPublicIdentity } from '@kiltprotocol/types'
 import { Crypto, DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
+import { Hash } from '@polkadot/types/interfaces'
+import { hexToString } from '@polkadot/util'
 import Identity from '../identity/Identity'
 import {
   CONTEXT,
@@ -21,24 +21,26 @@ import {
   SERVICE_KILT_MESSAGING,
 } from './Did'
 
-interface IEncodedDid extends Codec {
-  toJSON: () => [string, string, string | null] | null
+export interface IEncodedDidRecord extends Struct {
+  readonly signKey: Hash
+  readonly boxKey: Hash
+  readonly docRef: Option<Vec<u8>>
 }
 
 export function decodeDid(
   identifier: string,
-  encoded: Option<Tuple>
+  encoded: Option<IEncodedDidRecord>
 ): IDid | null {
-  DecoderUtils.assertCodecIsType(encoded, [
-    'Option<(PublicSigningKey,PublicBoxKey,Option<Bytes>)>',
-  ])
-  const decoded = (encoded as IEncodedDid).toJSON()
-  if (decoded) {
-    const documentStore = isHex(decoded[2]) ? hexToString(decoded[2]) : null
+  DecoderUtils.assertCodecIsType(encoded, ['Option<DidRecord>'])
+  if (encoded.isSome) {
+    const did = encoded.unwrap()
+    const documentStore = did.docRef.isSome
+      ? hexToString(did.docRef.unwrap().toHex())
+      : null
     return {
       identifier,
-      publicSigningKey: decoded[0],
-      publicBoxKey: decoded[1],
+      publicSigningKey: did.signKey.toHex(),
+      publicBoxKey: did.boxKey.toHex(),
       documentStore,
     }
   }
@@ -143,11 +145,10 @@ export function verifyDidDocumentSignature(
   if (identifier !== id) {
     throw SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(identifier, id)
   }
-  const unsignedDidDocument = { ...didDocument }
-  delete unsignedDidDocument.signature
+  const { signature, ...unsignedDidDocument } = didDocument
   return Crypto.verify(
     Crypto.hashObjectAsStr(unsignedDidDocument),
-    didDocument.signature,
+    signature,
     getAddressFromIdentifier(identifier)
   )
 }

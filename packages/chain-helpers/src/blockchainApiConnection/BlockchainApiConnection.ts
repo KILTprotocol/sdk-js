@@ -46,6 +46,11 @@ export const CUSTOM_TYPES: RegistryTypes = {
     delegationId: 'Option<DelegationNodeId>',
     revoked: 'bool',
   },
+  DidRecord: {
+    signKey: 'Hash',
+    boxKey: 'Hash',
+    docRef: 'Option<Vec<u8>>',
+  },
 }
 
 export async function buildConnection(
