@@ -63,7 +63,7 @@ describe('Attestation', () => {
     )
   })
 
-  xit('stores attestation', async () => {
+  it('stores attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'attestations', [
         testCType.hash,
