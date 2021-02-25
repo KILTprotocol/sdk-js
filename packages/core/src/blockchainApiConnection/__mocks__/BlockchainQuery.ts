@@ -1,11 +1,4 @@
-import {
-  Option,
-  TypeRegistry,
-  U8aFixed,
-  U64,
-  Vec,
-  U8,
-} from '@polkadot/types'
+import { Option, TypeRegistry, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { Constructor } from '@polkadot/util/types'
 import { CUSTOM_TYPES } from '../BlockchainApiConnection'
