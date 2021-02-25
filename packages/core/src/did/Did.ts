@@ -52,7 +52,6 @@ export interface IDid {
    */
   documentStore: string | null
 }
-
 export interface IDidDocumentCore {
   // id and context are the only mandatory properties, described as "MUST"s in the w3c spec https://w3c.github.io/did-core/
   id: string
