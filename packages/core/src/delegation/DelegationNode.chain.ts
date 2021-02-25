@@ -25,7 +25,7 @@ export async function store(
   identity: Identity,
   signature: string
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const includeParentId: boolean = delegation.parentId
     ? delegation.parentId !== delegation.rootId
     : false
@@ -43,7 +43,7 @@ export async function store(
 export async function query(
   delegationId: IDelegationNode['id']
 ): Promise<DelegationNode | null> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const decoded = decodeDelegationNode(
     await blockchain.api.query.delegation.delegations<
       Option<IChainDelegationNode>
@@ -67,7 +67,7 @@ export async function revoke(
   delegationId: IDelegationNode['id'],
   identity: Identity
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.revokeDelegation(
     delegationId
   )

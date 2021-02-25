@@ -58,7 +58,7 @@ import TYPE_REGISTRY, { mockChainQueryReturn } from './BlockchainQuery'
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
 const accumulator = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-async function getCached(): Promise<Blockchain> {
+async function getConnectionOrConnect(): Promise<Blockchain> {
   if (!BlockchainApiConnection.instance) {
     BlockchainApiConnection.instance = Promise.resolve(
       new Blockchain(__mocked_api as ApiPromise)
@@ -379,7 +379,7 @@ const __mocked_api: any = {
   registry: TYPE_REGISTRY,
 }
 
-BlockchainApiConnection.getCached = getCached
+BlockchainApiConnection.getConnectionOrConnect = getConnectionOrConnect
 BlockchainApiConnection.__queueResults = __queueResults
 BlockchainApiConnection.__setDefaultResult = __setDefaultResult
 BlockchainApiConnection.__mocked_api = __mocked_api

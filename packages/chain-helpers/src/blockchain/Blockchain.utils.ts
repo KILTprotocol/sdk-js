@@ -14,7 +14,7 @@ import type {
 } from '@kiltprotocol/types'
 import { ErrorHandler, ExtrinsicError, ExtrinsicErrors } from '../errorhandling'
 import { makeSubscriptionPromise } from './SubscriptionPromise'
-import { getCached } from '../blockchainApiConnection/BlockchainApiConnection'
+import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -169,6 +169,6 @@ export async function submitTxWithReSign(
   identity?: IIdentity,
   opts?: Partial<SubscriptionPromise.Options>
 ): Promise<ISubmittableResult> {
-  const chain = await getCached()
+  const chain = await getConnectionOrConnect()
   return chain.submitTxWithReSign(tx, identity, opts)
 }

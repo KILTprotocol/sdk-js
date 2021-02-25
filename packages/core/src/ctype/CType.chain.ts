@@ -21,7 +21,7 @@ export async function store(
   ctype: ICType,
   identity: Identity
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Create tx for 'ctype.add'`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.ctype.add(ctype.hash)
   return blockchain.signTx(identity, tx)
@@ -38,7 +38,7 @@ export function decode(
 export async function getOwner(
   ctypeHash: ICType['hash']
 ): Promise<IPublicIdentity['address'] | null> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.ctype.cTYPEs<Option<AccountId>>(
     ctypeHash
   )

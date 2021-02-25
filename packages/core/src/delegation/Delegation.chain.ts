@@ -18,7 +18,7 @@ function decodeDelegatedAttestations(queryResult: Vec<H256>): string[] {
 export async function getAttestationHashes(
   id: IDelegationBaseNode['id']
 ): Promise<string[]> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encodedHashes = await blockchain.api.query.attestation.delegatedAttestations<
     Vec<H256>
   >(id)
@@ -28,7 +28,7 @@ export async function getAttestationHashes(
 export async function getChildIds(
   id: IDelegationBaseNode['id']
 ): Promise<string[]> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const childIds = await blockchain.api.query.delegation.children<Vec<H256>>(id)
   DecoderUtils.assertCodecIsType(childIds, ['Vec<DelegationNodeId>'])
   return childIds.map((hash) => hash.toString())
@@ -37,7 +37,7 @@ export async function getChildIds(
 export async function fetchChildren(
   childIds: string[]
 ): Promise<Array<CodecWithId<Option<IChainDelegationNode>>>> {
-  const blockchain = await BlockchainApiConnection.getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const val: Array<CodecWithId<
     Option<IChainDelegationNode>
   >> = await Promise.all(
