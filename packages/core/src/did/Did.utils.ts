@@ -34,11 +34,14 @@ export function decodeDid(
   DecoderUtils.assertCodecIsType(encoded, ['Option<DidRecord>'])
   if (encoded.isSome) {
     const did = encoded.unwrap()
+    const documentStore = did.docRef.isSome
+      ? hexToString(did.docRef.toHex())
+      : undefined
     return {
       identifier,
       publicSigningKey: did.signKey.toString(),
       publicBoxKey: did.boxKey.toString(),
-      documentStore: hexToString(did.docRef.unwrapOrDefault().toHex()),
+      documentStore,
     }
   }
 
