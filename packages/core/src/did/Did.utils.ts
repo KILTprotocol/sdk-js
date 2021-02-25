@@ -36,11 +36,11 @@ export function decodeDid(
     const did = encoded.unwrap()
     const documentStore = did.docRef.isSome
       ? hexToString(did.docRef.unwrap().toHex())
-      : undefined
+      : null
     return {
       identifier,
-      publicSigningKey: did.signKey.toString(),
-      publicBoxKey: did.boxKey.toString(),
+      publicSigningKey: did.signKey.toHex(),
+      publicBoxKey: did.boxKey.toHex(),
       documentStore,
     }
   }
