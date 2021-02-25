@@ -35,7 +35,7 @@ export function decodeDid(
   if (encoded.isSome) {
     const did = encoded.unwrap()
     const documentStore = did.docRef.isSome
-      ? hexToString(did.docRef.toHex())
+      ? hexToString(did.docRef.unwrap().toHex())
       : undefined
     return {
       identifier,
