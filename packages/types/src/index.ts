@@ -6,6 +6,8 @@
 export type { ISubmittableResult } from '@polkadot/types/types'
 export type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
+export * as SubscriptionPromise from './SubscriptionPromise'
+
 export * from './AttestedClaim'
 export * from './Attestation'
 export * from './CType'
@@ -18,3 +20,4 @@ export * from './Message'
 export * from './Quote'
 export * from './RequestForAttestation'
 export * from './Terms'
+export * from './Blockchain'

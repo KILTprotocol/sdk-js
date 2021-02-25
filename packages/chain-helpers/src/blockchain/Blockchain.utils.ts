@@ -10,18 +10,11 @@ import type {
   IIdentity,
   ISubmittableResult,
   SubmittableExtrinsic,
+  SubscriptionPromise,
 } from '@kiltprotocol/types'
 import { ErrorHandler, ExtrinsicError, ExtrinsicErrors } from '../errorhandling'
-import {
-  Evaluator,
-  makeSubscriptionPromise,
-  TerminationOptions,
-} from './SubscriptionPromise'
+import { makeSubscriptionPromise } from './SubscriptionPromise'
 import { getCached } from '../blockchainApiConnection/BlockchainApiConnection'
-
-export type ResultEvaluator = Evaluator<ISubmittableResult>
-export type ErrorEvaluator = Evaluator<Error>
-export type SubscriptionPromiseOptions = TerminationOptions<ISubmittableResult>
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -34,26 +27,30 @@ export const RelevantSDKErrors = [
   SDKErrors.ErrorCode.ERROR_TRANSACTION_PRIORITY,
   SDKErrors.ErrorCode.ERROR_TRANSACTION_USURPED,
 ]
-export const IS_RELEVANT_ERROR: ErrorEvaluator = (
+export const IS_RELEVANT_ERROR: SubscriptionPromise.ErrorEvaluator = (
   err: Error | SDKErrors.SDKError
 ) => {
   return SDKErrors.isSDKError(err) && RelevantSDKErrors.includes(err.errorCode)
 }
-export const IS_READY: ResultEvaluator = (result) => result.status.isReady
-export const IS_IN_BLOCK: ResultEvaluator = (result) => result.isInBlock
-export const EXTRINSIC_EXECUTED: ResultEvaluator = (result) =>
-  ErrorHandler.extrinsicSuccessful(result)
-export const IS_FINALIZED: ResultEvaluator = (result) => result.isFinalized
-export const IS_USURPED: ResultEvaluator = (result) =>
+export const IS_READY: SubscriptionPromise.ResultEvaluator = (result) =>
+  result.status.isReady
+export const IS_IN_BLOCK: SubscriptionPromise.ResultEvaluator = (result) =>
+  result.isInBlock
+export const EXTRINSIC_EXECUTED: SubscriptionPromise.ResultEvaluator = (
+  result
+) => ErrorHandler.extrinsicSuccessful(result)
+export const IS_FINALIZED: SubscriptionPromise.ResultEvaluator = (result) =>
+  result.isFinalized
+export const IS_USURPED: SubscriptionPromise.ResultEvaluator = (result) =>
   result.status.isUsurped && SDKErrors.ERROR_TRANSACTION_USURPED()
-export const IS_ERROR: ResultEvaluator = (result) => {
+export const IS_ERROR: SubscriptionPromise.ResultEvaluator = (result) => {
   return (
     (result.status.isDropped && Error('isDropped')) ||
     (result.status.isInvalid && Error('isInvalid')) ||
     (result.status.isFinalityTimeout && Error('isFinalityTimeout'))
   )
 }
-export const EXTRINSIC_FAILED: ResultEvaluator = (result) =>
+export const EXTRINSIC_FAILED: SubscriptionPromise.ResultEvaluator = (result) =>
   ErrorHandler.extrinsicFailed(result) &&
   (ErrorHandler.getExtrinsicError(result) ||
     new ExtrinsicError(
@@ -62,14 +59,14 @@ export const EXTRINSIC_FAILED: ResultEvaluator = (result) =>
     ))
 
 /**
- * Parses potentially incomplete or undefined options and returns complete [[SubscriptionPromiseOptions]].
+ * Parses potentially incomplete or undefined options and returns complete [[SubscriptionPromise.Options]].
  *
- * @param opts Potentially undefined or partial [[SubscriptionPromiseOptions]] .
- * @returns Complete [[SubscriptionPromiseOptions]], with potentially defaulted values.
+ * @param opts Potentially undefined or partial [[SubscriptionPromise.Options]] .
+ * @returns Complete [[SubscriptionPromise.Options]], with potentially defaulted values.
  */
 export function parseSubscriptionOptions(
-  opts?: Partial<SubscriptionPromiseOptions>
-): SubscriptionPromiseOptions {
+  opts?: Partial<SubscriptionPromise.Options>
+): SubscriptionPromise.Options {
   const {
     resolveOn = IS_FINALIZED,
     rejectOn = (result: ISubmittableResult) =>
@@ -98,7 +95,7 @@ export function parseSubscriptionOptions(
  */
 export async function submitSignedTxRaw(
   tx: SubmittableExtrinsic,
-  opts: SubscriptionPromiseOptions
+  opts: SubscriptionPromise.Options
 ): Promise<ISubmittableResult> {
   log.info(`Submitting ${tx.method}`)
   const { promise, subscription } = makeSubscriptionPromise(opts)
@@ -119,7 +116,7 @@ export async function submitSignedTxRaw(
  */
 async function submitSignedTxErrorMatched(
   tx: SubmittableExtrinsic,
-  opts: SubscriptionPromiseOptions
+  opts: SubscriptionPromise.Options
 ): Promise<ISubmittableResult> {
   return submitSignedTxRaw(tx, opts).catch((reason: Error) => {
     switch (true) {
@@ -148,7 +145,7 @@ async function submitSignedTxErrorMatched(
  */
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,
-  opts: SubscriptionPromiseOptions
+  opts: SubscriptionPromise.Options
 ): Promise<ISubmittableResult> {
   return submitSignedTxErrorMatched(tx, opts).catch((reason: Error) => {
     if (IS_RELEVANT_ERROR(reason)) {
@@ -170,7 +167,7 @@ export async function submitSignedTx(
 export async function submitTxWithReSign(
   tx: SubmittableExtrinsic,
   identity?: IIdentity,
-  opts?: Partial<SubscriptionPromiseOptions>
+  opts?: Partial<SubscriptionPromise.Options>
 ): Promise<ISubmittableResult> {
   const chain = await getCached()
   return chain.submitTxWithReSign(tx, identity, opts)

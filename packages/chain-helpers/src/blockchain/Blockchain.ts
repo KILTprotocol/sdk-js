@@ -20,46 +20,13 @@ import type {
   IIdentity,
   ISubmittableResult,
   SubmittableExtrinsic,
+  IBlockchainApi,
+  BlockchainStats,
+  SubscriptionPromise,
 } from '@kiltprotocol/types'
-import {
-  parseSubscriptionOptions,
-  submitSignedTx,
-  SubscriptionPromiseOptions,
-} from './Blockchain.utils'
+import { parseSubscriptionOptions, submitSignedTx } from './Blockchain.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
-
-export type Stats = {
-  chain: string
-  nodeName: string
-  nodeVersion: string
-}
-
-export interface IBlockchainApi {
-  api: ApiPromise
-
-  getStats(): Promise<Stats>
-  listenToBlocks(listener: (header: Header) => void): Promise<() => void>
-  signTx(
-    identity: IIdentity,
-    tx: SubmittableExtrinsic
-  ): Promise<SubmittableExtrinsic>
-  submitTxWithReSign(
-    tx: SubmittableExtrinsic,
-    identity?: IIdentity,
-    opts?: SubscriptionPromiseOptions
-  ): Promise<ISubmittableResult>
-  submitTx(
-    identity: IIdentity,
-    tx: SubmittableExtrinsic,
-    opts?: SubscriptionPromiseOptions
-  ): Promise<ISubmittableResult>
-  getNonce(accountAddress: string): Promise<BN>
-  reSignTx(
-    identity: IIdentity,
-    tx: SubmittableExtrinsic
-  ): Promise<SubmittableExtrinsic>
-}
 
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
@@ -79,7 +46,7 @@ export default class Blockchain implements IBlockchainApi {
     this.accountNonces = new Map<IIdentity['address'], BN>()
   }
 
-  public async getStats(): Promise<Stats> {
+  public async getStats(): Promise<BlockchainStats> {
     const encoded: Text[] = await Promise.all([
       this.api.rpc.system.chain(),
       this.api.rpc.system.name(),
@@ -132,7 +99,7 @@ export default class Blockchain implements IBlockchainApi {
   public async submitTxWithReSign(
     tx: SubmittableExtrinsic,
     identity?: IIdentity,
-    opts?: Partial<SubscriptionPromiseOptions>
+    opts?: Partial<SubscriptionPromise.SubscriptionPromiseOptions>
   ): Promise<ISubmittableResult> {
     const options = parseSubscriptionOptions(opts)
     const retry = async (reason: Error): Promise<ISubmittableResult> => {
@@ -159,7 +126,7 @@ export default class Blockchain implements IBlockchainApi {
   public async submitTx(
     identity: IIdentity,
     tx: SubmittableExtrinsic,
-    opts?: Partial<SubscriptionPromiseOptions>
+    opts?: Partial<SubscriptionPromise.SubscriptionPromiseOptions>
   ): Promise<ISubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
     return this.submitTxWithReSign(signedTx, identity, opts)
