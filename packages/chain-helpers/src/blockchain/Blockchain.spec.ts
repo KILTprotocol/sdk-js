@@ -15,6 +15,7 @@ import type {
   IIdentity,
   ISubmittableResult,
   SubmittableExtrinsic,
+  SubscriptionPromise,
 } from '@kiltprotocol/types'
 import { getCached } from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
@@ -25,7 +26,6 @@ import {
   IS_FINALIZED,
   IS_USURPED,
   parseSubscriptionOptions,
-  ResultEvaluator,
   submitSignedTx,
 } from './Blockchain.utils'
 
@@ -322,7 +322,7 @@ describe('Tx logic', () => {
 
 describe('parseSubscriptionOptions', () => {
   it('takes incomplete SubscriptionPromiseOptions and sets default values where needed', async () => {
-    const testfunction: ResultEvaluator = () => true
+    const testfunction: SubscriptionPromise.ResultEvaluator = () => true
     expect(JSON.stringify(parseSubscriptionOptions())).toEqual(
       JSON.stringify({
         resolveOn: IS_FINALIZED,

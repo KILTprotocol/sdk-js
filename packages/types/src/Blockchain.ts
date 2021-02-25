@@ -6,7 +6,7 @@ import type {
   ISubmittableResult,
   SubmittableExtrinsic,
   SubscriptionPromise,
-} from '@kiltprotocol/types'
+} from '.'
 
 export type BlockchainStats = {
   chain: string

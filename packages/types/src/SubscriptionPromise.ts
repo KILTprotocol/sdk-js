@@ -1,4 +1,4 @@
-import type { ISubmittableResult } from '@kiltprotocol/types'
+import type { ISubmittableResult } from '.'
 
 /**
  * A function that determines whether a new incoming value should reject or resolve the promise.

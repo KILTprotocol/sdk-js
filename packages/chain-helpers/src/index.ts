@@ -5,22 +5,12 @@
 
 import { ExtrinsicError, ExtrinsicErrors, PalletIndex } from './errorhandling'
 import { BlockchainApiConnection } from './blockchainApiConnection'
-import {
-  Blockchain,
-  IBlockchainApi,
-  BlockchainUtils,
-  SubscriptionPromise,
-  Evaluator,
-  TerminationOptions,
-} from './blockchain'
+import { Blockchain, BlockchainUtils, SubscriptionPromise } from './blockchain'
 
 export {
   Blockchain,
-  IBlockchainApi,
   BlockchainUtils,
   SubscriptionPromise,
-  Evaluator,
-  TerminationOptions,
   ExtrinsicError,
   ExtrinsicErrors,
   PalletIndex,
