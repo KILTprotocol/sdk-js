@@ -19,8 +19,6 @@ import {
 import BalanceUtils from './Balance.utils'
 import Kilt from '../kilt/Kilt'
 
-// Seems like there is an issue with how this mock is imported or used, does not function.
-// TODO: Look into how the mocked api should be set instead.
 jest.mock(
   '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
 )
