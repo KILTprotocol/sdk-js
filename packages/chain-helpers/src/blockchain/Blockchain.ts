@@ -99,7 +99,7 @@ export default class Blockchain implements IBlockchainApi {
   public async submitTxWithReSign(
     tx: SubmittableExtrinsic,
     identity?: IIdentity,
-    opts?: Partial<SubscriptionPromise.SubscriptionPromiseOptions>
+    opts?: Partial<SubscriptionPromise.Options>
   ): Promise<ISubmittableResult> {
     const options = parseSubscriptionOptions(opts)
     const retry = async (reason: Error): Promise<ISubmittableResult> => {
@@ -126,7 +126,7 @@ export default class Blockchain implements IBlockchainApi {
   public async submitTx(
     identity: IIdentity,
     tx: SubmittableExtrinsic,
-    opts?: Partial<SubscriptionPromise.SubscriptionPromiseOptions>
+    opts?: Partial<SubscriptionPromise.Options>
   ): Promise<ISubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
     return this.submitTxWithReSign(signedTx, identity, opts)

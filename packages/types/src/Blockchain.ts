@@ -5,8 +5,8 @@ import type {
   IIdentity,
   ISubmittableResult,
   SubmittableExtrinsic,
+  SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { SubscriptionPromiseOptions } from './SubscriptionPromise'
 
 export type BlockchainStats = {
   chain: string
@@ -26,12 +26,12 @@ export interface IBlockchainApi {
   submitTxWithReSign(
     tx: SubmittableExtrinsic,
     identity?: IIdentity,
-    opts?: SubscriptionPromiseOptions
+    opts?: SubscriptionPromise.Options
   ): Promise<ISubmittableResult>
   submitTx(
     identity: IIdentity,
     tx: SubmittableExtrinsic,
-    opts?: SubscriptionPromiseOptions
+    opts?: SubscriptionPromise.Options
   ): Promise<ISubmittableResult>
   getNonce(accountAddress: string): Promise<BN>
   reSignTx(
