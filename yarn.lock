@@ -795,6 +795,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/actors-api@workspace:packages/actors_api"
   dependencies:
+    "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/messaging": "workspace:*"
@@ -802,6 +803,23 @@ __metadata:
     "@kiltprotocol/utils": "workspace:*"
     rimraf: ^3.0.2
     typescript: ^3.9.7
+  languageName: unknown
+  linkType: soft
+
+"@kiltprotocol/chain-helpers@workspace:*, @kiltprotocol/chain-helpers@workspace:packages/chain-helpers":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
+  dependencies:
+    "@kiltprotocol/config": "workspace:*"
+    "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*"
+    "@polkadot/api": ^3.7.3
+    "@polkadot/keyring": ^5.5.2
+    "@polkadot/types": ^3.7.3
+    bn.js: ^5.1.3
+    rimraf: ^3.0.2
+    typescript: ^3.9.7
+    typescript-logging: ^0.6.4
   languageName: unknown
   linkType: soft
 
@@ -820,6 +838,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/core@workspace:packages/core"
   dependencies:
+    "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
@@ -859,6 +878,7 @@ __metadata:
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
     "@kiltprotocol/actors-api": "workspace:*"
+    "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/messaging": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
@@ -871,9 +891,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/types@workspace:packages/types"
   dependencies:
-    "@polkadot/types": ^3.6.4
+    "@polkadot/api": ^3.7.3
+    "@polkadot/keyring": ^5.5.2
+    "@polkadot/types": ^3.7.3
+    bn.js: ^5.1.3
     rimraf: ^3.0.2
     ts-node: ^8.10.2
+    tweetnacl: ^1.0.3
     typescript: ^3.9.7
   languageName: unknown
   linkType: soft

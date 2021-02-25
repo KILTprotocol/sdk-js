@@ -5,16 +5,20 @@
  */
 
 /* eslint-disable dot-notation */
-import { SubmittableResult } from '@polkadot/api/submittable'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Text } from '@polkadot/types'
 import { SignerPayload } from '@polkadot/types/interfaces/types'
 import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
-import { SubmittableExtrinsic } from '..'
-import getCached from '../blockchainApiConnection/BlockchainApiConnection'
+import { Keyring } from '@polkadot/keyring'
+import type {
+  IIdentity,
+  ISubmittableResult,
+  SubmittableExtrinsic,
+  SubscriptionPromise,
+} from '@kiltprotocol/types'
+import { getCached } from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import Identity from '../identity/Identity'
 import Blockchain from './Blockchain'
 import {
   EXTRINSIC_FAILED,
@@ -22,7 +26,6 @@ import {
   IS_FINALIZED,
   IS_USURPED,
   parseSubscriptionOptions,
-  ResultEvaluator,
   submitSignedTx,
 } from './Blockchain.utils'
 
@@ -62,8 +65,8 @@ describe('queries', () => {
 })
 
 describe('Tx logic', () => {
-  let alice: Identity
-  let bob: Identity
+  let alice: IIdentity
+  let bob: IIdentity
   const api = require('../blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
   const setDefault = require('../blockchainApiConnection/BlockchainApiConnection')
@@ -73,8 +76,21 @@ describe('Tx logic', () => {
     return chain.getNonce(address)
   }
   beforeAll(async () => {
-    alice = Identity.buildFromURI('//Alice')
-    bob = Identity.buildFromURI('//Bob')
+    const keyring = new Keyring({
+      type: 'ed25519',
+      // KILT has registered the ss58 prefix 38
+      ss58Format: 38,
+    })
+    const alicePair = keyring.createFromUri('//Alice')
+    alice = {
+      signKeyringPair: alicePair,
+      address: alicePair.address,
+    } as IIdentity
+    const bobPair = keyring.createFromUri('//Bob')
+    bob = {
+      signKeyringPair: bobPair,
+      address: bobPair.address,
+    } as IIdentity
   })
 
   describe('getNonce', () => {
@@ -306,11 +322,11 @@ describe('Tx logic', () => {
 
 describe('parseSubscriptionOptions', () => {
   it('takes incomplete SubscriptionPromiseOptions and sets default values where needed', async () => {
-    const testfunction: ResultEvaluator = () => true
+    const testfunction: SubscriptionPromise.ResultEvaluator = () => true
     expect(JSON.stringify(parseSubscriptionOptions())).toEqual(
       JSON.stringify({
         resolveOn: IS_FINALIZED,
-        rejectOn: (result: SubmittableResult) =>
+        rejectOn: (result: ISubmittableResult) =>
           IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
         timeout: undefined,
       })
@@ -320,7 +336,7 @@ describe('parseSubscriptionOptions', () => {
     ).toEqual(
       JSON.stringify({
         resolveOn: testfunction,
-        rejectOn: (result: SubmittableResult) =>
+        rejectOn: (result: ISubmittableResult) =>
           IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
         timeout: undefined,
       })
@@ -349,7 +365,7 @@ describe('parseSubscriptionOptions', () => {
     ).toEqual(
       JSON.stringify({
         resolveOn: testfunction,
-        rejectOn: (result: SubmittableResult) =>
+        rejectOn: (result: ISubmittableResult) =>
           IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
         timeout: 10,
       })
@@ -363,7 +379,7 @@ describe('parseSubscriptionOptions', () => {
     ).toEqual(
       JSON.stringify({
         resolveOn: IS_FINALIZED,
-        rejectOn: (result: SubmittableResult) =>
+        rejectOn: (result: ISubmittableResult) =>
           IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
         timeout: 10,
       })

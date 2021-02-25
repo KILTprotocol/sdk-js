@@ -1,4 +1,3 @@
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 /**
  * Delegation nodes are used within the KILT protocol to construct the trust hierarchy.
  *
@@ -9,7 +8,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  * @preferred
  */
 
-import { IDelegationNode } from '@kiltprotocol/types'
+import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import Identity from '../identity/Identity'

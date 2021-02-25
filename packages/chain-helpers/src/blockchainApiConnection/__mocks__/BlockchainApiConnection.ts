@@ -46,10 +46,13 @@
 
 import Blockchain from '../../blockchain/Blockchain'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { AccountInfo, ExtrinsicStatus, Index } from '@polkadot/types/interfaces'
 import { GenericEventData, U64 } from '@polkadot/types'
-import { IPublicIdentity } from '@kiltprotocol/types'
+import type {
+  IPublicIdentity,
+  ISubmittableResult,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import TYPE_REGISTRY, { mockChainQueryReturn } from './BlockchainQuery'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
@@ -64,18 +67,18 @@ async function getCached(): Promise<Blockchain> {
   return BlockchainApiConnection.instance
 }
 
-const TxResultsQueue: SubmittableResult[] = []
-let defaultTxResult: SubmittableResult = __makeSubmittableResult({})
+const TxResultsQueue: ISubmittableResult[] = []
+let defaultTxResult: ISubmittableResult = __makeSubmittableResult({})
 
 class MockSubmittableExtrinsic {
-  result: SubmittableResult
+  result: ISubmittableResult
   method = { toHex: () => '0x00' }
   signature = {
     signed: false,
     toHuman: (): number | undefined => undefined,
   }
   nonce = { toHuman: (): number | undefined => undefined }
-  constructor(result: SubmittableResult) {
+  constructor(result: ISubmittableResult) {
     this.result = result
   }
 
@@ -127,13 +130,13 @@ class MockSubmittableExtrinsic {
 }
 
 function __getMockSubmittableExtrinsic(): SubmittableExtrinsic {
-  const result: SubmittableResult = TxResultsQueue.shift() || defaultTxResult
+  const result: ISubmittableResult = TxResultsQueue.shift() || defaultTxResult
   return (new MockSubmittableExtrinsic(result) as any) as SubmittableExtrinsic
 }
 
 function __makeSubmittableResult(
   opts: Partial<ExtrinsicStatus>
-): SubmittableResult {
+): ISubmittableResult {
   const finalized = opts ? !Object.keys(opts)[0] : true
   const status: ExtrinsicStatus = {
     isFinalized: finalized,
@@ -383,4 +386,3 @@ BlockchainApiConnection.__mocked_api = __mocked_api
 BlockchainApiConnection.mockChainQueryReturn = mockChainQueryReturn
 
 module.exports = BlockchainApiConnection
-module.exports.default = BlockchainApiConnection.getCached

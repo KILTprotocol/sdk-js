@@ -1,4 +1,3 @@
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 /**
  * A Decentralized Identifier (DID) is a new type of identifier that is globally unique, resolvable with high availability, and cryptographically verifiable.
  * Although it's not mandatory in KILT, users can optionally create a DID and anchor it to the KILT blockchain.
@@ -13,7 +12,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  */
 
 import { AnyJson } from '@polkadot/types/types'
-import { IPublicIdentity } from '@kiltprotocol/types'
+import type { IPublicIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import Identity from '../identity/Identity'
 import { queryByAddress, queryByIdentifier, remove, store } from './Did.chain'

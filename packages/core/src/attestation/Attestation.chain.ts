@@ -2,13 +2,12 @@
  * @packageDocumentation
  * @ignore
  */
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option, Struct } from '@polkadot/types'
-import { IAttestation } from '@kiltprotocol/types'
+import type { IAttestation, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { AccountId, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
-import { getCached } from '../blockchainApiConnection'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'
 import Attestation from './Attestation'
 import { DelegationNodeId } from '../delegation/DelegationDecoder'
@@ -26,7 +25,7 @@ export async function store(
   }
   log.debug(() => `Create tx for 'attestation.add'`)
 
-  const blockchain = await getCached()
+  const blockchain = await BlockchainApiConnection.getCached()
 
   const tx = blockchain.api.tx.attestation.add(
     txParams.claimHash,
@@ -67,7 +66,7 @@ function decode(
 // return types reflect backwards compatibility with mashnet-node v 0.22
 async function queryRaw(claimHash: string): Promise<Option<IChainAttestation>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
-  const blockchain = await getCached()
+  const blockchain = await BlockchainApiConnection.getCached()
   const result = await blockchain.api.query.attestation.attestations<
     Option<IChainAttestation>
   >(claimHash)
@@ -84,7 +83,7 @@ export async function revoke(
   identity: Identity,
   maxDepth: number
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await getCached()
+  const blockchain = await BlockchainApiConnection.getCached()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash,

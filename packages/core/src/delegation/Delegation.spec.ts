@@ -6,16 +6,20 @@
 
 import { Permission } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { Identity } from '..'
-import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import { getAttestationHashes } from './Delegation.chain'
 import DelegationNode from './DelegationNode'
+import Kilt from '../kilt/Kilt'
 
-jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+jest.mock(
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
+)
 
-const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
   .__mocked_api
 
+Kilt.config({ address: 'ws://testString' })
 const rootId = Crypto.hashStr('rootId')
 const nodeId = Crypto.hashStr('myNodeId')
 const ctypeHash = Crypto.hashStr('testCtype')

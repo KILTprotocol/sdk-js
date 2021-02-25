@@ -7,9 +7,9 @@
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { Permission } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { AttestedClaim, Identity } from '..'
 import Attestation from '../attestation/Attestation'
-import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
 import { config, disconnect } from '../kilt'
 import Claim from '../claim/Claim'
 import {
@@ -47,7 +47,9 @@ describe('when there is an account hierarchy', () => {
 
     if (!(await CtypeOnChain(DriversLicense))) {
       await DriversLicense.store(attester).then((tx) =>
-        submitTxWithReSign(tx, attester, { resolveOn: IS_IN_BLOCK })
+        BlockchainUtils.submitTxWithReSign(tx, attester, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        })
       )
     }
   }, 30_000)
@@ -58,11 +60,11 @@ describe('when there is an account hierarchy', () => {
       DriversLicense.hash,
       uncleSam.address
     )
-    await rootNode
-      .store(uncleSam)
-      .then((tx) =>
-        submitTxWithReSign(tx, uncleSam, { resolveOn: IS_IN_BLOCK })
-      )
+    await rootNode.store(uncleSam).then((tx) =>
+      BlockchainUtils.submitTxWithReSign(tx, uncleSam, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    )
     const delegatedNode = new DelegationNode(
       UUID.generate(),
       rootNode.id,
@@ -71,11 +73,11 @@ describe('when there is an account hierarchy', () => {
       rootNode.id
     )
     const HashSignedByDelegate = attester.signStr(delegatedNode.generateHash())
-    await delegatedNode
-      .store(uncleSam, HashSignedByDelegate)
-      .then((tx) =>
-        submitTxWithReSign(tx, uncleSam, { resolveOn: IS_IN_BLOCK })
-      )
+    await delegatedNode.store(uncleSam, HashSignedByDelegate).then((tx) =>
+      BlockchainUtils.submitTxWithReSign(tx, uncleSam, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    )
     await Promise.all([
       expect(rootNode.verify()).resolves.toBeTruthy(),
       expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -101,14 +103,14 @@ describe('when there is an account hierarchy', () => {
         rootNode.id
       )
       HashSignedByDelegate = attester.signStr(delegatedNode.generateHash())
-      await rootNode
-        .store(uncleSam)
-        .then((tx) =>
-          submitTxWithReSign(tx, uncleSam, { resolveOn: IS_IN_BLOCK })
-        )
+      await rootNode.store(uncleSam).then((tx) =>
+        BlockchainUtils.submitTxWithReSign(tx, uncleSam, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        })
+      )
       await delegatedNode.store(uncleSam, HashSignedByDelegate).then((tx) =>
-        submitTxWithReSign(tx, uncleSam, {
-          resolveOn: IS_IN_BLOCK,
+        BlockchainUtils.submitTxWithReSign(tx, uncleSam, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
       await Promise.all([
@@ -142,8 +144,8 @@ describe('when there is an account hierarchy', () => {
         attester.getPublicIdentity()
       )
       await attestation.store(attester).then((tx) =>
-        submitTxWithReSign(tx, attester, {
-          resolveOn: IS_IN_BLOCK,
+        BlockchainUtils.submitTxWithReSign(tx, attester, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
 
@@ -156,8 +158,8 @@ describe('when there is an account hierarchy', () => {
 
       // revoke attestation through root
       await attClaim.attestation.revoke(uncleSam, 1).then((tx) =>
-        submitTxWithReSign(tx, uncleSam, {
-          resolveOn: IS_IN_BLOCK,
+        BlockchainUtils.submitTxWithReSign(tx, uncleSam, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
       await expect(attClaim.verify()).resolves.toBeFalsy()

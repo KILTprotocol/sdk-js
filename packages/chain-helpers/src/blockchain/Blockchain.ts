@@ -8,8 +8,7 @@
  * @preferred
  */
 
-import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import { ApiPromise } from '@polkadot/api'
 import { Header } from '@polkadot/types/interfaces/types'
 import { AnyJson, Codec } from '@polkadot/types/types'
 import { Text } from '@polkadot/types'
@@ -17,46 +16,17 @@ import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import Identity from '../identity/Identity'
-import {
-  parseSubscriptionOptions,
-  submitSignedTx,
-  SubscriptionPromiseOptions,
-} from './Blockchain.utils'
+import type {
+  IIdentity,
+  ISubmittableResult,
+  SubmittableExtrinsic,
+  IBlockchainApi,
+  BlockchainStats,
+  SubscriptionPromise,
+} from '@kiltprotocol/types'
+import { parseSubscriptionOptions, submitSignedTx } from './Blockchain.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
-
-export type Stats = {
-  chain: string
-  nodeName: string
-  nodeVersion: string
-}
-
-export interface IBlockchainApi {
-  api: ApiPromise
-
-  getStats(): Promise<Stats>
-  listenToBlocks(listener: (header: Header) => void): Promise<() => void>
-  signTx(
-    identity: Identity,
-    tx: SubmittableExtrinsic
-  ): Promise<SubmittableExtrinsic>
-  submitTxWithReSign(
-    tx: SubmittableExtrinsic,
-    identity?: Identity,
-    opts?: SubscriptionPromiseOptions
-  ): Promise<SubmittableResult>
-  submitTx(
-    identity: Identity,
-    tx: SubmittableExtrinsic,
-    opts?: SubscriptionPromiseOptions
-  ): Promise<SubmittableResult>
-  getNonce(accountAddress: string): Promise<BN>
-  reSignTx(
-    identity: Identity,
-    tx: SubmittableExtrinsic
-  ): Promise<SubmittableExtrinsic>
-}
 
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
@@ -69,14 +39,14 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   public api: ApiPromise
-  private accountNonces: Map<Identity['address'], BN>
+  private accountNonces: Map<IIdentity['address'], BN>
 
   public constructor(api: ApiPromise) {
     this.api = api
-    this.accountNonces = new Map<Identity['address'], BN>()
+    this.accountNonces = new Map<IIdentity['address'], BN>()
   }
 
-  public async getStats(): Promise<Stats> {
+  public async getStats(): Promise<BlockchainStats> {
     const encoded: Text[] = await Promise.all([
       this.api.rpc.system.chain(),
       this.api.rpc.system.name(),
@@ -102,7 +72,7 @@ export default class Blockchain implements IBlockchainApi {
    *
    */
   public async signTx(
-    identity: Identity,
+    identity: IIdentity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic> {
     const nonce = await this.getNonce(identity.address)
@@ -128,11 +98,11 @@ export default class Blockchain implements IBlockchainApi {
    */
   public async submitTxWithReSign(
     tx: SubmittableExtrinsic,
-    identity?: Identity,
-    opts?: Partial<SubscriptionPromiseOptions>
-  ): Promise<SubmittableResult> {
+    identity?: IIdentity,
+    opts?: Partial<SubscriptionPromise.Options>
+  ): Promise<ISubmittableResult> {
     const options = parseSubscriptionOptions(opts)
-    const retry = async (reason: Error): Promise<SubmittableResult> => {
+    const retry = async (reason: Error): Promise<ISubmittableResult> => {
       if (
         reason.message === SDKErrors.ERROR_TRANSACTION_RECOVERABLE().message &&
         identity
@@ -154,10 +124,10 @@ export default class Blockchain implements IBlockchainApi {
    *
    */
   public async submitTx(
-    identity: Identity,
+    identity: IIdentity,
     tx: SubmittableExtrinsic,
-    opts?: Partial<SubscriptionPromiseOptions>
-  ): Promise<SubmittableResult> {
+    opts?: Partial<SubscriptionPromise.Options>
+  ): Promise<ISubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
     return this.submitTxWithReSign(signedTx, identity, opts)
   }
@@ -198,7 +168,7 @@ export default class Blockchain implements IBlockchainApi {
    *
    */
   public async reSignTx(
-    identity: Identity,
+    identity: IIdentity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic> {
     this.accountNonces.delete(identity.address)

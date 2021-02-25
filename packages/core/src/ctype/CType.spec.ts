@@ -15,17 +15,20 @@ import {
   ICTypeSchema,
   CompressedCTypeSchema,
 } from '@kiltprotocol/types'
-import { BlockchainUtils } from '../blockchain'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import Claim from '../claim/Claim'
 import Identity from '../identity/Identity'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
 import CType from './CType'
 import CTypeUtils, { getIdForSchema } from './CType.utils'
+import Kilt from '../kilt/Kilt'
 
-jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+jest.mock(
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
+)
 
 describe('CType', () => {
-  const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
   const registry = new TypeRegistry()
   let ctypeModel: ICType['schema']
@@ -37,6 +40,7 @@ describe('CType', () => {
   let claimContents: any
   let claim: Claim
   let compressedCType: CompressedCType
+  Kilt.config({ address: 'ws://testString' })
   beforeAll(async () => {
     ctypeModel = {
       $id: 'kilt:ctype:0x1',

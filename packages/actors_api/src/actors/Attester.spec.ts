@@ -6,17 +6,17 @@
 
 import { CType, Identity, SDKErrors } from '@kiltprotocol/core'
 import { ICType, IClaim, IMessage } from '@kiltprotocol/types'
-import { mockChainQueryReturn } from '@kiltprotocol/core/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import Message from '@kiltprotocol/messaging'
 import { Attester, Claimer } from '..'
 import { issueAttestation } from './Attester'
 
 jest.mock(
-  '@kiltprotocol/core/lib/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
 )
 
 describe('Attester', () => {
-  const blockchainApi = require('@kiltprotocol/core/lib/blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
   let attester: Identity
   let claimer: Identity

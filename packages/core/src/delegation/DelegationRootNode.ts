@@ -1,4 +1,3 @@
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 /**
  * KILT enables top-down trust structures.
  * On the lowest level, a delegation structure is always a **tree**.
@@ -12,7 +11,10 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  * @preferred
  */
 
-import { IDelegationRootNode } from '@kiltprotocol/types'
+import type {
+  IDelegationRootNode,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'

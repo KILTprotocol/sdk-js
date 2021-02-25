@@ -5,12 +5,12 @@
  */
 
 import BN from 'bn.js/'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
   getBalance,
   listenToBalanceChanges,
   makeTransfer,
 } from '../balance/Balance.chain'
-import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
 import { config, disconnect } from '../kilt'
 import Identity from '../identity/Identity'
 import {
@@ -66,7 +66,9 @@ describe('when there is a dev chain with a faucet', () => {
     listenToBalanceChanges(ident.address, funny)
     const balanceBefore = await getBalance(faucet.address)
     await makeTransfer(faucet, ident.address, MIN_TRANSACTION).then((tx) =>
-      submitTxWithReSign(tx, faucet, { resolveOn: IS_IN_BLOCK })
+      BlockchainUtils.submitTxWithReSign(tx, faucet, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
     )
     const [balanceAfter, balanceIdent] = await Promise.all([
       getBalance(faucet.address),
@@ -92,12 +94,11 @@ describe('When there are haves and have-nots', () => {
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    await makeTransfer(
-      richieRich,
-      stormyD.address,
-      MIN_TRANSACTION
-    ).then((tx) =>
-      submitTxWithReSign(tx, richieRich, { resolveOn: IS_IN_BLOCK })
+    await makeTransfer(richieRich, stormyD.address, MIN_TRANSACTION).then(
+      (tx) =>
+        BlockchainUtils.submitTxWithReSign(tx, richieRich, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        })
     )
     const balanceTo = await getBalance(stormyD.address)
     expect(balanceTo.toNumber()).toBe(MIN_TRANSACTION.toNumber())
@@ -107,8 +108,8 @@ describe('When there are haves and have-nots', () => {
     const originalBalance = await getBalance(stormyD.address)
     await expect(
       makeTransfer(bobbyBroke, stormyD.address, MIN_TRANSACTION).then((tx) =>
-        submitTxWithReSign(tx, bobbyBroke, {
-          resolveOn: IS_IN_BLOCK,
+        BlockchainUtils.submitTxWithReSign(tx, bobbyBroke, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
     ).rejects.toThrowError('1010: Invalid Transaction')
@@ -124,8 +125,8 @@ describe('When there are haves and have-nots', () => {
     const RichieBalance = await getBalance(richieRich.address)
     await expect(
       makeTransfer(richieRich, bobbyBroke.address, RichieBalance).then((tx) =>
-        submitTxWithReSign(tx, richieRich, {
-          resolveOn: IS_IN_BLOCK,
+        BlockchainUtils.submitTxWithReSign(tx, richieRich, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
     ).rejects.toThrowError()
@@ -141,10 +142,14 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
     await makeTransfer(faucet, richieRich.address, MIN_TRANSACTION).then((tx) =>
-      submitTxWithReSign(tx, faucet, { resolveOn: IS_IN_BLOCK })
+      BlockchainUtils.submitTxWithReSign(tx, faucet, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
     )
     await makeTransfer(faucet, stormyD.address, MIN_TRANSACTION).then((tx) =>
-      submitTxWithReSign(tx, faucet, { resolveOn: IS_IN_BLOCK })
+      BlockchainUtils.submitTxWithReSign(tx, faucet, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
     )
 
     expect(listener).toBeCalledWith(
@@ -160,10 +165,14 @@ describe('When there are haves and have-nots', () => {
     listenToBalanceChanges(faucet.address, listener)
     await Promise.all([
       makeTransfer(faucet, richieRich.address, MIN_TRANSACTION).then((tx) =>
-        submitTxWithReSign(tx, faucet, { resolveOn: IS_IN_BLOCK })
+        BlockchainUtils.submitTxWithReSign(tx, faucet, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        })
       ),
       makeTransfer(faucet, stormyD.address, MIN_TRANSACTION).then((tx) =>
-        submitTxWithReSign(tx, faucet, { resolveOn: IS_IN_BLOCK })
+        BlockchainUtils.submitTxWithReSign(tx, faucet, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        })
       ),
     ])
     expect(listener).toBeCalledWith(

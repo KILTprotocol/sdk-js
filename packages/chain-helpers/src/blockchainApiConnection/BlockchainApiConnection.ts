@@ -76,5 +76,3 @@ export async function getCached(
 export function clearCache(): void {
   instance = null
 }
-
-export default getCached

@@ -12,6 +12,7 @@
       "@kiltprotocol/types": ["types/src"],
       "@kiltprotocol/utils": ["utils/src"],
       "@kiltprotocol/messaging": ["messaging/src"],
+      "@kiltprotocol/chain-helpers": ["chain-helpers/src"]
     }
   },
   "skipLibCheck": true
