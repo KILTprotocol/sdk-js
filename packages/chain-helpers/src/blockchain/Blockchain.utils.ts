@@ -4,11 +4,10 @@
  * @preferred
  */
 
-import { SubmittableResult } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { IIdentity } from '@kiltprotocol/types'
+import type { IIdentity, ISubmittableResult } from '@kiltprotocol/types'
 import { ErrorHandler, ExtrinsicError, ExtrinsicErrors } from '../errorhandling'
 import {
   Evaluator,
@@ -17,9 +16,9 @@ import {
 } from './SubscriptionPromise'
 import { getCached } from '../blockchainApiConnection/BlockchainApiConnection'
 
-export type ResultEvaluator = Evaluator<SubmittableResult>
+export type ResultEvaluator = Evaluator<ISubmittableResult>
 export type ErrorEvaluator = Evaluator<Error>
-export type SubscriptionPromiseOptions = TerminationOptions<SubmittableResult>
+export type SubscriptionPromiseOptions = TerminationOptions<ISubmittableResult>
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -70,7 +69,7 @@ export function parseSubscriptionOptions(
 ): SubscriptionPromiseOptions {
   const {
     resolveOn = IS_FINALIZED,
-    rejectOn = (result: SubmittableResult) =>
+    rejectOn = (result: ISubmittableResult) =>
       IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
     timeout,
   } = { ...opts }
@@ -97,7 +96,7 @@ export function parseSubscriptionOptions(
 export async function submitSignedTxRaw(
   tx: SubmittableExtrinsic,
   opts: SubscriptionPromiseOptions
-): Promise<SubmittableResult> {
+): Promise<ISubmittableResult> {
   log.info(`Submitting ${tx.method}`)
   const { promise, subscription } = makeSubscriptionPromise(opts)
 
@@ -118,7 +117,7 @@ export async function submitSignedTxRaw(
 async function submitSignedTxErrorMatched(
   tx: SubmittableExtrinsic,
   opts: SubscriptionPromiseOptions
-): Promise<SubmittableResult> {
+): Promise<ISubmittableResult> {
   return submitSignedTxRaw(tx, opts).catch((reason: Error) => {
     switch (true) {
       case reason.message.includes(TxOutdated):
@@ -147,7 +146,7 @@ async function submitSignedTxErrorMatched(
 export async function submitSignedTx(
   tx: SubmittableExtrinsic,
   opts: SubscriptionPromiseOptions
-): Promise<SubmittableResult> {
+): Promise<ISubmittableResult> {
   return submitSignedTxErrorMatched(tx, opts).catch((reason: Error) => {
     if (IS_RELEVANT_ERROR(reason)) {
       return Promise.reject(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
@@ -169,7 +168,7 @@ export async function submitTxWithReSign(
   tx: SubmittableExtrinsic,
   identity?: IIdentity,
   opts?: Partial<SubscriptionPromiseOptions>
-): Promise<SubmittableResult> {
+): Promise<ISubmittableResult> {
   const chain = await getCached()
   return chain.submitTxWithReSign(tx, identity, opts)
 }

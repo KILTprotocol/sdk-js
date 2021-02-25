@@ -3,6 +3,8 @@
  * @ignore
  */
 
+export type { ISubmittableResult } from '@polkadot/types/types'
+
 export * from './AttestedClaim'
 export * from './Attestation'
 export * from './CType'

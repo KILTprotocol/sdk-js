@@ -5,7 +5,6 @@
  */
 
 /* eslint-disable dot-notation */
-import { SubmittableResult } from '@polkadot/api/submittable'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Text } from '@polkadot/types'
 import { SignerPayload } from '@polkadot/types/interfaces/types'
@@ -13,7 +12,7 @@ import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import { Keyring } from '@polkadot/keyring'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { IIdentity } from '@kiltprotocol/types'
+import type { IIdentity, ISubmittableResult } from '@kiltprotocol/types'
 import { getCached } from '../blockchainApiConnection/BlockchainApiConnection'
 import TYPE_REGISTRY from '../blockchainApiConnection/__mocks__/BlockchainQuery'
 import Blockchain from './Blockchain'
@@ -324,7 +323,7 @@ describe('parseSubscriptionOptions', () => {
     expect(JSON.stringify(parseSubscriptionOptions())).toEqual(
       JSON.stringify({
         resolveOn: IS_FINALIZED,
-        rejectOn: (result: SubmittableResult) =>
+        rejectOn: (result: ISubmittableResult) =>
           IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
         timeout: undefined,
       })
@@ -334,7 +333,7 @@ describe('parseSubscriptionOptions', () => {
     ).toEqual(
       JSON.stringify({
         resolveOn: testfunction,
-        rejectOn: (result: SubmittableResult) =>
+        rejectOn: (result: ISubmittableResult) =>
           IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
         timeout: undefined,
       })
@@ -363,7 +362,7 @@ describe('parseSubscriptionOptions', () => {
     ).toEqual(
       JSON.stringify({
         resolveOn: testfunction,
-        rejectOn: (result: SubmittableResult) =>
+        rejectOn: (result: ISubmittableResult) =>
           IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
         timeout: 10,
       })
@@ -377,7 +376,7 @@ describe('parseSubscriptionOptions', () => {
     ).toEqual(
       JSON.stringify({
         resolveOn: IS_FINALIZED,
-        rejectOn: (result: SubmittableResult) =>
+        rejectOn: (result: ISubmittableResult) =>
           IS_ERROR(result) || EXTRINSIC_FAILED(result) || IS_USURPED(result),
         timeout: 10,
       })

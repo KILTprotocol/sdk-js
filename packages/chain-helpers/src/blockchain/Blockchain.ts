@@ -8,7 +8,7 @@
  * @preferred
  */
 
-import { ApiPromise, SubmittableResult } from '@polkadot/api'
+import { ApiPromise } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Header } from '@polkadot/types/interfaces/types'
 import { AnyJson, Codec } from '@polkadot/types/types'
@@ -17,7 +17,7 @@ import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { IIdentity } from '@kiltprotocol/types'
+import type { IIdentity, ISubmittableResult } from '@kiltprotocol/types'
 import {
   parseSubscriptionOptions,
   submitSignedTx,
@@ -45,12 +45,12 @@ export interface IBlockchainApi {
     tx: SubmittableExtrinsic,
     identity?: IIdentity,
     opts?: SubscriptionPromiseOptions
-  ): Promise<SubmittableResult>
+  ): Promise<ISubmittableResult>
   submitTx(
     identity: IIdentity,
     tx: SubmittableExtrinsic,
     opts?: SubscriptionPromiseOptions
-  ): Promise<SubmittableResult>
+  ): Promise<ISubmittableResult>
   getNonce(accountAddress: string): Promise<BN>
   reSignTx(
     identity: IIdentity,
@@ -130,9 +130,9 @@ export default class Blockchain implements IBlockchainApi {
     tx: SubmittableExtrinsic,
     identity?: IIdentity,
     opts?: Partial<SubscriptionPromiseOptions>
-  ): Promise<SubmittableResult> {
+  ): Promise<ISubmittableResult> {
     const options = parseSubscriptionOptions(opts)
-    const retry = async (reason: Error): Promise<SubmittableResult> => {
+    const retry = async (reason: Error): Promise<ISubmittableResult> => {
       if (
         reason.message === SDKErrors.ERROR_TRANSACTION_RECOVERABLE().message &&
         identity
@@ -157,7 +157,7 @@ export default class Blockchain implements IBlockchainApi {
     identity: IIdentity,
     tx: SubmittableExtrinsic,
     opts?: Partial<SubscriptionPromiseOptions>
-  ): Promise<SubmittableResult> {
+  ): Promise<ISubmittableResult> {
     const signedTx = await this.signTx(identity, tx)
     return this.submitTxWithReSign(signedTx, identity, opts)
   }
