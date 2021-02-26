@@ -104,4 +104,23 @@ export default abstract class DelegationBaseNode
    * @returns Promise containing a submittable transaction.
    */
   public abstract revoke(identity: Identity): Promise<SubmittableExtrinsic>
+
+  /**
+   * Recursively counts all nodes in the branches below the current node (excluding the current node).
+   *
+   * @returns Promise resolving to the node count.
+   */
+  public async subtreeNodeCount(): Promise<number> {
+    const children = await this.getChildren()
+    if (children.length > 0) {
+      const childrensChildCounts = await Promise.all(
+        children.map((child) => child.subtreeNodeCount())
+      )
+      return (
+        children.length +
+        childrensChildCounts.reduce((previous, current) => previous + current)
+      )
+    }
+    return 0
+  }
 }
