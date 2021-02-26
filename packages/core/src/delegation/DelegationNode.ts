@@ -193,8 +193,10 @@ export default class DelegationNode extends DelegationBaseNode
    * @returns Promise containing a SubmittableExtrinsic.
    */
   public async revoke(identity: Identity): Promise<SubmittableExtrinsic> {
+    const { steps } = await this.findParent(identity.address)
+    const childCount = await this.subtreeNodeCount()
     log.debug(`:: revoke(${this.id})`)
-    return revoke(this.id, identity)
+    return revoke(this.id, identity, steps, childCount + 1)
   }
 
   public async getChildren(): Promise<DelegationNode[]> {
