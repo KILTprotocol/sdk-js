@@ -86,7 +86,7 @@ beforeAll(async () => {
   }
 }, 30_000)
 
-it('should be possible to delegate & revoke attestation rights', async () => {
+it('should be possible to delegate attestation rights', async () => {
   const rootNode = await writeRoot(root, DriversLicense.hash)
   const delegatedNode = await addDelegation(rootNode, root, attester, [
     Permission.ATTEST,
@@ -95,18 +95,7 @@ it('should be possible to delegate & revoke attestation rights', async () => {
     expect(rootNode.verify()).resolves.toBeTruthy(),
     expect(delegatedNode.verify()).resolves.toBeTruthy(),
   ])
-
-  await rootNode.revoke(root).then((tx) =>
-    BlockchainUtils.submitTxWithReSign(tx, root, {
-      resolveOn: BlockchainUtils.IS_IN_BLOCK,
-    })
-  )
-
-  await Promise.all([
-    expect(rootNode.verify()).resolves.toBeFalsy(),
-    expect(delegatedNode.verify()).resolves.toBeFalsy(),
-  ])
-}, 75_000)
+}, 60_000)
 
 describe('and attestation rights have been delegated', () => {
   let rootNode: DelegationRootNode
@@ -188,7 +177,7 @@ describe('revocation', () => {
     )
     await expect(
       delegationA.revoke(delegator).then((tx) =>
-        BlockchainUtils.submitTxWithReSign(tx, root, {
+        BlockchainUtils.submitTxWithReSign(tx, delegator, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
