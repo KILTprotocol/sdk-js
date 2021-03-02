@@ -8,14 +8,13 @@ import { IAttestation, CompressedAttestation } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 
 /**
- *  Checks whether the input meets all the required criteria of an IAttestation object.
+ *  Checks whether the input meets all the required criteria of an [[IAttestation]] object.
  *  Throws on invalid input.
  *
- * @param input The potentially only partial IAttestation.
- * @throws When input's cTypeHash, claimHash and owner do not exist.
- * @throws When the input's delegationId is not of type 'string' or 'null'.
- * @throws When input.revoked is not of type 'boolean'.
- * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_HASH_NOT_PROVIDED]], [[ERROR_DELEGATION_ID_TYPE]], [[ERROR_OWNER_NOT_PROVIDED]], [[ERROR_REVOCATION_BIT_MISSING]].
+ * @param input The potentially only partial [[IAttestation]].
+ * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_HASH_NOT_PROVIDED]] or [[ERROR_OWNER_NOT_PROVIDED]] when input's cTypeHash, claimHash or owner respectively do not exist.
+ * @throws [[ERROR_DELEGATION_ID_TYPE]] when the input's delegationId is not of type 'string' or 'null'.
+ * @throws [[ERROR_REVOCATION_BIT_MISSING]] when input.revoked is not of type 'boolean'.
  *
  */
 export function errorCheck(input: IAttestation): void {
@@ -61,9 +60,8 @@ export function compress(attestation: IAttestation): CompressedAttestation {
 /**
  *  Decompresses an [[Attestation]] from storage and/or message into an object.
  *
- * @param attestation A compressed [[Attestation]] array that is reverted back into an object.
- * @throws When [[attestation]] is not an Array or it's length is unequal 5.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @param attestation A compressed [[Attestation]] array that is decompressed back into an object.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when the attestation is not an array or its length is not equal to 5.
  *
  * @returns An object that has the same properties as an [[Attestation]].
  */

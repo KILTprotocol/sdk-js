@@ -162,6 +162,7 @@ export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
 }
 
 /**
+ * @ignore
  * Maps a [[ModuleError]] to its corresponding [[ExtrinsicError]].
  *
  * @param p The parameter object.

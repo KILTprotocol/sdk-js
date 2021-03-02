@@ -71,8 +71,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @param option Container for different options that can be passed to this method.
    * @param option.legitimations Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
-   * @throws When claimInput's owner address does not match the supplied identity's address.
-   * @throws [[ERROR_IDENTITY_MISMATCH]].
+   * @throws [[ERROR_IDENTITY_MISMATCH]] when claimInput's owner address does not match the supplied identity's address.
    * @returns A new [[RequestForAttestation]] object.
    * @example ```javascript
    * const input = RequestForAttestation.fromClaimAndIdentity(claim, alice);
@@ -171,8 +170,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Removes [[Claim]] properties from the [[RequestForAttestation]] object, provides anonymity and security when building the [[createPresentation]] method.
    *
    * @param properties - Properties to remove from the [[Claim]] object.
-   * @throws An error when a property which should be deleted wasn't found.
-   * @throws [[ERROR_CLAIM_HASHTREE_MISMATCH]].
+   * @throws [[ERROR_CLAIM_HASHTREE_MISMATCH]] when a property which should be deleted wasn't found.
    * @example ```javascript
    * const rawClaim = {
    *   name: 'Alice',
@@ -220,12 +218,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @param input - The [[RequestForAttestation]] for which to verify data.
    * @returns Whether the data is valid.
-   * @throws When any key of the claim contents could not be found in the claimHashTree.
-   * @throws When either the rootHash or the signature are not verifiable.
-   * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]], [[ERROR_ROOT_HASH_UNVERIFIABLE]], [[ERROR_SIGNATURE_UNVERIFIABLE]].
+   * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any key of the claim contents could not be found in the claimHashTree.
+   * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] or [[ERROR_SIGNATURE_UNVERIFIABLE]] when either the rootHash or the signature are not verifiable respectively.
    * @example ```javascript
    * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(claim, alice);
-   * reqForAtt.verifyData(); // returns true if the data is correct
+   * RequestForAttestation.verifyData(reqForAtt); // returns true if the data is correct
    * ```
    */
   public static verifyData(input: IRequestForAttestation): boolean {
@@ -270,7 +267,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *   claim,
    *   identity: alice,
    * });
-   * reqForAtt.verifySignature(); // returns `true` if the signature is correct
+   * RequestForAttestation.verifySignature(reqForAtt); // returns `true` if the signature is correct
    * ```
    */
   public static verifySignature(input: IRequestForAttestation): boolean {

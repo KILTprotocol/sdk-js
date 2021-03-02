@@ -17,9 +17,8 @@ export default class CTypeMetadata implements ICTypeMetadata {
    *  Instantiates a new CTypeMetadata.
    *
    * @param metadata [[ICTypeMetadata]] that is to be instantiated.
-   * @throws When metadata is not verifiable with the MetadataModel.
-   * @throws [[ERROR_OBJECT_MALFORMED]].
-   * @returns The verified and instantiated CTypeMetadata.
+   * @throws [[ERROR_OBJECT_MALFORMED]] when metadata is not verifiable with the MetadataModel.
+   * @returns The verified and instantiated [[CTypeMetadata]].
    */
   public constructor(metadata: ICTypeMetadata) {
     if (!CTypeUtils.verifySchema(metadata, MetadataModel)) {

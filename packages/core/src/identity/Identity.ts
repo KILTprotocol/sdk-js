@@ -54,9 +54,8 @@ export default class Identity implements IIdentity {
    * [STATIC] Builds an identity object from a mnemonic string.
    *
    * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
-   * @throws When phraseArg contains fewer than 12 correctly separated mnemonic words.
-   * @throws When the phraseArg could not be validated.
-   * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]], [[ERROR_MNEMONIC_PHRASE_INVALID]].
+   * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]] when phraseArg contains fewer than 12 correctly separated mnemonic words.
+   * @throws [[ERROR_MNEMONIC_PHRASE_INVALID]] when the phraseArg could not be validated.
    * @returns An [[Identity]].
    *
    * @example ```javascript
@@ -177,7 +176,7 @@ export default class Identity implements IIdentity {
    * @returns The [[PublicIdentity]], corresponding to the [[Identity]].
    * @example ```javascript
    * const mnemonic = Identity.generateMnemonic();
-   * const alice = await Kilt.Identity.buildFromMnemonic(mnemonic);
+   * const alice = Kilt.Identity.buildFromMnemonic(mnemonic);
    * alice.getPublicIdentity();
    * ```
    */
@@ -363,7 +362,7 @@ export default class Identity implements IIdentity {
    *
    * @param submittableExtrinsic - A chain transaction.
    * @param nonce - The nonce of the address operating the transaction.
-   * @returns The signed SubmittableExtrinsic.
+   * @returns The signed [[SubmittableExtrinsic]].
    * @example ```javascript
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const tx = await blockchain.api.tx.ctype.add(ctype.hash);

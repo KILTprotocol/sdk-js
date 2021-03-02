@@ -1,6 +1,7 @@
 /**
  * @packageDocumentation
  * @module BlockchchainUtils
+ * @typedef {SubscriptionPromise.Options} Options
  * @preferred
  */
 
@@ -59,10 +60,10 @@ export const EXTRINSIC_FAILED: SubscriptionPromise.ResultEvaluator = (result) =>
     ))
 
 /**
- * Parses potentially incomplete or undefined options and returns complete [[SubscriptionPromise.Options]].
+ * Parses potentially incomplete or undefined options and returns complete [[Options]].
  *
- * @param opts Potentially undefined or partial [[SubscriptionPromise.Options]] .
- * @returns Complete [[SubscriptionPromise.Options]], with potentially defaulted values.
+ * @param opts Potentially undefined or partial [[Options]] .
+ * @returns Complete [[Options]], with potentially defaulted values.
  */
 export function parseSubscriptionOptions(
   opts?: Partial<SubscriptionPromise.Options>
@@ -89,9 +90,9 @@ export function parseSubscriptionOptions(
  * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
  *
  * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
- * @param opts [[SubscriptionPromiseOptions]]: Criteria for resolving/rejecting the promise.
+ * @param opts [[SubscriptionPromise]]: Criteria for resolving/rejecting the promise.
  * @returns A promise which can be used to track transaction status.
- * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ * If resolved, this promise returns [[ISubmittableResult]] that has led to its resolution.
  */
 export async function submitSignedTxRaw(
   tx: SubmittableExtrinsic,
@@ -106,13 +107,13 @@ export async function submitSignedTxRaw(
 }
 
 /**
- * [ASYNC] Reroute to submitSignedTxRaw, this function matches the specific errors and returns the appropriate SDKErrors.
+ * [ASYNC] Reroute to [[submitSignedTxRaw]], this function matches the specific errors and returns the appropriate [[SDKErrors]].
  *
  *
  * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
- * @param opts [[SubscriptionPromiseOptions]]: Criteria for resolving/rejecting the promise.
+ * @param opts [[Options]]: Criteria for resolving/rejecting the promise.
  * @returns A promise which can be used to track transaction status.
- * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ * If resolved, this promise returns [[ISubmittableResult]] that has led to its resolution.
  */
 async function submitSignedTxErrorMatched(
   tx: SubmittableExtrinsic,
@@ -135,12 +136,12 @@ async function submitSignedTxErrorMatched(
   })
 }
 /**
- * [ASYNC] Uses submitSignedTxErrorMatched to reject with ERROR_TRANSACTION_RECOVERABLE if Tx can be re-signed.
+ * [ASYNC] Uses [[submitSignedTxErrorMatched]] to reject with [[ERROR_TRANSACTION_RECOVERABLE]] if the tx can be re-signed.
  *
  * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
- * @param opts [[SubscriptionPromiseOptions]]: Criteria for resolving/rejecting the promise.
+ * @param opts [[SubscriptionPromise]]: Criteria for resolving/rejecting the promise.
  * @returns A promise which can be used to track transaction status.
- * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ * If resolved, this promise returns [[ISubmittableResult]] that has led to its resolution.
  *
  */
 export async function submitSignedTx(
@@ -162,7 +163,7 @@ export async function submitSignedTx(
  * @param identity The [[Identity]] to re-sign the tx on recoverable error.
  * @param opts Optional partial criteria for resolving/rejecting the promise.
  * @returns A promise which can be used to track transaction status.
- * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ * If resolved, this promise returns [[ISubmittableResult]] that has led to its resolution.
  */
 export async function submitTxWithReSign(
   tx: SubmittableExtrinsic,

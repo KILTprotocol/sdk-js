@@ -45,7 +45,7 @@ export interface IRevocationHandle {
  * @param message The message result of the Claimer's attestation request in [[requestAttestation]].
  * @param claimer The [[PublicIdentity]] of the claimer. This is also the receiver of the returned message.
  * @throws [[ERROR_MESSAGE_TYPE]].
- * @returns The [[Attestation]] object which should be sent to the Claimer and
+ * @returns The [[Message]] object containing the [[Attestation]] which should be sent to the Claimer and
  * a handle which can be used to revoke the [[Attestation]] in [[revokeAttestation]].
  */
 export async function issueAttestation(
@@ -93,7 +93,7 @@ export async function issueAttestation(
 /**
  * [ASYNC] Revokes an [[Attestation]] created in [[issueAttestation]].
  *
- * @param attester The [[AttesterIdentity]] which signed the [[Attestation]] in [[issueAttestation]].
+ * @param attester The attester [[Identity]] which signed the [[Attestation]] in [[issueAttestation]].
  * @param revocationHandle A reference to the [[Attestation]] which was created in [[issueAttestation]].
  * @throws [[ERROR_UNAUTHORIZED]], [[ERROR_NOT_FOUND]].
  */

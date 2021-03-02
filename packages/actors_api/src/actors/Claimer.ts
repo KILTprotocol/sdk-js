@@ -25,7 +25,7 @@ import Credential from '../credential/Credential'
  * @param credentials The [[Credential]]s which should be verified.
  * @throws [[ERROR_PE_MISMATCH]], [[ERROR_MESSAGE_TYPE]], [[ERROR_PE_CREDENTIAL_MISSING]].
  * @returns A message which represents either an array of [[AttestedClaim]]s if privacy enhancement is not supported
- * or a CombinedPresentation. Both of these options can be verified.
+ * or a combined presentation. Both of these options can be verified.
  */
 export function createPresentation(
   identity: Identity,
@@ -65,14 +65,14 @@ export function createPresentation(
 }
 
 /**
- * The Claimer's [[Attestation]] session object which is returned in [[requestAttestation]] and required in [[buildCredential]].
+ * The Claimer's [[ClaimerAttestationSession]] session object which is returned in [[requestAttestation]] and required in [[buildCredential]].
  *
- * It includes all [[Claim]] data required for an [[Attestation]]: The [[Claim]], the Claimer's signature,
+ * It includes all [[Claim]] data required for an [[Attestation]]: the [[Claim]], the Claimer's signature,
  * the claimHashTree, the [[cTypeHash]], the unique identifier for the delegation,
  * an array of [[AttestedClaim]]s and the rootHash.
  *
  * In case of enabled privacy enhancement, both the Claimer's Attestation session
- * and the Attester's message from [[initiateAttestation]] are included as well.
+ * and the Attester's message from [[issueAttestation]] are included as well.
  * Both of these objects are required for privacy enhancement to prevent replay attacks.
  */
 export type ClaimerAttestationSession = {
@@ -80,7 +80,7 @@ export type ClaimerAttestationSession = {
 }
 
 /**
- * Creates an [[IRequestAttestationForClaim]] using the provided [[IInitiateAttestation]].
+ * Creates a [[Message]] containing the [[IRequestAttestationForClaim]] generated from the provided [[IClaim]].
  *
  * @param claim The [[Claim]] which should get attested.
  * @param identity The Claimer's [[Identity]] which owns the [[Claim]].
@@ -89,7 +89,7 @@ export type ClaimerAttestationSession = {
  * @param option.legitimations An Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to
  * include into the [[Attestation]] as legitimations.
  * @param option.delegationId The unique identifier of the desired delegation.
- * @returns An [[IRequestAttestationForClaim]] and a ClaimerAttestationSession which together with an [[ISubmitAttestationForClaim]]
+ * @returns A message containing an [[IRequestAttestationForClaim]] and a [[ClaimerAttestationSession]] which together with an [[ISubmitAttestationForClaim]]
  * object can be used to create a [[Credential]].
  */
 export function requestAttestation(
@@ -126,7 +126,7 @@ export function requestAttestation(
  * Builds a [[Credential]] which can be verified when used in [[createPresentation]].
  *
  * @param message The session object corresponding to the [[ISubmitAttestationForClaim]].
- * @param session The ClaimerAttestationSession which corresponds to the message and [[AttestedClaim]].
+ * @param session The [[ClaimerAttestationSession]] which corresponds to the message and [[AttestedClaim]].
  * @returns A signed and valid [[Credential]].
  */
 export function buildCredential(

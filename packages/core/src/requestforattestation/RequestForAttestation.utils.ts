@@ -20,9 +20,8 @@ import RequestForAttestation from './RequestForAttestation'
  *  Throws on invalid input.
  *
  * @param input - A potentially only partial [[IRequestForAttestation]].
- * @throws When either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type.
- * @throws When any of the input's claimHashTree's keys missing their hash.
- * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_MALFORMED]], [[ERROR_DELEGATION_ID_TYPE]].
+ * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]] or [[ERROR_DELEGATION_ID_TYPE]] when either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type, respectively.
+ * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any of the input's claimHashTree's keys missing their hash.
  *
  */
 export function errorCheck(input: IRequestForAttestation): void {
@@ -111,8 +110,7 @@ export function compress(
  *  Decompresses a [[RequestForAttestation]] from storage and/or message.
  *
  * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
- * @throws When reqForAtt is not an Array and it's length is not equal to the defined length of 8.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when reqForAtt is not an Array and it's length is not equal to the defined length of 8.
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */

@@ -175,13 +175,12 @@ export function verifyDisclosedAttributes(
 }
 
 /**
- *  Checks whether the input meets all the required criteria of an IClaim object.
+ *  Checks whether the input meets all the required criteria of an [[IClaim]] object.
  *  Throws on invalid input.
  *
  * @param input The potentially only partial IClaim.
- * @throws When input's cTypeHash do not exist.
- * @throws When any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
- * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_CONTENTS_MALFORMED]].
+ * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when input's cTypeHash do not exist.
+ * @throws [[ERROR_CLAIM_CONTENTS_MALFORMED]] when any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
  *
  */
 export function errorCheck(input: IClaim | PartialClaim): void {
@@ -236,8 +235,7 @@ export function compress(
  *  Decompresses the [[IClaim]] from storage and/or message.
  *
  * @param claim A [[CompressedClaim]] array that is reverted back into an object.
- * @throws When a [[CompressedClaim]] is not an Array or it's length is unequal 3.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when a [[CompressedClaim]] is not an Array or it's length is unequal 3.
  * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
  */
 export function decompress(claim: CompressedClaim): IClaim

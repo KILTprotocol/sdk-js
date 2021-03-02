@@ -66,9 +66,9 @@ export default class Blockchain implements IBlockchainApi {
   /**
    * [ASYNC] Signs the SubmittableExtrinsic with the given identity.
    *
-   * @param identity The [[Identity]] to sign the Tx with.
-   * @param tx The unsigned SubmittableExtrinsic.
-   * @returns Signed SubmittableExtrinsic.
+   * @param identity The [[Identity]] to sign the tx with.
+   * @param tx The unsigned [[SubmittableExtrinsic]].
+   * @returns Signed [[SubmittableExtrinsic]].
    *
    */
   public async signTx(
@@ -86,15 +86,15 @@ export default class Blockchain implements IBlockchainApi {
   /**
    * [ASYNC] Submits a signed [[SubmittableExtrinsic]] with exported function [[submitSignedTx]].
    * Handles recoverable errors if identity is provided by re-signing and re-sending the tx up to two times.
-   * Uses parseSubscriptionPromise to provide complete potentially defaulted options to the called submitSignedTx.
+   * Uses [[parseSubscriptionOptions]] to provide complete potentially defaulted options to the called [[submitSignedTx]].
    *
    * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
    *
    * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
-   * @param identity Optional [[Identity]] to potentially re-sign the Tx with.
+   * @param identity Optional [[Identity]] to potentially re-sign the tx with.
    * @param opts Optional partial criteria for resolving/rejecting the promise.
    * @returns A promise which can be used to track transaction status.
-   * If resolved, this promise returns the eventually resolved [[SubmittableResult]].
+   * If resolved, this promise returns the eventually resolved [[ISubmittableResult]].
    */
   public async submitTxWithReSign(
     tx: SubmittableExtrinsic,
@@ -115,12 +115,12 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   /**
-   * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
+   * [ASYNC] Signs and submits the [[SubmittableExtrinsic]] with optional resolution and rejection criteria.
    *
-   * @param identity The [[Identity]] that we sign and potentially re-sign the tx with.
+   * @param identity The [[Identity]] used to sign and potentially re-sign the tx.
    * @param tx The generated unsigned [[SubmittableExtrinsic]] to submit.
    * @param opts Partial optional criteria for resolving/rejecting the promise.
-   * @returns Promise result of The Extrinsic.
+   * @returns Promise result of executing the extrinsic, of type [[ISubmittableResult]].
    *
    */
   public async submitTx(
@@ -136,7 +136,7 @@ export default class Blockchain implements IBlockchainApi {
    * [ASYNC] Retrieves the Nonce for Transaction signing for the specified account and increments the in accountNonces mapped Index.
    *
    * @param accountAddress The address of the identity that we retrieve the nonce for.
-   * @returns [[BN]] representation of the Tx nonce for the identity.
+   * @returns {@link https://github.com/indutny/bn.js/ | BN} representation of the Tx nonce for the identity.
    *
    */
   public async getNonce(accountAddress: string): Promise<BN> {
@@ -163,7 +163,7 @@ export default class Blockchain implements IBlockchainApi {
    * [ASYNC] Re-signs the given [[SubmittableExtrinsic]] with an updated Nonce.
    *
    * @param identity The [[Identity]] to re-sign the Tx with.
-   * @param tx The previously with recoverable Error failed Tx.
+   * @param tx The tx with recoverable Error that failed.
    * @returns Original Tx, injected with signature payload with updated nonce.
    *
    */

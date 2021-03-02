@@ -36,8 +36,7 @@ export default class Message implements IMessage {
    * @param message The [[Message]] object which needs to be decrypted.
    * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
    * @param message.senderAddress The sender's public SS58 address of the [[Message]].
-   * @throws When the sender does not match the owner of the in the Message supplied Object.
-   * @throws [[SUBMIT_ATTESTATION_FOR_CLAIM]], [[SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC]], [[ERROR_IDENTITY_MISMATCH]].
+   * @throws [[ERROR_IDENTITY_MISMATCH]] when the sender does not match the owner of the content embedded in the message, e.g. a request for attestation or an attestation.
    *
    */
   public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
@@ -80,8 +79,7 @@ export default class Message implements IMessage {
    *
    * @param encrypted The encrypted [[Message]] object which needs to be decrypted.
    * @param senderAddress The sender's public SS58 address of the [[Message]].
-   * @throws When either the hash or the signature could not be verified against the calculations.
-   * @throws [[ERROR_NONCE_HASH_INVALID]].
+   * @throws [[ERROR_NONCE_HASH_INVALID]] when either the hash or the signature could not be verified against the calculations.
    *
    */
   public static ensureHashAndSignature(
@@ -112,9 +110,8 @@ export default class Message implements IMessage {
    *
    * @param encrypted The encrypted message.
    * @param receiver The [[Identity]] of the receiver.
-   * @throws When encrypted message couldn't be decrypted.
-   * @throws When the decoded message could not be parsed.
-   * @throws [[ERROR_DECODING_MESSAGE]], [[ERROR_PARSING_MESSAGE]].
+   * @throws [[ERROR_DECODING_MESSAGE]] when encrypted message couldn't be decrypted.
+   * @throws [[ERROR_PARSING_MESSAGE]] when the decoded message could not be parsed.
    * @returns The original [[Message]].
    */
   public static decrypt(

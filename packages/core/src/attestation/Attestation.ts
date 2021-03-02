@@ -46,9 +46,9 @@ export default class Attestation implements IAttestation {
    * @param claimHash - The hash of the claim that corresponds to the attestation to revoke.
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @param maxDepth - The number of levels to walk up the delegation hirarchy until the delegation node of identity is found.
-   * @returns A promise containing the SubmittableExtrinsic (submittable transaction).
+   * @returns A promise containing the [[SubmittableExtrinsic]] (submittable transaction).
    * @example ```javascript
-   * Attestation.revoke('0xd8024cdc147c4fa9221cd177').then(() => {
+   * Attestation.revoke('0xd8024cdc147c4fa9221cd177', attesterIdentity, 3).then(() => {
    *   // the attestation was successfully revoked
    * });
    * ```
@@ -83,7 +83,7 @@ export default class Attestation implements IAttestation {
    * @param attesterPublicIdentity - The attesters public identity, used to attest the underlying claim.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
-   * // create a complete new attestation from the RequestForAttestation and all other needed properties
+   * // create a complete new attestation from the `RequestForAttestation` and all other needed properties
    * Attestation.fromRequestAndPublicIdentity(request, attesterPublicIdentity);
    * ```
    */
@@ -169,7 +169,7 @@ export default class Attestation implements IAttestation {
    * @param identity - The identity used to store the attestation.
    * @returns A promise containing the SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * // Use [[store]] to store an attestation on chain, and to create an [[AttestedClaim]] upon success:
+   * // Use `store` to store an attestation on chain, and to create an `AttestedClaim` upon success:
    * attestation.store(attester).then(() => {
    *   // the attestation was successfully stored, so now we can for example create an AttestedClaim
    * });
@@ -184,9 +184,9 @@ export default class Attestation implements IAttestation {
    *
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @param maxDepth - The number of levels to walk up the delegation hirarchy until the delegation node of identity is found.
-   * @returns A promise containing the SubmittableExtrinsic (submittable transaction).
+   * @returns A promise containing the [[SubmittableExtrinsic]] (submittable transaction).
    * @example ```javascript
-   * attestation.revoke(identity).then(() => {
+   * attestation.revoke(identity, 3).then(() => {
    *   // the attestation was successfully revoked
    * });
    * ```
@@ -205,7 +205,7 @@ export default class Attestation implements IAttestation {
    * @param claimHash - The hash of the claim that corresponds to the attestation to check. Defaults to the claimHash for the attestation onto which "verify" is called.
    * @returns A promise containing whether the attestation is valid.
    * @example ```javascript
-   * attestation.verify().then((isVerified) => {
+   * Attestation.checkValidity(attestation).then((isVerified) => {
    *   // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```
@@ -239,7 +239,7 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * [STATIC] Builds an [[Attestation]] from the decompressed array.
+   * [STATIC] Builds an [[Attestation]] from the compressed array.
    *
    * @param attestation The [[CompressedAttestation]] that should get decompressed.
    * @returns A new [[Attestation]] object.
