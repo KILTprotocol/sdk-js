@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import Kilt from '@kiltprotocol/sdk-js'
 import type {
-  AttestedClaim,
   SubmittableExtrinsic,
   IRequestForAttestation,
   IRequestAttestationForClaim,
@@ -154,64 +153,63 @@ async function main(): Promise<void> {
     console.log(messageBack)
 
     /* After receiving the message, the Claimer just needs to save it and can use it later for verification: */
-    let myAttestedClaim: AttestedClaim
     if (
       messageBack.body.type ===
       Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM
     ) {
-      myAttestedClaim = Kilt.AttestedClaim.fromAttestedClaim({
+      const myAttestedClaim = Kilt.AttestedClaim.fromAttestedClaim({
         ...messageBack.body.content,
         request: requestForAttestation,
       })
-    }
 
-    /* 6. Verify a Claim */
+      /* 6. Verify a Claim */
 
-    /* As in the attestation, you need a second identity to act as the verifier: */
-    const verifierMnemonic = Kilt.Identity.generateMnemonic()
-    const verifier = Kilt.Identity.buildFromMnemonic(verifierMnemonic)
+      /* As in the attestation, you need a second identity to act as the verifier: */
+      const verifierMnemonic = Kilt.Identity.generateMnemonic()
+      const verifier = Kilt.Identity.buildFromMnemonic(verifierMnemonic)
 
-    /* 6.1. Request presentation for CTYPE */
-    const messageBodyForClaimer: IRequestClaimsForCTypes = {
-      type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-      content: { ctypes: [ctype.hash] },
-    }
-    const messageForClaimer = new Kilt.Message(
-      messageBodyForClaimer,
-      verifier,
-      claimer.getPublicIdentity()
-    )
+      /* 6.1. Request presentation for CTYPE */
+      const messageBodyForClaimer: IRequestClaimsForCTypes = {
+        type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        content: { ctypes: [ctype.hash] },
+      }
+      const messageForClaimer = new Kilt.Message(
+        messageBodyForClaimer,
+        verifier,
+        claimer.getPublicIdentity()
+      )
 
-    /* Now the claimer can send a message to verifier including the attested claim: */
-    console.log('Requested from verifier:', messageForClaimer.body.content)
+      /* Now the claimer can send a message to verifier including the attested claim: */
+      console.log('Requested from verifier:', messageForClaimer.body.content)
 
-    const copiedCredential = Kilt.AttestedClaim.fromAttestedClaim(
-      JSON.parse(JSON.stringify(myAttestedClaim))
-    )
-    copiedCredential.request.removeClaimProperties(['age'])
+      const copiedCredential = Kilt.AttestedClaim.fromAttestedClaim(
+        JSON.parse(JSON.stringify(myAttestedClaim))
+      )
+      copiedCredential.request.removeClaimProperties(['age'])
 
-    const messageBodyForVerifier: ISubmitClaimsForCTypes = {
-      content: [copiedCredential],
-      type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
-    }
-    const messageForVerifier = new Kilt.Message(
-      messageBodyForVerifier,
-      claimer,
-      verifier.getPublicIdentity()
-    )
+      const messageBodyForVerifier: ISubmitClaimsForCTypes = {
+        content: [copiedCredential],
+        type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      }
+      const messageForVerifier = new Kilt.Message(
+        messageBodyForVerifier,
+        claimer,
+        verifier.getPublicIdentity()
+      )
 
-    /* 6.2 Verify presentation */
-    /* When verifying the claimer's message, the verifier has to use their session which was created during the CTYPE request: */
-    if (
-      messageForVerifier.body.type ===
-      Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
-    ) {
-      const claims = messageForVerifier.body.content
-      const isValid = await Kilt.AttestedClaim.fromAttestedClaim(
-        claims[0]
-      ).verify()
-      console.log('Verifcation success?', isValid)
-      console.log('Attested claims from verifier perspective:\n', claims)
+      /* 6.2 Verify presentation */
+      /* When verifying the claimer's message, the verifier has to use their session which was created during the CTYPE request: */
+      if (
+        messageForVerifier.body.type ===
+        Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
+      ) {
+        const claims = messageForVerifier.body.content
+        const isValid = await Kilt.AttestedClaim.fromAttestedClaim(
+          claims[0]
+        ).verify()
+        console.log('Verifcation success?', isValid)
+        console.log('Attested claims from verifier perspective:\n', claims)
+      }
     }
   }
 }
