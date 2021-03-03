@@ -46,7 +46,7 @@ async function addDelegation(
   parentNode: DelegationRootNode | DelegationNode,
   delegator: Identity,
   delegee: Identity,
-  permissions: Permission[]
+  permissions: Permission[] = [Permission.ATTEST, Permission.DELEGATE]
 ): Promise<DelegationNode> {
   const rootId =
     parentNode instanceof DelegationRootNode ? parentNode.id : parentNode.rootId
@@ -88,9 +88,7 @@ beforeAll(async () => {
 
 it('should be possible to delegate attestation rights', async () => {
   const rootNode = await writeRoot(root, DriversLicense.hash)
-  const delegatedNode = await addDelegation(rootNode, root, attester, [
-    Permission.ATTEST,
-  ])
+  const delegatedNode = await addDelegation(rootNode, root, attester)
   await Promise.all([
     expect(rootNode.verify()).resolves.toBeTruthy(),
     expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -103,9 +101,7 @@ describe('and attestation rights have been delegated', () => {
 
   beforeAll(async () => {
     rootNode = await writeRoot(root, DriversLicense.hash)
-    delegatedNode = await addDelegation(rootNode, root, attester, [
-      Permission.ATTEST,
-    ])
+    delegatedNode = await addDelegation(rootNode, root, attester)
 
     await Promise.all([
       expect(rootNode.verify()).resolves.toBeTruthy(),
@@ -172,9 +168,10 @@ describe('revocation', () => {
     const delegationA = await addDelegation(
       delegationRoot,
       delegator,
-      firstDelegee,
-      [Permission.ATTEST]
+      firstDelegee
     )
+    console.log(JSON.stringify(delegationRoot, undefined, 2))
+    console.log(JSON.stringify(delegationA, undefined, 2))
     await expect(
       delegationA.revoke(delegator).then((tx) =>
         BlockchainUtils.submitTxWithReSign(tx, delegator, {
@@ -190,8 +187,7 @@ describe('revocation', () => {
     const delegationA = await addDelegation(
       delegationRoot,
       delegator,
-      firstDelegee,
-      [Permission.ATTEST]
+      firstDelegee
     )
     await expect(
       delegationRoot.revoke(firstDelegee).then((tx) =>
@@ -217,14 +213,12 @@ describe('revocation', () => {
     const delegationA = await addDelegation(
       delegationRoot,
       delegator,
-      firstDelegee,
-      [Permission.ATTEST, Permission.DELEGATE]
+      firstDelegee
     )
     const delegationB = await addDelegation(
       delegationA,
       firstDelegee,
-      secondDelegee,
-      [Permission.ATTEST]
+      secondDelegee
     )
     await expect(
       delegationRoot.revoke(delegator).then((tx) =>

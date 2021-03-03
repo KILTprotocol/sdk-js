@@ -109,7 +109,7 @@ export default abstract class DelegationBaseNode
    * Checks on chain whether a given identity is delegating to the current node.
    *
    * @param address The address of the identity.
-   * @returns An object containing a node owned by the identity if it is delegating, plus the number of steps traversed.
+   * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the address is owner of the current node.
    */
   public async isDelegating(
     address: Identity['address']
