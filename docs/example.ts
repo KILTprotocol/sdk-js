@@ -20,16 +20,18 @@ async function setup(): Promise<{
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' SETUP ')
   )
-  Kilt.config({ address: NODE_URL })
+  await Kilt.init({ address: NODE_URL })
 
   // ------------------------- Attester ----------------------------------------
 
   // To get an attestation, we need an Attester
-  // we can generate a new keypair, which will take about 20 minutes:
+  // we can generate a new keypair:
   // const attester = await Kilt.AttesterIdentity.buildFromMnemonic("...")
   // or we just use unsafe precalculated keys (just for demo purposes!):
   const attester = Kilt.Identity.buildFromMnemonic(
-    'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
+    'receive clutch item involve chaos clutch furnace arrest claw isolate okay together',
+    // using ed25519 bc this identity has test coins from the start on the development chain spec
+    { signingKeyPairType: 'ed25519' }
   )
   console.log(
     'Attester balance is:',
