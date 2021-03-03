@@ -111,7 +111,7 @@ export default abstract class DelegationBaseNode
    * @param address The address of the identity.
    * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the address is owner of the current node.
    */
-  public async isDelegating(
+  public async findAncestorOwnedBy(
     address: Identity['address']
   ): Promise<{ steps: number; node: DelegationBaseNode | null }> {
     if (this.account === address) {
@@ -122,7 +122,7 @@ export default abstract class DelegationBaseNode
     }
     const parent = await this.getParent()
     if (parent) {
-      const result = await parent.isDelegating(address)
+      const result = await parent.findAncestorOwnedBy(address)
       result.steps += 1
       return result
     }

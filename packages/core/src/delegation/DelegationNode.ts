@@ -158,7 +158,7 @@ export default class DelegationNode extends DelegationBaseNode
    * @returns Promise containing a SubmittableExtrinsic.
    */
   public async revoke(identity: Identity): Promise<SubmittableExtrinsic> {
-    const { steps, node } = await this.isDelegating(identity.address)
+    const { steps, node } = await this.findAncestorOwnedBy(identity.address)
     if (!node) {
       throw SDKErrors.ERROR_UNAUTHORIZED(
         `Identity with address ${identity.address} is not among the delegators and may not revoke this node`

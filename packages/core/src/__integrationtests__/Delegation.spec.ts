@@ -29,7 +29,10 @@ import {
   WS_ADDRESS,
 } from './utils'
 
-async function writeRoot(delegator: Identity, ctypeHash: ICType['hash']) {
+async function writeRoot(
+  delegator: Identity,
+  ctypeHash: ICType['hash']
+): Promise<DelegationRootNode> {
   const root = new DelegationRootNode(
     UUID.generate(),
     ctypeHash,
@@ -170,8 +173,6 @@ describe('revocation', () => {
       delegator,
       firstDelegee
     )
-    console.log(JSON.stringify(delegationRoot, undefined, 2))
-    console.log(JSON.stringify(delegationA, undefined, 2))
     await expect(
       delegationA.revoke(delegator).then((tx) =>
         BlockchainUtils.submitTxWithReSign(tx, delegator, {
