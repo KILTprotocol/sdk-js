@@ -265,7 +265,7 @@ describe('count depth', () => {
     await Promise.all(
       [0, 1, 5, 10, 75, 100, 300, 500, 999].map((i) =>
         expect(
-          nodes['0'].findParent(nodes[`${i}`].account)
+          nodes['0'].isDelegating(nodes[`${i}`].account)
         ).resolves.toMatchObject({ steps: i, node: nodes[`${i}`] })
       )
     )
@@ -274,33 +274,33 @@ describe('count depth', () => {
   it('counts various distances within the hierarchy', async () => {
     await Promise.all([
       expect(
-        nodes['10'].findParent(nodes['20'].account)
+        nodes['10'].isDelegating(nodes['20'].account)
       ).resolves.toMatchObject({ steps: 10, node: nodes['20'] }),
       expect(
-        nodes['250'].findParent(nodes['450'].account)
+        nodes['250'].isDelegating(nodes['450'].account)
       ).resolves.toMatchObject({ steps: 200, node: nodes['450'] }),
       expect(
-        nodes['800'].findParent(nodes['850'].account)
+        nodes['800'].isDelegating(nodes['850'].account)
       ).resolves.toMatchObject({ steps: 50, node: nodes['850'] }),
       expect(
-        nodes['5'].findParent(nodes['995'].account)
+        nodes['5'].isDelegating(nodes['995'].account)
       ).resolves.toMatchObject({ steps: 990, node: nodes['995'] }),
     ])
   })
 
   it('returns null if trying to count backwards', async () => {
     await Promise.all([
-      expect(nodes['10'].findParent(nodes['5'].account)).resolves.toMatchObject(
-        {
-          steps: 989,
-          node: null,
-        }
-      ),
       expect(
-        nodes['99'].findParent(nodes['95'].account)
+        nodes['10'].isDelegating(nodes['5'].account)
+      ).resolves.toMatchObject({
+        steps: 989,
+        node: null,
+      }),
+      expect(
+        nodes['99'].isDelegating(nodes['95'].account)
       ).resolves.toMatchObject({ steps: 900, node: null }),
       expect(
-        nodes['900'].findParent(nodes['500'].account)
+        nodes['900'].isDelegating(nodes['500'].account)
       ).resolves.toMatchObject({ steps: 99, node: null }),
     ])
   })
@@ -308,15 +308,15 @@ describe('count depth', () => {
   it('returns null if looking for non-existent account', async () => {
     const noOnesAddress = encodeAddress(Crypto.hash('-1', 256))
     await Promise.all([
-      expect(nodes['10'].findParent(noOnesAddress)).resolves.toMatchObject({
+      expect(nodes['10'].isDelegating(noOnesAddress)).resolves.toMatchObject({
         steps: 989,
         node: null,
       }),
-      expect(nodes['99'].findParent(noOnesAddress)).resolves.toMatchObject({
+      expect(nodes['99'].isDelegating(noOnesAddress)).resolves.toMatchObject({
         steps: 900,
         node: null,
       }),
-      expect(nodes['900'].findParent(noOnesAddress)).resolves.toMatchObject({
+      expect(nodes['900'].isDelegating(noOnesAddress)).resolves.toMatchObject({
         steps: 99,
         node: null,
       }),
