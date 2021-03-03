@@ -28,7 +28,11 @@ jest.mock('./DelegationRootNode.chain', () => ({
 }))
 
 const rootId = 'root'
-const identityAlice = Identity.buildFromURI('//Alice')
+let identityAlice: Identity
+
+beforeAll(() => {
+  identityAlice = Identity.buildFromURI('//Alice')
+})
 
 describe('Delegation', () => {
   it('delegation generate hash', () => {
@@ -119,12 +123,14 @@ describe('Delegation', () => {
 })
 
 describe('count subtree', () => {
-  const topNode = new DelegationNode('a1', rootId, identityAlice.address, [
-    Permission.ATTEST,
-    Permission.DELEGATE,
-  ])
+  let topNode: DelegationNode
 
   beforeAll(() => {
+    topNode = new DelegationNode('a1', rootId, identityAlice.address, [
+      Permission.ATTEST,
+      Permission.DELEGATE,
+    ])
+
     nodes = {
       b1: new DelegationNode(
         'b1',
