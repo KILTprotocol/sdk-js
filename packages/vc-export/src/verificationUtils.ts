@@ -12,6 +12,7 @@ import {
   KILT_ATTESTED_PROOF_TYPE,
   CredentialDigestProof,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
+  KeyTypesMap,
 } from './types'
 
 export interface VerificationResult {
@@ -62,9 +63,11 @@ export function verifySelfSignedProof(
       typeof verificationMethod === 'object' &&
       verificationMethod.publicKeyHex
     ) {
-      if (verificationMethod.type !== 'Ed25519VerificationKey2018')
+      if (!Object.values(KeyTypesMap).includes(verificationMethod.type))
         throw PROOF_MALFORMED_ERROR(
-          `signature type unknown; expected "Ed25519VerificationKey2018", got "${verificationMethod.type}"`
+          `signature type unknown; expected one of ${JSON.stringify(
+            Object.values(KeyTypesMap)
+          )}, got "${verificationMethod.type}"`
         )
       signerPubKey = verificationMethod.publicKeyHex
     } else {
@@ -74,7 +77,16 @@ export function verifySelfSignedProof(
     }
 
     // validate signature over root hash
-    if (!signatureVerify(credential.id, proof.signature, signerPubKey).isValid)
+    // signatureVerify can handle all required signature types out of the box
+    const verification = signatureVerify(
+      credential.id,
+      proof.signature,
+      signerPubKey
+    )
+    if (
+      !verification.isValid ||
+      KeyTypesMap[verification.crypto] !== verificationMethod.type
+    )
       throw new Error('signature could not be verified')
     return result
   } catch (e) {

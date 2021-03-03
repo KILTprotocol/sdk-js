@@ -10,7 +10,7 @@ import { Attestation } from '..'
 import { makeTransfer } from '../balance/Balance.chain'
 import Identity from '../identity'
 import { config, disconnect } from '../kilt'
-import { WS_ADDRESS } from './utils'
+import { wannabeAlice, WS_ADDRESS } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
@@ -18,7 +18,7 @@ let alice: Identity
 
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
-  alice = Identity.buildFromURI('//Alice')
+  alice = wannabeAlice
 })
 
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {

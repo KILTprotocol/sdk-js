@@ -9,7 +9,6 @@ import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import Attestation from '../attestation/Attestation'
 import { revoke } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-
 import { config, disconnect } from '../kilt'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
@@ -30,7 +29,7 @@ import '../../../../testingTools/jestErrorCodeMatcher'
 let alice: Identity
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
-  alice = Identity.buildFromURI('//Alice')
+  alice = wannabeAlice
 })
 
 describe('handling attestations that do not exist', () => {

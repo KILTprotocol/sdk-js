@@ -3,6 +3,7 @@ import { u8aToHex } from '@polkadot/util'
 import { AnyJson } from '@polkadot/types/types'
 import { Did, ClaimUtils } from '@kiltprotocol/core'
 import { IAttestedClaim, ICType } from '@kiltprotocol/types'
+import { signatureVerify } from '@polkadot/util-crypto'
 import {
   AttestedProof,
   CredentialDigestProof,
@@ -10,6 +11,7 @@ import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
   JSON_SCHEMA_TYPE,
+  KeyTypesMap,
   KILT_ATTESTED_PROOF_TYPE,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   KILT_SELF_SIGNED_PROOF_TYPE,
@@ -78,10 +80,19 @@ export function fromAttestedClaim(
   }
 
   // add self-signed proof
+  // infer key type
+  const keyType: string | undefined =
+    KeyTypesMap[signatureVerify('', claimerSignature, claim.owner).crypto]
+  if (!keyType)
+    throw new TypeError(
+      `Unknown signature type on credential.\nCurrently this handles ${JSON.stringify(
+        Object.keys(KeyTypesMap)
+      )}\nReceived: ${keyType}`
+    )
   const sSProof: SelfSignedProof = {
     type: KILT_SELF_SIGNED_PROOF_TYPE,
     verificationMethod: {
-      type: 'Ed25519VerificationKey2018',
+      type: keyType,
       publicKeyHex: u8aToHex(decodeAddress(claim.owner)),
     },
     signature: claimerSignature,

@@ -4,7 +4,7 @@
  * @ignore
  */
 
-import { ICType, Permission } from '@kiltprotocol/types'
+import { Permission, ICType } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { AttestedClaim, Identity } from '..'
