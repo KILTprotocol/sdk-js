@@ -181,7 +181,7 @@ await Kilt.BlockchainUtils.submitSignedTx(tx, {
 
 Please note that the **same CTYPE can only be stored once** on the blockchain.
 
-At the end of the process, the `CType` object should match the Ctype below.
+At the end of the process, the `CType` object should match the CType below.
 This can be saved anywhere, for example on a CTYPE registry service:
 
 ```typescript
@@ -464,10 +464,11 @@ Message {
 After receiving the message, the Claimer just needs to save it and can use it later for verification:
 
 ```typescript
+let myAttestedClaim: AttestedClaim
 if (
   messageBack.body.type === Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM
 ) {
-  const myAttestedClaim = Kilt.AttestedClaim.fromAttestedClaim({
+  myAttestedClaim = Kilt.AttestedClaim.fromAttestedClaim({
     ...messageBack.body.content,
     request: requestForAttestation,
   })
@@ -484,32 +485,35 @@ const verifier = Kilt.Identity.buildFromMnemonic(verifierMnemonic)
 ```
 
 Before a claimer sends any data to a verifier, the verifier needs to initiate the verification process by requesting a presentation for a specific CTYPE.
-Therefore, the verifier knows which properties are included in the attested claim and can request to see any combination of these publicly (including all of them or none).
+Therefore, the verifier knows which properties are included in the attested claim.
+A claimer can also hide selected properties from their credential.
 This is an **important feature for the privacy of a claimer** as this enables them to only show necessary properties for a specific verification.
-
-When requesting a CTYPE, a **session** object for the verifier is automatically generated.
-It prevents replay attacks and will be needed when verifying the attested claim.
-Therefore, this session has to be stored by the verifier.
-
-_Note_ that it is possible to verify multiple claims in one verification session.
 
 ### 6.1. Request presentation for CTYPE
 
 ```typescript
-const { session: verifierSession } = Kilt.Actors.Verifier.newRequestBuilder()
-  .requestPresentationForCtype({
-    ctypeHash: ctype.hash,
-    requestUpdatedAfter: new Date(), // request accumulator newer than NOW or the latest available
-    properties: ['age', 'name'], // publicly shown to the verifier
-  })
-  .finalize(verifier, claimer.getPublicIdentity())
+const messageBodyForClaimer: IRequestClaimsForCTypes = {
+  type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
+  content: { ctypes: [ctype.hash] },
+}
+const messageForClaimer = new Kilt.Message(
+  messageBodyForClaimer,
+  verifier,
+  claimer.getPublicIdentity()
+)
 ```
 
-Now the claimer can send a message to the verifier including the attested claim:
+Now the claimer can send a message to the verifier including the attested claim.
+They may choose to create a copy and remove selected properties from it:
 
 ```typescript
+const copiedCredential = Kilt.AttestedClaim.fromAttestedClaim(
+  JSON.parse(JSON.stringify(myAttestedClaim))
+)
+copiedCredential.request.removeClaimProperties(['age'])
+
 const messageBodyForVerifier: ISubmitClaimsForCTypes = {
-  content: [myAttestedClaim],
+  content: [copiedCredential],
   type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
 }
 const messageForVerifier = new Kilt.Message(
@@ -525,13 +529,15 @@ When verifying the claimer's message, the verifier has to use their session whic
 The result will be a boolean and the attested claim(s) which either are copies of the attested claim(s) the claimer sent OR they only show requested properties in case of privacy enhancement.
 
 ```typescript
-const {
-  verified: isValid, // whether the presented attested claim(s) are valid
-  claims, // the attested claims (potentially only with requested properties)
-} = await Kilt.Actors.Verifier.verifyPresentation(
-  messageForVerifier,
-  verifierSession
-)
+if (
+  messageForVerifier.body.type ===
+  Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
+) {
+  const claims = messageForVerifier.body.content
+  const isValid = await Kilt.AttestedClaim.fromAttestedClaim(claims[0]).verify()
+  console.log('Verifcation success?', isValid)
+  console.log('Attested claims from verifier perspective:\n', claims)
+}
 ```
 
 ## 7. Disconnect from chain
