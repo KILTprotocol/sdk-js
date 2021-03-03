@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/core",
-  "version": "0.19.1-30",
+  "version": "0.19.1-34",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
@@ -30,6 +30,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
+    "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",

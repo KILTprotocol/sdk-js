@@ -5,8 +5,8 @@
  */
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { SubmittableResult } from '@polkadot/api'
 import { Tuple } from '@polkadot/types'
+import type { ISubmittableResult } from '@kiltprotocol/types'
 import { ErrorHandler, PalletIndex } from '.'
 import { ExtrinsicError, ExtrinsicErrors } from './ExtrinsicError'
 
@@ -26,7 +26,7 @@ describe('ErrorHandler', () => {
         },
       },
     }
-    const submittableResult: SubmittableResult = {
+    const submittableResult: ISubmittableResult = {
       // @ts-ignore
       events: [evtRecord],
     }
@@ -49,7 +49,7 @@ describe('ErrorHandler', () => {
         },
       },
     }
-    const submittableResult: SubmittableResult = {
+    const submittableResult: ISubmittableResult = {
       // @ts-ignore
       events: [evtRecord],
     }
@@ -81,7 +81,7 @@ describe('ErrorHandler', () => {
         data: [errorCode],
       },
     }
-    const submittableResult: SubmittableResult = {
+    const submittableResult: ISubmittableResult = {
       // @ts-ignore
       events: [errorEventRecord],
     }

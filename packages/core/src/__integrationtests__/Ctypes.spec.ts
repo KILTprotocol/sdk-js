@@ -5,11 +5,10 @@
  */
 
 import { ICType } from '@kiltprotocol/types'
+import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import { Identity } from '..'
-import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
-import { ExtrinsicErrors } from '../errorhandling/ExtrinsicError'
 import { config, disconnect } from '../kilt'
 import { wannabeFaucet, WS_ADDRESS } from './utils'
 
@@ -45,8 +44,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
     await expect(
       ctype.store(bobbyBroke).then((tx) =>
-        submitTxWithReSign(tx, bobbyBroke, {
-          resolveOn: IS_IN_BLOCK,
+        BlockchainUtils.submitTxWithReSign(tx, bobbyBroke, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
     ).rejects.toThrowError()
@@ -56,8 +55,8 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
     await ctype.store(ctypeCreator).then((tx) =>
-      submitTxWithReSign(tx, ctypeCreator, {
-        resolveOn: IS_IN_BLOCK,
+      BlockchainUtils.submitTxWithReSign(tx, ctypeCreator, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     )
     await Promise.all([
@@ -71,14 +70,14 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
     await ctype.store(ctypeCreator).then((tx) =>
-      submitTxWithReSign(tx, ctypeCreator, {
-        resolveOn: IS_IN_BLOCK,
+      BlockchainUtils.submitTxWithReSign(tx, ctypeCreator, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     )
     await expect(
       ctype.store(ctypeCreator).then((tx) =>
-        submitTxWithReSign(tx, ctypeCreator, {
-          resolveOn: IS_IN_BLOCK,
+        BlockchainUtils.submitTxWithReSign(tx, ctypeCreator, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       )
     ).rejects.toThrowErrorWithCode(

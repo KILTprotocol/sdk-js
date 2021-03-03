@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/sdk-js",
-  "version": "0.19.1-30",
+  "version": "0.19.1-34",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@kiltprotocol/actors-api": "workspace:*",
+    "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/messaging": "workspace:*",
     "@kiltprotocol/types": "workspace:*"

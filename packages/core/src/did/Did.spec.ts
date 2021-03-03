@@ -6,25 +6,31 @@
 
 import { U8aFixed } from '@polkadot/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Did, IDid } from '..'
-import { BlockchainUtils } from '../blockchain'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
-} from '../blockchainApiConnection/__mocks__/BlockchainQuery'
+} from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { Did, IDid } from '..'
 import Identity from '../identity/Identity'
 import {
   getIdentifierFromAddress,
   verifyDidDocumentSignature,
 } from './Did.utils'
+import Kilt from '../kilt/Kilt'
 
-jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+jest.mock(
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
+)
 
 describe('DID', () => {
   const key1 = new U8aFixed(TYPE_REGISTRY, 'box-me', 256)
   const key2 = new U8aFixed(TYPE_REGISTRY, 'sign-me', 256)
+  Kilt.config({ address: 'ws://testString' })
+  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
+    .__mocked_api
 
-  require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs.mockImplementation(
-    async (address: string) => {
+  beforeAll(() => {
+    blockchainApi.query.did.dIDs.mockImplementation(async (address: string) => {
       if (address === 'withDocumentStore') {
         return mockChainQueryReturn('did', 'dIDs', [
           key2,
@@ -33,10 +39,17 @@ describe('DID', () => {
         ])
       }
       return mockChainQueryReturn('did', 'dIDs', [key1, key2, null])
-    }
-  )
+    })
+  })
 
   it('query by address with documentStore', async () => {
+    blockchainApi.query.did.dIDs.mockReturnValueOnce(
+      mockChainQueryReturn('did', 'dIDs', [
+        key2,
+        key1,
+        '0x687474703a2f2f6d794449442e6b696c742e696f',
+      ])
+    )
     const did = await Did.queryByAddress('withDocumentStore')
     expect(did).toEqual({
       identifier: 'did:kilt:withDocumentStore',

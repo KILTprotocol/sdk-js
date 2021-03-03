@@ -5,14 +5,17 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import { Evaluator, makeSubscriptionPromise } from './SubscriptionPromise'
+import { SubscriptionPromise } from '@kiltprotocol/types'
+import { makeSubscriptionPromise } from './SubscriptionPromise'
 
 const RESOLVE = 'resolve'
 const REJECT = 'reject'
 
-const RESOLVE_ON: Evaluator<string> = (value) => value === RESOLVE
+const RESOLVE_ON: SubscriptionPromise.Evaluator<string> = (value) =>
+  value === RESOLVE
 
-const REJECT_ON: Evaluator<string> = (value) => value === REJECT && 'error'
+const REJECT_ON: SubscriptionPromise.Evaluator<string> = (value) =>
+  value === REJECT && 'error'
 
 it('rejects promise on timeout', async () => {
   const { promise, subscription } = makeSubscriptionPromise({

@@ -14,8 +14,10 @@
  * @preferred
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { IDelegationBaseNode } from '@kiltprotocol/types'
+import type {
+  IDelegationBaseNode,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import Attestation from '../attestation/Attestation'
 import { query } from '../attestation/Attestation.chain'
 import Identity from '../identity/Identity'

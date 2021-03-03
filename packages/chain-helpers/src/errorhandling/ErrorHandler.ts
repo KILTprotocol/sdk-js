@@ -5,8 +5,8 @@
  * @ignore
  */
 
-import { SubmittableResult } from '@polkadot/api'
 import { EventRecord } from '@polkadot/types/interfaces'
+import type { ISubmittableResult } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { errorForPallet, ExtrinsicError } from './ExtrinsicError'
 
@@ -29,7 +29,7 @@ const ERROR_MODULE_NAME = 'system'
  * @param extrinsicResult The result of a submission.
  * @returns Whether the extrinsic submission failed.
  */
-export function extrinsicFailed(extrinsicResult: SubmittableResult): boolean {
+export function extrinsicFailed(extrinsicResult: ISubmittableResult): boolean {
   const events: EventRecord[] = extrinsicResult.events || []
   return events.some((eventRecord: EventRecord) => {
     return (
@@ -47,7 +47,7 @@ export function extrinsicFailed(extrinsicResult: SubmittableResult): boolean {
  * @returns Whether the extrinsic submission succeeded.
  */
 export function extrinsicSuccessful(
-  extrinsicResult: SubmittableResult
+  extrinsicResult: ISubmittableResult
 ): boolean {
   const events: EventRecord[] = extrinsicResult.events || []
   return events.some((eventRecord: EventRecord) => {
@@ -65,7 +65,7 @@ export function extrinsicSuccessful(
  * @returns The extrinsic error.
  */
 export function getExtrinsicError(
-  extrinsicResult: SubmittableResult
+  extrinsicResult: ISubmittableResult
 ): ExtrinsicError | null {
   const events: EventRecord[] = extrinsicResult.events || []
 

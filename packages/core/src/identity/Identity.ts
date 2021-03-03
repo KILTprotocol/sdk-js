@@ -13,33 +13,35 @@
  * @preferred
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Keyring } from '@polkadot/keyring'
-import { KeyringPair } from '@polkadot/keyring/types'
-import { Index } from '@polkadot/types/interfaces'
+import type { KeyringPair } from '@polkadot/keyring/types'
+import type { Index } from '@polkadot/types/interfaces'
+import type { KeypairType } from '@polkadot/util-crypto/types'
 import {
   cryptoIsReady,
   cryptoWaitReady,
   mnemonicToMiniSecret,
 } from '@polkadot/util-crypto'
-import { mnemonicGenerate as generate } from '@polkadot/util-crypto/mnemonic/generate'
-import { mnemonicValidate as validate } from '@polkadot/util-crypto/mnemonic/validate'
+import {
+  mnemonicGenerate as generate,
+  mnemonicValidate as validate,
+} from '@polkadot/util-crypto/mnemonic'
 import { hexToU8a } from '@polkadot/util/hex'
 import * as u8aUtil from '@polkadot/util/u8a'
-import BN from 'bn.js'
+import type BN from 'bn.js'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
-import nacl, { BoxKeyPair } from 'tweetnacl'
+import nacl from 'tweetnacl'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { KeypairType } from '@polkadot/util-crypto/types'
+import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
 import PublicIdentity from './PublicIdentity'
 
 type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
   | Identity['boxKeyPair']['publicKey']
 
-export default class Identity {
+export default class Identity implements IIdentity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
 
   /**
@@ -192,7 +194,7 @@ export default class Identity {
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
   public readonly signKeyringPair: KeyringPair
-  public readonly boxKeyPair: BoxKeyPair
+  public readonly boxKeyPair: nacl.BoxKeyPair
   public serviceAddress?: string
 
   protected constructor(seed: Uint8Array, signKeyringPair: KeyringPair) {

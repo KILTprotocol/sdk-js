@@ -3,10 +3,12 @@
  * @ignore
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Option } from '@polkadot/types'
-import { IDelegationRootNode } from '@kiltprotocol/types'
-import { getCached } from '../blockchainApiConnection'
+import type {
+  IDelegationRootNode,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'
 import {
   decodeRootDelegation,
@@ -19,7 +21,7 @@ export async function store(
   delegation: IDelegationRootNode,
   identity: Identity
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.createRoot(
     delegation.id,
     delegation.cTypeHash
@@ -30,7 +32,7 @@ export async function store(
 export async function query(
   delegationId: IDelegationRootNode['id']
 ): Promise<DelegationRootNode | null> {
-  const blockchain = await getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const decoded: RootDelegationRecord | null = decodeRootDelegation(
     await blockchain.api.query.delegation.root<Option<IChainDelegationRoot>>(
       delegationId
@@ -52,7 +54,7 @@ export async function revoke(
   delegation: IDelegationRootNode,
   identity: Identity
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.revokeRoot(
     delegation.id
   )

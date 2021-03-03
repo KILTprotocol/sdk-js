@@ -5,24 +5,27 @@
  */
 
 import { Permission } from '@kiltprotocol/types'
-import { BlockchainUtils } from '../blockchain'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
-} from '../blockchainApiConnection/__mocks__/BlockchainQuery'
+} from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers/'
 import Identity from '../identity/Identity'
 import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
+import Kilt from '../kilt/Kilt'
 
-jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+jest.mock(
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
+)
 
 let identityAlice: Identity
-
+Kilt.config({ address: 'ws://testString' })
 beforeAll(async () => {
   identityAlice = Identity.buildFromURI('//Alice')
 })
 
 describe('Delegation', () => {
-  const api = require('../blockchainApiConnection/BlockchainApiConnection')
+  const api = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
   it('delegation generate hash', () => {
     const node = new DelegationNode(
@@ -105,7 +108,7 @@ describe('Delegation', () => {
   })
 
   it('get delegation root', async () => {
-    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
+    require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
       mockChainQueryReturn('delegation', 'root', [
         '0x1234000000000000000000000000000000000000000000000000000000000000',
         identityAlice.address,

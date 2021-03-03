@@ -1,13 +1,4 @@
-import {
-  Bytes,
-  Option,
-  Tuple,
-  TypeRegistry,
-  U8aFixed,
-  U64,
-  Vec,
-  U8,
-} from '@polkadot/types'
+import { Option, TypeRegistry, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
 import { Codec } from '@polkadot/types/types'
 import { Constructor } from '@polkadot/util/types'
 import { CUSTOM_TYPES } from '../BlockchainApiConnection'
@@ -63,11 +54,7 @@ const chainQueryReturnTuples: {
   },
   did: {
     // DID: account-id -> (public-signing-key, public-encryption-key, did-reference?)?
-    dIDs: Tuple.with([
-      TYPE_REGISTRY.getOrUnknown('PublicSigningKey'),
-      TYPE_REGISTRY.getOrUnknown('PublicBoxKey'),
-      Option.with(Bytes),
-    ]),
+    dIDs: TYPE_REGISTRY.getOrUnknown('DidRecord'),
   },
   portablegabi: {
     // AccumulatorList: account-id -> [accumulators]?
