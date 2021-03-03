@@ -15,7 +15,18 @@ import * as ChainHelpers from '@kiltprotocol/chain-helpers'
 
 export * from '@kiltprotocol/types'
 export * from '@kiltprotocol/core'
-export { Actors }
+export {
+  Message,
+  Messaging,
+  Actors,
+  Credential,
+  Claimer,
+  Attester,
+  Verifier,
+  BlockchainUtils,
+  SubscriptionPromise,
+  ChainHelpers,
+}
 
 export default {
   ...core,
