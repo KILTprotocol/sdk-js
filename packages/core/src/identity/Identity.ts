@@ -42,11 +42,21 @@ type BoxPublicKey =
 export default class Identity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
 
-  public static async waitReady(): Promise<boolean> {
+  /**
+   * [STATIC][ASYNC] Wait for intialization of cryptography modules. Identity creation will error for some key types if this is not called at least once beforehand.
+   *
+   * @returns A promise which resolves once crypto modules are initialized.
+   */
+  public static cryptoWaitReady(): Promise<boolean> {
     return cryptoWaitReady()
   }
 
-  public static get ready(): boolean {
+  /**
+   * [STATIC] Indicates (synchronously) whether crypto modules have been initialized. This will rarely be needed; prefer awaiting the resolution of cryptoWaitReady() instead.
+   *
+   * @returns A boolean indicating whether crypto modules have been initialized.
+   */
+  public static get cryptoIsReady(): boolean {
     return cryptoIsReady()
   }
 

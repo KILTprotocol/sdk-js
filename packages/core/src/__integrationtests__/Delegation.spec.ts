@@ -4,7 +4,6 @@
  * @ignore
  */
 
-import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { Permission } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 import { AttestedClaim, Identity } from '..'
@@ -40,7 +39,6 @@ describe('when there is an account hierarchy', () => {
   let attester: Identity
 
   beforeAll(async () => {
-    await cryptoWaitReady()
     uncleSam = wannabeFaucet
     claimer = wannabeBob
     attester = wannabeAlice

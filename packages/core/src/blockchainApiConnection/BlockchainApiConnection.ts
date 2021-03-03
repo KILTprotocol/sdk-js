@@ -11,7 +11,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { RegistryTypes } from '@polkadot/types/types'
 import { ConfigService } from '@kiltprotocol/config'
-import { cryptoWaitReady } from '@polkadot/util-crypto'
 import Blockchain from '../blockchain/Blockchain'
 
 let instance: Promise<Blockchain> | null
@@ -57,7 +56,6 @@ export async function buildConnection(
     provider,
     types: CUSTOM_TYPES,
   })
-  await cryptoWaitReady()
   return new Blockchain(api)
 }
 

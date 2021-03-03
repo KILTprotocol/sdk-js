@@ -10,9 +10,9 @@
  */
 
 import { ConfigService } from '@kiltprotocol/config'
-import { cryptoWaitReady } from '@polkadot/util-crypto'
 import Blockchain from '../blockchain/Blockchain'
 import { clearCache, getCached } from '../blockchainApiConnection'
+import { Identity } from '../identity'
 
 export function connect(
   host: string = ConfigService.get('address')
@@ -44,7 +44,7 @@ export async function init<K extends Partial<ConfigService.configOpts>>(
   configs?: K
 ): Promise<void> {
   config(configs || {})
-  await cryptoWaitReady()
+  await Identity.cryptoWaitReady()
 }
 
 export default {
