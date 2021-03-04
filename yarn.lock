@@ -6948,6 +6948,7 @@ fsevents@^2.1.2:
     ts-jest: ^26.1.4
     ts-node: ^9.1.1
     typedoc: ^0.19
+    typedoc-plugin-external-module-name: ^4.0.6
     typescript: ^3.9.7
   languageName: unknown
   linkType: soft
@@ -8063,6 +8064,18 @@ fsevents@^2.1.2:
   peerDependencies:
     typedoc: ">=0.7.0 <0.18.0"
   checksum: 59673082ac8fb721818cd4b614dd4de3baaed80d47cdfc44a8082cb2ff8b4bede9c57f5a35ac1d20e5650359b840fb757d891122bc5bf9b8298071504f7740d3
+  languageName: node
+  linkType: hard
+
+"typedoc-plugin-external-module-name@npm:^4.0.6":
+  version: 4.0.6
+  resolution: "typedoc-plugin-external-module-name@npm:4.0.6"
+  dependencies:
+    lodash: ^4.1.2
+    semver: ^7.1.1
+  peerDependencies:
+    typedoc: ">=0.7.0 <0.20.0"
+  checksum: 2b23280c1e362e81cbc54193855c3c59c0d129f51346e6f37749d894247ecd057e4a00fb554f18a340fb9d0a8be1a23009316a5ee74ff58e6fa1b56b9a0e13e9
   languageName: node
   linkType: hard
 

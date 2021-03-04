@@ -55,6 +55,7 @@
     "ts-jest": "^26.1.4",
     "ts-node": "^9.1.1",
     "typedoc": "^0.19",
+    "typedoc-plugin-external-module-name": "^4.0.6",
     "typescript": "^3.9.7"
   },
   "version": "0.19.1-33"
