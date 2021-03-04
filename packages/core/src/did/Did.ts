@@ -8,7 +8,6 @@
  *
  * @packageDocumentation
  * @module DID
- * @preferred
  */
 
 import { AnyJson } from '@polkadot/types/types'

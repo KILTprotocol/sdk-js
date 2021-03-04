@@ -3,7 +3,6 @@
  *
  * @packageDocumentation
  * @module ExtrinsicErrors
- * @preferred
  */
 
 import { ModuleError } from './ErrorHandler'

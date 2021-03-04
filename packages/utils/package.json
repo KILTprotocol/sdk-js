@@ -10,8 +10,7 @@
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
-    "build:ts": "tsc --declaration -p tsconfig.build.json && cp -f ./src/jsonabc.d.ts ./lib/jsonabc.d.ts",
-    "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll"
+    "build:ts": "tsc --declaration -p tsconfig.build.json && cp -f ./src/jsonabc.d.ts ./lib/jsonabc.d.ts"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {

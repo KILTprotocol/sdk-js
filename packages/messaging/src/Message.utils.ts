@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @module MessageUtils
+ */
+
 import {
   AttestationUtils,
   AttestedClaimUtils,

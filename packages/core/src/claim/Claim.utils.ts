@@ -1,7 +1,6 @@
 /**
  * @packageDocumentation
  * @module ClaimUtils
- * @preferred
  */
 
 import { hexToBn } from '@polkadot/util'

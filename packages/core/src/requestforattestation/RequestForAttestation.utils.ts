@@ -1,7 +1,6 @@
 /**
  * @packageDocumentation
  * @module RequestForAttestationUtils
- * @preferred
  */
 
 import {

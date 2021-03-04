@@ -2,7 +2,6 @@
  * @packageDocumentation
  * @module BlockchchainUtils
  * @typedef {SubscriptionPromise.Options} Options
- * @preferred
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -136,7 +135,7 @@ async function submitSignedTxErrorMatched(
   })
 }
 /**
- * [ASYNC] Uses [[submitSignedTxErrorMatched]] to reject with [[ERROR_TRANSACTION_RECOVERABLE]] if the tx can be re-signed.
+ * [ASYNC] Rejects a tx that can be re-signed with  an [[ERROR_TRANSACTION_RECOVERABLE]].
  *
  * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
  * @param opts [[SubscriptionPromise]]: Criteria for resolving/rejecting the promise.

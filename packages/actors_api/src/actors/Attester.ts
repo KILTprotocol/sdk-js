@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @module Attester
+ */
+
 import {
   Attestation,
   PublicIdentity,

@@ -8,7 +8,6 @@
  *
  * @packageDocumentation
  * @module Credential
- * @preferred
  */
 
 import { AttestedClaim } from '@kiltprotocol/core'

@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/util
- * @ignore
- */
-
 import { SDKErrors } from '@kiltprotocol/utils'
 import { SubscriptionPromise } from '@kiltprotocol/types'
 import { makeSubscriptionPromise } from './SubscriptionPromise'

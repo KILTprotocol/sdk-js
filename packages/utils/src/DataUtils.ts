@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 /**
+ * @packageDocumentation
  * @module DataUtils
  */
 

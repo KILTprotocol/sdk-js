@@ -9,7 +9,6 @@
  *
  * @packageDocumentation
  * @module Claim
- * @preferred
  */
 
 import {

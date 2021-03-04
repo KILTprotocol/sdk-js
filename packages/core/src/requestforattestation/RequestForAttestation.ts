@@ -8,7 +8,6 @@
  *
  * @packageDocumentation
  * @module RequestForAttestation
- * @preferred
  */
 
 import {

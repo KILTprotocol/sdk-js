@@ -5,7 +5,6 @@
  *
  * @packageDocumentation
  * @module Blockchain
- * @preferred
  */
 
 import { ApiPromise } from '@polkadot/api'

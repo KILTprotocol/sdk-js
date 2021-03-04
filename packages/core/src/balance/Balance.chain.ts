@@ -6,7 +6,6 @@
  *
  * @packageDocumentation
  * @module Balance
- * @preferred
  */
 
 import { UnsubscribePromise } from '@polkadot/api/types'

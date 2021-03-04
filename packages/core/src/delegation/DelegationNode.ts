@@ -5,7 +5,6 @@
  *
  * @packageDocumentation
  * @module DelegationNode
- * @preferred
  */
 
 import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'

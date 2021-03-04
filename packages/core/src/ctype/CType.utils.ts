@@ -1,7 +1,6 @@
 /**
  * @packageDocumentation
  * @module CTypeUtils
- * @preferred
  */
 
 import Ajv from 'ajv'

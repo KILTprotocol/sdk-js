@@ -1,7 +1,6 @@
 /**
  * @packageDocumentation
  * @module CTypeMetadata
- * @preferred
  */
 
 import { ICTypeMetadata } from '@kiltprotocol/types'

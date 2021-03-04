@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/credential
- * @ignore
- */
-
 import {
   Attestation,
   Claim,

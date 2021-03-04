@@ -1,7 +1,6 @@
 /**
  * @packageDocumentation
  * @module QuoteUtils
- * @preferred
  */
 
 import {

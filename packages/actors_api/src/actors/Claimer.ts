@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @module Claimer
+ */
+
 import {
   AttestedClaim,
   Identity,

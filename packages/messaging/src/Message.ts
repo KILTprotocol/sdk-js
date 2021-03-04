@@ -8,7 +8,6 @@
  *
  * @packageDocumentation
  * @module Messaging
- * @preferred
  */
 
 import { Identity } from '@kiltprotocol/core'

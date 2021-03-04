@@ -1,7 +1,6 @@
 /**
  * @packageDocumentation
  * @module AttestedClaimUtils
- * @preferred
  */
 
 import { IAttestedClaim, CompressedAttestedClaim } from '@kiltprotocol/types'

@@ -7,7 +7,6 @@
  *
  * @packageDocumentation
  * @module Quote
- * @preferred
  */
 
 import Ajv from 'ajv'

@@ -1,10 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/blockchain
- * @ignore
- */
-
-/* eslint-disable dot-notation */
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Text } from '@polkadot/types'
 import { SignerPayload } from '@polkadot/types/interfaces/types'

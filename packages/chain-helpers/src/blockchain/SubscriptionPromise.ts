@@ -1,3 +1,8 @@
+/**
+  * @packageDocumentation
+  * @module SubscriptionPromise
+  */
+
 import type { SubscriptionPromise } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 

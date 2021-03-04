@@ -1,7 +1,6 @@
 /**
  * @packageDocumentation
  * @module AttestationUtils
- * @preferred
  */
 
 import { IAttestation, CompressedAttestation } from '@kiltprotocol/types'

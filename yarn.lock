@@ -854,8 +854,6 @@ __metadata:
     rimraf: ^3.0.2
     tslib: ^2.0.0
     tweetnacl: ^1.0.3
-    typedoc: ^0.17.8
-    typedoc-plugin-external-module-name: 3.1.0
     typescript: ^3.9.7
     typescript-logging: ^0.6.4
   languageName: unknown
@@ -4001,7 +3999,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"highlight.js@npm:^10.0.0, highlight.js@npm:^10.2.0":
+"highlight.js@npm:^10.2.0":
   version: 10.6.0
   resolution: "highlight.js@npm:10.6.0"
   checksum: ffe7a217915e6d4ea4545c5006df3b9d7de981eb0a9ddee77b57ab4d450b25e5d1bf7d5c2ea3b0696bd43f3fef12237507b17c082725a5a057be064a3f2582b0
@@ -5477,7 +5475,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"lunr@npm:^2.3.8, lunr@npm:^2.3.9":
+"lunr@npm:^2.3.9":
   version: 2.3.9
   resolution: "lunr@npm:2.3.9"
   checksum: a2b66320c2f6632322b91c43621eed9e623c0f1b81e7c2d74c238884a02229698baa4478bd238e9b32d7abf0db5ae9233b311c28e1edbcc481774e1ce83bec6f
@@ -5543,15 +5541,6 @@ fsevents@^2.1.2:
   dependencies:
     object-visit: ^1.0.0
   checksum: 9e85e6d802183927229d9ad04d70a0e0c7225451994605674d3ed4e4a21f817b4d9aba42a775e98078ffe47cf67df44a50eb07f965f14afead5015c8692503bd
-  languageName: node
-  linkType: hard
-
-"marked@npm:1.0.0":
-  version: 1.0.0
-  resolution: "marked@npm:1.0.0"
-  bin:
-    marked: bin/marked
-  checksum: 4121f2f5cb7130e57571780181cddac9e3a8692486045f760baad14c6d896c9481180ad8ab8a36fb9476375ddaa860dbc7d29ecf386b2bfa47d4450a9f866cd4
   languageName: node
   linkType: hard
 
@@ -8039,31 +8028,10 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"typedoc-default-themes@npm:^0.10.2":
-  version: 0.10.2
-  resolution: "typedoc-default-themes@npm:0.10.2"
-  dependencies:
-    lunr: ^2.3.8
-  checksum: 8766471937395067504b3f21edd8c9f89e6901c2912aff0b4371a5dfceea31e4a1f9d08282c2998d0bc0a70e3d6943b3043ebe90e6b11dfdaf52c4a05e32d980
-  languageName: node
-  linkType: hard
-
 "typedoc-default-themes@npm:^0.11.4":
   version: 0.11.4
   resolution: "typedoc-default-themes@npm:0.11.4"
   checksum: 1993030e242ae9cd8b25ec706d7fefccd14b6f8de8f766b55b9bfa1b7044e244eccec9e6ed2382f85a6cea23e547bf398125bcd6f359fa0647212802c0830f4f
-  languageName: node
-  linkType: hard
-
-"typedoc-plugin-external-module-name@npm:3.1.0":
-  version: 3.1.0
-  resolution: "typedoc-plugin-external-module-name@npm:3.1.0"
-  dependencies:
-    lodash: ^4.1.2
-    semver: ^7.1.1
-  peerDependencies:
-    typedoc: ">=0.7.0 <0.18.0"
-  checksum: 59673082ac8fb721818cd4b614dd4de3baaed80d47cdfc44a8082cb2ff8b4bede9c57f5a35ac1d20e5650359b840fb757d891122bc5bf9b8298071504f7740d3
   languageName: node
   linkType: hard
 
@@ -8076,28 +8044,6 @@ fsevents@^2.1.2:
   peerDependencies:
     typedoc: ">=0.7.0 <0.20.0"
   checksum: 2b23280c1e362e81cbc54193855c3c59c0d129f51346e6f37749d894247ecd057e4a00fb554f18a340fb9d0a8be1a23009316a5ee74ff58e6fa1b56b9a0e13e9
-  languageName: node
-  linkType: hard
-
-"typedoc@npm:^0.17.8":
-  version: 0.17.8
-  resolution: "typedoc@npm:0.17.8"
-  dependencies:
-    fs-extra: ^8.1.0
-    handlebars: ^4.7.6
-    highlight.js: ^10.0.0
-    lodash: ^4.17.15
-    lunr: ^2.3.8
-    marked: 1.0.0
-    minimatch: ^3.0.0
-    progress: ^2.0.3
-    shelljs: ^0.8.4
-    typedoc-default-themes: ^0.10.2
-  peerDependencies:
-    typescript: ">=3.8.3"
-  bin:
-    typedoc: bin/typedoc
-  checksum: 5c8d869a85c0fa71b69299ffbcf542278bb0f17672ee2fb23f65f696f5d520e66b0e29634589c71db9f0d4f059f9982ddfb0a29b733755071b1779e98537da1f
   languageName: node
   linkType: hard
 

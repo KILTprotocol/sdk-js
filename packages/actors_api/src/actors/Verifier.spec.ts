@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/actor
- * @ignore
- */
-
 import { CType, Identity } from '@kiltprotocol/core'
 import { IClaim, ICType } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'

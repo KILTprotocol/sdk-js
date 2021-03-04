@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module Delegation
  */
 
 import DelegationBaseNode from './Delegation'

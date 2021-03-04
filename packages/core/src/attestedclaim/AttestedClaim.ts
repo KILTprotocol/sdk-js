@@ -7,7 +7,6 @@
  *
  * @packageDocumentation
  * @module AttestedClaim
- * @preferred
  */
 
 import {

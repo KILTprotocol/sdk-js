@@ -9,6 +9,7 @@
     "build": "yarn workspaces foreach -pt --no-private run build",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
     "clean": "yarn workspaces foreach -p --no-private run clean",
+    "clean:docs": "rm -r docs/api",
     "version": "yarn workspaces foreach version",
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
     "lint": "eslint packages --format=codeframe",

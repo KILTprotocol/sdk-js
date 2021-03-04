@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/actor
- * @ignore
- */
-
 import { CType, Identity, SDKErrors } from '@kiltprotocol/core'
 import {
   IClaim,

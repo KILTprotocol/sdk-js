@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @module Verifier
+ */
+
 import { AttestedClaim, CType, SDKErrors, Identity } from '@kiltprotocol/core'
 import { ConfigService } from '@kiltprotocol/config'
 import {

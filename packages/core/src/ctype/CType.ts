@@ -7,7 +7,6 @@
  *
  * @packageDocumentation
  * @module CType
- * @preferred
  */
 
 import type {

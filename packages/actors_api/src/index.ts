@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module Actors
  */
 
 import * as Attester from './actors/Attester'

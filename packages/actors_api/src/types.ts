@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @ignore
+ */
+
 export { ICredential } from './credential/Credential'
 export {
   IPresentationReq,

@@ -10,7 +10,6 @@
  *
  * @packageDocumentation
  * @module Identity
- * @preferred
  */
 
 import { Keyring } from '@polkadot/keyring'

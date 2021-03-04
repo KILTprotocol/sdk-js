@@ -8,7 +8,6 @@
  *
  * @packageDocumentation
  * @module Attestation
- * @preferred
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
