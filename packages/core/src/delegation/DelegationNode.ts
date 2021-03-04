@@ -167,12 +167,10 @@ export default class DelegationNode extends DelegationBaseNode
     const childCount = await this.subtreeNodeCount()
     // must revoke all children and self
     const revocationCount = childCount + 1
-    // node side implementation requires steps + 1
-    const depth = steps + 1
     log.debug(
-      `:: revoke(${this.id}) with maxRevocations=${revocationCount} and maxDepth = ${depth} through delegation node ${node?.id} and identity ${identity.address}`
+      `:: revoke(${this.id}) with maxRevocations=${revocationCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${identity.address}`
     )
-    return revoke(this.id, identity, depth, revocationCount)
+    return revoke(this.id, identity, steps, revocationCount)
   }
 
   public async getChildren(): Promise<DelegationNode[]> {
