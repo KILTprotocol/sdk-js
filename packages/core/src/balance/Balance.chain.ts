@@ -40,7 +40,11 @@ export async function getBalance(
   accountAddress: IPublicIdentity['address']
 ): Promise<BN> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return (await blockchain.api.query.system.account(accountAddress)).data.free
+  return new BN(
+    (
+      await blockchain.api.query.system.account(accountAddress)
+    ).data.free.toString()
+  )
 }
 
 /**

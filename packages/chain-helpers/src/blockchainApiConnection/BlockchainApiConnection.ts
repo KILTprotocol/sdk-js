@@ -16,6 +16,8 @@ import Blockchain from '../blockchain/Blockchain'
 let instance: Promise<Blockchain> | null
 
 export const CUSTOM_TYPES: RegistryTypes = {
+  AccountIndex: 'u32',
+  Balance: 'u128',
   PublicSigningKey: 'Hash',
   PublicBoxKey: 'Hash',
   Signature: 'MultiSignature',
@@ -24,8 +26,12 @@ export const CUSTOM_TYPES: RegistryTypes = {
   BlockNumber: 'u64',
   Index: 'u64',
   RefCount: 'u32',
-
-  ErrorCode: 'u16',
+  AccountInfo: {
+    nonce: 'Index',
+    consumers: 'RefCount',
+    providers: 'RefCount',
+    data: 'AccountData',
+  },
   Permissions: 'u32',
   DelegationNodeId: 'Hash',
   DelegationNode: {
