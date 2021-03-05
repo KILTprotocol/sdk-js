@@ -1,3 +1,7 @@
+/**
+ * @group unit/ctype
+ */
+
 import { SubmittableResult } from '@polkadot/api'
 import { TypeRegistry } from '@polkadot/types'
 import { Option } from '@polkadot/types/codec'

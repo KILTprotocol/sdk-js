@@ -1,3 +1,7 @@
+/**
+ * @group unit/claim
+ */
+
 import { IClaim } from '@kiltprotocol/types'
 import { hashClaimContents, toJsonLD } from './Claim.utils'
 

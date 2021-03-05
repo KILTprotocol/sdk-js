@@ -1,3 +1,7 @@
+/**
+ * @group unit/actor
+ */
+
 import { CType, Identity, SDKErrors } from '@kiltprotocol/core'
 import {
   IClaim,

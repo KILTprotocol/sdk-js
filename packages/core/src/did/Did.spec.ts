@@ -1,3 +1,7 @@
+/**
+ * @group unit/did
+ */
+
 import { U8aFixed } from '@polkadot/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import TYPE_REGISTRY, {

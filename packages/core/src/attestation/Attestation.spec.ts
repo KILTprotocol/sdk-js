@@ -1,3 +1,7 @@
+/**
+ * @group unit/attestation
+ */
+
 import {
   IAttestation,
   CompressedAttestation,

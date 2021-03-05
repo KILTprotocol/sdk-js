@@ -1,3 +1,7 @@
+/**
+ * @group unit/delegation
+ */
+
 import { Permission } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
 import { Crypto } from '@kiltprotocol/utils'

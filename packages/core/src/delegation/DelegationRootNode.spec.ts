@@ -1,3 +1,7 @@
+/**
+ * @group unit/delegation
+ */
+
 import { Crypto } from '@kiltprotocol/utils'
 import {
   BlockchainApiConnection,

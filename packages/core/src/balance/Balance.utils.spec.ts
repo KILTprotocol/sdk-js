@@ -1,3 +1,7 @@
+/**
+ * @group unit/balance
+ */
+
 import BN from 'bn.js'
 import {
   formatKiltBalance,

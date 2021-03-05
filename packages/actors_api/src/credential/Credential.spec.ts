@@ -1,3 +1,7 @@
+/**
+ * @group unit/credential
+ */
+
 import {
   Attestation,
   Claim,

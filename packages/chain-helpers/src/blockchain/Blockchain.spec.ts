@@ -1,3 +1,7 @@
+/**
+ * @group unit/blockchain
+ */
+
 /* eslint-disable */
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Text } from '@polkadot/types'

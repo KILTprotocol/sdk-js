@@ -1,3 +1,7 @@
+/**
+ * @group unit/errorhandling
+ */
+
 import {
   errorForPallet,
   ExtrinsicError,

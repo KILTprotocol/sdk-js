@@ -1,3 +1,7 @@
+/**
+ * @group unit/ctype
+ */
+
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ICType, ICTypeMetadata } from '@kiltprotocol/types'
 import Identity from '../identity/Identity'

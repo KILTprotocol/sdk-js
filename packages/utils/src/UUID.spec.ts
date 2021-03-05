@@ -1,3 +1,7 @@
+/**
+ * @group unit/utils
+ */
+
 import UUID from './UUID'
 
 describe('UUID', () => {

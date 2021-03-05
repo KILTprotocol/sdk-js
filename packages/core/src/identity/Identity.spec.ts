@@ -1,3 +1,7 @@
+/**
+ * @group unit/identity
+ */
+
 import * as u8aUtil from '@polkadot/util/u8a'
 import { Crypto } from '@kiltprotocol/utils'
 import Identity from './Identity'
