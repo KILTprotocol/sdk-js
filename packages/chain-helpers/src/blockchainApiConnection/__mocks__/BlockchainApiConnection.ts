@@ -261,7 +261,7 @@ const __mocked_api: any = {
         async (
           address: IPublicIdentity['address'],
           cb
-        ): Promise<AccountInfoWithProviders> => 
+        ): Promise<AccountInfoWithProviders> =>
           TYPE_REGISTRY.createType('AccountInfoWithProviders')
       ),
     },
