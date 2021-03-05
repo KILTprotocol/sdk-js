@@ -81,7 +81,7 @@ To keep things simple, we grouped these two steps in a function you can call fir
 ```typescript
 import Kilt from '@kiltprotocol/sdk-js'
 
-await Kilt.init(address: YOUR_CHAIN_ADDRESS)
+await Kilt.init({ address: YOUR_CHAIN_ADDRESS })
 ```
 
 Again, this is asynchronous, so be sure to wrap this in an `async` function as described above.
@@ -130,11 +130,12 @@ const ctype = Kilt.CType.fromSchema({
 
 ### 3.2. Storing a CTYPE
 
-Before you can store the CTYPE on the blockchain, you have to connect to it.
+Before you can store the CTYPE on the blockchain, you have to configure your blockchain address and connect to it.
 Either Explicitly:
 
 ```typescript
-await Kilt.connect(YOUR_CHAIN_ADDRESS)
+Kilt.config({ address: YOUR_CHAIN_ADDRESS })
+await Kilt.connect()
 ```
 
 Or by setting a default address in the configuration, connecting implicitly.
@@ -149,7 +150,7 @@ Note that calling (as described in [1.2](#initializing-the-kilt-sdk))
 Kilt.init({ address: YOUR_CHAIN_ADDRESS })
 ```
 
-implies and thus is equivalent to the second approach.
+initializes the SDK _and_ sets the config, so it is related to the second approach.
 
 There are [three types](https://dev.kilt.io/#/?id=source-code-and-deployed-instances) of KILT chains which you can use, each one having a different address:
 
