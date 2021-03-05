@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * @ignore
- */
-
 import BalanceUtils from './Balance.utils'
 import * as Balance from './Balance.chain'
 

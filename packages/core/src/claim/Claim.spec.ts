@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/claim
- * @ignore
- */
-
 import { SDKErrors } from '@kiltprotocol/utils'
 import { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
 import CType from '../ctype/CType'

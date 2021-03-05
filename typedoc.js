@@ -5,14 +5,14 @@ module.exports = {
     '**/testingTools/**',
     '**/*.js',
     '**/node_modules/**',
-    '**/__integrationtests__/**'
+    '**/__integrationtests__/**',
+    '**/index.ts'
   ],
-  excludeExternals: false,
+  excludeExternals: true,
   excludeNotExported: true,
   excludePrivate: true,
-  hideGenerator: true,
   stripInternal: true,
-  excludeProtected: true,
+  hideGenerator: true,
   name: '@kiltprotocol/sdk-js',
   listInvalidSymbolLinks: true,
   tsconfig: 'tsconfig.json',

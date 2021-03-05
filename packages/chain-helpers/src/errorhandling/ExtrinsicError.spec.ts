@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/errorhandling
- * @ignore
- */
-
 import {
   errorForPallet,
   ExtrinsicError,

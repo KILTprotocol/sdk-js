@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/ConfigService
- * @ignore
- */
-
 /* eslint-disable dot-notation */
 import { LogLevel, Logger } from 'typescript-logging'
 import { SDKErrors } from '@kiltprotocol/utils'

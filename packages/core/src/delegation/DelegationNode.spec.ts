@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/delegation
- * @ignore
- */
-
 import { Permission } from '@kiltprotocol/types'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,

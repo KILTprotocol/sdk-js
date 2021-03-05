@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module Attestation
  */
 import { Option, Struct } from '@polkadot/types'
 import type { IAttestation, SubmittableExtrinsic } from '@kiltprotocol/types'
@@ -14,6 +14,9 @@ import { DelegationNodeId } from '../delegation/DelegationDecoder'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
+/**
+ * @ignore
+ */
 export async function store(
   attestation: IAttestation,
   identity: Identity
@@ -35,6 +38,9 @@ export async function store(
   return blockchain.signTx(identity, tx)
 }
 
+/**
+ * @ignore
+ */
 export interface IChainAttestation extends Struct {
   readonly ctypeHash: Hash
   readonly attester: AccountId
@@ -73,11 +79,17 @@ async function queryRaw(claimHash: string): Promise<Option<IChainAttestation>> {
   return result
 }
 
+/**
+ * @ignore
+ */
 export async function query(claimHash: string): Promise<Attestation | null> {
   const encoded = await queryRaw(claimHash)
   return decode(encoded, claimHash)
 }
 
+/**
+ * @ignore
+ */
 export async function revoke(
   claimHash: string,
   identity: Identity,

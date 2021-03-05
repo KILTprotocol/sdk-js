@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/requestforattestation
- * @ignore
- */
-
 /* eslint-disable dot-notation */
 import { hexToU8a } from '@polkadot/util'
 import {

@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/claim
- * @ignore
- */
-
 import { IClaim } from '@kiltprotocol/types'
 import { hashClaimContents, toJsonLD } from './Claim.utils'
 

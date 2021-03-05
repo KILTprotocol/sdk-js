@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/delegation
- * @ignore
- */
-
 import { Permission } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'

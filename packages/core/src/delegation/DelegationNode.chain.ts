@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module DelegationNode
  */
 
 import { Option } from '@polkadot/types'
@@ -20,6 +20,9 @@ import permissionsAsBitset from './DelegationNode.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationBaseNode')
 
+/**
+ * @ignore
+ */
 export async function store(
   delegation: IDelegationNode,
   identity: Identity,
@@ -40,6 +43,9 @@ export async function store(
   return blockchain.signTx(identity, tx)
 }
 
+/**
+ * @ignore
+ */
 export async function query(
   delegationId: IDelegationNode['id']
 ): Promise<DelegationNode | null> {
@@ -63,6 +69,9 @@ export async function query(
   return null
 }
 
+/**
+ * @ignore
+ */
 export async function revoke(
   delegationId: IDelegationNode['id'],
   identity: Identity
@@ -74,6 +83,9 @@ export async function revoke(
   return blockchain.signTx(identity, tx)
 }
 
+/**
+ * @ignore
+ */
 // function lives here to avoid circular imports between DelegationBaseNode and DelegationNode
 export async function getChildren(
   delegationNodeId: DelegationBaseNode['id']

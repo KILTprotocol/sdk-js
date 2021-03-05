@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module VCExport
  */
 
 import { decodeAddress } from '@polkadot/keyring'

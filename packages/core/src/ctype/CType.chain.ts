@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module CType
  */
 
 import { Option } from '@polkadot/types'
@@ -17,6 +17,9 @@ import Identity from '../identity/Identity'
 
 const log = ConfigService.LoggingFactory.getLogger('CType')
 
+/**
+ * @ignore
+ */
 export async function store(
   ctype: ICType,
   identity: Identity
@@ -27,6 +30,9 @@ export async function store(
   return blockchain.signTx(identity, tx)
 }
 
+/**
+ * @ignore
+ */
 // decoding is not backwards compatible with mashnet-node 0.22 anymore
 export function decode(
   encoded: Option<AccountId>
@@ -35,6 +41,9 @@ export function decode(
   return !encoded.isEmpty ? encoded.toString() : null
 }
 
+/**
+ * @ignore
+ */
 export async function getOwner(
   ctypeHash: ICType['hash']
 ): Promise<IPublicIdentity['address'] | null> {

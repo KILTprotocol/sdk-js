@@ -1,7 +1,3 @@
-/**
- * @group unit/utils
- */
-
 import Keyring, { encodeAddress } from '@polkadot/keyring'
 import { validateAddress, validateHash, validateSignature } from './DataUtils'
 import { ErrorCode } from './SDKErrors'

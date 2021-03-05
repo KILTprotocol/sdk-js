@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/utils
- * @ignore
- */
-
 import * as string from '@polkadot/util/string'
 import { Keyring } from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'

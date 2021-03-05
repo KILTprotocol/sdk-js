@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/ctype
- * @ignore
- */
-
 import { ICType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import {

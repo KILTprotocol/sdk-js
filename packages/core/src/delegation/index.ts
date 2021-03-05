@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * @module Delegation
- */
-
 import DelegationBaseNode from './Delegation'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'

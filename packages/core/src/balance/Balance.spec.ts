@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/balance
- * @ignore
- */
-
 import { SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
 import { AccountData, AccountInfo } from '@polkadot/types/interfaces'

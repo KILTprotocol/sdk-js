@@ -10,7 +10,7 @@
  *   * Attest.
  *
  * @packageDocumentation
- * @module Delegation
+ * @module DelegationBaseNode
  * @preferred
  */
 

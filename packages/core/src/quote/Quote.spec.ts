@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/quote
- * @ignore
- */
-
 import {
   IClaim,
   ICType,

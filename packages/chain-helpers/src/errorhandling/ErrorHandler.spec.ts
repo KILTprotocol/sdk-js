@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/errorhandling
- * @ignore
- */
-
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Tuple } from '@polkadot/types'
 import type { ISubmittableResult } from '@kiltprotocol/types'

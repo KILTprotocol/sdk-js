@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/ctype
- * @ignore
- */
-
 import { SubmittableResult } from '@polkadot/api'
 import { TypeRegistry } from '@polkadot/types'
 import { Option } from '@polkadot/types/codec'

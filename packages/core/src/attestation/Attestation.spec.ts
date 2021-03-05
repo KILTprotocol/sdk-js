@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/attestation
- * @ignore
- */
-
 import {
   IAttestation,
   CompressedAttestation,

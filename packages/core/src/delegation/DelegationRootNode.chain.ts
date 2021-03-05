@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module DelegationRootNode
  */
 
 import { Option } from '@polkadot/types'
@@ -17,6 +17,9 @@ import {
 } from './DelegationDecoder'
 import DelegationRootNode from './DelegationRootNode'
 
+/**
+ * @ignore
+ */
 export async function store(
   delegation: IDelegationRootNode,
   identity: Identity
@@ -29,6 +32,9 @@ export async function store(
   return blockchain.signTx(identity, tx)
 }
 
+/**
+ * @ignore
+ */
 export async function query(
   delegationId: IDelegationRootNode['id']
 ): Promise<DelegationRootNode | null> {
@@ -50,6 +56,9 @@ export async function query(
   return null
 }
 
+/**
+ * @ignore
+ */
 export async function revoke(
   delegation: IDelegationRootNode,
   identity: Identity

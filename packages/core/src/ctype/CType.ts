@@ -7,6 +7,7 @@
  *
  * @packageDocumentation
  * @module CType
+ * @preferred
  */
 
 import type {
@@ -90,7 +91,7 @@ export default class CType implements ICType {
    *
    * @param identity The identity which submits the blockchain transaction to store the [[CType]].
    *
-   * @returns A promise of a [[SubmittableExtrinsic]].
+   * @returns A promise of a SubmittableExtrinsic.
    */
   public async store(identity: Identity): Promise<SubmittableExtrinsic> {
     return store(this, identity)

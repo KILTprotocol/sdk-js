@@ -361,7 +361,7 @@ export default class Identity implements IIdentity {
    *
    * @param submittableExtrinsic - A chain transaction.
    * @param nonce - The nonce of the address operating the transaction.
-   * @returns The signed [[SubmittableExtrinsic]].
+   * @returns The signed SubmittableExtrinsic.
    * @example ```javascript
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const tx = await blockchain.api.tx.ctype.add(ctype.hash);

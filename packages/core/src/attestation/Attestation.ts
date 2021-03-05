@@ -8,6 +8,7 @@
  *
  * @packageDocumentation
  * @module Attestation
+ * @preferred
  */
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
@@ -45,7 +46,7 @@ export default class Attestation implements IAttestation {
    * @param claimHash - The hash of the claim that corresponds to the attestation to revoke.
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @param maxDepth - The number of levels to walk up the delegation hirarchy until the delegation node of identity is found.
-   * @returns A promise containing the [[SubmittableExtrinsic]] (submittable transaction).
+   * @returns A promise containing the SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
    * Attestation.revoke('0xd8024cdc147c4fa9221cd177', attesterIdentity, 3).then(() => {
    *   // the attestation was successfully revoked
@@ -183,7 +184,7 @@ export default class Attestation implements IAttestation {
    *
    * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
    * @param maxDepth - The number of levels to walk up the delegation hirarchy until the delegation node of identity is found.
-   * @returns A promise containing the [[SubmittableExtrinsic]] (submittable transaction).
+   * @returns A promise containing the SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
    * attestation.revoke(identity, 3).then(() => {
    *   // the attestation was successfully revoked

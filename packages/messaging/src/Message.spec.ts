@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/messaging
- * @ignore
- */
-
 import {
   IAttestedClaim,
   IClaim,

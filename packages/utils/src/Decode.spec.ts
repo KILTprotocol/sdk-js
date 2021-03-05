@@ -1,7 +1,3 @@
-/**
- * @group unit/utils
- */
-
 import { TypeRegistry } from '@polkadot/types'
 import { assertCodecIsType, codecIsType } from './Decode'
 

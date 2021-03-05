@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * @ignore
- */
-
 import * as core from '@kiltprotocol/core'
 import * as Actors from '@kiltprotocol/actors-api'
 import Message, * as Messaging from '@kiltprotocol/messaging'

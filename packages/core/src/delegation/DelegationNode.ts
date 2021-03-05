@@ -5,6 +5,7 @@
  *
  * @packageDocumentation
  * @module DelegationNode
+ * @preferred
  */
 
 import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
@@ -166,7 +167,7 @@ export default class DelegationNode extends DelegationBaseNode
    *
    * @param identity Account used to store the delegation node.
    * @param signature Signature of the delegate to ensure it is done under the delegate's permission.
-   * @returns Promise containing a [[SubmittableExtrinsic]].
+   * @returns Promise containing a SubmittableExtrinsic.
    */
   public async store(
     identity: Identity,
@@ -190,7 +191,7 @@ export default class DelegationNode extends DelegationBaseNode
    * [ASYNC] Revokes the delegation node on chain.
    *
    * @param identity The identity used to revoke the delegation.
-   * @returns Promise containing a [[SubmittableExtrinsic]].
+   * @returns Promise containing a SubmittableExtrinsic.
    */
   public async revoke(identity: Identity): Promise<SubmittableExtrinsic> {
     log.debug(`:: revoke(${this.id})`)

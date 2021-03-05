@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/identity
- * @ignore
- */
-
 import { U8aFixed } from '@polkadot/types'
 import { IPublicIdentity } from '@kiltprotocol/types'
 import TYPE_REGISTRY, {

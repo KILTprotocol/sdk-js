@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/attestation
- * @ignore
- */
-
 import { IClaim, CompressedAttestedClaim, ICType } from '@kiltprotocol/types'
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'

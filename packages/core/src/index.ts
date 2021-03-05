@@ -1,7 +1,3 @@
-/**
- * @packageDocumentation
- * @ignore
- */
 import Attestation, { AttestationUtils } from './attestation'
 import AttestedClaim, { AttestedClaimUtils } from './attestedclaim'
 import { Balance, BalanceUtils } from './balance'

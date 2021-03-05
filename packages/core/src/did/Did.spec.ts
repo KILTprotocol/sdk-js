@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group unit/did
- * @ignore
- */
-
 import { U8aFixed } from '@polkadot/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import TYPE_REGISTRY, {
