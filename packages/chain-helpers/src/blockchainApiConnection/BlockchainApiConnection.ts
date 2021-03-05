@@ -10,13 +10,13 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { RegistryTypes } from '@polkadot/types/types'
+// import { AccountInfoWithProviders } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import Blockchain from '../blockchain/Blockchain'
 
 let instance: Promise<Blockchain> | null
 
 export const CUSTOM_TYPES: RegistryTypes = {
-  AccountIndex: 'u32',
   Balance: 'u128',
   PublicSigningKey: 'Hash',
   PublicBoxKey: 'Hash',
@@ -26,12 +26,7 @@ export const CUSTOM_TYPES: RegistryTypes = {
   BlockNumber: 'u64',
   Index: 'u64',
   RefCount: 'u32',
-  AccountInfo: {
-    nonce: 'Index',
-    consumers: 'RefCount',
-    providers: 'RefCount',
-    data: 'AccountData',
-  },
+  AccountInfo: 'AccountInfoWithProviders',
   Permissions: 'u32',
   DelegationNodeId: 'Hash',
   DelegationNode: {
