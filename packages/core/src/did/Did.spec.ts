@@ -91,7 +91,7 @@ describe('DID', () => {
 
   it('creates default did document', async () => {
     const did = Did.fromIdentity(
-      Identity.buildFromURI('//Alice'),
+      Identity.buildFromURI('//Alice', { signingKeyPairType: 'ed25519' }),
       'http://myDID.kilt.io'
     )
     expect(
@@ -135,7 +135,9 @@ describe('DID', () => {
   })
 
   it('creates default did document (static)', async () => {
-    const alice = Identity.buildFromURI('//Alice')
+    const alice = Identity.buildFromURI('//Alice', {
+      signingKeyPairType: 'ed25519',
+    })
     expect(
       Did.createDefaultDidDocument(
         Did.getIdentifierFromAddress(alice.address),

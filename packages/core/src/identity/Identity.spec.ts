@@ -3,11 +3,32 @@ import { Crypto } from '@kiltprotocol/utils'
 import Identity from './Identity'
 import PublicIdentity from './PublicIdentity'
 
-describe('Identity', () => {
+describe('general', () => {
+  it('should fail creating identity based on invalid phrase', () => {
+    const phraseWithUnknownWord =
+      'taxi toddler rally tonight certain tired program settle topple what execute stew' // stew instead of few
+    expect(() =>
+      Identity.buildFromMnemonic(phraseWithUnknownWord)
+    ).toThrowError()
+
+    const phraseTooLong =
+      'taxi toddler rally tonight certain tired program settle topple what execute'
+    expect(() => Identity.buildFromMnemonic(phraseTooLong)).toThrowError()
+  })
+
+  it('should return instanceof PublicIdentity', () => {
+    const alice = Identity.buildFromURI('//Alice')
+    expect(alice.getPublicIdentity()).toBeInstanceOf(PublicIdentity)
+  })
+})
+
+describe('ed25519', () => {
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
   it('should create known identities', () => {
-    const alice = Identity.buildFromURI('//Alice')
+    const alice = Identity.buildFromURI('//Alice', {
+      signingKeyPairType: 'ed25519',
+    })
 
     expect(alice.seedAsHex).toEqual('0x2f2f416c696365')
 
@@ -19,14 +40,14 @@ describe('Identity', () => {
       '0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee'
     )
   })
-  it('should return instanceof PublicIdentity', () => {
-    const alice = Identity.buildFromURI('//Alice')
-    expect(alice.getPublicIdentity()).toBeInstanceOf(PublicIdentity)
-  })
 
   it('should create different identities with random phrases', () => {
-    const alice = Identity.buildFromMnemonic(Identity.generateMnemonic())
-    const bob = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    const alice = Identity.buildFromMnemonic(Identity.generateMnemonic(), {
+      signingKeyPairType: 'ed25519',
+    })
+    const bob = Identity.buildFromMnemonic(Identity.generateMnemonic(), {
+      signingKeyPairType: 'ed25519',
+    })
 
     expect(alice.signPublicKeyAsHex).not.toBeFalsy()
     expect(alice.boxKeyPair.publicKey).not.toBeFalsy()
@@ -44,7 +65,9 @@ describe('Identity', () => {
   it('should restore identity based on phrase', () => {
     const expectedPhrase =
       'taxi toddler rally tonight certain tired program settle topple what execute few'
-    const alice = Identity.buildFromMnemonic(expectedPhrase)
+    const alice = Identity.buildFromMnemonic(expectedPhrase, {
+      signingKeyPairType: 'ed25519',
+    })
 
     expect(alice.signPublicKeyAsHex).toEqual(
       '0x89bd53e9cde92516291a674475f41cc3d66f3db97463c92252e5c5b575ab9d0c'
@@ -59,28 +82,60 @@ describe('Identity', () => {
   })
 
   it('should have different keys for signing and boxing', () => {
-    const alice = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    const alice = Identity.buildFromMnemonic(Identity.generateMnemonic(), {
+      signingKeyPairType: 'ed25519',
+    })
     expect(Crypto.coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
       alice.boxKeyPair.publicKey
     )
   })
 
-  it('should fail creating identity based on invalid phrase', () => {
-    const phraseWithUnknownWord =
-      'taxi toddler rally tonight certain tired program settle topple what execute stew' // stew instead of few
-    expect(() =>
-      Identity.buildFromMnemonic(phraseWithUnknownWord)
-    ).toThrowError()
-
-    const phraseTooLong =
-      'taxi toddler rally tonight certain tired program settle topple what execute' // stew instead of few
-    expect(() => Identity.buildFromMnemonic(phraseTooLong)).toThrowError()
+  it('signs and verifies', () => {
+    const alice = Identity.buildFromMnemonic(Identity.generateMnemonic(), {
+      signingKeyPairType: 'ed25519',
+    })
+    expect(Crypto.verify('hello', alice.sign('hello'), alice.address)).toEqual(
+      true
+    )
   })
+})
 
+describe('sr25519', () => {
   it('should have different keys for signing and boxing', () => {
-    const alice = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    const alice = Identity.buildFromMnemonic(Identity.generateMnemonic(), {
+      signingKeyPairType: 'sr25519',
+    })
     expect(Crypto.coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
       alice.boxKeyPair.publicKey
     )
+  })
+
+  it('signs and verifies', () => {
+    const alice = Identity.buildFromMnemonic(Identity.generateMnemonic(), {
+      signingKeyPairType: 'sr25519',
+    })
+    expect(Crypto.verify('hello', alice.sign('hello'), alice.address)).toEqual(
+      true
+    )
+  })
+
+  describe('ecdsa', () => {
+    it('should have different keys for signing and boxing', () => {
+      const alice = Identity.buildFromMnemonic(Identity.generateMnemonic(), {
+        signingKeyPairType: 'ecdsa',
+      })
+      expect(Crypto.coToUInt8(alice.signPublicKeyAsHex)).not.toEqual(
+        alice.boxKeyPair.publicKey
+      )
+    })
+
+    it('signs and verifies', () => {
+      const alice = Identity.buildFromMnemonic(Identity.generateMnemonic(), {
+        signingKeyPairType: 'ecdsa',
+      })
+      expect(
+        Crypto.verify('hello', alice.sign('hello'), alice.address)
+      ).toEqual(true)
+    })
   })
 })

@@ -38,8 +38,12 @@ describe('Claim', () => {
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
   beforeAll(async () => {
-    claimerIdentity = Identity.buildFromURI('//Alice')
-    attesterIdentity = Identity.buildFromURI('//Bob')
+    claimerIdentity = Identity.buildFromURI('//Alice', {
+      signingKeyPairType: 'ed25519',
+    })
+    attesterIdentity = Identity.buildFromURI('//Bob', {
+      signingKeyPairType: 'ed25519',
+    })
     invalidCost = ({
       gross: 233,
       tax: { vat: 3.3 },

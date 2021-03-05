@@ -13,18 +13,25 @@
  */
 
 import { Keyring } from '@polkadot/keyring'
-import { KeyringPair } from '@polkadot/keyring/types'
-import { Index } from '@polkadot/types/interfaces'
-import { mnemonicToMiniSecret } from '@polkadot/util-crypto'
-import { mnemonicGenerate as generate } from '@polkadot/util-crypto/mnemonic/generate'
-import { mnemonicValidate as validate } from '@polkadot/util-crypto/mnemonic/validate'
+import type { KeyringPair } from '@polkadot/keyring/types'
+import type { Index } from '@polkadot/types/interfaces'
+import type { KeypairType } from '@polkadot/util-crypto/types'
+import {
+  cryptoIsReady,
+  cryptoWaitReady,
+  mnemonicToMiniSecret,
+} from '@polkadot/util-crypto'
+import {
+  mnemonicGenerate as generate,
+  mnemonicValidate as validate,
+} from '@polkadot/util-crypto/mnemonic'
 import { hexToU8a } from '@polkadot/util/hex'
 import * as u8aUtil from '@polkadot/util/u8a'
-import BN from 'bn.js'
+import type BN from 'bn.js'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
-import nacl, { BoxKeyPair } from 'tweetnacl'
+import nacl from 'tweetnacl'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
 import PublicIdentity from './PublicIdentity'
@@ -35,6 +42,24 @@ type BoxPublicKey =
 
 export default class Identity implements IIdentity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
+
+  /**
+   * [STATIC][ASYNC] Wait for intialization of cryptography modules. Identity creation will error for some key types if this is not called at least once beforehand.
+   *
+   * @returns A promise which resolves once crypto modules are initialized.
+   */
+  public static cryptoWaitReady(): Promise<boolean> {
+    return cryptoWaitReady()
+  }
+
+  /**
+   * [STATIC] Indicates (synchronously) whether crypto modules have been initialized. This will rarely be needed; prefer awaiting the resolution of cryptoWaitReady() instead.
+   *
+   * @returns A boolean indicating whether crypto modules have been initialized.
+   */
+  public static get cryptoIsReady(): boolean {
+    return cryptoIsReady()
+  }
 
   /**
    * [STATIC] Generates Mnemonic phrase used to create identities from phrase seed.
@@ -53,10 +78,11 @@ export default class Identity implements IIdentity {
    * [STATIC] Builds an identity object from a mnemonic string.
    *
    * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
    * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]] when phraseArg contains fewer than 12 correctly separated mnemonic words.
-   * @throws [[ERROR_MNEMONIC_PHRASE_INVALID]] when the phraseArg could not be validated.
+   * @throws [[ERROR_MNEMONIC_PHRASE_INVALID]] when phraseArg could not be validated.
    * @returns An [[Identity]].
-   *
    * @example ```javascript
    * const mnemonic = Identity.generateMnemonic();
    * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
@@ -64,7 +90,10 @@ export default class Identity implements IIdentity {
    * Identity.buildFromMnemonic(mnemonic);
    * ```
    */
-  public static buildFromMnemonic(phraseArg: string): Identity {
+  public static buildFromMnemonic(
+    phraseArg: string,
+    options: { signingKeyPairType?: KeypairType } = {}
+  ): Identity {
     let phrase = phraseArg
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
@@ -80,13 +109,15 @@ export default class Identity implements IIdentity {
     }
 
     const seed = mnemonicToMiniSecret(phrase)
-    return Identity.buildFromSeed(seed)
+    return Identity.buildFromSeed(seed, options)
   }
 
   /**
    * [STATIC] Builds an [[Identity]], generated from a seed hex string.
    *
    * @param seedArg - Seed as hex string (Starting with 0x).
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns  An [[Identity]].
    * @example ```javascript
    * const seed =
@@ -94,14 +125,17 @@ export default class Identity implements IIdentity {
    * Identity.buildFromSeedString(seed);
    * ```
    */
-  public static buildFromSeedString(seedArg: string): Identity {
+  public static buildFromSeedString(
+    seedArg: string,
+    options: { signingKeyPairType?: KeypairType } = {}
+  ): Identity {
     const asU8a = hexToU8a(seedArg)
-    return Identity.buildFromSeed(asU8a)
+    return Identity.buildFromSeed(asU8a, options)
   }
 
-  private static createKeyring(): Keyring {
+  private static createKeyring(type: KeypairType = 'sr25519'): Keyring {
     return new Keyring({
-      type: 'ed25519',
+      type,
       // KILT has registered the ss58 prefix 38
       ss58Format: 38,
     })
@@ -111,19 +145,24 @@ export default class Identity implements IIdentity {
    * [STATIC] Builds a new [[Identity]], generated from a seed (Secret Seed).
    *
    * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns An [[Identity]].
    * @example ```javascript
    * // prettier-ignore
    * const seed = new Uint8Array([108, 233, 253,  6,  12, 112,  22,  92,
-   *                               15, 200, 218, 37, 129,  13,  36, 145,
-   *                                6, 213, 223, 16,  10, 169, 128, 224,
-   *                              217, 161,  20,  9, 214, 179,  82,  97
-   *                            ]);
+   * 15, 200, 218, 37, 129,  13,  36, 145,
+   * 6, 213, 223, 16,  10, 169, 128, 224,
+   * 217, 161,  20,  9, 214, 179,  82,  97
+   * ]);
    * Identity.buildFromSeed(seed);
    * ```
    */
-  public static buildFromSeed(seed: Uint8Array): Identity {
-    const keyring = Identity.createKeyring()
+  public static buildFromSeed(
+    seed: Uint8Array,
+    options: { signingKeyPairType?: KeypairType } = {}
+  ): Identity {
+    const keyring = Identity.createKeyring(options.signingKeyPairType)
     const keyringPair = keyring.addFromSeed(seed)
     return new Identity(seed, keyringPair)
   }
@@ -132,13 +171,18 @@ export default class Identity implements IIdentity {
    * [STATIC] Builds a new [[Identity]], generated from a uniform resource identifier (URIs).
    *
    * @param uri - Standard identifiers.
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns  An [[Identity]].
    * @example ```javascript
    * Identity.buildFromURI('//Bob');
    * ```
    */
-  public static buildFromURI(uri: string): Identity {
-    const keyring = Identity.createKeyring()
+  public static buildFromURI(
+    uri: string,
+    options: { signingKeyPairType?: KeypairType } = {}
+  ): Identity {
+    const keyring = Identity.createKeyring(options.signingKeyPairType)
     const derived = keyring.createFromUri(uri)
     const seed = u8aUtil.u8aToU8a(uri)
     return new Identity(seed, derived)
@@ -148,7 +192,7 @@ export default class Identity implements IIdentity {
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
   public readonly signKeyringPair: KeyringPair
-  public readonly boxKeyPair: BoxKeyPair
+  public readonly boxKeyPair: nacl.BoxKeyPair
   public serviceAddress?: string
 
   protected constructor(seed: Uint8Array, signKeyringPair: KeyringPair) {
@@ -166,6 +210,10 @@ export default class Identity implements IIdentity {
     this.signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyringPair.publicKey)
 
     this.boxKeyPair = boxKeyPair
+  }
+
+  public get signingKeyType(): KeypairType {
+    return this.signKeyringPair.type
   }
 
   /**
