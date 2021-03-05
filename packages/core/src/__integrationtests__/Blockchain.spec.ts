@@ -1,3 +1,7 @@
+/**
+ * @group integration/blockchain
+ */
+
 import { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import BN from 'bn.js/'
 import { SDKErrors } from '@kiltprotocol/utils'

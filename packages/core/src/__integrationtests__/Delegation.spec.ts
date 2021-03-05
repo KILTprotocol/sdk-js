@@ -1,3 +1,7 @@
+/**
+ * @group integration/delegation
+ */
+
 import { Permission, ICType } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'

@@ -1,3 +1,7 @@
+/**
+ * @group integration/connectivity
+ */
+
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Header } from '@polkadot/types/interfaces/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'

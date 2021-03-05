@@ -1,3 +1,7 @@
+/**
+ * @group integration/balance
+ */
+
 import BN from 'bn.js/'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {

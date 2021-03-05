@@ -1,3 +1,7 @@
+/**
+ * @group integration/did
+ */
+
 import { Did, Identity } from '..'
 import { queryByAddress, queryByIdentifier } from '../did/Did.chain'
 import { WS_ADDRESS } from './utils'

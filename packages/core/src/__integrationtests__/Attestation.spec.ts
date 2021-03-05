@@ -1,3 +1,7 @@
+/**
+ * @group integration/attestation
+ */
+
 import { IAttestedClaim, IClaim } from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import Attestation from '../attestation/Attestation'
