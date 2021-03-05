@@ -8,7 +8,7 @@
 import { ModuleError } from './ErrorHandler'
 
 /**
- * @ignore
+ * @internal
  */
 export class ExtrinsicError extends Error {
   public errorCode: number
@@ -20,7 +20,7 @@ export class ExtrinsicError extends Error {
 }
 
 /**
- * @ignore
+ * @internal
  */
 export const ExtrinsicErrors = {
   CType: {
@@ -109,7 +109,7 @@ export const ExtrinsicErrors = {
 }
 
 /**
- * @ignore
+ * @internal
  * PalletIndex reflects the numerical index of a pallet assigned in the chain's metadata.
  */
 export enum PalletIndex {
@@ -120,7 +120,7 @@ export enum PalletIndex {
 }
 
 /**
- * @ignore
+ * @internal
  */
 export interface IPalletToExtrinsicErrors {
   [key: number]: {
@@ -132,7 +132,7 @@ export interface IPalletToExtrinsicErrors {
 }
 
 /**
- * @ignore
+ * @internal
  * This dictionary holds all [[ExtrinsicError]]s, divided by pallets.
  */
 export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
@@ -173,7 +173,7 @@ export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
 }
 
 /**
- * @ignore
+ * @internal
  * Maps a [[ModuleError]] to its corresponding [[ExtrinsicError]].
  *
  * @param p The parameter object.

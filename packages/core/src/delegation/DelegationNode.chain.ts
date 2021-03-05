@@ -21,7 +21,10 @@ import permissionsAsBitset from './DelegationNode.utils'
 const log = ConfigService.LoggingFactory.getLogger('DelegationBaseNode')
 
 /**
- * @ignore
+ * @param delegation
+ * @param identity
+ * @param signature
+ * @internal
  */
 export async function store(
   delegation: IDelegationNode,
@@ -44,7 +47,8 @@ export async function store(
 }
 
 /**
- * @ignore
+ * @param delegationId
+ * @internal
  */
 export async function query(
   delegationId: IDelegationNode['id']
@@ -70,7 +74,7 @@ export async function query(
 }
 
 /**
- * @ignore
+ * @internal
  *
  * Revokes part of a delegation tree at specified node, also revoking all nodes below.
  *
@@ -78,7 +82,7 @@ export async function query(
  * @param identity An identity which is authorized to revoke. Either the owner of the current node or of one of the parents.
  * @param maxDepth How many nodes may be traversed upwards in the hierarchy when searching for a node owned by `identity`. Each traversal will add to the transaction fee. Therefore a higher number will increase the fees locked until the transaction is complete. A number lower than the actual required traversals will result in a failed extrinsic (node will not be revoked).
  * @param maxRevocations How many delegation nodes may be revoked during the process. Each revocation adds to the transaction fee. A higher number will require more fees to be locked while an insufficiently high number will lead to premature abortion of the revocation process, leaving some nodes unrevoked. Revocations will first be performed on child nodes, therefore the current node is only revoked when this is accurate.
- * @returns a signed SubmittableExtrinsic ready to be dispatched.
+ * @returns A signed SubmittableExtrinsic ready to be dispatched.
  */
 export async function revoke(
   delegationId: IDelegationNode['id'],
@@ -96,7 +100,8 @@ export async function revoke(
 }
 
 /**
- * @ignore
+ * @param delegationNodeId
+ * @internal
  */
 // function lives here to avoid circular imports between DelegationBaseNode and DelegationNode
 export async function getChildren(

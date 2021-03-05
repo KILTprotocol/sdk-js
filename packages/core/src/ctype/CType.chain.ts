@@ -18,7 +18,9 @@ import Identity from '../identity/Identity'
 const log = ConfigService.LoggingFactory.getLogger('CType')
 
 /**
- * @ignore
+ * @param ctype
+ * @param identity
+ * @internal
  */
 export async function store(
   ctype: ICType,
@@ -31,7 +33,8 @@ export async function store(
 }
 
 /**
- * @ignore
+ * @param encoded
+ * @internal
  */
 // decoding is not backwards compatible with mashnet-node 0.22 anymore
 export function decode(
@@ -42,7 +45,8 @@ export function decode(
 }
 
 /**
- * @ignore
+ * @param ctypeHash
+ * @internal
  */
 export async function getOwner(
   ctypeHash: ICType['hash']

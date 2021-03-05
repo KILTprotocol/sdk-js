@@ -1,9 +1,10 @@
 /**
-  * ErrorHandler helps spot and determine transaction errors.
-  * @packageDocumentation
-  * @module ErrorHandler
-  * @preferred
-  */
+ * ErrorHandler helps spot and determine transaction errors.
+ *
+ * @packageDocumentation
+ * @module ErrorHandler
+ * @preferred
+ */
 
 import { EventRecord } from '@polkadot/types/interfaces'
 import type { ISubmittableResult } from '@kiltprotocol/types'

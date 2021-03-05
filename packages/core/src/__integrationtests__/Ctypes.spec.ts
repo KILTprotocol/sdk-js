@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group integration/ctype
- * @ignore
- */
-
 import { ICType } from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import { Identity } from '..'

@@ -16,7 +16,8 @@ import {
 } from './Did.utils'
 
 /**
- * @ignore
+ * @param identifier
+ * @internal
  */
 export async function queryByIdentifier(
   identifier: IDid['identifier']
@@ -31,7 +32,8 @@ export async function queryByIdentifier(
 }
 
 /**
- * @ignore
+ * @param address
+ * @internal
  */
 export async function queryByAddress(
   address: IPublicIdentity['address']
@@ -46,7 +48,8 @@ export async function queryByAddress(
 }
 
 /**
- * @ignore
+ * @param identity
+ * @internal
  */
 export async function remove(
   identity: Identity
@@ -57,7 +60,9 @@ export async function remove(
 }
 
 /**
- * @ignore
+ * @param did
+ * @param identity
+ * @internal
  */
 export async function store(
   did: IDid,

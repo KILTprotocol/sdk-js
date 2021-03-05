@@ -191,7 +191,7 @@ export default class Did implements IDid {
   /**
    * [STATIC] Signs (the hash of) a DID Document.
    *
-   * @param didDocument A DID Document, e.g. created via [[createDefaultDidDocument]].
+   * @param didDocument A DID Document, e.g. Created via [[createDefaultDidDocument]].
    * @param identity [[Identity]] representing the DID subject for this DID Document, and used for signature.
    * @returns The signed DID Document.
    */

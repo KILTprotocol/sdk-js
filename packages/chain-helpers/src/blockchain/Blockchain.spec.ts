@@ -91,7 +91,7 @@ describe('Tx logic', () => {
       const chain = new Blockchain(api)
       const initialNonce = await chain.getNonce(alice.address)
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      expect(chain['accountNonces'].get(alice.address)!.toNumber()).toEqual(
+      expect(chain.accountNonces.get(alice.address)!.toNumber()).toEqual(
         initialNonce.toNumber() + 1
       )
     })
@@ -146,7 +146,7 @@ describe('Tx logic', () => {
     it('should return the highest read Nonce (mapped Index 1st read)', async () => {
       const chain = new Blockchain(api)
       const indexMap = jest
-        .spyOn(chain['accountNonces'], 'get')
+        .spyOn(chain.accountNonces, 'get')
         .mockReturnValue(new BN(1191220))
       const nonce = await chain.getNonce(alice.address)
 
@@ -157,7 +157,7 @@ describe('Tx logic', () => {
     it('should return the highest read Nonce (mapped Index 2nd read)', async () => {
       const chain = new Blockchain(api)
       const indexMap = jest
-        .spyOn(chain['accountNonces'], 'get')
+        .spyOn(chain.accountNonces, 'get')
         .mockReturnValue(new BN(11912201))
         .mockReturnValueOnce(undefined)
       const nonce = await chain.getNonce(alice.address)
@@ -171,7 +171,7 @@ describe('Tx logic', () => {
       api.rpc.system.accountNextIndex.mockResolvedValue(new BN(11912202))
 
       const indexMap = jest
-        .spyOn(chain['accountNonces'], 'get')
+        .spyOn(chain.accountNonces, 'get')
         .mockReturnValue(new BN(11912201))
         .mockReturnValueOnce(undefined)
       const nonce = await chain.getNonce(alice.address)
@@ -187,7 +187,7 @@ describe('Tx logic', () => {
       )
 
       const indexMap = jest
-        .spyOn(chain['accountNonces'], 'get')
+        .spyOn(chain.accountNonces, 'get')
         .mockReturnValue(undefined)
       const nonce = await chain.getNonce(alice.address)
 
@@ -229,7 +229,7 @@ describe('Tx logic', () => {
       const getNonceSpy = jest
         .spyOn(chain, 'getNonce')
         .mockResolvedValue(new BN(1))
-      const deleteEntrySpy = jest.spyOn(chain['accountNonces'], 'delete')
+      const deleteEntrySpy = jest.spyOn(chain.accountNonces, 'delete')
       const reSigned = await chain.reSignTx(alice, submittable)
       expect(deleteEntrySpy).toHaveBeenCalledWith(alice.address)
       expect(reSigned.method.data).toEqual(submittable.method.data)

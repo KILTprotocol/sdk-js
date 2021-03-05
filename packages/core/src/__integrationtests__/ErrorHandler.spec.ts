@@ -1,9 +1,3 @@
-/**
- * @packageDocumentation
- * @group integration/errorhandler
- * @ignore
- */
-
 import BN from 'bn.js'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import { Attestation } from '..'

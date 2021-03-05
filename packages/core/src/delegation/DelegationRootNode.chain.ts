@@ -18,7 +18,9 @@ import {
 import DelegationRootNode from './DelegationRootNode'
 
 /**
- * @ignore
+ * @param delegation
+ * @param identity
+ * @internal
  */
 export async function store(
   delegation: IDelegationRootNode,
@@ -33,7 +35,8 @@ export async function store(
 }
 
 /**
- * @ignore
+ * @param delegationId
+ * @internal
  */
 export async function query(
   delegationId: IDelegationRootNode['id']
@@ -57,7 +60,7 @@ export async function query(
 }
 
 /**
- * @ignore
+ * @internal
  *
  * Revokes a full delegation tree, also revoking all constituent nodes.
  *

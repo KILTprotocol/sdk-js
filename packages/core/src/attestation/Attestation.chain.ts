@@ -15,7 +15,9 @@ import { DelegationNodeId } from '../delegation/DelegationDecoder'
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
 /**
- * @ignore
+ * @param attestation
+ * @param identity
+ * @internal
  */
 export async function store(
   attestation: IAttestation,
@@ -39,7 +41,7 @@ export async function store(
 }
 
 /**
- * @ignore
+ * @internal
  */
 export interface IChainAttestation extends Struct {
   readonly ctypeHash: Hash
@@ -80,7 +82,8 @@ async function queryRaw(claimHash: string): Promise<Option<IChainAttestation>> {
 }
 
 /**
- * @ignore
+ * @param claimHash
+ * @internal
  */
 export async function query(claimHash: string): Promise<Attestation | null> {
   const encoded = await queryRaw(claimHash)
@@ -88,7 +91,10 @@ export async function query(claimHash: string): Promise<Attestation | null> {
 }
 
 /**
- * @ignore
+ * @param claimHash
+ * @param identity
+ * @param maxDepth
+ * @internal
  */
 export async function revoke(
   claimHash: string,

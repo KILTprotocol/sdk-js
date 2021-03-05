@@ -16,7 +16,8 @@ function decodeDelegatedAttestations(queryResult: Vec<H256>): string[] {
 }
 
 /**
- * @ignore
+ * @param id
+ * @internal
  */
 export async function getAttestationHashes(
   id: IDelegationBaseNode['id']
@@ -29,7 +30,8 @@ export async function getAttestationHashes(
 }
 
 /**
- * @ignore
+ * @param id
+ * @internal
  */
 export async function getChildIds(
   id: IDelegationBaseNode['id']
@@ -41,7 +43,8 @@ export async function getChildIds(
 }
 
 /**
- * @ignore
+ * @param childIds
+ * @internal
  */
 export async function fetchChildren(
   childIds: string[]

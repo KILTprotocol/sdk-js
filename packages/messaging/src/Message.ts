@@ -35,7 +35,7 @@ export default class Message implements IMessage {
    * @param message The [[Message]] object which needs to be decrypted.
    * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
    * @param message.senderAddress The sender's public SS58 address of the [[Message]].
-   * @throws [[ERROR_IDENTITY_MISMATCH]] when the sender does not match the owner of the content embedded in the message, e.g. a request for attestation or an attestation.
+   * @throws [[ERROR_IDENTITY_MISMATCH]] when the sender does not match the owner of the content embedded in the message, e.g. A request for attestation or an attestation.
    *
    */
   public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
