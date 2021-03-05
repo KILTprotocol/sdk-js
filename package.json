@@ -55,5 +55,5 @@
     "ts-node": "^9.1.1",
     "typescript": "^3.9.7"
   },
-  "version": "0.19.1-37"
+  "version": "0.20.0-rc.1"
 }
