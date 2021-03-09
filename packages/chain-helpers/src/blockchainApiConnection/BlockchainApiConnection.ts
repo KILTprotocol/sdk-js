@@ -9,7 +9,6 @@
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { RegistryTypes } from '@polkadot/types/types'
-// import { AccountInfoWithProviders } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import Blockchain from '../blockchain/Blockchain'
 
