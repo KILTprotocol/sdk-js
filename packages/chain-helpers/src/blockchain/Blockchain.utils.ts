@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  * @module BlockchchainUtils
- * @preferred
+ * @typedef {SubscriptionPromise.Options} Options
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
@@ -59,10 +59,10 @@ export const EXTRINSIC_FAILED: SubscriptionPromise.ResultEvaluator = (result) =>
     ))
 
 /**
- * Parses potentially incomplete or undefined options and returns complete [[SubscriptionPromise.Options]].
+ * Parses potentially incomplete or undefined options and returns complete [[Options]].
  *
- * @param opts Potentially undefined or partial [[SubscriptionPromise.Options]] .
- * @returns Complete [[SubscriptionPromise.Options]], with potentially defaulted values.
+ * @param opts Potentially undefined or partial [[Options]] .
+ * @returns Complete [[Options]], with potentially defaulted values.
  */
 export function parseSubscriptionOptions(
   opts?: Partial<SubscriptionPromise.Options>
@@ -82,16 +82,16 @@ export function parseSubscriptionOptions(
 }
 
 /**
- * [ASYNC] Submits a signed [[SubmittableExtrinsic]] and attaches a callback to monitor the inclusion status of the transaction
+ * [ASYNC] Submits a signed SubmittableExtrinsic and attaches a callback to monitor the inclusion status of the transaction
  * and possible errors in the execution of extrinsics. Returns a promise to that end which by default resolves upon
  * finalization and rejects any errors occur during submission or execution of extrinsics. This behavior can be adjusted via optional parameters.
  *
  * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
  *
- * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
- * @param opts [[SubscriptionPromiseOptions]]: Criteria for resolving/rejecting the promise.
+ * @param tx The SubmittableExtrinsic to be submitted. Most transactions need to be signed, this must be done beforehand.
+ * @param opts [[SubscriptionPromise]]: Criteria for resolving/rejecting the promise.
  * @returns A promise which can be used to track transaction status.
- * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ * If resolved, this promise returns ISubmittableResult that has led to its resolution.
  */
 export async function submitSignedTxRaw(
   tx: SubmittableExtrinsic,
@@ -106,13 +106,13 @@ export async function submitSignedTxRaw(
 }
 
 /**
- * [ASYNC] Reroute to submitSignedTxRaw, this function matches the specific errors and returns the appropriate SDKErrors.
+ * [ASYNC] Reroute to [[submitSignedTxRaw]], this function matches the specific errors and returns the appropriate [[SDKErrors]].
  *
  *
- * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
- * @param opts [[SubscriptionPromiseOptions]]: Criteria for resolving/rejecting the promise.
+ * @param tx The SubmittableExtrinsic to be submitted. Most transactions need to be signed, this must be done beforehand.
+ * @param opts [[Options]]: Criteria for resolving/rejecting the promise.
  * @returns A promise which can be used to track transaction status.
- * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ * If resolved, this promise returns ISubmittableResult that has led to its resolution.
  */
 async function submitSignedTxErrorMatched(
   tx: SubmittableExtrinsic,
@@ -122,25 +122,22 @@ async function submitSignedTxErrorMatched(
     switch (true) {
       case reason.message.includes(TxOutdated):
         return Promise.reject(SDKErrors.ERROR_TRANSACTION_OUTDATED())
-        break
       case reason.message.includes(TxPriority):
         return Promise.reject(SDKErrors.ERROR_TRANSACTION_PRIORITY())
-        break
       case reason.message.includes(TxDuplicate):
         return Promise.reject(SDKErrors.ERROR_TRANSACTION_DUPLICATE())
-        break
       default:
         return Promise.reject(reason)
     }
   })
 }
 /**
- * [ASYNC] Uses submitSignedTxErrorMatched to reject with ERROR_TRANSACTION_RECOVERABLE if Tx can be re-signed.
+ * [ASYNC] Rejects a tx that can be re-signed with  an [[ERROR_TRANSACTION_RECOVERABLE]].
  *
- * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
- * @param opts [[SubscriptionPromiseOptions]]: Criteria for resolving/rejecting the promise.
+ * @param tx The SubmittableExtrinsic to be submitted. Most transactions need to be signed, this must be done beforehand.
+ * @param opts [[SubscriptionPromise]]: Criteria for resolving/rejecting the promise.
  * @returns A promise which can be used to track transaction status.
- * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ * If resolved, this promise returns ISubmittableResult that has led to its resolution.
  *
  */
 export async function submitSignedTx(
@@ -158,11 +155,11 @@ export async function submitSignedTx(
 /**
  * [ASYNC] Reroute of class method.
  *
- * @param tx The [[SubmittableExtrinsic]] to be submitted. Most transactions need to be signed, this must be done beforehand.
+ * @param tx The SubmittableExtrinsic to be submitted. Most transactions need to be signed, this must be done beforehand.
  * @param identity The [[Identity]] to re-sign the tx on recoverable error.
  * @param opts Optional partial criteria for resolving/rejecting the promise.
  * @returns A promise which can be used to track transaction status.
- * If resolved, this promise returns [[SubmittableResult]] that has led to its resolution.
+ * If resolved, this promise returns ISubmittableResult that has led to its resolution.
  */
 export async function submitTxWithReSign(
   tx: SubmittableExtrinsic,

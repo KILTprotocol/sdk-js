@@ -1,7 +1,6 @@
 /**
  * @packageDocumentation
  * @module QuoteUtils
- * @preferred
  */
 
 import {
@@ -20,8 +19,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
  *  Compresses the cost from a [[Quote]] object.
  *
  * @param cost A cost object that will be sorted and stripped into a [[Quote]].
- * @throws When cost is missing any property defined in [[ICostBreakdown]].
- * @throws [[ERROR_COMPRESS_OBJECT]].
+ * @throws [[ERROR_COMPRESS_OBJECT]] when cost is missing any property defined in [[ICostBreakdown]].
  *
  * @returns An ordered array of a cost.
  */
@@ -37,8 +35,7 @@ export function compressCost(cost: ICostBreakdown): CompressedCostBreakdown {
  *  Decompresses the cost from storage and/or message.
  *
  * @param cost A compressed cost array that is reverted back into an object.
- * @throws When cost is not an Array and it's length does not equal the defined length of 3.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when cost is not an Array and it's length does not equal the defined length of 3.
  *
  * @returns An object that has the same properties as a cost.
  */
@@ -54,8 +51,7 @@ export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
  *  Compresses a [[Quote]] for storage and/or messaging.
  *
  * @param quote An [[Quote]] object that will be sorted and stripped for messaging or storage.
- * @throws When quote is missing any property defined in [[IQuote]].
- * @throws [[ERROR_COMPRESS_OBJECT]].
+ * @throws [[ERROR_COMPRESS_OBJECT]] when quote is missing any property defined in [[IQuote]].
  *
  * @returns An ordered array of an [[Quote]].
  */
@@ -85,8 +81,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
  *  Decompresses an [[Quote]] from storage and/or message.
  *
  * @param quote A compressed [[Quote]] array that is reverted back into an object.
- * @throws When quote is not an Array and it's length does not equal the defined length of 6.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quote is not an Array and it's length does not equal the defined length of 6.
  * @returns An object that has the same properties as an [[Quote]].
  */
 
@@ -108,8 +103,7 @@ export function decompressQuote(quote: CompressedQuote): IQuote {
  *  Compresses an attester signed [[Quote]] for storage and/or messaging.
  *
  * @param attesterSignedQuote An attester signed [[Quote]] object that will be sorted and stripped for messaging or storage.
- * @throws When attesterSignedQuote is missing any property defined in [[IQuoteAttesterSigned]].
- * @throws [[ERROR_COMPRESS_OBJECT]].
+ * @throws [[ERROR_COMPRESS_OBJECT]] when attesterSignedQuote is missing any property defined in [[IQuoteAttesterSigned]].
  *
  * @returns An ordered array of an attester signed [[Quote]].
  */
@@ -146,8 +140,7 @@ export function compressAttesterSignedQuote(
  *  Decompresses an attester signed [[Quote]] from storage and/or message.
  *
  * @param attesterSignedQuote A compressed attester signed [[Quote]] array that is reverted back into an object.
- * @throws When attesterSignedQuote is not an Array and it's length does not equal the defined length of 7.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when attesterSignedQuote is not an Array and it's length does not equal the defined length of 7.
  *
  * @returns An object that has the same properties as an attester signed [[Quote]].
  */
@@ -173,8 +166,7 @@ export function decompressAttesterSignedQuote(
  *  Compresses a [[Quote]] Agreement for storage and/or messaging.
  *
  * @param quoteAgreement A [[Quote]] Agreement object that will be sorted and stripped for messaging or storage.
- * @throws When quoteAgreement is missing any property defined in [[IQuoteAgreement]].
- * @throws [[ERROR_COMPRESS_OBJECT]].
+ * @throws [[ERROR_COMPRESS_OBJECT]] when quoteAgreement is missing any property defined in [[IQuoteAgreement]].
  *
  * @returns An ordered array of a [[Quote]] Agreement.
  */
@@ -210,8 +202,7 @@ export function compressQuoteAgreement(
  *  Decompresses a [[Quote]] Agreement from storage and/or message.
  *
  * @param quoteAgreement A compressed [[Quote]] Agreement array that is reverted back into an object.
- * @throws When quoteAgreement is not an Array and it's length does not equal the defined length of 9.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when quoteAgreement is not an Array and it's length does not equal the defined length of 9.
  *
  * @returns An object that has the same properties as a [[Quote]] Agreement.
  */

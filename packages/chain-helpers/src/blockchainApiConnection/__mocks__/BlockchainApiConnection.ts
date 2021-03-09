@@ -46,7 +46,11 @@
 
 import Blockchain from '../../blockchain/Blockchain'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { AccountInfo, ExtrinsicStatus, Index } from '@polkadot/types/interfaces'
+import {
+  AccountInfoWithProviders,
+  ExtrinsicStatus,
+  Index,
+} from '@polkadot/types/interfaces'
 import { GenericEventData, U64 } from '@polkadot/types'
 import type {
   IPublicIdentity,
@@ -254,8 +258,11 @@ const __mocked_api: any = {
       // default return value decodes to BN(0)
       // default return value decodes to AccountInfo with all entries holding BN(0)
       account: jest.fn(
-        async (address: IPublicIdentity['address'], cb): Promise<AccountInfo> =>
-          TYPE_REGISTRY.createType('AccountInfo')
+        async (
+          address: IPublicIdentity['address'],
+          cb
+        ): Promise<AccountInfoWithProviders> =>
+          TYPE_REGISTRY.createType('AccountInfoWithProviders')
       ),
     },
     attestation: {

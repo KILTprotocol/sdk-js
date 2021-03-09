@@ -5,7 +5,6 @@
  *
  * @packageDocumentation
  * @module BlockchainApiConnection
- * @preferred
  */
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
@@ -16,6 +15,7 @@ import Blockchain from '../blockchain/Blockchain'
 let instance: Promise<Blockchain> | null
 
 export const CUSTOM_TYPES: RegistryTypes = {
+  Balance: 'u128',
   PublicSigningKey: 'Hash',
   PublicBoxKey: 'Hash',
   Signature: 'MultiSignature',
@@ -24,8 +24,7 @@ export const CUSTOM_TYPES: RegistryTypes = {
   BlockNumber: 'u64',
   Index: 'u64',
   RefCount: 'u32',
-
-  ErrorCode: 'u16',
+  AccountInfo: 'AccountInfoWithProviders',
   Permissions: 'u32',
   DelegationNodeId: 'Hash',
   DelegationNode: {

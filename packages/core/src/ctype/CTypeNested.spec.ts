@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/ctype
- * @ignore
  */
 
 import { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'

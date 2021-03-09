@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/balance
- * @ignore
  */
 
 import { SubmittableResult } from '@polkadot/api'

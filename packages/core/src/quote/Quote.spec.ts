@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/quote
- * @ignore
  */
 
 import {

@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @module IMessage
+ */
+
 import { AnyJson } from '@polkadot/types/types'
 import { CompressedAttestation, IAttestation } from './Attestation'
 import { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'

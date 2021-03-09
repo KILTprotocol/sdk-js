@@ -7,7 +7,9 @@
   "license": "BSD-4-Clause",
   "scripts": {
     "build": "yarn workspaces foreach -pt --no-private run build",
+    "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
     "clean": "yarn workspaces foreach -p --no-private run clean",
+    "clean:docs": "rm -rf docs/api",
     "version": "yarn workspaces foreach version",
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
     "lint": "eslint packages --format=codeframe",
@@ -53,6 +55,8 @@
     "prettier": "^2.0.5",
     "ts-jest": "^26.1.4",
     "ts-node": "^9.1.1",
+    "typedoc": "^0.19",
+    "typedoc-plugin-external-module-name": "^4.0.6",
     "typescript": "^3.9.7"
   },
   "version": "0.20.0-rc.2"

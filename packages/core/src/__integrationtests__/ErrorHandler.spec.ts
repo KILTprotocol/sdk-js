@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group integration/errorhandler
- * @ignore
  */
 
 import BN from 'bn.js'

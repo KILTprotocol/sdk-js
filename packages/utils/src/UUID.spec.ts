@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/utils
- * @ignore
  */
 
 import UUID from './UUID'

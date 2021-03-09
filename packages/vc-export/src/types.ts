@@ -1,3 +1,7 @@
+/**
+ * @packageDocumentation
+ * @module VCExportTypes
+ */
 import { AnyJson } from '@polkadot/types/types'
 import { IDidDocumentPublicKey } from '@kiltprotocol/core'
 import { ICType } from '@kiltprotocol/types'

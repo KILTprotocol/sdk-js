@@ -1,8 +1,9 @@
 /**
- * [[ErrorHandler]] helps spot and determine transaction errors.
+ * ErrorHandler helps spot and determine transaction errors.
  *
  * @packageDocumentation
- * @ignore
+ * @module ErrorHandler
+ * @preferred
  */
 
 import { EventRecord } from '@polkadot/types/interfaces'

@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @module Verifier
+ */
+
 import { AttestedClaim, CType, SDKErrors, Identity } from '@kiltprotocol/core'
 import { ConfigService } from '@kiltprotocol/config'
 import {
@@ -119,7 +124,7 @@ export function newRequestBuilder(): PresentationRequestBuilder {
 }
 
 /**
- * [ASYNC] Check that the submitted attestations fulfil our requested.
+ * [ASYNC] Checks that the submitted attestations fulfil the ones requested upon presentation creation.
  *
  * @param attestedClaims The attested claims submitted by the claimer.
  * @param session The stored session object.

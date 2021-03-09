@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/claim
- * @ignore
  */
 
 import { IClaim } from '@kiltprotocol/types'

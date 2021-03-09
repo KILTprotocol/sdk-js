@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/actor
- * @ignore
  */
 
 import { CType, Identity } from '@kiltprotocol/core'
