@@ -880,6 +880,7 @@ __metadata:
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/messaging": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*"
     rimraf: ^3.0.2
     typescript: ^3.9.7
   languageName: unknown

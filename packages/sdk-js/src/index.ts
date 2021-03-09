@@ -12,6 +12,7 @@ import {
   SubscriptionPromise,
 } from '@kiltprotocol/chain-helpers'
 import * as ChainHelpers from '@kiltprotocol/chain-helpers'
+import * as Utils from '@kiltprotocol/utils'
 
 export * from '@kiltprotocol/types'
 export * from '@kiltprotocol/core'
@@ -26,6 +27,7 @@ export {
   BlockchainUtils,
   SubscriptionPromise,
   ChainHelpers,
+  Utils,
 }
 
 export default {
@@ -40,4 +42,5 @@ export default {
   BlockchainUtils,
   SubscriptionPromise,
   ChainHelpers,
+  Utils,
 }
