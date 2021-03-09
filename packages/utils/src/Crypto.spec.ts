@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/utils
- * @ignore
  */
 
 import * as string from '@polkadot/util/string'

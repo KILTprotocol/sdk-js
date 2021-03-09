@@ -8,7 +8,6 @@
  *
  * @packageDocumentation
  * @module DelegationRootNode
- * @preferred
  */
 
 import type {

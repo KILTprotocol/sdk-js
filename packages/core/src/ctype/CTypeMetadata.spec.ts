@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/ctype
- * @ignore
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'

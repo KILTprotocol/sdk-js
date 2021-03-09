@@ -2,12 +2,14 @@
  * ExtrinsicErrors are KILT-specific errors, with associated codes and descriptions.
  *
  * @packageDocumentation
- * @module ExtrinsicErrors
- * @preferred
+ * @module ErrorHandler
  */
 
 import { ModuleError } from './ErrorHandler'
 
+/**
+ * @internal
+ */
 export class ExtrinsicError extends Error {
   public errorCode: number
 
@@ -17,6 +19,9 @@ export class ExtrinsicError extends Error {
   }
 }
 
+/**
+ * @internal
+ */
 export const ExtrinsicErrors = {
   CType: {
     ERROR_CTYPE_NOT_FOUND: { code: 11000, message: 'CType not found' },
@@ -104,6 +109,7 @@ export const ExtrinsicErrors = {
 }
 
 /**
+ * @internal
  * PalletIndex reflects the numerical index of a pallet assigned in the chain's metadata.
  */
 export enum PalletIndex {
@@ -112,6 +118,10 @@ export enum PalletIndex {
   Delegation = 13,
   DID = 14,
 }
+
+/**
+ * @internal
+ */
 export interface IPalletToExtrinsicErrors {
   [key: number]: {
     [key: number]: {
@@ -122,6 +132,7 @@ export interface IPalletToExtrinsicErrors {
 }
 
 /**
+ * @internal
  * This dictionary holds all [[ExtrinsicError]]s, divided by pallets.
  */
 export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
@@ -162,6 +173,7 @@ export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
 }
 
 /**
+ * @internal
  * Maps a [[ModuleError]] to its corresponding [[ExtrinsicError]].
  *
  * @param p The parameter object.

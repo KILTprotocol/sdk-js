@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group integration/delegation
- * @ignore
  */
 
 import { Permission, ICType } from '@kiltprotocol/types'

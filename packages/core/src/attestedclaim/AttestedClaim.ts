@@ -1,5 +1,5 @@
 /**
- * In KILT, the [[AttestedClaim]] is a **credential**, which a Claimer can store locally and share with Verifiers as they wish.
+ * In KILT, an [[AttestedClaim]] is a **credential**, which a Claimer can store locally and share with Verifiers as they wish.
  *
  * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[AttestedClaim]] object.
  * This [[AttestedClaim]] also contains the original request for attestation.
@@ -7,7 +7,6 @@
  *
  * @packageDocumentation
  * @module AttestedClaim
- * @preferred
  */
 
 import {
@@ -84,7 +83,7 @@ export default class AttestedClaim implements IAttestedClaim {
    *
    * @param attestedClaimInput - The base object with all required input, from which to create the attested claim.
    * @example ```javascript
-   * // Create an [[AttestedClaim]] upon successful [[Attestation]] creation:
+   * // Create an `AttestedClaim` upon successful `Attestation` creation:
    * const credential = new AttestedClaim(attestedClaimInput);
    * ```
    */
@@ -100,7 +99,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * (ASYNC) Verifies whether the attested claim is valid. It is valid if:
    * * the data is valid (see [[verifyData]]);
    * and
-   * * the [[Attestation]] object for this attested claim is valid (see [[Attestation.verify]], where the **chain** is queried).
+   * * the [[Attestation]] object for this attested claim is valid (see [[Attestation.checkValidity]], where the **chain** is queried).
    *
    * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
    *
@@ -132,7 +131,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param attestedClaim - The attested claim to verify.
    * @returns Whether the attested claim's data is valid.
    * @example ```javascript
-   * attestedClaim.verifyData();
+   * const verificationResult = attestedClaim.verifyData();
    * ```
    */
   public static verifyData(attestedClaim: IAttestedClaim): boolean {
@@ -155,8 +154,7 @@ export default class AttestedClaim implements IAttestedClaim {
    *  [STATIC] Verifies the data of each element of the given Array of IAttestedClaims.
    *
    * @param legitimations Array of IAttestedClaims to validate.
-   * @throws When one of the IAttestedClaims data is unable to be verified.
-   * @throws [[ERROR_LEGITIMATIONS_UNVERIFIABLE]].
+   * @throws [[ERROR_LEGITIMATIONS_UNVERIFIABLE]] when one of the IAttestedClaims data is unable to be verified.
    *
    * @returns Boolean whether each element of the given Array of IAttestedClaims is verifiable.
    */

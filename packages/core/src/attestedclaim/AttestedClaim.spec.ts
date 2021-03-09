@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/attestation
- * @ignore
  */
 
 import { IClaim, CompressedAttestedClaim, ICType } from '@kiltprotocol/types'

@@ -1,7 +1,6 @@
 /**
  * @packageDocumentation
  * @module BalanceUtils
- * @preferred
  */
 
 import BN from 'bn.js'

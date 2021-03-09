@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group integration/ctype
- * @ignore
  */
 
 import { ICType } from '@kiltprotocol/types'

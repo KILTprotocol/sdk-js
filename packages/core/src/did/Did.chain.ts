@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module DID
  */
 
 import { Option } from '@polkadot/types'
@@ -15,6 +15,10 @@ import {
   IEncodedDidRecord,
 } from './Did.utils'
 
+/**
+ * @param identifier
+ * @internal
+ */
 export async function queryByIdentifier(
   identifier: IDid['identifier']
 ): Promise<IDid | null> {
@@ -27,6 +31,10 @@ export async function queryByIdentifier(
   return decoded
 }
 
+/**
+ * @param address
+ * @internal
+ */
 export async function queryByAddress(
   address: IPublicIdentity['address']
 ): Promise<IDid | null> {
@@ -39,6 +47,10 @@ export async function queryByAddress(
   return decoded
 }
 
+/**
+ * @param identity
+ * @internal
+ */
 export async function remove(
   identity: Identity
 ): Promise<SubmittableExtrinsic> {
@@ -47,6 +59,11 @@ export async function remove(
   return blockchain.signTx(identity, tx)
 }
 
+/**
+ * @param did
+ * @param identity
+ * @internal
+ */
 export async function store(
   did: IDid,
   identity: Identity

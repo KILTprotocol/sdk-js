@@ -5,7 +5,7 @@
  * The DelegationDecoder methods transform a Codec type into an object of a KILT type.
  *
  * @packageDocumentation
- * @ignore
+ * @module DelegationDecoder
  */
 
 /**

@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group integration/attestation
- * @ignore
  */
 
 import { IAttestedClaim, IClaim } from '@kiltprotocol/types'

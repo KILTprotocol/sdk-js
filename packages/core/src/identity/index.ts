@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * @ignore
- */
-
 import Identity from './Identity'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
 

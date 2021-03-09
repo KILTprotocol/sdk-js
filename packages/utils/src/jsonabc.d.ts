@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @ignore
+ */
+
 // Type definitions for jsonabc 2.3
 // Project: http://novicelab.org/jsonabc
 // Definitions by: Florian Keller <https://github.com/ffflorian>

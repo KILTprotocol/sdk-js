@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/requestforattestation
- * @ignore
  */
 
 /* eslint-disable dot-notation */

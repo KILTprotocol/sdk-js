@@ -6,7 +6,6 @@
  *
  * @packageDocumentation
  * @module Kilt
- * @preferred
  */
 
 import { ConfigService } from '@kiltprotocol/config'

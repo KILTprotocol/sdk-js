@@ -1,8 +1,7 @@
 /**
- * @packageDocumentation
  * @group unit/vc-export
- * @ignore
  */
+
 import { IRequestForAttestation } from '@kiltprotocol/types'
 import { Attestation, AttestedClaim, CType, Did } from '@kiltprotocol/core'
 import toVC from './exportToVerifiableCredential'

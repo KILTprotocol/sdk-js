@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @module IBlockchain
+ */
+
 import { ApiPromise } from '@polkadot/api'
 import { Header } from '@polkadot/types/interfaces/types'
 import BN from 'bn.js'

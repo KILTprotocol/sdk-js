@@ -5,7 +5,6 @@
  *
  * @packageDocumentation
  * @module Crypto
- * @preferred
  */
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'

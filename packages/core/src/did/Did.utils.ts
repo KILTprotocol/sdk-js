@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module DIDUtils
  */
 
 import { Option, Struct, u8, Vec } from '@polkadot/types'

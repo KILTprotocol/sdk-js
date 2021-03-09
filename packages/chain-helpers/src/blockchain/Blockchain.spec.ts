@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/blockchain
- * @ignore
  */
 
 /* eslint-disable dot-notation */

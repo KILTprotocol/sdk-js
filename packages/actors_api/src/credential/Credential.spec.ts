@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/credential
- * @ignore
  */
 
 import {

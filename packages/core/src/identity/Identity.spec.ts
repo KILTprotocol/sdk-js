@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/identity
- * @ignore
  */
 
 import * as u8aUtil from '@polkadot/util/u8a'

@@ -1,7 +1,3 @@
-/**
- * @packageDocumentation
- * @ignore
- */
 import verification from './verificationUtils'
 import presentation from './presentationUtils'
 import { fromAttestedClaim } from './exportToVerifiableCredential'

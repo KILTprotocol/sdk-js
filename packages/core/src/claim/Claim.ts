@@ -9,7 +9,6 @@
  *
  * @packageDocumentation
  * @module Claim
- * @preferred
  */
 
 import {
@@ -37,8 +36,7 @@ export default class Claim implements IClaim {
    *
    * @param claimInput IClaim to instantiate the new claim from.
    * @param cTypeSchema ICType['schema'] to verify claimInput's contents.
-   * @throws When claimInput's contents could not be verified with the provided cTypeSchema.
-   * @throws [[ERROR_CLAIM_UNVERIFIABLE]].
+   * @throws [[ERROR_CLAIM_UNVERIFIABLE]] when claimInput's contents could not be verified with the provided cTypeSchema.
    *
    * @returns An instantiated Claim.
    */
@@ -92,8 +90,7 @@ export default class Claim implements IClaim {
    * @param ctypeInput [[ICType]] for which the Claim will be built.
    * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
    * @param claimOwner IPublicIdentity['address'] to be used as the Claim owner.
-   * @throws When claimInput's contents could not be verified with the schema of the provided ctypeInput.
-   * @throws [[ERROR_CLAIM_UNVERIFIABLE]].
+   * @throws [[ERROR_CLAIM_UNVERIFIABLE]] when claimInput's contents could not be verified with the schema of the provided ctypeInput.
    *
    * @returns An instantiated Claim.
    */
@@ -155,8 +152,7 @@ export default class Claim implements IClaim {
    *  Decompresses the [[IClaim]] from storage and/or message.
    *
    * @param claim A [[CompressedClaim]] array that is reverted back into an object.
-   * @throws When an [[CompressedClaim]] is not an Array or it's length is unequal 3.
-   * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+   * @throws [[ERROR_DECOMPRESSION_ARRAY]] when an [[CompressedClaim]] is not an Array or it's length is unequal 3.
    * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
    */
   public static decompress(claim: CompressedClaim): IClaim
@@ -164,8 +160,7 @@ export default class Claim implements IClaim {
    *  Decompresses the Partial [[IClaim]] from storage and/or message.
    *
    * @param claim An [[CompressedPartialClaim]] array that is reverted back into an object.
-   * @throws When an [[CompressedPartialClaim]] is not an Array or it's length is unequal 3.
-   * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+   * @throws [[ERROR_DECOMPRESSION_ARRAY]] when an [[CompressedPartialClaim]] is not an Array or it's length is unequal 3.
    * @returns An [[PartialClaim]] object that has the same properties as the [[CompressedPartialClaim]].
    */
   public static decompress(claim: CompressedPartialClaim): PartialClaim

@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module DelegationNodeUtils
  */
 
 import { IAttestation, IDelegationNode } from '@kiltprotocol/types'

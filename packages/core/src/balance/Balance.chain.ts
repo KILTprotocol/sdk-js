@@ -6,7 +6,6 @@
  *
  * @packageDocumentation
  * @module Balance
- * @preferred
  */
 
 import { UnsubscribePromise } from '@polkadot/api/types'
@@ -27,7 +26,6 @@ import BalanceUtils from './Balance.utils'
  * <BR>
  *
  * ```javascript
- * import * as sdk from '@kiltprotocol/prototype-sdk';
  *
  * const address = ...
  * sdk.Balance.getBalance(address)
@@ -55,8 +53,6 @@ export async function getBalance(
  * <BR>
  *
  * ```javascript
- * import * as sdk from '@kiltprotocol/prototype-sdk';
- *
  * const address = ...
  * const unsubscribe = sdk.Balance.listenToBalanceChanges(address,
  *   (account: IPublicIdentity['address'], balance: BN, change: BN) => {
@@ -101,8 +97,6 @@ export async function listenToBalanceChanges(
  * <BR>
  *
  * ```javascript
- * import * as sdk from '@kiltprotocol/prototype-sdk';
- *
  * const identity = ...
  * const address = ...
  * const amount: BN = new BN(42)

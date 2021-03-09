@@ -3,7 +3,6 @@
  *
  * @packageDocumentation
  * @module SDKErrors
- * @preferred
  */
 
 import { NonceHash } from '@kiltprotocol/types'

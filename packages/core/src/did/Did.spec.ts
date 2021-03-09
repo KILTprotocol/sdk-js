@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/did
- * @ignore
  */
 
 import { U8aFixed } from '@polkadot/types'

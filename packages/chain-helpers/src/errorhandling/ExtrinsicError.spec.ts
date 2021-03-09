@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/errorhandling
- * @ignore
  */
 
 import {

@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @module ISubscriptionPromise
+ */
+
 import type { ISubmittableResult } from '.'
 
 /**

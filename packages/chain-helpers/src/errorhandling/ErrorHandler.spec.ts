@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/errorhandling
- * @ignore
  */
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */

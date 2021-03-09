@@ -72,14 +72,16 @@ export default class DelegationNode extends DelegationBaseNode
    *
    * @example
    * ```
+   * // Sign the hash of the delegation node...
    * const delegate: Identity = ...
    * const signature:string = delegate.signStr(newDelegationNode.generateHash())
    *
+   * // Store the signed hash on the Kilt chain...
    * const myIdentity: Identity = ...
    * newDelegationNode.store(myIdentity, signature)
    * ```
    *
-   * @returns The hash representation of this delegation as a hex string.
+   * @returns The hash representation of this delegation **as a hex string**.
    */
   public generateHash(): string {
     const propsToHash: Array<Uint8Array | string> = [this.id, this.rootId]
@@ -100,8 +102,7 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * [ASYNC] Fetches the root of this delegation node.
    *
-   * @throws When the rootId could not be queried.
-   * @throws [[ERROR_ROOT_NODE_QUERY]].
+   * @throws [[ERROR_ROOT_NODE_QUERY]] when the rootId could not be queried.
    * @returns Promise containing the [[DelegationRootNode]] of this delegation node.
    */
   public async getRoot(): Promise<DelegationRootNode> {
@@ -130,7 +131,7 @@ export default class DelegationNode extends DelegationBaseNode
    * [ASYNC] Stores the delegation node on chain.
    *
    * @param identity Account used to store the delegation node.
-   * @param signature Signature of the delegate to ensure it's done under his permission.
+   * @param signature Signature of the delegate to ensure it is done under the delegate's permission.
    * @returns Promise containing a SubmittableExtrinsic.
    */
   public async store(
@@ -142,7 +143,7 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * [ASYNC] Verifies the delegation node by querying it from chain and checking its revoke status.
+   * [ASYNC] Verifies the delegation node by querying it from chain and checking its revocation status.
    *
    * @returns Promise containing a boolean flag.
    */

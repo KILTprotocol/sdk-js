@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * @ignore
- */
-
 import Did, {
   IDid,
   IDidDocument,

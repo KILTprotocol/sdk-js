@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * @ignore
- */
-
 import CType from './CType'
 import CTypeUtils from './CType.utils'
 import CTypeMetadata from './CTypeMetadata'

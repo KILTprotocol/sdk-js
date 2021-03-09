@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module DelegationRootNode
  */
 
 import { Option } from '@polkadot/types'
@@ -17,6 +17,11 @@ import {
 } from './DelegationDecoder'
 import DelegationRootNode from './DelegationRootNode'
 
+/**
+ * @param delegation
+ * @param identity
+ * @internal
+ */
 export async function store(
   delegation: IDelegationRootNode,
   identity: Identity
@@ -29,6 +34,10 @@ export async function store(
   return blockchain.signTx(identity, tx)
 }
 
+/**
+ * @param delegationId
+ * @internal
+ */
 export async function query(
   delegationId: IDelegationRootNode['id']
 ): Promise<DelegationRootNode | null> {
@@ -51,6 +60,8 @@ export async function query(
 }
 
 /**
+ * @internal
+ *
  * Revokes a full delegation tree, also revoking all constituent nodes.
  *
  * @param delegation The [[DelegationRootNode]] node in the delegation tree at which to revoke.

@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @module ActorsTypes
+ */
+
 export { ICredential } from './credential/Credential'
 export {
   IPresentationReq,

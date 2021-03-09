@@ -3,8 +3,7 @@
  * the logging level as well as storing custom configuration options.
  *
  * @packageDocumentation
- * @ignore
- * @preferred
+ * @module ConfigService
  */
 
 import {

@@ -10,7 +10,6 @@
  *
  * @packageDocumentation
  * @module Identity
- * @preferred
  */
 
 import { Keyring } from '@polkadot/keyring'
@@ -81,9 +80,8 @@ export default class Identity implements IIdentity {
    * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
    * @param options Optional parameters.
    * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
-   * @throws When phraseArg contains fewer than 12 correctly separated mnemonic words.
-   * @throws When the phraseArg could not be validated.
-   * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]], [[ERROR_MNEMONIC_PHRASE_INVALID]].
+   * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]] when phraseArg contains fewer than 12 correctly separated mnemonic words.
+   * @throws [[ERROR_MNEMONIC_PHRASE_INVALID]] when phraseArg could not be validated.
    * @returns An [[Identity]].
    * @example ```javascript
    * const mnemonic = Identity.generateMnemonic();
@@ -225,7 +223,7 @@ export default class Identity implements IIdentity {
    * @returns The [[PublicIdentity]], corresponding to the [[Identity]].
    * @example ```javascript
    * const mnemonic = Identity.generateMnemonic();
-   * const alice = await Kilt.Identity.buildFromMnemonic(mnemonic);
+   * const alice = Kilt.Identity.buildFromMnemonic(mnemonic);
    * alice.getPublicIdentity();
    * ```
    */

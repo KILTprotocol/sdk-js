@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 /**
+ * @packageDocumentation
  * @module DataUtils
  */
 
@@ -16,8 +17,7 @@ import { verify } from './Crypto'
  *
  * @param address Address string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
- * @throws When address not of type string or of invalid Format.
- * @throws [[ERROR_ADDRESS_TYPE]].
+ * @throws [[ERROR_ADDRESS_TYPE]] when address not of type string or of invalid Format.
  *
  * @returns Boolean whether the given address string checks out against the Format.
  */
@@ -40,8 +40,7 @@ export function validateAddress(
  *
  * @param hash Hash string to validate for correct Format.
  * @param name Contextual name of the address, e.g. "claim owner".
- * @throws When hash not of type string or of invalid Format.
- * @throws [[ERROR_HASH_TYPE]].
+ * @throws [[ERROR_HASH_TYPE]] when hash not of type string or of invalid Format.
  *
  * @returns Boolean whether the given hash string checks out against the Format.
  */
@@ -62,9 +61,8 @@ export function validateHash(hash: string, name: string): boolean {
  * @param data The signed string of data.
  * @param signature The signature of the data to be validated.
  * @param signer Address of the signer identity.
- * @throws When parameters are of invalid type.
- * @throws When the signature could not be validated against the data.
- * @throws [[ERROR_SIGNATURE_DATA_TYPE]], [[ERROR_SIGNATURE_UNVERIFIABLE]].
+ * @throws [[ERROR_SIGNATURE_DATA_TYPE]] when parameters are of invalid type.
+ * @throws [[ERROR_SIGNATURE_UNVERIFIABLE]] when the signature could not be validated against the data.
  *
  * @returns Boolean whether the signature is valid for the given data.
  */

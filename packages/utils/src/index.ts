@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * @ignore
- */
-
 export * as Crypto from './Crypto'
 export * as jsonabc from './jsonabc'
 export * as UUID from './UUID'

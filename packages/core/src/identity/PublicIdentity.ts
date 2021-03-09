@@ -3,7 +3,6 @@
  *
  * @packageDocumentation
  * @module PublicIdentity
- * @preferred
  */
 
 import { IPublicIdentity } from '@kiltprotocol/types'
