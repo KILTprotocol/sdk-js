@@ -26,10 +26,10 @@
   },
   "dependencies": {
     "@kiltprotocol/types": "workspace:*",
-    "@polkadot/keyring": "^5.4.4",
-    "@polkadot/types": "^3.6.4",
-    "@polkadot/util": "^5.4.4",
-    "@polkadot/util-crypto": "^5.4.4",
+    "@polkadot/keyring": "^5.9.2",
+    "@polkadot/types": "^3.11.1",
+    "@polkadot/util": "^5.9.2",
+    "@polkadot/util-crypto": "^5.9.2",
     "tweetnacl": "^1.0.3",
     "uuid": "^8.1.0"
   }

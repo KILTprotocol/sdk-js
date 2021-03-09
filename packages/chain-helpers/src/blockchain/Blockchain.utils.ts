@@ -122,13 +122,10 @@ async function submitSignedTxErrorMatched(
     switch (true) {
       case reason.message.includes(TxOutdated):
         return Promise.reject(SDKErrors.ERROR_TRANSACTION_OUTDATED())
-        break
       case reason.message.includes(TxPriority):
         return Promise.reject(SDKErrors.ERROR_TRANSACTION_PRIORITY())
-        break
       case reason.message.includes(TxDuplicate):
         return Promise.reject(SDKErrors.ERROR_TRANSACTION_DUPLICATE())
-        break
       default:
         return Promise.reject(reason)
     }
