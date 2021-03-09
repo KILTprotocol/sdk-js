@@ -29,6 +29,7 @@
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/messaging": "workspace:*",
-    "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/types": "workspace:*",
+    "@kiltprotocol/utils": "workspace:*"
   }
 }
