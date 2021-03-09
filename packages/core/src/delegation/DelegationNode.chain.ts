@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module DelegationNode
  */
 
 import { Option } from '@polkadot/types'
@@ -20,6 +20,12 @@ import permissionsAsBitset from './DelegationNode.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationBaseNode')
 
+/**
+ * @param delegation
+ * @param identity
+ * @param signature
+ * @internal
+ */
 export async function store(
   delegation: IDelegationNode,
   identity: Identity,
@@ -40,6 +46,10 @@ export async function store(
   return blockchain.signTx(identity, tx)
 }
 
+/**
+ * @param delegationId
+ * @internal
+ */
 export async function query(
   delegationId: IDelegationNode['id']
 ): Promise<DelegationNode | null> {
@@ -64,13 +74,15 @@ export async function query(
 }
 
 /**
+ * @internal
+ *
  * Revokes part of a delegation tree at specified node, also revoking all nodes below.
  *
  * @param delegationId The id of the node in the delegation tree at which to revoke.
  * @param identity An identity which is authorized to revoke. Either the owner of the current node or of one of the parents.
  * @param maxDepth How many nodes may be traversed upwards in the hierarchy when searching for a node owned by `identity`. Each traversal will add to the transaction fee. Therefore a higher number will increase the fees locked until the transaction is complete. A number lower than the actual required traversals will result in a failed extrinsic (node will not be revoked).
  * @param maxRevocations How many delegation nodes may be revoked during the process. Each revocation adds to the transaction fee. A higher number will require more fees to be locked while an insufficiently high number will lead to premature abortion of the revocation process, leaving some nodes unrevoked. Revocations will first be performed on child nodes, therefore the current node is only revoked when this is accurate.
- * @returns Signed [[SubmittableExtrinsic]] ready to be dispatched.
+ * @returns A signed SubmittableExtrinsic ready to be dispatched.
  */
 export async function revoke(
   delegationId: IDelegationNode['id'],
@@ -87,6 +99,10 @@ export async function revoke(
   return blockchain.signTx(identity, tx)
 }
 
+/**
+ * @param delegationNodeId
+ * @internal
+ */
 // function lives here to avoid circular imports between DelegationBaseNode and DelegationNode
 export async function getChildren(
   delegationNodeId: DelegationBaseNode['id']

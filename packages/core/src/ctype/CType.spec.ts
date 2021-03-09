@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/ctype
- * @ignore
  */
 
 import { SubmittableResult } from '@polkadot/api'

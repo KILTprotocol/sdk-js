@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group integration/blockchain
- * @ignore
  */
 
 import { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'

@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/messaging
- * @ignore
  */
 
 import {

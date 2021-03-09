@@ -7,7 +7,6 @@
  *
  * @packageDocumentation
  * @module Quote
- * @preferred
  */
 
 import Ajv from 'ajv'
@@ -57,8 +56,7 @@ export function validateQuoteSchema(
  * Builds a [[Quote]] object, from a simple object with the same properties.
  *
  * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
- * @throws When the derived basicQuote can not be validated with the QuoteSchema.
- * @throws [[ERROR_QUOTE_MALFORMED]].
+ * @throws [[ERROR_QUOTE_MALFORMED]] when the derived basicQuote can not be validated with the QuoteSchema.
  *
  * @returns A [[Quote]] object signed by an Attester.
  */
@@ -107,8 +105,7 @@ export function createAttesterSignature(
  *
  * @param quoteInput A [[Quote]] object.
  * @param identity [[Identity]] used to sign the object.
- * @throws When the derived quoteInput can not be validated with the QuoteSchema.
- * @throws [[ERROR_QUOTE_MALFORMED]].
+ * @throws [[ERROR_QUOTE_MALFORMED]] when the derived quoteInput can not be validated with the QuoteSchema.
  *
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
  */

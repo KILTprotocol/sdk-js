@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group integration/did
- * @ignore
  */
 
 import { Did, Identity } from '..'

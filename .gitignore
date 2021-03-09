@@ -30,7 +30,7 @@ lib
 settings.json
 
 # doc 
-docs/api
+**/docs/api
 
 # misc
 /.idea

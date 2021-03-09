@@ -4,11 +4,10 @@
  * * There are two different ways of creating presentations. The simplest way is to create an [[AttestedClaim]].
  * * An attested claim can be linked to an identity and the verifier might be able to track the usage of that credential.
  * * When creating a presentation a privacy enhanced variant can be forced, which ensures that the identity of the claimer
- * * stays hidden and that the claimer cannot be tracked over multiple sessions.
+ * stays hidden and that the claimer cannot be tracked over multiple sessions.
  *
  * @packageDocumentation
  * @module Credential
- * @preferred
  */
 
 import { AttestedClaim } from '@kiltprotocol/core'

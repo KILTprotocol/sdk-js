@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * @module VerificationUtils
+ */
+
 import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
 import { signatureVerify, blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'

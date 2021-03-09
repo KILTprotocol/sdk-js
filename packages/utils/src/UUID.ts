@@ -3,8 +3,8 @@
  *
  * UUIDs are used for example in [[RequestForAttestation]] to generate hashes.
  *
- * @module UUID
  * @packageDocumentation
+ * @module UUID
  */
 
 import { v4 as uuid } from 'uuid'

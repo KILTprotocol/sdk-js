@@ -1,8 +1,3 @@
-/**
- * @packageDocumentation
- * @ignore
- */
-
 import * as Quote from './Quote'
 
 export default Quote

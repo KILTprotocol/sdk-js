@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/vc-export",
-  "version": "0.19.1-37",
+  "version": "0.19.1-38",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
@@ -10,8 +10,7 @@
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "yarn clean && yarn build:ts",
-    "build:ts": "tsc --declaration -p tsconfig.build.json",
-    "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll"
+    "build:ts": "tsc --declaration -p tsconfig.build.json"
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {

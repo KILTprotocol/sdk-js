@@ -1,7 +1,5 @@
 /**
- * @packageDocumentation
  * @group unit/ConfigService
- * @ignore
  */
 
 /* eslint-disable dot-notation */

@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module DelegationBaseNode
  */
 
 import { Option, Vec } from '@polkadot/types'
@@ -15,6 +15,10 @@ function decodeDelegatedAttestations(queryResult: Vec<H256>): string[] {
   return queryResult.map((hash) => hash.toString())
 }
 
+/**
+ * @param id
+ * @internal
+ */
 export async function getAttestationHashes(
   id: IDelegationBaseNode['id']
 ): Promise<string[]> {
@@ -25,6 +29,10 @@ export async function getAttestationHashes(
   return decodeDelegatedAttestations(encodedHashes)
 }
 
+/**
+ * @param id
+ * @internal
+ */
 export async function getChildIds(
   id: IDelegationBaseNode['id']
 ): Promise<string[]> {
@@ -34,6 +42,10 @@ export async function getChildIds(
   return childIds.map((hash) => hash.toString())
 }
 
+/**
+ * @param childIds
+ * @internal
+ */
 export async function fetchChildren(
   childIds: string[]
 ): Promise<Array<CodecWithId<Option<IChainDelegationNode>>>> {
