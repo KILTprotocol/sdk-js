@@ -75,9 +75,11 @@
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#decompressschema" class="tsd-kind-icon">decompress<wbr>Schema</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#errorcheck" class="tsd-kind-icon">error<wbr>Check</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#gethashforschema" class="tsd-kind-icon">get<wbr>Hash<wbr>For<wbr>Schema</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#getidforctypehash" class="tsd-kind-icon">get<wbr>IdForCType<wbr>Hash</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#getidforschema" class="tsd-kind-icon">get<wbr>IdFor<wbr>Schema</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#validatenestedschemas" class="tsd-kind-icon">validate<wbr>Nested<wbr>Schemas</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#verifyclaimstructure" class="tsd-kind-icon">verify<wbr>Claim<wbr>Structure</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#verifyowner" class="tsd-kind-icon">verify<wbr>Owner</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#verifyschema" class="tsd-kind-icon">verify<wbr>Schema</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#verifyschemawitherrors" class="tsd-kind-icon">verify<wbr>Schema<wbr>With<wbr>Errors</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="ctypeutils.html#verifystored" class="tsd-kind-icon">verify<wbr>Stored</a></li>
@@ -98,7 +100,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L188">src/ctype/CType.utils.ts:188</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L192">packages/core/src/ctype/CType.utils.ts:192</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -130,7 +132,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L133">src/ctype/CType.utils.ts:133</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L138">packages/core/src/ctype/CType.utils.ts:138</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -139,10 +141,7 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When any of the four required properties of the cTypeSchema are missing.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_compress_object">ERROR_COMPRESS_OBJECT</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_compress_object">ERROR_COMPRESS_OBJECT</a> when any of the four required properties of the cTypeSchema are missing.</p>
 									</dd>
 								</dl>
 							</div>
@@ -170,7 +169,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L203">src/ctype/CType.utils.ts:203</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L206">packages/core/src/ctype/CType.utils.ts:206</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -179,10 +178,7 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When either the cType is not an Array or it&#39;s length is not equal to the defined length of 3.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a> when either the cType is not an Array or it&#39;s length is not equal to the defined length of 3.</p>
 									</dd>
 								</dl>
 							</div>
@@ -210,7 +206,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L165">src/ctype/CType.utils.ts:165</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L169">packages/core/src/ctype/CType.utils.ts:169</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -219,10 +215,7 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When either the cTypeSchema is not an Array or it&#39;s length is not equal to the defined length of 4.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a> when either the cTypeSchema is not an Array or it&#39;s length is not equal to the defined length of 4.</p>
 									</dd>
 								</dl>
 							</div>
@@ -250,7 +243,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L101">src/ctype/CType.utils.ts:101</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L107">packages/core/src/ctype/CType.utils.ts:107</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -260,16 +253,13 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When input does not correspond to either it&#39;s schema, or the CTypeWrapperModel.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_object_malformed">ERROR_OBJECT_MALFORMED</a> when input does not correspond to either it&#39;s schema, or the CTypeWrapperModel.</p>
 									</dd>
 									<dt>throws</dt>
-									<dd><p>When the input&#39;s hash does not match the hash calculated from ICType&#39;s schema.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_hash_malformed">ERROR_HASH_MALFORMED</a> when the input&#39;s hash does not match the hash calculated from ICType&#39;s schema.</p>
 									</dd>
 									<dt>throws</dt>
-									<dd><p>When the input&#39;s owner is not of type string or null.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_object_malformed">ERROR_OBJECT_MALFORMED</a>, <a href="../enums/sdkerror.errorcode.html#error_hash_malformed">ERROR_HASH_MALFORMED</a>, <a href="../enums/sdkerror.errorcode.html#error_ctype_owner_type">ERROR_CTYPE_OWNER_TYPE</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_ctype_owner_type">ERROR_CTYPE_OWNER_TYPE</a> when the input&#39;s owner is not of type string or null.</p>
 									</dd>
 								</dl>
 							</div>
@@ -296,13 +286,36 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L76">src/ctype/CType.utils.ts:76</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L79">packages/core/src/ctype/CType.utils.ts:79</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>schema: <span class="tsd-signature-type">schemaPropsForHashing</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="getidforctypehash" class="tsd-anchor"></a>
+					<h3>get<wbr>IdForCType<wbr>Hash</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>IdForCType<wbr>Hash<span class="tsd-signature-symbol">(</span>hash<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L89">packages/core/src/ctype/CType.utils.ts:89</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>hash: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -319,7 +332,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L86">src/ctype/CType.utils.ts:86</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L93">packages/core/src/ctype/CType.utils.ts:93</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -342,7 +355,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L225">src/ctype/CType.utils.ts:225</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L228">packages/core/src/ctype/CType.utils.ts:228</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -391,19 +404,16 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L54">src/ctype/CType.utils.ts:54</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L53">packages/core/src/ctype/CType.utils.ts:53</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p> Verifies the Structure of the provided IClaim[&#39;contents&#39;] with ICType[&#39;schema&#39;].</p>
+									<p> Verifies the structure of the provided IClaim[&#39;contents&#39;] with ICType[&#39;schema&#39;].</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When schema does not correspond to the CTypeModel.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_object_malformed">ERROR_OBJECT_MALFORMED</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_object_malformed">ERROR_OBJECT_MALFORMED</a> when schema does not correspond to the CTypeModel.</p>
 									</dd>
 								</dl>
 							</div>
@@ -428,6 +438,29 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="verifyowner" class="tsd-anchor"></a>
+					<h3>verify<wbr>Owner</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">verify<wbr>Owner<span class="tsd-signature-symbol">(</span>ctype<span class="tsd-signature-symbol">: </span><a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L67">packages/core/src/ctype/CType.utils.ts:67</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>ctype: <a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 					<a name="verifyschema" class="tsd-anchor"></a>
 					<h3>verify<wbr>Schema</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
@@ -437,7 +470,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L37">src/ctype/CType.utils.ts:37</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L37">packages/core/src/ctype/CType.utils.ts:37</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -463,7 +496,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L17">src/ctype/CType.utils.ts:17</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L17">packages/core/src/ctype/CType.utils.ts:17</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -492,7 +525,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/ctype/CType.utils.ts#L64">src/ctype/CType.utils.ts:64</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/ctype/CType.utils.ts#L63">packages/core/src/ctype/CType.utils.ts:63</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -539,6 +572,9 @@
 						<a href="ctypeutils.html#gethashforschema" class="tsd-kind-icon">get<wbr>Hash<wbr>For<wbr>Schema</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="ctypeutils.html#getidforctypehash" class="tsd-kind-icon">get<wbr>IdForCType<wbr>Hash</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="ctypeutils.html#getidforschema" class="tsd-kind-icon">get<wbr>IdFor<wbr>Schema</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
@@ -546,6 +582,9 @@
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="ctypeutils.html#verifyclaimstructure" class="tsd-kind-icon">verify<wbr>Claim<wbr>Structure</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="ctypeutils.html#verifyowner" class="tsd-kind-icon">verify<wbr>Owner</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="ctypeutils.html#verifyschema" class="tsd-kind-icon">verify<wbr>Schema</a>
@@ -569,13 +608,16 @@
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>

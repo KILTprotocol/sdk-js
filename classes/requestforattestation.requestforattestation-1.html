@@ -92,14 +92,12 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="requestforattestation.requestforattestation-1.html#ctypehash" class="tsd-kind-icon">c<wbr>Type<wbr>Hash</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="requestforattestation.requestforattestation-1.html#claim" class="tsd-kind-icon">claim</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="requestforattestation.requestforattestation-1.html#claimhashtree" class="tsd-kind-icon">claim<wbr>Hash<wbr>Tree</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="requestforattestation.requestforattestation-1.html#claimowner" class="tsd-kind-icon">claim<wbr>Owner</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="requestforattestation.requestforattestation-1.html#claimhashes" class="tsd-kind-icon">claim<wbr>Hashes</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="requestforattestation.requestforattestation-1.html#claimnoncemap" class="tsd-kind-icon">claim<wbr>Nonce<wbr>Map</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="requestforattestation.requestforattestation-1.html#claimersignature" class="tsd-kind-icon">claimer<wbr>Signature</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="requestforattestation.requestforattestation-1.html#delegationid" class="tsd-kind-icon">delegation<wbr>Id</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="requestforattestation.requestforattestation-1.html#legitimations" class="tsd-kind-icon">legitimations</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="requestforattestation.requestforattestation-1.html#privacyenhancement" class="tsd-kind-icon">privacy<wbr>Enhancement</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="requestforattestation.requestforattestation-1.html#roothash" class="tsd-kind-icon">root<wbr>Hash</a></li>
 							</ul>
 						</section>
@@ -136,7 +134,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L225">src/requestforattestation/RequestForAttestation.ts:225</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L134">packages/core/src/requestforattestation/RequestForAttestation.ts:134</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -146,7 +144,8 @@
 								<dl class="tsd-comment-tags">
 									<dt>example</dt>
 									<dd><pre><code class="language-javascript"><span class="hljs-comment">// create a new request for attestation</span>
-<span class="hljs-keyword">const</span> reqForAtt = <span class="hljs-keyword">new</span> RequestForAttestation(requestForAttestationInput);</code></pre>
+<span class="hljs-keyword">const</span> reqForAtt = <span class="hljs-keyword">new</span> RequestForAttestation(requestForAttestationInput);
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -169,46 +168,35 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="ctypehash" class="tsd-anchor"></a>
-					<h3>c<wbr>Type<wbr>Hash</h3>
-					<div class="tsd-signature tsd-kind-icon">c<wbr>Type<wbr>Hash<span class="tsd-signature-symbol">:</span> <a href="../modules/irequestforattestation.html#noncehash" class="tsd-signature-type">NonceHash</a></div>
-					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/irequestforattestation.irequestforattestation-1.html">IRequestForAttestation</a>.<a href="../interfaces/irequestforattestation.irequestforattestation-1.html#ctypehash">cTypeHash</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L222">src/requestforattestation/RequestForAttestation.ts:222</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="claim" class="tsd-anchor"></a>
 					<h3>claim</h3>
 					<div class="tsd-signature tsd-kind-icon">claim<span class="tsd-signature-symbol">:</span> <a href="../interfaces/iclaim.iclaim-1.html" class="tsd-signature-type">IClaim</a></div>
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/irequestforattestation.irequestforattestation-1.html">IRequestForAttestation</a>.<a href="../interfaces/irequestforattestation.irequestforattestation-1.html#claim">claim</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L217">src/requestforattestation/RequestForAttestation.ts:217</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L128">packages/core/src/requestforattestation/RequestForAttestation.ts:128</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="claimhashtree" class="tsd-anchor"></a>
-					<h3>claim<wbr>Hash<wbr>Tree</h3>
-					<div class="tsd-signature tsd-kind-icon">claim<wbr>Hash<wbr>Tree<span class="tsd-signature-symbol">:</span> <a href="../modules/irequestforattestation.html#noncehashtree" class="tsd-signature-type">NonceHashTree</a></div>
+					<a name="claimhashes" class="tsd-anchor"></a>
+					<h3>claim<wbr>Hashes</h3>
+					<div class="tsd-signature tsd-kind-icon">claim<wbr>Hashes<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/irequestforattestation.irequestforattestation-1.html">IRequestForAttestation</a>.<a href="../interfaces/irequestforattestation.irequestforattestation-1.html#claimhashtree">claimHashTree</a></p>
+						<p>Implementation of <a href="../interfaces/irequestforattestation.irequestforattestation-1.html">IRequestForAttestation</a>.<a href="../interfaces/irequestforattestation.irequestforattestation-1.html#claimhashes">claimHashes</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L221">src/requestforattestation/RequestForAttestation.ts:221</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L131">packages/core/src/requestforattestation/RequestForAttestation.ts:131</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="claimowner" class="tsd-anchor"></a>
-					<h3>claim<wbr>Owner</h3>
-					<div class="tsd-signature tsd-kind-icon">claim<wbr>Owner<span class="tsd-signature-symbol">:</span> <a href="../modules/irequestforattestation.html#noncehash" class="tsd-signature-type">NonceHash</a></div>
+					<a name="claimnoncemap" class="tsd-anchor"></a>
+					<h3>claim<wbr>Nonce<wbr>Map</h3>
+					<div class="tsd-signature tsd-kind-icon">claim<wbr>Nonce<wbr>Map<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/irequestforattestation.irequestforattestation-1.html">IRequestForAttestation</a>.<a href="../interfaces/irequestforattestation.irequestforattestation-1.html#claimowner">claimOwner</a></p>
+						<p>Implementation of <a href="../interfaces/irequestforattestation.irequestforattestation-1.html">IRequestForAttestation</a>.<a href="../interfaces/irequestforattestation.irequestforattestation-1.html#claimnoncemap">claimNonceMap</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L219">src/requestforattestation/RequestForAttestation.ts:219</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L132">packages/core/src/requestforattestation/RequestForAttestation.ts:132</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -219,7 +207,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/irequestforattestation.irequestforattestation-1.html">IRequestForAttestation</a>.<a href="../interfaces/irequestforattestation.irequestforattestation-1.html#claimersignature">claimerSignature</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L220">src/requestforattestation/RequestForAttestation.ts:220</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L130">packages/core/src/requestforattestation/RequestForAttestation.ts:130</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -230,7 +218,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/irequestforattestation.irequestforattestation-1.html">IRequestForAttestation</a>.<a href="../interfaces/irequestforattestation.irequestforattestation-1.html#delegationid">delegationId</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L225">src/requestforattestation/RequestForAttestation.ts:225</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L134">packages/core/src/requestforattestation/RequestForAttestation.ts:134</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -241,18 +229,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/irequestforattestation.irequestforattestation-1.html">IRequestForAttestation</a>.<a href="../interfaces/irequestforattestation.irequestforattestation-1.html#legitimations">legitimations</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L218">src/requestforattestation/RequestForAttestation.ts:218</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="privacyenhancement" class="tsd-anchor"></a>
-					<h3>privacy<wbr>Enhancement</h3>
-					<div class="tsd-signature tsd-kind-icon">privacy<wbr>Enhancement<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">AttestationRequest</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></div>
-					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/irequestforattestation.irequestforattestation-1.html">IRequestForAttestation</a>.<a href="../interfaces/irequestforattestation.irequestforattestation-1.html#privacyenhancement">privacyEnhancement</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L224">src/requestforattestation/RequestForAttestation.ts:224</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L129">packages/core/src/requestforattestation/RequestForAttestation.ts:129</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -263,7 +240,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/irequestforattestation.irequestforattestation-1.html">IRequestForAttestation</a>.<a href="../interfaces/irequestforattestation.irequestforattestation-1.html#roothash">rootHash</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L223">src/requestforattestation/RequestForAttestation.ts:223</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L133">packages/core/src/requestforattestation/RequestForAttestation.ts:133</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -280,7 +257,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L429">src/requestforattestation/RequestForAttestation.ts:429</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L318">packages/core/src/requestforattestation/RequestForAttestation.ts:318</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -303,7 +280,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L303">src/requestforattestation/RequestForAttestation.ts:303</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L208">packages/core/src/requestforattestation/RequestForAttestation.ts:208</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -317,7 +294,8 @@
   <span class="hljs-attr">identity</span>: alice,
 });
 reqForAtt.removeClaimOwner();
-<span class="hljs-comment">// `input` does not contain the claim `owner` or the `claimOwner`&#x27;s nonce anymore.</span></code></pre>
+<span class="hljs-comment">// `input` does not contain the claim `owner` or the `claimOwner`&#x27;s nonce anymore.</span>
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -335,7 +313,7 @@ reqForAtt.removeClaimOwner();
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L281">src/requestforattestation/RequestForAttestation.ts:281</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L187">packages/core/src/requestforattestation/RequestForAttestation.ts:187</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -344,10 +322,7 @@ reqForAtt.removeClaimOwner();
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>An error when a property which should be deleted wasn&#39;t found.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_claim_hashtree_mismatch">ERROR_CLAIM_HASHTREE_MISMATCH</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_claim_hashtree_mismatch">ERROR_CLAIM_HASHTREE_MISMATCH</a> when a property which should be deleted wasn&#39;t found.</p>
 									</dd>
 									<dt>example</dt>
 									<dd><pre><code class="language-javascript"><span class="hljs-keyword">const</span> rawClaim = {
@@ -360,7 +335,8 @@ reqForAtt.removeClaimOwner();
   <span class="hljs-attr">identity</span>: alice,
 });
 reqForAtt.removeClaimProperties([<span class="hljs-string">&#x27;name&#x27;</span>]);
-<span class="hljs-comment">// reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.</span></code></pre>
+<span class="hljs-comment">// reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.</span>
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -387,7 +363,7 @@ reqForAtt.removeClaimProperties([<span class="hljs-string">&#x27;name&#x27;</spa
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L353">src/requestforattestation/RequestForAttestation.ts:353</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L255">packages/core/src/requestforattestation/RequestForAttestation.ts:255</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -404,7 +380,7 @@ reqForAtt.removeClaimProperties([<span class="hljs-string">&#x27;name&#x27;</spa
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L391">src/requestforattestation/RequestForAttestation.ts:391</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L284">packages/core/src/requestforattestation/RequestForAttestation.ts:284</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -421,7 +397,7 @@ reqForAtt.removeClaimProperties([<span class="hljs-string">&#x27;name&#x27;</spa
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L374">src/requestforattestation/RequestForAttestation.ts:374</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L276">packages/core/src/requestforattestation/RequestForAttestation.ts:276</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -438,7 +414,7 @@ reqForAtt.removeClaimProperties([<span class="hljs-string">&#x27;name&#x27;</spa
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L439">src/requestforattestation/RequestForAttestation.ts:439</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L328">packages/core/src/requestforattestation/RequestForAttestation.ts:328</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -464,28 +440,26 @@ reqForAtt.removeClaimProperties([<span class="hljs-string">&#x27;name&#x27;</spa
 					<a name="fromclaimandidentity" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> from<wbr>Claim<wbr>And<wbr>Identity</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">from<wbr>Claim<wbr>And<wbr>Identity<span class="tsd-signature-symbol">(</span>claim<span class="tsd-signature-symbol">: </span><a href="../interfaces/iclaim.iclaim-1.html" class="tsd-signature-type">IClaim</a>, identity<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a>, __namedParameters<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span>attesterPubKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">AttesterPublicKey</span><span class="tsd-signature-symbol">; </span>delegationId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>initiateAttestationMsg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iinitiateattestation.html" class="tsd-signature-type">IInitiateAttestation</a><span class="tsd-signature-symbol">; </span>legitimations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>message<span class="tsd-signature-symbol">: </span><a href="requestforattestation.requestforattestation-1.html" class="tsd-signature-type">RequestForAttestation</a><span class="tsd-signature-symbol">; </span>session<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ClaimerAttestationSession</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Claim<wbr>And<wbr>Identity<span class="tsd-signature-symbol">(</span>claim<span class="tsd-signature-symbol">: </span><a href="../interfaces/iclaim.iclaim-1.html" class="tsd-signature-type">IClaim</a>, identity<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a>, __namedParameters<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span>delegationId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>legitimations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="requestforattestation.requestforattestation-1.html" class="tsd-signature-type">RequestForAttestation</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L125">src/requestforattestation/RequestForAttestation.ts:125</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L79">packages/core/src/requestforattestation/RequestForAttestation.ts:79</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>[STATIC] [ASYNC] Builds a new instance of <a href="requestforattestation.requestforattestation-1.html">RequestForAttestation</a>, from a complete set of required parameters.</p>
+									<p>[STATIC] Builds a new instance of <a href="requestforattestation.requestforattestation-1.html">RequestForAttestation</a>, from a complete set of required parameters.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When claimInput&#39;s owner address does not match the supplied identity&#39;s address.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_identity_mismatch">ERROR_IDENTITY_MISMATCH</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_identity_mismatch">ERROR_IDENTITY_MISMATCH</a> when claimInput&#39;s owner address does not match the supplied identity&#39;s address.</p>
 									</dd>
 									<dt>example</dt>
-									<dd><pre><code class="language-javascript"><span class="hljs-keyword">const</span> input = RequestForAttestation.fromClaimAndIdentity(claim, alice);</code></pre>
+									<dd><pre><code class="language-javascript"><span class="hljs-keyword">const</span> input = RequestForAttestation.fromClaimAndIdentity(claim, alice);
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -504,16 +478,10 @@ reqForAtt.removeClaimProperties([<span class="hljs-string">&#x27;name&#x27;</spa
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> __namedParameters: <span class="tsd-signature-symbol">{ </span>attesterPubKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">AttesterPublicKey</span><span class="tsd-signature-symbol">; </span>delegationId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>initiateAttestationMsg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iinitiateattestation.html" class="tsd-signature-type">IInitiateAttestation</a><span class="tsd-signature-symbol">; </span>legitimations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> = {}</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> __namedParameters: <span class="tsd-signature-symbol">{ </span>delegationId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>legitimations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> = {}</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter">
-											<h5>attester<wbr>Pub<wbr>Key<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">AttesterPublicKey</span></h5>
-										</li>
-										<li class="tsd-parameter">
 											<h5>delegation<wbr>Id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
-										</li>
-										<li class="tsd-parameter">
-											<h5>initiate<wbr>Attestation<wbr>Msg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iinitiateattestation.html" class="tsd-signature-type">IInitiateAttestation</a></h5>
 										</li>
 										<li class="tsd-parameter">
 											<h5>legitimations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a><span class="tsd-signature-symbol">[]</span></h5>
@@ -521,7 +489,7 @@ reqForAtt.removeClaimProperties([<span class="hljs-string">&#x27;name&#x27;</spa
 									</ul>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>message<span class="tsd-signature-symbol">: </span><a href="requestforattestation.requestforattestation-1.html" class="tsd-signature-type">RequestForAttestation</a><span class="tsd-signature-symbol">; </span>session<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ClaimerAttestationSession</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="requestforattestation.requestforattestation-1.html" class="tsd-signature-type">RequestForAttestation</a></h4>
 							<p>A new <a href="requestforattestation.requestforattestation-1.html">RequestForAttestation</a> object.</p>
 						</li>
 					</ul>
@@ -536,7 +504,7 @@ reqForAtt.removeClaimProperties([<span class="hljs-string">&#x27;name&#x27;</spa
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L102">src/requestforattestation/RequestForAttestation.ts:102</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L59">packages/core/src/requestforattestation/RequestForAttestation.ts:59</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -549,7 +517,8 @@ reqForAtt.removeClaimProperties([<span class="hljs-string">&#x27;name&#x27;</spa
 									<dd><pre><code class="language-javascript"><span class="hljs-keyword">const</span> serializedRequest =
   <span class="hljs-string">&#x27;{ &quot;claim&quot;: { &quot;cType&quot;: &quot;0x981...&quot;, &quot;contents&quot;: { &quot;name&quot;: &quot;Alice&quot;, &quot;age&quot;: 29 }, owner: &quot;5Gf...&quot; }, ... }, ... }&#x27;</span>;
 <span class="hljs-keyword">const</span> parsedRequest = <span class="hljs-built_in">JSON</span>.parse(serializedRequest);
-RequestForAttestation.fromRequest(parsedRequest);</code></pre>
+RequestForAttestation.fromRequest(parsedRequest);
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -577,7 +546,7 @@ RequestForAttestation.fromRequest(parsedRequest);</code></pre>
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L206">src/requestforattestation/RequestForAttestation.ts:206</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L117">packages/core/src/requestforattestation/RequestForAttestation.ts:117</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -609,7 +578,7 @@ RequestForAttestation.fromRequest(parsedRequest);</code></pre>
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L321">src/requestforattestation/RequestForAttestation.ts:321</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L227">packages/core/src/requestforattestation/RequestForAttestation.ts:227</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -618,17 +587,15 @@ RequestForAttestation.fromRequest(parsedRequest);</code></pre>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When any key of the claim contents could not be found in the claimHashTree.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_claim_nonce_map_malformed">ERROR_CLAIM_NONCE_MAP_MALFORMED</a> when any key of the claim contents could not be found in the claimHashTree.</p>
 									</dd>
 									<dt>throws</dt>
-									<dd><p>When either the rootHash or the signature are not verifiable.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_claim_hashtree_malformed">ERROR_CLAIM_HASHTREE_MALFORMED</a>, <a href="../enums/sdkerror.errorcode.html#error_root_hash_unverifiable">ERROR_ROOT_HASH_UNVERIFIABLE</a>, <a href="../enums/sdkerror.errorcode.html#error_signature_unverifiable">ERROR_SIGNATURE_UNVERIFIABLE</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_root_hash_unverifiable">ERROR_ROOT_HASH_UNVERIFIABLE</a> or <a href="../enums/sdkerrors.errorcode.html#error_signature_unverifiable">ERROR_SIGNATURE_UNVERIFIABLE</a> when either the rootHash or the signature are not verifiable respectively.</p>
 									</dd>
 									<dt>example</dt>
 									<dd><pre><code class="language-javascript"><span class="hljs-keyword">const</span> reqForAtt = RequestForAttestation.fromClaimAndIdentity(claim, alice);
-reqForAtt.verifyData(); <span class="hljs-comment">// returns true if the data is correct</span></code></pre>
+RequestForAttestation.verifyData(reqForAtt); <span class="hljs-comment">// returns true if the data is correct</span>
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -656,7 +623,7 @@ reqForAtt.verifyData(); <span class="hljs-comment">// returns true if the data i
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L378">src/requestforattestation/RequestForAttestation.ts:378</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L280">packages/core/src/requestforattestation/RequestForAttestation.ts:280</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -679,7 +646,7 @@ reqForAtt.verifyData(); <span class="hljs-comment">// returns true if the data i
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.ts#L370">src/requestforattestation/RequestForAttestation.ts:370</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.ts#L272">packages/core/src/requestforattestation/RequestForAttestation.ts:272</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -692,7 +659,8 @@ reqForAtt.verifyData(); <span class="hljs-comment">// returns true if the data i
   claim,
   <span class="hljs-attr">identity</span>: alice,
 });
-reqForAtt.verifySignature(); <span class="hljs-comment">// returns `true` if the signature is correct</span></code></pre>
+RequestForAttestation.verifySignature(reqForAtt); <span class="hljs-comment">// returns `true` if the signature is correct</span>
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -734,16 +702,13 @@ reqForAtt.verifySignature(); <span class="hljs-comment">// returns `true` if the
 								<a href="requestforattestation.requestforattestation-1.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="requestforattestation.requestforattestation-1.html#ctypehash" class="tsd-kind-icon">c<wbr>Type<wbr>Hash</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="requestforattestation.requestforattestation-1.html#claim" class="tsd-kind-icon">claim</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="requestforattestation.requestforattestation-1.html#claimhashtree" class="tsd-kind-icon">claim<wbr>Hash<wbr>Tree</a>
+								<a href="requestforattestation.requestforattestation-1.html#claimhashes" class="tsd-kind-icon">claim<wbr>Hashes</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="requestforattestation.requestforattestation-1.html#claimowner" class="tsd-kind-icon">claim<wbr>Owner</a>
+								<a href="requestforattestation.requestforattestation-1.html#claimnoncemap" class="tsd-kind-icon">claim<wbr>Nonce<wbr>Map</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="requestforattestation.requestforattestation-1.html#claimersignature" class="tsd-kind-icon">claimer<wbr>Signature</a>
@@ -753,9 +718,6 @@ reqForAtt.verifySignature(); <span class="hljs-comment">// returns `true` if the
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="requestforattestation.requestforattestation-1.html#legitimations" class="tsd-kind-icon">legitimations</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="requestforattestation.requestforattestation-1.html#privacyenhancement" class="tsd-kind-icon">privacy<wbr>Enhancement</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="requestforattestation.requestforattestation-1.html#roothash" class="tsd-kind-icon">root<wbr>Hash</a>
@@ -819,7 +781,9 @@ reqForAtt.verifySignature(); <span class="hljs-comment">// returns `true` if the
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
@@ -828,10 +792,11 @@ reqForAtt.verifySignature(); <span class="hljs-comment">// returns `true` if the
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>

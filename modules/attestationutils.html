@@ -89,12 +89,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/attestation/Attestation.utils.ts#L51">src/attestation/Attestation.utils.ts:51</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/attestation/Attestation.utils.ts#L48">packages/core/src/attestation/Attestation.utils.ts:48</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p> Compresses an <a href="attestation.html">Attestation</a> object into an array for storage and/or messaging.</p>
+									<p> Compresses an <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> object into an array for storage and/or messaging.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -102,12 +102,12 @@
 								<li>
 									<h5>attestation: <a href="../interfaces/iattestation.iattestation-1.html" class="tsd-signature-type">IAttestation</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>An <a href="attestation.html">Attestation</a> object that will be sorted and stripped for messaging or storage.</p>
+										<p>An <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> object that will be sorted and stripped for messaging or storage.</p>
 									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="iattestation.html#compressedattestation" class="tsd-signature-type">CompressedAttestation</a></h4>
-							<p>An ordered array of an <a href="attestation.html">Attestation</a>.</p>
+							<p>An ordered array of an <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a>.</p>
 						</li>
 					</ul>
 				</section>
@@ -121,19 +121,16 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/attestation/Attestation.utils.ts#L72">src/attestation/Attestation.utils.ts:72</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/attestation/Attestation.utils.ts#L68">packages/core/src/attestation/Attestation.utils.ts:68</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p> Decompresses an <a href="attestation.html">Attestation</a> from storage and/or message into an object.</p>
+									<p> Decompresses an <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> from storage and/or message into an object.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When <a href="../interfaces/iattestedclaim.iattestedclaim-1.html#attestation">attestation</a> is not an Array or it&#39;s length is unequal 5.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a> when the attestation is not an array or its length is not equal to 5.</p>
 									</dd>
 								</dl>
 							</div>
@@ -142,12 +139,12 @@
 								<li>
 									<h5>attestation: <a href="iattestation.html#compressedattestation" class="tsd-signature-type">CompressedAttestation</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>A compressed <a href="attestation.html">Attestation</a> array that is reverted back into an object.</p>
+										<p>A compressed <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> array that is decompressed back into an object.</p>
 									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/iattestation.iattestation-1.html" class="tsd-signature-type">IAttestation</a></h4>
-							<p>An object that has the same properties as an <a href="attestation.html">Attestation</a>.</p>
+							<p>An object that has the same properties as an <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a>.</p>
 						</li>
 					</ul>
 				</section>
@@ -161,26 +158,23 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/attestation/Attestation.utils.ts#L22">src/attestation/Attestation.utils.ts:22</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/attestation/Attestation.utils.ts#L19">packages/core/src/attestation/Attestation.utils.ts:19</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p> Checks whether the input meets all the required criteria of an IAttestation object.
+									<p> Checks whether the input meets all the required criteria of an <a href="iattestation.html">IAttestation</a> object.
 									Throws on invalid input.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When input&#39;s cTypeHash, claimHash and owner do not exist.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_ctype_hash_not_provided">ERROR_CTYPE_HASH_NOT_PROVIDED</a>, <a href="../enums/sdkerrors.errorcode.html#error_claim_hash_not_provided">ERROR_CLAIM_HASH_NOT_PROVIDED</a> or <a href="../enums/sdkerrors.errorcode.html#error_owner_not_provided">ERROR_OWNER_NOT_PROVIDED</a> when input&#39;s cTypeHash, claimHash or owner respectively do not exist.</p>
 									</dd>
 									<dt>throws</dt>
-									<dd><p>When the input&#39;s delegationId is not of type &#39;string&#39; or &#39;null&#39;.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_delegation_id_type">ERROR_DELEGATION_ID_TYPE</a> when the input&#39;s delegationId is not of type &#39;string&#39; or &#39;null&#39;.</p>
 									</dd>
 									<dt>throws</dt>
-									<dd><p>When input.revoked is not of type &#39;boolean&#39;.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_ctype_hash_not_provided">ERROR_CTYPE_HASH_NOT_PROVIDED</a>, <a href="../enums/sdkerror.errorcode.html#error_claim_hash_not_provided">ERROR_CLAIM_HASH_NOT_PROVIDED</a>, <a href="../enums/sdkerror.errorcode.html#error_delegation_id_type">ERROR_DELEGATION_ID_TYPE</a>, <a href="../enums/sdkerror.errorcode.html#error_owner_not_provided">ERROR_OWNER_NOT_PROVIDED</a>, <a href="../enums/sdkerror.errorcode.html#error_revocation_bit_missing">ERROR_REVOCATION_BIT_MISSING</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_revocation_bit_missing">ERROR_REVOCATION_BIT_MISSING</a> when input.revoked is not of type &#39;boolean&#39;.</p>
 									</dd>
 								</dl>
 							</div>
@@ -189,7 +183,7 @@
 								<li>
 									<h5>input: <a href="../interfaces/iattestation.iattestation-1.html" class="tsd-signature-type">IAttestation</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>The potentially only partial IAttestation.</p>
+										<p>The potentially only partial <a href="iattestation.html">IAttestation</a>.</p>
 									</div>
 								</li>
 							</ul>
@@ -234,13 +228,16 @@
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>

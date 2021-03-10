@@ -65,8 +65,15 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>The identity of an attester has an additional key pair to issue privacy enhanced attestation.</p>
+						<p>Identities are a core building block of the KILT SDK.
+						An Identity object represent an <strong>entity</strong> - be it a person, an organization, a machine or some other entity.</p>
 					</div>
+					<p>An Identity object can be built via a seed phrase or other. It has a signature keypair, an associated public address, and an encryption (&quot;boxing&quot;) keypair. These are needed to:</p>
+					<ul>
+						<li>create a signed <a href="claim.html">Claim</a>, an <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> or other (and verify these later).</li>
+						<li>encrypt messages between participants.</li>
+					</ul>
+					<p>Note: A <a href="publicidentity.html">PublicIdentity</a> object exposes only public information such as the public address, but doesn&#39;t expose any secrets such as private keys.</p>
 				</div>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -76,82 +83,10 @@
 						<section class="tsd-index-section ">
 							<h3>Classes</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/identity.attesteridentity.html" class="tsd-kind-icon">Attester<wbr>Identity</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/identity.identity-1.html" class="tsd-kind-icon">Identity</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/identity.publicattesteridentity.html" class="tsd-kind-icon">Public<wbr>Attester<wbr>Identity</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
-							<h3>Type aliases</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="identity.html#identitybuildoptions" class="tsd-kind-icon">Identity<wbr>Build<wbr>Options</a></li>
-								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="identity.html#keyoptions" class="tsd-kind-icon">Key<wbr>Options</a></li>
-								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="identity.html#options" class="tsd-kind-icon">Options</a></li>
 							</ul>
 						</section>
 					</div>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Type aliases</h2>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
-					<a name="identitybuildoptions" class="tsd-anchor"></a>
-					<h3>Identity<wbr>Build<wbr>Options</h3>
-					<div class="tsd-signature tsd-kind-icon">Identity<wbr>Build<wbr>Options<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>peEnabled<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/identity/Identity.ts#L63">src/identity/Identity.ts:63</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter">
-								<h5><span class="tsd-flag ts-flagOptional">Optional</span> pe<wbr>Enabled<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span></h5>
-							</li>
-						</ul>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
-					<a name="keyoptions" class="tsd-anchor"></a>
-					<h3>Key<wbr>Options</h3>
-					<div class="tsd-signature tsd-kind-icon">Key<wbr>Options<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>privateKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>publicKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/identity/AttesterIdentity.ts#L27">src/identity/AttesterIdentity.ts:27</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter">
-								<h5>private<wbr>Key<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
-								<div class="tsd-comment tsd-typography">
-									<div class="lead">
-										<p>The private gabi key.</p>
-									</div>
-								</div>
-							</li>
-							<li class="tsd-parameter">
-								<h5>public<wbr>Key<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
-								<div class="tsd-comment tsd-typography">
-									<div class="lead">
-										<p>The public gabi key.</p>
-									</div>
-								</div>
-							</li>
-						</ul>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
-					<a name="options" class="tsd-anchor"></a>
-					<h3>Options</h3>
-					<div class="tsd-signature tsd-kind-icon">Options<span class="tsd-signature-symbol">:</span> <a href="identity.html#identitybuildoptions" class="tsd-signature-type">IdentityBuildOptions</a><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-symbol">{ </span>accumulator<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">gabi.Accumulator</span><span class="tsd-signature-symbol">; </span>key<span class="tsd-signature-symbol">?: </span><a href="identity.html#keyoptions" class="tsd-signature-type">KeyOptions</a><span class="tsd-signature-symbol">; </span>maxAttributes<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>validityDuration<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/identity/AttesterIdentity.ts#L34">src/identity/AttesterIdentity.ts:34</a></li>
-						</ul>
-					</aside>
 				</section>
 			</section>
 		</div>
@@ -169,22 +104,7 @@
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="../classes/identity.attesteridentity.html" class="tsd-kind-icon">Attester<wbr>Identity</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-module">
 						<a href="../classes/identity.identity-1.html" class="tsd-kind-icon">Identity</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="../classes/identity.publicattesteridentity.html" class="tsd-kind-icon">Public<wbr>Attester<wbr>Identity</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="identity.html#identitybuildoptions" class="tsd-kind-icon">Identity<wbr>Build<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="identity.html#keyoptions" class="tsd-kind-icon">Key<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="identity.html#options" class="tsd-kind-icon">Options</a>
 					</li>
 				</ul>
 			</nav>
@@ -199,13 +119,16 @@
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>

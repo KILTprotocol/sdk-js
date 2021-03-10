@@ -123,7 +123,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/claim/Claim.ts#L130">src/claim/Claim.ts:130</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/claim/Claim.ts#L132">packages/core/src/claim/Claim.ts:132</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -146,7 +146,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/iclaim.iclaim-1.html">IClaim</a>.<a href="../interfaces/iclaim.iclaim-1.html#ctypehash">cTypeHash</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/claim/Claim.ts#L128">src/claim/Claim.ts:128</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/claim/Claim.ts#L130">packages/core/src/claim/Claim.ts:130</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -157,7 +157,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/iclaim.iclaim-1.html">IClaim</a>.<a href="../interfaces/iclaim.iclaim-1.html#contents">contents</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/claim/Claim.ts#L129">src/claim/Claim.ts:129</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/claim/Claim.ts#L131">packages/core/src/claim/Claim.ts:131</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -168,7 +168,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/iclaim.iclaim-1.html">IClaim</a>.<a href="../interfaces/iclaim.iclaim-1.html#owner">owner</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/claim/Claim.ts#L130">src/claim/Claim.ts:130</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/claim/Claim.ts#L132">packages/core/src/claim/Claim.ts:132</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -185,12 +185,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/claim/Claim.ts#L145">src/claim/Claim.ts:145</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/claim/Claim.ts#L147">packages/core/src/claim/Claim.ts:147</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Compresses an <a href="claim.claim-1.html">Claim</a> object from the <a href="../modules/iclaim.html#compressedclaim">CompressedClaim</a>.</p>
+									<p>Compresses the <a href="claim.claim-1.html">Claim</a> object to a <a href="../modules/iclaim.html#compressedclaim">CompressedClaim</a>.</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <a href="../modules/iclaim.html#compressedclaim" class="tsd-signature-type">CompressedClaim</a></h4>
@@ -202,28 +202,65 @@
 					<a name="decompress" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> decompress</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">decompress<span class="tsd-signature-symbol">(</span>compressedClaim<span class="tsd-signature-symbol">: </span><a href="../modules/iclaim.html#compressedclaim" class="tsd-signature-type">CompressedClaim</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="claim.claim-1.html" class="tsd-signature-type">Claim</a></li>
+						<li class="tsd-signature tsd-kind-icon">decompress<span class="tsd-signature-symbol">(</span>claim<span class="tsd-signature-symbol">: </span><a href="../modules/iclaim.html#compressedclaim" class="tsd-signature-type">CompressedClaim</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/iclaim.iclaim-1.html" class="tsd-signature-type">IClaim</a></li>
+						<li class="tsd-signature tsd-kind-icon">decompress<span class="tsd-signature-symbol">(</span>claim<span class="tsd-signature-symbol">: </span><a href="../modules/imessage.html#compressedpartialclaim" class="tsd-signature-type">CompressedPartialClaim</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/iclaim.html#partialclaim" class="tsd-signature-type">PartialClaim</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/claim/Claim.ts#L155">src/claim/Claim.ts:155</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/claim/Claim.ts#L158">packages/core/src/claim/Claim.ts:158</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>[STATIC] Builds an <a href="claim.claim-1.html">Claim</a> from the decompressed array.</p>
+									<p> Decompresses the <a href="../modules/iclaim.html">IClaim</a> from storage and/or message.</p>
 								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a> when an <a href="../modules/iclaim.html#compressedclaim">CompressedClaim</a> is not an Array or it&#39;s length is unequal 3.</p>
+									</dd>
+								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>compressedClaim: <a href="../modules/iclaim.html#compressedclaim" class="tsd-signature-type">CompressedClaim</a></h5>
+									<h5>claim: <a href="../modules/iclaim.html#compressedclaim" class="tsd-signature-type">CompressedClaim</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A <a href="../modules/iclaim.html#compressedclaim">CompressedClaim</a> array that is reverted back into an object.</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="claim.claim-1.html" class="tsd-signature-type">Claim</a></h4>
-							<p>A new <a href="claim.claim-1.html">Claim</a> object.</p>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/iclaim.iclaim-1.html" class="tsd-signature-type">IClaim</a></h4>
+							<p>An <a href="../modules/iclaim.html">IClaim</a> object that has the same properties as the <a href="../modules/iclaim.html#compressedclaim">CompressedClaim</a>.</p>
+						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/claim/Claim.ts#L166">packages/core/src/claim/Claim.ts:166</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p> Decompresses the Partial <a href="../modules/iclaim.html">IClaim</a> from storage and/or message.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a> when an <a href="../modules/imessage.html#compressedpartialclaim">CompressedPartialClaim</a> is not an Array or it&#39;s length is unequal 3.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>claim: <a href="../modules/imessage.html#compressedpartialclaim" class="tsd-signature-type">CompressedPartialClaim</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An <a href="../modules/imessage.html#compressedpartialclaim">CompressedPartialClaim</a> array that is reverted back into an object.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../modules/iclaim.html#partialclaim" class="tsd-signature-type">PartialClaim</a></h4>
+							<p>An <a href="../modules/iclaim.html#partialclaim">PartialClaim</a> object that has the same properties as the <a href="../modules/imessage.html#compressedpartialclaim">CompressedPartialClaim</a>.</p>
 						</li>
 					</ul>
 				</section>
@@ -237,7 +274,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/claim/Claim.ts#L95">src/claim/Claim.ts:95</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/claim/Claim.ts#L97">packages/core/src/claim/Claim.ts:97</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -246,10 +283,7 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When claimInput&#39;s contents could not be verified with the schema of the provided ctypeInput.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_claim_unverifiable">ERROR_CLAIM_UNVERIFIABLE</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_claim_unverifiable">ERROR_CLAIM_UNVERIFIABLE</a> when claimInput&#39;s contents could not be verified with the schema of the provided ctypeInput.</p>
 									</dd>
 								</dl>
 							</div>
@@ -289,19 +323,16 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/claim/Claim.ts#L40">src/claim/Claim.ts:40</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/claim/Claim.ts#L43">packages/core/src/claim/Claim.ts:43</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Instantiates a new Claim from the given <a href="../modules/iclaim.html">IClaim</a> and <a href="../modules/ctypeschema.html#ctypewrappermodel.properties-3.schema">schema</a>.</p>
+									<p>Instantiates a new Claim from the given <a href="../modules/iclaim.html">IClaim</a> and <a href="../interfaces/ictype.ictype-1.html#schema">schema</a>.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When claimInput&#39;s contents could not be verified with the provided cTypeSchema.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_claim_unverifiable">ERROR_CLAIM_UNVERIFIABLE</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_claim_unverifiable">ERROR_CLAIM_UNVERIFIABLE</a> when claimInput&#39;s contents could not be verified with the provided cTypeSchema.</p>
 									</dd>
 								</dl>
 							</div>
@@ -335,7 +366,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/claim/Claim.ts#L62">src/claim/Claim.ts:62</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/claim/Claim.ts#L65">packages/core/src/claim/Claim.ts:65</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -385,7 +416,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/claim/Claim.ts#L119">src/claim/Claim.ts:119</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/claim/Claim.ts#L121">packages/core/src/claim/Claim.ts:121</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -474,7 +505,9 @@
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
@@ -483,10 +516,11 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>

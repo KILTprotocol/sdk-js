@@ -77,6 +77,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="iclaim.html#compressedclaim" class="tsd-kind-icon">Compressed<wbr>Claim</a></li>
 								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="iclaim.html#iclaimcontents" class="tsd-kind-icon">IClaim<wbr>Contents</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="iclaim.html#partialclaim" class="tsd-kind-icon">Partial<wbr>Claim</a></li>
 							</ul>
 						</section>
 					</div>
@@ -87,10 +88,10 @@
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
 					<a name="compressedclaim" class="tsd-anchor"></a>
 					<h3>Compressed<wbr>Claim</h3>
-					<div class="tsd-signature tsd-kind-icon">Compressed<wbr>Claim<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">[</span><a href="iclaim.html#iclaimcontents" class="tsd-signature-type">IClaimContents</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">IClaim</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"cTypeHash"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">IClaim</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"owner"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">]</span></div>
+					<div class="tsd-signature tsd-kind-icon">Compressed<wbr>Claim<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">IClaim</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"cTypeHash"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">IClaim</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"owner"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">, </span><a href="iclaim.html#iclaimcontents" class="tsd-signature-type">IClaimContents</a><span class="tsd-signature-symbol">]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/types/Claim.ts#L18">src/types/Claim.ts:18</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/types/src/Claim.ts#L23">packages/types/src/Claim.ts:23</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -100,9 +101,24 @@
 					<div class="tsd-signature tsd-kind-icon">IClaim<wbr>Contents<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/types/Claim.ts#L8">src/types/Claim.ts:8</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/types/src/Claim.ts#L13">packages/types/src/Claim.ts:13</a></li>
 						</ul>
 					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
+					<a name="partialclaim" class="tsd-anchor"></a>
+					<h3>Partial<wbr>Claim</h3>
+					<div class="tsd-signature tsd-kind-icon">Partial<wbr>Claim<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Partial</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/iclaim.iclaim-1.html" class="tsd-signature-type">IClaim</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">Pick</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/iclaim.iclaim-1.html" class="tsd-signature-type">IClaim</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">"cTypeHash"</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/types/src/Claim.ts#L11">packages/types/src/Claim.ts:11</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The minimal partial claim from which a JSON-LD representation can be built.</p>
+						</div>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -128,6 +144,9 @@
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
 						<a href="iclaim.html#iclaimcontents" class="tsd-kind-icon">IClaim<wbr>Contents</a>
 					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="iclaim.html#partialclaim" class="tsd-kind-icon">Partial<wbr>Claim</a>
+					</li>
 				</ul>
 			</nav>
 		</div>
@@ -141,13 +160,16 @@
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>

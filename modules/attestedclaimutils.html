@@ -89,7 +89,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/attestedclaim/AttestedClaim.utils.ts#L45">src/attestedclaim/AttestedClaim.utils.ts:45</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/attestedclaim/AttestedClaim.utils.ts#L43">packages/core/src/attestedclaim/AttestedClaim.utils.ts:43</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -107,7 +107,7 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="iattestedclaim.html#compressedattestedclaim" class="tsd-signature-type">CompressedAttestedClaim</a></h4>
-							<p>An ordered array of an <a href="attestedclaim.html">AttestedClaim</a> that comprises of an <a href="attestation.html">Attestation</a> and <a href="requestforattestation.html">RequestForAttestation</a> arrays.</p>
+							<p>An ordered array of an <a href="attestedclaim.html">AttestedClaim</a> that comprises of an <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> and <a href="requestforattestation.html">RequestForAttestation</a> arrays.</p>
 						</li>
 					</ul>
 				</section>
@@ -121,7 +121,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/attestedclaim/AttestedClaim.utils.ts#L66">src/attestedclaim/AttestedClaim.utils.ts:66</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/attestedclaim/AttestedClaim.utils.ts#L63">packages/core/src/attestedclaim/AttestedClaim.utils.ts:63</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -130,10 +130,7 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When attestedClaim is not an Array or it&#39;s length is unequal 2.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a> when attestedClaim is not an Array or it&#39;s length is unequal 2.</p>
 									</dd>
 								</dl>
 							</div>
@@ -142,7 +139,7 @@
 								<li>
 									<h5>attestedClaim: <a href="iattestedclaim.html#compressedattestedclaim" class="tsd-signature-type">CompressedAttestedClaim</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>A compressed <a href="attestation.html">Attestation</a> and <a href="requestforattestation.html">RequestForAttestation</a> array that is reverted back into an object.</p>
+										<p>A compressed <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> and <a href="requestforattestation.html">RequestForAttestation</a> array that is reverted back into an object.</p>
 									</div>
 								</li>
 							</ul>
@@ -161,7 +158,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/attestedclaim/AttestedClaim.utils.ts#L23">src/attestedclaim/AttestedClaim.utils.ts:23</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/attestedclaim/AttestedClaim.utils.ts#L21">packages/core/src/attestedclaim/AttestedClaim.utils.ts:21</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -171,13 +168,10 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When input&#39;s attestation and request do not exist.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_attestation_not_provided">ERROR_ATTESTATION_NOT_PROVIDED</a> or <a href="../enums/sdkerrors.errorcode.html#error_rfa_not_provided">ERROR_RFA_NOT_PROVIDED</a> when input&#39;s attestation and request respectively do not exist.</p>
 									</dd>
 									<dt>throws</dt>
-									<dd><p>When input&#39;s Data could not be verified.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_attestation_not_provided">ERROR_ATTESTATION_NOT_PROVIDED</a>, <a href="../enums/sdkerror.errorcode.html#error_rfa_not_provided">ERROR_RFA_NOT_PROVIDED</a>, <a href="../enums/sdkerror.errorcode.html#error_attestedclaim_unverifiable">ERROR_ATTESTEDCLAIM_UNVERIFIABLE</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_attestedclaim_unverifiable">ERROR_ATTESTEDCLAIM_UNVERIFIABLE</a> when input&#39;s data could not be verified.</p>
 									</dd>
 								</dl>
 							</div>
@@ -231,13 +225,16 @@
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>

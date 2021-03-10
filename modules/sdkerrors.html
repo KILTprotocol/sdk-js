@@ -1,0 +1,1577 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>SDKErrors | @kiltprotocol/sdk-js</title>
+	<meta name="description" content="Documentation for @kiltprotocol/sdk-js">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">@kiltprotocol/sdk-js</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../globals.html">Globals</a>
+				</li>
+				<li>
+					<a href="sdkerrors.html">SDKErrors</a>
+				</li>
+			</ul>
+			<h1>Module SDKErrors</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>SDKErrors are KILT-specific errors, with associated codes and descriptions.</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Enumerations</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-enum tsd-parent-kind-module"><a href="../enums/sdkerrors.errorcode.html" class="tsd-kind-icon">Error<wbr>Code</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Classes</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/sdkerrors.sdkerror.html" class="tsd-kind-icon">SDKError</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Functions</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_address_invalid" class="tsd-kind-icon">ERROR_<wbr>ADDRESS_<wbr>INVALID</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_address_type" class="tsd-kind-icon">ERROR_<wbr>ADDRESS_<wbr>TYPE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_attestation_not_provided" class="tsd-kind-icon">ERROR_<wbr>ATTESTATION_<wbr>NOT_<wbr>PROVIDED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_attestation_session_missing" class="tsd-kind-icon">ERROR_<wbr>ATTESTATION_<wbr>SESSION_<wbr>MISSING</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_attestedclaim_unverifiable" class="tsd-kind-icon">ERROR_<wbr>ATTESTEDCLAIM_<wbr>UNVERIFIABLE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_claim_contents_malformed" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>CONTENTS_<wbr>MALFORMED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_claim_hashtree_mismatch" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>HASHTREE_<wbr>MISMATCH</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_claim_hash_not_provided" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>HASH_<wbr>NOT_<wbr>PROVIDED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_claim_nonce_map_malformed" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>NONCE_<wbr>MAP_<wbr>MALFORMED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_claim_nonce_map_not_provided" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>NONCE_<wbr>MAP_<wbr>NOT_<wbr>PROVIDED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_claim_not_provided" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>NOT_<wbr>PROVIDED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_claim_unverifiable" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>UNVERIFIABLE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_compress_object" class="tsd-kind-icon">ERROR_<wbr>COMPRESS_<wbr>OBJECT</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_ctype_hash_invalid" class="tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>HASH_<wbr>INVALID</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_ctype_hash_not_provided" class="tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>HASH_<wbr>NOT_<wbr>PROVIDED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_ctype_id_not_matching" class="tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>ID_<wbr>NOT_<wbr>MATCHING</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_ctype_owner_type" class="tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>OWNER_<wbr>TYPE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_decoding_message" class="tsd-kind-icon">ERROR_<wbr>DECODING_<wbr>MESSAGE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_decompression_array" class="tsd-kind-icon">ERROR_<wbr>DECOMPRESSION_<wbr>ARRAY</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_delegation_id_type" class="tsd-kind-icon">ERROR_<wbr>DELEGATION_<wbr>ID_<wbr>TYPE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_did_identifier_mismatch" class="tsd-kind-icon">ERROR_<wbr>DID_<wbr>IDENTIFIER_<wbr>MISMATCH</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_hash_malformed" class="tsd-kind-icon">ERROR_<wbr>HASH_<wbr>MALFORMED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_hash_type" class="tsd-kind-icon">ERROR_<wbr>HASH_<wbr>TYPE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_identity_mismatch" class="tsd-kind-icon">ERROR_<wbr>IDENTITY_<wbr>MISMATCH</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_identity_not_pe_enabled" class="tsd-kind-icon">ERROR_<wbr>IDENTITY_<wbr>NOT_<wbr>PE_<wbr>ENABLED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_invalid_did_prefix" class="tsd-kind-icon">ERROR_<wbr>INVALID_<wbr>DID_<wbr>PREFIX</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_invalid_proof_for_statement" class="tsd-kind-icon">ERROR_<wbr>INVALID_<wbr>PROOF_<wbr>FOR_<wbr>STATEMENT</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_legitimations_not_provided" class="tsd-kind-icon">ERROR_<wbr>LEGITIMATIONS_<wbr>NOT_<wbr>PROVIDED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_legitimations_unverifiable" class="tsd-kind-icon">ERROR_<wbr>LEGITIMATIONS_<wbr>UNVERIFIABLE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_message_body_malformed" class="tsd-kind-icon">ERROR_<wbr>MESSAGE_<wbr>BODY_<wbr>MALFORMED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_message_type" class="tsd-kind-icon">ERROR_<wbr>MESSAGE_<wbr>TYPE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_mnemonic_phrase_invalid" class="tsd-kind-icon">ERROR_<wbr>MNEMONIC_<wbr>PHRASE_<wbr>INVALID</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_mnemonic_phrase_malformed" class="tsd-kind-icon">ERROR_<wbr>MNEMONIC_<wbr>PHRASE_<wbr>MALFORMED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_nested_claim_unverifiable" class="tsd-kind-icon">ERROR_<wbr>NESTED_<wbr>CLAIM_<wbr>UNVERIFIABLE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_nonce_hash_invalid" class="tsd-kind-icon">ERROR_<wbr>NONCE_<wbr>HASH_<wbr>INVALID</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_not_found" class="tsd-kind-icon">ERROR_<wbr>NOT_<wbr>FOUND</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_no_proof_for_statement" class="tsd-kind-icon">ERROR_<wbr>NO_<wbr>PROOF_<wbr>FOR_<wbr>STATEMENT</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_object_malformed" class="tsd-kind-icon">ERROR_<wbr>OBJECT_<wbr>MALFORMED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_owner_not_provided" class="tsd-kind-icon">ERROR_<wbr>OWNER_<wbr>NOT_<wbr>PROVIDED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_parsing_message" class="tsd-kind-icon">ERROR_<wbr>PARSING_<wbr>MESSAGE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_pe_credential_missing" class="tsd-kind-icon">ERROR_<wbr>PE_<wbr>CREDENTIAL_<wbr>MISSING</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_pe_mismatch" class="tsd-kind-icon">ERROR_<wbr>PE_<wbr>MISMATCH</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_pe_missing" class="tsd-kind-icon">ERROR_<wbr>PE_<wbr>MISSING</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_pe_verification" class="tsd-kind-icon">ERROR_<wbr>PE_<wbr>VERIFICATION</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_quote_malformed" class="tsd-kind-icon">ERROR_<wbr>QUOTE_<wbr>MALFORMED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_revocation_bit_missing" class="tsd-kind-icon">ERROR_<wbr>REVOCATION_<wbr>BIT_<wbr>MISSING</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_rfa_not_provided" class="tsd-kind-icon">ERROR_<wbr>RFA_<wbr>NOT_<wbr>PROVIDED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_root_hash_unverifiable" class="tsd-kind-icon">ERROR_<wbr>ROOT_<wbr>HASH_<wbr>UNVERIFIABLE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_root_node_query" class="tsd-kind-icon">ERROR_<wbr>ROOT_<wbr>NODE_<wbr>QUERY</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_signature_data_type" class="tsd-kind-icon">ERROR_<wbr>SIGNATURE_<wbr>DATA_<wbr>TYPE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_signature_unverifiable" class="tsd-kind-icon">ERROR_<wbr>SIGNATURE_<wbr>UNVERIFIABLE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_timeout" class="tsd-kind-icon">ERROR_<wbr>TIMEOUT</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_transaction_duplicate" class="tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>DUPLICATE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_transaction_outdated" class="tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>OUTDATED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_transaction_priority" class="tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>PRIORITY</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_transaction_recoverable" class="tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>RECOVERABLE</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_transaction_usurped" class="tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>USURPED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_unauthorized" class="tsd-kind-icon">ERROR_<wbr>UNAUTHORIZED</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_unknown" class="tsd-kind-icon">ERROR_<wbr>UNKNOWN</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#error_ws_address_not_set" class="tsd-kind-icon">ERROR_<wbr>WS_<wbr>ADDRESS_<wbr>NOT_<wbr>SET</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="sdkerrors.html#issdkerror" class="tsd-kind-icon">isSDKError</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_address_invalid" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>ADDRESS_<wbr>INVALID</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>ADDRESS_<wbr>INVALID<span class="tsd-signature-symbol">(</span>address<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span>, type<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L363">packages/utils/src/SDKErrors.ts:363</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> address: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> type: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_address_type" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>ADDRESS_<wbr>TYPE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>ADDRESS_<wbr>TYPE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L220">packages/utils/src/SDKErrors.ts:220</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_attestation_not_provided" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>ATTESTATION_<wbr>NOT_<wbr>PROVIDED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>ATTESTATION_<wbr>NOT_<wbr>PROVIDED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L171">packages/utils/src/SDKErrors.ts:171</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_attestation_session_missing" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>ATTESTATION_<wbr>SESSION_<wbr>MISSING</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>ATTESTATION_<wbr>SESSION_<wbr>MISSING<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L190">packages/utils/src/SDKErrors.ts:190</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_attestedclaim_unverifiable" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>ATTESTEDCLAIM_<wbr>UNVERIFIABLE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>ATTESTEDCLAIM_<wbr>UNVERIFIABLE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L417">packages/utils/src/SDKErrors.ts:417</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_claim_contents_malformed" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>CLAIM_<wbr>CONTENTS_<wbr>MALFORMED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>CONTENTS_<wbr>MALFORMED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L256">packages/utils/src/SDKErrors.ts:256</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_claim_hashtree_mismatch" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>CLAIM_<wbr>HASHTREE_<wbr>MISMATCH</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>HASHTREE_<wbr>MISMATCH<span class="tsd-signature-symbol">(</span>key<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L306">packages/utils/src/SDKErrors.ts:306</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> key: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_claim_hash_not_provided" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>CLAIM_<wbr>HASH_<wbr>NOT_<wbr>PROVIDED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>HASH_<wbr>NOT_<wbr>PROVIDED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L156">packages/utils/src/SDKErrors.ts:156</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_claim_nonce_map_malformed" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>CLAIM_<wbr>NONCE_<wbr>MAP_<wbr>MALFORMED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>NONCE_<wbr>MAP_<wbr>MALFORMED<span class="tsd-signature-symbol">(</span>statement<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L289">packages/utils/src/SDKErrors.ts:289</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>statement: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_claim_nonce_map_not_provided" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>CLAIM_<wbr>NONCE_<wbr>MAP_<wbr>NOT_<wbr>PROVIDED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>NONCE_<wbr>MAP_<wbr>NOT_<wbr>PROVIDED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L208">packages/utils/src/SDKErrors.ts:208</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_claim_not_provided" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>CLAIM_<wbr>NOT_<wbr>PROVIDED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>NOT_<wbr>PROVIDED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L214">packages/utils/src/SDKErrors.ts:214</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_claim_unverifiable" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>CLAIM_<wbr>UNVERIFIABLE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>UNVERIFIABLE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L424">packages/utils/src/SDKErrors.ts:424</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_compress_object" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>COMPRESS_<wbr>OBJECT</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>COMPRESS_<wbr>OBJECT<span class="tsd-signature-symbol">(</span>object<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span>, type<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L511">packages/utils/src/SDKErrors.ts:511</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> object: <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> type: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_ctype_hash_invalid" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>CTYPE_<wbr>HASH_<wbr>INVALID</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>HASH_<wbr>INVALID<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L438">packages/utils/src/SDKErrors.ts:438</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_ctype_hash_not_provided" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>CTYPE_<wbr>HASH_<wbr>NOT_<wbr>PROVIDED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>HASH_<wbr>NOT_<wbr>PROVIDED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L139">packages/utils/src/SDKErrors.ts:139</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_ctype_id_not_matching" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>CTYPE_<wbr>ID_<wbr>NOT_<wbr>MATCHING</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>ID_<wbr>NOT_<wbr>MATCHING<span class="tsd-signature-symbol">(</span>fromSchema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, provided<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L149">packages/utils/src/SDKErrors.ts:149</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fromSchema: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>provided: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_ctype_owner_type" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>CTYPE_<wbr>OWNER_<wbr>TYPE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>OWNER_<wbr>TYPE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L268">packages/utils/src/SDKErrors.ts:268</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_decoding_message" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>DECODING_<wbr>MESSAGE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>DECODING_<wbr>MESSAGE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L539">packages/utils/src/SDKErrors.ts:539</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_decompression_array" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>DECOMPRESSION_<wbr>ARRAY</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>DECOMPRESSION_<wbr>ARRAY<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L493">packages/utils/src/SDKErrors.ts:493</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> type: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_delegation_id_type" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>DELEGATION_<wbr>ID_<wbr>TYPE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>DELEGATION_<wbr>ID_<wbr>TYPE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L250">packages/utils/src/SDKErrors.ts:250</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_did_identifier_mismatch" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>DID_<wbr>IDENTIFIER_<wbr>MISMATCH</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>DID_<wbr>IDENTIFIER_<wbr>MISMATCH<span class="tsd-signature-symbol">(</span>identifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L331">packages/utils/src/SDKErrors.ts:331</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>identifier: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>id: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_hash_malformed" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>HASH_<wbr>MALFORMED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>HASH_<wbr>MALFORMED<span class="tsd-signature-symbol">(</span>hash<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span>, type<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L230">packages/utils/src/SDKErrors.ts:230</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> hash: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> type: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_hash_type" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>HASH_<wbr>TYPE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>HASH_<wbr>TYPE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L223">packages/utils/src/SDKErrors.ts:223</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_identity_mismatch" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>IDENTITY_<wbr>MISMATCH</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>IDENTITY_<wbr>MISMATCH<span class="tsd-signature-symbol">(</span>context<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span>, type<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L454">packages/utils/src/SDKErrors.ts:454</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> context: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> type: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_identity_not_pe_enabled" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>IDENTITY_<wbr>NOT_<wbr>PE_<wbr>ENABLED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>IDENTITY_<wbr>NOT_<wbr>PE_<wbr>ENABLED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L473">packages/utils/src/SDKErrors.ts:473</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_invalid_did_prefix" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>INVALID_<wbr>DID_<wbr>PREFIX</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>INVALID_<wbr>DID_<wbr>PREFIX<span class="tsd-signature-symbol">(</span>identifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L351">packages/utils/src/SDKErrors.ts:351</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>identifier: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_invalid_proof_for_statement" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>INVALID_<wbr>PROOF_<wbr>FOR_<wbr>STATEMENT</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>INVALID_<wbr>PROOF_<wbr>FOR_<wbr>STATEMENT<span class="tsd-signature-symbol">(</span>statement<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L596">packages/utils/src/SDKErrors.ts:596</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>statement: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_legitimations_not_provided" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>LEGITIMATIONS_<wbr>NOT_<wbr>PROVIDED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>LEGITIMATIONS_<wbr>NOT_<wbr>PROVIDED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L184">packages/utils/src/SDKErrors.ts:184</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_legitimations_unverifiable" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>LEGITIMATIONS_<wbr>UNVERIFIABLE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>LEGITIMATIONS_<wbr>UNVERIFIABLE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L405">packages/utils/src/SDKErrors.ts:405</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_message_body_malformed" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>MESSAGE_<wbr>BODY_<wbr>MALFORMED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>MESSAGE_<wbr>BODY_<wbr>MALFORMED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L299">packages/utils/src/SDKErrors.ts:299</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_message_type" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>MESSAGE_<wbr>TYPE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>MESSAGE_<wbr>TYPE<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, expectedType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, alternativeType<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L556">packages/utils/src/SDKErrors.ts:556</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>type: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>expectedType: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> alternativeType: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_mnemonic_phrase_invalid" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>MNEMONIC_<wbr>PHRASE_<wbr>INVALID</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>MNEMONIC_<wbr>PHRASE_<wbr>INVALID<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L445">packages/utils/src/SDKErrors.ts:445</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_mnemonic_phrase_malformed" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>MNEMONIC_<wbr>PHRASE_<wbr>MALFORMED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>MNEMONIC_<wbr>PHRASE_<wbr>MALFORMED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L274">packages/utils/src/SDKErrors.ts:274</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_nested_claim_unverifiable" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>NESTED_<wbr>CLAIM_<wbr>UNVERIFIABLE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>NESTED_<wbr>CLAIM_<wbr>UNVERIFIABLE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L431">packages/utils/src/SDKErrors.ts:431</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_nonce_hash_invalid" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>NONCE_<wbr>HASH_<wbr>INVALID</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>NONCE_<wbr>HASH_<wbr>INVALID<span class="tsd-signature-symbol">(</span>nonceHash<span class="tsd-signature-symbol">?: </span><a href="irequestforattestation.html#noncehash" class="tsd-signature-type">NonceHash</a>, type<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L386">packages/utils/src/SDKErrors.ts:386</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> nonceHash: <a href="irequestforattestation.html#noncehash" class="tsd-signature-type">NonceHash</a></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> type: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_not_found" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>NOT_<wbr>FOUND</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>NOT_<wbr>FOUND<span class="tsd-signature-symbol">(</span>msg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L135">packages/utils/src/SDKErrors.ts:135</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>msg: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_no_proof_for_statement" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>NO_<wbr>PROOF_<wbr>FOR_<wbr>STATEMENT</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>NO_<wbr>PROOF_<wbr>FOR_<wbr>STATEMENT<span class="tsd-signature-symbol">(</span>statement<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L603">packages/utils/src/SDKErrors.ts:603</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>statement: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_object_malformed" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>OBJECT_<wbr>MALFORMED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>OBJECT_<wbr>MALFORMED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L262">packages/utils/src/SDKErrors.ts:262</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_owner_not_provided" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>OWNER_<wbr>NOT_<wbr>PROVIDED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>OWNER_<wbr>NOT_<wbr>PROVIDED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L168">packages/utils/src/SDKErrors.ts:168</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_parsing_message" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>PARSING_<wbr>MESSAGE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>PARSING_<wbr>MESSAGE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L545">packages/utils/src/SDKErrors.ts:545</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_pe_credential_missing" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>PE_<wbr>CREDENTIAL_<wbr>MISSING</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>PE_<wbr>CREDENTIAL_<wbr>MISSING<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L202">packages/utils/src/SDKErrors.ts:202</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_pe_mismatch" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>PE_<wbr>MISMATCH</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>PE_<wbr>MISMATCH<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L337">packages/utils/src/SDKErrors.ts:337</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_pe_missing" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>PE_<wbr>MISSING</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>PE_<wbr>MISSING<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L196">packages/utils/src/SDKErrors.ts:196</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_pe_verification" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>PE_<wbr>VERIFICATION</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>PE_<wbr>VERIFICATION<span class="tsd-signature-symbol">(</span>accFailure<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span>, keyFailure<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L584">packages/utils/src/SDKErrors.ts:584</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>accFailure: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+								<li>
+									<h5>keyFailure: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_quote_malformed" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>QUOTE_<wbr>MALFORMED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>QUOTE_<wbr>MALFORMED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L280">packages/utils/src/SDKErrors.ts:280</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_revocation_bit_missing" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>REVOCATION_<wbr>BIT_<wbr>MISSING</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>REVOCATION_<wbr>BIT_<wbr>MISSING<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L162">packages/utils/src/SDKErrors.ts:162</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_rfa_not_provided" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>RFA_<wbr>NOT_<wbr>PROVIDED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>RFA_<wbr>NOT_<wbr>PROVIDED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L178">packages/utils/src/SDKErrors.ts:178</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_root_hash_unverifiable" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>ROOT_<wbr>HASH_<wbr>UNVERIFIABLE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>ROOT_<wbr>HASH_<wbr>UNVERIFIABLE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L486">packages/utils/src/SDKErrors.ts:486</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_root_node_query" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>ROOT_<wbr>NODE_<wbr>QUERY</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>ROOT_<wbr>NODE_<wbr>QUERY<span class="tsd-signature-symbol">(</span>rootId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L343">packages/utils/src/SDKErrors.ts:343</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>rootId: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_signature_data_type" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>SIGNATURE_<wbr>DATA_<wbr>TYPE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>SIGNATURE_<wbr>DATA_<wbr>TYPE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L322">packages/utils/src/SDKErrors.ts:322</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_signature_unverifiable" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>SIGNATURE_<wbr>UNVERIFIABLE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>SIGNATURE_<wbr>UNVERIFIABLE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L411">packages/utils/src/SDKErrors.ts:411</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_timeout" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>TIMEOUT</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>TIMEOUT<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L577">packages/utils/src/SDKErrors.ts:577</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_transaction_duplicate" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>TRANSACTION_<wbr>DUPLICATE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>DUPLICATE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L114">packages/utils/src/SDKErrors.ts:114</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_transaction_outdated" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>TRANSACTION_<wbr>OUTDATED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>OUTDATED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L108">packages/utils/src/SDKErrors.ts:108</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_transaction_priority" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>TRANSACTION_<wbr>PRIORITY</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>PRIORITY<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L120">packages/utils/src/SDKErrors.ts:120</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_transaction_recoverable" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>TRANSACTION_<wbr>RECOVERABLE</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>RECOVERABLE<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L102">packages/utils/src/SDKErrors.ts:102</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_transaction_usurped" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>TRANSACTION_<wbr>USURPED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>USURPED<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L126">packages/utils/src/SDKErrors.ts:126</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_unauthorized" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>UNAUTHORIZED</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>UNAUTHORIZED<span class="tsd-signature-symbol">(</span>msg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L132">packages/utils/src/SDKErrors.ts:132</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>msg: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_unknown" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>UNKNOWN</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>UNKNOWN<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L573">packages/utils/src/SDKErrors.ts:573</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="error_ws_address_not_set" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> ERROR_<wbr>WS_<wbr>ADDRESS_<wbr>NOT_<wbr>SET</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">ERROR_<wbr>WS_<wbr>ADDRESS_<wbr>NOT_<wbr>SET<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L479">packages/utils/src/SDKErrors.ts:479</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/sdkerrors.sdkerror.html" class="tsd-signature-type">SDKError</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="issdkerror" class="tsd-anchor"></a>
+					<h3>isSDKError</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">isSDKError<span class="tsd-signature-symbol">(</span>input<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">input</span><span class="tsd-signature-symbol"> is </span><span class="tsd-signature-type">SDKError</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/SDKErrors.ts#L83">packages/utils/src/SDKErrors.ts:83</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>input: <span class="tsd-signature-type">unknown</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">input</span><span class="tsd-signature-symbol"> is </span><span class="tsd-signature-type">SDKError</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="../globals.html"><em>Globals</em></a>
+					</li>
+					<li class="current tsd-kind-module">
+						<a href="sdkerrors.html">SDKErrors</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-enum tsd-parent-kind-module">
+						<a href="../enums/sdkerrors.errorcode.html" class="tsd-kind-icon">Error<wbr>Code</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="../classes/sdkerrors.sdkerror.html" class="tsd-kind-icon">SDKError</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_address_invalid" class="tsd-kind-icon">ERROR_<wbr>ADDRESS_<wbr>INVALID</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_address_type" class="tsd-kind-icon">ERROR_<wbr>ADDRESS_<wbr>TYPE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_attestation_not_provided" class="tsd-kind-icon">ERROR_<wbr>ATTESTATION_<wbr>NOT_<wbr>PROVIDED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_attestation_session_missing" class="tsd-kind-icon">ERROR_<wbr>ATTESTATION_<wbr>SESSION_<wbr>MISSING</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_attestedclaim_unverifiable" class="tsd-kind-icon">ERROR_<wbr>ATTESTEDCLAIM_<wbr>UNVERIFIABLE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_claim_contents_malformed" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>CONTENTS_<wbr>MALFORMED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_claim_hashtree_mismatch" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>HASHTREE_<wbr>MISMATCH</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_claim_hash_not_provided" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>HASH_<wbr>NOT_<wbr>PROVIDED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_claim_nonce_map_malformed" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>NONCE_<wbr>MAP_<wbr>MALFORMED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_claim_nonce_map_not_provided" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>NONCE_<wbr>MAP_<wbr>NOT_<wbr>PROVIDED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_claim_not_provided" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>NOT_<wbr>PROVIDED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_claim_unverifiable" class="tsd-kind-icon">ERROR_<wbr>CLAIM_<wbr>UNVERIFIABLE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_compress_object" class="tsd-kind-icon">ERROR_<wbr>COMPRESS_<wbr>OBJECT</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_ctype_hash_invalid" class="tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>HASH_<wbr>INVALID</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_ctype_hash_not_provided" class="tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>HASH_<wbr>NOT_<wbr>PROVIDED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_ctype_id_not_matching" class="tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>ID_<wbr>NOT_<wbr>MATCHING</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_ctype_owner_type" class="tsd-kind-icon">ERROR_<wbr>CTYPE_<wbr>OWNER_<wbr>TYPE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_decoding_message" class="tsd-kind-icon">ERROR_<wbr>DECODING_<wbr>MESSAGE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_decompression_array" class="tsd-kind-icon">ERROR_<wbr>DECOMPRESSION_<wbr>ARRAY</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_delegation_id_type" class="tsd-kind-icon">ERROR_<wbr>DELEGATION_<wbr>ID_<wbr>TYPE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_did_identifier_mismatch" class="tsd-kind-icon">ERROR_<wbr>DID_<wbr>IDENTIFIER_<wbr>MISMATCH</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_hash_malformed" class="tsd-kind-icon">ERROR_<wbr>HASH_<wbr>MALFORMED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_hash_type" class="tsd-kind-icon">ERROR_<wbr>HASH_<wbr>TYPE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_identity_mismatch" class="tsd-kind-icon">ERROR_<wbr>IDENTITY_<wbr>MISMATCH</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_identity_not_pe_enabled" class="tsd-kind-icon">ERROR_<wbr>IDENTITY_<wbr>NOT_<wbr>PE_<wbr>ENABLED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_invalid_did_prefix" class="tsd-kind-icon">ERROR_<wbr>INVALID_<wbr>DID_<wbr>PREFIX</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_invalid_proof_for_statement" class="tsd-kind-icon">ERROR_<wbr>INVALID_<wbr>PROOF_<wbr>FOR_<wbr>STATEMENT</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_legitimations_not_provided" class="tsd-kind-icon">ERROR_<wbr>LEGITIMATIONS_<wbr>NOT_<wbr>PROVIDED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_legitimations_unverifiable" class="tsd-kind-icon">ERROR_<wbr>LEGITIMATIONS_<wbr>UNVERIFIABLE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_message_body_malformed" class="tsd-kind-icon">ERROR_<wbr>MESSAGE_<wbr>BODY_<wbr>MALFORMED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_message_type" class="tsd-kind-icon">ERROR_<wbr>MESSAGE_<wbr>TYPE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_mnemonic_phrase_invalid" class="tsd-kind-icon">ERROR_<wbr>MNEMONIC_<wbr>PHRASE_<wbr>INVALID</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_mnemonic_phrase_malformed" class="tsd-kind-icon">ERROR_<wbr>MNEMONIC_<wbr>PHRASE_<wbr>MALFORMED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_nested_claim_unverifiable" class="tsd-kind-icon">ERROR_<wbr>NESTED_<wbr>CLAIM_<wbr>UNVERIFIABLE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_nonce_hash_invalid" class="tsd-kind-icon">ERROR_<wbr>NONCE_<wbr>HASH_<wbr>INVALID</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_not_found" class="tsd-kind-icon">ERROR_<wbr>NOT_<wbr>FOUND</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_no_proof_for_statement" class="tsd-kind-icon">ERROR_<wbr>NO_<wbr>PROOF_<wbr>FOR_<wbr>STATEMENT</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_object_malformed" class="tsd-kind-icon">ERROR_<wbr>OBJECT_<wbr>MALFORMED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_owner_not_provided" class="tsd-kind-icon">ERROR_<wbr>OWNER_<wbr>NOT_<wbr>PROVIDED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_parsing_message" class="tsd-kind-icon">ERROR_<wbr>PARSING_<wbr>MESSAGE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_pe_credential_missing" class="tsd-kind-icon">ERROR_<wbr>PE_<wbr>CREDENTIAL_<wbr>MISSING</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_pe_mismatch" class="tsd-kind-icon">ERROR_<wbr>PE_<wbr>MISMATCH</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_pe_missing" class="tsd-kind-icon">ERROR_<wbr>PE_<wbr>MISSING</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_pe_verification" class="tsd-kind-icon">ERROR_<wbr>PE_<wbr>VERIFICATION</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_quote_malformed" class="tsd-kind-icon">ERROR_<wbr>QUOTE_<wbr>MALFORMED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_revocation_bit_missing" class="tsd-kind-icon">ERROR_<wbr>REVOCATION_<wbr>BIT_<wbr>MISSING</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_rfa_not_provided" class="tsd-kind-icon">ERROR_<wbr>RFA_<wbr>NOT_<wbr>PROVIDED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_root_hash_unverifiable" class="tsd-kind-icon">ERROR_<wbr>ROOT_<wbr>HASH_<wbr>UNVERIFIABLE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_root_node_query" class="tsd-kind-icon">ERROR_<wbr>ROOT_<wbr>NODE_<wbr>QUERY</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_signature_data_type" class="tsd-kind-icon">ERROR_<wbr>SIGNATURE_<wbr>DATA_<wbr>TYPE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_signature_unverifiable" class="tsd-kind-icon">ERROR_<wbr>SIGNATURE_<wbr>UNVERIFIABLE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_timeout" class="tsd-kind-icon">ERROR_<wbr>TIMEOUT</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_transaction_duplicate" class="tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>DUPLICATE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_transaction_outdated" class="tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>OUTDATED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_transaction_priority" class="tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>PRIORITY</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_transaction_recoverable" class="tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>RECOVERABLE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_transaction_usurped" class="tsd-kind-icon">ERROR_<wbr>TRANSACTION_<wbr>USURPED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_unauthorized" class="tsd-kind-icon">ERROR_<wbr>UNAUTHORIZED</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_unknown" class="tsd-kind-icon">ERROR_<wbr>UNKNOWN</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#error_ws_address_not_set" class="tsd-kind-icon">ERROR_<wbr>WS_<wbr>ADDRESS_<wbr>NOT_<wbr>SET</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="sdkerrors.html#issdkerror" class="tsd-kind-icon">isSDKError</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer>
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

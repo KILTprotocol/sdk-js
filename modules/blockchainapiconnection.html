@@ -67,7 +67,7 @@
 					<div class="lead">
 						<p>Blockchain Api Connection enables the building and accessing of the KILT <a href="blockchain.html">Blockchain</a> connection. In which it keeps one connection open and allows to reuse the connection for all <a href="blockchain.html">Blockchain</a> related tasks.</p>
 					</div>
-					<p>Other modules can access the <a href="blockchain.html">Blockchain</a> as such: <code>const blockchain = await getCached()</code>.</p>
+					<p>Other modules can access the <a href="blockchain.html">Blockchain</a> as such: <code>const blockchain = await getConnectionOrConnect()</code>.</p>
 				</div>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -75,17 +75,15 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Variables</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-variable tsd-parent-kind-module"><a href="blockchainapiconnection.html#default_ws_address" class="tsd-kind-icon">DEFAULT_<wbr>WS_<wbr>ADDRESS</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="blockchainapiconnection.html#buildconnection" class="tsd-kind-icon">build<wbr>Connection</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="blockchainapiconnection.html#clearcache" class="tsd-kind-icon">clear<wbr>Cache</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module"><a href="blockchainapiconnection.html#getcached" class="tsd-kind-icon">get<wbr>Cached</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="blockchainapiconnection.html#connected" class="tsd-kind-icon">connected</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="blockchainapiconnection.html#disconnect" class="tsd-kind-icon">disconnect</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="blockchainapiconnection.html#getconnection" class="tsd-kind-icon">get<wbr>Connection</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="blockchainapiconnection.html#getconnectionorconnect" class="tsd-kind-icon">get<wbr>Connection<wbr>OrConnect</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="blockchainapiconnection.html#setconnection" class="tsd-kind-icon">set<wbr>Connection</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -95,19 +93,6 @@
 							</ul>
 						</section>
 					</div>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Variables</h2>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module">
-					<a name="default_ws_address" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> DEFAULT_<wbr>WS_<wbr>ADDRESS</h3>
-					<div class="tsd-signature tsd-kind-icon">DEFAULT_<wbr>WS_<wbr>ADDRESS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = process.env.DEFAULT_WS_ADDRESS || &#x27;ws://127.0.0.1:9944&#x27;</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L15">src/blockchainApiConnection/BlockchainApiConnection.ts:15</a></li>
-						</ul>
-					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
@@ -122,16 +107,25 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L33">src/blockchainApiConnection/BlockchainApiConnection.ts:33</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L61">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:61</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Builds a new blockchain connection instance.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> host: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = DEFAULT_WS_ADDRESS</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> host: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = ConfigService.get(&#x27;address&#x27;)</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Optional host address. Otherwise taken from the ConfigService.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>A new blockchain connection instance.</p>
 						</li>
 					</ul>
 				</section>
@@ -145,33 +139,141 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L55">src/blockchainApiConnection/BlockchainApiConnection.ts:55</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L109">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:109</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Clears the cached blockchain connection instance.
+									This does NOT disconnect automatically beforehand!</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
-					<a name="getcached" class="tsd-anchor"></a>
-					<h3>get<wbr>Cached</h3>
+					<a name="connected" class="tsd-anchor"></a>
+					<h3>connected</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Cached<span class="tsd-signature-symbol">(</span>host<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">connected<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L46">src/blockchainApiConnection/BlockchainApiConnection.ts:46</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L118">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:118</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Check, if the cached blockchain connection is connected.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>If there is a cached connection and it is currently connected.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="disconnect" class="tsd-anchor"></a>
+					<h3>disconnect</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">disconnect<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L129">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:129</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Disconnects the cached connection and clears the cache.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>If there was a cached and connected connection, or not.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="getconnection" class="tsd-anchor"></a>
+					<h3>get<wbr>Connection</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Connection<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L89">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:89</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the cached blockchain connection instance.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></h4>
+							<p>Cached blockchain connection.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="getconnectionorconnect" class="tsd-anchor"></a>
+					<h3>get<wbr>Connection<wbr>OrConnect</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Connection<wbr>OrConnect<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L98">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:98</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the cached blockchain connection, or builds a new one, if non-existant.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>The cached or newly built blockchain connection instance.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="setconnection" class="tsd-anchor"></a>
+					<h3>set<wbr>Connection</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Connection<span class="tsd-signature-symbol">(</span>connectionInstance<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L80">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:80</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Allows caching of a self-built connection instance.
+									This will be automatically used by all chain functions.</p>
+								</div>
+								<p>For advanced use-cases only.</p>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> host: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = DEFAULT_WS_ADDRESS</span></h5>
+									<h5>connectionInstance: <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The Blockchain instance, which should be cached.</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/blockchain.blockchain-1.html" class="tsd-signature-type">Blockchain</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -184,16 +286,36 @@
 					<div class="tsd-signature tsd-kind-icon">CUSTOM_<wbr>TYPES<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L20">src/blockchainApiConnection/BlockchainApiConnection.ts:20</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L17">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:17</a></li>
 						</ul>
 					</aside>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="custom_types.accountinfo" class="tsd-anchor"></a>
+						<h3>Account<wbr>Info</h3>
+						<div class="tsd-signature tsd-kind-icon">Account<wbr>Info<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;AccountInfoWithProviders&quot;</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L27">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:27</a></li>
+							</ul>
+						</aside>
+					</section>
 					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
 						<a name="custom_types.address" class="tsd-anchor"></a>
 						<h3>Address</h3>
 						<div class="tsd-signature tsd-kind-icon">Address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;AccountId&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L27">src/blockchainApiConnection/BlockchainApiConnection.ts:27</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L22">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:22</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="custom_types.balance" class="tsd-anchor"></a>
+						<h3>Balance</h3>
+						<div class="tsd-signature tsd-kind-icon">Balance<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;u128&quot;</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L18">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:18</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -203,7 +325,7 @@
 						<div class="tsd-signature tsd-kind-icon">Block<wbr>Number<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;u64&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L29">src/blockchainApiConnection/BlockchainApiConnection.ts:29</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L24">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:24</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -213,17 +335,7 @@
 						<div class="tsd-signature tsd-kind-icon">Delegation<wbr>Node<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;Hash&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L21">src/blockchainApiConnection/BlockchainApiConnection.ts:21</a></li>
-							</ul>
-						</aside>
-					</section>
-					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-						<a name="custom_types.errorcode" class="tsd-anchor"></a>
-						<h3>Error<wbr>Code</h3>
-						<div class="tsd-signature tsd-kind-icon">Error<wbr>Code<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;u16&quot;</span></div>
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L25">src/blockchainApiConnection/BlockchainApiConnection.ts:25</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L29">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:29</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -233,7 +345,7 @@
 						<div class="tsd-signature tsd-kind-icon">Index<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;u64&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L30">src/blockchainApiConnection/BlockchainApiConnection.ts:30</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L25">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:25</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -243,7 +355,7 @@
 						<div class="tsd-signature tsd-kind-icon">Lookup<wbr>Source<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;AccountId&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L28">src/blockchainApiConnection/BlockchainApiConnection.ts:28</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L23">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:23</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -253,7 +365,7 @@
 						<div class="tsd-signature tsd-kind-icon">Permissions<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;u32&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L24">src/blockchainApiConnection/BlockchainApiConnection.ts:24</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L28">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:28</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -263,7 +375,7 @@
 						<div class="tsd-signature tsd-kind-icon">Public<wbr>Box<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;Hash&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L23">src/blockchainApiConnection/BlockchainApiConnection.ts:23</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L20">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:20</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -273,7 +385,17 @@
 						<div class="tsd-signature tsd-kind-icon">Public<wbr>Signing<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;Hash&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L22">src/blockchainApiConnection/BlockchainApiConnection.ts:22</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L19">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:19</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="custom_types.refcount" class="tsd-anchor"></a>
+						<h3>Ref<wbr>Count</h3>
+						<div class="tsd-signature tsd-kind-icon">Ref<wbr>Count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;u32&quot;</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L26">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:26</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -283,9 +405,199 @@
 						<div class="tsd-signature tsd-kind-icon">Signature<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;MultiSignature&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchainApiConnection/BlockchainApiConnection.ts#L26">src/blockchainApiConnection/BlockchainApiConnection.ts:26</a></li>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L21">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:21</a></li>
 							</ul>
 						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
+						<a name="custom_types.attestation" class="tsd-anchor"></a>
+						<h3>Attestation</h3>
+						<div class="tsd-signature tsd-kind-icon">Attestation<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L42">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:42</a></li>
+							</ul>
+						</aside>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.attestation.attester" class="tsd-anchor"></a>
+							<h3>attester</h3>
+							<div class="tsd-signature tsd-kind-icon">attester<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;AccountId&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L44">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:44</a></li>
+								</ul>
+							</aside>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.attestation.ctypehash" class="tsd-anchor"></a>
+							<h3>ctype<wbr>Hash</h3>
+							<div class="tsd-signature tsd-kind-icon">ctype<wbr>Hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;Hash&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L43">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:43</a></li>
+								</ul>
+							</aside>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.attestation.delegationid" class="tsd-anchor"></a>
+							<h3>delegation<wbr>Id</h3>
+							<div class="tsd-signature tsd-kind-icon">delegation<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;Option&lt;DelegationNodeId&gt;&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L45">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:45</a></li>
+								</ul>
+							</aside>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.attestation.revoked" class="tsd-anchor"></a>
+							<h3>revoked</h3>
+							<div class="tsd-signature tsd-kind-icon">revoked<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;bool&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L46">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:46</a></li>
+								</ul>
+							</aside>
+						</section>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
+						<a name="custom_types.delegationnode" class="tsd-anchor"></a>
+						<h3>Delegation<wbr>Node</h3>
+						<div class="tsd-signature tsd-kind-icon">Delegation<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L30">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:30</a></li>
+							</ul>
+						</aside>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.delegationnode.owner" class="tsd-anchor"></a>
+							<h3>owner</h3>
+							<div class="tsd-signature tsd-kind-icon">owner<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;AccountId&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L33">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:33</a></li>
+								</ul>
+							</aside>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.delegationnode.parent" class="tsd-anchor"></a>
+							<h3>parent</h3>
+							<div class="tsd-signature tsd-kind-icon">parent<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;Option&lt;DelegationNodeId&gt;&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L32">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:32</a></li>
+								</ul>
+							</aside>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.delegationnode.permissions-1" class="tsd-anchor"></a>
+							<h3>permissions</h3>
+							<div class="tsd-signature tsd-kind-icon">permissions<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;Permissions&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L34">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:34</a></li>
+								</ul>
+							</aside>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.delegationnode.revoked-1" class="tsd-anchor"></a>
+							<h3>revoked</h3>
+							<div class="tsd-signature tsd-kind-icon">revoked<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;bool&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L35">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:35</a></li>
+								</ul>
+							</aside>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.delegationnode.rootid" class="tsd-anchor"></a>
+							<h3>root<wbr>Id</h3>
+							<div class="tsd-signature tsd-kind-icon">root<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;DelegationNodeId&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L31">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:31</a></li>
+								</ul>
+							</aside>
+						</section>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
+						<a name="custom_types.delegationroot" class="tsd-anchor"></a>
+						<h3>Delegation<wbr>Root</h3>
+						<div class="tsd-signature tsd-kind-icon">Delegation<wbr>Root<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L37">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:37</a></li>
+							</ul>
+						</aside>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.delegationroot.ctypehash-1" class="tsd-anchor"></a>
+							<h3>ctype<wbr>Hash</h3>
+							<div class="tsd-signature tsd-kind-icon">ctype<wbr>Hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;Hash&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L38">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:38</a></li>
+								</ul>
+							</aside>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.delegationroot.owner-1" class="tsd-anchor"></a>
+							<h3>owner</h3>
+							<div class="tsd-signature tsd-kind-icon">owner<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;AccountId&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L39">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:39</a></li>
+								</ul>
+							</aside>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.delegationroot.revoked-2" class="tsd-anchor"></a>
+							<h3>revoked</h3>
+							<div class="tsd-signature tsd-kind-icon">revoked<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;bool&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L40">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:40</a></li>
+								</ul>
+							</aside>
+						</section>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-object-literal">
+						<a name="custom_types.didrecord" class="tsd-anchor"></a>
+						<h3>Did<wbr>Record</h3>
+						<div class="tsd-signature tsd-kind-icon">Did<wbr>Record<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L48">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:48</a></li>
+							</ul>
+						</aside>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.didrecord.boxkey" class="tsd-anchor"></a>
+							<h3>box<wbr>Key</h3>
+							<div class="tsd-signature tsd-kind-icon">box<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;Hash&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L50">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:50</a></li>
+								</ul>
+							</aside>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.didrecord.docref" class="tsd-anchor"></a>
+							<h3>doc<wbr>Ref</h3>
+							<div class="tsd-signature tsd-kind-icon">doc<wbr>Ref<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;Option&lt;Vec&lt;u8&gt;&gt;&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L51">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:51</a></li>
+								</ul>
+							</aside>
+						</section>
+						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+							<a name="custom_types.didrecord.signkey" class="tsd-anchor"></a>
+							<h3>sign<wbr>Key</h3>
+							<div class="tsd-signature tsd-kind-icon">sign<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;Hash&quot;</span></div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts#L49">packages/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection.ts:49</a></li>
+								</ul>
+							</aside>
+						</section>
 					</section>
 				</section>
 			</section>
@@ -303,9 +615,6 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-variable tsd-parent-kind-module">
-						<a href="blockchainapiconnection.html#default_ws_address" class="tsd-kind-icon">DEFAULT_<wbr>WS_<wbr>ADDRESS</a>
-					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="blockchainapiconnection.html#buildconnection" class="tsd-kind-icon">build<wbr>Connection</a>
 					</li>
@@ -313,7 +622,19 @@
 						<a href="blockchainapiconnection.html#clearcache" class="tsd-kind-icon">clear<wbr>Cache</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
-						<a href="blockchainapiconnection.html#getcached" class="tsd-kind-icon">get<wbr>Cached</a>
+						<a href="blockchainapiconnection.html#connected" class="tsd-kind-icon">connected</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="blockchainapiconnection.html#disconnect" class="tsd-kind-icon">disconnect</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="blockchainapiconnection.html#getconnection" class="tsd-kind-icon">get<wbr>Connection</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="blockchainapiconnection.html#getconnectionorconnect" class="tsd-kind-icon">get<wbr>Connection<wbr>OrConnect</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="blockchainapiconnection.html#setconnection" class="tsd-kind-icon">set<wbr>Connection</a>
 					</li>
 					<li class=" tsd-kind-object-literal tsd-parent-kind-module">
 						<a href="blockchainapiconnection.html#custom_types" class="tsd-kind-icon">CUSTOM_<wbr>TYPES</a>
@@ -331,13 +652,16 @@
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>

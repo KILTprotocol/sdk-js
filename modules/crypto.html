@@ -75,6 +75,13 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
+							<h3>Interfaces</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/crypto.hasher.html" class="tsd-kind-icon">Hasher</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/crypto.hashingoptions.html" class="tsd-kind-icon">Hashing<wbr>Options</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Type aliases</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="crypto.html#address" class="tsd-kind-icon">Address</a></li>
@@ -99,7 +106,9 @@
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="crypto.html#encryptsymmetricasstr" class="tsd-kind-icon">encrypt<wbr>Symmetric<wbr>AsStr</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="crypto.html#hash" class="tsd-kind-icon">hash</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="crypto.html#hashobjectasstr" class="tsd-kind-icon">hash<wbr>Object<wbr>AsStr</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="crypto.html#hashstatements" class="tsd-kind-icon">hash<wbr>Statements</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="crypto.html#hashstr" class="tsd-kind-icon">hash<wbr>Str</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="crypto.html#saltedblake2b256" class="tsd-kind-icon">salted<wbr>Blake2b256</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="crypto.html#sign" class="tsd-kind-icon">sign</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="crypto.html#signstr" class="tsd-kind-icon">sign<wbr>Str</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="crypto.html#verify" class="tsd-kind-icon">verify</a></li>
@@ -116,7 +125,7 @@
 					<div class="tsd-signature tsd-kind-icon">Address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L32">src/crypto/Crypto.ts:32</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L35">packages/utils/src/Crypto.ts:35</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -126,9 +135,14 @@
 					<div class="tsd-signature tsd-kind-icon">Crypto<wbr>Input<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L30">src/crypto/Crypto.ts:30</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L33">packages/utils/src/Crypto.ts:33</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Types accepted by hashing and crypto functions.</p>
+						</div>
+					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
 					<a name="encryptedasymmetric" class="tsd-anchor"></a>
@@ -136,7 +150,7 @@
 					<div class="tsd-signature tsd-kind-icon">Encrypted<wbr>Asymmetric<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>box<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">; </span>nonce<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L39">src/crypto/Crypto.ts:39</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L42">packages/utils/src/Crypto.ts:42</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -157,7 +171,7 @@
 					<div class="tsd-signature tsd-kind-icon">Encrypted<wbr>Asymmetric<wbr>String<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>box<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>nonce<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L49">src/crypto/Crypto.ts:49</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L52">packages/utils/src/Crypto.ts:52</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -178,7 +192,7 @@
 					<div class="tsd-signature tsd-kind-icon">Encrypted<wbr>Symmetric<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>encrypted<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">; </span>nonce<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L34">src/crypto/Crypto.ts:34</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L37">packages/utils/src/Crypto.ts:37</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -199,7 +213,7 @@
 					<div class="tsd-signature tsd-kind-icon">Encrypted<wbr>Symmetric<wbr>String<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>encrypted<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>nonce<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L44">src/crypto/Crypto.ts:44</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L47">packages/utils/src/Crypto.ts:47</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -221,25 +235,37 @@
 					<a name="cotouint8" class="tsd-anchor"></a>
 					<h3>co<wbr>ToUInt8</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">co<wbr>ToUInt8<span class="tsd-signature-symbol">(</span>input<span class="tsd-signature-symbol">: </span><a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a>, rawConvert<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span></li>
+						<li class="tsd-signature tsd-kind-icon">co<wbr>ToUInt8<span class="tsd-signature-symbol">(</span>input<span class="tsd-signature-symbol">: </span><a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span>, hexAsString<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L54">src/crypto/Crypto.ts:54</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L64">packages/utils/src/Crypto.ts:64</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a Uint8Array value from a Uint8Array, Buffer, string or hex input.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>input: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<h5>input: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Input array or string. Null or undefined result in an empty array.</p>
+									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> rawConvert: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> hexAsString: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Whether or not a hex string is encoded as a string instead of a number.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Uint8Array</span></h4>
+							<p>A (possibly empty) Uint8Array.</p>
 						</li>
 					</ul>
 				</section>
@@ -253,22 +279,37 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L190">src/crypto/Crypto.ts:190</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L296">packages/utils/src/Crypto.ts:296</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Wrapper around nacl.box.open. Authenticated decryption of an encrypted message.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>data: <a href="crypto.html#encryptedasymmetric" class="tsd-signature-type">EncryptedAsymmetric</a><span class="tsd-signature-symbol"> | </span><a href="crypto.html#encryptedasymmetricstring" class="tsd-signature-type">EncryptedAsymmetricString</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Object containing encrypted message and nonce used for encryption.</p>
+									</div>
 								</li>
 								<li>
 									<h5>publicKeyB: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Public key of the sender. Necessary to authenticate the message during decryption.</p>
+									</div>
 								</li>
 								<li>
 									<h5>secretKeyA: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Private key of the recipient. Required for decryption.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span></h4>
+							<p>Decrypted message or false if decryption is unsuccessful.</p>
 						</li>
 					</ul>
 				</section>
@@ -282,22 +323,37 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L204">src/crypto/Crypto.ts:204</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L318">packages/utils/src/Crypto.ts:318</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Wrapper around nacl.box.open. Authenticated decryption of an encrypted message.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>data: <a href="crypto.html#encryptedasymmetric" class="tsd-signature-type">EncryptedAsymmetric</a><span class="tsd-signature-symbol"> | </span><a href="crypto.html#encryptedasymmetricstring" class="tsd-signature-type">EncryptedAsymmetricString</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Object containing encrypted message and nonce used for encryption.</p>
+									</div>
 								</li>
 								<li>
 									<h5>publicKeyB: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Public key of the sender. Necessary to authenticate the message during decryption.</p>
+									</div>
 								</li>
 								<li>
 									<h5>secretKeyA: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Private key of the recipient. Required for decryption.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span></h4>
+							<p>Decrypted message as string or false if decryption is unsuccessful.</p>
 						</li>
 					</ul>
 				</section>
@@ -311,19 +367,31 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L113">src/crypto/Crypto.ts:113</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L168">packages/utils/src/Crypto.ts:168</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Takes a nonce &amp; secret to decrypt a message.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>data: <a href="crypto.html#encryptedsymmetric" class="tsd-signature-type">EncryptedSymmetric</a><span class="tsd-signature-symbol"> | </span><a href="crypto.html#encryptedsymmetricstring" class="tsd-signature-type">EncryptedSymmetricString</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Object containing encrypted message and the nonce used for encryption.</p>
+									</div>
 								</li>
 								<li>
 									<h5>secret: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Secret key for encryption &amp; decryption.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></h4>
+							<p>Decrypted message as byte array.</p>
 						</li>
 					</ul>
 				</section>
@@ -337,19 +405,31 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L124">src/crypto/Crypto.ts:124</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L186">packages/utils/src/Crypto.ts:186</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Takes a nonce &amp; secret to decrypt a message.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>data: <a href="crypto.html#encryptedsymmetric" class="tsd-signature-type">EncryptedSymmetric</a><span class="tsd-signature-symbol"> | </span><a href="crypto.html#encryptedsymmetricstring" class="tsd-signature-type">EncryptedSymmetricString</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Object containing encrypted message and the nonce used for encryption.</p>
+									</div>
 								</li>
 								<li>
 									<h5>secret: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Secret key for encryption &amp; decryption.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></h4>
+							<p>Decrypted message as string.</p>
 						</li>
 					</ul>
 				</section>
@@ -363,22 +443,37 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L164">src/crypto/Crypto.ts:164</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L254">packages/utils/src/Crypto.ts:254</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Wrapper around nacl.box. Authenticated encryption of a message for a recipient&#39;s public key.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>message: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>String or byte array to be enrypted.</p>
+									</div>
 								</li>
 								<li>
 									<h5>publicKeyA: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Public key of the recipient. The owner will be able to decrypt the message.</p>
+									</div>
 								</li>
 								<li>
 									<h5>secretKeyB: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Private key of the sender. Necessary to authenticate the message during decryption.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="crypto.html#encryptedasymmetric" class="tsd-signature-type">EncryptedAsymmetric</a></h4>
+							<p>Encrypted message and nonce used for encryption.</p>
 						</li>
 					</ul>
 				</section>
@@ -392,22 +487,37 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L179">src/crypto/Crypto.ts:179</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L277">packages/utils/src/Crypto.ts:277</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Wrapper around nacl.box. Authenticated encryption of a message for a recipient&#39;s public key.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>message: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>String or byte array to be enrypted.</p>
+									</div>
 								</li>
 								<li>
 									<h5>publicKeyA: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Public key of the recipient. The owner will be able to decrypt the message.</p>
+									</div>
 								</li>
 								<li>
 									<h5>secretKeyB: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Private key of the sender. Necessary to authenticate the message during decryption.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="crypto.html#encryptedasymmetricstring" class="tsd-signature-type">EncryptedAsymmetricString</a></h4>
+							<p>Encrypted message and nonce used for encryption as hex strings.</p>
 						</li>
 					</ul>
 				</section>
@@ -421,22 +531,37 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L86">src/crypto/Crypto.ts:86</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L126">packages/utils/src/Crypto.ts:126</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Encrypts a with a secret/key, which can be decrypted using the same key.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>message: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Message to be encrypted.</p>
+									</div>
 								</li>
 								<li>
 									<h5>secret: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Secret key for encryption &amp; decryption.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> nonce: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Random nonce to obscure message contents when encrypted. Will be auto-generated if not supplied.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="crypto.html#encryptedsymmetric" class="tsd-signature-type">EncryptedSymmetric</a></h4>
+							<p>Encrypted message &amp; nonce used for encryption. Both are needed for decryption.</p>
 						</li>
 					</ul>
 				</section>
@@ -450,22 +575,37 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L98">src/crypto/Crypto.ts:98</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L146">packages/utils/src/Crypto.ts:146</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Encrypts a with a secret/key, which can be decrypted using the same key.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>message: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Message to be encrypted.</p>
+									</div>
 								</li>
 								<li>
 									<h5>secret: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Secret key for encryption &amp; decryption.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> inputNonce: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Random nonce to obscure message contents that could otherwise be guessed or inferred. Will be auto-generated if not supplied.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="crypto.html#encryptedsymmetricstring" class="tsd-signature-type">EncryptedSymmetricString</a></h4>
+							<p>Encrypted message as string &amp; nonce used for encryption as hex strings. Both are needed for decryption.</p>
 						</li>
 					</ul>
 				</section>
@@ -479,19 +619,31 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L136">src/crypto/Crypto.ts:136</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L205">packages/utils/src/Crypto.ts:205</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Create the blake2b and return the result as a u8a with the specified <code>bitLength</code>.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>value: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Value to be hashed.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> bitLength: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Bit length of hash.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Uint8Array</span></h4>
+							<p>Blake2b hash byte array.</p>
 						</li>
 					</ul>
 				</section>
@@ -505,19 +657,70 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L144">src/crypto/Crypto.ts:144</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L226">packages/utils/src/Crypto.ts:226</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Hashes numbers, booleans, and objects by stringifying them. Object keys are sorted to yield consistent hashing.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>value: <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">boolean</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Object or value to be hashed.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> nonce: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Optional nonce to obscure hashed values that could be guessed.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+							<p>Blake2b hash as hex string.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="hashstatements" class="tsd-anchor"></a>
+					<h3>hash<wbr>Statements</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">hash<wbr>Statements<span class="tsd-signature-symbol">(</span>statements<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/crypto.hashingoptions.html" class="tsd-signature-type">HashingOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>digest<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>nonce<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>saltedHash<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>statement<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L372">packages/utils/src/Crypto.ts:372</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Configurable computation of salted over an array of statements. Can be used to validate/reproduce salted hashes
+									by means of an optional nonce map.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>statements: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An array of statement strings to be hashed.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <a href="../interfaces/crypto.hashingoptions.html" class="tsd-signature-type">HashingOptions</a><span class="tsd-signature-symbol"> = {}</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Optional hasher arguments.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>digest<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>nonce<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>saltedHash<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>statement<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>An array of objects for each statement which contain a statement, its digest, salted hash and nonce.</p>
 						</li>
 					</ul>
 				</section>
@@ -531,16 +734,67 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L140">src/crypto/Crypto.ts:140</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L215">packages/utils/src/Crypto.ts:215</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Create the blake2b and return the result as a hex string.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>value: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Value to be hashed.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+							<p>Blake2b hash as hex string.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="saltedblake2b256" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> salted<wbr>Blake2b256</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">salted<wbr>Blake2b256<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, nonce<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L358">packages/utils/src/Crypto.ts:358</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Default hasher for <a href="crypto.html#hashstatements">hashStatements</a>.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>String to be hashed.</p>
+										</div>
+									</div>
+								</li>
+								<li>
+									<h5>nonce: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>Optional nonce (as string) used to obscure hashed contents.</p>
+										</div>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+							<p>256 bit blake2 hash as hex string.</p>
 						</li>
 					</ul>
 				</section>
@@ -554,19 +808,31 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L64">src/crypto/Crypto.ts:64</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L81">packages/utils/src/Crypto.ts:81</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Signs a message.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>message: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>String or byte array to be signed.</p>
+									</div>
 								</li>
 								<li>
 									<h5>signKeyPair: <span class="tsd-signature-type">KeyringPair</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>KeyringPair used for signing.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Uint8Array</span></h4>
+							<p>Signature over message as byte array.</p>
 						</li>
 					</ul>
 				</section>
@@ -580,19 +846,31 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L71">src/crypto/Crypto.ts:71</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L95">packages/utils/src/Crypto.ts:95</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Signs a message. Returns signature string.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>message: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>String or byte array to be signed.</p>
+									</div>
 								</li>
 								<li>
 									<h5>signKeyPair: <span class="tsd-signature-type">KeyringPair</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>KeyringPair used for signing.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+							<p>Signature over message as hex string.</p>
 						</li>
 					</ul>
 				</section>
@@ -606,22 +884,37 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/crypto/Crypto.ts#L78">src/crypto/Crypto.ts:78</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/utils/src/Crypto.ts#L110">packages/utils/src/Crypto.ts:110</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Verifies a signature over a message.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>message: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Original signed message to be verified.</p>
+									</div>
 								</li>
 								<li>
 									<h5>signature: <a href="crypto.html#cryptoinput" class="tsd-signature-type">CryptoInput</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Signature as hex string or byte array.</p>
+									</div>
 								</li>
 								<li>
 									<h5>address: <a href="crypto.html#address" class="tsd-signature-type">Address</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Substrate address or public key of the signer.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+							<p>Whether the signature could be verified.</p>
 						</li>
 					</ul>
 				</section>
@@ -640,6 +933,12 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/crypto.hasher.html" class="tsd-kind-icon">Hasher</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/crypto.hashingoptions.html" class="tsd-kind-icon">Hashing<wbr>Options</a>
+					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
 						<a href="crypto.html#address" class="tsd-kind-icon">Address</a>
 					</li>
@@ -692,7 +991,13 @@
 						<a href="crypto.html#hashobjectasstr" class="tsd-kind-icon">hash<wbr>Object<wbr>AsStr</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="crypto.html#hashstatements" class="tsd-kind-icon">hash<wbr>Statements</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="crypto.html#hashstr" class="tsd-kind-icon">hash<wbr>Str</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="crypto.html#saltedblake2b256" class="tsd-kind-icon">salted<wbr>Blake2b256</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="crypto.html#sign" class="tsd-kind-icon">sign</a>
@@ -716,13 +1021,16 @@
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>

@@ -1,0 +1,269 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>PresentationUtils | @kiltprotocol/sdk-js</title>
+	<meta name="description" content="Documentation for @kiltprotocol/sdk-js">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">@kiltprotocol/sdk-js</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../globals.html">Globals</a>
+				</li>
+				<li>
+					<a href="presentationutils.html">PresentationUtils</a>
+				</li>
+			</ul>
+			<h1>Module PresentationUtils</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Functions</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="presentationutils.html#makepresentation" class="tsd-kind-icon">make<wbr>Presentation</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="presentationutils.html#removeproperties" class="tsd-kind-icon">remove<wbr>Properties</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="presentationutils.html#updatecredentialdigestproof" class="tsd-kind-icon">update<wbr>Credential<wbr>Digest<wbr>Proof</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="makepresentation" class="tsd-anchor"></a>
+					<h3>make<wbr>Presentation</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">make<wbr>Presentation<span class="tsd-signature-symbol">(</span>VC<span class="tsd-signature-symbol">: </span><a href="../interfaces/vcexporttypes.verifiablecredential.html" class="tsd-signature-type">VerifiableCredential</a>, showProperties<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/vcexporttypes.verifiablepresentation.html" class="tsd-signature-type">VerifiablePresentation</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/vc-export/src/presentationUtils.ts#L114">packages/vc-export/src/presentationUtils.ts:114</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a Verifiable Presentation from a KILT Verifiable Credential and allows removing properties while doing so. Does not currently sign the presentation or allow adding a challenge to be signed.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>VC: <a href="../interfaces/vcexporttypes.verifiablecredential.html" class="tsd-signature-type">VerifiableCredential</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The KILT Verifiable Credential as exported with the SDK utils.</p>
+									</div>
+								</li>
+								<li>
+									<h5>showProperties: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An array of properties to reveal.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/vcexporttypes.verifiablepresentation.html" class="tsd-signature-type">VerifiablePresentation</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>A Verifiable Presentation containing the original VC with its proofs, but not extra signatures.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="removeproperties" class="tsd-anchor"></a>
+					<h3>remove<wbr>Properties</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>Properties<span class="tsd-signature-symbol">(</span>VC<span class="tsd-signature-symbol">: </span><a href="../interfaces/vcexporttypes.verifiablecredential.html" class="tsd-signature-type">VerifiableCredential</a>, whitelist<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/vcexporttypes.verifiablecredential.html" class="tsd-signature-type">VerifiableCredential</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/vc-export/src/presentationUtils.ts#L70">packages/vc-export/src/presentationUtils.ts:70</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns a copy of a KILT Verifiable Credential where all claims about the credential subject that are not whitelisted have been removed.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>VC: <a href="../interfaces/vcexporttypes.verifiablecredential.html" class="tsd-signature-type">VerifiableCredential</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The KILT Verifiable Credential as exported with the SDK utils.</p>
+									</div>
+								</li>
+								<li>
+									<h5>whitelist: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An array of properties to keep on the credential.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/vcexporttypes.verifiablecredential.html" class="tsd-signature-type">VerifiableCredential</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>A Verifiable Credential containing the original proofs, but with non-whitelisted claims removed.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="updatecredentialdigestproof" class="tsd-anchor"></a>
+					<h3>update<wbr>Credential<wbr>Digest<wbr>Proof</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">update<wbr>Credential<wbr>Digest<wbr>Proof<span class="tsd-signature-symbol">(</span>credential<span class="tsd-signature-symbol">: </span><a href="../interfaces/vcexporttypes.verifiablecredential.html" class="tsd-signature-type">VerifiableCredential</a>, proof<span class="tsd-signature-symbol">: </span><a href="../interfaces/vcexporttypes.credentialdigestproof.html" class="tsd-signature-type">CredentialDigestProof</a>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span>hasher<span class="tsd-signature-symbol">?: </span><a href="../interfaces/crypto.hasher.html" class="tsd-signature-type">Hasher</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/vcexporttypes.credentialdigestproof.html" class="tsd-signature-type">CredentialDigestProof</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/vc-export/src/presentationUtils.ts#L29">packages/vc-export/src/presentationUtils.ts:29</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This proof is added to a credential to prove that revealed properties were attested in the original credential.
+										For each property to be revealed, it contains an unsalted hash of the statement plus a nonce which is required to verify against the salted hash in the credential.
+									Statements and nonces are mapped to each other through the unsalted hashes.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>credential: <a href="../interfaces/vcexporttypes.verifiablecredential.html" class="tsd-signature-type">VerifiableCredential</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p><a href="../interfaces/vcexporttypes.verifiablecredential.html">VerifiableCredential</a> object containing only the credentialSubject properties you want to reveal.</p>
+									</div>
+								</li>
+								<li>
+									<h5>proof: <a href="../interfaces/vcexporttypes.credentialdigestproof.html" class="tsd-signature-type">CredentialDigestProof</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The <a href="../interfaces/vcexporttypes.credentialdigestproof.html">CredentialDigestProof</a> to update.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <span class="tsd-signature-symbol">{ </span>hasher<span class="tsd-signature-symbol">?: </span><a href="../interfaces/crypto.hasher.html" class="tsd-signature-type">Hasher</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> = {}</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Options.</p>
+									</div>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> hasher<span class="tsd-signature-symbol">?: </span><a href="../interfaces/crypto.hasher.html" class="tsd-signature-type">Hasher</a></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>The hashing function used to generate digests for nonce map. Should be the one used in creating the original credential.</p>
+											</div>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/vcexporttypes.credentialdigestproof.html" class="tsd-signature-type">CredentialDigestProof</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>Proof object that can be included in a Verifiable Credential / Verifiable Presentation&#39;s proof section.</p>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="../globals.html"><em>Globals</em></a>
+					</li>
+					<li class="current tsd-kind-module">
+						<a href="presentationutils.html">Presentation<wbr>Utils</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="presentationutils.html#makepresentation" class="tsd-kind-icon">make<wbr>Presentation</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="presentationutils.html#removeproperties" class="tsd-kind-icon">remove<wbr>Properties</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="presentationutils.html#updatecredentialdigestproof" class="tsd-kind-icon">update<wbr>Credential<wbr>Digest<wbr>Proof</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer>
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

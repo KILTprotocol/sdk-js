@@ -81,7 +81,7 @@
 				<p><a href="https://kilt.io">KILT</a> documentation is provided in several guides and demos.</p>
 				<ul>
 					<li><a href="https://github.com/KILTprotocol/kilt-workshop-101">KILT workshop</a> 👈 Start here to get familiar with the basics</li>
-					<li><a href="https://github.com/KILTprotocol/sdk-js/blob/develop/docs/getting-started.md">Getting started guide</a> 👈 Start here if you&#39;d like to include KILT in your project</li>
+					<li><a href="https://github.com/KILTprotocol/sdk-js/blob/master/docs/getting-started.md">Getting started guide</a> 👈 Start here if you&#39;d like to include KILT in your project</li>
 					<li><a href="https://dev.kilt.io/">KILT Developer overview</a> 👈 Checkout for an overview of the codebase, infrastructure and deployed KILT instances.</li>
 					<li><a href="https://kiltprotocol.github.io/sdk-js">API documentation</a></li>
 					<li><a href="https://kilt.io/developers-sub/kilt-demo-client/">Demo client</a></li>
@@ -92,9 +92,11 @@
 					<h2>How to install the SDK</h2>
 				</a>
 				<p>Install the KILT-SDK by running the following commands:</p>
-				<pre><code class="language-bash">npm install @kiltprotocol/sdk-js</code></pre>
+				<pre><code class="language-bash">npm install @kiltprotocol/sdk-js
+</code></pre>
 				<p>Or with <code>yarn</code>:</p>
-				<pre><code class="language-bash">yarn add @kiltprotocol/sdk-js</code></pre>
+				<pre><code class="language-bash">yarn add @kiltprotocol/sdk-js
+</code></pre>
 				<a href="#example" id="example" style="color: inherit; text-decoration: none;">
 					<h2>Example</h2>
 				</a>
@@ -114,7 +116,8 @@ Claim {
     <span class="hljs-attr">contents</span>: {
         <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Alice&#x27;</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">29</span> },
     <span class="hljs-attr">owner</span>: <span class="hljs-string">&#x27;5EvSHoZF23mZS4XKQBLdqMv7a7CRSANJmxn7XDu6hwoiK4Wz&#x27;</span>
-}</code></pre>
+}
+</code></pre>
 				<a href="#development-setup" id="development-setup" style="color: inherit; text-decoration: none;">
 					<h2>Development Setup</h2>
 				</a>
@@ -136,25 +139,7 @@ Claim {
 						<a href="globals.html"><em>Globals</em></a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/_src_actor_attester_.html">&quot;src/actor/<wbr>Attester&quot;</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_src_actor_claimer_.html">&quot;src/actor/<wbr>Claimer&quot;</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_src_actor_verifier_.html">&quot;src/actor/<wbr>Verifier&quot;</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_src_test_constants_.html">&quot;src/test/constants&quot;</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_src_types_publicattesteridentity_.html">&quot;src/types/<wbr>Public<wbr>Attester<wbr>Identity&quot;</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_src_util_decode_.html">&quot;src/util/<wbr>Decode&quot;</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_src_util_jsonabc_.html">&quot;src/util/jsonabc&quot;</a>
+						<a href="modules/actorstypes.html">Actors<wbr>Types</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/attestation.html">Attestation</a>
@@ -169,13 +154,22 @@ Claim {
 						<a href="modules/attestedclaimutils.html">Attested<wbr>Claim<wbr>Utils</a>
 					</li>
 					<li class=" tsd-kind-module">
+						<a href="modules/attester.html">Attester</a>
+					</li>
+					<li class=" tsd-kind-module">
 						<a href="modules/balance.html">Balance</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/balanceutils.html">Balance<wbr>Utils</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/blockchain.html">Blockchain</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/blockchainapiconnection.html">Blockchain<wbr>Api<wbr>Connection</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/blockchchainutils.html">Blockchchain<wbr>Utils</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/ctype.html">CType</a>
@@ -196,6 +190,12 @@ Claim {
 						<a href="modules/claimutils.html">Claim<wbr>Utils</a>
 					</li>
 					<li class=" tsd-kind-module">
+						<a href="modules/claimer.html">Claimer</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/configservice.html">Config<wbr>Service</a>
+					</li>
+					<li class=" tsd-kind-module">
 						<a href="modules/credential.html">Credential</a>
 					</li>
 					<li class=" tsd-kind-module">
@@ -205,25 +205,40 @@ Claim {
 						<a href="modules/did.html">DID</a>
 					</li>
 					<li class=" tsd-kind-module">
+						<a href="modules/didutils.html">DIDUtils</a>
+					</li>
+					<li class=" tsd-kind-module">
 						<a href="modules/datautils.html">Data<wbr>Utils</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/decode.html">Decode</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/delegationbasenode.html">Delegation<wbr>Base<wbr>Node</a>
 					</li>
 					<li class=" tsd-kind-module">
+						<a href="modules/delegationdecoder.html">Delegation<wbr>Decoder</a>
+					</li>
+					<li class=" tsd-kind-module">
 						<a href="modules/delegationnode.html">Delegation<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/delegationnodeutils.html">Delegation<wbr>Node<wbr>Utils</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/delegationrootnode.html">Delegation<wbr>Root<wbr>Node</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/extrinsicerrors.html">Extrinsic<wbr>Errors</a>
+						<a href="modules/errorhandler.html">Error<wbr>Handler</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/iattestation.html">IAttestation</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/iattestedclaim.html">IAttested<wbr>Claim</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/iblockchain.html">IBlockchain</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/ictype.html">ICType</a>
@@ -235,10 +250,13 @@ Claim {
 						<a href="modules/iclaim.html">IClaim</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/icredential.html">ICredential</a>
+						<a href="modules/idelegation.html">IDelegation</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/idelegation.html">IDelegation</a>
+						<a href="modules/iidentity.html">IIdentity</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/imessage.html">IMessage</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/ipublicidentity.html">IPublic<wbr>Identity</a>
@@ -250,6 +268,9 @@ Claim {
 						<a href="modules/irequestforattestation.html">IRequest<wbr>For<wbr>Attestation</a>
 					</li>
 					<li class=" tsd-kind-module">
+						<a href="modules/isubscriptionpromise.html">ISubscription<wbr>Promise</a>
+					</li>
+					<li class=" tsd-kind-module">
 						<a href="modules/iterms.html">ITerms</a>
 					</li>
 					<li class=" tsd-kind-module">
@@ -259,7 +280,13 @@ Claim {
 						<a href="modules/kilt.html">Kilt</a>
 					</li>
 					<li class=" tsd-kind-module">
+						<a href="modules/messageutils.html">Message<wbr>Utils</a>
+					</li>
+					<li class=" tsd-kind-module">
 						<a href="modules/messaging.html">Messaging</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/presentationutils.html">Presentation<wbr>Utils</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/publicidentity.html">Public<wbr>Identity</a>
@@ -280,10 +307,25 @@ Claim {
 						<a href="modules/requestforattestationutils.html">Request<wbr>For<wbr>Attestation<wbr>Utils</a>
 					</li>
 					<li class=" tsd-kind-module">
-						<a href="modules/sdkerror.html">SDKError</a>
+						<a href="modules/sdkerrors.html">SDKErrors</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/subscriptionpromise.html">Subscription<wbr>Promise</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/uuid.html">UUID</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/vcexport.html">VCExport</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/vcexporttypes.html">VCExport<wbr>Types</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/verificationutils.html">Verification<wbr>Utils</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/verifier.html">Verifier</a>
 					</li>
 				</ul>
 			</nav>
@@ -302,13 +344,16 @@ Claim {
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>

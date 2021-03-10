@@ -76,7 +76,7 @@
 			<section class="tsd-panel">
 				<h3>Implements</h3>
 				<ul class="tsd-hierarchy">
-					<li><a href="../interfaces/messaging.imessage.html" class="tsd-signature-type">IMessage</a></li>
+					<li><a href="../interfaces/imessage.imessage-1.html" class="tsd-signature-type">IMessage</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -99,11 +99,13 @@
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="messaging.message.html#receiveraddress" class="tsd-kind-icon">receiver<wbr>Address</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="messaging.message.html#senderaddress" class="tsd-kind-icon">sender<wbr>Address</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="messaging.message.html#senderboxpublickey" class="tsd-kind-icon">sender<wbr>Box<wbr>Public<wbr>Key</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><a href="messaging.message.html#bodytype" class="tsd-kind-icon">Body<wbr>Type</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="messaging.message.html#compress" class="tsd-kind-icon">compress</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="messaging.message.html#encrypt" class="tsd-kind-icon">encrypt</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="messaging.message.html#decrypt" class="tsd-kind-icon">decrypt</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="messaging.message.html#ensurehashandsignature" class="tsd-kind-icon">ensure<wbr>Hash<wbr>And<wbr>Signature</a></li>
@@ -119,13 +121,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Message<span class="tsd-signature-symbol">(</span>body<span class="tsd-signature-symbol">: </span><a href="../modules/messaging.html#messagebody" class="tsd-signature-type">MessageBody</a>, sender<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a>, receiver<span class="tsd-signature-symbol">: </span><a href="../interfaces/ipublicidentity.ipublicidentity-1.html" class="tsd-signature-type">IPublicIdentity</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="messaging.message.html" class="tsd-signature-type">Message</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Message<span class="tsd-signature-symbol">(</span>body<span class="tsd-signature-symbol">: </span><a href="../modules/imessage.html#messagebody" class="tsd-signature-type">MessageBody</a><span class="tsd-signature-symbol"> | </span><a href="../modules/imessage.html#compressedmessagebody" class="tsd-signature-type">CompressedMessageBody</a>, sender<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a>, receiver<span class="tsd-signature-symbol">: </span><a href="../interfaces/ipublicidentity.ipublicidentity-1.html" class="tsd-signature-type">IPublicIdentity</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="messaging.message.html" class="tsd-signature-type">Message</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L232">src/messaging/Message.ts:232</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L156">packages/messaging/src/Message.ts:156</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -136,7 +138,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>body: <a href="../modules/messaging.html#messagebody" class="tsd-signature-type">MessageBody</a></h5>
+									<h5>body: <a href="../modules/imessage.html#messagebody" class="tsd-signature-type">MessageBody</a><span class="tsd-signature-symbol"> | </span><a href="../modules/imessage.html#compressedmessagebody" class="tsd-signature-type">CompressedMessageBody</a></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 											<p>The body of the message.</p>
@@ -170,11 +172,11 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="body" class="tsd-anchor"></a>
 					<h3>body</h3>
-					<div class="tsd-signature tsd-kind-icon">body<span class="tsd-signature-symbol">:</span> <a href="../modules/messaging.html#messagebody" class="tsd-signature-type">MessageBody</a></div>
+					<div class="tsd-signature tsd-kind-icon">body<span class="tsd-signature-symbol">:</span> <a href="../modules/imessage.html#messagebody" class="tsd-signature-type">MessageBody</a></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/messaging.imessage.html">IMessage</a>.<a href="../interfaces/messaging.imessage.html#body">body</a></p>
+						<p>Implementation of <a href="../interfaces/imessage.imessage-1.html">IMessage</a>.<a href="../interfaces/imessage.imessage-1.html#body">body</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L228">src/messaging/Message.ts:228</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L152">packages/messaging/src/Message.ts:152</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -183,9 +185,9 @@
 					<h3>created<wbr>At</h3>
 					<div class="tsd-signature tsd-kind-icon">created<wbr>At<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/messaging.imessage.html">IMessage</a>.<a href="../interfaces/messaging.imessage.html#createdat">createdAt</a></p>
+						<p>Implementation of <a href="../interfaces/imessage.imessage-1.html">IMessage</a>.<a href="../interfaces/imessage.imessage-1.html#createdat">createdAt</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L229">src/messaging/Message.ts:229</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L153">packages/messaging/src/Message.ts:153</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -194,9 +196,9 @@
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> message<wbr>Id</h3>
 					<div class="tsd-signature tsd-kind-icon">message<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/messaging.imessage.html">IMessage</a>.<a href="../interfaces/messaging.imessage.html#messageid">messageId</a></p>
+						<p>Implementation of <a href="../interfaces/imessage.imessage-1.html">IMessage</a>.<a href="../interfaces/imessage.imessage-1.html#messageid">messageId</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L226">src/messaging/Message.ts:226</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L150">packages/messaging/src/Message.ts:150</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -205,9 +207,9 @@
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> received<wbr>At</h3>
 					<div class="tsd-signature tsd-kind-icon">received<wbr>At<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/messaging.imessage.html">IMessage</a>.<a href="../interfaces/messaging.imessage.html#receivedat">receivedAt</a></p>
+						<p>Implementation of <a href="../interfaces/imessage.imessage-1.html">IMessage</a>.<a href="../interfaces/imessage.imessage-1.html#receivedat">receivedAt</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L227">src/messaging/Message.ts:227</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L151">packages/messaging/src/Message.ts:151</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -216,9 +218,9 @@
 					<h3>receiver<wbr>Address</h3>
 					<div class="tsd-signature tsd-kind-icon">receiver<wbr>Address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">IMessage</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"receiverAddress"</span><span class="tsd-signature-symbol">]</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/messaging.imessage.html">IMessage</a>.<a href="../interfaces/messaging.imessage.html#receiveraddress">receiverAddress</a></p>
+						<p>Implementation of <a href="../interfaces/imessage.imessage-1.html">IMessage</a>.<a href="../interfaces/imessage.imessage-1.html#receiveraddress">receiverAddress</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L230">src/messaging/Message.ts:230</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L154">packages/messaging/src/Message.ts:154</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -227,9 +229,9 @@
 					<h3>sender<wbr>Address</h3>
 					<div class="tsd-signature tsd-kind-icon">sender<wbr>Address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">IMessage</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"senderAddress"</span><span class="tsd-signature-symbol">]</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/messaging.imessage.html">IMessage</a>.<a href="../interfaces/messaging.imessage.html#senderaddress">senderAddress</a></p>
+						<p>Implementation of <a href="../interfaces/imessage.imessage-1.html">IMessage</a>.<a href="../interfaces/imessage.imessage-1.html#senderaddress">senderAddress</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L231">src/messaging/Message.ts:231</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L155">packages/messaging/src/Message.ts:155</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -238,26 +240,58 @@
 					<h3>sender<wbr>Box<wbr>Public<wbr>Key</h3>
 					<div class="tsd-signature tsd-kind-icon">sender<wbr>Box<wbr>Public<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">IMessage</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"senderBoxPublicKey"</span><span class="tsd-signature-symbol">]</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/messaging.imessage.html">IMessage</a>.<a href="../interfaces/messaging.imessage.html#senderboxpublickey">senderBoxPublicKey</a></p>
+						<p>Implementation of <a href="../interfaces/imessage.imessage-1.html">IMessage</a>.<a href="../interfaces/imessage.imessage-1.html#senderboxpublickey">senderBoxPublicKey</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L232">src/messaging/Message.ts:232</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L156">packages/messaging/src/Message.ts:156</a></li>
 						</ul>
 					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-static">
+					<a name="bodytype" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> Body<wbr>Type</h3>
+					<div class="tsd-signature tsd-kind-icon">Body<wbr>Type<span class="tsd-signature-symbol">:</span> <a href="../enums/imessage.messagebodytype.html" class="tsd-signature-type">MessageBodyType</a><span class="tsd-signature-symbol"> = MessageBodyType</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L30">packages/messaging/src/Message.ts:30</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>[STATIC] Lists all possible body types of <a href="messaging.message.html">Message</a>.</p>
+						</div>
+					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="encrypt" class="tsd-anchor"></a>
-					<h3>encrypt</h3>
+					<a name="compress" class="tsd-anchor"></a>
+					<h3>compress</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">encrypt<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/messaging.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a></li>
+						<li class="tsd-signature tsd-kind-icon">compress<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/imessage.html#compressedmessagebody" class="tsd-signature-type">CompressedMessageBody</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L274">src/messaging/Message.ts:274</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L217">packages/messaging/src/Message.ts:217</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../modules/imessage.html#compressedmessagebody" class="tsd-signature-type">CompressedMessageBody</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="encrypt" class="tsd-anchor"></a>
+					<h3>encrypt</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">encrypt<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/imessage.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L202">packages/messaging/src/Message.ts:202</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -265,8 +299,8 @@
 									<p>Encrypts the <a href="messaging.message.html">Message</a> symmetrically as a string. This can be reversed with <a href="messaging.message.html#decrypt">Message.decrypt</a>.</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="../modules/messaging.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a></h4>
-							<p>The encrypted version of the original <a href="messaging.message.html">Message</a>, see <a href="../modules/messaging.html#iencryptedmessage">IEncryptedMessage</a>.</p>
+							<h4 class="tsd-returns-title">Returns <a href="../modules/imessage.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a></h4>
+							<p>The encrypted version of the original <a href="messaging.message.html">Message</a>, see <a href="../modules/imessage.html#iencryptedmessage">IEncryptedMessage</a>.</p>
 						</li>
 					</ul>
 				</section>
@@ -274,13 +308,13 @@
 					<a name="decrypt" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> decrypt</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">decrypt<span class="tsd-signature-symbol">(</span>encrypted<span class="tsd-signature-symbol">: </span><a href="../modules/messaging.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a>, receiver<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/messaging.imessage.html" class="tsd-signature-type">IMessage</a></li>
+						<li class="tsd-signature tsd-kind-icon">decrypt<span class="tsd-signature-symbol">(</span>encrypted<span class="tsd-signature-symbol">: </span><a href="../modules/imessage.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a>, receiver<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/imessage.imessage-1.html" class="tsd-signature-type">IMessage</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L192">src/messaging/Message.ts:192</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L116">packages/messaging/src/Message.ts:116</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -290,20 +324,17 @@
 								<p>Uses <a href="messaging.message.html#ensurehashandsignature">Message.ensureHashAndSignature</a> and <a href="messaging.message.html#ensureownerissender">Message.ensureOwnerIsSender</a> internally.</p>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When encrypted message couldn&#39;t be decrypted.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_decoding_message">ERROR_DECODING_MESSAGE</a> when encrypted message couldn&#39;t be decrypted.</p>
 									</dd>
 									<dt>throws</dt>
-									<dd><p>When the decoded message could not be parsed.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decoding_message">ERROR_DECODING_MESSAGE</a>, <a href="../enums/sdkerror.errorcode.html#error_parsing_message">ERROR_PARSING_MESSAGE</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_parsing_message">ERROR_PARSING_MESSAGE</a> when the decoded message could not be parsed.</p>
 									</dd>
 								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>encrypted: <a href="../modules/messaging.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a></h5>
+									<h5>encrypted: <a href="../modules/imessage.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>The encrypted message.</p>
 									</div>
@@ -315,7 +346,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/messaging.imessage.html" class="tsd-signature-type">IMessage</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/imessage.imessage-1.html" class="tsd-signature-type">IMessage</a></h4>
 							<p>The original <a href="messaging.message.html">Message</a>.</p>
 						</li>
 					</ul>
@@ -324,13 +355,13 @@
 					<a name="ensurehashandsignature" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> ensure<wbr>Hash<wbr>And<wbr>Signature</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">ensure<wbr>Hash<wbr>And<wbr>Signature<span class="tsd-signature-symbol">(</span>encrypted<span class="tsd-signature-symbol">: </span><a href="../modules/messaging.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a>, senderAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IMessage</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"senderAddress"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">ensure<wbr>Hash<wbr>And<wbr>Signature<span class="tsd-signature-symbol">(</span>encrypted<span class="tsd-signature-symbol">: </span><a href="../modules/imessage.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a>, senderAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IMessage</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"senderAddress"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L163">src/messaging/Message.ts:163</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L84">packages/messaging/src/Message.ts:84</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -339,17 +370,14 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When either the hash or the signature could not be verified against the calculations.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_nonce_hash_invalid">ERROR_NONCE_HASH_INVALID</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_nonce_hash_invalid">ERROR_NONCE_HASH_INVALID</a> when either the hash or the signature could not be verified against the calculations.</p>
 									</dd>
 								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>encrypted: <a href="../modules/messaging.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a></h5>
+									<h5>encrypted: <a href="../modules/imessage.html#iencryptedmessage" class="tsd-signature-type">IEncryptedMessage</a></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>The encrypted <a href="messaging.message.html">Message</a> object which needs to be decrypted.</p>
 									</div>
@@ -369,13 +397,13 @@
 					<a name="ensureownerissender" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> ensure<wbr>Owner<wbr>IsSender</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">ensure<wbr>Owner<wbr>IsSender<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>body<span class="tsd-signature-symbol">: </span><a href="../interfaces/messaging.irequestterms.html" class="tsd-signature-type">IRequestTerms</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitterms.html" class="tsd-signature-type">ISubmitTerms</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectterms.html" class="tsd-signature-type">IRejectTerms</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iinitiateattestation.html" class="tsd-signature-type">IInitiateAttestation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestattestationforclaim.html" class="tsd-signature-type">IRequestAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitattestationforclaim.html" class="tsd-signature-type">ISubmitAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectattestationforclaim.html" class="tsd-signature-type">IRejectAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestclaimsforctypes.html" class="tsd-signature-type">IRequestClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitclaimsforctypesclassic.html" class="tsd-signature-type">ISubmitClaimsForCTypesClassic</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitclaimsforctypespe.html" class="tsd-signature-type">ISubmitClaimsForCTypesPE</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iacceptclaimsforctypes.html" class="tsd-signature-type">IAcceptClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectclaimsforctypes.html" class="tsd-signature-type">IRejectClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestacceptdelegation.html" class="tsd-signature-type">IRequestAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitacceptdelegation.html" class="tsd-signature-type">ISubmitAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectacceptdelegation.html" class="tsd-signature-type">IRejectAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iinformcreatedelegation.html" class="tsd-signature-type">IInformCreateDelegation</a><span class="tsd-signature-symbol">; </span>senderAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">ensure<wbr>Owner<wbr>IsSender<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>body<span class="tsd-signature-symbol">: </span><a href="../modules/imessage.html#messagebody" class="tsd-signature-type">MessageBody</a><span class="tsd-signature-symbol">; </span>senderAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/messaging/Message.ts#L119">src/messaging/Message.ts:119</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.ts#L41">packages/messaging/src/Message.ts:41</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -384,20 +412,17 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When the sender does not match the owner of the in the Message supplied Object.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/messaging.messagebodytype.html#submit_attestation_for_claim">SUBMIT_ATTESTATION_FOR_CLAIM</a>, <a href="../enums/messaging.messagebodytype.html#submit_claims_for_ctypes_classic">SUBMIT_CLAIMS_FOR_CTYPES_CLASSIC</a>, <a href="../enums/sdkerror.errorcode.html#error_identity_mismatch">ERROR_IDENTITY_MISMATCH</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_identity_mismatch">ERROR_IDENTITY_MISMATCH</a> when the sender does not match the owner of the content embedded in the message, e.g. A request for attestation or an attestation.</p>
 									</dd>
 								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>__namedParameters: <span class="tsd-signature-symbol">{ </span>body<span class="tsd-signature-symbol">: </span><a href="../interfaces/messaging.irequestterms.html" class="tsd-signature-type">IRequestTerms</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitterms.html" class="tsd-signature-type">ISubmitTerms</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectterms.html" class="tsd-signature-type">IRejectTerms</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iinitiateattestation.html" class="tsd-signature-type">IInitiateAttestation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestattestationforclaim.html" class="tsd-signature-type">IRequestAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitattestationforclaim.html" class="tsd-signature-type">ISubmitAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectattestationforclaim.html" class="tsd-signature-type">IRejectAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestclaimsforctypes.html" class="tsd-signature-type">IRequestClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitclaimsforctypesclassic.html" class="tsd-signature-type">ISubmitClaimsForCTypesClassic</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitclaimsforctypespe.html" class="tsd-signature-type">ISubmitClaimsForCTypesPE</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iacceptclaimsforctypes.html" class="tsd-signature-type">IAcceptClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectclaimsforctypes.html" class="tsd-signature-type">IRejectClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestacceptdelegation.html" class="tsd-signature-type">IRequestAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitacceptdelegation.html" class="tsd-signature-type">ISubmitAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectacceptdelegation.html" class="tsd-signature-type">IRejectAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iinformcreatedelegation.html" class="tsd-signature-type">IInformCreateDelegation</a><span class="tsd-signature-symbol">; </span>senderAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></h5>
+									<h5>__namedParameters: <span class="tsd-signature-symbol">{ </span>body<span class="tsd-signature-symbol">: </span><a href="../modules/imessage.html#messagebody" class="tsd-signature-type">MessageBody</a><span class="tsd-signature-symbol">; </span>senderAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter">
-											<h5>body<span class="tsd-signature-symbol">: </span><a href="../interfaces/messaging.irequestterms.html" class="tsd-signature-type">IRequestTerms</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitterms.html" class="tsd-signature-type">ISubmitTerms</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectterms.html" class="tsd-signature-type">IRejectTerms</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iinitiateattestation.html" class="tsd-signature-type">IInitiateAttestation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestattestationforclaim.html" class="tsd-signature-type">IRequestAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitattestationforclaim.html" class="tsd-signature-type">ISubmitAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectattestationforclaim.html" class="tsd-signature-type">IRejectAttestationForClaim</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestclaimsforctypes.html" class="tsd-signature-type">IRequestClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitclaimsforctypesclassic.html" class="tsd-signature-type">ISubmitClaimsForCTypesClassic</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitclaimsforctypespe.html" class="tsd-signature-type">ISubmitClaimsForCTypesPE</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iacceptclaimsforctypes.html" class="tsd-signature-type">IAcceptClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectclaimsforctypes.html" class="tsd-signature-type">IRejectClaimsForCTypes</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irequestacceptdelegation.html" class="tsd-signature-type">IRequestAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.isubmitacceptdelegation.html" class="tsd-signature-type">ISubmitAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.irejectacceptdelegation.html" class="tsd-signature-type">IRejectAcceptDelegation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/messaging.iinformcreatedelegation.html" class="tsd-signature-type">IInformCreateDelegation</a></h5>
+											<h5>body<span class="tsd-signature-symbol">: </span><a href="../modules/imessage.html#messagebody" class="tsd-signature-type">MessageBody</a></h5>
 										</li>
 										<li class="tsd-parameter">
 											<h5>sender<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
@@ -424,9 +449,6 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-enum tsd-parent-kind-module">
-						<a href="../enums/messaging.messagebodytype.html" class="tsd-kind-icon">Message<wbr>Body<wbr>Type</a>
-					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class tsd-parent-kind-module">
@@ -456,6 +478,12 @@
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="messaging.message.html#senderboxpublickey" class="tsd-kind-icon">sender<wbr>Box<wbr>Public<wbr>Key</a>
 							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-static">
+								<a href="messaging.message.html#bodytype" class="tsd-kind-icon">Body<wbr>Type</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="messaging.message.html#compress" class="tsd-kind-icon">compress</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="messaging.message.html#encrypt" class="tsd-kind-icon">encrypt</a>
 							</li>
@@ -472,69 +500,6 @@
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.iacceptclaimsforctypes.html" class="tsd-kind-icon">IAccept<wbr>Claims<wbr>ForCTypes</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.iinformcreatedelegation.html" class="tsd-kind-icon">IInform<wbr>Create<wbr>Delegation</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.iinitiateattestation.html" class="tsd-kind-icon">IInitiate<wbr>Attestation</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.imessage.html" class="tsd-kind-icon">IMessage</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.ipartialclaim.html" class="tsd-kind-icon">IPartial<wbr>Claim</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.irejectacceptdelegation.html" class="tsd-kind-icon">IReject<wbr>Accept<wbr>Delegation</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.irejectattestationforclaim.html" class="tsd-kind-icon">IReject<wbr>Attestation<wbr>For<wbr>Claim</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.irejectclaimsforctypes.html" class="tsd-kind-icon">IReject<wbr>Claims<wbr>ForCTypes</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.irejectterms.html" class="tsd-kind-icon">IReject<wbr>Terms</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.irequestacceptdelegation.html" class="tsd-kind-icon">IRequest<wbr>Accept<wbr>Delegation</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.irequestattestationforclaim.html" class="tsd-kind-icon">IRequest<wbr>Attestation<wbr>For<wbr>Claim</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.irequestclaimsforctypes.html" class="tsd-kind-icon">IRequest<wbr>Claims<wbr>ForCTypes</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.irequestterms.html" class="tsd-kind-icon">IRequest<wbr>Terms</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.isubmitacceptdelegation.html" class="tsd-kind-icon">ISubmit<wbr>Accept<wbr>Delegation</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.isubmitattestationforclaim.html" class="tsd-kind-icon">ISubmit<wbr>Attestation<wbr>For<wbr>Claim</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.isubmitclaimsforctypesclassic.html" class="tsd-kind-icon">ISubmit<wbr>Claims<wbr>ForCTypes<wbr>Classic</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.isubmitclaimsforctypespe.html" class="tsd-kind-icon">ISubmit<wbr>Claims<wbr>ForCTypesPE</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/messaging.isubmitterms.html" class="tsd-kind-icon">ISubmit<wbr>Terms</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/messaging.html#iencryptedmessage" class="tsd-kind-icon">IEncrypted<wbr>Message</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/messaging.html#isubmitclaimsforctypes" class="tsd-kind-icon">ISubmit<wbr>Claims<wbr>ForCTypes</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/messaging.html#messagebody" class="tsd-kind-icon">Message<wbr>Body</a>
-					</li>
 				</ul>
 			</nav>
 		</div>
@@ -548,7 +513,9 @@
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
@@ -557,13 +524,15 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
-			</ul>
-			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 		</div>
 	</div>

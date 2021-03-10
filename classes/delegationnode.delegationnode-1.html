@@ -109,6 +109,7 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="delegationnode.delegationnode-1.html#findancestorownedby" class="tsd-kind-icon">find<wbr>Ancestor<wbr>Owned<wbr>By</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="delegationnode.delegationnode-1.html#generatehash" class="tsd-kind-icon">generate<wbr>Hash</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="delegationnode.delegationnode-1.html#getattestationhashes" class="tsd-kind-icon">get<wbr>Attestation<wbr>Hashes</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="delegationnode.delegationnode-1.html#getattestations" class="tsd-kind-icon">get<wbr>Attestations</a></li>
@@ -117,6 +118,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="delegationnode.delegationnode-1.html#getroot" class="tsd-kind-icon">get<wbr>Root</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="delegationnode.delegationnode-1.html#revoke" class="tsd-kind-icon">revoke</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="delegationnode.delegationnode-1.html#store" class="tsd-kind-icon">store</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="delegationnode.delegationnode-1.html#subtreenodecount" class="tsd-kind-icon">subtree<wbr>Node<wbr>Count</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="delegationnode.delegationnode-1.html#verify" class="tsd-kind-icon">verify</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="delegationnode.delegationnode-1.html#query" class="tsd-kind-icon">query</a></li>
 							</ul>
@@ -137,7 +139,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides <a href="delegationbasenode.delegationbasenode-1.html">DelegationBaseNode</a>.<a href="delegationbasenode.delegationbasenode-1.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L45">src/delegation/DelegationNode.ts:45</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L42">packages/core/src/delegation/DelegationNode.ts:42</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -201,9 +203,9 @@
 					<div class="tsd-signature tsd-kind-icon">account<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">IDelegationBaseNode</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"account"</span><span class="tsd-signature-symbol">]</span></div>
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/idelegation.idelegationnode.html">IDelegationNode</a>.<a href="../interfaces/idelegation.idelegationnode.html#account">account</a></p>
-						<p>Inherited from <a href="delegationrootnode.delegationrootnode-1.html">DelegationRootNode</a>.<a href="delegationrootnode.delegationrootnode-1.html#account">account</a></p>
+						<p>Inherited from <a href="delegationnode.delegationnode-1.html">DelegationNode</a>.<a href="delegationnode.delegationnode-1.html#account">account</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/Delegation.ts#L29">src/delegation/Delegation.ts:29</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/Delegation.ts#L31">packages/core/src/delegation/Delegation.ts:31</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -213,9 +215,9 @@
 					<div class="tsd-signature tsd-kind-icon">id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">IDelegationBaseNode</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"id"</span><span class="tsd-signature-symbol">]</span></div>
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/idelegation.idelegationnode.html">IDelegationNode</a>.<a href="../interfaces/idelegation.idelegationnode.html#id">id</a></p>
-						<p>Inherited from <a href="delegationrootnode.delegationrootnode-1.html">DelegationRootNode</a>.<a href="delegationrootnode.delegationrootnode-1.html#id">id</a></p>
+						<p>Inherited from <a href="delegationnode.delegationnode-1.html">DelegationNode</a>.<a href="delegationnode.delegationnode-1.html#id">id</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/Delegation.ts#L28">src/delegation/Delegation.ts:28</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/Delegation.ts#L30">packages/core/src/delegation/Delegation.ts:30</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -226,7 +228,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/idelegation.idelegationnode.html">IDelegationNode</a>.<a href="../interfaces/idelegation.idelegationnode.html#parentid">parentId</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L44">src/delegation/DelegationNode.ts:44</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L41">packages/core/src/delegation/DelegationNode.ts:41</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -237,7 +239,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/idelegation.idelegationnode.html">IDelegationNode</a>.<a href="../interfaces/idelegation.idelegationnode.html#permissions">permissions</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L45">src/delegation/DelegationNode.ts:45</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L42">packages/core/src/delegation/DelegationNode.ts:42</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -247,9 +249,9 @@
 					<div class="tsd-signature tsd-kind-icon">revoked<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">IDelegationBaseNode</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"revoked"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> = false</span></div>
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/idelegation.idelegationnode.html">IDelegationNode</a>.<a href="../interfaces/idelegation.idelegationnode.html#revoked">revoked</a></p>
-						<p>Inherited from <a href="delegationrootnode.delegationrootnode-1.html">DelegationRootNode</a>.<a href="delegationrootnode.delegationrootnode-1.html#revoked">revoked</a></p>
+						<p>Inherited from <a href="delegationnode.delegationnode-1.html">DelegationNode</a>.<a href="delegationnode.delegationnode-1.html#revoked">revoked</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/Delegation.ts#L30">src/delegation/Delegation.ts:30</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/Delegation.ts#L32">packages/core/src/delegation/Delegation.ts:32</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -260,13 +262,46 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/idelegation.idelegationnode.html">IDelegationNode</a>.<a href="../interfaces/idelegation.idelegationnode.html#rootid">rootId</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L43">src/delegation/DelegationNode.ts:43</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L40">packages/core/src/delegation/DelegationNode.ts:40</a></li>
 						</ul>
 					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="findancestorownedby" class="tsd-anchor"></a>
+					<h3>find<wbr>Ancestor<wbr>Owned<wbr>By</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">find<wbr>Ancestor<wbr>Owned<wbr>By<span class="tsd-signature-symbol">(</span>address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Identity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>node<span class="tsd-signature-symbol">: </span><a href="delegationbasenode.delegationbasenode-1.html" class="tsd-signature-type">DelegationBaseNode</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">; </span>steps<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="delegationnode.delegationnode-1.html">DelegationNode</a>.<a href="delegationnode.delegationnode-1.html#findancestorownedby">findAncestorOwnedBy</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/Delegation.ts#L114">packages/core/src/delegation/Delegation.ts:114</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Checks on chain whether a given identity is delegating to the current node.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>address: <span class="tsd-signature-type">Identity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The address of the identity.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>node<span class="tsd-signature-symbol">: </span><a href="delegationbasenode.delegationbasenode-1.html" class="tsd-signature-type">DelegationBaseNode</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">; </span>steps<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>An object containing a <code>node</code> owned by the identity if it is delegating, plus the number of <code>steps</code> traversed. <code>steps</code> is 0 if the address is owner of the current node.</p>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="generatehash" class="tsd-anchor"></a>
 					<h3>generate<wbr>Hash</h3>
@@ -277,7 +312,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L87">src/delegation/DelegationNode.ts:87</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L86">packages/core/src/delegation/DelegationNode.ts:86</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -288,15 +323,19 @@
 								make sure delegation data (such as permissions) is not tampered.</p>
 								<dl class="tsd-comment-tags">
 									<dt>example</dt>
-									<dd><pre><code>const delegate:<span class="hljs-built_in"> Identity </span>= <span class="hljs-built_in">..</span>.
-const signature:string = delegate.signStr(newDelegationNode.generateHash())
+									<dd><pre><code><span class="hljs-comment">// Sign the hash of the delegation node...</span>
+<span class="hljs-keyword">const</span> <span class="hljs-built_in">delegate</span>: Identity = ...
+<span class="hljs-keyword">const</span> signature:<span class="hljs-built_in">string</span> = <span class="hljs-built_in">delegate</span>.signStr(newDelegationNode.generateHash())
 
-const myIdentity:<span class="hljs-built_in"> Identity </span>= <span class="hljs-built_in">..</span>.
-newDelegationNode.store(myIdentity, signature)</code></pre></dd>
+<span class="hljs-comment">// Store the signed hash on the Kilt chain...</span>
+<span class="hljs-keyword">const</span> myIdentity: Identity = ...
+newDelegationNode.store(myIdentity, signature)
+</code></pre>
+									</dd>
 								</dl>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
-							<p>The hash representation of this delegation as a hex string.</p>
+							<p>The hash representation of this delegation <strong>as a hex string</strong>.</p>
 						</li>
 					</ul>
 				</section>
@@ -309,9 +348,9 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="delegationrootnode.delegationrootnode-1.html">DelegationRootNode</a>.<a href="delegationrootnode.delegationrootnode-1.html#getattestationhashes">getAttestationHashes</a></p>
+								<p>Inherited from <a href="delegationnode.delegationnode-1.html">DelegationNode</a>.<a href="delegationnode.delegationnode-1.html#getattestationhashes">getAttestationHashes</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/Delegation.ts#L88">src/delegation/Delegation.ts:88</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/Delegation.ts#L90">packages/core/src/delegation/Delegation.ts:90</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -333,9 +372,9 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="delegationrootnode.delegationrootnode-1.html">DelegationRootNode</a>.<a href="delegationrootnode.delegationrootnode-1.html#getattestations">getAttestations</a></p>
+								<p>Inherited from <a href="delegationnode.delegationnode-1.html">DelegationNode</a>.<a href="delegationnode.delegationnode-1.html#getattestations">getAttestations</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/Delegation.ts#L72">src/delegation/Delegation.ts:72</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/Delegation.ts#L74">packages/core/src/delegation/Delegation.ts:74</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -359,7 +398,7 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 							<aside class="tsd-sources">
 								<p>Overrides <a href="delegationbasenode.delegationbasenode-1.html">DelegationBaseNode</a>.<a href="delegationbasenode.delegationbasenode-1.html#getchildren">getChildren</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L168">src/delegation/DelegationNode.ts:168</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L177">packages/core/src/delegation/DelegationNode.ts:177</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="delegationnode.delegationnode-1.html" class="tsd-signature-type">DelegationNode</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -377,7 +416,7 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 							<aside class="tsd-sources">
 								<p>Overrides <a href="delegationbasenode.delegationbasenode-1.html">DelegationBaseNode</a>.<a href="delegationbasenode.delegationbasenode-1.html#getparent">getParent</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L124">src/delegation/DelegationNode.ts:124</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L122">packages/core/src/delegation/DelegationNode.ts:122</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -401,7 +440,7 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 							<aside class="tsd-sources">
 								<p>Overrides <a href="delegationbasenode.delegationbasenode-1.html">DelegationBaseNode</a>.<a href="delegationbasenode.delegationbasenode-1.html#getroot">getRoot</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L110">src/delegation/DelegationNode.ts:110</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L108">packages/core/src/delegation/DelegationNode.ts:108</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -410,10 +449,7 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When the rootId could not be queried.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_root_node_query">ERROR_ROOT_NODE_QUERY</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_root_node_query">ERROR_ROOT_NODE_QUERY</a> when the rootId could not be queried.</p>
 									</dd>
 								</dl>
 							</div>
@@ -426,14 +462,14 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 					<a name="revoke" class="tsd-anchor"></a>
 					<h3>revoke</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">revoke<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">revoke<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<p>Overrides <a href="delegationbasenode.delegationbasenode-1.html">DelegationBaseNode</a>.<a href="delegationbasenode.delegationbasenode-1.html#revoke">revoke</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L163">src/delegation/DelegationNode.ts:163</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L161">packages/core/src/delegation/DelegationNode.ts:161</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -450,8 +486,8 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>Promise containing the SubmittableResult.</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>Promise containing a SubmittableExtrinsic.</p>
 						</li>
 					</ul>
 				</section>
@@ -459,13 +495,13 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 					<a name="store" class="tsd-anchor"></a>
 					<h3>store</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">store<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a>, signature<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">store<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a>, signature<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L139">src/delegation/DelegationNode.ts:139</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L137">packages/core/src/delegation/DelegationNode.ts:137</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -484,12 +520,36 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 								<li>
 									<h5>signature: <span class="tsd-signature-type">string</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>Signature of the delegate to ensure it&#39;s done under his permission.</p>
+										<p>Signature of the delegate to ensure it is done under the delegate&#39;s permission.</p>
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>Promise containing the SubmittableResult.</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>Promise containing a SubmittableExtrinsic.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="subtreenodecount" class="tsd-anchor"></a>
+					<h3>subtree<wbr>Node<wbr>Count</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">subtree<wbr>Node<wbr>Count<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="delegationnode.delegationnode-1.html">DelegationNode</a>.<a href="delegationnode.delegationnode-1.html#subtreenodecount">subtreeNodeCount</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/Delegation.ts#L140">packages/core/src/delegation/Delegation.ts:140</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Recursively counts all nodes in the branches below the current node (excluding the current node).</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>Promise resolving to the node count.</p>
 						</li>
 					</ul>
 				</section>
@@ -504,12 +564,12 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 							<aside class="tsd-sources">
 								<p>Overrides <a href="delegationbasenode.delegationbasenode-1.html">DelegationBaseNode</a>.<a href="delegationbasenode.delegationbasenode-1.html#verify">verify</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L152">src/delegation/DelegationNode.ts:152</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L150">packages/core/src/delegation/DelegationNode.ts:150</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>[ASYNC] Verifies the delegation node by querying it from chain and checking its revoke status.</p>
+									<p>[ASYNC] Verifies the delegation node by querying it from chain and checking its revocation status.</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -527,7 +587,7 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/delegation/DelegationNode.ts#L34">src/delegation/DelegationNode.ts:34</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/delegation/DelegationNode.ts#L31">packages/core/src/delegation/DelegationNode.ts:31</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -590,6 +650,9 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="delegationnode.delegationnode-1.html#rootid" class="tsd-kind-icon">root<wbr>Id</a>
 							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="delegationnode.delegationnode-1.html#findancestorownedby" class="tsd-kind-icon">find<wbr>Ancestor<wbr>Owned<wbr>By</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="delegationnode.delegationnode-1.html#generatehash" class="tsd-kind-icon">generate<wbr>Hash</a>
 							</li>
@@ -614,6 +677,9 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="delegationnode.delegationnode-1.html#store" class="tsd-kind-icon">store</a>
 							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="delegationnode.delegationnode-1.html#subtreenodecount" class="tsd-kind-icon">subtree<wbr>Node<wbr>Count</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
 								<a href="delegationnode.delegationnode-1.html#verify" class="tsd-kind-icon">verify</a>
 							</li>
@@ -637,7 +703,9 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
@@ -646,14 +714,15 @@ newDelegationNode.store(myIdentity, signature)</code></pre></dd>
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>

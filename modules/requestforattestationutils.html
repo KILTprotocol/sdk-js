@@ -70,11 +70,8 @@
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="requestforattestationutils.html#compress" class="tsd-kind-icon">compress</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module"><a href="requestforattestationutils.html#compressclaimhashtree" class="tsd-kind-icon">compress<wbr>Claim<wbr>Hash<wbr>Tree</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="requestforattestationutils.html#compresslegitimation" class="tsd-kind-icon">compress<wbr>Legitimation</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module"><a href="requestforattestationutils.html#compressnonceandhash" class="tsd-kind-icon">compress<wbr>Nonce<wbr>And<wbr>Hash</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="requestforattestationutils.html#decompress" class="tsd-kind-icon">decompress</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module"><a href="requestforattestationutils.html#decompressclaimhashtree" class="tsd-kind-icon">decompress<wbr>Claim<wbr>Hash<wbr>Tree</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="requestforattestationutils.html#errorcheck" class="tsd-kind-icon">error<wbr>Check</a></li>
 							</ul>
 						</section>
@@ -93,7 +90,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.utils.ts#L171">src/requestforattestation/RequestForAttestation.utils.ts:171</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.utils.ts#L93">packages/core/src/requestforattestation/RequestForAttestation.utils.ts:93</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -116,35 +113,6 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
-					<a name="compressclaimhashtree" class="tsd-anchor"></a>
-					<h3>compress<wbr>Claim<wbr>Hash<wbr>Tree</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">compress<wbr>Claim<wbr>Hash<wbr>Tree<span class="tsd-signature-symbol">(</span>claimHashTree<span class="tsd-signature-symbol">: </span><a href="irequestforattestation.html#noncehashtree" class="tsd-signature-type">NonceHashTree</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="irequestforattestation.html#compressednoncehashtree" class="tsd-signature-type">CompressedNonceHashTree</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.utils.ts#L104">src/requestforattestation/RequestForAttestation.utils.ts:104</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p> Compresses a <a href="irequestforattestation.html#noncehashtree">NonceHashTree</a> within a <a href="requestforattestation.html">RequestForAttestation</a> object.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>claimHashTree: <a href="irequestforattestation.html#noncehashtree" class="tsd-signature-type">NonceHashTree</a></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="irequestforattestation.html#compressednoncehashtree" class="tsd-signature-type">CompressedNonceHashTree</a></h4>
-							<p>An ordered array of an <a href="irequestforattestation.html#noncehashtree">NonceHashTree</a>.</p>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 					<a name="compresslegitimation" class="tsd-anchor"></a>
 					<h3>compress<wbr>Legitimation</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
@@ -154,12 +122,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.utils.ts#L143">src/requestforattestation/RequestForAttestation.utils.ts:143</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.utils.ts#L65">packages/core/src/requestforattestation/RequestForAttestation.utils.ts:65</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p> Compresses <a href="attestedclaim.html">AttestedClaim</a>s which are made up from an <a href="attestation.html">Attestation</a> and <a href="requestforattestation.html">RequestForAttestation</a> for storage and/or message.</p>
+									<p> Compresses <a href="attestedclaim.html">AttestedClaim</a>s which are made up from an <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> and <a href="requestforattestation.html">RequestForAttestation</a> for storage and/or message.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -167,52 +135,12 @@
 								<li>
 									<h5>leg: <a href="../interfaces/iattestedclaim.iattestedclaim-1.html" class="tsd-signature-type">IAttestedClaim</a><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>An array of <a href="attestation.html">Attestation</a> and <a href="requestforattestation.html">RequestForAttestation</a> objects.</p>
+										<p>An array of <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> and <a href="requestforattestation.html">RequestForAttestation</a> objects.</p>
 									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="iattestedclaim.html#compressedattestedclaim" class="tsd-signature-type">CompressedAttestedClaim</a><span class="tsd-signature-symbol">[]</span></h4>
 							<p>An ordered array of <a href="attestedclaim.html">AttestedClaim</a>s.</p>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
-					<a name="compressnonceandhash" class="tsd-anchor"></a>
-					<h3>compress<wbr>Nonce<wbr>And<wbr>Hash</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">compress<wbr>Nonce<wbr>And<wbr>Hash<span class="tsd-signature-symbol">(</span>nonceHash<span class="tsd-signature-symbol">: </span><a href="irequestforattestation.html#noncehash" class="tsd-signature-type">NonceHash</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="irequestforattestation.html#compressednoncehash" class="tsd-signature-type">CompressedNonceHash</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.utils.ts#L67">src/requestforattestation/RequestForAttestation.utils.ts:67</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p> Compresses an nonce and hash from a <a href="irequestforattestation.html#noncehashtree">NonceHashTree</a> or <a href="requestforattestation.html">RequestForAttestation</a> properties.</p>
-								</div>
-								<dl class="tsd-comment-tags">
-									<dt>throws</dt>
-									<dd><p>When the nonceHash is missing it&#39;s hash (existence of nonce is ignored).</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_compress_object">ERROR_COMPRESS_OBJECT</a>.</p>
-									</dd>
-								</dl>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>nonceHash: <a href="irequestforattestation.html#noncehash" class="tsd-signature-type">NonceHash</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>A hash or a hash and nonce object that will be sorted and stripped for messaging or storage.</p>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="irequestforattestation.html#compressednoncehash" class="tsd-signature-type">CompressedNonceHash</a></h4>
-							<p>An object compressing of a hash or a hash and nonce.</p>
 						</li>
 					</ul>
 				</section>
@@ -226,7 +154,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.utils.ts#L198">src/requestforattestation/RequestForAttestation.utils.ts:198</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.utils.ts#L117">packages/core/src/requestforattestation/RequestForAttestation.utils.ts:117</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -235,10 +163,7 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When reqForAtt is not an Array and it&#39;s length is not equal to the defined length of 8.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_decompression_array">ERROR_DECOMPRESSION_ARRAY</a> when reqForAtt is not an Array and it&#39;s length is not equal to the defined length of 8.</p>
 									</dd>
 								</dl>
 							</div>
@@ -257,35 +182,6 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
-					<a name="decompressclaimhashtree" class="tsd-anchor"></a>
-					<h3>decompress<wbr>Claim<wbr>Hash<wbr>Tree</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">decompress<wbr>Claim<wbr>Hash<wbr>Tree<span class="tsd-signature-symbol">(</span>compressedClaimHashTree<span class="tsd-signature-symbol">: </span><a href="irequestforattestation.html#compressednoncehashtree" class="tsd-signature-type">CompressedNonceHashTree</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="irequestforattestation.html#noncehashtree" class="tsd-signature-type">NonceHashTree</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.utils.ts#L124">src/requestforattestation/RequestForAttestation.utils.ts:124</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p> Decompresses a claim hash tree from storage and/or message.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>compressedClaimHashTree: <a href="irequestforattestation.html#compressednoncehashtree" class="tsd-signature-type">CompressedNonceHashTree</a></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="irequestforattestation.html#noncehashtree" class="tsd-signature-type">NonceHashTree</a></h4>
-							<p>An object that has the same properties as an claim hash tree.</p>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 					<a name="errorcheck" class="tsd-anchor"></a>
 					<h3>error<wbr>Check</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
@@ -295,7 +191,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/requestforattestation/RequestForAttestation.utils.ts#L31">src/requestforattestation/RequestForAttestation.utils.ts:31</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/requestforattestation/RequestForAttestation.utils.ts#L26">packages/core/src/requestforattestation/RequestForAttestation.utils.ts:26</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -305,13 +201,10 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p>When either the input&#39;s claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_claim_not_provided">ERROR_CLAIM_NOT_PROVIDED</a>, <a href="../enums/sdkerrors.errorcode.html#error_legitimations_not_provided">ERROR_LEGITIMATIONS_NOT_PROVIDED</a>, <a href="../enums/sdkerrors.errorcode.html#error_claim_nonce_map_not_provided">ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED</a> or <a href="../enums/sdkerrors.errorcode.html#error_delegation_id_type">ERROR_DELEGATION_ID_TYPE</a> when either the input&#39;s claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type, respectively.</p>
 									</dd>
 									<dt>throws</dt>
-									<dd><p>When any of the input&#39;s claimHashTree&#39;s keys missing their hash.</p>
-									</dd>
-									<dt>throws</dt>
-									<dd><p><a href="../enums/sdkerror.errorcode.html#error_claim_not_provided">ERROR_CLAIM_NOT_PROVIDED</a>, <a href="../enums/sdkerror.errorcode.html#error_legitimations_not_provided">ERROR_LEGITIMATIONS_NOT_PROVIDED</a>, <a href="../enums/sdkerror.errorcode.html#error_claim_hashtree_not_provided">ERROR_CLAIM_HASHTREE_NOT_PROVIDED</a>, <a href="../enums/sdkerror.errorcode.html#error_claim_hashtree_malformed">ERROR_CLAIM_HASHTREE_MALFORMED</a>, <a href="../enums/sdkerror.errorcode.html#error_delegation_id_type">ERROR_DELEGATION_ID_TYPE</a>.</p>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_claim_nonce_map_malformed">ERROR_CLAIM_NONCE_MAP_MALFORMED</a> when any of the input&#39;s claimHashTree&#39;s keys missing their hash.</p>
 									</dd>
 								</dl>
 							</div>
@@ -347,19 +240,10 @@
 						<a href="requestforattestationutils.html#compress" class="tsd-kind-icon">compress</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
-						<a href="requestforattestationutils.html#compressclaimhashtree" class="tsd-kind-icon">compress<wbr>Claim<wbr>Hash<wbr>Tree</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="requestforattestationutils.html#compresslegitimation" class="tsd-kind-icon">compress<wbr>Legitimation</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
-						<a href="requestforattestationutils.html#compressnonceandhash" class="tsd-kind-icon">compress<wbr>Nonce<wbr>And<wbr>Hash</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="requestforattestationutils.html#decompress" class="tsd-kind-icon">decompress</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-module">
-						<a href="requestforattestationutils.html#decompressclaimhashtree" class="tsd-kind-icon">decompress<wbr>Claim<wbr>Hash<wbr>Tree</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="requestforattestationutils.html#errorcheck" class="tsd-kind-icon">error<wbr>Check</a>
@@ -377,13 +261,16 @@
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>

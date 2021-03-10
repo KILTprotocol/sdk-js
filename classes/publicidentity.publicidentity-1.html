@@ -70,11 +70,6 @@
 				<ul class="tsd-hierarchy">
 					<li>
 						<span class="target">PublicIdentity</span>
-						<ul class="tsd-hierarchy">
-							<li>
-								<a href="identity.publicattesteridentity.html" class="tsd-signature-type">PublicAttesterIdentity</a>
-							</li>
-						</ul>
 					</li>
 				</ul>
 			</section>
@@ -124,7 +119,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/identity/PublicIdentity.ts#L184">src/identity/PublicIdentity.ts:184</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/identity/PublicIdentity.ts#L183">packages/core/src/identity/PublicIdentity.ts:183</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -133,7 +128,8 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>example</dt>
-									<dd><pre><code class="language-javascript"><span class="hljs-keyword">const</span> identity = <span class="hljs-keyword">new</span> PublicIdentity(address, boxPublicKeyAsHex, serviceAddress);</code></pre>
+									<dd><pre><code class="language-javascript"><span class="hljs-keyword">const</span> identity = <span class="hljs-keyword">new</span> PublicIdentity(address, boxPublicKeyAsHex, serviceAddress);
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -178,7 +174,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/ipublicidentity.ipublicidentity-1.html">IPublicIdentity</a>.<a href="../interfaces/ipublicidentity.ipublicidentity-1.html#address">address</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/identity/PublicIdentity.ts#L174">src/identity/PublicIdentity.ts:174</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/identity/PublicIdentity.ts#L173">packages/core/src/identity/PublicIdentity.ts:173</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -194,7 +190,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/ipublicidentity.ipublicidentity-1.html">IPublicIdentity</a>.<a href="../interfaces/ipublicidentity.ipublicidentity-1.html#boxpublickeyashex">boxPublicKeyAsHex</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/identity/PublicIdentity.ts#L179">src/identity/PublicIdentity.ts:179</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/identity/PublicIdentity.ts#L178">packages/core/src/identity/PublicIdentity.ts:178</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -210,7 +206,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/ipublicidentity.ipublicidentity-1.html">IPublicIdentity</a>.<a href="../interfaces/ipublicidentity.ipublicidentity-1.html#serviceaddress">serviceAddress</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/identity/PublicIdentity.ts#L184">src/identity/PublicIdentity.ts:184</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/identity/PublicIdentity.ts#L183">packages/core/src/identity/PublicIdentity.ts:183</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -232,7 +228,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/identity/PublicIdentity.ts#L91">src/identity/PublicIdentity.ts:91</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/identity/PublicIdentity.ts#L90">packages/core/src/identity/PublicIdentity.ts:90</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -270,7 +266,8 @@
     },
   ],
 };
-PublicIdentity.fromDidDocument(didDocument);</code></pre>
+PublicIdentity.fromDidDocument(didDocument);
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -298,7 +295,7 @@ PublicIdentity.fromDidDocument(didDocument);</code></pre>
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/identity/PublicIdentity.ts#L139">src/identity/PublicIdentity.ts:139</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/identity/PublicIdentity.ts#L138">packages/core/src/identity/PublicIdentity.ts:138</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -313,7 +310,8 @@ PublicIdentity.fromDidDocument(didDocument);</code></pre>
   },
 };
 <span class="hljs-keyword">const</span> identifier = <span class="hljs-string">&#x27;did:kilt:1234567&#x27;</span>;
-PublicIdentity.resolveFromDid(identifier, urlResolver);</code></pre>
+PublicIdentity.resolveFromDid(identifier, urlResolver);
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -395,7 +393,9 @@ PublicIdentity.resolveFromDid(identifier, urlResolver);</code></pre>
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
@@ -403,10 +403,11 @@ PublicIdentity.resolveFromDid(identifier, urlResolver);</code></pre>
 				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>

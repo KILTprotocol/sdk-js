@@ -100,24 +100,24 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/balance/Balance.chain.ts#L39">src/balance/Balance.chain.ts:39</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/balance/Balance.chain.ts#L37">packages/core/src/balance/Balance.chain.ts:37</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Fetches the current balance of the account with [accountAddress].
-									<B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.</p>
+									<B>Note that balance amount is in Femto-Kilt (1e-15)and must be translated to Kilt-Coin</B>.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>example</dt>
 									<dd><BR>
-										<pre><code class="language-javascript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> sdk <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@kiltprotocol/prototype-sdk&#x27;</span>;
-
+										<pre><code class="language-javascript">
 <span class="hljs-keyword">const</span> address = ...
 sdk.Balance.getBalance(address)
   .then(<span class="hljs-function">(<span class="hljs-params">balance: BN</span>) =&gt;</span> {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`balance is <span class="hljs-subst">${balance.toNumber()}</span>`</span>)
-  })</code></pre>
+  })
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -145,26 +145,25 @@ sdk.Balance.getBalance(address)
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/balance/Balance.chain.ts#L69">src/balance/Balance.chain.ts:69</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/balance/Balance.chain.ts#L69">packages/core/src/balance/Balance.chain.ts:69</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Attaches the given [listener] for balance changes on the account with [accountAddress].
-									<B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.</p>
+									<B>Note that balance amount is in Femto-Kilt (1e-15) and must be translated to Kilt-Coin</B>.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>example</dt>
 									<dd><BR>
-										<pre><code class="language-javascript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> sdk <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@kiltprotocol/prototype-sdk&#x27;</span>;
-
-<span class="hljs-keyword">const</span> address = ...
-const unsubscribe = sdk.Balance.listenToBalanceChanges(address,
+										<pre><code class="language-javascript"><span class="hljs-keyword">const</span> address = ...
+<span class="hljs-keyword">const</span> unsubscribe = sdk.Balance.listenToBalanceChanges(address,
   <span class="hljs-function">(<span class="hljs-params">account: IPublicIdentity[<span class="hljs-string">&#x27;address&#x27;</span>], balance: BN, change: BN</span>) =&gt;</span> {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Balance has changed by <span class="hljs-subst">${change.toNumber()}</span> to <span class="hljs-subst">${balance.toNumber()}</span>`</span>)
   });
 <span class="hljs-comment">// later</span>
-unsubscribe();</code></pre>
+unsubscribe();
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -216,35 +215,34 @@ unsubscribe();</code></pre>
 					<a name="maketransfer" class="tsd-anchor"></a>
 					<h3>make<wbr>Transfer</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">make<wbr>Transfer<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a>, accountAddressTo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span>, amount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">make<wbr>Transfer<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a>, accountAddressTo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span>, amount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span>, exponent<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/balance/Balance.chain.ts#L117">src/balance/Balance.chain.ts:117</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/balance/Balance.chain.ts#L116">packages/core/src/balance/Balance.chain.ts:116</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Transfer Kilt [amount] tokens to [toAccountAddress] using the given <a href="identity.html">Identity</a>.
-									<B>Note that balance amount is in µ-Kilt and must be translated to Kilt-Coin</B>.</p>
+									<B>Note that the value of the transferred currency and the balance amount reported by the chain is in Femto-Kilt (1e-15), and must be translated to Kilt-Coin</B>.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>example</dt>
 									<dd><BR>
-										<pre><code class="language-javascript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> sdk <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@kiltprotocol/prototype-sdk&#x27;</span>;
-
-<span class="hljs-keyword">const</span> identity = ...
-const address = ...
-const amount: BN = <span class="hljs-keyword">new</span> BN(<span class="hljs-number">42</span>)
+										<pre><code class="language-javascript"><span class="hljs-keyword">const</span> identity = ...
+<span class="hljs-keyword">const</span> address = ...
+<span class="hljs-keyword">const</span> amount: BN = <span class="hljs-keyword">new</span> BN(<span class="hljs-number">42</span>)
+<span class="hljs-keyword">const</span> blockchain = <span class="hljs-keyword">await</span> sdk.getConnectionOrConnect()
 sdk.Balance.makeTransfer(identity, address, amount)
-  .then(<span class="hljs-function">(<span class="hljs-params">status: SubmittableResult</span>) =&gt;</span> {
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;Successfully transferred ${amount.toNumber()} tokens&#x27;</span>)
-  })
+  .then(<span class="hljs-function"><span class="hljs-params">tx</span> =&gt;</span> blockchain.sendTx(tx))
+  .then(<span class="hljs-function">() =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;Successfully transferred ${amount.toNumber()} tokens&#x27;</span>))
   .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;Transfer failed&#x27;</span>)
-  })</code></pre>
+  })
+</code></pre>
 									</dd>
 								</dl>
 							</div>
@@ -265,11 +263,17 @@ sdk.Balance.makeTransfer(identity, address, amount)
 								<li>
 									<h5>amount: <span class="tsd-signature-type">BN</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>Amount of µ-Kilt to transfer.</p>
+										<p>Amount of Units to transfer.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> exponent: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = -15</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Magnitude of the amount. Default magnitude of Femto-Kilt.</p>
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>Promise containing the transaction status.</p>
 						</li>
 					</ul>
@@ -311,13 +315,16 @@ sdk.Balance.makeTransfer(identity, address, amount)
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>

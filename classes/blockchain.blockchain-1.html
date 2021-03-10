@@ -76,7 +76,7 @@
 			<section class="tsd-panel">
 				<h3>Implements</h3>
 				<ul class="tsd-hierarchy">
-					<li><a href="../interfaces/blockchain.iblockchainapi.html" class="tsd-signature-type">IBlockchainApi</a></li>
+					<li><a href="../interfaces/iblockchain.iblockchainapi.html" class="tsd-signature-type">IBlockchainApi</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -93,8 +93,6 @@
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="blockchain.blockchain-1.html#api" class="tsd-kind-icon">api</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="blockchain.blockchain-1.html#portablegabi" class="tsd-kind-icon">portablegabi</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="blockchain.blockchain-1.html#ready" class="tsd-kind-icon">ready</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -103,7 +101,10 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="blockchain.blockchain-1.html#getnonce" class="tsd-kind-icon">get<wbr>Nonce</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="blockchain.blockchain-1.html#getstats" class="tsd-kind-icon">get<wbr>Stats</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="blockchain.blockchain-1.html#listentoblocks" class="tsd-kind-icon">listen<wbr>ToBlocks</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="blockchain.blockchain-1.html#resigntx" class="tsd-kind-icon">re<wbr>Sign<wbr>Tx</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="blockchain.blockchain-1.html#signtx" class="tsd-kind-icon">sign<wbr>Tx</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="blockchain.blockchain-1.html#submittx" class="tsd-kind-icon">submit<wbr>Tx</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="blockchain.blockchain-1.html#submittxwithresign" class="tsd-kind-icon">submit<wbr>TxWith<wbr>ReSign</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="blockchain.blockchain-1.html#asarray" class="tsd-kind-icon">as<wbr>Array</a></li>
 							</ul>
 						</section>
@@ -122,7 +123,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchain/Blockchain.ts#L55">src/blockchain/Blockchain.ts:55</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchain/Blockchain.ts#L41">packages/chain-helpers/src/blockchain/Blockchain.ts:41</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -143,30 +144,9 @@
 					<h3>api</h3>
 					<div class="tsd-signature tsd-kind-icon">api<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ApiPromise</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/blockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/blockchain.iblockchainapi.html#api">api</a></p>
+						<p>Implementation of <a href="../interfaces/iblockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/iblockchain.iblockchainapi.html#api">api</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchain/Blockchain.ts#L53">src/blockchain/Blockchain.ts:53</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="portablegabi" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> portablegabi</h3>
-					<div class="tsd-signature tsd-kind-icon">portablegabi<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Blockchain</span></div>
-					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/blockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/blockchain.iblockchainapi.html#portablegabi">portablegabi</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchain/Blockchain.ts#L55">src/blockchain/Blockchain.ts:55</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="ready" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> ready</h3>
-					<div class="tsd-signature tsd-kind-icon">ready<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchain/Blockchain.ts#L54">src/blockchain/Blockchain.ts:54</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchain/Blockchain.ts#L40">packages/chain-helpers/src/blockchain/Blockchain.ts:40</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -177,23 +157,32 @@
 					<a name="getnonce" class="tsd-anchor"></a>
 					<h3>get<wbr>Nonce</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Nonce<span class="tsd-signature-symbol">(</span>accountAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Index</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Nonce<span class="tsd-signature-symbol">(</span>accountAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/blockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/blockchain.iblockchainapi.html#getnonce">getNonce</a></p>
+								<p>Implementation of <a href="../interfaces/iblockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/iblockchain.iblockchainapi.html#getnonce">getNonce</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchain/Blockchain.ts#L126">src/blockchain/Blockchain.ts:126</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchain/Blockchain.ts#L141">packages/chain-helpers/src/blockchain/Blockchain.ts:141</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>[ASYNC] Retrieves the Nonce for Transaction signing for the specified account and increments the in accountNonces mapped Index.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>accountAddress: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The address of the identity that we retrieve the nonce for.</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Index</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p><a href="https://github.com/indutny/bn.js/" class="external">BN</a> representation of the Tx nonce for the identity.</p>
 						</li>
 					</ul>
 				</section>
@@ -201,17 +190,17 @@
 					<a name="getstats" class="tsd-anchor"></a>
 					<h3>get<wbr>Stats</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Stats<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/blockchain.html#stats" class="tsd-signature-type">Stats</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Stats<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/iblockchain.html#blockchainstats" class="tsd-signature-type">BlockchainStats</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/blockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/blockchain.iblockchainapi.html#getstats">getStats</a></p>
+								<p>Implementation of <a href="../interfaces/iblockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/iblockchain.iblockchainapi.html#getstats">getStats</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchain/Blockchain.ts#L66">src/blockchain/Blockchain.ts:66</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchain/Blockchain.ts#L48">packages/chain-helpers/src/blockchain/Blockchain.ts:48</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/blockchain.html#stats" class="tsd-signature-type">Stats</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/iblockchain.html#blockchainstats" class="tsd-signature-type">BlockchainStats</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -225,7 +214,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchain/Blockchain.ts#L77">src/blockchain/Blockchain.ts:77</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchain/Blockchain.ts#L59">packages/chain-helpers/src/blockchain/Blockchain.ts:59</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -257,29 +246,174 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="submittx" class="tsd-anchor"></a>
-					<h3>submit<wbr>Tx</h3>
+					<a name="resigntx" class="tsd-anchor"></a>
+					<h3>re<wbr>Sign<wbr>Tx</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">submit<wbr>Tx<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="identity.identity-1.html" class="tsd-signature-type">Identity</a>, tx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">re<wbr>Sign<wbr>Tx<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="../interfaces/iidentity.iidentity-1.html" class="tsd-signature-type">IIdentity</a>, tx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/blockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/blockchain.iblockchainapi.html#submittx">submitTx</a></p>
+								<p>Implementation of <a href="../interfaces/iblockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/iblockchain.iblockchainapi.html#resigntx">reSignTx</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchain/Blockchain.ts#L83">src/blockchain/Blockchain.ts:83</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchain/Blockchain.ts#L169">packages/chain-helpers/src/blockchain/Blockchain.ts:169</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>[ASYNC] Re-signs the given SubmittableExtrinsic with an updated Nonce.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>identity: <a href="identity.identity-1.html" class="tsd-signature-type">Identity</a></h5>
+									<h5>identity: <a href="../interfaces/iidentity.iidentity-1.html" class="tsd-signature-type">IIdentity</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The <a href="../modules/identity.html">Identity</a> to re-sign the Tx with.</p>
+									</div>
 								</li>
 								<li>
 									<h5>tx: <span class="tsd-signature-type">SubmittableExtrinsic</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The tx with recoverable Error that failed.</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>Original Tx, injected with signature payload with updated nonce.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="signtx" class="tsd-anchor"></a>
+					<h3>sign<wbr>Tx</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">sign<wbr>Tx<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="../interfaces/iidentity.iidentity-1.html" class="tsd-signature-type">IIdentity</a>, tx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/iblockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/iblockchain.iblockchainapi.html#signtx">signTx</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchain/Blockchain.ts#L73">packages/chain-helpers/src/blockchain/Blockchain.ts:73</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>[ASYNC] Signs the SubmittableExtrinsic with the given identity.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>identity: <a href="../interfaces/iidentity.iidentity-1.html" class="tsd-signature-type">IIdentity</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The <a href="../modules/identity.html">Identity</a> to sign the tx with.</p>
+									</div>
+								</li>
+								<li>
+									<h5>tx: <span class="tsd-signature-type">SubmittableExtrinsic</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The unsigned SubmittableExtrinsic.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubmittableExtrinsic</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>Signed SubmittableExtrinsic.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="submittx" class="tsd-anchor"></a>
+					<h3>submit<wbr>Tx</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">submit<wbr>Tx<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="../interfaces/iidentity.iidentity-1.html" class="tsd-signature-type">IIdentity</a>, tx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SubmittableExtrinsic</span>, opts<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Partial</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubscriptionPromise.Options</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ISubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/iblockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/iblockchain.iblockchainapi.html#submittx">submitTx</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchain/Blockchain.ts#L125">packages/chain-helpers/src/blockchain/Blockchain.ts:125</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>[ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>identity: <a href="../interfaces/iidentity.iidentity-1.html" class="tsd-signature-type">IIdentity</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The <a href="../modules/identity.html">Identity</a> used to sign and potentially re-sign the tx.</p>
+									</div>
+								</li>
+								<li>
+									<h5>tx: <span class="tsd-signature-type">SubmittableExtrinsic</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The generated unsigned SubmittableExtrinsic to submit.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> opts: <span class="tsd-signature-type">Partial</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubscriptionPromise.Options</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Partial optional criteria for resolving/rejecting the promise.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ISubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>Promise result of executing the extrinsic, of type ISubmittableResult.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="submittxwithresign" class="tsd-anchor"></a>
+					<h3>submit<wbr>TxWith<wbr>ReSign</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">submit<wbr>TxWith<wbr>ReSign<span class="tsd-signature-symbol">(</span>tx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SubmittableExtrinsic</span>, identity<span class="tsd-signature-symbol">?: </span><a href="../modules/iidentity.html" class="tsd-signature-type">IIdentity</a>, opts<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Partial</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubscriptionPromise.Options</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ISubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/iblockchain.iblockchainapi.html">IBlockchainApi</a>.<a href="../interfaces/iblockchain.iblockchainapi.html#submittxwithresign">submitTxWithReSign</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchain/Blockchain.ts#L98">packages/chain-helpers/src/blockchain/Blockchain.ts:98</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>[ASYNC] Submits a signed SubmittableExtrinsic with exported function <a href="../modules/blockchchainutils.html#submitsignedtx">submitSignedTx</a>.
+										Handles recoverable errors if identity is provided by re-signing and re-sending the tx up to two times.
+									Uses <a href="../modules/blockchchainutils.html#parsesubscriptionoptions">parseSubscriptionOptions</a> to provide complete potentially defaulted options to the called <a href="../modules/blockchchainutils.html#submitsignedtx">submitSignedTx</a>.</p>
+								</div>
+								<p>Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>tx: <span class="tsd-signature-type">SubmittableExtrinsic</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The SubmittableExtrinsic to be submitted. Most transactions need to be signed, this must be done beforehand.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> identity: <a href="../modules/iidentity.html" class="tsd-signature-type">IIdentity</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Optional <a href="../modules/identity.html">Identity</a> to potentially re-sign the tx with.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> opts: <span class="tsd-signature-type">Partial</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SubscriptionPromise.Options</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Optional partial criteria for resolving/rejecting the promise.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ISubmittableResult</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>A promise which can be used to track transaction status.
+							If resolved, this promise returns the eventually resolved ISubmittableResult.</p>
 						</li>
 					</ul>
 				</section>
@@ -293,7 +427,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/069e9e5/src/blockchain/Blockchain.ts#L47">src/blockchain/Blockchain.ts:47</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/chain-helpers/src/blockchain/Blockchain.ts#L34">packages/chain-helpers/src/blockchain/Blockchain.ts:34</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -332,12 +466,6 @@
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="blockchain.blockchain-1.html#api" class="tsd-kind-icon">api</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="blockchain.blockchain-1.html#portablegabi" class="tsd-kind-icon">portablegabi</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="blockchain.blockchain-1.html#ready" class="tsd-kind-icon">ready</a>
-							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="blockchain.blockchain-1.html#getnonce" class="tsd-kind-icon">get<wbr>Nonce</a>
 							</li>
@@ -348,7 +476,16 @@
 								<a href="blockchain.blockchain-1.html#listentoblocks" class="tsd-kind-icon">listen<wbr>ToBlocks</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="blockchain.blockchain-1.html#resigntx" class="tsd-kind-icon">re<wbr>Sign<wbr>Tx</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="blockchain.blockchain-1.html#signtx" class="tsd-kind-icon">sign<wbr>Tx</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="blockchain.blockchain-1.html#submittx" class="tsd-kind-icon">submit<wbr>Tx</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="blockchain.blockchain-1.html#submittxwithresign" class="tsd-kind-icon">submit<wbr>TxWith<wbr>ReSign</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
 								<a href="blockchain.blockchain-1.html#asarray" class="tsd-kind-icon">as<wbr>Array</a>
@@ -357,12 +494,6 @@
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="../interfaces/blockchain.iblockchainapi.html" class="tsd-kind-icon">IBlockchain<wbr>Api</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-						<a href="../modules/blockchain.html#stats" class="tsd-kind-icon">Stats</a>
-					</li>
 				</ul>
 			</nav>
 		</div>
@@ -376,7 +507,9 @@
 				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
@@ -385,10 +518,11 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
