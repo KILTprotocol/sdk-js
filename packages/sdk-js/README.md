@@ -18,14 +18,12 @@ Regarding the privacy enhancement, please have a look at our [lightning talk for
 
 ## Documentation
 
-*You are currently viewing the develop branch documentation! This is the latest development and might be unstable. Have a look at the [master branch](https://github.com/KILTprotocol/sdk-js/tree/master) for the released stable version*
-
 [KILT](https://kilt.io) documentation is provided in several guides and demos.
 
-- [KILT workshop (Release Version)](https://github.com/KILTprotocol/kilt-workshop-101) 👈 Start here to get familiar with the basics
-- [Getting started guide (Develop Version)](/docs/getting-started.md) 👈 Start here if you'd like to include KILT in your project
-- [KILT Developer overview (Released Version)](https://dev.kilt.io/) 👈 Checkout for an overview of the codebase, infrastructure and deployed KILT instances.
-- [API documentation (Released Version)](https://kiltprotocol.github.io/sdk-js)
+- [KILT workshop](https://github.com/KILTprotocol/kilt-workshop-101) 👈 Start here to get familiar with the basics
+- [Getting started guide](https://github.com/KILTprotocol/sdk-js/blob/master/docs/getting-started.md) 👈 Start here if you'd like to include KILT in your project
+- [KILT Developer overview](https://dev.kilt.io/) 👈 Checkout for an overview of the codebase, infrastructure and deployed KILT instances.
+- [API documentation](https://kiltprotocol.github.io/sdk-js)
 - [Demo client](https://kilt.io/developers-sub/kilt-demo-client/)
 - [Demo client code](https://github.com/KILTprotocol/demo-client)
 
