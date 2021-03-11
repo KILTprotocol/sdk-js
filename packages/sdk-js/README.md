@@ -18,6 +18,8 @@ Regarding the privacy enhancement, please have a look at our [lightning talk for
 
 ## Documentation
 
+> To avoid confusion between the latest released SDK version and the `develop` default branch, the links in the list **point to the master branch**, which always contains the latest official release of the SDK.
+
 [KILT](https://kilt.io) documentation is provided in several guides and demos.
 
 - [KILT workshop](https://github.com/KILTprotocol/kilt-workshop-101) 👈 Start here to get familiar with the basics
@@ -27,7 +29,7 @@ Regarding the privacy enhancement, please have a look at our [lightning talk for
 - [Demo client](https://kilt.io/developers-sub/kilt-demo-client/)
 - [Demo client code](https://github.com/KILTprotocol/demo-client)
 
-To help improve, please see our [contribution page](https://github.com/KILTprotocol/sdk-js/blob/develop/docs/contribution-guide.md).
+To help improve, please see our [contribution page](/docs/contribution-guide.md).
 
 ## How to install the SDK
 
@@ -45,7 +47,7 @@ yarn add @kiltprotocol/sdk-js
 
 ## Example
 
-Please have a look at our examples within our [getting started guide](https://github.com/KILTprotocol/sdk-js/blob/develop/docs/getting-started.md).
+Please have a look at our examples within our [getting started guide](/docs/getting-started.md).
 
 A claim type (CTYPE) can be a credential of any kind, e.g. a drivers license, a sports club membership or even a fairtrade certificate for chocolate.
 
@@ -70,7 +72,7 @@ Claim {
 
 ## Development Setup
 
-[Development Setup](https://github.com/KILTprotocol/sdk-js/blob/develop/docs/development-setup.md)
+[Development Setup](/docs/development-setup.md)
 
 ## Job Board
 
@@ -78,4 +80,4 @@ Check to see if we have any [Job Offers](https://kilt.io/job-offers/)
 
 ## License
 
-[License](https://github.com/KILTprotocol/sdk-js/blob/develop/LICENSE)
+[License](/LICENSE)
