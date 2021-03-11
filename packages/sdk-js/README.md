@@ -18,7 +18,7 @@ Regarding the privacy enhancement, please have a look at our [lightning talk for
 
 ## Documentation
 
-*You are currently viewing the develop branch documentation! This is the latest development and might break. Have a look at the [master branch](https://github.com/KILTprotocol/sdk-js/tree/master) for the released version*
+*You are currently viewing the develop branch documentation! This is the latest development and might be unstable. Have a look at the [master branch](https://github.com/KILTprotocol/sdk-js/tree/master) for the released stable version*
 
 [KILT](https://kilt.io) documentation is provided in several guides and demos.
 
