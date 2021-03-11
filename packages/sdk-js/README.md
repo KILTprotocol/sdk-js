@@ -18,6 +18,8 @@ Regarding the privacy enhancement, please have a look at our [lightning talk for
 
 ## Documentation
 
+* The Links found here are related to the `master` branch. Be aware that you might see this on the `develop` branch which is the current unstable development version. *
+
 [KILT](https://kilt.io) documentation is provided in several guides and demos.
 
 - [KILT workshop](https://github.com/KILTprotocol/kilt-workshop-101) 👈 Start here to get familiar with the basics
