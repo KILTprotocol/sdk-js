@@ -18,7 +18,7 @@ Regarding the privacy enhancement, please have a look at our [lightning talk for
 
 ## Documentation
 
-> **The Links found here are related to the `master` branch aka the current released version.** Links outside this section point to the version you are currently viewing.
+> To avoid confusion between the latest released SDK version and the `develop` default branch, the links in the list that **follow point to the master branch**, which always contains the latest official release of the SDK.
 
 [KILT](https://kilt.io) documentation is provided in several guides and demos.
 
