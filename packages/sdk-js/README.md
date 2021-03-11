@@ -18,7 +18,7 @@ Regarding the privacy enhancement, please have a look at our [lightning talk for
 
 ## Documentation
 
-> To avoid confusion between the latest released SDK version and the `develop` default branch, the links in the list that **follow point to the master branch**, which always contains the latest official release of the SDK.
+> To avoid confusion between the latest released SDK version and the `develop` default branch, the links in the list **point to the master branch**, which always contains the latest official release of the SDK.
 
 [KILT](https://kilt.io) documentation is provided in several guides and demos.
 
@@ -29,7 +29,7 @@ Regarding the privacy enhancement, please have a look at our [lightning talk for
 - [Demo client](https://kilt.io/developers-sub/kilt-demo-client/)
 - [Demo client code](https://github.com/KILTprotocol/demo-client)
 
-To help improve, please see our [contribution page](https://github.com/KILTprotocol/sdk-js/blob/master/docs/contribution-guide.md).
+To help improve, please see our [contribution page](/docs/contribution-guide.md).
 
 ## How to install the SDK
 
