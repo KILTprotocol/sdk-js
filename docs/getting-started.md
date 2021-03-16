@@ -54,7 +54,9 @@ async function main() {
 main()
 ```
 
-To keep the examples short, we will not wrap each one in an asynchronous function and expect you to do this on your own. Also, the compiler will complain when you try to `await` a promise on the root level - except if you are using TypeScript 3.8+ and configure your _tsconfig.json_ to enable this (see [here](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#top-level-await) for more). In case you are unsure, please have a look at our [workshop](https://kiltprotocol.github.io/kilt-workshop-101/#/) where we provide everything ready to be copied and pasted.
+To keep the examples short, we will not wrap each one in an asynchronous function and expect you to do this on your own. Also, the compiler will complain when you try to `await` a promise on the root level - except if you are using TypeScript 3.8+ and configure your _tsconfig.json_ to enable this (see [here](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#top-level-await) for more).
+
+In case you are unsure, please have a look at our [workshop](https://kiltprotocol.github.io/kilt-workshop-101/#/) where we provide everything ready to be copied and pasted.
 
 💡 At any point, you can **check out our [getting-started.ts](./getting-started.ts) for a working example of the code presented in the following**.
 
@@ -153,7 +155,7 @@ In case you go with option #1 or #2, you have to request test money ([prod-net](
 However, **we recommend to start your local node** and use a mnemonic which already has tokens by using our docker image
 
 ```
-docker run -p 9944:9944 kiltprotocol/mashnet-node:develop --dev --ws-port 9944 --ws-external --rpc-external
+docker run -p 9944:9944 kiltprotocol/mashnet-node:latest --dev --ws-port 9944 --ws-external --rpc-external
 ```
 
 To store the CTYPE on the blockchain, you have to call:
@@ -277,7 +279,7 @@ const attester = Kilt.Identity.buildFromMnemonic(mnemonic)
 If the Attester doesn't live on the same machine, we need to send them a message with the request.
 KILT contains a simple messaging system and we describe it through the following example.
 
-First, we create the request for an attestation message in which the Claimer automatically encrypts the message with the public key of the Attester:
+First, we create the request for attestation message which the Claimer encrypts with the public key of the Attester:
 
 ```typescript
 import Kilt, { IRequestAttestationForClaim } from '@kiltprotocol/sdk-js'
@@ -319,13 +321,12 @@ const encrypted = message.encrypt()
 ```
 
 The messaging system is transport agnostic.
-Therefore, **during decryption** both the **sender identity and the validity of the message are checked automatically**.
 
 ```typescript
 const decrypted = Kilt.Message.decrypt(encrypted, attester)
 ```
 
-If the decryption process completes successfully, you can assume that the sender of message is also the owner of the claim.
+As sender identity and message validity are also checked during decryption, if the decryption process completes successfully, you can assume that the sender of the message is also the owner of the claim, as the two identites match.
 At this point the Attester has the original request for attestation object:
 
 ```typescript
