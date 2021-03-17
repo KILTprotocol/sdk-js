@@ -54,7 +54,7 @@ async function main() {
 main()
 ```
 
-To keep the examples short, we will not wrap each one in an asynchronous function and expect you to do this on your own. Also, the compiler will complain when you try to `await` a promise on the root level - except if you are using TypeScript 3.8+ and configure your _tsconfig.json_ to enable this (see [here](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#top-level-await) for more).
+To keep the examples short, we will not wrap each one in an asynchronous function and expect you to do this on your own. Also, the compiler will complain when you try to `await` a promise on the root level - except if you are using TypeScript 3.8+ and configure your _tsconfig.json_ to enable this (see [the typescript doc](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#top-level-await) for more).
 
 In case you are unsure, please have a look at our [workshop](https://kiltprotocol.github.io/kilt-workshop-101/#/) where we provide everything ready to be copied and pasted.
 
@@ -152,10 +152,16 @@ There are [three types](https://dev.kilt.io/#/?id=source-code-and-deployed-insta
 3. A local node: `ws://127.0.0.1:9944`
 
 In case you go with option #1 or #2, you have to request test money ([prod-net](https://faucet.kilt.io/), [dev-net](https://faucet-devnet.kilt.io/)) **since storing a CTYPE on the chain requires tokens** as transaction fee.
-However, **we recommend to start your local node** and use a mnemonic which already has tokens by using our docker image
+However, **we recommend to start your local node** and use a mnemonic which already has tokens by using our docker image. Depending on which version of the SDK you are using, you might need to spin up the latest officially released version of the node (working with the latest release of the SDK) or the latest development version of the node (working with the latest development version of the SDK). Either version can be started with the following command by using one between the `latest` and `develop` tag.
 
 ```
-docker run -p 9944:9944 kiltprotocol/mashnet-node:latest --dev --ws-port 9944 --ws-external --rpc-external
+docker run -p 9944:9944 kiltprotocol/mashnet-node:{latest,develop} --dev --ws-port 9944 --ws-external --rpc-external
+```
+
+while the latter with 
+
+```
+docker run -p 9944:9944 kiltprotocol/mashnet-node:develop --dev --ws-port 9944 --ws-external --rpc-external
 ```
 
 To store the CTYPE on the blockchain, you have to call:
