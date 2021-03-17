@@ -158,12 +158,6 @@ However, **we recommend to start your local node** and use a mnemonic which alre
 docker run -p 9944:9944 kiltprotocol/mashnet-node:{latest,develop} --dev --ws-port 9944 --ws-external --rpc-external
 ```
 
-while the latter with 
-
-```
-docker run -p 9944:9944 kiltprotocol/mashnet-node:develop --dev --ws-port 9944 --ws-external --rpc-external
-```
-
 To store the CTYPE on the blockchain, you have to call:
 
 ```typescript
