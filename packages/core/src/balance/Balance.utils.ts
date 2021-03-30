@@ -9,7 +9,7 @@ import { formatBalance } from '@polkadot/util'
 export const KILT_COIN = new BN(1)
 
 // Exported options from polkadot/util
-interface Options {
+export interface Options {
   decimals?: number
   forceUnit?: string
   withSi?: boolean
@@ -60,6 +60,7 @@ export default {
   KILT_COIN,
   TRANSACTION_FEE,
   formatKiltBalance,
+  formatKiltBalanceDecimalPlacement,
   asFemtoKilt,
   convertToTxUnit,
 }
