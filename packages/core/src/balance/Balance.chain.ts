@@ -16,7 +16,6 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { AccountData } from '@polkadot/types/interfaces'
 
 import Identity from '../identity/Identity'
 import BalanceUtils from './Balance.utils'
@@ -42,7 +41,7 @@ import BalanceUtils from './Balance.utils'
  */
 export async function getBalances(
   accountAddress: IPublicIdentity['address']
-): Promise<AccountData> {
+): Promise<Balances> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
   return (await blockchain.api.query.system.account(accountAddress)).data
@@ -80,20 +79,16 @@ export async function listenToBalanceChanges(
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const previousBalances = await getBalances(accountAddress)
 
-  const previousFree = new BN(previousBalances.free.toString())
-  const previousReserved = new BN(previousBalances.reserved.toString())
-  const previousMiscFrozen = new BN(previousBalances.miscFrozen.toString())
-  const previousFeeFrozen = new BN(previousBalances.feeFrozen.toString())
-
   return blockchain.api.query.system.account(
     accountAddress,
     ({ data: { free, reserved, miscFrozen, feeFrozen } }) => {
       const balancesChange = {
-        free: free.sub(previousFree),
-        reserved: reserved.sub(previousReserved),
-        miscFrozen: miscFrozen.sub(previousMiscFrozen),
-        feeFrozen: feeFrozen.sub(previousFeeFrozen),
+        free: free.sub(previousBalances.free),
+        reserved: reserved.sub(previousBalances.reserved),
+        miscFrozen: miscFrozen.sub(previousBalances.miscFrozen),
+        feeFrozen: feeFrozen.sub(previousBalances.feeFrozen),
       }
+
       const current = {
         free: new BN(free),
         reserved: new BN(reserved),
