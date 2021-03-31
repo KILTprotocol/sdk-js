@@ -11,7 +11,7 @@ import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'
 import {
   Balance,
-  getBalance,
+  getBalances,
   listenToBalanceChanges,
   makeTransfer,
 } from './Balance.chain'
@@ -71,7 +71,7 @@ describe('Balance', () => {
     }
 
     await listenToBalanceChanges(bob.address, listener)
-    const currentBalance = await getBalance(bob.address)
+    const currentBalance = await getBalances(bob.address)
     expect(currentBalance.free.toNumber()).toBeTruthy()
     expect(currentBalance.free.toNumber()).toEqual(BALANCE - FEE)
   })

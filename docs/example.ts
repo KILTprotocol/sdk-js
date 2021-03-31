@@ -35,7 +35,7 @@ async function setup(): Promise<{
   )
   console.log(
     'Attester balance is:',
-    await Kilt.Balance.getBalance(attester.address)
+    await Kilt.Balance.getBalances(attester.address)
   )
 
   // ------------------------- CType    ----------------------------------------

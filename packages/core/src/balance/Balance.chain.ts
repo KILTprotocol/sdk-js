@@ -40,13 +40,13 @@ export type Balance = {
  * ```javascript
  *
  * const address = ...
- * sdk.Balance.getBalance(address)
+ * sdk.Balance.getBalances(address)
  *   .then((balance: BN) => {
  *     console.log(`balance is ${balance.toNumber()}`)
  *   })
  * ```
  */
-export async function getBalance(
+export async function getBalances(
   accountAddress: IPublicIdentity['address']
 ): Promise<AccountData> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -84,7 +84,7 @@ export async function listenToBalanceChanges(
   ) => void
 ): Promise<UnsubscribePromise> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const previous = await getBalance(accountAddress)
+  const previous = await getBalances(accountAddress)
 
   const previousFree = new BN(previous.free.toString())
   const previousReserved = new BN(previous.reserved.toString())

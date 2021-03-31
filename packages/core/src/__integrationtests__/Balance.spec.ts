@@ -5,7 +5,7 @@
 import BN from 'bn.js/'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
-  getBalance,
+  getBalances,
   listenToBalanceChanges,
   makeTransfer,
 } from '../balance/Balance.chain'
@@ -35,24 +35,24 @@ describe('when there is a dev chain with a faucet', () => {
   })
 
   it('should have enough coins available on the faucet', async () => {
-    const balance = await getBalance(faucet.address)
+    const balance = await getBalances(faucet.address)
     expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
     // console.log(`Faucet has ${Number(balance)} micro Kilt`)
   })
 
   it('Bob has tokens', async () => {
-    const balance = await getBalance(bob.address)
+    const balance = await getBalances(bob.address)
     expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
   })
 
   it('Alice has tokens', async () => {
-    const balance = await getBalance(alice.address)
+    const balance = await getBalances(alice.address)
     expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
   })
 
-  it('getBalance should return 0 for new identity', async () => {
+  it('getBalances should return 0 for new identity', async () => {
     return expect(
-      getBalance(
+      getBalances(
         Identity.buildFromMnemonic(Identity.generateMnemonic()).address
       ).then((n) => n.free.toNumber())
     ).resolves.toEqual(0)
@@ -62,15 +62,15 @@ describe('when there is a dev chain with a faucet', () => {
     const ident = Identity.buildFromMnemonic(Identity.generateMnemonic())
     const funny = jest.fn()
     listenToBalanceChanges(ident.address, funny)
-    const balanceBefore = await getBalance(faucet.address)
+    const balanceBefore = await getBalances(faucet.address)
     await makeTransfer(faucet, ident.address, MIN_TRANSACTION).then((tx) =>
       BlockchainUtils.submitTxWithReSign(tx, faucet, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     )
     const [balanceAfter, balanceIdent] = await Promise.all([
-      getBalance(faucet.address),
-      getBalance(ident.address),
+      getBalances(faucet.address),
+      getBalances(ident.address),
     ])
     expect(
       balanceBefore.free.sub(balanceAfter.free).gt(MIN_TRANSACTION)
@@ -100,12 +100,12 @@ describe('When there are haves and have-nots', () => {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
     )
-    const balanceTo = await getBalance(stormyD.address)
+    const balanceTo = await getBalances(stormyD.address)
     expect(balanceTo.free.toNumber()).toBe(MIN_TRANSACTION.toNumber())
   }, 40_000)
 
   it('should not accept transactions from identity with zero balance', async () => {
-    const originalBalance = await getBalance(stormyD.address)
+    const originalBalance = await getBalances(stormyD.address)
     await expect(
       makeTransfer(bobbyBroke, stormyD.address, MIN_TRANSACTION).then((tx) =>
         BlockchainUtils.submitTxWithReSign(tx, bobbyBroke, {
@@ -114,15 +114,15 @@ describe('When there are haves and have-nots', () => {
       )
     ).rejects.toThrowError('1010: Invalid Transaction')
     const [newBalance, zeroBalance] = await Promise.all([
-      getBalance(stormyD.address),
-      getBalance(bobbyBroke.address),
+      getBalances(stormyD.address),
+      getBalances(bobbyBroke.address),
     ])
     expect(newBalance.free.toNumber()).toBe(originalBalance.free.toNumber())
     expect(zeroBalance.free.toNumber()).toBe(0)
   }, 50_000)
 
   xit('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
-    const RichieBalance = await getBalance(richieRich.address)
+    const RichieBalance = await getBalances(richieRich.address)
     await expect(
       makeTransfer(richieRich, bobbyBroke.address, RichieBalance.free).then(
         (tx) =>
@@ -132,8 +132,8 @@ describe('When there are haves and have-nots', () => {
       )
     ).rejects.toThrowError()
     const [newBalance, zeroBalance] = await Promise.all([
-      getBalance(richieRich.address),
-      getBalance(bobbyBroke.address),
+      getBalances(richieRich.address),
+      getBalances(bobbyBroke.address),
     ])
     expect(zeroBalance.free.toString()).toEqual('0')
     expect(newBalance.free.lt(RichieBalance.free))
