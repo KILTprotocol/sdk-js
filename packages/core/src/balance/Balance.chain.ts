@@ -10,7 +10,11 @@
 
 import { UnsubscribePromise } from '@polkadot/api/types'
 import BN from 'bn.js'
-import type { IPublicIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type {
+  Balances,
+  IPublicIdentity,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import {
   BlockchainApiConnection,
   // BlockchainUtils,
@@ -19,13 +23,6 @@ import { AccountData } from '@polkadot/types/interfaces'
 
 import Identity from '../identity/Identity'
 import BalanceUtils from './Balance.utils'
-
-export type Balance = {
-  free: BN
-  reserved: BN
-  miscFrozen: BN
-  feeFrozen: BN
-}
 
 /**
  * Fetches the current balance of the account with [accountAddress].
@@ -79,8 +76,8 @@ export async function listenToBalanceChanges(
   accountAddress: IPublicIdentity['address'],
   listener: (
     account: IPublicIdentity['address'],
-    balance: Balance,
-    change: Balance
+    balance: Balances,
+    change: Balances
   ) => void
 ): Promise<UnsubscribePromise> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()

@@ -5,6 +5,7 @@ export * as SubscriptionPromise from './SubscriptionPromise'
 
 export * from './AttestedClaim'
 export * from './Attestation'
+export * from './Balance'
 export * from './CType'
 export * from './CTypeMetadata'
 export * from './Claim'

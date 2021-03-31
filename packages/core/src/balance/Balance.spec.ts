@@ -8,9 +8,9 @@ import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
 import TYPE_REGISTRY from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { Balances } from '@kiltprotocol/types'
 import Identity from '../identity/Identity'
 import {
-  Balance,
   getBalances,
   listenToBalanceChanges,
   makeTransfer,
@@ -61,8 +61,8 @@ describe('Balance', () => {
   it('should listen to balance changes', async (done) => {
     const listener = (
       account: string,
-      balance: Balance,
-      change: Balance
+      balance: Balances,
+      change: Balances
     ): void => {
       expect(account).toBe(bob.address)
       expect(balance.free.toNumber()).toBe(BALANCE)
