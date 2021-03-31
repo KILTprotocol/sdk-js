@@ -61,12 +61,12 @@ describe('Balance', () => {
   it('should listen to balance changes', async (done) => {
     const listener = (
       account: string,
-      balance: Balances,
-      change: Balances
+      balances: Balances,
+      changes: Balances
     ): void => {
       expect(account).toBe(bob.address)
-      expect(balance.free.toNumber()).toBe(BALANCE)
-      expect(change.free.toNumber()).toBe(FEE)
+      expect(balances.free.toNumber()).toBe(BALANCE)
+      expect(changes.free.toNumber()).toBe(FEE)
       done()
     }
 
