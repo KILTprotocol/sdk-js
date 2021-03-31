@@ -10,6 +10,7 @@ import TYPE_REGISTRY from '@kiltprotocol/chain-helpers/lib/blockchainApiConnecti
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'
 import {
+  Balance,
   getBalance,
   listenToBalanceChanges,
   makeTransfer,
@@ -58,17 +59,21 @@ describe('Balance', () => {
     bob = Identity.buildFromURI('//Bob')
   })
   it('should listen to balance changes', async (done) => {
-    const listener = (account: string, balance: BN, change: BN): void => {
+    const listener = (
+      account: string,
+      balance: Balance,
+      change: Balance
+    ): void => {
       expect(account).toBe(bob.address)
-      expect(balance.toNumber()).toBe(BALANCE)
-      expect(change.toNumber()).toBe(FEE)
+      expect(balance.free.toNumber()).toBe(BALANCE)
+      expect(change.free.toNumber()).toBe(FEE)
       done()
     }
 
     await listenToBalanceChanges(bob.address, listener)
     const currentBalance = await getBalance(bob.address)
-    expect(currentBalance.toNumber()).toBeTruthy()
-    expect(currentBalance.toNumber()).toEqual(BALANCE - FEE)
+    expect(currentBalance.free.toNumber()).toBeTruthy()
+    expect(currentBalance.free.toNumber()).toEqual(BALANCE - FEE)
   })
 
   it('should make transfer', async () => {

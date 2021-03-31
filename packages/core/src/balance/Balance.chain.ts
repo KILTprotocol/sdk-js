@@ -11,9 +11,21 @@
 import { UnsubscribePromise } from '@polkadot/api/types'
 import BN from 'bn.js'
 import type { IPublicIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import {
+  BlockchainApiConnection,
+  // BlockchainUtils,
+} from '@kiltprotocol/chain-helpers'
+import { AccountData } from '@polkadot/types/interfaces'
+
 import Identity from '../identity/Identity'
 import BalanceUtils from './Balance.utils'
+
+export type Balance = {
+  free: BN
+  reserved: BN
+  miscFrozen: BN
+  feeFrozen: BN
+}
 
 /**
  * Fetches the current balance of the account with [accountAddress].
@@ -36,13 +48,10 @@ import BalanceUtils from './Balance.utils'
  */
 export async function getBalance(
   accountAddress: IPublicIdentity['address']
-): Promise<BN> {
+): Promise<AccountData> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return new BN(
-    (
-      await blockchain.api.query.system.account(accountAddress)
-    ).data.free.toString()
-  )
+
+  return (await blockchain.api.query.system.account(accountAddress)).data
 }
 
 /**
@@ -70,19 +79,34 @@ export async function listenToBalanceChanges(
   accountAddress: IPublicIdentity['address'],
   listener: (
     account: IPublicIdentity['address'],
-    balance: BN,
-    change: BN
+    balance: Balance,
+    change: Balance
   ) => void
 ): Promise<UnsubscribePromise> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  let previous = await getBalance(accountAddress)
+  const previous = await getBalance(accountAddress)
+
+  const previousFree = new BN(previous.free.toString())
+  const previousReserved = new BN(previous.reserved.toString())
+  const previousMiscFrozen = new BN(previous.miscFrozen.toString())
+  const previousFeeFrozen = new BN(previous.feeFrozen.toString())
 
   return blockchain.api.query.system.account(
     accountAddress,
-    ({ data: { free: current } }) => {
-      const change = current.sub(previous)
-      previous = current
-      listener(accountAddress, current, change)
+    ({ data: { free, reserved, miscFrozen, feeFrozen } }) => {
+      const balanceChange = {
+        free: free.sub(previousFree),
+        reserved: reserved.sub(previousReserved),
+        miscFrozen: miscFrozen.sub(previousMiscFrozen),
+        feeFrozen: feeFrozen.sub(previousFeeFrozen),
+      }
+      const current = {
+        free: new BN(free),
+        reserved: new BN(reserved),
+        miscFrozen: new BN(miscFrozen),
+        feeFrozen: new BN(feeFrozen),
+      }
+      listener(accountAddress, current, balanceChange)
     }
   )
 }
