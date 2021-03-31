@@ -36,25 +36,25 @@ describe('when there is a dev chain with a faucet', () => {
 
   it('should have enough coins available on the faucet', async () => {
     const balance = await getBalance(faucet.address)
-    expect(balance.gt(new BN(100_000_000))).toBeTruthy()
+    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
     // console.log(`Faucet has ${Number(balance)} micro Kilt`)
   })
 
   it('Bob has tokens', async () => {
     const balance = await getBalance(bob.address)
-    expect(balance.gt(new BN(100_000_000))).toBeTruthy()
+    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
   })
 
   it('Alice has tokens', async () => {
     const balance = await getBalance(alice.address)
-    expect(balance.gt(new BN(100_000_000))).toBeTruthy()
+    expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
   })
 
   it('getBalance should return 0 for new identity', async () => {
     return expect(
       getBalance(
         Identity.buildFromMnemonic(Identity.generateMnemonic()).address
-      ).then((n) => n.toNumber())
+      ).then((n) => n.free.toNumber())
     ).resolves.toEqual(0)
   })
 
@@ -72,8 +72,10 @@ describe('when there is a dev chain with a faucet', () => {
       getBalance(faucet.address),
       getBalance(ident.address),
     ])
-    expect(balanceBefore.sub(balanceAfter).gt(MIN_TRANSACTION)).toBeTruthy()
-    expect(balanceIdent.toNumber()).toBe(MIN_TRANSACTION.toNumber())
+    expect(
+      balanceBefore.free.sub(balanceAfter.free).gt(MIN_TRANSACTION)
+    ).toBeTruthy()
+    expect(balanceIdent.free.toNumber()).toBe(MIN_TRANSACTION.toNumber())
     expect(funny).toBeCalled()
   }, 30_000)
 })
@@ -99,7 +101,7 @@ describe('When there are haves and have-nots', () => {
         })
     )
     const balanceTo = await getBalance(stormyD.address)
-    expect(balanceTo.toNumber()).toBe(MIN_TRANSACTION.toNumber())
+    expect(balanceTo.free.toNumber()).toBe(MIN_TRANSACTION.toNumber())
   }, 40_000)
 
   it('should not accept transactions from identity with zero balance', async () => {
@@ -115,25 +117,26 @@ describe('When there are haves and have-nots', () => {
       getBalance(stormyD.address),
       getBalance(bobbyBroke.address),
     ])
-    expect(newBalance.toNumber()).toBe(originalBalance.toNumber())
-    expect(zeroBalance.toNumber()).toBe(0)
+    expect(newBalance.free.toNumber()).toBe(originalBalance.free.toNumber())
+    expect(zeroBalance.free.toNumber()).toBe(0)
   }, 50_000)
 
   xit('should not accept transactions when sender cannot pay gas, but will keep gas fee', async () => {
     const RichieBalance = await getBalance(richieRich.address)
     await expect(
-      makeTransfer(richieRich, bobbyBroke.address, RichieBalance).then((tx) =>
-        BlockchainUtils.submitTxWithReSign(tx, richieRich, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        })
+      makeTransfer(richieRich, bobbyBroke.address, RichieBalance.free).then(
+        (tx) =>
+          BlockchainUtils.submitTxWithReSign(tx, richieRich, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          })
       )
     ).rejects.toThrowError()
     const [newBalance, zeroBalance] = await Promise.all([
       getBalance(richieRich.address),
       getBalance(bobbyBroke.address),
     ])
-    expect(zeroBalance.toString()).toEqual('0')
-    expect(newBalance.lt(RichieBalance))
+    expect(zeroBalance.free.toString()).toEqual('0')
+    expect(newBalance.free.lt(RichieBalance.free))
   }, 30_000)
 
   it('should be able to make a new transaction once the last is ready', async () => {
