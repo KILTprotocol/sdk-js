@@ -49,7 +49,7 @@ export async function getBalances(
 
 /**
  * Attaches the given [listener] for balance changes on the account with [accountAddress].
- * <B>Note that the balance amounts is in Femto-Kilt (1e-15) and must be translated to Kilt-Coin</B>.
+ * <B>Note that the balance amounts are in Femto-Kilt (1e-15) and must be translated to Kilt-Coin</B>.
  *
  * @param accountAddress Address of the account on which to listen for all balance changes.
  * @param listener Listener to receive all balance change updates.
