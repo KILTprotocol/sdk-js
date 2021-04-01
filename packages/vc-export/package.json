@@ -27,6 +27,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
+    "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/config": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
@@ -36,6 +37,8 @@
     "@polkadot/util": "^5.9.2",
     "@polkadot/util-crypto": "^5.9.2",
     "ajv": "^6.12.5",
-    "jsonld": "^3.2.0"
+    "jsonld": "^3.2.0",
+    "jsonld-signatures": "^8.0.2",
+    "vc-js": "^0.6.4"
   }
 }

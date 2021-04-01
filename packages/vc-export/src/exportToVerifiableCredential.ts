@@ -96,6 +96,7 @@ export function fromAttestedClaim(
     )
   const sSProof: SelfSignedProof = {
     type: KILT_SELF_SIGNED_PROOF_TYPE,
+    proofPurpose: 'assertionMethod',
     verificationMethod: {
       type: keyType,
       publicKeyHex: u8aToHex(decodeAddress(claim.owner)),
@@ -107,6 +108,7 @@ export function fromAttestedClaim(
   // add attestation proof
   const attProof: AttestedProof = {
     type: KILT_ATTESTED_PROOF_TYPE,
+    proofPurpose: 'assertionMethod',
     attesterAddress: input.attestation.owner,
   }
   VC.proof.push(attProof)
@@ -114,6 +116,7 @@ export function fromAttestedClaim(
   // add hashed properties proof
   const cDProof: CredentialDigestProof = {
     type: KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
+    proofPurpose: 'assertionMethod',
     nonces: input.request.claimNonceMap,
     claimHashes,
   }
