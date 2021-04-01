@@ -22,7 +22,7 @@ import BalanceUtils from './Balance.utils'
 
 /**
  * Fetches the current balances of the account with [accountAddress].
- * <B>Note that the balance amounts is in Femto-Kilt (1e-15)and must be translated to Kilt-Coin</B>.
+ * <B>Note that the balance amounts are in Femto-Kilt (1e-15)and must be translated to Kilt-Coin</B>.
  *
  * @param accountAddress Address of the account for which to get the balances.
  * @returns A promise containing the current balances of the account.
