@@ -35,15 +35,10 @@ export function formatKiltBalanceDecimalPlacement(
   decimal: number,
   denomination: number
 ): string {
-  const decimalBN = new BN(decimal)
-  const denominationBN = new BN(denomination)
+  const factoring = new BN(10).pow(new BN(denomination - decimal))
+  const skimmedAmount = amount.div(new BN(factoring))
+  return (skimmedAmount.toNumber() / 10 ** decimal).toString()
 
-  const balanceFactoring = new BN(10).pow(denominationBN.sub(decimalBN))
-  const powersOfTen = new BN(10).pow(decimalBN).toNumber()
-  const amountFactoring = amount.div(balanceFactoring).toNumber()
-
-  const amountDenomination = amountFactoring / powersOfTen
-  return amountDenomination.toFixed(decimal)
 }
 
 export function convertToTxUnit(balance: BN, power: number): BN {
