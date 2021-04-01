@@ -38,7 +38,6 @@ export function formatKiltBalanceDecimalPlacement(
   const factoring = new BN(10).pow(new BN(denomination - decimal))
   const skimmedAmount = amount.div(new BN(factoring))
   return (skimmedAmount.toNumber() / 10 ** decimal).toString()
-
 }
 
 export function convertToTxUnit(balance: BN, power: number): BN {
