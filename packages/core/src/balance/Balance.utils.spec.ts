@@ -3,6 +3,7 @@
  */
 
 import BN from 'bn.js'
+import { BalanceOptions } from '@kiltprotocol/types'
 import {
   formatKiltBalance,
   convertToTxUnit,
@@ -14,11 +15,11 @@ import {
 const TESTVALUE = new BN('123456789000')
 const TESTVALUE_2 = new BN('123456789000000')
 describe('formatKiltBalance', () => {
-  const alterExistingOptions = {
+  const alterExistingOptions: BalanceOptions = {
     decimals: 17,
     withUnit: 'KIL',
   }
-  const addingOptions = {
+  const addingOptions: BalanceOptions = {
     // When enables displays the full unit - micro KILT
     withSiFull: false,
   }

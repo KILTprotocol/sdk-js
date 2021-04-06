@@ -8,9 +8,10 @@ import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
 import TYPE_REGISTRY from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { Balances } from '@kiltprotocol/types'
 import Identity from '../identity/Identity'
 import {
-  getBalance,
+  getBalances,
   listenToBalanceChanges,
   makeTransfer,
 } from './Balance.chain'
@@ -58,17 +59,21 @@ describe('Balance', () => {
     bob = Identity.buildFromURI('//Bob')
   })
   it('should listen to balance changes', async (done) => {
-    const listener = (account: string, balance: BN, change: BN): void => {
+    const listener = (
+      account: string,
+      balances: Balances,
+      changes: Balances
+    ): void => {
       expect(account).toBe(bob.address)
-      expect(balance.toNumber()).toBe(BALANCE)
-      expect(change.toNumber()).toBe(FEE)
+      expect(balances.free.toNumber()).toBe(BALANCE)
+      expect(changes.free.toNumber()).toBe(FEE)
       done()
     }
 
     await listenToBalanceChanges(bob.address, listener)
-    const currentBalance = await getBalance(bob.address)
-    expect(currentBalance.toNumber()).toBeTruthy()
-    expect(currentBalance.toNumber()).toEqual(BALANCE - FEE)
+    const currentBalance = await getBalances(bob.address)
+    expect(currentBalance.free.toNumber()).toBeTruthy()
+    expect(currentBalance.free.toNumber()).toEqual(BALANCE - FEE)
   })
 
   it('should make transfer', async () => {
