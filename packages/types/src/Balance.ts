@@ -11,3 +11,12 @@ export type Balances = {
   miscFrozen: BN
   feeFrozen: BN
 }
+
+// Extracted options from polkadot/util
+export interface BalanceOptions {
+  decimals?: number
+  forceUnit?: string
+  withSi?: boolean
+  withSiFull?: boolean
+  withUnit?: boolean | string
+}

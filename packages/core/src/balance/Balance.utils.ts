@@ -5,21 +5,13 @@
 
 import BN from 'bn.js'
 import { formatBalance } from '@polkadot/util'
+import { BalanceOptions } from '@kiltprotocol/types'
 
 export const KILT_COIN = new BN(1)
 
-// Exported options from polkadot/util
-export interface Options {
-  decimals?: number
-  forceUnit?: string
-  withSi?: boolean
-  withSiFull?: boolean
-  withUnit?: boolean | string
-}
-
 export function formatKiltBalance(
   amount: BN,
-  additionalOptions?: Options
+  additionalOptions?: BalanceOptions
 ): string {
   const options = {
     decimals: 15,
