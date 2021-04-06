@@ -3,7 +3,7 @@
  * @module CTypeMetadata
  */
 
-import { ICTypeMetadata } from '@kiltprotocol/types'
+import type { ICTypeMetadata } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import CTypeUtils from './CType.utils'
 import { MetadataModel } from './CTypeSchema'

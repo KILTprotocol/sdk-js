@@ -3,10 +3,10 @@
  * @module DIDUtils
  */
 
-import { Option, Struct, u8, Vec } from '@polkadot/types'
-import { IPublicIdentity } from '@kiltprotocol/types'
+import type { Option, Struct, u8, Vec } from '@polkadot/types'
+import type { IPublicIdentity } from '@kiltprotocol/types'
 import { Crypto, DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
-import { Hash } from '@polkadot/types/interfaces'
+import type { Hash } from '@polkadot/types/interfaces'
 import { hexToString } from '@polkadot/util'
 import Identity from '../identity/Identity'
 import {

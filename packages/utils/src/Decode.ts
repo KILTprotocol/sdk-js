@@ -3,7 +3,7 @@
  * @module Decode
  */
 
-import { Codec } from '@polkadot/types/types'
+import type { Codec } from '@polkadot/types/types'
 
 /**
  * Dummy comment needed for correct doc display, do not remove.

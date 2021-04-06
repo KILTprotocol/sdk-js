@@ -11,8 +11,8 @@
  * @preferred
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import {
+import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import type {
   IPublicIdentity,
   IAttestation,
   IRequestForAttestation,

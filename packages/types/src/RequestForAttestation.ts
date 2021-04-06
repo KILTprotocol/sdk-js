@@ -3,9 +3,9 @@
  * @module IRequestForAttestation
  */
 
-import { IAttestedClaim, CompressedAttestedClaim } from './AttestedClaim'
-import { IClaim, CompressedClaim } from './Claim'
-import { IDelegationBaseNode } from './Delegation'
+import type { IAttestedClaim, CompressedAttestedClaim } from './AttestedClaim'
+import type { IClaim, CompressedClaim } from './Claim'
+import type { IDelegationBaseNode } from './Delegation'
 
 export type Hash = string
 

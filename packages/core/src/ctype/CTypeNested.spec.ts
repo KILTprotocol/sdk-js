@@ -2,7 +2,7 @@
  * @group unit/ctype
  */
 
-import { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
+import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
 import CType from './CType'
 import Identity from '../identity/Identity'
 import Claim from '../claim/Claim'

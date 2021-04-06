@@ -4,11 +4,11 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
-import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
+import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
 import TYPE_REGISTRY from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { Balances } from '@kiltprotocol/types'
+import type { Balances } from '@kiltprotocol/types'
 import Identity from '../identity/Identity'
 import {
   getBalances,

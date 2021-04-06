@@ -5,7 +5,7 @@
  * @module ErrorHandler
  */
 
-import { ModuleError } from './ErrorHandler'
+import type { ModuleError } from './ErrorHandler'
 
 /**
  * @internal

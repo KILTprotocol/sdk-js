@@ -3,8 +3,8 @@
  * @module IAttestedClaim
  */
 
-import { IAttestation, CompressedAttestation } from './Attestation'
-import {
+import type { IAttestation, CompressedAttestation } from './Attestation'
+import type {
   IRequestForAttestation,
   CompressedRequestForAttestation,
 } from './RequestForAttestation'

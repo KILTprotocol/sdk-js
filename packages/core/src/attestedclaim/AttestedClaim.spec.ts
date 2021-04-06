@@ -2,7 +2,11 @@
  * @group unit/attestation
  */
 
-import { IClaim, CompressedAttestedClaim, ICType } from '@kiltprotocol/types'
+import type {
+  IClaim,
+  CompressedAttestedClaim,
+  ICType,
+} from '@kiltprotocol/types'
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'

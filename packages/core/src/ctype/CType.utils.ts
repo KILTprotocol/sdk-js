@@ -4,7 +4,7 @@
  */
 
 import Ajv from 'ajv'
-import {
+import type {
   ICType,
   IClaim,
   CompressedCType,

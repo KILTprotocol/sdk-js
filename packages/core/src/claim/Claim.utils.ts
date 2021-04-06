@@ -4,7 +4,7 @@
  */
 
 import { hexToBn } from '@polkadot/util'
-import {
+import type {
   IClaim,
   CompressedClaim,
   PartialClaim,

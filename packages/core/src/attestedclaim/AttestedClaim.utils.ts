@@ -3,7 +3,10 @@
  * @module AttestedClaimUtils
  */
 
-import { IAttestedClaim, CompressedAttestedClaim } from '@kiltprotocol/types'
+import type {
+  IAttestedClaim,
+  CompressedAttestedClaim,
+} from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import AttestationUtils from '../attestation/Attestation.utils'
 import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'

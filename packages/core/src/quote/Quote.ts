@@ -10,7 +10,7 @@
  */
 
 import Ajv from 'ajv'
-import {
+import type {
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,

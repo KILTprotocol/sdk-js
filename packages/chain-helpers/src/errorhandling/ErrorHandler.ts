@@ -6,7 +6,7 @@
  * @preferred
  */
 
-import { EventRecord } from '@polkadot/types/interfaces'
+import type { EventRecord } from '@polkadot/types/interfaces'
 import type { ISubmittableResult } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { errorForPallet, ExtrinsicError } from './ExtrinsicError'

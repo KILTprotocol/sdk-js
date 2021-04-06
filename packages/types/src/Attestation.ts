@@ -2,9 +2,9 @@
  * @packageDocumentation
  * @module IAttestation
  */
-import { ICType } from './CType'
-import { IDelegationBaseNode } from './Delegation'
-import { IPublicIdentity } from './PublicIdentity'
+import type { ICType } from './CType'
+import type { IDelegationBaseNode } from './Delegation'
+import type { IPublicIdentity } from './PublicIdentity'
 
 export interface IAttestation {
   claimHash: string

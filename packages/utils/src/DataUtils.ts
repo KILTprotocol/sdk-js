@@ -7,7 +7,7 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
-import { IPublicIdentity } from '@kiltprotocol/types'
+import type { IPublicIdentity } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
 import { SDKErrors } from '.'
 import { verify } from './Crypto'

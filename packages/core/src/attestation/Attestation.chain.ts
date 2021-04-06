@@ -5,7 +5,7 @@
 import { Option, Struct } from '@polkadot/types'
 import type { IAttestation, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import { AccountId, Hash } from '@polkadot/types/interfaces'
+import type { AccountId, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'

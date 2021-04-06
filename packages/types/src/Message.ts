@@ -3,19 +3,24 @@
  * @module IMessage
  */
 
-import { AnyJson } from '@polkadot/types/types'
-import { CompressedAttestation, IAttestation } from './Attestation'
-import { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'
-import { CompressedClaim, IClaim, IClaimContents, PartialClaim } from './Claim'
-import { ICType } from './CType'
-import { IDelegationBaseNode, IDelegationNode } from './Delegation'
-import { IPublicIdentity } from './PublicIdentity'
-import { CompressedQuoteAgreed, IQuoteAgreement } from './Quote'
-import {
+import type { AnyJson } from '@polkadot/types/types'
+import type { CompressedAttestation, IAttestation } from './Attestation'
+import type { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'
+import type {
+  CompressedClaim,
+  IClaim,
+  IClaimContents,
+  PartialClaim,
+} from './Claim'
+import type { ICType } from './CType'
+import type { IDelegationBaseNode, IDelegationNode } from './Delegation'
+import type { IPublicIdentity } from './PublicIdentity'
+import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote'
+import type {
   CompressedRequestForAttestation,
   IRequestForAttestation,
 } from './RequestForAttestation'
-import { CompressedTerms, ITerms } from './Terms'
+import type { CompressedTerms, ITerms } from './Terms'
 
 export enum MessageBodyType {
   REQUEST_TERMS = 'request-terms',

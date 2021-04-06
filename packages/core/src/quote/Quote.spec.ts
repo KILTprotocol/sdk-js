@@ -2,7 +2,7 @@
  * @group unit/quote
  */
 
-import {
+import type {
   IClaim,
   ICType,
   CompressedQuote,

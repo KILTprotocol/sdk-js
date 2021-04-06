@@ -3,7 +3,7 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
+import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
 import Claim from './Claim'

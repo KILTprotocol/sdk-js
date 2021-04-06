@@ -7,7 +7,7 @@
  * @module Blockchain
  */
 
-import { ApiPromise } from '@polkadot/api'
+import type { ApiPromise } from '@polkadot/api'
 import { Header } from '@polkadot/types/interfaces/types'
 import { AnyJson, Codec } from '@polkadot/types/types'
 import { Text } from '@polkadot/types'
@@ -135,7 +135,7 @@ export default class Blockchain implements IBlockchainApi {
    * [ASYNC] Retrieves the Nonce for Transaction signing for the specified account and increments the in accountNonces mapped Index.
    *
    * @param accountAddress The address of the identity that we retrieve the nonce for.
-   * @returns {@link https://github.com/indutny/bn.js/ | BN} representation of the Tx nonce for the identity.
+   * @returns Representation of the Tx nonce for the identity.
    *
    */
   public async getNonce(accountAddress: string): Promise<BN> {
