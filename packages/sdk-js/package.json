@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "clean": "rimraf ./lib",
-    "build": "yarn clean && yarn build:ts && yarn bundle",
+    "build": "yarn clean && yarn build:ts",
     "build:ts": "tsc --declaration -p tsconfig.build.json",
     "bundle": "rimraf ./dist && webpack --config webpack.config.js"
   },
