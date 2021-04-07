@@ -4710,7 +4710,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"husky@npm:^4.3.8":
+"husky@npm:^4.2.5":
   version: 4.3.8
   resolution: "husky@npm:4.3.8"
   dependencies:
@@ -7806,7 +7806,7 @@ resolve@^1.9.0:
     eslint-plugin-jsx-a11y: ^6.3.1
     eslint-plugin-prettier: ^3.1.4
     eslint-plugin-tsc: ^1.2.0
-    husky: ^4.3.8
+    husky: ^4.2.5
     jest: ^26.2.0
     jest-docblock: ^26.0.0
     jest-runner: ^26.2.0
