@@ -28,6 +28,8 @@ jobs:
         run: yarn install --immutable
       - name: Build packages
         run: yarn run build
+      - name: Bundle library
+        run: yarn run bundle
       - name: Publish to NPM
         run: yarn run publish --tag latest
         env:

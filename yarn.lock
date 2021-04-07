@@ -890,6 +890,7 @@ __metadata:
     "@kiltprotocol/utils": "workspace:*"
     buffer: ^6.0.3
     crypto-browserify: ^3.12.0
+    process: ^0.11.10
     rimraf: ^3.0.2
     stream-browserify: ^3.0.0
     terser-webpack-plugin: ^5.1.1
@@ -7229,6 +7230,13 @@ fsevents@^2.1.2:
   version: 2.0.1
   resolution: "process-nextick-args@npm:2.0.1"
   checksum: ddeb0f07d0d5efa649c2c5e39d1afd0e3668df2b392d036c8a508b0034f7beffbc474b3c2f7fd3fed2dc4113cef8f1f7e00d05690df3c611b36f6c7efd7852d1
+  languageName: node
+  linkType: hard
+
+"process@npm:^0.11.10":
+  version: 0.11.10
+  resolution: "process@npm:0.11.10"
+  checksum: ed93a85e9185b40fb01788c588a87c1a9da0eb925ef7cebebbe1b8bbf0eba1802130366603a29e3b689c116969d4fe018de6aed3474bbeb5aefb3716b85d6449
   languageName: node
   linkType: hard
 

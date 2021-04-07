@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path')
 const TerserPlugin = require('terser-webpack-plugin')
+const webpack = require('webpack')
 
 module.exports = {
   mode: 'production',
+  // build two different bundles from the transpiled js
   entry: {
     'sdk-js': './lib/index.js',
     'sdk-js.min': './lib/index.js',
@@ -18,8 +20,13 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js', '.d.ts', '.mjs', '.json'],
     symlinks: false,
+    // Explicit fallbacks to include these in bundle
+    alias: {
+      buffer: 'buffer',
+      process: 'process'
+    },
     fallback: {
-      buffer: require.resolve('buffer/'),
+      buffer: require.resolve('buffer'),
       crypto: require.resolve('crypto-browserify'),
       stream: require.resolve('stream-browserify'),
     },
@@ -29,6 +36,13 @@ module.exports = {
   },
   optimization: {
     minimize: true,
+    // only minimize the *.min* bundle output
     minimizer: [new TerserPlugin({ include: /\.min\.umd\.js$/ })],
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+      Buffer: ['buffer', 'Buffer'],
+    }),
+  ],
 }

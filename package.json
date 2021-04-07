@@ -8,6 +8,7 @@
   "scripts": {
     "build": "yarn workspaces foreach -pt --no-private run build",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
+    "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
     "clean": "yarn workspaces foreach -p --no-private run clean",
     "clean:docs": "rm -rf docs/api",
     "version": "yarn workspaces foreach version",
