@@ -23,7 +23,7 @@ module.exports = {
     // Explicit fallbacks to include these in bundle
     alias: {
       buffer: 'buffer',
-      process: 'process'
+      process: 'process',
     },
     fallback: {
       buffer: require.resolve('buffer'),
