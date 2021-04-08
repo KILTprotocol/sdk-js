@@ -1,9 +1,15 @@
+/**
+ * @group unit/vc-js
+ */
+
 import { Blockchain } from '@kiltprotocol/chain-helpers'
 import jsigs, { purposes } from 'jsonld-signatures'
 import { Attestation } from '@kiltprotocol/core'
+import vcjs from 'vc-js'
 import AttestationSuite from './AttestationSuite'
 import credential from './testcred.json'
 import documentLoader from './documentLoader'
+import { AttestedProof, KILT_ATTESTED_PROOF_TYPE } from '../types'
 
 const attestation = Attestation.fromAttestation({
   claimHash:
@@ -21,14 +27,44 @@ const spy = jest
 
 let suite: AttestationSuite
 let purpose: purposes.ProofPurpose
+let proof: AttestedProof
 
 beforeAll(async () => {
   const KiltConnection = new Blockchain({} as any)
   suite = new AttestationSuite({ KiltConnection })
   purpose = new purposes.AssertionProofPurpose()
+  credential.proof.some((p) => {
+    if (p.type === KILT_ATTESTED_PROOF_TYPE) {
+      proof = p as AttestedProof
+      return true
+    }
+    return false
+  })
 })
 
 describe('jsigs', () => {
+  describe('proof matching', () => {
+    it('purpose matches proof', async () => {
+      await expect(purpose.match(proof, {})).resolves.toBe(true)
+      await expect(
+        purpose.match(proof, { document: credential, documentLoader })
+      ).resolves.toBe(true)
+    })
+
+    it('suite matches proof', async () => {
+      expect(suite.type).toEqual(proof.type)
+      await expect(suite.matchProof({ proof })).resolves.toBe(true)
+      await expect(
+        suite.matchProof({
+          proof,
+          document: credential,
+          purpose,
+          documentLoader,
+        })
+      ).resolves.toBe(true)
+    })
+  })
+
   describe('attested', () => {
     beforeAll(() => {
       spy.mockImplementation(async (): Promise<Attestation> => attestation)
@@ -45,7 +81,7 @@ describe('jsigs', () => {
       await expect(
         jsigs.sign(document, { suite, purpose, documentLoader })
       ).resolves.toMatchObject({
-        proof: [credential.proof[1]],
+        proof: [proof],
       })
     })
   })
@@ -69,7 +105,7 @@ describe('jsigs', () => {
       await expect(
         jsigs.sign(document, { suite, purpose, documentLoader })
       ).resolves.toMatchObject({
-        proof: [credential.proof[1]],
+        proof: [proof],
       })
     })
   })
@@ -88,6 +124,72 @@ describe('jsigs', () => {
       const document = { ...credential, proof: [] }
       await expect(
         jsigs.sign(document, { suite, purpose, documentLoader })
+      ).rejects.toThrow()
+    })
+  })
+})
+
+describe('vc-js', () => {
+  describe('attested', () => {
+    beforeAll(() => {
+      spy.mockImplementation(async (): Promise<Attestation> => attestation)
+    })
+
+    it('verifies Kilt Attestation Proof', async () => {
+      await expect(
+        vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
+      ).resolves.toMatchObject({ verified: true })
+    })
+
+    it('recreates Kilt Attestation Proof', async () => {
+      const document = { ...credential, proof: [] }
+      await expect(
+        vcjs.issue({ credential: document, suite, purpose, documentLoader })
+      ).resolves.toMatchObject({
+        proof: [proof],
+      })
+    })
+  })
+
+  describe('revoked', () => {
+    beforeAll(() => {
+      const revoked = { ...attestation, revoked: true }
+      spy.mockImplementation(
+        async (): Promise<Attestation> => revoked as Attestation
+      )
+    })
+
+    it('fails to verify Kilt Attestation Proof', async () => {
+      await expect(
+        vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
+      ).resolves.toMatchObject({ verified: false })
+    })
+
+    it('still recreates Kilt Attestation Proof', async () => {
+      const document = { ...credential, proof: [] }
+      await expect(
+        vcjs.issue({ credential: document, suite, purpose, documentLoader })
+      ).resolves.toMatchObject({
+        proof: [proof],
+      })
+    })
+  })
+
+  describe('not attested', () => {
+    beforeAll(() => {
+      spy.mockImplementation(async (): Promise<Attestation | null> => null)
+    })
+
+    it('fails to verify Kilt Attestation Proof', async () => {
+      await expect(
+        vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
+      ).resolves.toMatchObject({ verified: false })
+    })
+
+    it('fails to recreate Kilt Attestation Proof', async () => {
+      const document = { ...credential, proof: [] }
+      await expect(
+        vcjs.issue({ credential: document, suite, purpose, documentLoader })
       ).rejects.toThrow()
     })
   })

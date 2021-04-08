@@ -31,6 +31,14 @@ declare module 'jsonld-signatures' {
       term: string
       date?: Date | string | number
       maxTimestampDelta?: number
+      match(
+        proof: Proof,
+        options: {
+          document?: JsonLdObj
+          documentLoader?: DocumentLoader
+          expansionMap?: ExpansionMap
+        }
+      ): Promise<boolean>
     }
     export class AssertionProofPurpose extends ProofPurpose {}
   }
