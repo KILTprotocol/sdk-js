@@ -31,10 +31,10 @@
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/keyring": "^5.9.2",
-    "@polkadot/types": "^3.11.1",
-    "@polkadot/util": "^5.9.2",
-    "@polkadot/util-crypto": "^5.9.2",
+    "@polkadot/keyring": "^6.0.5",
+    "@polkadot/types": "^4.4.1",
+    "@polkadot/util": "^6.0.5",
+    "@polkadot/util-crypto": "^6.0.5",
     "ajv": "^6.12.5",
     "jsonld": "^3.2.0"
   }
