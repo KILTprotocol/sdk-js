@@ -8,7 +8,7 @@ import type { H256 } from '@polkadot/types/interfaces'
 import type { IDelegationBaseNode } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { CodecWithId, IChainDelegationNode } from './DelegationDecoder'
+import type { CodecWithId, IChainDelegationNode } from './DelegationDecoder'
 
 function decodeDelegatedAttestations(queryResult: Vec<H256>): string[] {
   DecoderUtils.assertCodecIsType(queryResult, ['Vec<Hash>'])

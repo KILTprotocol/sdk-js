@@ -8,10 +8,10 @@
  */
 
 import type { ApiPromise } from '@polkadot/api'
-import { Header } from '@polkadot/types/interfaces/types'
-import { AnyJson, Codec } from '@polkadot/types/types'
+import type { Header } from '@polkadot/types/interfaces/types'
+import type { AnyJson, Codec } from '@polkadot/types/types'
 import { Text } from '@polkadot/types'
-import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
+import type { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
