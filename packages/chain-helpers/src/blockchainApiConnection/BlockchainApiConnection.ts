@@ -45,6 +45,78 @@ export const CUSTOM_TYPES: RegistryTypes = {
     delegationId: 'Option<DelegationNodeId>',
     revoked: 'bool',
   },
+  DidUpdateOperation: {
+    did: 'DidIdentifier',
+    new_auth_key: 'Option<PublicVerificationKey>',
+    new_key_agreement_key: 'Option<PublicEncryptionKey>',
+    new_attestation_key: 'Option<PublicVerificationKey>',
+    new_delegation_key: 'Option<PublicVerificationKey>',
+    verification_keys_to_remove: 'Option<BTreeSet<PublicVerificationKey>>',
+    new_endpoint_url: 'Option<UrlEncoding>',
+    tx_counter: 'u64',
+  },
+  DidIdentifier: 'AccountId',
+  DidVerificationKeyType: {
+    _enum: [
+      'Authentication',
+      'CapabilityDelegation',
+      'CapabilityInvocation',
+      'AssertionMethod',
+    ],
+  },
+  DidEncryptionKeyType: {
+    _enum: ['KeyAgreement'],
+  },
+  PublicVerificationKey: {
+    _enum: {
+      Ed25519: '[u8; 32]',
+      Sr25519: '[u8; 32]',
+    },
+  },
+  DidSignature: {
+    _enum: {
+      Ed25519: '[u8; 64]',
+      Sr25519: '[u8; 64]',
+    },
+  },
+  PublicEncryptionKey: {
+    _enum: {
+      X55519: '[u8; 32]',
+    },
+  },
+  DIDError: {
+    _enum: {
+      StorageError: 'StorageError',
+      SignatureError: 'SignatureError',
+    },
+  },
+  StorageError: {
+    _enum: {
+      DIDAlreadyPresent: 'null',
+      DIDNotPresent: 'null',
+      VerificationkeyNotPresent: 'DidVerificationKeyType',
+    },
+  },
+  SignatureError: {
+    _enum: ['InvalidSignatureFormat', 'InvalidSignature'],
+  },
+  DidCreationOperation: {
+    did: 'DidIdentifier',
+    new_auth_key: 'PublicVerificationKey',
+    new_key_agreement_key: 'PublicEncryptionKey',
+    new_attestation_key: 'Option<PublicVerificationKey>',
+    new_delegation_key: 'Option<PublicVerificationKey>',
+    new_endpoint_url: 'Option<UrlEncoding>',
+  },
+  DidDetails: {
+    auth_key: 'PublicVerificationKey',
+    key_agreement_key: 'PublicEncryptionKey',
+    delegation_key: 'Option<PublicVerificationKey>',
+    attestation_key: 'Option<PublicVerificationKey>',
+    verification_keys: 'BTreeSet<PublicVerificationKey>',
+    endpoint_url: 'Option<UrlEncoding>',
+    last_tx_counter: 'u64',
+  },
 }
 
 /**
