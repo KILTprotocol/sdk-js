@@ -14,7 +14,7 @@ module.exports = {
     filename: '[name].umd.js',
     path: path.resolve(__dirname, 'dist/'),
     libraryTarget: 'umd',
-    library: '@kiltprotocol/sdk-js',
+    library: 'sdk',
     umdNamedDefine: true,
   },
   resolve: {
