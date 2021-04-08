@@ -15,15 +15,15 @@ import Blockchain from '../blockchain/Blockchain'
 let instance: Promise<Blockchain> | null
 
 export const CUSTOM_TYPES: RegistryTypes = {
+  AmountOf: 'i128',
   Balance: 'u128',
   PublicSigningKey: 'Hash',
   PublicBoxKey: 'Hash',
   Signature: 'MultiSignature',
-  Address: 'AccountId',
+  // Address: 'MultiAddress',
   LookupSource: 'AccountId',
   BlockNumber: 'u64',
   Index: 'u64',
-  RefCount: 'u32',
   AccountInfo: 'AccountInfoWithProviders',
   Permissions: 'u32',
   DelegationNodeId: 'Hash',
@@ -44,11 +44,6 @@ export const CUSTOM_TYPES: RegistryTypes = {
     attester: 'AccountId',
     delegationId: 'Option<DelegationNodeId>',
     revoked: 'bool',
-  },
-  DidRecord: {
-    signKey: 'Hash',
-    boxKey: 'Hash',
-    docRef: 'Option<Vec<u8>>',
   },
 }
 
