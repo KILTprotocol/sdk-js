@@ -15,9 +15,24 @@ import {
   CompressedAttestedClaim,
   CompressedMessageBody,
   MessageBody,
+  CompressedRequestClaimsForCTypesContent,
+  IRequestClaimsForCTypesContent,
+  ICType,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import Message from '.'
+
+export function checkRequiredCTypeProperties(
+  properties: string[],
+  cType: ICType
+): string[] {
+  if (!cType.hash) throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
+  properties.forEach((key) => {
+    if (!cType.schema.properties[key])
+      throw SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING
+  })
+  return properties
+}
 
 /**
  * [STATIC] Compresses a [[Message]] depending on the message body type.
@@ -80,7 +95,19 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      compressedContents = body.content.ctypes
+      compressedContents = body.content.map(
+        (val): CompressedRequestClaimsForCTypesContent => {
+          let attesterAdddress
+          if (val.acceptedAttester) {
+            attesterAdddress = val.acceptedAttester.map((cool) => cool)
+          }
+          const requiredAttributeObject = val
+            ? val.requiredAttributes
+            : undefined
+
+          return [val.cTypeHash, attesterAdddress, requiredAttributeObject]
+        }
+      )
       break
     }
     case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
@@ -207,9 +234,17 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      decompressedContents = {
-        ctypes: body[1],
-      }
+      decompressedContents = body[1].map(
+        (
+          val: CompressedRequestClaimsForCTypesContent
+        ): IRequestClaimsForCTypesContent => {
+          return {
+            cTypeHash: val[0],
+            acceptedAttester: val[1] ? val[1] : undefined,
+            requiredAttributes: val[2] ? val[2] : undefined,
+          }
+        }
+      )
       break
     }
     case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {

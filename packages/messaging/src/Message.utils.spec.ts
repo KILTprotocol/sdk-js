@@ -54,6 +54,7 @@ import {
   ISubmitClaimsForCTypes,
   CompressedAttestation,
   PartialClaim,
+  CompressedRequestClaimsForCTypesContent,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import {
@@ -161,7 +162,7 @@ describe('Messaging Utilities', () => {
   let requestClaimsForCTypesBody: IRequestClaimsForCTypes
   let requestClaimsForCTypesContent: IRequestClaimsForCTypesContent
   let compressedRequestClaimsForCTypesBody: CompressedRequestClaimsForCTypes
-  let compressedRequestClaimsForCTypesContent: Array<ICType['hash']>
+  let compressedRequestClaimsForCTypesContent: CompressedRequestClaimsForCTypesContent
   let submitClaimsForCTypesBody: ISubmitClaimsForCTypes
   let submitClaimsForCTypesContent: IAttestedClaim[]
   let compressedSubmitClaimsForCTypesBody: CompressedSubmitClaimsForCTypes
@@ -189,6 +190,18 @@ describe('Messaging Utilities', () => {
     date = new Date(2019, 11, 10)
     claimContents = {
       name: 'Bob',
+    }
+
+    const rawCType1: ICType['schema'] = {
+      $id: 'kilt:ctype:0x2',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Attested Claim',
+      properties: {
+        name: { type: 'string' },
+        james: { type: 'string' },
+        david: { type: 'string' },
+      },
+      type: 'object',
     }
     // CType Schema
     rawCType = {
@@ -368,10 +381,16 @@ describe('Messaging Utilities', () => {
     ]
     // Request Claims for CTypes content
     requestClaimsForCTypesContent = {
-      ctypes: [claim.cTypeHash],
+      cTypeHash: claim.cTypeHash,
+      acceptedAttester: [identityAlice.address],
+      requiredAttributes: rawCType.properties.name,
     }
     // Compressed Request claims for CType content
-    compressedRequestClaimsForCTypesContent = [claim.cTypeHash]
+    compressedRequestClaimsForCTypesContent = [
+      claim.cTypeHash,
+      [identityAlice.address],
+      { ...rawCType1.properties.james, ...rawCType1.properties.james },
+    ]
     // Submit claims for CType content
     submitClaimsForCTypesContent = [legitimation]
     // Compressed Submit claims for CType content
@@ -505,13 +524,16 @@ describe('Messaging Utilities', () => {
     ]
 
     requestClaimsForCTypesBody = {
-      content: requestClaimsForCTypesContent,
+      content: [requestClaimsForCTypesContent, requestClaimsForCTypesContent],
       type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
     }
 
     compressedRequestClaimsForCTypesBody = [
       Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-      compressedRequestClaimsForCTypesContent,
+      [
+        compressedRequestClaimsForCTypesContent,
+        compressedRequestClaimsForCTypesContent,
+      ],
     ]
 
     submitClaimsForCTypesBody = {

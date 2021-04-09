@@ -32,7 +32,7 @@ describe('Messaging', () => {
     const message = new Message(
       {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: { ctypes: ['0x12345678'] },
+        content: [{ cTypeHash: '0x12345678' }],
       },
       identityAlice,
       identityBob.getPublicIdentity()
@@ -241,9 +241,8 @@ describe('Messaging', () => {
       identityBob = Identity.buildFromURI('//Bob')
 
       messageBody = {
-        content: {
-          ctypes: ['0x12345678'],
-        },
+        content: [{ cTypeHash: '0x12345678' }],
+
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
       }
       encrypted = new Message(
@@ -264,10 +263,10 @@ describe('Messaging', () => {
       const encrypted2 = new Message(
         {
           ...messageBody,
-          content: {
+          content: [
+            { cTypeHash: `${messageBody.content[0].cTypeHash[0]}9` },
             ...messageBody.content,
-            ctypes: [`${messageBody.content.ctypes[0]}9`],
-          },
+          ],
         },
         identityAlice,
         identityBob.getPublicIdentity()

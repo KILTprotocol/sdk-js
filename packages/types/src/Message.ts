@@ -7,7 +7,7 @@ import { AnyJson } from '@polkadot/types/types'
 import { CompressedAttestation, IAttestation } from './Attestation'
 import { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'
 import { CompressedClaim, IClaim, IClaimContents, PartialClaim } from './Claim'
-import { ICType } from './CType'
+import { ICType, ICTypeSchema } from './CType'
 import { IDelegationBaseNode, IDelegationNode } from './Delegation'
 import { IPublicIdentity } from './PublicIdentity'
 import { CompressedQuoteAgreed, IQuoteAgreement } from './Quote'
@@ -117,7 +117,7 @@ export interface IRejectAttestationForClaim extends IMessageBodyBase {
 }
 
 export interface IRequestClaimsForCTypes extends IMessageBodyBase {
-  content: IRequestClaimsForCTypesContent
+  content: IRequestClaimsForCTypesContent[]
   type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
 }
 
@@ -178,7 +178,7 @@ export type CompressedRejectAttestationForClaim = [
 ]
 export type CompressedRequestClaimsForCTypes = [
   MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
-  Array<ICType['hash']>
+  CompressedRequestClaimsForCTypesContent[]
 ]
 export type CompressedSubmitClaimsForCTypes = [
   MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
@@ -220,7 +220,9 @@ export interface ISubmitAttestationForClaimContent {
 }
 
 export interface IRequestClaimsForCTypesContent {
-  ctypes: Array<ICType['hash']>
+  cTypeHash: ICType['hash']
+  acceptedAttester?: Array<IPublicIdentity['address']>
+  requiredAttributes?: ICTypeSchema['properties']['key']
 }
 
 export interface IDelegationData {
@@ -261,6 +263,12 @@ export type CompressedRejectedTerms = [
   CompressedPartialClaim,
   CompressedAttestedClaim[],
   IDelegationBaseNode['id'] | undefined
+]
+
+export type CompressedRequestClaimsForCTypesContent = [
+  ICType['hash'],
+  Array<IPublicIdentity['address']> | undefined,
+  ICTypeSchema['properties']['key'] | undefined
 ]
 
 export type CompressedRequestAttestationForClaimContent = [
