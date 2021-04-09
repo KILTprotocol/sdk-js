@@ -9,7 +9,7 @@
  * @module AttestedClaim
  */
 
-import {
+import type {
   IAttestedClaim,
   CompressedAttestedClaim,
   IAttestation,

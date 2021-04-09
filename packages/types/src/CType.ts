@@ -3,7 +3,7 @@
  * @module ICType
  */
 
-import { IPublicIdentity } from './PublicIdentity'
+import type { IPublicIdentity } from './PublicIdentity'
 
 export interface ICTypeSchema {
   $id: string

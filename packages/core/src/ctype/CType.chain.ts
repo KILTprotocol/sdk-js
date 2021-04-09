@@ -3,8 +3,8 @@
  * @module CType
  */
 
-import { Option } from '@polkadot/types'
-import { AccountId } from '@polkadot/types/interfaces'
+import type { Option } from '@polkadot/types'
+import type { AccountId } from '@polkadot/types/interfaces'
 import type {
   ICType,
   IPublicIdentity,

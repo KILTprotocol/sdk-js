@@ -3,7 +3,7 @@
  */
 
 import { CType, Identity, SDKErrors } from '@kiltprotocol/core'
-import {
+import type {
   IClaim,
   ICType,
   IRequestClaimsForCTypes,
@@ -14,7 +14,7 @@ import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchain
 import Message from '@kiltprotocol/messaging'
 import { Attester, Claimer, Verifier } from '..'
 import Credential from '../credential/Credential'
-import { ClaimerAttestationSession } from './Claimer'
+import type { ClaimerAttestationSession } from './Claimer'
 
 jest.mock(
   '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'

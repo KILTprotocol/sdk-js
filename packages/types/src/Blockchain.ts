@@ -3,9 +3,9 @@
  * @module IBlockchain
  */
 
-import { ApiPromise } from '@polkadot/api'
-import { Header } from '@polkadot/types/interfaces/types'
-import BN from 'bn.js'
+import type { ApiPromise } from '@polkadot/api'
+import type { Header } from '@polkadot/types/interfaces/types'
+import type BN from 'bn.js'
 import type {
   IIdentity,
   ISubmittableResult,

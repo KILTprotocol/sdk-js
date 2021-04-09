@@ -5,7 +5,7 @@
  * @module SDKErrors
  */
 
-import { NonceHash } from '@kiltprotocol/types'
+import type { NonceHash } from '@kiltprotocol/types'
 
 export enum ErrorCode {
   ERROR_TRANSACTION_RECOVERABLE = 1000,

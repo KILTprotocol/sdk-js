@@ -1,4 +1,4 @@
-export type { ISubmittableResult } from '@polkadot/types/types'
+export { ISubmittableResult } from '@polkadot/types/types'
 export type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 export * as SubscriptionPromise from './SubscriptionPromise'

@@ -7,7 +7,7 @@ import { Option } from '@polkadot/types'
 import type { IPublicIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import Identity from '../identity/Identity'
-import { IDid } from './Did'
+import type { IDid } from './Did'
 import {
   decodeDid,
   getAddressFromIdentifier,

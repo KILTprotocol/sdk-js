@@ -2,8 +2,8 @@
  * @packageDocumentation
  * @module IDelegation
  */
-import { ICType } from './CType'
-import { IPublicIdentity } from './PublicIdentity'
+import type { ICType } from './CType'
+import type { IPublicIdentity } from './PublicIdentity'
 
 /* eslint-disable no-bitwise */
 export enum Permission {

@@ -3,7 +3,7 @@
  * @module DelegationNode
  */
 
-import { Option } from '@polkadot/types'
+import type { Option } from '@polkadot/types'
 import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'

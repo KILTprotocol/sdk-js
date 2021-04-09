@@ -2,7 +2,7 @@
  * @group unit/messaging
  */
 
-import {
+import type {
   IAttestedClaim,
   IClaim,
   IEncryptedMessage,

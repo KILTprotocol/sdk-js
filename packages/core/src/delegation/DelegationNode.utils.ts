@@ -3,7 +3,7 @@
  * @module DelegationNodeUtils
  */
 
-import { IAttestation, IDelegationNode } from '@kiltprotocol/types'
+import type { IAttestation, IDelegationNode } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import Identity from '../identity'
 import DelegationNode from './DelegationNode'

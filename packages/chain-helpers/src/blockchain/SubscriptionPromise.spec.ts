@@ -3,7 +3,7 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import { SubscriptionPromise } from '@kiltprotocol/types'
+import type { SubscriptionPromise } from '@kiltprotocol/types'
 import { makeSubscriptionPromise } from './SubscriptionPromise'
 
 const RESOLVE = 'resolve'

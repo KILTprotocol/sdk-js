@@ -5,7 +5,7 @@
 
 import BN from 'bn.js'
 import { formatBalance } from '@polkadot/util'
-import { BalanceOptions } from '@kiltprotocol/types'
+import type { BalanceOptions } from '@kiltprotocol/types'
 
 export const KILT_COIN = new BN(1)
 

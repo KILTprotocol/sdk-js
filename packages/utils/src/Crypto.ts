@@ -8,7 +8,7 @@
  */
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
-import { KeyringPair } from '@polkadot/keyring/types'
+import type { KeyringPair } from '@polkadot/keyring/types'
 import {
   isString,
   stringToU8a,
