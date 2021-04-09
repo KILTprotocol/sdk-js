@@ -23,7 +23,7 @@ The SDK is now symlinked in your projects `node_modules` folder.
 ## HTML embedding
 
 ```html
-<script src="https://unpkg.com/@kiltprotocol/sdk-js/dist/sdk-js.umd.min.js"></script>
+<script src="https://unpkg.com/@kiltprotocol/sdk-js/dist/sdk-js.min.umd.js"></script>
 ```
 
 You can find the library on `window.sdk`.
