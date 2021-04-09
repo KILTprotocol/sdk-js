@@ -126,7 +126,9 @@ describe('Messaging Utilities', () => {
   let identityBob: Identity
   let date: Date
   let rawCType: ICType['schema']
+  let rawCType1: ICType['schema']
   let testCType: CType
+  let testCType1: CType
   let claim: Claim
   let claimContents: IClaim['contents']
   let quoteData: IQuote
@@ -192,7 +194,7 @@ describe('Messaging Utilities', () => {
       name: 'Bob',
     }
 
-    const rawCType1: ICType['schema'] = {
+    rawCType1 = {
       $id: 'kilt:ctype:0x2',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: 'Attested Claim',
@@ -215,6 +217,8 @@ describe('Messaging Utilities', () => {
     }
     // CType
     testCType = CType.fromSchema(rawCType, identityAlice.address)
+    testCType1 = CType.fromSchema(rawCType1, identityAlice.address)
+
     // Claim
     claim = Claim.fromCTypeAndClaimContents(
       testCType,
@@ -633,6 +637,17 @@ describe('Messaging Utilities', () => {
     ).toEqual(submitAttestationBody)
   })
   it('Checking message compression and decompression Claims for CTypes', async () => {
+    expect(() =>
+      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType)
+    ).toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
+
+    expect(() =>
+      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType1)
+    ).not.toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
+
+    expect(
+      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType1)
+    ).toEqual(['james', 'name'])
     // Request compression of claims for ctypes body
     expect(MessageUtils.compressMessage(requestClaimsForCTypesBody)).toEqual(
       compressedRequestClaimsForCTypesBody

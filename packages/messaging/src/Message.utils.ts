@@ -22,20 +22,43 @@ import {
 import { SDKErrors } from '@kiltprotocol/utils'
 import Message from '.'
 
-export function checkRequiredCTypeProperties(
+/**
+ * Verifies required properties for a given [[CType]] before sending or receiving a message.
+ *
+ * @param properties The list of required properties that need to be verified against a [[CType]].
+ * @param cType A [[CType]] used to verify the properties.
+ * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when the properties do not match the provide [[CType]].
+ *
+ * @returns Returns the properties back.
+ */
+
+export function verifyRequiredCTypeProperties(
   properties: string[],
   cType: ICType
 ): string[] {
-  if (!cType.hash) throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED
-  properties.forEach((key) => {
-    if (!cType.schema.properties[key])
-      throw SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING
-  })
+  if (!cType.hash) throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+  const cTypeProperties = Object.keys(cType.schema.properties).map(
+    (property: string): string | null => {
+      if (properties.includes(property)) {
+        return property
+      }
+      return null
+    }
+  )
+
+  const filteredCTypeProperties = cTypeProperties.filter(
+    (property: string | null) => property !== null
+  )
+
+  if (filteredCTypeProperties.length !== properties.length) {
+    throw SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING()
+  }
+
   return properties
 }
 
 /**
- * [STATIC] Compresses a [[Message]] depending on the message body type.
+ * Compresses a [[Message]] depending on the message body type.
  *
  * @param body The body of the [[Message]] which depends on the [[MessageBodyType]] that needs to be compressed.
  *
