@@ -20,6 +20,14 @@ yarn link "@kiltprotocol/sdk-js"
 Go into your project folder and execute that second command.
 The SDK is now symlinked in your projects `node_modules` folder.
 
+## HTML embedding
+
+```html
+<script src="https://unpkg.com/@kiltprotocol/sdk-js/dist/sdk-js.umd.min.js"></script>
+```
+
+You can find the library on `window.sdk`.
+
 ## Build to see changes
 
 Note that **before you see your changes from the SDK, you have to build it**, by executing a `build`:
@@ -64,9 +72,15 @@ yarn install --check-files
 
 ### NPM
 
-A new version of the SDK is automatically published to NPM when creating a Github release.
+A new version of the SDK is automatically published to NPM when creating a Github release,
+as well as prerelease versions on relevant changes of the develop branch.
 
-### Github
+From 0.20.0 upwards we also include two (one minified) UMD bundles of the complete SDK.
+These are also accessible directly via unpkg.com.
 
-As of July 10th 2020, we automatically publish [develop releases on Github](https://github.com/KILTprotocol/sdk-js/packages/286306) on each push to the `develop` branch.
+### Github  [DEPRECATED]
+
+From July 10th 2020 to November 27th 2020, we automatically published
+[develop releases on Github](https://github.com/KILTprotocol/sdk-js/packages/286306)
+on each push to the `develop` branch.
 In order to use these, you need to set up an `.npmrc` file in your project root and add an Github Access Token with `read:packages` permission.
