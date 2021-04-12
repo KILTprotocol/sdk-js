@@ -10,6 +10,7 @@ import {
   IAttestedClaim,
   IRequestForAttestation,
   IMessage,
+  IRequestClaimsForCTypesContent,
 } from '@kiltprotocol/types'
 import Message from '@kiltprotocol/messaging'
 
@@ -103,9 +104,11 @@ export class PresentationRequestBuilder {
       message: new Message(
         {
           type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-          content: {
-            ctypes: this.partialReq.map((pr) => pr.ctype),
-          },
+          content: this.partialReq.map(
+            (pr): IRequestClaimsForCTypesContent => {
+              return { cTypeHash: pr.ctype, requiredProperties: pr.properties }
+            }
+          ),
         },
         verifier,
         claimer

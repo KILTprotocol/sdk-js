@@ -387,13 +387,13 @@ describe('Messaging Utilities', () => {
     requestClaimsForCTypesContent = {
       cTypeHash: claim.cTypeHash,
       acceptedAttester: [identityAlice.address],
-      requiredAttributes: rawCType.properties.name,
+      requiredProperties: ['james', 'name'],
     }
     // Compressed Request claims for CType content
     compressedRequestClaimsForCTypesContent = [
       claim.cTypeHash,
       [identityAlice.address],
-      { ...rawCType1.properties.james, ...rawCType1.properties.james },
+      ['james', 'name'],
     ]
     // Submit claims for CType content
     submitClaimsForCTypesContent = [legitimation]
@@ -636,18 +636,8 @@ describe('Messaging Utilities', () => {
       MessageUtils.decompressMessage(compressedSubmitAttestationBody)
     ).toEqual(submitAttestationBody)
   })
+
   it('Checking message compression and decompression Claims for CTypes', async () => {
-    expect(() =>
-      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType)
-    ).toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
-
-    expect(() =>
-      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType1)
-    ).not.toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
-
-    expect(
-      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType1)
-    ).toEqual(['james', 'name'])
     // Request compression of claims for ctypes body
     expect(MessageUtils.compressMessage(requestClaimsForCTypesBody)).toEqual(
       compressedRequestClaimsForCTypesBody
@@ -716,5 +706,18 @@ describe('Messaging Utilities', () => {
     expect(() => MessageUtils.compressMessage(malformed)).toThrowError(
       SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
     )
+  })
+  it('Checking required properties for given CType', async () => {
+    expect(() =>
+      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType)
+    ).toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
+
+    expect(() =>
+      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType1)
+    ).not.toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
+
+    expect(
+      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType1)
+    ).toEqual(true)
   })
 })

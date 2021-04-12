@@ -141,9 +141,11 @@ describe('Claimer', () => {
   it('create public presentation from request without peRequest', async () => {
     const body: IRequestClaimsForCTypes = {
       type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-      content: {
-        ctypes: ['this is a ctype hash'],
-      },
+      content: [
+        {
+          cTypeHash: 'this is a ctype hash',
+        },
+      ],
     }
     const request = new Message(body, verifier, claimer.getPublicIdentity())
 

@@ -19,9 +19,14 @@ import {
   IEncryptedMessage,
   MessageBody,
   MessageBodyType,
+  ICType,
 } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { compressMessage, decompressMessage } from './Message.utils'
+import {
+  compressMessage,
+  decompressMessage,
+  verifyRequiredCTypeProperties,
+} from './Message.utils'
 
 export default class Message implements IMessage {
   /**
@@ -216,5 +221,12 @@ export default class Message implements IMessage {
 
   public compress(): CompressedMessageBody {
     return compressMessage(this.body)
+  }
+
+  public static verifyRequiredCTypeProperties(
+    requiredProperties: string[],
+    cType: ICType
+  ): boolean {
+    return verifyRequiredCTypeProperties(requiredProperties, cType)
   }
 }

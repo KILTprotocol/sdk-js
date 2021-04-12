@@ -222,7 +222,7 @@ export interface ISubmitAttestationForClaimContent {
 export interface IRequestClaimsForCTypesContent {
   cTypeHash: ICType['hash']
   acceptedAttester?: Array<IPublicIdentity['address']>
-  requiredAttributes?: ICTypeSchema['properties']['key']
+  requiredProperties?: string[]
 }
 
 export interface IDelegationData {
@@ -268,7 +268,7 @@ export type CompressedRejectedTerms = [
 export type CompressedRequestClaimsForCTypesContent = [
   ICType['hash'],
   Array<IPublicIdentity['address']> | undefined,
-  ICTypeSchema['properties']['key'] | undefined
+  string[] | undefined
 ]
 
 export type CompressedRequestAttestationForClaimContent = [

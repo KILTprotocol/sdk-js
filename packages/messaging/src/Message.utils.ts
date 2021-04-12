@@ -25,7 +25,7 @@ import Message from '.'
 /**
  * Verifies required properties for a given [[CType]] before sending or receiving a message.
  *
- * @param properties The list of required properties that need to be verified against a [[CType]].
+ * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
  * @param cType A [[CType]] used to verify the properties.
  * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when the properties do not match the provide [[CType]].
  *
@@ -33,28 +33,19 @@ import Message from '.'
  */
 
 export function verifyRequiredCTypeProperties(
-  properties: string[],
+  requiredProperties: string[],
   cType: ICType
-): string[] {
+): boolean {
   if (!cType.hash) throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
-  const cTypeProperties = Object.keys(cType.schema.properties).map(
-    (property: string): string | null => {
-      if (properties.includes(property)) {
-        return property
-      }
-      return null
-    }
-  )
 
-  const filteredCTypeProperties = cTypeProperties.filter(
-    (property: string | null) => property !== null
+  const validProperties = requiredProperties.find(
+    (property) => !(property in cType.schema.properties)
   )
-
-  if (filteredCTypeProperties.length !== properties.length) {
+  if (validProperties) {
     throw SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING()
   }
 
-  return properties
+  return true
 }
 
 /**
@@ -125,7 +116,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
             attesterAdddress = val.acceptedAttester.map((cool) => cool)
           }
           const requiredAttributeObject = val
-            ? val.requiredAttributes
+            ? val.requiredProperties
             : undefined
 
           return [val.cTypeHash, attesterAdddress, requiredAttributeObject]
@@ -264,7 +255,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
           return {
             cTypeHash: val[0],
             acceptedAttester: val[1] ? val[1] : undefined,
-            requiredAttributes: val[2] ? val[2] : undefined,
+            requiredProperties: val[2] ? val[2] : undefined,
           }
         }
       )
