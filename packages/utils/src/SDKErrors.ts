@@ -157,7 +157,7 @@ export const ERROR_CTYPE_ID_NOT_MATCHING: (
 export const ERROR_CTYPE_PROPERTIES_NOT_MATCHING: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CTYPE_PROPERTIES_NOT_MATCHING,
-    'CType properties not matching'
+    'Required properties do not match CType properties'
   )
 }
 

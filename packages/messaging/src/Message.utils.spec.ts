@@ -126,9 +126,9 @@ describe('Messaging Utilities', () => {
   let identityBob: Identity
   let date: Date
   let rawCType: ICType['schema']
-  let rawCType1: ICType['schema']
+  let rawCTypeWithMultipleProperties: ICType['schema']
   let testCType: CType
-  let testCType1: CType
+  let testCTypeWithMultipleProperties: CType
   let claim: Claim
   let claimContents: IClaim['contents']
   let quoteData: IQuote
@@ -194,14 +194,14 @@ describe('Messaging Utilities', () => {
       name: 'Bob',
     }
 
-    rawCType1 = {
+    rawCTypeWithMultipleProperties = {
       $id: 'kilt:ctype:0x2',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'Attested Claim',
+      title: 'Drivers license Claim',
       properties: {
         name: { type: 'string' },
-        james: { type: 'string' },
-        david: { type: 'string' },
+        id: { type: 'string' },
+        age: { type: 'string' },
       },
       type: 'object',
     }
@@ -217,7 +217,10 @@ describe('Messaging Utilities', () => {
     }
     // CType
     testCType = CType.fromSchema(rawCType, identityAlice.address)
-    testCType1 = CType.fromSchema(rawCType1, identityAlice.address)
+    testCTypeWithMultipleProperties = CType.fromSchema(
+      rawCTypeWithMultipleProperties,
+      identityAlice.address
+    )
 
     // Claim
     claim = Claim.fromCTypeAndClaimContents(
@@ -387,13 +390,13 @@ describe('Messaging Utilities', () => {
     requestClaimsForCTypesContent = {
       cTypeHash: claim.cTypeHash,
       acceptedAttester: [identityAlice.address],
-      requiredProperties: ['james', 'name'],
+      requiredProperties: ['id', 'name'],
     }
     // Compressed Request claims for CType content
     compressedRequestClaimsForCTypesContent = [
       claim.cTypeHash,
       [identityAlice.address],
-      ['james', 'name'],
+      ['id', 'name'],
     ]
     // Submit claims for CType content
     submitClaimsForCTypesContent = [legitimation]
@@ -709,15 +712,21 @@ describe('Messaging Utilities', () => {
   })
   it('Checking required properties for given CType', async () => {
     expect(() =>
-      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType)
+      MessageUtils.verifyRequiredCTypeProperties(['id', 'name'], testCType)
     ).toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
 
     expect(() =>
-      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType1)
+      MessageUtils.verifyRequiredCTypeProperties(
+        ['id', 'name'],
+        testCTypeWithMultipleProperties
+      )
     ).not.toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
 
     expect(
-      MessageUtils.verifyRequiredCTypeProperties(['james', 'name'], testCType1)
+      MessageUtils.verifyRequiredCTypeProperties(
+        ['id', 'name'],
+        testCTypeWithMultipleProperties
+      )
     ).toEqual(true)
   })
 })

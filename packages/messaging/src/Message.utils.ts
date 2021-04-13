@@ -111,15 +111,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
       compressedContents = body.content.map(
         (val): CompressedRequestClaimsForCTypesContent => {
-          let attesterAdddress
-          if (val.acceptedAttester) {
-            attesterAdddress = val.acceptedAttester.map((cool) => cool)
-          }
-          const requiredAttributeObject = val
-            ? val.requiredProperties
-            : undefined
-
-          return [val.cTypeHash, attesterAdddress, requiredAttributeObject]
+          return [val.cTypeHash, val.acceptedAttester, val.requiredProperties]
         }
       )
       break
@@ -254,8 +246,8 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
         ): IRequestClaimsForCTypesContent => {
           return {
             cTypeHash: val[0],
-            acceptedAttester: val[1] ? val[1] : undefined,
-            requiredProperties: val[2] ? val[2] : undefined,
+            acceptedAttester: val[1],
+            requiredProperties: val[2],
           }
         }
       )
