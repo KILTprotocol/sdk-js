@@ -6,6 +6,7 @@ import { Blockchain } from '@kiltprotocol/chain-helpers'
 import jsigs, { purposes } from 'jsonld-signatures'
 import { Attestation } from '@kiltprotocol/core'
 import vcjs from 'vc-js'
+import jsonld from 'jsonld'
 import AttestationSuite from './AttestationSuite'
 import credential from './testcred.json'
 import documentLoader from './documentLoader'
@@ -44,19 +45,26 @@ beforeAll(async () => {
 
 describe('jsigs', () => {
   describe('proof matching', () => {
-    it('purpose matches proof', async () => {
-      await expect(purpose.match(proof, {})).resolves.toBe(true)
+    it('purpose matches compacted proof', async () => {
+      const compactedProof = await jsonld.compact(
+        { ...proof, '@context': credential['@context'] },
+        'https://w3id.org/security/v2',
+        { documentLoader, compactToRelative: false}
+      )
+      await expect(purpose.match(compactedProof, {})).resolves.toBe(true)
       await expect(
-        purpose.match(proof, { document: credential, documentLoader })
+        purpose.match(compactedProof, { document: credential, documentLoader })
       ).resolves.toBe(true)
     })
 
     it('suite matches proof', async () => {
-      expect(suite.type).toEqual(proof.type)
-      await expect(suite.matchProof({ proof })).resolves.toBe(true)
+      const proofWithContext = { ...proof, '@context': credential['@context'] }
+      await expect(suite.matchProof({ proof: proofWithContext })).resolves.toBe(
+        true
+      )
       await expect(
         suite.matchProof({
-          proof,
+          proof: proofWithContext,
           document: credential,
           purpose,
           documentLoader,

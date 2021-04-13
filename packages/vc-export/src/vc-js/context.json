@@ -3,10 +3,23 @@
     "@version": 1.1,
     "@protected": true,
     "cred": "https://www.w3.org/2018/credentials#",
-    "sec": "https://w3id.org/security#",
-    "sec2": "https://w3id.org/security/v2#",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
     "kiltCred": "https://www.kilt.io/contexts/credentials#",
+    "sec": "https://w3id.org/security#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "verificationMethod": {
+      "@id": "sec:verificationMethod",
+      "@type": "@id"
+    },
+    "publicKeyHex": {
+      "@id": "sec:publicKeyHex"
+    },
+    "proofPurpose": {
+      "@id": "sec:proofPurpose",
+      "@type": "@vocab",
+      "@context": {
+        "@vocab": "sec"
+      }
+    },
     "KiltCredential2020": {
       "@id": "kiltCred:KiltCredential",
       "@context": {
@@ -18,7 +31,8 @@
         },
         "legitimationIds": {
           "@id": "kiltCred:legitimationIds",
-          "@type": "VerifiableCredential"
+          "@type": "@id",
+          "@container": "@set"
         },
         "nonTransferable": {
           "@id": "cred:nonTransferable",
@@ -26,9 +40,6 @@
         }
       }
     },
-    "verificationMethod": "sec:verificationMethod",
-    "publicKeyHex": "sec:publicKeyHex",
-    "proofPurpose":"sec:proofPurpose",
     "KILTSelfSigned2020": {
       "@id": "kiltCred:KILTSelfSigned2020",
       "@context": {
@@ -37,7 +48,7 @@
         "signature": "sec:proofValue"
       }
     },
-    "Ed25519VerificationKey2018": "sec2:Ed25519VerificationKey2018",
+    "Ed25519VerificationKey2018": "sec:Ed25519VerificationKey2018",
     "KILTAttestation2020": {
       "@id": "kiltCred:KILTAttestation2020",
       "@context": {
@@ -53,7 +64,8 @@
         "@protected": true,
         "claimHashes": {
           "@id": "kiltCred:KILTCredentialDigest2020#claimHashes",
-          "@type": "sec:digestValue"
+          "@type": "sec:digestValue",
+          "@container": "@set"
         },
         "nonces": {
           "@id": "kiltCred:KILTCredentialDigest2020#nonces",

@@ -7,7 +7,7 @@ declare module 'jsonld-signatures' {
     purposeResult?: { verified: boolean; error?: Error }
   }
   type DocumentLoader = (url: Url) => Promise<RemoteDocument>
-  type ExpansionMap = Function
+  type ExpansionMap = (info:any) => any
   function verify(
     document: JsonLdObj,
     options: {

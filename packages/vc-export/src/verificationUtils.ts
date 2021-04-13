@@ -117,7 +117,8 @@ export async function verifyAttestedProof(
   let status: AttestationStatus = AttestationStatus.unknown
   try {
     // check proof
-    if (proof.type !== KILT_ATTESTED_PROOF_TYPE)
+    const type = proof['@type'] || proof.type
+    if (type !== KILT_ATTESTED_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     const { attesterAddress } = proof
     if (typeof attesterAddress !== 'string' || !attesterAddress)
@@ -126,11 +127,14 @@ export async function verifyAttestedProof(
       throw PROOF_MALFORMED_ERROR(
         'attester address not matching credential issuer'
       )
-    const claimHash = credential.id
+    let claimHash = credential.id
     if (typeof claimHash !== 'string' || !claimHash)
       throw CREDENTIAL_MALFORMED_ERROR(
         'claim id (=claim hash) missing / invalid'
       )
+    if (claimHash.startsWith('/')) {
+      claimHash = claimHash.substr(1)
+    }
     let delegationId: string | null
 
     switch (typeof credential.delegationId) {

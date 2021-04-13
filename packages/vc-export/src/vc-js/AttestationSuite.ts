@@ -12,12 +12,16 @@ import {
 } from 'jsonld-signatures'
 import { JsonLdObj } from 'jsonld/jsonld-spec'
 import { Attestation } from '@kiltprotocol/core'
+import jsonld from 'jsonld'
 import {
   AttestedProof,
   KILT_ATTESTED_PROOF_TYPE,
   VerifiableCredential,
+  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
 } from '../types'
 import { verifyAttestedProof, AttestationStatus } from '../verificationUtils'
+import defaultDocumentLoader from './documentLoader'
+import { KILT_CREDENTIAL_CONTEXT_URL } from './kiltContexts'
 
 class AttestationError extends Error {
   public readonly attestationStatus: AttestationStatus
@@ -31,6 +35,9 @@ class AttestationError extends Error {
 
 export default class KiltAttestedProof extends suites.LinkedDataProof {
   private readonly provider: Blockchain
+  // vc-js complains when there is no verificationMethod
+  public readonly verificationMethod = '<none>'
+
   constructor(options: { KiltConnection: Blockchain }) {
     super({ type: KILT_ATTESTED_PROOF_TYPE })
     if (
@@ -53,15 +60,34 @@ export default class KiltAttestedProof extends suites.LinkedDataProof {
     expansionMap?: ExpansionMap
   }): Promise<VerificationResult> {
     try {
-      const { document, proof } = options
+      const {
+        document,
+        proof,
+        documentLoader = defaultDocumentLoader,
+        expansionMap,
+      } = options
       if (!document || typeof document !== 'object')
         throw new TypeError('document must be a JsonLd object')
       if (!proof || typeof proof !== 'object')
         throw new TypeError('proof must be a JsonLd object')
       this.setConnection()
+      const compactedDoc = await jsonld.compact(
+        document,
+        [DEFAULT_VERIFIABLECREDENTIAL_CONTEXT, KILT_CREDENTIAL_CONTEXT_URL],
+        { documentLoader, expansionMap, compactToRelative: false }
+      )
+      const compactedProof = await jsonld.compact(
+        proof,
+        [KILT_CREDENTIAL_CONTEXT_URL],
+        {
+          documentLoader,
+          expansionMap,
+          compactToRelative: false,
+        }
+      )
       const { verified, errors, status } = await verifyAttestedProof(
-        document as VerifiableCredential,
-        proof as AttestedProof
+        compactedDoc as VerifiableCredential,
+        compactedProof as AttestedProof
       )
       if (errors.length > 0)
         return {
@@ -93,9 +119,34 @@ export default class KiltAttestedProof extends suites.LinkedDataProof {
         'A credential with this id has not been attested in the Kilt network. Use @kiltprotocol/sdk-js to write attestations.'
       )
     return {
+      '@context': [
+        DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
+        KILT_CREDENTIAL_CONTEXT_URL,
+      ],
       type: this.type,
       proofPurpose: purpose?.term,
       attesterAddress: exists.owner,
     } as AttestedProof
+  }
+
+  public async matchProof(options: {
+    proof: Proof
+    document?: JsonLdObj
+    purpose?: purposes.ProofPurpose
+    documentLoader?: DocumentLoader
+    expansionMap?: ExpansionMap
+  }): Promise<boolean> {
+    const {
+      proof,
+      documentLoader = defaultDocumentLoader,
+      expansionMap,
+    } = options
+    const compact = await jsonld.compact(proof, KILT_CREDENTIAL_CONTEXT_URL, {
+      documentLoader,
+      expansionMap,
+      compactToRelative: false,
+    })
+    const type = compact['@type']
+    return type instanceof Array ? type.includes(this.type) : type === this.type
   }
 }
