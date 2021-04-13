@@ -81,7 +81,7 @@ export type IEncryptedMessage = Pick<
   | 'messageId'
   | 'receivedAt'
 > & {
-  message: string
+  ciphertext: string
   nonce: string
   hash: string
   signature: string
