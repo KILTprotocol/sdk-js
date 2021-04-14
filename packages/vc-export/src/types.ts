@@ -2,9 +2,9 @@
  * @packageDocumentation
  * @module VCExportTypes
  */
-import { AnyJson } from '@polkadot/types/types'
-import { IDidDocumentPublicKey } from '@kiltprotocol/core'
-import { ICType } from '@kiltprotocol/types'
+import type { AnyJson } from '@polkadot/types/types'
+import type { IDidDocumentPublicKey } from '@kiltprotocol/core'
+import type { ICType } from '@kiltprotocol/types'
 
 /**
  * Constant for default context.

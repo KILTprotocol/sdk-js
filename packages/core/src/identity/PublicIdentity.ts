@@ -5,7 +5,7 @@
  * @module PublicIdentity
  */
 
-import { IPublicIdentity } from '@kiltprotocol/types'
+import type { IPublicIdentity } from '@kiltprotocol/types'
 import Did, {
   IDENTIFIER_PREFIX,
   KEY_TYPE_ENCRYPTION,

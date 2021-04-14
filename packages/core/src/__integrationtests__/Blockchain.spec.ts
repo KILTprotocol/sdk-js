@@ -2,10 +2,10 @@
  * @group integration/blockchain
  */
 
-import { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
+import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import BN from 'bn.js/'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { IBlockchainApi } from '@kiltprotocol/types'
+import type { IBlockchainApi } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { makeTransfer } from '../balance/Balance.chain'
 import Identity from '../identity/Identity'

@@ -3,7 +3,7 @@
  */
 
 import BN from 'bn.js'
-import { BalanceOptions } from '@kiltprotocol/types'
+import type { BalanceOptions } from '@kiltprotocol/types'
 import {
   formatKiltBalance,
   convertToTxUnit,

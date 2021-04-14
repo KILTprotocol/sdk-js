@@ -8,7 +8,7 @@
  * @module Balance
  */
 
-import { UnsubscribePromise } from '@polkadot/api/types'
+import type { UnsubscribePromise } from '@polkadot/api/types'
 import BN from 'bn.js'
 import type {
   Balances,

@@ -3,7 +3,7 @@
  * @module IBalance
  */
 
-import BN from 'bn.js'
+import type BN from 'bn.js'
 
 export type Balances = {
   free: BN

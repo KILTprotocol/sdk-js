@@ -11,7 +11,7 @@ import {
   QuoteUtils,
   RequestForAttestationUtils,
 } from '@kiltprotocol/core'
-import {
+import type {
   IAttestedClaim,
   CompressedAttestedClaim,
   CompressedMessageBody,

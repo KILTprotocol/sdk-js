@@ -3,7 +3,7 @@
  * @module DelegationRootNode
  */
 
-import { Option } from '@polkadot/types'
+import type { Option } from '@polkadot/types'
 import type {
   IDelegationRootNode,
   SubmittableExtrinsic,

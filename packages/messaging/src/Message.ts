@@ -11,16 +11,15 @@
  */
 
 import { Identity } from '@kiltprotocol/core'
-import {
+import type {
   IPublicIdentity,
   CompressedMessageBody,
   IMessage,
   ISubmitClaimsForCTypes,
   IEncryptedMessage,
   MessageBody,
-  MessageBodyType,
-  ICType,
 } from '@kiltprotocol/types'
+import { MessageBodyType } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import {
   compressMessage,

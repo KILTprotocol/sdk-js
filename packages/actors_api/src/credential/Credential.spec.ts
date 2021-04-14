@@ -9,7 +9,7 @@ import {
   Identity,
   RequestForAttestation,
 } from '@kiltprotocol/core'
-import { ICType } from '@kiltprotocol/types'
+import type { ICType } from '@kiltprotocol/types'
 import Credential from './Credential'
 
 describe('Credential', () => {

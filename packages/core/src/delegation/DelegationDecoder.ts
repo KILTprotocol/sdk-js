@@ -11,11 +11,12 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
-import { Option } from '@polkadot/types'
-import { IDelegationRootNode, Permission } from '@kiltprotocol/types'
-import { Struct } from '@polkadot/types/codec'
-import { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
-import { u32 } from '@polkadot/types/primitive'
+import { Permission } from '@kiltprotocol/types'
+import type { Option } from '@polkadot/types'
+import type { IDelegationRootNode } from '@kiltprotocol/types'
+import type { Struct } from '@polkadot/types/codec'
+import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
+import type { u32 } from '@polkadot/types/primitive'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { DelegationNode } from '..'
 
