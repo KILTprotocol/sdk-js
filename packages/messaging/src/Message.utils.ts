@@ -7,6 +7,8 @@ import {
   AttestationUtils,
   AttestedClaimUtils,
   ClaimUtils,
+  CType,
+  CTypeUtils,
   QuoteUtils,
   RequestForAttestationUtils,
 } from '@kiltprotocol/core'
@@ -36,7 +38,7 @@ export function verifyRequiredCTypeProperties(
   requiredProperties: string[],
   cType: ICType
 ): boolean {
-  if (!cType.hash) throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+  if (!CType.isICType(cType)) CTypeUtils.errorCheck(cType as ICType)
 
   const validProperties = requiredProperties.find(
     (property) => !(property in cType.schema.properties)

@@ -710,7 +710,7 @@ describe('Messaging Utilities', () => {
       SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
     )
   })
-  it('Checking required properties for given CType', async () => {
+  it('Checking required properties for given CType', () => {
     expect(() =>
       MessageUtils.verifyRequiredCTypeProperties(['id', 'name'], testCType)
     ).toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
