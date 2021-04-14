@@ -171,7 +171,7 @@ async function main(): Promise<void> {
       /* 6.1. Request presentation for CTYPE */
       const messageBodyForClaimer: IRequestClaimsForCTypes = {
         type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: { ctypes: [ctype.hash] },
+        content: [{ cTypeHash: ctype.hash }],
       }
       const messageForClaimer = new Kilt.Message(
         messageBodyForClaimer,
