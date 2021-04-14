@@ -19,6 +19,7 @@ import {
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   KeyTypesMap,
 } from './types'
+import { fromCredentialURI } from './exportToVerifiableCredential'
 
 export interface VerificationResult {
   verified: boolean
@@ -59,7 +60,8 @@ export function verifySelfSignedProof(
   const result: VerificationResult = { verified: true, errors: [] }
   try {
     // check proof
-    if (proof.type !== KILT_SELF_SIGNED_PROOF_TYPE)
+    const type = proof['@type'] || proof.type
+    if (type !== KILT_SELF_SIGNED_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     if (!proof.signature) throw PROOF_MALFORMED_ERROR('signature missing')
     let signerPubKey: string
@@ -81,10 +83,11 @@ export function verifySelfSignedProof(
       )
     }
 
+    const rootHash = fromCredentialURI(credential.id)
     // validate signature over root hash
     // signatureVerify can handle all required signature types out of the box
     const verification = signatureVerify(
-      credential.id,
+      rootHash,
       proof.signature,
       signerPubKey
     )
@@ -127,14 +130,12 @@ export async function verifyAttestedProof(
       throw PROOF_MALFORMED_ERROR(
         'attester address not matching credential issuer'
       )
-    let claimHash = credential.id
-    if (typeof claimHash !== 'string' || !claimHash)
+    if (typeof credential.id !== 'string' || !credential.id)
       throw CREDENTIAL_MALFORMED_ERROR(
         'claim id (=claim hash) missing / invalid'
       )
-    if (claimHash.startsWith('/')) {
-      claimHash = claimHash.substr(1)
-    }
+    const claimHash = fromCredentialURI(credential.id)
+
     let delegationId: string | null
 
     switch (typeof credential.delegationId) {
@@ -205,7 +206,8 @@ export async function verifyCredentialDigestProof(
   const result: VerificationResult = { verified: true, errors: [] }
   try {
     // check proof
-    if (proof.type !== KILT_CREDENTIAL_DIGEST_PROOF_TYPE)
+    const type = proof['@type'] || proof.type
+    if (type !== KILT_CREDENTIAL_DIGEST_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     if (typeof proof.nonces !== 'object') {
       throw PROOF_MALFORMED_ERROR('proof must contain object "nonces"')
@@ -226,7 +228,7 @@ export async function verifyCredentialDigestProof(
     const rootHash = Crypto.hash(concatenated)
 
     // throw if root hash does not match expected (=id)
-    const expectedRootHash = credential.id
+    const expectedRootHash = fromCredentialURI(credential.id)
     if (expectedRootHash !== u8aToHex(rootHash))
       throw new Error('computed root hash does not match expected')
 

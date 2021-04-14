@@ -83,7 +83,7 @@ export interface VerifiableCredential {
   proof: Proof | Proof[]
   nonTransferable?: boolean
   credentialSchema?: CredentialSchema
-  expirationDate?: any
+  expirationDate?: string
 }
 
 export interface VerifiablePresentation {

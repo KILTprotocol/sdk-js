@@ -316,7 +316,7 @@ describe('proofs', () => {
     })
 
     it('it detects tampering with credential digest', () => {
-      VC.id = `1${VC.id.slice(1)}`
+      VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
       expect(
         verificationUtils.verifySelfSignedProof(VC, VC.proof[0])
       ).toMatchObject({

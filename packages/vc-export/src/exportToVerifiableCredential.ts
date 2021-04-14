@@ -25,6 +25,28 @@ import {
   VerifiableCredential,
 } from './types'
 
+const KILT_CREDENTIAL_URI_PREFIX = 'kilt:cred:'
+
+export function fromCredentialURI(credentialId: string): string {
+  const hexString = credentialId.startsWith(KILT_CREDENTIAL_URI_PREFIX)
+    ? credentialId.substring(KILT_CREDENTIAL_URI_PREFIX.length)
+    : credentialId
+  if (!hexString.startsWith('0x'))
+    throw new Error(
+      'credential id is not a valid identifier (could not extract base64 encoded string)'
+    )
+  return hexString
+}
+
+export function toCredentialURI(rootHash: string): string {
+  if (rootHash.startsWith(KILT_CREDENTIAL_URI_PREFIX)) {
+    return rootHash
+  }
+  if (!rootHash.startsWith('0x'))
+    throw new Error('root hash is not a base64 encoded string)')
+  return KILT_CREDENTIAL_URI_PREFIX + rootHash
+}
+
 export function fromAttestedClaim(
   input: IAttestedClaim,
   ctype?: ICType
@@ -39,7 +61,7 @@ export function fromAttestedClaim(
   } = input.request
 
   // write root hash to id
-  const id = rootHash
+  const id = toCredentialURI(rootHash)
 
   // transform & annotate claim to be json-ld and VC conformant
   const { credentialSubject } = ClaimUtils.toJsonLD(claim, false) as Record<

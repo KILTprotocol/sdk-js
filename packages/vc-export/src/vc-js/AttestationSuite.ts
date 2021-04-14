@@ -7,21 +7,18 @@ import {
   ExpansionMap,
   Proof,
   purposes,
-  suites,
   VerificationResult,
 } from 'jsonld-signatures'
 import { JsonLdObj } from 'jsonld/jsonld-spec'
 import { Attestation } from '@kiltprotocol/core'
-import jsonld from 'jsonld'
 import {
   AttestedProof,
   KILT_ATTESTED_PROOF_TYPE,
-  VerifiableCredential,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
 } from '../types'
 import { verifyAttestedProof, AttestationStatus } from '../verificationUtils'
-import defaultDocumentLoader from './documentLoader'
 import { KILT_CREDENTIAL_CONTEXT_URL } from './kiltContexts'
+import KiltAbstractSuite from './KiltAbstractSuite'
 
 class AttestationError extends Error {
   public readonly attestationStatus: AttestationStatus
@@ -33,10 +30,8 @@ class AttestationError extends Error {
   }
 }
 
-export default class KiltAttestedProof extends suites.LinkedDataProof {
+export default class KiltAttestedSuite extends KiltAbstractSuite {
   private readonly provider: Blockchain
-  // vc-js complains when there is no verificationMethod
-  public readonly verificationMethod = '<none>'
 
   constructor(options: { KiltConnection: Blockchain }) {
     super({ type: KILT_ATTESTED_PROOF_TYPE })
@@ -48,7 +43,7 @@ export default class KiltAttestedProof extends suites.LinkedDataProof {
     this.provider = options.KiltConnection
   }
 
-  private setConnection() {
+  private setConnection(): void {
     BlockchainApiConnection.setConnection(Promise.resolve(this.provider))
   }
 
@@ -60,34 +55,20 @@ export default class KiltAttestedProof extends suites.LinkedDataProof {
     expansionMap?: ExpansionMap
   }): Promise<VerificationResult> {
     try {
-      const {
-        document,
-        proof,
-        documentLoader = defaultDocumentLoader,
-        expansionMap,
-      } = options
+      const { document, proof } = options
       if (!document || typeof document !== 'object')
         throw new TypeError('document must be a JsonLd object')
       if (!proof || typeof proof !== 'object')
         throw new TypeError('proof must be a JsonLd object')
-      this.setConnection()
-      const compactedDoc = await jsonld.compact(
-        document,
-        [DEFAULT_VERIFIABLECREDENTIAL_CONTEXT, KILT_CREDENTIAL_CONTEXT_URL],
-        { documentLoader, expansionMap, compactToRelative: false }
-      )
-      const compactedProof = await jsonld.compact(
+      const compactedDoc = await this.compactDoc(document, options)
+      const compactedProof = await this.compactProof<AttestedProof>(
         proof,
-        [KILT_CREDENTIAL_CONTEXT_URL],
-        {
-          documentLoader,
-          expansionMap,
-          compactToRelative: false,
-        }
+        options
       )
+      this.setConnection()
       const { verified, errors, status } = await verifyAttestedProof(
-        compactedDoc as VerifiableCredential,
-        compactedProof as AttestedProof
+        compactedDoc,
+        compactedProof
       )
       if (errors.length > 0)
         return {
@@ -105,7 +86,7 @@ export default class KiltAttestedProof extends suites.LinkedDataProof {
     purpose?: purposes.ProofPurpose
     documentLoader?: DocumentLoader
     expansionMap?: ExpansionMap
-  }): Promise<Proof> {
+  }): Promise<AttestedProof> {
     const { document, purpose } = options
     if (!document || typeof document !== 'object')
       throw new TypeError('document must be a JsonLd object')
@@ -127,26 +108,5 @@ export default class KiltAttestedProof extends suites.LinkedDataProof {
       proofPurpose: purpose?.term,
       attesterAddress: exists.owner,
     } as AttestedProof
-  }
-
-  public async matchProof(options: {
-    proof: Proof
-    document?: JsonLdObj
-    purpose?: purposes.ProofPurpose
-    documentLoader?: DocumentLoader
-    expansionMap?: ExpansionMap
-  }): Promise<boolean> {
-    const {
-      proof,
-      documentLoader = defaultDocumentLoader,
-      expansionMap,
-    } = options
-    const compact = await jsonld.compact(proof, KILT_CREDENTIAL_CONTEXT_URL, {
-      documentLoader,
-      expansionMap,
-      compactToRelative: false,
-    })
-    const type = compact['@type']
-    return type instanceof Array ? type.includes(this.type) : type === this.type
   }
 }

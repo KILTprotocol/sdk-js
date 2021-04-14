@@ -49,7 +49,7 @@ describe('jsigs', () => {
       const compactedProof = await jsonld.compact(
         { ...proof, '@context': credential['@context'] },
         'https://w3id.org/security/v2',
-        { documentLoader, compactToRelative: false}
+        { documentLoader, compactToRelative: false }
       )
       await expect(purpose.match(compactedProof, {})).resolves.toBe(true)
       await expect(
