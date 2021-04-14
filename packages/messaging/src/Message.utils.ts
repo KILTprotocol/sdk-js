@@ -7,7 +7,6 @@ import {
   AttestationUtils,
   AttestedClaimUtils,
   ClaimUtils,
-  CType,
   CTypeUtils,
   QuoteUtils,
   RequestForAttestationUtils,
@@ -38,7 +37,7 @@ export function verifyRequiredCTypeProperties(
   requiredProperties: string[],
   cType: ICType
 ): boolean {
-  if (!CType.isICType(cType)) CTypeUtils.errorCheck(cType as ICType)
+  CTypeUtils.errorCheck(cType as ICType)
 
   const validProperties = requiredProperties.find(
     (property) => !(property in cType.schema.properties)
