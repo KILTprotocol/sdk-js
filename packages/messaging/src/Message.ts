@@ -18,6 +18,7 @@ import type {
   ISubmitClaimsForCTypes,
   IEncryptedMessage,
   MessageBody,
+  ICType,
 } from '@kiltprotocol/types'
 import { MessageBodyType } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
