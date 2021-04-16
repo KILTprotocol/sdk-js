@@ -146,7 +146,7 @@ describe('When there are haves and have-nots', () => {
     listenToBalanceChanges(faucet.address, listener)
     await makeTransfer(richieRich.address, MIN_TRANSACTION).then((tx) =>
       Blockchain.signAndSubmitTx(tx, faucet, {
-        resolveOn: BlockchainUtils.IS_READY,
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
     )
