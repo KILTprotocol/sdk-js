@@ -6,7 +6,6 @@
 import { Option } from '@polkadot/types'
 import type { IPublicIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import Identity from '../identity/Identity'
 import type { IDid } from './Did'
 import {
   decodeDid,
@@ -48,31 +47,24 @@ export async function queryByAddress(
 }
 
 /**
- * @param identity
  * @internal
  */
-export async function remove(
-  identity: Identity
-): Promise<SubmittableExtrinsic> {
+export async function remove(): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const tx: SubmittableExtrinsic = blockchain.api.tx.did.remove()
-  return blockchain.signTx(identity, tx)
+  return tx
 }
 
 /**
  * @param did
- * @param identity
  * @internal
  */
-export async function store(
-  did: IDid,
-  identity: Identity
-): Promise<SubmittableExtrinsic> {
+export async function store(did: IDid): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const tx: SubmittableExtrinsic = blockchain.api.tx.did.add(
     did.publicBoxKey,
     did.publicSigningKey,
     did.documentStore
   )
-  return blockchain.signTx(identity, tx)
+  return tx
 }

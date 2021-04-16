@@ -17,7 +17,7 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import Message from '@kiltprotocol/messaging'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 
 export interface IRevocationHandle {
   claimHash: IAttestation['claimHash']
@@ -76,8 +76,8 @@ export async function issueAttestation(
   )
 
   await attestation
-    .store(attester)
-    .then((tx) => BlockchainUtils.submitTxWithReSign(tx, attester))
+    .store()
+    .then((tx) => Blockchain.signAndSubmitTx(tx, attester, { reSign: true }))
 
   const revocationHandle = { claimHash: attestation.claimHash }
   return {
@@ -122,6 +122,6 @@ export async function revokeAttestation(
     attester,
     delegationTreeTraversalSteps
   ).then((tx: SubmittableExtrinsic) =>
-    BlockchainUtils.submitTxWithReSign(tx, attester)
+    Blockchain.signAndSubmitTx(tx, attester, { reSign: true })
   )
 }

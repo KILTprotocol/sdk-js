@@ -123,12 +123,11 @@ export default class Did implements IDid {
   /**
    * [ASYNC] Stores the [[Did]] object on-chain.
    *
-   * @param identity The identity used to store the [[Did]] object on-chain.
    * @returns A promise containing the SubmittableExtrinsic (transaction status).
    */
-  public async store(identity: Identity): Promise<SubmittableExtrinsic> {
+  public async store(): Promise<SubmittableExtrinsic> {
     log.debug(`Create tx for 'did.add'`)
-    return store(this, identity)
+    return store(this)
   }
 
   /**
@@ -154,14 +153,11 @@ export default class Did implements IDid {
   /**
    * [STATIC] Removes the [[Did]] object attached to a given [[Identity]] from the chain.
    *
-   * @param identity The identity for which to delete the [[Did]].
    * @returns A promise containing a SubmittableExtrinsic (submittable transaction).
    */
-  public static async remove(
-    identity: Identity
-  ): Promise<SubmittableExtrinsic> {
+  public static async remove(): Promise<SubmittableExtrinsic> {
     log.debug(`Create tx for 'did.remove'`)
-    return remove(identity)
+    return remove()
   }
 
   /**

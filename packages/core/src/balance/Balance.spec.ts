@@ -7,7 +7,7 @@ import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/Acc
 import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
 import TYPE_REGISTRY from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import type { Balances } from '@kiltprotocol/types'
 import Identity from '../identity/Identity'
 import {
@@ -77,11 +77,9 @@ describe('Balance', () => {
   })
 
   it('should make transfer', async () => {
-    const status = await makeTransfer(
-      alice,
-      bob.address,
-      new BN(100)
-    ).then((tx) => BlockchainUtils.submitTxWithReSign(tx, alice))
+    const status = await makeTransfer(bob.address, new BN(100)).then((tx) =>
+      Blockchain.signAndSubmitTx(tx, alice, { reSign: true })
+    )
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
@@ -93,11 +91,10 @@ describe('Balance', () => {
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
     const status = await makeTransfer(
-      alice,
       bob.address,
       amount,
       exponent
-    ).then((tx) => BlockchainUtils.submitTxWithReSign(tx, alice))
+    ).then((tx) => Blockchain.signAndSubmitTx(tx, alice, { reSign: true }))
     expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount
