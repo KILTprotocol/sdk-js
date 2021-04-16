@@ -39,6 +39,31 @@ export default class Blockchain implements IBlockchainApi {
     return []
   }
 
+  /**
+   * [STATIC] [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
+   *
+   * @param tx The generated unsigned SubmittableExtrinsic to submit.
+   * @param identity The [[Identity]] used to sign and potentially re-sign the tx.
+   * @param opts Partial optional criteria for resolving/rejecting the promise.
+   * @param opts.reSign Optional flag for re-attempting to send recoverably failed Tx.
+   * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
+   *
+   */
+  public static async signAndSubmitTx(
+    tx: SubmittableExtrinsic,
+    identity: IIdentity,
+    {
+      reSign = false,
+      ...opts
+    }: Partial<SubscriptionPromise.Options> & Partial<ReSignOpts> = {}
+  ): Promise<ISubmittableResult> {
+    const chain = await getConnectionOrConnect()
+    const signedTx = await chain.signTx(identity, tx)
+    return reSign
+      ? chain.submitSignedTxWithReSign(signedTx, identity, opts)
+      : submitSignedTx(signedTx, opts)
+  }
+
   public api: ApiPromise
   private accountNonces: Map<IIdentity['address'], BN>
 
@@ -113,31 +138,6 @@ export default class Blockchain implements IBlockchainApi {
       throw reason
     }
     return submitSignedTx(tx, opts).catch(retry).catch(retry)
-  }
-
-  /**
-   * [STATIC] [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
-   *
-   * @param tx The generated unsigned SubmittableExtrinsic to submit.
-   * @param identity The [[Identity]] used to sign and potentially re-sign the tx.
-   * @param opts Partial optional criteria for resolving/rejecting the promise.
-   * @param opts.reSign Optional flag for re-attempting to send recoverably failed Tx.
-   * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
-   *
-   */
-  public static async signAndSubmitTx(
-    tx: SubmittableExtrinsic,
-    identity: IIdentity,
-    {
-      reSign = false,
-      ...opts
-    }: Partial<SubscriptionPromise.Options> & Partial<ReSignOpts> = {}
-  ): Promise<ISubmittableResult> {
-    const chain = await getConnectionOrConnect()
-    const signedTx = await chain.signTx(identity, tx)
-    return reSign
-      ? chain.submitSignedTxWithReSign(signedTx, identity, opts)
-      : submitSignedTx(signedTx, opts)
   }
 
   /**
