@@ -92,7 +92,7 @@ export default class Message implements IMessage {
   ): void {
     if (
       Crypto.hashStr(
-        encrypted.message + encrypted.nonce + encrypted.createdAt
+        encrypted.ciphertext + encrypted.nonce + encrypted.createdAt
       ) !== encrypted.hash
     ) {
       throw SDKErrors.ERROR_NONCE_HASH_INVALID(
@@ -126,7 +126,7 @@ export default class Message implements IMessage {
     Message.ensureHashAndSignature(encrypted, encrypted.senderAddress)
 
     const ea: Crypto.EncryptedAsymmetricString = {
-      box: encrypted.message,
+      box: encrypted.ciphertext,
       nonce: encrypted.nonce,
     }
     const decoded: string | false = receiver.decryptAsymmetricAsStr(
@@ -208,7 +208,7 @@ export default class Message implements IMessage {
     return {
       messageId: this.messageId,
       receivedAt: this.receivedAt,
-      message: this.message,
+      ciphertext: this.message,
       nonce: this.nonce,
       createdAt: this.createdAt,
       hash: this.hash,
