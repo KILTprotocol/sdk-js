@@ -14,7 +14,6 @@ import type {
   IAttestation,
   IMessage,
   IRequestAttestationForClaim,
-  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import Message from '@kiltprotocol/messaging'
 import { Blockchain } from '@kiltprotocol/chain-helpers'
