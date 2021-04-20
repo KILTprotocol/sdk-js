@@ -48,7 +48,7 @@ async function main(): Promise<void> {
   )
   tx = await ctype.store()
   await Kilt.ChainHelpers.Blockchain.signAndSubmitTx(tx, identity, {
-    resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
     reSign: true,
   })
 
