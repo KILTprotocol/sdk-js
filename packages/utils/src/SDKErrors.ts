@@ -68,6 +68,7 @@ export enum ErrorCode {
   ERROR_ROOT_HASH_UNVERIFIABLE = 30010,
   ERROR_NESTED_CLAIM_UNVERIFIABLE = 30011,
   ERROR_INVALID_PROOF_FOR_STATEMENT = 30012,
+  ERROR_CTYPE_PROPERTIES_NOT_MATCHING = 30013,
 
   // Compression / Decompressions
   ERROR_DECOMPRESSION_ARRAY = 40001,
@@ -153,12 +154,20 @@ export const ERROR_CTYPE_ID_NOT_MATCHING: (
   )
 }
 
+export const ERROR_CTYPE_PROPERTIES_NOT_MATCHING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_CTYPE_PROPERTIES_NOT_MATCHING,
+    'Required properties do not match CType properties'
+  )
+}
+
 export const ERROR_CLAIM_HASH_NOT_PROVIDED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CLAIM_HASH_NOT_PROVIDED,
     'Claim hash missing'
   )
 }
+
 export const ERROR_REVOCATION_BIT_MISSING: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_REVOCATION_BIT_MISSING,

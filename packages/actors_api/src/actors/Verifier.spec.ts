@@ -102,7 +102,7 @@ describe('Verifier', () => {
       Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES
     )
     if (request.body.type === Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES) {
-      expect(request.body.content.ctypes).toEqual(['this is a ctype hash'])
+      expect(request.body.content[0].cTypeHash).toEqual('this is a ctype hash')
     }
   })
 
