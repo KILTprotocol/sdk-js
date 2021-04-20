@@ -74,7 +74,8 @@ async function setup(): Promise<{
   try {
     await ctype.store().then((tx) =>
       Kilt.ChainHelpers.Blockchain.signAndSubmitTx(tx, attester, {
-        resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+        resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+        reSign: true,
       })
     )
   } catch (e) {
