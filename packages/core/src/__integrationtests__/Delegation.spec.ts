@@ -5,7 +5,7 @@
 import type { ICType } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { Blockchain, BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { AttestedClaim, Identity } from '..'
 import Attestation from '../attestation/Attestation'
 import { config, disconnect } from '../kilt'
@@ -37,9 +37,10 @@ async function writeRoot(
     ctypeHash,
     delegator.address
   )
-  await root.store(delegator).then((tx) =>
-    BlockchainUtils.submitTxWithReSign(tx, delegator, {
+  await root.store().then((tx) =>
+    Blockchain.signAndSubmitTx(tx, delegator, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
     })
   )
   return root
@@ -60,10 +61,11 @@ async function addDelegation(
     parentNode.id
   )
   await delegation
-    .store(delegator, delegee.signStr(delegation.generateHash()))
+    .store(delegee.signStr(delegation.generateHash()))
     .then((tx) =>
-      BlockchainUtils.submitTxWithReSign(tx, delegator, {
+      Blockchain.signAndSubmitTx(tx, delegator, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     )
   return delegation
@@ -80,9 +82,10 @@ beforeAll(async () => {
   attester = wannabeAlice
 
   if (!(await CtypeOnChain(DriversLicense))) {
-    await DriversLicense.store(attester).then((tx) =>
-      BlockchainUtils.submitTxWithReSign(tx, attester, {
+    await DriversLicense.store().then((tx) =>
+      Blockchain.signAndSubmitTx(tx, attester, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     )
   }
@@ -131,9 +134,10 @@ describe('and attestation rights have been delegated', () => {
       request,
       attester.getPublicIdentity()
     )
-    await attestation.store(attester).then((tx) =>
-      BlockchainUtils.submitTxWithReSign(tx, attester, {
+    await attestation.store().then((tx) =>
+      Blockchain.signAndSubmitTx(tx, attester, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     )
 
@@ -146,8 +150,9 @@ describe('and attestation rights have been delegated', () => {
 
     // revoke attestation through root
     await attClaim.attestation.revoke(root, 1).then((tx) =>
-      BlockchainUtils.submitTxWithReSign(tx, root, {
+      Blockchain.signAndSubmitTx(tx, root, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     )
     await expect(attClaim.verify()).resolves.toBeFalsy()
@@ -174,8 +179,9 @@ describe('revocation', () => {
     )
     await expect(
       delegationA.revoke(delegator).then((tx) =>
-        BlockchainUtils.submitTxWithReSign(tx, delegator, {
+        Blockchain.signAndSubmitTx(tx, delegator, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
         })
       )
     ).resolves.not.toThrow()
@@ -190,9 +196,10 @@ describe('revocation', () => {
       firstDelegee
     )
     await expect(
-      delegationRoot.revoke(firstDelegee).then((tx) =>
-        BlockchainUtils.submitTxWithReSign(tx, firstDelegee, {
+      delegationRoot.revoke().then((tx) =>
+        Blockchain.signAndSubmitTx(tx, firstDelegee, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
         })
       )
     ).rejects.toThrow()
@@ -200,8 +207,9 @@ describe('revocation', () => {
 
     await expect(
       delegationA.revoke(firstDelegee).then((tx) =>
-        BlockchainUtils.submitTxWithReSign(tx, firstDelegee, {
+        Blockchain.signAndSubmitTx(tx, firstDelegee, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
         })
       )
     ).resolves.not.toThrow()
@@ -221,9 +229,10 @@ describe('revocation', () => {
       secondDelegee
     )
     await expect(
-      delegationRoot.revoke(delegator).then((tx) =>
-        BlockchainUtils.submitTxWithReSign(tx, delegator, {
+      delegationRoot.revoke().then((tx) =>
+        Blockchain.signAndSubmitTx(tx, delegator, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
         })
       )
     ).resolves.not.toThrow()

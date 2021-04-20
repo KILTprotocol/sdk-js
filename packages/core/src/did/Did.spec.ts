@@ -7,7 +7,7 @@ import { SDKErrors } from '@kiltprotocol/utils'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
 } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import { Did, IDid } from '..'
 import Identity from '../identity/Identity'
 import {
@@ -87,9 +87,9 @@ describe('DID', () => {
   it('store did', async () => {
     const alice = Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(alice, 'http://myDID.kilt.io')
-    const tx = await did.store(alice)
+    const tx = await did.store()
     await expect(
-      BlockchainUtils.submitTxWithReSign(tx, alice)
+      Blockchain.signAndSubmitTx(tx, alice, { reSign: true })
     ).resolves.toHaveProperty('isFinalized', true)
   })
 

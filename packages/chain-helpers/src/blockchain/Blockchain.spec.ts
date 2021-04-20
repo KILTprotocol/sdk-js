@@ -309,7 +309,7 @@ describe('Tx logic', () => {
         .mockImplementation(async (id, Tx) => {
           return Tx
         })
-      await expect(chain.submitTxWithReSign(tx, alice)).rejects.toThrow(
+      await expect(chain.submitSignedTxWithReSign(tx, alice)).rejects.toThrow(
         SDKErrors.ERROR_TRANSACTION_RECOVERABLE()
       )
 

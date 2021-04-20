@@ -22,8 +22,10 @@ import type {
   IBlockchainApi,
   BlockchainStats,
   SubscriptionPromise,
+  ReSignOpts,
 } from '@kiltprotocol/types'
-import { parseSubscriptionOptions, submitSignedTx } from './Blockchain.utils'
+import { submitSignedTx } from './Blockchain.utils'
+import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -35,6 +37,31 @@ export default class Blockchain implements IBlockchainApi {
     const json = queryResult.toJSON()
     if (json instanceof Array) return json
     return []
+  }
+
+  /**
+   * [STATIC] [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
+   *
+   * @param tx The generated unsigned SubmittableExtrinsic to submit.
+   * @param identity The [[Identity]] used to sign and potentially re-sign the tx.
+   * @param opts Partial optional criteria for resolving/rejecting the promise.
+   * @param opts.reSign Optional flag for re-attempting to send recoverably failed Tx.
+   * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
+   *
+   */
+  public static async signAndSubmitTx(
+    tx: SubmittableExtrinsic,
+    identity: IIdentity,
+    {
+      reSign = false,
+      ...opts
+    }: Partial<SubscriptionPromise.Options> & Partial<ReSignOpts> = {}
+  ): Promise<ISubmittableResult> {
+    const chain = await getConnectionOrConnect()
+    const signedTx = await chain.signTx(identity, tx)
+    return reSign
+      ? chain.submitSignedTxWithReSign(signedTx, identity, opts)
+      : submitSignedTx(signedTx, opts)
   }
 
   public api: ApiPromise
@@ -79,6 +106,7 @@ export default class Blockchain implements IBlockchainApi {
       tx,
       nonce
     )
+
     return signed
   }
 
@@ -95,40 +123,21 @@ export default class Blockchain implements IBlockchainApi {
    * @returns A promise which can be used to track transaction status.
    * If resolved, this promise returns the eventually resolved ISubmittableResult.
    */
-  public async submitTxWithReSign(
+  async submitSignedTxWithReSign(
     tx: SubmittableExtrinsic,
-    identity?: IIdentity,
+    identity: IIdentity,
     opts?: Partial<SubscriptionPromise.Options>
   ): Promise<ISubmittableResult> {
-    const options = parseSubscriptionOptions(opts)
     const retry = async (reason: Error): Promise<ISubmittableResult> => {
       if (
         reason.message === SDKErrors.ERROR_TRANSACTION_RECOVERABLE().message &&
         identity
       ) {
-        return submitSignedTx(await this.reSignTx(identity, tx), options)
+        return submitSignedTx(await this.reSignTx(identity, tx), opts)
       }
       throw reason
     }
-    return submitSignedTx(tx, options).catch(retry).catch(retry)
-  }
-
-  /**
-   * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
-   *
-   * @param identity The [[Identity]] used to sign and potentially re-sign the tx.
-   * @param tx The generated unsigned SubmittableExtrinsic to submit.
-   * @param opts Partial optional criteria for resolving/rejecting the promise.
-   * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
-   *
-   */
-  public async submitTx(
-    identity: IIdentity,
-    tx: SubmittableExtrinsic,
-    opts?: Partial<SubscriptionPromise.Options>
-  ): Promise<ISubmittableResult> {
-    const signedTx = await this.signTx(identity, tx)
-    return this.submitTxWithReSign(signedTx, identity, opts)
+    return submitSignedTx(tx, opts).catch(retry).catch(retry)
   }
 
   /**

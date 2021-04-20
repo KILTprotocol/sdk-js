@@ -9,7 +9,6 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import Identity from '../identity/Identity'
 import {
   decodeRootDelegation,
   IChainDelegationRoot,
@@ -19,19 +18,17 @@ import DelegationRootNode from './DelegationRootNode'
 
 /**
  * @param delegation
- * @param identity
  * @internal
  */
 export async function store(
-  delegation: IDelegationRootNode,
-  identity: Identity
+  delegation: IDelegationRootNode
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.createRoot(
     delegation.id,
     delegation.cTypeHash
   )
-  return blockchain.signTx(identity, tx)
+  return tx
 }
 
 /**
@@ -71,7 +68,6 @@ export async function query(
  */
 export async function revoke(
   delegation: IDelegationRootNode,
-  identity: Identity,
   maxRevocations: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -79,5 +75,5 @@ export async function revoke(
     delegation.id,
     maxRevocations
   )
-  return blockchain.signTx(identity, tx)
+  return tx
 }
