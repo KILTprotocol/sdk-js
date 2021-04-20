@@ -75,9 +75,8 @@ export async function issueAttestation(
     attester.getPublicIdentity()
   )
 
-  await attestation
-    .store()
-    .then((tx) => Blockchain.signAndSubmitTx(tx, attester, { reSign: true }))
+  const tx = await attestation.store()
+  Blockchain.signAndSubmitTx(tx, attester, { reSign: true })
 
   const revocationHandle = { claimHash: attestation.claimHash }
   return {
@@ -117,11 +116,10 @@ export async function revokeAttestation(
     attestation
   )
 
-  await Attestation.revoke(
+  const tx = await Attestation.revoke(
     revocationHandle.claimHash,
     attester,
     delegationTreeTraversalSteps
-  ).then((tx: SubmittableExtrinsic) =>
-    Blockchain.signAndSubmitTx(tx, attester, { reSign: true })
   )
+  Blockchain.signAndSubmitTx(tx, attester, { reSign: true })
 }
