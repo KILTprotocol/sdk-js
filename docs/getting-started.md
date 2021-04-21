@@ -167,17 +167,17 @@ const identity = Kilt.Identity.buildFromMnemonic(
   // using ed25519 as key type because this is how the endowed identity is set up
   { signingKeyPairType: 'ed25519' }
 )
-const tx = await ctype.store(identity)
+const tx = await ctype.store()
 
 // either sign and send in one step
-await Kilt.BlockchainUtils.submitSignedTx(tx, {
-  resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
-})
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
 
 // or step by step
 const chain = Kilt.connect()
 const signed = chain.signTx(identity, tx)
-await chain.submitSignedTxWithReSigns(tx)
+await Kilt.BlockchainUtils.submitSignedTx(tx)
 ```
 
 Please note that the **same CTYPE can only be stored once** on the blockchain.
