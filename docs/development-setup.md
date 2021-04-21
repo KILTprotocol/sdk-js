@@ -29,7 +29,7 @@ They can be used to easily embed our complete SDK.
 <script src="https://unpkg.com/@kiltprotocol/sdk-js@/dist/sdk-js.min.umd.js"></script>
 ```
 
-You can find the library on `window.sdk`, and use it completely dependency free.
+You can find the library on `window.kilt`, and use it completely dependency free.
 
 ## Build to see changes
 
@@ -83,7 +83,7 @@ From 0.20.0 upwards we also include two (one minified) UMD bundles of the comple
   - sdk-js.umd.js (4.19 MiB)
   - sdk-js.min.umd.js (1.92 MiB)
 
-These are also accessible directly via the NPM content delivery network unpkg.com using a url like:
+These are also accessible directly via the NPM CDN unpkg.com using a url like:
 
 `unpkg.com/@kiltprotocol/sdk-js{@:version}/dist/sdk-js.(min.)umd.js`
 
