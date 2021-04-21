@@ -47,9 +47,19 @@ async function main(): Promise<void> {
     { signingKeyPairType: 'ed25519' }
   )
   tx = await ctype.store()
-  await Kilt.ChainHelpers.Blockchain.signAndSubmitTx(tx, identity, {
+  /* This transaction has to be signed and sent to the Blockchain, either automatically like this */
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
     reSign: true,
+  })
+
+  /* or manually step by step */
+  const chain = Kilt.ChainHelpers.BlockchainApiConnection.getConnectionOrConnect()
+
+  chain.signTx(identity, tx)
+
+  await Kilt.BlockchainUtils.submitSignedTx(tx, {
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   })
 
   /* At the end of the process, the `CType` object should contain the following. */

@@ -4,7 +4,7 @@
 
 import { Crypto } from '@kiltprotocol/utils'
 import {
-  Blockchain,
+  BlockchainUtils,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
 import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
@@ -55,7 +55,7 @@ describe('Delegation', () => {
     await rootDelegation
       .store()
       .then((tx) =>
-        Blockchain.signAndSubmitTx(tx, identityAlice, { reSign: true })
+        BlockchainUtils.signAndSubmitTx(tx, identityAlice, { reSign: true })
       )
 
     const rootNode = await DelegationRootNode.query(ROOT_IDENTIFIER)
@@ -120,7 +120,7 @@ describe('Delegation', () => {
     const revokeStatus = await aDelegationRootNode
       .revoke()
       .then((tx) =>
-        Blockchain.signAndSubmitTx(tx, identityAlice, { reSign: true })
+        BlockchainUtils.signAndSubmitTx(tx, identityAlice, { reSign: true })
       )
     expect(blockchain.api.tx.delegation.revokeRoot).toBeCalledWith(
       'myRootId',

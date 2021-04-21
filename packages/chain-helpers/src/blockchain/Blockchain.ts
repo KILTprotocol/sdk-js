@@ -22,10 +22,8 @@ import type {
   IBlockchainApi,
   BlockchainStats,
   SubscriptionPromise,
-  ReSignOpts,
 } from '@kiltprotocol/types'
 import { submitSignedTx } from './Blockchain.utils'
-import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -37,31 +35,6 @@ export default class Blockchain implements IBlockchainApi {
     const json = queryResult.toJSON()
     if (json instanceof Array) return json
     return []
-  }
-
-  /**
-   * [STATIC] [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
-   *
-   * @param tx The generated unsigned SubmittableExtrinsic to submit.
-   * @param identity The [[Identity]] used to sign and potentially re-sign the tx.
-   * @param opts Partial optional criteria for resolving/rejecting the promise.
-   * @param opts.reSign Optional flag for re-attempting to send recoverably failed Tx.
-   * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
-   *
-   */
-  public static async signAndSubmitTx(
-    tx: SubmittableExtrinsic,
-    identity: IIdentity,
-    {
-      reSign = false,
-      ...opts
-    }: Partial<SubscriptionPromise.Options> & Partial<ReSignOpts> = {}
-  ): Promise<ISubmittableResult> {
-    const chain = await getConnectionOrConnect()
-    const signedTx = await chain.signTx(identity, tx)
-    return reSign
-      ? chain.submitSignedTxWithReSign(signedTx, identity, opts)
-      : submitSignedTx(signedTx, opts)
   }
 
   public api: ApiPromise
@@ -111,7 +84,7 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   /**
-   * [ASYNC] Submits a signed SubmittableExtrinsic with exported function [[submitSignedTx]].
+   * [ASYNC] Submits a signed SubmittableExtrinsic with imported function [[submitSignedTx]].
    * Handles recoverable errors if identity is provided by re-signing and re-sending the tx up to two times.
    * Uses [[parseSubscriptionOptions]] to provide complete potentially defaulted options to the called [[submitSignedTx]].
    *

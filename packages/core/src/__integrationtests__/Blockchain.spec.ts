@@ -6,7 +6,7 @@ import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import BN from 'bn.js/'
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { IBlockchainApi } from '@kiltprotocol/types'
-import { Blockchain, BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { makeTransfer } from '../balance/Balance.chain'
 import Identity from '../identity/Identity'
 import { wannabeFaucet, wannabeCharlie, WS_ADDRESS } from './utils'
@@ -27,7 +27,7 @@ describe('Chain returns specific errors, that we check for', () => {
     testIdentity = Identity.buildFromURI(Identity.generateMnemonic())
     charlie = wannabeCharlie
     const tx = await makeTransfer(testIdentity.address, new BN(10000), 0)
-    await Blockchain.signAndSubmitTx(tx, faucet, {
+    await BlockchainUtils.signAndSubmitTx(tx, faucet, {
       resolveOn: BlockchainUtils.IS_FINALIZED,
       reSign: true,
     })

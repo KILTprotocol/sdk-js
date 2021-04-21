@@ -13,7 +13,7 @@ import type {
   ICTypeSchema,
   CompressedCTypeSchema,
 } from '@kiltprotocol/types'
-import { Blockchain } from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import Claim from '../claim/Claim'
 import Identity from '../identity/Identity'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
@@ -106,7 +106,7 @@ describe('CType', () => {
     const ctype = CType.fromSchema(ctypeModel, identityAlice.address)
 
     const tx = await ctype.store()
-    const result = await Blockchain.signAndSubmitTx(tx, identityAlice, {
+    const result = await BlockchainUtils.signAndSubmitTx(tx, identityAlice, {
       reSign: true,
     })
     expect(result).toBeInstanceOf(SubmittableResult)
@@ -169,8 +169,8 @@ describe('CType', () => {
       SDKErrors.ERROR_ADDRESS_INVALID(invalidAddressCtype.owner!, 'CType owner')
     )
     expect(() => CType.fromCType(faultyAddressTypeCType)).toThrowError(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       SDKErrors.ERROR_ADDRESS_INVALID(
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         faultyAddressTypeCType.owner!,
         'CType owner'
       )

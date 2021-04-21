@@ -5,7 +5,7 @@
 import type { ICType } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
-import { Blockchain, BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { AttestedClaim, Identity } from '..'
 import Attestation from '../attestation/Attestation'
 import { config, disconnect } from '../kilt'
@@ -38,7 +38,7 @@ async function writeRoot(
     delegator.address
   )
   await root.store().then((tx) =>
-    Blockchain.signAndSubmitTx(tx, delegator, {
+    BlockchainUtils.signAndSubmitTx(tx, delegator, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
       reSign: true,
     })
@@ -63,7 +63,7 @@ async function addDelegation(
   await delegation
     .store(delegee.signStr(delegation.generateHash()))
     .then((tx) =>
-      Blockchain.signAndSubmitTx(tx, delegator, {
+      BlockchainUtils.signAndSubmitTx(tx, delegator, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
@@ -83,7 +83,7 @@ beforeAll(async () => {
 
   if (!(await CtypeOnChain(DriversLicense))) {
     await DriversLicense.store().then((tx) =>
-      Blockchain.signAndSubmitTx(tx, attester, {
+      BlockchainUtils.signAndSubmitTx(tx, attester, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
@@ -135,7 +135,7 @@ describe('and attestation rights have been delegated', () => {
       attester.getPublicIdentity()
     )
     await attestation.store().then((tx) =>
-      Blockchain.signAndSubmitTx(tx, attester, {
+      BlockchainUtils.signAndSubmitTx(tx, attester, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
@@ -150,7 +150,7 @@ describe('and attestation rights have been delegated', () => {
 
     // revoke attestation through root
     await attClaim.attestation.revoke(root, 1).then((tx) =>
-      Blockchain.signAndSubmitTx(tx, root, {
+      BlockchainUtils.signAndSubmitTx(tx, root, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
@@ -179,7 +179,7 @@ describe('revocation', () => {
     )
     await expect(
       delegationA.revoke(delegator).then((tx) =>
-        Blockchain.signAndSubmitTx(tx, delegator, {
+        BlockchainUtils.signAndSubmitTx(tx, delegator, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })
@@ -197,7 +197,7 @@ describe('revocation', () => {
     )
     await expect(
       delegationRoot.revoke().then((tx) =>
-        Blockchain.signAndSubmitTx(tx, firstDelegee, {
+        BlockchainUtils.signAndSubmitTx(tx, firstDelegee, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })
@@ -207,7 +207,7 @@ describe('revocation', () => {
 
     await expect(
       delegationA.revoke(firstDelegee).then((tx) =>
-        Blockchain.signAndSubmitTx(tx, firstDelegee, {
+        BlockchainUtils.signAndSubmitTx(tx, firstDelegee, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })
@@ -230,7 +230,7 @@ describe('revocation', () => {
     )
     await expect(
       delegationRoot.revoke().then((tx) =>
-        Blockchain.signAndSubmitTx(tx, delegator, {
+        BlockchainUtils.signAndSubmitTx(tx, delegator, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })

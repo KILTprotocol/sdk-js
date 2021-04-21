@@ -3,11 +3,7 @@
  */
 
 import BN from 'bn.js'
-import {
-  Blockchain,
-  BlockchainUtils,
-  ExtrinsicErrors,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import { Attestation } from '..'
 import { makeTransfer } from '../balance/Balance.chain'
 import Identity from '../identity'
@@ -27,7 +23,7 @@ it('records an unknown extrinsic error when transferring less than the existenti
   const to = Identity.buildFromMnemonic('')
   await expect(
     makeTransfer(to.address, new BN(1)).then((tx) =>
-      Blockchain.signAndSubmitTx(tx, alice, {
+      BlockchainUtils.signAndSubmitTx(tx, alice, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
@@ -47,7 +43,7 @@ it('records an extrinsic error when ctype does not exist', async () => {
   })
   const tx = await attestation.store()
   await expect(
-    Blockchain.signAndSubmitTx(tx, alice, {
+    BlockchainUtils.signAndSubmitTx(tx, alice, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
       reSign: true,
     })

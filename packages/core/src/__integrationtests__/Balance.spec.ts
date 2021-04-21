@@ -3,7 +3,7 @@
  */
 
 import BN from 'bn.js/'
-import { Blockchain, BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
   getBalances,
   listenToBalanceChanges,
@@ -64,7 +64,7 @@ describe('when there is a dev chain with a faucet', () => {
     listenToBalanceChanges(ident.address, funny)
     const balanceBefore = await getBalances(faucet.address)
     await makeTransfer(ident.address, MIN_TRANSACTION).then((tx) =>
-      Blockchain.signAndSubmitTx(tx, faucet, {
+      BlockchainUtils.signAndSubmitTx(tx, faucet, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
@@ -96,7 +96,7 @@ describe('When there are haves and have-nots', () => {
 
   it('can transfer tokens from the rich to the poor', async () => {
     await makeTransfer(stormyD.address, MIN_TRANSACTION).then((tx) =>
-      Blockchain.signAndSubmitTx(tx, richieRich, {
+      BlockchainUtils.signAndSubmitTx(tx, richieRich, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
@@ -109,7 +109,7 @@ describe('When there are haves and have-nots', () => {
     const originalBalance = await getBalances(stormyD.address)
     await expect(
       makeTransfer(stormyD.address, MIN_TRANSACTION).then((tx) =>
-        Blockchain.signAndSubmitTx(tx, bobbyBroke, {
+        BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })
@@ -127,7 +127,7 @@ describe('When there are haves and have-nots', () => {
     const RichieBalance = await getBalances(richieRich.address)
     await expect(
       makeTransfer(bobbyBroke.address, RichieBalance.free).then((tx) =>
-        Blockchain.signAndSubmitTx(tx, richieRich, {
+        BlockchainUtils.signAndSubmitTx(tx, richieRich, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })
@@ -145,13 +145,13 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
     await makeTransfer(richieRich.address, MIN_TRANSACTION).then((tx) =>
-      Blockchain.signAndSubmitTx(tx, faucet, {
+      BlockchainUtils.signAndSubmitTx(tx, faucet, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
     )
     await makeTransfer(stormyD.address, MIN_TRANSACTION).then((tx) =>
-      Blockchain.signAndSubmitTx(tx, faucet, {
+      BlockchainUtils.signAndSubmitTx(tx, faucet, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
@@ -170,13 +170,13 @@ describe('When there are haves and have-nots', () => {
     listenToBalanceChanges(faucet.address, listener)
     await Promise.all([
       makeTransfer(richieRich.address, MIN_TRANSACTION).then((tx) =>
-        Blockchain.signAndSubmitTx(tx, faucet, {
+        BlockchainUtils.signAndSubmitTx(tx, faucet, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })
       ),
       makeTransfer(stormyD.address, MIN_TRANSACTION).then((tx) =>
-        Blockchain.signAndSubmitTx(tx, faucet, {
+        BlockchainUtils.signAndSubmitTx(tx, faucet, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })

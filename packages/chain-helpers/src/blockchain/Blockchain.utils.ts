@@ -7,12 +7,15 @@
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type {
+  IIdentity,
   ISubmittableResult,
+  ReSignOpts,
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
 import { ErrorHandler, ExtrinsicError, ExtrinsicErrors } from '../errorhandling'
 import { makeSubscriptionPromise } from './SubscriptionPromise'
+import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -144,4 +147,28 @@ export async function submitSignedTx(
     }
     return Promise.reject(error)
   })
+}
+/**
+ * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
+ *
+ * @param tx The generated unsigned SubmittableExtrinsic to submit.
+ * @param identity The [[Identity]] used to sign and potentially re-sign the tx.
+ * @param opts Partial optional criteria for resolving/rejecting the promise.
+ * @param opts.reSign Optional flag for re-attempting to send recoverably failed Tx.
+ * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
+ *
+ */
+export async function signAndSubmitTx(
+  tx: SubmittableExtrinsic,
+  identity: IIdentity,
+  {
+    reSign = false,
+    ...opts
+  }: Partial<SubscriptionPromise.Options> & Partial<ReSignOpts> = {}
+): Promise<ISubmittableResult> {
+  const chain = await getConnectionOrConnect()
+  const signedTx = await chain.signTx(identity, tx)
+  return reSign
+    ? chain.submitSignedTxWithReSign(signedTx, identity, opts)
+    : submitSignedTx(signedTx, opts)
 }
