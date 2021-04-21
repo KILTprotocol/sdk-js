@@ -3,7 +3,7 @@
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
-import { ICType, ICTypeMetadata } from '@kiltprotocol/types'
+import type { ICType, ICTypeMetadata } from '@kiltprotocol/types'
 import Identity from '../identity/Identity'
 import CType from './CType'
 import CTypeUtils from './CType.utils'

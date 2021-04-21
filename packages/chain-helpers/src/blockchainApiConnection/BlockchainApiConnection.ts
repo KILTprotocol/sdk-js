@@ -8,7 +8,7 @@
  */
 
 import { ApiPromise, WsProvider } from '@polkadot/api'
-import { RegistryTypes } from '@polkadot/types/types'
+import type { RegistryTypes } from '@polkadot/types/types'
 import { ConfigService } from '@kiltprotocol/config'
 import Blockchain from '../blockchain/Blockchain'
 

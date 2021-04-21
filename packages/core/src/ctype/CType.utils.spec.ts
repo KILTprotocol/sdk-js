@@ -2,7 +2,7 @@
  * @group unit/ctype
  */
 
-import { ICType } from '@kiltprotocol/types'
+import type { ICType } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import {
   verifyClaimStructure,

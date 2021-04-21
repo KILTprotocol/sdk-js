@@ -3,7 +3,7 @@
  * @module RequestForAttestationUtils
  */
 
-import {
+import type {
   IAttestedClaim,
   CompressedAttestedClaim,
   CompressedRequestForAttestation,

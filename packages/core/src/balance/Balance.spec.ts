@@ -4,13 +4,14 @@
 
 import { SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
-import { AccountData, AccountInfo } from '@polkadot/types/interfaces'
+import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
 import TYPE_REGISTRY from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import type { Balances } from '@kiltprotocol/types'
 import Identity from '../identity/Identity'
 import {
-  getBalance,
+  getBalances,
   listenToBalanceChanges,
   makeTransfer,
 } from './Balance.chain'
@@ -58,25 +59,27 @@ describe('Balance', () => {
     bob = Identity.buildFromURI('//Bob')
   })
   it('should listen to balance changes', async (done) => {
-    const listener = (account: string, balance: BN, change: BN): void => {
+    const listener = (
+      account: string,
+      balances: Balances,
+      changes: Balances
+    ): void => {
       expect(account).toBe(bob.address)
-      expect(balance.toNumber()).toBe(BALANCE)
-      expect(change.toNumber()).toBe(FEE)
+      expect(balances.free.toNumber()).toBe(BALANCE)
+      expect(changes.free.toNumber()).toBe(FEE)
       done()
     }
 
     await listenToBalanceChanges(bob.address, listener)
-    const currentBalance = await getBalance(bob.address)
-    expect(currentBalance.toNumber()).toBeTruthy()
-    expect(currentBalance.toNumber()).toEqual(BALANCE - FEE)
+    const currentBalance = await getBalances(bob.address)
+    expect(currentBalance.free.toNumber()).toBeTruthy()
+    expect(currentBalance.free.toNumber()).toEqual(BALANCE - FEE)
   })
 
   it('should make transfer', async () => {
-    const status = await makeTransfer(
-      alice,
-      bob.address,
-      new BN(100)
-    ).then((tx) => BlockchainUtils.submitTxWithReSign(tx, alice))
+    const status = await makeTransfer(bob.address, new BN(100)).then((tx) =>
+      BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
+    )
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
@@ -88,11 +91,10 @@ describe('Balance', () => {
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
     const status = await makeTransfer(
-      alice,
       bob.address,
       amount,
       exponent
-    ).then((tx) => BlockchainUtils.submitTxWithReSign(tx, alice))
+    ).then((tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true }))
     expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount

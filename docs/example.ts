@@ -35,7 +35,7 @@ async function setup(): Promise<{
   )
   console.log(
     'Attester balance is:',
-    await Kilt.Balance.getBalance(attester.address)
+    await Kilt.Balance.getBalances(attester.address)
   )
 
   // ------------------------- CType    ----------------------------------------
@@ -72,9 +72,10 @@ async function setup(): Promise<{
   // ! This costs tokens !
   // Also note, that the completely same ctype can only be stored once on the blockchain.
   try {
-    await ctype.store(attester).then((tx) =>
-      Kilt.BlockchainUtils.submitTxWithReSign(tx, attester, {
-        resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+    await ctype.store().then((tx) =>
+      Kilt.BlockchainUtils.signAndSubmitTx(tx, attester, {
+        resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+        reSign: true,
       })
     )
   } catch (e) {

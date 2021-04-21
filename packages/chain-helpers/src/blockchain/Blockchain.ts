@@ -7,11 +7,11 @@
  * @module Blockchain
  */
 
-import { ApiPromise } from '@polkadot/api'
-import { Header } from '@polkadot/types/interfaces/types'
-import { AnyJson, Codec } from '@polkadot/types/types'
+import type { ApiPromise } from '@polkadot/api'
+import type { Header } from '@polkadot/types/interfaces/types'
+import type { AnyJson, Codec } from '@polkadot/types/types'
 import { Text } from '@polkadot/types'
-import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
+import type { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
@@ -23,7 +23,7 @@ import type {
   BlockchainStats,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import { parseSubscriptionOptions, submitSignedTx } from './Blockchain.utils'
+import { submitSignedTx } from './Blockchain.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 
@@ -79,11 +79,12 @@ export default class Blockchain implements IBlockchainApi {
       tx,
       nonce
     )
+
     return signed
   }
 
   /**
-   * [ASYNC] Submits a signed SubmittableExtrinsic with exported function [[submitSignedTx]].
+   * [ASYNC] Submits a signed SubmittableExtrinsic with imported function [[submitSignedTx]].
    * Handles recoverable errors if identity is provided by re-signing and re-sending the tx up to two times.
    * Uses [[parseSubscriptionOptions]] to provide complete potentially defaulted options to the called [[submitSignedTx]].
    *
@@ -95,47 +96,28 @@ export default class Blockchain implements IBlockchainApi {
    * @returns A promise which can be used to track transaction status.
    * If resolved, this promise returns the eventually resolved ISubmittableResult.
    */
-  public async submitTxWithReSign(
+  async submitSignedTxWithReSign(
     tx: SubmittableExtrinsic,
-    identity?: IIdentity,
+    identity: IIdentity,
     opts?: Partial<SubscriptionPromise.Options>
   ): Promise<ISubmittableResult> {
-    const options = parseSubscriptionOptions(opts)
     const retry = async (reason: Error): Promise<ISubmittableResult> => {
       if (
         reason.message === SDKErrors.ERROR_TRANSACTION_RECOVERABLE().message &&
         identity
       ) {
-        return submitSignedTx(await this.reSignTx(identity, tx), options)
+        return submitSignedTx(await this.reSignTx(identity, tx), opts)
       }
       throw reason
     }
-    return submitSignedTx(tx, options).catch(retry).catch(retry)
-  }
-
-  /**
-   * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
-   *
-   * @param identity The [[Identity]] used to sign and potentially re-sign the tx.
-   * @param tx The generated unsigned SubmittableExtrinsic to submit.
-   * @param opts Partial optional criteria for resolving/rejecting the promise.
-   * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
-   *
-   */
-  public async submitTx(
-    identity: IIdentity,
-    tx: SubmittableExtrinsic,
-    opts?: Partial<SubscriptionPromise.Options>
-  ): Promise<ISubmittableResult> {
-    const signedTx = await this.signTx(identity, tx)
-    return this.submitTxWithReSign(signedTx, identity, opts)
+    return submitSignedTx(tx, opts).catch(retry).catch(retry)
   }
 
   /**
    * [ASYNC] Retrieves the Nonce for Transaction signing for the specified account and increments the in accountNonces mapped Index.
    *
    * @param accountAddress The address of the identity that we retrieve the nonce for.
-   * @returns {@link https://github.com/indutny/bn.js/ | BN} representation of the Tx nonce for the identity.
+   * @returns Representation of the Tx nonce for the identity.
    *
    */
   public async getNonce(accountAddress: string): Promise<BN> {

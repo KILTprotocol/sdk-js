@@ -11,8 +11,8 @@
  * @preferred
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import {
+import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import type {
   IPublicIdentity,
   IAttestation,
   IRequestForAttestation,
@@ -58,7 +58,7 @@ export default class Attestation implements IAttestation {
     identity: Identity,
     maxDepth: number
   ): Promise<SubmittableExtrinsic> {
-    return revoke(claimHash, identity, maxDepth)
+    return revoke(claimHash, maxDepth)
   }
 
   /**
@@ -175,8 +175,8 @@ export default class Attestation implements IAttestation {
    * });
    * ```
    */
-  public async store(identity: Identity): Promise<SubmittableExtrinsic> {
-    return store(this, identity)
+  public async store(): Promise<SubmittableExtrinsic> {
+    return store(this)
   }
 
   /**
@@ -195,7 +195,7 @@ export default class Attestation implements IAttestation {
     identity: Identity,
     maxDepth: number
   ): Promise<SubmittableExtrinsic> {
-    return revoke(this.claimHash, identity, maxDepth)
+    return revoke(this.claimHash, maxDepth)
   }
 
   /**

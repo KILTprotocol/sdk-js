@@ -11,17 +11,22 @@
  */
 
 import { Identity } from '@kiltprotocol/core'
-import {
+import type {
   IPublicIdentity,
   CompressedMessageBody,
   IMessage,
   ISubmitClaimsForCTypes,
   IEncryptedMessage,
   MessageBody,
-  MessageBodyType,
+  ICType,
 } from '@kiltprotocol/types'
+import { MessageBodyType } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { compressMessage, decompressMessage } from './Message.utils'
+import {
+  compressMessage,
+  decompressMessage,
+  verifyRequiredCTypeProperties,
+} from './Message.utils'
 
 export default class Message implements IMessage {
   /**
@@ -87,7 +92,7 @@ export default class Message implements IMessage {
   ): void {
     if (
       Crypto.hashStr(
-        encrypted.message + encrypted.nonce + encrypted.createdAt
+        encrypted.ciphertext + encrypted.nonce + encrypted.createdAt
       ) !== encrypted.hash
     ) {
       throw SDKErrors.ERROR_NONCE_HASH_INVALID(
@@ -121,7 +126,7 @@ export default class Message implements IMessage {
     Message.ensureHashAndSignature(encrypted, encrypted.senderAddress)
 
     const ea: Crypto.EncryptedAsymmetricString = {
-      box: encrypted.message,
+      box: encrypted.ciphertext,
       nonce: encrypted.nonce,
     }
     const decoded: string | false = receiver.decryptAsymmetricAsStr(
@@ -203,7 +208,7 @@ export default class Message implements IMessage {
     return {
       messageId: this.messageId,
       receivedAt: this.receivedAt,
-      message: this.message,
+      ciphertext: this.message,
       nonce: this.nonce,
       createdAt: this.createdAt,
       hash: this.hash,
@@ -216,5 +221,12 @@ export default class Message implements IMessage {
 
   public compress(): CompressedMessageBody {
     return compressMessage(this.body)
+  }
+
+  public static verifyRequiredCTypeProperties(
+    requiredProperties: string[],
+    cType: ICType
+  ): boolean {
+    return verifyRequiredCTypeProperties(requiredProperties, cType)
   }
 }

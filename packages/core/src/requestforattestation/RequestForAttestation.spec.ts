@@ -4,7 +4,7 @@
 
 /* eslint-disable dot-notation */
 import { hexToU8a } from '@polkadot/util'
-import {
+import type {
   IClaim,
   IClaimContents,
   CompressedAttestedClaim,

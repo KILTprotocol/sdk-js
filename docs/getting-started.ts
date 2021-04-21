@@ -46,10 +46,17 @@ async function main(): Promise<void> {
     // using ed25519 as key type because this is how the endowed identity is set up
     { signingKeyPairType: 'ed25519' }
   )
-  tx = await ctype.store(identity)
-  await Kilt.BlockchainUtils.submitSignedTx(tx, {
-    resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+  tx = await ctype.store()
+  /* This transaction has to be signed and sent to the Blockchain, either automatically like this */
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+    reSign: true,
   })
+
+  /* or manually step by step */
+  // const chain = Kilt.connect()
+  // chain.signTx(identity, tx)
+  // await Kilt.BlockchainUtils.submitSignedTx(tx)
 
   /* At the end of the process, the `CType` object should contain the following. */
   console.log(ctype)
@@ -125,7 +132,7 @@ async function main(): Promise<void> {
     console.log(attestation)
 
     /* Now the Attester can store the attestation on the blockchain, which also costs tokens: */
-    tx = await attestation.store(attester)
+    tx = await attestation.store()
     await Kilt.BlockchainUtils.submitSignedTx(tx, {
       resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
     })
@@ -171,7 +178,7 @@ async function main(): Promise<void> {
       /* 6.1. Request presentation for CTYPE */
       const messageBodyForClaimer: IRequestClaimsForCTypes = {
         type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: { ctypes: [ctype.hash] },
+        content: [{ cTypeHash: ctype.hash }],
       }
       const messageForClaimer = new Kilt.Message(
         messageBodyForClaimer,

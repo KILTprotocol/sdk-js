@@ -3,12 +3,6 @@
 In this simple tutorial we show how you can start developing your own applications on top of the KILT Protocol.
 The next examples give you a simple skeleton on how to use the KILT SDK to create identities, CTYPEs and claims, and also how to issue an attestation with the use of our messaging framework.
 
-⚠️ In version [0.19.0](https://github.com/KILTprotocol/sdk-js/releases/tag/0.19.0) we added the privacy feature among other things.
-As a result, both the **attestation and the verification can now be done in two different ways: with and without privacy enhancement**.
-The privacy enhancement enables zero knowledge proofs of attested claims in which a **claimer reveals nothing about themselves** except for ["public" properties](#611-without-privacy-enhancement) the verifier requests to see (**multi-show unlinkability** and **selective disclosure**).
-For more information please check out our [lightning talk at the April 2020 Sub0](https://drive.google.com/file/d/16HHPn1BA5o-W8QCeHfoTI1tNb5yQUZzt/view?usp=sharing) or these [slides](https://speakerdeck.com/weichweich/anonymous-credentials).
-_Please note that this is **still experimental** as the used cryptography library is **lacking a security audit**._
-
 # Quick Start Guide <!-- omit in toc -->
 
 - [1. How to install the SDK](#1-how-to-install-the-sdk)
@@ -19,13 +13,10 @@ _Please note that this is **still experimental** as the used cryptography librar
   - [3.2. Storing a CTYPE](#32-storing-a-ctype)
 - [4. How to build a Claim](#4-how-to-build-a-claim)
 - [5. How to request, create and send an Attestation](#5-how-to-request-create-and-send-an-attestation)
-  - [5.1. Without privacy enhancement](#51-without-privacy-enhancement)
-    - [5.1.1. Requesting an Attestation](#511-requesting-an-attestation)
-    - [5.1.2. Sending an Attestation](#512-sending-an-attestation)
-  - [5.2. With privacy enhancement](#52-with-privacy-enhancement)
+  - [5.1. Requesting an Attestation](#51-requesting-an-attestation)
+  - [5.2. Sending an Attestation](#52-sending-an-attestation)
 - [6. Verify a claim](#6-verify-a-claim)
   - [6.1. Request presentation for CTYPE](#61-request-presentation-for-ctype)
-    - [6.1.1. Without privacy enhancement](#611-without-privacy-enhancement)
   - [6.2. Verify presentation](#62-verify-presentation)
 - [7. Disconnect from chain](#7-disconnect-from-chain)
 
@@ -45,11 +36,11 @@ yarn add @kiltprotocol/sdk-js
 
 ### 1.1. Prerequisites
 
-1. Make a new directory and navigate into it `mkdir kilt-rocks && cd kilt-rocks`
+1. Make a new directory and navigate into it with `mkdir kilt-rocks && cd kilt-rocks`
 2. Install the SDK with `yarn add @kiltprotocol/sdk-js`
 3. Install typescript with `yarn add typescript`
-4. Make a new file. E.g. `touch getting-started.ts`
-5. Execute file with `npx ts-node getting-started.ts`
+4. Make a new file, e.g. `touch getting-started.ts`
+5. Execute the file with `npx ts-node getting-started.ts`
 
 ### Note <!-- omit in toc -->
 
@@ -63,7 +54,9 @@ async function main() {
 main()
 ```
 
-To keep the examples short, we will not wrap each one in an asynchronous function and expect you to do this on your own. Also, the compiler will complain when you try to `await` a promise on the root level - except if you are using TypeScript 3.8+ and configure your _tsconfig.json_ to enable this, [see here](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#top-level-await). In case you are unsure, please have have a look at our [workshop](https://kiltprotocol.github.io/kilt-workshop-101/#/) where we provide everything ready to be copied and pasted.
+To keep the examples short, we will not wrap each one in an asynchronous function and expect you to do this on your own. Also, the compiler will complain when you try to `await` a promise on the root level - except if you are using TypeScript 3.8+ and configure your _tsconfig.json_ to enable this (see [the typescript doc](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#top-level-await) for more).
+
+In case you are unsure, please have a look at our [workshop](https://kiltprotocol.github.io/kilt-workshop-101/#/) where we provide everything ready to be copied and pasted.
 
 💡 At any point, you can **check out our [getting-started.ts](./getting-started.ts) for a working example of the code presented in the following**.
 
@@ -131,7 +124,7 @@ const ctype = Kilt.CType.fromSchema({
 ### 3.2. Storing a CTYPE
 
 Before you can store the CTYPE on the blockchain, you have to configure your blockchain address and connect to it.
-Either Explicitly:
+Either explicitly:
 
 ```typescript
 Kilt.config({ address: YOUR_CHAIN_ADDRESS })
@@ -154,15 +147,15 @@ initializes the SDK _and_ sets the config, so it is related to the second approa
 
 There are [three types](https://dev.kilt.io/#/?id=source-code-and-deployed-instances) of KILT chains which you can use, each one having a different address:
 
-1. The prod-net: `ws://full-nodes.kilt.io`
+1. The prod-net: `wss://full-nodes.kilt.io`
 2. The dev-net: `wss://full-nodes-lb.devnet.kilt.io`
 3. A local node: `ws://127.0.0.1:9944`
 
 In case you go with option #1 or #2, you have to request test money ([prod-net](https://faucet.kilt.io/), [dev-net](https://faucet-devnet.kilt.io/)) **since storing a CTYPE on the chain requires tokens** as transaction fee.
-However, **we recommend to start your local node** and use a mnemonic which already has tokens by using our docker image
+However, **we recommend to start your local node** and use a mnemonic which already has tokens by using our docker image. Depending on which version of the SDK you are using, you might need to spin up the latest officially released version of the node (working with the latest release of the SDK) or the latest development version of the node (working with the latest development version of the SDK). Either version can be started with the following command by using one between the `latest` and `develop` tag.
 
 ```
-docker run -p 9944:9944 kiltprotocol/mashnet-node:develop --dev --ws-port 9944 --ws-external --rpc-external
+docker run -p 9944:9944 kiltprotocol/mashnet-node:{latest,develop} --dev --ws-port 9944 --ws-external --rpc-external
 ```
 
 To store the CTYPE on the blockchain, you have to call:
@@ -174,13 +167,30 @@ const identity = Kilt.Identity.buildFromMnemonic(
   // using ed25519 as key type because this is how the endowed identity is set up
   { signingKeyPairType: 'ed25519' }
 )
-tx = await ctype.store(identity)
-await Kilt.BlockchainUtils.submitSignedTx(tx, {
-  resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
-})
+const tx = await ctype.store()
+
+// either sign and send in one step
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
+
+// or step by step
+const chain = Kilt.connect()
+const signed = chain.signTx(identity, tx)
+await Kilt.BlockchainUtils.submitSignedTx(tx)
 ```
 
 Please note that the **same CTYPE can only be stored once** on the blockchain.
+
+If a transaction fails with an by re-signing recoverable error (e.g. nonce collision),
+BlockchainUtils.signAndSubmitTx has the ability to re-sign and re-send the failed tx if the appropriate flag is set:
+```typescript
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+    reSign: true,
+  })
+```
+
 
 At the end of the process, the `CType` object should match the CType below.
 This can be saved anywhere, for example on a CTYPE registry service:
@@ -201,7 +211,7 @@ CType {
 
 ## 4. How to build a Claim
 
-To construct a claim, we need to know the structure of the claim that is defined in a CTYPE. Based on the CTYPE, we need to build a basic claim object with the respective fields filled out:
+To construct a claim, we need to know the structure of the claim that is defined in a CTYPE. Based on the CTYPE, we need to build a basic claim object with the respective fields filled out. In our example, the claim would be:
 
 ```typescript
 const rawClaim = {
@@ -226,20 +236,16 @@ As a result we get the following KILT claim:
 Claim {
   cTypeHash: '0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5',
   contents: { name: 'Alice', age: 29 },
-  owner: '4sfaMQFbtQTAEoPeTojr68kfavMv2KDoEBRUfYXJCDMZRvs2'
+  owner: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire'
 }
 ```
 
 ## 5. How to request, create and send an Attestation
 
-Since the zero knowledge cryptography we are using is still experimental, we will solely focus on attestations without privacy enhancement.
-
-### 5.1. Without privacy enhancement
-
 First, we need to build a request for an attestation, which has to include a claim and the address of the Claimer.
-(_Note_ that this object allows much more functionality, however, we do not go into the details here)
+(_Note_ that this object offers many more functionalities, however, we do not go into the details here).
 
-#### 5.1.1. Requesting an Attestation
+#### 5.1. Requesting an Attestation
 
 ```typescript
 import Kilt from '@kiltprotocol/sdk-js'
@@ -257,7 +263,7 @@ RequestForAttestation {
   claim: Claim {
     cTypeHash: '0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5',
     contents: { name: 'Alice', age: 29 },
-    owner: '4pxPdnbUNXsUJk9f9paMPuQQR4Pf4RRkS4UakEfK6BMvXbbJ'
+    owner: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire'
   },
   claimHashes: [
     '0x051e915e7f2803b54ab30d7206605662b55118412b7f295f30614b3940a2d539',
@@ -276,21 +282,21 @@ RequestForAttestation {
 }
 ```
 
-#### 5.1.2. Sending an Attestation
+#### 5.2. Sending an Attestation
 
-Before we can send the request for an attestation to an Attester, we should first [create an Attester identity like above](#how-to-generate-an-identity).
+Before we can send the request for an attestation to an Attester, we should first create an Attester identity, like done [above](#how-to-generate-an-identity).
 
 ```typescript
 const attesterMnemonic = Kilt.Identity.generateMnemonic()
-// mnemonic: prepare neither execute excuse return visit claim hill around riot valid humor
+// Alternatively, a well-known mnemonic is -> prepare neither execute excuse return visit claim hill around riot valid humor
 const attester = Kilt.Identity.buildFromMnemonic(mnemonic)
-// attester.address: 4oFi7fgq9Bzd1vwjZUSoYuATiqSvy5ZJFbScvQL2jAwJkWB3
+// Using the well-known mnemonic, attester.address = 4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F
 ```
 
 If the Attester doesn't live on the same machine, we need to send them a message with the request.
 KILT contains a simple messaging system and we describe it through the following example.
 
-First, we create the request for an attestation message in which the Claimer automatically encodes the message with the public key of the Attester:
+First, we create the request for attestation message which the Claimer encrypts with the public key of the Attester:
 
 ```typescript
 import Kilt, { IRequestAttestationForClaim } from '@kiltprotocol/sdk-js'
@@ -315,8 +321,8 @@ Message {
     type: 'request-attestation-for-claim'
   },
   createdAt: 1595252779597,
-  receiverAddress: '4sQR3dfZrrxobV69jQmLvArxyUto5eJtmyc2f9xs1Hc4quu3',
-  senderAddress: '4sfaMQFbtQTAEoPeTojr68kfavMv2KDoEBRUfYXJCDMZRvs2',
+  receiverAddress: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
+  senderAddress: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire',
   senderBoxPublicKey: '0x04c84fc046c9c783161d9f60a9b884592e58388a99eed2b3824e90951980dd25',
   message: '0xFEED....CAFE',
   nonce: '0x231e9050c63838987c4d956592550fccacf7fd2d065f7e0c',
@@ -332,13 +338,12 @@ const encrypted = message.encrypt()
 ```
 
 The messaging system is transport agnostic.
-Therefore, **during decryption** both the **sender identity and the validity of the message are checked automatically**.
 
 ```typescript
 const decrypted = Kilt.Message.decrypt(encrypted, attester)
 ```
 
-When decryption completes, you can assume that the sender of message is also the owner.
+As sender identity and message validity are also checked during decryption, if the decryption process completes successfully, you can assume that the sender of the message is also the owner of the claim, as the two identites match.
 At this point the Attester has the original request for attestation object:
 
 ```typescript
@@ -366,12 +371,12 @@ Attestation {
   claimHash: '0x7e72a141ae9581dfb7a4d5bc27c84a41366b8ba9bea558fbddd2d9997d3d4c2b',
   cTypeHash: '0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5',
   delegationId: null,
-  owner: '4sQR3dfZrrxobV69jQmLvArxyUto5eJtmyc2f9xs1Hc4quu3',
+  owner: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
   revoked: false
 }
 ```
 
-Now the Attester can store the attestation on the blockchain, which also costs tokens:
+Now the Attester must store the attestation on the blockchain, which also costs tokens:
 
 ```typescript
 const tx = await attestation.store(attester)
@@ -397,7 +402,7 @@ AttestedClaim {
     claim: Claim {
       cTypeHash: '0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5',
       contents: [Object],
-      owner: '4sfaMQFbtQTAEoPeTojr68kfavMv2KDoEBRUfYXJCDMZRvs2'
+      owner: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire'
     },
     claimHashes: [
       '0x20dd4bb18fd12025cf652db358bc82849ff632ec3e6382ca120a3eb7b138f2b2',
@@ -418,7 +423,7 @@ AttestedClaim {
     claimHash: '0x7e72a141ae9581dfb7a4d5bc27c84a41366b8ba9bea558fbddd2d9997d3d4c2b',
     cTypeHash: '0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5',
     delegationId: null,
-    owner: '4sQR3dfZrrxobV69jQmLvArxyUto5eJtmyc2f9xs1Hc4quu3',
+    owner: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
     revoked: false
   }
 }
@@ -452,8 +457,8 @@ Message {
     type: 'submit-attestation-for-claim'
   },
   createdAt: 1595254601814,
-  receiverAddress: '4sfaMQFbtQTAEoPeTojr68kfavMv2KDoEBRUfYXJCDMZRvs2',
-  senderAddress: '4sQR3dfZrrxobV69jQmLvArxyUto5eJtmyc2f9xs1Hc4quu3',
+  receiverAddress: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire',
+  senderAddress: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
   senderBoxPublicKey: '0x97a9f05a70fe934b365d8b63dea7424b4070d49f64f2baa70e74d984da797d2d',
   message: '0xFEED...CAFE',
   nonce: '0x8f18d3394f4d325106c7b618046f6a8415bff1d5b4d267a8',
@@ -462,7 +467,7 @@ Message {
 }
 ```
 
-After receiving the message, the Claimer just needs to save it and can use it later for verification:
+After receiving the message, the Claimer just needs to save it and use it later for verification:
 
 ```typescript
 let myAttestedClaim: AttestedClaim
@@ -476,7 +481,7 @@ if (
 }
 ```
 
-## 6. Verify a claim
+## 6. How to verify a Claim
 
 As in the attestation, you need a second identity to act as the verifier:
 
@@ -527,7 +532,7 @@ const messageForVerifier = new Kilt.Message(
 ### 6.2. Verify presentation
 
 When verifying the claimer's message, the verifier has to use their session which was created during the CTYPE request.
-The result will be a boolean and the attested claim(s) which either are copies of the attested claim(s) the claimer sent OR they only show requested properties in case of privacy enhancement.
+The result will be a boolean indicating the result of the verification and the attested claim(s) which are either sent in their entirety OR have been stripped off of the properties that the verifier did not request to verify.
 
 ```typescript
 if (

@@ -46,7 +46,7 @@
 
 import Blockchain from '../../blockchain/Blockchain'
 import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import {
+import type {
   AccountInfoWithProviders,
   ExtrinsicStatus,
   Index,

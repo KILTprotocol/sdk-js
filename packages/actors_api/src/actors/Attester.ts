@@ -14,7 +14,6 @@ import type {
   IAttestation,
   IMessage,
   IRequestAttestationForClaim,
-  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import Message from '@kiltprotocol/messaging'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
@@ -75,9 +74,8 @@ export async function issueAttestation(
     attester.getPublicIdentity()
   )
 
-  await attestation
-    .store(attester)
-    .then((tx) => BlockchainUtils.submitTxWithReSign(tx, attester))
+  const tx = await attestation.store()
+  await BlockchainUtils.signAndSubmitTx(tx, attester, { reSign: true })
 
   const revocationHandle = { claimHash: attestation.claimHash }
   return {
@@ -117,11 +115,10 @@ export async function revokeAttestation(
     attestation
   )
 
-  await Attestation.revoke(
+  const tx = await Attestation.revoke(
     revocationHandle.claimHash,
     attester,
     delegationTreeTraversalSteps
-  ).then((tx: SubmittableExtrinsic) =>
-    BlockchainUtils.submitTxWithReSign(tx, attester)
   )
+  BlockchainUtils.signAndSubmitTx(tx, attester, { reSign: true })
 }

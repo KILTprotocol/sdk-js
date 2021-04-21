@@ -3,7 +3,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Header } from '@polkadot/types/interfaces/types'
+import type { Header } from '@polkadot/types/interfaces/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { WS_ADDRESS } from './utils'
 import { config, disconnect } from '../kilt'

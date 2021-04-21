@@ -5,9 +5,9 @@
 
 import { decodeAddress } from '@polkadot/keyring'
 import { u8aToHex } from '@polkadot/util'
-import { AnyJson } from '@polkadot/types/types'
+import type { AnyJson } from '@polkadot/types/types'
 import { Did, ClaimUtils } from '@kiltprotocol/core'
-import { IAttestedClaim, ICType } from '@kiltprotocol/types'
+import type { IAttestedClaim, ICType } from '@kiltprotocol/types'
 import { signatureVerify } from '@polkadot/util-crypto'
 import {
   AttestedProof,

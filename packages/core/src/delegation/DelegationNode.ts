@@ -130,16 +130,12 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * [ASYNC] Stores the delegation node on chain.
    *
-   * @param identity Account used to store the delegation node.
    * @param signature Signature of the delegate to ensure it is done under the delegate's permission.
    * @returns Promise containing a SubmittableExtrinsic.
    */
-  public async store(
-    identity: Identity,
-    signature: string
-  ): Promise<SubmittableExtrinsic> {
+  public async store(signature: string): Promise<SubmittableExtrinsic> {
     log.info(`:: store(${this.id})`)
-    return store(this, identity, signature)
+    return store(this, signature)
   }
 
   /**
@@ -171,7 +167,7 @@ export default class DelegationNode extends DelegationBaseNode
     log.debug(
       `:: revoke(${this.id}) with maxRevocations=${revocationCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${identity.address}`
     )
-    return revoke(this.id, identity, steps, revocationCount)
+    return revoke(this.id, steps, revocationCount)
   }
 
   public async getChildren(): Promise<DelegationNode[]> {

@@ -3,19 +3,24 @@
  * @module IMessage
  */
 
-import { AnyJson } from '@polkadot/types/types'
-import { CompressedAttestation, IAttestation } from './Attestation'
-import { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'
-import { CompressedClaim, IClaim, IClaimContents, PartialClaim } from './Claim'
-import { ICType } from './CType'
-import { IDelegationBaseNode, IDelegationNode } from './Delegation'
-import { IPublicIdentity } from './PublicIdentity'
-import { CompressedQuoteAgreed, IQuoteAgreement } from './Quote'
-import {
+import type { AnyJson } from '@polkadot/types/types'
+import type { CompressedAttestation, IAttestation } from './Attestation'
+import type { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'
+import type {
+  CompressedClaim,
+  IClaim,
+  IClaimContents,
+  PartialClaim,
+} from './Claim'
+import type { ICType } from './CType'
+import type { IDelegationBaseNode, IDelegationNode } from './Delegation'
+import type { IPublicIdentity } from './PublicIdentity'
+import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote'
+import type {
   CompressedRequestForAttestation,
   IRequestForAttestation,
 } from './RequestForAttestation'
-import { CompressedTerms, ITerms } from './Terms'
+import type { CompressedTerms, ITerms } from './Terms'
 
 export enum MessageBodyType {
   REQUEST_TERMS = 'request-terms',
@@ -76,7 +81,7 @@ export type IEncryptedMessage = Pick<
   | 'messageId'
   | 'receivedAt'
 > & {
-  message: string
+  ciphertext: string
   nonce: string
   hash: string
   signature: string
@@ -117,7 +122,7 @@ export interface IRejectAttestationForClaim extends IMessageBodyBase {
 }
 
 export interface IRequestClaimsForCTypes extends IMessageBodyBase {
-  content: IRequestClaimsForCTypesContent
+  content: IRequestClaimsForCTypesContent[]
   type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
 }
 
@@ -178,7 +183,7 @@ export type CompressedRejectAttestationForClaim = [
 ]
 export type CompressedRequestClaimsForCTypes = [
   MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
-  Array<ICType['hash']>
+  CompressedRequestClaimsForCTypesContent[]
 ]
 export type CompressedSubmitClaimsForCTypes = [
   MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
@@ -220,7 +225,9 @@ export interface ISubmitAttestationForClaimContent {
 }
 
 export interface IRequestClaimsForCTypesContent {
-  ctypes: Array<ICType['hash']>
+  cTypeHash: ICType['hash']
+  acceptedAttester?: Array<IPublicIdentity['address']>
+  requiredProperties?: string[]
 }
 
 export interface IDelegationData {
@@ -261,6 +268,12 @@ export type CompressedRejectedTerms = [
   CompressedPartialClaim,
   CompressedAttestedClaim[],
   IDelegationBaseNode['id'] | undefined
+]
+
+export type CompressedRequestClaimsForCTypesContent = [
+  ICType['hash'],
+  Array<IPublicIdentity['address']> | undefined,
+  string[] | undefined
 ]
 
 export type CompressedRequestAttestationForClaimContent = [

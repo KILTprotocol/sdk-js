@@ -9,7 +9,7 @@ import {
   RequestForAttestation,
   SDKErrors,
 } from '@kiltprotocol/core'
-import {
+import type {
   IClaim,
   IMessage,
   IRequestAttestationForClaim,

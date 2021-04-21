@@ -4,7 +4,7 @@
 
 import * as string from '@polkadot/util/string'
 import { Keyring } from '@polkadot/keyring'
-import { KeyringPair } from '@polkadot/keyring/types'
+import type { KeyringPair } from '@polkadot/keyring/types'
 import nacl from 'tweetnacl'
 import * as Crypto from './Crypto'
 

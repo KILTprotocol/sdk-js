@@ -7,10 +7,7 @@ import {
   Attester,
   Verifier,
 } from '@kiltprotocol/actors-api'
-import {
-  BlockchainUtils,
-  SubscriptionPromise,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import * as ChainHelpers from '@kiltprotocol/chain-helpers'
 import * as Utils from '@kiltprotocol/utils'
 
@@ -25,7 +22,6 @@ export {
   Attester,
   Verifier,
   BlockchainUtils,
-  SubscriptionPromise,
   ChainHelpers,
   Utils,
 }
@@ -40,7 +36,6 @@ export default {
   Attester,
   Verifier,
   BlockchainUtils,
-  SubscriptionPromise,
   ChainHelpers,
   Utils,
 }

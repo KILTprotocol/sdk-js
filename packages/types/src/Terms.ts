@@ -3,12 +3,15 @@
  * @module ITerms
  */
 
-import { IAttestedClaim, CompressedAttestedClaim } from './AttestedClaim'
-import { ICType } from './CType'
-import { IDelegationBaseNode } from './Delegation'
-import { IQuoteAttesterSigned, CompressedQuoteAttesterSigned } from './Quote'
-import { CompressedPartialClaim } from './Message'
-import { PartialClaim } from './Claim'
+import type { IAttestedClaim, CompressedAttestedClaim } from './AttestedClaim'
+import type { ICType } from './CType'
+import type { IDelegationBaseNode } from './Delegation'
+import type {
+  IQuoteAttesterSigned,
+  CompressedQuoteAttesterSigned,
+} from './Quote'
+import type { CompressedPartialClaim } from './Message'
+import type { PartialClaim } from './Claim'
 
 export interface ITerms {
   claim: PartialClaim

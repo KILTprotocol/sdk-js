@@ -2,7 +2,7 @@
  * @group unit/attestation
  */
 
-import {
+import type {
   IAttestation,
   CompressedAttestation,
   ICType,

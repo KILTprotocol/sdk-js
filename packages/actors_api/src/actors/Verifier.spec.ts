@@ -3,7 +3,7 @@
  */
 
 import { CType, Identity } from '@kiltprotocol/core'
-import { IClaim, ICType } from '@kiltprotocol/types'
+import type { IClaim, ICType } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import Message from '@kiltprotocol/messaging'
 import { Attester, Claimer, Verifier } from '..'
@@ -102,7 +102,7 @@ describe('Verifier', () => {
       Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES
     )
     if (request.body.type === Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES) {
-      expect(request.body.content.ctypes).toEqual(['this is a ctype hash'])
+      expect(request.body.content[0].cTypeHash).toEqual('this is a ctype hash')
     }
   })
 
