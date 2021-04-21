@@ -54,11 +54,9 @@ async function main(): Promise<void> {
   })
 
   /* or manually step by step */
-  const chain = Kilt.connect()
-
-  chain.signTx(identity, tx)
-
-  await chain.submitSignedTxWithReSigns(tx)
+  // const chain = Kilt.connect()
+  // chain.signTx(identity, tx)  tx = await ctype.store()
+  // await chain.submitSignedTxWithReSigns(tx)
 
   /* At the end of the process, the `CType` object should contain the following. */
   console.log(ctype)
