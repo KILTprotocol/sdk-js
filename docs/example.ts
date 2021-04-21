@@ -72,9 +72,10 @@ async function setup(): Promise<{
   // ! This costs tokens !
   // Also note, that the completely same ctype can only be stored once on the blockchain.
   try {
-    await ctype.store(attester).then((tx) =>
-      Kilt.BlockchainUtils.submitTxWithReSign(tx, attester, {
-        resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+    await ctype.store().then((tx) =>
+      Kilt.ChainHelpers.Blockchain.signAndSubmitTx(tx, attester, {
+        resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+        reSign: true,
       })
     )
   } catch (e) {

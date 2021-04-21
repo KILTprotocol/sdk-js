@@ -13,12 +13,12 @@ import type {
   SubscriptionPromise,
 } from '.'
 
+export type ReSignOpts = { reSign: boolean }
 export type BlockchainStats = {
   chain: string
   nodeName: string
   nodeVersion: string
 }
-
 export interface IBlockchainApi {
   api: ApiPromise
 
@@ -28,15 +28,10 @@ export interface IBlockchainApi {
     identity: IIdentity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic>
-  submitTxWithReSign(
+  submitSignedTxWithReSign(
     tx: SubmittableExtrinsic,
     identity?: IIdentity,
-    opts?: SubscriptionPromise.Options
-  ): Promise<ISubmittableResult>
-  submitTx(
-    identity: IIdentity,
-    tx: SubmittableExtrinsic,
-    opts?: SubscriptionPromise.Options
+    opts?: Partial<SubscriptionPromise.Options>
   ): Promise<ISubmittableResult>
   getNonce(accountAddress: string): Promise<BN>
   reSignTx(

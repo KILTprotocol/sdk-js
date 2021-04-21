@@ -46,9 +46,10 @@ async function main(): Promise<void> {
     // using ed25519 as key type because this is how the endowed identity is set up
     { signingKeyPairType: 'ed25519' }
   )
-  tx = await ctype.store(identity)
-  await Kilt.BlockchainUtils.submitSignedTx(tx, {
-    resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+  tx = await ctype.store()
+  await Kilt.ChainHelpers.Blockchain.signAndSubmitTx(tx, identity, {
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+    reSign: true,
   })
 
   /* At the end of the process, the `CType` object should contain the following. */
@@ -125,7 +126,7 @@ async function main(): Promise<void> {
     console.log(attestation)
 
     /* Now the Attester can store the attestation on the blockchain, which also costs tokens: */
-    tx = await attestation.store(attester)
+    tx = await attestation.store()
     await Kilt.BlockchainUtils.submitSignedTx(tx, {
       resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
     })

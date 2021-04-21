@@ -13,7 +13,7 @@ import type {
   ICTypeSchema,
   CompressedCTypeSchema,
 } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { Blockchain } from '@kiltprotocol/chain-helpers'
 import Claim from '../claim/Claim'
 import Identity from '../identity/Identity'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
@@ -105,8 +105,10 @@ describe('CType', () => {
   it('stores ctypes', async () => {
     const ctype = CType.fromSchema(ctypeModel, identityAlice.address)
 
-    const tx = await ctype.store(identityAlice)
-    const result = await BlockchainUtils.submitTxWithReSign(tx, identityAlice)
+    const tx = await ctype.store()
+    const result = await Blockchain.signAndSubmitTx(tx, identityAlice, {
+      reSign: true,
+    })
     expect(result).toBeInstanceOf(SubmittableResult)
     expect(result.isFinalized).toBeTruthy()
     expect(result.isCompleted).toBeTruthy()

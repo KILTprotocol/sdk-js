@@ -17,7 +17,6 @@ import type {
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 
-import Identity from '../identity/Identity'
 import BalanceUtils from './Balance.utils'
 
 /**
@@ -104,7 +103,6 @@ export async function listenToBalanceChanges(
  * Transfer Kilt [amount] tokens to [toAccountAddress] using the given [[Identity]].
  * <B>Note that the value of the transferred currency and the balance amount reported by the chain is in Femto-Kilt (1e-15), and must be translated to Kilt-Coin</B>.
  *
- * @param identity Identity to use for token transfer.
  * @param accountAddressTo Address of the receiver account.
  * @param amount Amount of Units to transfer.
  * @param exponent Magnitude of the amount. Default magnitude of Femto-Kilt.
@@ -127,7 +125,6 @@ export async function listenToBalanceChanges(
  * ```
  */
 export async function makeTransfer(
-  identity: Identity,
   accountAddressTo: IPublicIdentity['address'],
   amount: BN,
   exponent = -15
@@ -141,5 +138,5 @@ export async function makeTransfer(
       ? amount
       : BalanceUtils.convertToTxUnit(amount, cleanExponent)
   )
-  return blockchain.signTx(identity, transfer)
+  return transfer
 }

@@ -3,7 +3,11 @@
  */
 
 import BN from 'bn.js'
-import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
+import {
+  Blockchain,
+  BlockchainUtils,
+  ExtrinsicErrors,
+} from '@kiltprotocol/chain-helpers'
 import { Attestation } from '..'
 import { makeTransfer } from '../balance/Balance.chain'
 import Identity from '../identity'
@@ -22,9 +26,10 @@ beforeAll(async () => {
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
   const to = Identity.buildFromMnemonic('')
   await expect(
-    makeTransfer(alice, to.address, new BN(1)).then((tx) =>
-      BlockchainUtils.submitTxWithReSign(tx, alice, {
+    makeTransfer(to.address, new BN(1)).then((tx) =>
+      Blockchain.signAndSubmitTx(tx, alice, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     )
   ).rejects.toThrowErrorWithCode(ExtrinsicErrors.UNKNOWN_ERROR.code)
@@ -40,10 +45,11 @@ it('records an extrinsic error when ctype does not exist', async () => {
     owner: alice.address,
     revoked: false,
   })
-  const tx = await attestation.store(alice)
+  const tx = await attestation.store()
   await expect(
-    BlockchainUtils.submitTxWithReSign(tx, alice, {
+    Blockchain.signAndSubmitTx(tx, alice, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
     })
   ).rejects.toThrowErrorWithCode(
     ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code

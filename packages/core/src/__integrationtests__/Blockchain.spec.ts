@@ -6,7 +6,7 @@ import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
 import BN from 'bn.js/'
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { IBlockchainApi } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { Blockchain, BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { makeTransfer } from '../balance/Balance.chain'
 import Identity from '../identity/Identity'
 import { wannabeFaucet, wannabeCharlie, WS_ADDRESS } from './utils'
@@ -26,14 +26,10 @@ describe('Chain returns specific errors, that we check for', () => {
     faucet = wannabeFaucet
     testIdentity = Identity.buildFromURI(Identity.generateMnemonic())
     charlie = wannabeCharlie
-    const tx = await makeTransfer(
-      faucet,
-      testIdentity.address,
-      new BN(10000),
-      0
-    )
-    await BlockchainUtils.submitTxWithReSign(tx, charlie, {
+    const tx = await makeTransfer(testIdentity.address, new BN(10000), 0)
+    await Blockchain.signAndSubmitTx(tx, faucet, {
       resolveOn: BlockchainUtils.IS_FINALIZED,
+      reSign: true,
     })
   }, 40000)
 
@@ -75,7 +71,7 @@ describe('Chain returns specific errors, that we check for', () => {
         version: blockchain.api.extrinsicVersion,
       }
     )
-    await BlockchainUtils.submitSignedTxRaw(
+    await BlockchainUtils.dispatchTx(
       tx,
       BlockchainUtils.parseSubscriptionOptions({
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -94,7 +90,7 @@ describe('Chain returns specific errors, that we check for', () => {
     )
 
     await expect(
-      BlockchainUtils.submitSignedTxRaw(
+      BlockchainUtils.dispatchTx(
         errorTx,
         BlockchainUtils.parseSubscriptionOptions({
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -143,7 +139,7 @@ describe('Chain returns specific errors, that we check for', () => {
       }
     )
     expect(
-      BlockchainUtils.submitSignedTxRaw(
+      BlockchainUtils.dispatchTx(
         tx,
         BlockchainUtils.parseSubscriptionOptions({
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -162,7 +158,7 @@ describe('Chain returns specific errors, that we check for', () => {
       errorSigner.toPayload()
     )
 
-    await BlockchainUtils.submitSignedTxRaw(
+    await BlockchainUtils.dispatchTx(
       errorTx,
       BlockchainUtils.parseSubscriptionOptions({
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
