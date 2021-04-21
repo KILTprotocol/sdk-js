@@ -167,13 +167,30 @@ const identity = Kilt.Identity.buildFromMnemonic(
   // using ed25519 as key type because this is how the endowed identity is set up
   { signingKeyPairType: 'ed25519' }
 )
-const tx = await ctype.store(identity)
-await Kilt.BlockchainUtils.submitSignedTx(tx, {
-  resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
-})
+const tx = await ctype.store()
+
+// either sign and send in one step
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
+
+// or step by step
+const chain = Kilt.connect()
+const signed = chain.signTx(identity, tx)
+await Kilt.BlockchainUtils.submitSignedTx(tx)
 ```
 
 Please note that the **same CTYPE can only be stored once** on the blockchain.
+
+If a transaction fails with an by re-signing recoverable error (e.g. nonce collision),
+BlockchainUtils.signAndSubmitTx has the ability to re-sign and re-send the failed tx if the appropriate flag is set:
+```typescript
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+    reSign: true,
+  })
+```
+
 
 At the end of the process, the `CType` object should match the CType below.
 This can be saved anywhere, for example on a CTYPE registry service:

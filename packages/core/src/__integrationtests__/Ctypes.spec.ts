@@ -3,11 +3,7 @@
  */
 
 import type { ICType } from '@kiltprotocol/types'
-import {
-  Blockchain,
-  BlockchainUtils,
-  ExtrinsicErrors,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import { Identity } from '..'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
@@ -46,7 +42,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
     await expect(
       ctype.store().then((tx) =>
-        Blockchain.signAndSubmitTx(tx, bobbyBroke, {
+        BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })
@@ -58,7 +54,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
     await ctype.store().then((tx) =>
-      Blockchain.signAndSubmitTx(tx, ctypeCreator, {
+      BlockchainUtils.signAndSubmitTx(tx, ctypeCreator, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
@@ -74,14 +70,14 @@ describe('When there is an CtypeCreator and a verifier', () => {
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
     await ctype.store().then((tx) =>
-      Blockchain.signAndSubmitTx(tx, ctypeCreator, {
+      BlockchainUtils.signAndSubmitTx(tx, ctypeCreator, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
     )
     await expect(
       ctype.store().then((tx) =>
-        Blockchain.signAndSubmitTx(tx, ctypeCreator, {
+        BlockchainUtils.signAndSubmitTx(tx, ctypeCreator, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })
