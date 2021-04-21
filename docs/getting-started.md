@@ -182,6 +182,16 @@ await Kilt.BlockchainUtils.submitSignedTx(tx)
 
 Please note that the **same CTYPE can only be stored once** on the blockchain.
 
+If a transaction fails with an by re-signing recoverable error (like nonce collision),
+BlockchainUtils.signAndSubmitTx has the ability to re-sign and re-send the failed tx if the appropriate flag is set:
+```typescript
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+    reSign: true,
+  })
+```
+
+
 At the end of the process, the `CType` object should match the CType below.
 This can be saved anywhere, for example on a CTYPE registry service:
 
