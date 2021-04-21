@@ -54,7 +54,7 @@ async function main(): Promise<void> {
   })
 
   /* or manually step by step */
-  const chain = Kilt.ChainHelpers.BlockchainApiConnection.getConnectionOrConnect()
+  const chain = Kilt.connect()
 
   chain.signTx(identity, tx)
 
