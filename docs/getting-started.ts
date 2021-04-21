@@ -58,9 +58,7 @@ async function main(): Promise<void> {
 
   chain.signTx(identity, tx)
 
-  await Kilt.BlockchainUtils.submitSignedTx(tx, {
-    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
-  })
+  await chain.submitSignedTxWithReSigns(tx)
 
   /* At the end of the process, the `CType` object should contain the following. */
   console.log(ctype)
