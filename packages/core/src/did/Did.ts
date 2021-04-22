@@ -123,7 +123,7 @@ export default class Did implements IDid {
   /**
    * [ASYNC] Stores the [[Did]] object on-chain.
    *
-   * @returns A promise containing the SubmittableExtrinsic (transaction status).
+   * @returns A promise containing the unsigned SubmittableExtrinsic (transaction status).
    */
   public async store(): Promise<SubmittableExtrinsic> {
     log.debug(`Create tx for 'did.add'`)

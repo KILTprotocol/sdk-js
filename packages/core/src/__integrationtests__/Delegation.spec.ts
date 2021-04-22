@@ -149,7 +149,7 @@ describe('and attestation rights have been delegated', () => {
     await expect(attClaim.verify()).resolves.toBeTruthy()
 
     // revoke attestation through root
-    await attClaim.attestation.revoke(root, 1).then((tx) =>
+    await attClaim.attestation.revoke(1).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, root, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
@@ -178,7 +178,7 @@ describe('revocation', () => {
       firstDelegee
     )
     await expect(
-      delegationA.revoke(delegator).then((tx) =>
+      delegationA.revoke(delegator.address).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, delegator, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -206,7 +206,7 @@ describe('revocation', () => {
     await expect(delegationRoot.verify()).resolves.toBe(true)
 
     await expect(
-      delegationA.revoke(firstDelegee).then((tx) =>
+      delegationA.revoke(firstDelegee.address).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, firstDelegee, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,

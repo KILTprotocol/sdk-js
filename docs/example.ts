@@ -69,15 +69,13 @@ async function setup(): Promise<{
   const ctype = new Kilt.CType(rawCtype)
 
   // Store ctype on blockchain
+  // signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria or activate re-sign-re-send options.
   // ! This costs tokens !
   // Also note, that the completely same ctype can only be stored once on the blockchain.
   try {
-    await ctype.store().then((tx) =>
-      Kilt.BlockchainUtils.signAndSubmitTx(tx, attester, {
-        resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
-        reSign: true,
-      })
-    )
+    await ctype
+      .store()
+      .then((tx) => Kilt.BlockchainUtils.signAndSubmitTx(tx, attester))
   } catch (e) {
     console.log(
       'Error while storing CType. Probably either insufficient funds or ctype does already exist.',

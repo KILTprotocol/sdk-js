@@ -18,7 +18,6 @@ import type {
   IRequestForAttestation,
   CompressedAttestation,
 } from '@kiltprotocol/types'
-import Identity from '../identity/Identity'
 import { revoke, query, store } from './Attestation.chain'
 import AttestationUtils from './Attestation.utils'
 import DelegationRootNode from '../delegation/DelegationRootNode'
@@ -44,18 +43,17 @@ export default class Attestation implements IAttestation {
    * [STATIC] [ASYNC] Revokes an attestation. Also available as an instance method.
    *
    * @param claimHash - The hash of the claim that corresponds to the attestation to revoke.
-   * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
-   * @param maxDepth - The number of levels to walk up the delegation hirarchy until the delegation node of identity is found.
-   * @returns A promise containing the SubmittableExtrinsic (submittable transaction).
+   * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * Attestation.revoke('0xd8024cdc147c4fa9221cd177', attesterIdentity, 3).then(() => {
-   *   // the attestation was successfully revoked
+   * Attestation.revoke('0xd8024cdc147c4fa9221cd177', 3).then(() => {
+   *   // the attestation revocation tx was created, sign and send it!
+   *   BlockchainUtils.signAndSendTx(tx, identity);
    * });
    * ```
    */
   public static async revoke(
     claimHash: string,
-    identity: Identity,
     maxDepth: number
   ): Promise<SubmittableExtrinsic> {
     return revoke(claimHash, maxDepth)
@@ -166,12 +164,11 @@ export default class Attestation implements IAttestation {
   /**
    * [ASYNC] Stores the attestation on chain.
    *
-   * @param identity - The identity used to store the attestation.
-   * @returns A promise containing the SubmittableExtrinsic (submittable transaction).
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
    * // Use `store` to store an attestation on chain, and to create an `AttestedClaim` upon success:
-   * attestation.store(attester).then(() => {
-   *   // the attestation was successfully stored, so now we can for example create an AttestedClaim
+   * attestation.store().then(() => {
+   *   // the attestation store tx was successfully prepared, so now we can sign and send it and subsequently create an `AttestedClaim`.
    * });
    * ```
    */
@@ -182,19 +179,16 @@ export default class Attestation implements IAttestation {
   /**
    * [ASYNC] Revokes the attestation. Also available as a static method.
    *
-   * @param identity - The identity used to revoke the attestation (should be an attester identity, or have delegated rights).
-   * @param maxDepth - The number of levels to walk up the delegation hirarchy until the delegation node of identity is found.
-   * @returns A promise containing the SubmittableExtrinsic (submittable transaction).
+   * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * attestation.revoke(identity, 3).then(() => {
-   *   // the attestation was successfully revoked
+   * attestation.revoke(3).then((tx) => {
+   *   // the attestation revocation tx was created, sign and send it!
+   *   BlockchainUtils.signAndSendTx(tx, identity);
    * });
    * ```
    */
-  public async revoke(
-    identity: Identity,
-    maxDepth: number
-  ): Promise<SubmittableExtrinsic> {
+  public async revoke(maxDepth: number): Promise<SubmittableExtrinsic> {
     return revoke(this.claimHash, maxDepth)
   }
 

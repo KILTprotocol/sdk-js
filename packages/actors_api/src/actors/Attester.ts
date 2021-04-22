@@ -75,7 +75,7 @@ export async function issueAttestation(
   )
 
   const tx = await attestation.store()
-  await BlockchainUtils.signAndSubmitTx(tx, attester, { reSign: true })
+  await BlockchainUtils.signAndSubmitTx(tx, attester)
 
   const revocationHandle = { claimHash: attestation.claimHash }
   return {
@@ -117,8 +117,7 @@ export async function revokeAttestation(
 
   const tx = await Attestation.revoke(
     revocationHandle.claimHash,
-    attester,
     delegationTreeTraversalSteps
   )
-  BlockchainUtils.signAndSubmitTx(tx, attester, { reSign: true })
+  BlockchainUtils.signAndSubmitTx(tx, attester)
 }
