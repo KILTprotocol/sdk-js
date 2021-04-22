@@ -54,6 +54,7 @@ export enum ErrorCode {
   ERROR_ROOT_NODE_QUERY = 20017,
   ERROR_INVALID_DID_PREFIX = 20018,
   ERROR_MESSAGE_BODY_MALFORMED = 20019,
+  ERROR_NODE_QUERY = 20020,
 
   // Data is invalid
   ERROR_ADDRESS_INVALID = 30001,
@@ -355,6 +356,14 @@ export const ERROR_ROOT_NODE_QUERY: (rootId: string) => SDKError = (
   return new SDKError(
     ErrorCode.ERROR_ROOT_NODE_QUERY,
     `Could not find root node with id ${rootId}`
+  )
+}
+export const ERROR_NODE_QUERY: (nodeId: string) => SDKError = (
+  nodeId: string
+) => {
+  return new SDKError(
+    ErrorCode.ERROR_NODE_QUERY,
+    `Could not find node with id ${nodeId}`
   )
 }
 export const ERROR_INVALID_DID_PREFIX: (identifier: string) => SDKError = (

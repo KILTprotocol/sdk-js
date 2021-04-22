@@ -48,12 +48,12 @@ export async function query(
     )
   )
   if (decoded) {
-    const root = new DelegationRootNode(
-      delegationId,
-      decoded.cTypeHash,
-      decoded.account
-    )
-    root.revoked = decoded.revoked
+    const root = new DelegationRootNode({
+      id: delegationId,
+      cTypeHash: decoded.cTypeHash,
+      account: decoded.account,
+      revoked: decoded.revoked,
+    })
     return root
   }
   return null

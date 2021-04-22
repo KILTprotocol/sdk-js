@@ -20,11 +20,25 @@ import DelegationBaseNode from './Delegation'
 import DelegationNode from './DelegationNode'
 import { getChildren } from './DelegationNode.chain'
 import { query, revoke, store } from './DelegationRootNode.chain'
+import * as DelegationRootNodeUtils from './DelegationRootNode.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationRootNode')
 
 export default class DelegationRootNode extends DelegationBaseNode
   implements IDelegationRootNode {
+  /**
+   * Instantiates a new DelegationRootNode from the given [[IDelegationRootNode]].
+   *
+   * @param delegationRootNodeInput IDelegationBaseNode to instantiate the new delegation node from.
+   *
+   * @returns An instantiated DelegationRootNode.
+   */
+  public static async fromDelegationRootNode(
+    delegationRootNodeInput: IDelegationRootNode
+  ): Promise<DelegationRootNode> {
+    return new DelegationRootNode(delegationRootNodeInput)
+  }
+
   /**
    * [STATIC] Queries the delegation root with ``delegationId``.
    *
@@ -47,13 +61,11 @@ export default class DelegationRootNode extends DelegationBaseNode
 
   public cTypeHash: IDelegationRootNode['cTypeHash']
 
-  public constructor(
-    id: IDelegationRootNode['id'],
-    ctypeHash: IDelegationRootNode['cTypeHash'],
-    account: IDelegationRootNode['account']
-  ) {
-    super(id, account)
-    this.cTypeHash = ctypeHash
+  public constructor(delegationRootNodeInput: IDelegationRootNode) {
+    super(delegationRootNodeInput.id, delegationRootNodeInput.account)
+    DelegationRootNodeUtils.errorCheck(delegationRootNodeInput)
+    this.cTypeHash = delegationRootNodeInput.cTypeHash
+    this.revoked = delegationRootNodeInput.revoked
   }
 
   public getRoot(): Promise<DelegationRootNode> {

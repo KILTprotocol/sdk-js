@@ -24,6 +24,7 @@ import Identity from '../identity/Identity'
 import { getAttestationHashes } from './Delegation.chain'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
+import * as DelegationUtils from './Delegation.utils'
 
 export default abstract class DelegationBaseNode
   implements IDelegationBaseNode {
@@ -41,6 +42,7 @@ export default abstract class DelegationBaseNode
     id: IDelegationBaseNode['id'],
     account: IDelegationBaseNode['account']
   ) {
+    DelegationUtils.errorCheck(id, account)
     this.account = account
     this.id = id
   }

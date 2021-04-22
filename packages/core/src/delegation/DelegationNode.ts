@@ -14,7 +14,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
 import { getChildren, query, revoke, store } from './DelegationNode.chain'
-import permissionsAsBitset from './DelegationNode.utils'
+import * as DelegationNodeUtils from './DelegationNode.utils'
 import DelegationRootNode from './DelegationRootNode'
 import { query as queryRoot } from './DelegationRootNode.chain'
 
@@ -22,6 +22,19 @@ const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
 export default class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
+  /**
+   * Instantiates a new DelegationNode from the given [[IDelegationNode]].
+   *
+   * @param delegationNodeInput IDelegationBaseNode to instantiate the new delegation node from.
+   *
+   * @returns An instantiated DelegationNode.
+   */
+  public static async fromDelegationNode(
+    delegationNodeInput: IDelegationNode
+  ): Promise<DelegationNode> {
+    return new DelegationNode(delegationNodeInput)
+  }
+
   /**
    * [STATIC] Queries the delegation node with [delegationId].
    *
@@ -49,18 +62,15 @@ export default class DelegationNode extends DelegationBaseNode
    * @param account Address of the account that will be the owner of the delegation.
    * @param permissions List of [[Permission]]s.
    * @param parentId Identifier of the parent delegation node already stored on-chain. Not required when the parent is the root node.
+   * @param delegationNodeInput
    */
-  public constructor(
-    id: IDelegationNode['id'],
-    rootId: IDelegationNode['rootId'],
-    account: IDelegationNode['account'],
-    permissions: IDelegationNode['permissions'],
-    parentId?: IDelegationNode['parentId']
-  ) {
-    super(id, account)
-    this.permissions = permissions
-    this.rootId = rootId
-    this.parentId = parentId
+  public constructor(delegationNodeInput: IDelegationNode) {
+    super(delegationNodeInput.id, delegationNodeInput.account)
+    DelegationNodeUtils.errorCheck(delegationNodeInput)
+    this.permissions = delegationNodeInput.permissions
+    this.rootId = delegationNodeInput.rootId
+    this.parentId = delegationNodeInput.parentId
+    this.revoked = delegationNodeInput.revoked
   }
 
   /**
@@ -91,7 +101,7 @@ export default class DelegationNode extends DelegationBaseNode
     const uint8Props: Uint8Array[] = propsToHash.map((value) => {
       return Crypto.coToUInt8(value)
     })
-    uint8Props.push(permissionsAsBitset(this))
+    uint8Props.push(DelegationNodeUtils.permissionsAsBitset(this))
     const generated: string = Crypto.u8aToHex(
       Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
     )

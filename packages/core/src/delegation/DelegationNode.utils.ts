@@ -7,6 +7,7 @@ import type { IAttestation, IDelegationNode } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import Identity from '../identity'
 import DelegationNode from './DelegationNode'
+import { query } from './DelegationRootNode.chain'
 
 /**
  * Creates a bitset from the permissions in the array where each enum value
@@ -20,10 +21,7 @@ import DelegationNode from './DelegationNode'
  * @param delegation The delegation from which you want to convert the permissions to bitset.
  * @returns The bitset as single value uint8 array.
  */
-// eslint-disable-next-line import/prefer-default-export
-export default function permissionsAsBitset(
-  delegation: IDelegationNode
-): Uint8Array {
+export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
   const permissionsBitsetData: number = delegation.permissions.reduce(
     (accumulator, currentValue) => accumulator + currentValue
   )
@@ -64,4 +62,22 @@ export async function countNodeDepth(
   }
 
   return delegationTreeTraversalSteps
+}
+
+export function errorCheck(delegationNodeInput: IDelegationNode): void {
+  const { parentId, permissions, rootId } = delegationNodeInput
+
+  if (permissions.length === 0) {
+    throw SDKErrors.ERROR_UNAUTHORIZED('Must have at least one permission')
+  }
+
+  if (parentId) {
+    if (!query(parentId)) {
+      throw SDKErrors.ERROR_NODE_QUERY(parentId)
+    }
+  }
+
+  if (!query(rootId)) {
+    throw SDKErrors.ERROR_ROOT_NODE_QUERY(rootId)
+  }
 }
