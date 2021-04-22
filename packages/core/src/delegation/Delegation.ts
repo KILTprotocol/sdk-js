@@ -101,7 +101,6 @@ export default abstract class DelegationBaseNode
   /**
    * Revokes this delegation node on chain.
    *
-   * @param address The address of the identity used to revoke the delegation.
    * @returns Promise containing a unsigned submittable transaction.
    */
   public abstract revoke(address: string): Promise<SubmittableExtrinsic>
