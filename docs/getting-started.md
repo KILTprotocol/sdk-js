@@ -175,7 +175,8 @@ const tx = await ctype.store()
   await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: Kilt.BlockchainUtils.IS_READY, // resolve once tx is in the tx pool
     rejectOn: Kilt.BlockchainUtils.IS_ERROR,  // only reject when IS_ERROR criteria is matched
-    timeout: 10_000,
+    timeout: 10_000, // Promise timeout in ms
+    tip: 10_000_000. // Amount of Femto-KILT to tip the validator
   })
 
 // or step by step

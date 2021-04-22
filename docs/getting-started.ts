@@ -50,16 +50,17 @@ async function main(): Promise<void> {
   /* This transaction has to be signed and sent to the Blockchain, either automatically like this */
   await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity)
 
-  /* signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria or activate re-sign-re-send options:
+  /* signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria, set tip value, or activate re-sign-re-send capabilities:
   // await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
   //   resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   //   rejectOn: Kilt.BlockchainUtils.IS_ERROR,
   //   reSign: true,
+  //   tip: 10_000_000,
   // })
 
   /* or manually step by step */
   // const chain = Kilt.connect()
-  // chain.signTx(identity, tx)
+  // chain.signTx(identity, tx, 10_000)
   // await Kilt.BlockchainUtils.submitSignedTx(tx)
 
   /* At the end of the process, the `CType` object should contain the following. */
