@@ -1,6 +1,6 @@
 import type { IDelegationBaseNode } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { query } from 'core/lib/delegation/DelegationNode.chain'
+import { query } from './DelegationNode.chain'
 
 // eslint-disable-next-line import/prefer-default-export
 export function errorCheck(
