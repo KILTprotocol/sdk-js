@@ -7,7 +7,7 @@ import type { IAttestation, IDelegationNode } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import Identity from '../identity'
 import DelegationNode from './DelegationNode'
-import { query } from './DelegationRootNode.chain'
+import { query } from './DelegationNode.chain'
 
 /**
  * Creates a bitset from the permissions in the array where each enum value
