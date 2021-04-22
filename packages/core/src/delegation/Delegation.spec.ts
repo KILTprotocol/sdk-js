@@ -89,13 +89,14 @@ describe('Delegation', () => {
   })
 
   it('get children', async () => {
-    const myDelegation = new DelegationNode(
-      nodeId,
+    const myDelegation = new DelegationNode({
+      id: nodeId,
       rootId,
-      identityAlice.getPublicIdentity().address,
-      [Permission.ATTEST],
-      undefined
-    )
+      account: identityAlice.getPublicIdentity().address,
+      permissions: [Permission.ATTEST],
+      parentId: undefined,
+      revoked: false,
+    })
     const children: DelegationNode[] = await myDelegation.getChildren()
     expect(children).toHaveLength(3)
     expect(children[0]).toEqual({

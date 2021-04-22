@@ -8,7 +8,7 @@ import { Crypto } from '@kiltprotocol/utils'
 import Identity from '../identity'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
-import permissionsAsBitset from './DelegationNode.utils'
+import { permissionsAsBitset } from './DelegationNode.utils'
 
 let childMap: Record<string, DelegationNode[]> = {}
 let nodes: Record<string, DelegationNode> = {}
@@ -34,13 +34,16 @@ beforeAll(() => {
 
 describe('Delegation', () => {
   it('delegation generate hash', () => {
-    const node = new DelegationNode(
-      '0x0000000000000000000000000000000000000000000000000000000000000001',
-      '0x0000000000000000000000000000000000000000000000000000000000000002',
-      'myAccount',
-      [Permission.ATTEST],
-      '0x0000000000000000000000000000000000000000000000000000000000000003'
-    )
+    const node = new DelegationNode({
+      id: '0x0000000000000000000000000000000000000000000000000000000000000001',
+      rootId:
+        '0x0000000000000000000000000000000000000000000000000000000000000002',
+      account: 'myAccount',
+      permissions: [Permission.ATTEST],
+      parentId:
+        '0x0000000000000000000000000000000000000000000000000000000000000003',
+      revoked: false,
+    })
     const hash: string = node.generateHash()
     expect(hash).toBe(
       '0x20c5b0ba186b1eef2eabdb10a5e6399cc8eaa865ad0aaed6d3583c97746392aa'
@@ -48,13 +51,14 @@ describe('Delegation', () => {
   })
 
   it('delegation permissionsAsBitset', () => {
-    const node = new DelegationNode(
-      'myId',
-      'myRootId',
-      'myAccount',
-      [Permission.ATTEST, Permission.DELEGATE],
-      'myParentNodeId'
-    )
+    const node = new DelegationNode({
+      id: 'myId',
+      rootId: 'myRootId',
+      account: 'myAccount',
+      permissions: [Permission.ATTEST, Permission.DELEGATE],
+      parentId: 'myParentNodeId',
+      revoked: false,
+    })
     const permissions: Uint8Array = permissionsAsBitset(node)
     const expected: Uint8Array = new Uint8Array(4)
     expected[0] = 3
@@ -63,13 +67,14 @@ describe('Delegation', () => {
 
   it('delegation verify', async () => {
     nodes = {
-      success: new DelegationNode(
-        'success',
-        'myRootId',
-        identityAlice.address,
-        [],
-        undefined
-      ),
+      success: new DelegationNode({
+        id: 'success',
+        rootId: 'myRootId',
+        account: identityAlice.address,
+        permissions: [],
+        parentId: undefined,
+        revoked: false,
+      }),
       failure: {
         ...nodes.success,
         revoked: true,
@@ -78,39 +83,46 @@ describe('Delegation', () => {
     }
 
     expect(
-      await new DelegationNode(
-        'success',
-        'myRootId',
-        identityAlice.address,
-        []
-      ).verify()
+      await new DelegationNode({
+        id: 'success',
+        rootId: 'myRootId',
+        account: identityAlice.address,
+        permissions: [],
+        parentId: undefined,
+        revoked: false,
+      }).verify()
     ).toBe(true)
 
     expect(
-      await new DelegationNode(
-        'failure',
-        'myRootId',
-        identityAlice.address,
-        []
-      ).verify()
+      await new DelegationNode({
+        id: 'failure',
+        rootId: 'myRootId',
+        account: identityAlice.address,
+        permissions: [],
+        parentId: undefined,
+        revoked: false,
+      }).verify()
     ).toBe(false)
   })
 
   it('get delegation root', async () => {
     rootNodes = {
-      rootNodeId: new DelegationRootNode(
-        'rootNodeId',
-        '0x1234000000000000000000000000000000000000000000000000000000000000',
-        identityAlice.address
-      ),
+      rootNodeId: new DelegationRootNode({
+        id: 'rootNodeId',
+        cTypeHash:
+          '0x1234000000000000000000000000000000000000000000000000000000000000',
+        account: identityAlice.address,
+        revoked: false,
+      }),
     }
 
-    const node: DelegationNode = new DelegationNode(
-      'nodeId',
-      'rootNodeId',
-      identityAlice.address,
-      []
-    )
+    const node: DelegationNode = new DelegationNode({
+      id: 'nodeId',
+      rootId: 'rootNodeId',
+      account: identityAlice.address,
+      permissions: [],
+      revoked: false,
+    })
     const rootNode = await node.getRoot()
 
     expect(rootNode).toBeDefined()
@@ -124,47 +136,55 @@ describe('count subtree', () => {
   let topNode: DelegationNode
 
   beforeAll(() => {
-    topNode = new DelegationNode('a1', rootId, identityAlice.address, [
-      Permission.ATTEST,
-      Permission.DELEGATE,
-    ])
+    topNode = new DelegationNode({
+      id: 'a1',
+      rootId,
+      account: identityAlice.address,
+      permissions: [Permission.ATTEST, Permission.DELEGATE],
+      revoked: false,
+    })
 
     nodes = {
-      b1: new DelegationNode(
-        'b1',
+      b1: new DelegationNode({
+        id: 'b1',
         rootId,
-        identityAlice.address,
-        [Permission.ATTEST, Permission.DELEGATE],
-        'a1'
-      ),
-      b2: new DelegationNode(
-        'b2',
+        account: identityAlice.address,
+        permissions: [Permission.ATTEST, Permission.DELEGATE],
+        parentId: 'a1',
+        revoked: false,
+      }),
+      b2: new DelegationNode({
+        id: 'b2',
         rootId,
-        identityAlice.address,
-        [Permission.ATTEST, Permission.DELEGATE],
-        'a1'
-      ),
-      c1: new DelegationNode(
-        'c1',
+        account: identityAlice.address,
+        permissions: [Permission.ATTEST, Permission.DELEGATE],
+        parentId: 'a1',
+        revoked: false,
+      }),
+      c1: new DelegationNode({
+        id: 'c1',
         rootId,
-        identityAlice.address,
-        [Permission.ATTEST, Permission.DELEGATE],
-        'b1'
-      ),
-      c2: new DelegationNode(
-        'c2',
+        account: identityAlice.address,
+        permissions: [Permission.ATTEST, Permission.DELEGATE],
+        parentId: 'b1',
+        revoked: false,
+      }),
+      c2: new DelegationNode({
+        id: 'c2',
         rootId,
-        identityAlice.address,
-        [Permission.ATTEST, Permission.DELEGATE],
-        'b1'
-      ),
-      d1: new DelegationNode(
-        'd1',
+        account: identityAlice.address,
+        permissions: [Permission.ATTEST, Permission.DELEGATE],
+        parentId: 'b1',
+        revoked: false,
+      }),
+      d1: new DelegationNode({
+        id: 'd1',
         rootId,
-        identityAlice.address,
-        [Permission.ATTEST, Permission.DELEGATE],
-        'c1'
-      ),
+        account: identityAlice.address,
+        permissions: [Permission.ATTEST, Permission.DELEGATE],
+        parentId: 'c1',
+        revoked: false,
+      }),
     }
     childMap = {
       a1: [nodes.b1, nodes.b2],
@@ -196,13 +216,14 @@ describe('count subtree', () => {
     // eslint-disable-next-line
     for (let index = 0; index < 101; index++) {
       childMap[`${index}`] = [
-        new DelegationNode(
-          `${index + 1}`,
+        new DelegationNode({
+          id: `${index + 1}`,
           rootId,
-          identityAlice.address,
-          [],
-          `${index}`
-        ),
+          account: identityAlice.address,
+          permissions: [],
+          parentId: `${index}`,
+          revoked: false,
+        }),
       ]
     }
     await expect(childMap['0'][0].subtreeNodeCount()).resolves.toStrictEqual(
@@ -215,13 +236,14 @@ describe('count subtree', () => {
     // eslint-disable-next-line
     for (let index = 0; index < 1001; index++) {
       childMap[`${index}`] = [
-        new DelegationNode(
-          `${index + 1}`,
+        new DelegationNode({
+          id: `${index + 1}`,
           rootId,
-          identityAlice.address,
-          [],
-          `${index}`
-        ),
+          account: identityAlice.address,
+          permissions: [],
+          parentId: `${index}`,
+          revoked: false,
+        }),
       ]
     }
     await expect(childMap['0'][0].subtreeNodeCount()).resolves.toStrictEqual(
@@ -234,13 +256,14 @@ describe('count subtree', () => {
     // eslint-disable-next-line
     for (let index = 0; index < 10001; index++) {
       childMap[`${index}`] = [
-        new DelegationNode(
-          `${index + 1}`,
+        new DelegationNode({
+          id: `${index + 1}`,
           rootId,
-          identityAlice.address,
-          [],
-          `${index}`
-        ),
+          account: identityAlice.address,
+          permissions: [],
+          parentId: `${index}`,
+          revoked: false,
+        }),
       ]
     }
     await expect(childMap['0'][0].subtreeNodeCount()).resolves.toStrictEqual(
@@ -254,13 +277,14 @@ describe('count depth', () => {
     nodes = {}
     // eslint-disable-next-line
     for (let index = 0; index < 1000; index++) {
-      nodes[`${index}`] = new DelegationNode(
-        `${index}`,
+      nodes[`${index}`] = new DelegationNode({
+        id: `${index}`,
         rootId,
-        encodeAddress(Crypto.hash(`${index}`, 256)),
-        [Permission.DELEGATE],
-        `${index + 1}`
-      )
+        account: encodeAddress(Crypto.hash(`${index}`, 256)),
+        permissions: [Permission.DELEGATE],
+        parentId: `${index + 1}`,
+        revoked: false,
+      })
     }
     expect(Object.keys(nodes)).toHaveLength(1000)
   })

@@ -47,11 +47,12 @@ describe('Delegation', () => {
   })
 
   it('stores root delegation', async () => {
-    const rootDelegation = new DelegationRootNode(
-      ROOT_IDENTIFIER,
-      ctypeHash,
-      identityAlice.address
-    )
+    const rootDelegation = await DelegationRootNode.fromDelegationRootNode({
+      id: ROOT_IDENTIFIER,
+      cTypeHash: ctypeHash,
+      account: identityAlice.address,
+      revoked: false,
+    })
     await rootDelegation
       .store(identityAlice)
       .then((tx) => BlockchainUtils.submitTxWithReSign(tx, identityAlice))
@@ -95,26 +96,33 @@ describe('Delegation', () => {
     )
 
     expect(
-      await new DelegationRootNode(
-        'success',
-        'myCtypeHash',
-        identityAlice.address
-      ).verify()
+      await new DelegationRootNode({
+        id: 'success',
+        cTypeHash: 'myCtypeHash',
+        account: identityAlice.address,
+        revoked: false,
+      }).verify()
     ).toBe(true)
 
     expect(
-      await new DelegationRootNode('failure', ctypeHash, 'myAccount').verify()
+      await new DelegationRootNode({
+        id: 'failure',
+        cTypeHash: ctypeHash,
+        account: 'myAccount',
+        revoked: false,
+      }).verify()
     ).toBe(false)
   })
 
   it('root delegation verify', async () => {
     const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
-    const aDelegationRootNode = new DelegationRootNode(
-      'myRootId',
-      ctypeHash,
-      'myAccount'
-    )
+    const aDelegationRootNode = new DelegationRootNode({
+      id: 'myRootId',
+      cTypeHash: ctypeHash,
+      account: 'myAccount',
+      revoked: false,
+    })
     const revokeStatus = await aDelegationRootNode
       .revoke(identityAlice)
       .then((tx) => BlockchainUtils.submitTxWithReSign(tx, identityAlice))

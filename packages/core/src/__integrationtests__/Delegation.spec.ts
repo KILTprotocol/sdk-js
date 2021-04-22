@@ -32,11 +32,14 @@ async function writeRoot(
   delegator: Identity,
   ctypeHash: ICType['hash']
 ): Promise<DelegationRootNode> {
-  const root = new DelegationRootNode(
-    UUID.generate(),
-    ctypeHash,
-    delegator.address
-  )
+  const root = new DelegationRootNode({
+    id: UUID.generate(),
+    cTypeHash: ctypeHash,
+    account: delegator.address,
+    revoked: false,
+  })
+  console.log('root,', root)
+
   await root.store(delegator).then((tx) =>
     BlockchainUtils.submitTxWithReSign(tx, delegator, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -52,13 +55,14 @@ async function addDelegation(
 ): Promise<DelegationNode> {
   const rootId =
     parentNode instanceof DelegationRootNode ? parentNode.id : parentNode.rootId
-  const delegation = new DelegationNode(
-    UUID.generate(),
+  const delegation = new DelegationNode({
+    id: UUID.generate(),
     rootId,
-    delegee.address,
+    account: delegee.address,
     permissions,
-    parentNode.id
-  )
+    parentId: parentNode.id,
+    revoked: false,
+  })
   await delegation
     .store(delegator, delegee.signStr(delegation.generateHash()))
     .then((tx) =>
@@ -90,6 +94,7 @@ beforeAll(async () => {
 
 it('should be possible to delegate attestation rights', async () => {
   const rootNode = await writeRoot(root, DriversLicense.hash)
+  console.log('rootNode', rootNode)
   const delegatedNode = await addDelegation(rootNode, root, attester)
   await Promise.all([
     expect(rootNode.verify()).resolves.toBeTruthy(),
