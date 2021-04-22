@@ -62,10 +62,13 @@ export default class DelegationRootNode extends DelegationBaseNode
   public cTypeHash: IDelegationRootNode['cTypeHash']
 
   public constructor(delegationRootNodeInput: IDelegationRootNode) {
-    super(delegationRootNodeInput.id, delegationRootNodeInput.account)
+    super(
+      delegationRootNodeInput.id,
+      delegationRootNodeInput.account,
+      delegationRootNodeInput.revoked
+    )
     DelegationRootNodeUtils.errorCheck(delegationRootNodeInput)
     this.cTypeHash = delegationRootNodeInput.cTypeHash
-    this.revoked = delegationRootNodeInput.revoked
   }
 
   public getRoot(): Promise<DelegationRootNode> {

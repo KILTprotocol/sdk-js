@@ -37,14 +37,17 @@ export default abstract class DelegationBaseNode
    *
    * @param id The unique identifier of the delegation node.
    * @param account The owner address of the delegation node.
+   * @param revoked
    */
   public constructor(
     id: IDelegationBaseNode['id'],
-    account: IDelegationBaseNode['account']
+    account: IDelegationBaseNode['account'],
+    revoked: IDelegationBaseNode['revoked']
   ) {
     DelegationUtils.errorCheck(id, account)
     this.account = account
     this.id = id
+    this.revoked = revoked
   }
 
   /**

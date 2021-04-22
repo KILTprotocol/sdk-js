@@ -65,12 +65,15 @@ export default class DelegationNode extends DelegationBaseNode
    * @param delegationNodeInput
    */
   public constructor(delegationNodeInput: IDelegationNode) {
-    super(delegationNodeInput.id, delegationNodeInput.account)
+    super(
+      delegationNodeInput.id,
+      delegationNodeInput.account,
+      delegationNodeInput.revoked
+    )
     DelegationNodeUtils.errorCheck(delegationNodeInput)
     this.permissions = delegationNodeInput.permissions
     this.rootId = delegationNodeInput.rootId
     this.parentId = delegationNodeInput.parentId
-    this.revoked = delegationNodeInput.revoked
   }
 
   /**
