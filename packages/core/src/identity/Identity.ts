@@ -413,8 +413,7 @@ export default class Identity implements IIdentity {
    * @example ```javascript
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const tx = await blockchain.api.tx.ctype.add(ctype.hash);
-   * const nonce = await blockchain.api.rpc.system.accountNextIndex(alice.address);
-   * alice.signSubmittableExtrinsic(tx, nonce);
+   * await blockchain.signTx(alice, tx); // calls signSubmittableExtrinsic internally
    * ```
    */
   public async signSubmittableExtrinsic(

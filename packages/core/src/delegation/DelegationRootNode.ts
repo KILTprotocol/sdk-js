@@ -68,7 +68,7 @@ export default class DelegationRootNode extends DelegationBaseNode
   /**
    * Stores the delegation root node on chain.
    *
-   * @returns Promise containing the SubmittableExtrinsic.
+   * @returns Promise containing the unsigned SubmittableExtrinsic.
    */
   public async store(): Promise<SubmittableExtrinsic> {
     log.debug(`:: store(${this.id})`)
