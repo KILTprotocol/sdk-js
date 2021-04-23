@@ -18,13 +18,9 @@ export const CUSTOM_TYPES: RegistryTypes = {
   Balance: 'u128',
   PublicSigningKey: 'Hash',
   PublicBoxKey: 'Hash',
-  Signature: 'MultiSignature',
-  Address: 'AccountId',
-  LookupSource: 'AccountId',
   BlockNumber: 'u64',
+  AmountOf: 'i128',
   Index: 'u64',
-  RefCount: 'u32',
-  AccountInfo: 'AccountInfoWithProviders',
   Permissions: 'u32',
   DelegationNodeId: 'Hash',
   DelegationNode: {
@@ -34,18 +30,17 @@ export const CUSTOM_TYPES: RegistryTypes = {
     permissions: 'Permissions',
     revoked: 'bool',
   },
-  DelegationRoot: {
-    ctypeHash: 'Hash',
-    owner: 'AccountId',
-    revoked: 'bool',
-  },
+  DelegationRoot: { ctypeHash: 'Hash', owner: 'AccountId', revoked: 'bool' },
   Attestation: {
     ctypeHash: 'Hash',
     attester: 'AccountId',
     delegationId: 'Option<DelegationNodeId>',
     revoked: 'bool',
   },
-  UrlEncoding: 'Vec<u8>',
+  XCurrencyId: { chainId: 'ChainId', currencyId: 'Vec<u8>' },
+  ChainId: { _enum: { RelayChain: 'Null', ParaChain: 'ParaId' } },
+  CurrencyIdOf: 'CurrencyId',
+  CurrencyId: { _enum: { Dot: 0, Ksm: 1, Kilt: 2 } },
   DidIdentifier: 'AccountId',
   DidVerificationKeyType: {
     _enum: [
@@ -55,57 +50,63 @@ export const CUSTOM_TYPES: RegistryTypes = {
       'AssertionMethod',
     ],
   },
-  DidEncryptionKeyType: {
-    _enum: ['KeyAgreement'],
-  },
+  DidEncryptionKeyType: { _enum: ['KeyAgreement'] },
   PublicVerificationKey: {
-    _enum: {
-      Ed25519: '[u8; 32]',
-      Sr25519: '[u8; 32]',
-    },
+    _enum: { Ed25519: '[u8; 32]', Sr25519: '[u8; 32]' },
   },
   DidSignature: {
-    _enum: {
-      Ed25519: '[u8; 64]',
-      Sr25519: '[u8; 64]',
-    },
+    _enum: { Ed25519: 'Ed25519Signature', Sr25519: 'Sr25519Signature' },
   },
-  PublicEncryptionKey: {
-    _enum: {
-      X55519: '[u8; 32]',
-    },
-  },
-  DIDError: {
+  PublicEncryptionKey: { _enum: { X55519: '[u8; 32]' } },
+  DidError: {
     _enum: {
       StorageError: 'StorageError',
       SignatureError: 'SignatureError',
+      OperationError: 'OperationError',
+      UrlError: 'UrlError',
     },
   },
   StorageError: {
     _enum: {
-      DIDAlreadyPresent: 'null',
-      DIDNotPresent: 'null',
-      VerificationkeyNotPresent: 'DidVerificationKeyType',
+      DidAlreadyPresent: 'null',
+      DidNotPresent: 'null',
+      DidKeyNotPresent: 'DidVerificationKeyType',
+      VerificationKeysNotPresent: 'Vec<PublicVerificationKey>',
     },
   },
-  SignatureError: {
-    _enum: ['InvalidSignatureFormat', 'InvalidSignature'],
-  },
+  SignatureError: { _enum: ['InvalidSignatureFormat', 'InvalidSignature'] },
+  OperationError: { _enum: ['InvalidNonce'] },
+  UrlError: { _enum: ['InvalidUrlEncoding', 'InvalidUrlScheme'] },
+  Url: { _enum: { Http: 'HttpUrl', Ftp: 'FtpUrl', Ipfs: 'IpfsUrl' } },
+  HttpUrl: { payload: 'Text' },
+  FtpUrl: { payload: 'Text' },
+  IpfsUrl: { payload: 'Text' },
   DidCreationOperation: {
     did: 'DidIdentifier',
     new_auth_key: 'PublicVerificationKey',
     new_key_agreement_key: 'PublicEncryptionKey',
     new_attestation_key: 'Option<PublicVerificationKey>',
     new_delegation_key: 'Option<PublicVerificationKey>',
-    new_endpoint_url: 'Option<UrlEncoding>',
+    new_endpoint_url: 'Option<Url>',
   },
+  DidUpdateOperation: {
+    did: 'DidIdentifier',
+    new_auth_key: 'Option<PublicVerificationKey>',
+    new_key_agreement_key: 'Option<PublicEncryptionKey>',
+    new_attestation_key: 'Option<PublicVerificationKey>',
+    new_delegation_key: 'Option<PublicVerificationKey>',
+    verification_keys_to_remove: 'Option<BTreeSet<PublicVerificationKey>>',
+    new_endpoint_url: 'Option<Url>',
+    tx_counter: 'u64',
+  },
+  DidDeletionOperation: { did: 'DidIdentifier', tx_counter: 'u64' },
   DidDetails: {
     auth_key: 'PublicVerificationKey',
     key_agreement_key: 'PublicEncryptionKey',
     delegation_key: 'Option<PublicVerificationKey>',
     attestation_key: 'Option<PublicVerificationKey>',
     verification_keys: 'BTreeSet<PublicVerificationKey>',
-    endpoint_url: 'Option<UrlEncoding>',
+    endpoint_url: 'Option<Url>',
     last_tx_counter: 'u64',
   },
 }

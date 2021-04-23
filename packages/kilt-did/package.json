@@ -28,6 +28,7 @@
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
+    "@kiltprotocol/core": "workspace:*",
     "@polkadot/types": "^3.11.1",
     "@polkadot/util-crypto": "^5.9.2",
     "@types/ed2curve": "^0.2.2",
