@@ -85,7 +85,7 @@ describe('Balance', () => {
   })
   it('should make transfer of amount with arbitrary exponent', async () => {
     const amount = new BN(10)
-    const exponent = -6
+    const exponent = -6.312513431
     const expectedAmount = BalanceUtils.convertToTxUnit(
       amount,
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))

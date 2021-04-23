@@ -37,7 +37,7 @@ describe('handling attestations that do not exist', () => {
 
   it('Attestation.revoke', async () => {
     return expect(
-      Attestation.revoke('0x012012012', alice, 0).then((tx) =>
+      Attestation.revoke('0x012012012', 0).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, alice, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,

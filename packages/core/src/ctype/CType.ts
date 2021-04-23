@@ -88,7 +88,7 @@ export default class CType implements ICType {
   /**
    * [ASYNC] Stores the [[CType]] on the blockchain.
    *
-   * @returns A promise of a SubmittableExtrinsic.
+   * @returns A promise of a unsigned SubmittableExtrinsic.
    */
   public async store(): Promise<SubmittableExtrinsic> {
     return store(this)
