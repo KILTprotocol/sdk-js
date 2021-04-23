@@ -160,6 +160,11 @@ export default class Message implements IMessage {
   public senderAddress: IMessage['senderAddress']
   public senderBoxPublicKey: IMessage['senderBoxPublicKey']
 
+  private ciphertext: string
+  private nonce: string
+  private hash: string
+  private signature: string
+
   /**
    * Constructs a message which should be encrypted with [[Message.encrypt]] before sending to the receiver.
    *
@@ -186,18 +191,13 @@ export default class Message implements IMessage {
       JSON.stringify(body),
       receiver.boxPublicKeyAsHex
     )
-    this.message = encryptedMessage.box
+    this.ciphertext = encryptedMessage.box
     this.nonce = encryptedMessage.nonce
 
-    const hashInput: string = this.message + this.nonce + this.createdAt
+    const hashInput: string = this.ciphertext + this.nonce + this.createdAt
     this.hash = Crypto.hashStr(hashInput)
     this.signature = sender.signStr(this.hash)
   }
-
-  private message: string
-  private nonce: string
-  private hash: string
-  private signature: string
 
   /**
    * Encrypts the [[Message]] symmetrically as a string. This can be reversed with [[Message.decrypt]].
@@ -208,7 +208,7 @@ export default class Message implements IMessage {
     return {
       messageId: this.messageId,
       receivedAt: this.receivedAt,
-      ciphertext: this.message,
+      ciphertext: this.ciphertext,
       nonce: this.nonce,
       createdAt: this.createdAt,
       hash: this.hash,
