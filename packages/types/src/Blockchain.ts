@@ -5,6 +5,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { Header } from '@polkadot/types/interfaces/types'
+import { AnyNumber } from '@polkadot/types/types'
 import type BN from 'bn.js'
 import type {
   IIdentity,
@@ -13,7 +14,7 @@ import type {
   SubscriptionPromise,
 } from '.'
 
-export type ReSignOpts = { reSign: boolean }
+export type ReSignOpts = { reSign: boolean; tip: AnyNumber }
 export type BlockchainStats = {
   chain: string
   nodeName: string
@@ -26,7 +27,8 @@ export interface IBlockchainApi {
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
   signTx(
     identity: IIdentity,
-    tx: SubmittableExtrinsic
+    tx: SubmittableExtrinsic,
+    tip?: AnyNumber
   ): Promise<SubmittableExtrinsic>
   submitSignedTxWithReSign(
     tx: SubmittableExtrinsic,

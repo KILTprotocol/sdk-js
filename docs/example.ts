@@ -69,7 +69,7 @@ async function setup(): Promise<{
   const ctype = new Kilt.CType(rawCtype)
 
   // Store ctype on blockchain
-  // signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria or activate re-sign-re-send options.
+  // signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria, set tip value, or activate re-sign-re-send capabilities.
   // ! This costs tokens !
   // Also note, that the completely same ctype can only be stored once on the blockchain.
   try {
