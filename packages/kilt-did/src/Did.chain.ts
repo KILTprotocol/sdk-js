@@ -6,8 +6,8 @@
 import type { Option } from '@polkadot/types'
 import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { IDid } from '@kiltprotocol/core'
-import { getIdentifierFromDid } from './identity'
+import type { IDid } from '@kiltprotocol/core'
+import { getIdentifierFromDid, getDidFromIdentifier } from './identity'
 import type {
   DidDetails,
   DidSigned,
@@ -47,6 +47,7 @@ export async function queryById(
       didDetail.verification_keys.values()
     ).map((key) => decodePublicKey(key))
     const didRecord: IDidRecord = {
+      did: getDidFromIdentifier(did_identifier),
       auth_key: decodePublicKey(didDetail.auth_key),
       key_agreement_key: decodePublicKey(didDetail.auth_key),
       verification_keys,

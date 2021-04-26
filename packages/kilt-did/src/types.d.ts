@@ -1,3 +1,5 @@
+import type { IIdentity } from '@kiltprotocol/types'
+
 export type KeypairType = 'ed25519' | 'sr15519' | 'x25519' | string
 
 export interface TypedPublicKey {
@@ -6,6 +8,7 @@ export interface TypedPublicKey {
 }
 
 export interface IDidRecord {
+  did: IIdentity['address']
   auth_key: TypedPublicKey
   key_agreement_key: TypedPublicKey
   delegation_key?: TypedPublicKey
