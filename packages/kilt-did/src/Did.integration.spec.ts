@@ -17,6 +17,7 @@ import type {
 } from './types.chain'
 import { create, update, deactivate, queryById, queryByDID } from './Did.chain'
 import { FullDID } from './identity'
+import { IDidRecord } from './types'
 
 let alice: IIdentity
 let TYPE_REGISTRY: TypeRegistry
@@ -66,13 +67,17 @@ describe('Did.chain', () => {
         })
       ).resolves.not.toThrow()
 
-      await expect(queryById(id.address)).resolves.toMatchObject({
+      await expect(queryById(id.address)).resolves.toMatchObject<
+        Partial<IDidRecord>
+      >({
         did: Did.getIdentifierFromAddress(id.address),
       })
     }, 20_000)
 
     it('deactivates did from previous step', async () => {
-      await expect(queryById(id.address)).resolves.toMatchObject({
+      await expect(queryById(id.address)).resolves.toMatchObject<
+        Partial<IDidRecord>
+      >({
         did: Did.getIdentifierFromAddress(id.address),
       })
 
@@ -132,7 +137,9 @@ describe('Did.chain', () => {
       })
     ).resolves.not.toThrow()
 
-    await expect(queryById(id.address)).resolves.toMatchObject({
+    await expect(queryById(id.address)).resolves.toMatchObject<
+      Partial<IDidRecord>
+    >({
       did: Did.getIdentifierFromAddress(id.address),
       endpoint_url: 'https://example.com',
     })
@@ -160,7 +167,9 @@ describe('Did.chain', () => {
       })
     ).resolves.not.toThrow()
 
-    await expect(queryById(id.address)).resolves.toMatchObject({
+    await expect(queryById(id.address)).resolves.toMatchObject<
+      Partial<IDidRecord>
+    >({
       did: Did.getIdentifierFromAddress(id.address),
       endpoint_url: 'ftp://example.com/abc',
     })
@@ -188,13 +197,18 @@ describe('did identity', () => {
       })
     ).resolves.not.toThrow()
 
-    await expect(queryByDID(id.did)).resolves.toMatchObject({
+    await expect(queryByDID(id.did)).resolves.toMatchObject<
+      Partial<IDidRecord>
+    >({
       did: id.did,
+      endpoint_url: 'https://example.com',
     })
   }, 20_000)
 
   it('deactivates did from previous step', async () => {
-    await expect(queryByDID(id.did)).resolves.toMatchObject({
+    await expect(queryByDID(id.did)).resolves.toMatchObject<
+      Partial<IDidRecord>
+    >({
       did: id.did,
     })
 
@@ -210,6 +224,50 @@ describe('did identity', () => {
     ).resolves.not.toThrow()
 
     await expect(queryByDID(id.did)).resolves.toBe(null)
+  }, 20_000)
+
+  it('updates did on chain', async () => {
+    const newDid = FullDID.fromIdentity(Identity.buildFromMnemonic(''))
+    await expect(
+      newDid.getDidCreateTx().then(async (tx) => {
+        await tx.signAsync(alice.signKeyringPair)
+        return BlockchainUtils.submitTxWithReSign(tx, alice, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        })
+      })
+    ).resolves.not.toThrow()
+
+    await expect(queryByDID(newDid.did)).resolves.toMatchObject<
+      Partial<IDidRecord>
+    >({
+      did: newDid.did,
+    })
+
+    const keyPair = Identity.buildFromMnemonic('').signKeyringPair
+    const signedDidUpdate = newDid.getDidUpdate(
+      {
+        attestation: keyPair,
+      },
+      1,
+      [],
+      'http://example.edu'
+    )
+
+    await expect(
+      update(signedDidUpdate).then(async (tx) => {
+        await tx.signAsync(alice.signKeyringPair)
+        return BlockchainUtils.submitTxWithReSign(tx, alice, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        })
+      })
+    ).resolves.not.toThrow()
+
+    await expect(queryByDID(newDid.did)).resolves.toMatchObject<
+      Partial<IDidRecord>
+    >({
+      did: newDid.did,
+      endpoint_url: 'http://example.edu',
+    })
   }, 20_000)
 })
 

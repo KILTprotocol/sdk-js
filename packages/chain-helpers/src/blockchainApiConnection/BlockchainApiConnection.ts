@@ -68,8 +68,8 @@ export const CUSTOM_TYPES: RegistryTypes = {
   },
   StorageError: {
     _enum: {
-      DidAlreadyPresent: 'null',
-      DidNotPresent: 'null',
+      DidAlreadyPresent: 'Null',
+      DidNotPresent: 'Null',
       DidKeyNotPresent: 'DidVerificationKeyType',
       VerificationKeysNotPresent: 'Vec<PublicVerificationKey>',
     },

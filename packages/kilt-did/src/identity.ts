@@ -288,12 +288,8 @@ export class FullDID extends LightDID {
     // build key update object
     function matchKeyOperation(
       keypair: IKeyPair | undefined | null
-    ): Record<string, unknown> {
-      return keypair
-        ? { update: keypair }
-        : keypair === null
-        ? { delete: undefined }
-        : { skip: undefined }
+    ): ReturnType<typeof formatPublicKey> | undefined {
+      return keypair ? formatPublicKey(keypair) : undefined
     }
     const didUpdateRaw = {
       did: getIdentifierFromDid(this.did),
@@ -302,7 +298,9 @@ export class FullDID extends LightDID {
       new_attestation_key: matchKeyOperation(keyUpdate.attestation),
       new_delegation_key: matchKeyOperation(keyUpdate.delegation),
       verification_keys_to_remove,
-      new_endpoint_url,
+      new_endpoint_url: new_endpoint_url
+        ? encodeUrl(new_endpoint_url)
+        : undefined,
       tx_counter,
     }
     const didUpdate = new (TYPE_REGISTRY.getOrThrow<IDidUpdateOperation>(
