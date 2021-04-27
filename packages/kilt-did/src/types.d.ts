@@ -17,3 +17,5 @@ export interface IDidRecord {
   endpoint_url?: string
   last_tx_counter: number
 }
+
+export type Nullable<T> = { [P in keyof T]: T[P] | null }

@@ -2,18 +2,28 @@ import nacl from 'tweetnacl'
 import { encodeAddress } from '@polkadot/util-crypto'
 import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { create, queryByDID, removeKeys, updateKeys } from './Did.chain'
-
-// placeholders for interfaces (will probably live in the types package in the end)
-export type IDidCreate = any
-export type IDidKeyUpdate = any
-export type IDidKeyRemoval = any
+import { TypeRegistry } from '@polkadot/types'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { Codec } from '@polkadot/types/types'
+import {
+  DidSignature,
+  DidSigned,
+  IDidCreationOperation,
+  IDidDeletionOperation,
+  IDidUpdateOperation,
+  Url,
+} from './types.chain'
+import { create, queryByDID, update, deactivate } from './Did.chain'
+import { Nullable } from './types'
 
 export interface IKeyPair {
   publicKey: Uint8Array
   type: string
   // do we need the identifier?
 }
+
+const TYPE_REGISTRY = new TypeRegistry()
+TYPE_REGISTRY.register(BlockchainApiConnection.CUSTOM_TYPES)
 
 function isIKeyPair(keypair: unknown): keypair is IKeyPair {
   return (
@@ -24,6 +34,18 @@ function isIKeyPair(keypair: unknown): keypair is IKeyPair {
     'type' in keypair &&
     typeof keypair['type'] === 'string'
   )
+}
+
+function encodeUrl(url: string): Url {
+  const typedUrl: Record<string, unknown> = {}
+  Array.from(['http', 'ftp', 'ipfs']).some((type) => {
+    if (url.startsWith(type)) {
+      typedUrl[type] = { payload: url }
+      return true
+    }
+    return false
+  })
+  return new (TYPE_REGISTRY.getOrThrow<Url>('Url'))(TYPE_REGISTRY, typedUrl)
 }
 
 export interface ISigningKeyPair extends IKeyPair {
@@ -45,17 +67,17 @@ export interface IEd25519KeyPair extends ISigningKeyPair {
   deriveEncryptionKeyPair: () => IEncryptionKeyPair
 }
 
+// TODO: should this use the same keys as the chain type?
 export interface KeySet {
   authentication: ISigningKeyPair
   encryption: IEncryptionKeyPair
   attestation?: ISigningKeyPair
-  revocation?: ISigningKeyPair
   delegation?: ISigningKeyPair
 }
 
 export class Curve25519KeyPair implements IEncryptionKeyPair {
   public publicKey: Uint8Array
-  public readonly type = 'curve25519'
+  public readonly type = 'x55519'
   private secretKey: Uint8Array
 
   constructor(secretKey: Uint8Array, publicKey: Uint8Array) {
@@ -79,6 +101,25 @@ export function getIdentifierFromDid(did: string): string {
     throw SDKErrors.ERROR_INVALID_DID_PREFIX(did)
   }
   return did.substr(KILT_DID_PREFIX.length)
+}
+
+function formatPublicKey(
+  keypair: IKeyPair
+): Record<IKeyPair['type'], IKeyPair['publicKey']> {
+  const { type, publicKey } = keypair
+  return { [type]: publicKey }
+}
+
+function signDidOperation<PayloadType extends Codec>(
+  payload: PayloadType,
+  key: ISigningKeyPair
+): DidSigned<PayloadType> {
+  const signature = new (TYPE_REGISTRY.getOrThrow<DidSignature>(
+    'DidSignature'
+  ))(TYPE_REGISTRY, {
+    [key.type]: key.sign(payload.toU8a()),
+  })
+  return { payload, signature }
 }
 
 export class LightDID {
@@ -128,32 +169,75 @@ export class FullDID extends LightDID {
     return this.keys.attestation
   }
 
-  public get revocationKey(): ISigningKeyPair | undefined {
-    return this.keys.revocation
+  constructor(
+    did: string,
+    authenticationKey: ISigningKeyPair,
+    encryptionKey: IEncryptionKeyPair,
+    attestationKey?: ISigningKeyPair,
+    delegationKey?: ISigningKeyPair
+  ) {
+    super(did, authenticationKey, encryptionKey)
+    this.setKeys({ attestation: attestationKey, delegation: delegationKey })
   }
 
-  public getKeys(): KeySet {
-    return this.keys
+  public static fromLightDID(
+    did: LightDID,
+    attestationKey?: ISigningKeyPair,
+    delegationKey?: ISigningKeyPair
+  ): FullDID {
+    return new FullDID(
+      did.did,
+      did.authenticationKey,
+      did.encryptionKey,
+      attestationKey,
+      delegationKey
+    )
   }
 
-  public setKeys(keys: Partial<KeySet>): void {
+  public static fromKeyPair(
+    keyPair: IEd25519KeyPair,
+    attestationKey?: ISigningKeyPair,
+    delegationKey?: ISigningKeyPair
+  ): FullDID {
+    return FullDID.fromLightDID(
+      super.fromKeyPair(keyPair),
+      attestationKey,
+      delegationKey
+    )
+  }
+
+  public static fromIdentity(
+    identity: IIdentity,
+    attestationKey?: ISigningKeyPair,
+    delegationKey?: ISigningKeyPair
+  ): FullDID {
+    return FullDID.fromLightDID(
+      super.fromIdentity(identity),
+      attestationKey,
+      delegationKey
+    )
+  }
+
+  public setKeys(keys: Partial<Nullable<KeySet>>): void {
     // copy current keys
     const keysCopy = { ...this.keys }
     // apply changes to copy
     Object.entries(keys).forEach(([name, keyPair]) => {
       if (
         isIKeyPair(keyPair) &&
-        [
-          'authentication',
-          'encryption',
-          'attestation',
-          'revocation',
-          'delegation',
-        ].includes(name)
+        ['authentication', 'encryption', 'attestation', 'delegation'].includes(
+          name
+        )
       ) {
         keysCopy[name] = keyPair
+      } else if (
+        keyPair === null &&
+        ['attestation', 'delegation'].includes(name)
+      ) {
+        delete keysCopy[name]
+      } else if (typeof keyPair === 'undefined') {
       } else {
-        throw Error(`erroneos input: entry "${name}" with value ${keyPair}`)
+        throw Error(`erroneous input: entry "${name}" with value ${keyPair}`)
       }
     })
     // if no errors, apply
@@ -175,52 +259,99 @@ export class FullDID extends LightDID {
     this.keys = keysCopy
   }
 
-  public getDidCreate(): IDidCreate {
-    const didCreate: IDidCreate = { createDid: { keys: this.getKeys() } } // build did create object, whatever that will look like
-    didCreate.signature = this.authenticationKey.sign(didCreate.createDid)
-    return didCreate
+  public getDidCreate(endpoint_url?: string): DidSigned<IDidCreationOperation> {
+    // build did create object
+    const didCreateRaw = {
+      did: getIdentifierFromDid(this.did),
+      new_auth_key: formatPublicKey(this.authenticationKey),
+      new_key_agreement_key: formatPublicKey(this.encryptionKey),
+      new_attestation_key: this.attestationKey
+        ? formatPublicKey(this.attestationKey)
+        : undefined,
+      new_delegation_key: this.delegationKey
+        ? formatPublicKey(this.delegationKey)
+        : undefined,
+      new_endpoint_url: endpoint_url ? encodeUrl(endpoint_url) : undefined,
+    }
+    const didCreate: IDidCreationOperation = new (TYPE_REGISTRY.getOrThrow<
+      IDidCreationOperation
+    >('DidCreationOperation'))(TYPE_REGISTRY, didCreateRaw)
+    return signDidOperation(didCreate, this.authenticationKey)
   }
 
-  public getKeyUpdate(
-    newKeys: Partial<KeySet>,
-    txIndex: number
-  ): IDidKeyUpdate {
-    const keyUpdate: IDidKeyUpdate = { updateKeys: { keys: newKeys, txIndex } } // build key update object, whatever that will look like
-    keyUpdate.signature = this.authenticationKey.sign(keyUpdate.updateKeys)
-    return keyUpdate
+  public getDidUpdate(
+    keyUpdate: Partial<Nullable<KeySet>>,
+    tx_counter: number,
+    verification_keys_to_remove: Array<IKeyPair['publicKey']> = [],
+    new_endpoint_url?: string
+  ): DidSigned<IDidUpdateOperation> {
+    // build key update object
+    function matchKeyOperation(
+      keypair: IKeyPair | undefined | null
+    ): Record<string, unknown> {
+      return keypair
+        ? { update: keypair }
+        : keypair === null
+        ? { delete: undefined }
+        : { skip: undefined }
+    }
+    const didUpdateRaw = {
+      did: getIdentifierFromDid(this.did),
+      new_auth_key: matchKeyOperation(keyUpdate.authentication),
+      new_key_agreement_key: matchKeyOperation(keyUpdate.encryption),
+      new_attestation_key: matchKeyOperation(keyUpdate.attestation),
+      new_delegation_key: matchKeyOperation(keyUpdate.delegation),
+      verification_keys_to_remove,
+      new_endpoint_url,
+      tx_counter,
+    }
+    const didUpdate = new (TYPE_REGISTRY.getOrThrow<IDidUpdateOperation>(
+      'DidUpdateOperation'
+    ))(TYPE_REGISTRY, didUpdateRaw)
+    return signDidOperation(didUpdate, this.authenticationKey)
   }
 
-  public getKeyRemoval(keyIds: string[], txIndex: number): IDidKeyRemoval {
-    const keyRemoval: IDidKeyRemoval = {
-      removeKeys: { keys: keyIds, txIndex },
-    } // build key update object, whatever that will look like
-    keyRemoval.signature = this.authenticationKey.sign(keyRemoval.removeKeys)
-    return keyRemoval
+  public getDidDeactivate(txIndex: number): DidSigned<IDidDeletionOperation> {
+    const didDeactivate: IDidDeletionOperation = new (TYPE_REGISTRY.getOrThrow<
+      IDidDeletionOperation
+    >('DidDeletionOperation'))(TYPE_REGISTRY, {
+      did: getIdentifierFromDid(this.did),
+      tx_counter: txIndex,
+    })
+    return signDidOperation(didDeactivate, this.authenticationKey)
   }
 
   public async getTxIndex(): Promise<number> {
     const didRecord = await queryByDID(this.did)
     if (!didRecord) throw new Error('did not on chain')
-    return didRecord.txIndex
+    return didRecord.last_tx_counter
   }
 
   // the following are optional, not sure if we want to include them
 
-  public async getDidCreateTx(): Promise<SubmittableExtrinsic> {
-    return create(this.getDidCreate())
+  public async getDidCreateTx(
+    endpoint_url?: string
+  ): Promise<SubmittableExtrinsic> {
+    return create(this.getDidCreate(endpoint_url))
   }
 
   public async getKeyUpdateTx(
     newKeys: Partial<KeySet>,
-    txIndex: number
+    txIndex: number,
+    verification_keys_to_remove: [] = [],
+    new_endpoint_url?: string
   ): Promise<SubmittableExtrinsic> {
-    return updateKeys(this.getKeyUpdate(newKeys, txIndex))
+    return update(
+      this.getDidUpdate(
+        newKeys,
+        txIndex,
+        verification_keys_to_remove,
+        new_endpoint_url
+      )
+    )
   }
 
-  public async getKeyRemovalTx(
-    keyIds: string[],
-    txIndex: number
-  ): Promise<SubmittableExtrinsic> {
-    return removeKeys(this.getKeyRemoval(keyIds, txIndex))
+  public async getKeyRemovalTx(txIndex: number): Promise<SubmittableExtrinsic> {
+    return deactivate(this.getDidDeactivate(txIndex))
   }
 }
