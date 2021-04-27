@@ -33,8 +33,19 @@ export function convertToTxUnit(balance: BN, power: number): BN {
   return new BN(balance).mul(new BN(10).pow(new BN(15 + power)))
 }
 
-export function asFemtoKilt(balance: BN): BN {
+export function toFemtoKilt(balance: BN): BN {
   return convertToTxUnit(balance, 0)
 }
-
+export function fromFemtoKilt(balance: BN): BN {
+  return new BN(balance).div(new BN(10).pow(new BN(15)))
+}
 export const TRANSACTION_FEE = convertToTxUnit(new BN(125), -9)
+
+export default {
+  KILT_COIN,
+  TRANSACTION_FEE,
+  formatKiltBalance,
+  toFemtoKilt,
+  fromFemtoKilt,
+  convertToTxUnit,
+}
