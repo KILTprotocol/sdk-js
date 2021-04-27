@@ -15,8 +15,8 @@ import type {
   IDidDeletionOperation,
   IDidUpdateOperation,
 } from './types.chain'
-import { create, update, deactivate, queryById, queryByDID } from './Did.chain'
-import { FullDID } from './identity'
+import { create, update, deactivate, queryById } from './Did.chain'
+import { IDidRecord } from './types'
 
 let alice: IIdentity
 let TYPE_REGISTRY: TypeRegistry
@@ -66,13 +66,17 @@ describe('Did.chain', () => {
         })
       ).resolves.not.toThrow()
 
-      await expect(queryById(id.address)).resolves.toMatchObject({
+      await expect(queryById(id.address)).resolves.toMatchObject<
+        Partial<IDidRecord>
+      >({
         did: Did.getIdentifierFromAddress(id.address),
       })
     }, 20_000)
 
     it('deactivates did from previous step', async () => {
-      await expect(queryById(id.address)).resolves.toMatchObject({
+      await expect(queryById(id.address)).resolves.toMatchObject<
+        Partial<IDidRecord>
+      >({
         did: Did.getIdentifierFromAddress(id.address),
       })
 
@@ -132,7 +136,9 @@ describe('Did.chain', () => {
       })
     ).resolves.not.toThrow()
 
-    await expect(queryById(id.address)).resolves.toMatchObject({
+    await expect(queryById(id.address)).resolves.toMatchObject<
+      Partial<IDidRecord>
+    >({
       did: Did.getIdentifierFromAddress(id.address),
       endpoint_url: 'https://example.com',
     })
@@ -160,56 +166,12 @@ describe('Did.chain', () => {
       })
     ).resolves.not.toThrow()
 
-    await expect(queryById(id.address)).resolves.toMatchObject({
+    await expect(queryById(id.address)).resolves.toMatchObject<
+      Partial<IDidRecord>
+    >({
       did: Did.getIdentifierFromAddress(id.address),
       endpoint_url: 'ftp://example.com/abc',
     })
-  }, 20_000)
-})
-
-describe('did identity', () => {
-  let id: FullDID
-  beforeAll(() => {
-    expect(() => {
-      id = FullDID.fromIdentity(Identity.buildFromMnemonic(''))
-    }).not.toThrow()
-    expect(id).toBeInstanceOf(FullDID)
-  })
-
-  it('writes a new did record to chain', async () => {
-    const signedDidCreate = id.getDidCreate('https://example.com')
-
-    await expect(
-      create(signedDidCreate).then(async (tx) => {
-        await tx.signAsync(alice.signKeyringPair)
-        return BlockchainUtils.submitTxWithReSign(tx, alice, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        })
-      })
-    ).resolves.not.toThrow()
-
-    await expect(queryByDID(id.did)).resolves.toMatchObject({
-      did: id.did,
-    })
-  }, 20_000)
-
-  it('deactivates did from previous step', async () => {
-    await expect(queryByDID(id.did)).resolves.toMatchObject({
-      did: id.did,
-    })
-
-    const signedDidDeactivate = id.getDidDeactivate(1)
-
-    await expect(
-      deactivate(signedDidDeactivate).then(async (tx) => {
-        await tx.signAsync(alice.signKeyringPair)
-        return BlockchainUtils.submitTxWithReSign(tx, alice, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        })
-      })
-    ).resolves.not.toThrow()
-
-    await expect(queryByDID(id.did)).resolves.toBe(null)
   }, 20_000)
 })
 
