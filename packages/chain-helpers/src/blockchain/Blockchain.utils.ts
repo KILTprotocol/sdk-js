@@ -155,6 +155,7 @@ export async function submitSignedTx(
  * @param identity The [[Identity]] used to sign and potentially re-sign the tx.
  * @param opts Partial optional criteria for resolving/rejecting the promise.
  * @param opts.reSign Optional flag for re-attempting to send recoverably failed Tx.
+ * @param opts.tip Optional amount of Femto-KILT to tip the validator.
  * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
  *
  */
@@ -163,11 +164,12 @@ export async function signAndSubmitTx(
   identity: IIdentity,
   {
     reSign = false,
+    tip,
     ...opts
   }: Partial<SubscriptionPromise.Options> & Partial<ReSignOpts> = {}
 ): Promise<ISubmittableResult> {
   const chain = await getConnectionOrConnect()
-  const signedTx = await chain.signTx(identity, tx)
+  const signedTx = await chain.signTx(identity, tx, tip)
   return reSign
     ? chain.submitSignedTxWithReSign(signedTx, identity, opts)
     : submitSignedTx(signedTx, opts)

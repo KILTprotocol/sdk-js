@@ -9,7 +9,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { Header } from '@polkadot/types/interfaces/types'
-import type { AnyJson, Codec } from '@polkadot/types/types'
+import type { AnyJson, AnyNumber, Codec } from '@polkadot/types/types'
 import { Text } from '@polkadot/types'
 import type { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
@@ -67,17 +67,20 @@ export default class Blockchain implements IBlockchainApi {
    *
    * @param identity The [[Identity]] to sign the tx with.
    * @param tx The unsigned SubmittableExtrinsic.
+   * @param tip The amount of Femto-KILT to tip the validator.
    * @returns Signed SubmittableExtrinsic.
    *
    */
   public async signTx(
     identity: IIdentity,
-    tx: SubmittableExtrinsic
+    tx: SubmittableExtrinsic,
+    tip?: AnyNumber
   ): Promise<SubmittableExtrinsic> {
     const nonce = await this.getNonce(identity.address)
     const signed: SubmittableExtrinsic = await identity.signSubmittableExtrinsic(
       tx,
-      nonce
+      nonce,
+      tip
     )
 
     return signed
