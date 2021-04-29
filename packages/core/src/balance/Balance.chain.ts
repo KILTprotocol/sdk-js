@@ -76,7 +76,7 @@ export async function listenToBalanceChanges(
   ) => void
 ): Promise<UnsubscribePromise> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const previousBalances = await getBalances(accountAddress)
+  let previousBalances = await getBalances(accountAddress)
 
   return blockchain.api.query.system.account(
     accountAddress,
@@ -94,6 +94,8 @@ export async function listenToBalanceChanges(
         miscFrozen: new BN(miscFrozen),
         feeFrozen: new BN(feeFrozen),
       }
+      previousBalances = current
+
       listener(accountAddress, current, balancesChange)
     }
   )
