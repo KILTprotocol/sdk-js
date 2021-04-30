@@ -79,6 +79,7 @@
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="balanceutils.html#asfemtokilt" class="tsd-kind-icon">as<wbr>Femto<wbr>Kilt</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="balanceutils.html#converttotxunit" class="tsd-kind-icon">convert<wbr>ToTx<wbr>Unit</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="balanceutils.html#formatkiltbalance" class="tsd-kind-icon">format<wbr>Kilt<wbr>Balance</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="balanceutils.html#formatkiltbalancedecimalplacement" class="tsd-kind-icon">format<wbr>Kilt<wbr>Balance<wbr>Decimal<wbr>Placement</a></li>
 							</ul>
 						</section>
 					</div>
@@ -92,7 +93,7 @@
 					<div class="tsd-signature tsd-kind-icon">KILT_<wbr>COIN<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol"> = new BN(1)</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/balance/Balance.utils.ts#L9">packages/core/src/balance/Balance.utils.ts:9</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/balance/Balance.utils.ts#L10">packages/core/src/balance/Balance.utils.ts:10</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -102,7 +103,7 @@
 					<div class="tsd-signature tsd-kind-icon">TRANSACTION_<wbr>FEE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol"> = convertToTxUnit(new BN(125), -9)</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/balance/Balance.utils.ts#L27">packages/core/src/balance/Balance.utils.ts:27</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/balance/Balance.utils.ts#L43">packages/core/src/balance/Balance.utils.ts:43</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -119,7 +120,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/balance/Balance.utils.ts#L23">packages/core/src/balance/Balance.utils.ts:23</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/balance/Balance.utils.ts#L39">packages/core/src/balance/Balance.utils.ts:39</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -142,7 +143,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/balance/Balance.utils.ts#L19">packages/core/src/balance/Balance.utils.ts:19</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/balance/Balance.utils.ts#L35">packages/core/src/balance/Balance.utils.ts:35</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -162,19 +163,51 @@
 					<a name="formatkiltbalance" class="tsd-anchor"></a>
 					<h3>format<wbr>Kilt<wbr>Balance</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">format<wbr>Kilt<wbr>Balance<span class="tsd-signature-symbol">(</span>amount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+						<li class="tsd-signature tsd-kind-icon">format<wbr>Kilt<wbr>Balance<span class="tsd-signature-symbol">(</span>amount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span>, additionalOptions<span class="tsd-signature-symbol">?: </span><a href="../interfaces/ibalance.balanceoptions.html" class="tsd-signature-type">BalanceOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/core/src/balance/Balance.utils.ts#L11">packages/core/src/balance/Balance.utils.ts:11</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/balance/Balance.utils.ts#L12">packages/core/src/balance/Balance.utils.ts:12</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>amount: <span class="tsd-signature-type">BN</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> additionalOptions: <a href="../interfaces/ibalance.balanceoptions.html" class="tsd-signature-type">BalanceOptions</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="formatkiltbalancedecimalplacement" class="tsd-anchor"></a>
+					<h3>format<wbr>Kilt<wbr>Balance<wbr>Decimal<wbr>Placement</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">format<wbr>Kilt<wbr>Balance<wbr>Decimal<wbr>Placement<span class="tsd-signature-symbol">(</span>amount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BN</span>, decimal<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, denomination<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/balance/Balance.utils.ts#L25">packages/core/src/balance/Balance.utils.ts:25</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>amount: <span class="tsd-signature-type">BN</span></h5>
+								</li>
+								<li>
+									<h5>decimal: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>denomination: <span class="tsd-signature-type">number</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -210,6 +243,9 @@
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="balanceutils.html#formatkiltbalance" class="tsd-kind-icon">format<wbr>Kilt<wbr>Balance</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="balanceutils.html#formatkiltbalancedecimalplacement" class="tsd-kind-icon">format<wbr>Kilt<wbr>Balance<wbr>Decimal<wbr>Placement</a>
 					</li>
 				</ul>
 			</nav>

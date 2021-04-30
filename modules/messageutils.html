@@ -71,6 +71,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="messageutils.html#compressmessage" class="tsd-kind-icon">compress<wbr>Message</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="messageutils.html#decompressmessage" class="tsd-kind-icon">decompress<wbr>Message</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="messageutils.html#verifyrequiredctypeproperties" class="tsd-kind-icon">verify<wbr>RequiredCType<wbr>Properties</a></li>
 							</ul>
 						</section>
 					</div>
@@ -88,12 +89,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.utils.ts#L30">packages/messaging/src/Message.utils.ts:30</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/messaging/src/Message.utils.ts#L60">packages/messaging/src/Message.utils.ts:60</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>[STATIC] Compresses a <a href="../classes/messaging.message.html">Message</a> depending on the message body type.</p>
+									<p>Compresses a <a href="../classes/messaging.message.html">Message</a> depending on the message body type.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -120,7 +121,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/4b9274e/packages/messaging/src/Message.utils.ts#L150">packages/messaging/src/Message.utils.ts:150</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/messaging/src/Message.utils.ts#L184">packages/messaging/src/Message.utils.ts:184</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -139,6 +140,49 @@
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="imessage.html#messagebody" class="tsd-signature-type">MessageBody</a></h4>
 							<p>Returns the compressed message back to its original form and more human readable.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="verifyrequiredctypeproperties" class="tsd-anchor"></a>
+					<h3>verify<wbr>RequiredCType<wbr>Properties</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">verify<wbr>RequiredCType<wbr>Properties<span class="tsd-signature-symbol">(</span>requiredProperties<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, cType<span class="tsd-signature-symbol">: </span><a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/messaging/src/Message.utils.ts#L36">packages/messaging/src/Message.utils.ts:36</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Verifies required properties for a given <a href="ctype.html">CType</a> before sending or receiving a message.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p><a href="../enums/sdkerrors.errorcode.html#error_ctype_hash_not_provided">ERROR_CTYPE_HASH_NOT_PROVIDED</a> when the properties do not match the provide <a href="ctype.html">CType</a>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>requiredProperties: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The list of required properties that need to be verified against a <a href="ctype.html">CType</a>.</p>
+									</div>
+								</li>
+								<li>
+									<h5>cType: <a href="../interfaces/ictype.ictype-1.html" class="tsd-signature-type">ICType</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A <a href="ctype.html">CType</a> used to verify the properties.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+							<p>Returns the properties back.</p>
 						</li>
 					</ul>
 				</section>
@@ -162,6 +206,9 @@
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="messageutils.html#decompressmessage" class="tsd-kind-icon">decompress<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="messageutils.html#verifyrequiredctypeproperties" class="tsd-kind-icon">verify<wbr>RequiredCType<wbr>Properties</a>
 					</li>
 				</ul>
 			</nav>

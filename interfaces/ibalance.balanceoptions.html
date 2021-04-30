@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>IRequestClaimsForCTypesContent | @kiltprotocol/sdk-js</title>
+	<title>BalanceOptions | @kiltprotocol/sdk-js</title>
 	<meta name="description" content="Documentation for @kiltprotocol/sdk-js">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -52,13 +52,13 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/imessage.html">IMessage</a>
+					<a href="../modules/ibalance.html">IBalance</a>
 				</li>
 				<li>
-					<a href="imessage.irequestclaimsforctypescontent.html">IRequestClaimsForCTypesContent</a>
+					<a href="ibalance.balanceoptions.html">BalanceOptions</a>
 				</li>
 			</ul>
-			<h1>Interface IRequestClaimsForCTypesContent</h1>
+			<h1>Interface BalanceOptions</h1>
 		</div>
 	</div>
 </header>
@@ -69,7 +69,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">IRequestClaimsForCTypesContent</span>
+						<span class="target">BalanceOptions</span>
 					</li>
 				</ul>
 			</section>
@@ -80,9 +80,11 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="imessage.irequestclaimsforctypescontent.html#acceptedattester" class="tsd-kind-icon">accepted<wbr>Attester</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="imessage.irequestclaimsforctypescontent.html#ctypehash" class="tsd-kind-icon">c<wbr>Type<wbr>Hash</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="imessage.irequestclaimsforctypescontent.html#requiredproperties" class="tsd-kind-icon">required<wbr>Properties</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ibalance.balanceoptions.html#decimals" class="tsd-kind-icon">decimals</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ibalance.balanceoptions.html#forceunit" class="tsd-kind-icon">force<wbr>Unit</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ibalance.balanceoptions.html#withsi" class="tsd-kind-icon">with<wbr>Si</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ibalance.balanceoptions.html#withsifull" class="tsd-kind-icon">with<wbr>SiFull</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ibalance.balanceoptions.html#withunit" class="tsd-kind-icon">with<wbr>Unit</a></li>
 							</ul>
 						</section>
 					</div>
@@ -91,32 +93,52 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="acceptedattester" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> accepted<wbr>Attester</h3>
-					<div class="tsd-signature tsd-kind-icon">accepted<wbr>Attester<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">IPublicIdentity</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"address"</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<a name="decimals" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> decimals</h3>
+					<div class="tsd-signature tsd-kind-icon">decimals<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/types/src/Message.ts#L229">packages/types/src/Message.ts:229</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/types/src/Balance.ts#L17">packages/types/src/Balance.ts:17</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="ctypehash" class="tsd-anchor"></a>
-					<h3>c<wbr>Type<wbr>Hash</h3>
-					<div class="tsd-signature tsd-kind-icon">c<wbr>Type<wbr>Hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ICType</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">"hash"</span><span class="tsd-signature-symbol">]</span></div>
+					<a name="forceunit" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> force<wbr>Unit</h3>
+					<div class="tsd-signature tsd-kind-icon">force<wbr>Unit<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/types/src/Message.ts#L228">packages/types/src/Message.ts:228</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/types/src/Balance.ts#L18">packages/types/src/Balance.ts:18</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="requiredproperties" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> required<wbr>Properties</h3>
-					<div class="tsd-signature tsd-kind-icon">required<wbr>Properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
+					<a name="withsi" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> with<wbr>Si</h3>
+					<div class="tsd-signature tsd-kind-icon">with<wbr>Si<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/types/src/Message.ts#L230">packages/types/src/Message.ts:230</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/types/src/Balance.ts#L19">packages/types/src/Balance.ts:19</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="withsifull" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> with<wbr>SiFull</h3>
+					<div class="tsd-signature tsd-kind-icon">with<wbr>SiFull<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/types/src/Balance.ts#L20">packages/types/src/Balance.ts:20</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="withunit" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> with<wbr>Unit</h3>
+					<div class="tsd-signature tsd-kind-icon">with<wbr>Unit<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/types/src/Balance.ts#L21">packages/types/src/Balance.ts:21</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -129,7 +151,7 @@
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 					<li class="current tsd-kind-module">
-						<a href="../modules/imessage.html">IMessage</a>
+						<a href="../modules/ibalance.html">IBalance</a>
 					</li>
 				</ul>
 			</nav>
@@ -138,21 +160,30 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface tsd-parent-kind-module">
-						<a href="imessage.irequestclaimsforctypescontent.html" class="tsd-kind-icon">IRequest<wbr>Claims<wbr>ForCTypes<wbr>Content</a>
+						<a href="ibalance.balanceoptions.html" class="tsd-kind-icon">Balance<wbr>Options</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="imessage.irequestclaimsforctypescontent.html#acceptedattester" class="tsd-kind-icon">accepted<wbr>Attester</a>
+								<a href="ibalance.balanceoptions.html#decimals" class="tsd-kind-icon">decimals</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="imessage.irequestclaimsforctypescontent.html#ctypehash" class="tsd-kind-icon">c<wbr>Type<wbr>Hash</a>
+								<a href="ibalance.balanceoptions.html#forceunit" class="tsd-kind-icon">force<wbr>Unit</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="imessage.irequestclaimsforctypescontent.html#requiredproperties" class="tsd-kind-icon">required<wbr>Properties</a>
+								<a href="ibalance.balanceoptions.html#withsi" class="tsd-kind-icon">with<wbr>Si</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="ibalance.balanceoptions.html#withsifull" class="tsd-kind-icon">with<wbr>SiFull</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="ibalance.balanceoptions.html#withunit" class="tsd-kind-icon">with<wbr>Unit</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/ibalance.html#balances" class="tsd-kind-icon">Balances</a>
+					</li>
 				</ul>
 			</nav>
 		</div>
