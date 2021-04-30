@@ -7,18 +7,24 @@ import type { Option } from '@polkadot/types'
 import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { IDid } from '@kiltprotocol/core'
-import { getIdentifierFromDid, getDidFromIdentifier } from './identity'
 import type {
   DidDetails,
-  DidSigned,
   IDidCreationOperation,
   IDidDeletionOperation,
   IDidUpdateOperation,
   PublicEncryptionKey,
   PublicVerificationKey,
+  Url,
   UrlEncoding,
 } from './types.chain'
-import type { IDidRecord, TypedPublicKey } from './types'
+import type {
+  DidSigned,
+  IDidRecord,
+  KeyDetails,
+  KeypairType,
+  TypedPublicKey,
+} from './types'
+import { getDidFromIdentifier, getIdentifierFromDid } from './Did.utils'
 
 export async function queryEncoded(
   did_identifier: IIdentity['address']
@@ -31,9 +37,13 @@ function decodePublicKey(
   key: PublicVerificationKey | PublicEncryptionKey
 ): TypedPublicKey {
   return {
-    type: key.type,
+    type: key.type as KeypairType,
     publicKeyHex: key.value.toHex(),
   }
+}
+
+function decodeEndpointUrl(url: Url): string {
+  return (url.value as UrlEncoding).payload.toString()
 }
 
 export async function queryById(
@@ -43,9 +53,15 @@ export async function queryById(
   result.unwrapOr(null)
   if (result.isSome) {
     const didDetail = result.unwrap()
-    const verification_keys = Array.from(
-      didDetail.verification_keys.values()
-    ).map((key) => decodePublicKey(key))
+    const verification_keys: KeyDetails[] = Array.from(
+      didDetail.verification_keys.entries()
+    ).map(([keyId, keyDetails]) => {
+      return {
+        ...decodePublicKey(keyDetails.verification_key),
+        id: keyId.toHex(),
+        includedAt: keyDetails.block_number.toNumber(),
+      }
+    })
     const didRecord: IDidRecord = {
       did: getDidFromIdentifier(did_identifier),
       auth_key: decodePublicKey(didDetail.auth_key),
@@ -55,8 +71,9 @@ export async function queryById(
     }
     if (didDetail.endpoint_url.isSome) {
       // that's super awkward but I guess there are reasons that the Url encoding needs to be a struct
-      didRecord.endpoint_url = (didDetail.endpoint_url.unwrap()
-        .value as UrlEncoding).payload.toString()
+      didRecord.endpoint_url = decodeEndpointUrl(
+        didDetail.endpoint_url.unwrap()
+      )
     }
     if (didDetail.delegation_key.isSome) {
       didRecord.delegation_key = decodePublicKey(

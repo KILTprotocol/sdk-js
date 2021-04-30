@@ -1,4 +1,5 @@
 import type {
+  BTreeMap,
   BTreeSet,
   Enum,
   Option,
@@ -7,7 +8,7 @@ import type {
   u8,
   Vec,
 } from '@polkadot/types'
-import { AccountId } from '@polkadot/types/interfaces'
+import type { AccountId, BlockNumber, Hash } from '@polkadot/types/interfaces'
 
 export interface PublicVerificationKey extends Enum {
   isEd25519: boolean
@@ -21,7 +22,16 @@ export interface PublicEncryptionKey extends Enum {
   asX25519: Vec<u8>
 }
 
-type DidIdentifier = AccountId
+export interface VerificationKeyDetails extends Struct {
+  /// A verification key the DID controls.
+  verification_key: PublicVerificationKey
+  /// The block number in which the verification key was added to the DID.
+  block_number: BlockNumber
+}
+
+export type KeyId = Hash
+
+export type DidIdentifier = AccountId
 
 export interface UrlEncoding extends Struct {
   payload: Vec<u8>
@@ -41,27 +51,39 @@ export interface DidDetails extends Struct {
   key_agreement_key: PublicEncryptionKey
   delegation_key: Option<PublicVerificationKey>
   attestation_key: Option<PublicVerificationKey>
-  verification_keys: BTreeSet<PublicVerificationKey>
+  verification_keys: BTreeMap<KeyId, VerificationKeyDetails>
   endpoint_url: Option<Url>
   last_tx_counter: u64
 }
 
 export interface IDidCreationOperation extends Struct {
   did: DidIdentifier
-  new_auth_key: PublicVerificationKey
-  new_key_agreement_key: PublicEncryptionKey
+  new_authentication_key: PublicVerificationKey
+  new_key_agreement_keys: BTreeSet<PublicEncryptionKey>
   new_attestation_key: Option<PublicVerificationKey>
   new_delegation_key: Option<PublicVerificationKey>
   new_endpoint_url: Option<Url>
 }
 
+export interface DidKeyUpdateAction extends Enum {
+  /// Do not change the verification key.
+  isIgnore: boolean
+  asIgnore: null
+  /// Change the verification key to the new one provided.
+  isChange: boolean
+  asChange: PublicVerificationKey
+  /// Delete the verification key.
+  isDelete: boolean
+  asDelete: null
+}
+
 export interface IDidUpdateOperation extends Struct {
   did: DidIdentifier
-  new_auth_key: Option<PublicVerificationKey>
-  new_key_agreement_key: Option<PublicEncryptionKey>
-  new_attestation_key: Option<PublicVerificationKey>
-  new_delegation_key: Option<PublicVerificationKey>
-  verification_keys_to_remove: Option<BTreeSet<PublicVerificationKey>>
+  new_authentication_key: Option<PublicVerificationKey>
+  new_key_agreement_keys: BTreeSet<PublicEncryptionKey>
+  attestation_key_update: DidKeyUpdateAction
+  delegation_key_update: DidKeyUpdateAction
+  public_keys_to_remove: BTreeSet<KeyId>
   new_endpoint_url: Option<Url>
   tx_counter: u64
 }
@@ -76,9 +98,4 @@ export interface DidSignature extends Enum {
   isSr25519: boolean
   asEd25519: Vec<u8>
   asSr25519: Vec<u8>
-}
-
-export interface DidSigned<PayloadType> {
-  payload: PayloadType
-  signature: DidSignature
 }
