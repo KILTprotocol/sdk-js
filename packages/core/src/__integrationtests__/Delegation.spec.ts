@@ -38,7 +38,6 @@ async function writeRoot(
     account: delegator.address,
     revoked: false,
   })
-  console.log('root,', root)
 
   await root.store(delegator).then((tx) =>
     BlockchainUtils.submitTxWithReSign(tx, delegator, {
