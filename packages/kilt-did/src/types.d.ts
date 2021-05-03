@@ -1,22 +1,26 @@
 import type { IIdentity } from '@kiltprotocol/types'
 
-export type KeypairType = 'ed25519' | 'sr15519' | 'x25519'
+export type KeypairType = string
 
-export interface IKeyPair {
+export interface IPublicKey {
   publicKey: Uint8Array
   type: KeypairType
   // do we need the identifier?
 }
 
-export interface ISigningKeyPair extends IKeyPair {
+export type IKeyPair = IPublicKey
+
+export type ISigningKey = IPublicKey
+export type IEncryptionKey = IPublicKey
+
+export interface ISigningKeyPair extends ISigningKey {
   sign: (message: string | Uint8Array) => Uint8Array
 }
 
-export interface IEncryptionKeyPair extends IKeyPair {
+export interface IEncryptionKeyPair extends IEncryptionKey {
   decrypt: (
     message: Uint8Array,
-    nonce: Uint8Array,
-    senderPublicKey: Uint8Array
+    additionalData: Record<string, unknown>
   ) => Uint8Array | null
 }
 
@@ -26,6 +30,13 @@ export interface KeySet {
   encryption: IEncryptionKeyPair
   attestation?: ISigningKeyPair
   delegation?: ISigningKeyPair
+}
+
+export interface PublicKeySet {
+  authentication: ISigningKey
+  encryption: IEncryptionKey
+  attestation?: ISigningKey
+  delegation?: ISigningKey
 }
 
 export interface TypedPublicKey {
@@ -40,11 +51,11 @@ export interface KeyDetails extends TypedPublicKey {
 
 export interface IDidRecord {
   did: IIdentity['address']
-  auth_key: TypedPublicKey
-  key_agreement_key: TypedPublicKey
-  delegation_key?: TypedPublicKey
-  attestation_key?: TypedPublicKey
-  verification_keys: KeyDetails[]
+  authentication_key: KeyDetails
+  key_agreement_keys: KeyDetails[]
+  delegation_key?: KeyDetails
+  attestation_key?: KeyDetails
+  public_keys: KeyDetails[]
   endpoint_url?: string
   last_tx_counter: number
 }
@@ -54,10 +65,14 @@ export type Nullable<T> = { [P in keyof T]: T[P] | null }
 export type PublicKeyEnum = Partial<Record<KeypairType, Uint8Array>>
 export type SignatureEnum = Partial<Record<KeypairType, Uint8Array>>
 
-interface UrlEncoding {
+export interface UrlEncoding {
   payload: string
 }
-export type UrlEnum = {}
+
+export type UrlEnum =
+  | { Http: UrlEncoding }
+  | { Ftp: UrlEncoding }
+  | { Ipfs: UrlEncoding }
 
 export interface DidSigned<PayloadType> {
   payload: PayloadType

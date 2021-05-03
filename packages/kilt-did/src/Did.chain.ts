@@ -12,8 +12,8 @@ import type {
   IDidCreationOperation,
   IDidDeletionOperation,
   IDidUpdateOperation,
-  PublicEncryptionKey,
-  PublicVerificationKey,
+  DidEncryptionKey,
+  DidVerificationKey,
   Url,
   UrlEncoding,
 } from './types.chain'
@@ -34,7 +34,7 @@ export async function queryEncoded(
 }
 
 function decodePublicKey(
-  key: PublicVerificationKey | PublicEncryptionKey
+  key: DidVerificationKey | DidEncryptionKey
 ): TypedPublicKey {
   return {
     type: key.type as KeypairType,
@@ -53,20 +53,29 @@ export async function queryById(
   result.unwrapOr(null)
   if (result.isSome) {
     const didDetail = result.unwrap()
-    const verification_keys: KeyDetails[] = Array.from(
-      didDetail.verification_keys.entries()
+    const public_keys: KeyDetails[] = Array.from(
+      didDetail.public_keys.entries()
     ).map(([keyId, keyDetails]) => {
       return {
-        ...decodePublicKey(keyDetails.verification_key),
+        ...decodePublicKey(keyDetails.key.value),
         id: keyId.toHex(),
         includedAt: keyDetails.block_number.toNumber(),
       }
     })
+    const authenticationKeyId = didDetail.authentication_key.toHex()
+    const keyAgreementKeyIds = Array.from(
+      didDetail.key_agreement_keys.values()
+    ).map((id) => id.toHex())
+
     const didRecord: IDidRecord = {
       did: getDidFromIdentifier(did_identifier),
-      auth_key: decodePublicKey(didDetail.auth_key),
-      key_agreement_key: decodePublicKey(didDetail.auth_key),
-      verification_keys,
+      public_keys,
+      authentication_key: public_keys.find(
+        (key) => key.id === authenticationKeyId
+      )!,
+      key_agreement_keys: public_keys.filter((key) =>
+        keyAgreementKeyIds.includes(key.id)
+      ),
       last_tx_counter: didDetail.last_tx_counter.toNumber(),
     }
     if (didDetail.endpoint_url.isSome) {
@@ -76,13 +85,15 @@ export async function queryById(
       )
     }
     if (didDetail.delegation_key.isSome) {
-      didRecord.delegation_key = decodePublicKey(
-        didDetail.delegation_key.unwrap()
+      const delegationKeyId = didDetail.delegation_key.unwrap().toHex()
+      didRecord.delegation_key = public_keys.find(
+        (key) => key.id === delegationKeyId
       )
     }
     if (didDetail.attestation_key.isSome) {
-      didRecord.attestation_key = decodePublicKey(
-        didDetail.attestation_key.unwrap()
+      const attestationKeyId = didDetail.attestation_key.unwrap().toHex()
+      didRecord.attestation_key = public_keys.find(
+        (key) => key.id === attestationKeyId
       )
     }
     return didRecord
@@ -98,7 +109,7 @@ export async function queryByDID(
   return queryById(didId)
 }
 
-export async function create(
+export async function didCreateTx(
   createDid: DidSigned<IDidCreationOperation>
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -108,7 +119,7 @@ export async function create(
   )
 }
 
-export async function update(
+export async function didUpdateTx(
   keyUpdate: DidSigned<IDidUpdateOperation>
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -118,7 +129,7 @@ export async function update(
   )
 }
 
-export async function deactivate(
+export async function didDeleteTx(
   keyRemoval: DidSigned<IDidDeletionOperation>
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()

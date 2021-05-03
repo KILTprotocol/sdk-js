@@ -4,11 +4,12 @@ import type { Codec } from '@polkadot/types/types'
 import type {
   DidSigned,
   PublicKeyEnum,
-  IKeyPair,
   ISigningKeyPair,
   UrlEnum,
   Nullable,
-  KeySet,
+  IPublicKey,
+  PublicKeySet,
+  UrlEncoding,
 } from './types'
 import type {
   IDidCreationOperation,
@@ -40,24 +41,21 @@ export function signCodec<PayloadType extends Codec>(
   return { payload, signature }
 }
 
-export function formatPublicKey(keypair: IKeyPair): PublicKeyEnum {
+export function formatPublicKey(keypair: IPublicKey): PublicKeyEnum {
   const { type, publicKey } = keypair
   return { [type]: publicKey }
 }
 
-export function isIKeyPair(keypair: unknown): keypair is IKeyPair {
-  return (
-    typeof keypair === 'object' &&
-    !!keypair &&
-    'publicKey' in keypair &&
-    keypair['publicKey'] instanceof Uint8Array &&
-    'type' in keypair &&
-    typeof keypair['type'] === 'string'
-  )
+export function isIKeyPair(keypair: unknown): keypair is IPublicKey {
+  if (typeof keypair === 'object') {
+    const { publicKey, type } = keypair as any
+    return publicKey instanceof Uint8Array && typeof type === 'string'
+  }
+  return false
 }
 
 export function encodeEndpointUrl(url: string): UrlEnum {
-  const typedUrl: Record<string, unknown> = {}
+  const typedUrl: Record<string, UrlEncoding> = {}
   const matched = Array.from(['http', 'ftp', 'ipfs']).some((type) => {
     if (url.startsWith(type)) {
       typedUrl[type] = { payload: url }
@@ -69,20 +67,20 @@ export function encodeEndpointUrl(url: string): UrlEnum {
     throw new Error(
       'only endpoint urls starting with http/https, ftp, and ipfs are accepted'
     )
-  return typedUrl
+  return typedUrl as UrlEnum
 }
 
 export function encodeDidCreate(
   typeRegistry: TypeRegistry,
   did: string,
-  keys: KeySet,
+  keys: PublicKeySet,
   endpoint_url?: string
 ): IDidCreationOperation {
   // build did create object
   const didCreateRaw = {
     did: getIdentifierFromDid(did),
-    new_auth_key: formatPublicKey(keys.authentication),
-    new_key_agreement_key: formatPublicKey(keys.encryption),
+    new_authentication_key: formatPublicKey(keys.authentication),
+    new_key_agreement_keys: [formatPublicKey(keys.encryption)],
     new_attestation_key: keys.attestation
       ? formatPublicKey(keys.attestation)
       : undefined,
@@ -98,7 +96,7 @@ export function encodeDidCreate(
   ))(typeRegistry, didCreateRaw)
 }
 
-function matchKeyOperation(keypair: IKeyPair | undefined | null) {
+function matchKeyOperation(keypair: IPublicKey | undefined | null) {
   return keypair && typeof keypair === 'object'
     ? { Change: formatPublicKey(keypair) }
     : keypair === null
@@ -110,7 +108,7 @@ export function encodeDidUpdate(
   typeRegistry: TypeRegistry,
   did: string,
   tx_counter: number,
-  keysToUpdate: Partial<Nullable<KeySet>>,
+  keysToUpdate: Partial<Nullable<PublicKeySet>>,
   verification_keys_to_remove: KeyId[] = [],
   new_endpoint_url?: string
 ): IDidUpdateOperation {

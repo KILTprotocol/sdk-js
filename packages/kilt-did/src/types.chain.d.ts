@@ -10,21 +10,25 @@ import type {
 } from '@polkadot/types'
 import type { AccountId, BlockNumber, Hash } from '@polkadot/types/interfaces'
 
-export interface PublicVerificationKey extends Enum {
+export interface DidVerificationKey extends Enum {
   isEd25519: boolean
   isSr25519: boolean
   asEd25519: Vec<u8>
   asSr25519: Vec<u8>
+  type: 'sr25519' | 'ed25519'
+  value: Vec<u8>
 }
 
-export interface PublicEncryptionKey extends Enum {
+export interface DidEncryptionKey extends Enum {
   isX25519: boolean
   asX25519: Vec<u8>
+  type: 'x25519'
+  value: Vec<u8>
 }
 
 export interface VerificationKeyDetails extends Struct {
   /// A verification key the DID controls.
-  verification_key: PublicVerificationKey
+  verification_key: DidVerificationKey
   /// The block number in which the verification key was added to the DID.
   block_number: BlockNumber
 }
@@ -46,22 +50,36 @@ export interface Url extends Enum {
   asIpfs: UrlEncoding
 }
 
+export interface DidPublicKey extends Enum {
+  isDidVerificationKey: boolean
+  asDidVerificationKey: DidVerificationKey
+  isDidEncryptionKey: boolean
+  asDidEncryptionKey: DidEncryptionKey
+  type: 'DidVerificationKey' | 'DidEncryptionKey'
+  value: DidVerificationKey | DidEncryptionKey
+}
+
+export interface DidPublicKeyDetails extends Struct {
+  key: DidPublicKey
+  block_number: BlockNumber
+}
+
 export interface DidDetails extends Struct {
-  auth_key: PublicVerificationKey
-  key_agreement_key: PublicEncryptionKey
-  delegation_key: Option<PublicVerificationKey>
-  attestation_key: Option<PublicVerificationKey>
-  verification_keys: BTreeMap<KeyId, VerificationKeyDetails>
+  authentication_key: KeyId
+  key_agreement_keys: BTreeSet<KeyId>
+  delegation_key: Option<KeyId>
+  attestation_key: Option<KeyId>
+  public_keys: BTreeMap<KeyId, DidPublicKeyDetails>
   endpoint_url: Option<Url>
   last_tx_counter: u64
 }
 
 export interface IDidCreationOperation extends Struct {
   did: DidIdentifier
-  new_authentication_key: PublicVerificationKey
-  new_key_agreement_keys: BTreeSet<PublicEncryptionKey>
-  new_attestation_key: Option<PublicVerificationKey>
-  new_delegation_key: Option<PublicVerificationKey>
+  new_authentication_key: DidVerificationKey
+  new_key_agreement_keys: BTreeSet<DidEncryptionKey>
+  new_attestation_key: Option<DidVerificationKey>
+  new_delegation_key: Option<DidVerificationKey>
   new_endpoint_url: Option<Url>
 }
 
@@ -71,7 +89,7 @@ export interface DidKeyUpdateAction extends Enum {
   asIgnore: null
   /// Change the verification key to the new one provided.
   isChange: boolean
-  asChange: PublicVerificationKey
+  asChange: DidVerificationKey
   /// Delete the verification key.
   isDelete: boolean
   asDelete: null
@@ -79,8 +97,8 @@ export interface DidKeyUpdateAction extends Enum {
 
 export interface IDidUpdateOperation extends Struct {
   did: DidIdentifier
-  new_authentication_key: Option<PublicVerificationKey>
-  new_key_agreement_keys: BTreeSet<PublicEncryptionKey>
+  new_authentication_key: Option<DidVerificationKey>
+  new_key_agreement_keys: BTreeSet<DidEncryptionKey>
   attestation_key_update: DidKeyUpdateAction
   delegation_key_update: DidKeyUpdateAction
   public_keys_to_remove: BTreeSet<KeyId>

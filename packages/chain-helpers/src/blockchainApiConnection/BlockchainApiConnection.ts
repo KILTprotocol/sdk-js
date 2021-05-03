@@ -51,13 +51,13 @@ export const CUSTOM_TYPES: RegistryTypes = {
     ],
   },
   DidEncryptionKeyType: { _enum: ['KeyAgreement'] },
-  PublicVerificationKey: {
+  DidVerificationKey: {
     _enum: { Ed25519: '[u8; 32]', Sr25519: '[u8; 32]' },
   },
   DidSignature: {
     _enum: { Ed25519: 'Ed25519Signature', Sr25519: 'Sr25519Signature' },
   },
-  PublicEncryptionKey: { _enum: { X55519: '[u8; 32]' } },
+  DidEncryptionKey: { _enum: { X25519: '[u8; 32]' } },
   DidError: {
     _enum: {
       StorageError: 'StorageError',
@@ -71,7 +71,7 @@ export const CUSTOM_TYPES: RegistryTypes = {
       DidAlreadyPresent: 'Null',
       DidNotPresent: 'Null',
       DidKeyNotPresent: 'DidVerificationKeyType',
-      VerificationKeysNotPresent: 'Vec<PublicVerificationKey>',
+      VerificationKeysNotPresent: 'Vec<DidVerificationKey>',
     },
   },
   SignatureError: { _enum: ['InvalidSignatureFormat', 'InvalidSignature'] },
@@ -83,32 +83,50 @@ export const CUSTOM_TYPES: RegistryTypes = {
   IpfsUrl: { payload: 'Text' },
   DidCreationOperation: {
     did: 'DidIdentifier',
-    new_auth_key: 'PublicVerificationKey',
-    new_key_agreement_key: 'PublicEncryptionKey',
-    new_attestation_key: 'Option<PublicVerificationKey>',
-    new_delegation_key: 'Option<PublicVerificationKey>',
+    new_authentication_key: 'DidVerificationKey',
+    new_key_agreement_keys: 'BTreeSet<DidEncryptionKey>',
+    new_attestation_key: 'Option<DidVerificationKey>',
+    new_delegation_key: 'Option<DidVerificationKey>',
     new_endpoint_url: 'Option<Url>',
   },
   DidUpdateOperation: {
     did: 'DidIdentifier',
-    new_auth_key: 'Option<PublicVerificationKey>',
-    new_key_agreement_key: 'Option<PublicEncryptionKey>',
-    new_attestation_key: 'Option<PublicVerificationKey>',
-    new_delegation_key: 'Option<PublicVerificationKey>',
-    verification_keys_to_remove: 'Option<BTreeSet<PublicVerificationKey>>',
+    new_authentication_key: 'Option<DidVerificationKey>',
+    new_key_agreement_keys: 'BTreeSet<DidEncryptionKey>',
+    attestation_key_update: 'DidVerificationKeyUpdateAction',
+    delegation_key_update: 'DidVerificationKeyUpdateAction',
+    public_keys_to_remove: 'BTreeSet<KeyId>',
     new_endpoint_url: 'Option<Url>',
     tx_counter: 'u64',
   },
   DidDeletionOperation: { did: 'DidIdentifier', tx_counter: 'u64' },
   DidDetails: {
-    auth_key: 'PublicVerificationKey',
-    key_agreement_key: 'PublicEncryptionKey',
-    delegation_key: 'Option<PublicVerificationKey>',
-    attestation_key: 'Option<PublicVerificationKey>',
-    verification_keys: 'BTreeSet<PublicVerificationKey>',
+    authentication_key: 'KeyId',
+    key_agreement_keys: 'BTreeSet<KeyId>',
+    delegation_key: 'Option<KeyId>',
+    attestation_key: 'Option<KeyId>',
+    public_keys: 'BTreeMap<KeyId, DidPublicKeyDetails>',
     endpoint_url: 'Option<Url>',
     last_tx_counter: 'u64',
   },
+  DidPublicKeyDetails: {
+    key: 'DidPublicKey',
+    block_number: 'BlockNumber',
+  },
+  DidPublicKey: {
+    _enum: {
+      PublicVerificationKey: 'DidVerificationKey',
+      PublicEncryptionKey: 'DidEncryptionKey',
+    },
+  },
+  DidVerificationKeyUpdateAction: {
+    _enum: {
+      Ignore: 'Null',
+      Change: 'DidVerificationKey',
+      Delete: 'Null',
+    },
+  },
+  KeyId: 'Hash',
 }
 
 /**
