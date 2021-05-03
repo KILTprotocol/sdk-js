@@ -5,7 +5,7 @@ import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 export function errorCheck(delegationRootNodeInput: IDelegationRootNode): void {
   const { cTypeHash } = delegationRootNodeInput
 
-  if (DataUtils.validateHash(cTypeHash, 'delegation root node ctype')) {
-    throw SDKErrors.ERROR_HASH_MALFORMED(cTypeHash)
-  }
+  if (!cTypeHash) {
+    throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
+  } else DataUtils.validateHash(cTypeHash, 'delegation root node ctype')
 }

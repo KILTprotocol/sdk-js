@@ -5,9 +5,9 @@
 
 import type { IAttestation, IDelegationNode } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { isHex } from '@polkadot/util'
 import Identity from '../identity'
 import DelegationNode from './DelegationNode'
-import { query } from './DelegationNode.chain'
 
 /**
  * Creates a bitset from the permissions in the array where each enum value
@@ -65,19 +65,24 @@ export async function countNodeDepth(
 }
 
 export function errorCheck(delegationNodeInput: IDelegationNode): void {
-  const { parentId, permissions, rootId } = delegationNodeInput
+  const { permissions, rootId, parentId } = delegationNodeInput
 
-  if (permissions.length === 0) {
-    throw SDKErrors.ERROR_UNAUTHORIZED('Must have at least one permission')
+  if (permissions.length === 0 || permissions.length > 3) {
+    throw SDKErrors.ERROR_UNAUTHORIZED(
+      'Must have at least one permission and no more then two'
+    )
   }
 
+  if (!rootId || typeof rootId !== 'string') {
+    throw SDKErrors.ERROR_NODE_QUERY(rootId)
+  } else if (!isHex(rootId)) {
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+  }
   if (parentId) {
-    if (!query(parentId)) {
+    if (typeof parentId !== 'string') {
       throw SDKErrors.ERROR_NODE_QUERY(parentId)
+    } else if (!isHex(parentId)) {
+      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
     }
-  }
-
-  if (!query(rootId)) {
-    throw SDKErrors.ERROR_ROOT_NODE_QUERY(rootId)
   }
 }

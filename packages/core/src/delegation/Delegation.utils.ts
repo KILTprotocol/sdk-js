@@ -1,17 +1,23 @@
 import type { IDelegationBaseNode } from '@kiltprotocol/types'
-import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { query } from './DelegationNode.chain'
+import { SDKErrors, DataUtils } from '@kiltprotocol/utils'
+import { isHex } from '@polkadot/util'
 
-// eslint-disable-next-line import/prefer-default-export
-export function errorCheck(
+export default function errorCheck(
   id: IDelegationBaseNode['id'],
-  account: IDelegationBaseNode['account']
+  account: IDelegationBaseNode['account'],
+  revoked: IDelegationBaseNode['revoked']
 ): void {
-  if (!query(id)) {
+  if (!id || typeof id !== 'string') {
     throw SDKErrors.ERROR_NODE_QUERY(id)
+  } else if (!isHex(id)) {
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
 
-  if (!DataUtils.validateAddress(account, 'delegationNode Address')) {
-    throw SDKErrors.ERROR_UNAUTHORIZED('delegation account not matching')
+  if (!account) {
+    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED
+  } else DataUtils.validateAddress(account, 'delegationNode owner')
+
+  if (typeof revoked !== 'boolean') {
+    throw SDKErrors.ERROR_NOT_FOUND('not boolean')
   }
 }
