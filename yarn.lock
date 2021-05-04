@@ -932,6 +932,7 @@ __metadata:
     "@polkadot/util-crypto": ^5.9.2
     "@types/jsonld": ^1.5.1
     ajv: ^6.12.5
+    crypto-ld: ^3.7.0
     jsonld: ^2.0.2
     jsonld-signatures: ^5.0.0
     rimraf: ^3.0.2

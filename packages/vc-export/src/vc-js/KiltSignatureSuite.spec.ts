@@ -6,6 +6,9 @@ import jsigs, { purposes } from 'jsonld-signatures'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'
 import { Identity } from '@kiltprotocol/core'
+import { Ed25519KeyPair } from 'crypto-ld' // eslint-disable-line import/no-extraneous-dependencies
+import { base58Decode } from '@polkadot/util-crypto'
+import { Crypto } from '@kiltprotocol/utils'
 import Suite from './KiltSignatureSuite'
 import credential from './testcred.json'
 import documentLoader from './documentLoader'
@@ -102,6 +105,37 @@ describe('jsigs', () => {
       ).resolves.toMatchObject({ verified: false })
     })
   })
+
+  describe('issue', () => {
+    it('creates and validates Kilt Self Signed Proof', async () => {
+      const keypair = await Ed25519KeyPair.generate()
+      const verificationMethod: IPublicKeyRecord = {
+        publicKeyHex: Crypto.u8aToHex(base58Decode(keypair.publicKey)),
+        type: keypair.type,
+      }
+      suite = new Suite({ signer: keypair.signer(), verificationMethod })
+      const document = { ...credential, proof: [] }
+      const signed = await jsigs.sign(document, {
+        suite,
+        purpose,
+        documentLoader,
+      })
+      expect(signed).toHaveProperty(
+        `proof.0`,
+        expect.objectContaining({
+          type: KILT_SELF_SIGNED_PROOF_TYPE,
+          proofPurpose: purpose.term,
+          verificationMethod,
+          signature: expect.any(String),
+        })
+      )
+      // we currently do not check whether the credentialSubject is linked in any way to the public key in the proof
+      // -> that is why resigning with a different key works just fine
+      await expect(
+        jsigs.verify(signed, { suite, purpose, documentLoader })
+      ).resolves.toMatchObject({ verified: true })
+    })
+  })
 })
 
 describe('vc-js', () => {
@@ -153,6 +187,43 @@ describe('vc-js', () => {
           documentLoader,
         })
       ).resolves.toMatchObject({ verified: false })
+    })
+  })
+
+  describe('issue', () => {
+    it('creates and validates Kilt Self Signed Proof', async () => {
+      const keypair = await Ed25519KeyPair.generate()
+      const verificationMethod: IPublicKeyRecord = {
+        publicKeyHex: Crypto.u8aToHex(base58Decode(keypair.publicKey)),
+        type: keypair.type,
+      }
+      suite = new Suite({ signer: keypair.signer(), verificationMethod })
+      const document = { ...credential, proof: [] }
+      const signed = await vcjs.issue({
+        credential: document,
+        suite,
+        purpose,
+        documentLoader,
+      })
+      expect(signed).toHaveProperty(
+        `proof.0`,
+        expect.objectContaining({
+          type: KILT_SELF_SIGNED_PROOF_TYPE,
+          proofPurpose: purpose.term,
+          verificationMethod,
+          signature: expect.any(String),
+        })
+      )
+      // we currently do not check whether the credentialSubject is linked in any way to the public key in the proof
+      // -> that is why resigning with a different key works just fine
+      await expect(
+        vcjs.verifyCredential({
+          credential: signed,
+          suite,
+          purpose,
+          documentLoader,
+        })
+      ).resolves.toMatchObject({ verified: true })
     })
   })
 })
