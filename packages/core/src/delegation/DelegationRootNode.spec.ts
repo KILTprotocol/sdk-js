@@ -21,11 +21,15 @@ describe('Delegation', () => {
   let identityAlice: Identity
   let ctypeHash: string
   let ROOT_IDENTIFIER: string
+  let ROOT_SUCCESS: string
   Kilt.config({ address: 'ws://testString' })
 
   beforeAll(async () => {
     identityAlice = Identity.buildFromURI('//Alice')
-    ctypeHash = Crypto.hashStr('testCtype')
+    ctypeHash = `0x6b696c743a63747970653a307830303031000000000000000000000000000000`
+    ROOT_IDENTIFIER = Crypto.hashStr('1')
+    ROOT_SUCCESS = Crypto.hashStr('success')
+
     require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
       mockChainQueryReturn('delegation', 'root', [
         ctypeHash,
@@ -42,8 +46,6 @@ describe('Delegation', () => {
         false,
       ])
     )
-
-    ROOT_IDENTIFIER = 'abc123'
   })
 
   it('stores root delegation', async () => {
@@ -76,9 +78,9 @@ describe('Delegation', () => {
   it('root delegation verify', async () => {
     require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root = jest.fn(
       async (rootId) => {
-        if (rootId === 'success') {
+        if (rootId === ROOT_SUCCESS) {
           const tuple = mockChainQueryReturn('delegation', 'root', [
-            'myCtypeHash',
+            ctypeHash,
             identityAlice.address,
             false,
           ])
@@ -86,7 +88,7 @@ describe('Delegation', () => {
           return Promise.resolve(tuple)
         }
         const tuple = mockChainQueryReturn('delegation', 'root', [
-          'myCtypeHash',
+          ctypeHash,
           identityAlice.address,
           true,
         ])
@@ -97,37 +99,37 @@ describe('Delegation', () => {
 
     expect(
       await new DelegationRootNode({
-        id: 'success',
-        cTypeHash: 'myCtypeHash',
+        id: ROOT_IDENTIFIER,
+        cTypeHash: ctypeHash,
         account: identityAlice.address,
         revoked: false,
       }).verify()
-    ).toBe(true)
+    ).toBe(false)
 
     expect(
       await new DelegationRootNode({
-        id: 'failure',
+        id: ROOT_SUCCESS,
         cTypeHash: ctypeHash,
-        account: 'myAccount',
-        revoked: false,
+        account: identityAlice.address,
+        revoked: true,
       }).verify()
-    ).toBe(false)
+    ).toBe(true)
   })
 
   it('root delegation verify', async () => {
     const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
     const aDelegationRootNode = new DelegationRootNode({
-      id: 'myRootId',
+      id: ROOT_IDENTIFIER,
       cTypeHash: ctypeHash,
-      account: 'myAccount',
+      account: identityAlice.address,
       revoked: false,
     })
     const revokeStatus = await aDelegationRootNode
       .revoke(identityAlice)
       .then((tx) => BlockchainUtils.submitTxWithReSign(tx, identityAlice))
     expect(blockchain.api.tx.delegation.revokeRoot).toBeCalledWith(
-      'myRootId',
+      ROOT_IDENTIFIER,
       1
     )
     expect(revokeStatus).toBeDefined()
