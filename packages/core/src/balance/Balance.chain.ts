@@ -17,7 +17,6 @@ import type {
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 
-import Identity from '../identity/Identity'
 import BalanceUtils from './Balance.utils'
 
 /**
@@ -77,7 +76,7 @@ export async function listenToBalanceChanges(
   ) => void
 ): Promise<UnsubscribePromise> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const previousBalances = await getBalances(accountAddress)
+  let previousBalances = await getBalances(accountAddress)
 
   return blockchain.api.query.system.account(
     accountAddress,
@@ -95,20 +94,21 @@ export async function listenToBalanceChanges(
         miscFrozen: new BN(miscFrozen),
         feeFrozen: new BN(feeFrozen),
       }
+      previousBalances = current
+
       listener(accountAddress, current, balancesChange)
     }
   )
 }
 
 /**
- * Transfer Kilt [amount] tokens to [toAccountAddress] using the given [[Identity]].
+ * Transfer Kilt [amount] tokens to [toAccountAddress].
  * <B>Note that the value of the transferred currency and the balance amount reported by the chain is in Femto-Kilt (1e-15), and must be translated to Kilt-Coin</B>.
  *
- * @param identity Identity to use for token transfer.
  * @param accountAddressTo Address of the receiver account.
  * @param amount Amount of Units to transfer.
  * @param exponent Magnitude of the amount. Default magnitude of Femto-Kilt.
- * @returns Promise containing the transaction status.
+ * @returns Promise containing unsigned SubmittableExtrinsic.
  *
  * @example
  * <BR>
@@ -118,8 +118,8 @@ export async function listenToBalanceChanges(
  * const address = ...
  * const amount: BN = new BN(42)
  * const blockchain = await sdk.getConnectionOrConnect()
- * sdk.Balance.makeTransfer(identity, address, amount)
- *   .then(tx => blockchain.sendTx(tx))
+ * sdk.Balance.makeTransfer(address, amount, 0) //
+ *   .then(tx => BlockchainUtils.signAndSendTx(tx, identity))
  *   .then(() => console.log('Successfully transferred ${amount.toNumber()} tokens'))
  *   .catch(err => {
  *     console.log('Transfer failed')
@@ -127,7 +127,6 @@ export async function listenToBalanceChanges(
  * ```
  */
 export async function makeTransfer(
-  identity: Identity,
   accountAddressTo: IPublicIdentity['address'],
   amount: BN,
   exponent = -15
@@ -141,5 +140,5 @@ export async function makeTransfer(
       ? amount
       : BalanceUtils.convertToTxUnit(amount, cleanExponent)
   )
-  return blockchain.signTx(identity, transfer)
+  return transfer
 }

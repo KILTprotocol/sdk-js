@@ -16,7 +16,7 @@
  *   false
  * )
  * const transfer = blockchain.api.tx.balances.transfer(alice.address, amount) // returns a mock SubmittableExtrinsic that has a send() method
- * const result = await blockchain.submitTx(alice, transfer)                   // calls transfer.send() internally
+ * const result = await BlockchainUtils.signAndSubmitTx(alice, transfer)       // calls transfer.send() internally
  * ```
  * You can also queue results with
  * ```

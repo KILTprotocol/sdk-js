@@ -816,7 +816,7 @@ __metadata:
     "@polkadot/api": ^3.11.1
     "@polkadot/keyring": ^5.9.2
     "@polkadot/types": ^3.11.1
-    bn.js: ^5.2.0
+    bn.js: ^4.11.9
     rimraf: ^3.0.2
     typescript: ^3.9.7
     typescript-logging: ^0.6.4
@@ -850,7 +850,7 @@ __metadata:
     "@polkadot/util-crypto": ^5.9.2
     "@types/uuid": ^8.0.0
     ajv: ^6.12.5
-    bn.js: ^5.2.0
+    bn.js: ^4.11.9
     rimraf: ^3.0.2
     tslib: ^2.0.0
     tweetnacl: ^1.0.3
@@ -893,7 +893,7 @@ __metadata:
     "@polkadot/api": ^3.11.1
     "@polkadot/keyring": ^5.9.2
     "@polkadot/types": ^3.11.1
-    bn.js: ^5.2.0
+    bn.js: ^4.11.9
     rimraf: ^3.0.2
     ts-node: ^8.10.2
     tweetnacl: ^1.0.3
@@ -2042,13 +2042,6 @@ __metadata:
   version: 4.11.9
   resolution: "bn.js@npm:4.11.9"
   checksum: 31630d3560b28931010980886a0f657b37ce818ba237867cd838e89a1a0b71044fb4977aa56376616997b372bbb3f55d3bb25e5378c48c1d24a47bfb4235b60e
-  languageName: node
-  linkType: hard
-
-"bn.js@npm:^5.2.0":
-  version: 5.2.0
-  resolution: "bn.js@npm:5.2.0"
-  checksum: 7a73bdbba63013a7f9953fbbd6ea3351e4cf36d6fdbb5adf7969fcd65255b9c04f2994b0132d89d74ffe608a0eb5a48322526bee20c0e03e71e502603b420f63
   languageName: node
   linkType: hard
 

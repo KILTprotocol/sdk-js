@@ -87,9 +87,9 @@ describe('DID', () => {
   it('store did', async () => {
     const alice = Identity.buildFromURI('//Alice')
     const did = Did.fromIdentity(alice, 'http://myDID.kilt.io')
-    const tx = await did.store(alice)
+    const tx = await did.store()
     await expect(
-      BlockchainUtils.submitTxWithReSign(tx, alice)
+      BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
     ).resolves.toHaveProperty('isFinalized', true)
   })
 

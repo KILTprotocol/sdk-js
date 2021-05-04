@@ -77,27 +77,24 @@ describe('Balance', () => {
   })
 
   it('should make transfer', async () => {
-    const status = await makeTransfer(
-      alice,
-      bob.address,
-      new BN(100)
-    ).then((tx) => BlockchainUtils.submitTxWithReSign(tx, alice))
+    const status = await makeTransfer(bob.address, new BN(100)).then((tx) =>
+      BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
+    )
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()
   })
   it('should make transfer of amount with arbitrary exponent', async () => {
     const amount = new BN(10)
-    const exponent = -6
+    const exponent = -6.312513431
     const expectedAmount = BalanceUtils.convertToTxUnit(
       amount,
       (exponent >= 0 ? 1 : -1) * Math.floor(Math.abs(exponent))
     )
     const status = await makeTransfer(
-      alice,
       bob.address,
       amount,
       exponent
-    ).then((tx) => BlockchainUtils.submitTxWithReSign(tx, alice))
+    ).then((tx) => BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true }))
     expect(blockchainApi.tx.balances.transfer).toHaveBeenCalledWith(
       bob.address,
       expectedAmount

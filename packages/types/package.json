@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/types",
-  "version": "0.20.0",
+  "version": "0.21.1-0",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
@@ -24,7 +24,7 @@
     "@polkadot/api": "^3.11.1",
     "@polkadot/keyring": "^5.9.2",
     "@polkadot/types": "^3.11.1",
-    "bn.js": "^5.2.0",
+    "bn.js": "^4.11.9",
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
