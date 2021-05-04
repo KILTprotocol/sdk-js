@@ -12,9 +12,9 @@ import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   Proof,
   IPublicKeyRecord,
-} from '../types'
-import defaultDocumentLoader from './documentLoader'
-import { KILT_CREDENTIAL_CONTEXT_URL } from './kiltContexts'
+} from '../../types'
+import defaultDocumentLoader from '../documentLoader'
+import { KILT_CREDENTIAL_CONTEXT_URL } from '../context'
 
 export default abstract class KiltAbstractSuite extends suites.LinkedDataProof {
   public readonly verificationMethod?: string | IPublicKeyRecord

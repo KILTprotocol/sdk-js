@@ -16,9 +16,9 @@ import {
   AttestedProof,
   KILT_ATTESTED_PROOF_TYPE,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-} from '../types'
-import { verifyAttestedProof, AttestationStatus } from '../verificationUtils'
-import { KILT_CREDENTIAL_CONTEXT_URL } from './kiltContexts'
+} from '../../types'
+import { verifyAttestedProof, AttestationStatus } from '../../verificationUtils'
+import { KILT_CREDENTIAL_CONTEXT_URL } from '../context'
 import KiltAbstractSuite from './KiltAbstractSuite'
 
 class AttestationError extends Error {

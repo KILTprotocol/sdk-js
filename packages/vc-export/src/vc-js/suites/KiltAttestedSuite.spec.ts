@@ -7,10 +7,10 @@ import jsigs, { purposes } from 'jsonld-signatures'
 import { Attestation } from '@kiltprotocol/core'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'
-import AttestationSuite from './AttestationSuite'
-import credential from './testcred.json'
-import documentLoader from './documentLoader'
-import { AttestedProof, KILT_ATTESTED_PROOF_TYPE } from '../types'
+import AttestationSuite from './KiltAttestedSuite'
+import credential from '../examples/example-vc.json'
+import documentLoader from '../documentLoader'
+import { AttestedProof, KILT_ATTESTED_PROOF_TYPE } from '../../types'
 
 const attestation = Attestation.fromAttestation({
   claimHash:

@@ -10,14 +10,14 @@ import { Ed25519KeyPair } from 'crypto-ld' // eslint-disable-line import/no-extr
 import { base58Decode } from '@polkadot/util-crypto'
 import { Crypto } from '@kiltprotocol/utils'
 import Suite from './KiltSignatureSuite'
-import credential from './testcred.json'
-import documentLoader from './documentLoader'
+import credential from '../examples/example-vc.json'
+import documentLoader from '../documentLoader'
 import {
   VerifiableCredential,
   KILT_SELF_SIGNED_PROOF_TYPE,
   SelfSignedProof,
   IPublicKeyRecord,
-} from '../types'
+} from '../../types'
 
 let suite: Suite
 let purpose: purposes.ProofPurpose

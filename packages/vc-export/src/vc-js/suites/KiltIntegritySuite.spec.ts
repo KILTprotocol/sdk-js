@@ -5,14 +5,14 @@
 import jsigs, { purposes } from 'jsonld-signatures'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'
-import Suite from './KiltDisclosureSuite'
-import credential from './testcred.json'
-import documentLoader from './documentLoader'
+import Suite from './KiltIntegritySuite'
+import credential from '../examples/example-vc.json'
+import documentLoader from '../documentLoader'
 import {
   CredentialDigestProof,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   VerifiableCredential,
-} from '../types'
+} from '../../types'
 
 let suite: Suite
 let purpose: purposes.ProofPurpose

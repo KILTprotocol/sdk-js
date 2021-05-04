@@ -10,11 +10,11 @@ import {
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   CredentialDigestProof,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-} from '../types'
+} from '../../types'
 
-import { verifyCredentialDigestProof } from '../verificationUtils'
+import { verifyCredentialDigestProof } from '../../verificationUtils'
 import KiltAbstractSuite from './KiltAbstractSuite'
-import { KILT_CREDENTIAL_CONTEXT_URL } from './kiltContexts'
+import { KILT_CREDENTIAL_CONTEXT_URL } from '../context'
 
 export default class KiltDisclosureSuite extends KiltAbstractSuite {
   private existingProof?: CredentialDigestProof

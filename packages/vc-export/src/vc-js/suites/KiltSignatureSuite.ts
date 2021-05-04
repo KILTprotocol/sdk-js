@@ -12,11 +12,11 @@ import {
   IPublicKeyRecord,
   KILT_SELF_SIGNED_PROOF_TYPE,
   SelfSignedProof,
-} from '../types'
-import { verifySelfSignedProof } from '../verificationUtils'
-import { fromCredentialURI } from '../exportToVerifiableCredential'
+} from '../../types'
+import { verifySelfSignedProof } from '../../verificationUtils'
+import { fromCredentialURI } from '../../exportToVerifiableCredential'
 import KiltAbstractSuite from './KiltAbstractSuite'
-import { KILT_CREDENTIAL_CONTEXT_URL } from './kiltContexts'
+import { KILT_CREDENTIAL_CONTEXT_URL } from '../context'
 
 export default class KiltSignatureSuite extends KiltAbstractSuite {
   private signer?: Signer
