@@ -93,7 +93,6 @@ beforeAll(async () => {
 
 it('should be possible to delegate attestation rights', async () => {
   const rootNode = await writeRoot(root, DriversLicense.hash)
-  console.log('rootNode', rootNode)
   const delegatedNode = await addDelegation(rootNode, root, attester)
   await Promise.all([
     expect(rootNode.verify()).resolves.toBeTruthy(),
