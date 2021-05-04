@@ -35,7 +35,8 @@ export default class KiltAttestedSuite extends KiltAbstractSuite {
   private readonly provider: Blockchain
 
   constructor(options: { KiltConnection: Blockchain }) {
-    super({ type: KILT_ATTESTED_PROOF_TYPE })
+    // vc-js complains when there is no verificationMethod
+    super({ type: KILT_ATTESTED_PROOF_TYPE, verificationMethod: '<none>' })
     if (
       !options.KiltConnection ||
       !(options.KiltConnection instanceof Blockchain)
@@ -91,6 +92,7 @@ export default class KiltAttestedSuite extends KiltAbstractSuite {
     const { document, purpose } = options
     if (!document || typeof document !== 'object')
       throw new TypeError('document must be a JsonLd object')
+    /* eslint-disable-next-line dot-notation */
     const id: string = document['@id'] || document['id']
     if (!id || typeof id !== 'string')
       throw new Error('document must have an @id property')

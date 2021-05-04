@@ -1,18 +1,24 @@
-import {
+import type {
   DocumentLoader,
   ExpansionMap,
   purposes,
   VerificationResult,
+  Signer,
 } from 'jsonld-signatures'
-import { JsonLdObj } from 'jsonld/jsonld-spec'
-import { KILT_CREDENTIAL_DIGEST_PROOF_TYPE, SelfSignedProof } from '../types'
-
+import type { JsonLdObj } from 'jsonld/jsonld-spec'
+import {
+  IPublicKeyRecord,
+  KILT_SELF_SIGNED_PROOF_TYPE,
+  SelfSignedProof,
+} from '../types'
 import { verifySelfSignedProof } from '../verificationUtils'
 import KiltAbstractSuite from './KiltAbstractSuite'
 
 export default class KiltSignatureSuite extends KiltAbstractSuite {
-  constructor(options: {} = {}) {
-    super({ type: KILT_CREDENTIAL_DIGEST_PROOF_TYPE })
+  constructor({
+    verificationMethod,
+  }: { signer?: Signer; verificationMethod?: string | IPublicKeyRecord } = {}) {
+    super({ type: KILT_SELF_SIGNED_PROOF_TYPE, verificationMethod })
   }
 
   public async createProof(options: {
@@ -22,18 +28,6 @@ export default class KiltSignatureSuite extends KiltAbstractSuite {
     expansionMap?: ExpansionMap
   }): Promise<SelfSignedProof> {
     throw new Error('not implemented')
-    // const { document, purpose } = options
-    // if (!document || typeof document !== 'object')
-    //   throw new TypeError('document must be a JsonLd object')
-
-    //   return {
-    //     '@context': [
-    //       DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-    //       KILT_CREDENTIAL_CONTEXT_URL,
-    //     ],
-    //     type: this.type,
-    //     proofPurpose: purpose?.term,
-    //   } as SelfSignedProof
   }
 
   public async verifyProof(options: {

@@ -20,7 +20,11 @@ export default class KiltDisclosureSuite extends KiltAbstractSuite {
   private existingProof?: CredentialDigestProof
 
   constructor(options: { existingProof?: CredentialDigestProof } = {}) {
-    super({ type: KILT_CREDENTIAL_DIGEST_PROOF_TYPE })
+    // vc-js complains when there is no verificationMethod
+    super({
+      type: KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
+      verificationMethod: '<none>',
+    })
     const { existingProof } = options
     if (
       existingProof &&
@@ -62,9 +66,10 @@ export default class KiltDisclosureSuite extends KiltAbstractSuite {
             `existing proof contained no nonce for statement "${next.statement}" (expected key "${next.digest}")`
           )
         }
-        prev.claimHashes.push(next.saltedHash)
-        prev.nonces[next.digest] = next.nonce
-        return prev
+        return {
+          claimHashes: [...prev.claimHashes, next.saltedHash],
+          nonces: { ...prev.nonces, [next.digest]: next.nonce },
+        }
       },
       { nonces: {}, claimHashes: [] }
     )

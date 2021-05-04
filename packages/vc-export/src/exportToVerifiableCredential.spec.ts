@@ -103,7 +103,8 @@ it('exports credential to VC', () => {
       name: 'Kurt',
       premium: true,
     },
-    id: '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
+    id:
+      'kilt:cred:0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
     issuanceDate: expect.any(String),
     issuer: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     legitimationIds: [],

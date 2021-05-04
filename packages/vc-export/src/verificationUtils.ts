@@ -64,24 +64,25 @@ export function verifySelfSignedProof(
     if (type !== KILT_SELF_SIGNED_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     if (!proof.signature) throw PROOF_MALFORMED_ERROR('signature missing')
-    let signerPubKey: string
     const { verificationMethod } = proof
     if (
-      typeof verificationMethod === 'object' &&
-      verificationMethod.publicKeyHex
+      !(
+        typeof verificationMethod === 'object' &&
+        verificationMethod.publicKeyHex
+      )
     ) {
-      if (!Object.values(KeyTypesMap).includes(verificationMethod.type))
-        throw PROOF_MALFORMED_ERROR(
-          `signature type unknown; expected one of ${JSON.stringify(
-            Object.values(KeyTypesMap)
-          )}, got "${verificationMethod.type}"`
-        )
-      signerPubKey = verificationMethod.publicKeyHex
-    } else {
       throw PROOF_MALFORMED_ERROR(
         'proof must contain public key; resolve did key references beforehand'
       )
     }
+    const keyType = verificationMethod.type || verificationMethod['@type']
+    if (!Object.values(KeyTypesMap).includes(keyType))
+      throw PROOF_MALFORMED_ERROR(
+        `signature type unknown; expected one of ${JSON.stringify(
+          Object.values(KeyTypesMap)
+        )}, got "${verificationMethod.type}"`
+      )
+    const signerPubKey = verificationMethod.publicKeyHex
 
     const rootHash = fromCredentialURI(credential.id)
     // validate signature over root hash
@@ -92,10 +93,10 @@ export function verifySelfSignedProof(
       signerPubKey
     )
     if (
-      !verification.isValid ||
-      KeyTypesMap[verification.crypto] !== verificationMethod.type
-    )
+      !(verification.isValid && KeyTypesMap[verification.crypto] === keyType)
+    ) {
       throw new Error('signature could not be verified')
+    }
     return result
   } catch (e) {
     result.verified = false

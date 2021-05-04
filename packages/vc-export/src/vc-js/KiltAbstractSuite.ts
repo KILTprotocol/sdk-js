@@ -11,13 +11,24 @@ import {
   VerifiableCredential,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   Proof,
+  IPublicKeyRecord,
 } from '../types'
 import defaultDocumentLoader from './documentLoader'
 import { KILT_CREDENTIAL_CONTEXT_URL } from './kiltContexts'
 
 export default abstract class KiltAbstractSuite extends suites.LinkedDataProof {
-  // vc-js complains when there is no verificationMethod
-  public readonly verificationMethod = '<none>'
+  public readonly verificationMethod?: string | IPublicKeyRecord
+
+  constructor({
+    type,
+    verificationMethod,
+  }: {
+    type: string
+    verificationMethod?: string | IPublicKeyRecord
+  }) {
+    super({ type })
+    this.verificationMethod = verificationMethod
+  }
 
   protected async compactProof<ProofType extends Proof>(
     proof: JsonLdObj,
