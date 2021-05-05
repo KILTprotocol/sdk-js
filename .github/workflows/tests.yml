@@ -30,9 +30,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      CI: true
-
     needs: check_skip
 
     strategy:
@@ -80,8 +77,6 @@ jobs:
         run: unzip build.zip -d .
       - name: lint
         run: yarn lint
-        env:
-          CI: true
 
   test:
     runs-on: ubuntu-latest
@@ -99,8 +94,6 @@ jobs:
         run: unzip build.zip -d .
       - name: unit tests
         run: yarn test:ci
-        env:
-          CI: true
 
   integration_test:
     runs-on: ubuntu-latest
