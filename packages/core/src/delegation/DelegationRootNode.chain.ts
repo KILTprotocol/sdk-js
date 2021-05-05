@@ -63,7 +63,7 @@ export async function query(
  *
  * @param delegation The [[DelegationRootNode]] node in the delegation tree at which to revoke.
  * @param maxRevocations The maximum number of revocations that may be performed. Should be set to the number of nodes (including the root node) in the tree. Higher numbers result in a larger amount locked during the transaction, as each revocation adds to the fee that is charged.
- * @returns unsigned [[SubmittableExtrinsic]] ready to be signed and dispatched.
+ * @returns Unsigned [[SubmittableExtrinsic]] ready to be signed and dispatched.
  */
 export async function revoke(
   delegation: IDelegationRootNode,

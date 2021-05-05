@@ -60,5 +60,5 @@
     "typedoc-plugin-external-module-name": "^4.0.6",
     "typescript": "^3.9.7"
   },
-  "version": "0.21.1-0"
+  "version": "0.21.1-1"
 }
