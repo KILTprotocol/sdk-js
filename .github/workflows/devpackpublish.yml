@@ -36,7 +36,7 @@ jobs:
         run: yarn run version $PACKAGE_VERSION
       - name: Build packages
         run: yarn run build
-      -name: Bundle library
+      - name: Bundle library
         run: yarn run bundle
       - name: Publish to npm
         run: yarn run publish --tag dev
