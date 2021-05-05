@@ -30,6 +30,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      CI: true
+
     needs: check_skip
 
     strategy:
@@ -42,18 +45,27 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: yarn install & build
-        run: |
-          yarn install --immutable
-          yarn build
-          yarn test:ci
-        env:
-          CI: true
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - uses: actions/cache@v2
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.node-version }}-yarn-
+      - name: yarn install
+        run: yarn install --immutable
+      - name: yarn build
+        run: yarn build
+      - name: zip build
+        run: zip -r build.zip .
       - name: upload build
         uses: actions/upload-artifact@v2
         with:
           name: build-${{ matrix.node-version }}
-          path: ${{ github.workspace }}
+          path: build.zip
 
 
   lint:
@@ -64,6 +76,8 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: build-12.x
+      - name: unzip
+        run: unzip build.zip -d .
       - name: lint
         run: yarn lint
         env:
@@ -81,6 +95,8 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: build-${{ matrix.node-version }}
+      - name: unzip
+        run: unzip build.zip -d .
       - name: unit tests
         run: yarn test:ci
         env:
@@ -99,6 +115,8 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: build-12.x
+      - name: unzip
+        run: unzip build.zip -d .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -137,6 +155,8 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: build-12.x
+      - name: unzip
+        run: unzip build.zip -d .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -175,6 +195,8 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: build-12.x
+      - name: unzip
+        run: unzip build.zip -d .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
