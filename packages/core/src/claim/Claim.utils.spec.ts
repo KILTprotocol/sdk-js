@@ -1,10 +1,8 @@
 /**
- * @packageDocumentation
  * @group unit/claim
- * @ignore
  */
 
-import { IClaim } from '..'
+import type { IClaim } from '@kiltprotocol/types'
 import { hashClaimContents, toJsonLD } from './Claim.utils'
 
 const claim: IClaim = {
@@ -16,7 +14,7 @@ const claim: IClaim = {
     number: 26,
     optIn: true,
   },
-  owner: 'did:kilt:5D4FoyWD1y4Zn2UM4PiG8PAzmamUbCehpfFChiqyCXD7E2B4',
+  owner: '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
 }
 
 it('exports claim as json-ld', () => {
@@ -28,7 +26,7 @@ it('exports claim as json-ld', () => {
         "@id": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2",
       },
       "https://www.w3.org/2018/credentials#credentialSubject": Object {
-        "@id": "did:kilt:5D4FoyWD1y4Zn2UM4PiG8PAzmamUbCehpfFChiqyCXD7E2B4",
+        "@id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
         "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#address": "homestreet, home",
         "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#name": "John",
         "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#number": 26,
@@ -53,7 +51,7 @@ it('exports claim as json-ld', () => {
         "@context": Object {
           "@vocab": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#",
         },
-        "@id": "did:kilt:5D4FoyWD1y4Zn2UM4PiG8PAzmamUbCehpfFChiqyCXD7E2B4",
+        "@id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
         "address": "homestreet, home",
         "name": "John",
         "number": 26,
@@ -65,28 +63,27 @@ it('exports claim as json-ld', () => {
 
 it('validates hashes from snapshot', () => {
   // given some nonces...
-  const nonces = {
-    '0x1481712e2e8f2f8372216510c487a82543ab5e901a447afb8dfe1366cd73781e':
-      '276b53b6-37db-4179-822e-ed2337a5b889',
-    '0x3f490cb42d224c339cc92381d2205b8c44afb29155b1f24189688c9fa09341fd':
-      'a63ff753-2622-4312-b612-571495c1bc9d',
-    '0x88e53f8d7e8cced445ffc89453448077cd154671ead1df4945a0b07bf8eab299':
-      'd5ceaebd-1e0e-432a-a501-58baa2f66e59',
-    '0xb1f984b606d073d2ae8e8802c383e78af4786ffe381994fe87a7cb47f4f9e035':
-      '8db12d9e-26c0-49c0-bf91-818d6cc6116a',
-    '0x4b88ab9b8ada95d425c767c58f32f83b7b479ac25b0c3defbbbf571ec07d3a5a':
-      '81687a00-f759-4fee-a68c-d9085f9d32f5',
-  }
+  const nonces = [
+    '276b53b6-37db-4179-822e-ed2337a5b889',
+    'a63ff753-2622-4312-b612-571495c1bc9d',
+    'd5ceaebd-1e0e-432a-a501-58baa2f66e59',
+    '8db12d9e-26c0-49c0-bf91-818d6cc6116a',
+    '81687a00-f759-4fee-a68c-d9085f9d32f5',
+  ]
+  const digests = Object.keys(hashClaimContents(claim).nonceMap)
+  const nonceMap = digests.sort().reduce((previous, current, i) => {
+    return { ...previous, [current]: nonces[i] }
+  }, {})
   // we expect the resulting hashes to be the same every time
   const hashed = hashClaimContents(claim, {
-    nonces,
+    nonces: nonceMap,
   })
-  expect(hashed.nonceMap).toEqual(nonces)
+  expect(hashed.nonceMap).toEqual(nonceMap)
   expect(hashed.hashes).toMatchInlineSnapshot(`
     Array [
-      "0x06a9f901566d6f095f256d72e7f93ecdea2fd040b591ff53a6df1fdca33c5094",
-      "0x72f198fbfa727874e18d758ac3a4664437eaa2c7c651352f649ca9ad281a9553",
-      "0x8a8089c46e1b363be1744120c122671260c77133fa680217cffcb8aa45521b9c",
+      "0x3c2ae125a0baf4ed64a30b7ad012810b4622628a2eb5ad32e769e6a1d356d58d",
+      "0x69aae66efd954c3712e91dd2761dab08ea941e6516e7cf6ddf6e3b90ddc5bdf3",
+      "0x8d5736197583931c4e4d3dce0503596760f7a13e8187cc440b7de1edd4370d6a",
       "0xad82658110207f8e65e1c2ae196ec7952aacda0aa9f19c83ce18b60612fe909a",
       "0xf5db5c377a5e85ba94a457d5be8b8ec05419c3e0a666147d6ed86b45089374bd",
     ]

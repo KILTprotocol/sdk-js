@@ -1,7 +1,6 @@
 /**
  * @packageDocumentation
  * @module QuoteSchema
- * @preferred
  */
 
 const QuoteSchema = {

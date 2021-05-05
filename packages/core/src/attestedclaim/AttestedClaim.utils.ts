@@ -1,13 +1,15 @@
 /**
  * @packageDocumentation
  * @module AttestedClaimUtils
- * @preferred
  */
 
+import type {
+  IAttestedClaim,
+  CompressedAttestedClaim,
+} from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import AttestationUtils from '../attestation/Attestation.utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
 import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
-import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
 import AttestedClaim from './AttestedClaim'
 
 /**
@@ -15,9 +17,8 @@ import AttestedClaim from './AttestedClaim'
  *  Throws on invalid input.
  *
  * @param input The potentially only partial IAttestedClaim.
- * @throws When input's attestation and request do not exist.
- * @throws When input's Data could not be verified.
- * @throws [[ERROR_ATTESTATION_NOT_PROVIDED]], [[ERROR_RFA_NOT_PROVIDED]], [[ERROR_ATTESTEDCLAIM_UNVERIFIABLE]].
+ * @throws [[ERROR_ATTESTATION_NOT_PROVIDED]] or [[ERROR_RFA_NOT_PROVIDED]] when input's attestation and request respectively do not exist.
+ * @throws [[ERROR_ATTESTEDCLAIM_UNVERIFIABLE]] when input's data could not be verified.
  *
  */
 export function errorCheck(input: IAttestedClaim): void {
@@ -57,8 +58,7 @@ export function compress(
  *  Decompresses an [[AttestedClaim]] array from storage and/or message into an object.
  *
  * @param attestedClaim A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
- * @throws When attestedClaim is not an Array or it's length is unequal 2.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when attestedClaim is not an Array or it's length is unequal 2.
  *
  * @returns An object that has the same properties as an [[AttestedClaim]].
  */

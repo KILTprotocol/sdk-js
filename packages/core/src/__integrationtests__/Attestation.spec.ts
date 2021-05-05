@@ -1,27 +1,15 @@
 /**
- * @packageDocumentation
  * @group integration/attestation
- * @ignore
  */
 
-import { IAttestedClaim, IClaim } from '..'
+import type { IAttestedClaim, IClaim } from '@kiltprotocol/types'
+import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import Attestation from '../attestation/Attestation'
 import { revoke } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { IBlockchainApi } from '../blockchain/Blockchain'
-import {
-  IS_IN_BLOCK,
-  IS_READY,
-  submitTxWithReSign,
-} from '../blockchain/Blockchain.utils'
-import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
+import { config, disconnect } from '../kilt'
 import Claim from '../claim/Claim'
-import Credential from '../credential/Credential'
 import CType from '../ctype/CType'
-import {
-  ERROR_ALREADY_ATTESTED,
-  ERROR_CTYPE_NOT_FOUND,
-} from '../errorhandling/ExtrinsicError'
 import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import {
@@ -31,13 +19,15 @@ import {
   wannabeAlice,
   wannabeBob,
   wannabeFaucet,
+  WS_ADDRESS,
 } from './utils'
 
-let blockchain: IBlockchainApi | undefined
+import '../../../../testingTools/jestErrorCodeMatcher'
+
 let alice: Identity
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
-  alice = await Identity.buildFromURI('//Alice')
+  config({ address: WS_ADDRESS })
+  alice = wannabeAlice
 })
 
 describe('handling attestations that do not exist', () => {
@@ -47,8 +37,11 @@ describe('handling attestations that do not exist', () => {
 
   it('Attestation.revoke', async () => {
     return expect(
-      Attestation.revoke('0x012012012', alice).then((tx) =>
-        submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })
+      Attestation.revoke('0x012012012', 0).then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, alice, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
+        })
       )
     ).rejects.toThrow()
   }, 30_000)
@@ -60,16 +53,19 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   let claimer: Identity
 
   beforeAll(async () => {
-    faucet = await wannabeFaucet
-    attester = await wannabeAlice
-    claimer = await wannabeBob
+    faucet = wannabeFaucet
+    attester = wannabeAlice
+    claimer = wannabeBob
 
     const ctypeExists = await CtypeOnChain(DriversLicense)
     // console.log(`ctype exists: ${ctypeExists}`)
     // console.log(`verify stored: ${await DriversLicense.verifyStored()}`)
     if (!ctypeExists) {
-      await DriversLicense.store(attester).then((tx) =>
-        submitTxWithReSign(tx, attester, { resolveOn: IS_READY })
+      await DriversLicense.store().then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, attester, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
+        })
       )
     }
   }, 60_000)
@@ -81,9 +77,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.address
     )
-    const {
-      message: request,
-    } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer)
+    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
     expect(request.verifyData()).toBeTruthy()
     expect(request.claim.contents).toMatchObject(content)
   })
@@ -96,26 +90,20 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.address
     )
-    const {
-      message: request,
-    } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer)
+    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
     expect(request.verifyData()).toBeTruthy()
     expect(request.verifySignature()).toBeTruthy()
     const attestation = Attestation.fromRequestAndPublicIdentity(
       request,
       attester.getPublicIdentity()
     )
-    await attestation
-      .store(attester)
-      .then((tx) =>
-        submitTxWithReSign(tx, attester, { resolveOn: IS_IN_BLOCK })
-      )
-    const cred = await Credential.fromRequestAndAttestation(
-      claimer,
-      request,
-      attestation
+    await attestation.store().then((tx) =>
+      BlockchainUtils.signAndSubmitTx(tx, attester, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
     )
-    const aClaim = cred.createPresentation([], false)
+    const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
     expect(aClaim.verifyData()).toBeTruthy()
     await expect(aClaim.verify()).resolves.toBeTruthy()
   }, 60_000)
@@ -128,9 +116,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.address
     )
-    const {
-      message: request,
-    } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer)
+    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
     expect(request.verifyData()).toBeTruthy()
     expect(request.verifySignature()).toBeTruthy()
     const attestation = Attestation.fromRequestAndPublicIdentity(
@@ -138,23 +124,17 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       attester.getPublicIdentity()
     )
 
-    const bobbyBroke = await Identity.buildFromMnemonic(
-      Identity.generateMnemonic()
-    )
+    const bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     await expect(
-      attestation.store(bobbyBroke).then((tx) =>
-        submitTxWithReSign(tx, bobbyBroke, {
-          resolveOn: IS_IN_BLOCK,
+      attestation.store().then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
         })
       )
     ).rejects.toThrow()
-    const cred = await Credential.fromRequestAndAttestation(
-      bobbyBroke,
-      request,
-      attestation
-    )
-    const aClaim = cred.createPresentation([], false)
+    const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
 
     await expect(aClaim.verify()).resolves.toBeFalsy()
   }, 60_000)
@@ -181,20 +161,21 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       content,
       claimer.address
     )
-    const {
-      message: request,
-    } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer)
-    const attestation = await Attestation.fromRequestAndPublicIdentity(
+    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
+    const attestation = Attestation.fromRequestAndPublicIdentity(
       request,
       attester.getPublicIdentity()
     )
     await expect(
-      attestation.store(attester).then((tx) =>
-        submitTxWithReSign(tx, attester, {
-          resolveOn: IS_IN_BLOCK,
+      attestation.store().then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, attester, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
         })
       )
-    ).rejects.toThrowError(ERROR_CTYPE_NOT_FOUND)
+    ).rejects.toThrowErrorWithCode(
+      ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code
+    )
   }, 60_000)
 
   describe('when there is an attested claim on-chain', () => {
@@ -207,35 +188,32 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         content,
         claimer.address
       )
-      const {
-        message: request,
-      } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer)
+      const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
       const attestation = Attestation.fromRequestAndPublicIdentity(
         request,
         attester.getPublicIdentity()
       )
-      await attestation.store(attester).then((tx) =>
-        submitTxWithReSign(tx, attester, {
-          resolveOn: IS_IN_BLOCK,
+      await attestation.store().then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, attester, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
         })
       )
-      const cred = await Credential.fromRequestAndAttestation(
-        claimer,
-        request,
-        attestation
-      )
-      attClaim = cred.createPresentation([], false)
+      attClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
       await expect(attClaim.verify()).resolves.toBeTruthy()
     }, 60_000)
 
     it('should not be possible to attest the same claim twice', async () => {
       await expect(
-        attClaim.attestation.store(attester).then((tx) =>
-          submitTxWithReSign(tx, attester, {
-            resolveOn: IS_IN_BLOCK,
+        attClaim.attestation.store().then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, attester, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
           })
         )
-      ).rejects.toThrowError(ERROR_ALREADY_ATTESTED)
+      ).rejects.toThrowErrorWithCode(
+        ExtrinsicErrors.Attestation.ERROR_ALREADY_ATTESTED.code
+      )
     }, 15_000)
 
     it('should not be possible to use attestation for different claim', async () => {
@@ -245,9 +223,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         content,
         claimer.address
       )
-      const {
-        message: request,
-      } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer)
+      const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
       const fakeAttClaim: IAttestedClaim = {
         request,
         attestation: attClaim.attestation,
@@ -258,8 +234,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(
-        revoke(attClaim.getHash(), claimer).then((tx) =>
-          submitTxWithReSign(tx, claimer, { resolveOn: IS_IN_BLOCK })
+        revoke(attClaim.getHash(), 0).then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, claimer, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
         )
       ).rejects.toThrowError('not permitted')
       await expect(attClaim.verify()).resolves.toBeTruthy()
@@ -267,8 +246,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should be possible for the attester to revoke an attestation', async () => {
       await expect(attClaim.verify()).resolves.toBeTruthy()
-      await revoke(attClaim.getHash(), attester).then((tx) =>
-        submitTxWithReSign(tx, attester, { resolveOn: IS_IN_BLOCK })
+      await revoke(attClaim.getHash(), 0).then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, attester, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
+        })
       )
       await expect(attClaim.verify()).resolves.toBeFalsy()
     }, 40_000)
@@ -277,8 +259,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   describe('when there is another Ctype that works as a legitimation', () => {
     beforeAll(async () => {
       if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
-        await IsOfficialLicenseAuthority.store(faucet).then((tx) =>
-          submitTxWithReSign(tx, faucet, { resolveOn: IS_IN_BLOCK })
+        await IsOfficialLicenseAuthority.store().then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, faucet, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
         )
       }
       await expect(
@@ -296,9 +281,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         },
         attester.address
       )
-      const {
-        message: request1,
-      } = await RequestForAttestation.fromClaimAndIdentity(
+      const request1 = RequestForAttestation.fromClaimAndIdentity(
         licenseAuthorization,
         attester
       )
@@ -306,29 +289,27 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         request1,
         faucet.getPublicIdentity()
       )
-      await licenseAuthorizationGranted
-        .store(faucet)
-        .then((tx) =>
-          submitTxWithReSign(tx, faucet, { resolveOn: IS_IN_BLOCK })
-        )
+      await licenseAuthorizationGranted.store().then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, faucet, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
+        })
+      )
       // make request including legitimation
       const iBelieveICanDrive = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         { name: 'Dominic Toretto', age: 52 },
         claimer.address
       )
-      const {
-        message: request2,
-      } = await RequestForAttestation.fromClaimAndIdentity(
+      const request2 = RequestForAttestation.fromClaimAndIdentity(
         iBelieveICanDrive,
         claimer,
         {
           legitimations: [
-            await Credential.fromRequestAndAttestation(
-              attester,
+            AttestedClaim.fromRequestAndAttestation(
               request1,
               licenseAuthorizationGranted
-            ).then((e) => e.createPresentation([], false)),
+            ),
           ],
         }
       )
@@ -336,14 +317,16 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         request2,
         attester.getPublicIdentity()
       )
-      await LicenseGranted.store(attester).then((tx) =>
-        submitTxWithReSign(tx, attester, { resolveOn: IS_IN_BLOCK })
+      await LicenseGranted.store().then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, attester, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
+        })
       )
-      const license = await Credential.fromRequestAndAttestation(
-        claimer,
+      const license = AttestedClaim.fromRequestAndAttestation(
         request2,
         LicenseGranted
-      ).then((e) => e.createPresentation([], false))
+      )
       await Promise.all([
         expect(license.verify()).resolves.toBeTruthy(),
         expect(
@@ -355,5 +338,5 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 })
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })

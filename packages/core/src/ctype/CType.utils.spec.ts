@@ -1,11 +1,9 @@
 /**
- * @packageDocumentation
  * @group unit/ctype
- * @ignore
  */
 
-import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
-import ICType from '../types/CType'
+import type { ICType } from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import {
   verifyClaimStructure,
   verifySchema,
@@ -66,7 +64,7 @@ describe('CTypeUtils', () => {
     expect(verifySchemaWithErrors(badClaim, CTypeWrapperModel, [])).toBeFalsy()
     expect(() => {
       verifyClaimStructure(badClaim, ctypeInput)
-    }).toThrow(ERROR_OBJECT_MALFORMED())
+    }).toThrow(SDKErrors.ERROR_OBJECT_MALFORMED())
   })
   it('verifies ctypes', () => {
     expect(verifySchema(ctypeWrapperModel, CTypeModel)).toBeTruthy()
@@ -90,8 +88,8 @@ describe('CType registration verification', () => {
   } as ICType['schema']
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
-    identityBob = await Identity.buildFromURI('//Bob')
+    identityAlice = Identity.buildFromURI('//Alice')
+    identityBob = Identity.buildFromURI('//Bob')
   }, 30_000)
 
   describe('when CType is not registered', () => {

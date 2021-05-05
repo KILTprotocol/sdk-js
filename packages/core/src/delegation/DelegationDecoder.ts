@@ -5,22 +5,24 @@
  * The DelegationDecoder methods transform a Codec type into an object of a KILT type.
  *
  * @packageDocumentation
- * @ignore
+ * @module DelegationDecoder
  */
 
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
-import { Option, Tuple } from '@polkadot/types'
-import { Codec } from '@polkadot/types/types'
+import { Permission } from '@kiltprotocol/types'
+import type { Option } from '@polkadot/types'
+import type { IDelegationRootNode } from '@kiltprotocol/types'
+import type { Struct } from '@polkadot/types/codec'
+import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
+import type { u32 } from '@polkadot/types/primitive'
+import { DecoderUtils } from '@kiltprotocol/utils'
 import { DelegationNode } from '..'
-import { coToUInt8 } from '../crypto/Crypto'
-import { IDelegationRootNode, Permission } from '../types/Delegation'
-import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 
-export type CodecWithId = {
+export type CodecWithId<C> = {
   id: string
-  codec: Option<Tuple>
+  codec: C
 }
 
 export type RootDelegationRecord = Pick<
@@ -28,22 +30,23 @@ export type RootDelegationRecord = Pick<
   'cTypeHash' | 'account' | 'revoked'
 >
 
-interface IChainRootDelegation extends Codec {
-  toJSON: () => [string, string, boolean] | null
+export interface IChainDelegationRoot extends Struct {
+  readonly ctypeHash: Hash
+  readonly owner: AccountId
+  readonly revoked: boolean
 }
 
 export function decodeRootDelegation(
-  encoded: Option<Tuple>
+  encoded: Option<IChainDelegationRoot>
 ): RootDelegationRecord | null {
-  assertCodecIsType(encoded, ['Option<(Hash,AccountId,bool)>'])
-  if (encoded instanceof Option || hasNonNullByte(encoded)) {
-    const json = (encoded as IChainRootDelegation).toJSON()
-    if (json instanceof Array) {
-      return {
-        cTypeHash: json[0],
-        account: json[1],
-        revoked: json[2],
-      }
+  DecoderUtils.assertCodecIsType(encoded, ['Option<DelegationRoot>'])
+  if (encoded.isSome) {
+    const delegationRoot = encoded.unwrap()
+    // TODO: check that root is none
+    return {
+      cTypeHash: delegationRoot.ctypeHash.toString(),
+      account: delegationRoot.owner.toString(),
+      revoked: delegationRoot.revoked.valueOf(),
     }
   }
   return null
@@ -69,51 +72,36 @@ function decodePermissions(bitset: number): Permission[] {
   return permissions
 }
 
-/**
- * Checks if `rootId` is set (to something different than `0`).
- *
- * @param rootId The root id part of the query result for delegation nodes.
- * @returns Whether the root is set.
- */
-function verifyRoot(rootId: string): boolean {
-  const rootU8: Uint8Array = coToUInt8(rootId)
-  return (
-    rootU8.reduce((accumulator, currentValue) => accumulator + currentValue) > 0
-  )
-}
-
 export type DelegationNodeRecord = Pick<
   DelegationNode,
   'rootId' | 'parentId' | 'account' | 'permissions' | 'revoked'
 >
 
-interface IChainDelegationNode extends Codec {
-  toJSON: () => [string, string | null, string, number, boolean] | null
+export type DelegationNodeId = Hash
+
+export interface IChainDelegationNode extends Struct {
+  readonly rootId: DelegationNodeId
+  readonly parent: Option<DelegationNodeId>
+  readonly owner: AccountId
+  readonly permissions: u32
+  readonly revoked: boolean
 }
 
 export function decodeDelegationNode(
-  encoded: Option<Tuple>
+  encoded: Option<IChainDelegationNode>
 ): DelegationNodeRecord | null {
-  assertCodecIsType(encoded, [
-    'Option<(DelegationNodeId,Option<DelegationNodeId>,AccountId,Permissions,bool)>',
-  ])
-  if (encoded instanceof Option || hasNonNullByte(encoded)) {
-    const json = (encoded as IChainDelegationNode).toJSON()
-    if (json instanceof Array) {
-      if (typeof json[0] !== 'string' || typeof json[3] !== 'number')
-        return null
-      if (!verifyRoot(json[0])) {
-        // Query returns 0x0 for rootId if queried for a root id instead of a node id.
-        // A node without a root node is therefore interpreted as invalid.
-        return null
-      }
-      return {
-        rootId: json[0],
-        parentId: json[1] || undefined, // optional
-        account: json[2],
-        permissions: decodePermissions(json[3]),
-        revoked: json[4],
-      }
+  DecoderUtils.assertCodecIsType(encoded, ['Option<DelegationNode>'])
+  if (encoded.isSome) {
+    const delegationNode = encoded.unwrap()
+
+    return {
+      rootId: delegationNode.rootId.toString(),
+      parentId: delegationNode.parent.isSome
+        ? delegationNode.parent.toString()
+        : undefined,
+      account: delegationNode.owner.toString(),
+      permissions: decodePermissions(delegationNode.permissions.toNumber()),
+      revoked: delegationNode.revoked.valueOf(),
     }
   }
   return null

@@ -1,19 +1,28 @@
 /**
- * @packageDocumentation
  * @group unit/balance
- * @ignore
  */
 
 import BN from 'bn.js'
+import type { BalanceOptions } from '@kiltprotocol/types'
 import {
   formatKiltBalance,
   convertToTxUnit,
   asFemtoKilt,
   TRANSACTION_FEE,
+  formatKiltBalanceDecimalPlacement,
 } from './Balance.utils'
 
+const TESTVALUE = new BN('123456789000')
+const TESTVALUE_2 = new BN('123456789000000')
 describe('formatKiltBalance', () => {
-  const TESTVALUE = new BN('123456789000')
+  const alterExistingOptions: BalanceOptions = {
+    decimals: 17,
+    withUnit: 'KIL',
+  }
+  const addingOptions: BalanceOptions = {
+    // When enables displays the full unit - micro KILT
+    withSiFull: false,
+  }
   const baseValue = new BN('1')
   it('formats the given balance', async () => {
     expect(formatKiltBalance(TESTVALUE)).toEqual('123.4567 micro KILT')
@@ -37,15 +46,50 @@ describe('formatKiltBalance', () => {
     ).toEqual('1.0000 Kilo KILT')
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(21))))
-    ).toEqual('1.0000 Mega KILT')
+    ).toEqual('1.0000 Mill KILT')
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(24))))
-    ).toEqual('1.0000 Giga KILT')
+    ).toEqual('1.0000 Bill KILT')
     expect(
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(27))))
-    ).toEqual('1.0000 Tera KILT')
+    ).toEqual('1.0000 Tril KILT')
+  })
+  it('changes formatting options for given balances', () => {
+    expect(
+      formatKiltBalance(
+        baseValue.mul(new BN(10).pow(new BN(12))),
+        alterExistingOptions
+      )
+    ).toEqual('10.0000 micro KIL')
+    expect(
+      formatKiltBalance(
+        baseValue.mul(new BN(10).pow(new BN(12))),
+        alterExistingOptions
+      )
+    ).not.toEqual('1.0000 micro KILT')
+    expect(
+      formatKiltBalance(
+        baseValue.mul(new BN(10).pow(new BN(12))),
+        addingOptions
+      )
+    ).toEqual('1.0000 mKILT')
   })
 })
+
+describe('format', () => {
+  it('formats the decimal placements of given balance', () => {
+    expect(formatKiltBalanceDecimalPlacement(TESTVALUE, 3, 10)).toEqual(
+      '12.345'
+    )
+    expect(formatKiltBalanceDecimalPlacement(TESTVALUE, 8, 16)).toEqual(
+      '0.00001234'
+    )
+    expect(formatKiltBalanceDecimalPlacement(TESTVALUE_2, 2, 9)).toEqual(
+      '123456.78'
+    )
+  })
+})
+
 describe('convertToTxUnit', () => {
   it('converts given value with given power to femto KILT', () => {
     expect(new BN(convertToTxUnit(new BN(1), -15).toString())).toEqual(

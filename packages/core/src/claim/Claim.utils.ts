@@ -1,23 +1,20 @@
 /**
  * @packageDocumentation
  * @module ClaimUtils
- * @preferred
  */
 
 import { hexToBn } from '@polkadot/util'
-import jsonabc from '../util/jsonabc'
-import * as SDKErrors from '../errorhandling/SDKErrors'
-import IClaim, { CompressedClaim } from '../types/Claim'
-import { validateAddress, validateHash } from '../util/DataUtils'
+import type {
+  IClaim,
+  CompressedClaim,
+  PartialClaim,
+  CompressedPartialClaim,
+} from '@kiltprotocol/types'
+import { jsonabc, DataUtils, Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { getIdForCTypeHash } from '../ctype/CType.utils'
-import { HashingOptions, hashStatements } from '../crypto/Crypto'
+import Did from '../did'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
-
-/**
- * The minimal partial claim from which a JSON-LD representation can be built.
- */
-export type PartialClaim = Partial<IClaim> & Pick<IClaim, 'cTypeHash'>
 
 /**
  * Produces JSON-LD readable representations of [[IClaim]]['contents']. This is done by implicitly or explicitely transforming property keys to globally unique predicates.
@@ -34,9 +31,9 @@ function JsonLDcontents(
 ): Record<string, unknown> {
   const { cTypeHash, contents, owner } = claim
   if (!cTypeHash) SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
-  const vocabulary = `${getIdForCTypeHash(claim.cTypeHash)}#`
+  const vocabulary = `${getIdForCTypeHash(cTypeHash)}#`
   const result: Record<string, unknown> = {}
-  if (claim.owner) result['@id'] = owner
+  if (owner) result['@id'] = Did.getIdentifierFromAddress(owner)
   if (!expanded) {
     return {
       ...result,
@@ -96,7 +93,7 @@ function makeStatementsJsonLD(claim: PartialClaim): string[] {
  */
 export function hashClaimContents(
   claim: PartialClaim,
-  options: HashingOptions & {
+  options: Crypto.HashingOptions & {
     canonicalisation?: (claim: PartialClaim) => string[]
   } = {}
 ): {
@@ -109,7 +106,7 @@ export function hashClaimContents(
   // use canonicalisation algorithm to make hashable statement strings
   const statements = canonicalisation(claim)
   // iterate over statements to produce salted hashes
-  const processed = hashStatements(statements, options)
+  const processed = Crypto.hashStatements(statements, options)
   // produce array of salted hashes to add to credential
   const hashes = processed
     .map(({ saltedHash }) => saltedHash)
@@ -142,7 +139,7 @@ export function verifyDisclosedAttributes(
     nonces: Record<string, string>
     hashes: string[]
   },
-  options: Pick<HashingOptions, 'hasher'> & {
+  options: Pick<Crypto.HashingOptions, 'hasher'> & {
     canonicalisation?: (claim: PartialClaim) => string[]
   } = {}
 ): { verified: boolean; errors: SDKErrors.SDKError[] } {
@@ -153,7 +150,7 @@ export function verifyDisclosedAttributes(
   // use canonicalisation algorithm to make hashable statement strings
   const statements = canonicalisation(claim)
   // iterate over statements to produce salted hashes
-  const hashed = hashStatements(statements, { ...options, nonces })
+  const hashed = Crypto.hashStatements(statements, { ...options, nonces })
   // check resulting hashes
   const digestsInProof = Object.keys(nonces)
   return hashed.reduce<{ verified: boolean; errors: SDKErrors.SDKError[] }>(
@@ -177,21 +174,20 @@ export function verifyDisclosedAttributes(
 }
 
 /**
- *  Checks whether the input meets all the required criteria of an IClaim object.
+ *  Checks whether the input meets all the required criteria of an [[IClaim]] object.
  *  Throws on invalid input.
  *
  * @param input The potentially only partial IClaim.
- * @throws When input's cTypeHash do not exist.
- * @throws When any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
- * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]], [[ERROR_CLAIM_CONTENTS_MALFORMED]].
+ * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when input's cTypeHash do not exist.
+ * @throws [[ERROR_CLAIM_CONTENTS_MALFORMED]] when any of the input's contents[key] is not of type 'number', 'boolean' or 'string'.
  *
  */
-export function errorCheck(input: IClaim): void {
+export function errorCheck(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
   if (input.owner) {
-    validateAddress(input.owner, 'Claim owner')
+    DataUtils.validateAddress(input.owner, 'Claim owner')
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {
@@ -204,38 +200,63 @@ export function errorCheck(input: IClaim): void {
       }
     })
   }
-  validateHash(input.cTypeHash, 'Claim CType')
+  DataUtils.validateHash(input.cTypeHash, 'Claim CType')
 }
 
 /**
- *  Compresses the [[Claim]] for storage and/or messaging.
+ *  Compresses the [[IClaim]] for storage and/or messaging.
  *
- * @param claim A [[Claim]] object that will be sorted and stripped for messaging or storage.
+ * @param claim An [[IClaim]] object that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of a [[Claim]].
+ * @returns An ordered array of a [[CompressedClaim]].
  */
-export function compress(claim: IClaim): CompressedClaim {
+export function compress(claim: IClaim): CompressedClaim
+/**
+ *  Compresses the [[PartialClaim]] for storage and/or messaging.
+ *
+ * @param claim A [[PartialClaim]] object that will be sorted and stripped for messaging or storage.
+ *
+ * @returns An ordered array of a [[CompressedPartialClaim]].
+ */
+export function compress(claim: PartialClaim): CompressedPartialClaim
+export function compress(
+  claim: IClaim | PartialClaim
+): CompressedClaim | CompressedPartialClaim {
   errorCheck(claim)
-  const sortedContents = jsonabc.sortObj(claim.contents)
-  return [sortedContents, claim.cTypeHash, claim.owner]
+  let sortedContents
+  if (claim.contents) {
+    sortedContents = jsonabc.sortObj(claim.contents)
+  }
+  return [claim.cTypeHash, claim.owner, sortedContents]
 }
 
 /**
- *  Decompresses the [[Claim]] from storage and/or message.
+ *  Decompresses the [[IClaim]] from storage and/or message.
  *
- * @param claim A compressed [[Claim]] array that is reverted back into an object.
- * @throws When [[Claim]] is not an Array or it's length is unequal 3.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
- * @returns An object that has the same properties as the [[Claim]].
+ * @param claim A [[CompressedClaim]] array that is reverted back into an object.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when a [[CompressedClaim]] is not an Array or it's length is unequal 3.
+ * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
  */
-export function decompress(claim: CompressedClaim): IClaim {
+export function decompress(claim: CompressedClaim): IClaim
+/**
+ *  Decompresses the Partial [[IClaim]] from storage and/or message.
+ *
+ * @param claim A [[CompressedPartialClaim]] array that is reverted back into an object.
+ * @throws When a [[CompressedPartialClaim]] is not an Array or it's length is unequal 3.
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @returns A [[PartialClaim]] object that has the same properties as the [[CompressedPartialClaim]].
+ */
+export function decompress(claim: CompressedPartialClaim): PartialClaim
+export function decompress(
+  claim: CompressedClaim | CompressedPartialClaim
+): IClaim | PartialClaim {
   if (!Array.isArray(claim) || claim.length !== 3) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Claim')
   }
   return {
-    contents: claim[0],
-    cTypeHash: claim[1],
-    owner: claim[2],
+    cTypeHash: claim[0],
+    owner: claim[1],
+    contents: claim[2],
   }
 }
 
@@ -245,4 +266,5 @@ export default {
   errorCheck,
   hashClaimContents,
   verifyDisclosedAttributes,
+  toJsonLD,
 }

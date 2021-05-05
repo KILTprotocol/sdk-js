@@ -1,106 +1,36 @@
 /**
- * @packageDocumentation
  * @group unit/requestforattestation
- * @ignore
  */
 
 /* eslint-disable dot-notation */
-import {
-  AttesterAttestationSession,
-  ClaimerAttestationSession,
-} from '@kiltprotocol/portablegabi'
 import { hexToU8a } from '@polkadot/util'
+import type {
+  IClaim,
+  IClaimContents,
+  CompressedAttestedClaim,
+  ICType,
+  CompressedRequestForAttestation,
+  IRequestForAttestation,
+} from '@kiltprotocol/types'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { u8aToHex } from '../crypto'
 import CType from '../ctype/CType'
-import {
-  ErrorCode,
-  ERROR_LEGITIMATIONS_NOT_PROVIDED,
-  ERROR_ROOT_HASH_UNVERIFIABLE,
-  ERROR_SIGNATURE_UNVERIFIABLE,
-} from '../errorhandling/SDKErrors'
-import AttesterIdentity from '../identity/AttesterIdentity'
 import Identity from '../identity/Identity'
-import constants from '../test/constants'
-import { CompressedAttestedClaim } from '../types/AttestedClaim'
-import IClaim, { IClaimContents } from '../types/Claim'
-import ICType from '../types/CType'
-import IRequestForAttestation, {
-  CompressedRequestForAttestation,
-} from '../types/RequestForAttestation'
+
 import RequestForAttestation from './RequestForAttestation'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
-import '../errorhandling/test/jest.ErrorCodeMatcher'
 
-async function buildRequestForAttestationPE(
-  claimer: Identity,
-  contents: IClaim['contents'],
-  legitimations: AttestedClaim[]
-): Promise<
-  [
-    RequestForAttestation,
-    ClaimerAttestationSession | null,
-    Identity,
-    AttesterAttestationSession
-  ]
-> {
-  // create claim
+import '../../../../testingTools/jestErrorCodeMatcher'
 
-  const identityAlice = await AttesterIdentity.buildFromURI('//Alice', {
-    key: {
-      publicKey: constants.PUBLIC_KEY.toString(),
-      privateKey: constants.PRIVATE_KEY.toString(),
-    },
-  })
-
-  const {
-    messageBody: message,
-    session,
-  } = await identityAlice.initiateAttestation()
-
-  const rawCType: ICType['schema'] = {
-    $id: 'kilt:ctype:0x1',
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    properties: {
-      name: { type: 'string' },
-    },
-    title: 'title',
-    type: 'object',
-  }
-
-  const testCType: CType = CType.fromSchema(rawCType, identityAlice.address)
-
-  const claim: IClaim = {
-    cTypeHash: testCType.hash,
-    contents,
-    owner: claimer.address,
-  }
-  // build request for attestation with legitimations
-  const {
-    message: request,
-    session: claimerSession,
-  } = await RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
-    legitimations,
-    initiateAttestationMsg: message,
-    attesterPubKey: identityAlice.getPublicGabiKey(),
-  })
-  return [request, claimerSession, identityAlice, session]
-}
-
-async function buildRequestForAttestation(
+function buildRequestForAttestation(
   claimer: Identity,
   contents: IClaimContents,
   legitimations: AttestedClaim[]
-): Promise<RequestForAttestation> {
+): RequestForAttestation {
   // create claim
 
-  const identityAlice = await AttesterIdentity.buildFromURI('//Alice', {
-    key: {
-      publicKey: constants.PUBLIC_KEY.toString(),
-      privateKey: constants.PRIVATE_KEY.toString(),
-    },
-  })
+  const identityAlice = Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
     $id: 'kilt:ctype:0x2',
@@ -123,13 +53,9 @@ async function buildRequestForAttestation(
     owner: claimer.address,
   }
   // build request for attestation with legitimations
-  const { message: request } = await RequestForAttestation.fromClaimAndIdentity(
-    claim,
-    claimer,
-    {
-      legitimations,
-    }
-  )
+  const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
+    legitimations,
+  })
   return request
 }
 
@@ -144,14 +70,10 @@ describe('RequestForAttestation', () => {
   let legitimationCharlie: AttestedClaim
 
   beforeEach(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
-    identityBob = await Identity.buildFromURI('//Bob')
-    identityCharlie = await Identity.buildFromURI('//Charlie')
-    legitimationRequest = await buildRequestForAttestation(
-      identityAlice,
-      {},
-      []
-    )
+    identityAlice = Identity.buildFromURI('//Alice')
+    identityBob = Identity.buildFromURI('//Bob')
+    identityCharlie = Identity.buildFromURI('//Charlie')
+    legitimationRequest = buildRequestForAttestation(identityAlice, {}, [])
     // build attestation
     legitimationAttestation = Attestation.fromRequestAndPublicIdentity(
       legitimationRequest,
@@ -176,7 +98,7 @@ describe('RequestForAttestation', () => {
   })
 
   it('verify request for attestation', async () => {
-    const request = await buildRequestForAttestation(
+    const request = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',
@@ -191,44 +113,12 @@ describe('RequestForAttestation', () => {
     // just deleting a field will result in a wrong proof
     delete request.claimNonceMap[Object.keys(request.claimNonceMap)[0]]
     expect(() => request.verifyData()).toThrowErrorWithCode(
-      ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT
+      SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT
     )
-  })
-
-  it('verify request for attestation (PE)', async () => {
-    const identityBobWithPE = await Identity.buildFromURI('//Bob', {
-      peEnabled: true,
-    })
-    const [
-      request,
-      claimerSession,
-      attester,
-      attesterSession,
-    ] = await buildRequestForAttestationPE(
-      identityBobWithPE,
-      {
-        a: 'a',
-        b: 'b',
-        c: 'c',
-      },
-      [legitimationCharlie]
-    )
-
-    // check proof on complete data
-    expect(RequestForAttestation.verifyData(request)).toBeTruthy()
-
-    // just deleting a field will result in a wrong proof
-    delete request.claimHashes[0]
-    expect(() => request.verifyData()).toThrowError(
-      ERROR_ROOT_HASH_UNVERIFIABLE()
-    )
-    expect(claimerSession).toBeDefined()
-    expect(attester).toBeDefined()
-    expect(attesterSession).toBeDefined()
   })
 
   it('throws on wrong hash in claim hash tree', async () => {
-    const request = await buildRequestForAttestation(
+    const request = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',
@@ -245,7 +135,7 @@ describe('RequestForAttestation', () => {
   })
 
   it('hides the claim owner', async () => {
-    const request = await buildRequestForAttestation(identityBob, {}, [])
+    const request = buildRequestForAttestation(identityBob, {}, [])
     request.removeClaimOwner()
     expect(Object.keys(request.claimNonceMap)).toHaveLength(
       request.claimHashes.length - 1
@@ -262,7 +152,7 @@ describe('RequestForAttestation', () => {
       request: legitimationRequest,
       attestation: legitimationAttestationBob,
     })
-    const reqForAtt = await buildRequestForAttestation(
+    const reqForAtt = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',
@@ -275,9 +165,9 @@ describe('RequestForAttestation', () => {
     const compressedLegitimationCharlie: CompressedAttestedClaim = [
       [
         [
-          legitimationCharlie.request.claim.contents,
           legitimationCharlie.request.claim.cTypeHash,
           legitimationCharlie.request.claim.owner,
+          legitimationCharlie.request.claim.contents,
         ],
         legitimationCharlie.request.claimNonceMap,
         legitimationCharlie.request.claimerSignature,
@@ -285,7 +175,6 @@ describe('RequestForAttestation', () => {
         legitimationCharlie.request.rootHash,
         [],
         legitimationCharlie.request.delegationId,
-        null,
       ],
       [
         legitimationCharlie.attestation.claimHash,
@@ -299,9 +188,9 @@ describe('RequestForAttestation', () => {
     const compressedLegitimationBob: CompressedAttestedClaim = [
       [
         [
-          legitimationBob.request.claim.contents,
           legitimationBob.request.claim.cTypeHash,
           legitimationBob.request.claim.owner,
+          legitimationBob.request.claim.contents,
         ],
         legitimationBob.request.claimNonceMap,
         legitimationBob.request.claimerSignature,
@@ -309,7 +198,6 @@ describe('RequestForAttestation', () => {
         legitimationBob.request.rootHash,
         [],
         legitimationBob.request.delegationId,
-        null,
       ],
       [
         legitimationBob.attestation.claimHash,
@@ -322,9 +210,9 @@ describe('RequestForAttestation', () => {
 
     const compressedReqForAtt: CompressedRequestForAttestation = [
       [
-        reqForAtt.claim.contents,
         reqForAtt.claim.cTypeHash,
         reqForAtt.claim.owner,
+        reqForAtt.claim.contents,
       ],
       reqForAtt.claimNonceMap,
       reqForAtt.claimerSignature,
@@ -332,7 +220,6 @@ describe('RequestForAttestation', () => {
       reqForAtt.rootHash,
       [compressedLegitimationCharlie, compressedLegitimationBob],
       reqForAtt.delegationId,
-      null,
     ]
 
     expect(RequestForAttestationUtils.compress(reqForAtt)).toEqual(
@@ -369,7 +256,7 @@ describe('RequestForAttestation', () => {
   })
 
   it('hides claim properties', async () => {
-    const request = await buildRequestForAttestation(
+    const request = buildRequestForAttestation(
       identityBob,
       { a: 'a', b: 'b' },
       []
@@ -386,7 +273,7 @@ describe('RequestForAttestation', () => {
   })
 
   it('should throw error on faulty constructor input', async () => {
-    const builtRequest = await buildRequestForAttestation(
+    const builtRequest = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',
@@ -395,7 +282,7 @@ describe('RequestForAttestation', () => {
       },
       []
     )
-    const builtRequestWithLegitimation = (await buildRequestForAttestation(
+    const builtRequestWithLegitimation = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',
@@ -403,9 +290,9 @@ describe('RequestForAttestation', () => {
         c: 'c',
       },
       [legitimationCharlie]
-    )) as IRequestForAttestation
+    ) as IRequestForAttestation
     const builtRequestNoLegitimations = {
-      ...(await buildRequestForAttestation(
+      ...buildRequestForAttestation(
         identityBob,
         {
           a: 'a',
@@ -413,12 +300,12 @@ describe('RequestForAttestation', () => {
           c: 'c',
         },
         []
-      )),
+      ),
     } as IRequestForAttestation
     delete builtRequestNoLegitimations.legitimations
 
     const builtRequestMalformedRootHash = {
-      ...(await buildRequestForAttestation(
+      ...buildRequestForAttestation(
         identityBob,
         {
           a: 'a',
@@ -426,7 +313,7 @@ describe('RequestForAttestation', () => {
           c: 'c',
         },
         []
-      )),
+      ),
     } as IRequestForAttestation
     builtRequestMalformedRootHash.rootHash = [
       builtRequestMalformedRootHash.rootHash.slice(0, 15),
@@ -437,7 +324,7 @@ describe('RequestForAttestation', () => {
       builtRequestMalformedRootHash.rootHash.slice(16),
     ].join('')
     const builtRequestIncompleteClaimHashTree = {
-      ...(await buildRequestForAttestation(
+      ...buildRequestForAttestation(
         identityBob,
         {
           a: 'a',
@@ -445,7 +332,7 @@ describe('RequestForAttestation', () => {
           c: 'c',
         },
         []
-      )),
+      ),
     } as IRequestForAttestation
     const deletedKey = Object.keys(
       builtRequestIncompleteClaimHashTree.claimNonceMap
@@ -455,7 +342,7 @@ describe('RequestForAttestation', () => {
       'calculateRootHash'
     ](builtRequestIncompleteClaimHashTree)
     const builtRequestMalformedSignature = {
-      ...(await buildRequestForAttestation(
+      ...buildRequestForAttestation(
         identityBob,
         {
           a: 'a',
@@ -463,18 +350,20 @@ describe('RequestForAttestation', () => {
           c: 'c',
         },
         []
-      )),
+      ),
     } as IRequestForAttestation
     const signatureAsBytes = hexToU8a(
       builtRequestMalformedSignature.claimerSignature
     )
     signatureAsBytes[5] += 1
-    builtRequestMalformedSignature.claimerSignature = u8aToHex(signatureAsBytes)
+    builtRequestMalformedSignature.claimerSignature = Crypto.u8aToHex(
+      signatureAsBytes
+    )
     builtRequestMalformedSignature.rootHash = RequestForAttestation[
       'calculateRootHash'
     ](builtRequestMalformedSignature)
     const builtRequestMalformedHashes = {
-      ...(await buildRequestForAttestation(
+      ...buildRequestForAttestation(
         identityBob,
         {
           a: 'a',
@@ -482,7 +371,7 @@ describe('RequestForAttestation', () => {
           c: 'c',
         },
         []
-      )),
+      ),
     } as IRequestForAttestation
     Object.entries(builtRequestMalformedHashes.claimNonceMap).forEach(
       ([hash, nonce]) => {
@@ -500,19 +389,19 @@ describe('RequestForAttestation', () => {
     ](builtRequestMalformedHashes)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
-    ).toThrowError(ERROR_LEGITIMATIONS_NOT_PROVIDED())
+    ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedRootHash)
-    ).toThrowError(ERROR_ROOT_HASH_UNVERIFIABLE())
+    ).toThrowError(SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestIncompleteClaimHashTree)
-    ).toThrowErrorWithCode(ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
-    ).toThrowError(ERROR_SIGNATURE_UNVERIFIABLE())
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedHashes)
-    ).toThrowErrorWithCode(ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
+    ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequest)
     ).not.toThrow()
@@ -521,7 +410,7 @@ describe('RequestForAttestation', () => {
     }).not.toThrow()
   })
   it('checks Object instantiation', async () => {
-    const builtRequest = await buildRequestForAttestation(
+    const builtRequest = buildRequestForAttestation(
       identityBob,
       {
         a: 'a',

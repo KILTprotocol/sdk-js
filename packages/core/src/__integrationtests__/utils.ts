@@ -1,7 +1,3 @@
-/**
- * @packageDocumentation
- * @ignore
- */
 /* eslint-disable */
 
 import BN from 'bn.js/'
@@ -12,13 +8,25 @@ import Identity from '../identity/Identity'
 export const MIN_TRANSACTION = new BN(100_000_000)
 export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 
+export const WS_ADDRESS = 'ws://127.0.0.1:9944'
 // Dev Faucet account seed phrase
 export const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 
-export const wannabeFaucet = Identity.buildFromURI(FaucetSeed)
-export const wannabeAlice = Identity.buildFromURI('//Alice')
-export const wannabeBob = Identity.buildFromURI('//Bob')
+// endowed accounts on development chain spec
+// ids are ed25519 because the endowed accounts are
+export const wannabeFaucet = Identity.buildFromURI(FaucetSeed, {
+  signingKeyPairType: 'ed25519',
+})
+export const wannabeAlice = Identity.buildFromURI('//Alice', {
+  signingKeyPairType: 'ed25519',
+})
+export const wannabeBob = Identity.buildFromURI('//Bob', {
+  signingKeyPairType: 'ed25519',
+})
+export const wannabeCharlie = Identity.buildFromURI('//Charlie', {
+  signingKeyPairType: 'ed25519',
+})
 
 export async function CtypeOnChain(ctype: CType): Promise<boolean> {
   return getOwner(ctype.hash)

@@ -1,23 +1,28 @@
 /**
- * @packageDocumentation
  * @group unit/attestation
- * @ignore
  */
 
-import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
+import type {
+  IAttestation,
+  CompressedAttestation,
+  ICType,
+} from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
-import * as SDKErrors from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import IAttestation, { CompressedAttestation } from '../types/Attestation'
-import ICType from '../types/CType'
 import Attestation from './Attestation'
 import AttestationUtils from './Attestation.utils'
+import Kilt from '../kilt/Kilt'
 
-jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+jest.mock(
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
+)
 
 describe('Attestation', () => {
+  Kilt.config({ address: 'ws://testString' })
   let identityAlice: Identity
   let identityBob: Identity
   let rawCTypeSchema: ICType['schema']
@@ -25,12 +30,12 @@ describe('Attestation', () => {
   let testcontents: any
   let testClaim: Claim
   let requestForAttestation: RequestForAttestation
-  const blockchainApi = require('../blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
-    identityBob = await Identity.buildFromURI('//Bob')
+    identityAlice = Identity.buildFromURI('//Alice')
+    identityBob = Identity.buildFromURI('//Bob')
 
     rawCTypeSchema = {
       $id: 'kilt:ctype:0x1',
@@ -50,12 +55,10 @@ describe('Attestation', () => {
       testcontents,
       identityBob.address
     )
-    ;({
-      message: requestForAttestation,
-    } = await RequestForAttestation.fromClaimAndIdentity(
+    requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
       testClaim,
       identityBob
-    ))
+    )
   })
 
   it('stores attestation', async () => {
@@ -231,7 +234,7 @@ describe('Attestation', () => {
     const malformedAddress = {
       claimHash,
       cTypeHash,
-      owner: identityAlice.signKeyringPair.address.replace('7', 'D'),
+      owner: identityAlice.signKeyringPair.address.replace('8', 'D'),
       revoked: false,
       delegationId: null,
     } as IAttestation

@@ -1,4 +1,3 @@
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 /**
  * Delegation nodes are used within the KILT protocol to construct the trust hierarchy.
  *
@@ -9,19 +8,16 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  * @preferred
  */
 
-import { factory } from '../config/ConfigLog'
-import Crypto from '../crypto'
-import { coToUInt8, u8aConcat, u8aToHex } from '../crypto/Crypto'
-import { ERROR_ROOT_NODE_QUERY } from '../errorhandling/SDKErrors'
-import Identity from '../identity/Identity'
-import { IDelegationNode } from '../types/Delegation'
+import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
 import DelegationBaseNode from './Delegation'
 import { getChildren, query, revoke, store } from './DelegationNode.chain'
 import permissionsAsBitset from './DelegationNode.utils'
 import DelegationRootNode from './DelegationRootNode'
 import { query as queryRoot } from './DelegationRootNode.chain'
 
-const log = factory.getLogger('DelegationNode')
+const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
 export default class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
@@ -75,14 +71,17 @@ export default class DelegationNode extends DelegationBaseNode
    *
    * @example
    * ```
+   * // Sign the hash of the delegation node...
    * const delegate: Identity = ...
    * const signature:string = delegate.signStr(newDelegationNode.generateHash())
    *
+   * // Store the signed hash on the Kilt chain...
    * const myIdentity: Identity = ...
-   * newDelegationNode.store(myIdentity, signature)
+   * tx = newDelegationNode.store(signature)
+   * BlockchainUtils.signAndSendTx(tx, myIdentity)
    * ```
    *
-   * @returns The hash representation of this delegation as a hex string.
+   * @returns The hash representation of this delegation **as a hex string**.
    */
   public generateHash(): string {
     const propsToHash: Array<Uint8Array | string> = [this.id, this.rootId]
@@ -90,11 +89,11 @@ export default class DelegationNode extends DelegationBaseNode
       propsToHash.push(this.parentId)
     }
     const uint8Props: Uint8Array[] = propsToHash.map((value) => {
-      return coToUInt8(value)
+      return Crypto.coToUInt8(value)
     })
     uint8Props.push(permissionsAsBitset(this))
-    const generated: string = u8aToHex(
-      Crypto.hash(u8aConcat(...uint8Props), 256)
+    const generated: string = Crypto.u8aToHex(
+      Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
     )
     log.debug(`generateHash(): ${generated}`)
     return generated
@@ -103,14 +102,13 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * [ASYNC] Fetches the root of this delegation node.
    *
-   * @throws When the rootId could not be queried.
-   * @throws [[ERROR_ROOT_NODE_QUERY]].
+   * @throws [[ERROR_ROOT_NODE_QUERY]] when the rootId could not be queried.
    * @returns Promise containing the [[DelegationRootNode]] of this delegation node.
    */
   public async getRoot(): Promise<DelegationRootNode> {
     const rootNode = await queryRoot(this.rootId)
     if (!rootNode) {
-      throw ERROR_ROOT_NODE_QUERY(this.rootId)
+      throw SDKErrors.ERROR_ROOT_NODE_QUERY(this.rootId)
     }
     return rootNode
   }
@@ -122,7 +120,7 @@ export default class DelegationNode extends DelegationBaseNode
    */
 
   public async getParent(): Promise<DelegationBaseNode | null> {
-    if (!this.parentId) {
+    if (!this.parentId || this.parentId === this.rootId) {
       // parent must be root
       return this.getRoot()
     }
@@ -132,20 +130,16 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * [ASYNC] Stores the delegation node on chain.
    *
-   * @param identity Account used to store the delegation node.
-   * @param signature Signature of the delegate to ensure it's done under his permission.
-   * @returns Promise containing a SubmittableExtrinsic.
+   * @param signature Signature of the delegate to ensure it is done under the delegate's permission.
+   * @returns Promise containing a unsigned SubmittableExtrinsic.
    */
-  public async store(
-    identity: Identity,
-    signature: string
-  ): Promise<SubmittableExtrinsic> {
+  public async store(signature: string): Promise<SubmittableExtrinsic> {
     log.info(`:: store(${this.id})`)
-    return store(this, identity, signature)
+    return store(this, signature)
   }
 
   /**
-   * [ASYNC] Verifies the delegation node by querying it from chain and checking its revoke status.
+   * [ASYNC] Verifies the delegation node by querying it from chain and checking its revocation status.
    *
    * @returns Promise containing a boolean flag.
    */
@@ -157,12 +151,23 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * [ASYNC] Revokes the delegation node on chain.
    *
-   * @param identity The identity used to revoke the delegation.
-   * @returns Promise containing a SubmittableExtrinsic.
+   * @param address The address of the identity used to revoke the delegation.
+   * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async revoke(identity: Identity): Promise<SubmittableExtrinsic> {
-    log.debug(`:: revoke(${this.id})`)
-    return revoke(this.id, identity)
+  public async revoke(address: string): Promise<SubmittableExtrinsic> {
+    const { steps, node } = await this.findAncestorOwnedBy(address)
+    if (!node) {
+      throw SDKErrors.ERROR_UNAUTHORIZED(
+        `Identity with address ${address} is not among the delegators and may not revoke this node`
+      )
+    }
+    const childCount = await this.subtreeNodeCount()
+    // must revoke all children and self
+    const revocationCount = childCount + 1
+    log.debug(
+      `:: revoke(${this.id}) with maxRevocations=${revocationCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${address}`
+    )
+    return revoke(this.id, steps, revocationCount)
   }
 
   public async getChildren(): Promise<DelegationNode[]> {

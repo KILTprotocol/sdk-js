@@ -9,14 +9,18 @@
  *
  * @packageDocumentation
  * @module Claim
- * @preferred
  */
 
+import type {
+  IClaim,
+  CompressedClaim,
+  IPublicIdentity,
+  CompressedPartialClaim,
+  PartialClaim,
+} from '@kiltprotocol/types'
+import { SDKErrors } from '@kiltprotocol/utils'
 import ICType from '../ctype/CType'
 import CTypeUtils from '../ctype/CType.utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
-import IClaim, { CompressedClaim } from '../types/Claim'
-import IPublicIdentity from '../types/PublicIdentity'
 import ClaimUtils from './Claim.utils'
 
 function verifyClaim(
@@ -32,8 +36,7 @@ export default class Claim implements IClaim {
    *
    * @param claimInput IClaim to instantiate the new claim from.
    * @param cTypeSchema ICType['schema'] to verify claimInput's contents.
-   * @throws When claimInput's contents could not be verified with the provided cTypeSchema.
-   * @throws [[ERROR_CLAIM_UNVERIFIABLE]].
+   * @throws [[ERROR_CLAIM_UNVERIFIABLE]] when claimInput's contents could not be verified with the provided cTypeSchema.
    *
    * @returns An instantiated Claim.
    */
@@ -87,8 +90,7 @@ export default class Claim implements IClaim {
    * @param ctypeInput [[ICType]] for which the Claim will be built.
    * @param claimContents IClaim['contents'] to be used as the pure contents of the instantiated Claim.
    * @param claimOwner IPublicIdentity['address'] to be used as the Claim owner.
-   * @throws When claimInput's contents could not be verified with the schema of the provided ctypeInput.
-   * @throws [[ERROR_CLAIM_UNVERIFIABLE]].
+   * @throws [[ERROR_CLAIM_UNVERIFIABLE]] when claimInput's contents could not be verified with the schema of the provided ctypeInput.
    *
    * @returns An instantiated Claim.
    */
@@ -137,7 +139,7 @@ export default class Claim implements IClaim {
   }
 
   /**
-   * Compresses an [[Claim]] object from the [[CompressedClaim]].
+   * Compresses the [[Claim]] object to a [[CompressedClaim]].
    *
    * @returns An array that contains the same properties of an [[Claim]].
    */
@@ -147,13 +149,24 @@ export default class Claim implements IClaim {
   }
 
   /**
-   * [STATIC] Builds an [[Claim]] from the decompressed array.
+   *  Decompresses the [[IClaim]] from storage and/or message.
    *
-   * @returns A new [[Claim]] object.
+   * @param claim A [[CompressedClaim]] array that is reverted back into an object.
+   * @throws [[ERROR_DECOMPRESSION_ARRAY]] when an [[CompressedClaim]] is not an Array or it's length is unequal 3.
+   * @returns An [[IClaim]] object that has the same properties as the [[CompressedClaim]].
    */
-
-  public static decompress(compressedClaim: CompressedClaim): Claim {
-    const decompressedClaim = ClaimUtils.decompress(compressedClaim)
-    return new Claim(decompressedClaim)
+  public static decompress(claim: CompressedClaim): IClaim
+  /**
+   *  Decompresses the Partial [[IClaim]] from storage and/or message.
+   *
+   * @param claim An [[CompressedPartialClaim]] array that is reverted back into an object.
+   * @throws [[ERROR_DECOMPRESSION_ARRAY]] when an [[CompressedPartialClaim]] is not an Array or it's length is unequal 3.
+   * @returns An [[PartialClaim]] object that has the same properties as the [[CompressedPartialClaim]].
+   */
+  public static decompress(claim: CompressedPartialClaim): PartialClaim
+  public static decompress(
+    compressedClaim: CompressedClaim | CompressedPartialClaim
+  ): IClaim | PartialClaim {
+    return ClaimUtils.decompress(compressedClaim)
   }
 }

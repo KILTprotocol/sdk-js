@@ -1,17 +1,14 @@
 /**
- * @packageDocumentation
  * @group unit/ctype
- * @ignore
  */
 
+import { SDKErrors } from '@kiltprotocol/utils'
+import type { ICType, ICTypeMetadata } from '@kiltprotocol/types'
 import Identity from '../identity/Identity'
-import ICType from '../types/CType'
-import ICTypeMetadata from '../types/CTypeMetadata'
 import CType from './CType'
 import CTypeUtils from './CType.utils'
 import CTypeMetadata from './CTypeMetadata'
 import { MetadataModel } from './CTypeSchema'
-import { ERROR_OBJECT_MALFORMED } from '../errorhandling/SDKErrors'
 
 describe('CType', () => {
   let identityAlice: Identity
@@ -21,7 +18,7 @@ describe('CType', () => {
   let metadata: CTypeMetadata
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
 
     rawCType = {
       $id: 'kilt:ctype:0x1',
@@ -65,7 +62,7 @@ describe('CType', () => {
     }
     delete faultyMetadata.metadata.properties
     expect(() => new CTypeMetadata(faultyMetadata)).toThrow(
-      ERROR_OBJECT_MALFORMED()
+      SDKErrors.ERROR_OBJECT_MALFORMED()
     )
   })
 })

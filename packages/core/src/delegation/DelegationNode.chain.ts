@@ -1,28 +1,34 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module DelegationNode
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option, Tuple } from '@polkadot/types'
-import { getCached } from '../blockchainApiConnection'
-import { factory } from '../config/ConfigLog'
-import Identity from '../identity/Identity'
-import { IDelegationNode } from '../types/Delegation'
+import type { Option } from '@polkadot/types'
+import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
+import { ConfigService } from '@kiltprotocol/config'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import DelegationBaseNode from './Delegation'
 import { fetchChildren, getChildIds } from './Delegation.chain'
-import { CodecWithId, decodeDelegationNode } from './DelegationDecoder'
+import {
+  CodecWithId,
+  decodeDelegationNode,
+  IChainDelegationNode,
+} from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
 import permissionsAsBitset from './DelegationNode.utils'
 
-const log = factory.getLogger('DelegationBaseNode')
+const log = ConfigService.LoggingFactory.getLogger('DelegationBaseNode')
 
+/**
+ * @param delegation
+ * @param signature
+ * @internal
+ */
 export async function store(
   delegation: IDelegationNode,
-  identity: Identity,
   signature: string
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const includeParentId: boolean = delegation.parentId
     ? delegation.parentId !== delegation.rootId
     : false
@@ -34,17 +40,21 @@ export async function store(
     permissionsAsBitset(delegation),
     signature
   )
-  return blockchain.signTx(identity, tx)
+  return tx
 }
 
+/**
+ * @param delegationId
+ * @internal
+ */
 export async function query(
   delegationId: IDelegationNode['id']
 ): Promise<DelegationNode | null> {
-  const blockchain = await getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegations<Option<Tuple>>(
-      delegationId
-    )
+    await blockchain.api.query.delegation.delegations<
+      Option<IChainDelegationNode>
+    >(delegationId)
   )
   if (decoded) {
     const root = new DelegationNode(
@@ -60,26 +70,45 @@ export async function query(
   return null
 }
 
+/**
+ * @internal
+ *
+ * Revokes part of a delegation tree at specified node, also revoking all nodes below.
+ *
+ * @param delegationId The id of the node in the delegation tree at which to revoke.
+ * @param maxDepth How many nodes may be traversed upwards in the hierarchy when searching for a node owned by `identity`. Each traversal will add to the transaction fee. Therefore a higher number will increase the fees locked until the transaction is complete. A number lower than the actual required traversals will result in a failed extrinsic (node will not be revoked).
+ * @param maxRevocations How many delegation nodes may be revoked during the process. Each revocation adds to the transaction fee. A higher number will require more fees to be locked while an insufficiently high number will lead to premature abortion of the revocation process, leaving some nodes unrevoked. Revocations will first be performed on child nodes, therefore the current node is only revoked when this is accurate.
+ * @returns An unsigned SubmittableExtrinsic ready to be signed and dispatched.
+ */
 export async function revoke(
   delegationId: IDelegationNode['id'],
-  identity: Identity
+  maxDepth: number,
+  maxRevocations: number
 ): Promise<SubmittableExtrinsic> {
-  const blockchain = await getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.revokeDelegation(
-    delegationId
+    delegationId,
+    maxDepth,
+    maxRevocations
   )
-  return blockchain.signTx(identity, tx)
+  return tx
 }
 
+/**
+ * @param delegationNodeId
+ * @internal
+ */
 // function lives here to avoid circular imports between DelegationBaseNode and DelegationNode
 export async function getChildren(
   delegationNodeId: DelegationBaseNode['id']
 ): Promise<DelegationNode[]> {
   log.info(` :: getChildren('${delegationNodeId}')`)
   const childIds: string[] = await getChildIds(delegationNodeId)
-  const queryResults: CodecWithId[] = await fetchChildren(childIds)
+  const queryResults: Array<CodecWithId<
+    Option<IChainDelegationNode>
+  >> = await fetchChildren(childIds)
   const children: DelegationNode[] = queryResults
-    .map((codec: CodecWithId) => {
+    .map((codec: CodecWithId<Option<IChainDelegationNode>>) => {
       const decoded = decodeDelegationNode(codec.codec)
       if (decoded) {
         const child = new DelegationNode(

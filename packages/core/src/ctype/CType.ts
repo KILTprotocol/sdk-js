@@ -10,10 +10,13 @@
  * @preferred
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import Identity from '../identity/Identity'
-import IClaim from '../types/Claim'
-import ICType, { CompressedCType, CTypeSchemaWithoutId } from '../types/CType'
+import type {
+  IClaim,
+  ICType,
+  CompressedCType,
+  CTypeSchemaWithoutId,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { store } from './CType.chain'
 import CTypeUtils from './CType.utils'
 
@@ -85,12 +88,10 @@ export default class CType implements ICType {
   /**
    * [ASYNC] Stores the [[CType]] on the blockchain.
    *
-   * @param identity The identity which submits the blockchain transaction to store the [[CType]].
-   *
-   * @returns A promise of a SubmittableExtrinsic .
+   * @returns A promise of a unsigned SubmittableExtrinsic.
    */
-  public async store(identity: Identity): Promise<SubmittableExtrinsic> {
-    return store(this, identity)
+  public async store(): Promise<SubmittableExtrinsic> {
+    return store(this)
   }
 
   /**

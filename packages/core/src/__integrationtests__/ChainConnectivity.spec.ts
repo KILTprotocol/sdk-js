@@ -1,21 +1,20 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
- * @packageDocumentation
  * @group integration/connectivity
- * @ignore
  */
 
-import { Header } from '@polkadot/types/interfaces/types'
-import { IBlockchainApi } from '../blockchain/Blockchain'
-import { DEFAULT_WS_ADDRESS, getCached } from '../blockchainApiConnection'
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import type { Header } from '@polkadot/types/interfaces/types'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { WS_ADDRESS } from './utils'
+import { config, disconnect } from '../kilt'
 
-let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  config({ address: WS_ADDRESS })
 })
 
 describe('Blockchain', () => {
   it('should get stats', async () => {
+    const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
     expect(blockchain).not.toBeUndefined()
     const stats = await blockchain!.getStats()
 
@@ -27,6 +26,7 @@ describe('Blockchain', () => {
   })
 
   it('should listen to blocks', async (done) => {
+    const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
     const listener = (header: Header): void => {
       // console.log(`Best block number ${header.number}`)
       expect(Number(header.number)).toBeGreaterThanOrEqual(0)
@@ -40,5 +40,5 @@ describe('Blockchain', () => {
 })
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })

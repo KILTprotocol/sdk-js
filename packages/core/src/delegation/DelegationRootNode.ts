@@ -1,4 +1,3 @@
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 /**
  * KILT enables top-down trust structures.
  * On the lowest level, a delegation structure is always a **tree**.
@@ -9,18 +8,19 @@ import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
  *
  * @packageDocumentation
  * @module DelegationRootNode
- * @preferred
  */
 
-import { factory } from '../config/ConfigLog'
-import Identity from '../identity/Identity'
-import { IDelegationRootNode } from '../types/Delegation'
+import type {
+  IDelegationRootNode,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import { ConfigService } from '@kiltprotocol/config'
 import DelegationBaseNode from './Delegation'
 import DelegationNode from './DelegationNode'
 import { getChildren } from './DelegationNode.chain'
 import { query, revoke, store } from './DelegationRootNode.chain'
 
-const log = factory.getLogger('DelegationRootNode')
+const log = ConfigService.LoggingFactory.getLogger('DelegationRootNode')
 
 export default class DelegationRootNode extends DelegationBaseNode
   implements IDelegationRootNode {
@@ -68,12 +68,11 @@ export default class DelegationRootNode extends DelegationBaseNode
   /**
    * Stores the delegation root node on chain.
    *
-   * @param identity The account used to store the delegation root node.
-   * @returns Promise containing the SubmittableExtrinsic.
+   * @returns Promise containing the unsigned SubmittableExtrinsic.
    */
-  public async store(identity: Identity): Promise<SubmittableExtrinsic> {
+  public async store(): Promise<SubmittableExtrinsic> {
     log.debug(`:: store(${this.id})`)
-    return store(this, identity)
+    return store(this)
   }
 
   public async verify(): Promise<boolean> {
@@ -81,9 +80,10 @@ export default class DelegationRootNode extends DelegationBaseNode
     return node !== null && !node.revoked
   }
 
-  public async revoke(identity: Identity): Promise<SubmittableExtrinsic> {
+  public async revoke(): Promise<SubmittableExtrinsic> {
+    const childCount = await this.subtreeNodeCount()
     log.debug(`:: revoke(${this.id})`)
-    return revoke(this, identity)
+    return revoke(this, childCount + 1)
   }
 
   public async getChildren(): Promise<DelegationNode[]> {

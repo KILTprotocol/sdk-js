@@ -3,16 +3,15 @@
  *
  * @packageDocumentation
  * @module PublicIdentity
- * @preferred
  */
 
+import type { IPublicIdentity } from '@kiltprotocol/types'
 import Did, {
   IDENTIFIER_PREFIX,
   KEY_TYPE_ENCRYPTION,
   SERVICE_KILT_MESSAGING,
 } from '../did/Did'
 import { getAddressFromIdentifier } from '../did/Did.utils'
-import IPublicIdentity from '../types/PublicIdentity'
 
 export interface IURLResolver {
   resolve(url: string): Promise<Record<string, unknown> | null>

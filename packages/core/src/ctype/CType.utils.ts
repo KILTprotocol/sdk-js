@@ -1,16 +1,16 @@
 /**
  * @packageDocumentation
  * @module CTypeUtils
- * @preferred
  */
 
 import Ajv from 'ajv'
-import jsonabc from '../util/jsonabc'
-import Crypto from '../crypto'
-import * as SDKErrors from '../errorhandling/SDKErrors'
-import IClaim from '../types/Claim'
-import ICType, { CompressedCType, CompressedCTypeSchema } from '../types/CType'
-import { validateAddress } from '../util/DataUtils'
+import type {
+  ICType,
+  IClaim,
+  CompressedCType,
+  CompressedCTypeSchema,
+} from '@kiltprotocol/types'
+import { jsonabc, Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { getOwner } from './CType.chain'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 
@@ -42,12 +42,11 @@ export function verifySchema(
 }
 
 /**
- *  Verifies the Structure of the provided IClaim['contents'] with ICType['schema'].
+ *  Verifies the structure of the provided IClaim['contents'] with ICType['schema'].
  *
  * @param claimContents IClaim['contents'] to be verified against the schema.
  * @param schema ICType['schema'] to be verified against the [CTypeModel].
- * @throws When schema does not correspond to the CTypeModel.
- * @throws [[ERROR_OBJECT_MALFORMED]].
+ * @throws [[ERROR_OBJECT_MALFORMED]] when schema does not correspond to the CTypeModel.
  *
  * @returns Boolean whether both claimContents and schema could be verified.
  */
@@ -100,10 +99,9 @@ export function getIdForSchema(schema: schemaPropsForHashing): string {
  *  Throws on invalid input.
  *
  * @param input The potentially only partial ICType.
- * @throws When input does not correspond to either it's schema, or the CTypeWrapperModel.
- * @throws When the input's hash does not match the hash calculated from ICType's schema.
- * @throws When the input's owner is not of type string or null.
- * @throws [[ERROR_OBJECT_MALFORMED]], [[ERROR_HASH_MALFORMED]], [[ERROR_CTYPE_OWNER_TYPE]].
+ * @throws [[ERROR_OBJECT_MALFORMED]] when input does not correspond to either it's schema, or the CTypeWrapperModel.
+ * @throws [[ERROR_HASH_MALFORMED]] when the input's hash does not match the hash calculated from ICType's schema.
+ * @throws [[ERROR_CTYPE_OWNER_TYPE]] when the input's owner is not of type string or null.
  *
  */
 export function errorCheck(input: ICType): void {
@@ -121,7 +119,7 @@ export function errorCheck(input: ICType): void {
   }
   if (
     typeof input.owner === 'string'
-      ? !validateAddress(input.owner, 'CType owner')
+      ? !DataUtils.validateAddress(input.owner, 'CType owner')
       : !(input.owner === null)
   ) {
     throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
@@ -132,8 +130,7 @@ export function errorCheck(input: ICType): void {
  *  Compresses a [[CType]] schema for storage and/or messaging.
  *
  * @param cTypeSchema A [[CType]] schema object that will be sorted and stripped for messaging or storage.
- * @throws When any of the four required properties of the cTypeSchema are missing.
- * @throws [[ERROR_COMPRESS_OBJECT]].
+ * @throws [[ERROR_COMPRESS_OBJECT]] when any of the four required properties of the cTypeSchema are missing.
  *
  * @returns An ordered array of a [[CType]] schema.
  */
@@ -164,8 +161,7 @@ export function compressSchema(
  *  Decompresses a schema of a [[CType]] from storage and/or message.
  *
  * @param cTypeSchema A compressed [[CType]] schema array that is reverted back into an object.
- * @throws When either the cTypeSchema is not an Array or it's length is not equal to the defined length of 4.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when either the cTypeSchema is not an Array or it's length is not equal to the defined length of 4.
  *
  * @returns An object that has the same properties as a [[CType]] schema.
  */
@@ -202,8 +198,7 @@ export function compress(cType: ICType): CompressedCType {
  *  Decompresses a [[CType]] from storage and/or message.
  *
  * @param cType A compressed [[CType]] array that is reverted back into an object.
- * @throws When either the cType is not an Array or it's length is not equal to the defined length of 3.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when either the cType is not an Array or it's length is not equal to the defined length of 3.
  *
  * @returns An object that has the same properties as a [[CType]].
  */

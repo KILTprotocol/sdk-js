@@ -1,19 +1,14 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module DIDUtils
  */
 
-import { Option, Tuple } from '@polkadot/types'
-import { Codec } from '@polkadot/types/types'
-import { hexToString, isHex } from '@polkadot/util'
-import Crypto from '../crypto'
-import {
-  ERROR_DID_IDENTIFIER_MISMATCH,
-  ERROR_INVALID_DID_PREFIX,
-} from '../errorhandling/SDKErrors'
+import type { Option, Struct, u8, Vec } from '@polkadot/types'
+import type { IPublicIdentity } from '@kiltprotocol/types'
+import { Crypto, DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
+import type { Hash } from '@polkadot/types/interfaces'
+import { hexToString } from '@polkadot/util'
 import Identity from '../identity/Identity'
-import IPublicIdentity from '../types/PublicIdentity'
-import { assertCodecIsType, hasNonNullByte } from '../util/Decode'
 import {
   CONTEXT,
   IDENTIFIER_PREFIX,
@@ -26,36 +21,39 @@ import {
   SERVICE_KILT_MESSAGING,
 } from './Did'
 
-interface IEncodedDid extends Codec {
-  toJSON: () => [string, string, string | null] | null
+export interface IEncodedDidRecord extends Struct {
+  readonly signKey: Hash
+  readonly boxKey: Hash
+  readonly docRef: Option<Vec<u8>>
 }
 
 export function decodeDid(
   identifier: string,
-  encoded: Option<Tuple>
+  encoded: Option<IEncodedDidRecord>
 ): IDid | null {
-  assertCodecIsType(encoded, [
-    'Option<(PublicSigningKey,PublicBoxKey,Option<Bytes>)>',
-  ])
-  if (encoded instanceof Option || hasNonNullByte(encoded)) {
-    const decoded = (encoded as IEncodedDid).toJSON()
-    if (decoded) {
-      const documentStore = isHex(decoded[2]) ? hexToString(decoded[2]) : null
-      return {
-        identifier,
-        publicSigningKey: decoded[0],
-        publicBoxKey: decoded[1],
-        documentStore,
-      }
+  DecoderUtils.assertCodecIsType(encoded, ['Option<DidRecord>'])
+  if (encoded.isSome) {
+    const did = encoded.unwrap()
+    const documentStore = did.docRef.isSome
+      ? hexToString(did.docRef.unwrap().toHex())
+      : null
+    return {
+      identifier,
+      publicSigningKey: did.signKey.toHex(),
+      publicBoxKey: did.boxKey.toHex(),
+      documentStore,
     }
   }
+
   return null
 }
 
 export function getIdentifierFromAddress(
   address: IPublicIdentity['address']
 ): IDid['identifier'] {
-  return IDENTIFIER_PREFIX + address
+  return address.startsWith(IDENTIFIER_PREFIX)
+    ? address
+    : IDENTIFIER_PREFIX + address
 }
 
 /**
@@ -71,7 +69,7 @@ export function getAddressFromIdentifier(
   identifier: IDid['identifier']
 ): IPublicIdentity['address'] {
   if (!identifier.startsWith(IDENTIFIER_PREFIX)) {
-    throw ERROR_INVALID_DID_PREFIX(identifier)
+    throw SDKErrors.ERROR_INVALID_DID_PREFIX(identifier)
   }
   return identifier.substr(IDENTIFIER_PREFIX.length)
 }
@@ -145,13 +143,12 @@ export function verifyDidDocumentSignature(
   }
   const { id } = didDocument
   if (identifier !== id) {
-    throw ERROR_DID_IDENTIFIER_MISMATCH(identifier, id)
+    throw SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(identifier, id)
   }
-  const unsignedDidDocument = { ...didDocument }
-  delete unsignedDidDocument.signature
+  const { signature, ...unsignedDidDocument } = didDocument
   return Crypto.verify(
     Crypto.hashObjectAsStr(unsignedDidDocument),
-    didDocument.signature,
+    signature,
     getAddressFromIdentifier(identifier)
   )
 }

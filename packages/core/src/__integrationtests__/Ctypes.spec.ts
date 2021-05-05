@@ -1,22 +1,19 @@
 /**
- * @packageDocumentation
  * @group integration/ctype
- * @ignore
  */
 
+import type { ICType } from '@kiltprotocol/types'
+import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import { Identity } from '..'
-import { IBlockchainApi } from '../blockchain/Blockchain'
-import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
-import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
-import { ERROR_CTYPE_ALREADY_EXISTS } from '../errorhandling/ExtrinsicError'
-import ICType from '../types/CType'
-import { wannabeFaucet } from './utils'
+import { config, disconnect } from '../kilt'
+import { wannabeFaucet, WS_ADDRESS } from './utils'
 
-let blockchain: IBlockchainApi | undefined
+import '../../../../testingTools/jestErrorCodeMatcher'
+
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  config({ address: WS_ADDRESS })
 })
 
 describe('When there is an CtypeCreator and a verifier', () => {
@@ -37,18 +34,17 @@ describe('When there is an CtypeCreator and a verifier', () => {
   }
 
   beforeAll(async () => {
-    ctypeCreator = await wannabeFaucet
+    ctypeCreator = wannabeFaucet
   })
 
   it('should not be possible to create a claim type w/o tokens', async () => {
     const ctype = makeCType()
-    const bobbyBroke = await Identity.buildFromMnemonic(
-      Identity.generateMnemonic()
-    )
+    const bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
     await expect(
-      ctype.store(bobbyBroke).then((tx) =>
-        submitTxWithReSign(tx, bobbyBroke, {
-          resolveOn: IS_IN_BLOCK,
+      ctype.store().then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
         })
       )
     ).rejects.toThrowError()
@@ -57,9 +53,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should be possible to create a claim type', async () => {
     const ctype = makeCType()
-    await ctype.store(ctypeCreator).then((tx) =>
-      submitTxWithReSign(tx, ctypeCreator, {
-        resolveOn: IS_IN_BLOCK,
+    await ctype.store().then((tx) =>
+      BlockchainUtils.signAndSubmitTx(tx, ctypeCreator, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     )
     await Promise.all([
@@ -72,18 +69,22 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   it('should not be possible to create a claim type that exists', async () => {
     const ctype = makeCType()
-    await ctype.store(ctypeCreator).then((tx) =>
-      submitTxWithReSign(tx, ctypeCreator, {
-        resolveOn: IS_IN_BLOCK,
+    await ctype.store().then((tx) =>
+      BlockchainUtils.signAndSubmitTx(tx, ctypeCreator, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     )
     await expect(
-      ctype.store(ctypeCreator).then((tx) =>
-        submitTxWithReSign(tx, ctypeCreator, {
-          resolveOn: IS_IN_BLOCK,
+      ctype.store().then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, ctypeCreator, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
         })
       )
-    ).rejects.toThrowError(ERROR_CTYPE_ALREADY_EXISTS)
+    ).rejects.toThrowErrorWithCode(
+      ExtrinsicErrors.CType.ERROR_CTYPE_ALREADY_EXISTS.code
+    )
     // console.log('Triggered error on re-submit')
     await expect(getOwner(ctype.hash)).resolves.toBe(ctypeCreator.address)
   }, 45_000)
@@ -122,5 +123,5 @@ describe('When there is an CtypeCreator and a verifier', () => {
 })
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })

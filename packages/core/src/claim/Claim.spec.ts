@@ -1,18 +1,11 @@
 /**
- * @packageDocumentation
  * @group unit/claim
- * @ignore
  */
 
+import { SDKErrors } from '@kiltprotocol/utils'
+import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
 import CType from '../ctype/CType'
-import {
-  ERROR_ADDRESS_INVALID,
-  ERROR_CTYPE_HASH_NOT_PROVIDED,
-  ERROR_HASH_MALFORMED,
-} from '../errorhandling/SDKErrors'
 import Identity from '../identity/Identity'
-import IClaim, { CompressedClaim } from '../types/Claim'
-import ICType from '../types/CType'
 import Claim from './Claim'
 import ClaimUtils from './Claim.utils'
 
@@ -25,7 +18,7 @@ describe('Claim', () => {
   let compressedClaim: CompressedClaim
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
 
     claimContents = {
       name: 'Bob',
@@ -49,11 +42,11 @@ describe('Claim', () => {
       identityAlice.address
     )
     compressedClaim = [
+      claim.cTypeHash,
+      claim.owner,
       {
         name: 'Bob',
       },
-      claim.cTypeHash,
-      claim.owner,
     ]
   })
 
@@ -129,20 +122,23 @@ describe('Claim', () => {
     const malformedAddress = {
       cTypeHash,
       contents: claimContents,
-      owner: ownerAddress.replace('7', 'D'),
+      owner: ownerAddress.replace('8', 'D'),
     } as IClaim
 
     expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
 
     expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowError(
-      ERROR_CTYPE_HASH_NOT_PROVIDED()
+      SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
     )
 
     expect(() => ClaimUtils.errorCheck(malformedCTypeHash)).toThrowError(
-      ERROR_HASH_MALFORMED(malformedCTypeHash.cTypeHash, 'Claim CType')
+      SDKErrors.ERROR_HASH_MALFORMED(
+        malformedCTypeHash.cTypeHash,
+        'Claim CType'
+      )
     )
     expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowError(
-      ERROR_ADDRESS_INVALID(malformedAddress.owner, 'Claim owner')
+      SDKErrors.ERROR_ADDRESS_INVALID(malformedAddress.owner, 'Claim owner')
     )
   })
 })

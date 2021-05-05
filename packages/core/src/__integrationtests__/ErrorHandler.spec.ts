@@ -1,32 +1,34 @@
 /**
- * @packageDocumentation
  * @group integration/errorhandler
- * @ignore
  */
 
 import BN from 'bn.js'
-import { Attestation, IBlockchainApi } from '..'
+import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
+import { Attestation } from '..'
 import { makeTransfer } from '../balance/Balance.chain'
-import { IS_IN_BLOCK, submitTxWithReSign } from '../blockchain/Blockchain.utils'
-import { DEFAULT_WS_ADDRESS, getCached } from '../blockchainApiConnection'
-import { ERROR_CTYPE_NOT_FOUND, ERROR_UNKNOWN } from '../errorhandling'
 import Identity from '../identity'
+import { config, disconnect } from '../kilt'
+import { wannabeAlice, WS_ADDRESS } from './utils'
 
-let blockchain: IBlockchainApi | undefined
+import '../../../../testingTools/jestErrorCodeMatcher'
+
 let alice: Identity
 
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
-  alice = await Identity.buildFromURI('//Alice')
+  config({ address: WS_ADDRESS })
+  alice = wannabeAlice
 })
 
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
-  const to = await Identity.buildFromMnemonic('')
+  const to = Identity.buildFromMnemonic('')
   await expect(
-    makeTransfer(alice, to.address, new BN(1)).then((tx) =>
-      submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })
+    makeTransfer(to.address, new BN(1)).then((tx) =>
+      BlockchainUtils.signAndSubmitTx(tx, alice, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
     )
-  ).rejects.toThrow(ERROR_UNKNOWN)
+  ).rejects.toThrowErrorWithCode(ExtrinsicErrors.UNKNOWN_ERROR.code)
 }, 30_000)
 
 it('records an extrinsic error when ctype does not exist', async () => {
@@ -39,12 +41,17 @@ it('records an extrinsic error when ctype does not exist', async () => {
     owner: alice.address,
     revoked: false,
   })
-  const tx = await attestation.store(alice)
+  const tx = await attestation.store()
   await expect(
-    submitTxWithReSign(tx, alice, { resolveOn: IS_IN_BLOCK })
-  ).rejects.toThrow(ERROR_CTYPE_NOT_FOUND)
+    BlockchainUtils.signAndSubmitTx(tx, alice, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+  ).rejects.toThrowErrorWithCode(
+    ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code
+  )
 }, 30_000)
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })

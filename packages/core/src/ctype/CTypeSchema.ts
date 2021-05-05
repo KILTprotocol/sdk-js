@@ -1,7 +1,6 @@
 /**
  * @packageDocumentation
  * @module CTypeSchema
- * @preferred
  */
 
 export const CTypeModel = {

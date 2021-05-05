@@ -8,31 +8,24 @@
  *
  * @packageDocumentation
  * @module RequestForAttestation
- * @preferred
  */
-import {
-  AttestationRequest,
-  AttesterPublicKey,
-  ClaimerAttestationSession,
-} from '@kiltprotocol/portablegabi'
-import { validateLegitimations } from '../util/DataUtils'
-import ClaimUtils from '../claim/Claim.utils'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { coToUInt8, hash, u8aConcat, u8aToHex, verify } from '../crypto/Crypto'
-import * as SDKErrors from '../errorhandling/SDKErrors'
-import Identity from '../identity/Identity'
-import { IInitiateAttestation } from '../messaging/Message'
-import IAttestedClaim from '../types/AttestedClaim'
-import IClaim from '../types/Claim'
-import { IDelegationBaseNode } from '../types/Delegation'
-import IRequestForAttestation, {
+
+import type {
+  IRequestForAttestation,
   CompressedRequestForAttestation,
   Hash,
-} from '../types/RequestForAttestation'
+  IDelegationBaseNode,
+  IClaim,
+  IAttestedClaim,
+} from '@kiltprotocol/types'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import ClaimUtils from '../claim/Claim.utils'
+import AttestedClaim from '../attestedclaim/AttestedClaim'
+import Identity from '../identity/Identity'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 
 function verifyClaimerSignature(reqForAtt: IRequestForAttestation): boolean {
-  return verify(
+  return Crypto.verify(
     reqForAtt.rootHash,
     reqForAtt.claimerSignature,
     reqForAtt.claim.owner
@@ -40,15 +33,13 @@ function verifyClaimerSignature(reqForAtt: IRequestForAttestation): boolean {
 }
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
-  const result = u8aConcat(...leaves)
-  return hash(result)
+  const result = Crypto.u8aConcat(...leaves)
+  return Crypto.hash(result)
 }
 
 export type Options = {
   legitimations?: AttestedClaim[]
   delegationId?: IDelegationBaseNode['id']
-  initiateAttestationMsg?: IInitiateAttestation
-  attesterPubKey?: AttesterPublicKey
 }
 
 export default class RequestForAttestation implements IRequestForAttestation {
@@ -72,64 +63,26 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * [STATIC] [ASYNC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
+   * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
    *
    * @param claim An `IClaim` object the request for attestation is built for.
    * @param identity The Claimer's [[Identity]].
    * @param option Container for different options that can be passed to this method.
    * @param option.legitimations Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
-   * @param option.initiateAttestationMsg The message object which was created during the initiation of the attestation in [[initiateAttestation]].
-   * @param option.attesterPubKey The privacy enhanced public key of the Attester.
-   * @throws When claimInput's owner address does not match the supplied identity's address.
-   * @throws [[ERROR_IDENTITY_MISMATCH]].
+   * @throws [[ERROR_IDENTITY_MISMATCH]] when claimInput's owner address does not match the supplied identity's address.
    * @returns A new [[RequestForAttestation]] object.
    * @example ```javascript
    * const input = RequestForAttestation.fromClaimAndIdentity(claim, alice);
    * ```
    */
-  public static async fromClaimAndIdentity(
+  public static fromClaimAndIdentity(
     claim: IClaim,
     identity: Identity,
-    {
-      legitimations,
-      delegationId,
-      initiateAttestationMsg,
-      attesterPubKey,
-    }: Options = {}
-  ): Promise<{
-    message: RequestForAttestation
-    session: ClaimerAttestationSession | null
-  }> {
+    { legitimations, delegationId }: Options = {}
+  ): RequestForAttestation {
     if (claim.owner !== identity.address) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH()
-    }
-
-    let peRequest: AttestationRequest | null = null
-    let session: ClaimerAttestationSession | null = null
-    if (
-      typeof initiateAttestationMsg !== 'undefined' &&
-      typeof attesterPubKey !== 'undefined'
-    ) {
-      const rawClaim: { [id: string]: any } = {
-        claim,
-      }
-      if (typeof legitimations !== 'undefined') {
-        rawClaim.legitimations = legitimations
-      }
-      if (typeof delegationId !== 'undefined') {
-        rawClaim.delegationId = delegationId
-      }
-      if (!identity.claimer) {
-        throw SDKErrors.ERROR_IDENTITY_NOT_PE_ENABLED()
-      }
-      const peSessionMessage = await identity.claimer.requestAttestation({
-        claim: rawClaim,
-        startAttestationMsg: initiateAttestationMsg.content,
-        attesterPubKey,
-      })
-      peRequest = peSessionMessage.message
-      session = peSessionMessage.session
     }
 
     const {
@@ -143,19 +96,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
       delegationId,
     })
 
-    return {
-      message: new RequestForAttestation({
-        claim,
-        legitimations: legitimations || [],
-        claimHashes,
-        claimNonceMap,
-        rootHash,
-        claimerSignature: RequestForAttestation.sign(identity, rootHash),
-        delegationId: delegationId || null,
-        privacyEnhancement: peRequest,
-      }),
-      session,
-    }
+    return new RequestForAttestation({
+      claim,
+      legitimations: legitimations || [],
+      claimHashes,
+      claimNonceMap,
+      rootHash,
+      claimerSignature: RequestForAttestation.sign(identity, rootHash),
+      delegationId: delegationId || null,
+    })
   }
 
   /**
@@ -182,7 +131,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public claimHashes: string[]
   public claimNonceMap: Record<string, string>
   public rootHash: Hash
-  public privacyEnhancement: AttestationRequest | null
   public delegationId: IDelegationBaseNode['id'] | null
 
   /**
@@ -215,15 +163,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.claimerSignature = requestForAttestationInput.claimerSignature
     this.verifySignature()
     this.verifyData()
-    this.privacyEnhancement = requestForAttestationInput.privacyEnhancement
   }
 
   /**
    * Removes [[Claim]] properties from the [[RequestForAttestation]] object, provides anonymity and security when building the [[createPresentation]] method.
    *
    * @param properties - Properties to remove from the [[Claim]] object.
-   * @throws An error when a property which should be deleted wasn't found.
-   * @throws [[ERROR_CLAIM_HASHTREE_MISMATCH]].
+   * @throws [[ERROR_CLAIM_HASHTREE_MISMATCH]] when a property which should be deleted wasn't found.
    * @example ```javascript
    * const rawClaim = {
    *   name: 'Alice',
@@ -271,12 +217,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @param input - The [[RequestForAttestation]] for which to verify data.
    * @returns Whether the data is valid.
-   * @throws When any key of the claim contents could not be found in the claimHashTree.
-   * @throws When either the rootHash or the signature are not verifiable.
-   * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]], [[ERROR_ROOT_HASH_UNVERIFIABLE]], [[ERROR_SIGNATURE_UNVERIFIABLE]].
+   * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any key of the claim contents could not be found in the claimHashTree.
+   * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] or [[ERROR_SIGNATURE_UNVERIFIABLE]] when either the rootHash or the signature are not verifiable respectively.
    * @example ```javascript
    * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(claim, alice);
-   * reqForAtt.verifyData(); // returns true if the data is correct
+   * RequestForAttestation.verifyData(reqForAtt); // returns true if the data is correct
    * ```
    */
   public static verifyData(input: IRequestForAttestation): boolean {
@@ -302,7 +247,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       throw verificationResult.errors[0] || SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
 
     // check legitimations
-    validateLegitimations(input.legitimations)
+    AttestedClaim.validateLegitimations(input.legitimations)
 
     return true
   }
@@ -321,7 +266,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *   claim,
    *   identity: alice,
    * });
-   * reqForAtt.verifySignature(); // returns `true` if the signature is correct
+   * RequestForAttestation.verifySignature(reqForAtt); // returns `true` if the signature is correct
    * ```
    */
   public static verifySignature(input: IRequestForAttestation): boolean {
@@ -351,15 +296,15 @@ export default class RequestForAttestation implements IRequestForAttestation {
   ): Uint8Array[] {
     const result: Uint8Array[] = []
     claimHashes.forEach((item) => {
-      result.push(coToUInt8(item))
+      result.push(Crypto.coToUInt8(item))
     })
     if (legitimations) {
       legitimations.forEach((legitimation) => {
-        result.push(coToUInt8(legitimation.attestation.claimHash))
+        result.push(Crypto.coToUInt8(legitimation.attestation.claimHash))
       })
     }
     if (delegationId) {
-      result.push(coToUInt8(delegationId))
+      result.push(Crypto.coToUInt8(delegationId))
     }
 
     return result
@@ -398,6 +343,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
       request.delegationId || null
     )
     const root: Uint8Array = getHashRoot(hashes)
-    return u8aToHex(root)
+    return Crypto.u8aToHex(root)
   }
 }

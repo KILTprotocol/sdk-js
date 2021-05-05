@@ -4,6 +4,7 @@ module.exports = {
   clearMocks: true,
   runner: 'groups',
   testTimeout: 10000,
+  setupFilesAfterEnv: ['../testingTools/setup.ts'],
   coverageThreshold: {
     global: {
       branches: 70,
@@ -19,6 +20,11 @@ module.exports = {
     '!**/__mocks__/**',
     '!**/__tests__/**',
     '!**/lib/**',
+    '!**/test/**',
+    '!**/kilt/*',
+    '!**/blockchainApiConnection/*',
+    '!**/types/**/*',
+    '!**/SDKErrors.ts'
   ],
   rootDir: 'packages',
   coverageDirectory: 'coverage',

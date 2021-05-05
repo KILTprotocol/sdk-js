@@ -6,23 +6,42 @@
  *
  * @packageDocumentation
  * @module Kilt
- * @preferred
  */
 
-import Blockchain from '../blockchain/Blockchain'
-import { clearCache, getCached } from '../blockchainApiConnection'
+import { ConfigService } from '@kiltprotocol/config'
+import {
+  BlockchainApiConnection,
+  Blockchain,
+} from '@kiltprotocol/chain-helpers'
+import { Identity } from '../identity'
 
-export function connect(host: string): Promise<Blockchain> {
-  return getCached(host)
+export function connect(): Promise<Blockchain> {
+  return BlockchainApiConnection.getConnectionOrConnect()
 }
 
-export async function disconnect(host: string): Promise<void> {
-  const cached = await getCached(host)
-  cached.api.disconnect()
-  clearCache()
+export function config<K extends Partial<ConfigService.configOpts>>(
+  configs: K
+): void {
+  ConfigService.set(configs)
 }
+
+/**
+ * Prepares crypto modules (required e.g. For identity creation) and calls Kilt.config().
+ *
+ * @param configs Arguments to pass on to Kilt.config().
+ * @returns Promise that must be awaited to assure crypto is ready.
+ */
+export async function init<K extends Partial<ConfigService.configOpts>>(
+  configs?: K
+): Promise<void> {
+  config(configs || {})
+  await Identity.cryptoWaitReady()
+}
+export const { disconnect } = BlockchainApiConnection
 
 export default {
   connect,
   disconnect,
+  config,
+  init,
 }

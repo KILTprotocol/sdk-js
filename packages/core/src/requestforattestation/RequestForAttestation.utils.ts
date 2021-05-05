@@ -1,17 +1,17 @@
 /**
  * @packageDocumentation
  * @module RequestForAttestationUtils
- * @preferred
  */
 
-import { validateHash } from '../util/DataUtils'
+import type {
+  IAttestedClaim,
+  CompressedAttestedClaim,
+  CompressedRequestForAttestation,
+  IRequestForAttestation,
+} from '@kiltprotocol/types'
+import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
 import ClaimUtils from '../claim/Claim.utils'
-import * as SDKErrors from '../errorhandling/SDKErrors'
-import IAttestedClaim, { CompressedAttestedClaim } from '../types/AttestedClaim'
-import IRequestForAttestation, {
-  CompressedRequestForAttestation,
-} from '../types/RequestForAttestation'
 import RequestForAttestation from './RequestForAttestation'
 
 /**
@@ -19,9 +19,8 @@ import RequestForAttestation from './RequestForAttestation'
  *  Throws on invalid input.
  *
  * @param input - A potentially only partial [[IRequestForAttestation]].
- * @throws When either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type.
- * @throws When any of the input's claimHashTree's keys missing their hash.
- * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_MALFORMED]], [[ERROR_DELEGATION_ID_TYPE]].
+ * @throws [[ERROR_CLAIM_NOT_PROVIDED]], [[ERROR_LEGITIMATIONS_NOT_PROVIDED]], [[ERROR_CLAIM_NONCE_MAP_NOT_PROVIDED]] or [[ERROR_DELEGATION_ID_TYPE]] when either the input's claim, legitimations, claimHashTree or DelegationId are not provided or of the wrong type, respectively.
+ * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any of the input's claimHashTree's keys missing their hash.
  *
  */
 export function errorCheck(input: IRequestForAttestation): void {
@@ -42,7 +41,7 @@ export function errorCheck(input: IRequestForAttestation): void {
     Object.entries(input.claimNonceMap).some(
       ([digest, nonce]) =>
         !digest ||
-        !validateHash(digest, 'statement digest') ||
+        !DataUtils.validateHash(digest, 'statement digest') ||
         typeof nonce !== 'string' ||
         !nonce
     )
@@ -103,7 +102,6 @@ export function compress(
     reqForAtt.rootHash,
     compressLegitimation(reqForAtt.legitimations),
     reqForAtt.delegationId,
-    reqForAtt.privacyEnhancement,
   ]
 }
 
@@ -111,8 +109,7 @@ export function compress(
  *  Decompresses a [[RequestForAttestation]] from storage and/or message.
  *
  * @param reqForAtt A compressed [[RequestForAttestation]] array that is reverted back into an object.
- * @throws When reqForAtt is not an Array and it's length is not equal to the defined length of 8.
- * @throws [[ERROR_DECOMPRESSION_ARRAY]].
+ * @throws [[ERROR_DECOMPRESSION_ARRAY]] when reqForAtt is not an Array and it's length is not equal to the defined length of 8.
  *
  * @returns An object that has the same properties as a [[RequestForAttestation]].
  */
@@ -120,7 +117,7 @@ export function compress(
 export function decompress(
   reqForAtt: CompressedRequestForAttestation
 ): IRequestForAttestation {
-  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 8) {
+  if (!Array.isArray(reqForAtt) || reqForAtt.length !== 7) {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Request for Attestation')
   }
   return {
@@ -131,7 +128,6 @@ export function decompress(
     rootHash: reqForAtt[4],
     legitimations: decompressLegitimation(reqForAtt[5]),
     delegationId: reqForAtt[6],
-    privacyEnhancement: reqForAtt[7],
   }
 }
 

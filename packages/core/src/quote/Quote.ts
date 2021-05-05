@@ -7,15 +7,16 @@
  *
  * @packageDocumentation
  * @module Quote
- * @preferred
  */
 
 import Ajv from 'ajv'
-import { hashObjectAsStr } from '../crypto/Crypto'
-import { ERROR_QUOTE_MALFORMED } from '../errorhandling/SDKErrors'
+import type {
+  IQuote,
+  IQuoteAgreement,
+  IQuoteAttesterSigned,
+} from '@kiltprotocol/types'
+import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import Identity from '../identity/Identity'
-import { IQuote, IQuoteAgreement, IQuoteAttesterSigned } from '../types/Quote'
-import { validateSignature } from '../util/DataUtils'
 import QuoteSchema from './QuoteSchema'
 
 /**
@@ -55,8 +56,7 @@ export function validateQuoteSchema(
  * Builds a [[Quote]] object, from a simple object with the same properties.
  *
  * @param deserializedQuote The object which is used to create the attester signed [[Quote]] object.
- * @throws When the derived basicQuote can not be validated with the QuoteSchema.
- * @throws [[ERROR_QUOTE_MALFORMED]].
+ * @throws [[ERROR_QUOTE_MALFORMED]] when the derived basicQuote can not be validated with the QuoteSchema.
  *
  * @returns A [[Quote]] object signed by an Attester.
  */
@@ -65,13 +65,13 @@ export function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned
 ): IQuoteAttesterSigned {
   const { attesterSignature, ...basicQuote } = deserializedQuote
-  validateSignature(
-    hashObjectAsStr(basicQuote),
+  DataUtils.validateSignature(
+    Crypto.hashObjectAsStr(basicQuote),
     attesterSignature,
     deserializedQuote.attesterAddress
   )
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
-    throw ERROR_QUOTE_MALFORMED()
+    throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
 
   return {
@@ -93,7 +93,7 @@ export function createAttesterSignature(
   quoteInput: IQuote,
   attesterIdentity: Identity
 ): IQuoteAttesterSigned {
-  const signature = attesterIdentity.signStr(hashObjectAsStr(quoteInput))
+  const signature = attesterIdentity.signStr(Crypto.hashObjectAsStr(quoteInput))
   return {
     ...quoteInput,
     attesterSignature: signature,
@@ -105,8 +105,7 @@ export function createAttesterSignature(
  *
  * @param quoteInput A [[Quote]] object.
  * @param identity [[Identity]] used to sign the object.
- * @throws When the derived quoteInput can not be validated with the QuoteSchema.
- * @throws [[ERROR_QUOTE_MALFORMED]].
+ * @throws [[ERROR_QUOTE_MALFORMED]] when the derived quoteInput can not be validated with the QuoteSchema.
  *
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
  */
@@ -116,7 +115,7 @@ export function fromQuoteDataAndIdentity(
   identity: Identity
 ): IQuoteAttesterSigned {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
-    throw ERROR_QUOTE_MALFORMED()
+    throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
   return createAttesterSignature(quoteInput, identity)
 }
@@ -137,13 +136,13 @@ export function createQuoteAgreement(
   requestRootHash: string
 ): IQuoteAgreement {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
-  validateSignature(
-    hashObjectAsStr(basicQuote),
+  DataUtils.validateSignature(
+    Crypto.hashObjectAsStr(basicQuote),
     attesterSignature,
     attesterSignedQuote.attesterAddress
   )
   const signature = claimerIdentity.signStr(
-    hashObjectAsStr(attesterSignedQuote)
+    Crypto.hashObjectAsStr(attesterSignedQuote)
   )
   return {
     ...attesterSignedQuote,

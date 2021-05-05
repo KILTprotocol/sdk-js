@@ -1,33 +1,39 @@
 /**
- * @packageDocumentation
  * @group unit/delegation
- * @ignore
  */
 
-import { Crypto, Identity } from '..'
-import { BlockchainUtils } from '../blockchain'
-import getCached from '../blockchainApiConnection'
-import { mockChainQueryReturn } from '../blockchainApiConnection/__mocks__/BlockchainQuery'
-import DelegationRootNode from './DelegationRootNode'
+import { Crypto } from '@kiltprotocol/utils'
+import {
+  BlockchainUtils,
+  BlockchainApiConnection,
+} from '@kiltprotocol/chain-helpers'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { Identity } from '..'
 
-jest.mock('../blockchainApiConnection/BlockchainApiConnection')
+import DelegationRootNode from './DelegationRootNode'
+import Kilt from '../kilt/Kilt'
+
+jest.mock(
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
+)
 
 describe('Delegation', () => {
   let identityAlice: Identity
   let ctypeHash: string
   let ROOT_IDENTIFIER: string
+  Kilt.config({ address: 'ws://testString' })
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
     ctypeHash = Crypto.hashStr('testCtype')
-    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
+    require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
       mockChainQueryReturn('delegation', 'root', [
         ctypeHash,
         identityAlice.address,
         false,
       ])
     )
-    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations.mockReturnValue(
+    require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations.mockReturnValue(
       mockChainQueryReturn('delegation', 'delegations', [
         ctypeHash,
         null,
@@ -47,8 +53,10 @@ describe('Delegation', () => {
       identityAlice.address
     )
     await rootDelegation
-      .store(identityAlice)
-      .then((tx) => BlockchainUtils.submitTxWithReSign(tx, identityAlice))
+      .store()
+      .then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, identityAlice, { reSign: true })
+      )
 
     const rootNode = await DelegationRootNode.query(ROOT_IDENTIFIER)
     if (rootNode) {
@@ -67,7 +75,7 @@ describe('Delegation', () => {
   })
 
   it('root delegation verify', async () => {
-    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root = jest.fn(
+    require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root = jest.fn(
       async (rootId) => {
         if (rootId === 'success') {
           const tuple = mockChainQueryReturn('delegation', 'root', [
@@ -102,7 +110,7 @@ describe('Delegation', () => {
   })
 
   it('root delegation verify', async () => {
-    const blockchain = await getCached()
+    const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
     const aDelegationRootNode = new DelegationRootNode(
       'myRootId',
@@ -110,9 +118,14 @@ describe('Delegation', () => {
       'myAccount'
     )
     const revokeStatus = await aDelegationRootNode
-      .revoke(identityAlice)
-      .then((tx) => BlockchainUtils.submitTxWithReSign(tx, identityAlice))
-    expect(blockchain.api.tx.delegation.revokeRoot).toBeCalledWith('myRootId')
+      .revoke()
+      .then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, identityAlice, { reSign: true })
+      )
+    expect(blockchain.api.tx.delegation.revokeRoot).toBeCalledWith(
+      'myRootId',
+      1
+    )
     expect(revokeStatus).toBeDefined()
   })
 })

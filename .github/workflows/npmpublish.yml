@@ -8,23 +8,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
         with:
           node-version: 10
       - run: yarn install --immutable
+      - run: yarn build
       - run: yarn test:ci
 
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
         with:
           node-version: 10
-          registry-url: https://registry.npmjs.org/
-      - run: yarn install --immutable
-      - run: npm publish --access public
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Build packages
+        run: yarn run build
+      - name: Publish to NPM
+        run: yarn run publish --tag latest
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          YARN_NPM_AUTH_TOKEN: ${{secrets.npm_token}}

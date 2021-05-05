@@ -1,24 +1,21 @@
 /**
- * @packageDocumentation
  * @group integration/did
- * @ignore
  */
 
 import { Did, Identity } from '..'
-import { IBlockchainApi } from '../blockchain/Blockchain'
-import getCached, { DEFAULT_WS_ADDRESS } from '../blockchainApiConnection'
 import { queryByAddress, queryByIdentifier } from '../did/Did.chain'
+import { WS_ADDRESS } from './utils'
+import { config, disconnect } from '../kilt'
 
-let blockchain: IBlockchainApi | undefined
 beforeAll(async () => {
-  blockchain = await getCached(DEFAULT_WS_ADDRESS)
+  config({ address: WS_ADDRESS })
 })
 
 describe('querying DIDs that do not exist', () => {
   let ident: Identity
 
   beforeAll(async () => {
-    ident = await Identity.buildFromMnemonic(Identity.generateMnemonic())
+    ident = Identity.buildFromMnemonic(Identity.generateMnemonic())
   })
 
   it('queryByAddress', async () => {
@@ -33,5 +30,5 @@ describe('querying DIDs that do not exist', () => {
 })
 
 afterAll(() => {
-  if (typeof blockchain !== 'undefined') blockchain.api.disconnect()
+  disconnect()
 })

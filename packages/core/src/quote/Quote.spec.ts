@@ -1,16 +1,10 @@
 /**
- * @packageDocumentation
  * @group unit/quote
- * @ignore
  */
 
-import { hashObjectAsStr, verify } from '../crypto/Crypto'
-import CType from '../ctype/CType'
-import Identity from '../identity/Identity'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import IClaim from '../types/Claim'
-import ICType from '../types/CType'
-import {
+import type {
+  IClaim,
+  ICType,
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
@@ -18,7 +12,11 @@ import {
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
-} from '../types/Quote'
+} from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
+import CType from '../ctype/CType'
+import Identity from '../identity/Identity'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import * as Quote from './Quote'
 import QuoteUtils from './Quote.utils'
 import QuoteSchema from './QuoteSchema'
@@ -44,8 +42,12 @@ describe('Claim', () => {
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
   beforeAll(async () => {
-    claimerIdentity = await Identity.buildFromURI('//Alice')
-    attesterIdentity = await Identity.buildFromURI('//Bob')
+    claimerIdentity = Identity.buildFromURI('//Alice', {
+      signingKeyPairType: 'ed25519',
+    })
+    attesterIdentity = Identity.buildFromURI('//Bob', {
+      signingKeyPairType: 'ed25519',
+    })
     invalidCost = ({
       gross: 233,
       tax: { vat: 3.3 },
@@ -71,10 +73,7 @@ describe('Claim', () => {
     }
 
     // build request for attestation with legitimations
-    ;({ message: request } = await RequestForAttestation.fromClaimAndIdentity(
-      claim,
-      claimerIdentity
-    ))
+    request = RequestForAttestation.fromClaimAndIdentity(claim, claimerIdentity)
 
     invalidCostQuoteData = {
       cTypeHash: '0x12345678',
@@ -167,11 +166,11 @@ describe('Claim', () => {
   it('tests created quote data against given data', () => {
     expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
     expect(quoteBothAgreed.claimerSignature).toEqual(
-      claimerIdentity.signStr(hashObjectAsStr(validAttesterSignedQuote))
+      claimerIdentity.signStr(Crypto.hashObjectAsStr(validAttesterSignedQuote))
     )
     expect(
-      verify(
-        hashObjectAsStr({
+      Crypto.verify(
+        Crypto.hashObjectAsStr({
           attesterAddress: validQuoteData.attesterAddress,
           cTypeHash: validQuoteData.cTypeHash,
           cost: validQuoteData.cost,

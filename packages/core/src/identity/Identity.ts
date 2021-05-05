@@ -10,64 +10,56 @@
  *
  * @packageDocumentation
  * @module Identity
- * @preferred
  */
 
-import { Claimer } from '@kiltprotocol/portablegabi'
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { Keyring } from '@polkadot/keyring'
-import { KeyringPair } from '@polkadot/keyring/types'
-import { Index } from '@polkadot/types/interfaces'
-import { mnemonicToMiniSecret } from '@polkadot/util-crypto'
-import generate from '@polkadot/util-crypto/mnemonic/generate'
-import validate from '@polkadot/util-crypto/mnemonic/validate'
+import type { KeyringPair } from '@polkadot/keyring/types'
+import type { Index } from '@polkadot/types/interfaces'
+import type { KeypairType } from '@polkadot/util-crypto/types'
+import {
+  cryptoIsReady,
+  cryptoWaitReady,
+  mnemonicToMiniSecret,
+} from '@polkadot/util-crypto'
+import {
+  mnemonicGenerate as generate,
+  mnemonicValidate as validate,
+} from '@polkadot/util-crypto/mnemonic'
 import { hexToU8a } from '@polkadot/util/hex'
 import * as u8aUtil from '@polkadot/util/u8a'
-import BN from 'bn.js'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
-import nacl, { BoxKeyPair } from 'tweetnacl'
-import Crypto from '../crypto'
-import {
-  CryptoInput,
-  EncryptedAsymmetric,
-  EncryptedAsymmetricString,
-} from '../crypto/Crypto'
-import * as SDKErrors from '../errorhandling/SDKErrors'
+import nacl from 'tweetnacl'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
+import { AnyNumber } from '@polkadot/types/types'
 import PublicIdentity from './PublicIdentity'
 
 type BoxPublicKey =
   | PublicIdentity['boxPublicKeyAsHex']
   | Identity['boxKeyPair']['publicKey']
 
-/**
- * The minimal required length of the seed.
- */
-const MIN_SEED_LENGTH = 32
-
-function fillRight(
-  data: Uint8Array,
-  value: number,
-  length: number
-): Uint8Array {
-  // pad seed if needed for claimer
-  let paddedSeed = u8aUtil.u8aToU8a([...data])
-  if (paddedSeed.length < length) {
-    paddedSeed = u8aUtil.u8aToU8a([
-      ...paddedSeed,
-      ...new Array<number>(length - paddedSeed.length).fill(value),
-    ])
-  }
-  return paddedSeed
-}
-
-export type IdentityBuildOptions = {
-  peEnabled?: boolean
-}
-
-export default class Identity {
+export default class Identity implements IIdentity {
   private static ADDITIONAL_ENTROPY_FOR_HASHING = new Uint8Array([1, 2, 3])
+
+  /**
+   * [STATIC][ASYNC] Wait for intialization of cryptography modules. Identity creation will error for some key types if this is not called at least once beforehand.
+   *
+   * @returns A promise which resolves once crypto modules are initialized.
+   */
+  public static cryptoWaitReady(): Promise<boolean> {
+    return cryptoWaitReady()
+  }
+
+  /**
+   * [STATIC] Indicates (synchronously) whether crypto modules have been initialized. This will rarely be needed; prefer awaiting the resolution of cryptoWaitReady() instead.
+   *
+   * @returns A boolean indicating whether crypto modules have been initialized.
+   */
+  public static get cryptoIsReady(): boolean {
+    return cryptoIsReady()
+  }
 
   /**
    * [STATIC] Generates Mnemonic phrase used to create identities from phrase seed.
@@ -86,24 +78,22 @@ export default class Identity {
    * [STATIC] Builds an identity object from a mnemonic string.
    *
    * @param phraseArg - [BIP39](https://www.npmjs.com/package/bip39) Mnemonic word phrase (Secret phrase).
-   * @param options The option object.
-   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: false).
-   * @throws When phraseArg contains fewer than 12 correctly separated mnemonic words.
-   * @throws When the phraseArg could not be validated.
-   * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]], [[ERROR_MNEMONIC_PHRASE_INVALID]].
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
+   * @throws [[ERROR_MNEMONIC_PHRASE_MALFORMED]] when phraseArg contains fewer than 12 correctly separated mnemonic words.
+   * @throws [[ERROR_MNEMONIC_PHRASE_INVALID]] when phraseArg could not be validated.
    * @returns An [[Identity]].
-   *
    * @example ```javascript
    * const mnemonic = Identity.generateMnemonic();
    * // mnemonic: "coast ugly state lunch repeat step armed goose together pottery bind mention"
    *
-   * await Identity.buildFromMnemonic(mnemonic);
+   * Identity.buildFromMnemonic(mnemonic);
    * ```
    */
-  public static async buildFromMnemonic(
+  public static buildFromMnemonic(
     phraseArg: string,
-    { peEnabled = false }: IdentityBuildOptions = {}
-  ): Promise<Identity> {
+    options: { signingKeyPairType?: KeypairType } = {}
+  ): Identity {
     let phrase = phraseArg
     if (phrase) {
       if (phrase.trim().split(/\s+/g).length < 12) {
@@ -119,105 +109,93 @@ export default class Identity {
     }
 
     const seed = mnemonicToMiniSecret(phrase)
-    return Identity.buildFromSeed(seed, { peEnabled })
+    return Identity.buildFromSeed(seed, options)
   }
 
   /**
    * [STATIC] Builds an [[Identity]], generated from a seed hex string.
    *
    * @param seedArg - Seed as hex string (Starting with 0x).
-   * @param options The option object.
-   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: false).
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns  An [[Identity]].
    * @example ```javascript
    * const seed =
    *   '0x6ce9fd060c70165c0fc8da25810d249106d5df100aa980e0d9a11409d6b35261';
-   * await Identity.buildFromSeedString(seed);
+   * Identity.buildFromSeedString(seed);
    * ```
    */
-  public static async buildFromSeedString(
+  public static buildFromSeedString(
     seedArg: string,
-    { peEnabled = false }: IdentityBuildOptions = {}
-  ): Promise<Identity> {
+    options: { signingKeyPairType?: KeypairType } = {}
+  ): Identity {
     const asU8a = hexToU8a(seedArg)
-    return Identity.buildFromSeed(asU8a, { peEnabled })
+    return Identity.buildFromSeed(asU8a, options)
+  }
+
+  private static createKeyring(type: KeypairType = 'sr25519'): Keyring {
+    return new Keyring({
+      type,
+      // KILT has registered the ss58 prefix 38
+      ss58Format: 38,
+    })
   }
 
   /**
    * [STATIC] Builds a new [[Identity]], generated from a seed (Secret Seed).
    *
    * @param seed - A seed as an Uint8Array with 24 arbitrary numbers.
-   * @param options The option object.
-   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: false).
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns An [[Identity]].
    * @example ```javascript
    * // prettier-ignore
    * const seed = new Uint8Array([108, 233, 253,  6,  12, 112,  22,  92,
-   *                               15, 200, 218, 37, 129,  13,  36, 145,
-   *                                6, 213, 223, 16,  10, 169, 128, 224,
-   *                              217, 161,  20,  9, 214, 179,  82,  97
-   *                            ]);
-   * await Identity.buildFromSeed(seed);
+   * 15, 200, 218, 37, 129,  13,  36, 145,
+   * 6, 213, 223, 16,  10, 169, 128, 224,
+   * 217, 161,  20,  9, 214, 179,  82,  97
+   * ]);
+   * Identity.buildFromSeed(seed);
    * ```
    */
-  public static async buildFromSeed(
+  public static buildFromSeed(
     seed: Uint8Array,
-    { peEnabled = false }: IdentityBuildOptions = {}
-  ): Promise<Identity> {
-    const keyring = new Keyring({ type: 'ed25519' })
+    options: { signingKeyPairType?: KeypairType } = {}
+  ): Identity {
+    const keyring = Identity.createKeyring(options.signingKeyPairType)
     const keyringPair = keyring.addFromSeed(seed)
-
-    // pad seed if needed for claimer
-    const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
-    let claimer = null
-    if (peEnabled) {
-      claimer = await Claimer.buildFromSeed(paddedSeed)
-    }
-
-    return new Identity(seed, keyringPair, claimer)
+    return new Identity(seed, keyringPair)
   }
 
   /**
    * [STATIC] Builds a new [[Identity]], generated from a uniform resource identifier (URIs).
    *
    * @param uri - Standard identifiers.
-   * @param options The option object.
-   * @param options.peEnabled - If the identity should be privacy enhanced, or not (default: false).
+   * @param options Optional parameters.
+   * @param options.signingKeyPairType The signature key type to be used for this identity. Default is `sr25519`.
    * @returns  An [[Identity]].
    * @example ```javascript
    * Identity.buildFromURI('//Bob');
    * ```
    */
-  public static async buildFromURI(
+  public static buildFromURI(
     uri: string,
-    { peEnabled = false }: IdentityBuildOptions = {}
-  ): Promise<Identity> {
-    const keyring = new Keyring({ type: 'ed25519' })
+    options: { signingKeyPairType?: KeypairType } = {}
+  ): Identity {
+    const keyring = Identity.createKeyring(options.signingKeyPairType)
     const derived = keyring.createFromUri(uri)
     const seed = u8aUtil.u8aToU8a(uri)
-
-    let claimer = null
-    if (peEnabled) {
-      const paddedSeed = fillRight(seed, 0, MIN_SEED_LENGTH)
-      claimer = await Claimer.buildFromSeed(paddedSeed)
-    }
-
-    return new Identity(seed, derived, claimer)
+    return new Identity(seed, derived)
   }
 
   public readonly seed: Uint8Array
   public readonly seedAsHex: string
   public readonly signPublicKeyAsHex: string
-  public readonly claimer: Claimer | null
   public readonly signKeyringPair: KeyringPair
-  public readonly boxKeyPair: BoxKeyPair
+  public readonly boxKeyPair: nacl.BoxKeyPair
   public serviceAddress?: string
 
-  protected constructor(
-    seed: Uint8Array,
-    signKeyringPair: KeyringPair,
-    claimer: Claimer | null
-  ) {
+  protected constructor(seed: Uint8Array, signKeyringPair: KeyringPair) {
     // NB: use different secret keys for each key pair in order to avoid
     // compromising both key pairs at the same time if one key becomes public
     // Maybe use BIP32 and BIP44
@@ -232,7 +210,10 @@ export default class Identity {
     this.signPublicKeyAsHex = u8aUtil.u8aToHex(signKeyringPair.publicKey)
 
     this.boxKeyPair = boxKeyPair
-    this.claimer = claimer
+  }
+
+  public get signingKeyType(): KeypairType {
+    return this.signKeyringPair.type
   }
 
   /**
@@ -242,7 +223,7 @@ export default class Identity {
    * @returns The [[PublicIdentity]], corresponding to the [[Identity]].
    * @example ```javascript
    * const mnemonic = Identity.generateMnemonic();
-   * const alice = await Kilt.Identity.buildFromMnemonic(mnemonic);
+   * const alice = Kilt.Identity.buildFromMnemonic(mnemonic);
    * alice.getPublicIdentity();
    * ```
    */
@@ -279,7 +260,7 @@ export default class Identity {
    * @returns The signed data.
    * @example  ```javascript
    * const mnemonic = Identity.generateMnemonic();
-   * const alice = await Identity.buildFromMnemonic(mnemonic);
+   * const alice = Identity.buildFromMnemonic(mnemonic);
    * const data = 'This is a test';
    * alice.sign(data);
    * // (output) Uint8Array [
@@ -287,7 +268,7 @@ export default class Identity {
    * //          ]
    * ```
    */
-  public sign(cryptoInput: CryptoInput): Uint8Array {
+  public sign(cryptoInput: Crypto.CryptoInput): Uint8Array {
     return Crypto.sign(cryptoInput, this.signKeyringPair)
   }
 
@@ -300,7 +281,7 @@ export default class Identity {
    * identity.signStr(data);
    * ```
    */
-  public signStr(cryptoInput: CryptoInput): string {
+  public signStr(cryptoInput: Crypto.CryptoInput): string {
     return Crypto.signStr(cryptoInput, this.signKeyringPair)
   }
 
@@ -323,7 +304,7 @@ export default class Identity {
    * ```
    */
   public encryptAsymmetricAsStr(
-    cryptoInput: CryptoInput,
+    cryptoInput: Crypto.CryptoInput,
     boxPublicKey: BoxPublicKey
   ): Crypto.EncryptedAsymmetricString {
     return Crypto.encryptAsymmetricAsStr(
@@ -353,7 +334,7 @@ export default class Identity {
    * ```
    */
   public decryptAsymmetricAsStr(
-    encrypted: EncryptedAsymmetric | EncryptedAsymmetricString,
+    encrypted: Crypto.EncryptedAsymmetric | Crypto.EncryptedAsymmetricString,
     boxPublicKey: BoxPublicKey
   ): string | false {
     return Crypto.decryptAsymmetricAsStr(
@@ -383,7 +364,7 @@ export default class Identity {
    * ```
    */
   public encryptAsymmetric(
-    input: CryptoInput,
+    input: Crypto.CryptoInput,
     boxPublicKey: BoxPublicKey
   ): Crypto.EncryptedAsymmetric {
     return Crypto.encryptAsymmetric(
@@ -413,7 +394,7 @@ export default class Identity {
    * ```
    */
   public decryptAsymmetric(
-    encrypted: EncryptedAsymmetric | EncryptedAsymmetricString,
+    encrypted: Crypto.EncryptedAsymmetric | Crypto.EncryptedAsymmetricString,
     boxPublicKey: BoxPublicKey
   ): false | Uint8Array {
     return Crypto.decryptAsymmetric(
@@ -428,20 +409,22 @@ export default class Identity {
    *
    * @param submittableExtrinsic - A chain transaction.
    * @param nonce - The nonce of the address operating the transaction.
+   * @param tip - (Optional) The amount of Femto-KILT to tip the validator.
    * @returns The signed SubmittableExtrinsic.
    * @example ```javascript
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const tx = await blockchain.api.tx.ctype.add(ctype.hash);
-   * const nonce = await blockchain.api.rpc.system.accountNextIndex(alice.address);
-   * alice.signSubmittableExtrinsic(tx, nonce);
+   * await blockchain.signTx(alice, tx); // calls signSubmittableExtrinsic internally
    * ```
    */
   public async signSubmittableExtrinsic(
     submittableExtrinsic: SubmittableExtrinsic,
-    nonce: number | Index | BN
+    nonce: AnyNumber | Index,
+    tip?: AnyNumber
   ): Promise<SubmittableExtrinsic> {
     return submittableExtrinsic.signAsync(this.signKeyringPair, {
       nonce,
+      tip,
     })
   }
 

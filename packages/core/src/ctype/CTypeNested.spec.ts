@@ -1,16 +1,12 @@
 /**
- * @packageDocumentation
  * @group unit/ctype
- * @ignore
  */
 
+import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
 import CType from './CType'
 import Identity from '../identity/Identity'
-import ICType from '../types/CType'
 import Claim from '../claim/Claim'
 import CTypeUtils from './CType.utils'
-import { IClaim } from '..'
-import { IClaimContents } from '../types/Claim'
 
 describe('Nested CTypes', () => {
   let identityAlice: Identity
@@ -28,7 +24,7 @@ describe('Nested CTypes', () => {
   let nestedDeepData: Claim
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
+    identityAlice = Identity.buildFromURI('//Alice')
 
     passportCType = {
       $id: 'kilt:ctype:0x1',

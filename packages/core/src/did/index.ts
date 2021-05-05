@@ -1,9 +1,9 @@
-/**
- * @packageDocumentation
- * @ignore
- */
+import Did, {
+  IDid,
+  IDidDocument,
+  IDidDocumentPublicKey,
+  IDidDocumentSigned,
+} from './Did'
 
-import Did, { IDid } from './Did'
-
-export { Did, IDid }
+export { Did, IDid, IDidDocument, IDidDocumentPublicKey, IDidDocumentSigned }
 export default Did

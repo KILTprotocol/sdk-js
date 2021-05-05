@@ -1,42 +1,52 @@
 /**
  * @packageDocumentation
- * @ignore
+ * @module CType
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { Option } from '@polkadot/types'
-import { AccountId } from '@polkadot/types/interfaces'
-import { getCached } from '../blockchainApiConnection'
-import { factory } from '../config/ConfigLog'
-import Identity from '../identity/Identity'
-import ICType from '../types/CType'
-import IPublicIdentity from '../types/PublicIdentity'
-import { assertCodecIsType } from '../util/Decode'
+import type { Option } from '@polkadot/types'
+import type { AccountId } from '@polkadot/types/interfaces'
+import type {
+  ICType,
+  IPublicIdentity,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import { DecoderUtils } from '@kiltprotocol/utils'
+import { ConfigService } from '@kiltprotocol/config'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 
-const log = factory.getLogger('CType')
+const log = ConfigService.LoggingFactory.getLogger('CType')
 
-export async function store(
-  ctype: ICType,
-  identity: Identity
-): Promise<SubmittableExtrinsic> {
-  const blockchain = await getCached()
+/**
+ * @param ctype
+ * @internal
+ */
+export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Create tx for 'ctype.add'`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.ctype.add(ctype.hash)
-  return blockchain.signTx(identity, tx)
+  return tx
 }
 
+/**
+ * @param encoded
+ * @internal
+ */
 // decoding is not backwards compatible with mashnet-node 0.22 anymore
 export function decode(
   encoded: Option<AccountId>
 ): IPublicIdentity['address'] | null {
-  assertCodecIsType(encoded, ['Option<AccountId>'])
+  DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId>'])
   return !encoded.isEmpty ? encoded.toString() : null
 }
 
+/**
+ * @param ctypeHash
+ * @internal
+ */
 export async function getOwner(
   ctypeHash: ICType['hash']
 ): Promise<IPublicIdentity['address'] | null> {
-  const blockchain = await getCached()
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.ctype.cTYPEs<Option<AccountId>>(
     ctypeHash
   )

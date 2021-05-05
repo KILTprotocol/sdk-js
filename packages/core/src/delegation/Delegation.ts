@@ -14,11 +14,13 @@
  * @preferred
  */
 
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import type {
+  IDelegationBaseNode,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import Attestation from '../attestation/Attestation'
 import { query } from '../attestation/Attestation.chain'
 import Identity from '../identity/Identity'
-import { IDelegationBaseNode } from '../types/Delegation'
 import { getAttestationHashes } from './Delegation.chain'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
@@ -62,7 +64,7 @@ export default abstract class DelegationBaseNode
    *
    * @returns Promise containing the resolved children nodes.
    */
-  public abstract async getChildren(): Promise<DelegationNode[]>
+  public abstract getChildren(): Promise<DelegationNode[]>
 
   /**
    * Fetches and resolves all attestations attested with this delegation node.
@@ -99,7 +101,54 @@ export default abstract class DelegationBaseNode
   /**
    * Revokes this delegation node on chain.
    *
-   * @returns Promise containing a submittable transaction.
+   * @param address The address of the identity used to revoke the delegation.
+   * @returns Promise containing a unsigned submittable transaction.
    */
-  public abstract revoke(identity: Identity): Promise<SubmittableExtrinsic>
+  public abstract revoke(address: string): Promise<SubmittableExtrinsic>
+
+  /**
+   * Checks on chain whether a identity with the given address is delegating to the current node.
+   *
+   * @param address The address of the identity.
+   * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the address is owner of the current node.
+   */
+  public async findAncestorOwnedBy(
+    address: Identity['address']
+  ): Promise<{ steps: number; node: DelegationBaseNode | null }> {
+    if (this.account === address) {
+      return {
+        steps: 0,
+        node: this,
+      }
+    }
+    const parent = await this.getParent()
+    if (parent) {
+      const result = await parent.findAncestorOwnedBy(address)
+      result.steps += 1
+      return result
+    }
+    return {
+      steps: 0,
+      node: null,
+    }
+  }
+
+  /**
+   * Recursively counts all nodes in the branches below the current node (excluding the current node).
+   *
+   * @returns Promise resolving to the node count.
+   */
+  public async subtreeNodeCount(): Promise<number> {
+    const children = await this.getChildren()
+    if (children.length > 0) {
+      const childrensChildCounts = await Promise.all(
+        children.map((child) => child.subtreeNodeCount())
+      )
+      return (
+        children.length +
+        childrensChildCounts.reduce((previous, current) => previous + current)
+      )
+    }
+    return 0
+  }
 }
