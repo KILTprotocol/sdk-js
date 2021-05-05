@@ -20,17 +20,6 @@ yarn link "@kiltprotocol/sdk-js"
 Go into your project folder and execute that second command.
 The SDK is now symlinked in your projects `node_modules` folder.
 
-## Embed bundle in HTML
-
-We include UMD bundles in our release and prerelease NPM publishes.
-They can be used to easily embed our complete SDK.
-
-```html
-<script src="https://unpkg.com/@kiltprotocol/sdk-js@/dist/sdk-js.min.umd.js"></script>
-```
-
-You can find the library on `window.kilt`, and use it completely dependency free.
-
 ## Build to see changes
 
 Note that **before you see your changes from the SDK, you have to build it**, by executing a `build`:
@@ -77,15 +66,7 @@ yarn install --check-files
 
 A new version of the SDK is automatically published to NPM when creating a Github release,
 as well as prerelease versions on relevant changes of the develop branch.
-
-From 0.20.0 upwards we also include two (one minified) UMD bundles of the complete SDK in the dist directory:
-
-  - sdk-js.umd.js (4.19 MiB)
-  - sdk-js.min.umd.js (1.92 MiB)
-
-These are also accessible directly via the NPM CDN unpkg.com using a url like:
-
-`unpkg.com/@kiltprotocol/sdk-js{@:version}/dist/sdk-js.(min.)umd.js`
+We also include two (one minimized) UMD bundles of the complete sdk-js package in the dist folder.
 
 ### Github  [DEPRECATED]
 
