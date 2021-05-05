@@ -42,31 +42,27 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: cache build
-        uses: actions/cache@v2
-        with:
-          path: ~/
-          key: sdk-build-${{ matrix.node-version }}-${{ env.GITHUB_REF }}-${{ env.GITHUB_SHA }}
-          restore-keys: |
-            sdk-build-${{ matrix.node-version }}-${{ env.GITHUB_REF }}-
-            sdk-build-${{ matrix.node-version }}-
       - name: yarn install & build
         run: |
           yarn install --immutable
           yarn build
         env:
           CI: true
+      - name: upload build
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-${{ matrix.node-version }}
+          path: ${{ github.workspace }}
+
 
   lint:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-      - name: get cached build
-        uses: actions/cache@v2
+      - uses: actions/download-artifact@v2
         with:
-          path: ~/
-          key: sdk-build-10.x-${{ env.GITHUB_REF }}-${{ env.GITHUB_SHA }}
+          name: build-12.x
       - name: lint
         run: yarn lint
         env:
@@ -81,11 +77,9 @@ jobs:
         node-version: [10.x, 12.x]
 
     steps:
-      - name: get cached build
-        uses: actions/cache@v2
+      - uses: actions/download-artifact@v2
         with:
-          path: ~/
-          key: sdk-build-${{ matrix.node-version }}-${{ env.GITHUB_REF }}-${{ env.GITHUB_SHA }}
+          name: build-${{ matrix.node-version }}
       - name: unit tests
         run: yarn test:ci
         env:
@@ -97,13 +91,9 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/checkout@v1
-
-      - name: get cached build
-        uses: actions/cache@v2
+      - uses: actions/download-artifact@v2
         with:
-          path: ~/
-          key: sdk-build-10.x-${{ env.GITHUB_REF }}-${{ env.GITHUB_SHA }}
+          name: build-12.x
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -135,13 +125,9 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/checkout@v1
-
-      - name: get cached build
-        uses: actions/cache@v2
+      - uses: actions/download-artifact@v2
         with:
-          path: ~/
-          key: sdk-build-10.x-${{ env.GITHUB_REF }}-${{ env.GITHUB_SHA }}
+          name: build-12.x
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -173,13 +159,9 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/checkout@v1
-
-      - name: get cached build
-        uses: actions/cache@v2
+      - uses: actions/download-artifact@v2
         with:
-          path: ~/
-          key: sdk-build-10.x-${{ env.GITHUB_REF }}-${{ env.GITHUB_SHA }}
+          name: build-12.x
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
