@@ -54,6 +54,7 @@ They can be used to easily embed our complete SDK.
 ```
 
 You can find the library on `window.kilt`, and use it completely dependency free.
+
 ## Example
 
 Please have a look at our examples within our [getting started guide](/docs/getting-started.md).
