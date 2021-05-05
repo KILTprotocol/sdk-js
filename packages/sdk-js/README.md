@@ -44,6 +44,7 @@ Or with `yarn`:
 ```bash
 yarn add @kiltprotocol/sdk-js
 ```
+
 ## Embed bundle in HTML
 
 We include UMD bundles in our release and prerelease NPM publishes.
