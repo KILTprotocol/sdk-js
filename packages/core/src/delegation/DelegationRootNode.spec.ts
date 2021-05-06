@@ -49,7 +49,7 @@ describe('Delegation', () => {
   })
 
   it('stores root delegation', async () => {
-    const rootDelegation = await DelegationRootNode.fromDelegationRootNode({
+    const rootDelegation = new DelegationRootNode({
       id: ROOT_IDENTIFIER,
       cTypeHash: ctypeHash,
       account: identityAlice.address,

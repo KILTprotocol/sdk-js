@@ -3,12 +3,13 @@ import { SDKErrors, DataUtils } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
 
 export default function errorCheck(
-  id: IDelegationBaseNode['id'],
-  account: IDelegationBaseNode['account'],
-  revoked: IDelegationBaseNode['revoked']
+  delegationBaseNode: IDelegationBaseNode
 ): void {
-  if (!id || typeof id !== 'string') {
-    throw SDKErrors.ERROR_NODE_QUERY(id)
+  const { id, account, revoked } = delegationBaseNode
+  if (!id) {
+    throw SDKErrors.ERROR_DELEGATION_ID_MISSING()
+  } else if (typeof id !== 'string') {
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
   } else if (!isHex(id)) {
     throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
   }
@@ -17,7 +18,9 @@ export default function errorCheck(
     throw SDKErrors.ERROR_OWNER_NOT_PROVIDED
   } else DataUtils.validateAddress(account, 'delegationNode owner')
 
-  if (typeof revoked !== 'boolean') {
-    throw SDKErrors.ERROR_NOT_FOUND('not boolean')
+  if (!revoked) {
+    throw SDKErrors.ERROR_DELEGATION_REVOKED_STATUS_MISSING()
+  } else if (typeof revoked !== 'boolean') {
+    throw new TypeError('Delegation revoked type is incorrect')
   }
 }

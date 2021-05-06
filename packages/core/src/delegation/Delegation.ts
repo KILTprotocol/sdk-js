@@ -44,10 +44,10 @@ export default abstract class DelegationBaseNode
     account: IDelegationBaseNode['account'],
     revoked: IDelegationBaseNode['revoked']
   ) {
-    errorCheck(id, account, revoked)
     this.account = account
     this.id = id
     this.revoked = revoked
+    errorCheck(this)
   }
 
   /**

@@ -22,19 +22,6 @@ const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 export default class DelegationNode extends DelegationBaseNode
   implements IDelegationNode {
   /**
-   * Instantiates a new DelegationNode from the given [[IDelegationNode]].
-   *
-   * @param delegationNodeInput IDelegationBaseNode to instantiate the new delegation node from.
-   *
-   * @returns An instantiated DelegationNode.
-   */
-  public static async fromDelegationNode(
-    delegationNodeInput: IDelegationNode
-  ): Promise<DelegationNode> {
-    return new DelegationNode(delegationNodeInput)
-  }
-
-  /**
    * [STATIC] Queries the delegation node with [delegationId].
    *
    * @param delegationId The unique identifier of the desired delegation.
@@ -69,10 +56,10 @@ export default class DelegationNode extends DelegationBaseNode
       delegationNodeInput.account,
       delegationNodeInput.revoked
     )
-    DelegationNodeUtils.errorCheck(delegationNodeInput)
     this.permissions = delegationNodeInput.permissions
     this.rootId = delegationNodeInput.rootId
     this.parentId = delegationNodeInput.parentId
+    DelegationNodeUtils.errorCheck(this)
   }
 
   /**
