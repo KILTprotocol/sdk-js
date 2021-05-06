@@ -36,7 +36,6 @@ export enum ErrorCode {
   ERROR_IDENTITY_NOT_PE_ENABLED = 10016,
   ERROR_WS_ADDRESS_NOT_SET = 10017,
   ERROR_DELEGATION_ID_MISSING = 10018,
-  ERROR_DELEGATION_REVOKED_STATUS_MISSING = 10019,
 
   // Data type is wrong or malformed
   ERROR_ADDRESS_TYPE = 20001,
@@ -270,13 +269,6 @@ export const ERROR_DELEGATION_ID_MISSING: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_DELEGATION_ID_MISSING,
     'DelegationId is missing'
-  )
-}
-
-export const ERROR_DELEGATION_REVOKED_STATUS_MISSING: () => SDKError = () => {
-  return new SDKError(
-    ErrorCode.ERROR_DELEGATION_REVOKED_STATUS_MISSING,
-    'Delegation revoked status is missing'
   )
 }
 

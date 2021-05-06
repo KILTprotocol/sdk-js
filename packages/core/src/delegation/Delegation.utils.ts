@@ -18,9 +18,7 @@ export default function errorCheck(
     throw SDKErrors.ERROR_OWNER_NOT_PROVIDED
   } else DataUtils.validateAddress(account, 'delegationNode owner')
 
-  if (!revoked) {
-    throw SDKErrors.ERROR_DELEGATION_REVOKED_STATUS_MISSING()
-  } else if (typeof revoked !== 'boolean') {
+  if (typeof revoked !== 'boolean') {
     throw new TypeError('revoked is expected to be a boolean')
   }
 }
