@@ -103,12 +103,12 @@ jobs:
     strategy:
       matrix:
         image: ['latest-rc']
-        can_fail: [false]
+        required: ['required']
         include:
         - image: 'latest-develop'
-          can_fail: true
+          required: 'optional'
 
-    continue-on-error: ${{ matrix.can_fail }}
+    continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
       - uses: actions/download-artifact@v2
@@ -149,12 +149,12 @@ jobs:
     strategy:
       matrix:
         image: ['latest-rc']
-        can_fail: [false]
+        required: ['required']
         include:
         - image: 'latest-develop'
-          can_fail: true
+          required: 'optional'
 
-    continue-on-error: ${{ matrix.can_fail }}
+    continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
       - uses: actions/download-artifact@v2
@@ -195,12 +195,12 @@ jobs:
     strategy:
       matrix:
         image: ['latest-rc']
-        can_fail: [false]
+        required: ['required']
         include:
         - image: 'latest-develop'
-          can_fail: true
+          required: 'optional'
 
-    continue-on-error: ${{ matrix.can_fail }}
+    continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
       - uses: actions/download-artifact@v2
