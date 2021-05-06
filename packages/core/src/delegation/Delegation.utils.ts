@@ -21,6 +21,6 @@ export default function errorCheck(
   if (!revoked) {
     throw SDKErrors.ERROR_DELEGATION_REVOKED_STATUS_MISSING()
   } else if (typeof revoked !== 'boolean') {
-    throw new TypeError('Delegation revoked type is incorrect')
+    throw new TypeError('revoked is expected to be a boolean')
   }
 }

@@ -43,19 +43,14 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * Creates a new [DelegationNode].
    *
-   * @param id A unique identifier.
-   * @param rootId Identifier of the root delegation node that is already stored on-chain.
-   * @param account Address of the account that will be the owner of the delegation.
-   * @param permissions List of [[Permission]]s.
-   * @param parentId Identifier of the parent delegation node already stored on-chain. Not required when the parent is the root node.
-   * @param delegationNodeInput
+   * @param delegationNodeInput - The base object from which to create the delegation node.
    */
   public constructor(delegationNodeInput: IDelegationNode) {
-    super(
-      delegationNodeInput.id,
-      delegationNodeInput.account,
-      delegationNodeInput.revoked
-    )
+    super({
+      id: delegationNodeInput.id,
+      account: delegationNodeInput.account,
+      revoked: delegationNodeInput.revoked,
+    })
     this.permissions = delegationNodeInput.permissions
     this.rootId = delegationNodeInput.rootId
     this.parentId = delegationNodeInput.parentId

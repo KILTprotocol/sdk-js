@@ -47,12 +47,17 @@ export default class DelegationRootNode extends DelegationBaseNode
 
   public cTypeHash: IDelegationRootNode['cTypeHash']
 
+  /**
+   * Creates a new [DelegationRootNode].
+   *
+   * @param delegationRootNodeInput - The base object from which to create the delegation base node.
+   */
   public constructor(delegationRootNodeInput: IDelegationRootNode) {
-    super(
-      delegationRootNodeInput.id,
-      delegationRootNodeInput.account,
-      delegationRootNodeInput.revoked
-    )
+    super({
+      id: delegationRootNodeInput.id,
+      account: delegationRootNodeInput.account,
+      revoked: delegationRootNodeInput.revoked,
+    })
     this.cTypeHash = delegationRootNodeInput.cTypeHash
     errorCheck(this)
   }

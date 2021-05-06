@@ -35,18 +35,12 @@ export default abstract class DelegationBaseNode
   /**
    * Builds a new [DelegationBaseNode] instance.
    *
-   * @param id The unique identifier of the delegation node.
-   * @param account The owner address of the delegation node.
-   * @param revoked
+   * @param delegationBaseNodeInput - The base object from which to create the delegation base node.
    */
-  public constructor(
-    id: IDelegationBaseNode['id'],
-    account: IDelegationBaseNode['account'],
-    revoked: IDelegationBaseNode['revoked']
-  ) {
-    this.account = account
-    this.id = id
-    this.revoked = revoked
+  public constructor(delegationBaseNodeInput: IDelegationBaseNode) {
+    this.account = delegationBaseNodeInput.account
+    this.id = delegationBaseNodeInput.id
+    this.revoked = delegationBaseNodeInput.revoked
     errorCheck(this)
   }
 
