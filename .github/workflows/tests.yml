@@ -102,7 +102,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-rc', 'latest-develop']
+        image: ['latest-rc']
         can_fail: [false]
         include:
         - image: 'latest-develop'
@@ -148,7 +148,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-rc', 'latest-develop']
+        image: ['latest-rc']
         can_fail: [false]
         include:
         - image: 'latest-develop'
@@ -194,7 +194,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-rc', 'latest-develop']
+        image: ['latest-rc']
         can_fail: [false]
         include:
         - image: 'latest-develop'
