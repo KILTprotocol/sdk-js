@@ -2,13 +2,13 @@
  * @group unit/delegation
  */
 
-import { Permission } from '@kiltprotocol/types'
+import { IDelegationNode, Permission } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import Identity from '../identity'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
-import { permissionsAsBitset } from './DelegationNode.utils'
+import { permissionsAsBitset, errorCheck } from './DelegationNode.utils'
 
 let childMap: Record<string, DelegationNode[]> = {}
 let nodes: Record<string, DelegationNode> = {}
@@ -403,5 +403,63 @@ describe('count depth', () => {
         node: null,
       }),
     ])
+  })
+
+  it('error check should throw errors on faulty delegation nodes', async () => {
+    const malformedPremissionsDelegationNode = {
+      id,
+      rootId,
+      account: identityAlice.address,
+      permissions: [],
+      parentId: undefined,
+      revoked: false,
+    } as IDelegationNode
+
+    const missingRootIdDelegationNode = {
+      id,
+      rootId,
+      account: identityAlice.address,
+      permissions: [Permission.DELEGATE],
+      parentId: undefined,
+      revoked: false,
+    } as IDelegationNode
+
+    delete missingRootIdDelegationNode.rootId
+
+    const malformedRootIdDelegationNode = {
+      id,
+      rootId: rootId.slice(13) + rootId.slice(15),
+      account: identityAlice.address,
+      permissions: [Permission.DELEGATE],
+      parentId: undefined,
+      revoked: false,
+    } as IDelegationNode
+
+    const malformedParentIdDelegationNode = {
+      id,
+      rootId,
+      account: identityAlice.address,
+      permissions: [Permission.DELEGATE],
+      parentId: 'malformed',
+      revoked: false,
+    } as IDelegationNode
+
+    expect(() => errorCheck(malformedPremissionsDelegationNode)).toThrowError(
+      SDKErrors.ERROR_UNAUTHORIZED(
+        'Must have at least one permission and no more then two'
+      )
+    )
+
+    expect(() => errorCheck(missingRootIdDelegationNode)).toThrowError(
+      SDKErrors.ERROR_DELEGATION_ID_MISSING()
+    )
+
+    expect(() => errorCheck(malformedRootIdDelegationNode)).toThrowError(
+      SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    )
+
+    expect(() => errorCheck(malformedParentIdDelegationNode)).toThrowError(
+      SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    )
   })
 })

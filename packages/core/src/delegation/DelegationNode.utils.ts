@@ -82,7 +82,7 @@ export function errorCheck(delegationNodeInput: IDelegationNode): void {
   }
   if (parentId) {
     if (typeof parentId !== 'string') {
-      throw SDKErrors.ERROR_DELEGATION_ID_MISSING()
+      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
     } else if (!isHex(parentId)) {
       throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
     }

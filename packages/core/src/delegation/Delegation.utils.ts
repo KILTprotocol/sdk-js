@@ -15,7 +15,7 @@ export default function errorCheck(
   }
 
   if (!account) {
-    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED
+    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
   } else DataUtils.validateAddress(account, 'delegationNode owner')
 
   if (typeof revoked !== 'boolean') {

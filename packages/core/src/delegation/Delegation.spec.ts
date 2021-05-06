@@ -4,11 +4,12 @@
 
 import { Permission } from '@kiltprotocol/types'
 import type { ICType, IDelegationBaseNode } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { Identity } from '..'
 import DelegationNode from './DelegationNode'
 import Kilt from '../kilt/Kilt'
+import errorCheck from './Delegation.utils'
 
 jest.mock(
   '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
@@ -134,5 +135,53 @@ describe('Delegation', () => {
   it('get attestation hashes', async () => {
     attestationHashes = await myDelegation.getAttestationHashes()
     expect(attestationHashes).toHaveLength(3)
+  })
+
+  it('error check should throw errors on faulty delegation', async () => {
+    const malformedIdDelegation = {
+      id: nodeId.slice(13) + nodeId.slice(15),
+      account: identityAlice.address,
+      revoked: false,
+    } as IDelegationBaseNode
+
+    const missingIdDelegation = {
+      id: nodeId,
+      account: identityAlice.address,
+      revoked: false,
+    } as IDelegationBaseNode
+
+    delete missingIdDelegation.id
+
+    const missingAccountDelegation = {
+      id: nodeId,
+      account: identityAlice.address,
+      revoked: false,
+    } as IDelegationBaseNode
+
+    delete missingAccountDelegation.account
+
+    const missingRevokedStatusDelegation = {
+      id: nodeId,
+      account: identityAlice.address,
+      revoked: false,
+    } as IDelegationBaseNode
+
+    delete missingRevokedStatusDelegation.revoked
+
+    expect(() => errorCheck(malformedIdDelegation)).toThrowError(
+      SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    )
+
+    expect(() => errorCheck(missingIdDelegation)).toThrowError(
+      SDKErrors.ERROR_DELEGATION_ID_MISSING()
+    )
+
+    expect(() => errorCheck(missingAccountDelegation)).toThrowError(
+      SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+    )
+
+    expect(() => errorCheck(missingRevokedStatusDelegation)).toThrowError(
+      new TypeError('revoked is expected to be a boolean')
+    )
   })
 })

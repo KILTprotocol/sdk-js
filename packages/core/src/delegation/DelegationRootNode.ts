@@ -53,11 +53,7 @@ export default class DelegationRootNode extends DelegationBaseNode
    * @param delegationRootNodeInput - The base object from which to create the delegation base node.
    */
   public constructor(delegationRootNodeInput: IDelegationRootNode) {
-    super({
-      id: delegationRootNodeInput.id,
-      account: delegationRootNodeInput.account,
-      revoked: delegationRootNodeInput.revoked,
-    })
+    super(delegationRootNodeInput)
     this.cTypeHash = delegationRootNodeInput.cTypeHash
     errorCheck(this)
   }
