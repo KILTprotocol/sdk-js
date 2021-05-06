@@ -102,7 +102,12 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-develop', 'latest-rc']
+        image: ['latest-rc', 'latest-develop']
+        include:
+        - image: 'latest-develop'
+          can_fail: true
+
+    continue-on-error: ${{ matrix.can_fail }}
 
     steps:
       - uses: actions/download-artifact@v2
@@ -142,7 +147,12 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-develop', 'latest-rc']
+        image: ['latest-rc', 'latest-develop']
+        include:
+        - image: 'latest-develop'
+          can_fail: true
+
+    continue-on-error: ${{ matrix.can_fail }}
 
     steps:
       - uses: actions/download-artifact@v2
@@ -182,7 +192,12 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-develop', 'latest-rc']
+        image: ['latest-rc', 'latest-develop']
+        include:
+        - image: 'latest-develop'
+          can_fail: true
+
+    continue-on-error: ${{ matrix.can_fail }}
 
     steps:
       - uses: actions/download-artifact@v2
