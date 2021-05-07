@@ -304,9 +304,9 @@ KILT contains a simple messaging system and we describe it through the following
 First, we create the request for attestation message which the Claimer encrypts with the public key of the Attester:
 
 ```typescript
-import Kilt, { IRequestAttestationForClaim } from '@kiltprotocol/sdk-js'
+import Kilt, { MessageBody } from '@kiltprotocol/sdk-js'
 
-const messageBody: IRequestAttestationForClaim = {
+const messageBody: MessageBody = {
   content: { requestForAttestation },
   type: Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
 }
@@ -435,9 +435,7 @@ AttestedClaim {
 The Attester has to send the `attestedClaim` object back to the Claimer in the following message:
 
 ```typescript
-import { ISubmitAttestationForClaim } from '@kiltprotocol/sdk-js'
-
-const messageBodyBack: ISubmitAttestationForClaim = {
+const messageBodyBack: MessageBody = {
   content: attestedClaim,
   type: Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
 }
@@ -501,7 +499,7 @@ This is an **important feature for the privacy of a claimer** as this enables th
 ### 6.1. Request presentation for CTYPE
 
 ```typescript
-const messageBodyForClaimer: IRequestClaimsForCTypes = {
+const messageBodyForClaimer: MessageBody = {
   type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
   content: { ctypes: [ctype.hash] },
 }
@@ -521,7 +519,7 @@ const copiedCredential = Kilt.AttestedClaim.fromAttestedClaim(
 )
 copiedCredential.request.removeClaimProperties(['age'])
 
-const messageBodyForVerifier: ISubmitClaimsForCTypes = {
+const messageBodyForVerifier: MessageBody = {
   content: [copiedCredential],
   type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
 }

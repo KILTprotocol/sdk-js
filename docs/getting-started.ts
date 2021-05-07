@@ -3,10 +3,7 @@ import Kilt from '@kiltprotocol/sdk-js'
 import type {
   SubmittableExtrinsic,
   IRequestForAttestation,
-  IRequestAttestationForClaim,
-  IRequestClaimsForCTypes,
-  ISubmitAttestationForClaim,
-  ISubmitClaimsForCTypes,
+  MessageBody,
 } from '@kiltprotocol/sdk-js'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
@@ -101,7 +98,7 @@ async function main(): Promise<void> {
   )
 
   /* First, we create the request for an attestation message in which the Claimer automatically encodes the message with the public key of the Attester: */
-  const messageBody: IRequestAttestationForClaim = {
+  const messageBody: MessageBody = {
     content: { requestForAttestation },
     type: Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
   }
@@ -151,7 +148,7 @@ async function main(): Promise<void> {
     console.log(attestedClaim)
 
     /* The Attester has to send the `attestedClaim` object back to the Claimer in the following message: */
-    const messageBodyBack: ISubmitAttestationForClaim = {
+    const messageBodyBack: MessageBody = {
       content: attestedClaim,
       type: Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
     }
@@ -181,7 +178,7 @@ async function main(): Promise<void> {
       const verifier = Kilt.Identity.buildFromMnemonic(verifierMnemonic)
 
       /* 6.1. Request presentation for CTYPE */
-      const messageBodyForClaimer: IRequestClaimsForCTypes = {
+      const messageBodyForClaimer: MessageBody = {
         type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
         content: [{ cTypeHash: ctype.hash }],
       }
@@ -199,7 +196,7 @@ async function main(): Promise<void> {
       )
       copiedCredential.request.removeClaimProperties(['age'])
 
-      const messageBodyForVerifier: ISubmitClaimsForCTypes = {
+      const messageBodyForVerifier: MessageBody = {
         content: [copiedCredential],
         type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
       }
