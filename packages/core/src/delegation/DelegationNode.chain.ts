@@ -15,7 +15,7 @@ import {
   IChainDelegationNode,
 } from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
-import permissionsAsBitset from './DelegationNode.utils'
+import { permissionsAsBitset } from './DelegationNode.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationBaseNode')
 
@@ -57,14 +57,15 @@ export async function query(
     >(delegationId)
   )
   if (decoded) {
-    const root = new DelegationNode(
-      delegationId,
-      decoded.rootId,
-      decoded.account,
-      decoded.permissions,
-      decoded.parentId
-    )
-    root.revoked = decoded.revoked
+    const root = new DelegationNode({
+      id: delegationId,
+      rootId: decoded.rootId,
+      account: decoded.account,
+      permissions: decoded.permissions,
+      parentId: decoded.parentId,
+      revoked: decoded.revoked,
+    })
+
     return root
   }
   return null
@@ -111,14 +112,14 @@ export async function getChildren(
     .map((codec: CodecWithId<Option<IChainDelegationNode>>) => {
       const decoded = decodeDelegationNode(codec.codec)
       if (decoded) {
-        const child = new DelegationNode(
-          codec.id,
-          decoded.rootId,
-          decoded.account,
-          decoded.permissions,
-          decoded.parentId
-        )
-        child.revoked = decoded.revoked
+        const child = new DelegationNode({
+          id: codec.id,
+          rootId: decoded.rootId,
+          account: decoded.account,
+          permissions: decoded.permissions,
+          parentId: decoded.parentId,
+          revoked: decoded.revoked,
+        })
         return child
       }
       return null
