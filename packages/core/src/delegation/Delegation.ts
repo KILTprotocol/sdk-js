@@ -24,6 +24,7 @@ import Identity from '../identity/Identity'
 import { getAttestationHashes } from './Delegation.chain'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
+import errorCheck from './Delegation.utils'
 
 export default abstract class DelegationBaseNode
   implements IDelegationBaseNode {
@@ -34,15 +35,13 @@ export default abstract class DelegationBaseNode
   /**
    * Builds a new [DelegationBaseNode] instance.
    *
-   * @param id The unique identifier of the delegation node.
-   * @param account The owner address of the delegation node.
+   * @param delegationBaseNodeInput - The base object from which to create the delegation base node.
    */
-  public constructor(
-    id: IDelegationBaseNode['id'],
-    account: IDelegationBaseNode['account']
-  ) {
-    this.account = account
-    this.id = id
+  public constructor(delegationBaseNodeInput: IDelegationBaseNode) {
+    this.account = delegationBaseNodeInput.account
+    this.id = delegationBaseNodeInput.id
+    this.revoked = delegationBaseNodeInput.revoked
+    errorCheck(this)
   }
 
   /**
