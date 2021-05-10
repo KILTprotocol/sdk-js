@@ -8,6 +8,8 @@ import {
   AttestedClaimUtils,
   ClaimUtils,
   CTypeUtils,
+  Quote,
+  QuoteSchema,
   QuoteUtils,
   RequestForAttestationUtils,
 } from '@kiltprotocol/core'
@@ -19,9 +21,110 @@ import type {
   CompressedRequestClaimsForCTypesContent,
   IRequestClaimsForCTypesContent,
   ICType,
+  IMessage,
+  PartialClaim,
+  IClaim,
 } from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import Message from '.'
+
+export function errorCheckMessageBody(body: MessageBody): boolean | void {
+  switch (body.type) {
+    case Message.BodyType.REQUEST_TERMS: {
+      ClaimUtils.errorCheck(body.content)
+      break
+    }
+    case Message.BodyType.SUBMIT_TERMS: {
+      ClaimUtils.errorCheck(body.content.claim)
+      body.content.legitimations.map((attestedClaim: IAttestedClaim) =>
+        AttestedClaimUtils.errorCheck(attestedClaim)
+      )
+      if (body.content.delegationId) {
+        DataUtils.validateHash(
+          body.content.delegationId,
+          'Submit terms delegation id hash'
+        )
+      }
+      if (body.content.quote) {
+        Quote.validateQuoteSchema(QuoteSchema, body.content.quote)
+      }
+      if (body.content.prerequisiteClaims) {
+        DataUtils.validateHash(
+          body.content.prerequisiteClaims,
+          'Submit terms pre-requisite claims'
+        )
+      }
+      break
+    }
+    case Message.BodyType.REJECT_TERMS: {
+      ClaimUtils.errorCheck(body.content.claim)
+      if (body.content.delegationId) {
+        DataUtils.validateHash(
+          body.content.delegationId,
+          'Reject terms delegation id hash'
+        )
+      }
+      ClaimUtils.errorCheck(body.content.claim)
+      body.content.legitimations.map((val) =>
+        AttestedClaimUtils.errorCheck(val)
+      )
+      break
+    }
+    case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+      RequestForAttestationUtils.errorCheck(body.content.requestForAttestation)
+      if (body.content.quote) {
+        Quote.validateQuoteSchema(QuoteSchema, body.content.quote)
+      }
+      if (body.content.prerequisiteClaims) {
+        body.content.prerequisiteClaims.map((claim: IClaim | PartialClaim) =>
+          ClaimUtils.errorCheck(claim)
+        )
+      }
+      break
+    }
+    case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+      break
+    }
+    case Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM: {
+      break
+    }
+    case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
+      break
+    }
+    case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
+      break
+    }
+    case Message.BodyType.REJECT_CLAIMS_FOR_CTYPES: {
+      break
+    }
+    case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
+      break
+    }
+    case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
+      break
+    }
+
+    case Message.BodyType.REJECT_ACCEPT_DELEGATION: {
+      break
+    }
+    case Message.BodyType.INFORM_CREATE_DELEGATION: {
+      break
+    }
+
+    case Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES: {
+      break
+    }
+    default:
+      throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
+  }
+
+  return true
+}
+
+export function errorCheckMessage(message: IMessage): boolean | void {
+  console.log(message)
+  return true
+}
 
 /**
  * Verifies required properties for a given [[CType]] before sending or receiving a message.
