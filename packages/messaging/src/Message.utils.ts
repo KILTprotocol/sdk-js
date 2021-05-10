@@ -24,9 +24,49 @@ import type {
   IMessage,
   PartialClaim,
   IClaim,
+  IDelegationData,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import { isHex, isJsonObject } from '@polkadot/util'
+
 import Message from '.'
+
+// Had to add the check as differs from the delegation types
+export function errorCheckDelegationData(
+  delegationData: IDelegationData
+): boolean | void {
+  const { permissions, id, parentId, isPCR, account } = delegationData
+
+  if (!id) {
+    throw SDKErrors.ERROR_DELEGATION_ID_MISSING()
+  } else if (typeof id !== 'string') {
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+  } else if (!isHex(id)) {
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+  }
+
+  if (!account) {
+    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+  } else DataUtils.validateAddress(account, 'delegationNode owner')
+
+  if (typeof isPCR !== 'boolean') {
+    throw new TypeError('isPCR is expected to be a boolean')
+  }
+
+  if (permissions.length === 0 || permissions.length > 3) {
+    throw SDKErrors.ERROR_UNAUTHORIZED(
+      'Must have at least one permission and no more then two'
+    )
+  }
+
+  if (parentId) {
+    if (typeof parentId !== 'string') {
+      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    } else if (!isHex(parentId)) {
+      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    }
+  }
+}
 
 export function errorCheckMessageBody(body: MessageBody): boolean | void {
   switch (body.type) {
@@ -42,7 +82,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       if (body.content.delegationId) {
         DataUtils.validateHash(
           body.content.delegationId,
-          'Submit terms delegation id hash'
+          'Submit terms delegation id hash invalid'
         )
       }
       if (body.content.quote) {
@@ -51,7 +91,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       if (body.content.prerequisiteClaims) {
         DataUtils.validateHash(
           body.content.prerequisiteClaims,
-          'Submit terms pre-requisite claims'
+          'Submit terms pre-requisite claims invalid'
         )
       }
       break
@@ -83,35 +123,82 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       break
     }
     case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+      AttestationUtils.errorCheck(body.content.attestation)
       break
     }
     case Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM: {
+      isHex(body.content)
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
+      body.content.forEach(
+        (requestClaimsForCTypes: IRequestClaimsForCTypesContent): void => {
+          DataUtils.validateHash(
+            requestClaimsForCTypes.cTypeHash,
+            'request claims for ctypes cTypeHash invalid'
+          )
+          requestClaimsForCTypes.acceptedAttester?.map((address) =>
+            DataUtils.validateAddress(
+              address,
+              'request claims for ctypes attester approved addresses invalid'
+            )
+          )
+          requestClaimsForCTypes.requiredProperties?.map((requiredProps) => {
+            if (typeof requiredProps !== 'string')
+              throw new TypeError(
+                'required properties is expected to be a string'
+              )
+          })
+        }
+      )
       break
     }
     case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
+      body.content.map((attestedClaim) =>
+        AttestedClaimUtils.errorCheck(attestedClaim)
+      )
       break
     }
     case Message.BodyType.REJECT_CLAIMS_FOR_CTYPES: {
+      body.content.map((cTypeHash) =>
+        DataUtils.validateHash(
+          cTypeHash,
+          'rejected claims for ctypes ctype hashes invalid'
+        )
+      )
       break
     }
     case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
+      errorCheckDelegationData(body.content.delegationData)
+      isHex(body.content.signatures)
+      isJsonObject(body.content.metaData)
       break
     }
     case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
+      errorCheckDelegationData(body.content.delegationData)
+      isHex(body.content.signatures)
       break
     }
 
     case Message.BodyType.REJECT_ACCEPT_DELEGATION: {
+      errorCheckDelegationData(body.content)
       break
     }
     case Message.BodyType.INFORM_CREATE_DELEGATION: {
+      DataUtils.validateHash(
+        body.content.delegationId,
+        'inform create delegation message delegation id invalid'
+      )
       break
     }
 
     case Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES: {
+      body.content.map((cTypeHash) =>
+        DataUtils.validateHash(
+          cTypeHash,
+          'accept claims for ctypes message ctype hash invalid'
+        )
+      )
       break
     }
     default:
@@ -122,7 +209,19 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
 }
 
 export function errorCheckMessage(message: IMessage): boolean | void {
-  console.log(message)
+  const {
+    body,
+    // messageId,
+    // createdAt,
+    // receiverAddress,
+    // senderAddress,
+    // senderBoxPublicKey,
+    // receivedAt,
+    // inReplyTo,
+    // references,
+  } = message
+  errorCheckMessageBody(body)
+
   return true
 }
 

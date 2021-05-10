@@ -194,7 +194,7 @@ export default class Message implements IMessage {
     this.receiverAddress = receiver.address
     this.senderAddress = sender.address
     this.senderBoxPublicKey = sender.getBoxPublicKey()
-
+    errorCheckMessageBody(this.body)
     const encryptedMessage: Crypto.EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(
       JSON.stringify(body),
       receiver.boxPublicKeyAsHex
