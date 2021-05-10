@@ -20,11 +20,16 @@ import type {
 import type {
   DidSigned,
   IDidRecord,
+  ISigningKeyPair,
   KeyDetails,
   KeypairType,
   TypedPublicKey,
 } from './types'
-import { getDidFromIdentifier, getIdentifierFromDid } from './Did.utils'
+import {
+  getDidFromIdentifier,
+  getIdentifierFromDid,
+  signCodec,
+} from './Did.utils'
 
 export async function queryEncoded(
   didIdentifier: IIdentity['address']
@@ -135,4 +140,13 @@ export async function didDeleteTx(
     keyRemoval.payload,
     keyRemoval.signature
   )
+}
+
+export async function didSignExtrinsic(
+  extrinsic: SubmittableExtrinsic,
+  signer: ISigningKeyPair
+): Promise<SubmittableExtrinsic> {
+  const { payload, signature } = signCodec(extrinsic, signer)
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  return blockchain.api.tx.did.submitDidCall(payload, signature)
 }
