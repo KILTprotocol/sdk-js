@@ -127,7 +127,9 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       break
     }
     case Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM: {
-      isHex(body.content)
+      if (!isHex(body.content)) {
+        throw SDKErrors.ERROR_HASH_MALFORMED()
+      }
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
@@ -170,13 +172,19 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
     }
     case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
       errorCheckDelegationData(body.content.delegationData)
-      isHex(body.content.signatures)
-      isJsonObject(body.content.metaData)
+      if (!isHex(body.content.signatures)) {
+        throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+      }
+      if (!isJsonObject(body.content.metaData)) {
+        throw SDKErrors.ERROR_OBJECT_MALFORMED()
+      }
       break
     }
     case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
       errorCheckDelegationData(body.content.delegationData)
-      isHex(body.content.signatures)
+      if (!isHex(body.content.signatures)) {
+        throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+      }
       break
     }
 
@@ -211,16 +219,32 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
 export function errorCheckMessage(message: IMessage): boolean | void {
   const {
     body,
-    // messageId,
-    // createdAt,
-    // receiverAddress,
-    // senderAddress,
-    // senderBoxPublicKey,
-    // receivedAt,
-    // inReplyTo,
-    // references,
+    messageId,
+    createdAt,
+    receiverAddress,
+    senderAddress,
+    receivedAt,
+    senderBoxPublicKey,
+    inReplyTo,
   } = message
   errorCheckMessageBody(body)
+  if (messageId && typeof messageId !== 'string') {
+    throw new TypeError('message id is expected to be a string')
+  }
+  if (createdAt && typeof createdAt !== 'number') {
+    throw new TypeError('created at is expected to be a number')
+  }
+  if (receivedAt && typeof receivedAt !== 'number') {
+    throw new TypeError('received at is expected to be a number')
+  }
+  DataUtils.validateAddress(receiverAddress, 'receiver address')
+  DataUtils.validateAddress(senderAddress, 'sender address')
+  if (!isHex(senderBoxPublicKey)) {
+    throw SDKErrors.ERROR_ADDRESS_INVALID()
+  }
+  if (inReplyTo && typeof inReplyTo !== 'string') {
+    throw new TypeError('in reply to is expected to be a string')
+  }
 
   return true
 }
