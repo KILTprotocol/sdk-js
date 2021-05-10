@@ -51,13 +51,13 @@ export interface KeyDetails extends TypedPublicKey {
 
 export interface IDidRecord {
   did: IIdentity['address']
-  authentication_key: KeyDetails
-  key_agreement_keys: KeyDetails[]
-  delegation_key?: KeyDetails
-  attestation_key?: KeyDetails
-  public_keys: KeyDetails[]
-  endpoint_url?: string
-  last_tx_counter: number
+  authenticationKey: KeyDetails
+  keyAgreementKeys: KeyDetails[]
+  delegationKey?: KeyDetails
+  attestationKey?: KeyDetails
+  publicKeys: KeyDetails[]
+  endpointUrl?: string
+  lastTxCounter: number
 }
 
 export type Nullable<T> = { [P in keyof T]: T[P] | null }

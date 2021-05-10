@@ -27,10 +27,10 @@ import type {
 import { getDidFromIdentifier, getIdentifierFromDid } from './Did.utils'
 
 export async function queryEncoded(
-  did_identifier: IIdentity['address']
+  didIdentifier: IIdentity['address']
 ): Promise<Option<DidDetails>> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.query.did.did<Option<DidDetails>>(did_identifier)
+  return blockchain.api.query.did.did<Option<DidDetails>>(didIdentifier)
 }
 
 function decodePublicKey(
@@ -47,52 +47,50 @@ function decodeEndpointUrl(url: Url): string {
 }
 
 export async function queryById(
-  did_identifier: IIdentity['address']
+  didIdentifier: IIdentity['address']
 ): Promise<IDidRecord | null> {
-  const result = await queryEncoded(did_identifier)
+  const result = await queryEncoded(didIdentifier)
   result.unwrapOr(null)
   if (result.isSome) {
     const didDetail = result.unwrap()
-    const public_keys: KeyDetails[] = Array.from(
-      didDetail.public_keys.entries()
+    const publicKeys: KeyDetails[] = Array.from(
+      didDetail.publicKeys.entries()
     ).map(([keyId, keyDetails]) => {
       return {
         ...decodePublicKey(keyDetails.key.value),
         id: keyId.toHex(),
-        includedAt: keyDetails.block_number.toNumber(),
+        includedAt: keyDetails.blockNumber.toNumber(),
       }
     })
-    const authenticationKeyId = didDetail.authentication_key.toHex()
+    const authenticationKeyId = didDetail.authenticationKey.toHex()
     const keyAgreementKeyIds = Array.from(
-      didDetail.key_agreement_keys.values()
+      didDetail.keyAgreementKeys.values()
     ).map((id) => id.toHex())
 
     const didRecord: IDidRecord = {
-      did: getDidFromIdentifier(did_identifier),
-      public_keys,
-      authentication_key: public_keys.find(
+      did: getDidFromIdentifier(didIdentifier),
+      publicKeys,
+      authenticationKey: publicKeys.find(
         (key) => key.id === authenticationKeyId
       )!,
-      key_agreement_keys: public_keys.filter((key) =>
+      keyAgreementKeys: publicKeys.filter((key) =>
         keyAgreementKeyIds.includes(key.id)
       ),
-      last_tx_counter: didDetail.last_tx_counter.toNumber(),
+      lastTxCounter: didDetail.lastTxCounter.toNumber(),
     }
-    if (didDetail.endpoint_url.isSome) {
+    if (didDetail.endpointUrl.isSome) {
       // that's super awkward but I guess there are reasons that the Url encoding needs to be a struct
-      didRecord.endpoint_url = decodeEndpointUrl(
-        didDetail.endpoint_url.unwrap()
-      )
+      didRecord.endpointUrl = decodeEndpointUrl(didDetail.endpointUrl.unwrap())
     }
-    if (didDetail.delegation_key.isSome) {
-      const delegationKeyId = didDetail.delegation_key.unwrap().toHex()
-      didRecord.delegation_key = public_keys.find(
+    if (didDetail.delegationKey.isSome) {
+      const delegationKeyId = didDetail.delegationKey.unwrap().toHex()
+      didRecord.delegationKey = publicKeys.find(
         (key) => key.id === delegationKeyId
       )
     }
-    if (didDetail.attestation_key.isSome) {
-      const attestationKeyId = didDetail.attestation_key.unwrap().toHex()
-      didRecord.attestation_key = public_keys.find(
+    if (didDetail.attestationKey.isSome) {
+      const attestationKeyId = didDetail.attestationKey.unwrap().toHex()
+      didRecord.attestationKey = publicKeys.find(
         (key) => key.id === attestationKeyId
       )
     }

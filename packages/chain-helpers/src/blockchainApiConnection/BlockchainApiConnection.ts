@@ -26,11 +26,11 @@ export const CUSTOM_TYPES: RegistryTypes = {
   DelegationNode: {
     rootId: 'DelegationNodeId',
     parent: 'Option<DelegationNodeId>',
-    owner: 'AccountId',
+    owner: 'DelegatorId',
     permissions: 'Permissions',
     revoked: 'bool',
   },
-  DelegationRoot: { ctypeHash: 'Hash', owner: 'AccountId', revoked: 'bool' },
+  DelegationRoot: { ctypeHash: 'Hash', owner: 'DelegatorId', revoked: 'bool' },
   Attestation: {
     ctypeHash: 'Hash',
     attester: 'AccountId',
@@ -62,19 +62,23 @@ export const CUSTOM_TYPES: RegistryTypes = {
     _enum: {
       StorageError: 'StorageError',
       SignatureError: 'SignatureError',
-      OperationError: 'OperationError',
       UrlError: 'UrlError',
+      InternalError: 'null',
     },
   },
   StorageError: {
     _enum: {
       DidAlreadyPresent: 'Null',
       DidNotPresent: 'Null',
-      DidKeyNotPresent: 'DidVerificationKeyType',
-      VerificationKeysNotPresent: 'Vec<DidVerificationKey>',
+      DidKeyNotPresent: 'DidVerificationKeyRelationship',
+      VerificationKeyNotPresent: 'Null',
+      CurrentlyActiveKey: 'Null',
+      MaxTxCounterValue: 'Null',
     },
   },
-  SignatureError: { _enum: ['InvalidSignatureFormat', 'InvalidSignature'] },
+  SignatureError: {
+    _enum: ['InvalidSignatureFormat', 'InvalidSignature', 'InvalidNonce'],
+  },
   OperationError: { _enum: ['InvalidNonce'] },
   UrlError: { _enum: ['InvalidUrlEncoding', 'InvalidUrlScheme'] },
   Url: { _enum: { Http: 'HttpUrl', Ftp: 'FtpUrl', Ipfs: 'IpfsUrl' } },
@@ -83,35 +87,35 @@ export const CUSTOM_TYPES: RegistryTypes = {
   IpfsUrl: { payload: 'Text' },
   DidCreationOperation: {
     did: 'DidIdentifier',
-    new_authentication_key: 'DidVerificationKey',
-    new_key_agreement_keys: 'BTreeSet<DidEncryptionKey>',
-    new_attestation_key: 'Option<DidVerificationKey>',
-    new_delegation_key: 'Option<DidVerificationKey>',
-    new_endpoint_url: 'Option<Url>',
+    newAuthenticationKey: 'DidVerificationKey',
+    newKeyAgreementKeys: 'BTreeSet<DidEncryptionKey>',
+    newAttestationKey: 'Option<DidVerificationKey>',
+    newDelegationKey: 'Option<DidVerificationKey>',
+    newEndpointUrl: 'Option<Url>',
   },
   DidUpdateOperation: {
     did: 'DidIdentifier',
-    new_authentication_key: 'Option<DidVerificationKey>',
-    new_key_agreement_keys: 'BTreeSet<DidEncryptionKey>',
-    attestation_key_update: 'DidVerificationKeyUpdateAction',
-    delegation_key_update: 'DidVerificationKeyUpdateAction',
-    public_keys_to_remove: 'BTreeSet<KeyId>',
-    new_endpoint_url: 'Option<Url>',
-    tx_counter: 'u64',
+    newAuthenticationKey: 'Option<DidVerificationKey>',
+    newKeyAgreementKeys: 'BTreeSet<DidEncryptionKey>',
+    attestationKeyUpdate: 'DidVerificationKeyUpdateAction',
+    delegationKeyUpdate: 'DidVerificationKeyUpdateAction',
+    publicKeysToRemove: 'BTreeSet<KeyId>',
+    newEndpointUrl: 'Option<Url>',
+    txCounter: 'u64',
   },
-  DidDeletionOperation: { did: 'DidIdentifier', tx_counter: 'u64' },
+  DidDeletionOperation: { did: 'DidIdentifier', txCounter: 'u64' },
   DidDetails: {
-    authentication_key: 'KeyId',
-    key_agreement_keys: 'BTreeSet<KeyId>',
-    delegation_key: 'Option<KeyId>',
-    attestation_key: 'Option<KeyId>',
-    public_keys: 'BTreeMap<KeyId, DidPublicKeyDetails>',
-    endpoint_url: 'Option<Url>',
-    last_tx_counter: 'u64',
+    authenticationKey: 'KeyId',
+    keyAgreementKeys: 'BTreeSet<KeyId>',
+    delegationKey: 'Option<KeyId>',
+    attestationKey: 'Option<KeyId>',
+    publicKeys: 'BTreeMap<KeyId, DidPublicKeyDetails>',
+    endpointUrl: 'Option<Url>',
+    lastTxCounter: 'u64',
   },
   DidPublicKeyDetails: {
     key: 'DidPublicKey',
-    block_number: 'BlockNumber',
+    blockNumber: 'BlockNumber',
   },
   DidPublicKey: {
     _enum: {
@@ -127,6 +131,38 @@ export const CUSTOM_TYPES: RegistryTypes = {
     },
   },
   KeyId: 'Hash',
+
+  Address: 'MultiAddress',
+  LookupSource: 'MultiAddress',
+
+  CtypeCreator: 'DidIdentifier',
+  CtypeHash: 'Hash',
+
+  ClaimHash: 'Hash',
+  Attester: 'DidIdentifier',
+
+  DelegatorId: 'DidIdentifier',
+  DelegationSignature: 'DidSignature',
+
+  AccountIdentifier: 'AccountId',
+  DidCallable: 'Call',
+  DidVerificationKeyRelationship: {
+    _enum: [
+      'Authentication',
+      'CapabilityDelegation',
+      'CapabilityInvocation',
+      'AssertionMethod',
+    ],
+  },
+
+  KeyError: {
+    _enum: ['InvalidVerificationKeyFormat', 'InvalidEncryptionKeyFormat'],
+  },
+  DidAuthorizedCallOperation: {
+    did: 'DidIdentifier',
+    txCounter: 'u64',
+    call: 'DidCallable',
+  },
 }
 
 /**

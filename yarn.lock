@@ -864,6 +864,7 @@ __metadata:
   resolution: "@kiltprotocol/did@workspace:packages/kilt-did"
   dependencies:
     "@kiltprotocol/chain-helpers": "workspace:*"
+    "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/types": ^3.11.1

@@ -28,9 +28,9 @@ export interface DidEncryptionKey extends Enum {
 
 export interface VerificationKeyDetails extends Struct {
   /// A verification key the DID controls.
-  verification_key: DidVerificationKey
+  verificationKey: DidVerificationKey
   /// The block number in which the verification key was added to the DID.
-  block_number: BlockNumber
+  blockNumber: BlockNumber
 }
 
 export type KeyId = Hash
@@ -61,26 +61,26 @@ export interface DidPublicKey extends Enum {
 
 export interface DidPublicKeyDetails extends Struct {
   key: DidPublicKey
-  block_number: BlockNumber
+  blockNumber: BlockNumber
 }
 
 export interface DidDetails extends Struct {
-  authentication_key: KeyId
-  key_agreement_keys: BTreeSet<KeyId>
-  delegation_key: Option<KeyId>
-  attestation_key: Option<KeyId>
-  public_keys: BTreeMap<KeyId, DidPublicKeyDetails>
-  endpoint_url: Option<Url>
-  last_tx_counter: u64
+  authenticationKey: KeyId
+  keyAgreementKeys: BTreeSet<KeyId>
+  delegationKey: Option<KeyId>
+  attestationKey: Option<KeyId>
+  publicKeys: BTreeMap<KeyId, DidPublicKeyDetails>
+  endpointUrl: Option<Url>
+  lastTxCounter: u64
 }
 
 export interface IDidCreationOperation extends Struct {
   did: DidIdentifier
-  new_authentication_key: DidVerificationKey
-  new_key_agreement_keys: BTreeSet<DidEncryptionKey>
-  new_attestation_key: Option<DidVerificationKey>
-  new_delegation_key: Option<DidVerificationKey>
-  new_endpoint_url: Option<Url>
+  newAuthenticationKey: DidVerificationKey
+  newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
+  newAttestationKey: Option<DidVerificationKey>
+  newDelegationKey: Option<DidVerificationKey>
+  newEndpointUrl: Option<Url>
 }
 
 export interface DidKeyUpdateAction extends Enum {
@@ -97,18 +97,18 @@ export interface DidKeyUpdateAction extends Enum {
 
 export interface IDidUpdateOperation extends Struct {
   did: DidIdentifier
-  new_authentication_key: Option<DidVerificationKey>
-  new_key_agreement_keys: BTreeSet<DidEncryptionKey>
-  attestation_key_update: DidKeyUpdateAction
-  delegation_key_update: DidKeyUpdateAction
-  public_keys_to_remove: BTreeSet<KeyId>
-  new_endpoint_url: Option<Url>
-  tx_counter: u64
+  newAuthenticationKey: Option<DidVerificationKey>
+  newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
+  attestationKeyUpdate: DidKeyUpdateAction
+  delegationKeyUpdate: DidKeyUpdateAction
+  publicKeysToRemove: BTreeSet<KeyId>
+  newEndpointUrl: Option<Url>
+  txCounter: u64
 }
 
 export interface IDidDeletionOperation extends Struct {
   did: DidIdentifier
-  tx_counter: u64
+  txCounter: u64
 }
 
 export interface DidSignature extends Enum {

@@ -121,7 +121,7 @@ describe('Did.chain', () => {
       Partial<IDidRecord>
     >({
       did: Did.getIdentifierFromAddress(id.address),
-      endpoint_url: 'https://example.com',
+      endpointUrl: 'https://example.com',
     })
 
     const didUpdate = encodeDidUpdate(
@@ -148,7 +148,7 @@ describe('Did.chain', () => {
       Partial<IDidRecord>
     >({
       did: Did.getIdentifierFromAddress(id.address),
-      endpoint_url: 'ftp://example.com/abc',
+      endpointUrl: 'ftp://example.com/abc',
     })
   }, 20_000)
 })

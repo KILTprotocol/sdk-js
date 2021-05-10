@@ -74,22 +74,20 @@ export function encodeDidCreate(
   typeRegistry: TypeRegistry,
   did: string,
   keys: PublicKeySet,
-  endpoint_url?: string
+  endpointUrl?: string
 ): IDidCreationOperation {
   // build did create object
   const didCreateRaw = {
     did: getIdentifierFromDid(did),
-    new_authentication_key: formatPublicKey(keys.authentication),
-    new_key_agreement_keys: [formatPublicKey(keys.encryption)],
-    new_attestation_key: keys.attestation
+    newAuthenticationKey: formatPublicKey(keys.authentication),
+    newKeyAgreementKeys: [formatPublicKey(keys.encryption)],
+    newAttestationKey: keys.attestation
       ? formatPublicKey(keys.attestation)
       : undefined,
-    new_delegation_key: keys.delegation
+    newDelegationKey: keys.delegation
       ? formatPublicKey(keys.delegation)
       : undefined,
-    new_endpoint_url: endpoint_url
-      ? encodeEndpointUrl(endpoint_url)
-      : undefined,
+    newEndpointUrl: endpointUrl ? encodeEndpointUrl(endpointUrl) : undefined,
   }
   return new (typeRegistry.getOrThrow<IDidCreationOperation>(
     'DidCreationOperation'
@@ -107,23 +105,23 @@ function matchKeyOperation(keypair: IPublicKey | undefined | null) {
 export function encodeDidUpdate(
   typeRegistry: TypeRegistry,
   did: string,
-  tx_counter: number,
+  txCounter: number,
   keysToUpdate: Partial<Nullable<PublicKeySet>>,
-  verification_keys_to_remove: KeyId[] = [],
-  new_endpoint_url?: string
+  verificationKeysToRemove: KeyId[] = [],
+  newEndpointUrl?: string
 ): IDidUpdateOperation {
   const { authentication, encryption, attestation, delegation } = keysToUpdate
   const didUpdateRaw = {
     did: getIdentifierFromDid(did),
-    new_auth_key: authentication ? formatPublicKey(authentication) : null,
-    new_key_agreement_key: encryption ? [formatPublicKey(encryption)] : [],
-    new_attestation_key: matchKeyOperation(attestation),
-    new_delegation_key: matchKeyOperation(delegation),
-    verification_keys_to_remove,
-    new_endpoint_url: new_endpoint_url
-      ? encodeEndpointUrl(new_endpoint_url)
+    newAuthKey: authentication ? formatPublicKey(authentication) : null,
+    newKeyAgreementKey: encryption ? [formatPublicKey(encryption)] : [],
+    newAttestationKey: matchKeyOperation(attestation),
+    newDelegationKey: matchKeyOperation(delegation),
+    verificationKeysToRemove,
+    newEndpointUrl: newEndpointUrl
+      ? encodeEndpointUrl(newEndpointUrl)
       : undefined,
-    tx_counter,
+    txCounter,
   }
   return new (typeRegistry.getOrThrow<IDidUpdateOperation>(
     'DidUpdateOperation'
@@ -133,12 +131,12 @@ export function encodeDidUpdate(
 export function encodeDidDelete(
   typeRegistry: TypeRegistry,
   did: string,
-  tx_counter: number
+  txCounter: number
 ): IDidDeletionOperation {
   return new (typeRegistry.getOrThrow<IDidDeletionOperation>(
     'DidDeletionOperation'
   ))(typeRegistry, {
     did: getIdentifierFromDid(did),
-    tx_counter,
+    txCounter,
   })
 }
