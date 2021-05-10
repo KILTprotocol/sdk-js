@@ -14,33 +14,14 @@ import type {
   CompressedAttestedClaim,
   IAttestation,
   IRequestForAttestation,
+  IPresentationOptions,
+  IPresentationSigningOptions,
 } from '@kiltprotocol/types'
-import { SDKErrors, Crypto } from '@kiltprotocol/utils'
+import { SDKErrors } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import AttestedClaimUtils from './AttestedClaim.utils'
-
-interface Signer {
-  sign: (data: Uint8Array) => Uint8Array
-}
-
-interface UnsignedPresentation extends AttestedClaim {}
-
-interface SignedPresentation extends UnsignedPresentation {
-  verifierChallenge: string
-  presentationSignature: string
-}
-
-interface PresentationOptions {
-  excludeOwner?: boolean
-  excludedClaims?: string[]
-  includedClaims?: string[]
-}
-
-interface PresentationSigningOptions {
-  challenge?: string
-  signer?: Signer
-}
+import { Presentation, SignedPresentation } from './Presentation'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -118,44 +99,17 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   public createPresentation(
-    presentationOptions: Required<PresentationSigningOptions> &
-      PresentationOptions
+    presentationOptions: IPresentationSigningOptions & IPresentationOptions
   ): SignedPresentation
+
   public createPresentation(
-    presentationOptions?: PresentationOptions
-  ): UnsignedPresentation
-  public createPresentation({
-    excludeOwner = false,
-    excludedClaims,
-    includedClaims,
-    challenge,
-    signer,
-  }: PresentationOptions & PresentationSigningOptions = {}):
-    | UnsignedPresentation
-    | SignedPresentation {
-    const attClaim:
-      | UnsignedPresentation
-      | SignedPresentation = new AttestedClaim(JSON.parse(JSON.stringify(this)))
+    presentationOptions?: IPresentationOptions
+  ): Presentation
 
-    // remove requested from hidden attributes
-    const excludedClaimProperties = (
-      includedClaims || Object.keys(attClaim.request.claim.contents)
-    ).filter((key) => !excludedClaims?.includes(key))
-
-    // remove specific attributes
-    attClaim.request.removeClaimProperties(excludedClaimProperties)
-    if (excludeOwner) {
-      attClaim.request.removeClaimOwner()
-    }
-    if (signer && challenge) {
-      ;(attClaim as SignedPresentation).verifierChallenge = challenge
-      const signature = signer.sign(Crypto.coToUInt8(JSON.stringify(attClaim)))
-      ;(attClaim as SignedPresentation).presentationSignature = Crypto.u8aToHex(
-        signature
-      )
-      return attClaim
-    }
-    return attClaim
+  public createPresentation(
+    opts: IPresentationOptions & Partial<IPresentationSigningOptions> = {}
+  ): Presentation | SignedPresentation {
+    return Presentation.fromAttestedClaim(this, opts)
   }
 
   /**
