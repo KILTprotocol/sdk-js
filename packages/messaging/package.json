@@ -27,6 +27,7 @@
     "dependencies": {
         "@kiltprotocol/core": "workspace:*",
         "@kiltprotocol/types": "workspace:*",
-        "@kiltprotocol/utils": "workspace:*"
+        "@kiltprotocol/utils": "workspace:*",
+        "@polkadot/util": "^5.9.2"
     }
 }

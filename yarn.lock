@@ -873,6 +873,7 @@ __metadata:
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
+    "@polkadot/util": ^5.9.2
     rimraf: ^3.0.2
     typescript: ^3.9.7
   languageName: unknown
