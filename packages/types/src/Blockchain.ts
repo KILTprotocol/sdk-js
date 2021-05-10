@@ -3,9 +3,10 @@
  * @module IBlockchain
  */
 
-import { ApiPromise } from '@polkadot/api'
-import { Header } from '@polkadot/types/interfaces/types'
-import BN from 'bn.js'
+import type { ApiPromise } from '@polkadot/api'
+import type { Header } from '@polkadot/types/interfaces/types'
+import { AnyNumber } from '@polkadot/types/types'
+import type BN from 'bn.js'
 import type {
   IIdentity,
   ISubmittableResult,
@@ -13,12 +14,12 @@ import type {
   SubscriptionPromise,
 } from '.'
 
+export type ReSignOpts = { reSign: boolean; tip: AnyNumber }
 export type BlockchainStats = {
   chain: string
   nodeName: string
   nodeVersion: string
 }
-
 export interface IBlockchainApi {
   api: ApiPromise
 
@@ -26,17 +27,13 @@ export interface IBlockchainApi {
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
   signTx(
     identity: IIdentity,
-    tx: SubmittableExtrinsic
+    tx: SubmittableExtrinsic,
+    tip?: AnyNumber
   ): Promise<SubmittableExtrinsic>
-  submitTxWithReSign(
+  submitSignedTxWithReSign(
     tx: SubmittableExtrinsic,
     identity?: IIdentity,
-    opts?: SubscriptionPromise.Options
-  ): Promise<ISubmittableResult>
-  submitTx(
-    identity: IIdentity,
-    tx: SubmittableExtrinsic,
-    opts?: SubscriptionPromise.Options
+    opts?: Partial<SubscriptionPromise.Options>
   ): Promise<ISubmittableResult>
   getNonce(accountAddress: string): Promise<BN>
   reSignTx(

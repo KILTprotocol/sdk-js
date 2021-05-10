@@ -10,7 +10,7 @@
  * @module RequestForAttestation
  */
 
-import {
+import type {
   IRequestForAttestation,
   CompressedRequestForAttestation,
   Hash,

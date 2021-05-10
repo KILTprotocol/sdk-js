@@ -3,7 +3,7 @@
  * @module QuoteUtils
  */
 
-import {
+import type {
   CompressedCostBreakdown,
   CompressedQuote,
   CompressedQuoteAgreed,

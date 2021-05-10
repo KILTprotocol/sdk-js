@@ -2,8 +2,8 @@
  * @packageDocumentation
  * @module IClaim
  */
-import { ICType } from './CType'
-import { IPublicIdentity } from './PublicIdentity'
+import type { ICType } from './CType'
+import type { IPublicIdentity } from './PublicIdentity'
 
 /**
  * The minimal partial claim from which a JSON-LD representation can be built.

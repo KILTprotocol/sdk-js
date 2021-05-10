@@ -11,10 +11,9 @@
 import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
 import { getChildren, query, revoke, store } from './DelegationNode.chain'
-import permissionsAsBitset from './DelegationNode.utils'
+import * as DelegationNodeUtils from './DelegationNode.utils'
 import DelegationRootNode from './DelegationRootNode'
 import { query as queryRoot } from './DelegationRootNode.chain'
 
@@ -44,23 +43,14 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * Creates a new [DelegationNode].
    *
-   * @param id A unique identifier.
-   * @param rootId Identifier of the root delegation node that is already stored on-chain.
-   * @param account Address of the account that will be the owner of the delegation.
-   * @param permissions List of [[Permission]]s.
-   * @param parentId Identifier of the parent delegation node already stored on-chain. Not required when the parent is the root node.
+   * @param delegationNodeInput - The base object from which to create the delegation node.
    */
-  public constructor(
-    id: IDelegationNode['id'],
-    rootId: IDelegationNode['rootId'],
-    account: IDelegationNode['account'],
-    permissions: IDelegationNode['permissions'],
-    parentId?: IDelegationNode['parentId']
-  ) {
-    super(id, account)
-    this.permissions = permissions
-    this.rootId = rootId
-    this.parentId = parentId
+  public constructor(delegationNodeInput: IDelegationNode) {
+    super(delegationNodeInput)
+    this.permissions = delegationNodeInput.permissions
+    this.rootId = delegationNodeInput.rootId
+    this.parentId = delegationNodeInput.parentId
+    DelegationNodeUtils.errorCheck(this)
   }
 
   /**
@@ -78,7 +68,8 @@ export default class DelegationNode extends DelegationBaseNode
    *
    * // Store the signed hash on the Kilt chain...
    * const myIdentity: Identity = ...
-   * newDelegationNode.store(myIdentity, signature)
+   * tx = newDelegationNode.store(signature)
+   * BlockchainUtils.signAndSendTx(tx, myIdentity)
    * ```
    *
    * @returns The hash representation of this delegation **as a hex string**.
@@ -91,7 +82,7 @@ export default class DelegationNode extends DelegationBaseNode
     const uint8Props: Uint8Array[] = propsToHash.map((value) => {
       return Crypto.coToUInt8(value)
     })
-    uint8Props.push(permissionsAsBitset(this))
+    uint8Props.push(DelegationNodeUtils.permissionsAsBitset(this))
     const generated: string = Crypto.u8aToHex(
       Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
     )
@@ -130,16 +121,12 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * [ASYNC] Stores the delegation node on chain.
    *
-   * @param identity Account used to store the delegation node.
    * @param signature Signature of the delegate to ensure it is done under the delegate's permission.
-   * @returns Promise containing a SubmittableExtrinsic.
+   * @returns Promise containing a unsigned SubmittableExtrinsic.
    */
-  public async store(
-    identity: Identity,
-    signature: string
-  ): Promise<SubmittableExtrinsic> {
+  public async store(signature: string): Promise<SubmittableExtrinsic> {
     log.info(`:: store(${this.id})`)
-    return store(this, identity, signature)
+    return store(this, signature)
   }
 
   /**
@@ -155,23 +142,23 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * [ASYNC] Revokes the delegation node on chain.
    *
-   * @param identity The identity used to revoke the delegation.
-   * @returns Promise containing a SubmittableExtrinsic.
+   * @param address The address of the identity used to revoke the delegation.
+   * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async revoke(identity: Identity): Promise<SubmittableExtrinsic> {
-    const { steps, node } = await this.findAncestorOwnedBy(identity.address)
+  public async revoke(address: string): Promise<SubmittableExtrinsic> {
+    const { steps, node } = await this.findAncestorOwnedBy(address)
     if (!node) {
       throw SDKErrors.ERROR_UNAUTHORIZED(
-        `Identity with address ${identity.address} is not among the delegators and may not revoke this node`
+        `Identity with address ${address} is not among the delegators and may not revoke this node`
       )
     }
     const childCount = await this.subtreeNodeCount()
     // must revoke all children and self
     const revocationCount = childCount + 1
     log.debug(
-      `:: revoke(${this.id}) with maxRevocations=${revocationCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${identity.address}`
+      `:: revoke(${this.id}) with maxRevocations=${revocationCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${address}`
     )
-    return revoke(this.id, identity, steps, revocationCount)
+    return revoke(this.id, steps, revocationCount)
   }
 
   public async getChildren(): Promise<DelegationNode[]> {

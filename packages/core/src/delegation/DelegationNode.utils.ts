@@ -3,8 +3,9 @@
  * @module DelegationNodeUtils
  */
 
-import { IAttestation, IDelegationNode } from '@kiltprotocol/types'
+import type { IAttestation, IDelegationNode } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { isHex } from '@polkadot/util'
 import Identity from '../identity'
 import DelegationNode from './DelegationNode'
 
@@ -20,10 +21,7 @@ import DelegationNode from './DelegationNode'
  * @param delegation The delegation from which you want to convert the permissions to bitset.
  * @returns The bitset as single value uint8 array.
  */
-// eslint-disable-next-line import/prefer-default-export
-export default function permissionsAsBitset(
-  delegation: IDelegationNode
-): Uint8Array {
+export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
   const permissionsBitsetData: number = delegation.permissions.reduce(
     (accumulator, currentValue) => accumulator + currentValue
   )
@@ -64,4 +62,29 @@ export async function countNodeDepth(
   }
 
   return delegationTreeTraversalSteps
+}
+
+export function errorCheck(delegationNodeInput: IDelegationNode): void {
+  const { permissions, rootId, parentId } = delegationNodeInput
+
+  if (permissions.length === 0 || permissions.length > 3) {
+    throw SDKErrors.ERROR_UNAUTHORIZED(
+      'Must have at least one permission and no more then two'
+    )
+  }
+
+  if (!rootId) {
+    throw SDKErrors.ERROR_DELEGATION_ID_MISSING()
+  } else if (typeof rootId !== 'string') {
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+  } else if (!isHex(rootId)) {
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+  }
+  if (parentId) {
+    if (typeof parentId !== 'string') {
+      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    } else if (!isHex(parentId)) {
+      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    }
+  }
 }

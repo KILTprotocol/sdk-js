@@ -3,7 +3,7 @@
  * @module AttestationUtils
  */
 
-import { IAttestation, CompressedAttestation } from '@kiltprotocol/types'
+import type { IAttestation, CompressedAttestation } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 
 /**

@@ -6,7 +6,7 @@ import { SubmittableResult } from '@polkadot/api'
 import { TypeRegistry } from '@polkadot/types'
 import { Option } from '@polkadot/types/codec'
 import { SDKErrors } from '@kiltprotocol/utils'
-import {
+import type {
   ICType,
   CompressedCType,
   CTypeSchemaWithoutId,
@@ -105,8 +105,10 @@ describe('CType', () => {
   it('stores ctypes', async () => {
     const ctype = CType.fromSchema(ctypeModel, identityAlice.address)
 
-    const tx = await ctype.store(identityAlice)
-    const result = await BlockchainUtils.submitTxWithReSign(tx, identityAlice)
+    const tx = await ctype.store()
+    const result = await BlockchainUtils.signAndSubmitTx(tx, identityAlice, {
+      reSign: true,
+    })
     expect(result).toBeInstanceOf(SubmittableResult)
     expect(result.isFinalized).toBeTruthy()
     expect(result.isCompleted).toBeTruthy()
@@ -167,8 +169,8 @@ describe('CType', () => {
       SDKErrors.ERROR_ADDRESS_INVALID(invalidAddressCtype.owner!, 'CType owner')
     )
     expect(() => CType.fromCType(faultyAddressTypeCType)).toThrowError(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       SDKErrors.ERROR_ADDRESS_INVALID(
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         faultyAddressTypeCType.owner!,
         'CType owner'
       )

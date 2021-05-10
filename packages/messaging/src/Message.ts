@@ -11,17 +11,22 @@
  */
 
 import { Identity } from '@kiltprotocol/core'
-import {
+import type {
   IPublicIdentity,
   CompressedMessageBody,
   IMessage,
   ISubmitClaimsForCTypes,
   IEncryptedMessage,
   MessageBody,
-  MessageBodyType,
+  ICType,
 } from '@kiltprotocol/types'
+import { MessageBodyType } from '@kiltprotocol/types'
 import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { compressMessage, decompressMessage } from './Message.utils'
+import {
+  compressMessage,
+  decompressMessage,
+  verifyRequiredCTypeProperties,
+} from './Message.utils'
 
 export default class Message implements IMessage {
   /**
@@ -87,7 +92,7 @@ export default class Message implements IMessage {
   ): void {
     if (
       Crypto.hashStr(
-        encrypted.message + encrypted.nonce + encrypted.createdAt
+        encrypted.ciphertext + encrypted.nonce + encrypted.createdAt
       ) !== encrypted.hash
     ) {
       throw SDKErrors.ERROR_NONCE_HASH_INVALID(
@@ -121,7 +126,7 @@ export default class Message implements IMessage {
     Message.ensureHashAndSignature(encrypted, encrypted.senderAddress)
 
     const ea: Crypto.EncryptedAsymmetricString = {
-      box: encrypted.message,
+      box: encrypted.ciphertext,
       nonce: encrypted.nonce,
     }
     const decoded: string | false = receiver.decryptAsymmetricAsStr(
@@ -155,6 +160,11 @@ export default class Message implements IMessage {
   public senderAddress: IMessage['senderAddress']
   public senderBoxPublicKey: IMessage['senderBoxPublicKey']
 
+  private ciphertext: string
+  private nonce: string
+  private hash: string
+  private signature: string
+
   /**
    * Constructs a message which should be encrypted with [[Message.encrypt]] before sending to the receiver.
    *
@@ -181,18 +191,13 @@ export default class Message implements IMessage {
       JSON.stringify(body),
       receiver.boxPublicKeyAsHex
     )
-    this.message = encryptedMessage.box
+    this.ciphertext = encryptedMessage.box
     this.nonce = encryptedMessage.nonce
 
-    const hashInput: string = this.message + this.nonce + this.createdAt
+    const hashInput: string = this.ciphertext + this.nonce + this.createdAt
     this.hash = Crypto.hashStr(hashInput)
     this.signature = sender.signStr(this.hash)
   }
-
-  private message: string
-  private nonce: string
-  private hash: string
-  private signature: string
 
   /**
    * Encrypts the [[Message]] symmetrically as a string. This can be reversed with [[Message.decrypt]].
@@ -203,7 +208,7 @@ export default class Message implements IMessage {
     return {
       messageId: this.messageId,
       receivedAt: this.receivedAt,
-      message: this.message,
+      ciphertext: this.ciphertext,
       nonce: this.nonce,
       createdAt: this.createdAt,
       hash: this.hash,
@@ -216,5 +221,12 @@ export default class Message implements IMessage {
 
   public compress(): CompressedMessageBody {
     return compressMessage(this.body)
+  }
+
+  public static verifyRequiredCTypeProperties(
+    requiredProperties: string[],
+    cType: ICType
+  ): boolean {
+    return verifyRequiredCTypeProperties(requiredProperties, cType)
   }
 }
