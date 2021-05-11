@@ -104,7 +104,6 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
           'Reject terms delegation id hash'
         )
       }
-      ClaimUtils.errorCheck(body.content.claim)
       body.content.legitimations.map((val) =>
         AttestedClaimUtils.errorCheck(val)
       )
@@ -161,6 +160,15 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       )
       break
     }
+    case Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES: {
+      body.content.map((cTypeHash) =>
+        DataUtils.validateHash(
+          cTypeHash,
+          'accept claims for ctypes message ctype hash invalid'
+        )
+      )
+      break
+    }
     case Message.BodyType.REJECT_CLAIMS_FOR_CTYPES: {
       body.content.map((cTypeHash) =>
         DataUtils.validateHash(
@@ -203,15 +211,6 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       break
     }
 
-    case Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES: {
-      body.content.map((cTypeHash) =>
-        DataUtils.validateHash(
-          cTypeHash,
-          'accept claims for ctypes message ctype hash invalid'
-        )
-      )
-      break
-    }
     default:
       throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
   }

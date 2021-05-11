@@ -842,7 +842,7 @@ describe('Messaging Utilities', () => {
       identityBob.getPublicIdentity()
     )
   })
-  it('error check should not throw errors on faulty bodies', async () => {
+  it('error check should not throw errors on faulty bodies', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestTermsBody)
     ).not.toThrowError()
@@ -886,7 +886,7 @@ describe('Messaging Utilities', () => {
       MessageUtils.errorCheckMessageBody(informCreateDelegationBody)
     ).not.toThrowError()
   })
-  it('error check should not throw errors on message', async () => {
+  it('error check should not throw errors on message', () => {
     expect(() =>
       MessageUtils.errorCheckMessage(messageRequestTerms)
     ).not.toThrowError()
@@ -930,34 +930,73 @@ describe('Messaging Utilities', () => {
       MessageUtils.errorCheckMessage(messageInformCreateDelegation)
     ).not.toThrowError()
   })
-  it('error check should throw errors on message', async () => {
+  it('error check should throw errors on message', () => {
     messageRequestTerms.receiverAddress = 'this is not a receiver address'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRequestTerms)
-    ).toThrowError()
+    ).toThrowError(
+      SDKErrors.ERROR_ADDRESS_INVALID(
+        messageRequestTerms.receiverAddress,
+        'receiver address'
+      )
+    )
     messageSubmitTerms.senderBoxPublicKey =
       'this is not a sender box public key'
     expect(() =>
       MessageUtils.errorCheckMessage(messageSubmitTerms)
-    ).toThrowError()
+    ).toThrowError(SDKErrors.ERROR_ADDRESS_INVALID())
     messageRejectTerms.senderAddress = 'this is not a sender address'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRejectTerms)
-    ).toThrowError()
+    ).toThrowError(
+      SDKErrors.ERROR_ADDRESS_INVALID(
+        messageRejectTerms.senderAddress,
+        'sender address'
+      )
+    )
   })
-  it('error check should throw errors on faulty bodies', async () => {
+  it('error check should throw errors on faulty bodies', () => {
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestTermsBody)
-    ).toThrowError()
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        requestTermsBody.content.cTypeHash,
+        'Claim CType'
+      )
+    )
+    submitTermsBody.content.prerequisiteClaims = 'this is not a delegation id'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitTermsBody)
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        submitTermsBody.content.prerequisiteClaims,
+        'Submit terms pre-requisite claims invalid'
+      )
+    )
     submitTermsBody.content.delegationId = 'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitTermsBody)
-    ).toThrowError()
-    rejectTermsBody.content.claim = { cTypeHash: '' }
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        submitTermsBody.content.delegationId,
+        'Submit terms delegation id hash invalid'
+      )
+    )
+
+    rejectTermsBody.content.delegationId = 'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectTermsBody)
-    ).toThrowError()
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        rejectTermsBody.content.delegationId,
+        'Reject terms delegation id hash'
+      )
+    )
+    delete rejectTermsBody.content.claim.cTypeHash
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(rejectTermsBody)
+    ).toThrowError(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED())
     requestAttestationBody.content.requestForAttestation.claimerSignature =
       'this is not the claimers signature'
     expect(() =>
@@ -967,44 +1006,78 @@ describe('Messaging Utilities', () => {
       'this is not the claim hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAttestationBody)
-    ).toThrowError()
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        submitAttestationBody.content.attestation.claimHash,
+        'Claim'
+      )
+    )
     rejectAttestationForClaimBody.content = 'this is not the root hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAttestationForClaimBody)
-    ).toThrowError()
+    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED())
     requestClaimsForCTypesBody.content[0].cTypeHash = 'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestClaimsForCTypesBody)
-    ).toThrowError()
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        requestClaimsForCTypesBody.content[0].cTypeHash,
+        'request claims for ctypes cTypeHash invalid'
+      )
+    )
     delete submitClaimsForCTypesBody.content[0].attestation.revoked
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitClaimsForCTypesBody)
-    ).toThrowError()
+    ).toThrowError(SDKErrors.ERROR_REVOCATION_BIT_MISSING())
     acceptClaimsForCTypesBody.content[0] = 'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(acceptClaimsForCTypesBody)
-    ).toThrowError()
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        acceptClaimsForCTypesBody.content[0],
+        'accept claims for ctypes message ctype hash invalid'
+      )
+    )
     rejectClaimsForCTypesBody.content[0] = 'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectClaimsForCTypesBody)
-    ).toThrowError()
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        rejectClaimsForCTypesBody.content[0],
+        'rejected claims for ctypes ctype hashes invalid'
+      )
+    )
     requestAcceptDelegationBody.content.signatures.inviter =
       'this is not a signature'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
-    ).toThrowError()
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
     submitAcceptDelegationBody.content.delegationData.parentId =
       'this is not a parent id hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
-    ).toThrowError()
-    rejectAcceptDelegationBody.content.account = 'this is not an address'
+    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE())
+    delete rejectAcceptDelegationBody.content.account
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAcceptDelegationBody)
-    ).toThrowError()
-    delete informCreateDelegationBody.content.delegationId
+    ).toThrowError(SDKErrors.ERROR_OWNER_NOT_PROVIDED())
+    informCreateDelegationBody.content.delegationId =
+      'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(informCreateDelegationBody)
-    ).toThrowError()
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        informCreateDelegationBody.content.delegationId,
+        'inform create delegation message delegation id invalid'
+      )
+    )
+  })
+  it('error check of the delegation data in messaging', () => {
+    delete submitAcceptDelegationBody.content.delegationData.id
+    expect(() =>
+      MessageUtils.errorCheckDelegationData(
+        submitAcceptDelegationBody.content.delegationData
+      )
+    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_MISSING())
   })
 })
