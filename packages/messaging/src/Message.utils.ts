@@ -172,7 +172,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
     }
     case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
       errorCheckDelegationData(body.content.delegationData)
-      if (!isHex(body.content.signatures)) {
+      if (!isHex(body.content.signatures.inviter)) {
         throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
       }
       if (!isJsonObject(body.content.metaData)) {
@@ -182,7 +182,10 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
     }
     case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
       errorCheckDelegationData(body.content.delegationData)
-      if (!isHex(body.content.signatures)) {
+      if (
+        !isHex(body.content.signatures.invitee) ||
+        !isHex(body.content.signatures.inviter)
+      ) {
         throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
       }
       break
@@ -227,7 +230,6 @@ export function errorCheckMessage(message: IMessage): boolean | void {
     senderBoxPublicKey,
     inReplyTo,
   } = message
-  errorCheckMessageBody(body)
   if (messageId && typeof messageId !== 'string') {
     throw new TypeError('message id is expected to be a string')
   }
@@ -245,7 +247,7 @@ export function errorCheckMessage(message: IMessage): boolean | void {
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('in reply to is expected to be a string')
   }
-
+  errorCheckMessageBody(body)
   return true
 }
 
