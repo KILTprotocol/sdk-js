@@ -1047,16 +1047,26 @@ describe('Messaging Utilities', () => {
         'rejected claims for ctypes ctype hashes invalid'
       )
     )
+    delete requestAcceptDelegationBody.content.metaData
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
+    ).toThrowError(SDKErrors.ERROR_OBJECT_MALFORMED())
     requestAcceptDelegationBody.content.signatures.inviter =
       'this is not a signature'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
+    submitAcceptDelegationBody.content.signatures.invitee =
+      'this is not a signature'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
     ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
     submitAcceptDelegationBody.content.delegationData.parentId =
       'this is not a parent id hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
     ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE())
+
     delete rejectAcceptDelegationBody.content.account
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAcceptDelegationBody)
@@ -1071,8 +1081,34 @@ describe('Messaging Utilities', () => {
         'inform create delegation message delegation id invalid'
       )
     )
+    expect(() =>
+      MessageUtils.errorCheckMessageBody({} as MessageBody)
+    ).toThrowError(SDKErrors.ERROR_MESSAGE_BODY_MALFORMED())
   })
   it('error check of the delegation data in messaging', () => {
+    delete requestAcceptDelegationBody.content.delegationData.isPCR
+    expect(() =>
+      MessageUtils.errorCheckDelegationData(
+        requestAcceptDelegationBody.content.delegationData
+      )
+    ).toThrowError(TypeError('isPCR is expected to be a boolean'))
+    requestAcceptDelegationBody.content.delegationData.id =
+      'this is not a delegation id'
+    expect(() =>
+      MessageUtils.errorCheckDelegationData(
+        requestAcceptDelegationBody.content.delegationData
+      )
+    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE())
+    submitAcceptDelegationBody.content.delegationData.permissions = []
+    expect(() =>
+      MessageUtils.errorCheckDelegationData(
+        submitAcceptDelegationBody.content.delegationData
+      )
+    ).toThrowError(
+      SDKErrors.ERROR_UNAUTHORIZED(
+        'Must have at least one permission and no more then two'
+      )
+    )
     delete submitAcceptDelegationBody.content.delegationData.id
     expect(() =>
       MessageUtils.errorCheckDelegationData(
