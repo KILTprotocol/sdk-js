@@ -107,17 +107,19 @@ export function encodeDidUpdate(
   did: string,
   txCounter: number,
   keysToUpdate: Partial<Nullable<PublicKeySet>>,
-  verificationKeysToRemove: KeyId[] = [],
+  publicKeysToRemove: KeyId[] = [],
   newEndpointUrl?: string
 ): IDidUpdateOperation {
   const { authentication, encryption, attestation, delegation } = keysToUpdate
   const didUpdateRaw = {
     did: getIdentifierFromDid(did),
-    newAuthKey: authentication ? formatPublicKey(authentication) : null,
-    newKeyAgreementKey: encryption ? [formatPublicKey(encryption)] : [],
-    newAttestationKey: matchKeyOperation(attestation),
-    newDelegationKey: matchKeyOperation(delegation),
-    verificationKeysToRemove,
+    newAuthenticationKey: authentication
+      ? formatPublicKey(authentication)
+      : null,
+    newKeyAgreementKeys: encryption ? [formatPublicKey(encryption)] : [],
+    attestationKeyUpdate: matchKeyOperation(attestation),
+    delegationKeyUpdate: matchKeyOperation(delegation),
+    publicKeysToRemove,
     newEndpointUrl: newEndpointUrl
       ? encodeEndpointUrl(newEndpointUrl)
       : undefined,

@@ -16,6 +16,7 @@ import type {
   DidVerificationKey,
   Url,
   UrlEncoding,
+  DidAuthorizedCallOperation,
 } from './types.chain'
 import type {
   DidSigned,
@@ -143,10 +144,19 @@ export async function didDeleteTx(
 }
 
 export async function didSignExtrinsic(
-  extrinsic: SubmittableExtrinsic,
+  didIdentifier: IIdentity['address'],
+  txCounter: number,
+  call: SubmittableExtrinsic,
   signer: ISigningKeyPair
 ): Promise<SubmittableExtrinsic> {
-  const { payload, signature } = signCodec(extrinsic, signer)
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const signableCall = new (blockchain.api.registry.getOrThrow<
+    DidAuthorizedCallOperation
+  >('DidAuthorizedCallOperation'))(blockchain.api.registry, {
+    did: didIdentifier,
+    txCounter,
+    call,
+  })
+  const { payload, signature } = signCodec(signableCall, signer)
   return blockchain.api.tx.did.submitDidCall(payload, signature)
 }

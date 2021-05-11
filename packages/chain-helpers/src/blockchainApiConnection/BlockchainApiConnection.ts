@@ -15,34 +15,70 @@ import Blockchain from '../blockchain/Blockchain'
 let instance: Promise<Blockchain> | null
 
 export const CUSTOM_TYPES: RegistryTypes = {
-  Balance: 'u128',
-  PublicSigningKey: 'Hash',
-  PublicBoxKey: 'Hash',
-  BlockNumber: 'u64',
+  // Runtime types
+  Address: 'MultiAddress',
   AmountOf: 'i128',
+  Balance: 'u128',
+  BlockNumber: 'u64',
   Index: 'u64',
+  LookupSource: 'MultiAddress',
+
+  // Ctype types
+  CtypeCreatorOf: 'DidIdentifierOf',
+  CtypeHashOf: 'Hash',
+
+  // Attestation types
+  ClaimHashOf: 'Hash',
+  AttesterOf: 'DidIdentifierOf',
+  AttestationDetails: {
+    ctypeHash: 'CtypeHashOf',
+    attester: 'AttesterOf',
+    delegationId: 'Option<DelegationNodeIdOf>',
+    revoked: 'bool',
+  },
+
+  // Delegation types
   Permissions: 'u32',
-  DelegationNodeId: 'Hash',
+  DelegationNodeIdOf: 'Hash',
+  DelegatorIdOf: 'DidIdentifierOf',
+  DelegationSignature: 'DidSignature',
+  DelegationRoot: {
+    ctypeHash: 'CtypeHashOf',
+    owner: 'DelegatorIdOf',
+    revoked: 'bool',
+  },
   DelegationNode: {
-    rootId: 'DelegationNodeId',
-    parent: 'Option<DelegationNodeId>',
-    owner: 'DelegatorId',
+    rootId: 'DelegationNodeIdOf',
+    parent: 'Option<DelegationNodeIdOf>',
+    owner: 'DelegatorIdOf',
     permissions: 'Permissions',
     revoked: 'bool',
   },
-  DelegationRoot: { ctypeHash: 'Hash', owner: 'DelegatorId', revoked: 'bool' },
-  Attestation: {
-    ctypeHash: 'Hash',
-    attester: 'AccountId',
-    delegationId: 'Option<DelegationNodeId>',
-    revoked: 'bool',
+
+  // Did types
+  KeyIdOf: 'Hash',
+  DidIdentifierOf: 'AccountId',
+  AccountIdentifierOf: 'AccountId',
+  BlockNumberOf: 'BlockNumber',
+  DidCallableOf: 'Call',
+  DidVerificationKey: {
+    _enum: {
+      Ed25519: '[u8; 32]',
+      Sr25519: '[u8; 32]',
+    },
   },
-  XCurrencyId: { chainId: 'ChainId', currencyId: 'Vec<u8>' },
-  ChainId: { _enum: { RelayChain: 'Null', ParaChain: 'ParaId' } },
-  CurrencyIdOf: 'CurrencyId',
-  CurrencyId: { _enum: { Dot: 0, Ksm: 1, Kilt: 2 } },
-  DidIdentifier: 'AccountId',
-  DidVerificationKeyType: {
+  DidEncryptionKey: {
+    _enum: {
+      X25519: '[u8; 32]',
+    },
+  },
+  DidPublicKey: {
+    _enum: {
+      PublicVerificationKey: 'DidVerificationKey',
+      PublicEncryptionKey: 'DidEncryptionKey',
+    },
+  },
+  DidVerificationKeyRelationship: {
     _enum: [
       'Authentication',
       'CapabilityDelegation',
@@ -50,20 +86,18 @@ export const CUSTOM_TYPES: RegistryTypes = {
       'AssertionMethod',
     ],
   },
-  DidEncryptionKeyType: { _enum: ['KeyAgreement'] },
-  DidVerificationKey: {
-    _enum: { Ed25519: '[u8; 32]', Sr25519: '[u8; 32]' },
-  },
   DidSignature: {
-    _enum: { Ed25519: 'Ed25519Signature', Sr25519: 'Sr25519Signature' },
+    _enum: {
+      Ed25519: 'Ed25519Signature',
+      Sr25519: 'Sr25519Signature',
+    },
   },
-  DidEncryptionKey: { _enum: { X25519: '[u8; 32]' } },
   DidError: {
     _enum: {
       StorageError: 'StorageError',
       SignatureError: 'SignatureError',
       UrlError: 'UrlError',
-      InternalError: 'null',
+      InternalError: 'Null',
     },
   },
   StorageError: {
@@ -79,14 +113,27 @@ export const CUSTOM_TYPES: RegistryTypes = {
   SignatureError: {
     _enum: ['InvalidSignatureFormat', 'InvalidSignature', 'InvalidNonce'],
   },
-  OperationError: { _enum: ['InvalidNonce'] },
-  UrlError: { _enum: ['InvalidUrlEncoding', 'InvalidUrlScheme'] },
-  Url: { _enum: { Http: 'HttpUrl', Ftp: 'FtpUrl', Ipfs: 'IpfsUrl' } },
-  HttpUrl: { payload: 'Text' },
-  FtpUrl: { payload: 'Text' },
-  IpfsUrl: { payload: 'Text' },
+  KeyError: {
+    _enum: ['InvalidVerificationKeyFormat', 'InvalidEncryptionKeyFormat'],
+  },
+  UrlError: {
+    _enum: ['InvalidUrlEncoding', 'InvalidUrlScheme'],
+  },
+  DidPublicKeyDetails: {
+    key: 'DidPublicKey',
+    blockNumber: 'BlockNumberOf',
+  },
+  DidDetails: {
+    authenticationKey: 'KeyIdOf',
+    keyAgreementKeys: 'BTreeSet<KeyIdOf>',
+    delegationKey: 'Option<KeyIdOf>',
+    attestationKey: 'Option<KeyIdOf>',
+    publicKeys: 'BTreeMap<KeyIdOf, DidPublicKeyDetails>',
+    endpointUrl: 'Option<Url>',
+    lastTxCounter: 'u64',
+  },
   DidCreationOperation: {
-    did: 'DidIdentifier',
+    did: 'DidIdentifierOf',
     newAuthenticationKey: 'DidVerificationKey',
     newKeyAgreementKeys: 'BTreeSet<DidEncryptionKey>',
     newAttestationKey: 'Option<DidVerificationKey>',
@@ -94,34 +141,14 @@ export const CUSTOM_TYPES: RegistryTypes = {
     newEndpointUrl: 'Option<Url>',
   },
   DidUpdateOperation: {
-    did: 'DidIdentifier',
+    did: 'DidIdentifierOf',
     newAuthenticationKey: 'Option<DidVerificationKey>',
     newKeyAgreementKeys: 'BTreeSet<DidEncryptionKey>',
     attestationKeyUpdate: 'DidVerificationKeyUpdateAction',
     delegationKeyUpdate: 'DidVerificationKeyUpdateAction',
-    publicKeysToRemove: 'BTreeSet<KeyId>',
+    publicKeysToRemove: 'BTreeSet<KeyIdOf>',
     newEndpointUrl: 'Option<Url>',
     txCounter: 'u64',
-  },
-  DidDeletionOperation: { did: 'DidIdentifier', txCounter: 'u64' },
-  DidDetails: {
-    authenticationKey: 'KeyId',
-    keyAgreementKeys: 'BTreeSet<KeyId>',
-    delegationKey: 'Option<KeyId>',
-    attestationKey: 'Option<KeyId>',
-    publicKeys: 'BTreeMap<KeyId, DidPublicKeyDetails>',
-    endpointUrl: 'Option<Url>',
-    lastTxCounter: 'u64',
-  },
-  DidPublicKeyDetails: {
-    key: 'DidPublicKey',
-    blockNumber: 'BlockNumber',
-  },
-  DidPublicKey: {
-    _enum: {
-      PublicVerificationKey: 'DidVerificationKey',
-      PublicEncryptionKey: 'DidEncryptionKey',
-    },
   },
   DidVerificationKeyUpdateAction: {
     _enum: {
@@ -130,38 +157,36 @@ export const CUSTOM_TYPES: RegistryTypes = {
       Delete: 'Null',
     },
   },
-  KeyId: 'Hash',
-
-  Address: 'MultiAddress',
-  LookupSource: 'MultiAddress',
-
-  CtypeCreator: 'DidIdentifier',
-  CtypeHash: 'Hash',
-
-  ClaimHash: 'Hash',
-  Attester: 'DidIdentifier',
-
-  DelegatorId: 'DidIdentifier',
-  DelegationSignature: 'DidSignature',
-
-  AccountIdentifier: 'AccountId',
-  DidCallable: 'Call',
-  DidVerificationKeyRelationship: {
-    _enum: [
-      'Authentication',
-      'CapabilityDelegation',
-      'CapabilityInvocation',
-      'AssertionMethod',
-    ],
-  },
-
-  KeyError: {
-    _enum: ['InvalidVerificationKeyFormat', 'InvalidEncryptionKeyFormat'],
+  DidDeletionOperation: {
+    did: 'DidIdentifierOf',
+    txCounter: 'u64',
   },
   DidAuthorizedCallOperation: {
-    did: 'DidIdentifier',
+    did: 'DidIdentifierOf',
     txCounter: 'u64',
-    call: 'DidCallable',
+    call: 'DidCallableOf',
+  },
+  HttpUrl: {
+    payload: 'Text',
+  },
+  FtpUrl: {
+    payload: 'Text',
+  },
+  IpfsUrl: {
+    payload: 'Text',
+  },
+  Url: {
+    _enum: {
+      Http: 'HttpUrl',
+      Ftp: 'FtpUrl',
+      Ipfs: 'IpfsUrl',
+    },
+  },
+
+  // Launch types
+  LockedBalance: {
+    block: 'BlockNumber',
+    amount: 'Balance',
   },
 }
 

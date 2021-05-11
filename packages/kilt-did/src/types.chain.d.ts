@@ -8,7 +8,12 @@ import type {
   u8,
   Vec,
 } from '@polkadot/types'
-import type { AccountId, BlockNumber, Hash } from '@polkadot/types/interfaces'
+import type {
+  AccountId,
+  BlockNumber,
+  Call,
+  Hash,
+} from '@polkadot/types/interfaces'
 
 export interface DidVerificationKey extends Enum {
   isEd25519: boolean
@@ -117,3 +122,11 @@ export interface DidSignature extends Enum {
   asEd25519: Vec<u8>
   asSr25519: Vec<u8>
 }
+
+export interface DidAuthorizedCallOperation extends Struct {
+  did: DidIdentifier
+  txCounter: u64
+  call: DidCallable
+}
+
+type DidCallable = Call

@@ -55,7 +55,7 @@ describe('Did.chain', () => {
       await expect(
         didCreateTx(signed).then(async (tx) => {
           await tx.signAsync(alice.signKeyringPair)
-          return BlockchainUtils.submitTxWithReSign(tx, alice, {
+          return BlockchainUtils.signAndSubmitTx(tx, alice, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
           })
         })
@@ -82,7 +82,7 @@ describe('Did.chain', () => {
       await expect(
         didDeleteTx(signed).then(async (tx) => {
           await tx.signAsync(alice.signKeyringPair)
-          return BlockchainUtils.submitTxWithReSign(tx, alice, {
+          return BlockchainUtils.signAndSubmitTx(tx, alice, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
           })
         })
@@ -111,7 +111,7 @@ describe('Did.chain', () => {
     await expect(
       didCreateTx(signed1).then(async (tx) => {
         await tx.signAsync(alice.signKeyringPair)
-        return BlockchainUtils.submitTxWithReSign(tx, alice, {
+        return BlockchainUtils.signAndSubmitTx(tx, alice, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       })
@@ -138,7 +138,7 @@ describe('Did.chain', () => {
     await expect(
       didUpdateTx(signed2).then(async (tx) => {
         await tx.signAsync(alice.signKeyringPair)
-        return BlockchainUtils.submitTxWithReSign(tx, alice, {
+        return BlockchainUtils.signAndSubmitTx(tx, alice, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
         })
       })
