@@ -7,50 +7,12 @@
  * @module BlockchainApiConnection
  */
 
+import { types as CUSTOM_TYPES } from '@kiltprotocol/type-definitions'
 import { ApiPromise, WsProvider } from '@polkadot/api'
-import type { RegistryTypes } from '@polkadot/types/types'
 import { ConfigService } from '@kiltprotocol/config'
 import Blockchain from '../blockchain/Blockchain'
 
 let instance: Promise<Blockchain> | null
-
-export const CUSTOM_TYPES: RegistryTypes = {
-  Balance: 'u128',
-  PublicSigningKey: 'Hash',
-  PublicBoxKey: 'Hash',
-  Signature: 'MultiSignature',
-  Address: 'AccountId',
-  LookupSource: 'AccountId',
-  BlockNumber: 'u64',
-  Index: 'u64',
-  RefCount: 'u32',
-  AccountInfo: 'AccountInfoWithProviders',
-  Permissions: 'u32',
-  DelegationNodeId: 'Hash',
-  DelegationNode: {
-    rootId: 'DelegationNodeId',
-    parent: 'Option<DelegationNodeId>',
-    owner: 'AccountId',
-    permissions: 'Permissions',
-    revoked: 'bool',
-  },
-  DelegationRoot: {
-    ctypeHash: 'Hash',
-    owner: 'AccountId',
-    revoked: 'bool',
-  },
-  Attestation: {
-    ctypeHash: 'Hash',
-    attester: 'AccountId',
-    delegationId: 'Option<DelegationNodeId>',
-    revoked: 'bool',
-  },
-  DidRecord: {
-    signKey: 'Hash',
-    boxKey: 'Hash',
-    docRef: 'Option<Vec<u8>>',
-  },
-}
 
 /**
  * Builds a new blockchain connection instance.
