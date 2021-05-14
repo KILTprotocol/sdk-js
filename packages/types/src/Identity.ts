@@ -2,11 +2,11 @@
  * @packageDocumentation
  * @module IIdentity
  */
-import { KeyringPair } from '@polkadot/keyring/types'
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { BoxKeyPair } from 'tweetnacl'
-import BN from 'bn.js'
-import { Index } from '@polkadot/types/interfaces'
+import type { KeyringPair } from '@polkadot/keyring/types'
+import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import type { BoxKeyPair } from 'tweetnacl'
+import type { Index } from '@polkadot/types/interfaces'
+import { AnyNumber } from '@polkadot/types/types'
 
 export interface IIdentity {
   readonly signKeyringPair: KeyringPair
@@ -18,6 +18,7 @@ export interface IIdentity {
   serviceAddress?: string
   signSubmittableExtrinsic(
     submittableExtrinsic: SubmittableExtrinsic,
-    nonce: number | Index | BN
+    nonce: AnyNumber | Index,
+    tip?: AnyNumber
   ): Promise<SubmittableExtrinsic>
 }

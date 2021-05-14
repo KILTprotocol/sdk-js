@@ -2,7 +2,7 @@
  * @group unit/messaging
  */
 
-import {
+import type {
   IAttestedClaim,
   IClaim,
   IEncryptedMessage,
@@ -32,7 +32,7 @@ describe('Messaging', () => {
     const message = new Message(
       {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: { ctypes: ['0x12345678'] },
+        content: [{ cTypeHash: '0x12345678' }],
       },
       identityAlice,
       identityBob.getPublicIdentity()
@@ -75,9 +75,9 @@ describe('Messaging', () => {
     const encryptedMessageWrongContent: IEncryptedMessage = JSON.parse(
       JSON.stringify(encryptedMessage)
     ) as IEncryptedMessage
-    encryptedMessageWrongContent.message = '1234'
+    encryptedMessageWrongContent.ciphertext = '1234'
     const hashStrWrongContent: string = Crypto.hashStr(
-      encryptedMessageWrongContent.message +
+      encryptedMessageWrongContent.ciphertext +
         encryptedMessageWrongContent.nonce +
         encryptedMessageWrongContent.createdAt
     )
@@ -101,7 +101,7 @@ describe('Messaging', () => {
       createdAt: ts,
       receiverAddress: encryptedMessage.receiverAddress,
       senderAddress: encryptedMessage.senderAddress,
-      message: encryptedWrongBody.box,
+      ciphertext: encryptedWrongBody.box,
       nonce: encryptedWrongBody.nonce,
       hash: hashStrBadContent,
       signature: identityAlice.signStr(hashStrBadContent),
@@ -241,9 +241,8 @@ describe('Messaging', () => {
       identityBob = Identity.buildFromURI('//Bob')
 
       messageBody = {
-        content: {
-          ctypes: ['0x12345678'],
-        },
+        content: [{ cTypeHash: '0x12345678' }],
+
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
       }
       encrypted = new Message(
@@ -264,22 +263,22 @@ describe('Messaging', () => {
       const encrypted2 = new Message(
         {
           ...messageBody,
-          content: {
+          content: [
+            { cTypeHash: `${messageBody.content[0].cTypeHash[0]}9` },
             ...messageBody.content,
-            ctypes: [`${messageBody.content.ctypes[0]}9`],
-          },
+          ],
         },
         identityAlice,
         identityBob.getPublicIdentity()
       ).encrypt()
-      const { message: msg, nonce, createdAt } = encrypted2
+      const { ciphertext: msg, nonce, createdAt } = encrypted2
 
       // check correct encrypted but with message from encrypted2
       expect(() =>
         Message.ensureHashAndSignature(
           {
             ...encrypted,
-            message: msg,
+            ciphertext: msg,
           },
           identityBob.address
         )

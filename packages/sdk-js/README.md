@@ -11,7 +11,6 @@ The open-source KILT SDK is written in TypeScript and enables you to quickly and
 
 - **Self-sovereign data.** Have ownership of your digital and analog identities, with control over who your users share that data with. Providing that extra layer of flexiblity and security.
 - **Interoperability.** Claim Types (CTYPEs) facilitate the adoption of standardised credential content structures.
-- **Privacy enhancement.** Show yourself but stay hidden. Our credentials optionally provide multi-show unlinkability and selective disclosure.
 
 To learn more, checkout the KILT [Whitepaper](https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf) or see our [how it works](https://kilt.io/kilt-data-sovereignty-and-interoperability/) video.
 Regarding the privacy enhancement, please have a look at our [lightning talk for Sub0 April 2020](https://drive.google.com/file/d/16HHPn1BA5o-W8QCeHfoTI1tNb5yQUZzt/view?usp=sharing).
@@ -44,6 +43,17 @@ Or with `yarn`:
 ```bash
 yarn add @kiltprotocol/sdk-js
 ```
+
+## Embed bundle in HTML
+
+We include UMD bundles in our release and prerelease NPM publishes.
+They can be used to easily embed our complete SDK.
+
+```html
+<script src="https://unpkg.com/@kiltprotocol/sdk-js@dev/dist/sdk-js.min.umd.js"></script>
+```
+
+You can find the library on `window.kilt`, and use it completely dependency free.
 
 ## Example
 

@@ -2,7 +2,7 @@
  * @group unit/claim
  */
 
-import { IClaim } from '@kiltprotocol/types'
+import type { IClaim } from '@kiltprotocol/types'
 import { hashClaimContents, toJsonLD } from './Claim.utils'
 
 const claim: IClaim = {

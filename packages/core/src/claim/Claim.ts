@@ -11,7 +11,7 @@
  * @module Claim
  */
 
-import {
+import type {
   IClaim,
   CompressedClaim,
   IPublicIdentity,

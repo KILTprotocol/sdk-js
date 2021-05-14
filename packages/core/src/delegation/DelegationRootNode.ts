@@ -15,11 +15,11 @@ import type {
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
-import Identity from '../identity/Identity'
 import DelegationBaseNode from './Delegation'
 import DelegationNode from './DelegationNode'
 import { getChildren } from './DelegationNode.chain'
 import { query, revoke, store } from './DelegationRootNode.chain'
+import errorCheck from './DelegationRootNode.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationRootNode')
 
@@ -47,13 +47,15 @@ export default class DelegationRootNode extends DelegationBaseNode
 
   public cTypeHash: IDelegationRootNode['cTypeHash']
 
-  public constructor(
-    id: IDelegationRootNode['id'],
-    ctypeHash: IDelegationRootNode['cTypeHash'],
-    account: IDelegationRootNode['account']
-  ) {
-    super(id, account)
-    this.cTypeHash = ctypeHash
+  /**
+   * Creates a new [DelegationRootNode].
+   *
+   * @param delegationRootNodeInput - The base object from which to create the delegation base node.
+   */
+  public constructor(delegationRootNodeInput: IDelegationRootNode) {
+    super(delegationRootNodeInput)
+    this.cTypeHash = delegationRootNodeInput.cTypeHash
+    errorCheck(this)
   }
 
   public getRoot(): Promise<DelegationRootNode> {
@@ -69,12 +71,11 @@ export default class DelegationRootNode extends DelegationBaseNode
   /**
    * Stores the delegation root node on chain.
    *
-   * @param identity The account used to store the delegation root node.
-   * @returns Promise containing the SubmittableExtrinsic.
+   * @returns Promise containing the unsigned SubmittableExtrinsic.
    */
-  public async store(identity: Identity): Promise<SubmittableExtrinsic> {
+  public async store(): Promise<SubmittableExtrinsic> {
     log.debug(`:: store(${this.id})`)
-    return store(this, identity)
+    return store(this)
   }
 
   public async verify(): Promise<boolean> {
@@ -82,10 +83,10 @@ export default class DelegationRootNode extends DelegationBaseNode
     return node !== null && !node.revoked
   }
 
-  public async revoke(identity: Identity): Promise<SubmittableExtrinsic> {
+  public async revoke(): Promise<SubmittableExtrinsic> {
     const childCount = await this.subtreeNodeCount()
     log.debug(`:: revoke(${this.id})`)
-    return revoke(this, identity, childCount + 1)
+    return revoke(this, childCount + 1)
   }
 
   public async getChildren(): Promise<DelegationNode[]> {

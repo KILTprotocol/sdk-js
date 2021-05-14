@@ -3,6 +3,7 @@
  */
 
 import BN from 'bn.js'
+import type { BalanceOptions } from '@kiltprotocol/types'
 import {
   formatKiltBalance,
   convertToTxUnit,
@@ -10,8 +11,16 @@ import {
   TRANSACTION_FEE,
 } from './Balance.utils'
 
+const TESTVALUE = new BN('123456789000')
 describe('formatKiltBalance', () => {
-  const TESTVALUE = new BN('123456789000')
+  const alterExistingOptions: BalanceOptions = {
+    decimals: 17,
+    withUnit: 'KIL',
+  }
+  const addingOptions: BalanceOptions = {
+    // When enables displays the full unit - micro KILT
+    withSiFull: false,
+  }
   const baseValue = new BN('1')
   it('formats the given balance', async () => {
     expect(formatKiltBalance(TESTVALUE)).toEqual('123.4567 micro KILT')
@@ -43,7 +52,28 @@ describe('formatKiltBalance', () => {
       formatKiltBalance(baseValue.mul(new BN(10).pow(new BN(27))))
     ).toEqual('1.0000 Tril KILT')
   })
+  it('changes formatting options for given balances', () => {
+    expect(
+      formatKiltBalance(
+        baseValue.mul(new BN(10).pow(new BN(12))),
+        alterExistingOptions
+      )
+    ).toEqual('10.0000 micro KIL')
+    expect(
+      formatKiltBalance(
+        baseValue.mul(new BN(10).pow(new BN(12))),
+        alterExistingOptions
+      )
+    ).not.toEqual('1.0000 micro KILT')
+    expect(
+      formatKiltBalance(
+        baseValue.mul(new BN(10).pow(new BN(12))),
+        addingOptions
+      )
+    ).toEqual('1.0000 mKILT')
+  })
 })
+
 describe('convertToTxUnit', () => {
   it('converts given value with given power to femto KILT', () => {
     expect(new BN(convertToTxUnit(new BN(1), -15).toString())).toEqual(

@@ -5,23 +5,20 @@
 import { Option, Struct } from '@polkadot/types'
 import type { IAttestation, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import { AccountId, Hash } from '@polkadot/types/interfaces'
+import type { AccountId, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import Identity from '../identity/Identity'
 import Attestation from './Attestation'
-import { DelegationNodeId } from '../delegation/DelegationDecoder'
+import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
 /**
  * @param attestation
- * @param identity
  * @internal
  */
 export async function store(
-  attestation: IAttestation,
-  identity: Identity
+  attestation: IAttestation
 ): Promise<SubmittableExtrinsic> {
   const txParams = {
     claimHash: attestation.claimHash,
@@ -37,7 +34,7 @@ export async function store(
     txParams.ctypeHash,
     txParams.delegationId
   )
-  return blockchain.signTx(identity, tx)
+  return tx
 }
 
 /**
@@ -92,13 +89,11 @@ export async function query(claimHash: string): Promise<Attestation | null> {
 
 /**
  * @param claimHash
- * @param identity
  * @param maxDepth
  * @internal
  */
 export async function revoke(
   claimHash: string,
-  identity: Identity,
   maxDepth: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -107,5 +102,5 @@ export async function revoke(
     claimHash,
     maxDepth
   )
-  return blockchain.signTx(identity, tx)
+  return tx
 }

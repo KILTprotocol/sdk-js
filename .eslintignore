@@ -1,4 +1,5 @@
 __mocks__
+dist
 lib
 jest.*
 coverage

@@ -7,20 +7,50 @@ import {
   AttestationUtils,
   AttestedClaimUtils,
   ClaimUtils,
+  CTypeUtils,
   QuoteUtils,
   RequestForAttestationUtils,
 } from '@kiltprotocol/core'
-import {
+import type {
   IAttestedClaim,
   CompressedAttestedClaim,
   CompressedMessageBody,
   MessageBody,
+  CompressedRequestClaimsForCTypesContent,
+  IRequestClaimsForCTypesContent,
+  ICType,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import Message from '.'
 
 /**
- * [STATIC] Compresses a [[Message]] depending on the message body type.
+ * Verifies required properties for a given [[CType]] before sending or receiving a message.
+ *
+ * @param requiredProperties The list of required properties that need to be verified against a [[CType]].
+ * @param cType A [[CType]] used to verify the properties.
+ * @throws [[ERROR_CTYPE_HASH_NOT_PROVIDED]] when the properties do not match the provide [[CType]].
+ *
+ * @returns Returns the properties back.
+ */
+
+export function verifyRequiredCTypeProperties(
+  requiredProperties: string[],
+  cType: ICType
+): boolean {
+  CTypeUtils.errorCheck(cType as ICType)
+
+  const validProperties = requiredProperties.find(
+    (property) => !(property in cType.schema.properties)
+  )
+  if (validProperties) {
+    throw SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING()
+  }
+
+  return true
+}
+
+/**
+ * Compresses a [[Message]] depending on the message body type.
  *
  * @param body The body of the [[Message]] which depends on the [[MessageBodyType]] that needs to be compressed.
  *
@@ -80,7 +110,11 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      compressedContents = body.content.ctypes
+      compressedContents = body.content.map(
+        (val): CompressedRequestClaimsForCTypesContent => {
+          return [val.cTypeHash, val.acceptedAttester, val.requiredProperties]
+        }
+      )
       break
     }
     case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
@@ -207,9 +241,17 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      decompressedContents = {
-        ctypes: body[1],
-      }
+      decompressedContents = body[1].map(
+        (
+          val: CompressedRequestClaimsForCTypesContent
+        ): IRequestClaimsForCTypesContent => {
+          return {
+            cTypeHash: val[0],
+            acceptedAttester: val[1],
+            requiredProperties: val[2],
+          }
+        }
+      )
       break
     }
     case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {

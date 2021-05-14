@@ -27,13 +27,13 @@ import {
 } from '@polkadot/util-crypto/mnemonic'
 import { hexToU8a } from '@polkadot/util/hex'
 import * as u8aUtil from '@polkadot/util/u8a'
-import type BN from 'bn.js'
 // see node_modules/@polkadot/util-crypto/nacl/keypair/fromSeed.js
 // as util-crypto is providing a wrapper only for signing keypair
 // and not for box keypair, we use TweetNaCl directly
 import nacl from 'tweetnacl'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
+import { AnyNumber } from '@polkadot/types/types'
 import PublicIdentity from './PublicIdentity'
 
 type BoxPublicKey =
@@ -409,20 +409,22 @@ export default class Identity implements IIdentity {
    *
    * @param submittableExtrinsic - A chain transaction.
    * @param nonce - The nonce of the address operating the transaction.
+   * @param tip - (Optional) The amount of Femto-KILT to tip the validator.
    * @returns The signed SubmittableExtrinsic.
    * @example ```javascript
    * const alice = Identity.buildFromMnemonic('car dog ...');
    * const tx = await blockchain.api.tx.ctype.add(ctype.hash);
-   * const nonce = await blockchain.api.rpc.system.accountNextIndex(alice.address);
-   * alice.signSubmittableExtrinsic(tx, nonce);
+   * await blockchain.signTx(alice, tx); // calls signSubmittableExtrinsic internally
    * ```
    */
   public async signSubmittableExtrinsic(
     submittableExtrinsic: SubmittableExtrinsic,
-    nonce: number | Index | BN
+    nonce: AnyNumber | Index,
+    tip?: AnyNumber
   ): Promise<SubmittableExtrinsic> {
     return submittableExtrinsic.signAsync(this.signKeyringPair, {
       nonce,
+      tip,
     })
   }
 

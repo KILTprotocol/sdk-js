@@ -24,6 +24,7 @@ import Identity from '../identity/Identity'
 import { getAttestationHashes } from './Delegation.chain'
 import DelegationNode from './DelegationNode'
 import DelegationRootNode from './DelegationRootNode'
+import errorCheck from './Delegation.utils'
 
 export default abstract class DelegationBaseNode
   implements IDelegationBaseNode {
@@ -34,15 +35,13 @@ export default abstract class DelegationBaseNode
   /**
    * Builds a new [DelegationBaseNode] instance.
    *
-   * @param id The unique identifier of the delegation node.
-   * @param account The owner address of the delegation node.
+   * @param delegationBaseNodeInput - The base object from which to create the delegation base node.
    */
-  public constructor(
-    id: IDelegationBaseNode['id'],
-    account: IDelegationBaseNode['account']
-  ) {
-    this.account = account
-    this.id = id
+  public constructor(delegationBaseNodeInput: IDelegationBaseNode) {
+    this.account = delegationBaseNodeInput.account
+    this.id = delegationBaseNodeInput.id
+    this.revoked = delegationBaseNodeInput.revoked
+    errorCheck(this)
   }
 
   /**
@@ -101,12 +100,13 @@ export default abstract class DelegationBaseNode
   /**
    * Revokes this delegation node on chain.
    *
-   * @returns Promise containing a submittable transaction.
+   * @param address The address of the identity used to revoke the delegation.
+   * @returns Promise containing a unsigned submittable transaction.
    */
-  public abstract revoke(identity: Identity): Promise<SubmittableExtrinsic>
+  public abstract revoke(address: string): Promise<SubmittableExtrinsic>
 
   /**
-   * Checks on chain whether a given identity is delegating to the current node.
+   * Checks on chain whether a identity with the given address is delegating to the current node.
    *
    * @param address The address of the identity.
    * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the address is owner of the current node.

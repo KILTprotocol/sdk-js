@@ -2,7 +2,7 @@
  * @group unit/messaging
  */
 
-import {
+import type {
   CompressedQuoteAttesterSigned,
   CompressedQuoteAgreed,
   ICType,
@@ -54,6 +54,7 @@ import {
   ISubmitClaimsForCTypes,
   CompressedAttestation,
   PartialClaim,
+  CompressedRequestClaimsForCTypesContent,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import {
@@ -125,7 +126,9 @@ describe('Messaging Utilities', () => {
   let identityBob: Identity
   let date: Date
   let rawCType: ICType['schema']
+  let rawCTypeWithMultipleProperties: ICType['schema']
   let testCType: CType
+  let testCTypeWithMultipleProperties: CType
   let claim: Claim
   let claimContents: IClaim['contents']
   let quoteData: IQuote
@@ -161,7 +164,7 @@ describe('Messaging Utilities', () => {
   let requestClaimsForCTypesBody: IRequestClaimsForCTypes
   let requestClaimsForCTypesContent: IRequestClaimsForCTypesContent
   let compressedRequestClaimsForCTypesBody: CompressedRequestClaimsForCTypes
-  let compressedRequestClaimsForCTypesContent: Array<ICType['hash']>
+  let compressedRequestClaimsForCTypesContent: CompressedRequestClaimsForCTypesContent
   let submitClaimsForCTypesBody: ISubmitClaimsForCTypes
   let submitClaimsForCTypesContent: IAttestedClaim[]
   let compressedSubmitClaimsForCTypesBody: CompressedSubmitClaimsForCTypes
@@ -190,6 +193,18 @@ describe('Messaging Utilities', () => {
     claimContents = {
       name: 'Bob',
     }
+
+    rawCTypeWithMultipleProperties = {
+      $id: 'kilt:ctype:0x2',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'Drivers license Claim',
+      properties: {
+        name: { type: 'string' },
+        id: { type: 'string' },
+        age: { type: 'string' },
+      },
+      type: 'object',
+    }
     // CType Schema
     rawCType = {
       $id: 'kilt:ctype:0x1',
@@ -202,6 +217,11 @@ describe('Messaging Utilities', () => {
     }
     // CType
     testCType = CType.fromSchema(rawCType, identityAlice.address)
+    testCTypeWithMultipleProperties = CType.fromSchema(
+      rawCTypeWithMultipleProperties,
+      identityAlice.address
+    )
+
     // Claim
     claim = Claim.fromCTypeAndClaimContents(
       testCType,
@@ -368,10 +388,16 @@ describe('Messaging Utilities', () => {
     ]
     // Request Claims for CTypes content
     requestClaimsForCTypesContent = {
-      ctypes: [claim.cTypeHash],
+      cTypeHash: claim.cTypeHash,
+      acceptedAttester: [identityAlice.address],
+      requiredProperties: ['id', 'name'],
     }
     // Compressed Request claims for CType content
-    compressedRequestClaimsForCTypesContent = [claim.cTypeHash]
+    compressedRequestClaimsForCTypesContent = [
+      claim.cTypeHash,
+      [identityAlice.address],
+      ['id', 'name'],
+    ]
     // Submit claims for CType content
     submitClaimsForCTypesContent = [legitimation]
     // Compressed Submit claims for CType content
@@ -505,13 +531,16 @@ describe('Messaging Utilities', () => {
     ]
 
     requestClaimsForCTypesBody = {
-      content: requestClaimsForCTypesContent,
+      content: [requestClaimsForCTypesContent, requestClaimsForCTypesContent],
       type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
     }
 
     compressedRequestClaimsForCTypesBody = [
       Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-      compressedRequestClaimsForCTypesContent,
+      [
+        compressedRequestClaimsForCTypesContent,
+        compressedRequestClaimsForCTypesContent,
+      ],
     ]
 
     submitClaimsForCTypesBody = {
@@ -610,6 +639,7 @@ describe('Messaging Utilities', () => {
       MessageUtils.decompressMessage(compressedSubmitAttestationBody)
     ).toEqual(submitAttestationBody)
   })
+
   it('Checking message compression and decompression Claims for CTypes', async () => {
     // Request compression of claims for ctypes body
     expect(MessageUtils.compressMessage(requestClaimsForCTypesBody)).toEqual(
@@ -679,5 +709,24 @@ describe('Messaging Utilities', () => {
     expect(() => MessageUtils.compressMessage(malformed)).toThrowError(
       SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
     )
+  })
+  it('Checking required properties for given CType', () => {
+    expect(() =>
+      MessageUtils.verifyRequiredCTypeProperties(['id', 'name'], testCType)
+    ).toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
+
+    expect(() =>
+      MessageUtils.verifyRequiredCTypeProperties(
+        ['id', 'name'],
+        testCTypeWithMultipleProperties
+      )
+    ).not.toThrowError(SDKErrors.ERROR_CTYPE_PROPERTIES_NOT_MATCHING())
+
+    expect(
+      MessageUtils.verifyRequiredCTypeProperties(
+        ['id', 'name'],
+        testCTypeWithMultipleProperties
+      )
+    ).toEqual(true)
   })
 })

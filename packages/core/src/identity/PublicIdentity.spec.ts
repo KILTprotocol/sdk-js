@@ -3,7 +3,7 @@
  */
 
 import { U8aFixed } from '@polkadot/types'
-import { IPublicIdentity } from '@kiltprotocol/types'
+import type { IPublicIdentity } from '@kiltprotocol/types'
 import TYPE_REGISTRY, {
   mockChainQueryReturn,
 } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'

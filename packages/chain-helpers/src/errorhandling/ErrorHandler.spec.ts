@@ -3,7 +3,7 @@
  */
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Tuple } from '@polkadot/types'
+import type { Tuple } from '@polkadot/types'
 import type { ISubmittableResult } from '@kiltprotocol/types'
 import { ErrorHandler, PalletIndex } from '.'
 import { ExtrinsicError, ExtrinsicErrors } from './ExtrinsicError'

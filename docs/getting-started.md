@@ -167,13 +167,35 @@ const identity = Kilt.Identity.buildFromMnemonic(
   // using ed25519 as key type because this is how the endowed identity is set up
   { signingKeyPairType: 'ed25519' }
 )
-const tx = await ctype.store(identity)
-await Kilt.BlockchainUtils.submitSignedTx(tx, {
-  resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
-})
+const tx = await ctype.store()
+
+// either sign and send in one step
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity)
+// signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria:
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: Kilt.BlockchainUtils.IS_READY, // resolve once tx is in the tx pool
+    rejectOn: Kilt.BlockchainUtils.IS_ERROR,  // only reject when IS_ERROR criteria is matched
+    timeout: 10_000, // Promise timeout in ms
+    tip: 10_000_000. // Amount of Femto-KILT to tip the validator
+  })
+
+// or step by step
+const chain = Kilt.connect()
+const signed = chain.signTx(identity, tx)
+await Kilt.BlockchainUtils.submitSignedTx(tx)
 ```
 
 Please note that the **same CTYPE can only be stored once** on the blockchain.
+
+If a transaction fails with an by re-signing recoverable error (e.g. multi device nonce collision),
+BlockchainUtils.signAndSubmitTx has the ability to re-sign and re-send the failed tx upt to 2 times, if the appropriate flag is set:
+```typescript
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+    reSign: true,
+  })
+```
+
 
 At the end of the process, the `CType` object should match the CType below.
 This can be saved anywhere, for example on a CTYPE registry service:
@@ -282,9 +304,9 @@ KILT contains a simple messaging system and we describe it through the following
 First, we create the request for attestation message which the Claimer encrypts with the public key of the Attester:
 
 ```typescript
-import Kilt, { IRequestAttestationForClaim } from '@kiltprotocol/sdk-js'
+import Kilt, { MessageBody } from '@kiltprotocol/sdk-js'
 
-const messageBody: IRequestAttestationForClaim = {
+const messageBody: MessageBody = {
   content: { requestForAttestation },
   type: Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
 }
@@ -362,10 +384,8 @@ Attestation {
 Now the Attester must store the attestation on the blockchain, which also costs tokens:
 
 ```typescript
-const tx = await attestation.store(attester)
-await Kilt.BlockchainUtils.submitSignedTx(tx, {
-  resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
-})
+const tx = await attestation.store()
+await Kilt.BlockchainUtils.submitSignedTx(tx)
 ```
 
 The request for attestation is fulfilled with the attestation, but it needs to be combined into the `AttestedClaim` object before sending it back to the Claimer:
@@ -415,9 +435,7 @@ AttestedClaim {
 The Attester has to send the `attestedClaim` object back to the Claimer in the following message:
 
 ```typescript
-import { ISubmitAttestationForClaim } from '@kiltprotocol/sdk-js'
-
-const messageBodyBack: ISubmitAttestationForClaim = {
+const messageBodyBack: MessageBody = {
   content: attestedClaim,
   type: Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
 }
@@ -481,7 +499,7 @@ This is an **important feature for the privacy of a claimer** as this enables th
 ### 6.1. Request presentation for CTYPE
 
 ```typescript
-const messageBodyForClaimer: IRequestClaimsForCTypes = {
+const messageBodyForClaimer: MessageBody = {
   type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
   content: { ctypes: [ctype.hash] },
 }
@@ -501,7 +519,7 @@ const copiedCredential = Kilt.AttestedClaim.fromAttestedClaim(
 )
 copiedCredential.request.removeClaimProperties(['age'])
 
-const messageBodyForVerifier: ISubmitClaimsForCTypes = {
+const messageBodyForVerifier: MessageBody = {
   content: [copiedCredential],
   type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
 }

@@ -5,7 +5,7 @@
  * @module SDKErrors
  */
 
-import { NonceHash } from '@kiltprotocol/types'
+import type { NonceHash } from '@kiltprotocol/types'
 
 export enum ErrorCode {
   ERROR_TRANSACTION_RECOVERABLE = 1000,
@@ -35,6 +35,7 @@ export enum ErrorCode {
   ERROR_NO_PROOF_FOR_STATEMENT = 10015,
   ERROR_IDENTITY_NOT_PE_ENABLED = 10016,
   ERROR_WS_ADDRESS_NOT_SET = 10017,
+  ERROR_DELEGATION_ID_MISSING = 10018,
 
   // Data type is wrong or malformed
   ERROR_ADDRESS_TYPE = 20001,
@@ -54,6 +55,7 @@ export enum ErrorCode {
   ERROR_ROOT_NODE_QUERY = 20017,
   ERROR_INVALID_DID_PREFIX = 20018,
   ERROR_MESSAGE_BODY_MALFORMED = 20019,
+  ERROR_NODE_QUERY = 20020,
 
   // Data is invalid
   ERROR_ADDRESS_INVALID = 30001,
@@ -68,6 +70,7 @@ export enum ErrorCode {
   ERROR_ROOT_HASH_UNVERIFIABLE = 30010,
   ERROR_NESTED_CLAIM_UNVERIFIABLE = 30011,
   ERROR_INVALID_PROOF_FOR_STATEMENT = 30012,
+  ERROR_CTYPE_PROPERTIES_NOT_MATCHING = 30013,
 
   // Compression / Decompressions
   ERROR_DECOMPRESSION_ARRAY = 40001,
@@ -153,12 +156,20 @@ export const ERROR_CTYPE_ID_NOT_MATCHING: (
   )
 }
 
+export const ERROR_CTYPE_PROPERTIES_NOT_MATCHING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_CTYPE_PROPERTIES_NOT_MATCHING,
+    'Required properties do not match CType properties'
+  )
+}
+
 export const ERROR_CLAIM_HASH_NOT_PROVIDED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CLAIM_HASH_NOT_PROVIDED,
     'Claim hash missing'
   )
 }
+
 export const ERROR_REVOCATION_BIT_MISSING: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_REVOCATION_BIT_MISSING,
@@ -253,6 +264,14 @@ export const ERROR_DELEGATION_ID_TYPE: () => SDKError = () => {
     'DelegationId of wrong type'
   )
 }
+
+export const ERROR_DELEGATION_ID_MISSING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_DELEGATION_ID_MISSING,
+    'DelegationId is missing'
+  )
+}
+
 export const ERROR_CLAIM_CONTENTS_MALFORMED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CLAIM_CONTENTS_MALFORMED,
@@ -346,6 +365,14 @@ export const ERROR_ROOT_NODE_QUERY: (rootId: string) => SDKError = (
   return new SDKError(
     ErrorCode.ERROR_ROOT_NODE_QUERY,
     `Could not find root node with id ${rootId}`
+  )
+}
+export const ERROR_NODE_QUERY: (nodeId: string) => SDKError = (
+  nodeId: string
+) => {
+  return new SDKError(
+    ErrorCode.ERROR_NODE_QUERY,
+    `Could not find node with id ${nodeId}`
   )
 }
 export const ERROR_INVALID_DID_PREFIX: (identifier: string) => SDKError = (

@@ -5,8 +5,8 @@
 /* eslint-disable dot-notation */
 import { SDKErrors } from '@kiltprotocol/utils'
 import { Text } from '@polkadot/types'
-import { SignerPayload } from '@polkadot/types/interfaces/types'
-import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
+import type { SignerPayload } from '@polkadot/types/interfaces/types'
+import type { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
 import BN from 'bn.js'
 import { Keyring } from '@polkadot/keyring'
 import type {
@@ -309,7 +309,7 @@ describe('Tx logic', () => {
         .mockImplementation(async (id, Tx) => {
           return Tx
         })
-      await expect(chain.submitTxWithReSign(tx, alice)).rejects.toThrow(
+      await expect(chain.submitSignedTxWithReSign(tx, alice)).rejects.toThrow(
         SDKErrors.ERROR_TRANSACTION_RECOVERABLE()
       )
 
