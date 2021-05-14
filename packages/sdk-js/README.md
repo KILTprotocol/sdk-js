@@ -50,7 +50,7 @@ We include UMD bundles in our release and prerelease NPM publishes.
 They can be used to easily embed our complete SDK.
 
 ```html
-<script src="https://unpkg.com/@kiltprotocol/sdk-js@/dist/sdk-js.min.umd.js"></script>
+<script src="https://unpkg.com/@kiltprotocol/sdk-js@dev/dist/sdk-js.min.umd.js"></script>
 ```
 
 You can find the library on `window.kilt`, and use it completely dependency free.
