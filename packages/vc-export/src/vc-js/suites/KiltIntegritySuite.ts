@@ -1,20 +1,20 @@
 import { Crypto } from '@kiltprotocol/utils'
-import {
+import type {
   DocumentLoader,
   ExpansionMap,
   purposes,
   VerificationResult,
 } from 'jsonld-signatures'
-import { JsonLdObj } from 'jsonld/jsonld-spec'
-import {
-  KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
-  CredentialDigestProof,
-  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-} from '../../types'
+import type { JsonLdObj } from 'jsonld/jsonld-spec'
+import type { CredentialDigestProof } from '../../types'
 
 import { verifyCredentialDigestProof } from '../../verificationUtils'
 import KiltAbstractSuite from './KiltAbstractSuite'
-import { KILT_CREDENTIAL_CONTEXT_URL } from '../context'
+import {
+  KILT_CREDENTIAL_CONTEXT_URL,
+  KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
+  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
+} from '../../constants'
 
 export default class KiltDisclosureSuite extends KiltAbstractSuite {
   private existingProof?: CredentialDigestProof

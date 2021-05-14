@@ -8,11 +8,8 @@ import jsonld from 'jsonld'
 import Suite from './KiltIntegritySuite'
 import credential from '../examples/example-vc.json'
 import documentLoader from '../documentLoader'
-import {
-  CredentialDigestProof,
-  KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
-  VerifiableCredential,
-} from '../../types'
+import type { CredentialDigestProof, VerifiableCredential } from '../../types'
+import { KILT_CREDENTIAL_DIGEST_PROOF_TYPE } from '../../constants'
 
 let suite: Suite
 let purpose: purposes.ProofPurpose
@@ -72,6 +69,7 @@ describe('jsigs', () => {
     })
 
     it('verifies Kilt Credential Digest Proof with props removed', async () => {
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       const { name, ...credentialSubject } = credential.credentialSubject
       expect(credentialSubject).not.toHaveProperty('name')
       await expect(
@@ -167,6 +165,7 @@ describe('vc-js', () => {
     })
 
     it('verifies Kilt Credential Digest Proof with props removed', async () => {
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       const { name, ...credentialSubject } = credential.credentialSubject
       expect(credentialSubject).not.toHaveProperty('name')
       await expect(

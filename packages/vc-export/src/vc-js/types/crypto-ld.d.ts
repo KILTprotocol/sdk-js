@@ -1,1 +1,1 @@
-declare module 'crypto-ld';
+declare module 'crypto-ld'

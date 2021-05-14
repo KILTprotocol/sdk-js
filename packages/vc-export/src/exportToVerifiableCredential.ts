@@ -4,15 +4,12 @@
  */
 
 import { decodeAddress } from '@polkadot/keyring'
-import { u8aToHex } from '@polkadot/util'
-import { AnyJson } from '@polkadot/types/types'
+import { isHex, u8aToHex } from '@polkadot/util'
+import type { AnyJson } from '@polkadot/types/types'
 import { Did, ClaimUtils } from '@kiltprotocol/core'
-import { IAttestedClaim, ICType } from '@kiltprotocol/types'
+import type { IAttestedClaim, ICType } from '@kiltprotocol/types'
 import { signatureVerify } from '@polkadot/util-crypto'
 import {
-  AttestedProof,
-  CredentialDigestProof,
-  CredentialSchema,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
   JSON_SCHEMA_TYPE,
@@ -20,31 +17,37 @@ import {
   KILT_ATTESTED_PROOF_TYPE,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   KILT_SELF_SIGNED_PROOF_TYPE,
+  KILT_CREDENTIAL_CONTEXT_URL,
+  KILT_VERIFIABLECREDENTIAL_TYPE,
+  KILT_CREDENTIAL_IRI_PREFIX,
+} from './constants'
+import type {
+  AttestedProof,
+  CredentialDigestProof,
+  CredentialSchema,
   Proof,
   SelfSignedProof,
   VerifiableCredential,
 } from './types'
 
-const KILT_CREDENTIAL_URI_PREFIX = 'kilt:cred:'
-
 export function fromCredentialURI(credentialId: string): string {
-  const hexString = credentialId.startsWith(KILT_CREDENTIAL_URI_PREFIX)
-    ? credentialId.substring(KILT_CREDENTIAL_URI_PREFIX.length)
+  const hexString = credentialId.startsWith(KILT_CREDENTIAL_IRI_PREFIX)
+    ? credentialId.substring(KILT_CREDENTIAL_IRI_PREFIX.length)
     : credentialId
-  if (!hexString.startsWith('0x'))
+  if (!isHex(hexString))
     throw new Error(
-      'credential id is not a valid identifier (could not extract base64 encoded string)'
+      'credential id is not a valid identifier (could not extract base16 / hex encoded string)'
     )
   return hexString
 }
 
 export function toCredentialURI(rootHash: string): string {
-  if (rootHash.startsWith(KILT_CREDENTIAL_URI_PREFIX)) {
+  if (rootHash.startsWith(KILT_CREDENTIAL_IRI_PREFIX)) {
     return rootHash
   }
-  if (!rootHash.startsWith('0x'))
-    throw new Error('root hash is not a base64 encoded string)')
-  return KILT_CREDENTIAL_URI_PREFIX + rootHash
+  if (!isHex(rootHash))
+    throw new Error('root hash is not a base16 / hex encoded string)')
+  return KILT_CREDENTIAL_IRI_PREFIX + rootHash
 }
 
 export function fromAttestedClaim(
@@ -93,8 +96,11 @@ export function fromAttestedClaim(
   const proof: Proof[] = []
 
   const VC: VerifiableCredential = {
-    '@context': [DEFAULT_VERIFIABLECREDENTIAL_CONTEXT],
-    type: [DEFAULT_VERIFIABLECREDENTIAL_TYPE],
+    '@context': [
+      DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
+      KILT_CREDENTIAL_CONTEXT_URL,
+    ],
+    type: [DEFAULT_VERIFIABLECREDENTIAL_TYPE, KILT_VERIFIABLECREDENTIAL_TYPE],
     id,
     credentialSubject,
     legitimationIds,

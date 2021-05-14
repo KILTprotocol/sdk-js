@@ -3,22 +3,22 @@ import {
   Blockchain,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
-import {
+import type {
   DocumentLoader,
   ExpansionMap,
   Proof,
   purposes,
   VerificationResult,
 } from 'jsonld-signatures'
-import { JsonLdObj } from 'jsonld/jsonld-spec'
+import type { JsonLdObj } from 'jsonld/jsonld-spec'
 import { Attestation } from '@kiltprotocol/core'
+import type { AttestedProof } from '../../types'
+import { verifyAttestedProof, AttestationStatus } from '../../verificationUtils'
 import {
-  AttestedProof,
+  KILT_CREDENTIAL_CONTEXT_URL,
   KILT_ATTESTED_PROOF_TYPE,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-} from '../../types'
-import { verifyAttestedProof, AttestationStatus } from '../../verificationUtils'
-import { KILT_CREDENTIAL_CONTEXT_URL } from '../context'
+} from '../../constants'
 import KiltAbstractSuite from './KiltAbstractSuite'
 
 class AttestationError extends Error {

@@ -12,12 +12,12 @@ import { Crypto } from '@kiltprotocol/utils'
 import Suite from './KiltSignatureSuite'
 import credential from '../examples/example-vc.json'
 import documentLoader from '../documentLoader'
-import {
+import type {
   VerifiableCredential,
-  KILT_SELF_SIGNED_PROOF_TYPE,
   SelfSignedProof,
   IPublicKeyRecord,
 } from '../../types'
+import { KILT_SELF_SIGNED_PROOF_TYPE } from '../../constants'
 
 let suite: Suite
 let purpose: purposes.ProofPurpose

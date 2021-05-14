@@ -7,16 +7,15 @@ import type {
 } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
 import { Crypto } from '@kiltprotocol/utils'
-import {
-  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-  IPublicKeyRecord,
-  KILT_SELF_SIGNED_PROOF_TYPE,
-  SelfSignedProof,
-} from '../../types'
+import type { IPublicKeyRecord, SelfSignedProof } from '../../types'
 import { verifySelfSignedProof } from '../../verificationUtils'
 import { fromCredentialURI } from '../../exportToVerifiableCredential'
 import KiltAbstractSuite from './KiltAbstractSuite'
-import { KILT_CREDENTIAL_CONTEXT_URL } from '../context'
+import {
+  KILT_CREDENTIAL_CONTEXT_URL,
+  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
+  KILT_SELF_SIGNED_PROOF_TYPE,
+} from '../../constants'
 
 export default class KiltSignatureSuite extends KiltAbstractSuite {
   private signer?: Signer

@@ -64,12 +64,10 @@
         "@protected": true,
         "claimHashes": {
           "@id": "kiltCred:KILTCredentialDigest2020#claimHashes",
-          "@type": "sec:digestValue",
           "@container": "@set"
         },
         "nonces": {
           "@id": "kiltCred:KILTCredentialDigest2020#nonces",
-          "@type": "sec:nonce",
           "@container": "@index"
         }
       }

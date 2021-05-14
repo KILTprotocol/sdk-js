@@ -10,7 +10,8 @@ import jsonld from 'jsonld'
 import AttestationSuite from './KiltAttestedSuite'
 import credential from '../examples/example-vc.json'
 import documentLoader from '../documentLoader'
-import { AttestedProof, KILT_ATTESTED_PROOF_TYPE } from '../../types'
+import type { AttestedProof } from '../../types'
+import { KILT_ATTESTED_PROOF_TYPE } from '../../constants'
 
 const attestation = Attestation.fromAttestation({
   claimHash:

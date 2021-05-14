@@ -1,4 +1,4 @@
-import { RemoteDocument, Url } from 'jsonld/jsonld-spec'
+import type { RemoteDocument, Url } from 'jsonld/jsonld-spec'
 import vcjs from 'vc-js'
 import kiltContexts from './context'
 

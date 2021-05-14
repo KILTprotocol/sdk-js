@@ -5,16 +5,14 @@ import {
   purposes,
   suites,
 } from 'jsonld-signatures'
-import { JsonLdObj } from 'jsonld/jsonld-spec'
+import type { JsonLdObj } from 'jsonld/jsonld-spec'
 import jsonld from 'jsonld'
-import {
-  VerifiableCredential,
-  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-  Proof,
-  IPublicKeyRecord,
-} from '../../types'
+import type { VerifiableCredential, Proof, IPublicKeyRecord } from '../../types'
 import defaultDocumentLoader from '../documentLoader'
-import { KILT_CREDENTIAL_CONTEXT_URL } from '../context'
+import {
+  KILT_CREDENTIAL_CONTEXT_URL,
+  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
+} from '../../constants'
 
 export default abstract class KiltAbstractSuite extends suites.LinkedDataProof {
   public readonly verificationMethod?: string | IPublicKeyRecord

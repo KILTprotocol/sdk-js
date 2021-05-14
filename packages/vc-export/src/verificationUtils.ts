@@ -10,14 +10,16 @@ import Ajv from 'ajv'
 import { Attestation, CTypeSchema, Did } from '@kiltprotocol/core'
 import { Crypto } from '@kiltprotocol/utils'
 import {
-  VerifiableCredential,
-  SelfSignedProof,
   KILT_SELF_SIGNED_PROOF_TYPE,
-  AttestedProof,
   KILT_ATTESTED_PROOF_TYPE,
-  CredentialDigestProof,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   KeyTypesMap,
+} from './constants'
+import type {
+  VerifiableCredential,
+  SelfSignedProof,
+  AttestedProof,
+  CredentialDigestProof,
 } from './types'
 import { fromCredentialURI } from './exportToVerifiableCredential'
 
