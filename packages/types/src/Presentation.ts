@@ -15,7 +15,6 @@ export interface IPresentationSigningOptions {
 }
 
 export interface IPresentationOptions {
-  excludeIdentity?: boolean
   showAttributes?: string[]
   hideAttributes?: string[]
 }

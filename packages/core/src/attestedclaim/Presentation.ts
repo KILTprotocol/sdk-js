@@ -1,9 +1,11 @@
 import { Crypto } from '@kiltprotocol/utils'
 import type {
+  IAttestation,
   IAttestedClaim,
   IPresentation,
   IPresentationOptions,
   IPresentationSigningOptions,
+  IRequestForAttestation,
 } from '@kiltprotocol/types'
 import AttestedClaim from './AttestedClaim'
 
@@ -37,7 +39,6 @@ export class Presentation extends AttestedClaim implements IPresentation {
   public static fromAttestedClaim(
     credential: IAttestedClaim,
     {
-      excludeIdentity,
       showAttributes,
       hideAttributes,
       signer,
@@ -47,10 +48,6 @@ export class Presentation extends AttestedClaim implements IPresentation {
     const presentation = new Presentation(
       JSON.parse(JSON.stringify(credential))
     )
-
-    if (excludeIdentity) {
-      presentation.request.removeClaimOwner()
-    }
 
     // remove attributes listed in `hideAttributes` or NOT listed in `showAttributes`, if specified
     const excludedClaimProperties = showAttributes
@@ -68,6 +65,20 @@ export class Presentation extends AttestedClaim implements IPresentation {
       presentation.sign({ challenge, signer })
     }
     return presentation
+  }
+
+  public static fromRequestAndAttestation(
+    request: IRequestForAttestation,
+    attestation: IAttestation,
+    opts: IPresentationOptions & Partial<IPresentationSigningOptions> = {}
+  ): AttestedClaim {
+    return Presentation.fromAttestedClaim(
+      {
+        request,
+        attestation,
+      },
+      opts
+    )
   }
 
   public sign({
@@ -96,8 +107,10 @@ export class Presentation extends AttestedClaim implements IPresentation {
   }
 
   public verifyData(): boolean {
-    return (
-      super.verifyData() && (this.isSigned() ? this.verifySignature() : true)
-    )
+    return (!this.isSigned() || this.verifySignature()) && super.verifyData()
+  }
+
+  public async verify(): Promise<boolean> {
+    return (!this.isSigned() || this.verifySignature()) && super.verify()
   }
 }

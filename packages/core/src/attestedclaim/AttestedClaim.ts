@@ -14,14 +14,11 @@ import type {
   CompressedAttestedClaim,
   IAttestation,
   IRequestForAttestation,
-  IPresentationOptions,
-  IPresentationSigningOptions,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import AttestedClaimUtils from './AttestedClaim.utils'
-import { Presentation, SignedPresentation } from './Presentation'
 
 export default class AttestedClaim implements IAttestedClaim {
   /**
@@ -96,20 +93,6 @@ export default class AttestedClaim implements IAttestedClaim {
     this.attestation = Attestation.fromAttestation(
       attestedClaimInput.attestation
     )
-  }
-
-  public createPresentation(
-    presentationOptions: IPresentationSigningOptions & IPresentationOptions
-  ): SignedPresentation
-
-  public createPresentation(
-    presentationOptions?: IPresentationOptions
-  ): Presentation
-
-  public createPresentation(
-    opts: IPresentationOptions & Partial<IPresentationSigningOptions> = {}
-  ): Presentation | SignedPresentation {
-    return Presentation.fromAttestedClaim(this, opts)
   }
 
   /**
