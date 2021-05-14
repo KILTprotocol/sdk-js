@@ -22,16 +22,6 @@ export function formatKiltBalance(
   return formatBalance(amount, options)
 }
 
-export function formatKiltBalanceDecimalPlacement(
-  amount: BN,
-  decimal: number,
-  denomination: number
-): string {
-  const factoring = new BN(10).pow(new BN(denomination - decimal))
-  const skimmedAmount = amount.div(new BN(factoring))
-  return (skimmedAmount.toNumber() / 10 ** decimal).toString()
-}
-
 export function convertToTxUnit(balance: BN, power: number): BN {
   return new BN(balance).mul(new BN(10).pow(new BN(15 + power)))
 }
@@ -46,7 +36,6 @@ export default {
   KILT_COIN,
   TRANSACTION_FEE,
   formatKiltBalance,
-  formatKiltBalanceDecimalPlacement,
   asFemtoKilt,
   convertToTxUnit,
 }
