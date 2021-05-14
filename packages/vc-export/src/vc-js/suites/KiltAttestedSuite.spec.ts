@@ -84,15 +84,6 @@ describe('jsigs', () => {
         jsigs.verify(credential, { suite, purpose, documentLoader })
       ).resolves.toMatchObject({ verified: true })
     })
-
-    it('recreates Kilt Attestation Proof', async () => {
-      const document = { ...credential, proof: [] }
-      await expect(
-        jsigs.sign(document, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({
-        proof: [proof],
-      })
-    })
   })
 
   describe('revoked', () => {
@@ -108,16 +99,8 @@ describe('jsigs', () => {
         jsigs.verify(credential, { suite, purpose, documentLoader })
       ).resolves.toMatchObject({ verified: false })
     })
-
-    it('still recreates Kilt Attestation Proof', async () => {
-      const document = { ...credential, proof: [] }
-      await expect(
-        jsigs.sign(document, { suite, purpose, documentLoader })
-      ).resolves.toMatchObject({
-        proof: [proof],
-      })
-    })
   })
+
   describe('not attested', () => {
     beforeAll(() => {
       spy.mockImplementation(async (): Promise<Attestation | null> => null)
@@ -127,13 +110,6 @@ describe('jsigs', () => {
       await expect(
         jsigs.verify(credential, { suite, purpose, documentLoader })
       ).resolves.toMatchObject({ verified: false })
-    })
-
-    it('fails to recreate Kilt Attestation Proof', async () => {
-      const document = { ...credential, proof: [] }
-      await expect(
-        jsigs.sign(document, { suite, purpose, documentLoader })
-      ).rejects.toThrow()
     })
   })
 })
@@ -149,15 +125,6 @@ describe('vc-js', () => {
         vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
       ).resolves.toMatchObject({ verified: true })
     })
-
-    it('recreates Kilt Attestation Proof', async () => {
-      const document = { ...credential, proof: [] }
-      await expect(
-        vcjs.issue({ credential: document, suite, purpose, documentLoader })
-      ).resolves.toMatchObject({
-        proof: [proof],
-      })
-    })
   })
 
   describe('revoked', () => {
@@ -173,15 +140,6 @@ describe('vc-js', () => {
         vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
       ).resolves.toMatchObject({ verified: false })
     })
-
-    it('still recreates Kilt Attestation Proof', async () => {
-      const document = { ...credential, proof: [] }
-      await expect(
-        vcjs.issue({ credential: document, suite, purpose, documentLoader })
-      ).resolves.toMatchObject({
-        proof: [proof],
-      })
-    })
   })
 
   describe('not attested', () => {
@@ -193,13 +151,6 @@ describe('vc-js', () => {
       await expect(
         vcjs.verifyCredential({ credential, suite, purpose, documentLoader })
       ).resolves.toMatchObject({ verified: false })
-    })
-
-    it('fails to recreate Kilt Attestation Proof', async () => {
-      const document = { ...credential, proof: [] }
-      await expect(
-        vcjs.issue({ credential: document, suite, purpose, documentLoader })
-      ).rejects.toThrow()
     })
   })
 })

@@ -3,61 +3,16 @@ import type {
   ExpansionMap,
   purposes,
   VerificationResult,
-  Signer,
 } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
-import { Crypto } from '@kiltprotocol/utils'
 import type { IPublicKeyRecord, SelfSignedProof } from '../../types'
 import { verifySelfSignedProof } from '../../verificationUtils'
-import { fromCredentialURI } from '../../exportToVerifiableCredential'
 import KiltAbstractSuite from './KiltAbstractSuite'
-import {
-  KILT_CREDENTIAL_CONTEXT_URL,
-  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-  KILT_SELF_SIGNED_PROOF_TYPE,
-} from '../../constants'
+import { KILT_SELF_SIGNED_PROOF_TYPE } from '../../constants'
 
 export default class KiltSignatureSuite extends KiltAbstractSuite {
-  private signer?: Signer
-  constructor({
-    signer,
-    verificationMethod,
-  }: { signer?: Signer; verificationMethod?: string | IPublicKeyRecord } = {}) {
-    super({ type: KILT_SELF_SIGNED_PROOF_TYPE, verificationMethod })
-    this.signer = signer
-  }
-
-  public async createProof(options: {
-    document: JsonLdObj
-    purpose?: purposes.ProofPurpose
-    documentLoader?: DocumentLoader
-    expansionMap?: ExpansionMap
-  }): Promise<SelfSignedProof> {
-    if (!(this.signer && typeof this.signer.sign === 'function')) {
-      throw new Error('A signer API has not been specified.')
-    }
-    if (!this.verificationMethod) {
-      throw new Error('verificationMethod is required to sign')
-    }
-    const { document, purpose } = options
-    if (!document || typeof document !== 'object')
-      throw new TypeError('document must be a JsonLd object')
-    const compactedDoc = await this.compactDoc(document, options)
-    const rootHash = fromCredentialURI(compactedDoc.id)
-
-    const signature = Crypto.u8aToHex(
-      await this.signer.sign({ data: Crypto.coToUInt8(rootHash) })
-    )
-    return {
-      '@context': [
-        DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-        KILT_CREDENTIAL_CONTEXT_URL,
-      ],
-      type: this.type,
-      proofPurpose: purpose?.term,
-      signature,
-      verificationMethod: this.verificationMethod,
-    } as SelfSignedProof
+  constructor() {
+    super({ type: KILT_SELF_SIGNED_PROOF_TYPE, verificationMethod: '<none>' })
   }
 
   public async verifyProof(options: {

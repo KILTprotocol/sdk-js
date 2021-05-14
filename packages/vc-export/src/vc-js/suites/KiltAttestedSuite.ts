@@ -11,14 +11,9 @@ import type {
   VerificationResult,
 } from 'jsonld-signatures'
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
-import { Attestation } from '@kiltprotocol/core'
 import type { AttestedProof } from '../../types'
 import { verifyAttestedProof, AttestationStatus } from '../../verificationUtils'
-import {
-  KILT_CREDENTIAL_CONTEXT_URL,
-  KILT_ATTESTED_PROOF_TYPE,
-  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-} from '../../constants'
+import { KILT_ATTESTED_PROOF_TYPE } from '../../constants'
 import KiltAbstractSuite from './KiltAbstractSuite'
 
 class AttestationError extends Error {
@@ -81,35 +76,5 @@ export default class KiltAttestedSuite extends KiltAbstractSuite {
     } catch (e) {
       return { verified: false, error: e }
     }
-  }
-
-  public async createProof(options: {
-    document: JsonLdObj
-    purpose?: purposes.ProofPurpose
-    documentLoader?: DocumentLoader
-    expansionMap?: ExpansionMap
-  }): Promise<AttestedProof> {
-    const { document, purpose } = options
-    if (!document || typeof document !== 'object')
-      throw new TypeError('document must be a JsonLd object')
-    /* eslint-disable-next-line dot-notation */
-    const id: string = document['@id'] || document['id']
-    if (!id || typeof id !== 'string')
-      throw new Error('document must have an @id property')
-    this.setConnection()
-    const exists = await Attestation.query(id)
-    if (!exists)
-      throw new Error(
-        'A credential with this id has not been attested in the Kilt network. Use @kiltprotocol/sdk-js to write attestations.'
-      )
-    return {
-      '@context': [
-        DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
-        KILT_CREDENTIAL_CONTEXT_URL,
-      ],
-      type: this.type,
-      proofPurpose: purpose?.term,
-      attesterAddress: exists.owner,
-    } as AttestedProof
   }
 }

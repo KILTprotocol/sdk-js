@@ -72,4 +72,15 @@ export default abstract class KiltAbstractSuite extends suites.LinkedDataProof {
     const type = compact['@type'] || compact.type
     return type instanceof Array ? type.includes(this.type) : type === this.type
   }
+
+  public async createProof(options: {
+    document: JsonLdObj
+    purpose?: purposes.ProofPurpose
+    documentLoader?: DocumentLoader
+    expansionMap?: ExpansionMap
+  }): Promise<never> {
+    throw new Error(
+      'Credential issuance through vc-js is not supported. For credential issuance, use @kiltprotocol/sdk-js and export your KILT credential to a VC representation using @kiltprotocol/vc-export'
+    )
+  }
 }

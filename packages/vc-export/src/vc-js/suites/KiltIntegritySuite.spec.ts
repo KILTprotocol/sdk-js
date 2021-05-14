@@ -98,58 +98,6 @@ describe('jsigs', () => {
       ).resolves.toMatchObject({ verified: false })
     })
   })
-
-  describe('issue', () => {
-    it('creates Kilt Credential Digest Proof', async () => {
-      suite = new Suite()
-      const document = { ...credential, proof: [] }
-      const signed = await jsigs.sign(document, {
-        suite,
-        purpose,
-        documentLoader,
-      })
-      Object.keys(proof.nonces).forEach((i) => {
-        expect(signed).toHaveProperty(`proof.0.nonces.${i}`)
-      })
-    })
-
-    it('recreates Kilt Credential Digest Proof', async () => {
-      suite = new Suite({ existingProof: proof })
-      const document = { ...credential, proof: [] }
-      const signed = await jsigs.sign(document, {
-        suite,
-        purpose,
-        documentLoader,
-      })
-      expect(signed).toHaveProperty(
-        'proof.0.claimHashes',
-        expect.arrayContaining(proof.claimHashes)
-      )
-      expect(signed).toHaveProperty(
-        'proof.0.nonces',
-        expect.objectContaining(proof.nonces)
-      )
-    })
-
-    it('recreates Kilt Credential Digest Proof for reduced credential', async () => {
-      suite = new Suite({ existingProof: proof })
-      const document = {
-        ...credential,
-        proof: [],
-        credentialSubject: { ...credential.credentialSubject, name: undefined },
-      }
-      const signed = await jsigs.sign(document, {
-        suite,
-        purpose,
-        documentLoader,
-      })
-      expect(signed).toHaveProperty(
-        'proof.0.claimHashes',
-        expect.objectContaining(proof.claimHashes)
-      )
-      expect(proof.nonces).toMatchObject((signed as any).proof[0].nonces)
-    })
-  })
 })
 
 describe('vc-js', () => {
@@ -199,56 +147,6 @@ describe('vc-js', () => {
           documentLoader,
         })
       ).resolves.toMatchObject({ verified: false })
-    })
-  })
-
-  describe('issue', () => {
-    it('creates Kilt Credential Digest Proof', async () => {
-      suite = new Suite()
-      const document = { ...credential, proof: [] }
-      const signed = await vcjs.issue({
-        credential: document,
-        suite,
-        purpose,
-        documentLoader,
-      })
-      Object.keys(proof.nonces).forEach((i) => {
-        expect(signed).toHaveProperty(`proof.0.nonces.${i}`)
-      })
-    })
-
-    it('recreates Kilt Credential Digest Proof', async () => {
-      suite = new Suite({ existingProof: proof })
-      const document = { ...credential, proof: [] }
-      await expect(
-        vcjs.issue({ credential: document, suite, purpose, documentLoader })
-      ).resolves.toMatchObject({
-        proof: [proof],
-      })
-    })
-
-    it('recreates Kilt Credential Digest Proof for reduced credential', async () => {
-      suite = new Suite({ existingProof: proof })
-      const document = {
-        ...credential,
-        proof: [],
-        credentialSubject: {
-          ...credential.credentialSubject,
-          name: undefined,
-        },
-      }
-      const signed = await vcjs.issue({
-        credential: document,
-        suite,
-        purpose,
-        documentLoader,
-      })
-
-      expect(signed).toHaveProperty(
-        'proof.0.claimHashes',
-        expect.arrayContaining(proof.claimHashes)
-      )
-      expect(proof.nonces).toMatchObject((signed as any).proof[0].nonces)
     })
   })
 })
