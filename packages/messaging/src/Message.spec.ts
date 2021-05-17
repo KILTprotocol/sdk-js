@@ -34,10 +34,13 @@ describe('Messaging', () => {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
         content: [{ cTypeHash: '0x12345678' }],
       },
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    const encryptedMessage = message.encrypt(
       identityAlice,
       identityBob.getPublicIdentity()
     )
-    const encryptedMessage = message.encrypt()
 
     const decryptedMessage = Message.decrypt(encryptedMessage, identityBob)
     expect(JSON.stringify(message.body)).toEqual(
@@ -160,7 +163,7 @@ describe('Messaging', () => {
     Message.ensureOwnerIsSender(
       new Message(
         requestAttestationBody,
-        identityAlice,
+        identityAlice.getPublicIdentity(),
         identityBob.getPublicIdentity()
       )
     )
@@ -168,7 +171,7 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(
           requestAttestationBody,
-          identityBob,
+          identityBob.getPublicIdentity(),
           identityAlice.getPublicIdentity()
         )
       )
@@ -191,7 +194,7 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(
           submitAttestationBody,
-          identityAlice,
+          identityAlice.getPublicIdentity(),
           identityBob.getPublicIdentity()
         )
       )
@@ -199,7 +202,7 @@ describe('Messaging', () => {
     Message.ensureOwnerIsSender(
       new Message(
         submitAttestationBody,
-        identityBob,
+        identityBob.getPublicIdentity(),
         identityAlice.getPublicIdentity()
       )
     )
@@ -217,7 +220,7 @@ describe('Messaging', () => {
     Message.ensureOwnerIsSender(
       new Message(
         submitClaimsForCTypeBody,
-        identityAlice,
+        identityAlice.getPublicIdentity(),
         identityBob.getPublicIdentity()
       )
     )
@@ -225,7 +228,7 @@ describe('Messaging', () => {
       Message.ensureOwnerIsSender(
         new Message(
           submitClaimsForCTypeBody,
-          identityBob,
+          identityBob.getPublicIdentity(),
           identityAlice.getPublicIdentity()
         )
       )
@@ -247,9 +250,9 @@ describe('Messaging', () => {
       }
       encrypted = new Message(
         messageBody,
-        identityAlice,
+        identityAlice.getPublicIdentity(),
         identityBob.getPublicIdentity()
-      ).encrypt()
+      ).encrypt(identityAlice, identityBob.getPublicIdentity())
       encryptedHash = encrypted.hash
     })
 
@@ -268,9 +271,9 @@ describe('Messaging', () => {
             ...messageBody.content,
           ],
         },
-        identityAlice,
+        identityAlice.getPublicIdentity(),
         identityBob.getPublicIdentity()
-      ).encrypt()
+      ).encrypt(identityAlice, identityBob.getPublicIdentity())
       const { ciphertext: msg, nonce, createdAt } = encrypted2
 
       // check correct encrypted but with message from encrypted2
