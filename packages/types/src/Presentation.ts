@@ -1,8 +1,9 @@
 import { IAttestedClaim } from './AttestedClaim'
 
-export interface IPresentation extends IAttestedClaim {
-  verifierChallenge?: string
-  presentationSignature?: string
+export interface IPresentation {
+  credentials: IAttestedClaim[]
+  challenge?: string
+  signature?: string
 }
 
 export interface Signer {
