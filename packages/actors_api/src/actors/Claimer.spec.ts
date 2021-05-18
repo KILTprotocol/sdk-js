@@ -38,7 +38,7 @@ describe('Claimer', () => {
     verifier = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     const rawCType: ICType['schema'] = {
-      $id: Crypto.hashStr('kilt:ctype:0x1'),
+      $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: 'Claimer',
       properties: {

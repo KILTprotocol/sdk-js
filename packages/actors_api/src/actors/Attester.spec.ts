@@ -27,7 +27,7 @@ describe('Attester', () => {
     claimer = Identity.buildFromURI('//Bob')
 
     rawCType = {
-      $id: Crypto.hashStr('kilt:ctype:0x1'),
+      $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: 'Attester',
       properties: {

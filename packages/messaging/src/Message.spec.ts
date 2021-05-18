@@ -31,7 +31,7 @@ describe('Messaging', () => {
     const message = new Message(
       {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: [{ cTypeHash: Crypto.hashStr('0x12345678') }],
+        content: [{ cTypeHash: `KILT:ctype:${Crypto.hashStr('0x12345678')}` }],
       },
       identityAlice,
       identityBob.getPublicIdentity()
@@ -114,7 +114,7 @@ describe('Messaging', () => {
   it('verifies the message sender is the owner', () => {
     const content = RequestForAttestation.fromClaimAndIdentity(
       {
-        cTypeHash: Crypto.hashStr('0x12345678'),
+        cTypeHash: `KILT:ctype:${Crypto.hashStr('0x12345678')}`,
         owner: identityAlice.address,
         contents: {},
       },
@@ -123,7 +123,7 @@ describe('Messaging', () => {
 
     const quoteData: IQuote = {
       attesterAddress: identityAlice.address,
-      cTypeHash: Crypto.hashStr('0x12345678'),
+      cTypeHash: `KILT:ctype:${Crypto.hashStr('0x12345678')}`,
       cost: {
         tax: { vat: 3.3 },
         net: 23.4,
@@ -171,7 +171,7 @@ describe('Messaging', () => {
     const attestation = {
       delegationId: null,
       claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
-      cTypeHash: Crypto.hashStr('0x12345678'),
+      cTypeHash: `KILT:ctype:${Crypto.hashStr('0x12345678')}`,
       owner: identityBob.getPublicIdentity().address,
       revoked: false,
     }
@@ -236,7 +236,7 @@ describe('Messaging', () => {
       identityBob = Identity.buildFromURI('//Bob')
 
       messageBody = {
-        content: [{ cTypeHash: Crypto.hashStr('0x12345678') }],
+        content: [{ cTypeHash: `KILT:ctype:${Crypto.hashStr('0x12345678')}` }],
 
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
       }
@@ -255,21 +255,21 @@ describe('Messaging', () => {
     })
     it('expects hash error', () => {
       // replicate the message but change the content
-      const encrypted2 = new Message(
+      const unencryptedMessage = new Message(
         {
           ...messageBody,
           content: [
             {
-              cTypeHash: Crypto.hashStr(
-                `${messageBody.content[0].cTypeHash[0]}9`
-              ),
+              cTypeHash: messageBody.content[0].cTypeHash,
             },
             ...messageBody.content,
           ],
         },
         identityAlice,
         identityBob.getPublicIdentity()
-      ).encrypt()
+      )
+      unencryptedMessage.body.content[0].cTypeHash = `${messageBody.content[0].cTypeHash[0]}9`
+      const encrypted2 = unencryptedMessage.encrypt()
       const { ciphertext: msg, nonce, createdAt } = encrypted2
 
       // check correct encrypted but with message from encrypted2
