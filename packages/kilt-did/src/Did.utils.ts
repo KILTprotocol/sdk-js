@@ -1,21 +1,22 @@
 import { SDKErrors } from '@kiltprotocol/utils'
-import { TypeRegistry } from '@polkadot/types'
-import type { Codec } from '@polkadot/types/types'
+import type { Codec, Registry } from '@polkadot/types/types'
 import type {
   DidSigned,
   PublicKeyEnum,
   ISigningKeyPair,
   UrlEnum,
-  Nullable,
   IPublicKey,
-  PublicKeySet,
   UrlEncoding,
+  IDeleteOptions,
+  IUpdateOptions,
+  ICreateOptions,
+  IAuthorizeCallOptions,
 } from './types'
 import type {
-  IDidCreationOperation,
-  IDidDeletionOperation,
-  IDidUpdateOperation,
-  KeyId,
+  DidAuthorizedCallOperation,
+  DidCreationOperation,
+  DidDeletionOperation,
+  DidUpdateOperation,
 } from './types.chain'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
@@ -71,14 +72,12 @@ export function encodeEndpointUrl(url: string): UrlEnum {
 }
 
 export function encodeDidCreate(
-  typeRegistry: TypeRegistry,
-  did: string,
-  keys: PublicKeySet,
-  endpointUrl?: string
-): IDidCreationOperation {
+  registry: Registry,
+  { didIdentifier, keys, endpointUrl }: ICreateOptions
+): DidCreationOperation {
   // build did create object
   const didCreateRaw = {
-    did: getIdentifierFromDid(did),
+    did: didIdentifier,
     newAuthenticationKey: formatPublicKey(keys.authentication),
     newKeyAgreementKeys: [formatPublicKey(keys.encryption)],
     newAttestationKey: keys.attestation
@@ -89,30 +88,34 @@ export function encodeDidCreate(
       : undefined,
     newEndpointUrl: endpointUrl ? encodeEndpointUrl(endpointUrl) : undefined,
   }
-  return new (typeRegistry.getOrThrow<IDidCreationOperation>(
+  return new (registry.getOrThrow<DidCreationOperation>(
     'DidCreationOperation'
-  ))(typeRegistry, didCreateRaw)
+  ))(registry, didCreateRaw)
 }
 
 function matchKeyOperation(keypair: IPublicKey | undefined | null) {
-  return keypair && typeof keypair === 'object'
-    ? { Change: formatPublicKey(keypair) }
-    : keypair === null
-    ? { Delete: null }
-    : { Ignore: null }
+  if (keypair && typeof keypair === 'object') {
+    return { Change: formatPublicKey(keypair) }
+  }
+  if (keypair === null) {
+    return { Delete: null }
+  }
+  return { Ignore: null }
 }
 
 export function encodeDidUpdate(
-  typeRegistry: TypeRegistry,
-  did: string,
-  txCounter: number,
-  keysToUpdate: Partial<Nullable<PublicKeySet>>,
-  publicKeysToRemove: KeyId[] = [],
-  newEndpointUrl?: string
-): IDidUpdateOperation {
+  registry: Registry,
+  {
+    didIdentifier,
+    txCounter,
+    keysToUpdate = {},
+    publicKeysToRemove = [],
+    newEndpointUrl,
+  }: IUpdateOptions
+): DidUpdateOperation {
   const { authentication, encryption, attestation, delegation } = keysToUpdate
   const didUpdateRaw = {
-    did: getIdentifierFromDid(did),
+    did: didIdentifier,
     newAuthenticationKey: authentication
       ? formatPublicKey(authentication)
       : null,
@@ -125,20 +128,33 @@ export function encodeDidUpdate(
       : undefined,
     txCounter,
   }
-  return new (typeRegistry.getOrThrow<IDidUpdateOperation>(
-    'DidUpdateOperation'
-  ))(typeRegistry, didUpdateRaw)
+  return new (registry.getOrThrow<DidUpdateOperation>('DidUpdateOperation'))(
+    registry,
+    didUpdateRaw
+  )
 }
 
 export function encodeDidDelete(
-  typeRegistry: TypeRegistry,
-  did: string,
-  txCounter: number
-): IDidDeletionOperation {
-  return new (typeRegistry.getOrThrow<IDidDeletionOperation>(
+  registry: Registry,
+  { didIdentifier, txCounter }: IDeleteOptions
+): DidDeletionOperation {
+  return new (registry.getOrThrow<DidDeletionOperation>(
     'DidDeletionOperation'
-  ))(typeRegistry, {
-    did: getIdentifierFromDid(did),
+  ))(registry, {
+    did: didIdentifier,
     txCounter,
+  })
+}
+
+export function encodeCallAuthentication(
+  registry: Registry,
+  { didIdentifier, txCounter, call }: IAuthorizeCallOptions
+): DidAuthorizedCallOperation {
+  return new (registry.getOrThrow<DidAuthorizedCallOperation>(
+    'DidAuthorizedCallOperation'
+  ))(registry, {
+    did: didIdentifier,
+    txCounter,
+    call,
   })
 }

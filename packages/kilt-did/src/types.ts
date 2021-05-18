@@ -1,4 +1,6 @@
-import type { IIdentity } from '@kiltprotocol/types'
+import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
+import { AnyNumber } from '@polkadot/types/types'
+import { KeyId } from './types.chain'
 
 export type KeypairType = string
 
@@ -77,4 +79,25 @@ export type UrlEnum =
 export interface DidSigned<PayloadType> {
   payload: PayloadType
   signature: SignatureEnum
+}
+
+export interface ICreateOptions {
+  didIdentifier: IIdentity['address']
+  keys: PublicKeySet
+  endpointUrl?: string
+}
+
+export interface IDeleteOptions {
+  didIdentifier: IIdentity['address']
+  txCounter: AnyNumber
+}
+
+export interface IUpdateOptions extends IDeleteOptions {
+  keysToUpdate?: Partial<Nullable<PublicKeySet>>
+  publicKeysToRemove?: KeyId[]
+  newEndpointUrl?: string
+}
+
+export interface IAuthorizeCallOptions extends IDeleteOptions {
+  call: SubmittableExtrinsic
 }

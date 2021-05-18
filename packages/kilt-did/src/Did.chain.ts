@@ -9,24 +9,27 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { IDid } from '@kiltprotocol/core'
 import type {
   DidDetails,
-  IDidCreationOperation,
-  IDidDeletionOperation,
-  IDidUpdateOperation,
   DidEncryptionKey,
   DidVerificationKey,
   Url,
   UrlEncoding,
-  DidAuthorizedCallOperation,
 } from './types.chain'
 import type {
-  DidSigned,
+  IAuthorizeCallOptions,
+  ICreateOptions,
+  IDeleteOptions,
   IDidRecord,
   ISigningKeyPair,
+  IUpdateOptions,
   KeyDetails,
   KeypairType,
   TypedPublicKey,
 } from './types'
 import {
+  encodeCallAuthentication,
+  encodeDidCreate,
+  encodeDidDelete,
+  encodeDidUpdate,
   getDidFromIdentifier,
   getIdentifierFromDid,
   signCodec,
@@ -113,50 +116,46 @@ export async function queryByDID(
   return queryById(didId)
 }
 
-export async function didCreateTx(
-  createDid: DidSigned<IDidCreationOperation>
+export async function createCreateTx(
+  createOptions: ICreateOptions,
+  authenticationKeypair: ISigningKeyPair
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.tx.did.submitDidCreateOperation(
-    createDid.payload,
-    createDid.signature
-  )
+  const encoded = encodeDidCreate(blockchain.api.registry, createOptions)
+  const { payload, signature } = signCodec(encoded, authenticationKeypair)
+  return blockchain.api.tx.did.submitDidCreateOperation(payload, signature)
 }
 
-export async function didUpdateTx(
-  keyUpdate: DidSigned<IDidUpdateOperation>
+export async function createUpdateTx(
+  updateOptions: IUpdateOptions,
+  authenticationKeypair: ISigningKeyPair
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.tx.did.submitDidUpdateOperation(
-    keyUpdate.payload,
-    keyUpdate.signature
-  )
+  const encoded = encodeDidUpdate(blockchain.api.registry, updateOptions)
+  const { payload, signature } = signCodec(encoded, authenticationKeypair)
+
+  return blockchain.api.tx.did.submitDidUpdateOperation(payload, signature)
 }
 
-export async function didDeleteTx(
-  keyRemoval: DidSigned<IDidDeletionOperation>
+export async function createDeleteTx(
+  deleteOptions: IDeleteOptions,
+  authenticationKeypair: ISigningKeyPair
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.tx.did.submitDidDeleteOperation(
-    keyRemoval.payload,
-    keyRemoval.signature
-  )
+  const encoded = encodeDidDelete(blockchain.api.registry, deleteOptions)
+  const { payload, signature } = signCodec(encoded, authenticationKeypair)
+  return blockchain.api.tx.did.submitDidDeleteOperation(payload, signature)
 }
 
-export async function didSignExtrinsic(
-  didIdentifier: IIdentity['address'],
-  txCounter: number,
-  call: SubmittableExtrinsic,
-  signer: ISigningKeyPair
+export async function createAuthenticationTx(
+  callAuthorizationOptions: IAuthorizeCallOptions,
+  signingKeypair: ISigningKeyPair
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const signableCall = new (blockchain.api.registry.getOrThrow<
-    DidAuthorizedCallOperation
-  >('DidAuthorizedCallOperation'))(blockchain.api.registry, {
-    did: didIdentifier,
-    txCounter,
-    call,
-  })
-  const { payload, signature } = signCodec(signableCall, signer)
+  const signableCall = encodeCallAuthentication(
+    blockchain.api.registry,
+    callAuthorizationOptions
+  )
+  const { payload, signature } = signCodec(signableCall, signingKeypair)
   return blockchain.api.tx.did.submitDidCall(payload, signature)
 }

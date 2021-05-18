@@ -79,7 +79,7 @@ export interface DidDetails extends Struct {
   lastTxCounter: u64
 }
 
-export interface IDidCreationOperation extends Struct {
+export interface DidCreationOperation extends Struct {
   did: DidIdentifier
   newAuthenticationKey: DidVerificationKey
   newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
@@ -100,7 +100,7 @@ export interface DidKeyUpdateAction extends Enum {
   asDelete: null
 }
 
-export interface IDidUpdateOperation extends Struct {
+export interface DidUpdateOperation extends Struct {
   did: DidIdentifier
   newAuthenticationKey: Option<DidVerificationKey>
   newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
@@ -111,7 +111,7 @@ export interface IDidUpdateOperation extends Struct {
   txCounter: u64
 }
 
-export interface IDidDeletionOperation extends Struct {
+export interface DidDeletionOperation extends Struct {
   did: DidIdentifier
   txCounter: u64
 }
