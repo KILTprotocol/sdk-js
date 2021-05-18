@@ -40,7 +40,7 @@ export async function store(
 /**
  * @internal
  */
-export interface IChainAttestation extends Struct {
+export interface AttestationDetails extends Struct {
   readonly ctypeHash: Hash
   readonly attester: AccountId
   readonly delegationId: Option<DelegationNodeId>
@@ -48,10 +48,10 @@ export interface IChainAttestation extends Struct {
 }
 
 function decode(
-  encoded: Option<IChainAttestation>,
+  encoded: Option<AttestationDetails>,
   claimHash: string // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
-  DecoderUtils.assertCodecIsType(encoded, ['Option<Attestation>'])
+  DecoderUtils.assertCodecIsType(encoded, ['Option<AttestationDetails>'])
   if (encoded.isSome) {
     const chainAttestation = encoded.unwrap()
     const attestation: IAttestation = {
@@ -69,11 +69,13 @@ function decode(
 }
 
 // return types reflect backwards compatibility with mashnet-node v 0.22
-async function queryRaw(claimHash: string): Promise<Option<IChainAttestation>> {
+async function queryRaw(
+  claimHash: string
+): Promise<Option<AttestationDetails>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const result = await blockchain.api.query.attestation.attestations<
-    Option<IChainAttestation>
+    Option<AttestationDetails>
   >(claimHash)
   return result
 }

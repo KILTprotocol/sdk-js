@@ -40,7 +40,7 @@ export async function query(
 ): Promise<DelegationRootNode | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const decoded: RootDelegationRecord | null = decodeRootDelegation(
-    await blockchain.api.query.delegation.root<Option<IChainDelegationRoot>>(
+    await blockchain.api.query.delegation.roots<Option<IChainDelegationRoot>>(
       delegationId
     )
   )
