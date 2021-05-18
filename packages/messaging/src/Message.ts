@@ -164,7 +164,7 @@ export default class Message implements IMessage {
    * Constructs a message which should be encrypted with [[Message.encrypt]] before sending to the receiver.
    *
    * @param body The body of the message.
-   * @param sender The [[Identity]] of the sender.
+   * @param sender The [[PublicIdentity]] of the sender.
    * @param receiver The [[PublicIdentity]] of the receiver.
    */
   public constructor(
