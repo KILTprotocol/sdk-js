@@ -57,9 +57,11 @@ import type {
   ISubmittableResult,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import TYPE_REGISTRY, { mockChainQueryReturn } from './BlockchainQuery'
+import { mockChainQueryReturn } from './BlockchainQuery'
 
 const BlockchainApiConnection = jest.requireActual('../BlockchainApiConnection')
+const TYPE_REGISTRY = BlockchainApiConnection.typesRegistry
+
 const accumulator = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 async function getConnectionOrConnect(): Promise<Blockchain> {

@@ -1,17 +1,14 @@
-import { Option, TypeRegistry, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
+import { Option, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
 import type { Constructor } from '@polkadot/util/types'
-import { types as CUSTOM_TYPES } from '@kiltprotocol/type-definitions'
 
-const TYPE_REGISTRY = new TypeRegistry()
-TYPE_REGISTRY.register({
-  ...CUSTOM_TYPES,
-})
+const TYPE_REGISTRY = jest.requireActual('../BlockchainApiConnection')
+  .typesRegistry
+
 const chainProperties = TYPE_REGISTRY.createType('ChainProperties', {
   ss58Format: 38,
 })
 TYPE_REGISTRY.setChainProperties(chainProperties)
-export default TYPE_REGISTRY
 
 const AccountId = TYPE_REGISTRY.getOrThrow('AccountId')
 
