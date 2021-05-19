@@ -7,11 +7,11 @@
  * @module BlockchainApiConnection
  */
 
-import { types as CUSTOM_TYPES } from '@kiltprotocol/type-definitions'
+import { types9 as CUSTOM_TYPES } from '@kiltprotocol/type-definitions'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { ConfigService } from '@kiltprotocol/config'
-import Blockchain from '../blockchain/Blockchain'
 import { TypeRegistry } from '@polkadot/types'
+import Blockchain from '../blockchain/Blockchain'
 
 let instance: Promise<Blockchain> | null
 
