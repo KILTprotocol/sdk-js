@@ -7,16 +7,12 @@
  * @module BlockchainApiConnection
  */
 
-import { types9 as CUSTOM_TYPES } from '@kiltprotocol/type-definitions'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { ConfigService } from '@kiltprotocol/config'
-import { TypeRegistry } from '@polkadot/types'
 import Blockchain from '../blockchain/Blockchain'
+import TYPE_REGISTRY from './TypeRegistry'
 
 let instance: Promise<Blockchain> | null
-
-export const typesRegistry = new TypeRegistry()
-typesRegistry.register(CUSTOM_TYPES)
 
 /**
  * Builds a new blockchain connection instance.
@@ -29,7 +25,7 @@ export async function buildConnection(
 ): Promise<Blockchain> {
   const provider = new WsProvider(host)
   const api: ApiPromise = await ApiPromise.create({
-    registry: typesRegistry,
+    registry: TYPE_REGISTRY,
     provider,
   })
   return new Blockchain(api)

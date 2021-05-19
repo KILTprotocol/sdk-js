@@ -1,9 +1,7 @@
 import { Option, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
 import type { Constructor } from '@polkadot/util/types'
-
-const TYPE_REGISTRY = jest.requireActual('../BlockchainApiConnection')
-  .typesRegistry
+import TYPE_REGISTRY from '../TypeRegistry'
 
 const chainProperties = TYPE_REGISTRY.createType('ChainProperties', {
   ss58Format: 38,
