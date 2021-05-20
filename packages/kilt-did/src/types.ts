@@ -1,4 +1,5 @@
 import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
+import { u64 } from '@polkadot/types'
 import { AnyNumber } from '@polkadot/types/types'
 import { KeyId } from './types.chain'
 
@@ -59,7 +60,7 @@ export interface IDidRecord {
   attestationKey?: KeyDetails
   publicKeys: KeyDetails[]
   endpointUrl?: string
-  lastTxCounter: number
+  lastTxCounter: u64
 }
 
 export type Nullable<T> = { [P in keyof T]: T[P] | null }

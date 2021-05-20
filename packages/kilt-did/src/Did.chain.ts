@@ -85,7 +85,7 @@ export async function queryById(
       keyAgreementKeys: publicKeys.filter((key) =>
         keyAgreementKeyIds.includes(key.id)
       ),
-      lastTxCounter: didDetail.lastTxCounter.toNumber(),
+      lastTxCounter: didDetail.lastTxCounter,
     }
     if (didDetail.endpointUrl.isSome) {
       // that's super awkward but I guess there are reasons that the Url encoding needs to be a struct
