@@ -9,11 +9,9 @@ import {
   convertToTxUnit,
   asFemtoKilt,
   TRANSACTION_FEE,
-  formatKiltBalanceDecimalPlacement,
 } from './Balance.utils'
 
 const TESTVALUE = new BN('123456789000')
-const TESTVALUE_2 = new BN('123456789000000')
 describe('formatKiltBalance', () => {
   const alterExistingOptions: BalanceOptions = {
     decimals: 17,
@@ -73,20 +71,6 @@ describe('formatKiltBalance', () => {
         addingOptions
       )
     ).toEqual('1.0000 mKILT')
-  })
-})
-
-describe('format', () => {
-  it('formats the decimal placements of given balance', () => {
-    expect(formatKiltBalanceDecimalPlacement(TESTVALUE, 3, 10)).toEqual(
-      '12.345'
-    )
-    expect(formatKiltBalanceDecimalPlacement(TESTVALUE, 8, 16)).toEqual(
-      '0.00001234'
-    )
-    expect(formatKiltBalanceDecimalPlacement(TESTVALUE_2, 2, 9)).toEqual(
-      '123456.78'
-    )
   })
 })
 

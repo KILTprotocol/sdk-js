@@ -56,7 +56,7 @@ describe('write and didDeleteTx', () => {
     >({
       did: getDidFromIdentifier(id.address),
     })
-  }, 20_000)
+  }, 30_000)
 
   it('deletes DID from previous step', async () => {
     await expect(queryById(id.address)).resolves.toMatchObject<
@@ -77,7 +77,7 @@ describe('write and didDeleteTx', () => {
     ).resolves.not.toThrow()
 
     await expect(queryById(id.address)).resolves.toBe(null)
-  }, 20_000)
+  }, 30_000)
 })
 
 it('creates and updates DID', async () => {
@@ -129,7 +129,7 @@ it('creates and updates DID', async () => {
     did: getDidFromIdentifier(id.address),
     endpointUrl: 'ftp://example.com/abc',
   })
-}, 20_000)
+}, 40_000)
 
 describe('DID authorization', () => {
   let id: IIdentity
@@ -159,7 +159,7 @@ describe('DID authorization', () => {
     >({
       did: getDidFromIdentifier(id.address),
     })
-  }, 20_000)
+  }, 30_000)
 
   it('authorizes ctype creation with DID signature', async () => {
     const ctype = CType.fromSchema({
@@ -184,7 +184,7 @@ describe('DID authorization', () => {
     ).resolves.not.toThrow()
 
     await expect(ctype.verifyStored()).resolves.toEqual(true)
-  }, 20_000)
+  }, 30_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
     const tx = await generateDeleteTx(
@@ -220,7 +220,7 @@ describe('DID authorization', () => {
     ).rejects.toThrow()
 
     await expect(ctype.verifyStored()).resolves.toEqual(false)
-  }, 20_000)
+  }, 40_000)
 })
 
 afterAll(async () => disconnect())

@@ -1,5 +1,9 @@
 import { ExtrinsicError, ExtrinsicErrors, PalletIndex } from './errorhandling'
-import { BlockchainApiConnection } from './blockchainApiConnection'
+import {
+  BlockchainApiConnection,
+  KILT_TYPES,
+  TypeRegistry,
+} from './blockchainApiConnection'
 import { Blockchain, BlockchainUtils, SubscriptionPromise } from './blockchain'
 
 export {
@@ -10,4 +14,6 @@ export {
   ExtrinsicErrors,
   PalletIndex,
   BlockchainApiConnection,
+  TypeRegistry,
+  KILT_TYPES,
 }
