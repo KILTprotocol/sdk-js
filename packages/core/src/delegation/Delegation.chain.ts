@@ -4,7 +4,7 @@
  */
 
 import type { Option, Vec } from '@polkadot/types'
-import type { H256, Hash } from '@polkadot/types/interfaces'
+import type { Hash } from '@polkadot/types/interfaces'
 import type { IDelegationBaseNode } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
@@ -24,7 +24,7 @@ export async function getAttestationHashes(
 ): Promise<string[]> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encodedHashes = await blockchain.api.query.attestation.delegatedAttestations<
-    Option<Vec<H256>>
+    Option<Vec<Hash>>
   >(id)
   return decodeDelegatedAttestations(encodedHashes)
 }
