@@ -7,9 +7,9 @@ import type {
   UrlEnum,
   IPublicKey,
   UrlEncoding,
-  IDeleteOptions,
+  IDidDeletionOptions,
   IUpdateOptions,
-  ICreateOptions,
+  IDidCreationOptions,
   IAuthorizeCallOptions,
 } from './types'
 import type {
@@ -71,9 +71,9 @@ export function encodeEndpointUrl(url: string): UrlEnum {
   return typedUrl as UrlEnum
 }
 
-export function encodeDidCreate(
+export function encodeDidCreationOperation(
   registry: Registry,
-  { didIdentifier, keys, endpointUrl }: ICreateOptions
+  { didIdentifier, keys, endpointUrl }: IDidCreationOptions
 ): DidCreationOperation {
   // build did create object
   const didCreateRaw = {
@@ -103,7 +103,7 @@ function matchKeyOperation(keypair: IPublicKey | undefined | null) {
   return { Ignore: null }
 }
 
-export function encodeDidUpdate(
+export function encodeDidUpdateOperation(
   registry: Registry,
   {
     didIdentifier,
@@ -134,9 +134,9 @@ export function encodeDidUpdate(
   )
 }
 
-export function encodeDidDelete(
+export function encodeDidDeletionOperation(
   registry: Registry,
-  { didIdentifier, txCounter }: IDeleteOptions
+  { didIdentifier, txCounter }: IDidDeletionOptions
 ): DidDeletionOperation {
   return new (registry.getOrThrow<DidDeletionOperation>(
     'DidDeletionOperation'
@@ -146,7 +146,7 @@ export function encodeDidDelete(
   })
 }
 
-export function encodeCallAuthentication(
+export function encodeDidAuthorizedCallOperation(
   registry: Registry,
   { didIdentifier, txCounter, call }: IAuthorizeCallOptions
 ): DidAuthorizedCallOperation {

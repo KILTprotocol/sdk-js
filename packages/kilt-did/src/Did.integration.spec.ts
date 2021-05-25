@@ -7,11 +7,11 @@ import type { IIdentity } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { UUID } from '@kiltprotocol/utils'
 import {
-  createDeleteTx,
-  createUpdateTx,
-  createCreateTx,
+  generateDeleteTx,
+  generateUpdateTx,
+  generateCreateTx,
   queryById,
-  createAuthenticationTx,
+  generateDidAuthenticatedTx,
 } from './Did.chain'
 import type { IDidRecord } from './types'
 import { getDidFromIdentifier } from './Did.utils'
@@ -32,8 +32,8 @@ describe('write and didDeleteTx', () => {
     didIdentifier = id.address
   })
 
-  it('writes a new did record to chain', async () => {
-    const tx = await createCreateTx(
+  it('writes a new DID record to chain', async () => {
+    const tx = await generateCreateTx(
       {
         didIdentifier,
         keys: {
@@ -58,14 +58,14 @@ describe('write and didDeleteTx', () => {
     })
   }, 20_000)
 
-  it('deactivates did from previous step', async () => {
+  it('deletes DID from previous step', async () => {
     await expect(queryById(id.address)).resolves.toMatchObject<
       Partial<IDidRecord>
     >({
       did: getDidFromIdentifier(id.address),
     })
 
-    const tx = await createDeleteTx(
+    const tx = await generateDeleteTx(
       { didIdentifier, txCounter: 1 },
       id.signKeyringPair
     )
@@ -80,10 +80,10 @@ describe('write and didDeleteTx', () => {
   }, 20_000)
 })
 
-it('creates and updates did', async () => {
+it('creates and updates DID', async () => {
   const id = Identity.buildFromMnemonic('')
 
-  const tx = await createCreateTx(
+  const tx = await generateCreateTx(
     {
       didIdentifier: id.address,
       keys: {
@@ -108,7 +108,7 @@ it('creates and updates did', async () => {
     endpointUrl: 'https://example.com',
   })
 
-  const tx2 = await createUpdateTx(
+  const tx2 = await generateUpdateTx(
     {
       didIdentifier: id.address,
       txCounter: 1,
@@ -131,11 +131,11 @@ it('creates and updates did', async () => {
   })
 }, 20_000)
 
-describe('did authorization', () => {
+describe('DID authorization', () => {
   let id: IIdentity
   beforeAll(async () => {
     id = Identity.buildFromMnemonic('')
-    const tx = await createCreateTx(
+    const tx = await generateCreateTx(
       {
         didIdentifier: id.address,
         keys: {
@@ -161,7 +161,7 @@ describe('did authorization', () => {
     })
   }, 20_000)
 
-  it('authorizes ctype creation with did signature', async () => {
+  it('authorizes ctype creation with DID signature', async () => {
     const ctype = CType.fromSchema({
       title: UUID.generate(),
       properties: {},
@@ -169,7 +169,7 @@ describe('did authorization', () => {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
     const call = await ctype.store()
-    const tx = await createAuthenticationTx(
+    const tx = await generateDidAuthenticatedTx(
       {
         didIdentifier: id.address,
         txCounter: 1,
@@ -186,8 +186,8 @@ describe('did authorization', () => {
     await expect(ctype.verifyStored()).resolves.toEqual(true)
   }, 20_000)
 
-  it('no longer authorizes ctype creation after did deactivation', async () => {
-    const tx = await createDeleteTx(
+  it('no longer authorizes ctype creation after DID deletion', async () => {
+    const tx = await generateDeleteTx(
       { didIdentifier: id.address, txCounter: 2 },
       id.signKeyringPair
     )
@@ -205,7 +205,7 @@ describe('did authorization', () => {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
     const call = await ctype.store()
-    const tx2 = await createAuthenticationTx(
+    const tx2 = await generateDidAuthenticatedTx(
       {
         didIdentifier: id.address,
         txCounter: 1,

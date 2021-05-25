@@ -8,38 +8,29 @@ export type KeypairType = string
 export interface IPublicKey {
   publicKey: Uint8Array
   type: KeypairType
-  // do we need the identifier?
 }
 
-export type IKeyPair = IPublicKey
+export type IVerificationKey = IPublicKey
+export type IEncryptionPublicKey = IPublicKey
 
-export type ISigningKey = IPublicKey
-export type IEncryptionKey = IPublicKey
-
-export interface ISigningKeyPair extends ISigningKey {
+export interface ISigningKeyPair extends IVerificationKey {
   sign: (message: string | Uint8Array) => Uint8Array
 }
 
-export interface IEncryptionKeyPair extends IEncryptionKey {
+export interface IEncryptionKeyPair extends IEncryptionPublicKey {
   decrypt: (
     message: Uint8Array,
     additionalData: Record<string, unknown>
   ) => Uint8Array | null
 }
 
-// TODO: should this use the same keys as the chain type?
-export interface KeySet {
-  authentication: ISigningKeyPair
-  encryption: IEncryptionKeyPair
-  attestation?: ISigningKeyPair
-  delegation?: ISigningKeyPair
-}
+export type IKeyPair = ISigningKeyPair | IEncryptionKeyPair
 
 export interface PublicKeySet {
-  authentication: ISigningKey
-  encryption: IEncryptionKey
-  attestation?: ISigningKey
-  delegation?: ISigningKey
+  authentication: IVerificationKey
+  encryption: IEncryptionPublicKey
+  attestation?: IVerificationKey
+  delegation?: IVerificationKey
 }
 
 export interface TypedPublicKey {
@@ -82,23 +73,23 @@ export interface DidSigned<PayloadType> {
   signature: SignatureEnum
 }
 
-export interface ICreateOptions {
+export interface IDidCreationOptions {
   didIdentifier: IIdentity['address']
   keys: PublicKeySet
   endpointUrl?: string
 }
 
-export interface IDeleteOptions {
+export interface IDidDeletionOptions {
   didIdentifier: IIdentity['address']
   txCounter: AnyNumber
 }
 
-export interface IUpdateOptions extends IDeleteOptions {
+export interface IUpdateOptions extends IDidDeletionOptions {
   keysToUpdate?: Partial<Nullable<PublicKeySet>>
   publicKeysToRemove?: KeyId[]
   newEndpointUrl?: string
 }
 
-export interface IAuthorizeCallOptions extends IDeleteOptions {
+export interface IAuthorizeCallOptions extends IDidDeletionOptions {
   call: SubmittableExtrinsic
 }
