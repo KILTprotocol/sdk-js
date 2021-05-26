@@ -1,17 +1,12 @@
-import { Option, TypeRegistry, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
+import { Option, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
 import type { Constructor } from '@polkadot/util/types'
-import { CUSTOM_TYPES } from '../BlockchainApiConnection'
+import TYPE_REGISTRY from '../TypeRegistry'
 
-const TYPE_REGISTRY = new TypeRegistry()
-TYPE_REGISTRY.register({
-  ...CUSTOM_TYPES,
-})
 const chainProperties = TYPE_REGISTRY.createType('ChainProperties', {
   ss58Format: 38,
 })
 TYPE_REGISTRY.setChainProperties(chainProperties)
-export default TYPE_REGISTRY
 
 const AccountId = TYPE_REGISTRY.getOrThrow('AccountId')
 
