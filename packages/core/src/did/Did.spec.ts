@@ -4,10 +4,11 @@
 
 import { U8aFixed } from '@polkadot/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import TYPE_REGISTRY, {
-  mockChainQueryReturn,
-} from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
+import {
+  BlockchainUtils,
+  TypeRegistry as TYPE_REGISTRY,
+} from '@kiltprotocol/chain-helpers'
 import { Did, IDid } from '..'
 import Identity from '../identity/Identity'
 import {

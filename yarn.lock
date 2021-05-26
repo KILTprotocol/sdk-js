@@ -818,6 +818,7 @@ __metadata:
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
   dependencies:
     "@kiltprotocol/config": "workspace:*"
+    "@kiltprotocol/type-definitions": 0.1.4
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^3.11.1
@@ -900,6 +901,13 @@ __metadata:
     webpack-cli: ^4.5.0
   languageName: unknown
   linkType: soft
+
+"@kiltprotocol/type-definitions@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@kiltprotocol/type-definitions@npm:0.1.4"
+  checksum: 872b03bf3cf2bed0b67005fb20c4bb2a7d1a490af7ce69ce8cad351bc9f593cc05507e6fe00d1f56d057b6babec420eadeb2cfbc62b1c027eb063d18e4b7a48f
+  languageName: node
+  linkType: hard
 
 "@kiltprotocol/types@workspace:*, @kiltprotocol/types@workspace:packages/types":
   version: 0.0.0-use.local
