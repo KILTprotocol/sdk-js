@@ -11,6 +11,7 @@
     "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
     "clean": "yarn workspaces foreach -p --no-private run clean",
     "clean:docs": "rm -rf docs/api",
+    "demo": "yarn ts-node packages/sdk-js/demo.ts",
     "version": "yarn workspaces foreach version",
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
     "lint": "eslint packages --format=codeframe",
