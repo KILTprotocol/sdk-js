@@ -126,7 +126,7 @@ async function main(): Promise<void> {
 
     /* The Attester creates the attestation based on the IRequestForAttestation object she received: */
     const attestation = Kilt.Attestation.fromRequestAndPublicIdentity(
-      extractedRequestForAttestation.getPublicIdentity(),
+      extractedRequestForAttestation,
       attester.getPublicIdentity()
     )
 
