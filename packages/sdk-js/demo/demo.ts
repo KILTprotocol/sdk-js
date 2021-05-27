@@ -13,8 +13,8 @@ async function main() {
   const aliceFirstEncryptionKeyPair = utils.generate_encryption_key()
 
   console.log(`Alice address: ${aliceKiltIdentity.address}`)
-  console.log(`Alice authentication public key: ${"0x" + Buffer.from(aliceFirstAuthenticationKeyPair.publicKey).toString("hex")}`)
-  console.log(`Alice encryption public key: ${"0x" + Buffer.from(aliceFirstEncryptionKeyPair.publicKey).toString("hex")}`)
+  console.log(`Alice authentication Ed25519 public key: ${"0x" + Buffer.from(aliceFirstAuthenticationKeyPair.publicKey).toString("hex")}`)
+  console.log(`Alice encryption X25519 public key: ${"0x" + Buffer.from(aliceFirstEncryptionKeyPair.publicKey).toString("hex")}`)
 
   await utils.waitForEnter()
 
@@ -44,15 +44,13 @@ async function main() {
   // // Step 3.1: generate new keys
 
   const aliceNewAuthenticationKeyPair = utils.generate_sr25519_authentication_key()
-  const aliceNewEncryptionKeyPair = utils.generate_encryption_key()
   const aliceNewAttestationKeyPair = utils.generate_sr25519_attestation_key()
   const aliceNewDelegationKeyPair = utils.generate_ed25519_delegation_key()
   const aliceNewEndpointUrl = "https://kilt.io"
 
-  console.log(`Alice new authentication public key: ${"0x" + Buffer.from(aliceNewAuthenticationKeyPair.publicKey).toString("hex")}`)
-  console.log(`Alice new encryption public key: ${"0x" + Buffer.from(aliceNewEncryptionKeyPair.publicKey).toString("hex")}`)
-  console.log(`Alice new attestation public key: ${"0x" + Buffer.from(aliceNewAttestationKeyPair.publicKey).toString("hex")}`)
-  console.log(`Alice new delegation public key: ${"0x" + Buffer.from(aliceNewDelegationKeyPair.publicKey).toString("hex")}`)
+  console.log(`Alice new authentication Sr25519 public key: ${"0x" + Buffer.from(aliceNewAuthenticationKeyPair.publicKey).toString("hex")}`)
+  console.log(`Alice new attestation Sr25519 public key: ${"0x" + Buffer.from(aliceNewAttestationKeyPair.publicKey).toString("hex")}`)
+  console.log(`Alice new delegation Ed25519 public key: ${"0x" + Buffer.from(aliceNewDelegationKeyPair.publicKey).toString("hex")}`)
   console.log(`Alice new endpoint URL: ${aliceNewEndpointUrl}`)
 
   await utils.waitForEnter()
@@ -64,7 +62,6 @@ async function main() {
       didIdentifier: aliceKiltIdentity.address,
       keysToUpdate: {
         authentication: aliceNewAuthenticationKeyPair,
-        encryption: { ...aliceNewEncryptionKeyPair, type: "x25519" },
         attestation: aliceNewAttestationKeyPair,
         delegation: aliceNewDelegationKeyPair
       },
@@ -106,8 +103,8 @@ async function main() {
 
   // Step 5: submit CTYPE creation with a wrong key (should fail)
 
-  const newCtype = kilt.CType.fromSchema(require("./ctype.json"))
-  const ctypeCreationExtrinsic = await newCtype.store()
+  let newCtype = kilt.CType.fromSchema(require("./ctype.json"))
+  let ctypeCreationExtrinsic = await newCtype.store()
 
   let ctypeCreationTx = await did.chain.generateDidAuthenticatedTx(
     {
@@ -119,7 +116,7 @@ async function main() {
     aliceNewDelegationKeyPair
   )
 
-  console.log("Bob submitting Alice's CTYPe creation (using the delegation key) to the KILT chain...")
+  console.log("Bob submitting Alice's CTYPE creation (using the delegation key) to the KILT chain...")
   
   try {
     await kilt.BlockchainUtils.signAndSubmitTx(ctypeCreationTx, bobKiltIdentity, {
@@ -129,7 +126,7 @@ async function main() {
     await utils.waitForEnter("Error generated. Press Enter to continue:")
   }
 
-  // Step 6: submit CTYPE creation with a wrong key (should fail)
+  // Step 6: submit CTYPE creation
 
   ctypeCreationTx = await did.chain.generateDidAuthenticatedTx(
     {
@@ -140,7 +137,7 @@ async function main() {
     aliceNewAttestationKeyPair
   )
 
-  console.log("Bob submitting Alice's CTYPe creation to the KILT chain...")
+  console.log("Bob submitting Alice's CTYPE creation to the KILT chain...")
 
   await kilt.BlockchainUtils.signAndSubmitTx(ctypeCreationTx, bobKiltIdentity, {
     resolveOn: kilt.BlockchainUtils.IS_IN_BLOCK,
@@ -162,19 +159,86 @@ async function main() {
     aliceNewAuthenticationKeyPair
   )
 
+  console.log("Bob submitting Alice's DID update to the KILT chain...")
+
   await kilt.BlockchainUtils.signAndSubmitTx(aliceDIDUpdateTx, bobKiltIdentity, {
     resolveOn: kilt.BlockchainUtils.IS_IN_BLOCK,
   })
 
   await utils.waitForEnter()
+
+  // Step 8: submit CTYPE creation with deleted key (should fail)
+
+  newCtype = kilt.CType.fromSchema(require("./ctype2.json"))
+  ctypeCreationExtrinsic = await newCtype.store()
+
+  ctypeCreationTx = await did.chain.generateDidAuthenticatedTx(
+    {
+      didIdentifier: aliceKiltIdentity.address,
+      call: ctypeCreationExtrinsic,
+      txCounter: didTxCounter
+    },
+    aliceNewAttestationKeyPair
+  )
+
+  console.log("Bob submitting Alice's CTYPE creation (using the deleted attestation key) to the KILT chain...")
+  
+  try {
+    await kilt.BlockchainUtils.signAndSubmitTx(ctypeCreationTx, bobKiltIdentity, {
+        resolveOn: kilt.BlockchainUtils.IS_IN_BLOCK,
+    })
+  } catch {
+    await utils.waitForEnter("Error generated. Press Enter to continue:")
+  }
+
+  // Step 9: DID deletion
+
+  const aliceDIDDeletionTx = await did.chain.generateDeleteTx(
+    {
+      didIdentifier: aliceKiltIdentity.address,
+      txCounter: didTxCounter++,
+    },
+    aliceNewAuthenticationKeyPair
+  )
+
+  console.log("Bob submitting Alice's DID deletion to the KILT chain...")
+  
+  await kilt.BlockchainUtils.signAndSubmitTx(aliceDIDDeletionTx, bobKiltIdentity, {
+    resolveOn: kilt.BlockchainUtils.IS_IN_BLOCK,
+  })
+
+  await utils.waitForEnter()
+
+  // Step 10: submit CTYPE creation with deleted DID
+
+  ctypeCreationExtrinsic = await newCtype.store()
+
+  ctypeCreationTx = await did.chain.generateDidAuthenticatedTx(
+    {
+      didIdentifier: aliceKiltIdentity.address,
+      call: ctypeCreationExtrinsic,
+      txCounter: didTxCounter
+    },
+    aliceNewAttestationKeyPair
+  )
+
+  console.log("Bob submitting Alice's CTYPE creation (after Alice's DID deletion) to the KILT chain...")
+  
+  try {
+    await kilt.BlockchainUtils.signAndSubmitTx(ctypeCreationTx, bobKiltIdentity, {
+        resolveOn: kilt.BlockchainUtils.IS_IN_BLOCK,
+    })
+  } catch {
+    await utils.waitForEnter("Error generated. Press Enter to continue:")
+  }
 }
 
-process.on('SIGINT', () => {
-  console.log("Bye!");
-  process.exit(0);
-});
+main().then(() => console.log("Bye!")).finally(kilt.disconnect)
 
-main().finally(kilt.disconnect)
+process.on('SIGINT', () => {
+  console.log("\nBye!");
+  process.exit(0);
+})
 
 /*
     STEPS:
