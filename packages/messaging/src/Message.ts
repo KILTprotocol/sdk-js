@@ -160,21 +160,16 @@ export default class Message implements IMessage {
   public senderAddress: IMessage['senderAddress']
   public senderBoxPublicKey: IMessage['senderBoxPublicKey']
 
-  private ciphertext: string
-  private nonce: string
-  private hash: string
-  private signature: string
-
   /**
    * Constructs a message which should be encrypted with [[Message.encrypt]] before sending to the receiver.
    *
    * @param body The body of the message.
-   * @param sender The [[Identity]] of the sender.
+   * @param sender The [[PublicIdentity]] of the sender.
    * @param receiver The [[PublicIdentity]] of the receiver.
    */
   public constructor(
     body: MessageBody | CompressedMessageBody,
-    sender: Identity,
+    sender: IPublicIdentity,
     receiver: IPublicIdentity
   ) {
     if (Array.isArray(body)) {
@@ -185,34 +180,38 @@ export default class Message implements IMessage {
     this.createdAt = Date.now()
     this.receiverAddress = receiver.address
     this.senderAddress = sender.address
-    this.senderBoxPublicKey = sender.getBoxPublicKey()
-
-    const encryptedMessage: Crypto.EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(
-      JSON.stringify(body),
-      receiver.boxPublicKeyAsHex
-    )
-    this.ciphertext = encryptedMessage.box
-    this.nonce = encryptedMessage.nonce
-
-    const hashInput: string = this.ciphertext + this.nonce + this.createdAt
-    this.hash = Crypto.hashStr(hashInput)
-    this.signature = sender.signStr(this.hash)
+    this.senderBoxPublicKey = sender.boxPublicKeyAsHex
   }
 
   /**
    * Encrypts the [[Message]] symmetrically as a string. This can be reversed with [[Message.decrypt]].
    *
+   * @param sender The [[Identity]] of the sender.
+   * @param receiver The [[PublicIdentity]] of the receiver.
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
-  public encrypt(): IEncryptedMessage {
+  public encrypt(
+    sender: Identity,
+    receiver: IPublicIdentity
+  ): IEncryptedMessage {
+    const encryptedMessage: Crypto.EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(
+      JSON.stringify(this.body),
+      receiver.boxPublicKeyAsHex
+    )
+    const ciphertext = encryptedMessage.box
+    const { nonce } = encryptedMessage
+
+    const hashInput: string = ciphertext + nonce + this.createdAt
+    const hash = Crypto.hashStr(hashInput)
+    const signature = sender.signStr(hash)
     return {
       messageId: this.messageId,
       receivedAt: this.receivedAt,
-      ciphertext: this.ciphertext,
-      nonce: this.nonce,
+      ciphertext,
+      nonce,
       createdAt: this.createdAt,
-      hash: this.hash,
-      signature: this.signature,
+      hash,
+      signature,
       receiverAddress: this.receiverAddress,
       senderAddress: this.senderAddress,
       senderBoxPublicKey: this.senderBoxPublicKey,

@@ -153,7 +153,10 @@ async function doAttestation(
   )
 
   // The message can be encrypted as follows
-  const reqAttestationEnc = reqAttestation.encrypt()
+  const reqAttestationEnc = reqAttestation.encrypt(
+    claimer,
+    attester.getPublicIdentity()
+  )
 
   // claimer sends [[encrypted]] to the attester
 
@@ -181,7 +184,10 @@ async function doAttestation(
   )
 
   // And send a message back
-  const submitAttestationEnc = submitAttestation.encrypt()
+  const submitAttestationEnc = submitAttestation.encrypt(
+    attester,
+    claimer.getPublicIdentity()
+  )
 
   // ------------------------- CLAIMER -----------------------------------------
   Kilt.Message.ensureHashAndSignature(submitAttestationEnc, attester.address)

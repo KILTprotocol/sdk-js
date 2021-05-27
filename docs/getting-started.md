@@ -170,14 +170,14 @@ const identity = Kilt.Identity.buildFromMnemonic(
 const tx = await ctype.store()
 
 // either sign and send in one step
-  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity)
+await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity)
 // signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria:
-  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: Kilt.BlockchainUtils.IS_READY, // resolve once tx is in the tx pool
-    rejectOn: Kilt.BlockchainUtils.IS_ERROR,  // only reject when IS_ERROR criteria is matched
-    timeout: 10_000, // Promise timeout in ms
-    tip: 10_000_000. // Amount of Femto-KILT to tip the validator
-  })
+await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+  resolveOn: Kilt.BlockchainUtils.IS_READY, // resolve once tx is in the tx pool
+  rejectOn: Kilt.BlockchainUtils.IS_ERROR, // only reject when IS_ERROR criteria is matched
+  timeout: 10_000, // Promise timeout in ms
+  tip: 10_000_000, // Amount of Femto-KILT to tip the validator
+})
 
 // or step by step
 const chain = Kilt.connect()
@@ -189,13 +189,13 @@ Please note that the **same CTYPE can only be stored once** on the blockchain.
 
 If a transaction fails with an by re-signing recoverable error (e.g. multi device nonce collision),
 BlockchainUtils.signAndSubmitTx has the ability to re-sign and re-send the failed tx upt to 2 times, if the appropriate flag is set:
-```typescript
-  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
-    reSign: true,
-  })
-```
 
+```typescript
+await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+  resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
+  reSign: true,
+})
+```
 
 At the end of the process, the `CType` object should match the CType below.
 This can be saved anywhere, for example on a CTYPE registry service:
@@ -312,7 +312,7 @@ const messageBody: MessageBody = {
 }
 const message = new Kilt.Message(
   messageBody,
-  claimer,
+  claimer.getPublicIdentity(),
   attester.getPublicIdentity()
 )
 ```
@@ -339,7 +339,7 @@ Message {
 The message can be encrypted as follows:
 
 ```typescript
-const encrypted = message.encrypt()
+const encrypted = message.encrypt(claime, attester.getPublicIdentity())
 ```
 
 The messaging system is transport agnostic.
@@ -441,7 +441,7 @@ const messageBodyBack: MessageBody = {
 }
 const messageBack = new Kilt.Message(
   messageBodyBack,
-  attester,
+  attester.getPublicIdentity(),
   claimer.getPublicIdentity()
 )
 ```
@@ -505,7 +505,7 @@ const messageBodyForClaimer: MessageBody = {
 }
 const messageForClaimer = new Kilt.Message(
   messageBodyForClaimer,
-  verifier,
+  verifier.getPublicIdentity(),
   claimer.getPublicIdentity()
 )
 ```
@@ -525,7 +525,7 @@ const messageBodyForVerifier: MessageBody = {
 }
 const messageForVerifier = new Kilt.Message(
   messageBodyForVerifier,
-  claimer,
+  claimer.getPublicIdentity(),
   verifier.getPublicIdentity()
 )
 ```
