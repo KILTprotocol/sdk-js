@@ -104,7 +104,7 @@ async function main(): Promise<void> {
   }
   const message = new Kilt.Message(
     messageBody,
-    claimer,
+    claimer.getPublicIdentity(),
     attester.getPublicIdentity()
   )
 
@@ -112,7 +112,7 @@ async function main(): Promise<void> {
   console.log(message)
 
   /* The message can be encrypted as follows: */
-  const encrypted = message.encrypt()
+  const encrypted = message.encrypt(claimer, attester.getPublicIdentity())
 
   /* Therefore, **during decryption** both the **sender identity and the validity of the message are checked automatically**. */
   const decrypted = Kilt.Message.decrypt(encrypted, attester)
@@ -126,7 +126,7 @@ async function main(): Promise<void> {
 
     /* The Attester creates the attestation based on the IRequestForAttestation object she received: */
     const attestation = Kilt.Attestation.fromRequestAndPublicIdentity(
-      extractedRequestForAttestation,
+      extractedRequestForAttestation.getPublicIdentity(),
       attester.getPublicIdentity()
     )
 
@@ -154,7 +154,7 @@ async function main(): Promise<void> {
     }
     const messageBack = new Kilt.Message(
       messageBodyBack,
-      attester,
+      attester.getPublicIdentity(),
       claimer.getPublicIdentity()
     )
 
@@ -184,7 +184,7 @@ async function main(): Promise<void> {
       }
       const messageForClaimer = new Kilt.Message(
         messageBodyForClaimer,
-        verifier,
+        verifier.getPublicIdentity(),
         claimer.getPublicIdentity()
       )
 
@@ -202,7 +202,7 @@ async function main(): Promise<void> {
       }
       const messageForVerifier = new Kilt.Message(
         messageBodyForVerifier,
-        claimer,
+        claimer.getPublicIdentity(),
         verifier.getPublicIdentity()
       )
 
