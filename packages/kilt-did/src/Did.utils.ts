@@ -1,4 +1,4 @@
-import { SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import type { Codec, Registry } from '@polkadot/types/types'
 import type {
   DidSigned,
@@ -16,6 +16,7 @@ import type {
   DidAuthorizedCallOperation,
   DidCreationOperation,
   DidDeletionOperation,
+  DidPublicKey,
   DidUpdateOperation,
 } from './types.chain'
 
@@ -157,4 +158,27 @@ export function encodeDidAuthorizedCallOperation(
     txCounter,
     call,
   })
+}
+
+export function encodeDidPublicKey(
+  registry: Registry,
+  key: IPublicKey
+): DidPublicKey {
+  let keyClass: string
+  if (['ed25519', 'sr25519'].includes(key.type)) {
+    keyClass = 'PublicVerificationKey'
+  } else if (key.type === 'x25519') {
+    keyClass = 'PublicEncryptionKey'
+  } else {
+    throw TypeError(
+      "key types currently recognized are ['ed25519', 'sr25519', 'x25519']"
+    )
+  }
+  return new (registry.getOrThrow<DidPublicKey>('DidPublicKey'))(registry, {
+    [keyClass]: formatPublicKey(key),
+  })
+}
+
+export function computeKeyId(publicKey: DidPublicKey): string {
+  return Crypto.hashStr(publicKey.toU8a())
 }
