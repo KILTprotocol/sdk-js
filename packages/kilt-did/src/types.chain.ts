@@ -56,11 +56,11 @@ export interface Url extends Enum {
 }
 
 export interface DidPublicKey extends Enum {
-  isDidVerificationKey: boolean
-  asDidVerificationKey: DidVerificationKey
-  isDidEncryptionKey: boolean
-  asDidEncryptionKey: DidEncryptionKey
-  type: 'DidVerificationKey' | 'DidEncryptionKey'
+  isPublicVerificationKey: boolean
+  asPublicVerificationKey: DidVerificationKey
+  isPublicEncryptionKey: boolean
+  asPublicEncryptionKey: DidEncryptionKey
+  type: 'PublicVerificationKey' | 'PublicEncryptionKey'
   value: DidVerificationKey | DidEncryptionKey
 }
 
