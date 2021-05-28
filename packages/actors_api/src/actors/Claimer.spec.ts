@@ -123,7 +123,7 @@ describe('Claimer', () => {
   it('create public presentation', async () => {
     const { message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
-        ctypeHash: Crypto.hashStr('this is a ctype hash'),
+        ctypeHash: `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`,
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(verifier, claimer.getPublicIdentity())
@@ -144,7 +144,7 @@ describe('Claimer', () => {
       type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
       content: [
         {
-          cTypeHash: Crypto.hashStr('this is a ctype hash'),
+          cTypeHash: `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`,
         },
       ],
     }

@@ -31,7 +31,7 @@ describe('Messaging', () => {
     const message = new Message(
       {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: [{ cTypeHash: `KILT:ctype:${Crypto.hashStr('0x12345678')}` }],
+        content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
       },
       identityAlice,
       identityBob.getPublicIdentity()
@@ -114,7 +114,7 @@ describe('Messaging', () => {
   it('verifies the message sender is the owner', () => {
     const content = RequestForAttestation.fromClaimAndIdentity(
       {
-        cTypeHash: `KILT:ctype:${Crypto.hashStr('0x12345678')}`,
+        cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
         owner: identityAlice.address,
         contents: {},
       },
@@ -123,7 +123,7 @@ describe('Messaging', () => {
 
     const quoteData: IQuote = {
       attesterAddress: identityAlice.address,
-      cTypeHash: `KILT:ctype:${Crypto.hashStr('0x12345678')}`,
+      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
       cost: {
         tax: { vat: 3.3 },
         net: 23.4,
@@ -171,7 +171,7 @@ describe('Messaging', () => {
     const attestation = {
       delegationId: null,
       claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
-      cTypeHash: `KILT:ctype:${Crypto.hashStr('0x12345678')}`,
+      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
       owner: identityBob.getPublicIdentity().address,
       revoked: false,
     }
@@ -236,7 +236,7 @@ describe('Messaging', () => {
       identityBob = Identity.buildFromURI('//Bob')
 
       messageBody = {
-        content: [{ cTypeHash: `KILT:ctype:${Crypto.hashStr('0x12345678')}` }],
+        content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
 
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
       }

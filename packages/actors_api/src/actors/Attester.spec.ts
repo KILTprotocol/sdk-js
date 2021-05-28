@@ -164,7 +164,7 @@ describe('Attester', () => {
       // const { messageBody } = await attester.initiateAttestation()
       const messageBody: IMessage['body'] = {
         type: Message.BodyType.REQUEST_TERMS,
-        content: { cTypeHash: Crypto.hashStr('0xabc') },
+        content: { cTypeHash: `kilt:ctype:${Crypto.hashStr('0xabc')}` },
       }
       await expect(
         issueAttestation(

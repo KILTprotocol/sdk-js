@@ -94,7 +94,7 @@ describe('Verifier', () => {
   it('request public presentation', async () => {
     const { session, message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
-        ctypeHash: Crypto.hashStr('this is a ctype hash'),
+        ctypeHash: `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`,
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(verifier, claimer.getPublicIdentity())
@@ -104,7 +104,7 @@ describe('Verifier', () => {
     )
     if (request.body.type === Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES) {
       expect(request.body.content[0].cTypeHash).toEqual(
-        Crypto.hashStr('this is a ctype hash')
+        `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`
       )
     }
   })
@@ -112,7 +112,7 @@ describe('Verifier', () => {
   it('verify public-only presentation all good', async () => {
     const { session, message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
-        ctypeHash: Crypto.hashStr('this is a ctype hash'),
+        ctypeHash: `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`,
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(verifier, claimer.getPublicIdentity())
@@ -140,7 +140,7 @@ describe('Verifier', () => {
   it('verify public-only presentation missing property', async () => {
     const { session, message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
-        ctypeHash: Crypto.hashStr('this is a ctype hash'),
+        ctypeHash: `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`,
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(verifier, claimer.getPublicIdentity())
