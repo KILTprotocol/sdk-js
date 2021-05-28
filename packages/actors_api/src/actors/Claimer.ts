@@ -64,7 +64,7 @@ export function createPresentation(
       type: Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
       content: attestedClaims,
     },
-    identity,
+    identity.getPublicIdentity(),
     verifier
   )
 }
@@ -122,7 +122,11 @@ export function requestAttestation(
   }
 
   return {
-    message: new Message(message, identity, attesterPublicIdentity),
+    message: new Message(
+      message,
+      identity.getPublicIdentity(),
+      attesterPublicIdentity
+    ),
     session: { requestForAttestation: request },
   }
 }

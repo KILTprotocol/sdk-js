@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/chain-helpers",
-  "version": "0.21.1-4",
+  "version": "0.21.1-6",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@kiltprotocol/config": "workspace:*",
+    "@kiltprotocol/type-definitions": "0.1.4",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/api": "^3.11.1",
