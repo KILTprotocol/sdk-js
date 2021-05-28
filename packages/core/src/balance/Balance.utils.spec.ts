@@ -10,13 +10,14 @@
  */
 
 import { BN } from '@polkadot/util'
-import type { BalanceOptions } from '@kiltprotocol/types'
+import type { BalanceNumber, BalanceOptions } from '@kiltprotocol/types'
 import {
   formatKiltBalance,
   convertToTxUnit,
   toFemtoKilt,
   TRANSACTION_FEE,
   fromFemtoKilt,
+  balanceNumberToString,
 } from './Balance.utils'
 
 const TESTVALUE = new BN('123456789000')
@@ -79,6 +80,18 @@ describe('formatKiltBalance', () => {
         addingOptions
       )
     ).toEqual('1.0000 mKILT')
+    expect(
+      formatKiltBalance(
+        baseValue.mul(new BN(10).pow(new BN(18))),
+        addingOptions
+      )
+    ).toEqual('1.0000 kKILT')
+    expect(
+      formatKiltBalance(
+        baseValue.mul(new BN(10).pow(new BN(21))),
+        addingOptions
+      )
+    ).toEqual('1.0000 MKILT')
   })
 })
 
@@ -105,8 +118,8 @@ describe('convertToTxUnit', () => {
     expect(new BN(convertToTxUnit(new BN(1), 3).toString())).toEqual(
       new BN('1000000000000000000')
     )
-    expect(new BN(convertToTxUnit(new BN(1), 6).toString())).toEqual(
-      new BN('1000000000000000000000')
+    expect(new BN(convertToTxUnit(new BN(-1), 6).toString())).toEqual(
+      new BN('-1000000000000000000000')
     )
     expect(new BN(convertToTxUnit(new BN(1), 9).toString())).toEqual(
       new BN('1000000000000000000000000')
@@ -122,21 +135,193 @@ describe('convertToTxUnit', () => {
     )
   })
 })
-describe('asFemtoKilt', () => {
-  it('converts whole KILT to femtoKilt using convertToTxUnit', () => {
-    expect(new BN(toFemtoKilt(new BN(1000)).toString())).toEqual(
-      new BN('1000000000000000000')
+describe('toFemtoKilt', () => {
+  it('converts whole KILT', () => {
+    expect(toFemtoKilt(new BN(1000)).toString()).toEqual(
+      new BN('1000000000000000000').toString()
     )
+  })
+  it('converts any metric amount', () => {
+    expect(new BN(toFemtoKilt('123456789', 'femto').toString())).toEqual(
+      new BN('123456789')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'pico').toString())).toEqual(
+      new BN('123456789')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'nano').toString())).toEqual(
+      new BN('123456789000')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'micro').toString())).toEqual(
+      new BN('123456789000000')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'milli').toString())).toEqual(
+      new BN('123456789000000000')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'kilo').toString())).toEqual(
+      new BN('123456789000000000000000')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'mega').toString())).toEqual(
+      new BN('123456789000000000000000000')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'mill').toString())).toEqual(
+      new BN('123456789000000000000000000')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'giga').toString())).toEqual(
+      new BN('123456789000000000000000000000')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'bill').toString())).toEqual(
+      new BN('123456789000000000000000000000')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'tera').toString())).toEqual(
+      new BN('123456789000000000000000000000000')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'tril').toString())).toEqual(
+      new BN('123456789000000000000000000000000')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'peta').toString())).toEqual(
+      new BN('123456789000000000000000000000000000')
+    )
+    expect(new BN(toFemtoKilt('123456.789', 'exa').toString())).toEqual(
+      new BN('123456789000000000000000000000000000000')
+    )
+    expect(new BN(toFemtoKilt('123.456789', 'zetta').toString())).toEqual(
+      new BN('123456789000000000000000000000000000000')
+    )
+    expect(new BN(toFemtoKilt('0.123456789', 'yotta').toString())).toEqual(
+      new BN('123456789000000000000000000000000000000')
+    )
+  })
+  it('handles too many decimal places', () => {
+    expect(toFemtoKilt('-0.000001', 'nano').toString()).toEqual(
+      new BN('-1').toString()
+    )
+    expect(() => toFemtoKilt('-0.0000001', 'nano').toString()).toThrowError()
+  })
+  it('handles edge cases', () => {
+    expect(() => toFemtoKilt(undefined!).toString()).toThrowError()
+    expect(() => toFemtoKilt({} as BalanceNumber).toString()).toThrowError()
+    expect(() =>
+      toFemtoKilt(([] as unknown) as BalanceNumber).toString()
+    ).toThrowError()
+    expect(() => toFemtoKilt('-2412d.3411').toString()).toThrowError()
+    expect(() => toFemtoKilt('-24.1.2').toString()).toThrowError()
+    expect(() => toFemtoKilt('fasdasdt').toString()).toThrowError()
+    expect(() => toFemtoKilt('').toString()).toThrowError()
+    expect(() => toFemtoKilt(1, 'nono').toString()).toThrowError()
+    expect(() => toFemtoKilt('.').toString()).toThrowError()
+    expect(() => toFemtoKilt('1.').toString()).toThrowError()
+    expect(toFemtoKilt('-0').toString()).toEqual(new BN('0').toString())
+    expect(toFemtoKilt('-0.000001', 'nano').toString()).toEqual(
+      new BN('-1').toString()
+    )
+    expect(toFemtoKilt('-0.000001', 'nano').toString()).toEqual(
+      new BN('-1').toString()
+    )
+    expect(toFemtoKilt('-.25', 'pico').toString()).toEqual(
+      new BN('-250').toString()
+    )
+    expect(() => toFemtoKilt('-0.0000001', 'nano').toString()).toThrowError()
   })
 })
 describe('fromFemtoKilt', () => {
   it('converts femtoKilt to whole KILT using convertToTxUnit', () => {
-    expect(
-      new BN(fromFemtoKilt(new BN('1000000000000000000')).toString())
-    ).toEqual(new BN('1000'))
+    expect(fromFemtoKilt(new BN('1'))).toEqual(`1.000 femto KILT`)
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
+    expect(fromFemtoKilt(new BN('1000000'))).toEqual(`1.000 nano KILT`)
+    expect(fromFemtoKilt(new BN('1000000000'))).toEqual(`1.000 micro KILT`)
+    expect(fromFemtoKilt(new BN('1000000000000'))).toEqual(`1.000 milli KILT`)
+    expect(fromFemtoKilt(new BN('1000000000000000'))).toEqual(`1.000 KILT`)
+    expect(fromFemtoKilt(new BN('1000000000000000000'))).toEqual(
+      `1.000 Kilo KILT`
+    )
+    expect(fromFemtoKilt(new BN('1000000000000000000000'))).toEqual(
+      `1.000 Mill KILT`
+    )
+    expect(fromFemtoKilt(new BN('1000000000000000000000000'))).toEqual(
+      `1.000 Bill KILT`
+    )
+    expect(fromFemtoKilt(new BN('1000000000000000000000000000'))).toEqual(
+      `1.000 Tril KILT`
+    )
+    expect(fromFemtoKilt(new BN('1000000000000000000000000000000'))).toEqual(
+      `1.000 Peta KILT`
+    )
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
+    expect(fromFemtoKilt(new BN('1000'))).toEqual(`1.000 pico KILT`)
+
+    expect(fromFemtoKilt(new BN('1000000000000000000'))).toEqual(
+      `1.000 Kilo KILT`
+    )
+    expect(fromFemtoKilt(new BN('1000000000000000'))).toEqual(`1.000 KILT`)
+    expect(fromFemtoKilt(new BN('1000000000000'))).toEqual(`1.000 milli KILT`)
+    expect(fromFemtoKilt(new BN('1000000000000000000'))).toEqual(
+      `1.000 Kilo KILT`
+    )
+    expect(fromFemtoKilt(new BN('1000000000000000000000'))).toEqual(
+      `1.000 Mill KILT`
+    )
+    expect(fromFemtoKilt(new BN('1000000000000000000000000'))).toEqual(
+      `1.000 Bill KILT`
+    )
+  })
+  it('converts negative femtoKilt to whole KILT using convertToTxUnit', () => {
+    expect(fromFemtoKilt(new BN('-1000000000000000000'))).toEqual(
+      `-1.000 Kilo KILT`
+    )
+  })
+  it('invalid input', () => {
+    expect(() => fromFemtoKilt({} as BN)).toThrowError()
+    expect(() => fromFemtoKilt(([] as unknown) as BN)).toThrowError()
+    expect(() => fromFemtoKilt({} as BigInt)).toThrowError()
+    expect(() => fromFemtoKilt(([] as unknown) as BigInt)).toThrowError()
   })
 })
-
+describe('balanceNumberToString', () => {
+  it('verifies string input for valid number representation', () => {
+    expect(() => balanceNumberToString('1.1')).not.toThrowError()
+    expect(() => balanceNumberToString('.1')).not.toThrowError()
+    expect(() => balanceNumberToString('462246261.14462264')).not.toThrowError()
+    expect(() =>
+      balanceNumberToString('-462246261.14462264')
+    ).not.toThrowError()
+  })
+  it('string input negative tests', () => {
+    expect(() => balanceNumberToString('1.')).toThrowError()
+    expect(() => balanceNumberToString('1.1.1')).toThrowError()
+    expect(() => balanceNumberToString('462246261..14462264')).toThrowError()
+    expect(() => balanceNumberToString('.462246261.14462264')).toThrowError()
+    expect(() => balanceNumberToString('.')).toThrowError()
+    expect(() => balanceNumberToString('dewf')).toThrowError()
+    expect(() => balanceNumberToString('1.24e15')).toThrowError()
+    expect(() => balanceNumberToString('-.462246261.14462264')).toThrowError()
+    expect(() => balanceNumberToString('.')).toThrowError()
+    expect(() => balanceNumberToString('313145314.d')).toThrowError()
+    expect(() => balanceNumberToString('1.24e15')).toThrowError()
+    expect(() => balanceNumberToString('-.462246261.14462264')).toThrowError()
+  })
+  it('verifies BN and BigInt', () => {
+    expect(() => balanceNumberToString({} as BN)).toThrowError()
+    expect(() => balanceNumberToString(([] as unknown) as BN)).toThrowError()
+    expect(() =>
+      balanceNumberToString(({ toString: 'blurt' } as unknown) as BN)
+    ).toThrowError()
+    expect(() => balanceNumberToString({} as BigInt)).toThrowError()
+    expect(() =>
+      balanceNumberToString(([] as unknown) as BigInt)
+    ).toThrowError()
+    expect(() =>
+      balanceNumberToString(({ toLocaleString: 'blurt' } as unknown) as BigInt)
+    ).toThrowError()
+  })
+})
 describe('TRANSACTION_FEE', () => {
   it('equals 125 nano KILT', () => {
     expect(formatKiltBalance(TRANSACTION_FEE)).toEqual('125.0000 nano KILT')
