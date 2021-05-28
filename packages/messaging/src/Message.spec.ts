@@ -7,14 +7,13 @@ import type {
   IClaim,
   IEncryptedMessage,
   IQuote,
-  IRequestForAttestation,
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
   IRequestClaimsForCTypes,
   ISubmitClaimsForCTypes,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { Identity, Quote } from '@kiltprotocol/core'
+import { Identity, Quote, RequestForAttestation } from '@kiltprotocol/core'
 import Message from './Message'
 
 describe('Messaging', () => {
@@ -32,7 +31,7 @@ describe('Messaging', () => {
     const message = new Message(
       {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: [{ cTypeHash: '0x12345678' }],
+        content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
       },
       identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
@@ -50,7 +49,7 @@ describe('Messaging', () => {
     const encryptedMessageWrongHash: IEncryptedMessage = JSON.parse(
       JSON.stringify(encryptedMessage)
     ) as IEncryptedMessage
-    encryptedMessageWrongHash.hash = '0x00000000'
+    encryptedMessageWrongHash.hash = Crypto.hashStr('0x00000000')
     expect(() =>
       Message.decrypt(encryptedMessageWrongHash, identityBob)
     ).toThrowError(
@@ -78,7 +77,7 @@ describe('Messaging', () => {
     const encryptedMessageWrongContent: IEncryptedMessage = JSON.parse(
       JSON.stringify(encryptedMessage)
     ) as IEncryptedMessage
-    encryptedMessageWrongContent.ciphertext = '1234'
+    encryptedMessageWrongContent.ciphertext = Crypto.hashStr('1234')
     const hashStrWrongContent: string = Crypto.hashStr(
       encryptedMessageWrongContent.ciphertext +
         encryptedMessageWrongContent.nonce +
@@ -116,23 +115,18 @@ describe('Messaging', () => {
   })
 
   it('verifies the message sender is the owner', () => {
-    const content = {
-      claim: {
-        cTypeHash: '0x12345678',
+    const content = RequestForAttestation.fromClaimAndIdentity(
+      {
+        cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
         owner: identityAlice.address,
         contents: {},
       },
-      delegationId: null,
-      legitimations: [],
-      claimNonceMap: { '0x12341234': 'a01234-1234324' },
-      claimHashes: ['0x12345678'],
-      rootHash: '0x12345678',
-      claimerSignature: '0x12345678',
-    } as IRequestForAttestation
+      identityAlice
+    )
 
     const quoteData: IQuote = {
       attesterAddress: identityAlice.address,
-      cTypeHash: '0x12345678',
+      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
       cost: {
         tax: { vat: 3.3 },
         net: 23.4,
@@ -177,16 +171,17 @@ describe('Messaging', () => {
       )
     ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender'))
 
+    const attestation = {
+      delegationId: null,
+      claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
+      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
+      owner: identityBob.getPublicIdentity().address,
+      revoked: false,
+    }
+
     const submitAttestationBody: ISubmitAttestationForClaim = {
       content: {
-        attestation: {
-          delegationId: null,
-          claimHash:
-            requestAttestationBody.content.requestForAttestation.rootHash,
-          cTypeHash: '0x12345678',
-          owner: identityBob.getPublicIdentity().address,
-          revoked: false,
-        },
+        attestation,
       },
       type: Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
     }
@@ -244,7 +239,7 @@ describe('Messaging', () => {
       identityBob = Identity.buildFromURI('//Bob')
 
       messageBody = {
-        content: [{ cTypeHash: '0x12345678' }],
+        content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
 
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
       }
@@ -263,17 +258,24 @@ describe('Messaging', () => {
     })
     it('expects hash error', () => {
       // replicate the message but change the content
-      const encrypted2 = new Message(
+      const unencryptedMessage = new Message(
         {
           ...messageBody,
           content: [
-            { cTypeHash: `${messageBody.content[0].cTypeHash[0]}9` },
+            {
+              cTypeHash: messageBody.content[0].cTypeHash,
+            },
             ...messageBody.content,
           ],
         },
         identityAlice.getPublicIdentity(),
         identityBob.getPublicIdentity()
-      ).encrypt(identityAlice, identityBob.getPublicIdentity())
+      )
+      unencryptedMessage.body.content[0].cTypeHash = `${messageBody.content[0].cTypeHash[0]}9`
+      const encrypted2 = unencryptedMessage.encrypt(
+        identityAlice,
+        identityBob.getPublicIdentity()
+      )
       const { ciphertext: msg, nonce, createdAt } = encrypted2
 
       // check correct encrypted but with message from encrypted2

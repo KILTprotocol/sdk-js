@@ -6,6 +6,7 @@ import { CType, Identity, SDKErrors } from '@kiltprotocol/core'
 import type { ICType, IClaim, IMessage } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import Message from '@kiltprotocol/messaging'
+import { Crypto } from '@kiltprotocol/utils'
 import { Attester, Claimer } from '..'
 import { issueAttestation } from './Attester'
 
@@ -65,7 +66,7 @@ describe('Attester', () => {
       contents: {
         name: 'bob',
         and: 1,
-        other: '0xbeef',
+        other: Crypto.hashStr('0xbeef'),
         attributes: true,
       },
       owner: claimer.address,
@@ -163,7 +164,7 @@ describe('Attester', () => {
       // const { messageBody } = await attester.initiateAttestation()
       const messageBody: IMessage['body'] = {
         type: Message.BodyType.REQUEST_TERMS,
-        content: { cTypeHash: '0xabc' },
+        content: { cTypeHash: `kilt:ctype:${Crypto.hashStr('0xabc')}` },
       }
       await expect(
         issueAttestation(

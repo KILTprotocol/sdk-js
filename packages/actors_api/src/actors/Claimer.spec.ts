@@ -12,6 +12,7 @@ import type {
 } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import Message from '@kiltprotocol/messaging'
+import { Crypto } from '@kiltprotocol/utils'
 import { Attester, Claimer, Verifier } from '..'
 import Credential from '../credential/Credential'
 import type { ClaimerAttestationSession } from './Claimer'
@@ -122,7 +123,7 @@ describe('Claimer', () => {
   it('create public presentation', async () => {
     const { message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
-        ctypeHash: 'this is a ctype hash',
+        ctypeHash: `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`,
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(verifier, claimer.getPublicIdentity())
@@ -143,7 +144,7 @@ describe('Claimer', () => {
       type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
       content: [
         {
-          cTypeHash: 'this is a ctype hash',
+          cTypeHash: `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`,
         },
       ],
     }
