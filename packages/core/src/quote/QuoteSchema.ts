@@ -5,7 +5,7 @@
 
 const QuoteSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  $id: 'KILT:quote:v1',
+  $id: 'kilt:quote:v1',
   type: 'object',
   title: 'Quote',
   properties: {

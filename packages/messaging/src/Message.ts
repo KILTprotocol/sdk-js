@@ -25,6 +25,8 @@ import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import {
   compressMessage,
   decompressMessage,
+  errorCheckMessage,
+  errorCheckMessageBody,
   verifyRequiredCTypeProperties,
 } from './Message.utils'
 
@@ -143,6 +145,12 @@ export default class Message implements IMessage {
         ...encrypted,
         body: messageBody,
       }
+
+      // checks the messasge body
+      errorCheckMessageBody(messageBody)
+
+      // checks the message structure
+      errorCheckMessage(decrypted)
       // make sure the sender is the owner of the identity
       Message.ensureOwnerIsSender(decrypted)
 
