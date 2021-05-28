@@ -21,7 +21,7 @@ import type {
   AttestedProof,
   CredentialDigestProof,
 } from './types'
-import { fromCredentialURI } from './exportToVerifiableCredential'
+import { fromCredentialIRI } from './exportToVerifiableCredential'
 
 export interface VerificationResult {
   verified: boolean
@@ -86,7 +86,7 @@ export function verifySelfSignedProof(
       )
     const signerPubKey = verificationMethod.publicKeyHex
 
-    const rootHash = fromCredentialURI(credential.id)
+    const rootHash = fromCredentialIRI(credential.id)
     // validate signature over root hash
     // signatureVerify can handle all required signature types out of the box
     const verification = signatureVerify(
@@ -137,7 +137,7 @@ export async function verifyAttestedProof(
       throw CREDENTIAL_MALFORMED_ERROR(
         'claim id (=claim hash) missing / invalid'
       )
-    const claimHash = fromCredentialURI(credential.id)
+    const claimHash = fromCredentialIRI(credential.id)
 
     let delegationId: string | null
 
@@ -231,7 +231,7 @@ export async function verifyCredentialDigestProof(
     const rootHash = Crypto.hash(concatenated)
 
     // throw if root hash does not match expected (=id)
-    const expectedRootHash = fromCredentialURI(credential.id)
+    const expectedRootHash = fromCredentialIRI(credential.id)
     if (expectedRootHash !== u8aToHex(rootHash))
       throw new Error('computed root hash does not match expected')
 

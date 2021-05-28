@@ -30,7 +30,7 @@ import type {
   VerifiableCredential,
 } from './types'
 
-export function fromCredentialURI(credentialId: string): string {
+export function fromCredentialIRI(credentialId: string): string {
   const hexString = credentialId.startsWith(KILT_CREDENTIAL_IRI_PREFIX)
     ? credentialId.substring(KILT_CREDENTIAL_IRI_PREFIX.length)
     : credentialId
@@ -41,7 +41,7 @@ export function fromCredentialURI(credentialId: string): string {
   return hexString
 }
 
-export function toCredentialURI(rootHash: string): string {
+export function toCredentialIRI(rootHash: string): string {
   if (rootHash.startsWith(KILT_CREDENTIAL_IRI_PREFIX)) {
     return rootHash
   }
@@ -64,7 +64,7 @@ export function fromAttestedClaim(
   } = input.request
 
   // write root hash to id
-  const id = toCredentialURI(rootHash)
+  const id = toCredentialIRI(rootHash)
 
   // transform & annotate claim to be json-ld and VC conformant
   const { credentialSubject } = ClaimUtils.toJsonLD(claim, false) as Record<
