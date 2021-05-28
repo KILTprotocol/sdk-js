@@ -772,73 +772,73 @@ describe('Messaging Utilities', () => {
   beforeAll(async () => {
     messageRequestTerms = new Message(
       requestTermsBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageSubmitTerms = new Message(
       submitTermsBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageRejectTerms = new Message(
       rejectTermsBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageRequestAttestationForClaim = new Message(
       requestAttestationBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageSubmitAttestationForClaim = new Message(
       submitAttestationBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
 
     messageRejectAttestationForClaim = new Message(
       rejectAttestationForClaimBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageRequestClaimsForCTypes = new Message(
       requestClaimsForCTypesBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageSubmitClaimsForCTypes = new Message(
       submitClaimsForCTypesBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageAcceptClaimsForCTypes = new Message(
       acceptClaimsForCTypesBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageRejectClaimsForCTypes = new Message(
       rejectClaimsForCTypesBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageRequestAcceptDelegation = new Message(
       requestAcceptDelegationBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageSubmitAcceptDelegation = new Message(
       submitAcceptDelegationBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageRejectAcceptDelegation = new Message(
       rejectAcceptDelegationBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
     messageInformCreateDelegation = new Message(
       informCreateDelegationBody,
-      identityAlice,
+      identityAlice.getPublicIdentity(),
       identityBob.getPublicIdentity()
     )
   })
