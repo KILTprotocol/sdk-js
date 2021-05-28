@@ -148,7 +148,11 @@ describe('Claimer', () => {
         },
       ],
     }
-    const request = new Message(body, verifier, claimer.getPublicIdentity())
+    const request = new Message(
+      body,
+      verifier.getPublicIdentity(),
+      claimer.getPublicIdentity()
+    )
 
     const presentation = Claimer.createPresentation(
       claimer,

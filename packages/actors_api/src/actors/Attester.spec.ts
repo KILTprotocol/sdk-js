@@ -169,7 +169,11 @@ describe('Attester', () => {
       await expect(
         issueAttestation(
           attester,
-          new Message(messageBody, attester, claimer.getPublicIdentity()),
+          new Message(
+            messageBody,
+            attester.getPublicIdentity(),
+            claimer.getPublicIdentity()
+          ),
           claimer.getPublicIdentity()
         )
       ).rejects.toThrowError(
