@@ -2,26 +2,18 @@
  * @group unit/vc-export
  */
 
-import { IRequestForAttestation } from '@kiltprotocol/types'
+import type { IRequestForAttestation } from '@kiltprotocol/types'
 import { Attestation, AttestedClaim, CType, Did } from '@kiltprotocol/core'
 import toVC from './exportToVerifiableCredential'
 import verificationUtils, { AttestationStatus } from './verificationUtils'
 import claimerUtils, { makePresentation } from './presentationUtils'
-import { VerifiableCredential } from './types'
-
-// jest.mock('jsonld', () => {
-//   return {
-//     compact: (obj: Record<string, any>) => {
-//       const prefix = obj['@context']['@vocab']
-//       const compacted = {}
-//       Object.entries(obj).forEach(([key, value]) => {
-//         if (!key.startsWith('@')) compacted[prefix + key] = value
-//         if (key === '@id') compacted[key] = value
-//       })
-//       return compacted
-//     },
-//   }
-// })
+import type { VerifiableCredential } from './types'
+import {
+  KILT_VERIFIABLECREDENTIAL_TYPE,
+  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
+  DEFAULT_VERIFIABLECREDENTIAL_TYPE,
+  KILT_CREDENTIAL_CONTEXT_URL,
+} from './constants'
 
 const ctype = CType.fromCType({
   schema: {
@@ -95,15 +87,19 @@ const credential = AttestedClaim.fromAttestedClaim({
 
 it('exports credential to VC', () => {
   expect(toVC.fromAttestedClaim(credential)).toMatchObject({
-    '@context': ['https://www.w3.org/2018/credentials/v1'],
-    type: ['VerifiableCredential'],
+    '@context': [
+      DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
+      KILT_CREDENTIAL_CONTEXT_URL,
+    ],
+    type: [DEFAULT_VERIFIABLECREDENTIAL_TYPE, KILT_VERIFIABLECREDENTIAL_TYPE],
     credentialSubject: {
       '@id': 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
       birthday: '1991-01-01',
       name: 'Kurt',
       premium: true,
     },
-    id: '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
+    id:
+      'kilt:cred:0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
     issuanceDate: expect.any(String),
     issuer: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     legitimationIds: [],
@@ -125,8 +121,11 @@ it('exports includes ctype as schema', () => {
 
 it('VC has correct format (full example)', () => {
   expect(toVC.fromAttestedClaim(credential, ctype)).toMatchObject({
-    '@context': ['https://www.w3.org/2018/credentials/v1'],
-    type: ['VerifiableCredential'],
+    '@context': [
+      DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
+      KILT_CREDENTIAL_CONTEXT_URL,
+    ],
+    type: [DEFAULT_VERIFIABLECREDENTIAL_TYPE, KILT_VERIFIABLECREDENTIAL_TYPE],
     credentialSchema: {
       '@id': expect.any(String),
       '@type': 'JsonSchemaValidator2018',
@@ -316,7 +315,7 @@ describe('proofs', () => {
     })
 
     it('it detects tampering with credential digest', () => {
-      VC.id = `1${VC.id.slice(1)}`
+      VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
       expect(
         verificationUtils.verifySelfSignedProof(VC, VC.proof[0])
       ).toMatchObject({
