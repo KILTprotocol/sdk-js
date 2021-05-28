@@ -86,7 +86,7 @@ export interface IDidDeletionOptions {
 
 export interface IUpdateOptions extends IDidDeletionOptions {
   keysToUpdate?: Partial<Nullable<PublicKeySet>>
-  publicKeysToRemove?: KeyId[]
+  publicKeysToRemove?: Array<KeyId | Uint8Array | string>
   newEndpointUrl?: string
 }
 
