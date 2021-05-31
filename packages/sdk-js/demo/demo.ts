@@ -101,10 +101,21 @@ async function main() {
     await utils.waitForEnter("❌  Error generated, as expected! Press Enter to continue:")
   }
 
-  // Step 5: submit CTYPE creation with a wrong key (should fail)
-
+  // Step 5: submit CTYPE creation without DID origin (should fail)
   let newCtype = kilt.CType.fromSchema(require("./ctype.json"))
   let ctypeCreationExtrinsic = await newCtype.store()
+
+  console.log("\n\n⛓  Bob submitting Alice's CTYPE creation (without DID origin) to the KILT chain...")
+  
+  try {
+    await kilt.BlockchainUtils.signAndSubmitTx(ctypeCreationExtrinsic, bobKiltIdentity, {
+        resolveOn: kilt.BlockchainUtils.IS_IN_BLOCK,
+    })
+  } catch {
+    await utils.waitForEnter("❌  Error generated, as expected! Press Enter to continue:")
+  }    
+
+  // Step 5: submit CTYPE creation with a wrong key (should fail)
 
   let ctypeCreationTx = await did.chain.generateDidAuthenticatedTx(
     {
@@ -167,7 +178,7 @@ async function main() {
 
   await utils.waitForEnter("✅  DID updated! Press Enter to continue:")
 
-  // Step 8: submit CTYPE creation with deleted key (should fail)
+  // Step 9: submit CTYPE creation with deleted key (should fail)
 
   newCtype = kilt.CType.fromSchema(require("./ctype2.json"))
   ctypeCreationExtrinsic = await newCtype.store()
@@ -191,7 +202,7 @@ async function main() {
     await utils.waitForEnter("❌  Error generated, as expected! Press Enter to continue:")
   }
 
-  // Step 9: DID deletion
+  // Step 10: DID deletion
 
   const aliceDIDDeletionTx = await did.chain.generateDeleteTx(
     {
@@ -209,7 +220,7 @@ async function main() {
 
   await utils.waitForEnter("✅  DID deleted! Press Enter to continue:")
 
-  // Step 10: submit CTYPE creation with deleted DID
+  // Step 11: submit CTYPE creation with deleted DID
 
   ctypeCreationExtrinsic = await newCtype.store()
 
@@ -232,7 +243,6 @@ async function main() {
     await utils.waitForEnter("❌  Error generated, as expected! Press Enter to continue:")
   }
 }
-
 main().then(() => console.log("\nBye! 👋 👋 👋 ")).finally(kilt.disconnect)
 
 process.on('SIGINT', async () => {
