@@ -2,6 +2,18 @@ import * as kilt from "@kiltprotocol/sdk-js"
 import * as did from "@kiltprotocol/did"
 import * as utils from "./utils"
 
+/*
+* STEP 1: Generate a KILT account, an authentication, and an encryption keypair.
+* STEP 2: Use the generated information to create and submit a DIDCreationOperation.
+* STEP 3: Update the DID details by replacing the old authentication key, and adding an attestation key, a delegation key and a new services endpoint URL.
+* STEP 4: Try to submit a new DIDUpdateOperation using the old authentication key, which should fail.
+* STEP 5: Try to create a new CTYPE without proxying it through the DID pallet, which should fail.
+* STEP 6: Create and submit a CTYPE creation operation via the DID pallet.
+* STEP 7: Update the DID details by disabling the attestation key and removing the encryption key.
+* STEP 8: Try to create a new CTYPE using the disabled attestation key, which should fail.
+* STEP 9: Delete the DID by generating and submitting a DIDDeletionOperation.
+*/
+
 async function main() {
   let didTxCounter = 1
   await kilt.init({address: "ws://127.0.0.1:9944"})
@@ -41,7 +53,7 @@ async function main() {
 
   await utils.waitForEnter("✅  DID created! Press Enter to continue:")
 
-  // // Step 3.1: generate new keys
+  // Step 3.1: generate new keys
 
   const aliceNewAuthenticationKeyPair = utils.generate_sr25519_authentication_key()
   const aliceNewAttestationKeyPair = utils.generate_sr25519_attestation_key()
@@ -102,6 +114,7 @@ async function main() {
   }
 
   // Step 5: submit CTYPE creation without DID origin (should fail)
+  
   let newCtype = kilt.CType.fromSchema(require("./ctype.json"))
   let ctypeCreationExtrinsic = await newCtype.store()
 
@@ -115,31 +128,9 @@ async function main() {
     await utils.waitForEnter("❌  Error generated, as expected! Press Enter to continue:")
   }    
 
-  // Step 5: submit CTYPE creation with a wrong key (should fail)
-
-  let ctypeCreationTx = await did.chain.generateDidAuthenticatedTx(
-    {
-      didIdentifier: aliceKiltIdentity.address,
-      call: ctypeCreationExtrinsic,
-      txCounter: didTxCounter,
-    },
-    // Delegation key, will fail.
-    aliceNewDelegationKeyPair
-  )
-
-  console.log("\n\n⛓  Bob submitting Alice's CTYPE creation (using the delegation key) to the KILT chain...")
-  
-  try {
-    await kilt.BlockchainUtils.signAndSubmitTx(ctypeCreationTx, bobKiltIdentity, {
-        resolveOn: kilt.BlockchainUtils.IS_IN_BLOCK,
-    })
-  } catch {
-    await utils.waitForEnter("❌  Error generated, as expected! Press Enter to continue:")
-  }
-
   // Step 6: submit CTYPE creation
 
-  ctypeCreationTx = await did.chain.generateDidAuthenticatedTx(
+  let ctypeCreationTx = await did.chain.generateDidAuthenticatedTx(
     {
       didIdentifier: aliceKiltIdentity.address,
       call: ctypeCreationExtrinsic,
@@ -170,7 +161,7 @@ async function main() {
     aliceNewAuthenticationKeyPair
   )
 
-  console.log("\n\n⛓  Bob submitting Alice's DID update deleting the attestation and the encryption key to the KILT chain...")
+  console.log("\n\n⛓  Bob submitting Alice's DID update disabling the attestation key and deleting the encryption key to the KILT chain...")
 
   await kilt.BlockchainUtils.signAndSubmitTx(aliceDIDUpdateTx, bobKiltIdentity, {
     resolveOn: kilt.BlockchainUtils.IS_IN_BLOCK,
@@ -178,7 +169,7 @@ async function main() {
 
   await utils.waitForEnter("✅  DID updated! Press Enter to continue:")
 
-  // Step 9: submit CTYPE creation with deleted key (should fail)
+  // Step 8: submit CTYPE creation with deleted key (should fail)
 
   newCtype = kilt.CType.fromSchema(require("./ctype2.json"))
   ctypeCreationExtrinsic = await newCtype.store()
@@ -202,7 +193,7 @@ async function main() {
     await utils.waitForEnter("❌  Error generated, as expected! Press Enter to continue:")
   }
 
-  // Step 10: DID deletion
+  // Step 9: DID deletion
 
   const aliceDIDDeletionTx = await did.chain.generateDeleteTx(
     {
@@ -219,29 +210,6 @@ async function main() {
   })
 
   await utils.waitForEnter("✅  DID deleted! Press Enter to continue:")
-
-  // Step 11: submit CTYPE creation with deleted DID
-
-  ctypeCreationExtrinsic = await newCtype.store()
-
-  ctypeCreationTx = await did.chain.generateDidAuthenticatedTx(
-    {
-      didIdentifier: aliceKiltIdentity.address,
-      call: ctypeCreationExtrinsic,
-      txCounter: didTxCounter
-    },
-    aliceNewAttestationKeyPair
-  )
-
-  console.log("\n\n⛓  Bob submitting Alice's CTYPE creation (after Alice's DID deletion) to the KILT chain...")
-  
-  try {
-    await kilt.BlockchainUtils.signAndSubmitTx(ctypeCreationTx, bobKiltIdentity, {
-        resolveOn: kilt.BlockchainUtils.IS_IN_BLOCK,
-    })
-  } catch {
-    await utils.waitForEnter("❌  Error generated, as expected! Press Enter to continue:")
-  }
 }
 main().then(() => console.log("\nBye! 👋 👋 👋 ")).finally(kilt.disconnect)
 
