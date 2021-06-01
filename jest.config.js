@@ -1,10 +1,11 @@
 module.exports = {
-  preset: 'ts-jest',
+  preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'node',
   clearMocks: true,
   runner: 'groups',
   testTimeout: 10000,
   setupFilesAfterEnv: ['../testingTools/setup.ts'],
+  transformIgnorePatterns:['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
   coverageThreshold: {
     global: {
       branches: 70,

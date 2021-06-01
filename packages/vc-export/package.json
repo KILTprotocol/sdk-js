@@ -14,18 +14,18 @@
   },
   "repository": "github:kiltprotocol/sdk-js",
   "engines": {
-    "node": ">=10.0"
+    "node": ">=14.0"
   },
   "author": "",
   "license": "BSD-4-Clause",
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
-    "@types/jsonld": "^1.5.1",
+    "@types/jsonld": "1.5.1",
     "crypto-ld": "^3.7.0",
     "rimraf": "^3.0.2",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.7"
+    "typescript": "4.0"
   },
   "dependencies": {
     "@kiltprotocol/chain-helpers": "workspace:*",
@@ -33,10 +33,10 @@
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/keyring": "^5.9.2",
-    "@polkadot/types": "^3.11.1",
-    "@polkadot/util": "^5.9.2",
-    "@polkadot/util-crypto": "^5.9.2",
+    "@polkadot/keyring": "^6.6.1",
+    "@polkadot/types": "^4.12.1",
+    "@polkadot/util": "^6.6.1",
+    "@polkadot/util-crypto": "^6.6.1",
     "ajv": "^6.12.5",
     "jsonld": "^2.0.2",
     "jsonld-signatures": "^5.0.0",
