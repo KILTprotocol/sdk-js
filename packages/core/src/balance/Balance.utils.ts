@@ -11,11 +11,15 @@
  */
 
 import { BN, formatBalance } from '@polkadot/util'
-import type { BalanceNumber, BalanceOptions } from '@kiltprotocol/types'
+import type {
+  BalanceNumber,
+  BalanceOptions,
+  metricPrefix,
+} from '@kiltprotocol/types'
 
 export const KILT_COIN = new BN(1)
 
-export const prefixes = new Map<string, number>([
+export const prefixes = new Map<metricPrefix, number>([
   ['femto', -15],
   ['pico', -12],
   ['nano', -9],
@@ -53,6 +57,15 @@ export function formatKiltBalance(
 export function convertToTxUnit(balance: BN, power: number): BN {
   return new BN(balance).mul(new BN(10).pow(new BN(15 + power)))
 }
+/**
+ * Safely converts the given [[BalanceNumber]] to a string, using the supplied methods,
+ * or it given a string checks for valid number representation.
+ *
+ * @param input [[BalanceNumber]] to convert.
+ * @returns String representation of the given [[BalanceNumber]].
+ * @throws On invalid number representation if given a string.
+ * @throws On malformed input.
+ */
 export function balanceNumberToString(input: BalanceNumber): string {
   if (typeof input === 'string') {
     if (!input.match(/^-?\d*\.?\d+$/)) {
@@ -60,22 +73,30 @@ export function balanceNumberToString(input: BalanceNumber): string {
     }
     return input
   }
-  if (typeof input === 'number') {
-    return input.toString()
-  }
   if (
-    typeof input === 'object' &&
-    ((input instanceof BN && input.toString) ||
-      (input instanceof BigInt && input.toLocaleString))
+    typeof input === 'number' ||
+    (typeof input === 'object' &&
+      ((input instanceof BN && input.toString) ||
+        (input instanceof BigInt && input.toLocaleString)))
   ) {
     return input.toString()
   }
   throw new Error('could not convert to String')
 }
-
-export function toFemtoKilt(input: BalanceNumber, unitInput = 'kilt'): BN {
+/**
+ * Converts the given [[BalanceNumber]] to the femto Kilt equivalent.
+ *
+ * @param input [[BalanceNumber]] to convert.
+ * @param unit Metric prefix of the given [[BalanceNumber]].
+ * @returns Exact BN representation in femtoKilt, to use in tx and calculations.
+ * @throws Unknown metricPrefix, or if the input has too many decimal places for it's unit.
+ */
+export function toFemtoKilt(
+  input: BalanceNumber,
+  unit: metricPrefix = 'kilt'
+): BN {
   const stringRepresentation = balanceNumberToString(input)
-  const unit = unitInput.toLowerCase()
+
   if (!prefixes.has(unit)) {
     throw new Error('Unknown metric prefix')
   }
@@ -100,6 +121,15 @@ export function toFemtoKilt(input: BalanceNumber, unitInput = 'kilt'): BN {
 
   return resultingBN.mul(new BN(negative ? -1 : 1))
 }
+/**
+ * Converts the given [[BalanceNumber]] to a human readable number with metric prefix and Unit.
+ * This function uses the polkadot formatBalance function,
+ * it's output can therefore be formatted via the polkadot formatting options.
+ *
+ * @param input [[BalanceNumber]] to convert from Femto Kilt.
+ * @param options [[BalanceOptions]] for internationalization and formatting.
+ * @returns String representation of the given [[BalanceNumber]] with unit und metric prefix.
+ */
 export function fromFemtoKilt(
   input: BalanceNumber,
   options?: BalanceOptions
