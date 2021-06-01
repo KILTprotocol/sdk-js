@@ -2,6 +2,8 @@
  * @group unit/messaging
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import type {
   CompressedQuoteAttesterSigned,
   CompressedQuoteAgreed,
@@ -993,6 +995,7 @@ describe('Messaging Utilities', () => {
         'Reject terms delegation id hash'
       )
     )
+    // @ts-expect-error
     delete rejectTermsBody.content.claim.cTypeHash
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectTermsBody)
@@ -1025,6 +1028,7 @@ describe('Messaging Utilities', () => {
         'request claims for ctypes cTypeHash invalid'
       )
     )
+    // @ts-expect-error
     delete submitClaimsForCTypesBody.content[0].attestation.revoked
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitClaimsForCTypesBody)
@@ -1066,7 +1070,7 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
     ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE())
-
+    // @ts-expect-error
     delete rejectAcceptDelegationBody.content.account
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAcceptDelegationBody)
@@ -1086,6 +1090,7 @@ describe('Messaging Utilities', () => {
     ).toThrowError(SDKErrors.ERROR_MESSAGE_BODY_MALFORMED())
   })
   it('error check of the delegation data in messaging', () => {
+    // @ts-expect-error
     delete requestAcceptDelegationBody.content.delegationData.isPCR
     expect(() =>
       MessageUtils.errorCheckDelegationData(
@@ -1109,6 +1114,7 @@ describe('Messaging Utilities', () => {
         'Must have at least one permission and no more then two'
       )
     )
+    // @ts-expect-error
     delete submitAcceptDelegationBody.content.delegationData.id
     expect(() =>
       MessageUtils.errorCheckDelegationData(

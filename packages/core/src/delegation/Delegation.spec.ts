@@ -2,6 +2,8 @@
  * @group unit/delegation
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import { Permission } from '@kiltprotocol/types'
 import type { ICType, IDelegationBaseNode } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -150,6 +152,7 @@ describe('Delegation', () => {
       revoked: false,
     } as IDelegationBaseNode
 
+    // @ts-expect-error
     delete missingIdDelegation.id
 
     const missingAccountDelegation = {
@@ -158,6 +161,7 @@ describe('Delegation', () => {
       revoked: false,
     } as IDelegationBaseNode
 
+    // @ts-expect-error
     delete missingAccountDelegation.account
 
     const missingRevokedStatusDelegation = {
@@ -166,6 +170,7 @@ describe('Delegation', () => {
       revoked: false,
     } as IDelegationBaseNode
 
+    // @ts-expect-error
     delete missingRevokedStatusDelegation.revoked
 
     expect(() => errorCheck(malformedIdDelegation)).toThrowError(
