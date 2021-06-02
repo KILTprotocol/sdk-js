@@ -342,6 +342,7 @@ describe('RequestForAttestation', () => {
       builtRequestIncompleteClaimHashTree.claimNonceMap
     )[0]
     delete builtRequestIncompleteClaimHashTree.claimNonceMap[deletedKey]
+    // @ts-expect-error
     builtRequestIncompleteClaimHashTree.rootHash = RequestForAttestation.calculateRootHash(
       builtRequestIncompleteClaimHashTree
     )
@@ -363,6 +364,7 @@ describe('RequestForAttestation', () => {
     builtRequestMalformedSignature.claimerSignature = Crypto.u8aToHex(
       signatureAsBytes
     )
+    // @ts-expect-error
     builtRequestMalformedSignature.rootHash = RequestForAttestation.calculateRootHash(
       builtRequestMalformedSignature
     )
@@ -388,6 +390,7 @@ describe('RequestForAttestation', () => {
         delete builtRequestMalformedHashes.claimNonceMap[hash]
       }
     )
+    // @ts-expect-error
     builtRequestMalformedHashes.rootHash = RequestForAttestation.calculateRootHash(
       builtRequestMalformedHashes
     )
