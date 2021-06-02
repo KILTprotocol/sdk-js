@@ -34,7 +34,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x]
+        node-version: [14.x, 16.x]
 
     steps:
       - uses: actions/checkout@v1
@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: build-12.x
+          name: build-14.x
       - name: unzip
         run: unzip build.zip -d .
       - name: lint
@@ -84,7 +84,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x]
+        node-version: [14.x, 16.x]
 
     steps:
       - uses: actions/download-artifact@v2
@@ -113,7 +113,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: build-12.x
+          name: build-14.x
       - name: unzip
         run: unzip build.zip -d .
 
@@ -159,7 +159,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: build-12.x
+          name: build-14.x
       - name: unzip
         run: unzip build.zip -d .
 
@@ -205,7 +205,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: build-12.x
+          name: build-14.x
       - name: unzip
         run: unzip build.zip -d .
 
