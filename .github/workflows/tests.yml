@@ -64,7 +64,6 @@ jobs:
           name: build-${{ matrix.node-version }}
           path: build.zip
 
-
   lint:
     runs-on: ubuntu-latest
     needs: build
@@ -105,8 +104,8 @@ jobs:
         image: ['latest-rc']
         required: ['required']
         include:
-        - image: 'latest-develop'
-          required: 'optional'
+          - image: 'latest-develop'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
@@ -151,8 +150,8 @@ jobs:
         image: ['latest-rc']
         required: ['required']
         include:
-        - image: 'latest-develop'
-          required: 'optional'
+          - image: 'latest-develop'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
@@ -197,8 +196,8 @@ jobs:
         image: ['latest-rc']
         required: ['required']
         include:
-        - image: 'latest-develop'
-          required: 'optional'
+          - image: 'latest-develop'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
