@@ -34,8 +34,8 @@ async function setup(): Promise<{
     { signingKeyPairType: 'ed25519' }
   )
   console.log(
-    'Attester balance is:',
-    await Kilt.Balance.getBalances(attester.address)
+    'Attester free balance is:',
+    (await Kilt.Balance.getBalances(attester.address)).free.toString()
   )
 
   // ------------------------- CType    ----------------------------------------
@@ -281,10 +281,10 @@ async function example(): Promise<boolean> {
     throw new Error('Example did not finish')
   }
 })()
-  .finally(() => Kilt.disconnect())
   .catch((e) => {
     console.error('Error Error Error!\n')
     setTimeout(() => {
       throw e
     }, 1)
   })
+  .finally(() => Kilt.disconnect())
