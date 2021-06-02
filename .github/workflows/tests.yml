@@ -83,7 +83,13 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x]
+        node-version: [14.x]
+        required: ['required']
+        include:
+          - node-version: 16.x
+            required: 'optional'
+
+    continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
       - uses: actions/download-artifact@v2
