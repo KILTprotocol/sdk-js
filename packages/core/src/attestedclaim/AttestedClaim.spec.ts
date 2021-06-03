@@ -2,6 +2,8 @@
  * @group unit/attestation
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import type {
   IClaim,
   CompressedAttestedClaim,
@@ -139,6 +141,7 @@ describe('RequestForAttestation', () => {
 
   it('Negative test for compresses and decompresses the attested claims object', () => {
     compressedLegitimation.pop()
+    // @ts-expect-error
     delete legitimation.attestation
 
     expect(() => {
@@ -163,6 +166,7 @@ describe('RequestForAttestation', () => {
       []
     )
     expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeTruthy()
+    // @ts-expect-error
     delete testAttestation.attestation.claimHash
 
     expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeFalsy()

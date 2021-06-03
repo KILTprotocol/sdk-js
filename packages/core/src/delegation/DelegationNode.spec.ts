@@ -2,6 +2,8 @@
  * @group unit/delegation
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import { IDelegationNode, Permission } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -424,6 +426,7 @@ describe('count depth', () => {
       revoked: false,
     } as IDelegationNode
 
+    // @ts-expect-error
     delete missingRootIdDelegationNode.rootId
 
     const malformedRootIdDelegationNode = {

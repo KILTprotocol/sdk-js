@@ -55,6 +55,7 @@ module.exports = {
         default: 'array-simple',
       },
     ],
+    '@typescript-eslint/ban-ts-comment' : 'warn',
     'jsdoc/require-description': 'warn',
     'jsdoc/require-description-complete-sentence': 'warn',
     'jsdoc/no-types': 'warn',

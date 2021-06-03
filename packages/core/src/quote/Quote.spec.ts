@@ -2,6 +2,8 @@
  * @group unit/quote
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import type {
   IClaim,
   ICType,
@@ -221,10 +223,13 @@ describe('Claim', () => {
     ).toEqual(quoteBothAgreed)
   })
   it('Negative test for compresses and decompresses the quote object', () => {
+    // @ts-expect-error
     delete validQuoteData.cTypeHash
     compressedQuote.pop()
+    // @ts-expect-error
     delete validAttesterSignedQuote.currency
     compressedResultAttesterSignedQuote.pop()
+    // @ts-expect-error
     delete quoteBothAgreed.currency
     compressedResultQuoteAgreement.pop()
 

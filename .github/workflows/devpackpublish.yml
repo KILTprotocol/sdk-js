@@ -4,13 +4,13 @@ on:
     branches:
       - develop
     paths:
-      - "**/*.ts"
-      - "package.json"
-      - "**/package.json"
-      - "!**/*.spec.ts"
-      - "!**/__integrationtests__"
-      - "!**/__mocks__"
-      - "!docs/**"
+      - '**/*.ts'
+      - 'package.json'
+      - '**/package.json'
+      - '!**/*.spec.ts'
+      - '!**/__integrationtests__'
+      - '!**/__mocks__'
+      - '!docs/**'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,7 +22,7 @@ jobs:
           token: ${{ secrets.GH_PAT }}
       - uses: actions/setup-node@v2
         with:
-          node-version: 10
+          node-version: 14
       - name: Install dependencies
         run: yarn install --immutable
       - name: Bump prerelease version of root package
@@ -55,9 +55,9 @@ jobs:
       matrix:
         repo:
           [
-            "KILTprotocol/kilt-workshop-101",
-            "KILTprotocol/demo-client",
-            "KILTprotocol/prototype-services",
+            'KILTprotocol/kilt-workshop-101',
+            'KILTprotocol/demo-client',
+            'KILTprotocol/prototype-services',
           ]
     runs-on: ubuntu-latest
     steps:

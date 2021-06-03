@@ -3,18 +3,17 @@
  */
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import type { Tuple } from '@polkadot/types'
 import type { ISubmittableResult } from '@kiltprotocol/types'
+import { DispatchError, EventRecord } from '@polkadot/types/interfaces'
 import { ErrorHandler, PalletIndex } from '.'
 import { ExtrinsicError, ExtrinsicErrors } from './ExtrinsicError'
+import { TypeRegistry } from '../blockchainApiConnection'
 
 describe('ErrorHandler', () => {
   it('test extrinsic failed', () => {
     const evtRecord = {
       phase: {
-        asApplyExtrinsic: {
-          isEmpty: false,
-        },
+        isApplyExtrinsic: true,
       },
       event: {
         index: {
@@ -24,10 +23,9 @@ describe('ErrorHandler', () => {
         },
       },
     }
-    const submittableResult: ISubmittableResult = {
-      // @ts-ignore
-      events: [evtRecord],
-    }
+    const submittableResult = {
+      events: ([evtRecord] as unknown) as EventRecord[],
+    } as ISubmittableResult
 
     expect(ErrorHandler.extrinsicFailed(submittableResult)).toBeTruthy()
   })
@@ -35,9 +33,7 @@ describe('ErrorHandler', () => {
   it('test extrinsic succeeded', () => {
     const evtRecord = {
       phase: {
-        asApplyExtrinsic: {
-          isEmpty: false,
-        },
+        isApplyExtrinsic: true,
       },
       event: {
         index: {
@@ -47,42 +43,32 @@ describe('ErrorHandler', () => {
         },
       },
     }
-    const submittableResult: ISubmittableResult = {
-      // @ts-ignore
-      events: [evtRecord],
-    }
+    const submittableResult = {
+      events: ([evtRecord] as unknown) as EventRecord[],
+    } as ISubmittableResult
 
     expect(ErrorHandler.extrinsicFailed(submittableResult)).toBeFalsy()
   })
 
   it('test get extrinsic error', async () => {
-    // @ts-ignore
-    const errorCode: Tuple = {
-      // @ts-ignore
-      toJSON: jest.fn(() => {
-        return {
-          Module: {
-            index: PalletIndex.CType,
-            error: 0,
-          },
-        }
-      }),
-    }
+    const dispatchError: DispatchError = TypeRegistry.createType(
+      'DispatchError',
+      { Module: { index: PalletIndex.CType, error: 0 } }
+    )
+
     const errorEventRecord = {
       phase: {
-        asApplyExtrinsic: {
-          isEmpty: false,
-        },
+        isApplyExtrinsic: true,
       },
       event: {
         section: 'system',
-        data: [errorCode],
+        data: [dispatchError],
       },
     }
-    const submittableResult: ISubmittableResult = {
-      // @ts-ignore
-      events: [errorEventRecord],
-    }
+    const submittableResult = {
+      events: ([errorEventRecord] as unknown) as EventRecord[],
+      dispatchError,
+    } as ISubmittableResult
 
     const { code, message } = ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND
 

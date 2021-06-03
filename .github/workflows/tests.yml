@@ -34,7 +34,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x]
+        node-version: [14.x, 16.x]
 
     steps:
       - uses: actions/checkout@v1
@@ -64,7 +64,6 @@ jobs:
           name: build-${{ matrix.node-version }}
           path: build.zip
 
-
   lint:
     runs-on: ubuntu-latest
     needs: build
@@ -72,7 +71,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: build-12.x
+          name: build-14.x
       - name: unzip
         run: unzip build.zip -d .
       - name: lint
@@ -84,7 +83,13 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x]
+        node-version: [14.x]
+        required: ['required']
+        include:
+          - node-version: 16.x
+            required: 'optional'
+
+    continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
       - uses: actions/download-artifact@v2
@@ -105,15 +110,15 @@ jobs:
         image: ['latest-rc']
         required: ['required']
         include:
-        - image: 'latest-develop'
-          required: 'optional'
+          - image: 'latest-develop'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: build-12.x
+          name: build-14.x
       - name: unzip
         run: unzip build.zip -d .
 
@@ -151,15 +156,15 @@ jobs:
         image: ['latest-rc']
         required: ['required']
         include:
-        - image: 'latest-develop'
-          required: 'optional'
+          - image: 'latest-develop'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: build-12.x
+          name: build-14.x
       - name: unzip
         run: unzip build.zip -d .
 
@@ -197,15 +202,15 @@ jobs:
         image: ['latest-rc']
         required: ['required']
         include:
-        - image: 'latest-develop'
-          required: 'optional'
+          - image: 'latest-develop'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: build-12.x
+          name: build-14.x
       - name: unzip
         run: unzip build.zip -d .
 

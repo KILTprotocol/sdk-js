@@ -5,6 +5,7 @@
   ],
   "compilerOptions": {
     "baseUrl": "./packages",
+    "sourceMap": true,
     "paths": {
       "@kiltprotocol/actors-api": ["actors_api/src"],
       "@kiltprotocol/chain-helpers": ["chain-helpers/src"],

@@ -2,6 +2,8 @@
  * @group unit/ctype
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import { SubmittableResult } from '@polkadot/api'
 import { TypeRegistry } from '@polkadot/types'
 import { Option } from '@polkadot/types/codec'
@@ -203,7 +205,9 @@ describe('CType', () => {
     const faultySchemaCTypeCompressed = [...compressedCType]
     faultySchemaCTypeCompressed[2] = faultySchema as CompressedCTypeSchema
     compressedCType.pop()
+    // @ts-expect-error
     delete rawCType.$id
+    // @ts-expect-error
     delete claimCtype.hash
 
     expect(() =>
