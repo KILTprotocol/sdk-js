@@ -206,7 +206,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * ```
    */
   public removeClaimOwner(): void {
-    delete (this.claim as Partial<IClaim>).owner
+    // @ts-expect-error
+    delete this.claim.owner
     this.claimNonceMap = ClaimUtils.hashClaimContents(this.claim, {
       nonces: this.claimNonceMap,
     }).nonceMap
