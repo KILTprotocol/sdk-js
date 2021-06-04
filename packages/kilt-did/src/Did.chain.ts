@@ -13,8 +13,6 @@ import type {
   DidVerificationKey,
   Url,
   UrlEncoding,
-} from './types.chain'
-import type {
   IAuthorizeCallOptions,
   IDidCreationOptions,
   IDidDeletionOptions,

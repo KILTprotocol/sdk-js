@@ -6,19 +6,17 @@ import type {
   ISigningKeyPair,
   UrlEnum,
   IPublicKey,
-  UrlEncoding,
   IDidDeletionOptions,
   IUpdateOptions,
   IDidCreationOptions,
   IAuthorizeCallOptions,
-} from './types'
-import type {
+  UrlEncodingJson,
   DidAuthorizedCallOperation,
   DidCreationOperation,
   DidDeletionOperation,
   DidPublicKey,
   DidUpdateOperation,
-} from './types.chain'
+} from './types'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 
@@ -57,7 +55,7 @@ export function isIKeyPair(keypair: unknown): keypair is IPublicKey {
 }
 
 export function encodeEndpointUrl(url: string): UrlEnum {
-  const typedUrl: Record<string, UrlEncoding> = {}
+  const typedUrl: Record<string, UrlEncodingJson> = {}
   const matched = Array.from(['http', 'ftp', 'ipfs']).some((type) => {
     if (url.startsWith(type)) {
       typedUrl[type] = { payload: url }
