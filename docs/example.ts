@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import Kilt from '@kiltprotocol/sdk-js'
 import type {
+  AttestedClaim,
   Actors,
   Claim,
   CType,
@@ -124,7 +125,7 @@ async function doAttestation(
   attester: Identity,
   claim: Claim
 ): Promise<{
-  credential: Actors.Credential
+  credential: AttestedClaim
   revocationHandle: Actors.types.IRevocationHandle
 }> {
   console.log(
@@ -213,7 +214,7 @@ async function doAttestation(
 
 async function doVerification(
   claimer: Identity,
-  credential: Actors.Credential
+  credential: AttestedClaim
 ): Promise<void> {
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(

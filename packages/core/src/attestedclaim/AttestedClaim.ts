@@ -187,6 +187,32 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
+   * Creates a public presentation which can be sent to a verifier.
+   *
+   * @param publicAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
+   * If kept empty, we hide all attributes inside the claim for the presentation.
+   *
+   * @returns A deep copy of the AttestedClaim with all but `publicAttributes` removed.
+   */
+  public createPresentation(publicAttributes: string[]): AttestedClaim {
+    const attClaim = new AttestedClaim(
+      // clone the attestation and request for attestation because properties will be deleted later.
+      // TODO: find a nice way to clone stuff
+      JSON.parse(JSON.stringify(this))
+    )
+
+    // filter attributes that are not in public attributes
+    const excludedClaimProperties = Array.from(this.getAttributes()).filter(
+      (property) => !publicAttributes.includes(property)
+    )
+
+    // remove these attributes
+    attClaim.request.removeClaimProperties(excludedClaimProperties)
+
+    return attClaim
+  }
+
+  /**
    * Compresses an [[AttestedClaim]] object.
    *
    * @returns An array that contains the same properties of an [[AttestedClaim]].

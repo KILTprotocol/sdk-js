@@ -204,6 +204,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * reqForAtt.removeClaimOwner();
    * // `input` does not contain the claim `owner` or the `claimOwner`'s nonce anymore.
    * ```
+   * @deprecated Do not use. This method produces an unverifiable [[RequestForAttestation]], as the owner's public key is required for signature verification.
    */
   public removeClaimOwner(): void {
     // @ts-expect-error
