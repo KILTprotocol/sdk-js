@@ -29,10 +29,6 @@
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/types": "^4.12.1",
-    "@polkadot/util-crypto": "^6.6.1",
-    "@types/ed2curve": "^0.2.2",
-    "ed2curve": "^0.3.0",
-    "tweetnacl": "^1.0.3"
+    "@polkadot/types": "^4.12.1"
   }
 }
