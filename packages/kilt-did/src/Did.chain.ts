@@ -18,7 +18,7 @@ import type {
   IDidDeletionOptions,
   IDidRecord,
   ISigningKeyPair,
-  IUpdateOptions,
+  IDidUpdateOptions,
   KeyDetails,
   KeypairType,
   TypedPublicKey,
@@ -117,7 +117,7 @@ export async function generateCreateTx(
 }
 
 export async function generateUpdateTx(
-  updateOptions: IUpdateOptions,
+  updateOptions: IDidUpdateOptions,
   authenticationKeypair: ISigningKeyPair
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()

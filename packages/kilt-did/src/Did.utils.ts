@@ -7,7 +7,7 @@ import type {
   UrlEnum,
   IPublicKey,
   IDidDeletionOptions,
-  IUpdateOptions,
+  IDidUpdateOptions,
   IDidCreationOptions,
   IAuthorizeCallOptions,
   UrlEncodingJson,
@@ -110,7 +110,7 @@ export function encodeDidUpdateOperation(
     keysToUpdate = {},
     publicKeysToRemove = [],
     newEndpointUrl,
-  }: IUpdateOptions
+  }: IDidUpdateOptions
 ): DidUpdateOperation {
   const { authentication, encryption, attestation, delegation } = keysToUpdate
   const didUpdateRaw = {

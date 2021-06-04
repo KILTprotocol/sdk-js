@@ -42,7 +42,7 @@ export interface IEncryptionKeyPair extends IEncryptionPublicKey {
 
 export type IKeyPair = ISigningKeyPair | IEncryptionKeyPair
 
-export interface PublicKeySet {
+export interface PublicKeyRoleAssignment {
   authentication: IVerificationKey
   encryption: IEncryptionPublicKey
   attestation?: IVerificationKey
@@ -91,7 +91,7 @@ export interface DidSigned<PayloadType> {
 
 export interface IDidCreationOptions {
   didIdentifier: IIdentity['address']
-  keys: PublicKeySet
+  keys: PublicKeyRoleAssignment
   endpointUrl?: string
 }
 
@@ -100,8 +100,8 @@ export interface IDidDeletionOptions {
   txCounter: AnyNumber
 }
 
-export interface IUpdateOptions extends IDidDeletionOptions {
-  keysToUpdate?: Partial<Nullable<PublicKeySet>>
+export interface IDidUpdateOptions extends IDidDeletionOptions {
+  keysToUpdate?: Partial<Nullable<PublicKeyRoleAssignment>>
   publicKeysToRemove?: Array<KeyId | Uint8Array | string>
   newEndpointUrl?: string
 }
