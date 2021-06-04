@@ -2,7 +2,7 @@
  * @group unit/actor
  */
 
-import { CType, Identity, SDKErrors } from '@kiltprotocol/core'
+import { AttestedClaim, CType, Identity, SDKErrors } from '@kiltprotocol/core'
 import type {
   IClaim,
   ICType,
@@ -14,7 +14,6 @@ import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchain
 import Message from '@kiltprotocol/messaging'
 import { Crypto } from '@kiltprotocol/utils'
 import { Attester, Claimer, Verifier } from '..'
-import Credential from '../credential/Credential'
 import type { ClaimerAttestationSession } from './Claimer'
 
 jest.mock(
@@ -29,7 +28,7 @@ describe('Claimer', () => {
   let verifier: Identity
   let cType: CType
   let claim: IClaim
-  let credential: Credential
+  let credential: AttestedClaim
 
   beforeAll(async () => {
     attester = Identity.buildFromURI('//Alice')
@@ -179,7 +178,7 @@ describe('Claimer', () => {
       }: {
         messageBody?: MessageBodyType
         allowPE?: boolean
-        credentials?: Credential[]
+        credentials?: AttestedClaim[]
       }): Message => {
         return Claimer.createPresentation(
           claimer,
