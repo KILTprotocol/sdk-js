@@ -77,29 +77,18 @@ export async function queryById(
     const didRecord: IDidRecord = {
       did: getDidFromIdentifier(didIdentifier),
       publicKeys,
-      authenticationKey: publicKeys.find(
-        (key) => key.id === authenticationKeyId
-      )!,
-      keyAgreementKeys: publicKeys.filter((key) =>
-        keyAgreementKeyIds.includes(key.id)
-      ),
+      authenticationKey: authenticationKeyId,
+      keyAgreementKeys: keyAgreementKeyIds,
       lastTxCounter: didDetail.lastTxCounter,
     }
     if (didDetail.endpointUrl.isSome) {
-      // that's super awkward but I guess there are reasons that the Url encoding needs to be a struct
       didRecord.endpointUrl = decodeEndpointUrl(didDetail.endpointUrl.unwrap())
     }
     if (didDetail.delegationKey.isSome) {
-      const delegationKeyId = didDetail.delegationKey.unwrap().toHex()
-      didRecord.delegationKey = publicKeys.find(
-        (key) => key.id === delegationKeyId
-      )
+      didRecord.delegationKey = didDetail.delegationKey.unwrap().toHex()
     }
     if (didDetail.attestationKey.isSome) {
-      const attestationKeyId = didDetail.attestationKey.unwrap().toHex()
-      didRecord.attestationKey = publicKeys.find(
-        (key) => key.id === attestationKeyId
-      )
+      didRecord.attestationKey = didDetail.attestationKey.unwrap().toHex()
     }
     return didRecord
   }

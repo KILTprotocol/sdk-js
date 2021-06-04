@@ -61,10 +61,10 @@ export interface KeyDetails extends TypedPublicKey {
 
 export interface IDidRecord {
   did: IIdentity['address']
-  authenticationKey: KeyDetails
-  keyAgreementKeys: KeyDetails[]
-  delegationKey?: KeyDetails
-  attestationKey?: KeyDetails
+  authenticationKey: KeyDetails['id']
+  keyAgreementKeys: Array<KeyDetails['id']>
+  delegationKey?: KeyDetails['id']
+  attestationKey?: KeyDetails['id']
   publicKeys: KeyDetails[]
   endpointUrl?: string
   lastTxCounter: u64
