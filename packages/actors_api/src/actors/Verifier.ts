@@ -110,7 +110,7 @@ export class PresentationRequestBuilder {
             }
           ),
         },
-        verifier,
+        verifier.getPublicIdentity(),
         claimer
       ),
     }

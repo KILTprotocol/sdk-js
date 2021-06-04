@@ -34,8 +34,8 @@ async function setup(): Promise<{
     { signingKeyPairType: 'ed25519' }
   )
   console.log(
-    'Attester balance is:',
-    await Kilt.Balance.getBalances(attester.address)
+    'Attester free balance is:',
+    (await Kilt.Balance.getBalances(attester.address)).free.toString()
   )
 
   // ------------------------- CType    ----------------------------------------
@@ -153,7 +153,10 @@ async function doAttestation(
   )
 
   // The message can be encrypted as follows
-  const reqAttestationEnc = reqAttestation.encrypt()
+  const reqAttestationEnc = reqAttestation.encrypt(
+    claimer,
+    attester.getPublicIdentity()
+  )
 
   // claimer sends [[encrypted]] to the attester
 
@@ -181,7 +184,10 @@ async function doAttestation(
   )
 
   // And send a message back
-  const submitAttestationEnc = submitAttestation.encrypt()
+  const submitAttestationEnc = submitAttestation.encrypt(
+    attester,
+    claimer.getPublicIdentity()
+  )
 
   // ------------------------- CLAIMER -----------------------------------------
   Kilt.Message.ensureHashAndSignature(submitAttestationEnc, attester.address)
@@ -275,10 +281,10 @@ async function example(): Promise<boolean> {
     throw new Error('Example did not finish')
   }
 })()
-  .finally(() => Kilt.disconnect())
   .catch((e) => {
     console.error('Error Error Error!\n')
     setTimeout(() => {
       throw e
     }, 1)
   })
+  .finally(() => Kilt.disconnect())

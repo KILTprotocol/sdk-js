@@ -7,10 +7,12 @@ import { blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
 import { Crypto } from '@kiltprotocol/utils'
 import {
-  VerifiableCredential,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLEPRESENTATION_TYPE,
+} from './constants'
+import type {
+  VerifiableCredential,
   VerifiablePresentation,
   CredentialDigestProof,
 } from './types'

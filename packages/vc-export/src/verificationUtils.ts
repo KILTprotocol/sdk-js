@@ -10,15 +10,18 @@ import Ajv from 'ajv'
 import { Attestation, CTypeSchema, Did } from '@kiltprotocol/core'
 import { Crypto } from '@kiltprotocol/utils'
 import {
-  VerifiableCredential,
-  SelfSignedProof,
   KILT_SELF_SIGNED_PROOF_TYPE,
-  AttestedProof,
   KILT_ATTESTED_PROOF_TYPE,
-  CredentialDigestProof,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   KeyTypesMap,
+} from './constants'
+import type {
+  VerifiableCredential,
+  SelfSignedProof,
+  AttestedProof,
+  CredentialDigestProof,
 } from './types'
+import { fromCredentialIRI } from './exportToVerifiableCredential'
 
 export interface VerificationResult {
   verified: boolean
@@ -59,40 +62,43 @@ export function verifySelfSignedProof(
   const result: VerificationResult = { verified: true, errors: [] }
   try {
     // check proof
-    if (proof.type !== KILT_SELF_SIGNED_PROOF_TYPE)
+    const type = proof['@type'] || proof.type
+    if (type !== KILT_SELF_SIGNED_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     if (!proof.signature) throw PROOF_MALFORMED_ERROR('signature missing')
-    let signerPubKey: string
     const { verificationMethod } = proof
     if (
-      typeof verificationMethod === 'object' &&
-      verificationMethod.publicKeyHex
+      !(
+        typeof verificationMethod === 'object' &&
+        verificationMethod.publicKeyHex
+      )
     ) {
-      if (!Object.values(KeyTypesMap).includes(verificationMethod.type))
-        throw PROOF_MALFORMED_ERROR(
-          `signature type unknown; expected one of ${JSON.stringify(
-            Object.values(KeyTypesMap)
-          )}, got "${verificationMethod.type}"`
-        )
-      signerPubKey = verificationMethod.publicKeyHex
-    } else {
       throw PROOF_MALFORMED_ERROR(
         'proof must contain public key; resolve did key references beforehand'
       )
     }
+    const keyType = verificationMethod.type || verificationMethod['@type']
+    if (!Object.values(KeyTypesMap).includes(keyType))
+      throw PROOF_MALFORMED_ERROR(
+        `signature type unknown; expected one of ${JSON.stringify(
+          Object.values(KeyTypesMap)
+        )}, got "${verificationMethod.type}"`
+      )
+    const signerPubKey = verificationMethod.publicKeyHex
 
+    const rootHash = fromCredentialIRI(credential.id)
     // validate signature over root hash
     // signatureVerify can handle all required signature types out of the box
     const verification = signatureVerify(
-      credential.id,
+      rootHash,
       proof.signature,
       signerPubKey
     )
     if (
-      !verification.isValid ||
-      KeyTypesMap[verification.crypto] !== verificationMethod.type
-    )
+      !(verification.isValid && KeyTypesMap[verification.crypto] === keyType)
+    ) {
       throw new Error('signature could not be verified')
+    }
     return result
   } catch (e) {
     result.verified = false
@@ -117,7 +123,8 @@ export async function verifyAttestedProof(
   let status: AttestationStatus = AttestationStatus.unknown
   try {
     // check proof
-    if (proof.type !== KILT_ATTESTED_PROOF_TYPE)
+    const type = proof['@type'] || proof.type
+    if (type !== KILT_ATTESTED_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     const { attesterAddress } = proof
     if (typeof attesterAddress !== 'string' || !attesterAddress)
@@ -126,11 +133,12 @@ export async function verifyAttestedProof(
       throw PROOF_MALFORMED_ERROR(
         'attester address not matching credential issuer'
       )
-    const claimHash = credential.id
-    if (typeof claimHash !== 'string' || !claimHash)
+    if (typeof credential.id !== 'string' || !credential.id)
       throw CREDENTIAL_MALFORMED_ERROR(
         'claim id (=claim hash) missing / invalid'
       )
+    const claimHash = fromCredentialIRI(credential.id)
+
     let delegationId: string | null
 
     switch (typeof credential.delegationId) {
@@ -201,7 +209,8 @@ export async function verifyCredentialDigestProof(
   const result: VerificationResult = { verified: true, errors: [] }
   try {
     // check proof
-    if (proof.type !== KILT_CREDENTIAL_DIGEST_PROOF_TYPE)
+    const type = proof['@type'] || proof.type
+    if (type !== KILT_CREDENTIAL_DIGEST_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     if (typeof proof.nonces !== 'object') {
       throw PROOF_MALFORMED_ERROR('proof must contain object "nonces"')
@@ -222,7 +231,7 @@ export async function verifyCredentialDigestProof(
     const rootHash = Crypto.hash(concatenated)
 
     // throw if root hash does not match expected (=id)
-    const expectedRootHash = credential.id
+    const expectedRootHash = fromCredentialIRI(credential.id)
     if (expectedRootHash !== u8aToHex(rootHash))
       throw new Error('computed root hash does not match expected')
 

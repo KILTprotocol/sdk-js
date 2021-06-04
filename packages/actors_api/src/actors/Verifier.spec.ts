@@ -6,6 +6,7 @@ import { CType, Identity } from '@kiltprotocol/core'
 import type { IClaim, ICType } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import Message from '@kiltprotocol/messaging'
+import { Crypto } from '@kiltprotocol/utils'
 import { Attester, Claimer, Verifier } from '..'
 import Credential from '../credential/Credential'
 
@@ -93,7 +94,7 @@ describe('Verifier', () => {
   it('request public presentation', async () => {
     const { session, message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
-        ctypeHash: 'this is a ctype hash',
+        ctypeHash: `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`,
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(verifier, claimer.getPublicIdentity())
@@ -102,14 +103,16 @@ describe('Verifier', () => {
       Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES
     )
     if (request.body.type === Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES) {
-      expect(request.body.content[0].cTypeHash).toEqual('this is a ctype hash')
+      expect(request.body.content[0].cTypeHash).toEqual(
+        `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`
+      )
     }
   })
 
   it('verify public-only presentation all good', async () => {
     const { session, message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
-        ctypeHash: 'this is a ctype hash',
+        ctypeHash: `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`,
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(verifier, claimer.getPublicIdentity())
@@ -137,7 +140,7 @@ describe('Verifier', () => {
   it('verify public-only presentation missing property', async () => {
     const { session, message: request } = Verifier.newRequestBuilder()
       .requestPresentationForCtype({
-        ctypeHash: 'this is a ctype hash',
+        ctypeHash: `kilt:ctype:${Crypto.hashStr('this is a ctype hash')}`,
         properties: ['name', 'and', 'other', 'attributes'],
       })
       .finalize(verifier, claimer.getPublicIdentity())

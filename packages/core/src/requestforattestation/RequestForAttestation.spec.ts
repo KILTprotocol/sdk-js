@@ -3,6 +3,8 @@
  */
 
 /* eslint-disable dot-notation */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import { hexToU8a } from '@polkadot/util'
 import type {
   IClaim,
@@ -236,6 +238,7 @@ describe('RequestForAttestation', () => {
       reqForAtt
     )
     compressedReqForAtt.pop()
+    // @ts-expect-error
     delete reqForAtt.claim.owner
 
     expect(() => {
@@ -302,6 +305,7 @@ describe('RequestForAttestation', () => {
         []
       ),
     } as IRequestForAttestation
+    // @ts-expect-error
     delete builtRequestNoLegitimations.legitimations
 
     const builtRequestMalformedRootHash = {
@@ -338,9 +342,10 @@ describe('RequestForAttestation', () => {
       builtRequestIncompleteClaimHashTree.claimNonceMap
     )[0]
     delete builtRequestIncompleteClaimHashTree.claimNonceMap[deletedKey]
-    builtRequestIncompleteClaimHashTree.rootHash = RequestForAttestation[
-      'calculateRootHash'
-    ](builtRequestIncompleteClaimHashTree)
+    // @ts-expect-error
+    builtRequestIncompleteClaimHashTree.rootHash = RequestForAttestation.calculateRootHash(
+      builtRequestIncompleteClaimHashTree
+    )
     const builtRequestMalformedSignature = {
       ...buildRequestForAttestation(
         identityBob,
@@ -359,9 +364,10 @@ describe('RequestForAttestation', () => {
     builtRequestMalformedSignature.claimerSignature = Crypto.u8aToHex(
       signatureAsBytes
     )
-    builtRequestMalformedSignature.rootHash = RequestForAttestation[
-      'calculateRootHash'
-    ](builtRequestMalformedSignature)
+    // @ts-expect-error
+    builtRequestMalformedSignature.rootHash = RequestForAttestation.calculateRootHash(
+      builtRequestMalformedSignature
+    )
     const builtRequestMalformedHashes = {
       ...buildRequestForAttestation(
         identityBob,
@@ -384,9 +390,10 @@ describe('RequestForAttestation', () => {
         delete builtRequestMalformedHashes.claimNonceMap[hash]
       }
     )
-    builtRequestMalformedHashes.rootHash = RequestForAttestation[
-      'calculateRootHash'
-    ](builtRequestMalformedHashes)
+    // @ts-expect-error
+    builtRequestMalformedHashes.rootHash = RequestForAttestation.calculateRootHash(
+      builtRequestMalformedHashes
+    )
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
     ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED())
