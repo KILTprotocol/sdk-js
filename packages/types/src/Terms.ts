@@ -19,6 +19,7 @@ export interface ITerms {
   delegationId?: IDelegationBaseNode['id']
   quote?: IQuoteAttesterSigned
   prerequisiteClaims?: ICType['hash']
+  cTypes?: ICType[]
 }
 
 export type CompressedTerms = [
