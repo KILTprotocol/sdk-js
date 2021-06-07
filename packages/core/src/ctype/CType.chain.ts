@@ -35,7 +35,7 @@ export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
 export function decode(
   encoded: Option<AccountId>
 ): IPublicIdentity['address'] | null {
-  DecoderUtils.assertCodecIsType(encoded, ['Option<AccountId>'])
+  DecoderUtils.assertCodecIsType(encoded, ['Option<CtypeCreatorOf>'])
   return !encoded.isEmpty ? encoded.toString() : null
 }
 
@@ -47,7 +47,7 @@ export async function getOwner(
   ctypeHash: ICType['hash']
 ): Promise<IPublicIdentity['address'] | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = await blockchain.api.query.ctype.cTYPEs<Option<AccountId>>(
+  const encoded = await blockchain.api.query.ctype.ctypes<Option<AccountId>>(
     ctypeHash
   )
   const queriedCTypeAccount = decode(encoded)

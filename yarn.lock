@@ -336,16 +336,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.9.6":
-  version: 7.10.5
-  resolution: "@babel/runtime@npm:7.10.5"
-  dependencies:
-    regenerator-runtime: ^0.13.4
-  checksum: 222bc7c75b83f73802c8c93c59281085d36ff4efebf58a81fb631af587ebaa0d0eaa187e30587448e65e8f50a4b8719fc13aa5214c02c2562e95be4c8230627e
-  languageName: node
-  linkType: hard
-
-"@babel/runtime@npm:^7.13.9, @babel/runtime@npm:^7.14.0":
+"@babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.13.9, @babel/runtime@npm:^7.14.0, @babel/runtime@npm:^7.9.6":
   version: 7.14.0
   resolution: "@babel/runtime@npm:7.14.0"
   dependencies:
@@ -870,6 +861,20 @@ __metadata:
     tweetnacl: ^1.0.3
     typescript: 4.0
     typescript-logging: ^0.6.4
+  languageName: unknown
+  linkType: soft
+
+"@kiltprotocol/did@workspace:packages/kilt-did":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/did@workspace:packages/kilt-did"
+  dependencies:
+    "@kiltprotocol/chain-helpers": "workspace:*"
+    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*"
+    "@polkadot/types": ^4.12.1
+    rimraf: ^3.0.2
+    typescript: 4.0
   languageName: unknown
   linkType: soft
 

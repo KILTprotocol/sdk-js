@@ -299,13 +299,13 @@ const __mocked_api: any = {
     },
     ctype: {
       // default return value decodes to null, represents CTYPE not found
-      cTYPEs: jest.fn(async (hash: string) =>
+      ctypes: jest.fn(async (hash: string) =>
         mockChainQueryReturn('ctype', 'cTYPEs')
       ),
     },
     delegation: {
       // default return value decodes to null, represents delegation not found
-      root: jest.fn(async (rootId: string) =>
+      roots: jest.fn(async (rootId: string) =>
         mockChainQueryReturn('delegation', 'root')
       ),
       /* example return value:
