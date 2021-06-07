@@ -342,6 +342,7 @@ describe('Messaging Utilities', () => {
       delegationId: undefined,
       quote: quoteAttesterSigned,
       prerequisiteClaims: undefined,
+      cTypes: undefined,
     }
     // Compressed Submit Terms Contentƒ
     compressedSubmitTermsContent = [
@@ -349,6 +350,7 @@ describe('Messaging Utilities', () => {
       [compressedLegitimation],
       undefined,
       compressedResultAttesterSignedQuote,
+      undefined,
       undefined,
     ]
     // Reject terms Content

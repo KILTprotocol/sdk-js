@@ -94,6 +94,9 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
           'Submit terms pre-requisite claims invalid'
         )
       }
+      if (body.content.cTypes) {
+        body.content.cTypes.map((val) => CTypeUtils.errorCheck(val))
+      }
       break
     }
     case Message.BodyType.REJECT_TERMS: {
@@ -305,6 +308,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
           ? QuoteUtils.compressAttesterSignedQuote(body.content.quote)
           : undefined,
         body.content.prerequisiteClaims,
+        body.content.cTypes?.map((val) => CTypeUtils.compress(val)),
       ]
       break
     }
@@ -432,6 +436,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
           ? QuoteUtils.decompressAttesterSignedQuote(body[1][3])
           : undefined,
         prerequisiteClaims: body[1][4],
+        cTypes: body[1][5]?.map((val) => CTypeUtils.decompress(val)),
       }
 
       break
