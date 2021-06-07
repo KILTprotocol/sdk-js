@@ -4,7 +4,7 @@
  */
 
 import type { IAttestedClaim, CompressedAttestedClaim } from './AttestedClaim'
-import type { ICType } from './CType'
+import type { CompressedCType, ICType } from './CType'
 import type { IDelegationBaseNode } from './Delegation'
 import type {
   IQuoteAttesterSigned,
@@ -27,5 +27,6 @@ export type CompressedTerms = [
   CompressedAttestedClaim[],
   IDelegationBaseNode['id'] | undefined,
   CompressedQuoteAttesterSigned | undefined,
-  ICType['hash'] | undefined
+  ICType['hash'] | undefined,
+  CompressedCType[] | undefined
 ]
