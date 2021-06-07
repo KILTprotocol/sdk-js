@@ -23,6 +23,13 @@ It provides you with tools to export your existing KILT credentials to the widel
     - credential digest proof that assures the integrity of disclosed attributes, claimer identity, legitimations and delegations
     - attestation proof that assures the credential is attested by the identity disclosed as the `issuer` and not revoked
   - a function to validate the disclosed claim properties against the schema of a KILT CType, which is a prescriptive schema detailing fields and their data types.
+- vc-js suites: tooling to integrate KILT VCs with `vc-js` and `jsonld-signatures^5.0.0`
+  - `suites`: contains suites to verify the three KILT proof types that secure a KILT VC.
+    - `KiltIntegritySuite`: provides integrity protection for essential components of the credential while allowing for blinding of claims relating to the `credentialSubject`.
+    - `KiltSignatureSuite`: verifies the signature over the root hash of a KILT credential.
+    - `KiltAttestedSuite`: provides lookup functionality to the KILT blockchain to check whether a credential is attested and still valid.
+  - `context`: contains a json-ld `@context` definitions for KILT VCs.
+  - `documentLoader`: an implementation of the DocumentLoader required to use `vc-js` / `jsonld-signatures` which allows to serve essential `@context` definitions to the json-ld processor, including the `context` included here.
 
 ## Examples
 
@@ -65,4 +72,45 @@ if (result && result.verified) {
     `Reward: ${presentation.verifiableCredential.credentialSubject.reward}`
   ) // undefined
 }
+```
+
+### Verifying a KILT VC with `vc-js`
+
+Assuming we have a KILT credential expressed as a VC (`credential`), for example as produced by the example above.
+
+```typescript
+import kilt from '@kiltprotocol/sdk-js'
+import { vcjsSuites } from '@kiltprotocol/vc-export'
+import vcjs from 'vc-js'
+import jsigs from 'jsonld-signatures'
+
+// 1. set up suites
+const {
+  KiltIntegritySuite,
+  KiltSignatureSuite,
+  KiltAttestedSuite,
+} = vcjsSuites.suites
+const signatureSuite = new KiltSignatureSuite()
+const integritySuite = new KiltIntegritySuite()
+// the KiltAttestedSuite requires a connection object that allows access to the KILT blockchain, which we can obtain via the KILT sdk
+await kilt.init({ address: 'wss://full-nodes.kilt.io:443' })
+const KiltConnection = await kilt.connect()
+const attestedSuite = new KiltAttestedSuite({ KiltConnection })
+
+// 2. obtain default kilt context loader
+const { documentLoader } = vcjsSuites
+
+// 3. obtain the `assertionMethod` proof purpose from `jsonld-signatures`
+const purpose = new jsigs.purposes.AssertionProofPurpose()
+
+// 4. call vc-js.verifyCredential with suites and context loader
+const result = await vcjs.verifyCredential({
+  credential,
+  suite: [signatureSuite, integritySuite, attestedSuite],
+  purpose,
+  documentLoader,
+})
+
+// 5. make sure all `results` indicate successful verification
+const verified = result.results.every((i) => i.verified === true)
 ```

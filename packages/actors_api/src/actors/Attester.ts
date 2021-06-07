@@ -86,7 +86,7 @@ export async function issueAttestation(
         },
         type: Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
       },
-      attester,
+      attester.getPublicIdentity(),
       claimer
     ),
     revocationHandle,

@@ -13,7 +13,7 @@ import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import DelegationBaseNode from './Delegation'
 import { getChildren, query, revoke, store } from './DelegationNode.chain'
-import permissionsAsBitset from './DelegationNode.utils'
+import * as DelegationNodeUtils from './DelegationNode.utils'
 import DelegationRootNode from './DelegationRootNode'
 import { query as queryRoot } from './DelegationRootNode.chain'
 
@@ -43,23 +43,14 @@ export default class DelegationNode extends DelegationBaseNode
   /**
    * Creates a new [DelegationNode].
    *
-   * @param id A unique identifier.
-   * @param rootId Identifier of the root delegation node that is already stored on-chain.
-   * @param account Address of the account that will be the owner of the delegation.
-   * @param permissions List of [[Permission]]s.
-   * @param parentId Identifier of the parent delegation node already stored on-chain. Not required when the parent is the root node.
+   * @param delegationNodeInput - The base object from which to create the delegation node.
    */
-  public constructor(
-    id: IDelegationNode['id'],
-    rootId: IDelegationNode['rootId'],
-    account: IDelegationNode['account'],
-    permissions: IDelegationNode['permissions'],
-    parentId?: IDelegationNode['parentId']
-  ) {
-    super(id, account)
-    this.permissions = permissions
-    this.rootId = rootId
-    this.parentId = parentId
+  public constructor(delegationNodeInput: IDelegationNode) {
+    super(delegationNodeInput)
+    this.permissions = delegationNodeInput.permissions
+    this.rootId = delegationNodeInput.rootId
+    this.parentId = delegationNodeInput.parentId
+    DelegationNodeUtils.errorCheck(this)
   }
 
   /**
@@ -91,7 +82,7 @@ export default class DelegationNode extends DelegationBaseNode
     const uint8Props: Uint8Array[] = propsToHash.map((value) => {
       return Crypto.coToUInt8(value)
     })
-    uint8Props.push(permissionsAsBitset(this))
+    uint8Props.push(DelegationNodeUtils.permissionsAsBitset(this))
     const generated: string = Crypto.u8aToHex(
       Crypto.hash(Crypto.u8aConcat(...uint8Props), 256)
     )

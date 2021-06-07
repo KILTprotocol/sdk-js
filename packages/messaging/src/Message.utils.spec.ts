@@ -2,6 +2,8 @@
  * @group unit/messaging
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import type {
   CompressedQuoteAttesterSigned,
   CompressedQuoteAgreed,
@@ -55,8 +57,12 @@ import type {
   CompressedAttestation,
   PartialClaim,
   CompressedRequestClaimsForCTypesContent,
+  IMessage,
+  IRejectAttestationForClaim,
+  IAcceptClaimsForCTypes,
+  IRejectClaimsForCTypes,
 } from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import {
   Attestation,
   AttestedClaim,
@@ -66,6 +72,7 @@ import {
   Quote,
   RequestForAttestation,
 } from '@kiltprotocol/core'
+
 import * as MessageUtils from './Message.utils'
 
 import Message from './Message'
@@ -81,7 +88,7 @@ async function buildAttestedClaim(
   const identityAlice = Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
-    $id: 'kilt:ctype:0x1',
+    $id: Crypto.hashStr('kilt:ctype:0x1'),
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     title: 'Attested Claim',
     properties: {
@@ -161,14 +168,17 @@ describe('Messaging Utilities', () => {
   let submitAttestationBody: ISubmitAttestationForClaim
   let compressedSubmitAttestationContent: CompressedAttestation
   let compressedSubmitAttestationBody: CompressedSubmitAttestationForClaim
+  let rejectAttestationForClaimBody: IRejectAttestationForClaim
   let requestClaimsForCTypesBody: IRequestClaimsForCTypes
   let requestClaimsForCTypesContent: IRequestClaimsForCTypesContent
   let compressedRequestClaimsForCTypesBody: CompressedRequestClaimsForCTypes
   let compressedRequestClaimsForCTypesContent: CompressedRequestClaimsForCTypesContent
   let submitClaimsForCTypesBody: ISubmitClaimsForCTypes
   let submitClaimsForCTypesContent: IAttestedClaim[]
+  let acceptClaimsForCTypesBody: IAcceptClaimsForCTypes
   let compressedSubmitClaimsForCTypesBody: CompressedSubmitClaimsForCTypes
   let compressedSubmitClaimsForCTypesContent: CompressedAttestedClaim[]
+  let rejectClaimsForCTypesBody: IRejectClaimsForCTypes
   let requestAcceptDelegationBody: IRequestAcceptDelegation
   let requestAcceptDelegationContent: IRequestDelegationApproval
   let compressedRequestAcceptDelegationBody: CompressedRequestAcceptDelegation
@@ -185,17 +195,31 @@ describe('Messaging Utilities', () => {
   let informCreateDelegationContent: IInformDelegationCreation
   let compressedInformCreateDelegationBody: CompressedInformCreateDelegation
   let compressedInformCreateDelegationContent: CompressedInformDelegationCreation
+  let messageRequestTerms: IMessage
+  let messageSubmitTerms: IMessage
+  let messageRejectTerms: IMessage
+  let messageRequestAttestationForClaim: IMessage
+  let messageSubmitAttestationForClaim: IMessage
+  let messageRequestClaimsForCTypes: IMessage
+  let messageRejectAttestationForClaim: IMessage
+  let messageSubmitClaimsForCTypes: IMessage
+  let messageAcceptClaimsForCTypes: IMessage
+  let messageRejectClaimsForCTypes: IMessage
+  let messageRequestAcceptDelegation: IMessage
+  let messageSubmitAcceptDelegation: IMessage
+  let messageRejectAcceptDelegation: IMessage
+  let messageInformCreateDelegation: IMessage
 
   beforeAll(async () => {
-    identityAlice = await Identity.buildFromURI('//Alice')
-    identityBob = await Identity.buildFromURI('//Bob')
+    identityAlice = Identity.buildFromURI('//Alice')
+    identityBob = Identity.buildFromURI('//Bob')
     date = new Date(2019, 11, 10)
     claimContents = {
       name: 'Bob',
     }
 
     rawCTypeWithMultipleProperties = {
-      $id: 'kilt:ctype:0x2',
+      $id: Crypto.hashStr('kilt:ctype:0x2'),
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: 'Drivers license Claim',
       properties: {
@@ -207,7 +231,7 @@ describe('Messaging Utilities', () => {
     }
     // CType Schema
     rawCType = {
-      $id: 'kilt:ctype:0x1',
+      $id: Crypto.hashStr('kilt:ctype:0x1'),
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: 'ClaimCtype',
       properties: {
@@ -318,6 +342,7 @@ describe('Messaging Utilities', () => {
       delegationId: undefined,
       quote: quoteAttesterSigned,
       prerequisiteClaims: undefined,
+      cTypes: undefined,
     }
     // Compressed Submit Terms Contentƒ
     compressedSubmitTermsContent = [
@@ -325,6 +350,7 @@ describe('Messaging Utilities', () => {
       [compressedLegitimation],
       undefined,
       compressedResultAttesterSignedQuote,
+      undefined,
       undefined,
     ]
     // Reject terms Content
@@ -405,15 +431,15 @@ describe('Messaging Utilities', () => {
     // Request Accept delegation content
     requestAcceptDelegationContent = {
       delegationData: {
-        account: '',
-        id: '',
-        parentId: '',
+        account: identityAlice.address,
+        id: Crypto.hashStr('0x12345678'),
+        parentId: Crypto.hashStr('0x12345678'),
         permissions: [1],
         isPCR: false,
       },
-      metaData: undefined,
+      metaData: {},
       signatures: {
-        inviter: 'string',
+        inviter: identityAlice.signStr('signature'),
       },
     }
     // Compressed Request accept delegation content
@@ -431,15 +457,15 @@ describe('Messaging Utilities', () => {
     // Submit Accept delegation content
     submitAcceptDelegationContent = {
       delegationData: {
-        account: '',
-        id: '',
-        parentId: '',
+        account: identityAlice.address,
+        id: Crypto.hashStr('0x12345678'),
+        parentId: Crypto.hashStr('0x12345678'),
         permissions: [1],
         isPCR: false,
       },
       signatures: {
-        inviter: 'string',
-        invitee: 'string',
+        inviter: identityAlice.signStr('signature'),
+        invitee: identityBob.signStr('signature'),
       },
     }
     // Compressed Submit accept delegation content
@@ -458,9 +484,9 @@ describe('Messaging Utilities', () => {
     ]
     // Reject Accept Delegation content
     rejectAcceptDelegationContent = {
-      account: '',
-      id: '',
-      parentId: '',
+      account: identityAlice.address,
+      id: Crypto.hashStr('0x12345678'),
+      parentId: Crypto.hashStr('0x12345678'),
       permissions: [1],
       isPCR: false,
     }
@@ -473,7 +499,10 @@ describe('Messaging Utilities', () => {
       rejectAcceptDelegationContent.isPCR,
     ]
 
-    informCreateDelegationContent = { delegationId: '', isPCR: false }
+    informCreateDelegationContent = {
+      delegationId: Crypto.hashStr('0x12345678'),
+      isPCR: false,
+    }
 
     compressedInformCreateDelegationContent = [
       informCreateDelegationContent.delegationId,
@@ -530,6 +559,10 @@ describe('Messaging Utilities', () => {
       compressedSubmitAttestationContent,
     ]
 
+    rejectAttestationForClaimBody = {
+      content: requestAttestationContent.requestForAttestation.rootHash,
+      type: Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM,
+    }
     requestClaimsForCTypesBody = {
       content: [requestClaimsForCTypesContent, requestClaimsForCTypesContent],
       type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
@@ -552,6 +585,16 @@ describe('Messaging Utilities', () => {
       Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
       compressedSubmitClaimsForCTypesContent,
     ]
+
+    acceptClaimsForCTypesBody = {
+      content: [claim.cTypeHash],
+      type: Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES,
+    }
+
+    rejectClaimsForCTypesBody = {
+      content: [claim.cTypeHash],
+      type: Message.BodyType.REJECT_CLAIMS_FOR_CTYPES,
+    }
 
     requestAcceptDelegationBody = {
       content: requestAcceptDelegationContent,
@@ -728,5 +771,357 @@ describe('Messaging Utilities', () => {
         testCTypeWithMultipleProperties
       )
     ).toEqual(true)
+  })
+
+  beforeAll(async () => {
+    messageRequestTerms = new Message(
+      requestTermsBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageSubmitTerms = new Message(
+      submitTermsBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageRejectTerms = new Message(
+      rejectTermsBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageRequestAttestationForClaim = new Message(
+      requestAttestationBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageSubmitAttestationForClaim = new Message(
+      submitAttestationBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+
+    messageRejectAttestationForClaim = new Message(
+      rejectAttestationForClaimBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageRequestClaimsForCTypes = new Message(
+      requestClaimsForCTypesBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageSubmitClaimsForCTypes = new Message(
+      submitClaimsForCTypesBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageAcceptClaimsForCTypes = new Message(
+      acceptClaimsForCTypesBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageRejectClaimsForCTypes = new Message(
+      rejectClaimsForCTypesBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageRequestAcceptDelegation = new Message(
+      requestAcceptDelegationBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageSubmitAcceptDelegation = new Message(
+      submitAcceptDelegationBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageRejectAcceptDelegation = new Message(
+      rejectAcceptDelegationBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+    messageInformCreateDelegation = new Message(
+      informCreateDelegationBody,
+      identityAlice.getPublicIdentity(),
+      identityBob.getPublicIdentity()
+    )
+  })
+  it('error check should not throw errors on faulty bodies', () => {
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(requestTermsBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitTermsBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(rejectTermsBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(requestAttestationBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitAttestationBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(rejectAttestationForClaimBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(requestClaimsForCTypesBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitClaimsForCTypesBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(acceptClaimsForCTypesBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(rejectClaimsForCTypesBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(rejectAcceptDelegationBody)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(informCreateDelegationBody)
+    ).not.toThrowError()
+  })
+  it('error check should not throw errors on message', () => {
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageRequestTerms)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageSubmitTerms)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageRejectTerms)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageRequestAttestationForClaim)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageSubmitAttestationForClaim)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageRejectAttestationForClaim)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageRequestClaimsForCTypes)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageSubmitClaimsForCTypes)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageAcceptClaimsForCTypes)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageRejectClaimsForCTypes)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageRequestAcceptDelegation)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageSubmitAcceptDelegation)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageRejectAcceptDelegation)
+    ).not.toThrowError()
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageInformCreateDelegation)
+    ).not.toThrowError()
+  })
+  it('error check should throw errors on message', () => {
+    messageRequestTerms.receiverAddress = 'this is not a receiver address'
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageRequestTerms)
+    ).toThrowError(
+      SDKErrors.ERROR_ADDRESS_INVALID(
+        messageRequestTerms.receiverAddress,
+        'receiver address'
+      )
+    )
+    messageSubmitTerms.senderBoxPublicKey =
+      'this is not a sender box public key'
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageSubmitTerms)
+    ).toThrowError(SDKErrors.ERROR_ADDRESS_INVALID())
+    messageRejectTerms.senderAddress = 'this is not a sender address'
+    expect(() =>
+      MessageUtils.errorCheckMessage(messageRejectTerms)
+    ).toThrowError(
+      SDKErrors.ERROR_ADDRESS_INVALID(
+        messageRejectTerms.senderAddress,
+        'sender address'
+      )
+    )
+  })
+  it('error check should throw errors on faulty bodies', () => {
+    requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(requestTermsBody)
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        requestTermsBody.content.cTypeHash,
+        'Claim CType'
+      )
+    )
+    submitTermsBody.content.prerequisiteClaims = 'this is not a delegation id'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitTermsBody)
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        submitTermsBody.content.prerequisiteClaims,
+        'Submit terms pre-requisite claims invalid'
+      )
+    )
+    submitTermsBody.content.delegationId = 'this is not a delegation id'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitTermsBody)
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        submitTermsBody.content.delegationId,
+        'Submit terms delegation id hash invalid'
+      )
+    )
+
+    rejectTermsBody.content.delegationId = 'this is not a delegation id'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(rejectTermsBody)
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        rejectTermsBody.content.delegationId,
+        'Reject terms delegation id hash'
+      )
+    )
+    // @ts-expect-error
+    delete rejectTermsBody.content.claim.cTypeHash
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(rejectTermsBody)
+    ).toThrowError(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED())
+    requestAttestationBody.content.requestForAttestation.claimerSignature =
+      'this is not the claimers signature'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(requestAttestationBody)
+    ).toThrowError()
+    submitAttestationBody.content.attestation.claimHash =
+      'this is not the claim hash'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitAttestationBody)
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        submitAttestationBody.content.attestation.claimHash,
+        'Claim'
+      )
+    )
+    rejectAttestationForClaimBody.content = 'this is not the root hash'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(rejectAttestationForClaimBody)
+    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED())
+    requestClaimsForCTypesBody.content[0].cTypeHash = 'this is not a cTypeHash'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(requestClaimsForCTypesBody)
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        requestClaimsForCTypesBody.content[0].cTypeHash,
+        'request claims for ctypes cTypeHash invalid'
+      )
+    )
+    // @ts-expect-error
+    delete submitClaimsForCTypesBody.content[0].attestation.revoked
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitClaimsForCTypesBody)
+    ).toThrowError(SDKErrors.ERROR_REVOCATION_BIT_MISSING())
+    acceptClaimsForCTypesBody.content[0] = 'this is not a cTypeHash'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(acceptClaimsForCTypesBody)
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        acceptClaimsForCTypesBody.content[0],
+        'accept claims for ctypes message ctype hash invalid'
+      )
+    )
+    rejectClaimsForCTypesBody.content[0] = 'this is not a cTypeHash'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(rejectClaimsForCTypesBody)
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        rejectClaimsForCTypesBody.content[0],
+        'rejected claims for ctypes ctype hashes invalid'
+      )
+    )
+    delete requestAcceptDelegationBody.content.metaData
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
+    ).toThrowError(SDKErrors.ERROR_OBJECT_MALFORMED())
+    requestAcceptDelegationBody.content.signatures.inviter =
+      'this is not a signature'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
+    submitAcceptDelegationBody.content.signatures.invitee =
+      'this is not a signature'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
+    submitAcceptDelegationBody.content.delegationData.parentId =
+      'this is not a parent id hash'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
+    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE())
+    // @ts-expect-error
+    delete rejectAcceptDelegationBody.content.account
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(rejectAcceptDelegationBody)
+    ).toThrowError(SDKErrors.ERROR_OWNER_NOT_PROVIDED())
+    informCreateDelegationBody.content.delegationId =
+      'this is not a delegation id'
+    expect(() =>
+      MessageUtils.errorCheckMessageBody(informCreateDelegationBody)
+    ).toThrowError(
+      SDKErrors.ERROR_HASH_MALFORMED(
+        informCreateDelegationBody.content.delegationId,
+        'inform create delegation message delegation id invalid'
+      )
+    )
+    expect(() =>
+      MessageUtils.errorCheckMessageBody({} as MessageBody)
+    ).toThrowError(SDKErrors.ERROR_MESSAGE_BODY_MALFORMED())
+  })
+  it('error check of the delegation data in messaging', () => {
+    // @ts-expect-error
+    delete requestAcceptDelegationBody.content.delegationData.isPCR
+    expect(() =>
+      MessageUtils.errorCheckDelegationData(
+        requestAcceptDelegationBody.content.delegationData
+      )
+    ).toThrowError(TypeError('isPCR is expected to be a boolean'))
+    requestAcceptDelegationBody.content.delegationData.id =
+      'this is not a delegation id'
+    expect(() =>
+      MessageUtils.errorCheckDelegationData(
+        requestAcceptDelegationBody.content.delegationData
+      )
+    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE())
+    submitAcceptDelegationBody.content.delegationData.permissions = []
+    expect(() =>
+      MessageUtils.errorCheckDelegationData(
+        submitAcceptDelegationBody.content.delegationData
+      )
+    ).toThrowError(
+      SDKErrors.ERROR_UNAUTHORIZED(
+        'Must have at least one permission and no more then two'
+      )
+    )
+    // @ts-expect-error
+    delete submitAcceptDelegationBody.content.delegationData.id
+    expect(() =>
+      MessageUtils.errorCheckDelegationData(
+        submitAcceptDelegationBody.content.delegationData
+      )
+    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_MISSING())
   })
 })

@@ -49,8 +49,8 @@ export class PresentationRequestBuilder {
    *
    * @param p The parameter object.
    * @param p.ctypeHash The SHA-256 hash of the [[CType]].
-   * @param p.properties A list of properties of the [[Credential]]s the verifier has to see in order to verify it.
-   * @param p.legitimations An optional boolean representing whether the verifier requests to see the legitimations of the attesters which signed the [[Credential]]s.
+   * @param p.properties A list of properties of the [[AttestedClaim]]s the verifier has to see in order to verify it.
+   * @param p.legitimations An optional boolean representing whether the verifier requests to see the legitimations of the attesters which signed the [[AttestedClaim]]s.
    * @param p.delegation An optional boolean representing whether the verifier requests to see the attesters' unique delegation identifiers.
    * The default value for this is the current date.
    * @returns A [[PresentationRequestBuilder]] on which you need to call [[finalize]] to complete the presentation request.
@@ -110,7 +110,7 @@ export class PresentationRequestBuilder {
             }
           ),
         },
-        verifier,
+        verifier.getPublicIdentity(),
         claimer
       ),
     }
@@ -120,7 +120,7 @@ export class PresentationRequestBuilder {
 /**
  * Initiates a verification by creating a request on the Verifier's side.
  *
- * @returns A [[PresentationRequestBuilder]] based on a [[CType]] and a list of required disclosed attributes of the [[Credential]]s.
+ * @returns A [[PresentationRequestBuilder]] based on a [[CType]] and a list of required disclosed attributes of the [[AttestedClaim]]s.
  */
 export function newRequestBuilder(): PresentationRequestBuilder {
   return new PresentationRequestBuilder()
@@ -173,13 +173,13 @@ async function verifyPublicPresentation(
 }
 
 /**
- * [ASYNC] Verifies the Claimer's presentation of [[Credential]]s.
+ * [ASYNC] Verifies the Claimer's presentation of [[AttestedClaim]]s.
  *
- * @param message The Claimer's presentation of the [[Credential]]s that should be verified, the result of [[createPresentation]].
+ * @param message The Claimer's presentation of the [[AttestedClaim]]s that should be verified, the result of [[createPresentation]].
  * @param session The Verifier's private verification session created in [[finalize]].
  * @throws [[ERROR_MESSAGE_TYPE]].
  * @returns An object containing the keys
- * **verified** (which describes whether the [[Credential]]s could be verified)
+ * **verified** (which describes whether the [[AttestedClaim]]s could be verified)
  * and **claims** (an array of [[Claim]]s restricted on the disclosed attributes selected in [[requestPresentationForCtype]]).
  */
 export async function verifyPresentation(

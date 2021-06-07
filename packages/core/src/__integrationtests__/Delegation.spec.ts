@@ -32,11 +32,13 @@ async function writeRoot(
   delegator: Identity,
   ctypeHash: ICType['hash']
 ): Promise<DelegationRootNode> {
-  const root = new DelegationRootNode(
-    UUID.generate(),
-    ctypeHash,
-    delegator.address
-  )
+  const root = new DelegationRootNode({
+    id: UUID.generate(),
+    cTypeHash: ctypeHash,
+    account: delegator.address,
+    revoked: false,
+  })
+
   await root.store().then((tx) =>
     BlockchainUtils.signAndSubmitTx(tx, delegator, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -53,13 +55,14 @@ async function addDelegation(
 ): Promise<DelegationNode> {
   const rootId =
     parentNode instanceof DelegationRootNode ? parentNode.id : parentNode.rootId
-  const delegation = new DelegationNode(
-    UUID.generate(),
+  const delegation = new DelegationNode({
+    id: UUID.generate(),
     rootId,
-    delegee.address,
+    account: delegee.address,
     permissions,
-    parentNode.id
-  )
+    parentId: parentNode.id,
+    revoked: false,
+  })
   await delegation
     .store(delegee.signStr(delegation.generateHash()))
     .then((tx) =>

@@ -5,20 +5,15 @@
 import type { AnyJson } from '@polkadot/types/types'
 import type { IDidDocumentPublicKey } from '@kiltprotocol/core'
 import type { ICType } from '@kiltprotocol/types'
-
-/**
- * Constant for default context.
- */
-export const DEFAULT_VERIFIABLECREDENTIAL_CONTEXT =
-  'https://www.w3.org/2018/credentials/v1'
-/**
- * Constant for default type.
- */
-export const DEFAULT_VERIFIABLECREDENTIAL_TYPE = 'VerifiableCredential'
-/**
- * Constant for default presentation type.
- */
-export const DEFAULT_VERIFIABLEPRESENTATION_TYPE = 'VerifiablePresentation'
+import type {
+  DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
+  DEFAULT_VERIFIABLECREDENTIAL_TYPE,
+  DEFAULT_VERIFIABLEPRESENTATION_TYPE,
+  JSON_SCHEMA_TYPE,
+  KILT_ATTESTED_PROOF_TYPE,
+  KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
+  KILT_SELF_SIGNED_PROOF_TYPE,
+} from './constants'
 
 export interface Proof {
   type: string
@@ -26,10 +21,6 @@ export interface Proof {
   proofPurpose?: string
   [key: string]: any
 }
-
-export const KILT_SELF_SIGNED_PROOF_TYPE = 'KILTSelfSigned2020'
-export const KILT_ATTESTED_PROOF_TYPE = 'KILTAttestation2020'
-export const KILT_CREDENTIAL_DIGEST_PROOF_TYPE = 'KILTCredentialDigest2020'
 
 export type IPublicKeyRecord = Partial<IDidDocumentPublicKey> &
   Pick<IDidDocumentPublicKey, 'publicKeyHex' | 'type'>
@@ -50,8 +41,6 @@ export interface CredentialDigestProof extends Proof {
   // salted hashes of statements in credentialSubject to allow selective disclosure.
   claimHashes: string[]
 }
-
-export const JSON_SCHEMA_TYPE = 'JsonSchemaValidator2018'
 
 export interface CredentialSchema {
   '@id': string
@@ -83,7 +72,7 @@ export interface VerifiableCredential {
   proof: Proof | Proof[]
   nonTransferable?: boolean
   credentialSchema?: CredentialSchema
-  expirationDate?: any
+  expirationDate?: string
 }
 
 export interface VerifiablePresentation {
@@ -92,12 +81,4 @@ export interface VerifiablePresentation {
   verifiableCredential: VerifiableCredential | VerifiableCredential[]
   holder?: string
   proof: Proof | Proof[]
-}
-
-export const KeyTypesMap = {
-  // proposed and used by dock.io, e.g. https://github.com/w3c-ccg/security-vocab/issues/32, https://github.com/docknetwork/sdk/blob/9c818b03bfb4fdf144c20678169c7aad3935ad96/src/utils/vc/contexts/security_context.js
-  sr25519: 'Sr25519VerificationKey2020',
-  // these are part of current w3 security vocab, see e.g. https://www.w3.org/ns/did/v1
-  ed25519: 'Ed25519VerificationKey2018',
-  ecdsa: 'EcdsaSecp256k1VerificationKey2019',
 }

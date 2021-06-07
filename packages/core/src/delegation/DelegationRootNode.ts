@@ -19,6 +19,7 @@ import DelegationBaseNode from './Delegation'
 import DelegationNode from './DelegationNode'
 import { getChildren } from './DelegationNode.chain'
 import { query, revoke, store } from './DelegationRootNode.chain'
+import errorCheck from './DelegationRootNode.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationRootNode')
 
@@ -46,13 +47,15 @@ export default class DelegationRootNode extends DelegationBaseNode
 
   public cTypeHash: IDelegationRootNode['cTypeHash']
 
-  public constructor(
-    id: IDelegationRootNode['id'],
-    ctypeHash: IDelegationRootNode['cTypeHash'],
-    account: IDelegationRootNode['account']
-  ) {
-    super(id, account)
-    this.cTypeHash = ctypeHash
+  /**
+   * Creates a new [DelegationRootNode].
+   *
+   * @param delegationRootNodeInput - The base object from which to create the delegation base node.
+   */
+  public constructor(delegationRootNodeInput: IDelegationRootNode) {
+    super(delegationRootNodeInput)
+    this.cTypeHash = delegationRootNodeInput.cTypeHash
+    errorCheck(this)
   }
 
   public getRoot(): Promise<DelegationRootNode> {

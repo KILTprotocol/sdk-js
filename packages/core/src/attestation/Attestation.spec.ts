@@ -2,6 +2,8 @@
  * @group unit/attestation
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import type {
   IAttestation,
   CompressedAttestation,
@@ -151,6 +153,7 @@ describe('Attestation', () => {
       attestation.delegationId,
     ]
     compressedAttestation.pop()
+    // @ts-expect-error
     delete attestation.claimHash
 
     expect(() => {
@@ -214,6 +217,7 @@ describe('Attestation', () => {
       revoked: false,
       delegationId: null,
     } as IAttestation
+    // @ts-expect-error
     delete noRevocationBit.revoked
     const malformedClaimHash = {
       claimHash: claimHash.slice(0, 20) + claimHash.slice(21),

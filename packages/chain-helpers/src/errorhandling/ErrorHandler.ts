@@ -21,8 +21,6 @@ export interface ModuleError {
   Module: { index: number; error: number }
 }
 
-const ERROR_MODULE_NAME = 'system'
-
 /**
  * Checks if there is `SystemEvent.ExtrinsicFailed` in the list of
  * transaction events within the given `extrinsicResult`.
@@ -34,7 +32,7 @@ export function extrinsicFailed(extrinsicResult: ISubmittableResult): boolean {
   const events: EventRecord[] = extrinsicResult.events || []
   return events.some((eventRecord: EventRecord) => {
     return (
-      !eventRecord.phase.asApplyExtrinsic.isEmpty &&
+      eventRecord.phase.isApplyExtrinsic &&
       eventRecord.event.index.toHex() === SystemEvent.ExtrinsicFailed
     )
   })
@@ -53,7 +51,7 @@ export function extrinsicSuccessful(
   const events: EventRecord[] = extrinsicResult.events || []
   return events.some((eventRecord: EventRecord) => {
     return (
-      !eventRecord.phase.asApplyExtrinsic.isEmpty &&
+      eventRecord.phase.isApplyExtrinsic &&
       eventRecord.event.index.toHex() === SystemEvent.ExtrinsicSuccess
     )
   })
@@ -68,36 +66,19 @@ export function extrinsicSuccessful(
 export function getExtrinsicError(
   extrinsicResult: ISubmittableResult
 ): ExtrinsicError | null {
-  const events: EventRecord[] = extrinsicResult.events || []
+  const errorEvent = extrinsicResult.dispatchError
 
-  const errorEvent = events.find((eventRecord: EventRecord) => {
-    return (
-      !eventRecord.phase.asApplyExtrinsic.isEmpty &&
-      eventRecord.event.section === ERROR_MODULE_NAME
-    )
-  })
+  if (errorEvent && errorEvent.isModule) {
+    const moduleError = errorEvent.asModule
 
-  if (errorEvent) {
-    const { data } = errorEvent.event
-    const moduleError = data && !data.isEmpty ? data[0].toJSON() : null
-
-    // TODO: Can this be accomplished in a prettier way using SDK functionality like constructor input checks?
-    // Note: Not all instances of `moduleError` have this specific structure!
-    if (
-      moduleError &&
-      typeof moduleError === 'object' &&
-      Object.keys(moduleError).includes('Module')
-    ) {
-      const {
-        Module: { index, error },
-      } = (moduleError as unknown) as ModuleError
-      if (index >= 0 && error >= 0) {
-        return errorForPallet({ index, error })
-      }
+    const index = moduleError.index.toNumber()
+    const error = moduleError.error.toNumber()
+    if (index >= 0 && error >= 0) {
+      return errorForPallet({ index, error })
     }
-    log.warn(`error event doesn't have a valid error structure: ${data}`)
-  } else {
-    log.warn('no error event found in transaction result')
+    log.warn(
+      `error event module index or error code out of range. index: ${index}; error: ${error}`
+    )
   }
   return null
 }

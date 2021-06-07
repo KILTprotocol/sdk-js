@@ -8,6 +8,8 @@ import {
   AttestedClaimUtils,
   ClaimUtils,
   CTypeUtils,
+  Quote,
+  QuoteSchema,
   QuoteUtils,
   RequestForAttestationUtils,
 } from '@kiltprotocol/core'
@@ -19,9 +21,237 @@ import type {
   CompressedRequestClaimsForCTypesContent,
   IRequestClaimsForCTypesContent,
   ICType,
+  IMessage,
+  PartialClaim,
+  IClaim,
+  IDelegationData,
 } from '@kiltprotocol/types'
-import { SDKErrors } from '@kiltprotocol/utils'
+import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import { isHex, isJsonObject } from '@polkadot/util'
+
 import Message from '.'
+
+// Had to add the check as differs from the delegation types
+export function errorCheckDelegationData(
+  delegationData: IDelegationData
+): boolean | void {
+  const { permissions, id, parentId, isPCR, account } = delegationData
+
+  if (!id) {
+    throw SDKErrors.ERROR_DELEGATION_ID_MISSING()
+  } else if (typeof id !== 'string') {
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+  } else if (!isHex(id)) {
+    throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+  }
+
+  if (!account) {
+    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
+  } else DataUtils.validateAddress(account, 'delegationNode owner')
+
+  if (typeof isPCR !== 'boolean') {
+    throw new TypeError('isPCR is expected to be a boolean')
+  }
+
+  if (permissions.length === 0 || permissions.length > 3) {
+    throw SDKErrors.ERROR_UNAUTHORIZED(
+      'Must have at least one permission and no more then two'
+    )
+  }
+
+  if (parentId) {
+    if (typeof parentId !== 'string') {
+      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    } else if (!isHex(parentId)) {
+      throw SDKErrors.ERROR_DELEGATION_ID_TYPE()
+    }
+  }
+}
+
+export function errorCheckMessageBody(body: MessageBody): boolean | void {
+  switch (body.type) {
+    case Message.BodyType.REQUEST_TERMS: {
+      ClaimUtils.errorCheck(body.content)
+      break
+    }
+    case Message.BodyType.SUBMIT_TERMS: {
+      ClaimUtils.errorCheck(body.content.claim)
+      body.content.legitimations.map((attestedClaim: IAttestedClaim) =>
+        AttestedClaimUtils.errorCheck(attestedClaim)
+      )
+      if (body.content.delegationId) {
+        DataUtils.validateHash(
+          body.content.delegationId,
+          'Submit terms delegation id hash invalid'
+        )
+      }
+      if (body.content.quote) {
+        Quote.validateQuoteSchema(QuoteSchema, body.content.quote)
+      }
+      if (body.content.prerequisiteClaims) {
+        DataUtils.validateHash(
+          body.content.prerequisiteClaims,
+          'Submit terms pre-requisite claims invalid'
+        )
+      }
+      if (body.content.cTypes) {
+        body.content.cTypes.map((val) => CTypeUtils.errorCheck(val))
+      }
+      break
+    }
+    case Message.BodyType.REJECT_TERMS: {
+      ClaimUtils.errorCheck(body.content.claim)
+      if (body.content.delegationId) {
+        DataUtils.validateHash(
+          body.content.delegationId,
+          'Reject terms delegation id hash'
+        )
+      }
+      body.content.legitimations.map((val) =>
+        AttestedClaimUtils.errorCheck(val)
+      )
+      break
+    }
+    case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+      RequestForAttestationUtils.errorCheck(body.content.requestForAttestation)
+      if (body.content.quote) {
+        Quote.validateQuoteSchema(QuoteSchema, body.content.quote)
+      }
+      if (body.content.prerequisiteClaims) {
+        body.content.prerequisiteClaims.map((claim: IClaim | PartialClaim) =>
+          ClaimUtils.errorCheck(claim)
+        )
+      }
+      break
+    }
+    case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+      AttestationUtils.errorCheck(body.content.attestation)
+      break
+    }
+    case Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM: {
+      if (!isHex(body.content)) {
+        throw SDKErrors.ERROR_HASH_MALFORMED()
+      }
+      break
+    }
+    case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
+      body.content.forEach(
+        (requestClaimsForCTypes: IRequestClaimsForCTypesContent): void => {
+          DataUtils.validateHash(
+            requestClaimsForCTypes.cTypeHash,
+            'request claims for ctypes cTypeHash invalid'
+          )
+          requestClaimsForCTypes.acceptedAttester?.map((address) =>
+            DataUtils.validateAddress(
+              address,
+              'request claims for ctypes attester approved addresses invalid'
+            )
+          )
+          requestClaimsForCTypes.requiredProperties?.map((requiredProps) => {
+            if (typeof requiredProps !== 'string')
+              throw new TypeError(
+                'required properties is expected to be a string'
+              )
+          })
+        }
+      )
+      break
+    }
+    case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
+      body.content.map((attestedClaim) =>
+        AttestedClaimUtils.errorCheck(attestedClaim)
+      )
+      break
+    }
+    case Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES: {
+      body.content.map((cTypeHash) =>
+        DataUtils.validateHash(
+          cTypeHash,
+          'accept claims for ctypes message ctype hash invalid'
+        )
+      )
+      break
+    }
+    case Message.BodyType.REJECT_CLAIMS_FOR_CTYPES: {
+      body.content.map((cTypeHash) =>
+        DataUtils.validateHash(
+          cTypeHash,
+          'rejected claims for ctypes ctype hashes invalid'
+        )
+      )
+      break
+    }
+    case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
+      errorCheckDelegationData(body.content.delegationData)
+      if (!isHex(body.content.signatures.inviter)) {
+        throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+      }
+      if (!isJsonObject(body.content.metaData)) {
+        throw SDKErrors.ERROR_OBJECT_MALFORMED()
+      }
+      break
+    }
+    case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
+      errorCheckDelegationData(body.content.delegationData)
+      if (
+        !isHex(body.content.signatures.invitee) ||
+        !isHex(body.content.signatures.inviter)
+      ) {
+        throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+      }
+      break
+    }
+
+    case Message.BodyType.REJECT_ACCEPT_DELEGATION: {
+      errorCheckDelegationData(body.content)
+      break
+    }
+    case Message.BodyType.INFORM_CREATE_DELEGATION: {
+      DataUtils.validateHash(
+        body.content.delegationId,
+        'inform create delegation message delegation id invalid'
+      )
+      break
+    }
+
+    default:
+      throw SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()
+  }
+
+  return true
+}
+
+export function errorCheckMessage(message: IMessage): boolean | void {
+  const {
+    body,
+    messageId,
+    createdAt,
+    receiverAddress,
+    senderAddress,
+    receivedAt,
+    senderBoxPublicKey,
+    inReplyTo,
+  } = message
+  if (messageId && typeof messageId !== 'string') {
+    throw new TypeError('message id is expected to be a string')
+  }
+  if (createdAt && typeof createdAt !== 'number') {
+    throw new TypeError('created at is expected to be a number')
+  }
+  if (receivedAt && typeof receivedAt !== 'number') {
+    throw new TypeError('received at is expected to be a number')
+  }
+  DataUtils.validateAddress(receiverAddress, 'receiver address')
+  DataUtils.validateAddress(senderAddress, 'sender address')
+  if (!isHex(senderBoxPublicKey)) {
+    throw SDKErrors.ERROR_ADDRESS_INVALID()
+  }
+  if (inReplyTo && typeof inReplyTo !== 'string') {
+    throw new TypeError('in reply to is expected to be a string')
+  }
+  errorCheckMessageBody(body)
+  return true
+}
 
 /**
  * Verifies required properties for a given [[CType]] before sending or receiving a message.
@@ -78,6 +308,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
           ? QuoteUtils.compressAttesterSignedQuote(body.content.quote)
           : undefined,
         body.content.prerequisiteClaims,
+        body.content.cTypes?.map((val) => CTypeUtils.compress(val)),
       ]
       break
     }
@@ -205,6 +436,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
           ? QuoteUtils.decompressAttesterSignedQuote(body[1][3])
           : undefined,
         prerequisiteClaims: body[1][4],
+        cTypes: body[1][5]?.map((val) => CTypeUtils.decompress(val)),
       }
 
       break
