@@ -585,8 +585,8 @@ Check record for each incoming message and update if accepted:
 // is hash fresh and createdAt recent ?
 if (
   submissions.has(encrypted.hash) ||
-  encrypted.createdAt > Date.now() + MAX_ACCEPTED_AGE ||
-  encrypted.createdAt < Date.now() + MIN_ACCEPTED_AGE
+  encrypted.createdAt < Date.now() - MAX_ACCEPTED_AGE ||
+  encrypted.createdAt > Date.now() - MIN_ACCEPTED_AGE
 ) {
   // no -> reject message
 } else {
@@ -599,9 +599,9 @@ Purge at regular intervals:
 
 ```typescript
 setInterval(() => {
-  const maxTime = Date.now() + MAX_ACCEPTED_AGE
+  const maxTime = Date.now() - MAX_ACCEPTED_AGE
   submissions.forEach((timestamp, hash) => {
-    if (timestamp > maxTime) submissions.delete(hash)
+    if (timestamp < maxTime) submissions.delete(hash)
   })
 }, 1000)
 ```
