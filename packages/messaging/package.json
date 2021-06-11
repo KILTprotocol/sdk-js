@@ -28,6 +28,6 @@
         "@kiltprotocol/core": "workspace:*",
         "@kiltprotocol/types": "workspace:*",
         "@kiltprotocol/utils": "workspace:*",
-        "@polkadot/util": "^6.6.1"
+        "@polkadot/util": "^6.7.1"
     }
 }
