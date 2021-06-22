@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>ICredential | @kiltprotocol/sdk-js</title>
+	<title>vc-export/src/vc-js | @kiltprotocol/sdk-js</title>
 	<meta name="description" content="Documentation for @kiltprotocol/sdk-js">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -52,68 +52,53 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/credential.html">Credential</a>
-				</li>
-				<li>
-					<a href="credential.icredential.html">ICredential</a>
+					<a href="vc_export_src_vc_js.html">vc-export/src/vc-js</a>
 				</li>
 			</ul>
-			<h1>Interface ICredential</h1>
+			<h1>Module vc-export/src/vc-js</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-hierarchy">
-				<h3>Hierarchy</h3>
-				<ul class="tsd-hierarchy">
-					<li>
-						<span class="target">ICredential</span>
-					</li>
-				</ul>
-			</section>
-			<section class="tsd-panel">
-				<h3>Implemented by</h3>
-				<ul class="tsd-hierarchy">
-					<li><a href="../classes/credential.credential-1.html" class="tsd-signature-type">Credential</a></li>
-				</ul>
-			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Properties</h3>
+							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="credential.icredential.html#attestation" class="tsd-kind-icon">attestation</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="credential.icredential.html#reqforatt" class="tsd-kind-icon">req<wbr>For<wbr>Att</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="vc_export_src_vc_js.html#documentloader" class="tsd-kind-icon">document<wbr>Loader</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="attestation" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> attestation</h3>
-					<div class="tsd-signature tsd-kind-icon">attestation<span class="tsd-signature-symbol">:</span> <a href="iattestation.iattestation-1.html" class="tsd-signature-type">IAttestation</a></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/actors_api/src/credential/Credential.ts#L18">packages/actors_api/src/credential/Credential.ts:18</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="reqforatt" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> req<wbr>For<wbr>Att</h3>
-					<div class="tsd-signature tsd-kind-icon">req<wbr>For<wbr>Att<span class="tsd-signature-symbol">:</span> <a href="irequestforattestation.irequestforattestation-1.html" class="tsd-signature-type">IRequestForAttestation</a></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/actors_api/src/credential/Credential.ts#L17">packages/actors_api/src/credential/Credential.ts:17</a></li>
-						</ul>
-					</aside>
+				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="documentloader" class="tsd-anchor"></a>
+					<h3>document<wbr>Loader</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">document<wbr>Loader<span class="tsd-signature-symbol">(</span>url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Url</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">RemoteDocument</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/vc-export/src/vc-js/documentLoader.ts#L5">packages/vc-export/src/vc-js/documentLoader.ts:5</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>url: <span class="tsd-signature-type">Url</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">RemoteDocument</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -124,30 +109,15 @@
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 					<li class="current tsd-kind-module">
-						<a href="../modules/credential.html">Credential</a>
+						<a href="vc_export_src_vc_js.html">vc-<wbr>export/src/vc-<wbr>js</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class tsd-parent-kind-module">
-						<a href="../classes/credential.credential-1.html" class="tsd-kind-icon">Credential</a>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="vc_export_src_vc_js.html#documentloader" class="tsd-kind-icon">document<wbr>Loader</a>
 					</li>
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-module">
-						<a href="credential.icredential.html" class="tsd-kind-icon">ICredential</a>
-						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="credential.icredential.html#attestation" class="tsd-kind-icon">attestation</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="credential.icredential.html#reqforatt" class="tsd-kind-icon">req<wbr>For<wbr>Att</a>
-							</li>
-						</ul>
-					</li>
-				</ul>
-				<ul class="after-current">
 				</ul>
 			</nav>
 		</div>
@@ -168,7 +138,6 @@
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
 				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>

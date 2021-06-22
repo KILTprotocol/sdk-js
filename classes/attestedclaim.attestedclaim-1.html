@@ -100,6 +100,7 @@
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="attestedclaim.attestedclaim-1.html#compress" class="tsd-kind-icon">compress</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="attestedclaim.attestedclaim-1.html#createpresentation" class="tsd-kind-icon">create<wbr>Presentation</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="attestedclaim.attestedclaim-1.html#getattributes" class="tsd-kind-icon">get<wbr>Attributes</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="attestedclaim.attestedclaim-1.html#gethash" class="tsd-kind-icon">get<wbr>Hash</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="attestedclaim.attestedclaim-1.html#verify" class="tsd-kind-icon">verify</a></li>
@@ -128,7 +129,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L79">packages/core/src/attestedclaim/AttestedClaim.ts:79</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L79">packages/core/src/attestedclaim/AttestedClaim.ts:79</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -168,7 +169,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/iattestedclaim.iattestedclaim-1.html">IAttestedClaim</a>.<a href="../interfaces/iattestedclaim.iattestedclaim-1.html#attestation">attestation</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L79">packages/core/src/attestedclaim/AttestedClaim.ts:79</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L79">packages/core/src/attestedclaim/AttestedClaim.ts:79</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -179,7 +180,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/iattestedclaim.iattestedclaim-1.html">IAttestedClaim</a>.<a href="../interfaces/iattestedclaim.iattestedclaim-1.html#request">request</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L78">packages/core/src/attestedclaim/AttestedClaim.ts:78</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L78">packages/core/src/attestedclaim/AttestedClaim.ts:78</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -196,7 +197,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L194">packages/core/src/attestedclaim/AttestedClaim.ts:194</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L220">packages/core/src/attestedclaim/AttestedClaim.ts:220</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -210,6 +211,39 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="createpresentation" class="tsd-anchor"></a>
+					<h3>create<wbr>Presentation</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Presentation<span class="tsd-signature-symbol">(</span>publicAttributes<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L197">packages/core/src/attestedclaim/AttestedClaim.ts:197</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a public presentation which can be sent to a verifier.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>publicAttributes: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
+										If kept empty, we hide all attributes inside the claim for the presentation.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a></h4>
+							<p>A deep copy of the AttestedClaim with all but <code>publicAttributes</code> removed.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getattributes" class="tsd-anchor"></a>
 					<h3>get<wbr>Attributes</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -219,7 +253,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L184">packages/core/src/attestedclaim/AttestedClaim.ts:184</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L184">packages/core/src/attestedclaim/AttestedClaim.ts:184</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -236,7 +270,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L180">packages/core/src/attestedclaim/AttestedClaim.ts:180</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L180">packages/core/src/attestedclaim/AttestedClaim.ts:180</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -265,7 +299,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L121">packages/core/src/attestedclaim/AttestedClaim.ts:121</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L121">packages/core/src/attestedclaim/AttestedClaim.ts:121</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -282,7 +316,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L149">packages/core/src/attestedclaim/AttestedClaim.ts:149</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L149">packages/core/src/attestedclaim/AttestedClaim.ts:149</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -299,7 +333,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L204">packages/core/src/attestedclaim/AttestedClaim.ts:204</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L230">packages/core/src/attestedclaim/AttestedClaim.ts:230</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -331,7 +365,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L35">packages/core/src/attestedclaim/AttestedClaim.ts:35</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L35">packages/core/src/attestedclaim/AttestedClaim.ts:35</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -371,7 +405,7 @@ AttestedClaim.fromAttestedClaim(<span class="hljs-built_in">JSON</span>.parse(se
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L52">packages/core/src/attestedclaim/AttestedClaim.ts:52</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L52">packages/core/src/attestedclaim/AttestedClaim.ts:52</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -416,7 +450,7 @@ AttestedClaim.fromRequestAndAttestation(request, attestation);
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L69">packages/core/src/attestedclaim/AttestedClaim.ts:69</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L69">packages/core/src/attestedclaim/AttestedClaim.ts:69</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -448,7 +482,7 @@ AttestedClaim.fromRequestAndAttestation(request, attestation);
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L161">packages/core/src/attestedclaim/AttestedClaim.ts:161</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L161">packages/core/src/attestedclaim/AttestedClaim.ts:161</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -485,7 +519,7 @@ AttestedClaim.fromRequestAndAttestation(request, attestation);
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L114">packages/core/src/attestedclaim/AttestedClaim.ts:114</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L114">packages/core/src/attestedclaim/AttestedClaim.ts:114</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -494,7 +528,7 @@ AttestedClaim.fromRequestAndAttestation(request, attestation);
 									<ul>
 										<li>the data is valid (see <a href="attestedclaim.attestedclaim-1.html#verifydata">verifyData</a>);
 										and</li>
-										<li>the <a href="../modules/blockchainapiconnection.html#custom_types.attestation">Attestation</a> object for this attested claim is valid (see <a href="attestation.attestation-1.html#checkvalidity-1">Attestation.checkValidity</a>, where the <strong>chain</strong> is queried).</li>
+										<li>the <a href="../modules/attestation.html">Attestation</a> object for this attested claim is valid (see <a href="attestation.attestation-1.html#checkvalidity-1">Attestation.checkValidity</a>, where the <strong>chain</strong> is queried).</li>
 									</ul>
 								</div>
 								<p>Upon presentation of an attested claim, a verifier would call this <a href="attestedclaim.attestedclaim-1.html#verify">verify</a> function.</p>
@@ -531,7 +565,7 @@ AttestedClaim.fromRequestAndAttestation(request, attestation);
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/core/src/attestedclaim/AttestedClaim.ts#L137">packages/core/src/attestedclaim/AttestedClaim.ts:137</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/core/src/attestedclaim/AttestedClaim.ts#L137">packages/core/src/attestedclaim/AttestedClaim.ts:137</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -595,6 +629,9 @@ AttestedClaim.fromRequestAndAttestation(request, attestation);
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="attestedclaim.attestedclaim-1.html#compress" class="tsd-kind-icon">compress</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="attestedclaim.attestedclaim-1.html#createpresentation" class="tsd-kind-icon">create<wbr>Presentation</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="attestedclaim.attestedclaim-1.html#getattributes" class="tsd-kind-icon">get<wbr>Attributes</a>

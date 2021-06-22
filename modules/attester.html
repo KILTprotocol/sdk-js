@@ -94,12 +94,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/actors_api/src/actors/Attester.ts#L55">packages/actors_api/src/actors/Attester.ts:55</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/actors_api/src/actors/Attester.ts#L55">packages/actors_api/src/actors/Attester.ts:55</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>[ASYNC] Creates an <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> for the <a href="claim.html">Claim</a> inside the request.</p>
+									<p>[ASYNC] Creates an <a href="attestation.html">Attestation</a> for the <a href="claim.html">Claim</a> inside the request.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
@@ -129,8 +129,8 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>message<span class="tsd-signature-symbol">: </span><a href="../classes/messaging.message.html" class="tsd-signature-type">Message</a><span class="tsd-signature-symbol">; </span>revocationHandle<span class="tsd-signature-symbol">: </span><a href="../interfaces/attester.irevocationhandle.html" class="tsd-signature-type">IRevocationHandle</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>The <a href="../classes/messaging.message.html">Message</a> object containing the <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> which should be sent to the Claimer and
-							a handle which can be used to revoke the <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> in <a href="attester.html#revokeattestation">revokeAttestation</a>.</p>
+							<p>The <a href="../classes/messaging.message.html">Message</a> object containing the <a href="attestation.html">Attestation</a> which should be sent to the Claimer and
+							a handle which can be used to revoke the <a href="attestation.html">Attestation</a> in <a href="attester.html#revokeattestation">revokeAttestation</a>.</p>
 						</li>
 					</ul>
 				</section>
@@ -144,12 +144,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/actors_api/src/actors/Attester.ts#L103">packages/actors_api/src/actors/Attester.ts:103</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/actors_api/src/actors/Attester.ts#L103">packages/actors_api/src/actors/Attester.ts:103</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>[ASYNC] Revokes an <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> created in <a href="attester.html#issueattestation">issueAttestation</a>.</p>
+									<p>[ASYNC] Revokes an <a href="attestation.html">Attestation</a> created in <a href="attester.html#issueattestation">issueAttestation</a>.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
@@ -162,13 +162,13 @@
 								<li>
 									<h5>attester: <a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>The attester <a href="identity.html">Identity</a> which signed the <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> in <a href="attester.html#issueattestation">issueAttestation</a>.</p>
+										<p>The attester <a href="identity.html">Identity</a> which signed the <a href="attestation.html">Attestation</a> in <a href="attester.html#issueattestation">issueAttestation</a>.</p>
 									</div>
 								</li>
 								<li>
 									<h5>revocationHandle: <a href="../interfaces/attester.irevocationhandle.html" class="tsd-signature-type">IRevocationHandle</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>A reference to the <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> which was created in <a href="attester.html#issueattestation">issueAttestation</a>.</p>
+										<p>A reference to the <a href="attestation.html">Attestation</a> which was created in <a href="attester.html#issueattestation">issueAttestation</a>.</p>
 									</div>
 								</li>
 							</ul>

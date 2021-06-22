@@ -71,6 +71,9 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="messageutils.html#compressmessage" class="tsd-kind-icon">compress<wbr>Message</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="messageutils.html#decompressmessage" class="tsd-kind-icon">decompress<wbr>Message</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="messageutils.html#errorcheckdelegationdata" class="tsd-kind-icon">error<wbr>Check<wbr>Delegation<wbr>Data</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="messageutils.html#errorcheckmessage" class="tsd-kind-icon">error<wbr>Check<wbr>Message</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="messageutils.html#errorcheckmessagebody" class="tsd-kind-icon">error<wbr>Check<wbr>Message<wbr>Body</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-module"><a href="messageutils.html#verifyrequiredctypeproperties" class="tsd-kind-icon">verify<wbr>RequiredCType<wbr>Properties</a></li>
 							</ul>
 						</section>
@@ -89,7 +92,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/messaging/src/Message.utils.ts#L60">packages/messaging/src/Message.utils.ts:60</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/messaging/src/Message.utils.ts#L290">packages/messaging/src/Message.utils.ts:290</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -121,7 +124,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/messaging/src/Message.utils.ts#L184">packages/messaging/src/Message.utils.ts:184</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/messaging/src/Message.utils.ts#L415">packages/messaging/src/Message.utils.ts:415</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -144,6 +147,75 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="errorcheckdelegationdata" class="tsd-anchor"></a>
+					<h3>error<wbr>Check<wbr>Delegation<wbr>Data</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">error<wbr>Check<wbr>Delegation<wbr>Data<span class="tsd-signature-symbol">(</span>delegationData<span class="tsd-signature-symbol">: </span><a href="../interfaces/imessage.idelegationdata.html" class="tsd-signature-type">IDelegationData</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/messaging/src/Message.utils.ts#L35">packages/messaging/src/Message.utils.ts:35</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>delegationData: <a href="../interfaces/imessage.idelegationdata.html" class="tsd-signature-type">IDelegationData</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="errorcheckmessage" class="tsd-anchor"></a>
+					<h3>error<wbr>Check<wbr>Message</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">error<wbr>Check<wbr>Message<span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">: </span><a href="../interfaces/imessage.imessage-1.html" class="tsd-signature-type">IMessage</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/messaging/src/Message.utils.ts#L224">packages/messaging/src/Message.utils.ts:224</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>message: <a href="../interfaces/imessage.imessage-1.html" class="tsd-signature-type">IMessage</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="errorcheckmessagebody" class="tsd-anchor"></a>
+					<h3>error<wbr>Check<wbr>Message<wbr>Body</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">error<wbr>Check<wbr>Message<wbr>Body<span class="tsd-signature-symbol">(</span>body<span class="tsd-signature-symbol">: </span><a href="imessage.html#messagebody" class="tsd-signature-type">MessageBody</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/messaging/src/Message.utils.ts#L71">packages/messaging/src/Message.utils.ts:71</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>body: <a href="imessage.html#messagebody" class="tsd-signature-type">MessageBody</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 					<a name="verifyrequiredctypeproperties" class="tsd-anchor"></a>
 					<h3>verify<wbr>RequiredCType<wbr>Properties</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
@@ -153,7 +225,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/messaging/src/Message.utils.ts#L36">packages/messaging/src/Message.utils.ts:36</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/messaging/src/Message.utils.ts#L266">packages/messaging/src/Message.utils.ts:266</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -206,6 +278,15 @@
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="messageutils.html#decompressmessage" class="tsd-kind-icon">decompress<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="messageutils.html#errorcheckdelegationdata" class="tsd-kind-icon">error<wbr>Check<wbr>Delegation<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="messageutils.html#errorcheckmessage" class="tsd-kind-icon">error<wbr>Check<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="messageutils.html#errorcheckmessagebody" class="tsd-kind-icon">error<wbr>Check<wbr>Message<wbr>Body</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
 						<a href="messageutils.html#verifyrequiredctypeproperties" class="tsd-kind-icon">verify<wbr>RequiredCType<wbr>Properties</a>

@@ -102,7 +102,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/actors_api/src/actors/Verifier.ts#L125">packages/actors_api/src/actors/Verifier.ts:125</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/actors_api/src/actors/Verifier.ts#L125">packages/actors_api/src/actors/Verifier.ts:125</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -111,7 +111,7 @@
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <a href="../classes/verifier.presentationrequestbuilder.html" class="tsd-signature-type">PresentationRequestBuilder</a></h4>
-							<p>A <a href="../classes/verifier.presentationrequestbuilder.html">PresentationRequestBuilder</a> based on a <a href="ctype.html">CType</a> and a list of required disclosed attributes of the <a href="credential.html">Credential</a>s.</p>
+							<p>A <a href="../classes/verifier.presentationrequestbuilder.html">PresentationRequestBuilder</a> based on a <a href="ctype.html">CType</a> and a list of required disclosed attributes of the <a href="attestedclaim.html">AttestedClaim</a>s.</p>
 						</li>
 					</ul>
 				</section>
@@ -125,12 +125,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/actors_api/src/actors/Verifier.ts#L185">packages/actors_api/src/actors/Verifier.ts:185</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/actors_api/src/actors/Verifier.ts#L185">packages/actors_api/src/actors/Verifier.ts:185</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>[ASYNC] Verifies the Claimer&#39;s presentation of <a href="credential.html">Credential</a>s.</p>
+									<p>[ASYNC] Verifies the Claimer&#39;s presentation of <a href="attestedclaim.html">AttestedClaim</a>s.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
@@ -143,7 +143,7 @@
 								<li>
 									<h5>message: <a href="../interfaces/imessage.imessage-1.html" class="tsd-signature-type">IMessage</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>The Claimer&#39;s presentation of the <a href="credential.html">Credential</a>s that should be verified, the result of <a href="../classes/credential.credential-1.html#createpresentation">createPresentation</a>.</p>
+										<p>The Claimer&#39;s presentation of the <a href="attestedclaim.html">AttestedClaim</a>s that should be verified, the result of <a href="../classes/attestedclaim.attestedclaim-1.html#createpresentation">createPresentation</a>.</p>
 									</div>
 								</li>
 								<li>
@@ -155,7 +155,7 @@
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>claims<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Partial</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/irequestforattestation.irequestforattestation-1.html" class="tsd-signature-type">IRequestForAttestation</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/iattestedclaim.iattestedclaim-1.html" class="tsd-signature-type">IAttestedClaim</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">; </span>verified<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>An object containing the keys
-								<strong>verified</strong> (which describes whether the <a href="credential.html">Credential</a>s could be verified)
+								<strong>verified</strong> (which describes whether the <a href="attestedclaim.html">AttestedClaim</a>s could be verified)
 							and <strong>claims</strong> (an array of <a href="claim.html">Claim</a>s restricted on the disclosed attributes selected in <a href="../classes/verifier.presentationrequestbuilder.html#requestpresentationforctype">requestPresentationForCtype</a>).</p>
 						</li>
 					</ul>

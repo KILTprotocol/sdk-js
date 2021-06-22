@@ -60,7 +60,7 @@
 	<div class="row">
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
-				<p><a href="https://kilt.io"><img src="https://user-images.githubusercontent.com/1248214/57789522-600fcc00-7739-11e9-86d9-73d7032f40fc.png" alt="">
+				<p><a href="https://kilt.io"><img src="https://user-images.githubusercontent.com/39338561/122415864-8d6a7c00-cf88-11eb-846f-a98a936f88da.png" alt="">
 				</a></p>
 				<p><img src="https://github.com/KILTprotocol/sdk-js/workflows/Lint%20and%20Test/badge.svg" alt="Lint and Test"></p>
 				<p>Data sovereignty and interoperability</p>
@@ -71,7 +71,6 @@
 				<ul>
 					<li><strong>Self-sovereign data.</strong> Have ownership of your digital and analog identities, with control over who your users share that data with. Providing that extra layer of flexiblity and security.</li>
 					<li><strong>Interoperability.</strong> Claim Types (CTYPEs) facilitate the adoption of standardised credential content structures.</li>
-					<li><strong>Privacy enhancement.</strong> Show yourself but stay hidden. Our credentials optionally provide multi-show unlinkability and selective disclosure.</li>
 				</ul>
 				<p>To learn more, checkout the KILT <a href="https://kilt.io/wp-content/uploads/2019/05/KILT-Whitepaper-v2019-May-28.pdf">Whitepaper</a> or see our <a href="https://kilt.io/kilt-data-sovereignty-and-interoperability/">how it works</a> video.
 				Regarding the privacy enhancement, please have a look at our <a href="https://drive.google.com/file/d/16HHPn1BA5o-W8QCeHfoTI1tNb5yQUZzt/view?usp=sharing">lightning talk for Sub0 April 2020</a>.</p>
@@ -100,6 +99,14 @@
 				<p>Or with <code>yarn</code>:</p>
 				<pre><code class="language-bash">yarn add @kiltprotocol/sdk-js
 </code></pre>
+				<a href="#embed-bundle-in-html" id="embed-bundle-in-html" style="color: inherit; text-decoration: none;">
+					<h2>Embed bundle in HTML</h2>
+				</a>
+				<p>We include UMD bundles in our release and prerelease NPM publishes.
+				They can be used to easily embed our complete SDK.</p>
+				<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://unpkg.com/@kiltprotocol/sdk-js@dev/dist/sdk-js.min.umd.js&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+				<p>You can find the library on <code>window.kilt</code>, and use it completely dependency free.</p>
 				<a href="#example" id="example" style="color: inherit; text-decoration: none;">
 					<h2>Example</h2>
 				</a>
@@ -197,9 +204,6 @@ Claim {
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/configservice.html">Config<wbr>Service</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/credential.html">Credential</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/crypto.html">Crypto</a>
@@ -332,6 +336,21 @@ Claim {
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/verifier.html">Verifier</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/chain_helpers_src_blockchainapiconnection.html">chain-<wbr>helpers/src/blockchain<wbr>Api<wbr>Connection</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_src_delegation.html">core/src/delegation</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/vc_export_src.html">vc-<wbr>export/src</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/vc_export_src_vc_js.html">vc-<wbr>export/src/vc-<wbr>js</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/vc_export_src_vc_js_suites.html">vc-<wbr>export/src/vc-<wbr>js/suites</a>
 					</li>
 				</ul>
 			</nav>

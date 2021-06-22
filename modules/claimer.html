@@ -91,14 +91,14 @@
 					<div class="tsd-signature tsd-kind-icon">Claimer<wbr>Attestation<wbr>Session<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>requestForAttestation<span class="tsd-signature-symbol">: </span><a href="../interfaces/irequestforattestation.irequestforattestation-1.html" class="tsd-signature-type">IRequestForAttestation</a><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/actors_api/src/actors/Claimer.ts#L83">packages/actors_api/src/actors/Claimer.ts:83</a></li>
+							<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/actors_api/src/actors/Claimer.ts#L82">packages/actors_api/src/actors/Claimer.ts:82</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
 							<p>The Claimer&#39;s <a href="claimer.html#claimerattestationsession">ClaimerAttestationSession</a> session object which is returned in <a href="claimer.html#requestattestation">requestAttestation</a> and required in <a href="claimer.html#buildcredential">buildCredential</a>.</p>
 						</div>
-						<p>It includes all <a href="claim.html">Claim</a> data required for an <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a>: the <a href="claim.html">Claim</a>, the Claimer&#39;s signature,
+						<p>It includes all <a href="claim.html">Claim</a> data required for an <a href="attestation.html">Attestation</a>: the <a href="claim.html">Claim</a>, the Claimer&#39;s signature,
 							the claimHashTree, the <a href="../interfaces/idelegation.idelegationrootnode.html#ctypehash">cTypeHash</a>, the unique identifier for the delegation,
 						an array of <a href="attestedclaim.html">AttestedClaim</a>s and the rootHash.</p>
 						<p>In case of enabled privacy enhancement, both the Claimer&#39;s Attestation session
@@ -121,18 +121,18 @@
 					<a name="buildcredential" class="tsd-anchor"></a>
 					<h3>build<wbr>Credential</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">build<wbr>Credential<span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">: </span><a href="../interfaces/imessage.imessage-1.html" class="tsd-signature-type">IMessage</a>, session<span class="tsd-signature-symbol">: </span><a href="claimer.html#claimerattestationsession" class="tsd-signature-type">ClaimerAttestationSession</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/credential.credential-1.html" class="tsd-signature-type">Credential</a></li>
+						<li class="tsd-signature tsd-kind-icon">build<wbr>Credential<span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">: </span><a href="../interfaces/imessage.imessage-1.html" class="tsd-signature-type">IMessage</a>, session<span class="tsd-signature-symbol">: </span><a href="claimer.html#claimerattestationsession" class="tsd-signature-type">ClaimerAttestationSession</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/actors_api/src/actors/Claimer.ts#L137">packages/actors_api/src/actors/Claimer.ts:137</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/actors_api/src/actors/Claimer.ts#L140">packages/actors_api/src/actors/Claimer.ts:140</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Builds a <a href="credential.html">Credential</a> which can be verified when used in <a href="claimer.html#createpresentation">createPresentation</a>.</p>
+									<p>Builds a <a href="attestedclaim.html">AttestedClaim</a> which can be verified when used in <a href="claimer.html#createpresentation">createPresentation</a>.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -150,8 +150,8 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/credential.credential-1.html" class="tsd-signature-type">Credential</a></h4>
-							<p>A signed and valid <a href="credential.html">Credential</a>.</p>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a></h4>
+							<p>A signed and valid <a href="attestedclaim.html">AttestedClaim</a>.</p>
 						</li>
 					</ul>
 				</section>
@@ -159,18 +159,18 @@
 					<a name="createpresentation" class="tsd-anchor"></a>
 					<h3>create<wbr>Presentation</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Presentation<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a>, message<span class="tsd-signature-symbol">: </span><a href="../interfaces/imessage.imessage-1.html" class="tsd-signature-type">IMessage</a>, verifier<span class="tsd-signature-symbol">: </span><a href="../interfaces/ipublicidentity.ipublicidentity-1.html" class="tsd-signature-type">IPublicIdentity</a>, credentials<span class="tsd-signature-symbol">: </span><a href="../classes/credential.credential-1.html" class="tsd-signature-type">Credential</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/messaging.message.html" class="tsd-signature-type">Message</a></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Presentation<span class="tsd-signature-symbol">(</span>identity<span class="tsd-signature-symbol">: </span><a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a>, message<span class="tsd-signature-symbol">: </span><a href="../interfaces/imessage.imessage-1.html" class="tsd-signature-type">IMessage</a>, verifier<span class="tsd-signature-symbol">: </span><a href="../interfaces/ipublicidentity.ipublicidentity-1.html" class="tsd-signature-type">IPublicIdentity</a>, credentials<span class="tsd-signature-symbol">: </span><a href="../classes/attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/messaging.message.html" class="tsd-signature-type">Message</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/actors_api/src/actors/Claimer.ts#L35">packages/actors_api/src/actors/Claimer.ts:35</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/actors_api/src/actors/Claimer.ts#L34">packages/actors_api/src/actors/Claimer.ts:34</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Creates a presentation for an arbitrary amount of <a href="credential.html">Credential</a>s which can be verified in <a href="verifier.html#verifypresentation">verifyPresentation</a>.</p>
+									<p>Creates a presentation for an arbitrary amount of <a href="attestedclaim.html">AttestedClaim</a>s which can be verified in <a href="verifier.html#verifypresentation">verifyPresentation</a>.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
@@ -183,7 +183,7 @@
 								<li>
 									<h5>identity: <a href="../classes/identity.identity-1.html" class="tsd-signature-type">Identity</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>The Claimer <a href="identity.html">Identity</a> which owns the <a href="credential.html">Credential</a>s.</p>
+										<p>The Claimer <a href="identity.html">Identity</a> which owns the <a href="attestedclaim.html">AttestedClaim</a>s.</p>
 									</div>
 								</li>
 								<li>
@@ -200,9 +200,9 @@
 									</div>
 								</li>
 								<li>
-									<h5>credentials: <a href="../classes/credential.credential-1.html" class="tsd-signature-type">Credential</a><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>credentials: <a href="../classes/attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>The <a href="credential.html">Credential</a>s which should be verified.</p>
+										<p>The <a href="attestedclaim.html">AttestedClaim</a>s which should be verified.</p>
 									</div>
 								</li>
 							</ul>
@@ -222,7 +222,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/d7dde24/packages/actors_api/src/actors/Claimer.ts#L100">packages/actors_api/src/actors/Claimer.ts:100</a></li>
+									<li>Defined in <a href="https://github.com/KILTprotocol/sdk-js/blob/daee859/packages/actors_api/src/actors/Claimer.ts#L99">packages/actors_api/src/actors/Claimer.ts:99</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -266,7 +266,7 @@
 											<h5><span class="tsd-flag ts-flagOptional">Optional</span> legitimations<span class="tsd-signature-symbol">?: </span><a href="../classes/attestedclaim.attestedclaim-1.html" class="tsd-signature-type">AttestedClaim</a><span class="tsd-signature-symbol">[]</span></h5>
 											<div class="tsd-comment tsd-typography">
 												<p>An Array of <a href="attestedclaim.html">AttestedClaim</a> objects of the Attester which the Claimer requests to
-												include into the <a href="blockchainapiconnection.html#custom_types.attestation">Attestation</a> as legitimations.</p>
+												include into the <a href="attestation.html">Attestation</a> as legitimations.</p>
 											</div>
 										</li>
 									</ul>
@@ -274,7 +274,7 @@
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{ </span>message<span class="tsd-signature-symbol">: </span><a href="../classes/messaging.message.html" class="tsd-signature-type">Message</a><span class="tsd-signature-symbol">; </span>session<span class="tsd-signature-symbol">: </span><a href="claimer.html#claimerattestationsession" class="tsd-signature-type">ClaimerAttestationSession</a><span class="tsd-signature-symbol"> }</span></h4>
 							<p>A message containing an <a href="../interfaces/imessage.irequestattestationforclaim.html">IRequestAttestationForClaim</a> and a <a href="claimer.html#claimerattestationsession">ClaimerAttestationSession</a> which together with an <a href="../interfaces/imessage.isubmitattestationforclaim.html">ISubmitAttestationForClaim</a>
-							object can be used to create a <a href="credential.html">Credential</a>.</p>
+							object can be used to create an <a href="attestedclaim.html">AttestedClaim</a>.</p>
 							<ul class="tsd-parameters">
 								<li class="tsd-parameter">
 									<h5>message<span class="tsd-signature-symbol">: </span><a href="../classes/messaging.message.html" class="tsd-signature-type">Message</a></h5>
