@@ -12,6 +12,7 @@
     "clean": "yarn workspaces foreach -p --no-private run clean",
     "clean:docs": "rm -rf docs/api",
     "version": "yarn workspaces foreach version",
+    "prepublish": "yarn workspaces foreach -p --no-private exec cp -f ../../LICENSE .",
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
     "lint": "eslint packages --format=codeframe",
     "lint:fix": "yarn lint --fix",
