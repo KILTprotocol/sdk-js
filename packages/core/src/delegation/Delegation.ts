@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * Delegations are the building blocks of top-down trust structures in KILT. An Attester can inherit trust through delegation from another attester ("top-down").
  * In order to model these trust hierarchies, a delegation is represented as a **node** in a **delegation tree**.
  *
