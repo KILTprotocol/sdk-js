@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * KILT enables top-down trust structures.
  * On the lowest level, a delegation structure is always a **tree**.
  * The root of this tree is DelegationRootNode.

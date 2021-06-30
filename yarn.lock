@@ -3809,6 +3809,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-license-header@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "eslint-plugin-license-header@npm:0.2.0"
+  dependencies:
+    requireindex: ^1.2.0
+  checksum: 53a36318185f84cf64824fe7ed3242ca9f0483e182bc258114ed508e2318bc5ee25b30fc2dd348ee7b02ff21767eec5b466868e1c44ec70a2e82aa03c105a305
+  languageName: node
+  linkType: hard
+
 "eslint-plugin-prettier@npm:^3.1.4":
   version: 3.1.4
   resolution: "eslint-plugin-prettier@npm:3.1.4"
@@ -7680,6 +7689,13 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"requireindex@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "requireindex@npm:1.2.0"
+  checksum: a6c6c2edd46bcce88f839f69f1d29a11920664862d8b78c205fc69ab2d65a8f592c1a8d68755335898af14ab110cc9fdfc7c572412d38cec485bdf4db45c49c5
+  languageName: node
+  linkType: hard
+
 "resolve-cwd@npm:^3.0.0":
   version: 3.0.0
   resolution: "resolve-cwd@npm:3.0.0"
@@ -7811,6 +7827,7 @@ fsevents@^2.1.2:
     eslint-plugin-import: ^2.22.0
     eslint-plugin-jsdoc: ^30.0.3
     eslint-plugin-jsx-a11y: ^6.3.1
+    eslint-plugin-license-header: ^0.2.0
     eslint-plugin-prettier: ^3.1.4
     eslint-plugin-tsc: ^1.2.0
     husky: ^4.2.5

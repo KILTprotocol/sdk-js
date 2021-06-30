@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * A [[PublicIdentity]] object exposes only public information such as the public address, but doesn't expose any secrets such as private keys.
  *
  * @packageDocumentation
