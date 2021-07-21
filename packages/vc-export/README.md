@@ -49,9 +49,9 @@ let identity: Identity
 const VC = VCUtils.fromAttestedClaim(credential)
 
 // produce a reduced copy of the VC where only selected attributes are disclosed
-const nameOnly = VCUtils.presentation.removeProperties(VC, ['name'])
+const nameOnly = await VCUtils.presentation.removeProperties(VC, ['name'])
 // or directly produce a VerifiablePresentation, which implicitly performs the step above
-const presentation = VCUtils.presentation.makePresentation(VC, ['name'])
+const presentation = await VCUtils.presentation.makePresentation(VC, ['name'])
 ```
 
 A verifier can now check the proofs attached to the VerifiableCredential but can only see the disclosed attributes:
