@@ -5,8 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
-import { AnyNumber } from '@polkadot/types/types'
+import type { IIdentity } from '@kiltprotocol/types'
+import type { AnyNumber, SignerPayloadJSON } from '@polkadot/types/types'
 import type {
   BTreeMap,
   BTreeSet,
@@ -21,6 +21,7 @@ import type {
   AccountId,
   BlockNumber,
   Call,
+  Extrinsic,
   Hash,
 } from '@polkadot/types/interfaces'
 
@@ -114,7 +115,7 @@ export interface IDidUpdateOptions extends IDidDeletionOptions {
 }
 
 export interface IAuthorizeCallOptions extends IDidDeletionOptions {
-  call: SubmittableExtrinsic
+  call: Extrinsic
 }
 
 /* CHAIN TYPES / CODECS */
@@ -232,3 +233,36 @@ export interface DidAuthorizedCallOperation extends Struct {
   txCounter: u64
   call: Call
 }
+
+interface RequestData<A extends string> {
+  alg: A
+  keyId: string // id of the key to use
+  data: Uint8Array // data to sign / encrypt / decrypt
+}
+
+export interface ResponseData<A extends string> {
+  alg: A
+  data: Uint8Array
+}
+
+export interface KeystoreSigningData<A extends string> extends RequestData<A> {
+  meta: Partial<SignerPayloadJSON> // info for extensions to display to user
+}
+
+export interface Keystore<Algs extends string = string> {
+  sign<A extends Algs>(
+    signData: KeystoreSigningData<A>
+  ): Promise<ResponseData<A>>
+  encrypt<A extends Algs, D extends RequestData<A>, R extends ResponseData<A>>(
+    requestData: D
+  ): Promise<R>
+  decrypt<A extends Algs, D extends RequestData<A>, R extends ResponseData<A>>(
+    requestData: D
+  ): Promise<R>
+  supportedAlgs(): Promise<Set<Algs>>
+  getKeyIds(): Promise<string[]>
+  // OR if above is deemed to reveal too much:
+  hasKeys(keyIds: string[]): Promise<boolean[]>
+}
+
+export type KeystoreSigner<A extends string> = Pick<Keystore<A>, 'sign'>
