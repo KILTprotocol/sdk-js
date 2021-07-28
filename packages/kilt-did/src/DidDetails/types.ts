@@ -27,11 +27,8 @@ export interface ServiceRecord {
 export interface IDidDetails {
   did: string
   getKey(id: KeyDetails['id']): KeyDetails | undefined
-  getKeyIds(): Array<KeyDetails['id']>
-  getKeys(): KeyDetails[]
-  getVerificationKeys(relationship?: VerificationKeyRelationship): KeyDetails[]
-  getSigningKeys(relationship?: VerificationKeyRelationship): KeyDetails[]
-  getKeyAgreementKeys(): KeyDetails[]
+  getKeyIds(relationship?: KeyRelationship | 'none'): Array<KeyDetails['id']>
+  getKeys(relationship?: KeyRelationship | 'none'): KeyDetails[]
   getServices(type?: string): ServiceRecord[]
   getNextTxIndex(): BigInt
 }

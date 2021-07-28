@@ -32,7 +32,7 @@ const mapping: SectionMapping<
   attestation: { default: 'assertionMethod' },
   ctype: { default: 'assertionMethod' },
   delegation: { default: 'capabilityDelegation' },
-  did: { default: 'authentication' },
+  did: { default: 'paymentAccount' },
   default: { default: 'paymentAccount' },
 }
 
@@ -72,7 +72,7 @@ export function getKeysForCall(
 ): KeyDetails[] {
   const keyRelationship = mapCallToKeyRelationship(call)
   if (keyRelationship === 'paymentAccount') return []
-  return didDetails.getSigningKeys(keyRelationship)
+  return didDetails.getKeys(keyRelationship)
 }
 
 export function getKeyIdsForCall(
@@ -92,7 +92,7 @@ export function getKeysForExtrinsic(
     extrinsic
   )
   if (keyRelationship === 'paymentAccount') return []
-  return didDetails.getSigningKeys(keyRelationship)
+  return didDetails.getKeys(keyRelationship)
 }
 
 export function getKeyIdsForExtrinsic(

@@ -7,19 +7,13 @@
 
 import { serialize, deserialize } from 'v8'
 import type { KeyDetails } from '../types'
-import type {
-  IDidDetails,
-  ServiceRecord,
-  VerificationKeyRelationship,
-} from './types'
+import type { IDidDetails, KeyRelationship, ServiceRecord } from './types'
 
 export interface DidDetailsCreationOpts {
   did: string
   keys: KeyDetails[]
+  keyRelationships: Record<KeyDetails['id'], KeyRelationship>
   lastTxIndex: bigint
-  signingKeyIds?: Record<KeyDetails['id'], VerificationKeyRelationship>
-  verificationKeyIds?: Record<KeyDetails['id'], VerificationKeyRelationship>
-  encryptionKeyIds?: Array<KeyDetails['id']>
   services?: ServiceRecord[]
 }
 
@@ -29,16 +23,10 @@ function cloneObject<T>(x: T): T {
 
 function errorCheck({
   keys,
-  signingKeyIds,
-  verificationKeyIds,
-  encryptionKeyIds,
+  keyRelationships,
 }: Required<DidDetailsCreationOpts>): void {
   const keyIds = new Set(keys.map((key) => key.id))
-  const keyReferences = new Set([
-    ...Object.keys(signingKeyIds),
-    ...Object.keys(verificationKeyIds),
-    ...encryptionKeyIds,
-  ])
+  const keyReferences = new Set(Object.keys(keyRelationships))
   keyReferences.forEach((id) => {
     if (!keyIds.has(id)) throw new Error(`No key with id ${id} in "keys"`)
   })
@@ -49,30 +37,24 @@ export class DidDetails implements IDidDetails {
   public readonly identifier: string
   protected services: ServiceRecord[]
   protected keys: Map<KeyDetails['id'], KeyDetails>
-  protected signingKeyIds: Record<KeyDetails['id'], VerificationKeyRelationship>
-  protected verificationKeyIds: Record<
-    KeyDetails['id'],
-    VerificationKeyRelationship
+  protected keyRelationships: Record<
+    KeyRelationship | 'none',
+    Array<KeyDetails['id']>
   >
 
-  protected encryptionKeyIds: Array<KeyDetails['id']>
   private lastTxIndex: bigint
 
   constructor({
     did,
     keys,
-    signingKeyIds = {},
-    verificationKeyIds = {},
-    encryptionKeyIds = [],
+    keyRelationships,
     lastTxIndex,
     services = [],
   }: DidDetailsCreationOpts) {
     errorCheck({
       did,
       keys,
-      signingKeyIds,
-      verificationKeyIds,
-      encryptionKeyIds,
+      keyRelationships,
       services,
       lastTxIndex,
     })
@@ -81,67 +63,39 @@ export class DidDetails implements IDidDetails {
     this.keys = new Map(keys.map((key) => [key.id, key]))
     this.lastTxIndex = lastTxIndex
     this.services = services
-    this.signingKeyIds = signingKeyIds
-    this.encryptionKeyIds = encryptionKeyIds
-    this.verificationKeyIds = verificationKeyIds
     const secondColonAt = this.did.indexOf(':', this.did.indexOf(':') + 1)
     this.identifier = this.did.substring(secondColonAt + 1)
+    this.keyRelationships = {
+      authentication: [],
+      assertionMethod: [],
+      capabilityDelegation: [],
+      capabilityInvocation: [],
+      keyAgreement: [],
+      none: [],
+    }
+    this.keys.forEach((_, id) => {
+      this.keyRelationships[keyRelationships[id] || 'none'].push(id)
+    })
   }
 
   public getKey(id: KeyDetails['id']): KeyDetails | undefined {
     return this.keys.get(id)
   }
 
-  public getKeys(): KeyDetails[] {
+  public getKeys(relationship?: KeyRelationship | 'none'): KeyDetails[] {
+    if (relationship) {
+      return this.getKeyIds(relationship).map((id) => this.getKey(id)!)
+    }
     return [...this.keys.values()]
   }
 
-  public getKeyIds(): Array<KeyDetails['id']> {
+  public getKeyIds(
+    relationship?: KeyRelationship | 'none'
+  ): Array<KeyDetails['id']> {
+    if (relationship) {
+      return this.keyRelationships[relationship]
+    }
     return [...this.keys.keys()]
-  }
-
-  public getVerificationKeyIds(
-    relationship?: VerificationKeyRelationship
-  ): Array<KeyDetails['id']> {
-    if (relationship) {
-      return Object.entries(this.verificationKeyIds)
-        .filter(([, rel]) => rel === relationship)
-        .map(([id]) => id)
-    }
-    return Object.keys(this.verificationKeyIds)
-  }
-
-  public getVerificationKeys(
-    relationship?: VerificationKeyRelationship
-  ): KeyDetails[] {
-    return this.getVerificationKeyIds(relationship)
-      .map((id) => this.getKey(id))
-      .filter<KeyDetails>((key): key is KeyDetails => !!key)
-  }
-
-  public getSigningKeyIds(
-    relationship?: VerificationKeyRelationship
-  ): Array<KeyDetails['id']> {
-    if (relationship) {
-      return Object.entries(this.signingKeyIds)
-        .filter(([, rel]) => rel === relationship)
-        .map(([id]) => id)
-    }
-    return Object.keys(this.signingKeyIds)
-  }
-
-  public getSigningKeys(
-    relationship?: VerificationKeyRelationship
-  ): KeyDetails[] {
-    return this.getSigningKeyIds(relationship)
-      .map((id) => this.getKey(id))
-      .filter<KeyDetails>((key): key is KeyDetails => !!key)
-  }
-
-  public getKeyAgreementKeys(): KeyDetails[] {
-    return this.encryptionKeyIds
-      .map((id) => this.getKey(id))
-      .filter<KeyDetails>((key): key is KeyDetails => !!key)
   }
 
   public getServices(type?: string): ServiceRecord[] {

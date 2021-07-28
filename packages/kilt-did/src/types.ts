@@ -234,7 +234,7 @@ export interface DidAuthorizedCallOperation extends Struct {
   call: Call
 }
 
-interface RequestData<A extends string> {
+export interface RequestData<A extends string> {
   alg: A
   keyId: string // id of the key to use
   data: Uint8Array // data to sign / encrypt / decrypt
@@ -249,18 +249,21 @@ export interface KeystoreSigningData<A extends string> extends RequestData<A> {
   meta: Partial<SignerPayloadJSON> // info for extensions to display to user
 }
 
-export interface Keystore<Algs extends string = string> {
-  sign<A extends Algs>(
+export interface Keystore<
+  SignAlgs extends string = string,
+  EncryptAlgs extends string = string
+> {
+  supportedAlgs(): Promise<Set<SignAlgs | EncryptAlgs>>
+  sign<A extends SignAlgs>(
     signData: KeystoreSigningData<A>
   ): Promise<ResponseData<A>>
-  encrypt<A extends Algs, D extends RequestData<A>, R extends ResponseData<A>>(
-    requestData: D
-  ): Promise<R>
-  decrypt<A extends Algs, D extends RequestData<A>, R extends ResponseData<A>>(
-    requestData: D
-  ): Promise<R>
-  supportedAlgs(): Promise<Set<Algs>>
-  getKeyIds(): Promise<string[]>
+  encrypt<A extends EncryptAlgs>(
+    requestData: RequestData<A>
+  ): Promise<ResponseData<A>>
+  decrypt<A extends EncryptAlgs>(
+    requestData: RequestData<A>
+  ): Promise<ResponseData<A>>
+  getKeyIds?(): Promise<string[]>
   // OR if above is deemed to reveal too much:
   hasKeys(keyIds: string[]): Promise<boolean[]>
 }
