@@ -24,7 +24,7 @@ import {
 import DelegationNode from './DelegationNode'
 import { permissionsAsBitset } from './DelegationNode.utils'
 
-const log = ConfigService.LoggingFactory.getLogger('DelegationBaseNode')
+const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
 /**
  * @param delegation The delegation to store on chain.

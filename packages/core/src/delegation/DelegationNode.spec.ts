@@ -63,15 +63,13 @@ beforeAll(() => {
 
 describe('Delegation', () => {
   it('delegation generate hash', () => {
-    const node = new DelegationNode({
+    const node = DelegationNode.new(
       id,
       hierarchyId,
       parentId,
-      account: identityBob.address,
-      childrenIds: [],
-      permissions: [Permission.DELEGATE],
-      revoked: false,
-    })
+      identityBob.address,
+      [Permission.DELEGATE]
+    )
     const hash: string = node.generateHash()
     expect(hash).toBe(
       '0x3f3dc0df7527013f2373f18f55cf87847df3249526e9b1d5aa75df8eeb5b7d6e'
@@ -79,15 +77,13 @@ describe('Delegation', () => {
   })
 
   it('delegation permissionsAsBitset', () => {
-    const node = new DelegationNode({
+    const node = DelegationNode.new(
       id,
       hierarchyId,
-      account: identityBob.address,
-      childrenIds: [],
-      permissions: [Permission.DELEGATE],
       parentId,
-      revoked: false,
-    })
+      identityBob.address,
+      [Permission.DELEGATE]
+    )
     const permissions: Uint8Array = permissionsAsBitset(node)
     const expected: Uint8Array = new Uint8Array(4)
     expected[0] = 2

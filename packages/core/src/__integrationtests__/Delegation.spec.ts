@@ -9,7 +9,7 @@
  * @group integration/delegation
  */
 
-import type { ICType } from '@kiltprotocol/types'
+import type { ICType, IDelegationNode } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
@@ -34,39 +34,41 @@ import {
   WS_ADDRESS,
 } from './utils'
 
-async function writeRoot(
+async function writeHierarchy(
   delegator: Identity,
   ctypeHash: ICType['hash']
-): Promise<DelegationHierarchyDetails> {
-  const root = new DelegationHierarchyDetails({
+): Promise<{ details: DelegationHierarchyDetails; rootNode: DelegationNode }> {
+  const details = new DelegationHierarchyDetails({
     rootId: UUID.generate(),
     cTypeHash: ctypeHash,
   })
 
-  await root.store().then((tx) =>
+  await details.store().then((tx) =>
     BlockchainUtils.signAndSubmitTx(tx, delegator, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
       reSign: true,
     })
   )
-  return root
+
+  const rootNode = (await DelegationNode.query(
+    details.rootId
+  )) as DelegationNode
+  return { details, rootNode }
 }
 async function addDelegation(
-  parentNode: DelegationNode | DelegationNode,
+  hierarchyId: IDelegationNode['id'],
+  parentId: DelegationNode['id'],
   delegator: Identity,
   delegee: Identity,
   permissions: Permission[] = [Permission.ATTEST, Permission.DELEGATE]
 ): Promise<DelegationNode> {
-  const rootId =
-    parentNode instanceof DelegationRootNode ? parentNode.id : parentNode.hierarchyId
-  const delegation = new DelegationNode({
-    id: UUID.generate(),
-    hierarchyId: rootId,
-    account: delegee.address,
-    permissions,
-    parentId: parentNode.id,
-    revoked: false,
-  })
+  const delegation = DelegationNode.new(
+    UUID.generate(),
+    hierarchyId,
+    parentId,
+    delegee.address,
+    permissions
+  )
   await delegation
     .store(delegee.signStr(delegation.generateHash()))
     .then((tx) =>
@@ -99,8 +101,13 @@ beforeAll(async () => {
 }, 30_000)
 
 it('should be possible to delegate attestation rights', async () => {
-  const rootNode = await writeRoot(root, DriversLicense.hash)
-  const delegatedNode = await addDelegation(rootNode, root, attester)
+  const { rootNode } = await writeHierarchy(root, DriversLicense.hash)
+  const delegatedNode = await addDelegation(
+    rootNode.id,
+    rootNode.id,
+    root,
+    attester
+  )
   await Promise.all([
     expect(rootNode.verify()).resolves.toBeTruthy(),
     expect(delegatedNode.verify()).resolves.toBeTruthy(),
@@ -108,12 +115,20 @@ it('should be possible to delegate attestation rights', async () => {
 }, 60_000)
 
 describe('and attestation rights have been delegated', () => {
-  let rootNode: DelegationRootNode
+  let hierarchyDetails: DelegationHierarchyDetails
+  let rootNode: DelegationNode
   let delegatedNode: DelegationNode
 
   beforeAll(async () => {
-    rootNode = await writeRoot(root, DriversLicense.hash)
-    delegatedNode = await addDelegation(rootNode, root, attester)
+    const result = await writeHierarchy(root, DriversLicense.hash)
+    hierarchyDetails = result.details
+    rootNode = result.rootNode
+    delegatedNode = await addDelegation(
+      hierarchyDetails.rootId,
+      hierarchyDetails.rootId,
+      root,
+      attester
+    )
 
     await Promise.all([
       expect(rootNode.verify()).resolves.toBeTruthy(),
@@ -178,9 +193,13 @@ describe('revocation', () => {
   })
 
   it('delegator can revoke delegation', async () => {
-    const delegationRoot = await writeRoot(delegator, DriversLicense.hash)
+    const { details, rootNode } = await writeHierarchy(
+      delegator,
+      DriversLicense.hash
+    )
     const delegationA = await addDelegation(
-      delegationRoot,
+      details.rootId,
+      details.rootId,
       delegator,
       firstDelegee
     )
@@ -196,7 +215,7 @@ describe('revocation', () => {
   }, 40_000)
 
   it('delegee cannot revoke root but can revoke own delegation', async () => {
-    const delegationRoot = await writeRoot(delegator, DriversLicense.hash)
+    const delegationRoot = await writeHierarchy(delegator, DriversLicense.hash)
     const delegationA = await addDelegation(
       delegationRoot,
       delegator,
@@ -224,7 +243,7 @@ describe('revocation', () => {
   }, 60_000)
 
   it('delegator can revoke root, revoking all delegations in tree', async () => {
-    const delegationRoot = await writeRoot(delegator, DriversLicense.hash)
+    const delegationRoot = await writeHierarchy(delegator, DriversLicense.hash)
     const delegationA = await addDelegation(
       delegationRoot,
       delegator,

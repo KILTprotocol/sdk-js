@@ -60,7 +60,7 @@ export default class DelegationNode implements IDelegationNode {
    *
    * @param delegationNodeInput - The base object from which to create the delegation node.
    */
-  public constructor(delegationNodeInput: IDelegationNode) {
+  constructor(delegationNodeInput: IDelegationNode) {
     this.id = delegationNodeInput.id
     this.hierarchyId = delegationNodeInput.hierarchyId
     this.parentId = delegationNodeInput.parentId
@@ -69,6 +69,24 @@ export default class DelegationNode implements IDelegationNode {
     this.permissions = delegationNodeInput.permissions
     this.revoked = delegationNodeInput.revoked
     DelegationNodeUtils.errorCheck(this)
+  }
+
+  public static new(
+    id: IDelegationNode['id'],
+    hierarchyId: IDelegationNode['hierarchyId'],
+    parentId: string, // Cannot be undefined here
+    account: IDelegationNode['account'],
+    permissions: IDelegationNode['permissions']
+  ): DelegationNode {
+    return new DelegationNode({
+      id,
+      hierarchyId,
+      parentId,
+      account,
+      permissions,
+      childrenIds: [],
+      revoked: false,
+    })
   }
 
   /**
