@@ -100,7 +100,7 @@ export async function revoke(
   return tx
 }
 
-async function fetchChildren(
+export async function fetchChildren(
   childrenIds: string[]
 ): Promise<Array<CodecWithId<Option<IChainDelegationNode>>>> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
@@ -141,6 +141,7 @@ export async function getChildren(
         id: codec.id,
         hierarchyId: decoded.hierarchyId,
         parentId: decoded.parentId,
+        childrenIds: decoded.childrenIds,
         account: decoded.account,
         permissions: decoded.permissions,
         revoked: decoded.revoked,

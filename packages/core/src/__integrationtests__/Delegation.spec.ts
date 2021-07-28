@@ -13,6 +13,7 @@ import type { ICType } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { UUID } from '@kiltprotocol/utils'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { DelegationHierarchyDetails } from '@kiltprotocol/sdk-js'
 import { AttestedClaim, Identity } from '..'
 import Attestation from '../attestation/Attestation'
 import { config, disconnect } from '../kilt'
@@ -20,11 +21,9 @@ import Claim from '../claim/Claim'
 import {
   fetchChildren,
   getAttestationHashes,
-  getChildIds,
-} from '../delegation/Delegation.chain'
+} from '../delegation/DelegationNode.chain'
 import { decodeDelegationNode } from '../delegation/DelegationDecoder'
 import DelegationNode from '../delegation/DelegationNode'
-import DelegationRootNode from '../delegation/DelegationRootNode'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import {
   CtypeOnChain,
@@ -38,12 +37,10 @@ import {
 async function writeRoot(
   delegator: Identity,
   ctypeHash: ICType['hash']
-): Promise<DelegationRootNode> {
-  const root = new DelegationRootNode({
-    id: UUID.generate(),
+): Promise<DelegationHierarchyDetails> {
+  const root = new DelegationHierarchyDetails({
+    rootId: UUID.generate(),
     cTypeHash: ctypeHash,
-    account: delegator.address,
-    revoked: false,
   })
 
   await root.store().then((tx) =>
@@ -55,7 +52,7 @@ async function writeRoot(
   return root
 }
 async function addDelegation(
-  parentNode: DelegationRootNode | DelegationNode,
+  parentNode: DelegationNode | DelegationNode,
   delegator: Identity,
   delegee: Identity,
   permissions: Permission[] = [Permission.ATTEST, Permission.DELEGATE]

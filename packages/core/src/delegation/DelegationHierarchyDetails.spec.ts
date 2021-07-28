@@ -37,7 +37,7 @@ describe('Delegation', () => {
     ROOT_IDENTIFIER = Crypto.hashStr('1')
     ROOT_SUCCESS = Crypto.hashStr('success')
 
-    require('@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.hierarchies.mockReturnValue(
+    require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.hierarchies.mockReturnValue(
       mockChainQueryReturn('delegation', 'hierarchies', [ctypeHash])
     )
     require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations.mockReturnValue(

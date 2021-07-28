@@ -21,7 +21,7 @@ import type {
   IRequestForAttestation,
   CompressedRequestForAttestation,
   Hash,
-  IDelegationBaseNode,
+  IDelegationNode,
   IClaim,
   IAttestedClaim,
 } from '@kiltprotocol/types'
@@ -46,7 +46,7 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 
 export type Options = {
   legitimations?: AttestedClaim[]
-  delegationId?: IDelegationBaseNode['id']
+  delegationId?: IDelegationNode['id']
 }
 
 export default class RequestForAttestation implements IRequestForAttestation {
@@ -138,7 +138,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public claimHashes: string[]
   public claimNonceMap: Record<string, string>
   public rootHash: Hash
-  public delegationId: IDelegationBaseNode['id'] | null
+  public delegationId: IDelegationNode['id'] | null
 
   /**
    * Builds a new [[RequestForAttestation]] instance.
@@ -301,7 +301,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   private static getHashLeaves(
     claimHashes: Hash[],
     legitimations: IAttestedClaim[],
-    delegationId: IDelegationBaseNode['id'] | null
+    delegationId: IDelegationNode['id'] | null
   ): Uint8Array[] {
     const result: Uint8Array[] = []
     claimHashes.forEach((item) => {

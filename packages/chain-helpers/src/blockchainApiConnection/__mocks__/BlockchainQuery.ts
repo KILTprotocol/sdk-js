@@ -36,7 +36,7 @@ const chainQueryReturnTuples: {
   delegation: {
     // Delegation hierarchies: root-id -> (ctype-hash)?
     hierarchies: TYPE_REGISTRY.getOrUnknown('DelegationHierarchies'),
-    // Delegations: delegation-id -> (hierarchy-id, parent-id?, childrenIds, account, permissions, revoked)?
+    // Delegations: delegation-id -> (hierarchy-id, parent-id?, childrenIds, details)?
     delegations: TYPE_REGISTRY.getOrUnknown('DelegationNodes'),
   },
   attestation: {
@@ -114,7 +114,6 @@ export function mockChainQueryReturn<T extends keyof ChainQueryTypes>(
       return wrapInOption()
     }
     case 'delegation': {
-      if (innerQuery === 'children') return wrapInVec()
       return wrapInOption()
     }
     case 'did': {

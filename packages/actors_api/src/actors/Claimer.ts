@@ -20,7 +20,7 @@ import type {
   IClaim,
   IMessage,
   IRequestAttestationForClaim,
-  IDelegationBaseNode,
+  IDelegationNode,
   IPublicIdentity,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
@@ -109,7 +109,7 @@ export function requestAttestation(
   attesterPublicIdentity: IPublicIdentity,
   option: {
     legitimations?: AttestedClaim[]
-    delegationId?: IDelegationBaseNode['id']
+    delegationId?: IDelegationNode['id']
   } = {}
 ): {
   message: Message

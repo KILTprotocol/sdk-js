@@ -12,7 +12,7 @@
 
 import type { IAttestedClaim, CompressedAttestedClaim } from './AttestedClaim'
 import type { CompressedCType, ICType } from './CType'
-import type { IDelegationBaseNode } from './Delegation'
+import type { IDelegationNode } from './Delegation'
 import type {
   IQuoteAttesterSigned,
   CompressedQuoteAttesterSigned,
@@ -23,7 +23,7 @@ import type { PartialClaim } from './Claim'
 export interface ITerms {
   claim: PartialClaim
   legitimations: IAttestedClaim[]
-  delegationId?: IDelegationBaseNode['id']
+  delegationId?: IDelegationNode['id']
   quote?: IQuoteAttesterSigned
   prerequisiteClaims?: ICType['hash']
   cTypes?: ICType[]
@@ -32,7 +32,7 @@ export interface ITerms {
 export type CompressedTerms = [
   CompressedPartialClaim,
   CompressedAttestedClaim[],
-  IDelegationBaseNode['id'] | undefined,
+  IDelegationNode['id'] | undefined,
   CompressedQuoteAttesterSigned | undefined,
   ICType['hash'] | undefined,
   CompressedCType[] | undefined

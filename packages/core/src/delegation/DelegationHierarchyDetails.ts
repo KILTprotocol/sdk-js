@@ -24,7 +24,7 @@ import type {
 } from '@kiltprotocol/types'
 import { query, store } from './DelegationHierarchyDetails.chain'
 
-const log = ConfigService.LoggingFactory.getLogger('DelegationRootNode')
+const log = ConfigService.LoggingFactory.getLogger('DelegationHierarchyDetails')
 
 export default class DelegationHierarchyDetails
   implements IDelegationHierarchyDetails {

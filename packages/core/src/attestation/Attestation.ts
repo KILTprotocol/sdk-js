@@ -25,9 +25,9 @@ import type {
   IRequestForAttestation,
   CompressedAttestation,
 } from '@kiltprotocol/types'
+import { DelegationHierarchyDetails } from '@kiltprotocol/sdk-js'
 import { revoke, query, store } from './Attestation.chain'
 import AttestationUtils from './Attestation.utils'
-import DelegationRootNode from '../delegation/DelegationRootNode'
 import DelegationNode from '../delegation/DelegationNode'
 
 export default class Attestation implements IAttestation {
@@ -109,24 +109,25 @@ export default class Attestation implements IAttestation {
    * [STATIC] [ASYNC] Tries to query the delegationId and if successful query the rootId.
    *
    * @param delegationId - The Id of the Delegation stored in [[Attestation]].
-   * @returns A promise of either null if querying was not successful or the affiliated [[DelegationRootNode]].
+   * @returns A promise of either null if querying was not successful or the affiliated [[DelegationNode]].
    */
-  public static async getDelegationRoot(
+  public static async getDelegationDetails(
     delegationId: IAttestation['delegationId'] | null
-  ): Promise<DelegationRootNode | null> {
-    if (delegationId) {
-      const delegationNode: DelegationNode | null = await DelegationNode.query(
-        delegationId
-      )
-      if (delegationNode) {
-        return delegationNode.getRoot()
-      }
+  ): Promise<DelegationHierarchyDetails | null> {
+    if (!delegationId) {
+      return null
     }
-    return null
+    const delegationNode: DelegationNode | null = await DelegationNode.query(
+      delegationId
+    )
+    if (!delegationNode) {
+      return null
+    }
+    return delegationNode.getHierarchyDetails()
   }
 
-  public async getDelegationRoot(): Promise<DelegationRootNode | null> {
-    return Attestation.getDelegationRoot(this.delegationId)
+  public async getDelegationDetails(): Promise<DelegationHierarchyDetails | null> {
+    return Attestation.getDelegationDetails(this.delegationId)
   }
 
   /**
