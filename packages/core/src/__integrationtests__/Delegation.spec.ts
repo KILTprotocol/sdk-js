@@ -61,10 +61,10 @@ async function addDelegation(
   permissions: Permission[] = [Permission.ATTEST, Permission.DELEGATE]
 ): Promise<DelegationNode> {
   const rootId =
-    parentNode instanceof DelegationRootNode ? parentNode.id : parentNode.rootId
+    parentNode instanceof DelegationRootNode ? parentNode.id : parentNode.hierarchyId
   const delegation = new DelegationNode({
     id: UUID.generate(),
-    rootId,
+    hierarchyId: rootId,
     account: delegee.address,
     permissions,
     parentId: parentNode.id,

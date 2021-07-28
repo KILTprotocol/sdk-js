@@ -49,9 +49,9 @@ let identity: Identity
 const VC = VCUtils.fromAttestedClaim(credential)
 
 // produce a reduced copy of the VC where only selected attributes are disclosed
-const nameOnly = VCUtils.presentation.removeProperties(VC, ['name'])
+const nameOnly = await VCUtils.presentation.removeProperties(VC, ['name'])
 // or directly produce a VerifiablePresentation, which implicitly performs the step above
-const presentation = VCUtils.presentation.makePresentation(VC, ['name'])
+const presentation = await VCUtils.presentation.makePresentation(VC, ['name'])
 ```
 
 A verifier can now check the proofs attached to the VerifiableCredential but can only see the disclosed attributes:
@@ -97,13 +97,18 @@ await kilt.init({ address: 'wss://full-nodes.kilt.io:443' })
 const KiltConnection = await kilt.connect()
 const attestedSuite = new KiltAttestedSuite({ KiltConnection })
 
-// 2. obtain default kilt context loader
+// 2. verify credential schema
+const schemaVerified = verificationUtils.validateSchema(credential).verified
+// unfortunately the VC credentialSchema definition is underspecified in their context - we therefore have to remove it before credential verification
+delete credential['credentialSchema']
+
+// 3. obtain default kilt context loader
 const { documentLoader } = vcjsSuites
 
-// 3. obtain the `assertionMethod` proof purpose from `jsonld-signatures`
+// 4. obtain the `assertionMethod` proof purpose from `jsonld-signatures`
 const purpose = new jsigs.purposes.AssertionProofPurpose()
 
-// 4. call vc-js.verifyCredential with suites and context loader
+// 5. call vc-js.verifyCredential with suites and context loader
 const result = await vcjs.verifyCredential({
   credential,
   suite: [signatureSuite, integritySuite, attestedSuite],
@@ -111,6 +116,6 @@ const result = await vcjs.verifyCredential({
   documentLoader,
 })
 
-// 5. make sure all `results` indicate successful verification
+// 6. make sure all `results` indicate successful verification
 const verified = result.results.every((i) => i.verified === true)
 ```

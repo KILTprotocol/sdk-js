@@ -13,7 +13,7 @@ const AccountId = TYPE_REGISTRY.getOrThrow('AccountId')
 type ChainQueryTypes = {
   attestation: 'attestations' | 'delegatedAttestations'
   ctype: 'cTYPEs'
-  delegation: 'root' | 'delegations' | 'children'
+  delegation: 'hierarchies' | 'delegations'
   did: 'dIDs'
   portablegabi: 'accumulatorList' | 'accumulatorCount' | 'accountState'
 }
@@ -34,12 +34,10 @@ const chainQueryReturnTuples: {
     cTYPEs: AccountId,
   },
   delegation: {
-    // Root-Delegation: root-id -> (ctype-hash, account, revoked)
-    root: TYPE_REGISTRY.getOrUnknown('DelegationRoot'),
-    // Delegations: delegation-id -> (root-id, parent-id?, account, permissions, revoked)?
-    delegations: TYPE_REGISTRY.getOrUnknown('DelegationNode'),
-    // Children: root-or-delegation-id -> [delegation-id]
-    children: TYPE_REGISTRY.getOrUnknown('DelegationNodeId'),
+    // Delegation hierarchies: root-id -> (ctype-hash)?
+    hierarchies: TYPE_REGISTRY.getOrUnknown('DelegationHierarchies'),
+    // Delegations: delegation-id -> (hierarchy-id, parent-id?, childrenIds, account, permissions, revoked)?
+    delegations: TYPE_REGISTRY.getOrUnknown('DelegationNodes'),
   },
   attestation: {
     // Attestations: claim-hash -> (ctype-hash, attester-account, delegation-id?, revoked)?
