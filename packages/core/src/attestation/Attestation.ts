@@ -25,7 +25,7 @@ import type {
   IRequestForAttestation,
   CompressedAttestation,
 } from '@kiltprotocol/types'
-import { DelegationHierarchyDetails } from '@kiltprotocol/sdk-js'
+import { DelegationHierarchyDetails } from '../delegation'
 import { revoke, query, store } from './Attestation.chain'
 import AttestationUtils from './Attestation.utils'
 import DelegationNode from '../delegation/DelegationNode'

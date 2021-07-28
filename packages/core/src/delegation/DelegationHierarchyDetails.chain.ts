@@ -5,29 +5,24 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import {
+import type {
   IDelegationHierarchyDetails,
   IDelegationNode,
   SubmittableExtrinsic,
-} from '@kiltprotocol/sdk-js'
+} from '@kiltprotocol/types'
 import { Option } from '@polkadot/types'
-import { BlockchainApiConnection } from 'chain-helpers/src/blockchainApiConnection'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
   decodeDelegationHierarchyDetails,
   DelegationHierarchyDetailsRecord,
   IChainDelegationHierarchyDetails,
 } from './DelegationDecoder'
-import DelegationHierarchyDetails from './DelegationHierarchyDetails'
 
 /**
  * @packageDocumentation
  * @module DelegationHierarchyDetails
  */
 
-/**
- * @param delegationHierarchyDetails The details associated with the delegation hierarchy being created.
- * @internal
- */
 export async function store(
   delegationHierarchyDetails: IDelegationHierarchyDetails
 ): Promise<SubmittableExtrinsic> {
@@ -41,7 +36,7 @@ export async function store(
 
 export async function query(
   rootId: IDelegationNode['id']
-): Promise<DelegationHierarchyDetails | null> {
+): Promise<IDelegationHierarchyDetails | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const decoded: DelegationHierarchyDetailsRecord | null = decodeDelegationHierarchyDetails(
     await blockchain.api.query.delegation.delegationHierarchies<
@@ -51,9 +46,9 @@ export async function query(
   if (!decoded) {
     return null
   }
-  const details = new DelegationHierarchyDetails({
+  const details = {
     rootId,
     cTypeHash: decoded.cTypeHash,
-  })
+  }
   return details
 }
