@@ -9,14 +9,17 @@ import { serialize, deserialize } from 'v8'
 import type { KeyDetails } from '../types'
 import type { IDidDetails, KeyRelationship, ServiceRecord } from './types'
 
+export type KeyRoles = Partial<Record<KeyRelationship, Array<KeyDetails['id']>>>
+
 export interface DidDetailsCreationOpts {
   did: string
   keys: KeyDetails[]
-  keyRelationships: Record<KeyDetails['id'], KeyRelationship>
+  keyRelationships: KeyRoles
   lastTxIndex: bigint
   services?: ServiceRecord[]
 }
 
+// @ts-ignore
 function cloneObject<T>(x: T): T {
   return deserialize(serialize(x))
 }
@@ -37,17 +40,14 @@ export class DidDetails implements IDidDetails {
   public readonly identifier: string
   protected services: ServiceRecord[]
   protected keys: Map<KeyDetails['id'], KeyDetails>
-  protected keyRelationships: Record<
-    KeyRelationship | 'none',
-    Array<KeyDetails['id']>
-  >
+  protected keyRelationships: KeyRoles & { none?: Array<KeyDetails['id']> }
 
   private lastTxIndex: bigint
 
   constructor({
     did,
     keys,
-    keyRelationships,
+    keyRelationships = {},
     lastTxIndex,
     services = [],
   }: DidDetailsCreationOpts) {
@@ -65,16 +65,15 @@ export class DidDetails implements IDidDetails {
     this.services = services
     const secondColonAt = this.did.indexOf(':', this.did.indexOf(':') + 1)
     this.identifier = this.did.substring(secondColonAt + 1)
-    this.keyRelationships = {
-      authentication: [],
-      assertionMethod: [],
-      capabilityDelegation: [],
-      capabilityInvocation: [],
-      keyAgreement: [],
-      none: [],
-    }
+    this.keyRelationships = keyRelationships
+    this.keyRelationships.none = []
+    const keysWithRelationship = new Set<string>(
+      Array.prototype.concat(...Object.values(keyRelationships))
+    )
     this.keys.forEach((_, id) => {
-      this.keyRelationships[keyRelationships[id] || 'none'].push(id)
+      if (!keysWithRelationship.has(id)) {
+        this.keyRelationships.none?.push(id)
+      }
     })
   }
 
@@ -93,7 +92,7 @@ export class DidDetails implements IDidDetails {
     relationship?: KeyRelationship | 'none'
   ): Array<KeyDetails['id']> {
     if (relationship) {
-      return this.keyRelationships[relationship]
+      return this.keyRelationships[relationship] || []
     }
     return [...this.keys.keys()]
   }
