@@ -18,18 +18,16 @@ export enum Permission {
   DELEGATE = 1 << 1, // 0010
 }
 
-export interface IDelegationBaseNode {
+export interface IDelegationNode {
   id: string
+  rootId: IDelegationNode['id']
+  parentId?: IDelegationNode['id']
+  childrenIds: Array<IDelegationNode['id']>
   account: IPublicIdentity['address']
+  permissions: Permission[]
   revoked: boolean
 }
 
-export interface IDelegationRootNode extends IDelegationBaseNode {
+export interface IDelegationHierarchyDetails {
   cTypeHash: ICType['hash']
-}
-
-export interface IDelegationNode extends IDelegationBaseNode {
-  rootId: IDelegationBaseNode['id']
-  parentId?: IDelegationBaseNode['id']
-  permissions: Permission[]
 }
