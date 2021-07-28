@@ -14,10 +14,10 @@ import {
   BlockchainUtils,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
-import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
-import { Identity } from '..'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/src/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { Identity } from '../identity'
 
-import DelegationRootNode from './DelegationRootNode'
+import DelegationHierarchyDetails from './DelegationHierarchyDetails'
 import Kilt from '../kilt/Kilt'
 
 jest.mock(
@@ -37,20 +37,14 @@ describe('Delegation', () => {
     ROOT_IDENTIFIER = Crypto.hashStr('1')
     ROOT_SUCCESS = Crypto.hashStr('success')
 
-    require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.root.mockReturnValue(
-      mockChainQueryReturn('delegation', 'root', [
-        ctypeHash,
-        identityAlice.address,
-        false,
-      ])
+    require('@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.hierarchies.mockReturnValue(
+      mockChainQueryReturn('delegation', 'hierarchies', [ctypeHash])
     )
     require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.delegation.delegations.mockReturnValue(
       mockChainQueryReturn('delegation', 'delegations', [
-        ctypeHash,
+        ROOT_IDENTIFIER,
         null,
-        identityAlice.address,
-        1,
-        false,
+        [],
       ])
     )
   })

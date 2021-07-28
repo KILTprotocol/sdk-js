@@ -16,22 +16,21 @@ import { encodeAddress } from '@polkadot/keyring'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import Identity from '../identity'
 import DelegationNode from './DelegationNode'
-import DelegationRootNode from './DelegationRootNode'
+import DelegationHierarchyDetails from './DelegationHierarchyDetails'
 import { permissionsAsBitset, errorCheck } from './DelegationNode.utils'
 
-let childMap: Record<string, DelegationNode[]> = {}
+let hierarchiesDetails: Record<string, DelegationHierarchyDetails> = {}
 let nodes: Record<string, DelegationNode> = {}
-let rootNodes: Record<string, DelegationRootNode> = {}
 
 jest.mock('./DelegationNode.chain', () => ({
   getChildren: jest.fn(async (id: string) => {
-    return childMap[id] || []
+    return nodes[id].childrenIds
   }),
   query: jest.fn(async (id: string) => nodes[id] || null),
 }))
 
-jest.mock('./DelegationRootNode.chain', () => ({
-  query: jest.fn(async (id: string) => rootNodes[id] || null),
+jest.mock('./DelegationHierarchyDetails.chain', () => ({
+  query: jest.fn(async (id: string) => hierarchiesDetails[id] || null),
 }))
 
 let identityAlice: Identity
@@ -39,7 +38,7 @@ let identityBob: Identity
 let id: string
 let successId: string
 let failureId: string
-let rootId: string
+let hierarchyId: string
 let parentId: string
 let hashList: string[]
 let addresses: string[]
@@ -48,7 +47,7 @@ beforeAll(() => {
   identityAlice = Identity.buildFromURI('//Alice')
   identityBob = Identity.buildFromURI('//Bob')
   successId = Crypto.hashStr('success')
-  rootId = Crypto.hashStr('rootId')
+  hierarchyId = Crypto.hashStr('rootId')
   id = Crypto.hashStr('id')
   parentId = Crypto.hashStr('parentId')
   failureId = Crypto.hashStr('failure')
@@ -66,10 +65,11 @@ describe('Delegation', () => {
   it('delegation generate hash', () => {
     const node = new DelegationNode({
       id,
-      rootId,
-      account: identityBob.address,
-      permissions: [Permission.DELEGATE],
+      hierarchyId,
       parentId,
+      account: identityBob.address,
+      childrenIds: [],
+      permissions: [Permission.DELEGATE],
       revoked: false,
     })
     const hash: string = node.generateHash()
@@ -81,8 +81,9 @@ describe('Delegation', () => {
   it('delegation permissionsAsBitset', () => {
     const node = new DelegationNode({
       id,
-      rootId,
+      hierarchyId,
       account: identityBob.address,
+      childrenIds: [],
       permissions: [Permission.DELEGATE],
       parentId,
       revoked: false,
@@ -97,8 +98,9 @@ describe('Delegation', () => {
     nodes = {
       [successId]: new DelegationNode({
         id: successId,
-        rootId,
+        hierarchyId,
         account: identityAlice.address,
+        childrenIds: [],
         permissions: [Permission.DELEGATE],
         parentId: undefined,
         revoked: false,
@@ -113,8 +115,9 @@ describe('Delegation', () => {
     expect(
       await new DelegationNode({
         id: successId,
-        rootId,
+        hierarchyId,
         account: identityAlice.address,
+        childrenIds: [],
         permissions: [Permission.DELEGATE],
         parentId: undefined,
         revoked: false,
@@ -124,8 +127,9 @@ describe('Delegation', () => {
     expect(
       await new DelegationNode({
         id: failureId,
-        rootId,
+        hierarchyId,
         account: identityAlice.address,
+        childrenIds: [],
         permissions: [Permission.DELEGATE],
         parentId: undefined,
         revoked: false,
@@ -134,27 +138,37 @@ describe('Delegation', () => {
   })
 
   it('get delegation root', async () => {
-    rootNodes = {
-      [rootId]: new DelegationRootNode({
-        id: rootId,
+    hierarchiesDetails = {
+      [hierarchyId]: new DelegationHierarchyDetails({
+        rootId: hierarchyId,
         cTypeHash:
           'kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84',
+      }),
+    }
+
+    nodes = {
+      [hierarchyId]: new DelegationNode({
+        id: hierarchyId,
+        hierarchyId,
         account: identityAlice.address,
+        childrenIds: [],
+        permissions: [Permission.DELEGATE],
         revoked: false,
       }),
     }
 
     const node: DelegationNode = new DelegationNode({
       id,
-      rootId,
+      hierarchyId,
       account: identityAlice.address,
+      childrenIds: [],
       permissions: [Permission.DELEGATE],
       revoked: false,
     })
-    const rootNode = await node.getRoot()
+    const hierarchyDetails = await node.getHierarchyDetails()
 
-    expect(rootNode).toBeDefined()
-    expect(rootNode.cTypeHash).toBe(
+    expect(hierarchyDetails).toBeDefined()
+    expect(hierarchyDetails.cTypeHash).toBe(
       'kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84'
     )
   })
@@ -171,8 +185,9 @@ describe('count subtree', () => {
   beforeAll(() => {
     topNode = new DelegationNode({
       id: a1,
-      rootId,
+      hierarchyId,
       account: identityAlice.address,
+      childrenIds: [b1, b2],
       permissions: [Permission.ATTEST, Permission.DELEGATE],
       revoked: false,
     })
@@ -180,55 +195,57 @@ describe('count subtree', () => {
     nodes = {
       [b1]: new DelegationNode({
         id: b1,
-        rootId,
+        hierarchyId,
         account: identityAlice.address,
         permissions: [Permission.ATTEST, Permission.DELEGATE],
         parentId: a1,
+        childrenIds: [c1, c2],
         revoked: false,
       }),
       [b2]: new DelegationNode({
         id: b2,
-        rootId,
+        hierarchyId,
         account: identityAlice.address,
+        childrenIds: [],
         permissions: [Permission.ATTEST, Permission.DELEGATE],
         parentId: a1,
         revoked: false,
       }),
       [c1]: new DelegationNode({
         id: c1,
-        rootId,
+        hierarchyId,
         account: identityAlice.address,
+        childrenIds: [d1],
         permissions: [Permission.ATTEST, Permission.DELEGATE],
         parentId: b1,
         revoked: false,
       }),
       [c2]: new DelegationNode({
         id: c2,
-        rootId,
+        hierarchyId,
         account: identityAlice.address,
+        childrenIds: [],
         permissions: [Permission.ATTEST, Permission.DELEGATE],
         parentId: b1,
         revoked: false,
       }),
       [d1]: new DelegationNode({
         id: d1,
-        rootId,
+        hierarchyId,
         account: identityAlice.address,
+        childrenIds: [],
         permissions: [Permission.ATTEST, Permission.DELEGATE],
         parentId: c1,
         revoked: false,
       }),
     }
-    childMap = {
-      [a1]: [nodes[b1], nodes[b2]],
-      [b1]: [nodes[c1], nodes[c2]],
-      [c1]: [nodes[d1]],
-    }
   })
 
   it('mocks work', async () => {
     expect(topNode.id).toEqual(a1)
-    await expect(topNode.getChildren()).resolves.toBe(childMap[a1])
+    await expect(
+      (await topNode.getChildren()).map((childNode) => childNode.id)
+    ).resolves.toBe(topNode.childrenIds)
     await expect(nodes[d1].getChildren()).resolves.toStrictEqual([])
   })
 
@@ -244,16 +261,17 @@ describe('count subtree', () => {
     await expect(nodes[d1].subtreeNodeCount()).resolves.toStrictEqual(0)
   })
 
-  it('counts all subnodes in deeply nested childMap (100)', async () => {
-    childMap = hashList.slice(0, 101).reduce((previous, current, index) => {
+  it('counts all subnodes in deeply nested structure (100)', async () => {
+    nodes = hashList.slice(0, 101).reduce((previous, current, index) => {
       return {
         ...previous,
         [current]: [
           new DelegationNode({
-            id: hashList[index + 1],
-            rootId,
+            id: current,
+            hierarchyId,
             account: identityAlice.address,
             permissions: [Permission.DELEGATE],
+            childrenIds: [hashList[index + 1]],
             parentId: current,
             revoked: false,
           }),
@@ -262,20 +280,21 @@ describe('count subtree', () => {
     }, {})
 
     await expect(
-      childMap[hashList[0]][0].subtreeNodeCount()
+      nodes[hashList[0]][0].subtreeNodeCount()
     ).resolves.toStrictEqual(100)
   })
 
-  it('counts all subnodes in deeply nested childMap (1000)', async () => {
-    childMap = hashList.slice(0, 1001).reduce((previous, current, index) => {
+  it('counts all subnodes in deeply nested structure (1000)', async () => {
+    nodes = hashList.slice(0, 1001).reduce((previous, current, index) => {
       return {
         ...previous,
         [current]: [
           new DelegationNode({
-            id: hashList[index + 1],
-            rootId,
+            id: current,
+            hierarchyId,
             account: identityAlice.address,
             permissions: [Permission.DELEGATE],
+            childrenIds: [hashList[index + 1]],
             parentId: current,
             revoked: false,
           }),
@@ -283,20 +302,21 @@ describe('count subtree', () => {
       }
     }, {})
     await expect(
-      childMap[hashList[0]][0].subtreeNodeCount()
+      nodes[hashList[0]][0].subtreeNodeCount()
     ).resolves.toStrictEqual(1000)
   })
 
-  it('counts all subnodes in deeply nested childMap (10000)', async () => {
-    childMap = hashList.slice(0, 10001).reduce((previous, current, index) => {
+  it('counts all subnodes in deeply nested structure (10000)', async () => {
+    nodes = hashList.slice(0, 10001).reduce((previous, current, index) => {
       return {
         ...previous,
         [current]: [
           new DelegationNode({
-            id: hashList[index + 1],
-            rootId,
+            id: current,
+            hierarchyId,
             account: identityAlice.address,
             permissions: [Permission.DELEGATE],
+            childrenIds: [hashList[index + 1]],
             parentId: current,
             revoked: false,
           }),
@@ -304,7 +324,7 @@ describe('count subtree', () => {
       }
     }, {})
     await expect(
-      childMap[hashList[0]][0].subtreeNodeCount()
+      nodes[hashList[0]][0].subtreeNodeCount()
     ).resolves.toStrictEqual(10000)
   })
 })
@@ -317,9 +337,10 @@ describe('count depth', () => {
         (nodeId, index) =>
           new DelegationNode({
             id: nodeId,
-            rootId,
+            hierarchyId,
             account: addresses[index],
             permissions: [Permission.DELEGATE],
+            childrenIds: [],
             parentId: hashList[index + 1],
             revoked: false,
           })
@@ -417,8 +438,9 @@ describe('count depth', () => {
   it('error check should throw errors on faulty delegation nodes', async () => {
     const malformedPremissionsDelegationNode = {
       id,
-      rootId,
+      hierarchyId,
       account: identityAlice.address,
+      childrenIds: [],
       permissions: [],
       parentId: undefined,
       revoked: false,
@@ -426,7 +448,7 @@ describe('count depth', () => {
 
     const missingRootIdDelegationNode = {
       id,
-      rootId,
+      hierarchyId,
       account: identityAlice.address,
       permissions: [Permission.DELEGATE],
       parentId: undefined,
@@ -434,11 +456,11 @@ describe('count depth', () => {
     } as IDelegationNode
 
     // @ts-expect-error
-    delete missingRootIdDelegationNode.rootId
+    delete missingRootIdDelegationNode.hierarchyId
 
     const malformedRootIdDelegationNode = {
       id,
-      rootId: rootId.slice(13) + rootId.slice(15),
+      hierarchyId: hierarchyId.slice(13) + hierarchyId.slice(15),
       account: identityAlice.address,
       permissions: [Permission.DELEGATE],
       parentId: undefined,
@@ -447,7 +469,7 @@ describe('count depth', () => {
 
     const malformedParentIdDelegationNode = {
       id,
-      rootId,
+      hierarchyId,
       account: identityAlice.address,
       permissions: [Permission.DELEGATE],
       parentId: 'malformed',

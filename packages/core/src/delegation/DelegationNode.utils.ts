@@ -72,7 +72,7 @@ export async function countNodeDepth(
 }
 
 export function errorCheck(delegationNodeInput: IDelegationNode): void {
-  const { permissions, rootId, parentId } = delegationNodeInput
+  const { permissions, hierarchyId: rootId, parentId } = delegationNodeInput
 
   if (permissions.length === 0 || permissions.length > 3) {
     throw SDKErrors.ERROR_UNAUTHORIZED(

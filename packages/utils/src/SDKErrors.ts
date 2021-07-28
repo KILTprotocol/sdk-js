@@ -59,7 +59,7 @@ export enum ErrorCode {
   ERROR_CLAIM_HASHTREE_MISMATCH = 20014,
   ERROR_PE_MISMATCH = 20015,
   ERROR_DID_IDENTIFIER_MISMATCH = 20016,
-  ERROR_ROOT_NODE_QUERY = 20017,
+  ERROR_HIERARCHY_QUERY = 20017,
   ERROR_INVALID_DID_PREFIX = 20018,
   ERROR_MESSAGE_BODY_MALFORMED = 20019,
   ERROR_NODE_QUERY = 20020,
@@ -366,11 +366,11 @@ export const ERROR_PE_MISMATCH: () => SDKError = () => {
     'Verifier requested public presentation, but privacy enhancement was forced.'
   )
 }
-export const ERROR_ROOT_NODE_QUERY: (rootId: string) => SDKError = (
+export const ERROR_HIERARCHY_QUERY: (rootId: string) => SDKError = (
   rootId: string
 ) => {
   return new SDKError(
-    ErrorCode.ERROR_ROOT_NODE_QUERY,
+    ErrorCode.ERROR_HIERARCHY_QUERY,
     `Could not find root node with id ${rootId}`
   )
 }

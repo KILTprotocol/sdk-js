@@ -20,7 +20,7 @@ export enum Permission {
 
 export interface IDelegationNode {
   id: string
-  rootId: IDelegationNode['id']
+  hierarchyId: IDelegationNode['id']
   parentId?: IDelegationNode['id']
   childrenIds: Array<IDelegationNode['id']>
   account: IPublicIdentity['address']
@@ -29,5 +29,6 @@ export interface IDelegationNode {
 }
 
 export interface IDelegationHierarchyDetails {
+  rootId: IDelegationNode['id']
   cTypeHash: ICType['hash']
 }
