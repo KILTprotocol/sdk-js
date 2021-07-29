@@ -8,7 +8,7 @@ import Identity from '../identity/Identity'
 export const MIN_TRANSACTION = new BN(100_000_000)
 export const ENDOWMENT = MIN_TRANSACTION.mul(new BN(100))
 
-export const WS_ADDRESS = 'ws://127.0.0.1:9944'
+export const WS_ADDRESS = 'ws://127.0.0.1:50000'
 // Dev Faucet account seed phrase
 export const FaucetSeed =
   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'

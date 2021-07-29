@@ -1,118 +1,108 @@
-// /**
-//  * Copyright 2018-2021 BOTLabs GmbH.
-//  *
-//  * This source code is licensed under the BSD 4-Clause "Original" license
-//  * found in the LICENSE file in the root directory of this source tree.
-//  */
+/**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
 
-// /**
-//  * @group integration/delegation
-//  */
+/**
+ * @group integration/delegation
+ */
 
-// import type { ICType, IDelegationNode } from '@kiltprotocol/types'
-// import { Permission } from '@kiltprotocol/types'
-// import { UUID } from '@kiltprotocol/utils'
-// import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-// import { DelegationHierarchyDetails } from '@kiltprotocol/sdk-js'
-// import { AttestedClaim, Identity } from '..'
-// import Attestation from '../attestation/Attestation'
-// import { config, disconnect } from '../kilt'
-// import Claim from '../claim/Claim'
-// import {
-//   fetchChildren,
-//   getAttestationHashes,
-// } from '../delegation/DelegationNode.chain'
-// import { decodeDelegationNode } from '../delegation/DelegationDecoder'
-// import DelegationNode from '../delegation/DelegationNode'
-// import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-// import {
-//   CtypeOnChain,
-//   DriversLicense,
-//   wannabeAlice,
-//   wannabeBob,
-//   wannabeFaucet,
-//   WS_ADDRESS,
-// } from './utils'
+import type { ICType, IDelegationNode } from '@kiltprotocol/types'
+import { Permission } from '@kiltprotocol/types'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { Identity } from '..'
+import { config, disconnect } from '../kilt'
+import DelegationNode from '../delegation/DelegationNode'
+import {
+  CtypeOnChain,
+  DriversLicense,
+  wannabeAlice,
+  wannabeFaucet,
+  WS_ADDRESS,
+} from './utils'
 
-// async function writeHierarchy(
-//   delegator: Identity,
-//   ctypeHash: ICType['hash']
-// ): Promise<{ details: DelegationHierarchyDetails; rootNode: DelegationNode }> {
-//   const details = new DelegationHierarchyDetails({
-//     rootId: UUID.generate(),
-//     cTypeHash: ctypeHash,
-//   })
+async function writeHierarchy(
+  delegator: Identity,
+  ctypeHash: ICType['hash']
+): Promise<DelegationNode> {
+  const rootNode = DelegationNode.newRoot(
+    delegator.address,
+    [Permission.DELEGATE],
+    {
+      cTypeHash: ctypeHash,
+    }
+  )
 
-//   await details.store().then((tx) =>
-//     BlockchainUtils.signAndSubmitTx(tx, delegator, {
-//       resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//       reSign: true,
-//     })
-//   )
+  await rootNode.store().then((tx) =>
+    BlockchainUtils.signAndSubmitTx(tx, delegator, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+  )
 
-//   const rootNode = (await DelegationNode.query(
-//     details.rootId
-//   )) as DelegationNode
-//   return { details, rootNode }
-// }
-// async function addDelegation(
-//   hierarchyId: IDelegationNode['id'],
-//   parentId: DelegationNode['id'],
-//   delegator: Identity,
-//   delegee: Identity,
-//   permissions: Permission[] = [Permission.ATTEST, Permission.DELEGATE]
-// ): Promise<DelegationNode> {
-//   const delegation = DelegationNode.new(
-//     UUID.generate(),
-//     hierarchyId,
-//     parentId,
-//     delegee.address,
-//     permissions
-//   )
-//   await delegation
-//     .store(delegee.signStr(delegation.generateHash()))
-//     .then((tx) =>
-//       BlockchainUtils.signAndSubmitTx(tx, delegator, {
-//         resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//         reSign: true,
-//       })
-//     )
-//   return delegation
-// }
+  return rootNode
+}
 
-// let root: Identity
+async function addDelegation(
+  hierarchyId: IDelegationNode['id'],
+  parentId: DelegationNode['id'],
+  delegator: Identity,
+  delegee: Identity,
+  permissions: Permission[] = [Permission.ATTEST, Permission.DELEGATE]
+): Promise<DelegationNode> {
+  const delegationNode = DelegationNode.newNode(
+    hierarchyId,
+    parentId,
+    delegee.address,
+    permissions
+  )
+
+  await delegationNode
+    .store(delegee.signStr(delegationNode.generateHash()))
+    .then((tx) =>
+      BlockchainUtils.signAndSubmitTx(tx, delegator, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    )
+  return delegationNode
+}
+
+let root: Identity
 // let claimer: Identity
-// let attester: Identity
+let attester: Identity
 
-// beforeAll(async () => {
-//   config({ address: WS_ADDRESS })
-//   root = wannabeFaucet
-//   claimer = wannabeBob
-//   attester = wannabeAlice
+beforeAll(async () => {
+  config({ address: WS_ADDRESS })
+  root = wannabeFaucet
+  // claimer = wannabeBob
+  attester = wannabeAlice
 
-//   if (!(await CtypeOnChain(DriversLicense))) {
-//     await DriversLicense.store().then((tx) =>
-//       BlockchainUtils.signAndSubmitTx(tx, attester, {
-//         resolveOn: BlockchainUtils.IS_IN_BLOCK,
-//         reSign: true,
-//       })
-//     )
-//   }
-// }, 30_000)
+  if (!(await CtypeOnChain(DriversLicense))) {
+    await DriversLicense.store().then((tx) =>
+      BlockchainUtils.signAndSubmitTx(tx, attester, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    )
+  }
+}, 30_000)
 
-// it('should be possible to delegate attestation rights', async () => {
-//   const { rootNode } = await writeHierarchy(root, DriversLicense.hash)
-//   const delegatedNode = await addDelegation(
-//     rootNode.id,
-//     rootNode.id,
-//     root,
-//     attester
-//   )
-//   await Promise.all([
-//     expect(rootNode.verify()).resolves.toBeTruthy(),
-//     expect(delegatedNode.verify()).resolves.toBeTruthy(),
-//   ])
-// }, 60_000)
+it('should be possible to delegate attestation rights', async () => {
+  const rootNode = await writeHierarchy(root, DriversLicense.hash)
+  const delegatedNode = await addDelegation(
+    rootNode.id,
+    rootNode.id,
+    root,
+    attester
+  )
+  await Promise.all([
+    expect(rootNode.verify()).resolves.toBeTruthy(),
+    expect(delegatedNode.verify()).resolves.toBeTruthy(),
+  ])
+}, 60_000)
 
 // describe('and attestation rights have been delegated', () => {
 //   let hierarchyDetails: DelegationHierarchyDetails
@@ -299,6 +289,6 @@
 //   })
 // })
 
-// afterAll(() => {
-//   disconnect()
-// })
+afterAll(() => {
+  disconnect()
+})

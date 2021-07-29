@@ -20,7 +20,7 @@
  */
 import { IDelegationHierarchyDetails, Permission } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
-import type { Struct } from '@polkadot/types/codec'
+import type { BTreeSet, Struct } from '@polkadot/types/codec'
 import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
 import type { u32 } from '@polkadot/types/primitive'
 import { DecoderUtils } from '@kiltprotocol/utils'
@@ -92,7 +92,7 @@ export type DelegationNodeId = Hash
 export interface IChainDelegationNode extends Struct {
   readonly hierarchyRootId: DelegationNodeId
   readonly parent: Option<DelegationNodeId>
-  readonly children: DelegationNodeId[]
+  readonly children: BTreeSet<DelegationNodeId>
   readonly details: IChainDelegationDetails
 }
 
@@ -116,7 +116,7 @@ export function decodeDelegationNode(
   return {
     hierarchyId: delegationNode.hierarchyRootId.toHex(),
     parentId: delegationNode.parent.toHex(),
-    childrenIds: delegationNode.children.map((id) => id.toHex()),
+    childrenIds: [...delegationNode.children.keys()].map((id) => id.toHex()),
     account: delegationNode.details.owner.toString(),
     permissions: decodePermissions(
       delegationNode.details.permissions.toNumber()

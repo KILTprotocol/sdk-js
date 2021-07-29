@@ -48,7 +48,6 @@ export async function storeAsDelegation(
 
   return blockchain.api.tx.delegation.addDelegation(
     delegation.id,
-    delegation.hierarchyId,
     delegation.parentId,
     delegation.account,
     permissionsAsBitset(delegation),
@@ -61,7 +60,7 @@ export async function query(
 ): Promise<DelegationNode | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegations<
+    await blockchain.api.query.delegation.delegationNodes<
       Option<IChainDelegationNode>
     >(delegationId)
   )
