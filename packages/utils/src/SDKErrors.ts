@@ -43,6 +43,11 @@ export enum ErrorCode {
   ERROR_IDENTITY_NOT_PE_ENABLED = 10016,
   ERROR_WS_ADDRESS_NOT_SET = 10017,
   ERROR_DELEGATION_ID_MISSING = 10018,
+  ERROR_HIERARCHY_DETAILS_MISSING = 10019,
+  ERROR_DELEGATION_SIGNATURE_MISSING = 10020,
+  ERROR_DELEGATION_PARENT_MISSING = 10021,
+  ERROR_INVALID_ROOT_NODE = 10022,
+  ERROR_INVALID_DELEGATION_NODE = 10023,
 
   // Data type is wrong or malformed
   ERROR_ADDRESS_TYPE = 20001,
@@ -276,6 +281,41 @@ export const ERROR_DELEGATION_ID_MISSING: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_DELEGATION_ID_MISSING,
     'DelegationId is missing'
+  )
+}
+
+export const ERROR_HIERARCHY_DETAILS_MISSING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_HIERARCHY_DETAILS_MISSING,
+    'Delegation hierarchy details missing'
+  )
+}
+
+export const ERROR_DELEGATION_SIGNATURE_MISSING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_DELEGATION_SIGNATURE_MISSING,
+    "Delegatee's signature missing"
+  )
+}
+
+export const ERROR_DELEGATION_PARENT_MISSING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_DELEGATION_PARENT_MISSING,
+    'Delegation parentId missing'
+  )
+}
+
+export const ERROR_INVALID_ROOT_NODE: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_INVALID_ROOT_NODE,
+    'The given node is not a valid root node'
+  )
+}
+
+export const ERROR_INVALID_DELEGATION_NODE: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_INVALID_DELEGATION_NODE,
+    'The given node is not a valid delegation node'
   )
 }
 

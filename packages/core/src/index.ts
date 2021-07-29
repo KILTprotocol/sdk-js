@@ -10,11 +10,7 @@ import AttestedClaim, { AttestedClaimUtils } from './attestedclaim'
 import { Balance, BalanceUtils } from './balance'
 import Claim, { ClaimUtils } from './claim'
 import { CType, CTypeMetadata, CTypeSchema, CTypeUtils } from './ctype'
-import {
-  DelegationNode,
-  DelegationHierarchyDetails,
-  DelegationNodeUtils,
-} from './delegation'
+import { DelegationNode, DelegationNodeUtils } from './delegation'
 import Did, {
   IDid,
   IDidDocument,
@@ -49,7 +45,6 @@ export {
   AttestationUtils,
   AttestedClaim,
   AttestedClaimUtils,
-  DelegationHierarchyDetails,
   DelegationNode,
   DelegationNodeUtils,
   Did,

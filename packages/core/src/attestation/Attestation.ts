@@ -22,10 +22,10 @@ import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type {
   IPublicIdentity,
   IAttestation,
+  IDelegationHierarchyDetails,
   IRequestForAttestation,
   CompressedAttestation,
 } from '@kiltprotocol/types'
-import { DelegationHierarchyDetails } from '../delegation'
 import { revoke, query, store } from './Attestation.chain'
 import AttestationUtils from './Attestation.utils'
 import DelegationNode from '../delegation/DelegationNode'
@@ -113,7 +113,7 @@ export default class Attestation implements IAttestation {
    */
   public static async getDelegationDetails(
     delegationId: IAttestation['delegationId'] | null
-  ): Promise<DelegationHierarchyDetails | null> {
+  ): Promise<IDelegationHierarchyDetails | null> {
     if (!delegationId) {
       return null
     }
@@ -126,7 +126,7 @@ export default class Attestation implements IAttestation {
     return delegationNode.getHierarchyDetails()
   }
 
-  public async getDelegationDetails(): Promise<DelegationHierarchyDetails | null> {
+  public async getDelegationDetails(): Promise<IDelegationHierarchyDetails | null> {
     return Attestation.getDelegationDetails(this.delegationId)
   }
 

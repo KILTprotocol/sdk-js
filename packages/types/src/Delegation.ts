@@ -29,6 +29,5 @@ export interface IDelegationNode {
 }
 
 export interface IDelegationHierarchyDetails {
-  rootId: IDelegationNode['id']
   cTypeHash: ICType['hash']
 }

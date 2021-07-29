@@ -8,7 +8,6 @@
 import type {
   IDelegationHierarchyDetails,
   IDelegationNode,
-  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { Option } from '@polkadot/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
@@ -23,18 +22,7 @@ import {
  * @module DelegationHierarchyDetails
  */
 
-export async function store(
-  delegationHierarchyDetails: IDelegationHierarchyDetails
-): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.createHierarchy(
-    delegationHierarchyDetails.rootId,
-    delegationHierarchyDetails.cTypeHash
-  )
-  return tx
-}
-
-export async function query(
+export default async function query(
   rootId: IDelegationNode['id']
 ): Promise<IDelegationHierarchyDetails | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()

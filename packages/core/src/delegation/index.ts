@@ -6,7 +6,6 @@
  */
 
 import DelegationNode from './DelegationNode'
-import DelegationHierarchyDetails from './DelegationHierarchyDetails'
 import * as DelegationNodeUtils from './DelegationNode.utils'
 
-export { DelegationNode, DelegationHierarchyDetails, DelegationNodeUtils }
+export { DelegationNode, DelegationNodeUtils }
