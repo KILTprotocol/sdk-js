@@ -29,6 +29,8 @@
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/types": "^4.13.1"
+    "@polkadot/keyring": "^6.7.1",
+    "@polkadot/types": "^4.13.1",
+    "@polkadot/util-crypto": "^6.7.1"
   }
 }

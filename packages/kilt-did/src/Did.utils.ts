@@ -99,7 +99,9 @@ export function encodeDidCreationOperation(
   ))(registry, didCreateRaw)
 }
 
-function matchKeyOperation(keypair: IPublicKey | undefined | null) {
+function matchKeyOperation(
+  keypair: IPublicKey | undefined | null
+): { Delete: null } | { Ignore: null } | { Change: PublicKeyEnum } {
   if (keypair && typeof keypair === 'object') {
     return { Change: formatPublicKey(keypair) }
   }

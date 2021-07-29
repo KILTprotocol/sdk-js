@@ -8,10 +8,14 @@
 import { DidDetails, DidDetailsCreationOpts } from '../DidDetails/DidDetails'
 import { queryByDID } from '../Did.chain'
 import { ServiceRecord } from '../DidDetails/types'
+import { IDidRecord } from '../types'
 
+/**
+ * This is only a dummy; we don't know yet how the extra service data will be secured (signature over data?).
+ */
 export type ServicesResolver = (
   endpointUrl: string,
-  did: string
+  did: IDidRecord
 ) => Promise<ServiceRecord[]>
 
 export interface ResolverOpts {
@@ -34,19 +38,25 @@ export async function resolveDid({
     keyAgreementKeys,
     lastTxCounter,
   } = didRec
+
+  const keyRelationships: DidDetailsCreationOpts['keyRelationships'] = {
+    authentication: [authenticationKey],
+    keyAgreement: keyAgreementKeys,
+  }
+  if (attestationKey) {
+    keyRelationships.assertionMethod = [attestationKey]
+  }
+  if (delegationKey) {
+    keyRelationships.capabilityDelegation = [delegationKey]
+  }
   const didDetails: DidDetailsCreationOpts = {
     did,
     keys: publicKeys,
-    keyRelationships: {
-      authentication: [authenticationKey],
-      assertionMethod: attestationKey ? [attestationKey] : [],
-      capabilityDelegation: delegationKey ? [delegationKey] : [],
-      keyAgreement: keyAgreementKeys,
-    },
+    keyRelationships,
     lastTxIndex: lastTxCounter.toBigInt(),
   }
   if (servicesResolver && endpointUrl) {
-    didDetails.services = await servicesResolver(endpointUrl, did)
+    didDetails.services = await servicesResolver(endpointUrl, didRec)
   }
   return new DidDetails(didDetails)
 }

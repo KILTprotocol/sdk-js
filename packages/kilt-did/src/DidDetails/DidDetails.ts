@@ -5,9 +5,17 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { Extrinsic } from '@polkadot/types/interfaces'
 import { serialize, deserialize } from 'v8'
 import type { KeyDetails } from '../types'
-import type { IDidDetails, KeyRelationship, ServiceRecord } from './types'
+import type {
+  ApiOrMetadata,
+  CallMeta,
+  IDidDetails,
+  KeyRelationship,
+  ServiceRecord,
+} from './types'
+import { getKeysForCall, getKeysForExtrinsic } from './utils'
 
 export type KeyRoles = Partial<Record<KeyRelationship, Array<KeyDetails['id']>>>
 
@@ -29,7 +37,9 @@ function errorCheck({
   keyRelationships,
 }: Required<DidDetailsCreationOpts>): void {
   const keyIds = new Set(keys.map((key) => key.id))
-  const keyReferences = new Set(Object.keys(keyRelationships))
+  const keyReferences = new Set<string>(
+    Array.prototype.concat(...Object.values(keyRelationships))
+  )
   keyReferences.forEach((id) => {
     if (!keyIds.has(id)) throw new Error(`No key with id ${id} in "keys"`)
   })
@@ -108,5 +118,16 @@ export class DidDetails implements IDidDetails {
     const nextIndex = this.lastTxIndex + BigInt(1)
     if (increment) this.lastTxIndex = nextIndex
     return nextIndex
+  }
+
+  public getKeysForCall(call: CallMeta): KeyDetails[] {
+    return getKeysForCall(this, call)
+  }
+
+  public getKeysForExtrinsic(
+    apiOrMetadata: ApiOrMetadata,
+    extrinsic: Extrinsic
+  ): KeyDetails[] {
+    return getKeysForExtrinsic(apiOrMetadata, this, extrinsic)
   }
 }

@@ -6,8 +6,13 @@
  */
 
 import { Keyring } from '@polkadot/keyring'
-import nacl from 'tweetnacl'
-import { randomAsU8a, cryptoWaitReady } from '@polkadot/util-crypto'
+import {
+  randomAsU8a,
+  cryptoWaitReady,
+  naclBoxKeypairFromSecret,
+  naclOpen,
+  naclSeal,
+} from '@polkadot/util-crypto'
 import {
   Keystore,
   KeystoreSigningData,
@@ -42,6 +47,18 @@ function encryptionSupported(alg: string): alg is EncryptionAlgorithms {
 //   return encryptionSupport.has(alg as EncryptionAlgorithms)
 // }
 
+export type KeyGenOpts<T extends string> = Pick<
+  RequestData<T>,
+  'keyId' | 'alg'
+> & {
+  seed?: Uint8Array
+}
+
+export interface NaclKeypair {
+  publicKey: Uint8Array
+  secretKey: Uint8Array
+}
+
 /**
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!
  */
@@ -49,7 +66,7 @@ export class DemoKeystore
   implements Keystore<SubstrateKeyTypes, EncryptionAlgorithms> {
   private keyring: Keyring
   private signingPublicKeys: Record<string, Uint8Array> = {}
-  private encryptionKeypairs: Record<string, nacl.BoxKeyPair> = {}
+  private encryptionKeypairs: Record<string, NaclKeypair> = {}
 
   constructor() {
     this.keyring = new Keyring()
@@ -58,7 +75,8 @@ export class DemoKeystore
   private async generateSigningKeypair<T extends SubstrateKeyTypes>({
     keyId,
     alg,
-  }: Pick<RequestData<T>, 'keyId' | 'alg'>): Promise<{
+    seed,
+  }: KeyGenOpts<T>): Promise<{
     publicKey: Uint8Array
     keyId: string
     alg: T
@@ -66,7 +84,7 @@ export class DemoKeystore
     if (this.signingPublicKeys[keyId]) throw new Error('id already used')
     await cryptoWaitReady()
     const keypair = this.keyring.addFromSeed(
-      randomAsU8a(32),
+      seed || randomAsU8a(32),
       { name: keyId },
       alg
     )
@@ -77,13 +95,14 @@ export class DemoKeystore
   private async generateEncryptionKeypair<T extends EncryptionAlgorithms>({
     keyId,
     alg,
-  }: Pick<RequestData<T>, 'keyId' | 'alg'>): Promise<{
+    seed,
+  }: KeyGenOpts<T>): Promise<{
     publicKey: Uint8Array
     keyId: string
     alg: T
   }> {
     if (this.encryptionKeypairs[keyId]) throw new Error('id already used')
-    const keypair = nacl.box.keyPair()
+    const keypair = naclBoxKeypairFromSecret(seed || randomAsU8a(32))
     this.encryptionKeypairs[keyId] = keypair
     return { keyId, alg, publicKey: keypair.publicKey }
   }
@@ -141,9 +160,8 @@ export class DemoKeystore
       return Promise.reject(
         new Error(`key with id ${keyId} cannot be used with alg ${alg}`)
       )
-    const nonce = nacl.randomBytes(24)
-    const encrypted = nacl.box(data, nonce, peerPublicKey, keypair.secretKey)
-    return { data: encrypted, alg, nonce }
+    const { nonce, sealed } = naclSeal(data, keypair.secretKey, peerPublicKey)
+    return { data: sealed, alg, nonce }
   }
 
   async decrypt<A extends EncryptionAlgorithms>({
@@ -166,12 +184,7 @@ export class DemoKeystore
       return Promise.reject(
         new Error(`key with id ${keyId} cannot be used with alg ${alg}`)
       )
-    const decrypted = nacl.box.open(
-      data,
-      nonce,
-      peerPublicKey,
-      keypair.secretKey
-    )
+    const decrypted = naclOpen(data, nonce, peerPublicKey, keypair.secretKey)
     if (!decrypted)
       return Promise.reject(new Error('failed to decrypt with given key'))
     return { data: decrypted, alg }

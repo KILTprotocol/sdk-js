@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ApiPromise } from '@polkadot/api'
+import type { Metadata } from '@polkadot/metadata'
 import type { KeyDetails } from '../types'
 
 export type VerificationKeyRelationship =
@@ -32,3 +34,5 @@ export interface IDidDetails {
   getServices(type?: string): ServiceRecord[]
   getNextTxIndex(): BigInt
 }
+
+export type ApiOrMetadata = ApiPromise | Metadata

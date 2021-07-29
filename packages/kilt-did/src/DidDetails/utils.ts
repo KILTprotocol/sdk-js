@@ -6,7 +6,6 @@
  */
 
 import type { ApiPromise } from '@polkadot/api'
-import type { Metadata } from '@polkadot/metadata'
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { TypeRegistry } from '@polkadot/types'
 import type { KeyDetails } from '../types'
@@ -14,6 +13,7 @@ import type {
   CallMeta,
   VerificationKeyRelationship,
   IDidDetails,
+  ApiOrMetadata,
 } from './types'
 
 interface MethodMapping<V extends string> {
@@ -51,7 +51,7 @@ function isApiPromise(api: unknown): api is ApiPromise {
 
 // to recover Call info from an Extrinsic/SubmittableExtrinsic, we need the chain's metadata, which we can also get from the api object
 export function mapExtrinsicToKeyRelationship(
-  apiOrMetadata: ApiPromise | Metadata,
+  apiOrMetadata: ApiOrMetadata,
   extrinsic: Extrinsic
 ): VerificationKeyRelationship | 'paymentAccount' {
   let callMeta: CallMeta
@@ -83,7 +83,7 @@ export function getKeyIdsForCall(
 }
 
 export function getKeysForExtrinsic(
-  apiOrMetadata: ApiPromise | Metadata,
+  apiOrMetadata: ApiOrMetadata,
   didDetails: IDidDetails,
   extrinsic: Extrinsic
 ): KeyDetails[] {
@@ -96,7 +96,7 @@ export function getKeysForExtrinsic(
 }
 
 export function getKeyIdsForExtrinsic(
-  apiOrMetadata: ApiPromise | Metadata,
+  apiOrMetadata: ApiOrMetadata,
   didDetails: IDidDetails,
   extrinsic: Extrinsic
 ): Array<KeyDetails['id']> {

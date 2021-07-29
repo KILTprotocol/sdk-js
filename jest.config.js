@@ -4,7 +4,7 @@ module.exports = {
   clearMocks: true,
   runner: 'groups',
   testTimeout: 10000,
-  setupFilesAfterEnv: ['../testingTools/setup.ts'],
+  setupFilesAfterEnv: ['../testingTools/setup.js'],
   transformIgnorePatterns:['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
   coverageThreshold: {
     global: {
