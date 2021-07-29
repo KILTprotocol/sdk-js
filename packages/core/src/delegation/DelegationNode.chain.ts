@@ -16,11 +16,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
-import {
-  CodecWithId,
-  decodeDelegationNode,
-  IChainDelegationNode,
-} from './DelegationDecoder'
+import { decodeDelegationNode, IChainDelegationNode } from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
 import { permissionsAsBitset } from './DelegationNode.utils'
 
@@ -99,55 +95,21 @@ export async function revoke(
   return tx
 }
 
-export async function fetchChildren(
-  childrenIds: string[]
-): Promise<Array<CodecWithId<Option<IChainDelegationNode>>>> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const val: Array<CodecWithId<
-    Option<IChainDelegationNode>
-  >> = await Promise.all(
-    childrenIds.map(async (childId: string) => {
-      const queryResult = await blockchain.api.query.delegation.delegations<
-        Option<IChainDelegationNode>
-      >(childId)
-      return {
-        id: childId,
-        codec: queryResult,
-      }
-    })
-  )
-  return val
-}
-
 export async function getChildren(
   delegationNode: DelegationNode
 ): Promise<DelegationNode[]> {
   log.info(` :: getChildren('${delegationNode.id}')`)
-  const queryResults: Array<CodecWithId<
-    Option<IChainDelegationNode>
-  >> = await fetchChildren(delegationNode.childrenIds)
-  const children: DelegationNode[] = queryResults
-    .map((codec: CodecWithId<Option<IChainDelegationNode>>) => {
-      const decoded = decodeDelegationNode(codec.codec)
-      if (!decoded) {
-        return null
+  const childrenNodes = await Promise.all(
+    delegationNode.childrenIds.map(async (childId) => {
+      const childNode = await query(childId)
+      if (!childNode) {
+        throw SDKErrors.ERROR_DELEGATION_ID_MISSING
       }
-      const child = new DelegationNode({
-        id: codec.id,
-        hierarchyId: decoded.hierarchyId,
-        parentId: decoded.parentId,
-        childrenIds: decoded.childrenIds,
-        account: decoded.account,
-        permissions: decoded.permissions,
-        revoked: decoded.revoked,
-      })
-      return child
+      return childNode
     })
-    .filter((value): value is DelegationNode => {
-      return value !== null
-    })
-  log.info(`children: ${JSON.stringify(children)}`)
-  return children
+  )
+  log.info(`children: ${JSON.stringify(childrenNodes)}`)
+  return childrenNodes
 }
 
 function decodeDelegatedAttestations(queryResult: Option<Vec<Hash>>): string[] {

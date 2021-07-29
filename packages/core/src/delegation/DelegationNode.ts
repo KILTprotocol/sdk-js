@@ -40,7 +40,7 @@ import {
   storeAsDelegation,
   storeAsRoot,
 } from './DelegationNode.chain'
-import queryDetails from './DelegationHierarchyDetails.chain'
+import { query as queryDetails } from './DelegationHierarchyDetails.chain'
 import * as DelegationNodeUtils from './DelegationNode.utils'
 import Attestation from '../attestation/Attestation'
 import Identity from '../identity/Identity'

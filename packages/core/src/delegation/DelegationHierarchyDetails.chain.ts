@@ -22,7 +22,8 @@ import {
  * @module DelegationHierarchyDetails
  */
 
-export default async function query(
+// eslint-disable-next-line import/prefer-default-export
+export async function query(
   rootId: IDelegationNode['id']
 ): Promise<IDelegationHierarchyDetails | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
