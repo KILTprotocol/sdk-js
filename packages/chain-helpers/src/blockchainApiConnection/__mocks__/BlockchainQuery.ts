@@ -35,13 +35,13 @@ const chainQueryReturnTuples: {
   },
   delegation: {
     // Delegation hierarchies: root-id -> (ctype-hash)?
-    hierarchies: TYPE_REGISTRY.getOrUnknown('DelegationHierarchies'),
+    hierarchies: TYPE_REGISTRY.getOrUnknown('DelegationHierarchyDetails'),
     // Delegations: delegation-id -> (hierarchy-id, parent-id?, childrenIds, details)?
-    delegations: TYPE_REGISTRY.getOrUnknown('DelegationNodes'),
+    delegations: TYPE_REGISTRY.getOrUnknown('DelegationNode'),
   },
   attestation: {
     // Attestations: claim-hash -> (ctype-hash, attester-account, delegation-id?, revoked)?
-    attestations: TYPE_REGISTRY.getOrUnknown('Attestation'),
+    attestations: TYPE_REGISTRY.getOrUnknown('AttestationDetails'),
     // DelegatedAttestations: delegation-id -> [claim-hash]
     delegatedAttestations: TYPE_REGISTRY.getOrUnknown('Hash'),
   },

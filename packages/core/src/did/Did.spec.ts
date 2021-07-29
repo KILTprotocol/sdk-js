@@ -11,7 +11,7 @@
 
 import { U8aFixed } from '@polkadot/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/src/blockchainApiConnection/__mocks__/BlockchainQuery'
 import {
   BlockchainUtils,
   TypeRegistry as TYPE_REGISTRY,
@@ -25,14 +25,14 @@ import {
 import Kilt from '../kilt/Kilt'
 
 jest.mock(
-  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection'
 )
 
 describe('DID', () => {
   const key1 = new U8aFixed(TYPE_REGISTRY, 'box-me', 256)
   const key2 = new U8aFixed(TYPE_REGISTRY, 'sign-me', 256)
   Kilt.config({ address: 'ws://testString' })
-  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
   beforeAll(() => {

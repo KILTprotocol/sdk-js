@@ -304,7 +304,7 @@ const __mocked_api: any = {
     },
     delegation: {
       // default return value decodes to null, represents delegation not found
-      roots: jest.fn(async (rootId: string) =>
+      hierarchies: jest.fn(async (rootId: string) =>
         mockChainQueryReturn('delegation', 'hierarchies')
       ),
       /* example return value:
