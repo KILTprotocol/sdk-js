@@ -12,7 +12,7 @@
 import { U8aFixed } from '@polkadot/types'
 import type { IPublicIdentity } from '@kiltprotocol/types'
 import { TypeRegistry as TYPE_REGISTRY } from '@kiltprotocol/chain-helpers'
-import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/src/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import PublicIdentity, { IURLResolver } from './PublicIdentity'
 import Kilt from '../kilt/Kilt'
 

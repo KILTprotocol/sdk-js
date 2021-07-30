@@ -17,7 +17,7 @@ import type {
   ISubmitClaimsForCTypes,
   MessageBodyType,
 } from '@kiltprotocol/types'
-import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/src/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import Message from '@kiltprotocol/messaging'
 import { Crypto } from '@kiltprotocol/utils'
 import { Attester, Claimer, Verifier } from '..'

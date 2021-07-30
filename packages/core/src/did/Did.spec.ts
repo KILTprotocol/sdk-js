@@ -11,7 +11,7 @@
 
 import { U8aFixed } from '@polkadot/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/src/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import {
   BlockchainUtils,
   TypeRegistry as TYPE_REGISTRY,
