@@ -29,7 +29,7 @@ import BalanceUtils from './Balance.utils'
 import Kilt from '../kilt/Kilt'
 
 jest.mock(
-  '@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
 )
 
 const BALANCE = 42
@@ -39,7 +39,7 @@ describe('Balance', () => {
   Kilt.config({ address: 'ws://testSting' })
   let alice: Identity
   let bob: Identity
-  const blockchainApi = require('@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
   const accountInfo = (balance: number): AccountInfo => {

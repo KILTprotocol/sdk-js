@@ -31,11 +31,11 @@ import CTypeUtils, { getIdForSchema } from './CType.utils'
 import Kilt from '../kilt/Kilt'
 
 jest.mock(
-  '@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
 )
 
 describe('CType', () => {
-  const blockchainApi = require('@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
   const registry = new TypeRegistry()
   let ctypeModel: ICType['schema']

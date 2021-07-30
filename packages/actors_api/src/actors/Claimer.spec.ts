@@ -24,11 +24,11 @@ import { Attester, Claimer, Verifier } from '..'
 import type { ClaimerAttestationSession } from './Claimer'
 
 jest.mock(
-  '@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
 )
 
 describe('Claimer', () => {
-  const blockchainApi = require('@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
   let attester: Identity
   let claimer: Identity

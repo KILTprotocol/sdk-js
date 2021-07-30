@@ -17,7 +17,7 @@ import PublicIdentity, { IURLResolver } from './PublicIdentity'
 import Kilt from '../kilt/Kilt'
 
 jest.mock(
-  '@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
 )
 
 describe('PublicIdentity', () => {
@@ -26,7 +26,7 @@ describe('PublicIdentity', () => {
   Kilt.config({ address: 'ws://testString' })
   // https://polkadot.js.org/api/examples/promise/
   // testing to create correct demo accounts
-  require('@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
+  require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api.query.did.dIDs = jest.fn(
     async (id) => {
       switch (id) {
         case '1':

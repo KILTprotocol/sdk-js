@@ -25,14 +25,14 @@ import {
 import Kilt from '../kilt/Kilt'
 
 jest.mock(
-  '@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
 )
 
 describe('DID', () => {
   const key1 = new U8aFixed(TYPE_REGISTRY, 'box-me', 256)
   const key2 = new U8aFixed(TYPE_REGISTRY, 'sign-me', 256)
   Kilt.config({ address: 'ws://testString' })
-  const blockchainApi = require('@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
   beforeAll(() => {

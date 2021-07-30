@@ -73,6 +73,16 @@ export default class DelegationNode implements IDelegationNode {
     DelegationNodeUtils.errorCheck(this)
   }
 
+  /**
+   * Builds a new [DelegationNode] representing a regular delegation node ready to be submitted to the chain for creation.
+   *
+   * @param hierarchyId - The delegation hierarchy under which to store the node.
+   * @param parentId - The parent node under which to store the node.
+   * @param account - The address of this delegation.
+   * @param permissions - The set of permissions to associated with this delegation node.
+   *
+   * @returns A new [DelegationNode] with a randomly-generated id.
+   */
   public static newNode(
     hierarchyId: IDelegationNode['hierarchyId'],
     parentId: string, // Cannot be undefined here
@@ -90,6 +100,15 @@ export default class DelegationNode implements IDelegationNode {
     })
   }
 
+  /**
+   * Builds a new [DelegationNode] representing a root delegation node ready to be submitted to the chain for creation.
+   *
+   * @param account - The address of this delegation (and of the whole hierarchy under it).
+   * @param permissions - The set of permissions to associated with this delegation node.
+   * @param hierarchyDetails - The details associated with the delegation hierarchy (e.g. The CType hash of allowed attestations).
+   *
+   * @returns A new [DelegationNode] with a randomly-generated id.
+   */
   public static newRoot(
     account: IDelegationNode['account'],
     permissions: IDelegationNode['permissions'],
@@ -110,7 +129,11 @@ export default class DelegationNode implements IDelegationNode {
     return newNode
   }
 
-  // Utility method to retrieve the CType hash associated with a delegation node.
+  /**
+   * Lazily fetches the details of the hierarchy the node is part of and return its CType.
+   *
+   * @returns The CType hash associated with the delegation hierarchy.
+   */
   public get cTypeHash(): Promise<string> {
     return this.getHierarchyDetails().then((details) => details.cTypeHash)
   }
@@ -144,6 +167,8 @@ export default class DelegationNode implements IDelegationNode {
 
   /**
    * [ASYNC] Fetches the children nodes of this delegation node.
+   *
+   * If new nodes have been created with this node as parent, **it is advised to first sync up this node with the latest blockchain state by calling [DelegationNodeUtils.getSyncedState]**.
    *
    * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
    */
@@ -247,9 +272,10 @@ export default class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * Checks on chain whether a identity with the given address is delegating to the current node.
+   * [ASYNC] Checks on chain whether a identity with the given address is delegating to the current node.
    *
    * @param address The address of the identity.
+   *
    * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the address is owner of the current node.
    */
   public async findAncestorOwnedBy(

@@ -115,7 +115,9 @@ export function decodeDelegationNode(
 
   return {
     hierarchyId: delegationNode.hierarchyRootId.toHex(),
-    parentId: delegationNode.parent.toHex(),
+    parentId: delegationNode.parent.isNone
+      ? delegationNode.parent.toHex()
+      : undefined,
     childrenIds: [...delegationNode.children.keys()].map((id) => id.toHex()),
     account: delegationNode.details.owner.toString(),
     permissions: decodePermissions(

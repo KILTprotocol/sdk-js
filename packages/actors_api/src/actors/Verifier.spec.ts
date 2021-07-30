@@ -17,7 +17,7 @@ import { Crypto } from '@kiltprotocol/utils'
 import { Attester, Claimer, Verifier } from '..'
 
 jest.mock(
-  '@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection'
+  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
 )
 
 describe('Verifier', () => {
@@ -27,7 +27,7 @@ describe('Verifier', () => {
   let cType: CType
   let claim: IClaim
   let credential: AttestedClaim
-  const blockchainApi = require('@kiltprotocol/chain-helpers/src/blockchainApiConnection/BlockchainApiConnection')
+  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
   beforeAll(async () => {
