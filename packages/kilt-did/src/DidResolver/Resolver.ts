@@ -8,14 +8,14 @@
 import { DidDetails, DidDetailsCreationOpts } from '../DidDetails/DidDetails'
 import { queryByDID } from '../Did.chain'
 import { ServiceRecord } from '../DidDetails/types'
-import { IDidRecord } from '../types'
 
 /**
  * This is only a dummy; we don't know yet how the extra service data will be secured (signature over data?).
  */
 export type ServicesResolver = (
-  endpointUrl: string,
-  did: IDidRecord
+  resourceHash: string,
+  endpoints: string[],
+  contentType: string
 ) => Promise<ServiceRecord[]>
 
 export interface ResolverOpts {
@@ -34,7 +34,7 @@ export async function resolveDid({
     attestationKey,
     authenticationKey,
     delegationKey,
-    endpointUrl,
+    endpointData,
     keyAgreementKeys,
     lastTxCounter,
   } = didRec
@@ -55,8 +55,9 @@ export async function resolveDid({
     keyRelationships,
     lastTxIndex: lastTxCounter.toBigInt(),
   }
-  if (servicesResolver && endpointUrl) {
-    didDetails.services = await servicesResolver(endpointUrl, didRec)
+  if (servicesResolver && endpointData) {
+    const { digest, contentType, urls } = endpointData
+    didDetails.services = await servicesResolver(digest, urls, contentType)
   }
   return new DidDetails(didDetails)
 }

@@ -29,7 +29,7 @@ import type {
   KeyDetails,
   KeypairType,
   TypedPublicKey,
-  KeystoreSigner,
+  KeystoreSigningOptions,
 } from './types'
 import {
   encodeDidAuthorizedCallOperation,
@@ -110,12 +110,6 @@ export async function queryByDID(
   return queryById(didId)
 }
 
-interface SigningOptions<A extends string = string> {
-  signer: KeystoreSigner<A>
-  signingKeyId: string
-  alg: string
-}
-
 export async function generateCreateTx({
   signer,
   signingKeyId,
@@ -123,7 +117,9 @@ export async function generateCreateTx({
   didIdentifier,
   keys,
   endpointUrl,
-}: IDidCreationOptions & SigningOptions): Promise<SubmittableExtrinsic> {
+}: IDidCreationOptions & KeystoreSigningOptions): Promise<
+  SubmittableExtrinsic
+> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = encodeDidCreationOperation(blockchain.api.registry, {
     didIdentifier,
@@ -150,7 +146,7 @@ export async function generateUpdateTx({
   signer,
   signingKeyId,
   alg,
-}: IDidUpdateOptions & SigningOptions): Promise<SubmittableExtrinsic> {
+}: IDidUpdateOptions & KeystoreSigningOptions): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = encodeDidUpdateOperation(blockchain.api.registry, {
     didIdentifier,
@@ -176,7 +172,9 @@ export async function generateDeleteTx({
   signer,
   signingKeyId,
   alg,
-}: IDidDeletionOptions & SigningOptions): Promise<SubmittableExtrinsic> {
+}: IDidDeletionOptions & KeystoreSigningOptions): Promise<
+  SubmittableExtrinsic
+> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = encodeDidDeletionOperation(blockchain.api.registry, {
     txCounter,
@@ -200,7 +198,9 @@ export async function generateDidAuthenticatedTx({
   txCounter,
   didIdentifier,
   call,
-}: IAuthorizeCallOptions & SigningOptions): Promise<SubmittableExtrinsic> {
+}: IAuthorizeCallOptions & KeystoreSigningOptions): Promise<
+  SubmittableExtrinsic
+> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const signableCall = encodeDidAuthorizedCallOperation(
     blockchain.api.registry,

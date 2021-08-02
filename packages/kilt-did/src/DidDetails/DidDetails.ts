@@ -5,9 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { SubmittableExtrinsic } from '@kiltprotocol/sdk-js'
 import type { Extrinsic } from '@polkadot/types/interfaces'
-import { serialize, deserialize } from 'v8'
-import type { KeyDetails } from '../types'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { generateDidAuthenticatedTx } from '../Did.chain'
+import type { KeyDetails, KeystoreSigner } from '../types'
 import type {
   ApiOrMetadata,
   CallMeta,
@@ -25,11 +27,6 @@ export interface DidDetailsCreationOpts {
   keyRelationships: KeyRoles
   lastTxIndex: bigint
   services?: ServiceRecord[]
-}
-
-// @ts-ignore
-function cloneObject<T>(x: T): T {
-  return deserialize(serialize(x))
 }
 
 function errorCheck({
@@ -129,5 +126,27 @@ export class DidDetails implements IDidDetails {
     extrinsic: Extrinsic
   ): KeyDetails[] {
     return getKeysForExtrinsic(apiOrMetadata, this, extrinsic)
+  }
+
+  public async authorizeExtrinsic(
+    extrinsic: Extrinsic,
+    signer: KeystoreSigner,
+    incrementTxIndex = true
+  ): Promise<SubmittableExtrinsic> {
+    const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+    const [signingKey] = this.getKeysForExtrinsic(api, extrinsic)
+    if (!signingKey) {
+      throw new Error(
+        `The details for did ${this.did} do not contain the required keys for this operation`
+      )
+    }
+    return generateDidAuthenticatedTx({
+      didIdentifier: this.identifier,
+      signingKeyId: signingKey.id,
+      alg: signingKey.type,
+      signer,
+      call: extrinsic,
+      txCounter: this.getNextTxIndex(incrementTxIndex),
+    })
   }
 }

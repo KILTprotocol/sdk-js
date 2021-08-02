@@ -52,7 +52,7 @@ export type IKeyPair = ISigningKeyPair | IEncryptionKeyPair
 
 export interface PublicKeyRoleAssignment {
   authentication: IVerificationKey
-  encryption: IEncryptionPublicKey
+  encryption?: IEncryptionPublicKey
   attestation?: IVerificationKey
   delegation?: IVerificationKey
 }
@@ -246,7 +246,7 @@ export interface ResponseData<A extends string> {
 }
 
 export interface KeystoreSigningData<A extends string> extends RequestData<A> {
-  meta: Partial<SignerPayloadJSON> // info for extensions to display to user
+  meta?: Partial<SignerPayloadJSON> // info for extensions to display to user
 }
 
 export interface Keystore<
@@ -268,4 +268,13 @@ export interface Keystore<
   hasKeys(keyIds: string[]): Promise<boolean[]>
 }
 
-export type KeystoreSigner<A extends string> = Pick<Keystore<A>, 'sign'>
+export type KeystoreSigner<A extends string = string> = Pick<
+  Keystore<A>,
+  'sign'
+>
+
+export interface KeystoreSigningOptions<A extends string = string> {
+  signer: KeystoreSigner<A>
+  signingKeyId: string
+  alg: A
+}

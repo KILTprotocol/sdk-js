@@ -49,19 +49,24 @@ function isApiPromise(api: unknown): api is ApiPromise {
   return (api as ApiPromise).type === 'promise'
 }
 
+export function extrinsicToCallMeta(
+  apiOrMetadata: ApiOrMetadata,
+  extrinsic: Extrinsic
+): CallMeta {
+  if (isApiPromise(apiOrMetadata)) {
+    return apiOrMetadata.findCall(extrinsic.callIndex)
+  }
+  const registry = new TypeRegistry()
+  registry.setMetadata(apiOrMetadata)
+  return registry.findMetaCall(extrinsic.callIndex)
+}
+
 // to recover Call info from an Extrinsic/SubmittableExtrinsic, we need the chain's metadata, which we can also get from the api object
 export function mapExtrinsicToKeyRelationship(
   apiOrMetadata: ApiOrMetadata,
   extrinsic: Extrinsic
 ): VerificationKeyRelationship | 'paymentAccount' {
-  let callMeta: CallMeta
-  if (isApiPromise(apiOrMetadata)) {
-    callMeta = apiOrMetadata.findCall(extrinsic.callIndex)
-  } else {
-    const registry = new TypeRegistry()
-    registry.setMetadata(apiOrMetadata)
-    callMeta = registry.findMetaCall(extrinsic.callIndex)
-  }
+  const callMeta = extrinsicToCallMeta(apiOrMetadata, extrinsic)
   return mapCallToKeyRelationship(callMeta)
 }
 
@@ -75,6 +80,15 @@ export function getKeysForCall(
   return didDetails.getKeys(keyRelationship)
 }
 
+export function getKeysForExtrinsic(
+  apiOrMetadata: ApiOrMetadata,
+  didDetails: IDidDetails,
+  extrinsic: Extrinsic
+): KeyDetails[] {
+  const callMeta = extrinsicToCallMeta(apiOrMetadata, extrinsic)
+  return getKeysForCall(didDetails, callMeta)
+}
+
 export function getKeyIdsForCall(
   didDetails: IDidDetails,
   call: CallMeta
@@ -82,25 +96,11 @@ export function getKeyIdsForCall(
   return getKeysForCall(didDetails, call).map((key) => key.id)
 }
 
-export function getKeysForExtrinsic(
-  apiOrMetadata: ApiOrMetadata,
-  didDetails: IDidDetails,
-  extrinsic: Extrinsic
-): KeyDetails[] {
-  const keyRelationship = mapExtrinsicToKeyRelationship(
-    apiOrMetadata,
-    extrinsic
-  )
-  if (keyRelationship === 'paymentAccount') return []
-  return didDetails.getKeys(keyRelationship)
-}
-
 export function getKeyIdsForExtrinsic(
   apiOrMetadata: ApiOrMetadata,
   didDetails: IDidDetails,
   extrinsic: Extrinsic
 ): Array<KeyDetails['id']> {
-  return getKeysForExtrinsic(apiOrMetadata, didDetails, extrinsic).map(
-    (key) => key.id
-  )
+  const callMeta = extrinsicToCallMeta(apiOrMetadata, extrinsic)
+  return getKeyIdsForCall(didDetails, callMeta)
 }
