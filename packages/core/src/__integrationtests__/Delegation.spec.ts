@@ -32,13 +32,11 @@ async function writeHierarchy(
   delegator: Identity,
   ctypeHash: ICType['hash']
 ): Promise<DelegationNode> {
-  const rootNode = DelegationNode.newRoot(
-    delegator.address,
-    [Permission.DELEGATE],
-    {
-      cTypeHash: ctypeHash,
-    }
-  )
+  const rootNode = DelegationNode.newRoot({
+    account: delegator.address,
+    permissions: [Permission.DELEGATE],
+    cTypeHash: ctypeHash,
+  })
 
   await rootNode.store().then((tx) =>
     BlockchainUtils.signAndSubmitTx(tx, delegator, {

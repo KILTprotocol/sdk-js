@@ -31,6 +31,7 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
+import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { query as queryAttestation } from '../attestation/Attestation.chain'
 import {
   getChildren,
@@ -47,6 +48,13 @@ import Identity from '../identity/Identity'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
+type NewDelegationNodeInput = Required<
+  Pick<IDelegationNode, 'hierarchyId' | 'parentId' | 'account' | 'permissions'>
+>
+
+type NewDelegationRootInput = Pick<IDelegationNode, 'account' | 'permissions'> &
+  DelegationHierarchyDetailsRecord
+
 export default class DelegationNode implements IDelegationNode {
   public readonly id: IDelegationNode['id']
   public readonly hierarchyId: IDelegationNode['hierarchyId']
@@ -57,19 +65,27 @@ export default class DelegationNode implements IDelegationNode {
   private hierarchyDetails?: IDelegationHierarchyDetails
   public readonly revoked: boolean
 
+  // eslint-disable-next-line jsdoc/require-param
   /**
-   * Creates a new [DelegationNode].
+   * Creates a new [DelegationNode] from an [IDelegationNode].
    *
-   * @param delegationNodeInput - The base object from which to create the delegation node.
    */
-  public constructor(delegationNodeInput: IDelegationNode) {
-    this.id = delegationNodeInput.id
-    this.hierarchyId = delegationNodeInput.hierarchyId
-    this.parentId = delegationNodeInput.parentId
-    this.childrenIds = delegationNodeInput.childrenIds
-    this.account = delegationNodeInput.account
-    this.permissions = delegationNodeInput.permissions
-    this.revoked = delegationNodeInput.revoked
+  public constructor({
+    id,
+    hierarchyId,
+    parentId,
+    childrenIds,
+    account,
+    permissions,
+    revoked,
+  }: IDelegationNode) {
+    this.id = id
+    this.hierarchyId = hierarchyId
+    this.parentId = parentId
+    this.childrenIds = childrenIds
+    this.account = account
+    this.permissions = permissions
+    this.revoked = revoked
     DelegationNodeUtils.errorCheck(this)
   }
 
@@ -91,7 +107,7 @@ export default class DelegationNode implements IDelegationNode {
     parentId, // Cannot be undefined here
     account,
     permissions,
-  }: IDelegationNode): DelegationNode {
+  }: NewDelegationNodeInput): DelegationNode {
     return new DelegationNode({
       id: UUID.generate(),
       hierarchyId,
@@ -112,10 +128,11 @@ export default class DelegationNode implements IDelegationNode {
    *
    * @returns A new [DelegationNode] with a randomly generated id.
    */
-  public static newRoot(
-    { account, permissions }: IDelegationNode,
-    hierarchyDetails: IDelegationHierarchyDetails
-  ): DelegationNode {
+  public static newRoot({
+    account,
+    permissions,
+    cTypeHash,
+  }: NewDelegationRootInput): DelegationNode {
     const nodeId = UUID.generate()
 
     const newNode = new DelegationNode({
@@ -126,7 +143,10 @@ export default class DelegationNode implements IDelegationNode {
       childrenIds: [],
       revoked: false,
     })
-    newNode.hierarchyDetails = hierarchyDetails
+    newNode.hierarchyDetails = {
+      id: nodeId,
+      cTypeHash,
+    }
 
     return newNode
   }
@@ -319,6 +339,7 @@ export default class DelegationNode implements IDelegationNode {
   public async subtreeNodeCount(): Promise<number> {
     // Fetch the latest state from chain first
     await this.refreshState()
+
     const children = await this.getChildren()
     if (children.length === 0) {
       return 0
