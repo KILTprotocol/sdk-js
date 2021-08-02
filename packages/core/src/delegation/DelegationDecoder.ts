@@ -31,7 +31,10 @@ export type CodecWithId<C> = {
   codec: C
 }
 
-export type DelegationHierarchyDetailsRecord = IDelegationHierarchyDetails
+export type DelegationHierarchyDetailsRecord = Pick<
+  IDelegationHierarchyDetails,
+  'cTypeHash'
+>
 
 export type CtypeHash = Hash
 

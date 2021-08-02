@@ -14,7 +14,7 @@ import type { Option, Vec } from '@polkadot/types'
 import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { Hash } from '@polkadot/types/interfaces'
+import type { Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import { decodeDelegationNode, IChainDelegationNode } from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
@@ -35,7 +35,7 @@ export async function storeAsRoot(
     throw SDKErrors.ERROR_INVALID_ROOT_NODE
   }
   return blockchain.api.tx.delegation.createHierarchy(
-    delegation.id,
+    delegation.hierarchyId,
     await delegation.cTypeHash
   )
 }
@@ -81,17 +81,10 @@ export async function query(
   if (!decoded) {
     return null
   }
-  const root = new DelegationNode({
+  return new DelegationNode({
+    ...decoded,
     id: delegationId,
-    hierarchyId: decoded.hierarchyId,
-    parentId: decoded.parentId,
-    childrenIds: decoded.childrenIds,
-    account: decoded.account,
-    permissions: decoded.permissions,
-    revoked: decoded.revoked,
   })
-
-  return root
 }
 
 /**

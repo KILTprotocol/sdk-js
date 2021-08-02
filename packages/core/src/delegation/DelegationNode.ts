@@ -10,7 +10,7 @@
  *
  * Starting from the root node, entities can delegate the right to issue attestations to Claimers for a certain CTYPE and also delegate the right to attest and to delegate further nodes.
  *
- * A delegation object is stored on-chain, and can be revoked. A base node is created, a ID which may be used in a [[RequestForAttestation]].
+ * A delegation object is stored on-chain, and can be revoked.
  *
  * A delegation can and may restrict permissions.
  *
@@ -76,19 +76,22 @@ export default class DelegationNode implements IDelegationNode {
   /**
    * Builds a new [DelegationNode] representing a regular delegation node ready to be submitted to the chain for creation.
    *
+   * @param hierarchyId.hierarchyId
    * @param hierarchyId - The delegation hierarchy under which to store the node.
    * @param parentId - The parent node under which to store the node.
-   * @param account - The address of this delegation.
-   * @param permissions - The set of permissions to associated with this delegation node.
-   *
-   * @returns A new [DelegationNode] with a randomly-generated id.
+   * @param account - The owner (i.e., delegate) of this delegation.
+   * @param permissions - The set of permissions associated with this delegation node.
+   * @param hierarchyId.parentId
+   * @param hierarchyId.account
+   * @param hierarchyId.permissions
+   * @returns A new [DelegationNode] with a randomly generated id.
    */
-  public static newNode(
-    hierarchyId: IDelegationNode['hierarchyId'],
-    parentId: string, // Cannot be undefined here
-    account: IDelegationNode['account'],
-    permissions: IDelegationNode['permissions']
-  ): DelegationNode {
+  public static newNode({
+    hierarchyId,
+    parentId, // Cannot be undefined here
+    account,
+    permissions,
+  }: IDelegationNode): DelegationNode {
     return new DelegationNode({
       id: UUID.generate(),
       hierarchyId,
@@ -104,14 +107,13 @@ export default class DelegationNode implements IDelegationNode {
    * Builds a new [DelegationNode] representing a root delegation node ready to be submitted to the chain for creation.
    *
    * @param account - The address of this delegation (and of the whole hierarchy under it).
-   * @param permissions - The set of permissions to associated with this delegation node.
+   * @param permissions - The set of permissions associated with this delegation node.
    * @param hierarchyDetails - The details associated with the delegation hierarchy (e.g. The CType hash of allowed attestations).
    *
-   * @returns A new [DelegationNode] with a randomly-generated id.
+   * @returns A new [DelegationNode] with a randomly generated id.
    */
   public static newRoot(
-    account: IDelegationNode['account'],
-    permissions: IDelegationNode['permissions'],
+    { account, permissions }: IDelegationNode,
     hierarchyDetails: IDelegationHierarchyDetails
   ): DelegationNode {
     const nodeId = UUID.generate()
@@ -151,9 +153,9 @@ export default class DelegationNode implements IDelegationNode {
         throw SDKErrors.ERROR_HIERARCHY_QUERY(this.hierarchyId)
       }
       this.hierarchyDetails = hierarchyDetails
+      return hierarchyDetails
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.hierarchyDetails!
+    return this.hierarchyDetails
   }
 
   /**
@@ -162,7 +164,7 @@ export default class DelegationNode implements IDelegationNode {
    * @returns Promise containing the parent as [[DelegationNode]] or [null].
    */
   public async getParent(): Promise<DelegationNode | null> {
-    return this.parentId ? query(this.parentId) : Promise.resolve(null)
+    return this.parentId ? query(this.parentId) : null
   }
 
   /**

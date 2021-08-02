@@ -9,7 +9,7 @@ import type {
   IDelegationHierarchyDetails,
   IDelegationNode,
 } from '@kiltprotocol/types'
-import { Option } from '@polkadot/types'
+import type { Option } from '@polkadot/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import {
   decodeDelegationHierarchyDetails,
@@ -39,9 +39,8 @@ export async function query(
   if (!decoded) {
     return null
   }
-  const details = {
-    rootId,
-    cTypeHash: decoded.cTypeHash,
+  return {
+    ...decoded,
+    id: rootId,
   }
-  return details
 }
