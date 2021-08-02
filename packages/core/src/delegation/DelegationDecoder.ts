@@ -18,23 +18,20 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
+import type { IDelegationNode } from '@kiltprotocol/types'
 import { IDelegationHierarchyDetails, Permission } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
 import type { BTreeSet, Struct } from '@polkadot/types/codec'
 import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
-import type { u32 } from '@polkadot/types/primitive'
+import type { Bool, u32 } from '@polkadot/types/primitive'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import DelegationNode from './DelegationNode'
 
 export type CodecWithId<C> = {
   id: string
   codec: C
 }
 
-export type DelegationHierarchyDetailsRecord = Pick<
-  IDelegationHierarchyDetails,
-  'cTypeHash'
->
+export type DelegationHierarchyDetailsRecord = IDelegationHierarchyDetails
 
 export type CtypeHash = Hash
 
@@ -77,15 +74,7 @@ function decodePermissions(bitset: number): Permission[] {
   return permissions
 }
 
-export type DelegationNodeRecord = Pick<
-  DelegationNode,
-  | 'hierarchyId'
-  | 'parentId'
-  | 'childrenIds'
-  | 'account'
-  | 'permissions'
-  | 'revoked'
->
+export type DelegationNodeRecord = Omit<IDelegationNode, 'id'>
 
 export type DelegationNodeId = Hash
 
@@ -100,7 +89,7 @@ export type DelegationOwner = AccountId
 
 export interface IChainDelegationDetails extends Struct {
   readonly owner: DelegationOwner
-  readonly revoked: boolean
+  readonly revoked: Bool
   readonly permissions: u32
 }
 

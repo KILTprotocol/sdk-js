@@ -13,7 +13,6 @@
 import type { IAttestation, IDelegationNode } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
-import { query } from './DelegationNode.chain'
 import Identity from '../identity'
 import DelegationNode from './DelegationNode'
 
@@ -70,23 +69,6 @@ export async function countNodeDepth(
   }
 
   return delegationTreeTraversalSteps
-}
-
-/**
- * [ASYNC] Syncronise a delegation node with the latest state as stored on the blockchain.
- *
- * @param delegationNode The input delegation node for which the state needs to be syncronised.
- *
- * @returns A new instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
- */
-export async function getSyncedState(
-  delegationNode: DelegationNode
-): Promise<DelegationNode> {
-  const fetchedNode = await query(delegationNode.id)
-  if (!fetchedNode) {
-    throw SDKErrors.ERROR_DELEGATION_ID_MISSING
-  }
-  return fetchedNode
 }
 
 export function errorCheck(delegationNodeInput: IDelegationNode): void {

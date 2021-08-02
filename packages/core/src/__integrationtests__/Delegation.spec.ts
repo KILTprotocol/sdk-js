@@ -26,7 +26,6 @@ import {
   wannabeFaucet,
   WS_ADDRESS,
 } from './utils'
-import { DelegationNodeUtils } from '../delegation'
 import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
 async function writeHierarchy(
@@ -234,7 +233,7 @@ describe('revocation', () => {
   }, 60_000)
 
   it('delegator can revoke root, revoking all delegations in tree', async () => {
-    let delegationRoot = await writeHierarchy(delegator, DriversLicense.hash)
+    const delegationRoot = await writeHierarchy(delegator, DriversLicense.hash)
     const delegationA = await addDelegation(
       delegationRoot.id,
       delegationRoot.id,
@@ -247,7 +246,6 @@ describe('revocation', () => {
       firstDelegee,
       secondDelegee
     )
-    delegationRoot = await DelegationNodeUtils.getSyncedState(delegationRoot)
     await expect(
       delegationRoot.revoke(delegator.address).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, delegator, {

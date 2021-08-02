@@ -168,8 +168,6 @@ export default class DelegationNode implements IDelegationNode {
   /**
    * [ASYNC] Fetches the children nodes of this delegation node.
    *
-   * If new nodes have been created with this node as parent, **it is advised to first sync up this node with the latest blockchain state by calling [DelegationNodeUtils.getSyncedState]**.
-   *
    * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
    */
   public async getChildren(): Promise<DelegationNode[]> {
@@ -239,10 +237,23 @@ export default class DelegationNode implements IDelegationNode {
   }
 
   /**
+   * [ASYNC] Syncronise the delegation node state with the latest state as stored on the blockchain.
+   *
+   * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
+   */
+  public async refreshState(): Promise<void> {
+    const newNodeState = query(this.id)
+    if (!newNodeState) {
+      throw SDKErrors.ERROR_DELEGATION_ID_MISSING
+    }
+    Object.assign(this, newNodeState)
+  }
+
+  /**
    * [ASYNC] Stores the delegation node on chain.
    *
    * @param signature Signature of the delegate to ensure it is done under the delegate's permission.
-   * @returns Promise containing a unsigned SubmittableExtrinsic.
+   * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
   public async store(signature?: string): Promise<SubmittableExtrinsic> {
     if (this.isRoot()) {
@@ -252,8 +263,7 @@ export default class DelegationNode implements IDelegationNode {
       if (!signature) {
         throw SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING
       }
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return storeAsDelegation(this, signature!)
+      return storeAsDelegation(this, signature)
     }
   }
 
@@ -300,11 +310,13 @@ export default class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Recursively counts all nodes that descend from the current node (excluding the current node).
+   * [ASYNC] Recursively counts all nodes that descend from the current node (excluding the current node), after refreshing the node status with the one stored on chain.
    *
    * @returns Promise resolving to the node count.
    */
   public async subtreeNodeCount(): Promise<number> {
+    // Fetch the latest state from chain first
+    await this.refreshState()
     const children = await this.getChildren()
     if (children.length === 0) {
       return 0
