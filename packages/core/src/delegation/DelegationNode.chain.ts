@@ -36,7 +36,7 @@ export async function storeAsRoot(
   }
   return blockchain.api.tx.delegation.createHierarchy(
     delegation.hierarchyId,
-    await delegation.cTypeHash
+    await delegation.getCTypeHash()
   )
 }
 

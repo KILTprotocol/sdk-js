@@ -35,7 +35,7 @@ jest.mock('./DelegationNode.chain', () => {
       nodes[node.id] = node
       hierarchiesDetails[node.id] = {
         id: node.id,
-        cTypeHash: await node.cTypeHash,
+        cTypeHash: await node.getCTypeHash(),
       }
     }),
     revoke: jest.fn(
@@ -591,7 +591,7 @@ describe('DelegationHierarchy', () => {
     expect(queriedDelegation).not.toBe(undefined)
     if (queriedDelegation) {
       expect(queriedDelegation.account).toBe(identityAlice.address)
-      expect(queriedDelegation.cTypeHash).resolves.toBe(ctypeHash)
+      expect(queriedDelegation.getCTypeHash()).resolves.toBe(ctypeHash)
       expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
     }
   })
