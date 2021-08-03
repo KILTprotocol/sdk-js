@@ -19,7 +19,7 @@ import {
   KeystoreSigningData,
   RequestData,
   ResponseData,
-} from '../types'
+} from '@kiltprotocol/types'
 
 export type SubstrateKeyTypes = Keyring['type']
 export type EncryptionAlgorithms = 'x25519-xsalsa20-poly1305'

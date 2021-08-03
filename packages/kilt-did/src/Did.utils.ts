@@ -10,19 +10,16 @@ import type { Codec, Registry } from '@polkadot/types/types'
 import type {
   DidSigned,
   PublicKeyEnum,
-  ISigningKeyPair,
   UrlEnum,
-  IPublicKey,
-  IDidDeletionOptions,
   IDidUpdateOptions,
   IDidCreationOptions,
   IAuthorizeCallOptions,
   UrlEncodingJson,
   DidAuthorizedCallOperation,
   DidCreationOperation,
-  DidDeletionOperation,
   DidPublicKey,
   DidUpdateOperation,
+  INewPublicKey,
 } from './types'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
@@ -40,7 +37,7 @@ export function getIdentifierFromDid(did: string): string {
 
 export function signCodec<PayloadType extends Codec>(
   payload: PayloadType,
-  signer: ISigningKeyPair
+  signer: { type: string; sign: (message: Uint8Array) => Uint8Array }
 ): DidSigned<PayloadType> {
   const signature = {
     [signer.type]: signer.sign(payload.toU8a()),
@@ -48,12 +45,12 @@ export function signCodec<PayloadType extends Codec>(
   return { payload, signature }
 }
 
-export function formatPublicKey(keypair: IPublicKey): PublicKeyEnum {
+export function formatPublicKey(keypair: INewPublicKey): PublicKeyEnum {
   const { type, publicKey } = keypair
   return { [type]: publicKey }
 }
 
-export function isIKeyPair(keypair: unknown): keypair is IPublicKey {
+export function isIKeyPair(keypair: unknown): keypair is INewPublicKey {
   if (typeof keypair === 'object') {
     const { publicKey, type } = keypair as any
     return publicKey instanceof Uint8Array && typeof type === 'string'
@@ -85,7 +82,9 @@ export function encodeDidCreationOperation(
   const didCreateRaw = {
     did: didIdentifier,
     newAuthenticationKey: formatPublicKey(keys.authentication),
-    newKeyAgreementKeys: [formatPublicKey(keys.encryption)],
+    newKeyAgreementKeys: keys.encryption
+      ? [formatPublicKey(keys.encryption)]
+      : [],
     newAttestationKey: keys.attestation
       ? formatPublicKey(keys.attestation)
       : undefined,
@@ -100,7 +99,7 @@ export function encodeDidCreationOperation(
 }
 
 function matchKeyOperation(
-  keypair: IPublicKey | undefined | null
+  keypair: INewPublicKey | undefined | null
 ): { Delete: null } | { Ignore: null } | { Change: PublicKeyEnum } {
   if (keypair && typeof keypair === 'object') {
     return { Change: formatPublicKey(keypair) }
@@ -114,8 +113,6 @@ function matchKeyOperation(
 export function encodeDidUpdateOperation(
   registry: Registry,
   {
-    didIdentifier,
-    txCounter,
     keysToUpdate = {},
     publicKeysToRemove = [],
     newEndpointUrl,
@@ -123,7 +120,6 @@ export function encodeDidUpdateOperation(
 ): DidUpdateOperation {
   const { authentication, encryption, attestation, delegation } = keysToUpdate
   const didUpdateRaw = {
-    did: didIdentifier,
     newAuthenticationKey: authentication
       ? formatPublicKey(authentication)
       : null,
@@ -134,24 +130,11 @@ export function encodeDidUpdateOperation(
     newEndpointUrl: newEndpointUrl
       ? encodeEndpointUrl(newEndpointUrl)
       : undefined,
-    txCounter,
   }
   return new (registry.getOrThrow<DidUpdateOperation>('DidUpdateOperation'))(
     registry,
     didUpdateRaw
   )
-}
-
-export function encodeDidDeletionOperation(
-  registry: Registry,
-  { didIdentifier, txCounter }: IDidDeletionOptions
-): DidDeletionOperation {
-  return new (registry.getOrThrow<DidDeletionOperation>(
-    'DidDeletionOperation'
-  ))(registry, {
-    did: didIdentifier,
-    txCounter,
-  })
 }
 
 export function encodeDidAuthorizedCallOperation(
@@ -169,7 +152,7 @@ export function encodeDidAuthorizedCallOperation(
 
 export function encodeDidPublicKey(
   registry: Registry,
-  key: IPublicKey
+  key: INewPublicKey
 ): DidPublicKey {
   let keyClass: string
   if (['ed25519', 'sr25519'].includes(key.type)) {

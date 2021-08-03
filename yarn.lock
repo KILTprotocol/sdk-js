@@ -845,6 +845,7 @@ __metadata:
   dependencies:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
+    "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^4.13.1
@@ -864,12 +865,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/did@workspace:packages/kilt-did":
+"@kiltprotocol/did@workspace:*, @kiltprotocol/did@workspace:packages/kilt-did":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/did@workspace:packages/kilt-did"
   dependencies:
     "@kiltprotocol/chain-helpers": "workspace:*"
-    "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/keyring": ^6.7.1
@@ -928,6 +928,7 @@ __metadata:
   dependencies:
     "@polkadot/api": ^4.13.1
     "@polkadot/keyring": ^6.7.1
+    "@polkadot/metadata": 4.13.1
     "@polkadot/types": ^4.13.1
     bn.js: ^4.11.9
     rimraf: ^3.0.2

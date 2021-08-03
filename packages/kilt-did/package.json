@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@kiltprotocol/chain-helpers": "workspace:*",
-    "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/keyring": "^6.7.1",

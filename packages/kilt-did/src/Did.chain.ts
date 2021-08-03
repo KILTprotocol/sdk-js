@@ -11,10 +11,16 @@
  */
 
 import type { Option } from '@polkadot/types'
-import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type {
+  IIdentity,
+  SubmittableExtrinsic,
+  IDidDetails,
+  KeyDetails,
+  KeystoreSigningOptions,
+} from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import type { IDid } from '@kiltprotocol/core'
 import { Crypto } from '@kiltprotocol/utils'
+import type { Extrinsic } from '@polkadot/types/interfaces'
 import type {
   DidDetails,
   DidEncryptionKey,
@@ -23,18 +29,12 @@ import type {
   UrlEncoding,
   IAuthorizeCallOptions,
   IDidCreationOptions,
-  IDidDeletionOptions,
   IDidRecord,
   IDidUpdateOptions,
-  KeyDetails,
-  KeypairType,
-  TypedPublicKey,
-  KeystoreSigningOptions,
 } from './types'
 import {
   encodeDidAuthorizedCallOperation,
   encodeDidCreationOperation,
-  encodeDidDeletionOperation,
   encodeDidUpdateOperation,
   getDidFromIdentifier,
   getIdentifierFromDid,
@@ -47,11 +47,9 @@ export async function queryEncoded(
   return blockchain.api.query.did.did<Option<DidDetails>>(didIdentifier)
 }
 
-function decodePublicKey(
-  key: DidVerificationKey | DidEncryptionKey
-): TypedPublicKey {
+function decodePublicKey(key: DidVerificationKey | DidEncryptionKey) {
   return {
-    type: key.type as KeypairType,
+    type: key.type,
     publicKeyHex: key.value.toHex(),
   }
 }
@@ -89,7 +87,11 @@ export async function queryById(
       lastTxCounter: didDetail.lastTxCounter,
     }
     if (didDetail.endpointUrl.isSome) {
-      didRecord.endpointUrl = decodeEndpointUrl(didDetail.endpointUrl.unwrap())
+      didRecord.endpointData = {
+        urls: [decodeEndpointUrl(didDetail.endpointUrl.unwrap())],
+        contentType: 'application/json',
+        digest: 'N/A',
+      }
     }
     if (didDetail.delegationKey.isSome) {
       didRecord.delegationKey = didDetail.delegationKey.unwrap().toHex()
@@ -103,7 +105,7 @@ export async function queryById(
 }
 
 export async function queryByDID(
-  did: IDid['identifier']
+  did: IDidDetails['did']
 ): Promise<IDidRecord | null> {
   // we will have to extract the id part from the did string
   const didId = getIdentifierFromDid(did)
@@ -137,59 +139,41 @@ export async function generateCreateTx({
   })
 }
 
-export async function generateUpdateTx({
-  didIdentifier,
-  txCounter,
+export async function getUpdateDidExtrinsic({
   keysToUpdate,
   publicKeysToRemove,
   newEndpointUrl,
-  signer,
-  signingKeyId,
-  alg,
-}: IDidUpdateOptions & KeystoreSigningOptions): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = encodeDidUpdateOperation(blockchain.api.registry, {
-    didIdentifier,
-    txCounter,
+}: IDidUpdateOptions): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = encodeDidUpdateOperation(api.registry, {
     keysToUpdate,
     publicKeysToRemove,
     newEndpointUrl,
   })
-  const signature = await signer.sign({
-    data: encoded.toU8a(),
-    meta: {},
-    keyId: signingKeyId,
-    alg,
-  })
-  return blockchain.api.tx.did.submitDidUpdateOperation(encoded, {
-    [signature.alg]: signature.data,
-  })
+  return api.tx.did.update(encoded)
 }
 
-export async function generateDeleteTx({
-  txCounter,
-  didIdentifier,
-  signer,
-  signingKeyId,
-  alg,
-}: IDidDeletionOptions & KeystoreSigningOptions): Promise<
-  SubmittableExtrinsic
-> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = encodeDidDeletionOperation(blockchain.api.registry, {
-    txCounter,
-    didIdentifier,
-  })
-  const signature = await signer.sign({
-    data: encoded.toU8a(),
-    meta: {},
-    keyId: signingKeyId,
-    alg,
-  })
-  return blockchain.api.tx.did.submitDidDeleteOperation(encoded, {
-    [signature.alg]: signature.data,
-  })
+export async function getDeleteDidExtrinsic(): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.did.delete()
 }
+
+// async function deleteDid(
+//   did: IDidDetails,
+//   signer: KeystoreSigner
+// ): Promise<SubmittableExtrinsic> {
+//   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+//   const extrinsic = api.tx.did.delete()
+//   const [key] = getKeysForExtrinsic(api, did, extrinsic)
+//   return generateDidAuthenticatedTx({
+//     didIdentifier: getIdentifierFromDid(did.did),
+//     signingKeyId: key.id,
+//     alg: key.type,
+//     call: extrinsic,
+//     txCounter: did.getNextTxIndex(),
+//     signer,
+//   })
+// }
 
 export async function generateDidAuthenticatedTx({
   signingKeyId,

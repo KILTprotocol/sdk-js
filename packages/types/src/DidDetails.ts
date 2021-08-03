@@ -7,7 +7,6 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { Metadata } from '@polkadot/metadata'
-import type { KeyDetails } from '../types'
 
 export type VerificationKeyRelationship =
   | 'authentication'
@@ -19,7 +18,14 @@ export type KeyRelationship = VerificationKeyRelationship | 'keyAgreement'
 
 export type CallMeta = { section: string; method: string }
 
-export interface ServiceRecord {
+export interface KeyDetails<T extends string = string> {
+  type: T
+  publicKeyHex: string
+  id: string
+  includedAt: number
+}
+
+export interface ServiceDetails {
   id: string
   type: string | string[]
   serviceEndpoint: string | string[]
@@ -31,7 +37,7 @@ export interface IDidDetails {
   getKey(id: KeyDetails['id']): KeyDetails | undefined
   getKeyIds(relationship?: KeyRelationship | 'none'): Array<KeyDetails['id']>
   getKeys(relationship?: KeyRelationship | 'none'): KeyDetails[]
-  getServices(type?: string): ServiceRecord[]
+  getServices(type?: string): ServiceDetails[]
   getNextTxIndex(): BigInt
 }
 

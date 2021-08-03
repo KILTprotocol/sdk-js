@@ -8,13 +8,13 @@
 import type { ApiPromise } from '@polkadot/api'
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { TypeRegistry } from '@polkadot/types'
-import type { KeyDetails } from '../types'
 import type {
-  CallMeta,
-  VerificationKeyRelationship,
-  IDidDetails,
   ApiOrMetadata,
-} from './types'
+  CallMeta,
+  IDidDetails,
+  KeyDetails,
+  VerificationKeyRelationship,
+} from '@kiltprotocol/types'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -32,7 +32,11 @@ const mapping: SectionMapping<
   attestation: { default: 'assertionMethod' },
   ctype: { default: 'assertionMethod' },
   delegation: { default: 'capabilityDelegation' },
-  did: { default: 'paymentAccount' },
+  did: {
+    default: 'paymentAccount',
+    update: 'authentication',
+    delete: 'authentication',
+  },
   default: { default: 'paymentAccount' },
 }
 

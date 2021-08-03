@@ -5,8 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { IIdentity } from '@kiltprotocol/types'
-import type { AnyNumber, SignerPayloadJSON } from '@polkadot/types/types'
+import type { IIdentity, KeyDetails } from '@kiltprotocol/types'
+import type { AnyNumber } from '@polkadot/types/types'
 import type {
   BTreeMap,
   BTreeSet,
@@ -27,44 +27,22 @@ import type {
 
 /* SDK TYPES */
 
-export type KeypairType = string
-
-export interface IPublicKey {
+export interface INewPublicKey<T extends string = string> {
   publicKey: Uint8Array
-  type: KeypairType
+  type: T
 }
-
-export type IVerificationKey = IPublicKey
-export type IEncryptionPublicKey = IPublicKey
-
-export interface ISigningKeyPair extends IVerificationKey {
-  sign: (message: string | Uint8Array) => Uint8Array
-}
-
-export interface IEncryptionKeyPair extends IEncryptionPublicKey {
-  decrypt: (
-    message: Uint8Array,
-    additionalData: Record<string, unknown>
-  ) => Uint8Array | null
-}
-
-export type IKeyPair = ISigningKeyPair | IEncryptionKeyPair
 
 export interface PublicKeyRoleAssignment {
-  authentication: IVerificationKey
-  encryption?: IEncryptionPublicKey
-  attestation?: IVerificationKey
-  delegation?: IVerificationKey
+  authentication: INewPublicKey
+  encryption?: INewPublicKey
+  attestation?: INewPublicKey
+  delegation?: INewPublicKey
 }
 
-export interface TypedPublicKey {
-  type: KeypairType
-  publicKeyHex: string
-}
-
-export interface KeyDetails extends TypedPublicKey {
-  id: string
-  includedAt: number
+export interface IEndpointData {
+  digest: string
+  contentType: string
+  urls: string[]
 }
 
 export interface IDidRecord {
@@ -74,14 +52,14 @@ export interface IDidRecord {
   delegationKey?: KeyDetails['id']
   attestationKey?: KeyDetails['id']
   publicKeys: KeyDetails[]
-  endpointUrl?: string
+  endpointData?: IEndpointData
   lastTxCounter: u64
 }
 
 export type Nullable<T> = { [P in keyof T]: T[P] | null }
 
-export type PublicKeyEnum = Partial<Record<KeypairType, Uint8Array>>
-export type SignatureEnum = Partial<Record<KeypairType, Uint8Array>>
+export type PublicKeyEnum = Record<string, Uint8Array>
+export type SignatureEnum = Record<string, Uint8Array>
 
 export interface UrlEncodingJson {
   payload: string
@@ -103,36 +81,32 @@ export interface IDidCreationOptions {
   endpointUrl?: string
 }
 
-export interface IDidDeletionOptions {
-  didIdentifier: IIdentity['address']
-  txCounter: AnyNumber
-}
-
-export interface IDidUpdateOptions extends IDidDeletionOptions {
+export interface IDidUpdateOptions {
   keysToUpdate?: Partial<Nullable<PublicKeyRoleAssignment>>
   publicKeysToRemove?: Array<KeyId | Uint8Array | string>
   newEndpointUrl?: string
 }
 
-export interface IAuthorizeCallOptions extends IDidDeletionOptions {
+export interface IAuthorizeCallOptions {
+  didIdentifier: IIdentity['address']
+  txCounter: AnyNumber
   call: Extrinsic
 }
 
 /* CHAIN TYPES / CODECS */
 
-export interface DidVerificationKey extends Enum {
-  isEd25519: boolean
-  isSr25519: boolean
-  asEd25519: Vec<u8>
-  asSr25519: Vec<u8>
-  type: 'sr25519' | 'ed25519'
+type SupportedSignatureKeys = 'sr25519' | 'ed25519' | 'ecdsa'
+type SupportedEncryptionKeys = 'x25519'
+
+export interface DidVerificationKey<T extends string = SupportedSignatureKeys>
+  extends Enum {
+  type: T
   value: Vec<u8>
 }
 
-export interface DidEncryptionKey extends Enum {
-  isX25519: boolean
-  asX25519: Vec<u8>
-  type: 'x25519'
+export interface DidEncryptionKey<T extends string = SupportedEncryptionKeys>
+  extends Enum {
+  type: T
   value: Vec<u8>
 }
 
@@ -206,19 +180,12 @@ export interface DidKeyUpdateAction extends Enum {
 }
 
 export interface DidUpdateOperation extends Struct {
-  did: DidIdentifier
   newAuthenticationKey: Option<DidVerificationKey>
   newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
   attestationKeyUpdate: DidKeyUpdateAction
   delegationKeyUpdate: DidKeyUpdateAction
   publicKeysToRemove: BTreeSet<KeyId>
   newEndpointUrl: Option<Url>
-  txCounter: u64
-}
-
-export interface DidDeletionOperation extends Struct {
-  did: DidIdentifier
-  txCounter: u64
 }
 
 export interface DidSignature extends Enum {
@@ -232,49 +199,4 @@ export interface DidAuthorizedCallOperation extends Struct {
   did: DidIdentifier
   txCounter: u64
   call: Call
-}
-
-export interface RequestData<A extends string> {
-  alg: A
-  keyId: string // id of the key to use
-  data: Uint8Array // data to sign / encrypt / decrypt
-}
-
-export interface ResponseData<A extends string> {
-  alg: A
-  data: Uint8Array
-}
-
-export interface KeystoreSigningData<A extends string> extends RequestData<A> {
-  meta?: Partial<SignerPayloadJSON> // info for extensions to display to user
-}
-
-export interface Keystore<
-  SignAlgs extends string = string,
-  EncryptAlgs extends string = string
-> {
-  supportedAlgs(): Promise<Set<SignAlgs | EncryptAlgs>>
-  sign<A extends SignAlgs>(
-    signData: KeystoreSigningData<A>
-  ): Promise<ResponseData<A>>
-  encrypt<A extends EncryptAlgs>(
-    requestData: RequestData<A>
-  ): Promise<ResponseData<A>>
-  decrypt<A extends EncryptAlgs>(
-    requestData: RequestData<A>
-  ): Promise<ResponseData<A>>
-  getKeyIds?(): Promise<string[]>
-  // OR if above is deemed to reveal too much:
-  hasKeys(keyIds: string[]): Promise<boolean[]>
-}
-
-export type KeystoreSigner<A extends string = string> = Pick<
-  Keystore<A>,
-  'sign'
->
-
-export interface KeystoreSigningOptions<A extends string = string> {
-  signer: KeystoreSigner<A>
-  signingKeyId: string
-  alg: A
 }

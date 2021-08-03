@@ -5,9 +5,9 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { ServiceDetails } from '@kiltprotocol/types'
 import { DidDetails, DidDetailsCreationOpts } from '../DidDetails/DidDetails'
 import { queryByDID } from '../Did.chain'
-import { ServiceRecord } from '../DidDetails/types'
 
 /**
  * This is only a dummy; we don't know yet how the extra service data will be secured (signature over data?).
@@ -16,7 +16,7 @@ export type ServicesResolver = (
   resourceHash: string,
   endpoints: string[],
   contentType: string
-) => Promise<ServiceRecord[]>
+) => Promise<ServiceDetails[]>
 
 export interface ResolverOpts {
   did: string

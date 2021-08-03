@@ -5,18 +5,21 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { SubmittableExtrinsic } from '@kiltprotocol/sdk-js'
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { generateDidAuthenticatedTx } from '../Did.chain'
-import type { KeyDetails, KeystoreSigner } from '../types'
+import { serialize, deserialize } from 'v8'
 import type {
+  KeyDetails,
+  KeystoreSigner,
+  SubmittableExtrinsic,
   ApiOrMetadata,
   CallMeta,
   IDidDetails,
   KeyRelationship,
-  ServiceRecord,
-} from './types'
+  ServiceDetails,
+} from '@kiltprotocol/types'
+
+import { generateDidAuthenticatedTx } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './utils'
 
 export type KeyRoles = Partial<Record<KeyRelationship, Array<KeyDetails['id']>>>
@@ -26,7 +29,7 @@ export interface DidDetailsCreationOpts {
   keys: KeyDetails[]
   keyRelationships: KeyRoles
   lastTxIndex: bigint
-  services?: ServiceRecord[]
+  services?: ServiceDetails[]
 }
 
 function errorCheck({
@@ -45,7 +48,7 @@ function errorCheck({
 export class DidDetails implements IDidDetails {
   public readonly did: string
   public readonly identifier: string
-  protected services: ServiceRecord[]
+  protected services: ServiceDetails[]
   protected keys: Map<KeyDetails['id'], KeyDetails>
   protected keyRelationships: KeyRoles & { none?: Array<KeyDetails['id']> }
 
@@ -104,7 +107,7 @@ export class DidDetails implements IDidDetails {
     return [...this.keys.keys()]
   }
 
-  public getServices(type?: string): ServiceRecord[] {
+  public getServices(type?: string): ServiceDetails[] {
     if (type) {
       return this.services.filter((service) => service.type === type)
     }
