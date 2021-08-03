@@ -55,12 +55,12 @@ async function addDelegation(
   delegee: Identity,
   permissions: Permission[] = [Permission.ATTEST, Permission.DELEGATE]
 ): Promise<DelegationNode> {
-  const delegationNode = DelegationNode.newNode(
+  const delegationNode = DelegationNode.newNode({
     hierarchyId,
     parentId,
-    delegee.address,
-    permissions
-  )
+    account: delegee.address,
+    permissions,
+  })
 
   await delegationNode
     .store(delegee.signStr(delegationNode.generateHash()))

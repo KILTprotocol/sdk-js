@@ -33,7 +33,10 @@ jest.mock('./DelegationNode.chain', () => {
     query: jest.fn(async (id: string) => nodes[id] || null),
     storeAsRoot: jest.fn(async (node: DelegationNode) => {
       nodes[node.id] = node
-      hierarchiesDetails[node.id] = { cTypeHash: await node.cTypeHash }
+      hierarchiesDetails[node.id] = {
+        id: node.id,
+        cTypeHash: await node.cTypeHash,
+      }
     }),
     revoke: jest.fn(
       async (
@@ -164,6 +167,7 @@ describe('DelegationNode', () => {
     it('get delegation root', async () => {
       hierarchiesDetails = {
         [hierarchyId]: {
+          id: hierarchyId,
           cTypeHash:
             'kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84',
         },
@@ -558,9 +562,10 @@ describe('DelegationHierarchy', () => {
       [ROOT_IDENTIFIER]: revokedRootDelegationNode,
       [ROOT_SUCCESS]: notRevokedRootDelegationNode,
     }
+
     hierarchiesDetails = {
-      [ROOT_IDENTIFIER]: { cTypeHash: ctypeHash },
-      [ROOT_SUCCESS]: { cTypeHash: ctypeHash },
+      [ROOT_IDENTIFIER]: { id: ROOT_IDENTIFIER, cTypeHash: ctypeHash },
+      [ROOT_SUCCESS]: { id: ROOT_SUCCESS, cTypeHash: ctypeHash },
     }
   })
 
