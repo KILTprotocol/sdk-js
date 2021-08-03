@@ -24,15 +24,27 @@ import type {
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 
-export function getDidFromIdentifier(identifier: string): string {
+export function getKiltDidFromIdentifier(identifier: string): string {
+  if (identifier.startsWith(KILT_DID_PREFIX)) {
+    return identifier
+  }
   return KILT_DID_PREFIX + identifier
 }
 
-export function getIdentifierFromDid(did: string): string {
+export function getIdentifierFromKiltDid(did: string): string {
   if (!did.startsWith(KILT_DID_PREFIX)) {
     throw SDKErrors.ERROR_INVALID_DID_PREFIX(did)
   }
   return did.substr(KILT_DID_PREFIX.length)
+}
+
+export function getIdentifierFromDid(did: string): string {
+  const secondColonAt = did.indexOf(':', did.indexOf(':') + 1)
+  const identifier = did.substring(secondColonAt + 1)
+  if (!identifier) {
+    throw SDKErrors.ERROR_INVALID_DID_PREFIX(did)
+  }
+  return identifier
 }
 
 export function signCodec<PayloadType extends Codec>(

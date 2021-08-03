@@ -36,8 +36,8 @@ import {
   encodeDidAuthorizedCallOperation,
   encodeDidCreationOperation,
   encodeDidUpdateOperation,
-  getDidFromIdentifier,
-  getIdentifierFromDid,
+  getKiltDidFromIdentifier,
+  getIdentifierFromKiltDid,
 } from './Did.utils'
 
 export async function queryEncoded(
@@ -80,7 +80,7 @@ export async function queryById(
     ).map((id) => id.toHex())
 
     const didRecord: IDidRecord = {
-      did: getDidFromIdentifier(didIdentifier),
+      did: getKiltDidFromIdentifier(didIdentifier),
       publicKeys,
       authenticationKey: authenticationKeyId,
       keyAgreementKeys: keyAgreementKeyIds,
@@ -108,7 +108,7 @@ export async function queryByDID(
   did: IDidDetails['did']
 ): Promise<IDidRecord | null> {
   // we will have to extract the id part from the did string
-  const didId = getIdentifierFromDid(did)
+  const didId = getIdentifierFromKiltDid(did)
   return queryById(didId)
 }
 
@@ -166,7 +166,7 @@ export async function getDeleteDidExtrinsic(): Promise<Extrinsic> {
 //   const extrinsic = api.tx.did.delete()
 //   const [key] = getKeysForExtrinsic(api, did, extrinsic)
 //   return generateDidAuthenticatedTx({
-//     didIdentifier: getIdentifierFromDid(did.did),
+//     didIdentifier: getIdentifierFromKiltDid(did.did),
 //     signingKeyId: key.id,
 //     alg: key.type,
 //     call: extrinsic,
