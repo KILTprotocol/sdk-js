@@ -264,7 +264,7 @@ export default class DelegationNode implements IDelegationNode {
    * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
    */
   public async refreshState(): Promise<void> {
-    const newNodeState = query(this.id)
+    const newNodeState = await query(this.id)
     if (!newNodeState) {
       throw SDKErrors.ERROR_DELEGATION_ID_MISSING
     }
