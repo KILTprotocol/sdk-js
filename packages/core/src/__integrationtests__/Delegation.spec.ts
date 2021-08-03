@@ -231,7 +231,7 @@ describe('revocation', () => {
   }, 60_000)
 
   it('delegator can revoke root, revoking all delegations in tree', async () => {
-    const delegationRoot = await writeHierarchy(delegator, DriversLicense.hash)
+    let delegationRoot = await writeHierarchy(delegator, DriversLicense.hash)
     const delegationA = await addDelegation(
       delegationRoot.id,
       delegationRoot.id,
@@ -244,6 +244,7 @@ describe('revocation', () => {
       firstDelegee,
       secondDelegee
     )
+    delegationRoot = await delegationRoot.getLatestState()
     await expect(
       delegationRoot.revoke(delegator.address).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, delegator, {

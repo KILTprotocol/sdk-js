@@ -156,7 +156,7 @@ export default class DelegationNode implements IDelegationNode {
    *
    * @returns The CType hash associated with the delegation hierarchy.
    */
-  public get cTypeHash(): Promise<string> {
+  public async getCTypeHash(): Promise<string> {
     return this.getHierarchyDetails().then((details) => details.cTypeHash)
   }
 
@@ -263,12 +263,12 @@ export default class DelegationNode implements IDelegationNode {
    *
    * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
    */
-  public async refreshState(): Promise<void> {
+  public async getLatestState(): Promise<DelegationNode> {
     const newNodeState = await query(this.id)
     if (!newNodeState) {
       throw SDKErrors.ERROR_DELEGATION_ID_MISSING
     }
-    Object.assign(this, newNodeState)
+    return newNodeState
   }
 
   /**
@@ -332,14 +332,11 @@ export default class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Recursively counts all nodes that descend from the current node (excluding the current node), after refreshing the node status with the one stored on chain.
+   * [ASYNC] Recursively counts all nodes that descend from the current node (excluding the current node). It is important to first refresh the state of the node from the chain.
    *
    * @returns Promise resolving to the node count.
    */
   public async subtreeNodeCount(): Promise<number> {
-    // Fetch the latest state from chain first
-    await this.refreshState()
-
     const children = await this.getChildren()
     if (children.length === 0) {
       return 0
