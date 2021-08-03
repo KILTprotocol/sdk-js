@@ -25,7 +25,7 @@ export interface IRequestForAttestation {
   claim: IClaim
   claimNonceMap: Record<Hash, string>
   claimHashes: Hash[]
-  claimerSignature: string
+  claimerSignature?: { signature: string; keyId: string }
   delegationId: IDelegationBaseNode['id'] | null
   legitimations: IAttestedClaim[]
   rootHash: Hash

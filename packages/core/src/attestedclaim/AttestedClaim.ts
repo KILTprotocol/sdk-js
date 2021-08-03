@@ -21,8 +21,11 @@ import type {
   CompressedAttestedClaim,
   IAttestation,
   IRequestForAttestation,
+  IDidDetails,
+  IDidResolver,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
+import { DefaultResolver } from '@kiltprotocol/did'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import AttestedClaimUtils from './AttestedClaim.utils'
@@ -111,17 +114,45 @@ export default class AttestedClaim implements IAttestedClaim {
    * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
    *
    * @param attestedClaim - The attested claim to check for validity.
+   * @param verificationOpts
+   * @param verificationOpts.claimerDid
+   * @param verificationOpts.resolver
    * @returns A promise containing whether this attested claim is valid.
    * @example ```javascript
    * attestedClaim.verify().then((isVerified) => {
-   *   // `isVerified` is true if the attestation is verified, false otherwise
+   * // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```
    */
-  public static async verify(attestedClaim: IAttestedClaim): Promise<boolean> {
-    return (
-      AttestedClaim.verifyData(attestedClaim) &&
-      Attestation.checkValidity(attestedClaim.attestation)
+  public static async verify(
+    attestedClaim: IAttestedClaim,
+    {
+      claimerDid,
+      resolver = DefaultResolver,
+    }: { claimerDid?: IDidDetails; resolver?: IDidResolver } = {}
+  ): Promise<boolean> {
+    if (claimerDid) {
+      return (
+        AttestedClaim.verifyData(attestedClaim) &&
+        RequestForAttestation.verifySignature(
+          attestedClaim.request,
+          claimerDid
+        ) &&
+        Attestation.checkValidity(attestedClaim.attestation)
+      )
+    }
+    if (resolver) {
+      return (
+        AttestedClaim.verifyData(attestedClaim) &&
+        (await RequestForAttestation.resolveAndVerifySignature(
+          attestedClaim.request,
+          resolver
+        )) &&
+        Attestation.checkValidity(attestedClaim.attestation)
+      )
+    }
+    throw new Error(
+      'Either the claimer DidDetails or a resolver is required for verification'
     )
   }
 

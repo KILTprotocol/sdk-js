@@ -11,10 +11,10 @@
 
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
+import { getIdentifierFromDid } from '@kiltprotocol/did'
 import CType from '../ctype/CType'
 import Claim from './Claim'
 import ClaimUtils from './Claim.utils'
-import { getIdentifierFromDid } from '@kiltprotocol/did'
 
 describe('Claim', () => {
   let did: string

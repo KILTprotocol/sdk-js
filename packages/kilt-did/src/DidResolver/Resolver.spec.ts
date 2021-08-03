@@ -6,8 +6,9 @@
  */
 
 import { TypeRegistry } from '@kiltprotocol/chain-helpers'
+import { ServicesResolver } from '@kiltprotocol/types'
 import { IDidRecord } from '../types'
-import { resolveDid, ServicesResolver } from './Resolver'
+import { DefaultResolver } from './DefaultResolver'
 
 jest.mock('../Did.chain', () => ({
   queryByDID: jest.fn(
@@ -18,15 +19,17 @@ jest.mock('../Did.chain', () => ({
       publicKeys: [
         {
           id: `${did}#auth`,
-          includedAt: 200,
           type: 'ed25519',
+          controller: did,
           publicKeyHex: '0x123',
+          includedAt: 200,
         },
         {
           id: `${did}#x25519`,
-          includedAt: 250,
           type: 'x25519',
+          controller: did,
           publicKeyHex: '0x25519',
+          includedAt: 250,
         },
       ],
       lastTxCounter: TypeRegistry.createType('u64', 10),
@@ -36,14 +39,16 @@ jest.mock('../Did.chain', () => ({
 }))
 
 it('resolves stuff', async () => {
-  await expect(resolveDid({ did: 'did:kilt:test' })).resolves.toMatchObject({
+  await expect(
+    DefaultResolver.resolve({ did: 'did:kilt:test' })
+  ).resolves.toMatchObject({
     did: 'did:kilt:test',
     identifier: 'test',
   })
 })
 
 it('has the right keys', async () => {
-  const didRecord = await resolveDid({ did: 'did:kilt:test' })
+  const didRecord = await DefaultResolver.resolve({ did: 'did:kilt:test' })
   expect(didRecord?.getKeyIds()).toStrictEqual([
     'did:kilt:test#auth',
     'did:kilt:test#x25519',
@@ -70,15 +75,16 @@ it('adds services when service resolver is present', async () => {
   const servicesResolver: ServicesResolver = jest.fn(async () => [service])
 
   await expect(
-    resolveDid({ did: 'did:kilt:test' }).then((did) =>
+    DefaultResolver.resolve({ did: 'did:kilt:test' }).then((did) =>
       did?.getServices('DidComm messaging')
     )
   ).resolves.toMatchObject([])
 
   await expect(
-    resolveDid({ did: 'did:kilt:test', servicesResolver }).then((did) =>
-      did?.getServices('DidComm messaging')
-    )
+    DefaultResolver.resolve({
+      did: 'did:kilt:test',
+      servicesResolver,
+    }).then((did) => did?.getServices('DidComm messaging'))
   ).resolves.toMatchObject([service])
 
   expect(servicesResolver).toHaveBeenCalledWith(

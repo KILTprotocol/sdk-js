@@ -19,9 +19,10 @@ export type KeyRelationship = VerificationKeyRelationship | 'keyAgreement'
 export type CallMeta = { section: string; method: string }
 
 export interface KeyDetails<T extends string = string> {
-  type: T
-  publicKeyHex: string
   id: string
+  type: T
+  controller: IDidDetails['did']
+  publicKeyHex: string
   includedAt: number
 }
 

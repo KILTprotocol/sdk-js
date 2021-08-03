@@ -5,25 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ServiceDetails } from '@kiltprotocol/types'
+import type { IDidResolver, ResolverOpts } from '@kiltprotocol/types'
 import { DidDetails, DidDetailsCreationOpts } from '../DidDetails/DidDetails'
 import { queryByDID } from '../Did.chain'
 
 /**
  * This is only a dummy; we don't know yet how the extra service data will be secured (signature over data?).
  */
-export type ServicesResolver = (
-  resourceHash: string,
-  endpoints: string[],
-  contentType: string
-) => Promise<ServiceDetails[]>
 
-export interface ResolverOpts {
-  did: string
-  servicesResolver?: ServicesResolver
-}
-
-export async function resolveDid({
+export async function resolve({
   did,
   servicesResolver,
 }: ResolverOpts): Promise<DidDetails | null> {
@@ -61,3 +51,5 @@ export async function resolveDid({
   }
   return new DidDetails(didDetails)
 }
+
+export const DefaultResolver: IDidResolver = { resolve }

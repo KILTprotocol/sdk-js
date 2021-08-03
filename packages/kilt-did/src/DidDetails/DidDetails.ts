@@ -21,6 +21,7 @@ import type {
 
 import { generateDidAuthenticatedTx } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './utils'
+import { getIdentifierFromDid } from '../Did.utils'
 
 export type KeyRoles = Partial<Record<KeyRelationship, Array<KeyDetails['id']>>>
 
@@ -73,8 +74,7 @@ export class DidDetails implements IDidDetails {
     this.keys = new Map(keys.map((key) => [key.id, key]))
     this.lastTxIndex = lastTxIndex
     this.services = services
-    const secondColonAt = this.did.indexOf(':', this.did.indexOf(':') + 1)
-    this.identifier = this.did.substring(secondColonAt + 1)
+    this.identifier = getIdentifierFromDid(this.did)
     this.keyRelationships = keyRelationships
     this.keyRelationships.none = []
     const keysWithRelationship = new Set<string>(

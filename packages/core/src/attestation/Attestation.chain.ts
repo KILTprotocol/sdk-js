@@ -15,6 +15,7 @@ import { DecoderUtils } from '@kiltprotocol/utils'
 import type { AccountId, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { getKiltDidFromIdentifier } from '@kiltprotocol/did'
 import Attestation from './Attestation'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
@@ -27,19 +28,15 @@ const log = ConfigService.LoggingFactory.getLogger('Attestation')
 export async function store(
   attestation: IAttestation
 ): Promise<SubmittableExtrinsic> {
-  const txParams = {
-    claimHash: attestation.claimHash,
-    ctypeHash: attestation.cTypeHash,
-    delegationId: attestation.delegationId,
-  }
+  const { claimHash, cTypeHash, delegationId } = attestation
   log.debug(() => `Create tx for 'attestation.add'`)
 
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
   const tx = blockchain.api.tx.attestation.add(
-    txParams.claimHash,
-    txParams.ctypeHash,
-    txParams.delegationId
+    claimHash,
+    cTypeHash,
+    delegationId
   )
   return tx
 }
@@ -64,7 +61,7 @@ function decode(
     const attestation: IAttestation = {
       claimHash,
       cTypeHash: chainAttestation.ctypeHash.toString(),
-      owner: chainAttestation.attester.toString(),
+      owner: getKiltDidFromIdentifier(chainAttestation.attester.toString()),
       delegationId:
         chainAttestation.delegationId.unwrapOr(null)?.toString() || null,
       revoked: chainAttestation.revoked.valueOf(),

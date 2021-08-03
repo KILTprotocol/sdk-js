@@ -20,17 +20,16 @@ import type {
 } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto } from '@kiltprotocol/utils'
-import type { Extrinsic } from '@polkadot/types/interfaces'
+import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type {
   DidDetails,
-  DidEncryptionKey,
-  DidVerificationKey,
   Url,
   UrlEncoding,
   IAuthorizeCallOptions,
   IDidCreationOptions,
   IDidRecord,
   IDidUpdateOptions,
+  DidPublicKeyDetails,
 } from './types'
 import {
   encodeDidAuthorizedCallOperation,
@@ -47,10 +46,18 @@ export async function queryEncoded(
   return blockchain.api.query.did.did<Option<DidDetails>>(didIdentifier)
 }
 
-function decodePublicKey(key: DidVerificationKey | DidEncryptionKey) {
+function decodeDidPublicKeyDetails(
+  did: string,
+  keyId: Hash,
+  keyDetails: DidPublicKeyDetails
+): KeyDetails {
+  const key = keyDetails.key.value
   return {
+    id: keyId.toHex(),
     type: key.type,
+    controller: did,
     publicKeyHex: key.value.toHex(),
+    includedAt: keyDetails.blockNumber.toNumber(),
   }
 }
 
@@ -64,15 +71,12 @@ export async function queryById(
   const result = await queryEncoded(didIdentifier)
   result.unwrapOr(null)
   if (result.isSome) {
+    const did = getKiltDidFromIdentifier(didIdentifier)
     const didDetail = result.unwrap()
     const publicKeys: KeyDetails[] = Array.from(
       didDetail.publicKeys.entries()
     ).map(([keyId, keyDetails]) => {
-      return {
-        ...decodePublicKey(keyDetails.key.value),
-        id: keyId.toHex(),
-        includedAt: keyDetails.blockNumber.toNumber(),
-      }
+      return decodeDidPublicKeyDetails(did, keyId, keyDetails)
     })
     const authenticationKeyId = didDetail.authenticationKey.toHex()
     const keyAgreementKeyIds = Array.from(
@@ -80,7 +84,7 @@ export async function queryById(
     ).map((id) => id.toHex())
 
     const didRecord: IDidRecord = {
-      did: getKiltDidFromIdentifier(didIdentifier),
+      did,
       publicKeys,
       authenticationKey: authenticationKeyId,
       keyAgreementKeys: keyAgreementKeyIds,
@@ -110,6 +114,22 @@ export async function queryByDID(
   // we will have to extract the id part from the did string
   const didId = getIdentifierFromKiltDid(did)
   return queryById(didId)
+}
+
+export async function queryKey(
+  did: string,
+  keyId: string
+): Promise<KeyDetails | null> {
+  const encoded = await queryEncoded(getIdentifierFromKiltDid(did))
+  if (encoded.isNone) return null
+  const keyIdU8a = Crypto.coToUInt8(keyId)
+  let key: KeyDetails | null = null
+  encoded.unwrap().publicKeys.forEach((keyDetails, id) => {
+    if (id.eq(keyIdU8a)) {
+      key = decodeDidPublicKeyDetails(did, id, keyDetails)
+    }
+  })
+  return key
 }
 
 export async function generateCreateTx({
