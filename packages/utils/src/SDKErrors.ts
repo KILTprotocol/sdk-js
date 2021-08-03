@@ -43,6 +43,11 @@ export enum ErrorCode {
   ERROR_IDENTITY_NOT_PE_ENABLED = 10016,
   ERROR_WS_ADDRESS_NOT_SET = 10017,
   ERROR_DELEGATION_ID_MISSING = 10018,
+  ERROR_HIERARCHY_DETAILS_MISSING = 10019,
+  ERROR_DELEGATION_SIGNATURE_MISSING = 10020,
+  ERROR_DELEGATION_PARENT_MISSING = 10021,
+  ERROR_INVALID_ROOT_NODE = 10022,
+  ERROR_INVALID_DELEGATION_NODE = 10023,
 
   // Data type is wrong or malformed
   ERROR_ADDRESS_TYPE = 20001,
@@ -59,7 +64,7 @@ export enum ErrorCode {
   ERROR_CLAIM_HASHTREE_MISMATCH = 20014,
   ERROR_PE_MISMATCH = 20015,
   ERROR_DID_IDENTIFIER_MISMATCH = 20016,
-  ERROR_ROOT_NODE_QUERY = 20017,
+  ERROR_HIERARCHY_QUERY = 20017,
   ERROR_INVALID_DID_PREFIX = 20018,
   ERROR_MESSAGE_BODY_MALFORMED = 20019,
   ERROR_NODE_QUERY = 20020,
@@ -279,6 +284,41 @@ export const ERROR_DELEGATION_ID_MISSING: () => SDKError = () => {
   )
 }
 
+export const ERROR_HIERARCHY_DETAILS_MISSING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_HIERARCHY_DETAILS_MISSING,
+    'Delegation hierarchy details missing'
+  )
+}
+
+export const ERROR_DELEGATION_SIGNATURE_MISSING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_DELEGATION_SIGNATURE_MISSING,
+    "Delegatee's signature missing"
+  )
+}
+
+export const ERROR_DELEGATION_PARENT_MISSING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_DELEGATION_PARENT_MISSING,
+    'Delegation parentId missing'
+  )
+}
+
+export const ERROR_INVALID_ROOT_NODE: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_INVALID_ROOT_NODE,
+    'The given node is not a valid root node'
+  )
+}
+
+export const ERROR_INVALID_DELEGATION_NODE: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_INVALID_DELEGATION_NODE,
+    'The given node is not a valid delegation node'
+  )
+}
+
 export const ERROR_CLAIM_CONTENTS_MALFORMED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CLAIM_CONTENTS_MALFORMED,
@@ -366,11 +406,11 @@ export const ERROR_PE_MISMATCH: () => SDKError = () => {
     'Verifier requested public presentation, but privacy enhancement was forced.'
   )
 }
-export const ERROR_ROOT_NODE_QUERY: (rootId: string) => SDKError = (
+export const ERROR_HIERARCHY_QUERY: (rootId: string) => SDKError = (
   rootId: string
 ) => {
   return new SDKError(
-    ErrorCode.ERROR_ROOT_NODE_QUERY,
+    ErrorCode.ERROR_HIERARCHY_QUERY,
     `Could not find root node with id ${rootId}`
   )
 }
