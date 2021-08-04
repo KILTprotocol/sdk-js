@@ -12,7 +12,7 @@
 
 import type { IAttestedClaim, CompressedAttestedClaim } from './AttestedClaim'
 import type { IClaim, CompressedClaim } from './Claim'
-import type { IDelegationBaseNode } from './Delegation'
+import type { IDelegationNode } from './Delegation'
 
 export type Hash = string
 
@@ -26,7 +26,7 @@ export interface IRequestForAttestation {
   claimNonceMap: Record<Hash, string>
   claimHashes: Hash[]
   claimerSignature?: { signature: string; keyId: string }
-  delegationId: IDelegationBaseNode['id'] | null
+  delegationId: IDelegationNode['id'] | null
   legitimations: IAttestedClaim[]
   rootHash: Hash
 }

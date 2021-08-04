@@ -10,47 +10,62 @@
  * @module DelegationNode
  */
 
-import type { Option } from '@polkadot/types'
+import type { Option, Vec } from '@polkadot/types'
 import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import DelegationBaseNode from './Delegation'
-import { fetchChildren, getChildIds } from './Delegation.chain'
-import {
-  CodecWithId,
-  decodeDelegationNode,
-  IChainDelegationNode,
-} from './DelegationDecoder'
+import type { Hash } from '@polkadot/types/interfaces'
+import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
+import { decodeDelegationNode, IChainDelegationNode } from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
 import { permissionsAsBitset } from './DelegationNode.utils'
 
-const log = ConfigService.LoggingFactory.getLogger('DelegationBaseNode')
+const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
+
+/**
+ * @param delegation
+ * @internal
+ */
+export async function storeAsRoot(
+  delegation: DelegationNode
+): Promise<SubmittableExtrinsic> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+
+  if (!delegation.isRoot()) {
+    throw SDKErrors.ERROR_INVALID_ROOT_NODE
+  }
+  return blockchain.api.tx.delegation.createHierarchy(
+    delegation.hierarchyId,
+    await delegation.getCTypeHash()
+  )
+}
 
 /**
  * @param delegation
  * @param signature
  * @internal
  */
-export async function store(
-  delegation: IDelegationNode,
+export async function storeAsDelegation(
+  delegation: DelegationNode,
   signature: string
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const includeParentId: boolean = delegation.parentId
-    ? delegation.parentId !== delegation.rootId
-    : false
-  const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.addDelegation(
+
+  if (delegation.isRoot()) {
+    throw SDKErrors.ERROR_INVALID_DELEGATION_NODE
+  }
+
+  return blockchain.api.tx.delegation.addDelegation(
     delegation.id,
-    delegation.rootId,
-    includeParentId ? delegation.parentId : undefined,
+    delegation.parentId,
     delegation.account,
     permissionsAsBitset(delegation),
     signature
   )
-  return tx
 }
 
 /**
+ * @param delegation
  * @param delegationId
  * @internal
  */
@@ -59,23 +74,17 @@ export async function query(
 ): Promise<DelegationNode | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const decoded = decodeDelegationNode(
-    await blockchain.api.query.delegation.delegations<
+    await blockchain.api.query.delegation.delegationNodes<
       Option<IChainDelegationNode>
     >(delegationId)
   )
-  if (decoded) {
-    const root = new DelegationNode({
-      id: delegationId,
-      rootId: decoded.rootId,
-      account: decoded.account,
-      permissions: decoded.permissions,
-      parentId: decoded.parentId,
-      revoked: decoded.revoked,
-    })
-
-    return root
+  if (!decoded) {
+    return null
   }
-  return null
+  return new DelegationNode({
+    ...decoded,
+    id: delegationId,
+  })
 }
 
 /**
@@ -104,36 +113,47 @@ export async function revoke(
 
 /**
  * @param delegationNodeId
+ * @param delegationNode
  * @internal
  */
-// function lives here to avoid circular imports between DelegationBaseNode and DelegationNode
 export async function getChildren(
-  delegationNodeId: DelegationBaseNode['id']
+  delegationNode: DelegationNode
 ): Promise<DelegationNode[]> {
-  log.info(` :: getChildren('${delegationNodeId}')`)
-  const childIds: string[] = await getChildIds(delegationNodeId)
-  const queryResults: Array<CodecWithId<
-    Option<IChainDelegationNode>
-  >> = await fetchChildren(childIds)
-  const children: DelegationNode[] = queryResults
-    .map((codec: CodecWithId<Option<IChainDelegationNode>>) => {
-      const decoded = decodeDelegationNode(codec.codec)
-      if (decoded) {
-        const child = new DelegationNode({
-          id: codec.id,
-          rootId: decoded.rootId,
-          account: decoded.account,
-          permissions: decoded.permissions,
-          parentId: decoded.parentId,
-          revoked: decoded.revoked,
-        })
-        return child
+  log.info(` :: getChildren('${delegationNode.id}')`)
+  const childrenNodes = await Promise.all(
+    delegationNode.childrenIds.map(async (childId) => {
+      const childNode = await query(childId)
+      if (!childNode) {
+        throw SDKErrors.ERROR_DELEGATION_ID_MISSING
       }
-      return null
+      return childNode
     })
-    .filter((value): value is DelegationNode => {
-      return value !== null
-    })
-  log.info(`children: ${JSON.stringify(children)}`)
-  return children
+  )
+  log.info(`children: ${JSON.stringify(childrenNodes)}`)
+  return childrenNodes
+}
+
+/**
+ * @param delegationNodeId
+ * @param queryResult
+ * @internal
+ */
+function decodeDelegatedAttestations(queryResult: Option<Vec<Hash>>): string[] {
+  DecoderUtils.assertCodecIsType(queryResult, ['Option<Vec<ClaimHashOf>>'])
+  return queryResult.unwrapOrDefault().map((hash) => hash.toHex())
+}
+
+/**
+ * @param delegationNodeId
+ * @param id
+ * @internal
+ */
+export async function getAttestationHashes(
+  id: IDelegationNode['id']
+): Promise<string[]> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const encodedHashes = await blockchain.api.query.attestation.delegatedAttestations<
+    Option<Vec<Hash>>
+  >(id)
+  return decodeDelegatedAttestations(encodedHashes)
 }

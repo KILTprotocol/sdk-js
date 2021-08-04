@@ -10,54 +10,215 @@
  *
  * Starting from the root node, entities can delegate the right to issue attestations to Claimers for a certain CTYPE and also delegate the right to attest and to delegate further nodes.
  *
+ * A delegation object is stored on-chain, and can be revoked.
+ *
+ * A delegation can and may restrict permissions.
+ *
+ * Permissions:
+ *   * Delegate.
+ *   * Attest.
+ *
  * @packageDocumentation
  * @module DelegationNode
  * @preferred
  */
 
-import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
-import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import type {
+  IDelegationHierarchyDetails,
+  IDelegationNode,
+  IPublicIdentity,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import DelegationBaseNode from './Delegation'
-import { getChildren, query, revoke, store } from './DelegationNode.chain'
+import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
+import { query as queryAttestation } from '../attestation/Attestation.chain'
+import {
+  getChildren,
+  getAttestationHashes,
+  query,
+  revoke,
+  storeAsDelegation,
+  storeAsRoot,
+} from './DelegationNode.chain'
+import { query as queryDetails } from './DelegationHierarchyDetails.chain'
 import * as DelegationNodeUtils from './DelegationNode.utils'
-import DelegationRootNode from './DelegationRootNode'
-import { query as queryRoot } from './DelegationRootNode.chain'
+import Attestation from '../attestation/Attestation'
+import Identity from '../identity/Identity'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
-export default class DelegationNode extends DelegationBaseNode
-  implements IDelegationNode {
+type NewDelegationNodeInput = Required<
+  Pick<IDelegationNode, 'hierarchyId' | 'parentId' | 'account' | 'permissions'>
+>
+
+type NewDelegationRootInput = Pick<IDelegationNode, 'account' | 'permissions'> &
+  DelegationHierarchyDetailsRecord
+
+export default class DelegationNode implements IDelegationNode {
+  public readonly id: IDelegationNode['id']
+  public readonly hierarchyId: IDelegationNode['hierarchyId']
+  public readonly parentId?: IDelegationNode['parentId']
+  public readonly childrenIds: Array<IDelegationNode['id']> = []
+  public readonly account: IPublicIdentity['address']
+  public readonly permissions: IDelegationNode['permissions']
+  private hierarchyDetails?: IDelegationHierarchyDetails
+  public readonly revoked: boolean
+
+  // eslint-disable-next-line jsdoc/require-param
   /**
-   * [STATIC] Queries the delegation node with [delegationId].
+   * Creates a new [DelegationNode] from an [IDelegationNode].
    *
-   * @param delegationId The unique identifier of the desired delegation.
-   * @returns Promise containing the [[DelegationNode]] or [null].
    */
-  public static async query(
-    delegationId: string
-  ): Promise<DelegationNode | null> {
-    log.info(`:: query('${delegationId}')`)
-    const result = await query(delegationId)
-    log.info(`result: ${JSON.stringify(result)}`)
-    return result
+  public constructor({
+    id,
+    hierarchyId,
+    parentId,
+    childrenIds,
+    account,
+    permissions,
+    revoked,
+  }: IDelegationNode) {
+    this.id = id
+    this.hierarchyId = hierarchyId
+    this.parentId = parentId
+    this.childrenIds = childrenIds
+    this.account = account
+    this.permissions = permissions
+    this.revoked = revoked
+    DelegationNodeUtils.errorCheck(this)
   }
 
-  public rootId: IDelegationNode['rootId']
-  public parentId?: IDelegationNode['parentId']
-  public permissions: IDelegationNode['permissions']
+  /**
+   * Builds a new [DelegationNode] representing a regular delegation node ready to be submitted to the chain for creation.
+   *
+   * @param hierarchyId.hierarchyId
+   * @param hierarchyId - The delegation hierarchy under which to store the node.
+   * @param parentId - The parent node under which to store the node.
+   * @param account - The owner (i.e., delegate) of this delegation.
+   * @param permissions - The set of permissions associated with this delegation node.
+   * @param hierarchyId.parentId
+   * @param hierarchyId.account
+   * @param hierarchyId.permissions
+   * @returns A new [DelegationNode] with a randomly generated id.
+   */
+  public static newNode({
+    hierarchyId,
+    parentId, // Cannot be undefined here
+    account,
+    permissions,
+  }: NewDelegationNodeInput): DelegationNode {
+    return new DelegationNode({
+      id: UUID.generate(),
+      hierarchyId,
+      parentId,
+      account,
+      permissions,
+      childrenIds: [],
+      revoked: false,
+    })
+  }
 
   /**
-   * Creates a new [DelegationNode].
+   * Builds a new [DelegationNode] representing a root delegation node ready to be submitted to the chain for creation.
    *
-   * @param delegationNodeInput - The base object from which to create the delegation node.
+   * @param account - The address of this delegation (and of the whole hierarchy under it).
+   * @param permissions - The set of permissions associated with this delegation node.
+   * @param hierarchyDetails - The details associated with the delegation hierarchy (e.g. The CType hash of allowed attestations).
+   *
+   * @returns A new [DelegationNode] with a randomly generated id.
    */
-  public constructor(delegationNodeInput: IDelegationNode) {
-    super(delegationNodeInput)
-    this.permissions = delegationNodeInput.permissions
-    this.rootId = delegationNodeInput.rootId
-    this.parentId = delegationNodeInput.parentId
-    DelegationNodeUtils.errorCheck(this)
+  public static newRoot({
+    account,
+    permissions,
+    cTypeHash,
+  }: NewDelegationRootInput): DelegationNode {
+    const nodeId = UUID.generate()
+
+    const newNode = new DelegationNode({
+      id: nodeId,
+      hierarchyId: nodeId,
+      account,
+      permissions,
+      childrenIds: [],
+      revoked: false,
+    })
+    newNode.hierarchyDetails = {
+      id: nodeId,
+      cTypeHash,
+    }
+
+    return newNode
+  }
+
+  /**
+   * Lazily fetches the details of the hierarchy the node is part of and return its CType.
+   *
+   * @returns The CType hash associated with the delegation hierarchy.
+   */
+  public async getCTypeHash(): Promise<string> {
+    return this.getHierarchyDetails().then((details) => details.cTypeHash)
+  }
+
+  /**
+   * [ASYNC] Fetches the details of the hierarchy this delegation node belongs to.
+   *
+   * @throws [[ERROR_HIERARCHY_QUERY]] when the hierarchy details could not be queried.
+   * @returns Promise containing the [[DelegationHierarchyDetails]] of this delegation node.
+   */
+  public async getHierarchyDetails(): Promise<IDelegationHierarchyDetails> {
+    if (!this.hierarchyDetails) {
+      const hierarchyDetails = await queryDetails(this.hierarchyId)
+      if (!hierarchyDetails) {
+        throw SDKErrors.ERROR_HIERARCHY_QUERY(this.hierarchyId)
+      }
+      this.hierarchyDetails = hierarchyDetails
+      return hierarchyDetails
+    }
+    return this.hierarchyDetails
+  }
+
+  /**
+   * [ASYNC] Fetches the parent node of this delegation node.
+   *
+   * @returns Promise containing the parent as [[DelegationNode]] or [null].
+   */
+  public async getParent(): Promise<DelegationNode | null> {
+    return this.parentId ? query(this.parentId) : null
+  }
+
+  /**
+   * [ASYNC] Fetches the children nodes of this delegation node.
+   *
+   * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
+   */
+  public async getChildren(): Promise<DelegationNode[]> {
+    return getChildren(this)
+  }
+
+  /**
+   * [ASYNC] Fetches and resolves all attestations attested with this delegation node.
+   *
+   * @returns Promise containing all resolved attestations attested with this node.
+   */
+  public async getAttestations(): Promise<Attestation[]> {
+    const attestationHashes = await this.getAttestationHashes()
+    const attestations = await Promise.all(
+      attestationHashes.map((claimHash: string) => {
+        return queryAttestation(claimHash)
+      })
+    )
+
+    return attestations.filter((value): value is Attestation => !!value)
+  }
+
+  /**
+   * [ASYNC] Fetches all hashes of attestations attested with this delegation node.
+   *
+   * @returns Promise containing all attestation hashes attested with this node.
+   */
+  public async getAttestationHashes(): Promise<string[]> {
+    return getAttestationHashes(this.id)
   }
 
   /**
@@ -82,8 +243,8 @@ export default class DelegationNode extends DelegationBaseNode
    * @returns The hash representation of this delegation **as a hex string**.
    */
   public generateHash(): string {
-    const propsToHash: Array<Uint8Array | string> = [this.id, this.rootId]
-    if (this.parentId && this.parentId !== this.rootId) {
+    const propsToHash: Array<Uint8Array | string> = [this.id, this.hierarchyId]
+    if (this.parentId) {
       propsToHash.push(this.parentId)
     }
     const uint8Props: Uint8Array[] = propsToHash.map((value) => {
@@ -98,42 +259,38 @@ export default class DelegationNode extends DelegationBaseNode
   }
 
   /**
-   * [ASYNC] Fetches the root of this delegation node.
+   * [ASYNC] Syncronise the delegation node state with the latest state as stored on the blockchain.
    *
-   * @throws [[ERROR_ROOT_NODE_QUERY]] when the rootId could not be queried.
-   * @returns Promise containing the [[DelegationRootNode]] of this delegation node.
+   * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
    */
-  public async getRoot(): Promise<DelegationRootNode> {
-    const rootNode = await queryRoot(this.rootId)
-    if (!rootNode) {
-      throw SDKErrors.ERROR_ROOT_NODE_QUERY(this.rootId)
+  public async getLatestState(): Promise<DelegationNode> {
+    const newNodeState = await query(this.id)
+    if (!newNodeState) {
+      throw SDKErrors.ERROR_DELEGATION_ID_MISSING
     }
-    return rootNode
-  }
-
-  /**
-   * [ASYNC] Fetches the parent node of this delegation node.
-   *
-   * @returns Promise containing the parent as [[DelegationBaseNode]] or [null].
-   */
-
-  public async getParent(): Promise<DelegationBaseNode | null> {
-    if (!this.parentId || this.parentId === this.rootId) {
-      // parent must be root
-      return this.getRoot()
-    }
-    return query(this.parentId)
+    return newNodeState
   }
 
   /**
    * [ASYNC] Stores the delegation node on chain.
    *
    * @param signature Signature of the delegate to ensure it is done under the delegate's permission.
-   * @returns Promise containing a unsigned SubmittableExtrinsic.
+   * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async store(signature: string): Promise<SubmittableExtrinsic> {
-    log.info(`:: store(${this.id})`)
-    return store(this, signature)
+  public async store(signature?: string): Promise<SubmittableExtrinsic> {
+    if (this.isRoot()) {
+      return storeAsRoot(this)
+      // eslint-disable-next-line no-else-return
+    } else {
+      if (!signature) {
+        throw SDKErrors.ERROR_DELEGATION_SIGNATURE_MISSING
+      }
+      return storeAsDelegation(this, signature)
+    }
+  }
+
+  isRoot(): boolean {
+    return this.id === this.hierarchyId && !this.parentId
   }
 
   /**
@@ -144,6 +301,53 @@ export default class DelegationNode extends DelegationBaseNode
   public async verify(): Promise<boolean> {
     const node = await query(this.id)
     return node !== null && !node.revoked
+  }
+
+  /**
+   * [ASYNC] Checks on chain whether a identity with the given address is delegating to the current node.
+   *
+   * @param address The address of the identity.
+   *
+   * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the address is owner of the current node.
+   */
+  public async findAncestorOwnedBy(
+    address: Identity['address']
+  ): Promise<{ steps: number; node: DelegationNode | null }> {
+    if (this.account === address) {
+      return {
+        steps: 0,
+        node: this,
+      }
+    }
+    const parent = await this.getParent()
+    if (parent) {
+      const result = await parent.findAncestorOwnedBy(address)
+      result.steps += 1
+      return result
+    }
+    return {
+      steps: 0,
+      node: null,
+    }
+  }
+
+  /**
+   * [ASYNC] Recursively counts all nodes that descend from the current node (excluding the current node). It is important to first refresh the state of the node from the chain.
+   *
+   * @returns Promise resolving to the node count.
+   */
+  public async subtreeNodeCount(): Promise<number> {
+    const children = await this.getChildren()
+    if (children.length === 0) {
+      return 0
+    }
+    const childrensChildCounts = await Promise.all(
+      children.map((child) => child.subtreeNodeCount())
+    )
+    return (
+      children.length +
+      childrensChildCounts.reduce((previous, current) => previous + current)
+    )
   }
 
   /**
@@ -159,16 +363,25 @@ export default class DelegationNode extends DelegationBaseNode
         `Identity with address ${address} is not among the delegators and may not revoke this node`
       )
     }
-    const childCount = await this.subtreeNodeCount()
-    // must revoke all children and self
-    const revocationCount = childCount + 1
+    const childrenCount = await this.subtreeNodeCount()
     log.debug(
-      `:: revoke(${this.id}) with maxRevocations=${revocationCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${address}`
+      `:: revoke(${this.id}) with maxRevocations=${childrenCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${address}`
     )
-    return revoke(this.id, steps, revocationCount)
+    return revoke(this.id, steps, childrenCount)
   }
 
-  public async getChildren(): Promise<DelegationNode[]> {
-    return getChildren(this.id)
+  /**
+   * [STATIC] [ASYNC] Queries the delegation node with its [delegationId].
+   *
+   * @param delegationId The unique identifier of the desired delegation.
+   * @returns Promise containing the [[DelegationNode]] or [null].
+   */
+  public static async query(
+    delegationId: string
+  ): Promise<DelegationNode | null> {
+    log.info(`:: query('${delegationId}')`)
+    const result = await query(delegationId)
+    log.info(`result: ${JSON.stringify(result)}`)
+    return result
   }
 }

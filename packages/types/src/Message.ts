@@ -20,7 +20,7 @@ import type {
   PartialClaim,
 } from './Claim'
 import type { ICType } from './CType'
-import type { IDelegationBaseNode, IDelegationNode } from './Delegation'
+import type { IDelegationNode } from './Delegation'
 import type { IPublicIdentity } from './PublicIdentity'
 import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote'
 import type {
@@ -110,7 +110,7 @@ export interface IRejectTerms extends IMessageBodyBase {
   content: {
     claim: PartialClaim
     legitimations: IAttestedClaim[]
-    delegationId?: IDelegationBaseNode['id']
+    delegationId?: IDelegationNode['id']
   }
   type: MessageBodyType.REJECT_TERMS
 }
@@ -238,8 +238,8 @@ export interface IRequestClaimsForCTypesContent {
 }
 
 export interface IDelegationData {
-  account: IDelegationBaseNode['account']
-  id: IDelegationBaseNode['id']
+  account: IDelegationNode['account']
+  id: IDelegationNode['id']
   parentId: IDelegationNode['id']
   permissions: IDelegationNode['permissions']
   isPCR: boolean
@@ -261,7 +261,7 @@ export interface ISubmitDelegationApproval {
 }
 
 export interface IInformDelegationCreation {
-  delegationId: IDelegationBaseNode['id']
+  delegationId: IDelegationNode['id']
   isPCR: boolean
 }
 
@@ -274,7 +274,7 @@ export type CompressedPartialClaim = [
 export type CompressedRejectedTerms = [
   CompressedPartialClaim,
   CompressedAttestedClaim[],
-  IDelegationBaseNode['id'] | undefined
+  IDelegationNode['id'] | undefined
 ]
 
 export type CompressedRequestClaimsForCTypesContent = [
@@ -290,8 +290,8 @@ export type CompressedRequestAttestationForClaimContent = [
 ]
 
 export type CompressedDelegationData = [
-  IDelegationBaseNode['account'],
-  IDelegationBaseNode['id'],
+  IDelegationNode['account'],
+  IDelegationNode['id'],
   IDelegationNode['id'],
   IDelegationNode['permissions'],
   boolean

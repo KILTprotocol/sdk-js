@@ -31,10 +31,9 @@
  * value setters `.mockReturnValue` or `.mockReturnValueOnce` on the method you want to modify:
  * ```
  *   const mocked_api = require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api
- *   mocked_api.query.delegation.children.mockReturnValue(
- *     new Vec(
- *       'Hash',
- *       ['0x123', '0x456', '0x789']
+ *   mocked_api.query.delegation.hierarchies.mockReturnValue(
+ *     new Option(
+ *       'Hash'
  *     )
  *   )
  * ```
@@ -229,10 +228,10 @@ const __mocked_api: any = {
       }),
     },
     delegation: {
-      createRoot: jest.fn((rootId, _ctypeHash) => {
+      createHierarchy: jest.fn((rootId, _ctypeHash) => {
         return __getMockSubmittableExtrinsic()
       }),
-      revokeRoot: jest.fn((rootId) => {
+      addDelegation: jest.fn((delegationId, parent_id, owner, permissions, signature) => {
         return __getMockSubmittableExtrinsic()
       }),
       revokeDelegation: jest.fn((delegationId) => {
@@ -305,18 +304,14 @@ const __mocked_api: any = {
     },
     delegation: {
       // default return value decodes to null, represents delegation not found
-      roots: jest.fn(async (rootId: string) =>
-        mockChainQueryReturn('delegation', 'root')
+      hierarchies: jest.fn(async (rootId: string) =>
+        mockChainQueryReturn('delegation', 'hierarchies')
       ),
       /* example return value:
       new Option(
         TYPE_REGISTRY,
-        Tuple.with(['Hash', AccountId, Bool]),
-        [
-          '0x1234',                                            // ctype hash
-          '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',  // Account
-          false,                                               // revoked flag
-        ]
+        Hash,
+        '0x1234',                                            // ctype hash
       )
       */
 
@@ -327,26 +322,13 @@ const __mocked_api: any = {
       /* example return value:
       new Option(
         TYPE_REGISTRY,
-        Tuple.with(['DelegationNodeId','Option<DelegationNodeId>',AccountId,U32,Bool]),
+        Tuple.with(['DelegationNodeId','Option<DelegationNodeId>','Vec<DelegationNodeId>',DelegationDetails]),
         [
-          '0x1234',                                            // root-id
-          null,                                                // parent-id?
-          '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',  // Account
-          0,                                                   // permissions
-          false,                                               // revoked flag
+          '0x1234',                                                     // root-id
+          '0x1234',                                                     // parent-id?
+          '[0x2345,0x3456]                                              // children ids
+          '{4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs,false,0}', // {owner, revocation status, permissions}
         ]
-      )
-      */
-
-      // default return value decodes to [], represents: no children found
-      children: jest.fn(async (id: string) =>
-        mockChainQueryReturn('delegation', 'children')
-      ),
-      /* example return value:
-      new Vec(
-        TYPE_REGISTRY,
-        'DelegationNodeId',
-        ['0x123', '0x456', '0x789']
       )
       */
     },
