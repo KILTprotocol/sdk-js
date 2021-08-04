@@ -9,6 +9,7 @@
  * @packageDocumentation
  * @module IClaim
  */
+import type { IDidDetails } from './DidDetails'
 import type { ICType } from './CType'
 
 /**
@@ -23,7 +24,7 @@ export type IClaimContents = Record<
 export interface IClaim {
   cTypeHash: ICType['hash']
   contents: IClaimContents
-  owner: string
+  owner: IDidDetails['did']
 }
 
 export type CompressedClaim = [

@@ -5,12 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type { IDidDetails } from './DidDetails'
+
 /**
  * @packageDocumentation
  * @module ICType
  */
-
-import type { IPublicIdentity } from './PublicIdentity'
 
 export interface ICTypeSchema {
   $id: string
@@ -26,7 +26,7 @@ export type CTypeSchemaWithoutId = Omit<ICTypeSchema, '$id'>
 
 export interface ICType {
   hash: string
-  owner: IPublicIdentity['address'] | null
+  owner: IDidDetails['did'] | null
   schema: ICTypeSchema
 }
 

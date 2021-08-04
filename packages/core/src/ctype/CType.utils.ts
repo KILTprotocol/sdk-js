@@ -18,7 +18,8 @@ import type {
   CompressedCTypeSchema,
 } from '@kiltprotocol/types'
 import { jsonabc, Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { getOwner } from './CType.chain'
+import { getIdentifierFromKiltDid } from '@kiltprotocol/did'
+import { getOwner, isStored } from './CType.chain'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 
 export function verifySchemaWithErrors(
@@ -68,7 +69,7 @@ export function verifyClaimStructure(
 }
 
 export async function verifyStored(ctype: ICType): Promise<boolean> {
-  return typeof (await getOwner(ctype.hash)) === 'string'
+  return isStored(ctype.hash)
 }
 
 export async function verifyOwner(ctype: ICType): Promise<boolean> {
@@ -126,7 +127,10 @@ export function errorCheck(input: ICType): void {
   }
   if (
     typeof input.owner === 'string'
-      ? !DataUtils.validateAddress(input.owner, 'CType owner')
+      ? !DataUtils.validateAddress(
+          getIdentifierFromKiltDid(input.owner),
+          'CType owner'
+        )
       : !(input.owner === null)
   ) {
     throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
