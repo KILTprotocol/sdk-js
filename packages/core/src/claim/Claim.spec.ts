@@ -11,7 +11,7 @@
 
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
-import { getIdentifierFromDid } from '@kiltprotocol/did'
+import { DidUtils } from '@kiltprotocol/did'
 import CType from '../ctype/CType'
 import Claim from './Claim'
 import ClaimUtils from './Claim.utils'
@@ -142,7 +142,7 @@ describe('Claim', () => {
     )
     expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowError(
       SDKErrors.ERROR_ADDRESS_INVALID(
-        getIdentifierFromDid(malformedAddress.owner),
+        DidUtils.getIdentifierFromDid(malformedAddress.owner),
         'Claim owner'
       )
     )

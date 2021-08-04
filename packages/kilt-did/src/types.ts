@@ -188,13 +188,6 @@ export interface DidUpdateOperation extends Struct {
   newEndpointUrl: Option<Url>
 }
 
-export interface DidSignature extends Enum {
-  isEd25519: boolean
-  isSr25519: boolean
-  asEd25519: Vec<u8>
-  asSr25519: Vec<u8>
-}
-
 export interface DidAuthorizedCallOperation extends Struct {
   did: DidIdentifier
   txCounter: u64

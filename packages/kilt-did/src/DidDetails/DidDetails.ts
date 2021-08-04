@@ -90,6 +90,10 @@ export class DidDetails implements IDidDetails {
     return this.keys.get(id)
   }
 
+  public getService(id: ServiceDetails['id']): ServiceDetails | undefined {
+    return this.services.find((s) => s.id === id)
+  }
+
   public getKeys(relationship?: KeyRelationship | 'none'): KeyDetails[] {
     if (relationship) {
       return this.getKeyIds(relationship).map((id) => this.getKey(id)!)

@@ -20,7 +20,7 @@ import type {
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { getKiltDidFromIdentifier } from '@kiltprotocol/did'
+import { DidUtils } from '@kiltprotocol/did'
 
 const log = ConfigService.LoggingFactory.getLogger('CType')
 
@@ -42,7 +42,7 @@ export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
 export function decode(encoded: Option<AccountId>): IDidDetails['did'] | null {
   DecoderUtils.assertCodecIsType(encoded, ['Option<CtypeCreatorOf>'])
   return encoded.isSome
-    ? getKiltDidFromIdentifier(encoded.unwrap().toString())
+    ? DidUtils.getKiltDidFromIdentifier(encoded.unwrap().toString())
     : null
 }
 

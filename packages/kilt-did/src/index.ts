@@ -8,8 +8,8 @@
 import type * as DidTypes from './index.types'
 
 export { DidTypes }
-export * from './Did.chain'
-export * from './Did.utils'
+export * as DidChain from './Did.chain'
+export * as DidUtils from './Did.utils'
 export * from './DemoKeystore/DemoKeystore'
 export * from './DidDetails'
 export * from './DidResolver/DefaultResolver'

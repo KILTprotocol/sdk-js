@@ -7,7 +7,8 @@
 
 import type { IDidResolver, ResolverOpts } from '@kiltprotocol/types'
 import { DidDetails, DidDetailsCreationOpts } from '../DidDetails/DidDetails'
-import { queryByDID } from '../Did.chain'
+import { queryById } from '../Did.chain'
+import { getKiltDidFromIdentifier, parseDidUrl } from '../Did.utils'
 
 /**
  * This is only a dummy; we don't know yet how the extra service data will be secured (signature over data?).
@@ -17,7 +18,8 @@ export async function resolve({
   did,
   servicesResolver,
 }: ResolverOpts): Promise<DidDetails | null> {
-  const didRec = await queryByDID(did)
+  const { identifier } = parseDidUrl(did)
+  const didRec = await queryById(identifier)
   if (!didRec) return null
   const {
     publicKeys,
@@ -40,7 +42,7 @@ export async function resolve({
     keyRelationships.capabilityDelegation = [delegationKey]
   }
   const didDetails: DidDetailsCreationOpts = {
-    did,
+    did: getKiltDidFromIdentifier(identifier),
     keys: publicKeys,
     keyRelationships,
     lastTxIndex: lastTxCounter.toBigInt(),

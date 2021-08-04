@@ -28,7 +28,7 @@ import type { BTreeSet, Struct } from '@polkadot/types/codec'
 import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
 import type { Bool, u32 } from '@polkadot/types/primitive'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import { getKiltDidFromIdentifier } from 'kilt-did/lib'
+import { DidUtils } from '@kiltprotocol/did'
 
 export type CodecWithId<C> = {
   id: string
@@ -115,7 +115,9 @@ export function decodeDelegationNode(
       ? delegationNode.parent.toHex()
       : undefined,
     childrenIds: [...delegationNode.children.keys()].map((id) => id.toHex()),
-    account: getKiltDidFromIdentifier(delegationNode.details.owner.toString()),
+    account: DidUtils.getKiltDidFromIdentifier(
+      delegationNode.details.owner.toString()
+    ),
     permissions: decodePermissions(
       delegationNode.details.permissions.toNumber()
     ),

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { SignerPayloadJSON } from '@polkadot/types/types'
+import type { SignerPayloadJSON } from '@polkadot/types/types'
 
 export interface RequestData<A extends string> {
   alg: A

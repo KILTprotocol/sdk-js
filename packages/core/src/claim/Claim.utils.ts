@@ -18,7 +18,7 @@ import type {
   CompressedPartialClaim,
 } from '@kiltprotocol/types'
 import { jsonabc, DataUtils, Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { getIdentifierFromKiltDid } from '@kiltprotocol/did'
+import { DidUtils } from '@kiltprotocol/did'
 import { getIdForCTypeHash } from '../ctype/CType.utils'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
@@ -194,7 +194,7 @@ export function errorCheck(input: IClaim | PartialClaim): void {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
   if (input.owner) {
-    const address = getIdentifierFromKiltDid(input.owner)
+    const address = DidUtils.getIdentifierFromKiltDid(input.owner)
     DataUtils.validateAddress(address, 'Claim owner')
   }
   if (input.contents !== undefined) {

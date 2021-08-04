@@ -5,8 +5,17 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import type {
+  DidSignature,
+  IDidDetails,
+  IDidResolver,
+  KeyDetails,
+  KeystoreSigner,
+  VerificationKeyRelationship,
+} from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import type { Codec, Registry } from '@polkadot/types/types'
+import { DefaultResolver } from './DidResolver/DefaultResolver'
 import type {
   DidSigned,
   PublicKeyEnum,
@@ -23,6 +32,7 @@ import type {
 } from './types'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
+const kiltDidRegex = /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#.+)?$/
 
 export function getKiltDidFromIdentifier(identifier: string): string {
   if (identifier.startsWith(KILT_DID_PREFIX)) {
@@ -45,6 +55,16 @@ export function getIdentifierFromDid(did: string): string {
     throw SDKErrors.ERROR_INVALID_DID_PREFIX(did)
   }
   return identifier
+}
+
+export function parseDidUrl(didUrl: string) {
+  const { identifier, fragment } = didUrl.match(kiltDidRegex)?.groups || {}
+  if (!identifier) throw SDKErrors.ERROR_INVALID_DID_PREFIX(didUrl)
+  return {
+    did: getKiltDidFromIdentifier(identifier),
+    identifier,
+    fragment: fragment.substr(1),
+  }
 }
 
 export function signCodec<PayloadType extends Codec>(
@@ -183,4 +203,94 @@ export function encodeDidPublicKey(
 
 export function computeKeyId(publicKey: DidPublicKey): string {
   return Crypto.hashStr(publicKey.toU8a())
+}
+
+export type VerficationResult = {
+  verified: boolean
+  didDetails?: IDidDetails
+  key?: KeyDetails
+}
+
+export async function verifyDidSignature({
+  message,
+  signature,
+  keyId,
+  keyRelationship,
+  didDetails,
+}: {
+  message: string | Uint8Array
+  signature: string | Uint8Array
+  keyId: string
+  didDetails: IDidDetails
+  keyRelationship?: VerificationKeyRelationship
+}): Promise<VerficationResult> {
+  const key = keyRelationship
+    ? didDetails?.getKeys(keyRelationship).find((k) => k.id === keyId)
+    : didDetails?.getKey(keyId)
+  if (!key || key.controller !== didDetails.did)
+    return {
+      verified: false,
+      didDetails,
+      key,
+    }
+  return {
+    verified: Crypto.verify(message, signature, key.publicKeyHex),
+    didDetails,
+    key,
+  }
+}
+
+export async function verifyDidSignatureAsync({
+  message,
+  signature,
+  keyId,
+  keyRelationship,
+  resolver = DefaultResolver,
+  didDetails,
+}: {
+  message: string | Uint8Array
+  signature: string | Uint8Array
+  keyId: string
+  resolver?: IDidResolver
+  didDetails?: IDidDetails
+  keyRelationship?: VerificationKeyRelationship
+}): Promise<VerficationResult> {
+  let didOrNot: IDidDetails | undefined | null
+  if (!didDetails) {
+    if (!(typeof resolver?.resolve === 'function'))
+      throw new Error(
+        'Either the claimer DidDetails or a DID resolver is required for verification'
+      )
+    const { did } = parseDidUrl(keyId)
+    didOrNot = await resolver.resolve({ did })
+  } else {
+    didOrNot = didDetails
+  }
+  if (didOrNot) {
+    return verifyDidSignature({
+      message,
+      signature,
+      keyId,
+      keyRelationship,
+      didDetails: didOrNot,
+    })
+  }
+  return {
+    verified: false,
+  }
+}
+
+export async function authenticateWithDid(
+  toSign: Uint8Array | string,
+  did: IDidDetails,
+  signer: KeystoreSigner
+): Promise<DidSignature> {
+  const [key] = did.getKeys('authentication')
+  const keyId = key.id
+  const { data: signature } = await signer.sign({
+    keyId,
+    alg: key.type,
+    data: Crypto.coToUInt8(toSign),
+  })
+  return { keyId, signature: Crypto.u8aToHex(signature) }
 }

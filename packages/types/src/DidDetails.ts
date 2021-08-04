@@ -43,3 +43,5 @@ export interface IDidDetails {
 }
 
 export type ApiOrMetadata = ApiPromise | Metadata
+
+export type DidSignature = { keyId: string; signature: string }
