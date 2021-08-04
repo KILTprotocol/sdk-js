@@ -26,7 +26,9 @@
 import type {
   IDelegationHierarchyDetails,
   IDelegationNode,
+  IDidDetails,
   IPublicIdentity,
+  KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
@@ -44,7 +46,6 @@ import {
 import { query as queryDetails } from './DelegationHierarchyDetails.chain'
 import * as DelegationNodeUtils from './DelegationNode.utils'
 import Attestation from '../attestation/Attestation'
-import Identity from '../identity/Identity'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
@@ -223,19 +224,7 @@ export default class DelegationNode implements IDelegationNode {
    * Generates the delegation hash from the delegations' property values.
    *
    * This hash is signed by the delegate and later stored along with the delegation to
-   * make sure delegation data (such as permissions) is not tampered.
-   *
-   * @example
-   * ```
-   * // Sign the hash of the delegation node...
-   * const delegate: Identity = ...
-   * const signature:string = delegate.signStr(newDelegationNode.generateHash())
-   *
-   * // Store the signed hash on the Kilt chain...
-   * const myIdentity: Identity = ...
-   * tx = newDelegationNode.store(signature)
-   * BlockchainUtils.signAndSendTx(tx, myIdentity)
-   * ```
+   * make sure delegation data (such as permissions) has not been tampered with.
    *
    * @returns The hash representation of this delegation **as a hex string**.
    */
@@ -253,6 +242,45 @@ export default class DelegationNode implements IDelegationNode {
     )
     log.debug(`generateHash(): ${generated}`)
     return generated
+  }
+
+  /**
+   * Signs the delegation hash from the delegations' property values.
+   *
+   * This is required to anchor the delegation node on chain in order to enforce the delegee's consent.
+   *
+   * @param delegeeDid
+   * @param signer
+   * @example
+   * ```
+   * // Sign the hash of the delegation node...
+   * let myNewDelegation: DelegationNode
+   * let myDidDetails: IDidDetails
+   * let myKeyStore: Keystore
+   * const signature:string = await myNewDelegation.delegeeSign(myDidDetails, myKeyStore)
+   *
+   * // produce the extrinsic that stores the delegation node on the Kilt chain
+   * const extrinsic = newDelegationNode.store(signature)
+   *
+   * // now the delegating DID must sign as well
+   * const submittable = delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore)
+   *
+   * // and we can put it on chain
+   * await submittable.signAndSend()
+   * ```
+   * @returns The signature over the delegation **as a hex string**.
+   */
+  public async delegeeSign(
+    delegeeDid: IDidDetails,
+    signer: KeystoreSigner
+  ): Promise<string> {
+    const [key] = delegeeDid.getKeys('authentication')
+    const { data: signature } = await signer.sign({
+      alg: key.type,
+      keyId: key.id,
+      data: Crypto.coToUInt8(this.generateHash()),
+    })
+    return Crypto.u8aToHex(signature)
   }
 
   /**
@@ -301,16 +329,16 @@ export default class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Checks on chain whether a identity with the given address is delegating to the current node.
+   * [ASYNC] Checks on chain whether a identity with the given DID is delegating to the current node.
    *
-   * @param address The address of the identity.
+   * @param did The DID to search for.
    *
-   * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the address is owner of the current node.
+   * @returns An object containing a `node` owned by the identity if it is delegating, plus the number of `steps` traversed. `steps` is 0 if the DID is owner of the current node.
    */
   public async findAncestorOwnedBy(
-    address: Identity['address']
+    did: IDidDetails['did']
   ): Promise<{ steps: number; node: DelegationNode | null }> {
-    if (this.account === address) {
+    if (this.account === did) {
       return {
         steps: 0,
         node: this,
@@ -318,7 +346,7 @@ export default class DelegationNode implements IDelegationNode {
     }
     const parent = await this.getParent()
     if (parent) {
-      const result = await parent.findAncestorOwnedBy(address)
+      const result = await parent.findAncestorOwnedBy(did)
       result.steps += 1
       return result
     }
@@ -350,19 +378,19 @@ export default class DelegationNode implements IDelegationNode {
   /**
    * [ASYNC] Revokes the delegation node on chain.
    *
-   * @param address The address of the identity used to revoke the delegation.
+   * @param did The address of the identity used to revoke the delegation.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async revoke(address: string): Promise<SubmittableExtrinsic> {
-    const { steps, node } = await this.findAncestorOwnedBy(address)
+  public async revoke(did: IDidDetails['did']): Promise<SubmittableExtrinsic> {
+    const { steps, node } = await this.findAncestorOwnedBy(did)
     if (!node) {
       throw SDKErrors.ERROR_UNAUTHORIZED(
-        `Identity with address ${address} is not among the delegators and may not revoke this node`
+        `The DID ${did} is not among the delegators and may not revoke this node`
       )
     }
     const childrenCount = await this.subtreeNodeCount()
     log.debug(
-      `:: revoke(${this.id}) with maxRevocations=${childrenCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${address}`
+      `:: revoke(${this.id}) with maxRevocations=${childrenCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${did}`
     )
     return revoke(this.id, steps, childrenCount)
   }

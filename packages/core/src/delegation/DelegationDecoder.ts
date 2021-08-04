@@ -18,13 +18,17 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
-import type { IDelegationNode } from '@kiltprotocol/types'
-import { IDelegationHierarchyDetails, Permission } from '@kiltprotocol/types'
+import type {
+  IDelegationNode,
+  IDelegationHierarchyDetails,
+} from '@kiltprotocol/types'
+import { Permission } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
 import type { BTreeSet, Struct } from '@polkadot/types/codec'
 import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
 import type { Bool, u32 } from '@polkadot/types/primitive'
 import { DecoderUtils } from '@kiltprotocol/utils'
+import { getKiltDidFromIdentifier } from 'kilt-did/lib'
 
 export type CodecWithId<C> = {
   id: string
@@ -88,10 +92,10 @@ export interface IChainDelegationNode extends Struct {
   readonly details: IChainDelegationDetails
 }
 
-export type DelegationOwner = AccountId
+type DelegationOwnerIdentifier = AccountId
 
 export interface IChainDelegationDetails extends Struct {
-  readonly owner: DelegationOwner
+  readonly owner: DelegationOwnerIdentifier
   readonly revoked: Bool
   readonly permissions: u32
 }
@@ -111,7 +115,7 @@ export function decodeDelegationNode(
       ? delegationNode.parent.toHex()
       : undefined,
     childrenIds: [...delegationNode.children.keys()].map((id) => id.toHex()),
-    account: delegationNode.details.owner.toString(),
+    account: getKiltDidFromIdentifier(delegationNode.details.owner.toString()),
     permissions: decodePermissions(
       delegationNode.details.permissions.toNumber()
     ),
