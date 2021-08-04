@@ -7,7 +7,6 @@
 
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import { serialize, deserialize } from 'v8'
 import type {
   KeyDetails,
   KeystoreSigner,

@@ -92,14 +92,11 @@ export default class DelegationNode implements IDelegationNode {
   /**
    * Builds a new [DelegationNode] representing a regular delegation node ready to be submitted to the chain for creation.
    *
-   * @param hierarchyId.hierarchyId
-   * @param hierarchyId - The delegation hierarchy under which to store the node.
-   * @param parentId - The parent node under which to store the node.
-   * @param account - The owner (i.e., delegate) of this delegation.
-   * @param permissions - The set of permissions associated with this delegation node.
-   * @param hierarchyId.parentId
-   * @param hierarchyId.account
-   * @param hierarchyId.permissions
+   * @param input - An partial [IDelegationNode] input object.
+   * @param input.hierarchyId - The delegation hierarchy under which to store the node.
+   * @param input.parentId - The parent node under which to store the node.
+   * @param input.account - The owner (i.e., delegate) of this delegation.
+   * @param input.permissions - The set of permissions associated with this delegation node.
    * @returns A new [DelegationNode] with a randomly generated id.
    */
   public static newNode({
@@ -122,10 +119,10 @@ export default class DelegationNode implements IDelegationNode {
   /**
    * Builds a new [DelegationNode] representing a root delegation node ready to be submitted to the chain for creation.
    *
-   * @param account - The address of this delegation (and of the whole hierarchy under it).
-   * @param permissions - The set of permissions associated with this delegation node.
-   * @param hierarchyDetails - The details associated with the delegation hierarchy (e.g. The CType hash of allowed attestations).
-   *
+   * @param input - An input object.
+   * @param input.account - The address of this delegation (and of the whole hierarchy under it).
+   * @param input.permissions - The set of permissions associated with this delegation node.
+   * @param input.cTypeHash - The cTypeHash associated with the entire hierarchy.
    * @returns A new [DelegationNode] with a randomly generated id.
    */
   public static newRoot({
