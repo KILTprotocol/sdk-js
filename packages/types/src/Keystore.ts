@@ -11,11 +11,13 @@ export interface RequestData<A extends string> {
   alg: A
   keyId: string // id of the key to use
   data: Uint8Array // data to sign / encrypt / decrypt
+  [x: string]: unknown
 }
 
 export interface ResponseData<A extends string> {
   alg: A
   data: Uint8Array
+  [x: string]: unknown
 }
 
 export interface KeystoreSigningData<A extends string> extends RequestData<A> {

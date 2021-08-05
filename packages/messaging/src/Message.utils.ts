@@ -35,6 +35,7 @@ import type {
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { isHex, isJsonObject } from '@polkadot/util'
+import { DidUtils } from '@kiltprotocol/did'
 
 import Message from '.'
 
@@ -233,10 +234,9 @@ export function errorCheckMessage(message: IMessage): boolean | void {
     body,
     messageId,
     createdAt,
-    receiverAddress,
-    senderAddress,
+    receiver,
+    sender,
     receivedAt,
-    senderBoxPublicKey,
     inReplyTo,
   } = message
   if (messageId && typeof messageId !== 'string') {
@@ -248,11 +248,8 @@ export function errorCheckMessage(message: IMessage): boolean | void {
   if (receivedAt && typeof receivedAt !== 'number') {
     throw new TypeError('received at is expected to be a number')
   }
-  DataUtils.validateAddress(receiverAddress, 'receiver address')
-  DataUtils.validateAddress(senderAddress, 'sender address')
-  if (!isHex(senderBoxPublicKey)) {
-    throw SDKErrors.ERROR_ADDRESS_INVALID()
-  }
+  DidUtils.validateKiltDid(receiver)
+  DidUtils.validateKiltDid(sender)
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('in reply to is expected to be a string')
   }
@@ -287,9 +284,9 @@ export function verifyRequiredCTypeProperties(
 }
 
 /**
- * Compresses a [[Message]] depending on the message body type.
+ * Compresses a [[MessageBody]] depending on the message body type.
  *
- * @param body The body of the [[Message]] which depends on the [[MessageBodyType]] that needs to be compressed.
+ * @param body The body of the [[IMessage]] which depends on the [[MessageBodyType]] that needs to be compressed.
  *
  * @returns Returns the compressed message optimised for sending.
  */
@@ -412,9 +409,9 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
 }
 
 /**
- * [STATIC] Takes a compressed [[Message]] and decompresses it depending on the message body type.
+ * [STATIC] Takes a compressed [[MessageBody]] and decompresses it depending on the message body type.
  *
- * @param body The body of the compressed [[Message]] which depends on the [[MessageBodyType]] that needs to be decompressed.
+ * @param body The body of the compressed [[IMessage]] which depends on the [[MessageBodyType]] that needs to be decompressed.
  *
  * @returns Returns the compressed message back to its original form and more human readable.
  */

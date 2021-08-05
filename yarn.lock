@@ -885,6 +885,7 @@ __metadata:
   resolution: "@kiltprotocol/messaging@workspace:packages/messaging"
   dependencies:
     "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/util": ^6.7.1
