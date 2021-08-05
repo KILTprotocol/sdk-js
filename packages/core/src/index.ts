@@ -17,7 +17,6 @@ import Did, {
   IDidDocumentPublicKey,
   IDidDocumentSigned,
 } from './did'
-import { Identity, IURLResolver, PublicIdentity } from './identity'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {
   RequestForAttestationUtils,
@@ -30,9 +29,6 @@ export { SDKErrors } from '@kiltprotocol/utils'
 export {
   Balance,
   BalanceUtils,
-  Identity,
-  PublicIdentity,
-  IURLResolver,
   CType,
   CTypeMetadata,
   CTypeUtils,

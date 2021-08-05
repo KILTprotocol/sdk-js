@@ -23,7 +23,7 @@ export interface KeyDetails<T extends string = string> {
   type: T
   controller: IDidDetails['did']
   publicKeyHex: string
-  includedAt: number
+  includedAt?: number
 }
 
 export interface ServiceDetails {

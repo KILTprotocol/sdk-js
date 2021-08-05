@@ -193,10 +193,7 @@ export function errorCheck(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
-  if (input.owner) {
-    const address = DidUtils.getIdentifierFromKiltDid(input.owner)
-    DataUtils.validateAddress(address, 'Claim owner')
-  }
+  DidUtils.validateKiltDid(input.owner)
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {
       if (

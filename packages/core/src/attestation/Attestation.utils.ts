@@ -38,11 +38,7 @@ export function errorCheck(input: IAttestation): void {
   }
   if (!input.owner) {
     throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
-  } else
-    DataUtils.validateAddress(
-      DidUtils.getIdentifierFromKiltDid(input.owner),
-      'owner'
-    )
+  } else DidUtils.validateKiltDid(input.owner)
 
   if (typeof input.revoked !== 'boolean') {
     throw SDKErrors.ERROR_REVOCATION_BIT_MISSING()

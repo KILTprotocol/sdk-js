@@ -15,6 +15,7 @@ import type {
 } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import type { Codec, Registry } from '@polkadot/types/types'
+import { checkAddress } from '@polkadot/util-crypto'
 import { DefaultResolver } from './DidResolver/DefaultResolver'
 import type {
   DidSigned,
@@ -63,8 +64,27 @@ export function parseDidUrl(didUrl: string) {
   return {
     did: getKiltDidFromIdentifier(identifier),
     identifier,
-    fragment: fragment.substr(1),
+    fragment: fragment?.substr(1),
   }
+}
+
+export function validateKiltDid(
+  input: unknown,
+  allowFragment = false
+): input is IDidDetails['did'] {
+  if (typeof input !== 'string') {
+    throw TypeError(`DID string expected, got ${typeof input}`)
+  }
+  const { identifier, did } = parseDidUrl(input)
+  if (!allowFragment && did !== input) {
+    throw new Error(
+      `Expected DID of format kilt:did:<ss58 identifier>, got ${input}`
+    )
+  }
+  if (!checkAddress(identifier, 38)[0]) {
+    throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+  }
+  return true
 }
 
 export function signCodec<PayloadType extends Codec>(

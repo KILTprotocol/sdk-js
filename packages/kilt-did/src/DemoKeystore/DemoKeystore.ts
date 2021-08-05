@@ -12,6 +12,8 @@ import {
   naclBoxKeypairFromSecret,
   naclOpen,
   naclSeal,
+  randomAsHex,
+  blake2AsU8a,
 } from '@polkadot/util-crypto'
 import { Crypto } from '@kiltprotocol/utils'
 import {
@@ -51,13 +53,19 @@ function encryptionSupported(alg: string): alg is EncryptionAlgorithms {
 export interface KeyGenOpts<T extends string> {
   alg: RequestData<T>['alg']
   keyId?: RequestData<T>['keyId']
-  seed?: Uint8Array
+  seed?: string
 }
 
 export interface NaclKeypair {
   publicKey: Uint8Array
   secretKey: Uint8Array
 }
+
+export type KeyAddOpts<T extends string> = Pick<
+  RequestData<T>,
+  'keyId' | 'alg'
+> &
+  NaclKeypair
 
 /**
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!
@@ -81,7 +89,8 @@ export class DemoKeystore
   }> {
     const { seed, alg } = opts
     await cryptoWaitReady()
-    const keypair = this.keyring.addFromSeed(seed || randomAsU8a(32), {}, alg)
+
+    const keypair = this.keyring.addFromUri(seed || randomAsHex(32), {}, alg)
 
     const keyId = opts.keyId || Crypto.u8aToHex(keypair.publicKey)
     if (this.signingPublicKeys[keyId])
@@ -99,7 +108,9 @@ export class DemoKeystore
     alg: T
   }> {
     const { seed, alg } = opts
-    const keypair = naclBoxKeypairFromSecret(seed || randomAsU8a(32))
+    const keypair = naclBoxKeypairFromSecret(
+      seed ? blake2AsU8a(seed, 32) : randomAsU8a(32)
+    )
 
     const keyId = opts.keyId || Crypto.u8aToHex(keypair.publicKey)
     if (this.encryptionKeypairs[keyId])
@@ -123,6 +134,61 @@ export class DemoKeystore
     }
     if (encryptionSupported(alg)) {
       return this.generateEncryptionKeypair({ keyId, alg, seed })
+    }
+    throw new Error('alg not supported')
+  }
+
+  private async addSigningKeypair<T extends SubstrateKeyTypes>({
+    keyId,
+    alg,
+    publicKey,
+    secretKey,
+  }: KeyAddOpts<T>): Promise<{
+    publicKey: Uint8Array
+    keyId: string
+    alg: T
+  }> {
+    if (this.signingPublicKeys[keyId]) throw new Error('id already used')
+    await cryptoWaitReady()
+    const keypair = this.keyring.addFromPair(
+      { publicKey, secretKey },
+      { name: keyId },
+      alg
+    )
+    this.signingPublicKeys[keyId] = keypair.publicKey
+    return { keyId, alg, publicKey: keypair.publicKey }
+  }
+
+  private async addEncryptionKeypair<T extends EncryptionAlgorithms>({
+    keyId,
+    alg,
+    secretKey,
+  }: KeyAddOpts<T>): Promise<{
+    publicKey: Uint8Array
+    keyId: string
+    alg: T
+  }> {
+    if (this.encryptionKeypairs[keyId]) throw new Error('id already used')
+    const keypair = naclBoxKeypairFromSecret(secretKey)
+    this.encryptionKeypairs[keyId] = keypair
+    return { keyId, alg, publicKey: keypair.publicKey }
+  }
+
+  async addKeypair<T extends SubstrateKeyTypes | EncryptionAlgorithms>({
+    keyId,
+    alg,
+    publicKey,
+    secretKey,
+  }: KeyAddOpts<T>): Promise<{
+    publicKey: Uint8Array
+    keyId: string
+    alg: T
+  }> {
+    if (signingSupported(alg)) {
+      return this.addSigningKeypair({ keyId, alg, publicKey, secretKey })
+    }
+    if (encryptionSupported(alg)) {
+      return this.addEncryptionKeypair({ keyId, alg, publicKey, secretKey })
     }
     throw new Error('alg not supported')
   }

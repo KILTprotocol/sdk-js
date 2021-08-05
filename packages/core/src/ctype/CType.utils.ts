@@ -17,7 +17,7 @@ import type {
   CompressedCType,
   CompressedCTypeSchema,
 } from '@kiltprotocol/types'
-import { jsonabc, Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import { jsonabc, Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
 import { getOwner, isStored } from './CType.chain'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
@@ -125,14 +125,7 @@ export function errorCheck(input: ICType): void {
       input.schema.$id
     )
   }
-  if (
-    typeof input.owner === 'string'
-      ? !DataUtils.validateAddress(
-          DidUtils.getIdentifierFromKiltDid(input.owner),
-          'CType owner'
-        )
-      : !(input.owner === null)
-  ) {
+  if (!(input.owner === null || DidUtils.validateKiltDid(input.owner))) {
     throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
   }
 }
