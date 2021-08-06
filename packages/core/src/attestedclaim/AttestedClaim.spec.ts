@@ -15,23 +15,27 @@ import type {
   IClaim,
   CompressedAttestedClaim,
   ICType,
+  IDidDetails,
 } from '@kiltprotocol/types'
+import { DemoKeystore, createLocalDemoDidFromSeed } from '@kiltprotocol/did'
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
-import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import AttestedClaim from './AttestedClaim'
 import AttestedClaimUtils from './AttestedClaim.utils'
+import { query } from '../attestation/Attestation.chain'
+
+jest.mock('../attestation/Attestation.chain')
 
 async function buildAttestedClaim(
-  claimer: Identity,
-  attester: Identity,
+  claimer: IDidDetails,
+  attester: IDidDetails,
   contents: IClaim['contents'],
-  legitimations: AttestedClaim[]
+  legitimations: AttestedClaim[],
+  signer: DemoKeystore
 ): Promise<AttestedClaim> {
   // create claim
-  const identityAlice = Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
     $id: 'kilt:ctype:0x1',
@@ -43,28 +47,22 @@ async function buildAttestedClaim(
     type: 'object',
   }
 
-  const testCType: CType = CType.fromSchema(
-    rawCType,
-    identityAlice.signKeyringPair.address
-  )
+  const testCType: CType = CType.fromSchema(rawCType)
 
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
     contents,
-    claimer.address
+    claimer.did
   )
   // build request for attestation with legitimations
-  const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
-    claim,
-    claimer,
-    {
-      legitimations,
-    }
-  )
+  const requestForAttestation = RequestForAttestation.fromClaim(claim, {
+    legitimations,
+  })
+  await requestForAttestation.signWithDid(signer, claimer)
   // build attestation
-  const testAttestation = Attestation.fromRequestAndPublicIdentity(
+  const testAttestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    attester.getPublicIdentity()
+    attester.did
   )
   // combine to attested claim
   const attestedClaim = AttestedClaim.fromRequestAndAttestation(
@@ -75,19 +73,28 @@ async function buildAttestedClaim(
 }
 
 describe('RequestForAttestation', () => {
-  let identityAlice: Identity
-  let identityBob: Identity
-  let identityCharlie: Identity
+  let keystore: DemoKeystore
+  let identityAlice: IDidDetails
+  let identityBob: IDidDetails
+  let identityCharlie: IDidDetails
   let legitimation: AttestedClaim
   let compressedLegitimation: CompressedAttestedClaim
 
   beforeAll(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
+    keystore = new DemoKeystore()
 
-    identityBob = Identity.buildFromURI('//Bob')
-    identityCharlie = Identity.buildFromURI('//Charlie')
+    identityAlice = await createLocalDemoDidFromSeed(keystore, '//Alice')
 
-    legitimation = await buildAttestedClaim(identityAlice, identityBob, {}, [])
+    identityBob = await createLocalDemoDidFromSeed(keystore, '//Bob')
+    identityCharlie = await createLocalDemoDidFromSeed(keystore, '//Charlie')
+
+    legitimation = await buildAttestedClaim(
+      identityAlice,
+      identityBob,
+      {},
+      [],
+      keystore
+    )
     compressedLegitimation = [
       [
         [
@@ -121,11 +128,17 @@ describe('RequestForAttestation', () => {
         b: 'b',
         c: 'c',
       },
-      [legitimation]
+      [legitimation],
+      keystore
     )
+
+    ;(query as jest.Mock).mockResolvedValue(attestedClaim.attestation)
 
     // check proof on complete data
     expect(AttestedClaim.verifyData(attestedClaim)).toBeTruthy()
+    await expect(
+      AttestedClaim.verify(attestedClaim, { claimerDid: identityCharlie })
+    ).resolves.toBe(true)
   })
 
   it('compresses and decompresses the attested claims object', () => {
@@ -170,7 +183,8 @@ describe('RequestForAttestation', () => {
       identityAlice,
       identityBob,
       {},
-      []
+      [],
+      keystore
     )
     expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeTruthy()
     // @ts-expect-error
@@ -183,7 +197,8 @@ describe('RequestForAttestation', () => {
       identityAlice,
       identityBob,
       {},
-      []
+      [],
+      keystore
     )
     expect(AttestedClaim.isIAttestedClaim(testAttestation)).toBeTruthy()
     const { cTypeHash } = testAttestation.attestation
@@ -199,7 +214,8 @@ describe('RequestForAttestation', () => {
       identityAlice,
       identityBob,
       {},
-      []
+      [],
+      keystore
     )
     expect(testAttestation.getHash()).toEqual(
       testAttestation.attestation.claimHash
@@ -208,15 +224,17 @@ describe('RequestForAttestation', () => {
 })
 
 describe('create presentation', () => {
-  let claimer: Identity
-  let attester: Identity
+  let keystore: DemoKeystore
+  let claimer: IDidDetails
+  let attester: IDidDetails
   let ctype: CType
   let reqForAtt: RequestForAttestation
   let attestation: Attestation
 
   beforeAll(async () => {
-    attester = Identity.buildFromMnemonic(Identity.generateMnemonic())
-    claimer = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    keystore = new DemoKeystore()
+    attester = await createLocalDemoDidFromSeed(keystore, '//Attester')
+    claimer = await createLocalDemoDidFromSeed(keystore, '//Claimer')
 
     const rawCType: ICType['schema'] = {
       $id: 'kilt:ctype:0x1',
@@ -228,25 +246,21 @@ describe('create presentation', () => {
       type: 'object',
     }
 
-    ctype = CType.fromSchema(rawCType, claimer.address)
+    ctype = CType.fromSchema(rawCType, claimer.did)
 
     // cannot be used since the variable needs to be established in the outer scope
-    reqForAtt = RequestForAttestation.fromClaimAndIdentity(
+    reqForAtt = RequestForAttestation.fromClaim(
       Claim.fromCTypeAndClaimContents(
         ctype,
         {
           name: 'Peter',
           age: 12,
         },
-        claimer.address
-      ),
-      claimer
+        claimer.did
+      )
     )
 
-    attestation = Attestation.fromRequestAndPublicIdentity(
-      reqForAtt,
-      attester.getPublicIdentity()
-    )
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
   })
 
   it('should build from reqForAtt and Attestation', async () => {

@@ -58,6 +58,13 @@ export function errorCheck(input: IRequestForAttestation): void {
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
     throw SDKErrors.ERROR_DELEGATION_ID_TYPE
   }
+  if (
+    input.claimerSignature &&
+    (typeof input.claimerSignature.keyId !== 'string' ||
+      typeof input.claimerSignature.signature !== 'string')
+  ) {
+    throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+  }
   RequestForAttestation.verifyData(input as IRequestForAttestation)
 }
 

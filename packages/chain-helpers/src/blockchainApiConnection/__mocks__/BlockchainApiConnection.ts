@@ -231,9 +231,11 @@ const __mocked_api: any = {
       createHierarchy: jest.fn((rootId, _ctypeHash) => {
         return __getMockSubmittableExtrinsic()
       }),
-      addDelegation: jest.fn((delegationId, parent_id, owner, permissions, signature) => {
-        return __getMockSubmittableExtrinsic()
-      }),
+      addDelegation: jest.fn(
+        (delegationId, parent_id, owner, permissions, signature) => {
+          return __getMockSubmittableExtrinsic()
+        }
+      ),
       revokeDelegation: jest.fn((delegationId) => {
         return __getMockSubmittableExtrinsic()
       }),

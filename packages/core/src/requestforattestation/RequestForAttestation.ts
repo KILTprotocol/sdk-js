@@ -299,16 +299,16 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   public async signWithDid(
-    signer: KeystoreSigner<string>,
+    signer: KeystoreSigner,
     did: IDidDetails
   ): Promise<this> {
     const [key] = did.getKeys('assertionMethod')
-    const { data, alg } = await signer.sign({
+    const { data } = await signer.sign({
       data: Crypto.coToUInt8(this.rootHash),
       alg: key.type,
       keyId: key.id,
     })
-    return this.addSignature(data, alg)
+    return this.addSignature(data, key.id)
   }
 
   public async signWithKey(

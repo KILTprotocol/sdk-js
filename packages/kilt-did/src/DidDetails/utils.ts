@@ -15,6 +15,7 @@ import type {
   KeyDetails,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
+import { DidDetails, KeyRoles } from './DidDetails'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -107,4 +108,28 @@ export function getKeyIdsForExtrinsic(
 ): Array<KeyDetails['id']> {
   const callMeta = extrinsicToCallMeta(apiOrMetadata, extrinsic)
   return getKeyIdsForCall(didDetails, callMeta)
+}
+
+export function newDidfromKeyRecords(keys: {
+  authentication: KeyDetails
+  keyAgreement?: KeyDetails
+  assertionMethod?: KeyDetails
+  capabilityDelegation?: KeyDetails
+  capabilityInvocation?: KeyDetails
+}): DidDetails {
+  const did = keys.authentication.controller
+  const allKeys: KeyDetails[] = []
+  const keyRelationships: KeyRoles = {}
+  Object.entries(keys).forEach(([thisRole, thisKey]) => {
+    if (thisKey) {
+      keyRelationships[thisRole] = [thisKey.id]
+      allKeys.push(thisKey)
+    }
+  })
+  return new DidDetails({
+    did,
+    keys: allKeys,
+    keyRelationships,
+    lastTxIndex: BigInt(0),
+  })
 }

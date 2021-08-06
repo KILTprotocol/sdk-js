@@ -33,7 +33,17 @@ import type {
 } from './types'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
-const kiltDidRegex = /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#.+)?$/
+export const KILT_DID_REGEX = /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#.+)?$/
+export const CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES = [
+  'ed25519',
+  'sr25519',
+  'ecdsa',
+]
+export const CHAIN_SUPPORTED_ENCRYPTION_KEY_TYPES = ['x25519']
+export const CHAIN_SUPPORTED_KEY_TYPES = [
+  ...CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES,
+  ...CHAIN_SUPPORTED_ENCRYPTION_KEY_TYPES,
+]
 
 export function getKiltDidFromIdentifier(identifier: string): string {
   if (identifier.startsWith(KILT_DID_PREFIX)) {
@@ -59,7 +69,7 @@ export function getIdentifierFromDid(did: string): string {
 }
 
 export function parseDidUrl(didUrl: string) {
-  const { identifier, fragment } = didUrl.match(kiltDidRegex)?.groups || {}
+  const { identifier, fragment } = didUrl.match(KILT_DID_REGEX)?.groups || {}
   if (!identifier) throw SDKErrors.ERROR_INVALID_DID_PREFIX(didUrl)
   return {
     did: getKiltDidFromIdentifier(identifier),
@@ -207,13 +217,13 @@ export function encodeDidPublicKey(
   key: INewPublicKey
 ): DidPublicKey {
   let keyClass: string
-  if (['ed25519', 'sr25519'].includes(key.type)) {
+  if (CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.includes(key.type)) {
     keyClass = 'PublicVerificationKey'
-  } else if (key.type === 'x25519') {
+  } else if (CHAIN_SUPPORTED_ENCRYPTION_KEY_TYPES.includes(key.type)) {
     keyClass = 'PublicEncryptionKey'
   } else {
     throw TypeError(
-      "key types currently recognized are ['ed25519', 'sr25519', 'x25519']"
+      `Unsupported key type; types currently recognized are ${CHAIN_SUPPORTED_KEY_TYPES}`
     )
   }
   return new (registry.getOrThrow<DidPublicKey>('DidPublicKey'))(registry, {

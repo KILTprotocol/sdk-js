@@ -14,6 +14,8 @@ import {
   naclSeal,
   randomAsHex,
   blake2AsU8a,
+  blake2AsHex,
+  encodeAddress,
 } from '@polkadot/util-crypto'
 import { Crypto } from '@kiltprotocol/utils'
 import {
@@ -22,6 +24,8 @@ import {
   RequestData,
   ResponseData,
 } from '@kiltprotocol/types'
+import { getKiltDidFromIdentifier } from '../Did.utils'
+import { DidDetails, DidDetailsUtils } from '../DidDetails'
 
 export type SubstrateKeyTypes = Keyring['type']
 export type EncryptionAlgorithms = 'x25519-xsalsa20-poly1305'
@@ -108,19 +112,16 @@ export class DemoKeystore
     alg: T
   }> {
     const { seed, alg } = opts
-    const keypair = naclBoxKeypairFromSecret(
-      seed ? blake2AsU8a(seed, 32) : randomAsU8a(32)
+    const { secretKey, publicKey } = naclBoxKeypairFromSecret(
+      seed ? blake2AsU8a(seed, 32 * 8) : randomAsU8a(32)
     )
-
-    const keyId = opts.keyId || Crypto.u8aToHex(keypair.publicKey)
-    if (this.encryptionKeypairs[keyId])
-      throw new Error(`id ${keyId} already used`)
-
-    this.encryptionKeypairs[keyId] = keypair
-    return { keyId, alg, publicKey: keypair.publicKey }
+    const keyId = opts.keyId || Crypto.u8aToHex(publicKey)
+    return this.addEncryptionKeypair({ keyId, alg, secretKey, publicKey })
   }
 
-  async generateKeypair<T extends SubstrateKeyTypes | EncryptionAlgorithms>({
+  public async generateKeypair<
+    T extends SubstrateKeyTypes | EncryptionAlgorithms
+  >({
     keyId,
     alg,
     seed,
@@ -174,7 +175,7 @@ export class DemoKeystore
     return { keyId, alg, publicKey: keypair.publicKey }
   }
 
-  async addKeypair<T extends SubstrateKeyTypes | EncryptionAlgorithms>({
+  public async addKeypair<T extends SubstrateKeyTypes | EncryptionAlgorithms>({
     keyId,
     alg,
     publicKey,
@@ -193,7 +194,7 @@ export class DemoKeystore
     throw new Error('alg not supported')
   }
 
-  async sign<A extends SubstrateKeyTypes>({
+  public async sign<A extends SubstrateKeyTypes>({
     keyId,
     alg,
     data,
@@ -211,7 +212,7 @@ export class DemoKeystore
     return { alg, data: signature }
   }
 
-  async encrypt<A extends EncryptionAlgorithms>({
+  public async encrypt<A extends EncryptionAlgorithms>({
     data,
     alg,
     keyId,
@@ -233,7 +234,7 @@ export class DemoKeystore
     return { data: sealed, alg, nonce }
   }
 
-  async decrypt<A extends EncryptionAlgorithms>({
+  public async decrypt<A extends EncryptionAlgorithms>({
     keyId,
     alg,
     data,
@@ -260,22 +261,74 @@ export class DemoKeystore
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async supportedAlgs(): Promise<
+  public async supportedAlgs(): Promise<
     Set<SubstrateKeyTypes | EncryptionAlgorithms>
   > {
     return supportedAlgs
   }
 
-  async getKeyIds(): Promise<string[]> {
+  public async getKeyIds(): Promise<string[]> {
     return [
       ...Object.keys(this.signingPublicKeys),
       ...Object.keys(this.encryptionKeypairs),
     ]
   }
 
-  async hasKeys(keyIds: string[]): Promise<boolean[]> {
+  public async hasKeys(keyIds: string[]): Promise<boolean[]> {
     return keyIds.map(
       (id) => !!(this.signingPublicKeys[id] || this.encryptionKeypairs)
     )
   }
+}
+
+/**
+ * Creates DidDetails for use in local testing. Will not work on-chain bc identifiers are generated ad-hoc.
+ *
+ * @param keystore
+ * @param mnemonicOrHexSeed
+ * @param signingKeyType
+ */
+export async function createLocalDemoDidFromSeed(
+  keystore: DemoKeystore,
+  mnemonicOrHexSeed: string,
+  signingKeyType = 'ed25519'
+): Promise<DidDetails> {
+  const did = getKiltDidFromIdentifier(
+    encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38)
+  )
+
+  const generateKeypairForDid = async (derivation: string, type: any) => {
+    const seed = `${mnemonicOrHexSeed}//${derivation}`
+    const keyId = `${did}#${blake2AsHex(seed, 64)}`
+    const { publicKey } = await keystore.generateKeypair({
+      keyId,
+      alg: type,
+      seed,
+    })
+    return {
+      id: keyId,
+      controller: did,
+      type,
+      publicKeyHex: Crypto.u8aToHex(publicKey),
+    }
+  }
+
+  return DidDetailsUtils.newDidfromKeyRecords({
+    authentication: await generateKeypairForDid(
+      'authentication',
+      signingKeyType
+    ),
+    assertionMethod: await generateKeypairForDid(
+      'assertionMethod',
+      signingKeyType
+    ),
+    capabilityDelegation: await generateKeypairForDid(
+      'capabilityDelegation',
+      signingKeyType
+    ),
+    keyAgreement: await generateKeypairForDid(
+      'keyAgreement',
+      'x25519-xsalsa20-poly1305'
+    ),
+  })
 }

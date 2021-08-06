@@ -5,6 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/**
+ * @group unit/did
+ */
+
 import { DidDetails, DidDetailsCreationOpts } from './DidDetails'
 
 describe('functional tests', () => {
@@ -12,24 +16,28 @@ describe('functional tests', () => {
   const keys = [
     {
       id: `${did}#1`,
+      controller: did,
       includedAt: 100,
       type: 'ed25519',
       publicKeyHex: '0xed25519',
     },
     {
       id: `${did}#2`,
+      controller: did,
       includedAt: 250,
       type: 'x25519',
       publicKeyHex: '0x255191',
     },
     {
       id: `${did}#3`,
+      controller: did,
       includedAt: 250,
       type: 'x25519',
       publicKeyHex: '0x255192',
     },
     {
       id: `${did}#4`,
+      controller: did,
       includedAt: 200,
       type: 'sr25519',
       publicKeyHex: '0xbeef',
@@ -66,24 +74,28 @@ describe('functional tests', () => {
     expect(dd.getKeys()).toMatchInlineSnapshot(`
       Array [
         Object {
+          "controller": "did:kilt:test",
           "id": "did:kilt:test#1",
           "includedAt": 100,
           "publicKeyHex": "0xed25519",
           "type": "ed25519",
         },
         Object {
+          "controller": "did:kilt:test",
           "id": "did:kilt:test#2",
           "includedAt": 250,
           "publicKeyHex": "0x255191",
           "type": "x25519",
         },
         Object {
+          "controller": "did:kilt:test",
           "id": "did:kilt:test#3",
           "includedAt": 250,
           "publicKeyHex": "0x255192",
           "type": "x25519",
         },
         Object {
+          "controller": "did:kilt:test",
           "id": "did:kilt:test#4",
           "includedAt": 200,
           "publicKeyHex": "0xbeef",
