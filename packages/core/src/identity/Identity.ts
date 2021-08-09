@@ -39,12 +39,15 @@ import * as u8aUtil from '@polkadot/util/u8a'
 // and not for box keypair, we use TweetNaCl directly
 import nacl from 'tweetnacl'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type {
+  IIdentity,
+  IPublicIdentity,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { AnyNumber } from '@polkadot/types/types'
-import PublicIdentity from './PublicIdentity'
 
 type BoxPublicKey =
-  | PublicIdentity['boxPublicKeyAsHex']
+  | IPublicIdentity['boxPublicKeyAsHex']
   | Identity['boxKeyPair']['publicKey']
 
 export default class Identity implements IIdentity {
@@ -234,12 +237,12 @@ export default class Identity implements IIdentity {
    * alice.getPublicIdentity();
    * ```
    */
-  public getPublicIdentity(): PublicIdentity {
-    return new PublicIdentity(
-      this.signKeyringPair.address,
-      u8aUtil.u8aToHex(this.boxKeyPair.publicKey),
-      this.serviceAddress
-    )
+  public getPublicIdentity(): IPublicIdentity {
+    return {
+      address: this.signKeyringPair.address,
+      boxPublicKeyAsHex: u8aUtil.u8aToHex(this.boxKeyPair.publicKey),
+      serviceAddress: this.serviceAddress,
+    }
   }
 
   /**

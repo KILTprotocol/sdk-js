@@ -6,7 +6,6 @@
  */
 
 import Identity from './Identity'
-import PublicIdentity, { IURLResolver } from './PublicIdentity'
 
-export { Identity, PublicIdentity, IURLResolver }
+export { Identity }
 export default Identity

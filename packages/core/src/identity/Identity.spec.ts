@@ -12,7 +12,7 @@
 import * as u8aUtil from '@polkadot/util/u8a'
 import { Crypto } from '@kiltprotocol/utils'
 import Identity from './Identity'
-import PublicIdentity from './PublicIdentity'
+import { IPublicIdentity } from '@kiltprotocol/sdk-js'
 
 describe('general', () => {
   it('should fail creating identity based on invalid phrase', () => {
@@ -29,7 +29,11 @@ describe('general', () => {
 
   it('should return instanceof PublicIdentity', () => {
     const alice = Identity.buildFromURI('//Alice')
-    expect(alice.getPublicIdentity()).toBeInstanceOf(PublicIdentity)
+    expect(alice.getPublicIdentity()).toMatchObject<IPublicIdentity>({
+      address: expect.any(String),
+      boxPublicKeyAsHex: expect.any(String),
+      serviceAddress: undefined,
+    })
   })
 })
 
