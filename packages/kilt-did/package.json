@@ -30,6 +30,7 @@
     "@kiltprotocol/utils": "workspace:*",
     "@polkadot/keyring": "^6.7.1",
     "@polkadot/types": "^4.13.1",
+    "@polkadot/util": "^6.7.1",
     "@polkadot/util-crypto": "^6.7.1"
   }
 }

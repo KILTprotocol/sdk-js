@@ -11,10 +11,11 @@
 
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
-import { DidUtils } from '@kiltprotocol/did'
 import CType from '../ctype/CType'
 import Claim from './Claim'
 import ClaimUtils from './Claim.utils'
+
+import '../../../../testingTools/jestErrorCodeMatcher'
 
 describe('Claim', () => {
   let did: string
@@ -130,21 +131,16 @@ describe('Claim', () => {
 
     expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
 
-    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowError(
+    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
       SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
     )
 
-    expect(() => ClaimUtils.errorCheck(malformedCTypeHash)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(
-        malformedCTypeHash.cTypeHash,
-        'Claim CType'
-      )
-    )
-    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowError(
-      SDKErrors.ERROR_ADDRESS_INVALID(
-        DidUtils.getIdentifierFromDid(malformedAddress.owner),
-        'Claim owner'
-      )
+    expect(() =>
+      ClaimUtils.errorCheck(malformedCTypeHash)
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+
+    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowErrorWithCode(
+      SDKErrors.ERROR_ADDRESS_INVALID()
     )
   })
 })

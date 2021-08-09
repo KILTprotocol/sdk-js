@@ -136,7 +136,7 @@ describe('CType', () => {
     )
     expect(() => CType.fromCType(invalidAddressCtype))
       .toThrowErrorMatchingInlineSnapshot(`
-      "Provided CType owner address invalid 
+      "Provided DID identifier address invalid 
 
           Address: Dp6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N"
     `)

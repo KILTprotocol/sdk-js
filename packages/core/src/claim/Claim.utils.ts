@@ -193,7 +193,9 @@ export function errorCheck(input: IClaim | PartialClaim): void {
   if (!input.cTypeHash) {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
-  DidUtils.validateKiltDid(input.owner)
+  if (input.owner) {
+    DidUtils.validateKiltDid(input.owner)
+  }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {
       if (

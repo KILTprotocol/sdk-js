@@ -11,7 +11,7 @@
  */
 
 import type { AnyJson } from '@polkadot/types/types'
-import type { IDidDetails, KeyDetails } from './DidDetails'
+import type { DidSignature, IDidDetails, KeyDetails } from './DidDetails'
 import type { CompressedAttestation, IAttestation } from './Attestation'
 import type { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'
 import type {
@@ -245,15 +245,15 @@ export interface IRequestDelegationApproval {
   delegationData: IDelegationData
   metaData?: AnyJson
   signatures: {
-    inviter: string
+    inviter: DidSignature
   }
 }
 
 export interface ISubmitDelegationApproval {
   delegationData: IDelegationData
   signatures: {
-    inviter: string
-    invitee: string
+    inviter: DidSignature
+    invitee: DidSignature
   }
 }
 
@@ -296,13 +296,14 @@ export type CompressedDelegationData = [
 
 export type CompressedRequestDelegationApproval = [
   CompressedDelegationData,
-  string,
+  [DidSignature['signature'], DidSignature['keyId']],
   AnyJson
 ]
 
 export type CompressedSubmitDelegationApproval = [
   CompressedDelegationData,
-  [string, string]
+  [DidSignature['signature'], DidSignature['keyId']],
+  [DidSignature['signature'], DidSignature['keyId']]
 ]
 
 export type CompressedInformDelegationCreation = [

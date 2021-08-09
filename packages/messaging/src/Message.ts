@@ -239,14 +239,19 @@ export default class Message implements IMessage {
     }: { receiverDetails?: IDidDetails; resolver?: IDidResolver } = {}
   ): Promise<IEncryptedMessage> {
     const receiverDidDetails =
-      receiverDetails || (await resolver.resolve({ did: this.receiver }))
-    const receiverKeyDetails = receiverDidDetails?.getKey(senderKeyId)
-    if (
-      !receiverKeyDetails ||
-      !receiverDidDetails ||
-      receiverDidDetails.did !== this.receiver
-    ) {
+      receiverDetails || (await resolver.resolve({ did: receiverKeyId }))
+    const receiverKeyDetails = receiverDidDetails?.getKey(receiverKeyId)
+    if (!receiverKeyDetails || !receiverDidDetails) {
       throw Error('receiver key cannot be resolved') // TODO: improve error
+    }
+    if (
+      this.receiver !== receiverDidDetails.did ||
+      this.receiver !== receiverKeyDetails.controller
+    ) {
+      throw SDKErrors.ERROR_IDENTITY_MISMATCH(
+        'receiver public key',
+        'revceiver'
+      )
     }
 
     const toEncrypt: IEncryptedMessageContents = {

@@ -388,7 +388,7 @@ export const ERROR_CLAIM_HASHTREE_MISMATCH: (key?: string) => SDKError = (
 export const ERROR_SIGNATURE_DATA_TYPE: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_SIGNATURE_DATA_TYPE,
-    'Property non existent'
+    'Signature malformed'
   )
 }
 export const ERROR_DID_IDENTIFIER_MISMATCH: (

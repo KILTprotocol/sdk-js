@@ -68,6 +68,7 @@ import type {
   IRejectAttestationForClaim,
   IAcceptClaimsForCTypes,
   IRejectClaimsForCTypes,
+  IDidDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import {
@@ -75,24 +76,29 @@ import {
   AttestedClaim,
   Claim,
   CType,
-  Identity,
   Quote,
   RequestForAttestation,
 } from '@kiltprotocol/core'
 
+import {
+  createLocalDemoDidFromSeed,
+  DemoKeystore,
+  DidUtils,
+} from '@kiltprotocol/did'
 import * as MessageUtils from './Message.utils'
 
 import Message from './Message'
 
+import '../../../testingTools/jestErrorCodeMatcher'
+
 // TODO: Duplicated code, would be nice to have as a seperated test package with similar helpers
 async function buildAttestedClaim(
-  claimer: Identity,
-  attester: Identity,
+  claimer: IDidDetails,
+  attester: IDidDetails,
   contents: IClaim['contents'],
   legitimations: AttestedClaim[]
 ): Promise<AttestedClaim> {
   // create claim
-  const identityAlice = Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
     $id: Crypto.hashStr('kilt:ctype:0x1'),
@@ -104,28 +110,21 @@ async function buildAttestedClaim(
     type: 'object',
   }
 
-  const testCType: CType = CType.fromSchema(
-    rawCType,
-    identityAlice.signKeyringPair.address
-  )
+  const testCType: CType = CType.fromSchema(rawCType)
 
   const claim = Claim.fromCTypeAndClaimContents(
     testCType,
     contents,
-    claimer.address
+    claimer.did
   )
   // build request for attestation with legitimations
-  const requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
-    claim,
-    claimer,
-    {
-      legitimations,
-    }
-  )
+  const requestForAttestation = RequestForAttestation.fromClaim(claim, {
+    legitimations,
+  })
   // build attestation
-  const testAttestation = Attestation.fromRequestAndPublicIdentity(
+  const testAttestation = Attestation.fromRequestAndDid(
     requestForAttestation,
-    attester.getPublicIdentity()
+    attester.did
   )
   // combine to attested claim
   const attestedClaim = AttestedClaim.fromRequestAndAttestation(
@@ -136,8 +135,9 @@ async function buildAttestedClaim(
 }
 
 describe('Messaging Utilities', () => {
-  let identityAlice: Identity
-  let identityBob: Identity
+  let keystore: DemoKeystore
+  let identityAlice: IDidDetails
+  let identityBob: IDidDetails
   let date: Date
   let rawCType: ICType['schema']
   let rawCTypeWithMultipleProperties: ICType['schema']
@@ -218,8 +218,9 @@ describe('Messaging Utilities', () => {
   let messageInformCreateDelegation: IMessage
 
   beforeAll(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
-    identityBob = Identity.buildFromURI('//Bob')
+    keystore = new DemoKeystore()
+    identityAlice = await createLocalDemoDidFromSeed(keystore, '//Alice')
+    identityBob = await createLocalDemoDidFromSeed(keystore, '//Bob')
     date = new Date(2019, 11, 10)
     claimContents = {
       name: 'Bob',
@@ -247,17 +248,17 @@ describe('Messaging Utilities', () => {
       type: 'object',
     }
     // CType
-    testCType = CType.fromSchema(rawCType, identityAlice.address)
+    testCType = CType.fromSchema(rawCType, identityAlice.did)
     testCTypeWithMultipleProperties = CType.fromSchema(
       rawCTypeWithMultipleProperties,
-      identityAlice.address
+      identityAlice.did
     )
 
     // Claim
     claim = Claim.fromCTypeAndClaimContents(
       testCType,
       claimContents,
-      identityAlice.address
+      identityAlice.did
     )
     // Legitimation
     legitimation = await buildAttestedClaim(identityAlice, identityBob, {}, [])
@@ -286,7 +287,7 @@ describe('Messaging Utilities', () => {
     ]
     // Quote Data
     quoteData = {
-      attesterAddress: identityAlice.address,
+      attesterDid: identityAlice.did,
       cTypeHash: claim.cTypeHash,
       cost: {
         tax: { vat: 3.3 },
@@ -298,13 +299,14 @@ describe('Messaging Utilities', () => {
       timeframe: date,
     }
     // Quote signed by attester
-    quoteAttesterSigned = Quote.createAttesterSignature(
+    quoteAttesterSigned = await Quote.createAttesterSignature(
       quoteData,
-      identityAlice
+      identityAlice,
+      keystore
     )
     // Compressed Quote Attester Signed quote
     compressedResultAttesterSignedQuote = [
-      quoteAttesterSigned.attesterAddress,
+      quoteAttesterSigned.attesterDid,
       quoteAttesterSigned.cTypeHash,
       [
         quoteAttesterSigned.cost.gross,
@@ -314,24 +316,35 @@ describe('Messaging Utilities', () => {
       quoteAttesterSigned.currency,
       quoteAttesterSigned.termsAndConditions,
       quoteAttesterSigned.timeframe,
-      quoteAttesterSigned.attesterSignature,
+      [
+        quoteAttesterSigned.attesterSignature.signature,
+        quoteAttesterSigned.attesterSignature.keyId,
+      ],
     ]
     // Quote agreement
-    bothSigned = Quote.createQuoteAgreement(
-      identityAlice,
+    bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
-      legitimation.request.rootHash
+      legitimation.request.rootHash,
+      identityAlice,
+      identityBob,
+      keystore
     )
     // Compressed Quote Agreement
     compressedQuoteAgreement = [
-      bothSigned.attesterAddress,
+      bothSigned.attesterDid,
       bothSigned.cTypeHash,
       [bothSigned.cost.gross, bothSigned.cost.net, bothSigned.cost.tax],
       bothSigned.currency,
       bothSigned.termsAndConditions,
       bothSigned.timeframe,
-      bothSigned.attesterSignature,
-      bothSigned.claimerSignature,
+      [
+        bothSigned.attesterSignature.signature,
+        bothSigned.attesterSignature.keyId,
+      ],
+      [
+        bothSigned.claimerSignature.signature,
+        bothSigned.claimerSignature.keyId,
+      ],
       bothSigned.rootHash,
     ]
     // Request Terms content
@@ -406,7 +419,7 @@ describe('Messaging Utilities', () => {
         delegationId: null,
         claimHash: requestAttestationContent.requestForAttestation.rootHash,
         cTypeHash: claim.cTypeHash,
-        owner: identityBob.getPublicIdentity().address,
+        owner: identityBob.did,
         revoked: false,
       },
     }
@@ -422,13 +435,13 @@ describe('Messaging Utilities', () => {
     // Request Claims for CTypes content
     requestClaimsForCTypesContent = {
       cTypeHash: claim.cTypeHash,
-      acceptedAttester: [identityAlice.address],
+      acceptedAttester: [identityAlice.did],
       requiredProperties: ['id', 'name'],
     }
     // Compressed Request claims for CType content
     compressedRequestClaimsForCTypesContent = [
       claim.cTypeHash,
-      [identityAlice.address],
+      [identityAlice.did],
       ['id', 'name'],
     ]
     // Submit claims for CType content
@@ -438,7 +451,7 @@ describe('Messaging Utilities', () => {
     // Request Accept delegation content
     requestAcceptDelegationContent = {
       delegationData: {
-        account: identityAlice.address,
+        account: identityAlice.did,
         id: Crypto.hashStr('0x12345678'),
         parentId: Crypto.hashStr('0x12345678'),
         permissions: [1],
@@ -446,7 +459,11 @@ describe('Messaging Utilities', () => {
       },
       metaData: {},
       signatures: {
-        inviter: identityAlice.signStr('signature'),
+        inviter: await DidUtils.authenticateWithDid(
+          'signature',
+          identityAlice,
+          keystore
+        ),
       },
     }
     // Compressed Request accept delegation content
@@ -458,21 +475,32 @@ describe('Messaging Utilities', () => {
         requestAcceptDelegationContent.delegationData.permissions,
         requestAcceptDelegationContent.delegationData.isPCR,
       ],
-      requestAcceptDelegationContent.signatures.inviter,
+      [
+        requestAcceptDelegationContent.signatures.inviter.signature,
+        requestAcceptDelegationContent.signatures.inviter.keyId,
+      ],
       requestAcceptDelegationContent.metaData,
     ]
     // Submit Accept delegation content
     submitAcceptDelegationContent = {
       delegationData: {
-        account: identityAlice.address,
+        account: identityAlice.did,
         id: Crypto.hashStr('0x12345678'),
         parentId: Crypto.hashStr('0x12345678'),
         permissions: [1],
         isPCR: false,
       },
       signatures: {
-        inviter: identityAlice.signStr('signature'),
-        invitee: identityBob.signStr('signature'),
+        inviter: await DidUtils.authenticateWithDid(
+          'signature',
+          identityAlice,
+          keystore
+        ),
+        invitee: await DidUtils.authenticateWithDid(
+          'signature',
+          identityBob,
+          keystore
+        ),
       },
     }
     // Compressed Submit accept delegation content
@@ -485,13 +513,17 @@ describe('Messaging Utilities', () => {
         submitAcceptDelegationContent.delegationData.isPCR,
       ],
       [
-        submitAcceptDelegationContent.signatures.inviter,
-        submitAcceptDelegationContent.signatures.invitee,
+        submitAcceptDelegationContent.signatures.inviter.signature,
+        submitAcceptDelegationContent.signatures.inviter.keyId,
+      ],
+      [
+        submitAcceptDelegationContent.signatures.invitee.signature,
+        submitAcceptDelegationContent.signatures.invitee.keyId,
       ],
     ]
     // Reject Accept Delegation content
     rejectAcceptDelegationContent = {
-      account: identityAlice.address,
+      account: identityAlice.did,
       id: Crypto.hashStr('0x12345678'),
       parentId: Crypto.hashStr('0x12345678'),
       permissions: [1],
@@ -783,74 +815,74 @@ describe('Messaging Utilities', () => {
   beforeAll(async () => {
     messageRequestTerms = new Message(
       requestTermsBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageSubmitTerms = new Message(
       submitTermsBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageRejectTerms = new Message(
       rejectTermsBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageRequestAttestationForClaim = new Message(
       requestAttestationBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageSubmitAttestationForClaim = new Message(
       submitAttestationBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
 
     messageRejectAttestationForClaim = new Message(
       rejectAttestationForClaimBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageRequestClaimsForCTypes = new Message(
       requestClaimsForCTypesBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageSubmitClaimsForCTypes = new Message(
       submitClaimsForCTypesBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageAcceptClaimsForCTypes = new Message(
       acceptClaimsForCTypesBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageRejectClaimsForCTypes = new Message(
       rejectClaimsForCTypesBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageRequestAcceptDelegation = new Message(
       requestAcceptDelegationBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageSubmitAcceptDelegation = new Message(
       submitAcceptDelegationBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageRejectAcceptDelegation = new Message(
       rejectAcceptDelegationBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
     messageInformCreateDelegation = new Message(
       informCreateDelegationBody,
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
   })
   it('error check should not throw errors on faulty bodies', () => {
@@ -942,75 +974,46 @@ describe('Messaging Utilities', () => {
     ).not.toThrowError()
   })
   it('error check should throw errors on message', () => {
-    messageRequestTerms.receiverAddress = 'this is not a receiver address'
+    messageRequestTerms.receiver = 'did:kilt:thisisnotareceiveraddress'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRequestTerms)
-    ).toThrowError(
-      SDKErrors.ERROR_ADDRESS_INVALID(
-        messageRequestTerms.receiverAddress,
-        'receiver address'
-      )
-    )
-    messageSubmitTerms.senderBoxPublicKey =
-      'this is not a sender box public key'
+    ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_PREFIX(''))
+    messageSubmitTerms.sender = 'this is not a sender did'
     expect(() =>
       MessageUtils.errorCheckMessage(messageSubmitTerms)
-    ).toThrowError(SDKErrors.ERROR_ADDRESS_INVALID())
-    messageRejectTerms.senderAddress = 'this is not a sender address'
+    ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_PREFIX(''))
+    messageRejectTerms.sender = 'this is not a sender address'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRejectTerms)
-    ).toThrowError(
-      SDKErrors.ERROR_ADDRESS_INVALID(
-        messageRejectTerms.senderAddress,
-        'sender address'
-      )
-    )
+    ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_PREFIX(''))
   })
   it('error check should throw errors on faulty bodies', () => {
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestTermsBody)
-    ).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(
-        requestTermsBody.content.cTypeHash,
-        'Claim CType'
-      )
-    )
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     submitTermsBody.content.prerequisiteClaims = 'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitTermsBody)
-    ).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(
-        submitTermsBody.content.prerequisiteClaims,
-        'Submit terms pre-requisite claims invalid'
-      )
-    )
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     submitTermsBody.content.delegationId = 'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitTermsBody)
-    ).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(
-        submitTermsBody.content.delegationId,
-        'Submit terms delegation id hash invalid'
-      )
-    )
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
 
     rejectTermsBody.content.delegationId = 'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectTermsBody)
-    ).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(
-        rejectTermsBody.content.delegationId,
-        'Reject terms delegation id hash'
-      )
-    )
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     // @ts-expect-error
     delete rejectTermsBody.content.claim.cTypeHash
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectTermsBody)
-    ).toThrowError(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED())
-    requestAttestationBody.content.requestForAttestation.claimerSignature =
-      'this is not the claimers signature'
+    ).toThrowErrorWithCode(SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED())
+    requestAttestationBody.content.requestForAttestation.claimerSignature = {
+      signature: 'this is not the claimers signature',
+      keyId: 'this is not a key id',
+    }
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAttestationBody)
     ).toThrowError()
@@ -1018,25 +1021,15 @@ describe('Messaging Utilities', () => {
       'this is not the claim hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAttestationBody)
-    ).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(
-        submitAttestationBody.content.attestation.claimHash,
-        'Claim'
-      )
-    )
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     rejectAttestationForClaimBody.content = 'this is not the root hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAttestationForClaimBody)
-    ).toThrowError(SDKErrors.ERROR_HASH_MALFORMED())
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     requestClaimsForCTypesBody.content[0].cTypeHash = 'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestClaimsForCTypesBody)
-    ).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(
-        requestClaimsForCTypesBody.content[0].cTypeHash,
-        'request claims for ctypes cTypeHash invalid'
-      )
-    )
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     // @ts-expect-error
     delete submitClaimsForCTypesBody.content[0].attestation.revoked
     expect(() =>
@@ -1054,46 +1047,36 @@ describe('Messaging Utilities', () => {
     rejectClaimsForCTypesBody.content[0] = 'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectClaimsForCTypesBody)
-    ).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(
-        rejectClaimsForCTypesBody.content[0],
-        'rejected claims for ctypes ctype hashes invalid'
-      )
-    )
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     delete requestAcceptDelegationBody.content.metaData
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_OBJECT_MALFORMED())
-    requestAcceptDelegationBody.content.signatures.inviter =
+    ).toThrowErrorWithCode(SDKErrors.ERROR_OBJECT_MALFORMED())
+    requestAcceptDelegationBody.content.signatures.inviter.signature =
       'this is not a signature'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
-    submitAcceptDelegationBody.content.signatures.invitee =
-      'this is not a signature'
+    ).toThrowErrorWithCode(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
+    submitAcceptDelegationBody.content.signatures.invitee.keyId =
+      'this is not a key id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
+    ).toThrowErrorWithCode(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
     submitAcceptDelegationBody.content.delegationData.parentId =
       'this is not a parent id hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(submitAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE())
+    ).toThrowErrorWithCode(SDKErrors.ERROR_DELEGATION_ID_TYPE())
     // @ts-expect-error
     delete rejectAcceptDelegationBody.content.account
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAcceptDelegationBody)
-    ).toThrowError(SDKErrors.ERROR_OWNER_NOT_PROVIDED())
+    ).toThrowErrorWithCode(SDKErrors.ERROR_OWNER_NOT_PROVIDED())
     informCreateDelegationBody.content.delegationId =
       'this is not a delegation id'
     expect(() =>
       MessageUtils.errorCheckMessageBody(informCreateDelegationBody)
-    ).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(
-        informCreateDelegationBody.content.delegationId,
-        'inform create delegation message delegation id invalid'
-      )
-    )
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     expect(() =>
       MessageUtils.errorCheckMessageBody({} as MessageBody)
     ).toThrowError(SDKErrors.ERROR_MESSAGE_BODY_MALFORMED())
@@ -1112,13 +1095,13 @@ describe('Messaging Utilities', () => {
       MessageUtils.errorCheckDelegationData(
         requestAcceptDelegationBody.content.delegationData
       )
-    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_TYPE())
+    ).toThrowErrorWithCode(SDKErrors.ERROR_DELEGATION_ID_TYPE())
     submitAcceptDelegationBody.content.delegationData.permissions = []
     expect(() =>
       MessageUtils.errorCheckDelegationData(
         submitAcceptDelegationBody.content.delegationData
       )
-    ).toThrowError(
+    ).toThrowErrorWithCode(
       SDKErrors.ERROR_UNAUTHORIZED(
         'Must have at least one permission and no more then two'
       )
@@ -1129,6 +1112,6 @@ describe('Messaging Utilities', () => {
       MessageUtils.errorCheckDelegationData(
         submitAcceptDelegationBody.content.delegationData
       )
-    ).toThrowError(SDKErrors.ERROR_DELEGATION_ID_MISSING())
+    ).toThrowErrorWithCode(SDKErrors.ERROR_DELEGATION_ID_MISSING())
   })
 })

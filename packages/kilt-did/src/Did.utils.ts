@@ -14,6 +14,7 @@ import type {
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
+import { isHex } from '@polkadot/util'
 import type { Codec, Registry } from '@polkadot/types/types'
 import { checkAddress } from '@polkadot/util-crypto'
 import { DefaultResolver } from './DidResolver/DefaultResolver'
@@ -95,6 +96,20 @@ export function validateKiltDid(
     throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
   }
   return true
+}
+
+export function validateDidSignature(input: unknown): input is DidSignature {
+  try {
+    if (
+      !isHex((input as DidSignature).signature) ||
+      !validateKiltDid((input as DidSignature).keyId, true)
+    ) {
+      throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+    }
+    return true
+  } catch (e) {
+    throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
+  }
 }
 
 export function signCodec<PayloadType extends Codec>(
