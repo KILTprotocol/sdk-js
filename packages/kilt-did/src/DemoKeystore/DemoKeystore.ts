@@ -297,18 +297,22 @@ export async function createLocalDemoDidFromSeed(
     encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38)
   )
 
-  const generateKeypairForDid = async (derivation: string, type: any) => {
+  const generateKeypairForDid = async (
+    derivation: string,
+    alg: string,
+    keytype: string
+  ) => {
     const seed = `${mnemonicOrHexSeed}//${derivation}`
     const keyId = `${did}#${blake2AsHex(seed, 64)}`
-    const { publicKey } = await keystore.generateKeypair({
+    const { publicKey } = await keystore.generateKeypair<any>({
       keyId,
-      alg: type,
+      alg,
       seed,
     })
     return {
       id: keyId,
       controller: did,
-      type,
+      type: keytype,
       publicKeyHex: Crypto.u8aToHex(publicKey),
     }
   }
@@ -316,19 +320,23 @@ export async function createLocalDemoDidFromSeed(
   return DidDetailsUtils.newDidfromKeyRecords({
     authentication: await generateKeypairForDid(
       'authentication',
+      signingKeyType,
       signingKeyType
     ),
     assertionMethod: await generateKeypairForDid(
       'assertionMethod',
+      signingKeyType,
       signingKeyType
     ),
     capabilityDelegation: await generateKeypairForDid(
       'capabilityDelegation',
+      signingKeyType,
       signingKeyType
     ),
     keyAgreement: await generateKeypairForDid(
       'keyAgreement',
-      'x25519-xsalsa20-poly1305'
+      'x25519-xsalsa20-poly1305',
+      'x25519'
     ),
   })
 }

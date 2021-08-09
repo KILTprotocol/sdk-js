@@ -26,7 +26,7 @@ import { createLocalDemoDidFromSeed, DemoKeystore } from '@kiltprotocol/did'
 import Message from './Message'
 
 describe('Messaging', () => {
-  let fakeResolver: IDidResolver
+  let mockResolver: IDidResolver
   let keystore: DemoKeystore
   let identityAlice: IDidDetails
   let identityBob: IDidDetails
@@ -37,7 +37,7 @@ describe('Messaging', () => {
     keystore = new DemoKeystore()
     identityAlice = await createLocalDemoDidFromSeed(keystore, '//Alice')
     identityBob = await createLocalDemoDidFromSeed(keystore, '//Bob')
-    fakeResolver = {
+    mockResolver = {
       resolve: async ({ did }) => {
         if (did.startsWith(identityAlice.did)) {
           return identityAlice
@@ -60,14 +60,13 @@ describe('Messaging', () => {
       identityBob.did
     )
     const encryptedMessage = await message.encrypt(
-      identityAlice.getKeys('keyAgreement')[0].id,
-      identityBob.getKeys('keyAgreement')[0].id,
-      keystore,
-      { resolver: fakeResolver }
+      identityAlice.getKeys('keyAgreement')[0],
+      identityBob.getKeys('keyAgreement')[0],
+      keystore
     )
 
     const decryptedMessage = await Message.decrypt(encryptedMessage, keystore, {
-      resolver: fakeResolver,
+      resolver: mockResolver,
     })
     expect(JSON.stringify(message.body)).toEqual(
       JSON.stringify(decryptedMessage.body)
@@ -84,7 +83,7 @@ describe('Messaging', () => {
 
     await expect(() =>
       Message.decrypt(encryptedMessageWrongContent, keystore, {
-        resolver: fakeResolver,
+        resolver: mockResolver,
       })
     ).rejects.toThrowError(SDKErrors.ERROR_DECODING_MESSAGE())
 
@@ -104,29 +103,37 @@ describe('Messaging', () => {
     }
     await expect(() =>
       Message.decrypt(encryptedMessageWrongBody, keystore, {
-        resolver: fakeResolver,
+        resolver: mockResolver,
       })
     ).rejects.toThrowError(SDKErrors.ERROR_PARSING_MESSAGE())
   })
 
   it('verifies the sender is the sender key owner', async () => {
+    const wrongSender = `did:kilt:${Crypto.encodeAddress(
+      new Uint8Array(32),
+      38
+    )}`
+
     const message = new Message(
       {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
         content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
       },
-      `did:kilt:${Crypto.encodeAddress(new Uint8Array(32), 38)}`,
+      wrongSender,
       identityBob.did
     )
+
+    const forgedAliceKey = { ...identityAlice.getKeys('keyAgreement')[0] }
+    forgedAliceKey.controller = wrongSender
+
     const encryptedMessage = await message.encrypt(
-      identityAlice.getKeys('keyAgreement')[0].id,
-      identityBob.getKeys('keyAgreement')[0].id,
-      keystore,
-      { resolver: fakeResolver }
+      forgedAliceKey,
+      identityBob.getKeys('keyAgreement')[0],
+      keystore
     )
     await expect(
       Message.decrypt(encryptedMessage, keystore, {
-        resolver: fakeResolver,
+        resolver: mockResolver,
       })
     ).rejects.toThrowErrorMatchingInlineSnapshot(`"Error parsing message body"`)
   })

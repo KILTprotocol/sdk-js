@@ -27,10 +27,11 @@ import type {
   IDidDetails,
   IDidResolver,
   IEncryptedMessageContents,
+  KeyDetails,
 } from '@kiltprotocol/types'
 import { MessageBodyType } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import { DefaultResolver, DidUtils, DemoKeystore } from '@kiltprotocol/did'
+import { DefaultResolver, DemoKeystore } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
@@ -119,18 +120,19 @@ export default class Message implements IMessage {
       receivedAt,
     } = encrypted
 
-    // the key id contains the DID, extract it from there
-    const { did: senderDid } = DidUtils.parseDidUrl(senderKeyId)
     // if we don't have the sender DID details already, fetch it via resolver
     const senderDidDetails =
-      senderDetails || (await resolver.resolve({ did: senderDid }))
+      senderDetails || (await resolver.resolve({ did: senderKeyId }))
+    // check if key is currently associated with DID
     const senderKeyDetails = senderDidDetails?.getKey(senderKeyId)
-    if (
-      !senderKeyDetails ||
-      !senderDidDetails ||
-      senderDidDetails.did !== senderDid
-    ) {
+    if (!senderKeyDetails || !senderDidDetails) {
       throw Error('sender key cannot be resolved') // TODO: improve error
+    }
+    // check key type
+    if (senderKeyDetails.type !== 'x25519') {
+      throw Error(
+        `key type mismatch for message sender: requires x25519, got ${senderKeyDetails.type}`
+      )
     }
 
     const { data } = await keystore
@@ -172,7 +174,7 @@ export default class Message implements IMessage {
         throw SDKErrors.ERROR_IDENTITY_MISMATCH('Encryption key', 'Sender')
       }
 
-      // checks the messasge body
+      // checks the message body
       errorCheckMessageBody(decrypted.body)
 
       // checks the message structure
@@ -221,37 +223,24 @@ export default class Message implements IMessage {
   /**
    * Encrypts the [[Message]] as a string. This can be reversed with [[Message.decrypt]].
    *
-   * @param senderKeyId
-   * @param receiverKeyId
+   * @param senderKey
+   * @param receiverKey
    * @param keystore
-   * @param resolutionOptions
-   * @param resolutionOptions.receiverDetails
-   * @param resolutionOptions.resolver
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
   public async encrypt(
-    senderKeyId: string,
-    receiverKeyId: string,
-    keystore: { encrypt: DemoKeystore['encrypt'] }, // TODO: use proper interface
-    {
-      receiverDetails,
-      resolver = DefaultResolver,
-    }: { receiverDetails?: IDidDetails; resolver?: IDidResolver } = {}
+    senderKey: KeyDetails,
+    receiverKey: KeyDetails,
+    keystore: { encrypt: DemoKeystore['encrypt'] } // TODO: use proper interface
   ): Promise<IEncryptedMessage> {
-    const receiverDidDetails =
-      receiverDetails || (await resolver.resolve({ did: receiverKeyId }))
-    const receiverKeyDetails = receiverDidDetails?.getKey(receiverKeyId)
-    if (!receiverKeyDetails || !receiverDidDetails) {
-      throw Error('receiver key cannot be resolved') // TODO: improve error
-    }
-    if (
-      this.receiver !== receiverDidDetails.did ||
-      this.receiver !== receiverKeyDetails.controller
-    ) {
+    if (this.receiver !== receiverKey.controller) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH(
         'receiver public key',
         'revceiver'
       )
+    }
+    if (this.sender !== senderKey.controller) {
+      throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
     }
 
     const toEncrypt: IEncryptedMessageContents = {
@@ -269,8 +258,8 @@ export default class Message implements IMessage {
     const encryted = await keystore.encrypt({
       alg: 'x25519-xsalsa20-poly1305',
       data: serialized,
-      keyId: senderKeyId,
-      peerPublicKey: hexToU8a(receiverKeyDetails.publicKeyHex),
+      keyId: senderKey.id,
+      peerPublicKey: hexToU8a(receiverKey.publicKeyHex),
     })
     const ciphertext = u8aToHex(encryted.data)
     const nonce = u8aToHex(encryted.nonce)
@@ -279,8 +268,8 @@ export default class Message implements IMessage {
       receivedAt: this.receivedAt,
       ciphertext,
       nonce,
-      senderKeyId,
-      receiverKeyId,
+      senderKeyId: senderKey.id,
+      receiverKeyId: receiverKey.id,
     }
   }
 
