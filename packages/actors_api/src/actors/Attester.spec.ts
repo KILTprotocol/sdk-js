@@ -9,11 +9,12 @@
  * @group unit/actor
  */
 
-import { CType, Identity, SDKErrors } from '@kiltprotocol/core'
-import type { ICType, IClaim, IMessage } from '@kiltprotocol/types'
+import { CType, SDKErrors } from '@kiltprotocol/core'
+import type { ICType, IClaim, IMessage, IDidDetails } from '@kiltprotocol/types'
 import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
 import Message from '@kiltprotocol/messaging'
 import { Crypto } from '@kiltprotocol/utils'
+import { createLocalDemoDidFromSeed, DemoKeystore } from '@kiltprotocol/did'
 import { Attester, Claimer } from '..'
 import { issueAttestation } from './Attester'
 
@@ -24,14 +25,16 @@ jest.mock(
 describe('Attester', () => {
   const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
-  let attester: Identity
-  let claimer: Identity
+  let keystore: DemoKeystore
+  let attester: IDidDetails
+  let claimer: IDidDetails
   let rawCType: ICType['schema']
   let cType: CType
   beforeAll(async () => {
-    attester = Identity.buildFromURI('//Alice')
+    keystore = new DemoKeystore()
+    attester = await createLocalDemoDidFromSeed(keystore, '//Alice')
 
-    claimer = Identity.buildFromURI('//Bob')
+    claimer = await createLocalDemoDidFromSeed(keystore, '//Bob')
 
     rawCType = {
       $id: 'kilt:ctype:0x1',
@@ -43,14 +46,14 @@ describe('Attester', () => {
       type: 'object',
     }
 
-    cType = CType.fromSchema(rawCType, claimer.address)
+    cType = CType.fromSchema(rawCType, claimer.did)
   })
 
   it('Issue privacy enhanced attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'attestations', [
         cType.hash,
-        attester.address,
+        attester.did,
         undefined,
         0,
       ])
@@ -76,12 +79,12 @@ describe('Attester', () => {
         other: Crypto.hashStr('0xbeef'),
         attributes: true,
       },
-      owner: claimer.address,
+      owner: claimer.did,
     }
     const { message: requestAttestation } = Claimer.requestAttestation(
       claim,
       claimer,
-      attester.getPublicIdentity()
+      attester.did
     )
 
     const { message } = await Attester.issueAttestation(
