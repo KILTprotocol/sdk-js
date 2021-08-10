@@ -795,6 +795,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kiltprotocol/actors-api@workspace:*, @kiltprotocol/actors-api@workspace:packages/actors_api":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/actors-api@workspace:packages/actors_api"
+  dependencies:
+    "@kiltprotocol/chain-helpers": "workspace:*"
+    "@kiltprotocol/config": "workspace:*"
+    "@kiltprotocol/core": "workspace:*"
+    "@kiltprotocol/did": "workspace:*"
+    "@kiltprotocol/messaging": "workspace:*"
+    "@kiltprotocol/types": "workspace:*"
+    "@kiltprotocol/utils": "workspace:*"
+    rimraf: ^3.0.2
+    typescript: 4.0
+  languageName: unknown
+  linkType: soft
+
 "@kiltprotocol/chain-helpers@workspace:*, @kiltprotocol/chain-helpers@workspace:packages/chain-helpers":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
@@ -884,6 +900,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
+    "@kiltprotocol/actors-api": "workspace:*"
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
     "@kiltprotocol/messaging": "workspace:*"

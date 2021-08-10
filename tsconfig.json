@@ -7,6 +7,7 @@
     "baseUrl": "./packages",
     "sourceMap": true,
     "paths": {
+      "@kiltprotocol/actors-api": ["actors_api/src"],
       "@kiltprotocol/chain-helpers": ["chain-helpers/src"],
       "@kiltprotocol/config": ["config/src"],
       "@kiltprotocol/core": ["core/src"],
