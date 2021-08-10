@@ -34,7 +34,6 @@
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
-    "@kiltprotocol/actors-api": "workspace:*",
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/core": "workspace:*",
     "@kiltprotocol/messaging": "workspace:*",
