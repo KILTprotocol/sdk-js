@@ -9,13 +9,15 @@
  * @group unit/vc-js
  */
 
-import jsigs, { purposes } from 'jsonld-signatures'
+import jsigs, { DocumentLoader, purposes } from 'jsonld-signatures'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'
 import { Identity } from '@kiltprotocol/core'
+import { DidUtils } from '@kiltprotocol/did'
+import { Crypto } from '@kiltprotocol/utils'
 import Suite from './KiltSignatureSuite'
 import credential from '../examples/example-vc.json'
-import documentLoader from '../documentLoader'
+import kiltDocumentLoader from '../documentLoader'
 import type {
   VerifiableCredential,
   SelfSignedProof,
@@ -26,6 +28,7 @@ import { KILT_SELF_SIGNED_PROOF_TYPE } from '../../constants'
 let suite: Suite
 let purpose: purposes.ProofPurpose
 let proof: SelfSignedProof
+let documentLoader: DocumentLoader
 
 beforeAll(async () => {
   suite = new Suite()
@@ -37,6 +40,28 @@ beforeAll(async () => {
     }
     return false
   })
+  documentLoader = async (url) => {
+    if (url.startsWith('did:kilt:')) {
+      const { identifier, fragment, did } = DidUtils.parseDidUrl(url)
+      const key: IPublicKeyRecord = {
+        id: url,
+        publicKeyHex: Crypto.u8aToHex(Crypto.decodeAddress(identifier)),
+        controller: did,
+        type: 'Ed25519VerificationKey2018',
+      }
+      if (fragment) {
+        return { documentUrl: url, document: key }
+      }
+      return {
+        documentUrl: url,
+        document: {
+          id: did,
+          verificationMethod: [key],
+        },
+      }
+    }
+    return kiltDocumentLoader(url)
+  }
 })
 
 describe('jsigs', () => {

@@ -11,7 +11,7 @@
 
 import * as u8aUtil from '@polkadot/util/u8a'
 import { Crypto } from '@kiltprotocol/utils'
-import { IPublicIdentity } from '@kiltprotocol/sdk-js'
+import type { IPublicIdentity } from '@kiltprotocol/types'
 import Identity from './Identity'
 
 describe('general', () => {

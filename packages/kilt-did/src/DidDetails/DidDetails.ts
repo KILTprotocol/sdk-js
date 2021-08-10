@@ -33,9 +33,13 @@ export interface DidDetailsCreationOpts {
 }
 
 function errorCheck({
+  did,
   keys,
   keyRelationships,
 }: Required<DidDetailsCreationOpts>): void {
+  if (!did) {
+    throw Error('did is required for DidDetails')
+  }
   const keyIds = new Set(keys.map((key) => key.id))
   const keyReferences = new Set<string>(
     Array.prototype.concat(...Object.values(keyRelationships))
