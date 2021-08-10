@@ -13,13 +13,7 @@ import * as Utils from '@kiltprotocol/utils'
 
 export * from '@kiltprotocol/types'
 export * from '@kiltprotocol/core'
-export {
-  Message,
-  Messaging,
-  BlockchainUtils,
-  ChainHelpers,
-  Utils,
-}
+export { Message, Messaging, BlockchainUtils, ChainHelpers, Utils }
 
 export default {
   ...core,
