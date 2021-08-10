@@ -11,8 +11,8 @@
 
 import * as u8aUtil from '@polkadot/util/u8a'
 import { Crypto } from '@kiltprotocol/utils'
-import Identity from './Identity'
 import { IPublicIdentity } from '@kiltprotocol/sdk-js'
+import Identity from './Identity'
 
 describe('general', () => {
   it('should fail creating identity based on invalid phrase', () => {

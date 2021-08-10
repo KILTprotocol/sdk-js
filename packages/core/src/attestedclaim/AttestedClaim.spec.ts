@@ -16,8 +16,10 @@ import type {
   CompressedAttestedClaim,
   ICType,
   IDidDetails,
+  IDidResolver,
 } from '@kiltprotocol/types'
 import { DemoKeystore, createLocalDemoDidFromSeed } from '@kiltprotocol/did'
+import { UUID } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
@@ -84,7 +86,6 @@ describe('RequestForAttestation', () => {
     keystore = new DemoKeystore()
 
     identityAlice = await createLocalDemoDidFromSeed(keystore, '//Alice')
-
     identityBob = await createLocalDemoDidFromSeed(keystore, '//Bob')
     identityCharlie = await createLocalDemoDidFromSeed(keystore, '//Charlie')
 
@@ -268,17 +269,29 @@ describe('create presentation', () => {
     expect(cred).toBeDefined()
   })
 
-  // should be tested here, but the setup for the privacy enhanced credentials is pretty big
-  // It should be covered in the actor tests.
-  it.todo(
-    'should build from reqForAtt and Attestation with privacy enhancement'
-  )
-
   it('should create AttestedClaim and exclude specific attributes', async () => {
+    const mockResolver: IDidResolver = {
+      resolve: async ({ did }) => {
+        if (did.startsWith(claimer.did)) return claimer
+        return null
+      },
+    }
+    ;(query as jest.Mock).mockResolvedValue(attestation)
+
     const cred = AttestedClaim.fromRequestAndAttestation(reqForAtt, attestation)
 
-    const att = cred.createPresentation(['name'])
+    const challenge = UUID.generate()
+    const att = await cred.createPresentation({
+      selectedAttributes: ['name'],
+      signer: keystore,
+      claimerDid: claimer,
+      challenge,
+    })
     expect(att.getAttributes()).toEqual(new Set(['name']))
+    await expect(
+      AttestedClaim.verify(att, { resolver: mockResolver })
+    ).resolves.toBe(true)
+    expect(att.request.claimerSignature?.challenge).toEqual(challenge)
   })
 
   it('should get attribute keys', async () => {

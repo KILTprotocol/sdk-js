@@ -256,7 +256,7 @@ export type VerficationResult = {
   key?: KeyDetails
 }
 
-export async function verifyDidSignature({
+export function verifyDidSignature({
   message,
   signature,
   keyId,
@@ -268,7 +268,7 @@ export async function verifyDidSignature({
   keyId: string
   didDetails: IDidDetails
   keyRelationship?: VerificationKeyRelationship
-}): Promise<VerficationResult> {
+}): VerficationResult {
   const key = keyRelationship
     ? didDetails?.getKeys(keyRelationship).find((k) => k.id === keyId)
     : didDetails?.getKey(keyId)

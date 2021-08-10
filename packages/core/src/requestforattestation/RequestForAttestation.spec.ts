@@ -100,6 +100,8 @@ describe('RequestForAttestation', () => {
     })
   })
 
+  it.todo('signing and verification')
+
   it('verify request for attestation', async () => {
     const request = buildRequestForAttestation(
       identityBob,

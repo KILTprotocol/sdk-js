@@ -23,6 +23,8 @@ import type {
   IRequestForAttestation,
   IDidDetails,
   IDidResolver,
+  KeystoreSigner,
+  KeyDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { DefaultResolver } from '@kiltprotocol/did'
@@ -131,28 +133,13 @@ export default class AttestedClaim implements IAttestedClaim {
       resolver = DefaultResolver,
     }: { claimerDid?: IDidDetails; resolver?: IDidResolver } = {}
   ): Promise<boolean> {
-    if (claimerDid) {
-      return (
-        AttestedClaim.verifyData(attestedClaim) &&
-        RequestForAttestation.verifySignature(
-          attestedClaim.request,
-          claimerDid
-        ) &&
-        Attestation.checkValidity(attestedClaim.attestation)
-      )
-    }
-    if (resolver) {
-      return (
-        AttestedClaim.verifyData(attestedClaim) &&
-        (await RequestForAttestation.resolveAndVerifySignature(
-          attestedClaim.request,
-          resolver
-        )) &&
-        Attestation.checkValidity(attestedClaim.attestation)
-      )
-    }
-    throw new Error(
-      'Either the claimer DidDetails or a resolver is required for verification'
+    return (
+      AttestedClaim.verifyData(attestedClaim) &&
+      (await RequestForAttestation.verifySignature(attestedClaim.request, {
+        resolver,
+        claimerDid,
+      })) &&
+      Attestation.checkValidity(attestedClaim.attestation)
     )
   }
 
@@ -226,13 +213,30 @@ export default class AttestedClaim implements IAttestedClaim {
 
   /**
    * Creates a public presentation which can be sent to a verifier.
+   * This presentation is signed.
    *
-   * @param publicAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
-   * If kept empty, we hide all attributes inside the claim for the presentation.
-   *
+   * @param presentationOptions
+   * @param presentationOptions.signer Keystore signer to sign the presentation.
+   * @param presentationOptions.claimerSigningKey If passed, this key is used for signing.
+   * @param presentationOptions.claimerDid If no signing key is passed, the required key is fetched from the claimerDid (mandatory in that case).
+   * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
+   * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
+   * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
    * @returns A deep copy of the AttestedClaim with all but `publicAttributes` removed.
    */
-  public createPresentation(publicAttributes: string[]): AttestedClaim {
+  public async createPresentation({
+    selectedAttributes,
+    signer,
+    challenge,
+    claimerSigningKey,
+    claimerDid,
+  }: {
+    signer: KeystoreSigner
+    claimerSigningKey?: KeyDetails
+    claimerDid?: IDidDetails
+    challenge?: string
+    selectedAttributes?: string[]
+  }): Promise<AttestedClaim> {
     const attClaim = new AttestedClaim(
       // clone the attestation and request for attestation because properties will be deleted later.
       // TODO: find a nice way to clone stuff
@@ -240,13 +244,24 @@ export default class AttestedClaim implements IAttestedClaim {
     )
 
     // filter attributes that are not in public attributes
-    const excludedClaimProperties = Array.from(this.getAttributes()).filter(
-      (property) => !publicAttributes.includes(property)
-    )
+    const excludedClaimProperties = selectedAttributes
+      ? Array.from(this.getAttributes()).filter(
+          (property) => !selectedAttributes.includes(property)
+        )
+      : []
 
     // remove these attributes
     attClaim.request.removeClaimProperties(excludedClaimProperties)
 
+    if (claimerDid) {
+      await attClaim.request.signWithDid(signer, claimerDid, challenge)
+    } else if (claimerSigningKey) {
+      await attClaim.request.signWithKey(signer, claimerSigningKey, challenge)
+    } else {
+      throw new Error(
+        'Either a key or claimer did details are required for signing'
+      )
+    }
     return attClaim
   }
 
