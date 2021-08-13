@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export { ISubmittableResult } from '@polkadot/types/types'
+export type { ISubmittableResult } from '@polkadot/types/types'
 export type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 export * as SubscriptionPromise from './SubscriptionPromise'

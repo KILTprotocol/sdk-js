@@ -6,15 +6,21 @@
  */
 
 import type { ApiPromise } from '@polkadot/api'
-import type { Metadata } from '@polkadot/metadata'
+import type { Metadata } from '@polkadot/types'
+
+export enum KeyRelationship {
+  authentication = 'Authentication',
+  capabilityDelegation = 'CapabilityDelegation',
+  assertionMethod = 'AssertionMethod',
+  keyAgreement = 'KeyAgreement',
+}
 
 export type VerificationKeyRelationship =
-  | 'authentication'
-  | 'assertionMethod'
-  | 'capabilityDelegation'
-  | 'capabilityInvocation'
+  | KeyRelationship.authentication
+  | KeyRelationship.capabilityDelegation
+  | KeyRelationship.assertionMethod
 
-export type KeyRelationship = VerificationKeyRelationship | 'keyAgreement'
+export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
 
 export type CallMeta = { section: string; method: string }
 

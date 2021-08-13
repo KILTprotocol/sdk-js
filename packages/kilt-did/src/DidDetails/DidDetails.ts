@@ -14,20 +14,22 @@ import type {
   ApiOrMetadata,
   CallMeta,
   IDidDetails,
-  KeyRelationship,
   ServiceDetails,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 
 import { generateDidAuthenticatedTx } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './utils'
 import { getIdentifierFromDid } from '../Did.utils'
 
-export type KeyRoles = Partial<Record<KeyRelationship, Array<KeyDetails['id']>>>
+export type MapKeyToRelationship = Partial<
+  Record<KeyRelationship, Array<KeyDetails['id']>>
+>
 
 export interface DidDetailsCreationOpts {
   did: string
   keys: KeyDetails[]
-  keyRelationships: KeyRoles
+  keyRelationships: MapKeyToRelationship
   lastTxIndex: bigint
   services?: ServiceDetails[]
 }
@@ -41,6 +43,22 @@ function errorCheck({
     throw Error('did is required for DidDetails')
   }
   const keyIds = new Set(keys.map((key) => key.id))
+  if (!keyRelationships[KeyRelationship.authentication]?.length) {
+    throw Error(
+      `At least one ${KeyRelationship.authentication} key is required on DidDetails`
+    )
+  }
+  const allowedKeyRelationships: string[] = [
+    ...Object.values(KeyRelationship),
+    'none',
+  ]
+  Object.keys(keyRelationships).forEach((kr) => {
+    if (!allowedKeyRelationships.includes(kr)) {
+      throw Error(
+        `key relationship ${kr} is not recognized. Allowed: ${KeyRelationship}`
+      )
+    }
+  })
   const keyReferences = new Set<string>(
     Array.prototype.concat(...Object.values(keyRelationships))
   )
@@ -54,7 +72,9 @@ export class DidDetails implements IDidDetails {
   public readonly identifier: string
   protected services: ServiceDetails[]
   protected keys: Map<KeyDetails['id'], KeyDetails>
-  protected keyRelationships: KeyRoles & { none?: Array<KeyDetails['id']> }
+  protected keyRelationships: MapKeyToRelationship & {
+    none?: Array<KeyDetails['id']>
+  }
 
   private lastTxIndex: bigint
 

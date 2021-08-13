@@ -9,6 +9,7 @@
  * @group unit/did
  */
 
+import { KeyRelationship } from '@kiltprotocol/types'
 import { DidDetails, DidDetailsCreationOpts } from './DidDetails'
 
 describe('functional tests', () => {
@@ -59,9 +60,9 @@ describe('functional tests', () => {
     did,
     keys,
     keyRelationships: {
-      authentication: [keys[0].id],
-      keyAgreement: [keys[1].id, keys[2].id],
-      assertionMethod: [keys[3].id],
+      [KeyRelationship.authentication]: [keys[0].id],
+      [KeyRelationship.keyAgreement]: [keys[1].id, keys[2].id],
+      [KeyRelationship.assertionMethod]: [keys[3].id],
     },
     lastTxIndex: BigInt(10),
     services,
@@ -121,23 +122,23 @@ describe('functional tests', () => {
 
   it('gets keys via role', () => {
     let dd = new DidDetails(didDetails)
-    expect(dd.getKeyIds('authentication')).toEqual([keys[0].id])
-    expect(dd.getKeys('authentication')).toEqual([keys[0]])
-    expect(dd.getKeyIds('keyAgreement')).toEqual(
-      didDetails.keyRelationships.keyAgreement
+    expect(dd.getKeyIds(KeyRelationship.authentication)).toEqual([keys[0].id])
+    expect(dd.getKeys(KeyRelationship.authentication)).toEqual([keys[0]])
+    expect(dd.getKeyIds(KeyRelationship.keyAgreement)).toEqual(
+      didDetails.keyRelationships[KeyRelationship.keyAgreement]
     )
-    expect(dd.getKeys('keyAgreement').map((key) => key.id)).toEqual(
-      didDetails.keyRelationships.keyAgreement
-    )
-    expect(dd.getKeyIds('assertionMethod')).toEqual([keys[3].id])
+    expect(
+      dd.getKeys(KeyRelationship.keyAgreement).map((key) => key.id)
+    ).toEqual(didDetails.keyRelationships[KeyRelationship.keyAgreement])
+    expect(dd.getKeyIds(KeyRelationship.assertionMethod)).toEqual([keys[3].id])
 
     dd = new DidDetails({
       ...didDetails,
-      keyRelationships: { authentication: [keys[3].id] },
+      keyRelationships: { [KeyRelationship.authentication]: [keys[3].id] },
     })
-    expect(dd.getKeys('authentication').map((key) => key.id)).toEqual([
-      keys[3].id,
-    ])
+    expect(
+      dd.getKeys(KeyRelationship.authentication).map((key) => key.id)
+    ).toEqual([keys[3].id])
     expect(dd.getKeyIds('none')).toEqual(keys.slice(0, 3).map((key) => key.id))
   })
 
@@ -172,10 +173,9 @@ describe('functional tests', () => {
     const dd = new DidDetails({
       ...didDetails,
       keyRelationships: {
-        authentication: [keys[0].id],
-        capabilityDelegation: [keys[1].id],
-        capabilityInvocation: [keys[2].id],
-        assertionMethod: [keys[3].id],
+        [KeyRelationship.authentication]: [keys[0].id],
+        [KeyRelationship.capabilityDelegation]: [keys[1].id],
+        [KeyRelationship.assertionMethod]: [keys[3].id],
       },
     })
     expect(

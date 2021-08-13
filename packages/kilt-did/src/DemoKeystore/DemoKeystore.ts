@@ -19,13 +19,16 @@ import {
 } from '@polkadot/util-crypto'
 import { Crypto } from '@kiltprotocol/utils'
 import {
+  KeyRelationship,
   Keystore,
   KeystoreSigningData,
   RequestData,
   ResponseData,
 } from '@kiltprotocol/types'
+import { KeyringPair } from '@polkadot/keyring/types'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import { DidDetails, DidDetailsUtils } from '../DidDetails'
+import { DefaultResolver } from '..'
 
 export type SubstrateKeyTypes = Keyring['type']
 export type EncryptionAlgorithms = 'x25519-xsalsa20-poly1305'
@@ -302,7 +305,9 @@ export async function createLocalDemoDidFromSeed(
     alg: string,
     keytype: string
   ) => {
-    const seed = `${mnemonicOrHexSeed}//${derivation}`
+    const seed = derivation
+      ? `${mnemonicOrHexSeed}//${derivation}`
+      : mnemonicOrHexSeed
     const keyId = `${did}#${blake2AsHex(seed, 64)}`
     const { publicKey } = await keystore.generateKeypair<any>({
       keyId,
@@ -317,26 +322,57 @@ export async function createLocalDemoDidFromSeed(
     }
   }
 
-  return DidDetailsUtils.newDidfromKeyRecords({
-    authentication: await generateKeypairForDid(
-      'authentication',
+  return DidDetailsUtils.newDidDetailsfromKeys({
+    [KeyRelationship.authentication]: await generateKeypairForDid(
+      '',
       signingKeyType,
       signingKeyType
     ),
-    assertionMethod: await generateKeypairForDid(
+    [KeyRelationship.assertionMethod]: await generateKeypairForDid(
       'assertionMethod',
       signingKeyType,
       signingKeyType
     ),
-    capabilityDelegation: await generateKeypairForDid(
+    [KeyRelationship.capabilityDelegation]: await generateKeypairForDid(
       'capabilityDelegation',
       signingKeyType,
       signingKeyType
     ),
-    keyAgreement: await generateKeypairForDid(
+    [KeyRelationship.keyAgreement]: await generateKeypairForDid(
       'keyAgreement',
       'x25519-xsalsa20-poly1305',
       'x25519'
     ),
+  })
+}
+
+export async function createOnChainDidFromSeed(
+  paymentAccount: KeyringPair,
+  keystore: DemoKeystore,
+  mnemonicOrHexSeed: string,
+  signingKeyType = 'ed25519'
+): Promise<DidDetails> {
+  const didDetails = await createLocalDemoDidFromSeed(
+    keystore,
+    mnemonicOrHexSeed,
+    signingKeyType
+  )
+  const submittable = await DidDetailsUtils.writeNewDidFromDidDetails(
+    didDetails,
+    keystore
+  )
+  return new Promise((resolve, reject) => {
+    submittable.signAndSend(paymentAccount, async (result) => {
+      if (result.dispatchError || result.isError) {
+        reject(result.dispatchError?.toHuman() || result.status.toHuman())
+      }
+      if (result.isInBlock) {
+        const queried = await DefaultResolver.resolve({ did: didDetails.did })
+        if (queried) {
+          resolve(queried as DidDetails)
+        }
+        reject(Error(`failed to write Did${didDetails.did}`))
+      }
+    })
   })
 }

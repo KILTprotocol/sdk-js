@@ -20,6 +20,8 @@ import type {
   IDidDetails,
   IDidResolver,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
+
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { Quote, RequestForAttestation } from '@kiltprotocol/core'
 import { createLocalDemoDidFromSeed, DemoKeystore } from '@kiltprotocol/did'
@@ -60,8 +62,8 @@ describe('Messaging', () => {
       identityBob.did
     )
     const encryptedMessage = await message.encrypt(
-      identityAlice.getKeys('keyAgreement')[0],
-      identityBob.getKeys('keyAgreement')[0],
+      identityAlice.getKeys(KeyRelationship.keyAgreement)[0],
+      identityBob.getKeys(KeyRelationship.keyAgreement)[0],
       keystore
     )
 
@@ -90,16 +92,16 @@ describe('Messaging', () => {
     const encryptedWrongBody = await keystore.encrypt({
       alg: 'x25519-xsalsa20-poly1305',
       data: Crypto.coToUInt8('{ wrong JSON'),
-      keyId: identityAlice.getKeys('keyAgreement')[0].id,
+      keyId: identityAlice.getKeys(KeyRelationship.keyAgreement)[0].id,
       peerPublicKey: Crypto.coToUInt8(
-        identityBob.getKeys('keyAgreement')[0].publicKeyHex
+        identityBob.getKeys(KeyRelationship.keyAgreement)[0].publicKeyHex
       ),
     })
     const encryptedMessageWrongBody: IEncryptedMessage = {
       ciphertext: Crypto.u8aToHex(encryptedWrongBody.data),
       nonce: Crypto.u8aToHex(encryptedWrongBody.nonce),
-      senderKeyId: identityAlice.getKeys('keyAgreement')[0].id,
-      receiverKeyId: identityBob.getKeys('keyAgreement')[0].id,
+      senderKeyId: identityAlice.getKeys(KeyRelationship.keyAgreement)[0].id,
+      receiverKeyId: identityBob.getKeys(KeyRelationship.keyAgreement)[0].id,
     }
     await expect(() =>
       Message.decrypt(encryptedMessageWrongBody, keystore, {
@@ -123,12 +125,14 @@ describe('Messaging', () => {
       identityBob.did
     )
 
-    const forgedAliceKey = { ...identityAlice.getKeys('keyAgreement')[0] }
+    const forgedAliceKey = {
+      ...identityAlice.getKeys(KeyRelationship.keyAgreement)[0],
+    }
     forgedAliceKey.controller = wrongSender
 
     const encryptedMessage = await message.encrypt(
       forgedAliceKey,
-      identityBob.getKeys('keyAgreement')[0],
+      identityBob.getKeys(KeyRelationship.keyAgreement)[0],
       keystore
     )
     await expect(

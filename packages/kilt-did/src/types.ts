@@ -5,7 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { IIdentity, KeyDetails } from '@kiltprotocol/types'
+import type {
+  IIdentity,
+  KeyDetails,
+  KeyRelationship,
+} from '@kiltprotocol/types'
 import type { AnyNumber } from '@polkadot/types/types'
 import type {
   BTreeMap,
@@ -32,15 +36,12 @@ export interface INewPublicKey<T extends string = string> {
   type: T
 }
 
-export interface PublicKeyRoleAssignment {
-  authentication: INewPublicKey
-  encryption?: INewPublicKey
-  attestation?: INewPublicKey
-  delegation?: INewPublicKey
-}
+export type PublicKeyRoleAssignment = Partial<
+  Record<KeyRelationship, INewPublicKey>
+>
 
 export interface IEndpointData {
-  digest: string
+  contentHash: string
   contentType: string
   urls: string[]
 }
@@ -49,8 +50,8 @@ export interface IDidRecord {
   did: IIdentity['address']
   authenticationKey: KeyDetails['id']
   keyAgreementKeys: Array<KeyDetails['id']>
-  delegationKey?: KeyDetails['id']
-  attestationKey?: KeyDetails['id']
+  capabilityDelegationKey?: KeyDetails['id']
+  assertionMethodKey?: KeyDetails['id']
   publicKeys: KeyDetails[]
   endpointData?: IEndpointData
   lastTxCounter: u64
@@ -75,16 +76,16 @@ export interface DidSigned<PayloadType> {
   signature: SignatureEnum
 }
 
-export interface IDidCreationOptions {
-  didIdentifier: IIdentity['address']
-  keys: PublicKeyRoleAssignment
-  endpointUrl?: string
+export interface EndpointData {
+  contentHash: string
+  contentType: ContentType['type']
+  urls: string[]
 }
 
-export interface IDidUpdateOptions {
-  keysToUpdate?: Partial<Nullable<PublicKeyRoleAssignment>>
-  publicKeysToRemove?: Array<KeyId | Uint8Array | string>
-  newEndpointUrl?: string
+export interface IDidCreationOptions {
+  didIdentifier: IIdentity['address']
+  keys?: PublicKeyRoleAssignment
+  endpointData?: EndpointData
 }
 
 export interface IAuthorizeCallOptions {
@@ -148,44 +149,37 @@ export interface DidPublicKeyDetails extends Struct {
   blockNumber: BlockNumber
 }
 
-export interface DidDetails extends Struct {
+export interface ContentType extends Enum {
+  'isApplication/json': boolean
+  'isApplication/ld+json': boolean
+  type: 'application/json' | 'application/ld+json'
+}
+
+export interface ServiceEndpoints extends Struct {
+  contentHash: Hash
+  urls: Vec<Url>
+  contentType: ContentType
+}
+
+export type DidKeyAgreementKeys = BTreeSet<KeyId>
+export type DidPublicKeyMap = BTreeMap<KeyId, DidPublicKeyDetails>
+
+export interface DidRecord extends Struct {
   authenticationKey: KeyId
-  keyAgreementKeys: BTreeSet<KeyId>
-  delegationKey: Option<KeyId>
-  attestationKey: Option<KeyId>
-  publicKeys: BTreeMap<KeyId, DidPublicKeyDetails>
-  endpointUrl: Option<Url>
+  keyAgreementKeys: DidKeyAgreementKeys
+  capabilityDelegationKey: Option<KeyId>
+  assertionMethodKey: Option<KeyId>
+  publicKeys: DidPublicKeyMap
+  serviceEndpoints: Option<ServiceEndpoints>
   lastTxCounter: u64
 }
 
-export interface DidCreationOperation extends Struct {
+export interface DidCreationDetails extends Struct {
   did: DidIdentifier
-  newAuthenticationKey: DidVerificationKey
   newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
-  newAttestationKey: Option<DidVerificationKey>
+  newAssertionMethodKey: Option<DidVerificationKey>
   newDelegationKey: Option<DidVerificationKey>
-  newEndpointUrl: Option<Url>
-}
-
-export interface DidKeyUpdateAction extends Enum {
-  /// Do not change the verification key.
-  isIgnore: boolean
-  asIgnore: null
-  /// Change the verification key to the new one provided.
-  isChange: boolean
-  asChange: DidVerificationKey
-  /// Delete the verification key.
-  isDelete: boolean
-  asDelete: null
-}
-
-export interface DidUpdateOperation extends Struct {
-  newAuthenticationKey: Option<DidVerificationKey>
-  newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
-  attestationKeyUpdate: DidKeyUpdateAction
-  delegationKeyUpdate: DidKeyUpdateAction
-  publicKeysToRemove: BTreeSet<KeyId>
-  newEndpointUrl: Option<Url>
+  newServiceEndpoints: Option<ServiceEndpoints>
 }
 
 export interface DidAuthorizedCallOperation extends Struct {

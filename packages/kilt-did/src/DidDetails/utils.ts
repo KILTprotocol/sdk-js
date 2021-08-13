@@ -13,9 +13,15 @@ import type {
   CallMeta,
   IDidDetails,
   KeyDetails,
+  KeystoreSigner,
+  SubmittableExtrinsic,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
-import { DidDetails, KeyRoles } from './DidDetails'
+import { KeyRelationship } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
+import { DidDetails, MapKeyToRelationship } from './DidDetails'
+import { PublicKeyRoleAssignment } from '../types'
+import { DidChain } from '..'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -30,13 +36,13 @@ type SectionMapping<V extends string> = Record<string, MethodMapping<V>>
 const mapping: SectionMapping<
   VerificationKeyRelationship | 'paymentAccount'
 > = {
-  attestation: { default: 'assertionMethod' },
-  ctype: { default: 'assertionMethod' },
-  delegation: { default: 'capabilityDelegation' },
+  attestation: { default: KeyRelationship.assertionMethod },
+  ctype: { default: KeyRelationship.assertionMethod },
+  delegation: { default: KeyRelationship.capabilityDelegation },
   did: {
     default: 'paymentAccount',
-    update: 'authentication',
-    delete: 'authentication',
+    update: KeyRelationship.authentication,
+    delete: KeyRelationship.authentication,
   },
   default: { default: 'paymentAccount' },
 }
@@ -110,16 +116,14 @@ export function getKeyIdsForExtrinsic(
   return getKeyIdsForCall(didDetails, callMeta)
 }
 
-export function newDidfromKeyRecords(keys: {
-  authentication: KeyDetails
-  keyAgreement?: KeyDetails
-  assertionMethod?: KeyDetails
-  capabilityDelegation?: KeyDetails
-  capabilityInvocation?: KeyDetails
-}): DidDetails {
-  const did = keys.authentication.controller
+export function newDidDetailsfromKeys(
+  keys: Partial<Record<KeyRelationship, KeyDetails>> & {
+    [KeyRelationship.authentication]: KeyDetails
+  }
+): DidDetails {
+  const did = keys[KeyRelationship.authentication].controller
   const allKeys: KeyDetails[] = []
-  const keyRelationships: KeyRoles = {}
+  const keyRelationships: MapKeyToRelationship = {}
   Object.entries(keys).forEach(([thisRole, thisKey]) => {
     if (thisKey) {
       keyRelationships[thisRole] = [thisKey.id]
@@ -131,5 +135,37 @@ export function newDidfromKeyRecords(keys: {
     keys: allKeys,
     keyRelationships,
     lastTxIndex: BigInt(0),
+  })
+}
+
+export async function writeNewDidFromDidDetails(
+  didDetails: DidDetails,
+  signer: KeystoreSigner
+): Promise<SubmittableExtrinsic> {
+  const [signingKey] = didDetails.getKeys(KeyRelationship.authentication)
+  const [assertionMethod] = didDetails.getKeys(KeyRelationship.assertionMethod)
+  const [delegation] = didDetails.getKeys(KeyRelationship.capabilityDelegation)
+  const [keyAgreement] = didDetails.getKeys(KeyRelationship.keyAgreement)
+
+  const keys: PublicKeyRoleAssignment = {
+    [KeyRelationship.assertionMethod]: {
+      ...assertionMethod,
+      publicKey: Crypto.coToUInt8(assertionMethod.publicKeyHex),
+    },
+    [KeyRelationship.capabilityDelegation]: {
+      ...delegation,
+      publicKey: Crypto.coToUInt8(delegation.publicKeyHex),
+    },
+    [KeyRelationship.keyAgreement]: {
+      ...keyAgreement,
+      publicKey: Crypto.coToUInt8(keyAgreement.publicKeyHex),
+    },
+  }
+  return DidChain.generateCreateTx({
+    signer,
+    signingKeyId: signingKey.id,
+    alg: signingKey.type,
+    didIdentifier: didDetails.did,
+    keys,
   })
 }

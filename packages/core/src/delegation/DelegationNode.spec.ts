@@ -137,8 +137,8 @@ describe('DelegationNode', () => {
         } as DelegationNode,
       }
 
-      expect(
-        await new DelegationNode({
+      await expect(
+        new DelegationNode({
           id: successId,
           hierarchyId,
           account: didAlice,
@@ -147,10 +147,10 @@ describe('DelegationNode', () => {
           parentId: undefined,
           revoked: false,
         }).verify()
-      ).toBe(true)
+      ).resolves.toBe(true)
 
-      expect(
-        await new DelegationNode({
+      await expect(
+        new DelegationNode({
           id: failureId,
           hierarchyId,
           account: didAlice,
@@ -159,7 +159,7 @@ describe('DelegationNode', () => {
           parentId: undefined,
           revoked: false,
         }).verify()
-      ).toBe(false)
+      ).resolves.toBe(false)
     })
 
     it('get delegation root', async () => {
@@ -587,7 +587,7 @@ describe('DelegationHierarchy', () => {
     expect(queriedDelegation).not.toBe(undefined)
     if (queriedDelegation) {
       expect(queriedDelegation.account).toBe(didAlice)
-      expect(queriedDelegation.getCTypeHash()).resolves.toBe(ctypeHash)
+      await expect(queriedDelegation.getCTypeHash()).resolves.toBe(ctypeHash)
       expect(queriedDelegation.id).toBe(ROOT_IDENTIFIER)
     }
   })
@@ -605,7 +605,7 @@ describe('DelegationHierarchy', () => {
     const fetchedNodeRevocationStatus = DelegationNode.query(
       ROOT_IDENTIFIER
     ).then((node) => node?.revoked)
-    expect(fetchedNodeRevocationStatus).resolves.not.toBeNull()
-    expect(fetchedNodeRevocationStatus).resolves.toEqual(true)
+    await expect(fetchedNodeRevocationStatus).resolves.not.toBeNull()
+    await expect(fetchedNodeRevocationStatus).resolves.toEqual(true)
   })
 })

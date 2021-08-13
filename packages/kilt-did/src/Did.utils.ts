@@ -9,29 +9,33 @@ import type {
   DidSignature,
   IDidDetails,
   IDidResolver,
+  IIdentity,
   KeyDetails,
   KeystoreSigner,
+  SubmittableExtrinsic,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
 import type { Codec, Registry } from '@polkadot/types/types'
 import { checkAddress } from '@polkadot/util-crypto'
+import { KeyringPair } from '@polkadot/keyring/types'
 import { DefaultResolver } from './DidResolver/DefaultResolver'
 import type {
   DidSigned,
   PublicKeyEnum,
   UrlEnum,
-  IDidUpdateOptions,
   IDidCreationOptions,
   IAuthorizeCallOptions,
   UrlEncodingJson,
   DidAuthorizedCallOperation,
-  DidCreationOperation,
+  DidCreationDetails,
   DidPublicKey,
-  DidUpdateOperation,
   INewPublicKey,
+  PublicKeyRoleAssignment,
 } from './types'
+import { generateCreateTx } from './Did.chain'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 export const KILT_DID_REGEX = /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#.+)?$/
@@ -153,64 +157,33 @@ export function encodeEndpointUrl(url: string): UrlEnum {
 
 export function encodeDidCreationOperation(
   registry: Registry,
-  { didIdentifier, keys, endpointUrl }: IDidCreationOptions
-): DidCreationOperation {
+  { didIdentifier, keys = {}, endpointData }: IDidCreationOptions
+): DidCreationDetails {
+  const {
+    [KeyRelationship.assertionMethod]: assertionMethodKey,
+    [KeyRelationship.capabilityDelegation]: delegationKey,
+    [KeyRelationship.keyAgreement]: encryptionKey,
+  } = keys
   // build did create object
   const didCreateRaw = {
     did: didIdentifier,
-    newAuthenticationKey: formatPublicKey(keys.authentication),
-    newKeyAgreementKeys: keys.encryption
-      ? [formatPublicKey(keys.encryption)]
-      : [],
-    newAttestationKey: keys.attestation
-      ? formatPublicKey(keys.attestation)
+    newKeyAgreementKeys: encryptionKey ? [formatPublicKey(encryptionKey)] : [],
+    newAssertionMethodKey: assertionMethodKey
+      ? formatPublicKey(assertionMethodKey)
       : undefined,
-    newDelegationKey: keys.delegation
-      ? formatPublicKey(keys.delegation)
+    newCapabilityDelegationKey: delegationKey
+      ? formatPublicKey(delegationKey)
       : undefined,
-    newEndpointUrl: endpointUrl ? encodeEndpointUrl(endpointUrl) : undefined,
-  }
-  return new (registry.getOrThrow<DidCreationOperation>(
-    'DidCreationOperation'
-  ))(registry, didCreateRaw)
-}
-
-function matchKeyOperation(
-  keypair: INewPublicKey | undefined | null
-): { Delete: null } | { Ignore: null } | { Change: PublicKeyEnum } {
-  if (keypair && typeof keypair === 'object') {
-    return { Change: formatPublicKey(keypair) }
-  }
-  if (keypair === null) {
-    return { Delete: null }
-  }
-  return { Ignore: null }
-}
-
-export function encodeDidUpdateOperation(
-  registry: Registry,
-  {
-    keysToUpdate = {},
-    publicKeysToRemove = [],
-    newEndpointUrl,
-  }: IDidUpdateOptions
-): DidUpdateOperation {
-  const { authentication, encryption, attestation, delegation } = keysToUpdate
-  const didUpdateRaw = {
-    newAuthenticationKey: authentication
-      ? formatPublicKey(authentication)
-      : null,
-    newKeyAgreementKeys: encryption ? [formatPublicKey(encryption)] : [],
-    attestationKeyUpdate: matchKeyOperation(attestation),
-    delegationKeyUpdate: matchKeyOperation(delegation),
-    publicKeysToRemove,
-    newEndpointUrl: newEndpointUrl
-      ? encodeEndpointUrl(newEndpointUrl)
+    newServiceEndpoints: endpointData
+      ? {
+          ...endpointData,
+          urls: endpointData.urls.map((url) => encodeEndpointUrl(url)),
+        }
       : undefined,
   }
-  return new (registry.getOrThrow<DidUpdateOperation>('DidUpdateOperation'))(
+  return new (registry.getOrThrow<DidCreationDetails>('DidCreationDetails'))(
     registry,
-    didUpdateRaw
+    didCreateRaw
   )
 }
 
@@ -330,7 +303,12 @@ export async function authenticateWithDid(
   did: IDidDetails,
   signer: KeystoreSigner
 ): Promise<DidSignature> {
-  const [key] = did.getKeys('authentication')
+  const [key] = did.getKeys(KeyRelationship.authentication)
+  if (!key) {
+    throw Error(
+      `failed to get ${KeyRelationship.authentication} key from DidDetails`
+    )
+  }
   const keyId = key.id
   const { data: signature } = await signer.sign({
     keyId,
@@ -338,4 +316,33 @@ export async function authenticateWithDid(
     data: Crypto.coToUInt8(toSign),
   })
   return { keyId, signature: Crypto.u8aToHex(signature) }
+}
+
+export function addDidfromKeypair(
+  authenticationKeypair: KeyringPair,
+  publicKeys: Omit<PublicKeyRoleAssignment, KeyRelationship.authentication> = {}
+): Promise<SubmittableExtrinsic> {
+  const didIdentifier = authenticationKeypair.address
+  const signer: KeystoreSigner = {
+    sign: ({ data }) =>
+      Promise.resolve({
+        data: authenticationKeypair.sign(data),
+        alg: authenticationKeypair.type as any,
+      }),
+  }
+  return generateCreateTx({
+    signer,
+    didIdentifier,
+    keys: publicKeys,
+    alg: '',
+    signingKeyId: '',
+  })
+}
+
+export function addDidfromIdentity(
+  identity: IIdentity
+): Promise<SubmittableExtrinsic> {
+  return addDidfromKeypair(identity.signKeyringPair, {
+    [KeyRelationship.keyAgreement]: { ...identity.boxKeyPair, type: 'x25519' },
+  })
 }

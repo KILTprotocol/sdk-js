@@ -24,6 +24,7 @@ import type {
   IQuoteAttesterSigned,
   KeystoreSigner,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
 import QuoteSchema from './QuoteSchema'
@@ -79,7 +80,7 @@ export function fromAttesterSignedInput(
     ...attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
     didDetails: attesterDid,
-    keyRelationship: 'authentication',
+    keyRelationship: KeyRelationship.authentication,
   })
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
@@ -166,7 +167,7 @@ export async function createQuoteAgreement(
     ...attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
     didDetails: attesterIdentity,
-    keyRelationship: 'authentication',
+    keyRelationship: KeyRelationship.authentication,
   })
 
   const signature = await DidUtils.authenticateWithDid(

@@ -30,6 +30,7 @@ import type {
   IDidResolver,
   DidSignature,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DefaultResolver, DidUtils } from '@kiltprotocol/did'
 import ClaimUtils from '../claim/Claim.utils'
@@ -270,7 +271,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       ...claimerSignature,
       message: verifyData,
       didDetails: claimerDid,
-      keyRelationship: 'authentication',
+      keyRelationship: KeyRelationship.authentication,
       resolver,
     })
     if (input.claim.owner !== didDetails?.did) {
@@ -308,7 +309,12 @@ export default class RequestForAttestation implements IRequestForAttestation {
     did: IDidDetails,
     challenge?: string
   ): Promise<this> {
-    const [key] = did.getKeys('authentication')
+    const [key] = did.getKeys(KeyRelationship.authentication)
+    if (!key) {
+      throw Error(
+        `failed to get ${KeyRelationship.authentication} key from DidDetails`
+      )
+    }
     return this.signWithKey(signer, key, challenge)
   }
 

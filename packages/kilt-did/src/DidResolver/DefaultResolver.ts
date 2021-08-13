@@ -6,6 +6,7 @@
  */
 
 import type { IDidResolver, ResolverOpts } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 import { DidDetails, DidDetailsCreationOpts } from '../DidDetails/DidDetails'
 import { queryById } from '../Did.chain'
 import { getKiltDidFromIdentifier, parseDidUrl } from '../Did.utils'
@@ -23,23 +24,25 @@ export async function resolve({
   if (!didRec) return null
   const {
     publicKeys,
-    attestationKey,
+    assertionMethodKey,
     authenticationKey,
-    delegationKey,
+    capabilityDelegationKey,
     endpointData,
     keyAgreementKeys,
     lastTxCounter,
   } = didRec
 
   const keyRelationships: DidDetailsCreationOpts['keyRelationships'] = {
-    authentication: [authenticationKey],
-    keyAgreement: keyAgreementKeys,
+    [KeyRelationship.authentication]: [authenticationKey],
+    [KeyRelationship.keyAgreement]: keyAgreementKeys,
   }
-  if (attestationKey) {
-    keyRelationships.assertionMethod = [attestationKey]
+  if (assertionMethodKey) {
+    keyRelationships[KeyRelationship.assertionMethod] = [assertionMethodKey]
   }
-  if (delegationKey) {
-    keyRelationships.capabilityDelegation = [delegationKey]
+  if (capabilityDelegationKey) {
+    keyRelationships[KeyRelationship.capabilityDelegation] = [
+      capabilityDelegationKey,
+    ]
   }
   const didDetails: DidDetailsCreationOpts = {
     did: getKiltDidFromIdentifier(identifier),
@@ -48,8 +51,8 @@ export async function resolve({
     lastTxIndex: lastTxCounter.toBigInt(),
   }
   if (servicesResolver && endpointData) {
-    const { digest, contentType, urls } = endpointData
-    didDetails.services = await servicesResolver(digest, urls, contentType)
+    const { contentHash, contentType, urls } = endpointData
+    didDetails.services = await servicesResolver(contentHash, urls, contentType)
   }
   return new DidDetails(didDetails)
 }

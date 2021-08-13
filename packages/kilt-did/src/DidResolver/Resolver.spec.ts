@@ -53,7 +53,7 @@ it('has the right keys', async () => {
     'did:kilt:test#auth',
     'did:kilt:test#x25519',
   ])
-  expect(didRecord?.getKeyIds('authentication')).toStrictEqual([
+  expect(didRecord?.getKeyIds(KeyRelationship.authentication)).toStrictEqual([
     'did:kilt:test#auth',
   ])
   expect(didRecord?.getKeys('keyAgreement')).toStrictEqual([
