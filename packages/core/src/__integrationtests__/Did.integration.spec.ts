@@ -9,21 +9,18 @@
  * @group integration/did
  */
 
-import { CType, disconnect, Identity, init } from '@kiltprotocol/core'
-import type { IIdentity } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { UUID } from '@kiltprotocol/utils'
+import type { IIdentity, KeystoreSigner } from '@kiltprotocol/types'
+import { Crypto, UUID } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
-import {
-  generateDeleteTx,
-  generateUpdateTx,
-  generateCreateTx,
-  queryById,
-  generateDidAuthenticatedTx,
-} from './Did.chain'
-import type { IDidRecord, IPublicKey, KeystoreSigner } from './types'
-import { getDidFromIdentifier } from './Did.utils'
-import { DemoKeystore } from './DemoKeystore/DemoKeystore'
+import { DemoKeystore, DidChain, DidTypes, DidUtils } from '@kiltprotocol/did'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { KeyRelationship } from '@kiltprotocol/types'
+import { disconnect, init } from '../kilt'
+
+import { CType } from '../ctype'
+import { Identity } from '../identity'
+
+type IPublicKey = { id: string; publicKey: Uint8Array; type: string }
 
 let alice: IIdentity
 const keystore = new DemoKeystore()
@@ -35,7 +32,7 @@ beforeAll(async () => {
 
 describe('write and didDeleteTx', () => {
   let didIdentifier: string
-  let key: IPublicKey & { id: string }
+  let key: IPublicKey
   beforeAll(async () => {
     const { keyId, publicKey, alg } = await keystore.generateKeypair({
       alg: 'ed25519',
@@ -45,12 +42,13 @@ describe('write and didDeleteTx', () => {
   })
 
   it('writes a new DID record to chain', async () => {
-    const tx = await generateCreateTx({
+    const tx = await DidChain.generateCreateTx({
       didIdentifier,
-      keys: {
-        authentication: key,
+      endpointData: {
+        urls: ['https://example.com'],
+        contentHash: Crypto.hashStr('look I made you some content!'),
+        contentType: 'application/json',
       },
-      endpointUrl: 'https://example.com',
       signer: keystore as KeystoreSigner<string>,
       signingKeyId: key.id,
       alg: key.type,
@@ -62,35 +60,38 @@ describe('write and didDeleteTx', () => {
       })
     ).resolves.not.toThrow()
 
-    await expect(queryById(didIdentifier)).resolves.toMatchObject<
-      Partial<IDidRecord>
+    await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
+      Partial<DidTypes.IDidRecord>
     >({
-      did: getDidFromIdentifier(didIdentifier),
+      did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
     })
   }, 30_000)
 
   it('deletes DID from previous step', async () => {
-    await expect(queryById(didIdentifier)).resolves.toMatchObject<
-      Partial<IDidRecord>
+    await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
+      Partial<DidTypes.IDidRecord>
     >({
-      did: getDidFromIdentifier(didIdentifier),
+      did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
     })
 
-    const tx = await generateDeleteTx({
+    const call = await DidChain.getDeleteDidExtrinsic()
+
+    const submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
       txCounter: 1,
+      call,
       signer: keystore as KeystoreSigner<string>,
       signingKeyId: key.id,
       alg: key.type,
     })
 
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx, alice, {
+      BlockchainUtils.signAndSubmitTx(submittable, alice, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     ).resolves.not.toThrow()
 
-    await expect(queryById(didIdentifier)).resolves.toBe(null)
+    await expect(DidChain.queryById(didIdentifier)).resolves.toBe(null)
   }, 30_000)
 })
 
@@ -99,14 +100,15 @@ it('creates and updates DID', async () => {
     alg: 'ed25519',
   })
   const didIdentifier = encodeAddress(publicKey)
-  const key: IPublicKey & { id: string } = { publicKey, id: keyId, type: alg }
+  const key: IPublicKey = { publicKey, id: keyId, type: alg }
 
-  const tx = await generateCreateTx({
+  const tx = await DidChain.generateCreateTx({
     didIdentifier,
-    keys: {
-      authentication: key,
+    endpointData: {
+      urls: ['https://example.com'],
+      contentHash: Crypto.hashStr('daddy made you your favorite, open wide'),
+      contentType: 'application/json',
     },
-    endpointUrl: 'https://example.com',
     signer: keystore as KeystoreSigner<string>,
     signingKeyId: key.id,
     alg: key.type,
@@ -118,17 +120,27 @@ it('creates and updates DID', async () => {
     })
   ).resolves.not.toThrow()
 
-  await expect(queryById(didIdentifier)).resolves.toMatchObject<
-    Partial<IDidRecord>
+  await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
+    Partial<DidTypes.IDidRecord>
   >({
-    did: getDidFromIdentifier(didIdentifier),
-    endpointUrl: 'https://example.com',
+    did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
+    endpointData: {
+      urls: ['https://example.com'],
+      contentType: 'application/json',
+      contentHash: expect.any(String),
+    },
   })
 
-  const tx2 = await generateUpdateTx({
+  const updateEndpointCall = await DidChain.getSetEndpointDataExtrinsic({
+    urls: ['ftp://example.com/abc'],
+    contentHash: Crypto.hashStr('here comes the content'),
+    contentType: 'application/ld+json',
+  })
+
+  const tx2 = await DidChain.generateDidAuthenticatedTx({
     didIdentifier,
     txCounter: 1,
-    newEndpointUrl: 'ftp://example.com/abc',
+    call: updateEndpointCall,
     signer: keystore as KeystoreSigner<string>,
     signingKeyId: key.id,
     alg: key.type,
@@ -140,31 +152,33 @@ it('creates and updates DID', async () => {
     })
   ).resolves.not.toThrow()
 
-  await expect(queryById(didIdentifier)).resolves.toMatchObject<
-    Partial<IDidRecord>
+  await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
+    Partial<DidTypes.IDidRecord>
   >({
-    did: getDidFromIdentifier(didIdentifier),
-    endpointUrl: 'ftp://example.com/abc',
+    did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
+    endpointData: {
+      urls: ['ftp://example.com/abc'],
+      contentType: 'application/ld+json',
+      contentHash: expect.any(String),
+    },
   })
 }, 40_000)
 
 describe('DID authorization', () => {
   let didIdentifier: string
-  let key: IPublicKey & { id: string }
+  let key: IPublicKey
   beforeAll(async () => {
     const { keyId, publicKey, alg } = await keystore.generateKeypair({
       alg: 'ed25519',
     })
     didIdentifier = encodeAddress(publicKey)
     key = { publicKey, id: keyId, type: alg }
-    const tx = await generateCreateTx({
+    const tx = await DidChain.generateCreateTx({
       didIdentifier,
       keys: {
-        authentication: key,
-        attestation: key,
-        delegation: key,
+        [KeyRelationship.assertionMethod]: key,
+        [KeyRelationship.capabilityDelegation]: key,
       },
-      endpointUrl: 'https://example.com',
       signer: keystore as KeystoreSigner<string>,
       signingKeyId: key.id,
       alg: key.type,
@@ -175,10 +189,10 @@ describe('DID authorization', () => {
       })
     ).resolves.not.toThrow()
 
-    await expect(queryById(didIdentifier)).resolves.toMatchObject<
-      Partial<IDidRecord>
+    await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
+      Partial<DidTypes.IDidRecord>
     >({
-      did: getDidFromIdentifier(didIdentifier),
+      did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
     })
   }, 30_000)
 
@@ -190,7 +204,7 @@ describe('DID authorization', () => {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
     const call = await ctype.store()
-    const tx = await generateDidAuthenticatedTx({
+    const tx = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
       txCounter: 1,
       call,
@@ -208,9 +222,11 @@ describe('DID authorization', () => {
   }, 30_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
-    const tx = await generateDeleteTx({
+    const deleteCall = await DidChain.getDeleteDidExtrinsic()
+    const tx = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
       txCounter: 2,
+      call: deleteCall,
       signer: keystore as KeystoreSigner<string>,
       signingKeyId: key.id,
       alg: key.type,
@@ -229,9 +245,9 @@ describe('DID authorization', () => {
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     })
     const call = await ctype.store()
-    const tx2 = await generateDidAuthenticatedTx({
+    const tx2 = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: 1,
+      txCounter: 3,
       call,
       signer: keystore as KeystoreSigner<string>,
       signingKeyId: key.id,
