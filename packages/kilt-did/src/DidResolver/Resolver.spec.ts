@@ -5,13 +5,18 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/**
+ * @group unit/did
+ */
+
 import { TypeRegistry } from '@kiltprotocol/chain-helpers'
-import { ServicesResolver } from '@kiltprotocol/types'
+import { KeyRelationship, ServicesResolver } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
 import { IDidRecord } from '../types'
 import { DefaultResolver } from './DefaultResolver'
 
-jest.mock('../Did.chain', () => ({
-  queryByDID: jest.fn(
+jest.mock('../Did.chain', () => {
+  const queryByDID = jest.fn(
     async (did: string): Promise<IDidRecord | null> => ({
       did,
       authenticationKey: `${did}#auth`,
@@ -33,32 +38,42 @@ jest.mock('../Did.chain', () => ({
         },
       ],
       lastTxCounter: TypeRegistry.createType('u64', 10),
-      endpointUrl: 'ipfs://mydidstuff',
+      endpointData: {
+        urls: ['ipfs://mydidstuff'],
+        contentHash: Crypto.hashStr('stuff'),
+        contentType: 'application/json',
+      },
     })
-  ),
-}))
+  )
+  return {
+    queryByDID,
+    queryById: jest.fn(
+      async (id: string): Promise<IDidRecord | null> =>
+        queryByDID(`did:kilt:${id}`)
+    ),
+  }
+})
+
+const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+const did = `did:kilt:${identifier}`
 
 it('resolves stuff', async () => {
-  await expect(
-    DefaultResolver.resolve({ did: 'did:kilt:test' })
-  ).resolves.toMatchObject({
-    did: 'did:kilt:test',
-    identifier: 'test',
+  await expect(DefaultResolver.resolve({ did })).resolves.toMatchObject({
+    did,
+    identifier,
   })
 })
 
 it('has the right keys', async () => {
-  const didRecord = await DefaultResolver.resolve({ did: 'did:kilt:test' })
-  expect(didRecord?.getKeyIds()).toStrictEqual([
-    'did:kilt:test#auth',
-    'did:kilt:test#x25519',
-  ])
+  const didRecord = await DefaultResolver.resolve({ did })
+  expect(didRecord?.getKeyIds()).toStrictEqual([`${did}#auth`, `${did}#x25519`])
   expect(didRecord?.getKeyIds(KeyRelationship.authentication)).toStrictEqual([
-    'did:kilt:test#auth',
+    `${did}#auth`,
   ])
-  expect(didRecord?.getKeys('keyAgreement')).toStrictEqual([
+  expect(didRecord?.getKeys(KeyRelationship.keyAgreement)).toStrictEqual([
     {
-      id: 'did:kilt:test#x25519',
+      id: `${did}#x25519`,
+      controller: did,
       includedAt: 250,
       type: 'x25519',
       publicKeyHex: '0x25519',
@@ -68,27 +83,28 @@ it('has the right keys', async () => {
 
 it('adds services when service resolver is present', async () => {
   const service = {
-    id: 'did:kilt:test#messaging',
+    id: `${did}#messaging`,
     type: 'DidComm messaging',
-    serviceEndpoint: 'example.com/didcomm/did:kilt:test',
+    serviceEndpoint: `example.com/didcomm/${did}`,
   }
   const servicesResolver: ServicesResolver = jest.fn(async () => [service])
 
   await expect(
-    DefaultResolver.resolve({ did: 'did:kilt:test' }).then((did) =>
-      did?.getServices('DidComm messaging')
+    DefaultResolver.resolve({ did }).then((didDetails) =>
+      didDetails?.getServices('DidComm messaging')
     )
   ).resolves.toMatchObject([])
 
   await expect(
     DefaultResolver.resolve({
-      did: 'did:kilt:test',
+      did,
       servicesResolver,
-    }).then((did) => did?.getServices('DidComm messaging'))
+    }).then((didDetails) => didDetails?.getServices('DidComm messaging'))
   ).resolves.toMatchObject([service])
 
   expect(servicesResolver).toHaveBeenCalledWith(
-    'ipfs://mydidstuff',
-    expect.objectContaining({ did: 'did:kilt:test' })
+    expect.any(String),
+    ['ipfs://mydidstuff'],
+    'application/json'
   )
 })
