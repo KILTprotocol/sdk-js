@@ -13,14 +13,15 @@ import type { IIdentity, KeystoreSigner } from '@kiltprotocol/types'
 import { Crypto, UUID } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
 import { DemoKeystore, DidChain, DidTypes, DidUtils } from '@kiltprotocol/did'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import {
+  BlockchainUtils,
+  BlockchainApiConnection,
+} from '@kiltprotocol/chain-helpers'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { disconnect, init } from '../kilt'
 
 import { CType } from '../ctype'
 import { Identity } from '../identity'
-
-type IPublicKey = { id: string; publicKey: Uint8Array; type: string }
 
 let alice: IIdentity
 const keystore = new DemoKeystore()
@@ -32,13 +33,13 @@ beforeAll(async () => {
 
 describe('write and didDeleteTx', () => {
   let didIdentifier: string
-  let key: IPublicKey
+  let key: DidTypes.INewPublicKey
   beforeAll(async () => {
-    const { keyId, publicKey, alg } = await keystore.generateKeypair({
+    const { publicKey, alg } = await keystore.generateKeypair({
       alg: 'ed25519',
     })
     didIdentifier = encodeAddress(publicKey)
-    key = { publicKey, id: keyId, type: alg }
+    key = { publicKey, type: alg }
   })
 
   it('writes a new DID record to chain', async () => {
@@ -50,7 +51,7 @@ describe('write and didDeleteTx', () => {
         contentType: 'application/json',
       },
       signer: keystore as KeystoreSigner<string>,
-      signingKeyId: key.id,
+      signingPublicKey: key.publicKey,
       alg: key.type,
     })
 
@@ -81,7 +82,7 @@ describe('write and didDeleteTx', () => {
       txCounter: 1,
       call,
       signer: keystore as KeystoreSigner<string>,
-      signingKeyId: key.id,
+      signingPublicKey: key.publicKey,
       alg: key.type,
     })
 
@@ -96,11 +97,11 @@ describe('write and didDeleteTx', () => {
 })
 
 it('creates and updates DID', async () => {
-  const { keyId, publicKey, alg } = await keystore.generateKeypair({
+  const { publicKey, alg } = await keystore.generateKeypair({
     alg: 'ed25519',
   })
   const didIdentifier = encodeAddress(publicKey)
-  const key: IPublicKey = { publicKey, id: keyId, type: alg }
+  const key: DidTypes.INewPublicKey = { publicKey, type: alg }
 
   const tx = await DidChain.generateCreateTx({
     didIdentifier,
@@ -110,7 +111,7 @@ it('creates and updates DID', async () => {
       contentType: 'application/json',
     },
     signer: keystore as KeystoreSigner<string>,
-    signingKeyId: key.id,
+    signingPublicKey: key.publicKey,
     alg: key.type,
   })
 
@@ -142,7 +143,7 @@ it('creates and updates DID', async () => {
     txCounter: 1,
     call: updateEndpointCall,
     signer: keystore as KeystoreSigner<string>,
-    signingKeyId: key.id,
+    signingPublicKey: key.publicKey,
     alg: key.type,
   })
 
@@ -166,13 +167,14 @@ it('creates and updates DID', async () => {
 
 describe('DID authorization', () => {
   let didIdentifier: string
-  let key: IPublicKey
+  let key: DidTypes.INewPublicKey
+  let lastTxIndex = BigInt(0)
   beforeAll(async () => {
-    const { keyId, publicKey, alg } = await keystore.generateKeypair({
+    const { publicKey, alg } = await keystore.generateKeypair({
       alg: 'ed25519',
     })
     didIdentifier = encodeAddress(publicKey)
-    key = { publicKey, id: keyId, type: alg }
+    key = { publicKey, type: alg }
     const tx = await DidChain.generateCreateTx({
       didIdentifier,
       keys: {
@@ -180,7 +182,7 @@ describe('DID authorization', () => {
         [KeyRelationship.capabilityDelegation]: key,
       },
       signer: keystore as KeystoreSigner<string>,
-      signingKeyId: key.id,
+      signingPublicKey: key.publicKey,
       alg: key.type,
     })
     await expect(
@@ -196,6 +198,12 @@ describe('DID authorization', () => {
     })
   }, 30_000)
 
+  beforeEach(async () => {
+    lastTxIndex = await DidChain.queryLastNonce(
+      DidUtils.getKiltDidFromIdentifier(didIdentifier)
+    )
+  })
+
   it('authorizes ctype creation with DID signature', async () => {
     const ctype = CType.fromSchema({
       title: UUID.generate(),
@@ -206,10 +214,10 @@ describe('DID authorization', () => {
     const call = await ctype.store()
     const tx = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: 1,
+      txCounter: lastTxIndex + BigInt(1),
       call,
       signer: keystore as KeystoreSigner<string>,
-      signingKeyId: key.id,
+      signingPublicKey: key.publicKey,
       alg: key.type,
     })
     await expect(
@@ -221,14 +229,49 @@ describe('DID authorization', () => {
     await expect(ctype.verifyStored()).resolves.toEqual(true)
   }, 30_000)
 
+  it.skip('authorizes batch with DID signature', async () => {
+    const ctype1 = CType.fromSchema({
+      title: UUID.generate(),
+      properties: {},
+      type: 'object',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    })
+    const ctype2 = CType.fromSchema({
+      title: UUID.generate(),
+      properties: {},
+      type: 'object',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+    })
+    const calls = await Promise.all([ctype1, ctype2].map((c) => c.store()))
+    const batch = await BlockchainApiConnection.getConnectionOrConnect().then(
+      ({ api }) => api.tx.utility.batch(calls)
+    )
+    const tx = await DidChain.generateDidAuthenticatedTx({
+      didIdentifier,
+      txCounter: lastTxIndex + BigInt(1),
+      call: batch,
+      signer: keystore as KeystoreSigner<string>,
+      signingPublicKey: key.publicKey,
+      alg: key.type,
+    })
+    await expect(
+      BlockchainUtils.signAndSubmitTx(tx, alice, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    ).resolves.not.toThrow()
+
+    await expect(ctype1.verifyStored()).resolves.toEqual(true)
+    await expect(ctype2.verifyStored()).resolves.toEqual(true)
+  }, 30_000)
+
   it('no longer authorizes ctype creation after DID deletion', async () => {
     const deleteCall = await DidChain.getDeleteDidExtrinsic()
     const tx = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: 2,
+      txCounter: lastTxIndex + BigInt(1),
       call: deleteCall,
       signer: keystore as KeystoreSigner<string>,
-      signingKeyId: key.id,
+      signingPublicKey: key.publicKey,
       alg: key.type,
     })
 
@@ -247,10 +290,10 @@ describe('DID authorization', () => {
     const call = await ctype.store()
     const tx2 = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: 3,
+      txCounter: lastTxIndex + BigInt(2),
       call,
       signer: keystore as KeystoreSigner<string>,
-      signingKeyId: key.id,
+      signingPublicKey: key.publicKey,
       alg: key.type,
     })
     await expect(

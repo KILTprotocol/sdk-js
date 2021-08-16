@@ -11,10 +11,17 @@
 
 import type { IAttestedClaim, IClaim } from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
+import {
+  createOnChainDidFromSeed,
+  DemoKeystore,
+  DidDetails,
+} from '@kiltprotocol/did'
+import { Crypto } from '@kiltprotocol/utils'
+import { randomAsHex } from '@polkadot/util-crypto'
 import Attestation from '../attestation/Attestation'
 import { revoke } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import { config, disconnect } from '../kilt'
+import { disconnect, init } from '../kilt'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
 import Identity from '../identity/Identity'
@@ -23,57 +30,79 @@ import {
   CtypeOnChain,
   DriversLicense,
   IsOfficialLicenseAuthority,
-  wannabeAlice,
-  wannabeBob,
   wannabeFaucet,
   WS_ADDRESS,
 } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
-let alice: Identity
+let tokenHolder: Identity
+let signer: DemoKeystore
+let attester: DidDetails
+let anotherAttester: DidDetails
+let claimer: DidDetails
+
 beforeAll(async () => {
-  config({ address: WS_ADDRESS })
-  alice = wannabeAlice
+  await init({ address: WS_ADDRESS })
+  tokenHolder = wannabeFaucet
+  signer = new DemoKeystore()
+  ;[attester, anotherAttester, claimer] = await Promise.all([
+    createOnChainDidFromSeed(
+      tokenHolder.signKeyringPair,
+      signer,
+      randomAsHex()
+    ),
+    createOnChainDidFromSeed(
+      tokenHolder.signKeyringPair,
+      signer,
+      randomAsHex()
+    ),
+    createOnChainDidFromSeed(
+      tokenHolder.signKeyringPair,
+      signer,
+      randomAsHex()
+    ),
+  ])
+}, 30_000)
+
+beforeEach(async () => {
+  await Promise.all(
+    [attester, anotherAttester, claimer].map((i) => i.refetchNonce())
+  )
 })
 
 describe('handling attestations that do not exist', () => {
+  const claimHash = Crypto.hashStr('abcde')
   it('Attestation.query', async () => {
-    return expect(Attestation.query('0x012012012')).resolves.toBeNull()
+    return expect(Attestation.query(claimHash)).resolves.toBeNull()
   }, 30_000)
 
   it('Attestation.revoke', async () => {
     return expect(
-      Attestation.revoke('0x012012012', 0).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, alice, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      Attestation.revoke(claimHash, 0)
+        .then((tx) => attester.authorizeExtrinsic(tx, signer))
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
+        )
     ).rejects.toThrow()
   }, 30_000)
 })
 
 describe('When there is an attester, claimer and ctype drivers license', () => {
-  let faucet: Identity
-  let attester: Identity
-  let claimer: Identity
-
   beforeAll(async () => {
-    faucet = wannabeFaucet
-    attester = wannabeAlice
-    claimer = wannabeBob
-
     const ctypeExists = await CtypeOnChain(DriversLicense)
-    // console.log(`ctype exists: ${ctypeExists}`)
-    // console.log(`verify stored: ${await DriversLicense.verifyStored()}`)
     if (!ctypeExists) {
-      await DriversLicense.store().then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, attester, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      attester
+        .authorizeExtrinsic(await DriversLicense.store(), signer)
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
+        )
     }
   }, 60_000)
 
@@ -82,10 +111,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
-      claimer.address
+      claimer.did
     )
-    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
-    expect(request.verifyData()).toBeTruthy()
+    const request = RequestForAttestation.fromClaim(claim)
+    await request.signWithDid(signer, claimer)
+    expect(request.verifyData()).toBe(true)
+    await expect(request.verifySignature()).resolves.toBe(true)
     expect(request.claim.contents).toMatchObject(content)
   })
 
@@ -95,24 +126,25 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
-      claimer.address
+      claimer.did
     )
-    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
-    expect(request.verifyData()).toBeTruthy()
-    expect(request.verifySignature()).toBeTruthy()
-    const attestation = Attestation.fromRequestAndPublicIdentity(
-      request,
-      attester.getPublicIdentity()
-    )
-    await attestation.store().then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, attester, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
-    )
+    const request = RequestForAttestation.fromClaim(claim)
+    expect(request.verifyData()).toBe(true)
+    await request.signWithDid(signer, claimer)
+    await expect(request.verifySignature()).resolves.toBe(true)
+    const attestation = Attestation.fromRequestAndDid(request, attester.did)
+    await attestation
+      .store()
+      .then((call) => attester.authorizeExtrinsic(call, signer))
+      .then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
+        })
+      )
     const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
-    expect(aClaim.verifyData()).toBeTruthy()
-    await expect(aClaim.verify()).resolves.toBeTruthy()
+    expect(aClaim.verifyData()).toBe(true)
+    await expect(aClaim.verify()).resolves.toBe(true)
   }, 60_000)
 
   it('should not be possible to attest a claim w/o tokens', async () => {
@@ -121,25 +153,26 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       DriversLicense,
       content,
-      claimer.address
+      claimer.did
     )
-    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
-    expect(request.verifyData()).toBeTruthy()
-    expect(request.verifySignature()).toBeTruthy()
-    const attestation = Attestation.fromRequestAndPublicIdentity(
-      request,
-      attester.getPublicIdentity()
-    )
+    const request = RequestForAttestation.fromClaim(claim)
+    expect(request.verifyData()).toBe(true)
+    await request.signWithDid(signer, claimer)
+    await expect(request.verifySignature()).resolves.toBe(true)
+    const attestation = Attestation.fromRequestAndDid(request, attester.did)
 
     const bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
 
     await expect(
-      attestation.store().then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      attestation
+        .store()
+        .then((call) => attester.authorizeExtrinsic(call, signer))
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
+        )
     ).rejects.toThrow()
     const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
 
@@ -166,20 +199,20 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const claim = Claim.fromCTypeAndClaimContents(
       badCtype,
       content,
-      claimer.address
+      claimer.did
     )
-    const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
-    const attestation = Attestation.fromRequestAndPublicIdentity(
-      request,
-      attester.getPublicIdentity()
-    )
+    const request = RequestForAttestation.fromClaim(claim)
+    const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await expect(
-      attestation.store().then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, attester, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      attestation
+        .store()
+        .then((call) => attester.authorizeExtrinsic(call, signer))
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
+        )
     ).rejects.toThrowErrorWithCode(
       ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND.code
     )
@@ -193,31 +226,35 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,
-        claimer.address
+        claimer.did
       )
-      const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
-      const attestation = Attestation.fromRequestAndPublicIdentity(
-        request,
-        attester.getPublicIdentity()
-      )
-      await attestation.store().then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, attester, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
-      attClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
-      await expect(attClaim.verify()).resolves.toBeTruthy()
-    }, 60_000)
-
-    it('should not be possible to attest the same claim twice', async () => {
-      await expect(
-        attClaim.attestation.store().then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, attester, {
+      const request = RequestForAttestation.fromClaim(claim)
+      await request.signWithDid(signer, claimer)
+      const attestation = Attestation.fromRequestAndDid(request, attester.did)
+      await attestation
+        .store()
+        .then((call) => attester.authorizeExtrinsic(call, signer))
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
           })
         )
+      attClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
+      await expect(attClaim.verify()).resolves.toBe(true)
+    }, 60_000)
+
+    it('should not be possible to attest the same claim twice', async () => {
+      await expect(
+        attClaim.attestation
+          .store()
+          .then((call) => attester.authorizeExtrinsic(call, signer))
+          .then((tx) =>
+            BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+              resolveOn: BlockchainUtils.IS_IN_BLOCK,
+              reSign: true,
+            })
+          )
       ).rejects.toThrowErrorWithCode(
         ExtrinsicErrors.Attestation.ERROR_ALREADY_ATTESTED.code
       )
@@ -228,9 +265,10 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const claim = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         content,
-        claimer.address
+        claimer.did
       )
-      const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer)
+      const request = RequestForAttestation.fromClaim(claim)
+      await request.signWithDid(signer, claimer)
       const fakeAttClaim: IAttestedClaim = {
         request,
         attestation: attClaim.attestation,
@@ -241,24 +279,28 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(
-        revoke(attClaim.getHash(), 0).then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, claimer, {
+        revoke(attClaim.getHash(), 0)
+          .then((call) => claimer.authorizeExtrinsic(call, signer))
+          .then((tx) =>
+            BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+              resolveOn: BlockchainUtils.IS_IN_BLOCK,
+              reSign: true,
+            })
+          )
+      ).rejects.toThrowError('not permitted')
+      await expect(attClaim.verify()).resolves.toBe(true)
+    }, 45_000)
+
+    it('should be possible for the attester to revoke an attestation', async () => {
+      await expect(attClaim.verify()).resolves.toBe(true)
+      await revoke(attClaim.getHash(), 0)
+        .then((call) => attester.authorizeExtrinsic(call, signer))
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
           })
         )
-      ).rejects.toThrowError('not permitted')
-      await expect(attClaim.verify()).resolves.toBeTruthy()
-    }, 45_000)
-
-    it('should be possible for the attester to revoke an attestation', async () => {
-      await expect(attClaim.verify()).resolves.toBeTruthy()
-      await revoke(attClaim.getHash(), 0).then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, attester, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
       await expect(attClaim.verify()).resolves.toBeFalsy()
     }, 40_000)
   })
@@ -266,16 +308,16 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   describe('when there is another Ctype that works as a legitimation', () => {
     beforeAll(async () => {
       if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
-        await IsOfficialLicenseAuthority.store().then((tx) =>
-          BlockchainUtils.signAndSubmitTx(tx, faucet, {
-            resolveOn: BlockchainUtils.IS_IN_BLOCK,
-            reSign: true,
-          })
-        )
+        await IsOfficialLicenseAuthority.store()
+          .then((call) => attester.authorizeExtrinsic(call, signer))
+          .then((tx) =>
+            BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+              resolveOn: BlockchainUtils.IS_IN_BLOCK,
+              reSign: true,
+            })
+          )
       }
-      await expect(
-        CtypeOnChain(IsOfficialLicenseAuthority)
-      ).resolves.toBeTruthy()
+      await expect(CtypeOnChain(IsOfficialLicenseAuthority)).resolves.toBe(true)
     }, 45_000)
 
     it('can be included in a claim as a legitimation', async () => {
@@ -286,59 +328,57 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           LicenseType: "Driver's License",
           LicenseSubtypes: 'sportscars, tanks',
         },
-        attester.address
+        attester.did
       )
-      const request1 = RequestForAttestation.fromClaimAndIdentity(
-        licenseAuthorization,
-        attester
-      )
-      const licenseAuthorizationGranted = Attestation.fromRequestAndPublicIdentity(
+      const request1 = RequestForAttestation.fromClaim(licenseAuthorization)
+      await request1.signWithDid(signer, claimer)
+      const licenseAuthorizationGranted = Attestation.fromRequestAndDid(
         request1,
-        faucet.getPublicIdentity()
+        anotherAttester.did
       )
-      await licenseAuthorizationGranted.store().then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, faucet, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      await licenseAuthorizationGranted
+        .store()
+        .then((call) => anotherAttester.authorizeExtrinsic(call, signer))
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
+        )
       // make request including legitimation
       const iBelieveICanDrive = Claim.fromCTypeAndClaimContents(
         DriversLicense,
         { name: 'Dominic Toretto', age: 52 },
-        claimer.address
+        claimer.did
       )
-      const request2 = RequestForAttestation.fromClaimAndIdentity(
-        iBelieveICanDrive,
-        claimer,
-        {
-          legitimations: [
-            AttestedClaim.fromRequestAndAttestation(
-              request1,
-              licenseAuthorizationGranted
-            ),
-          ],
-        }
-      )
-      const LicenseGranted = Attestation.fromRequestAndPublicIdentity(
+      const request2 = RequestForAttestation.fromClaim(iBelieveICanDrive, {
+        legitimations: [
+          AttestedClaim.fromRequestAndAttestation(
+            request1,
+            licenseAuthorizationGranted
+          ),
+        ],
+      })
+      await request2.signWithDid(signer, claimer)
+      const LicenseGranted = Attestation.fromRequestAndDid(
         request2,
-        attester.getPublicIdentity()
+        attester.did
       )
-      await LicenseGranted.store().then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, attester, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      await LicenseGranted.store()
+        .then((call) => attester.authorizeExtrinsic(call, signer))
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
+        )
       const license = AttestedClaim.fromRequestAndAttestation(
         request2,
         LicenseGranted
       )
       await Promise.all([
-        expect(license.verify()).resolves.toBeTruthy(),
-        expect(
-          licenseAuthorizationGranted.checkValidity()
-        ).resolves.toBeTruthy(),
+        expect(license.verify()).resolves.toBe(true),
+        expect(licenseAuthorizationGranted.checkValidity()).resolves.toBe(true),
       ])
     }, 70_000)
   })

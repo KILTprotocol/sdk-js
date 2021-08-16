@@ -21,6 +21,7 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto } from '@kiltprotocol/utils'
 import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
+import type { Codec } from '@polkadot/types/types'
 import type {
   Url,
   UrlEncoding,
@@ -50,6 +51,10 @@ export async function queryEncoded(
   return blockchain.api.query.did.did<Option<DidRecord>>(didIdentifier)
 }
 
+function assembleKeyId(keyId: Codec, did: string): string {
+  return `${did}#${keyId.toHex()}`
+}
+
 function decodeDidPublicKeyDetails(
   did: string,
   keyId: Hash,
@@ -57,8 +62,8 @@ function decodeDidPublicKeyDetails(
 ): KeyDetails {
   const key = keyDetails.key.value
   return {
-    id: keyId.toHex(),
-    type: key.type,
+    id: assembleKeyId(keyId, did),
+    type: key.type.toLowerCase(),
     controller: did,
     publicKeyHex: key.value.toHex(),
     includedAt: keyDetails.blockNumber.toNumber(),
@@ -75,10 +80,10 @@ function decodeDidRecord(didDetail: DidRecord, did: string) {
   ).map(([keyId, keyDetails]) => {
     return decodeDidPublicKeyDetails(did, keyId, keyDetails)
   })
-  const authenticationKeyId = didDetail.authenticationKey.toHex()
+  const authenticationKeyId = assembleKeyId(didDetail.authenticationKey, did)
   const keyAgreementKeyIds = Array.from(
     didDetail.keyAgreementKeys.values()
-  ).map((id) => id.toHex())
+  ).map((id) => assembleKeyId(id, did))
 
   const didRecord: IDidRecord = {
     did,
@@ -96,12 +101,16 @@ function decodeDidRecord(didDetail: DidRecord, did: string) {
     }
   }
   if (didDetail.capabilityDelegationKey.isSome) {
-    didRecord.capabilityDelegationKey = didDetail.capabilityDelegationKey
-      .unwrap()
-      .toHex()
+    didRecord.capabilityDelegationKey = assembleKeyId(
+      didDetail.capabilityDelegationKey.unwrap(),
+      did
+    )
   }
   if (didDetail.assertionMethodKey.isSome) {
-    didRecord.assertionMethodKey = didDetail.assertionMethodKey.unwrap().toHex()
+    didRecord.assertionMethodKey = assembleKeyId(
+      didDetail.assertionMethodKey.unwrap(),
+      did
+    )
   }
   return didRecord
 }
@@ -141,6 +150,12 @@ export async function queryKey(
     }
   })
   return key
+}
+
+export async function queryLastNonce(did: string): Promise<bigint> {
+  const encoded = await queryEncoded(getIdentifierFromKiltDid(did))
+  if (encoded.isNone) return BigInt(0)
+  return encoded.unwrap().lastTxCounter.toBigInt()
 }
 
 // ### EXTRINSICS

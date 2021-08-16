@@ -18,7 +18,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 
-import { generateDidAuthenticatedTx } from '../Did.chain'
+import { generateDidAuthenticatedTx, queryLastNonce } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './utils'
 import { getIdentifierFromDid } from '../Did.utils'
 
@@ -178,5 +178,10 @@ export class DidDetails implements IDidDetails {
       call: extrinsic,
       txCounter: this.getNextTxIndex(incrementTxIndex),
     })
+  }
+
+  public async refetchNonce(): Promise<this> {
+    this.lastTxIndex = await queryLastNonce(this.did)
+    return this
   }
 }
