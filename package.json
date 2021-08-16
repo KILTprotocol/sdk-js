@@ -6,6 +6,7 @@
   ],
   "license": "BSD-4-Clause",
   "scripts": {
+    "check": "tsc -p tsconfig.json --noEmit",
     "build": "yarn workspaces foreach -pt --no-private run build",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
     "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
