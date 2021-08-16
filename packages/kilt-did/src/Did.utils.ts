@@ -309,13 +309,12 @@ export async function authenticateWithDid(
       `failed to get ${KeyRelationship.authentication} key from DidDetails`
     )
   }
-  const keyId = key.id
   const { data: signature } = await signer.sign({
-    keyId,
+    publicKey: Crypto.coToUInt8(key.publicKeyHex),
     alg: key.type,
     data: Crypto.coToUInt8(toSign),
   })
-  return { keyId, signature: Crypto.u8aToHex(signature) }
+  return { keyId: key.id, signature: Crypto.u8aToHex(signature) }
 }
 
 export function addDidfromKeypair(
@@ -335,7 +334,7 @@ export function addDidfromKeypair(
     didIdentifier,
     keys: publicKeys,
     alg: '',
-    signingKeyId: '',
+    signingPublicKey: '',
   })
 }
 

@@ -147,7 +147,7 @@ export async function queryKey(
 
 export async function generateCreateTx({
   signer,
-  signingKeyId,
+  signingPublicKey,
   alg,
   didIdentifier,
   keys = {},
@@ -164,7 +164,7 @@ export async function generateCreateTx({
   const signature = await signer.sign({
     data: encoded.toU8a(),
     meta: {},
-    keyId: signingKeyId,
+    publicKey: Crypto.coToUInt8(signingPublicKey),
     alg,
   })
   return blockchain.api.tx.did.create(encoded, {
@@ -264,7 +264,7 @@ export async function getDeleteDidExtrinsic(): Promise<Extrinsic> {
 }
 
 export async function generateDidAuthenticatedTx({
-  signingKeyId,
+  signingPublicKey,
   alg,
   signer,
   txCounter,
@@ -289,7 +289,7 @@ export async function generateDidAuthenticatedTx({
       nonce: signableCall.txCounter.toHex(),
       address: Crypto.encodeAddress(signableCall.did),
     },
-    keyId: signingKeyId,
+    publicKey: Crypto.coToUInt8(signingPublicKey),
     alg,
   })
   return blockchain.api.tx.did.submitDidCall(signableCall, {

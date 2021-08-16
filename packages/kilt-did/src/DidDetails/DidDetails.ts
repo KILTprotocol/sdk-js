@@ -172,7 +172,7 @@ export class DidDetails implements IDidDetails {
     }
     return generateDidAuthenticatedTx({
       didIdentifier: this.identifier,
-      signingKeyId: signingKey.id,
+      signingPublicKey: signingKey.publicKeyHex,
       alg: signingKey.type,
       signer,
       call: extrinsic,

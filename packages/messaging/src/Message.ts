@@ -99,6 +99,7 @@ export default class Message implements IMessage {
    * @param keystore
    * @param resolutionOptions
    * @param resolutionOptions.senderDetails
+   * @param resolutionOptions.receiverDetails
    * @param resolutionOptions.resolver
    * @throws [[ERROR_DECODING_MESSAGE]] when encrypted message couldn't be decrypted.
    * @throws [[ERROR_PARSING_MESSAGE]] when the decoded message could not be parsed.
@@ -109,8 +110,13 @@ export default class Message implements IMessage {
     keystore: { decrypt: DemoKeystore['decrypt'] }, // TODO: use proper interface
     {
       senderDetails,
+      receiverDetails,
       resolver = DefaultResolver,
-    }: { senderDetails?: IDidDetails; resolver?: IDidResolver } = {}
+    }: {
+      senderDetails?: IDidDetails
+      receiverDetails?: IDidDetails
+      resolver?: IDidResolver
+    } = {}
   ): Promise<IMessage> {
     const {
       senderKeyId,
@@ -120,14 +126,21 @@ export default class Message implements IMessage {
       receivedAt,
     } = encrypted
 
-    // if we don't have the sender DID details already, fetch it via resolver
-    const senderDidDetails =
-      senderDetails || (await resolver.resolve({ did: senderKeyId }))
-    // check if key is currently associated with DID
-    const senderKeyDetails = senderDidDetails?.getKey(senderKeyId)
-    if (!senderKeyDetails || !senderDidDetails) {
-      throw Error('sender key cannot be resolved') // TODO: improve error
+    // if we don't have the sender DID & receiver details already, fetch it via resolver
+    const resolveKey = async (keyId: string, didDetails?: IDidDetails) => {
+      // check if key is currently associated with DID
+      const keyDetails = (
+        didDetails || (await resolver.resolve({ did: keyId }))
+      )?.getKey(keyId)
+      if (!keyDetails) {
+        throw Error(`key with id ${keyId} cannot be resolved`) // TODO: improve error
+      }
+      return keyDetails
     }
+
+    const senderKeyDetails = await resolveKey(senderKeyId, senderDetails)
+    const receiverKeyDetails = await resolveKey(receiverKeyId, receiverDetails)
+
     // check key type
     if (senderKeyDetails.type !== 'x25519') {
       throw Error(
@@ -137,7 +150,7 @@ export default class Message implements IMessage {
 
     const { data } = await keystore
       .decrypt({
-        keyId: receiverKeyId,
+        publicKey: hexToU8a(receiverKeyDetails.publicKeyHex),
         alg: 'x25519-xsalsa20-poly1305', // TODO find better ways than hard-coding the alg
         peerPublicKey: hexToU8a(senderKeyDetails.publicKeyHex),
         data: hexToU8a(ciphertext),
@@ -258,7 +271,7 @@ export default class Message implements IMessage {
     const encryted = await keystore.encrypt({
       alg: 'x25519-xsalsa20-poly1305',
       data: serialized,
-      keyId: senderKey.id,
+      publicKey: hexToU8a(senderKey.publicKeyHex),
       peerPublicKey: hexToU8a(receiverKey.publicKeyHex),
     })
     const ciphertext = u8aToHex(encryted.data)

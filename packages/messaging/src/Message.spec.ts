@@ -92,7 +92,9 @@ describe('Messaging', () => {
     const encryptedWrongBody = await keystore.encrypt({
       alg: 'x25519-xsalsa20-poly1305',
       data: Crypto.coToUInt8('{ wrong JSON'),
-      keyId: identityAlice.getKeys(KeyRelationship.keyAgreement)[0].id,
+      publicKey: Crypto.coToUInt8(
+        identityAlice.getKeys(KeyRelationship.keyAgreement)[0].publicKeyHex
+      ),
       peerPublicKey: Crypto.coToUInt8(
         identityBob.getKeys(KeyRelationship.keyAgreement)[0].publicKeyHex
       ),

@@ -26,9 +26,12 @@ import {
   ResponseData,
 } from '@kiltprotocol/types'
 import { KeyringPair } from '@polkadot/keyring/types'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { KeypairType } from '@polkadot/util-crypto/types'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import { DidDetails, DidDetailsUtils } from '../DidDetails'
-import { DefaultResolver } from '..'
+import { DefaultResolver, DidUtils } from '..'
+import { PublicKeyRoleAssignment } from '../types'
 
 export type SubstrateKeyTypes = Keyring['type']
 export type EncryptionAlgorithms = 'x25519-xsalsa20-poly1305'
@@ -59,7 +62,6 @@ function encryptionSupported(alg: string): alg is EncryptionAlgorithms {
 
 export interface KeyGenOpts<T extends string> {
   alg: RequestData<T>['alg']
-  keyId?: RequestData<T>['keyId']
   seed?: string
 }
 
@@ -68,177 +70,183 @@ export interface NaclKeypair {
   secretKey: Uint8Array
 }
 
-export type KeyAddOpts<T extends string> = Pick<
-  RequestData<T>,
-  'keyId' | 'alg'
-> &
+export type KeyAddOpts<T extends string> = Pick<RequestData<T>, 'alg'> &
   NaclKeypair
+
+const KeypairTypeForAlg: Record<string, string> = {
+  ed25519: 'ed25519',
+  sr25519: 'sr25519',
+  'ecdsa-secp256k1': 'ecdsa',
+  'x25519-xsalsa20-poly1305': 'x25519',
+}
+
+function getKeypairTypeForAlg(alg: string): KeypairType {
+  return KeypairTypeForAlg[alg.toLowerCase()] as KeypairType
+}
 
 /**
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!
  */
 export class DemoKeystore
   implements Keystore<SubstrateKeyTypes, EncryptionAlgorithms> {
-  private keyring: Keyring
-  private signingPublicKeys: Record<string, Uint8Array> = {}
-  private encryptionKeypairs: Record<string, NaclKeypair> = {}
-
-  constructor() {
-    this.keyring = new Keyring()
-  }
+  private signingKeyring: Keyring = new Keyring()
+  private encryptionKeypairs: Map<string, NaclKeypair> = new Map()
 
   private async generateSigningKeypair<T extends SubstrateKeyTypes>(
     opts: KeyGenOpts<T>
   ): Promise<{
     publicKey: Uint8Array
-    keyId: string
     alg: T
   }> {
     const { seed, alg } = opts
     await cryptoWaitReady()
 
-    const keypair = this.keyring.addFromUri(seed || randomAsHex(32), {}, alg)
+    const keypairType = getKeypairTypeForAlg(alg)
+    const keypair = this.signingKeyring.addFromUri(
+      seed || randomAsHex(32),
+      {},
+      keypairType as KeypairType
+    )
 
-    const keyId = opts.keyId || Crypto.u8aToHex(keypair.publicKey)
-    if (this.signingPublicKeys[keyId])
-      throw new Error(`id ${keyId} already used`)
-
-    this.signingPublicKeys[keyId] = keypair.publicKey
-    return { keyId, alg, publicKey: keypair.publicKey }
+    return { alg, publicKey: keypair.publicKey }
   }
 
   private async generateEncryptionKeypair<T extends EncryptionAlgorithms>(
     opts: KeyGenOpts<T>
   ): Promise<{
     publicKey: Uint8Array
-    keyId: string
     alg: T
   }> {
     const { seed, alg } = opts
     const { secretKey, publicKey } = naclBoxKeypairFromSecret(
       seed ? blake2AsU8a(seed, 32 * 8) : randomAsU8a(32)
     )
-    const keyId = opts.keyId || Crypto.u8aToHex(publicKey)
-    return this.addEncryptionKeypair({ keyId, alg, secretKey, publicKey })
+    return this.addEncryptionKeypair({ alg, secretKey, publicKey })
   }
 
   public async generateKeypair<
     T extends SubstrateKeyTypes | EncryptionAlgorithms
   >({
-    keyId,
     alg,
     seed,
   }: KeyGenOpts<T>): Promise<{
     publicKey: Uint8Array
-    keyId: string
     alg: T
   }> {
     if (signingSupported(alg)) {
-      return this.generateSigningKeypair({ keyId, alg, seed })
+      return this.generateSigningKeypair({ alg, seed })
     }
     if (encryptionSupported(alg)) {
-      return this.generateEncryptionKeypair({ keyId, alg, seed })
+      return this.generateEncryptionKeypair({ alg, seed })
     }
-    throw new Error('alg not supported')
+    throw new Error(`alg ${alg} is not supported`)
   }
 
   private async addSigningKeypair<T extends SubstrateKeyTypes>({
-    keyId,
     alg,
     publicKey,
     secretKey,
   }: KeyAddOpts<T>): Promise<{
     publicKey: Uint8Array
-    keyId: string
     alg: T
   }> {
-    if (this.signingPublicKeys[keyId]) throw new Error('id already used')
     await cryptoWaitReady()
-    const keypair = this.keyring.addFromPair(
+    if (this.signingKeyring.getPair(publicKey))
+      throw new Error('public key already stored')
+    const keypairType = getKeypairTypeForAlg(alg)
+    const keypair = this.signingKeyring.addFromPair(
       { publicKey, secretKey },
-      { name: keyId },
-      alg
+      {},
+      keypairType
     )
-    this.signingPublicKeys[keyId] = keypair.publicKey
-    return { keyId, alg, publicKey: keypair.publicKey }
+    return { alg, publicKey: keypair.publicKey }
   }
 
   private async addEncryptionKeypair<T extends EncryptionAlgorithms>({
-    keyId,
     alg,
     secretKey,
   }: KeyAddOpts<T>): Promise<{
     publicKey: Uint8Array
-    keyId: string
     alg: T
   }> {
-    if (this.encryptionKeypairs[keyId]) throw new Error('id already used')
     const keypair = naclBoxKeypairFromSecret(secretKey)
-    this.encryptionKeypairs[keyId] = keypair
-    return { keyId, alg, publicKey: keypair.publicKey }
+    const { publicKey } = keypair
+    const publicKeyHex = Crypto.u8aToHex(publicKey)
+    if (this.encryptionKeypairs.has(publicKeyHex))
+      throw new Error('public key already used')
+    this.encryptionKeypairs.set(publicKeyHex, keypair)
+    return { alg, publicKey }
   }
 
   public async addKeypair<T extends SubstrateKeyTypes | EncryptionAlgorithms>({
-    keyId,
     alg,
     publicKey,
     secretKey,
   }: KeyAddOpts<T>): Promise<{
     publicKey: Uint8Array
-    keyId: string
     alg: T
   }> {
     if (signingSupported(alg)) {
-      return this.addSigningKeypair({ keyId, alg, publicKey, secretKey })
+      return this.addSigningKeypair({ alg, publicKey, secretKey })
     }
     if (encryptionSupported(alg)) {
-      return this.addEncryptionKeypair({ keyId, alg, publicKey, secretKey })
+      return this.addEncryptionKeypair({ alg, publicKey, secretKey })
     }
-    throw new Error('alg not supported')
+    throw new Error(`alg ${alg} is not supported`)
   }
 
+  // public async aliasKeypair(keyId: string, alias: string): Promise<void> {
+  //   if (this.signingPublicKeys[keyId] && !this.hasKeys([alias])[0]) {
+  //     this.signingPublicKeys[alias] = this.signingPublicKeys[keyId]
+  //   } else {
+  //     throw Error('no such key')
+  //   }
+  // }
+
   public async sign<A extends SubstrateKeyTypes>({
-    keyId,
+    publicKey,
     alg,
     data,
   }: KeystoreSigningData<A>): Promise<ResponseData<A>> {
-    if (!signingSupported(alg)) throw new Error('alg not supported')
-    const publicKey = this.signingPublicKeys[keyId]
-    if (!publicKey)
-      return Promise.reject(new Error(`unknown signing key with id ${keyId}`))
-    const keypair = this.keyring.getPair(publicKey)
-    if (alg !== keypair.type)
+    if (!signingSupported(alg))
+      throw new Error(`alg ${alg} is not supported for signing`)
+    const keyType = getKeypairTypeForAlg(alg)
+    const keypair = this.signingKeyring.getPair(publicKey)
+    if (!keypair || keyType !== keypair.type)
       return Promise.reject(
-        new Error(`key with id ${keyId} cannot be used with alg ${alg}`)
+        new Error(`no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`)
       )
     const signature = keypair.sign(data, { withType: false })
     return { alg, data: signature }
   }
 
+  private getEncryptionKeyPair(
+    publicKey: Uint8Array,
+    alg: string
+  ): NaclKeypair {
+    if (!encryptionSupported(alg))
+      throw new Error(`alg ${alg} is not supported for encryption`)
+    const publicKeyHex = Crypto.u8aToHex(publicKey)
+    const keypair = this.encryptionKeypairs.get(publicKeyHex)
+    if (!keypair) throw Error(`no key ${publicKeyHex} for alg ${alg}`)
+    return keypair
+  }
+
   public async encrypt<A extends EncryptionAlgorithms>({
     data,
     alg,
-    keyId,
+    publicKey,
     peerPublicKey,
   }: RequestData<A> & { peerPublicKey: Uint8Array }): Promise<
     ResponseData<A> & { nonce: Uint8Array }
   > {
-    if (!encryptionSupported(alg)) throw new Error('alg not supported')
-    const keypair = this.encryptionKeypairs[keyId]
-    if (!keypair)
-      return Promise.reject(
-        new Error(`unknown encryption key with id ${keyId}`)
-      )
-    if (alg !== 'x25519-xsalsa20-poly1305')
-      return Promise.reject(
-        new Error(`key with id ${keyId} cannot be used with alg ${alg}`)
-      )
+    const keypair = this.getEncryptionKeyPair(publicKey, alg)
     const { nonce, sealed } = naclSeal(data, keypair.secretKey, peerPublicKey)
     return { data: sealed, alg, nonce }
   }
 
   public async decrypt<A extends EncryptionAlgorithms>({
-    keyId,
+    publicKey,
     alg,
     data,
     peerPublicKey,
@@ -247,16 +255,7 @@ export class DemoKeystore
     peerPublicKey: Uint8Array
     nonce: Uint8Array
   }): Promise<ResponseData<A>> {
-    if (!encryptionSupported(alg)) throw new Error('alg not supported')
-    const keypair = this.encryptionKeypairs[keyId]
-    if (!keypair)
-      return Promise.reject(
-        new Error(`unknown encryption key with id ${keyId}`)
-      )
-    if (alg !== 'x25519-xsalsa20-poly1305')
-      return Promise.reject(
-        new Error(`key with id ${keyId} cannot be used with alg ${alg}`)
-      )
+    const keypair = this.getEncryptionKeyPair(publicKey, alg)
     const decrypted = naclOpen(data, nonce, peerPublicKey, keypair.secretKey)
     if (!decrypted)
       return Promise.reject(new Error('failed to decrypt with given key'))
@@ -270,17 +269,16 @@ export class DemoKeystore
     return supportedAlgs
   }
 
-  public async getKeyIds(): Promise<string[]> {
+  public async getKeys(): Promise<Uint8Array[]> {
     return [
-      ...Object.keys(this.signingPublicKeys),
-      ...Object.keys(this.encryptionKeypairs),
+      ...this.signingKeyring.publicKeys,
+      ...[...this.encryptionKeypairs.values()].map((i) => i.publicKey),
     ]
   }
 
-  public async hasKeys(keyIds: string[]): Promise<boolean[]> {
-    return keyIds.map(
-      (id) => !!(this.signingPublicKeys[id] || this.encryptionKeypairs)
-    )
+  public async hasKeys(keys: Uint8Array[]): Promise<boolean[]> {
+    const knownKeys = await this.getKeys()
+    return keys.map((key) => knownKeys.includes(key))
   }
 }
 
@@ -310,7 +308,6 @@ export async function createLocalDemoDidFromSeed(
       : mnemonicOrHexSeed
     const keyId = `${did}#${blake2AsHex(seed, 64)}`
     const { publicKey } = await keystore.generateKeypair<any>({
-      keyId,
       alg,
       seed,
     })
@@ -350,29 +347,50 @@ export async function createOnChainDidFromSeed(
   paymentAccount: KeyringPair,
   keystore: DemoKeystore,
   mnemonicOrHexSeed: string,
-  signingKeyType = 'ed25519'
+  signingKeyType: SubstrateKeyTypes = 'ed25519'
 ): Promise<DidDetails> {
-  const didDetails = await createLocalDemoDidFromSeed(
-    keystore,
+  const makeKey = (path: string, alg: string) =>
+    keystore
+      .generateKeypair({
+        alg: signingKeyType,
+        seed: `${mnemonicOrHexSeed}//${path}`,
+      })
+      .then((key) => ({ ...key, type: getKeypairTypeForAlg(alg) }))
+
+  const keys: PublicKeyRoleAssignment = {
+    [KeyRelationship.assertionMethod]: await makeKey(
+      'assertionMethod',
+      signingKeyType
+    ),
+    [KeyRelationship.capabilityDelegation]: await makeKey(
+      'capabilityDelegation',
+      signingKeyType
+    ),
+    [KeyRelationship.keyAgreement]: await makeKey(
+      'keyAgreement',
+      'x25519-xsalsa20-poly1305'
+    ),
+  }
+  keystore.generateKeypair({
+    alg: signingKeyType,
+    seed: mnemonicOrHexSeed,
+  })
+  const authentication = new Keyring().addFromUri(
     mnemonicOrHexSeed,
+    undefined,
     signingKeyType
   )
-  const submittable = await DidDetailsUtils.writeNewDidFromDidDetails(
-    didDetails,
-    keystore
-  )
-  return new Promise((resolve, reject) => {
-    submittable.signAndSend(paymentAccount, async (result) => {
-      if (result.dispatchError || result.isError) {
-        reject(result.dispatchError?.toHuman() || result.status.toHuman())
-      }
-      if (result.isInBlock) {
-        const queried = await DefaultResolver.resolve({ did: didDetails.did })
-        if (queried) {
-          resolve(queried as DidDetails)
-        }
-        reject(Error(`failed to write Did${didDetails.did}`))
-      }
-    })
+
+  const submittable = await DidUtils.addDidfromKeypair(authentication, keys)
+  await BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
+    reSign: true,
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
+  const didIdentifier = encodeAddress(authentication.publicKey, 38)
+  const did = getKiltDidFromIdentifier(didIdentifier)
+  const queried = await DefaultResolver.resolve({ did })
+  if (queried) {
+    return queried as DidDetails
+  }
+  throw Error(`failed to write Did${did}`)
 }

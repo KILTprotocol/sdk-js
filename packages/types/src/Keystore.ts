@@ -9,7 +9,7 @@ import type { SignerPayloadJSON } from '@polkadot/types/types'
 
 export interface RequestData<A extends string> {
   alg: A
-  keyId: string // id of the key to use
+  publicKey: Uint8Array // alternatively, public key from the keypair to use
   data: Uint8Array // data to sign / encrypt / decrypt
   [x: string]: unknown
 }
@@ -38,18 +38,15 @@ export interface Keystore<
   decrypt<A extends EncryptAlgs>(
     requestData: RequestData<A>
   ): Promise<ResponseData<A>>
-  getKeyIds?(): Promise<string[]>
+  getKeys?(): Promise<Uint8Array[]>
   // OR if above is deemed to reveal too much:
-  hasKeys(keyIds: string[]): Promise<boolean[]>
+  hasKeys(keyIds: Uint8Array[]): Promise<boolean[]>
 }
 
-export type KeystoreSigner<A extends string = string> = Pick<
-  Keystore<A>,
-  'sign'
->
+export type KeystoreSigner<A extends string = any> = Pick<Keystore<A>, 'sign'>
 
 export interface KeystoreSigningOptions<A extends string = string> {
   signer: KeystoreSigner<A>
-  signingKeyId: string
+  signingPublicKey: string | Uint8Array
   alg: A
 }

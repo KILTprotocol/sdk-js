@@ -163,9 +163,9 @@ export async function writeNewDidFromDidDetails(
   }
   return DidChain.generateCreateTx({
     signer,
-    signingKeyId: signingKey.id,
+    signingPublicKey: signingKey.publicKeyHex,
     alg: signingKey.type,
-    didIdentifier: didDetails.did,
+    didIdentifier: didDetails.identifier,
     keys,
   })
 }

@@ -326,7 +326,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     const { data } = await signer.sign({
       data: makeSigningData(this, challenge),
       alg: key.type,
-      keyId: key.id,
+      publicKey: Crypto.coToUInt8(key.publicKeyHex),
     })
     return this.addSignature(data, key.id, challenge)
   }
