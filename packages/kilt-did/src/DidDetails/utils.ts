@@ -40,9 +40,9 @@ const mapping: SectionMapping<
   ctype: { default: KeyRelationship.assertionMethod },
   delegation: { default: KeyRelationship.capabilityDelegation },
   did: {
-    default: 'paymentAccount',
-    update: KeyRelationship.authentication,
-    delete: KeyRelationship.authentication,
+    default: KeyRelationship.authentication,
+    create: 'paymentAccount',
+    submitDidCall: 'paymentAccount',
   },
   default: { default: 'paymentAccount' },
 }

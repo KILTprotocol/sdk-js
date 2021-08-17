@@ -18,25 +18,26 @@ import {
 } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { randomAsHex } from '@polkadot/util-crypto'
+import { KeyringPair } from '@polkadot/keyring/types'
 import Attestation from '../attestation/Attestation'
 import { revoke } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { disconnect, init } from '../kilt'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
-import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import {
   CtypeOnChain,
   DriversLicense,
   IsOfficialLicenseAuthority,
-  wannabeFaucet,
+  devFaucet,
   WS_ADDRESS,
+  keypairFromRandom,
 } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
-let tokenHolder: Identity
+let tokenHolder: KeyringPair
 let signer: DemoKeystore
 let attester: DidDetails
 let anotherAttester: DidDetails
@@ -44,24 +45,12 @@ let claimer: DidDetails
 
 beforeAll(async () => {
   await init({ address: WS_ADDRESS })
-  tokenHolder = wannabeFaucet
+  tokenHolder = devFaucet
   signer = new DemoKeystore()
   ;[attester, anotherAttester, claimer] = await Promise.all([
-    createOnChainDidFromSeed(
-      tokenHolder.signKeyringPair,
-      signer,
-      randomAsHex()
-    ),
-    createOnChainDidFromSeed(
-      tokenHolder.signKeyringPair,
-      signer,
-      randomAsHex()
-    ),
-    createOnChainDidFromSeed(
-      tokenHolder.signKeyringPair,
-      signer,
-      randomAsHex()
-    ),
+    createOnChainDidFromSeed(tokenHolder, signer, randomAsHex()),
+    createOnChainDidFromSeed(tokenHolder, signer, randomAsHex()),
+    createOnChainDidFromSeed(tokenHolder, signer, randomAsHex()),
   ])
 }, 30_000)
 
@@ -161,7 +150,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     await expect(request.verifySignature()).resolves.toBe(true)
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
 
-    const bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    const bobbyBroke = keypairFromRandom()
 
     await expect(
       attestation
