@@ -21,7 +21,7 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { DidDetails, MapKeyToRelationship } from './DidDetails'
 import { PublicKeyRoleAssignment } from '../types'
-import { DidChain } from '..'
+import { DidChain, DidUtils } from '..'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -139,7 +139,7 @@ export function newDidDetailsfromKeys(
 }
 
 export async function writeNewDidFromDidDetails(
-  didDetails: DidDetails,
+  didDetails: IDidDetails,
   signer: KeystoreSigner
 ): Promise<SubmittableExtrinsic> {
   const [signingKey] = didDetails.getKeys(KeyRelationship.authentication)
@@ -165,7 +165,7 @@ export async function writeNewDidFromDidDetails(
     signer,
     signingPublicKey: signingKey.publicKeyHex,
     alg: signingKey.type,
-    didIdentifier: didDetails.identifier,
+    didIdentifier: DidUtils.getIdentifierFromKiltDid(didDetails.did),
     keys,
   })
 }

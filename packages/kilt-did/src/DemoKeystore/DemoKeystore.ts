@@ -28,6 +28,7 @@ import {
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { KeypairType } from '@polkadot/util-crypto/types'
+import { u8aEq } from '@polkadot/util'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import { DidDetails, DidDetailsUtils } from '../DidDetails'
 import { DefaultResolver, DidUtils } from '..'
@@ -151,7 +152,7 @@ export class DemoKeystore
     alg: T
   }> {
     await cryptoWaitReady()
-    if (this.signingKeyring.getPair(publicKey))
+    if (this.signingKeyring.publicKeys.some((i) => u8aEq(publicKey, i)))
       throw new Error('public key already stored')
     const keypairType = getKeypairTypeForAlg(alg)
     const keypair = this.signingKeyring.addFromPair(
@@ -194,14 +195,6 @@ export class DemoKeystore
     }
     throw new Error(`alg ${alg} is not supported`)
   }
-
-  // public async aliasKeypair(keyId: string, alias: string): Promise<void> {
-  //   if (this.signingPublicKeys[keyId] && !this.hasKeys([alias])[0]) {
-  //     this.signingPublicKeys[alias] = this.signingPublicKeys[keyId]
-  //   } else {
-  //     throw Error('no such key')
-  //   }
-  // }
 
   public async sign<A extends SubstrateKeyTypes>({
     publicKey,
@@ -278,7 +271,7 @@ export class DemoKeystore
 
   public async hasKeys(keys: Uint8Array[]): Promise<boolean[]> {
     const knownKeys = await this.getKeys()
-    return keys.map((key) => knownKeys.includes(key))
+    return keys.map((key) => knownKeys.some((i) => u8aEq(key, i)))
   }
 }
 
@@ -349,45 +342,41 @@ export async function createOnChainDidFromSeed(
   mnemonicOrHexSeed: string,
   signingKeyType: SubstrateKeyTypes = 'ed25519'
 ): Promise<DidDetails> {
-  const makeKey = (path: string, alg: string) =>
+  const makeKey = (seed: string, alg: string) =>
     keystore
       .generateKeypair({
         alg: signingKeyType,
-        seed: `${mnemonicOrHexSeed}//${path}`,
+        seed,
       })
       .then((key) => ({ ...key, type: getKeypairTypeForAlg(alg) }))
 
   const keys: PublicKeyRoleAssignment = {
+    [KeyRelationship.authentication]: await makeKey(
+      mnemonicOrHexSeed,
+      signingKeyType
+    ),
     [KeyRelationship.assertionMethod]: await makeKey(
-      'assertionMethod',
+      `${mnemonicOrHexSeed}//assertionMethod`,
       signingKeyType
     ),
     [KeyRelationship.capabilityDelegation]: await makeKey(
-      'capabilityDelegation',
+      `${mnemonicOrHexSeed}//capabilityDelegation`,
       signingKeyType
     ),
     [KeyRelationship.keyAgreement]: await makeKey(
-      'keyAgreement',
+      `${mnemonicOrHexSeed}//keyAgreement`,
       'x25519-xsalsa20-poly1305'
     ),
   }
-  keystore.generateKeypair({
-    alg: signingKeyType,
-    seed: mnemonicOrHexSeed,
-  })
-  const authentication = new Keyring().addFromUri(
-    mnemonicOrHexSeed,
-    undefined,
-    signingKeyType
-  )
 
-  const submittable = await DidUtils.addDidfromKeypair(authentication, keys)
+  const { submittable, did } = await DidUtils.writeDidfromPublicKeys(
+    keystore,
+    keys
+  )
   await BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
     reSign: true,
     resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
-  const didIdentifier = encodeAddress(authentication.publicKey, 38)
-  const did = getKiltDidFromIdentifier(didIdentifier)
   const queried = await DefaultResolver.resolve({ did })
   if (queried) {
     return queried as DidDetails

@@ -19,8 +19,7 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
 import type { Codec, Registry } from '@polkadot/types/types'
-import { checkAddress } from '@polkadot/util-crypto'
-import { KeyringPair } from '@polkadot/keyring/types'
+import { checkAddress, encodeAddress } from '@polkadot/util-crypto'
 import { DefaultResolver } from './DidResolver/DefaultResolver'
 import type {
   DidSigned,
@@ -34,6 +33,7 @@ import type {
   DidPublicKey,
   INewPublicKey,
   PublicKeyRoleAssignment,
+  EndpointData,
 } from './types'
 import { generateCreateTx } from './Did.chain'
 
@@ -317,31 +317,39 @@ export async function authenticateWithDid(
   return { keyId: key.id, signature: Crypto.u8aToHex(signature) }
 }
 
-export function addDidfromKeypair(
-  authenticationKeypair: KeyringPair,
-  publicKeys: Omit<PublicKeyRoleAssignment, KeyRelationship.authentication> = {}
-): Promise<SubmittableExtrinsic> {
-  const didIdentifier = authenticationKeypair.address
-  const signer: KeystoreSigner = {
-    sign: ({ data }) =>
-      Promise.resolve({
-        data: authenticationKeypair.sign(data),
-        alg: authenticationKeypair.type as any,
-      }),
-  }
-  return generateCreateTx({
+export async function writeDidfromPublicKeys(
+  signer: KeystoreSigner,
+  publicKeys: PublicKeyRoleAssignment,
+  endpointData?: EndpointData
+): Promise<{ submittable: SubmittableExtrinsic; did: string }> {
+  const { [KeyRelationship.authentication]: authenticationKey } = publicKeys
+  if (!authenticationKey)
+    throw Error(`${KeyRelationship.authentication} key is required`)
+  const didIdentifier = encodeAddress(authenticationKey.publicKey, 38)
+  const submittable = await generateCreateTx({
     signer,
     didIdentifier,
     keys: publicKeys,
-    alg: '',
-    signingPublicKey: '',
+    alg: authenticationKey.type,
+    signingPublicKey: authenticationKey.publicKey,
+    endpointData,
   })
+  return { submittable, did: getKiltDidFromIdentifier(didIdentifier) }
 }
 
-export function addDidfromIdentity(
+export function writeDidfromIdentity(
   identity: IIdentity
-): Promise<SubmittableExtrinsic> {
-  return addDidfromKeypair(identity.signKeyringPair, {
+): Promise<{ submittable: SubmittableExtrinsic; did: string }> {
+  const { signKeyringPair } = identity
+  const signer: KeystoreSigner = {
+    sign: ({ data }) =>
+      Promise.resolve({
+        data: signKeyringPair.sign(data),
+        alg: signKeyringPair.type as any,
+      }),
+  }
+  return writeDidfromPublicKeys(signer, {
+    [KeyRelationship.authentication]: signKeyringPair,
     [KeyRelationship.keyAgreement]: { ...identity.boxKeyPair, type: 'x25519' },
   })
 }
