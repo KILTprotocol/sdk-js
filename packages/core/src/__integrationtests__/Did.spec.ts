@@ -9,7 +9,7 @@
  * @group integration/did
  */
 
-import type { IIdentity, KeystoreSigner } from '@kiltprotocol/types'
+import type { KeystoreSigner } from '@kiltprotocol/types'
 import { Crypto, UUID } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
 import { DemoKeystore, DidChain, DidTypes, DidUtils } from '@kiltprotocol/did'
@@ -18,17 +18,18 @@ import {
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
 import { KeyRelationship } from '@kiltprotocol/types'
+import { KeyringPair } from '@polkadot/keyring/types'
 import { disconnect, init } from '../kilt'
 
 import { CType } from '../ctype'
-import { Identity } from '../identity'
+import { devAlice } from './utils'
 
-let alice: IIdentity
+let paymentAccount: KeyringPair
 const keystore = new DemoKeystore()
 
 beforeAll(async () => {
   await init({ address: 'ws://localhost:9944' })
-  alice = Identity.buildFromURI('//Alice')
+  paymentAccount = devAlice
 })
 
 describe('write and didDeleteTx', () => {
@@ -56,7 +57,7 @@ describe('write and didDeleteTx', () => {
     })
 
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx, alice, {
+      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     ).resolves.not.toThrow()
@@ -87,7 +88,7 @@ describe('write and didDeleteTx', () => {
     })
 
     await expect(
-      BlockchainUtils.signAndSubmitTx(submittable, alice, {
+      BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     ).resolves.not.toThrow()
@@ -116,7 +117,7 @@ it('creates and updates DID', async () => {
   })
 
   await expect(
-    BlockchainUtils.signAndSubmitTx(tx, alice, {
+    BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
     })
   ).resolves.not.toThrow()
@@ -148,7 +149,7 @@ it('creates and updates DID', async () => {
   })
 
   await expect(
-    BlockchainUtils.signAndSubmitTx(tx2, alice, {
+    BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
     })
   ).resolves.not.toThrow()
@@ -186,7 +187,7 @@ describe('DID authorization', () => {
       alg: key.type,
     })
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx, alice, {
+      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     ).resolves.not.toThrow()
@@ -199,7 +200,7 @@ describe('DID authorization', () => {
   }, 30_000)
 
   beforeEach(async () => {
-    lastTxIndex = await DidChain.queryLastNonce(
+    lastTxIndex = await DidChain.queryLastTxIndex(
       DidUtils.getKiltDidFromIdentifier(didIdentifier)
     )
   })
@@ -221,7 +222,7 @@ describe('DID authorization', () => {
       alg: key.type,
     })
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx, alice, {
+      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     ).resolves.not.toThrow()
@@ -255,7 +256,7 @@ describe('DID authorization', () => {
       alg: key.type,
     })
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx, alice, {
+      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     ).resolves.not.toThrow()
@@ -276,7 +277,7 @@ describe('DID authorization', () => {
     })
 
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx, alice, {
+      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     ).resolves.not.toThrow()
@@ -297,7 +298,7 @@ describe('DID authorization', () => {
       alg: key.type,
     })
     await expect(
-      BlockchainUtils.signAndSubmitTx(tx2, alice, {
+      BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
       })
     ).rejects.toThrow()

@@ -107,7 +107,7 @@ beforeAll(async () => {
 }, 30_000)
 
 beforeEach(async () => {
-  await Promise.all([attester, root, claimer].map((i) => i.refetchNonce()))
+  await Promise.all([attester, root, claimer].map((i) => i.refreshTxIndex()))
 })
 
 it('should be possible to delegate attestation rights', async () => {

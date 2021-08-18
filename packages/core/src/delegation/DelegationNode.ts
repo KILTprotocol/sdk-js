@@ -23,17 +23,18 @@
  * @preferred
  */
 
-import type {
+import {
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,
   IPublicIdentity,
+  KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { DidUtils } from '@kiltprotocol/did'
+import { DidTypes } from '@kiltprotocol/did'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { query as queryAttestation } from '../attestation/Attestation.chain'
 import {
@@ -274,14 +275,19 @@ export default class DelegationNode implements IDelegationNode {
   public async delegeeSign(
     delegeeDid: IDidDetails,
     signer: KeystoreSigner
-  ): Promise<string> {
-    return (
-      await DidUtils.authenticateWithDid(
-        this.generateHash(),
-        delegeeDid,
-        signer
+  ): Promise<DidTypes.SignatureEnum> {
+    const [key] = delegeeDid.getKeys(KeyRelationship.authentication)
+    if (!key) {
+      throw Error(
+        `failed to get ${KeyRelationship.authentication} key from DidDetails`
       )
-    ).signature
+    }
+    const { data: signature, alg } = await signer.sign({
+      publicKey: Crypto.coToUInt8(key.publicKeyHex),
+      alg: key.type,
+      data: Crypto.coToUInt8(this.generateHash()),
+    })
+    return { [alg]: signature }
   }
 
   /**
@@ -303,7 +309,9 @@ export default class DelegationNode implements IDelegationNode {
    * @param signature Signature of the delegate to ensure it is done under the delegate's permission.
    * @returns Promise containing an unsigned SubmittableExtrinsic.
    */
-  public async store(signature?: string): Promise<SubmittableExtrinsic> {
+  public async store(
+    signature?: DidTypes.SignatureEnum
+  ): Promise<SubmittableExtrinsic> {
     if (this.isRoot()) {
       return storeAsRoot(this)
       // eslint-disable-next-line no-else-return

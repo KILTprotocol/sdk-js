@@ -56,7 +56,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await Promise.all(
-    [attester, anotherAttester, claimer].map((i) => i.refetchNonce())
+    [attester, anotherAttester, claimer].map((i) => i.refreshTxIndex())
   )
 })
 

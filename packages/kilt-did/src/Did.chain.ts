@@ -152,7 +152,7 @@ export async function queryKey(
   return key
 }
 
-export async function queryLastNonce(did: string): Promise<bigint> {
+export async function queryLastTxIndex(did: string): Promise<bigint> {
   const encoded = await queryEncoded(getIdentifierFromKiltDid(did))
   if (encoded.isNone) return BigInt(0)
   return encoded.unwrap().lastTxCounter.toBigInt()

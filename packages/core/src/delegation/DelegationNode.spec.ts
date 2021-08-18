@@ -608,4 +608,23 @@ describe('DelegationHierarchy', () => {
     await expect(fetchedNodeRevocationStatus).resolves.not.toBeNull()
     await expect(fetchedNodeRevocationStatus).resolves.toEqual(true)
   })
+
+  // This test is matched with a unit test on the node side to assure uniform hash generation.
+  // Both must be updated in sync.
+  it('delegation node hash generation', () => {
+    const node = new DelegationNode({
+      id: '0xb97ebcbcf58e3d844f2187869806cb6d78266f673df1ef8a2e42d77b7e5e4d42',
+      parentId:
+        '0x2919b8674c0b73322741200dcd88e372fdc832c747ced8ea6325dd15c76f5bd1',
+      hierarchyId:
+        '0x46a733d2a51c1c8b0c99ab1966c9a958417da9bf2a995a8ac06f9008e7c4a733',
+      childrenIds: [],
+      revoked: false,
+      account: didAlice,
+      permissions: [Permission.ATTEST],
+    })
+    expect(node.generateHash()).toMatchInlineSnapshot(
+      `"0xa344dddae169b49af834d22e6f148e019a12bd7ed929978713faf38221ae8504"`
+    )
+  })
 })
