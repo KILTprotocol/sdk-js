@@ -19,6 +19,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
+import { getSignatureAlgForKeyType } from '../Did.utils'
 import { DidDetails, MapKeyToRelationship } from './DidDetails'
 import { PublicKeyRoleAssignment } from '../types'
 import { DidChain, DidUtils } from '..'
@@ -164,8 +165,40 @@ export async function writeNewDidFromDidDetails(
   return DidChain.generateCreateTx({
     signer,
     signingPublicKey: signingKey.publicKeyHex,
-    alg: signingKey.type,
+    alg: getSignatureAlgForKeyType(signingKey.type),
     didIdentifier: DidUtils.getIdentifierFromKiltDid(didDetails.did),
     keys,
   })
+}
+
+export async function signWithKey(
+  toSign: Uint8Array | string,
+  key: KeyDetails,
+  signer: KeystoreSigner
+): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
+  const alg = getSignatureAlgForKeyType(key.type)
+  const { data: signature } = await signer.sign({
+    publicKey: Crypto.coToUInt8(key.publicKeyHex),
+    alg,
+    data: Crypto.coToUInt8(toSign),
+  })
+  return { keyId: key.id, signature, alg }
+}
+
+export async function signWithDid(
+  toSign: Uint8Array | string,
+  did: IDidDetails,
+  signer: KeystoreSigner,
+  whichKey: KeyRelationship | KeyDetails['id']
+): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
+  let key: KeyDetails | undefined
+  if (Object.values(KeyRelationship).includes(whichKey as KeyRelationship)) {
+    ;[key] = did.getKeys(KeyRelationship.authentication)
+  } else {
+    key = did.getKey(whichKey)
+  }
+  if (!key) {
+    throw Error(`failed to find key on DidDetails (${did.did}): ${whichKey}`)
+  }
+  return signWithKey(toSign, key, signer)
 }

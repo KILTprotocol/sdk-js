@@ -200,7 +200,7 @@ describe('Claim', () => {
   it('tests created quote data against given data', async () => {
     expect(validQuoteData.attesterDid).toEqual(attesterIdentity.did)
     await expect(
-      DidUtils.authenticateWithDid(
+      DidUtils.getDidAuthenticationSignature(
         Crypto.hashObjectAsStr(validAttesterSignedQuote),
         claimerIdentity,
         keystore

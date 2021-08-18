@@ -911,9 +911,9 @@ __metadata:
   linkType: soft
 
 "@kiltprotocol/type-definitions@file:.yalc/@kiltprotocol/type-definitions::locator=%40kiltprotocol%2Fchain-helpers%40workspace%3Apackages%2Fchain-helpers":
-  version: 0.1.13-42c575f3
-  resolution: "@kiltprotocol/type-definitions@file:.yalc/@kiltprotocol/type-definitions#.yalc/@kiltprotocol/type-definitions::hash=5b9af9&locator=%40kiltprotocol%2Fchain-helpers%40workspace%3Apackages%2Fchain-helpers"
-  checksum: b69f6b4473fc6e87570ef86c591b3baf62d141e4de069ed7127663a3b2a9990f9023d8df14518fd5ca543dfc821d674ed3f3202d8cfe0b5d3413babf2ee7e955
+  version: 0.1.13-407c5131
+  resolution: "@kiltprotocol/type-definitions@file:.yalc/@kiltprotocol/type-definitions#.yalc/@kiltprotocol/type-definitions::hash=351eaf&locator=%40kiltprotocol%2Fchain-helpers%40workspace%3Apackages%2Fchain-helpers"
+  checksum: 9d8e07003b29f154d6045dacf9fe76e3098b02c89cbee53e4b509a959fd6859e295a16f2ebd94bb521a8f4b26cc9289562821d0bdd3c9d301c1dbab1fc47b251
   languageName: node
   linkType: hard
 

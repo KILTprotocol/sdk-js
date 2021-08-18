@@ -18,11 +18,10 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
-import type { Codec, Registry } from '@polkadot/types/types'
+import type { Registry } from '@polkadot/types/types'
 import { checkAddress, encodeAddress } from '@polkadot/util-crypto'
 import { DefaultResolver } from './DidResolver/DefaultResolver'
 import type {
-  DidSigned,
   PublicKeyEnum,
   UrlEnum,
   IDidCreationOptions,
@@ -36,19 +35,36 @@ import type {
   EndpointData,
 } from './types'
 import { generateCreateTx } from './Did.chain'
+import { signWithDid } from './DidDetails/utils'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 export const KILT_DID_REGEX = /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#.+)?$/
-export const CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES = [
-  'ed25519',
-  'sr25519',
-  'ecdsa',
-]
-export const CHAIN_SUPPORTED_ENCRYPTION_KEY_TYPES = ['x25519']
-export const CHAIN_SUPPORTED_KEY_TYPES = [
-  ...CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES,
+
+export enum CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES {
+  ed25519 = 'ed25519',
+  sr25519 = 'sr25519',
+  secp256k1 = 'secp256k1',
+}
+
+export enum CHAIN_SUPPORTED_ENCRYPTION_KEY_TYPES {
+  x25519 = 'x25519',
+}
+
+export const CHAIN_SUPPORTED_KEY_TYPES = {
   ...CHAIN_SUPPORTED_ENCRYPTION_KEY_TYPES,
-]
+  ...CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES,
+}
+export type CHAIN_SUPPORTED_KEY_TYPES = typeof CHAIN_SUPPORTED_KEY_TYPES
+
+const SignatureAlgForKeyType = {
+  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.ed25519]: 'ed25519',
+  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.sr25519]: 'sr25519',
+  [CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.secp256k1]: 'ecdsa-secp256k1',
+}
+
+export function getSignatureAlgForKeyType(keyType: string): string {
+  return SignatureAlgForKeyType[keyType] || keyType
+}
 
 export function getKiltDidFromIdentifier(identifier: string): string {
   if (identifier.startsWith(KILT_DID_PREFIX)) {
@@ -116,24 +132,14 @@ export function validateDidSignature(input: unknown): input is DidSignature {
   }
 }
 
-export function signCodec<PayloadType extends Codec>(
-  payload: PayloadType,
-  signer: { type: string; sign: (message: Uint8Array) => Uint8Array }
-): DidSigned<PayloadType> {
-  const signature = {
-    [signer.type]: signer.sign(payload.toU8a()),
-  }
-  return { payload, signature }
-}
-
 export function formatPublicKey(keypair: INewPublicKey): PublicKeyEnum {
   const { type, publicKey } = keypair
   return { [type]: publicKey }
 }
 
-export function isIKeyPair(keypair: unknown): keypair is INewPublicKey {
-  if (typeof keypair === 'object') {
-    const { publicKey, type } = keypair as any
+export function isINewPublicKey(key: unknown): key is INewPublicKey {
+  if (typeof key === 'object') {
+    const { publicKey, type } = key as INewPublicKey
     return publicKey instanceof Uint8Array && typeof type === 'string'
   }
   return false
@@ -205,13 +211,23 @@ export function encodeDidPublicKey(
   key: INewPublicKey
 ): DidPublicKey {
   let keyClass: string
-  if (CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES.includes(key.type)) {
+  if (
+    (Object.values(CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES) as string[]).includes(
+      key.type
+    )
+  ) {
     keyClass = 'PublicVerificationKey'
-  } else if (CHAIN_SUPPORTED_ENCRYPTION_KEY_TYPES.includes(key.type)) {
+  } else if (
+    (Object.values(CHAIN_SUPPORTED_ENCRYPTION_KEY_TYPES) as string[]).includes(
+      key.type
+    )
+  ) {
     keyClass = 'PublicEncryptionKey'
   } else {
     throw TypeError(
-      `Unsupported key type; types currently recognized are ${CHAIN_SUPPORTED_KEY_TYPES}`
+      `Unsupported key type; types currently recognized are ${Object.values(
+        CHAIN_SUPPORTED_KEY_TYPES
+      )}`
     )
   }
   return new (registry.getOrThrow<DidPublicKey>('DidPublicKey'))(registry, {
@@ -245,7 +261,11 @@ export function verifyDidSignature({
   const key = keyRelationship
     ? didDetails?.getKeys(keyRelationship).find((k) => k.id === keyId)
     : didDetails?.getKey(keyId)
-  if (!key || key.controller !== didDetails.did)
+  if (
+    !key ||
+    key.controller !== didDetails.did ||
+    !SignatureAlgForKeyType[key.type]
+  )
     return {
       verified: false,
       didDetails,
@@ -298,23 +318,18 @@ export async function verifyDidSignatureAsync({
   }
 }
 
-export async function authenticateWithDid(
+export async function getDidAuthenticationSignature(
   toSign: Uint8Array | string,
   did: IDidDetails,
   signer: KeystoreSigner
 ): Promise<DidSignature> {
-  const [key] = did.getKeys(KeyRelationship.authentication)
-  if (!key) {
-    throw Error(
-      `failed to get ${KeyRelationship.authentication} key from DidDetails`
-    )
-  }
-  const { data: signature } = await signer.sign({
-    publicKey: Crypto.coToUInt8(key.publicKeyHex),
-    alg: key.type,
-    data: Crypto.coToUInt8(toSign),
-  })
-  return { keyId: key.id, signature: Crypto.u8aToHex(signature) }
+  const { keyId, signature } = await signWithDid(
+    toSign,
+    did,
+    signer,
+    KeyRelationship.authentication
+  )
+  return { keyId, signature: Crypto.u8aToHex(signature) }
 }
 
 export async function writeDidfromPublicKeys(
@@ -330,7 +345,7 @@ export async function writeDidfromPublicKeys(
     signer,
     didIdentifier,
     keys: publicKeys,
-    alg: authenticationKey.type,
+    alg: getSignatureAlgForKeyType(authenticationKey.type),
     signingPublicKey: authenticationKey.publicKey,
     endpointData,
   })
@@ -345,7 +360,7 @@ export function writeDidfromIdentity(
     sign: ({ data }) =>
       Promise.resolve({
         data: signKeyringPair.sign(data),
-        alg: signKeyringPair.type as any,
+        alg: getSignatureAlgForKeyType(signKeyringPair.type) as any,
       }),
   }
   return writeDidfromPublicKeys(signer, {

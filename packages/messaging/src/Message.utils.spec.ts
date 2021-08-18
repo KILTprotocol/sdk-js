@@ -459,7 +459,7 @@ describe('Messaging Utilities', () => {
       },
       metaData: {},
       signatures: {
-        inviter: await DidUtils.authenticateWithDid(
+        inviter: await DidUtils.getDidAuthenticationSignature(
           'signature',
           identityAlice,
           keystore
@@ -491,12 +491,12 @@ describe('Messaging Utilities', () => {
         isPCR: false,
       },
       signatures: {
-        inviter: await DidUtils.authenticateWithDid(
+        inviter: await DidUtils.getDidAuthenticationSignature(
           'signature',
           identityAlice,
           keystore
         ),
-        invitee: await DidUtils.authenticateWithDid(
+        invitee: await DidUtils.getDidAuthenticationSignature(
           'signature',
           identityBob,
           keystore

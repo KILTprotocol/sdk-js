@@ -34,7 +34,7 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { DidTypes } from '@kiltprotocol/did'
+import { DidTypes, DidDetailsUtils } from '@kiltprotocol/did'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { query as queryAttestation } from '../attestation/Attestation.chain'
 import {
@@ -276,17 +276,12 @@ export default class DelegationNode implements IDelegationNode {
     delegeeDid: IDidDetails,
     signer: KeystoreSigner
   ): Promise<DidTypes.SignatureEnum> {
-    const [key] = delegeeDid.getKeys(KeyRelationship.authentication)
-    if (!key) {
-      throw Error(
-        `failed to get ${KeyRelationship.authentication} key from DidDetails`
-      )
-    }
-    const { data: signature, alg } = await signer.sign({
-      publicKey: Crypto.coToUInt8(key.publicKeyHex),
-      alg: key.type,
-      data: Crypto.coToUInt8(this.generateHash()),
-    })
+    const { alg, signature } = await DidDetailsUtils.signWithDid(
+      Crypto.coToUInt8(this.generateHash()),
+      delegeeDid,
+      signer,
+      KeyRelationship.authentication
+    )
     return { [alg]: signature }
   }
 

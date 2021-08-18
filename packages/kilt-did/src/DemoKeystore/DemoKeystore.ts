@@ -93,6 +93,31 @@ export class DemoKeystore
   private signingKeyring: Keyring = new Keyring()
   private encryptionKeypairs: Map<string, NaclKeypair> = new Map()
 
+  private getSigningKeyPair(publicKey: Uint8Array, alg: string): KeyringPair {
+    if (!signingSupported(alg))
+      throw new Error(`alg ${alg} is not supported for signing`)
+    const keyType = getKeypairTypeForAlg(alg)
+    try {
+      const keypair = this.signingKeyring.getPair(publicKey)
+      if (keypair && keyType === keypair.type) return keypair
+    } catch {
+      throw Error(`no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`)
+    }
+    throw Error(`no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`)
+  }
+
+  private getEncryptionKeyPair(
+    publicKey: Uint8Array,
+    alg: string
+  ): NaclKeypair {
+    if (!encryptionSupported(alg))
+      throw new Error(`alg ${alg} is not supported for encryption`)
+    const publicKeyHex = Crypto.u8aToHex(publicKey)
+    const keypair = this.encryptionKeypairs.get(publicKeyHex)
+    if (!keypair) throw Error(`no key ${publicKeyHex} for alg ${alg}`)
+    return keypair
+  }
+
   private async generateSigningKeypair<T extends SubstrateKeyTypes>(
     opts: KeyGenOpts<T>
   ): Promise<{
@@ -201,28 +226,9 @@ export class DemoKeystore
     alg,
     data,
   }: KeystoreSigningData<A>): Promise<ResponseData<A>> {
-    if (!signingSupported(alg))
-      throw new Error(`alg ${alg} is not supported for signing`)
-    const keyType = getKeypairTypeForAlg(alg)
-    const keypair = this.signingKeyring.getPair(publicKey)
-    if (!keypair || keyType !== keypair.type)
-      return Promise.reject(
-        new Error(`no key ${Crypto.u8aToHex(publicKey)} for alg ${alg}`)
-      )
+    const keypair = this.getSigningKeyPair(publicKey, alg)
     const signature = keypair.sign(data, { withType: false })
     return { alg, data: signature }
-  }
-
-  private getEncryptionKeyPair(
-    publicKey: Uint8Array,
-    alg: string
-  ): NaclKeypair {
-    if (!encryptionSupported(alg))
-      throw new Error(`alg ${alg} is not supported for encryption`)
-    const publicKeyHex = Crypto.u8aToHex(publicKey)
-    const keypair = this.encryptionKeypairs.get(publicKeyHex)
-    if (!keypair) throw Error(`no key ${publicKeyHex} for alg ${alg}`)
-    return keypair
   }
 
   public async encrypt<A extends EncryptionAlgorithms>({

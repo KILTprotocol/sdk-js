@@ -32,7 +32,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { DefaultResolver, DidUtils } from '@kiltprotocol/did'
+import { DefaultResolver, DidUtils, DidDetailsUtils } from '@kiltprotocol/did'
 import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
@@ -309,13 +309,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
     did: IDidDetails,
     challenge?: string
   ): Promise<this> {
-    const [key] = did.getKeys(KeyRelationship.authentication)
-    if (!key) {
-      throw Error(
-        `failed to get ${KeyRelationship.authentication} key from DidDetails`
-      )
-    }
-    return this.signWithKey(signer, key, challenge)
+    const { signature, keyId } = await DidDetailsUtils.signWithDid(
+      makeSigningData(this, challenge),
+      did,
+      signer,
+      KeyRelationship.authentication
+    )
+    return this.addSignature(signature, keyId, challenge)
   }
 
   public async signWithKey(
@@ -323,12 +323,12 @@ export default class RequestForAttestation implements IRequestForAttestation {
     key: KeyDetails,
     challenge?: string
   ): Promise<this> {
-    const { data } = await signer.sign({
-      data: makeSigningData(this, challenge),
-      alg: key.type,
-      publicKey: Crypto.coToUInt8(key.publicKeyHex),
-    })
-    return this.addSignature(data, key.id, challenge)
+    const { signature } = await DidDetailsUtils.signWithKey(
+      makeSigningData(this, challenge),
+      key,
+      signer
+    )
+    return this.addSignature(signature, key.id, challenge)
   }
 
   private static getHashLeaves(

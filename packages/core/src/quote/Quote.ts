@@ -106,7 +106,7 @@ export async function createAttesterSignature(
   attesterIdentity: IDidDetails,
   signer: KeystoreSigner
 ): Promise<IQuoteAttesterSigned> {
-  const signature = await DidUtils.authenticateWithDid(
+  const signature = await DidUtils.getDidAuthenticationSignature(
     Crypto.hashObjectAsStr(quoteInput),
     attesterIdentity,
     signer
@@ -170,7 +170,7 @@ export async function createQuoteAgreement(
     keyRelationship: KeyRelationship.authentication,
   })
 
-  const signature = await DidUtils.authenticateWithDid(
+  const signature = await DidUtils.getDidAuthenticationSignature(
     Crypto.hashObjectAsStr(attesterSignedQuote),
     claimerIdentity,
     signer

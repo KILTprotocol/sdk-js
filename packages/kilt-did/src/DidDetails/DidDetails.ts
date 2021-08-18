@@ -20,7 +20,7 @@ import { KeyRelationship } from '@kiltprotocol/types'
 
 import { generateDidAuthenticatedTx, queryLastTxIndex } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './utils'
-import { getIdentifierFromDid } from '../Did.utils'
+import { getIdentifierFromDid, getSignatureAlgForKeyType } from '../Did.utils'
 
 export type MapKeyToRelationship = Partial<
   Record<KeyRelationship, Array<KeyDetails['id']>>
@@ -173,7 +173,7 @@ export class DidDetails implements IDidDetails {
     return generateDidAuthenticatedTx({
       didIdentifier: this.identifier,
       signingPublicKey: signingKey.publicKeyHex,
-      alg: signingKey.type,
+      alg: getSignatureAlgForKeyType(signingKey.type),
       signer,
       call: extrinsic,
       txCounter: this.getNextTxIndex(incrementTxIndex),
