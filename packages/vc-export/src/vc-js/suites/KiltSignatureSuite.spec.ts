@@ -12,9 +12,9 @@
 import jsigs, { DocumentLoader, purposes } from 'jsonld-signatures'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'
-import { Identity } from '@kiltprotocol/core'
 import { DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
+import { randomAsHex } from '@polkadot/util-crypto'
 import Suite from './KiltSignatureSuite'
 import credential from '../examples/example-vc.json'
 import kiltDocumentLoader from '../documentLoader'
@@ -126,7 +126,7 @@ describe('jsigs', () => {
     it('detects signer mismatch', async () => {
       const verificationMethod = {
         ...(proof.verificationMethod as IPublicKeyRecord),
-        publicKeyHex: Identity.buildFromMnemonic('').signPublicKeyAsHex,
+        publicKeyHex: randomAsHex(32),
       }
       tamperCred.proof = [{ ...proof, verificationMethod }]
       await expect(
@@ -174,7 +174,7 @@ describe('vc-js', () => {
     it('detects signer mismatch', async () => {
       const verificationMethod = {
         ...(proof.verificationMethod as IPublicKeyRecord),
-        publicKeyHex: Identity.buildFromMnemonic('').signPublicKeyAsHex,
+        publicKeyHex: randomAsHex(32),
       }
       tamperCred.proof = [{ ...proof, verificationMethod }]
       await expect(

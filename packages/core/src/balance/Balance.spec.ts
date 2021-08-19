@@ -9,7 +9,7 @@
  * @group unit/balance
  */
 
-import { SubmittableResult } from '@polkadot/api'
+import { Keyring, SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
 import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import BN from 'bn.js/'
@@ -19,7 +19,7 @@ import {
 } from '@kiltprotocol/chain-helpers'
 
 import type { Balances } from '@kiltprotocol/types'
-import Identity from '../identity/Identity'
+import { KeyringPair } from '@polkadot/keyring/types'
 import {
   getBalances,
   listenToBalanceChanges,
@@ -37,8 +37,9 @@ const FEE = 30
 
 describe('Balance', () => {
   Kilt.config({ address: 'ws://testSting' })
-  let alice: Identity
-  let bob: Identity
+  const keyring = new Keyring({ type: 'sr25519', ss58Format: 38 })
+  let alice: KeyringPair
+  let bob: KeyringPair
   const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
     .__mocked_api
 
@@ -65,8 +66,8 @@ describe('Balance', () => {
     }
   )
   beforeAll(async () => {
-    alice = Identity.buildFromURI('//Alice')
-    bob = Identity.buildFromURI('//Bob')
+    alice = keyring.addFromUri('//Alice')
+    bob = keyring.addFromUri('//Bob')
   })
   it('should listen to balance changes', async (done) => {
     const listener = (
