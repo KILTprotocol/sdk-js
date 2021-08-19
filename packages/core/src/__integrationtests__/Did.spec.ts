@@ -12,7 +12,13 @@
 import type { KeystoreSigner } from '@kiltprotocol/types'
 import { Crypto, UUID } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
-import { DemoKeystore, DidChain, DidTypes, DidUtils } from '@kiltprotocol/did'
+import {
+  DemoKeystore,
+  DidChain,
+  DidTypes,
+  DidUtils,
+  SigningAlgorithms,
+} from '@kiltprotocol/did'
 import {
   BlockchainUtils,
   BlockchainApiConnection,
@@ -37,7 +43,7 @@ describe('write and didDeleteTx', () => {
   let key: DidTypes.INewPublicKey
   beforeAll(async () => {
     const { publicKey, alg } = await keystore.generateKeypair({
-      alg: 'ed25519',
+      alg: SigningAlgorithms.Ed25519,
     })
     didIdentifier = encodeAddress(publicKey)
     key = { publicKey, type: alg }
@@ -99,7 +105,7 @@ describe('write and didDeleteTx', () => {
 
 it('creates and updates DID', async () => {
   const { publicKey, alg } = await keystore.generateKeypair({
-    alg: 'ed25519',
+    alg: SigningAlgorithms.Ed25519,
   })
   const didIdentifier = encodeAddress(publicKey)
   const key: DidTypes.INewPublicKey = { publicKey, type: alg }
@@ -172,7 +178,7 @@ describe('DID authorization', () => {
   let lastTxIndex = BigInt(0)
   beforeAll(async () => {
     const { publicKey, alg } = await keystore.generateKeypair({
-      alg: 'ed25519',
+      alg: SigningAlgorithms.Ed25519,
     })
     didIdentifier = encodeAddress(publicKey)
     key = { publicKey, type: alg }

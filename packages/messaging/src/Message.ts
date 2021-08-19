@@ -28,10 +28,11 @@ import type {
   IDidResolver,
   IEncryptedMessageContents,
   KeyDetails,
+  NaclBoxCapable,
 } from '@kiltprotocol/types'
 import { MessageBodyType } from '@kiltprotocol/types'
 import { SDKErrors, UUID } from '@kiltprotocol/utils'
-import { DefaultResolver, DemoKeystore } from '@kiltprotocol/did'
+import { DefaultResolver } from '@kiltprotocol/did'
 import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
@@ -107,7 +108,7 @@ export default class Message implements IMessage {
    */
   public static async decrypt(
     encrypted: IEncryptedMessage,
-    keystore: { decrypt: DemoKeystore['decrypt'] }, // TODO: use proper interface
+    keystore: Pick<NaclBoxCapable, 'decrypt'>,
     {
       senderDetails,
       receiverDetails,
@@ -244,7 +245,7 @@ export default class Message implements IMessage {
   public async encrypt(
     senderKey: KeyDetails,
     receiverKey: KeyDetails,
-    keystore: { encrypt: DemoKeystore['encrypt'] } // TODO: use proper interface
+    keystore: Pick<NaclBoxCapable, 'encrypt'>
   ): Promise<IEncryptedMessage> {
     if (this.receiver !== receiverKey.controller) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH(

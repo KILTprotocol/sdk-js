@@ -50,3 +50,18 @@ export interface KeystoreSigningOptions<A extends string = string> {
   signingPublicKey: string | Uint8Array
   alg: A
 }
+
+export interface NaclBoxCapable
+  extends Keystore<any, 'x25519-xsalsa20-poly1305'> {
+  encrypt<A extends 'x25519-xsalsa20-poly1305'>(
+    requestData: RequestData<A> & {
+      peerPublicKey: Uint8Array
+    }
+  ): Promise<ResponseData<A> & { nonce: Uint8Array }>
+  decrypt<A extends 'x25519-xsalsa20-poly1305'>(
+    requestData: RequestData<A> & {
+      peerPublicKey: Uint8Array
+      nonce: Uint8Array
+    }
+  ): Promise<ResponseData<A>>
+}

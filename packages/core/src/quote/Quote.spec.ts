@@ -28,6 +28,7 @@ import {
   DemoKeystore,
   DidUtils,
   createLocalDemoDidFromSeed,
+  SigningAlgorithms,
 } from '@kiltprotocol/did'
 import CType from '../ctype/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
@@ -62,12 +63,12 @@ describe('Claim', () => {
     claimerIdentity = await createLocalDemoDidFromSeed(
       keystore,
       '//Alice',
-      'ed25519'
+      SigningAlgorithms.Ed25519
     )
     attesterIdentity = await createLocalDemoDidFromSeed(
       keystore,
       '//Bob',
-      'ed25519'
+      SigningAlgorithms.Ed25519
     )
 
     invalidCost = ({

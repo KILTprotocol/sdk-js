@@ -22,6 +22,7 @@ import {
   KeyRelationship,
   Keystore,
   KeystoreSigningData,
+  NaclBoxCapable,
   RequestData,
   ResponseData,
 } from '@kiltprotocol/types'
@@ -34,32 +35,24 @@ import { DidDetails, DidDetailsUtils } from '../DidDetails'
 import { DefaultResolver, DidUtils } from '..'
 import { PublicKeyRoleAssignment } from '../types'
 
-export type SubstrateKeyTypes = Keyring['type']
-export type EncryptionAlgorithms = 'x25519-xsalsa20-poly1305'
+export enum SigningAlgorithms {
+  Ed25519 = 'ed25519',
+  Sr25519 = 'sr25519',
+  EcdsaSecp256k1 = 'ecdsa-secp256k1',
+}
 
-const encryptionSupport = new Set<EncryptionAlgorithms>([
-  'x25519-xsalsa20-poly1305',
-])
-const signingSupport = new Set<SubstrateKeyTypes>([
-  'ed25519',
-  'sr25519',
-  'ecdsa',
-  'ethereum',
-])
+export enum EncryptionAlgorithms {
+  NaclBox = 'x25519-xsalsa20-poly1305',
+}
 
-const supportedAlgs = new Set([...signingSupport, ...encryptionSupport])
+const supportedAlgs = { ...EncryptionAlgorithms, ...SigningAlgorithms }
 
-function signingSupported(alg: string): alg is SubstrateKeyTypes {
-  return signingSupport.has(alg as SubstrateKeyTypes)
+function signingSupported(alg: string): alg is SigningAlgorithms {
+  return Object.values(SigningAlgorithms).some((i) => i === alg)
 }
 function encryptionSupported(alg: string): alg is EncryptionAlgorithms {
-  return encryptionSupport.has(alg as EncryptionAlgorithms)
+  return Object.values(EncryptionAlgorithms).some((i) => i === alg)
 }
-// function isSupported(
-//   alg: string
-// ): alg is SubstrateKeyTypes | EncryptionAlgorithms {
-//   return encryptionSupport.has(alg as EncryptionAlgorithms)
-// }
 
 export interface KeyGenOpts<T extends string> {
   alg: RequestData<T>['alg']
@@ -89,7 +82,7 @@ function getKeypairTypeForAlg(alg: string): KeypairType {
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!
  */
 export class DemoKeystore
-  implements Keystore<SubstrateKeyTypes, EncryptionAlgorithms> {
+  implements Keystore<SigningAlgorithms, EncryptionAlgorithms>, NaclBoxCapable {
   private signingKeyring: Keyring = new Keyring()
   private encryptionKeypairs: Map<string, NaclKeypair> = new Map()
 
@@ -118,7 +111,7 @@ export class DemoKeystore
     return keypair
   }
 
-  private async generateSigningKeypair<T extends SubstrateKeyTypes>(
+  private async generateSigningKeypair<T extends SigningAlgorithms>(
     opts: KeyGenOpts<T>
   ): Promise<{
     publicKey: Uint8Array
@@ -151,7 +144,7 @@ export class DemoKeystore
   }
 
   public async generateKeypair<
-    T extends SubstrateKeyTypes | EncryptionAlgorithms
+    T extends SigningAlgorithms | EncryptionAlgorithms
   >({
     alg,
     seed,
@@ -168,7 +161,7 @@ export class DemoKeystore
     throw new Error(`alg ${alg} is not supported`)
   }
 
-  private async addSigningKeypair<T extends SubstrateKeyTypes>({
+  private async addSigningKeypair<T extends SigningAlgorithms>({
     alg,
     publicKey,
     secretKey,
@@ -204,7 +197,7 @@ export class DemoKeystore
     return { alg, publicKey }
   }
 
-  public async addKeypair<T extends SubstrateKeyTypes | EncryptionAlgorithms>({
+  public async addKeypair<T extends SigningAlgorithms | EncryptionAlgorithms>({
     alg,
     publicKey,
     secretKey,
@@ -221,7 +214,7 @@ export class DemoKeystore
     throw new Error(`alg ${alg} is not supported`)
   }
 
-  public async sign<A extends SubstrateKeyTypes>({
+  public async sign<A extends SigningAlgorithms>({
     publicKey,
     alg,
     data,
@@ -231,7 +224,7 @@ export class DemoKeystore
     return { alg, data: signature }
   }
 
-  public async encrypt<A extends EncryptionAlgorithms>({
+  public async encrypt<A extends 'x25519-xsalsa20-poly1305'>({
     data,
     alg,
     publicKey,
@@ -244,7 +237,7 @@ export class DemoKeystore
     return { data: sealed, alg, nonce }
   }
 
-  public async decrypt<A extends EncryptionAlgorithms>({
+  public async decrypt<A extends 'x25519-xsalsa20-poly1305'>({
     publicKey,
     alg,
     data,
@@ -263,9 +256,9 @@ export class DemoKeystore
 
   // eslint-disable-next-line class-methods-use-this
   public async supportedAlgs(): Promise<
-    Set<SubstrateKeyTypes | EncryptionAlgorithms>
+    Set<SigningAlgorithms | EncryptionAlgorithms>
   > {
-    return supportedAlgs
+    return new Set(Object.values(supportedAlgs))
   }
 
   public async getKeys(): Promise<Uint8Array[]> {
@@ -291,7 +284,7 @@ export class DemoKeystore
 export async function createLocalDemoDidFromSeed(
   keystore: DemoKeystore,
   mnemonicOrHexSeed: string,
-  signingKeyType = 'ed25519'
+  signingKeyType = SigningAlgorithms.Ed25519
 ): Promise<DidDetails> {
   const did = getKiltDidFromIdentifier(
     encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38)
@@ -336,7 +329,7 @@ export async function createLocalDemoDidFromSeed(
     ),
     [KeyRelationship.keyAgreement]: await generateKeypairForDid(
       'keyAgreement',
-      'x25519-xsalsa20-poly1305',
+      EncryptionAlgorithms.NaclBox,
       'x25519'
     ),
   })
@@ -346,7 +339,7 @@ export async function createOnChainDidFromSeed(
   paymentAccount: KeyringPair,
   keystore: DemoKeystore,
   mnemonicOrHexSeed: string,
-  signingKeyType: SubstrateKeyTypes = 'ed25519'
+  signingKeyType = SigningAlgorithms.Ed25519
 ): Promise<DidDetails> {
   const makeKey = (seed: string, alg: string) =>
     keystore
@@ -371,7 +364,7 @@ export async function createOnChainDidFromSeed(
     ),
     [KeyRelationship.keyAgreement]: await makeKey(
       `${mnemonicOrHexSeed}//keyAgreement`,
-      'x25519-xsalsa20-poly1305'
+      EncryptionAlgorithms.NaclBox
     ),
   }
 
