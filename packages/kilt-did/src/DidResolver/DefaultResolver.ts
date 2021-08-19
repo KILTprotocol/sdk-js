@@ -5,21 +5,21 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { IDidResolver, ResolverOpts } from '@kiltprotocol/types'
+import type {
+  IDidResolver,
+  KeyDetails,
+  ResolverOpts,
+  ServiceDetails,
+} from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { DidDetails, DidDetailsCreationOpts } from '../DidDetails/DidDetails'
-import { queryById } from '../Did.chain'
+import { queryById, queryKey } from '../Did.chain'
 import { getKiltDidFromIdentifier, parseDidUrl } from '../Did.utils'
 
-/**
- * This is only a dummy; we don't know yet how the extra service data will be secured (signature over data?).
- */
-
-export async function resolve({
-  did,
-  servicesResolver,
-}: ResolverOpts): Promise<DidDetails | null> {
-  const { identifier } = parseDidUrl(did)
+async function detailsFromIdentifier(
+  identifier: string,
+  { servicesResolver }: ResolverOpts
+): Promise<DidDetails | null> {
   const didRec = await queryById(identifier)
   if (!didRec) return null
   const {
@@ -57,4 +57,29 @@ export async function resolve({
   return new DidDetails(didDetails)
 }
 
-export const DefaultResolver: IDidResolver = { resolve }
+export async function resolveKey(didUri: string): Promise<KeyDetails | null> {
+  const { did, fragment } = parseDidUrl(didUri)
+  return queryKey(did, fragment)
+}
+
+export async function resolveDoc(
+  did: string,
+  opts: ResolverOpts = {}
+): Promise<DidDetails | null> {
+  const { identifier } = parseDidUrl(did)
+  return detailsFromIdentifier(identifier, opts)
+}
+
+export async function resolve(
+  didUri: string,
+  opts: ResolverOpts = {}
+): Promise<DidDetails | KeyDetails | ServiceDetails | null> {
+  const { fragment, identifier } = parseDidUrl(didUri)
+  const details = await detailsFromIdentifier(identifier, opts)
+  if (!fragment || !details) {
+    return details
+  }
+  return details?.getKey(didUri) || details?.getService(didUri) || null
+}
+
+export const DefaultResolver: IDidResolver = { resolveDoc, resolveKey, resolve }

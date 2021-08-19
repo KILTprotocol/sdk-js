@@ -269,13 +269,13 @@ describe('create presentation', () => {
     expect(cred).toBeDefined()
   })
 
-  it('should create AttestedClaim and exclude specific attributes', async () => {
+  it('should create presentation and exclude specific attributes', async () => {
     const mockResolver: IDidResolver = {
-      resolve: async ({ did }) => {
+      resolveDoc: async (did: string) => {
         if (did.startsWith(claimer.did)) return claimer
         return null
       },
-    }
+    } as IDidResolver
     ;(query as jest.Mock).mockResolvedValue(attestation)
 
     const cred = AttestedClaim.fromRequestAndAttestation(reqForAtt, attestation)

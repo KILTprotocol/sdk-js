@@ -299,8 +299,7 @@ export async function verifyDidSignatureAsync({
       throw new Error(
         'Either the claimer DidDetails or a DID resolver is required for verification'
       )
-    const { did } = parseDidUrl(keyId)
-    didOrNot = await resolver.resolve({ did })
+    didOrNot = await resolver.resolveDoc(keyId)
   } else {
     didOrNot = didDetails
   }

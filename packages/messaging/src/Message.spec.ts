@@ -39,16 +39,26 @@ describe('Messaging', () => {
     keystore = new DemoKeystore()
     identityAlice = await createLocalDemoDidFromSeed(keystore, '//Alice')
     identityBob = await createLocalDemoDidFromSeed(keystore, '//Bob')
+
+    const resolveDoc = async (did: string) => {
+      if (did.startsWith(identityAlice.did)) {
+        return identityAlice
+      }
+      if (did.startsWith(identityBob.did)) {
+        return identityBob
+      }
+      return null
+    }
+    const resolveKey = async (did: string) => {
+      const details = await resolveDoc(did)
+      return details?.getKey(did) || null
+    }
     mockResolver = {
-      resolve: async ({ did }) => {
-        if (did.startsWith(identityAlice.did)) {
-          return identityAlice
-        }
-        if (did.startsWith(identityBob.did)) {
-          return identityBob
-        }
-        return null
+      resolve: async (did) => {
+        return (await resolveKey(did)) || resolveDoc(did)
       },
+      resolveKey,
+      resolveDoc,
     }
   })
 

@@ -58,14 +58,14 @@ const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 const did = `did:kilt:${identifier}`
 
 it('resolves stuff', async () => {
-  await expect(DefaultResolver.resolve({ did })).resolves.toMatchObject({
+  await expect(DefaultResolver.resolveDoc(did)).resolves.toMatchObject({
     did,
     identifier,
   })
 })
 
 it('has the right keys', async () => {
-  const didRecord = await DefaultResolver.resolve({ did })
+  const didRecord = await DefaultResolver.resolveDoc(did)
   expect(didRecord?.getKeyIds()).toStrictEqual([`${did}#auth`, `${did}#x25519`])
   expect(didRecord?.getKeyIds(KeyRelationship.authentication)).toStrictEqual([
     `${did}#auth`,
@@ -90,14 +90,13 @@ it('adds services when service resolver is present', async () => {
   const servicesResolver: ServicesResolver = jest.fn(async () => [service])
 
   await expect(
-    DefaultResolver.resolve({ did }).then((didDetails) =>
+    DefaultResolver.resolveDoc(did).then((didDetails) =>
       didDetails?.getServices('DidComm messaging')
     )
   ).resolves.toMatchObject([])
 
   await expect(
-    DefaultResolver.resolve({
-      did,
+    DefaultResolver.resolveDoc(did, {
       servicesResolver,
     }).then((didDetails) => didDetails?.getServices('DidComm messaging'))
   ).resolves.toMatchObject([service])

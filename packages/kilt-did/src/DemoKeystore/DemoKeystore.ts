@@ -376,7 +376,7 @@ export async function createOnChainDidFromSeed(
     reSign: true,
     resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
-  const queried = await DefaultResolver.resolve({ did })
+  const queried = await DefaultResolver.resolveDoc(did)
   if (queried) {
     return queried as DidDetails
   }

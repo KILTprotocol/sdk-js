@@ -130,9 +130,8 @@ export default class Message implements IMessage {
     // if we don't have the sender DID & receiver details already, fetch it via resolver
     const resolveKey = async (keyId: string, didDetails?: IDidDetails) => {
       // check if key is currently associated with DID
-      const keyDetails = (
-        didDetails || (await resolver.resolve({ did: keyId }))
-      )?.getKey(keyId)
+      const keyDetails =
+        didDetails?.getKey(keyId) || (await resolver.resolveKey(keyId))
       if (!keyDetails) {
         throw Error(`key with id ${keyId} cannot be resolved`) // TODO: improve error
       }
