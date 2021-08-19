@@ -14,7 +14,7 @@ import type { Option } from '@polkadot/types'
 import type {
   IIdentity,
   SubmittableExtrinsic,
-  KeyDetails,
+  IDidKeyDetails,
   KeystoreSigningOptions,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
@@ -60,7 +60,7 @@ function decodeDidPublicKeyDetails(
   did: string,
   keyId: Hash,
   keyDetails: DidPublicKeyDetails
-): KeyDetails {
+): IDidKeyDetails {
   const key = keyDetails.key.value
   return {
     id: assembleKeyId(keyId, did),
@@ -76,7 +76,7 @@ function decodeEndpointUrl(url: Url): string {
 }
 
 function decodeDidRecord(didDetail: DidRecord, did: string) {
-  const publicKeys: KeyDetails[] = Array.from(
+  const publicKeys: IDidKeyDetails[] = Array.from(
     didDetail.publicKeys.entries()
   ).map(([keyId, keyDetails]) => {
     return decodeDidPublicKeyDetails(did, keyId, keyDetails)
@@ -140,11 +140,11 @@ export async function queryByDID(
 export async function queryKey(
   did: string,
   keyId: string
-): Promise<KeyDetails | null> {
+): Promise<IDidKeyDetails | null> {
   const encoded = await queryEncoded(getIdentifierFromKiltDid(did))
   if (encoded.isNone) return null
   const keyIdU8a = Crypto.coToUInt8(keyId)
-  let key: KeyDetails | null = null
+  let key: IDidKeyDetails | null = null
   encoded.unwrap().publicKeys.forEach((keyDetails, id) => {
     if (id.eq(keyIdU8a)) {
       key = decodeDidPublicKeyDetails(did, id, keyDetails)

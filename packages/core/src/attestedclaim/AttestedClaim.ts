@@ -24,7 +24,7 @@ import type {
   IDidDetails,
   IDidResolver,
   KeystoreSigner,
-  KeyDetails,
+  IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { DefaultResolver } from '@kiltprotocol/did'
@@ -232,7 +232,7 @@ export default class AttestedClaim implements IAttestedClaim {
     claimerDid,
   }: {
     signer: KeystoreSigner
-    claimerSigningKey?: KeyDetails
+    claimerSigningKey?: IDidKeyDetails
     claimerDid?: IDidDetails
     challenge?: string
     selectedAttributes?: string[]

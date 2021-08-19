@@ -24,7 +24,7 @@ import type {
   IDelegationNode,
   IClaim,
   IAttestedClaim,
-  KeyDetails,
+  IDidKeyDetails,
   KeystoreSigner,
   IDidDetails,
   IDidResolver,
@@ -320,7 +320,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
   public async signWithKey(
     signer: KeystoreSigner<string>,
-    key: KeyDetails,
+    key: IDidKeyDetails,
     challenge?: string
   ): Promise<this> {
     const { signature } = await DidDetailsUtils.signWithKey(

@@ -25,7 +25,7 @@ export type EncryptionKeyRelationship = KeyRelationship.keyAgreement
 
 export type CallMeta = { section: string; method: string }
 
-export interface KeyDetails<T extends string = string> {
+export interface IDidKeyDetails<T extends string = string> {
   id: string
   type: T
   controller: IDidDetails['did']
@@ -42,9 +42,11 @@ export interface ServiceDetails {
 
 export interface IDidDetails {
   did: string
-  getKey(id: KeyDetails['id']): KeyDetails | undefined
-  getKeyIds(relationship?: KeyRelationship | 'none'): Array<KeyDetails['id']>
-  getKeys(relationship?: KeyRelationship | 'none'): KeyDetails[]
+  getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined
+  getKeyIds(
+    relationship?: KeyRelationship | 'none'
+  ): Array<IDidKeyDetails['id']>
+  getKeys(relationship?: KeyRelationship | 'none'): IDidKeyDetails[]
   getServices(type?: string): ServiceDetails[]
   getNextTxIndex(): BN
 }

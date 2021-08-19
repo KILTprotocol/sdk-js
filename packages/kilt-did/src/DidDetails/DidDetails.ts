@@ -8,7 +8,7 @@
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type {
-  KeyDetails,
+  IDidKeyDetails,
   KeystoreSigner,
   SubmittableExtrinsic,
   ApiOrMetadata,
@@ -24,12 +24,12 @@ import { getKeysForCall, getKeysForExtrinsic } from './utils'
 import { getIdentifierFromDid, getSignatureAlgForKeyType } from '../Did.utils'
 
 export type MapKeyToRelationship = Partial<
-  Record<KeyRelationship, Array<KeyDetails['id']>>
+  Record<KeyRelationship, Array<IDidKeyDetails['id']>>
 >
 
 export interface DidDetailsCreationOpts {
   did: string
-  keys: KeyDetails[]
+  keys: IDidKeyDetails[]
   keyRelationships: MapKeyToRelationship
   lastTxIndex: BN
   services?: ServiceDetails[]
@@ -72,9 +72,9 @@ export class DidDetails implements IDidDetails {
   public readonly did: string
   public readonly identifier: string
   protected services: ServiceDetails[]
-  protected keys: Map<KeyDetails['id'], KeyDetails>
+  protected keys: Map<IDidKeyDetails['id'], IDidKeyDetails>
   protected keyRelationships: MapKeyToRelationship & {
-    none?: Array<KeyDetails['id']>
+    none?: Array<IDidKeyDetails['id']>
   }
 
   private lastTxIndex: BN
@@ -111,7 +111,7 @@ export class DidDetails implements IDidDetails {
     })
   }
 
-  public getKey(id: KeyDetails['id']): KeyDetails | undefined {
+  public getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined {
     return this.keys.get(id)
   }
 
@@ -119,7 +119,7 @@ export class DidDetails implements IDidDetails {
     return this.services.find((s) => s.id === id)
   }
 
-  public getKeys(relationship?: KeyRelationship | 'none'): KeyDetails[] {
+  public getKeys(relationship?: KeyRelationship | 'none'): IDidKeyDetails[] {
     if (relationship) {
       return this.getKeyIds(relationship).map((id) => this.getKey(id)!)
     }
@@ -128,7 +128,7 @@ export class DidDetails implements IDidDetails {
 
   public getKeyIds(
     relationship?: KeyRelationship | 'none'
-  ): Array<KeyDetails['id']> {
+  ): Array<IDidKeyDetails['id']> {
     if (relationship) {
       return this.keyRelationships[relationship] || []
     }
@@ -148,14 +148,14 @@ export class DidDetails implements IDidDetails {
     return nextIndex
   }
 
-  public getKeysForCall(call: CallMeta): KeyDetails[] {
+  public getKeysForCall(call: CallMeta): IDidKeyDetails[] {
     return getKeysForCall(this, call)
   }
 
   public getKeysForExtrinsic(
     apiOrMetadata: ApiOrMetadata,
     extrinsic: Extrinsic
-  ): KeyDetails[] {
+  ): IDidKeyDetails[] {
     return getKeysForExtrinsic(apiOrMetadata, this, extrinsic)
   }
 

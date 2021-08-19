@@ -7,7 +7,7 @@
 
 import type {
   IIdentity,
-  KeyDetails,
+  IDidKeyDetails,
   KeyRelationship,
 } from '@kiltprotocol/types'
 import type { AnyNumber } from '@polkadot/types/types'
@@ -48,11 +48,11 @@ export interface IEndpointData {
 
 export interface IDidRecord {
   did: IIdentity['address']
-  authenticationKey: KeyDetails['id']
-  keyAgreementKeys: Array<KeyDetails['id']>
-  capabilityDelegationKey?: KeyDetails['id']
-  assertionMethodKey?: KeyDetails['id']
-  publicKeys: KeyDetails[]
+  authenticationKey: IDidKeyDetails['id']
+  keyAgreementKeys: Array<IDidKeyDetails['id']>
+  capabilityDelegationKey?: IDidKeyDetails['id']
+  assertionMethodKey?: IDidKeyDetails['id']
+  publicKeys: IDidKeyDetails[]
   endpointData?: IEndpointData
   lastTxCounter: u64
 }

@@ -27,7 +27,7 @@ import type {
   IDidDetails,
   IDidResolver,
   IEncryptedMessageContents,
-  KeyDetails,
+  IDidKeyDetails,
   NaclBoxCapable,
 } from '@kiltprotocol/types'
 import { MessageBodyType } from '@kiltprotocol/types'
@@ -242,8 +242,8 @@ export default class Message implements IMessage {
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
   public async encrypt(
-    senderKey: KeyDetails,
-    receiverKey: KeyDetails,
+    senderKey: IDidKeyDetails,
+    receiverKey: IDidKeyDetails,
     keystore: Pick<NaclBoxCapable, 'encrypt'>
   ): Promise<IEncryptedMessage> {
     if (this.receiver !== receiverKey.controller) {

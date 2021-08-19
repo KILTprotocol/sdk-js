@@ -11,7 +11,7 @@
  */
 
 import type { AnyJson } from '@polkadot/types/types'
-import type { DidSignature, IDidDetails, KeyDetails } from './DidDetails'
+import type { DidSignature, IDidDetails, IDidKeyDetails } from './DidDetails'
 import type { CompressedAttestation, IAttestation } from './Attestation'
 import type { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'
 import type {
@@ -84,8 +84,8 @@ export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
  * - `senderKeyId` - The identifier of a DID-associated private key with which to which to encrypt.
  */
 export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
-  receiverKeyId: KeyDetails['id']
-  senderKeyId: KeyDetails['id']
+  receiverKeyId: IDidKeyDetails['id']
+  senderKeyId: IDidKeyDetails['id']
   ciphertext: string
   nonce: string
 }

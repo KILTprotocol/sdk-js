@@ -12,7 +12,7 @@ import type {
   ApiOrMetadata,
   CallMeta,
   IDidDetails,
-  KeyDetails,
+  IDidKeyDetails,
   KeystoreSigner,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
@@ -86,7 +86,7 @@ export function mapExtrinsicToKeyRelationship(
 export function getKeysForCall(
   didDetails: IDidDetails,
   call: CallMeta
-): KeyDetails[] {
+): IDidKeyDetails[] {
   const keyRelationship = mapCallToKeyRelationship(call)
   if (keyRelationship === 'paymentAccount') return []
   return didDetails.getKeys(keyRelationship)
@@ -96,7 +96,7 @@ export function getKeysForExtrinsic(
   apiOrMetadata: ApiOrMetadata,
   didDetails: IDidDetails,
   extrinsic: Extrinsic
-): KeyDetails[] {
+): IDidKeyDetails[] {
   const callMeta = extrinsicToCallMeta(apiOrMetadata, extrinsic)
   return getKeysForCall(didDetails, callMeta)
 }
@@ -104,7 +104,7 @@ export function getKeysForExtrinsic(
 export function getKeyIdsForCall(
   didDetails: IDidDetails,
   call: CallMeta
-): Array<KeyDetails['id']> {
+): Array<IDidKeyDetails['id']> {
   return getKeysForCall(didDetails, call).map((key) => key.id)
 }
 
@@ -112,18 +112,18 @@ export function getKeyIdsForExtrinsic(
   apiOrMetadata: ApiOrMetadata,
   didDetails: IDidDetails,
   extrinsic: Extrinsic
-): Array<KeyDetails['id']> {
+): Array<IDidKeyDetails['id']> {
   const callMeta = extrinsicToCallMeta(apiOrMetadata, extrinsic)
   return getKeyIdsForCall(didDetails, callMeta)
 }
 
 export function newDidDetailsfromKeys(
-  keys: Partial<Record<KeyRelationship, KeyDetails>> & {
-    [KeyRelationship.authentication]: KeyDetails
+  keys: Partial<Record<KeyRelationship, IDidKeyDetails>> & {
+    [KeyRelationship.authentication]: IDidKeyDetails
   }
 ): DidDetails {
   const did = keys[KeyRelationship.authentication].controller
-  const allKeys: KeyDetails[] = []
+  const allKeys: IDidKeyDetails[] = []
   const keyRelationships: MapKeyToRelationship = {}
   Object.entries(keys).forEach(([thisRole, thisKey]) => {
     if (thisKey) {
@@ -173,7 +173,7 @@ export async function writeNewDidFromDidDetails(
 
 export async function signWithKey(
   toSign: Uint8Array | string,
-  key: KeyDetails,
+  key: IDidKeyDetails,
   signer: KeystoreSigner
 ): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
   const alg = getSignatureAlgForKeyType(key.type)
@@ -189,9 +189,9 @@ export async function signWithDid(
   toSign: Uint8Array | string,
   did: IDidDetails,
   signer: KeystoreSigner,
-  whichKey: KeyRelationship | KeyDetails['id']
+  whichKey: KeyRelationship | IDidKeyDetails['id']
 ): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
-  let key: KeyDetails | undefined
+  let key: IDidKeyDetails | undefined
   if (Object.values(KeyRelationship).includes(whichKey as KeyRelationship)) {
     ;[key] = did.getKeys(KeyRelationship.authentication)
   } else {

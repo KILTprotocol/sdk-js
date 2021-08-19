@@ -7,7 +7,7 @@
 
 import type {
   IDidResolver,
-  KeyDetails,
+  IDidKeyDetails,
   ResolverOpts,
   ServiceDetails,
 } from '@kiltprotocol/types'
@@ -57,7 +57,9 @@ async function detailsFromIdentifier(
   return new DidDetails(didDetails)
 }
 
-export async function resolveKey(didUri: string): Promise<KeyDetails | null> {
+export async function resolveKey(
+  didUri: string
+): Promise<IDidKeyDetails | null> {
   const { did, fragment } = parseDidUrl(didUri)
   return queryKey(did, fragment)
 }
@@ -73,7 +75,7 @@ export async function resolveDoc(
 export async function resolve(
   didUri: string,
   opts: ResolverOpts = {}
-): Promise<DidDetails | KeyDetails | ServiceDetails | null> {
+): Promise<DidDetails | IDidKeyDetails | ServiceDetails | null> {
   const { fragment, identifier } = parseDidUrl(didUri)
   const details = await detailsFromIdentifier(identifier, opts)
   if (!fragment || !details) {

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { IDidDetails, KeyDetails, ServiceDetails } from './DidDetails'
+import type { IDidDetails, IDidKeyDetails, ServiceDetails } from './DidDetails'
 
 export type ServicesResolver = (
   resourceHash: string,
@@ -21,10 +21,10 @@ export interface IDidResolver {
   resolve: (
     didUri: string,
     opts?: ResolverOpts
-  ) => Promise<IDidDetails | KeyDetails | ServiceDetails | null>
+  ) => Promise<IDidDetails | IDidKeyDetails | ServiceDetails | null>
   resolveDoc: (did: string, opts?: ResolverOpts) => Promise<IDidDetails | null>
   resolveKey: (
     didUri: string,
     opts?: ResolverOpts
-  ) => Promise<KeyDetails | null>
+  ) => Promise<IDidKeyDetails | null>
 }

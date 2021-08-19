@@ -10,7 +10,7 @@ import type {
   IDidDetails,
   IDidResolver,
   IIdentity,
-  KeyDetails,
+  IDidKeyDetails,
   KeystoreSigner,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
@@ -242,7 +242,7 @@ export function computeKeyId(publicKey: DidPublicKey): string {
 export type VerficationResult = {
   verified: boolean
   didDetails?: IDidDetails
-  key?: KeyDetails
+  key?: IDidKeyDetails
 }
 
 export function verifyDidSignature({
