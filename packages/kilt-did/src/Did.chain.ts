@@ -22,6 +22,7 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto } from '@kiltprotocol/utils'
 import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { Codec } from '@polkadot/types/types'
+import { BN } from '@polkadot/util'
 import type {
   Url,
   UrlEncoding,
@@ -152,10 +153,10 @@ export async function queryKey(
   return key
 }
 
-export async function queryLastTxIndex(did: string): Promise<bigint> {
+export async function queryLastTxIndex(did: string): Promise<BN> {
   const encoded = await queryEncoded(getIdentifierFromKiltDid(did))
-  if (encoded.isNone) return BigInt(0)
-  return encoded.unwrap().lastTxCounter.toBigInt()
+  if (encoded.isNone) return new BN(0)
+  return encoded.unwrap().lastTxCounter.toBn()
 }
 
 // ### EXTRINSICS

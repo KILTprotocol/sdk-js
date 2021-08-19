@@ -25,6 +25,7 @@ import {
 } from '@kiltprotocol/chain-helpers'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { KeyringPair } from '@polkadot/keyring/types'
+import BN from 'bn.js'
 import { disconnect, init } from '../kilt'
 
 import { CType } from '../ctype'
@@ -175,7 +176,7 @@ it('creates and updates DID', async () => {
 describe('DID authorization', () => {
   let didIdentifier: string
   let key: DidTypes.INewPublicKey
-  let lastTxIndex = BigInt(0)
+  let lastTxIndex = new BN(0)
   beforeAll(async () => {
     const { publicKey, alg } = await keystore.generateKeypair({
       alg: SigningAlgorithms.Ed25519,
@@ -221,7 +222,7 @@ describe('DID authorization', () => {
     const call = await ctype.store()
     const tx = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: lastTxIndex + BigInt(1),
+      txCounter: lastTxIndex.addn(1),
       call,
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
@@ -255,7 +256,7 @@ describe('DID authorization', () => {
     )
     const tx = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: lastTxIndex + BigInt(1),
+      txCounter: lastTxIndex.addn(1),
       call: batch,
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
@@ -275,7 +276,7 @@ describe('DID authorization', () => {
     const deleteCall = await DidChain.getDeleteDidExtrinsic()
     const tx = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: lastTxIndex + BigInt(1),
+      txCounter: lastTxIndex.addn(1),
       call: deleteCall,
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
@@ -297,7 +298,7 @@ describe('DID authorization', () => {
     const call = await ctype.store()
     const tx2 = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: lastTxIndex + BigInt(2),
+      txCounter: lastTxIndex.addn(2),
       call,
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,

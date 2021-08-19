@@ -7,6 +7,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { Metadata } from '@polkadot/types'
+import type BN from 'bn.js'
 
 export enum KeyRelationship {
   authentication = 'Authentication',
@@ -45,7 +46,7 @@ export interface IDidDetails {
   getKeyIds(relationship?: KeyRelationship | 'none'): Array<KeyDetails['id']>
   getKeys(relationship?: KeyRelationship | 'none'): KeyDetails[]
   getServices(type?: string): ServiceDetails[]
-  getNextTxIndex(): BigInt
+  getNextTxIndex(): BN
 }
 
 export type ApiOrMetadata = ApiPromise | Metadata

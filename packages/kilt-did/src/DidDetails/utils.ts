@@ -19,7 +19,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import { getSignatureAlgForKeyType } from '../Did.utils'
+import { BN } from '@polkadot/util'
 import { DidDetails, MapKeyToRelationship } from './DidDetails'
 import { PublicKeyRoleAssignment } from '../types'
 import { DidChain, DidUtils } from '..'
@@ -135,7 +135,7 @@ export function newDidDetailsfromKeys(
     did,
     keys: allKeys,
     keyRelationships,
-    lastTxIndex: BigInt(0),
+    lastTxIndex: new BN(0),
   })
 }
 

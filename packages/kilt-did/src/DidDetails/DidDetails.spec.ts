@@ -10,6 +10,7 @@
  */
 
 import { KeyRelationship } from '@kiltprotocol/types'
+import { BN } from '@polkadot/util'
 import { DidDetails, DidDetailsCreationOpts } from './DidDetails'
 
 describe('functional tests', () => {
@@ -64,7 +65,7 @@ describe('functional tests', () => {
       [KeyRelationship.keyAgreement]: [keys[1].id, keys[2].id],
       [KeyRelationship.assertionMethod]: [keys[3].id],
     },
-    lastTxIndex: BigInt(10),
+    lastTxIndex: new BN(10),
     services,
   }
 
@@ -155,17 +156,17 @@ describe('functional tests', () => {
   it('returns the next nonce', () => {
     let dd = new DidDetails(didDetails)
     expect(dd.getNextTxIndex().toString()).toEqual(
-      (didDetails.lastTxIndex + BigInt(1)).toString()
+      didDetails.lastTxIndex.addn(1).toString()
     )
     expect(dd.getNextTxIndex().toString()).toEqual(
-      (didDetails.lastTxIndex + BigInt(2)).toString()
+      didDetails.lastTxIndex.addn(2).toString()
     )
     dd = new DidDetails(didDetails)
     expect(dd.getNextTxIndex(false).toString()).toEqual(
-      (didDetails.lastTxIndex + BigInt(1)).toString()
+      didDetails.lastTxIndex.addn(1).toString()
     )
     expect(dd.getNextTxIndex(false).toString()).toEqual(
-      (didDetails.lastTxIndex + BigInt(1)).toString()
+      didDetails.lastTxIndex.addn(1).toString()
     )
   })
 

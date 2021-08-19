@@ -48,7 +48,7 @@ async function detailsFromIdentifier(
     did: getKiltDidFromIdentifier(identifier),
     keys: publicKeys,
     keyRelationships,
-    lastTxIndex: lastTxCounter.toBigInt(),
+    lastTxIndex: lastTxCounter.toBn(),
   }
   if (servicesResolver && endpointData) {
     const { contentHash, contentType, urls } = endpointData

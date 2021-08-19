@@ -8,7 +8,7 @@ import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
-export const ENDOWMENT = EXISTENTIAL_DEPOSIT.mul(new BN(100))
+export const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(100)
 
 export const WS_ADDRESS = 'ws://127.0.0.1:9944'
 // Dev Faucet account seed phrase

@@ -18,6 +18,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 
+import type { BN } from '@polkadot/util'
 import { generateDidAuthenticatedTx, queryLastTxIndex } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './utils'
 import { getIdentifierFromDid, getSignatureAlgForKeyType } from '../Did.utils'
@@ -30,7 +31,7 @@ export interface DidDetailsCreationOpts {
   did: string
   keys: KeyDetails[]
   keyRelationships: MapKeyToRelationship
-  lastTxIndex: bigint
+  lastTxIndex: BN
   services?: ServiceDetails[]
 }
 
@@ -76,7 +77,7 @@ export class DidDetails implements IDidDetails {
     none?: Array<KeyDetails['id']>
   }
 
-  private lastTxIndex: bigint
+  private lastTxIndex: BN
 
   constructor({
     did,
@@ -141,8 +142,8 @@ export class DidDetails implements IDidDetails {
     return this.services
   }
 
-  public getNextTxIndex(increment = true): BigInt {
-    const nextIndex = this.lastTxIndex + BigInt(1)
+  public getNextTxIndex(increment = true): BN {
+    const nextIndex = this.lastTxIndex.addn(1)
     if (increment) this.lastTxIndex = nextIndex
     return nextIndex
   }
