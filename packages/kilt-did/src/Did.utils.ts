@@ -295,7 +295,7 @@ export async function verifyDidSignatureAsync({
 }): Promise<VerficationResult> {
   let didOrNot: IDidDetails | undefined | null
   if (!didDetails) {
-    if (!(typeof resolver?.resolve === 'function'))
+    if (typeof resolver?.resolveDoc !== 'function')
       throw new Error(
         'Either the claimer DidDetails or a DID resolver is required for verification'
       )
