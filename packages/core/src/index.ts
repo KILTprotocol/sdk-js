@@ -16,8 +16,6 @@ import RequestForAttestation, {
   RequestForAttestationUtils,
 } from './requestforattestation'
 
-export { Identity } from './identity'
-
 export { connect, disconnect, config, init } from './kilt'
 
 export { SDKErrors } from '@kiltprotocol/utils'
