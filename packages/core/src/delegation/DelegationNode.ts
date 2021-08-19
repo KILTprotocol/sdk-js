@@ -27,7 +27,6 @@ import {
   IDelegationHierarchyDetails,
   IDelegationNode,
   IDidDetails,
-  IPublicIdentity,
   KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
@@ -63,7 +62,7 @@ export default class DelegationNode implements IDelegationNode {
   public readonly hierarchyId: IDelegationNode['hierarchyId']
   public readonly parentId?: IDelegationNode['parentId']
   public readonly childrenIds: Array<IDelegationNode['id']> = []
-  public readonly account: IPublicIdentity['address']
+  public readonly account: IDidDetails['did']
   public readonly permissions: IDelegationNode['permissions']
   private hierarchyDetails?: IDelegationHierarchyDetails
   public readonly revoked: boolean

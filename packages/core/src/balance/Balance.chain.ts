@@ -63,7 +63,7 @@ export async function getBalances(
  * ```javascript
  * const address = ...
  * const unsubscribe = await sdk.Balance.listenToBalanceChanges(address,
- *   (account: IPublicIdentity['address'], balances: Balances, changes: Balances) => {
+ *   (account: KeyringPair['address'], balances: Balances, changes: Balances) => {
  *     console.log(`Balance has changed by ${changes.free.toNumber()} to ${balances.free.toNumber()}`)
  *   });
  * // later

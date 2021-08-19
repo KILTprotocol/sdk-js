@@ -21,9 +21,9 @@
 import type {
   IClaim,
   CompressedClaim,
-  IPublicIdentity,
   CompressedPartialClaim,
   PartialClaim,
+  IDidDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import ICType from '../ctype/CType'
@@ -73,7 +73,7 @@ export default class Claim implements IClaim {
     cTypeInput: ICType,
     nestedCType: Array<ICType['schema']>,
     claimContents: IClaim['contents'],
-    claimOwner: IPublicIdentity['address']
+    claimOwner: IDidDetails['did']
   ): Claim {
     if (
       !CTypeUtils.validateNestedSchemas(
