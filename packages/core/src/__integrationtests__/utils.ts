@@ -3,7 +3,7 @@
 import Keyring from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { randomAsU8a } from '@polkadot/util-crypto'
-import BN from 'bn.js/'
+import { BN } from '@polkadot/util'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 

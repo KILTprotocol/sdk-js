@@ -7,7 +7,7 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { Metadata } from '@polkadot/types'
-import type BN from 'bn.js'
+import type { BN } from '@polkadot/util'
 
 export enum KeyRelationship {
   authentication = 'Authentication',

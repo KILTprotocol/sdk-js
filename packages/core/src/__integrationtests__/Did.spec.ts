@@ -25,7 +25,7 @@ import {
 } from '@kiltprotocol/chain-helpers'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { KeyringPair } from '@polkadot/keyring/types'
-import BN from 'bn.js'
+import { BN } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
 
 import { CType } from '../ctype'

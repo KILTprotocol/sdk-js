@@ -12,7 +12,7 @@
 import { Keyring, SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
 import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
-import BN from 'bn.js/'
+import { BN } from '@polkadot/util'
 import {
   TypeRegistry as TYPE_REGISTRY,
   BlockchainUtils,

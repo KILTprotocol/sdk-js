@@ -9,7 +9,7 @@
  * @group unit/balance
  */
 
-import BN from 'bn.js'
+import { BN } from '@polkadot/util'
 import type { BalanceOptions } from '@kiltprotocol/types'
 import {
   formatKiltBalance,

@@ -19,7 +19,7 @@ import type { Header } from '@polkadot/types/interfaces/types'
 import type { AnyJson, AnyNumber, Codec } from '@polkadot/types/types'
 import type { Text } from '@polkadot/types'
 import type { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
-import BN from 'bn.js'
+import { BN } from '@polkadot/util'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type {

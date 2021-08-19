@@ -10,7 +10,7 @@
  */
 
 import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
-import BN from 'bn.js/'
+import { BN } from '@polkadot/util'
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { IBlockchainApi } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'

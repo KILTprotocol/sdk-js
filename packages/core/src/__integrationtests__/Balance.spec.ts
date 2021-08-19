@@ -9,7 +9,7 @@
  * @group integration/balance
  */
 
-import BN from 'bn.js/'
+import { BN } from '@polkadot/util'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { KeyringPair } from '@polkadot/keyring/types'
 import {

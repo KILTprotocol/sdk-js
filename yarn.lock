@@ -815,7 +815,7 @@ __metadata:
     "@polkadot/api": ^5.4.1
     "@polkadot/keyring": ^7.1.2
     "@polkadot/types": ^5.4.1
-    bn.js: ^4.11.9
+    "@polkadot/util": ^7.1.2
     rimraf: ^3.0.2
     typescript: ^4.2.2
     typescript-logging: ^0.6.4
@@ -850,7 +850,6 @@ __metadata:
     "@polkadot/util-crypto": ^7.1.2
     "@types/uuid": ^8.0.0
     ajv: ^6.12.5
-    bn.js: ^4.11.9
     rimraf: ^3.0.2
     tslib: ^2.0.0
     tweetnacl: ^1.0.3
@@ -912,8 +911,8 @@ __metadata:
 
 "@kiltprotocol/type-definitions@file:.yalc/@kiltprotocol/type-definitions::locator=%40kiltprotocol%2Fchain-helpers%40workspace%3Apackages%2Fchain-helpers":
   version: 0.1.13-407c5131
-  resolution: "@kiltprotocol/type-definitions@file:.yalc/@kiltprotocol/type-definitions#.yalc/@kiltprotocol/type-definitions::hash=351eaf&locator=%40kiltprotocol%2Fchain-helpers%40workspace%3Apackages%2Fchain-helpers"
-  checksum: 9d8e07003b29f154d6045dacf9fe76e3098b02c89cbee53e4b509a959fd6859e295a16f2ebd94bb521a8f4b26cc9289562821d0bdd3c9d301c1dbab1fc47b251
+  resolution: "@kiltprotocol/type-definitions@file:.yalc/@kiltprotocol/type-definitions#.yalc/@kiltprotocol/type-definitions::hash=c30f11&locator=%40kiltprotocol%2Fchain-helpers%40workspace%3Apackages%2Fchain-helpers"
+  checksum: c38d65d17630b84a1d542a7cdab98fcc33baf91bdfbca46e9d1b125e99bc4e540e8b9c9f6e04027d3ac6335f625d84d56b79519cb6249d7e34bce7026ba429ed
   languageName: node
   linkType: hard
 
@@ -924,7 +923,6 @@ __metadata:
     "@polkadot/api": ^5.4.1
     "@polkadot/keyring": ^7.1.2
     "@polkadot/types": ^5.4.1
-    bn.js: ^4.11.9
     rimraf: ^3.0.2
     ts-node: ^8.10.2
     tweetnacl: ^1.0.3

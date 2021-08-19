@@ -17,7 +17,7 @@
 
 import type { UnsubscribePromise } from '@polkadot/api/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
-import BN from 'bn.js'
+import { BN } from '@polkadot/util'
 import type { Balances, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import BalanceUtils from './Balance.utils'
