@@ -27,7 +27,6 @@ import type {
   IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { DefaultResolver } from '@kiltprotocol/did'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import AttestedClaimUtils from './AttestedClaim.utils'
@@ -117,8 +116,10 @@ export default class AttestedClaim implements IAttestedClaim {
    *
    * @param attestedClaim - The attested claim to check for validity.
    * @param verificationOpts
-   * @param verificationOpts.claimerDid
-   * @param verificationOpts.resolver
+   * @param verificationOpts.claimerDid - The claimer's identity as an [[IDidDetails]] object.
+   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
+   * Defaults to the DefaultResolver.
+   * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @returns A promise containing whether this attested claim is valid.
    * @example ```javascript
    * attestedClaim.verify().then((isVerified) => {
@@ -128,23 +129,30 @@ export default class AttestedClaim implements IAttestedClaim {
    */
   public static async verify(
     attestedClaim: IAttestedClaim,
-    {
-      claimerDid,
-      resolver = DefaultResolver,
-    }: { claimerDid?: IDidDetails; resolver?: IDidResolver } = {}
+    verificationOpts: {
+      claimerDid?: IDidDetails
+      resolver?: IDidResolver
+      challenge?: string
+    } = {}
   ): Promise<boolean> {
     return (
       AttestedClaim.verifyData(attestedClaim) &&
-      (await RequestForAttestation.verifySignature(attestedClaim.request, {
-        resolver,
-        claimerDid,
-      })) &&
+      (await RequestForAttestation.verifySignature(
+        attestedClaim.request,
+        verificationOpts
+      )) &&
       Attestation.checkValidity(attestedClaim.attestation)
     )
   }
 
-  public async verify(): Promise<boolean> {
-    return AttestedClaim.verify(this)
+  public async verify(
+    verificationOpts: {
+      claimerDid?: IDidDetails
+      resolver?: IDidResolver
+      challenge?: string
+    } = {}
+  ): Promise<boolean> {
+    return AttestedClaim.verify(this, verificationOpts)
   }
 
   /**

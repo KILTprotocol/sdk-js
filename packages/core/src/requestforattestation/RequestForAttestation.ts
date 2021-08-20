@@ -243,10 +243,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * Verifies the signature of the [[RequestForAttestation]] object.
    *
    * @param input - [[RequestForAttestation]].
-   * @param resolutionOpts
-   * @param resolutionOpts.claimerDid - The claimer's identity as an [[IDidDetails]] object.
-   * @param resolutionOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
+   * @param verificationOpts
+   * @param verificationOpts.claimerDid - The claimer's identity as an [[IDidDetails]] object.
+   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
    * Defaults to the DefaultResolver.
+   * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner.
    * @returns Whether the signature is correct.
    * @example ```javascript
@@ -260,12 +261,18 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public static async verifySignature(
     input: IRequestForAttestation,
     {
+      challenge,
       claimerDid,
       resolver = DefaultResolver,
-    }: { claimerDid?: IDidDetails; resolver?: IDidResolver } = {}
+    }: {
+      claimerDid?: IDidDetails
+      resolver?: IDidResolver
+      challenge?: string
+    } = {}
   ): Promise<boolean> {
     const { claimerSignature } = input
     if (!claimerSignature) return false
+    if (challenge && challenge !== claimerSignature.challenge) return false
     const verifyData = makeSigningData(input, claimerSignature.challenge)
     const { verified, didDetails } = await DidUtils.verifyDidSignatureAsync({
       ...claimerSignature,
@@ -281,7 +288,11 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   public async verifySignature(
-    resolverOpts: { claimerDid?: IDidDetails; resolver?: IDidResolver } = {}
+    resolverOpts: {
+      claimerDid?: IDidDetails
+      resolver?: IDidResolver
+      challenge?: string
+    } = {}
   ): Promise<boolean> {
     return RequestForAttestation.verifySignature(this, resolverOpts)
   }
