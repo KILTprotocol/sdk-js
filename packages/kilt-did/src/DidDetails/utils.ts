@@ -23,6 +23,12 @@ import { BN } from '@polkadot/util'
 import { DidDetails, MapKeyToRelationship } from './DidDetails'
 import { PublicKeyRoleAssignment } from '../types'
 import { DidChain, DidUtils } from '..'
+import {
+  computeKeyId,
+  encodeDidPublicKey,
+  getKiltDidFromIdentifier,
+  getSignatureAlgForKeyType,
+} from '../Did.utils'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -201,4 +207,41 @@ export async function signWithDid(
     throw Error(`failed to find key on DidDetails (${did.did}): ${whichKey}`)
   }
   return signWithKey(toSign, key, signer)
+}
+
+/**
+ * A tool to predict public key details if a given key would be added to an on-chain DID.
+ * Especially handy for predicting the key id or for deriving which DID may be claimed with a
+ * given authentication key.
+ *
+ * @param typeRegistry A TypeRegistry instance to which @kiltprotocol/types have been registered.
+ * @param publicKey The public key in hex or U8a encoding.
+ * @param type The [[CHAIN_SUPPORTED_KEY_TYPES]] variant indicating the key type.
+ * @param controller Optionally, set the the DID to which this key would be added.
+ * If left blank, the controller DID is inferred from the public key, mimicing the link between a new
+ * DID and its authentication key.
+ * @returns The [[IDidKeyDetails]] including key id, controller, type, and the public key hex encoded.
+ */
+export function deriveDidPublicKey<T extends string>(
+  typeRegistry: TypeRegistry,
+  publicKey: string | Uint8Array,
+  type: T,
+  controller?: string
+): IDidKeyDetails<T> {
+  const publicKeyHex =
+    typeof publicKey === 'string' ? publicKey : Crypto.u8aToHex(publicKey)
+  const publicKeyU8a =
+    publicKey instanceof Uint8Array ? publicKey : Crypto.coToUInt8(publicKey)
+  const keyIdentifier = computeKeyId(
+    encodeDidPublicKey(typeRegistry, { publicKey: publicKeyU8a, type })
+  )
+  const did =
+    controller ||
+    getKiltDidFromIdentifier(Crypto.encodeAddress(publicKeyU8a, 38))
+  return {
+    id: `${did}#${keyIdentifier}`,
+    controller: did,
+    type,
+    publicKeyHex,
+  }
 }
