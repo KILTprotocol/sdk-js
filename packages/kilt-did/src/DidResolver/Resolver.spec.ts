@@ -12,12 +12,12 @@
 import { TypeRegistry } from '@kiltprotocol/chain-helpers'
 import { KeyRelationship, ServicesResolver } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import { IDidRecord } from '../types'
+import { IDidChainRecordJSON } from '../types'
 import { DefaultResolver } from './DefaultResolver'
 
 jest.mock('../Did.chain', () => {
   const queryByDID = jest.fn(
-    async (did: string): Promise<IDidRecord | null> => ({
+    async (did: string): Promise<IDidChainRecordJSON | null> => ({
       did,
       authenticationKey: `${did}#auth`,
       keyAgreementKeys: [`${did}#x25519`],
@@ -48,7 +48,7 @@ jest.mock('../Did.chain', () => {
   return {
     queryByDID,
     queryById: jest.fn(
-      async (id: string): Promise<IDidRecord | null> =>
+      async (id: string): Promise<IDidChainRecordJSON | null> =>
         queryByDID(`did:kilt:${id}`)
     ),
   }

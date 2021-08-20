@@ -28,10 +28,10 @@ import type {
   UrlEncoding,
   IAuthorizeCallOptions,
   IDidCreationOptions,
-  IDidRecord,
+  IDidChainRecordJSON,
   DidPublicKeyDetails,
   INewPublicKey,
-  DidRecord,
+  IDidChainRecordCodec,
   EndpointData,
 } from './types'
 import {
@@ -47,9 +47,11 @@ import {
 
 export async function queryEncoded(
   didIdentifier: IIdentity['address']
-): Promise<Option<DidRecord>> {
+): Promise<Option<IDidChainRecordCodec>> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.query.did.did<Option<DidRecord>>(didIdentifier)
+  return blockchain.api.query.did.did<Option<IDidChainRecordCodec>>(
+    didIdentifier
+  )
 }
 
 function assembleKeyId(keyId: Codec, did: string): string {
@@ -75,7 +77,7 @@ function decodeEndpointUrl(url: Url): string {
   return (url.value as UrlEncoding).payload.toString()
 }
 
-function decodeDidRecord(didDetail: DidRecord, did: string) {
+function decodeDidChainRecord(didDetail: IDidChainRecordCodec, did: string) {
   const publicKeys: IDidKeyDetails[] = Array.from(
     didDetail.publicKeys.entries()
   ).map(([keyId, keyDetails]) => {
@@ -86,7 +88,7 @@ function decodeDidRecord(didDetail: DidRecord, did: string) {
     didDetail.keyAgreementKeys.values()
   ).map((id) => assembleKeyId(id, did))
 
-  const didRecord: IDidRecord = {
+  const didRecord: IDidChainRecordJSON = {
     did,
     publicKeys,
     authenticationKey: authenticationKeyId,
@@ -118,10 +120,10 @@ function decodeDidRecord(didDetail: DidRecord, did: string) {
 
 export async function queryById(
   didIdentifier: IIdentity['address']
-): Promise<IDidRecord | null> {
+): Promise<IDidChainRecordJSON | null> {
   const result = await queryEncoded(didIdentifier)
   if (result.isSome) {
-    return decodeDidRecord(
+    return decodeDidChainRecord(
       result.unwrap(),
       getKiltDidFromIdentifier(didIdentifier)
     )
@@ -130,8 +132,8 @@ export async function queryById(
 }
 
 export async function queryByDID(
-  did: IDidRecord['did']
-): Promise<IDidRecord | null> {
+  did: IDidChainRecordJSON['did']
+): Promise<IDidChainRecordJSON | null> {
   // we will have to extract the id part from the did string
   const didId = getIdentifierFromKiltDid(did)
   return queryById(didId)

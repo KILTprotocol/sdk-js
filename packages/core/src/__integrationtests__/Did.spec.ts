@@ -70,7 +70,7 @@ describe('write and didDeleteTx', () => {
     ).resolves.not.toThrow()
 
     await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
-      Partial<DidTypes.IDidRecord>
+      Partial<DidTypes.IDidChainRecordJSON>
     >({
       did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
     })
@@ -78,7 +78,7 @@ describe('write and didDeleteTx', () => {
 
   it('deletes DID from previous step', async () => {
     await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
-      Partial<DidTypes.IDidRecord>
+      Partial<DidTypes.IDidChainRecordJSON>
     >({
       did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
     })
@@ -130,7 +130,7 @@ it('creates and updates DID', async () => {
   ).resolves.not.toThrow()
 
   await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
-    Partial<DidTypes.IDidRecord>
+    Partial<DidTypes.IDidChainRecordJSON>
   >({
     did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
     endpointData: {
@@ -162,7 +162,7 @@ it('creates and updates DID', async () => {
   ).resolves.not.toThrow()
 
   await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
-    Partial<DidTypes.IDidRecord>
+    Partial<DidTypes.IDidChainRecordJSON>
   >({
     did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
     endpointData: {
@@ -200,7 +200,7 @@ describe('DID authorization', () => {
     ).resolves.not.toThrow()
 
     await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
-      Partial<DidTypes.IDidRecord>
+      Partial<DidTypes.IDidChainRecordJSON>
     >({
       did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
     })

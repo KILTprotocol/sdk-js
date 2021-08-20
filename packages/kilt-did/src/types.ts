@@ -46,7 +46,7 @@ export interface IEndpointData {
   urls: string[]
 }
 
-export interface IDidRecord {
+export interface IDidChainRecordJSON {
   did: IIdentity['address']
   authenticationKey: IDidKeyDetails['id']
   keyAgreementKeys: Array<IDidKeyDetails['id']>
@@ -164,7 +164,7 @@ export interface ServiceEndpoints extends Struct {
 export type DidKeyAgreementKeys = BTreeSet<KeyId>
 export type DidPublicKeyMap = BTreeMap<KeyId, DidPublicKeyDetails>
 
-export interface DidRecord extends Struct {
+export interface IDidChainRecordCodec extends Struct {
   authenticationKey: KeyId
   keyAgreementKeys: DidKeyAgreementKeys
   capabilityDelegationKey: Option<KeyId>
