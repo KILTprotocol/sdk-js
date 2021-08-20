@@ -233,6 +233,7 @@ export class DemoKeystore
     ResponseData<A> & { nonce: Uint8Array }
   > {
     const keypair = this.getEncryptionKeyPair(publicKey, alg)
+    // this is an alias for tweetnacl nacl.box
     const { nonce, sealed } = naclSeal(data, keypair.secretKey, peerPublicKey)
     return { data: sealed, alg, nonce }
   }
@@ -248,6 +249,7 @@ export class DemoKeystore
     nonce: Uint8Array
   }): Promise<ResponseData<A>> {
     const keypair = this.getEncryptionKeyPair(publicKey, alg)
+    // this is an alias for tweetnacl nacl.box.open
     const decrypted = naclOpen(data, nonce, peerPublicKey, keypair.secretKey)
     if (!decrypted)
       return Promise.reject(new Error('failed to decrypt with given key'))
@@ -261,16 +263,14 @@ export class DemoKeystore
     return new Set(Object.values(supportedAlgs))
   }
 
-  public async getKeys(): Promise<Uint8Array[]> {
-    return [
+  public async hasKeys(
+    keys: Array<Pick<RequestData<string>, 'alg' | 'publicKey'>>
+  ): Promise<boolean[]> {
+    const knownKeys = [
       ...this.signingKeyring.publicKeys,
       ...[...this.encryptionKeypairs.values()].map((i) => i.publicKey),
     ]
-  }
-
-  public async hasKeys(keys: Uint8Array[]): Promise<boolean[]> {
-    const knownKeys = await this.getKeys()
-    return keys.map((key) => knownKeys.some((i) => u8aEq(key, i)))
+    return keys.map((key) => knownKeys.some((i) => u8aEq(key.publicKey, i)))
   }
 }
 
