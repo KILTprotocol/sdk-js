@@ -20,7 +20,6 @@
 
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type {
-  IPublicIdentity,
   IAttestation,
   IDelegationHierarchyDetails,
   IRequestForAttestation,
@@ -85,22 +84,22 @@ export default class Attestation implements IAttestation {
    * [STATIC] Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
    *
    * @param request - The base request for attestation.
-   * @param attesterPublicIdentity - The attesters public identity, used to attest the underlying claim.
+   * @param attesterDid - The attester's did, used to attest to the underlying claim.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create a complete new attestation from the `RequestForAttestation` and all other needed properties
-   * Attestation.fromRequestAndPublicIdentity(request, attesterPublicIdentity);
+   * Attestation.fromRequestAndDid(request, attesterDid);
    * ```
    */
-  public static fromRequestAndPublicIdentity(
+  public static fromRequestAndDid(
     request: IRequestForAttestation,
-    attesterPublicIdentity: IPublicIdentity
+    attesterDid: string
   ): Attestation {
     return new Attestation({
       claimHash: request.rootHash,
       cTypeHash: request.claim.cTypeHash,
       delegationId: request.delegationId,
-      owner: attesterPublicIdentity.address,
+      owner: attesterDid,
       revoked: false,
     })
   }
@@ -170,7 +169,7 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * [ASYNC] Stores the attestation on chain.
+   * [ASYNC] Prepares an extrinsic to store the attestation on chain.
    *
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
@@ -185,7 +184,7 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * [ASYNC] Revokes the attestation. Also available as a static method.
+   * [ASYNC] Prepares an extrinisc to revoke the attestation. Also available as a static method.
    *
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).

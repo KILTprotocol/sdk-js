@@ -13,7 +13,7 @@ import type { KeyringPair } from '@polkadot/keyring/types'
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type { BoxKeyPair } from 'tweetnacl'
 import type { Index } from '@polkadot/types/interfaces'
-import { AnyNumber } from '@polkadot/types/types'
+import type { AnyNumber } from '@polkadot/types/types'
 
 export interface IIdentity {
   readonly signKeyringPair: KeyringPair

@@ -14,12 +14,13 @@ import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
 import type {
   ICType,
-  IPublicIdentity,
+  IDidDetails,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { DidUtils } from '@kiltprotocol/did'
 
 const log = ConfigService.LoggingFactory.getLogger('CType')
 
@@ -38,12 +39,11 @@ export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
  * @param encoded
  * @internal
  */
-// decoding is not backwards compatible with mashnet-node 0.22 anymore
-export function decode(
-  encoded: Option<AccountId>
-): IPublicIdentity['address'] | null {
+export function decode(encoded: Option<AccountId>): IDidDetails['did'] | null {
   DecoderUtils.assertCodecIsType(encoded, ['Option<CtypeCreatorOf>'])
-  return !encoded.isEmpty ? encoded.toString() : null
+  return encoded.isSome
+    ? DidUtils.getKiltDidFromIdentifier(encoded.unwrap().toString(), 'full')
+    : null
 }
 
 /**
@@ -52,11 +52,22 @@ export function decode(
  */
 export async function getOwner(
   ctypeHash: ICType['hash']
-): Promise<IPublicIdentity['address'] | null> {
+): Promise<IDidDetails['did'] | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = await blockchain.api.query.ctype.ctypes<Option<AccountId>>(
     ctypeHash
   )
-  const queriedCTypeAccount = decode(encoded)
-  return queriedCTypeAccount
+  return decode(encoded)
+}
+
+/**
+ * @param ctypeHash
+ * @internal
+ */
+export async function isStored(ctypeHash: ICType['hash']): Promise<boolean> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = await blockchain.api.query.ctype.ctypes<Option<AccountId>>(
+    ctypeHash
+  )
+  return encoded.isSome
 }

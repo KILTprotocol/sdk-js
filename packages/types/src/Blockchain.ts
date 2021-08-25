@@ -11,9 +11,10 @@
  */
 
 import type { ApiPromise } from '@polkadot/api'
+import type { KeyringPair } from '@polkadot/keyring/types'
 import type { Header } from '@polkadot/types/interfaces/types'
-import { AnyNumber } from '@polkadot/types/types'
-import type BN from 'bn.js'
+import type { AnyNumber } from '@polkadot/types/types'
+import type { BN } from '@polkadot/util'
 import type {
   IIdentity,
   ISubmittableResult,
@@ -33,18 +34,18 @@ export interface IBlockchainApi {
   getStats(): Promise<BlockchainStats>
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
   signTx(
-    identity: IIdentity,
+    signer: KeyringPair | IIdentity,
     tx: SubmittableExtrinsic,
     tip?: AnyNumber
   ): Promise<SubmittableExtrinsic>
   submitSignedTxWithReSign(
     tx: SubmittableExtrinsic,
-    identity?: IIdentity,
+    signer?: KeyringPair | IIdentity,
     opts?: Partial<SubscriptionPromise.Options>
   ): Promise<ISubmittableResult>
   getNonce(accountAddress: string): Promise<BN>
   reSignTx(
-    identity: IIdentity,
+    signer: KeyringPair | IIdentity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic>
 }

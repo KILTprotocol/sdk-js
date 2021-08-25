@@ -65,9 +65,10 @@ export enum ErrorCode {
   ERROR_PE_MISMATCH = 20015,
   ERROR_DID_IDENTIFIER_MISMATCH = 20016,
   ERROR_HIERARCHY_QUERY = 20017,
-  ERROR_INVALID_DID_PREFIX = 20018,
+  ERROR_INVALID_DID_FORMAT = 20018,
   ERROR_MESSAGE_BODY_MALFORMED = 20019,
   ERROR_NODE_QUERY = 20020,
+  ERROR_UNSUPPORTED_DID = 20021,
 
   // Data is invalid
   ERROR_ADDRESS_INVALID = 30001,
@@ -83,6 +84,7 @@ export enum ErrorCode {
   ERROR_NESTED_CLAIM_UNVERIFIABLE = 30011,
   ERROR_INVALID_PROOF_FOR_STATEMENT = 30012,
   ERROR_CTYPE_PROPERTIES_NOT_MATCHING = 30013,
+  ERROR_UNSUPPORTED_KEY = 30014,
 
   // Compression / Decompressions
   ERROR_DECOMPRESSION_ARRAY = 40001,
@@ -172,6 +174,15 @@ export const ERROR_CTYPE_PROPERTIES_NOT_MATCHING: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CTYPE_PROPERTIES_NOT_MATCHING,
     'Required properties do not match CType properties'
+  )
+}
+
+export const ERROR_UNSUPPORTED_KEY: (keyType: string) => SDKError = (
+  keyType: string
+) => {
+  return new SDKError(
+    ErrorCode.ERROR_UNSUPPORTED_KEY,
+    `The provided key type "${keyType}" is currently not supported.`
   )
 }
 
@@ -388,7 +399,7 @@ export const ERROR_CLAIM_HASHTREE_MISMATCH: (key?: string) => SDKError = (
 export const ERROR_SIGNATURE_DATA_TYPE: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_SIGNATURE_DATA_TYPE,
-    'Property non existent'
+    'Signature malformed'
   )
 }
 export const ERROR_DID_IDENTIFIER_MISMATCH: (
@@ -422,12 +433,20 @@ export const ERROR_NODE_QUERY: (nodeId: string) => SDKError = (
     `Could not find node with id ${nodeId}`
   )
 }
-export const ERROR_INVALID_DID_PREFIX: (identifier: string) => SDKError = (
+export const ERROR_INVALID_DID_FORMAT: (identifier: string) => SDKError = (
   identifier: string
 ) => {
   return new SDKError(
-    ErrorCode.ERROR_INVALID_DID_PREFIX,
-    `Not a KILT did: ${identifier}`
+    ErrorCode.ERROR_INVALID_DID_FORMAT,
+    `Not a valid KILT did: ${identifier}`
+  )
+}
+export const ERROR_UNSUPPORTED_DID: (input: string) => SDKError = (
+  input: string
+) => {
+  return new SDKError(
+    ErrorCode.ERROR_UNSUPPORTED_DID,
+    `The DID ${input} is not supported.`
   )
 }
 
