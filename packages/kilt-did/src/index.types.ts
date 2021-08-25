@@ -5,12 +5,4 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-/**
- * @packageDocumentation
- * @module IPublicIdentity
- */
-export interface IPublicIdentity {
-  address: string
-  boxPublicKeyAsHex: string
-  serviceAddress?: string
-}
+export * from './types'

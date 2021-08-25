@@ -20,6 +20,7 @@ import type {
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
+import type { KeyringPair } from '@polkadot/keyring/types'
 import { ErrorHandler, ExtrinsicError, ExtrinsicErrors } from '../errorhandling'
 import { makeSubscriptionPromise } from './SubscriptionPromise'
 import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'
@@ -159,16 +160,15 @@ export async function submitSignedTx(
  * [ASYNC] Signs and submits the SubmittableExtrinsic with optional resolution and rejection criteria.
  *
  * @param tx The generated unsigned SubmittableExtrinsic to submit.
- * @param identity The [[Identity]] used to sign and potentially re-sign the tx.
+ * @param signer The [[Identity]] or [[KeyringPair]] used to sign and potentially re-sign the tx.
  * @param opts Partial optional criteria for resolving/rejecting the promise.
  * @param opts.reSign Optional flag for re-attempting to send recoverably failed Tx.
  * @param opts.tip Optional amount of Femto-KILT to tip the validator.
  * @returns Promise result of executing the extrinsic, of type ISubmittableResult.
- *
  */
 export async function signAndSubmitTx(
   tx: SubmittableExtrinsic,
-  identity: IIdentity,
+  signer: KeyringPair | IIdentity,
   {
     reSign = false,
     tip,
@@ -176,8 +176,8 @@ export async function signAndSubmitTx(
   }: Partial<SubscriptionPromise.Options> & Partial<ReSignOpts> = {}
 ): Promise<ISubmittableResult> {
   const chain = await getConnectionOrConnect()
-  const signedTx = await chain.signTx(identity, tx, tip)
+  const signedTx = await chain.signTx(signer, tx, tip)
   return reSign
-    ? chain.submitSignedTxWithReSign(signedTx, identity, opts)
+    ? chain.submitSignedTxWithReSign(signedTx, signer, opts)
     : submitSignedTx(signedTx, opts)
 }

@@ -6,6 +6,7 @@
   ],
   "license": "BSD-4-Clause",
   "scripts": {
+    "check": "tsc -p tsconfig.json --noEmit",
     "build": "yarn workspaces foreach -pt --no-private run build",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
     "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
@@ -60,7 +61,8 @@
     "ts-node": "^9.1.1",
     "typedoc": "^0.19",
     "typedoc-plugin-external-module-name": "^4.0.6",
-    "typescript": "4.0"
+    "typescript": "^4.2.2"
   },
-  "version": "0.22.2-1"
+  "version": "0.22.2-1",
+  "packageManager": "yarn@2.4.2"
 }

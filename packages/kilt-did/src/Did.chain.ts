@@ -11,48 +11,65 @@
  */
 
 import type { Option } from '@polkadot/types'
-import type { IIdentity, SubmittableExtrinsic } from '@kiltprotocol/types'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-import type { IDid } from '@kiltprotocol/core'
 import type {
-  DidDetails,
-  DidEncryptionKey,
-  DidVerificationKey,
+  IIdentity,
+  SubmittableExtrinsic,
+  IDidKeyDetails,
+  KeystoreSigningOptions,
+} from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
+import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { Crypto } from '@kiltprotocol/utils'
+import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
+import type { Codec } from '@polkadot/types/types'
+import { BN } from '@polkadot/util'
+import type {
   Url,
   UrlEncoding,
   IAuthorizeCallOptions,
   IDidCreationOptions,
-  IDidDeletionOptions,
-  IDidRecord,
-  ISigningKeyPair,
-  IDidUpdateOptions,
-  KeyDetails,
-  KeypairType,
-  TypedPublicKey,
+  IDidChainRecordJSON,
+  DidPublicKeyDetails,
+  INewPublicKey,
+  IDidChainRecordCodec,
+  EndpointData,
 } from './types'
 import {
   encodeDidAuthorizedCallOperation,
   encodeDidCreationOperation,
-  encodeDidDeletionOperation,
-  encodeDidUpdateOperation,
-  getDidFromIdentifier,
-  getIdentifierFromDid,
-  signCodec,
+  getKiltDidFromIdentifier,
+  getIdentifierFromKiltDid,
+  formatPublicKey,
+  encodeEndpointUrl,
 } from './Did.utils'
+
+// ### QUERYING
 
 export async function queryEncoded(
   didIdentifier: IIdentity['address']
-): Promise<Option<DidDetails>> {
+): Promise<Option<IDidChainRecordCodec>> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.query.did.did<Option<DidDetails>>(didIdentifier)
+  return blockchain.api.query.did.did<Option<IDidChainRecordCodec>>(
+    didIdentifier
+  )
 }
 
-function decodePublicKey(
-  key: DidVerificationKey | DidEncryptionKey
-): TypedPublicKey {
+function assembleKeyId(keyId: Codec, did: string): string {
+  return `${did}#${keyId.toHex()}`
+}
+
+function decodeDidPublicKeyDetails(
+  did: string,
+  keyId: Hash,
+  keyDetails: DidPublicKeyDetails
+): IDidKeyDetails {
+  const key = keyDetails.key.value
   return {
-    type: key.type as KeypairType,
+    id: assembleKeyId(keyId, did),
+    type: key.type.toLowerCase(),
+    controller: did,
     publicKeyHex: key.value.toHex(),
+    includedAt: keyDetails.blockNumber.toNumber(),
   }
 }
 
@@ -60,105 +77,240 @@ function decodeEndpointUrl(url: Url): string {
   return (url.value as UrlEncoding).payload.toString()
 }
 
+function decodeDidChainRecord(didDetail: IDidChainRecordCodec, did: string) {
+  const publicKeys: IDidKeyDetails[] = Array.from(
+    didDetail.publicKeys.entries()
+  ).map(([keyId, keyDetails]) => {
+    return decodeDidPublicKeyDetails(did, keyId, keyDetails)
+  })
+  const authenticationKeyId = assembleKeyId(didDetail.authenticationKey, did)
+  const keyAgreementKeyIds = Array.from(
+    didDetail.keyAgreementKeys.values()
+  ).map((id) => assembleKeyId(id, did))
+
+  const didRecord: IDidChainRecordJSON = {
+    did,
+    publicKeys,
+    authenticationKey: authenticationKeyId,
+    keyAgreementKeys: keyAgreementKeyIds,
+    lastTxCounter: didDetail.lastTxCounter,
+  }
+  if (didDetail.serviceEndpoints.isSome) {
+    const endpointData = didDetail.serviceEndpoints.unwrap()
+    didRecord.endpointData = {
+      urls: endpointData.urls.map((e) => decodeEndpointUrl(e)),
+      contentType: endpointData.contentType.type,
+      contentHash: endpointData.contentHash.toHex(),
+    }
+  }
+  if (didDetail.capabilityDelegationKey.isSome) {
+    didRecord.capabilityDelegationKey = assembleKeyId(
+      didDetail.capabilityDelegationKey.unwrap(),
+      did
+    )
+  }
+  if (didDetail.assertionMethodKey.isSome) {
+    didRecord.assertionMethodKey = assembleKeyId(
+      didDetail.assertionMethodKey.unwrap(),
+      did
+    )
+  }
+  return didRecord
+}
+
 export async function queryById(
   didIdentifier: IIdentity['address']
-): Promise<IDidRecord | null> {
+): Promise<IDidChainRecordJSON | null> {
   const result = await queryEncoded(didIdentifier)
-  result.unwrapOr(null)
   if (result.isSome) {
-    const didDetail = result.unwrap()
-    const publicKeys: KeyDetails[] = Array.from(
-      didDetail.publicKeys.entries()
-    ).map(([keyId, keyDetails]) => {
-      return {
-        ...decodePublicKey(keyDetails.key.value),
-        id: keyId.toHex(),
-        includedAt: keyDetails.blockNumber.toNumber(),
-      }
-    })
-    const authenticationKeyId = didDetail.authenticationKey.toHex()
-    const keyAgreementKeyIds = Array.from(
-      didDetail.keyAgreementKeys.values()
-    ).map((id) => id.toHex())
-
-    const didRecord: IDidRecord = {
-      did: getDidFromIdentifier(didIdentifier),
-      publicKeys,
-      authenticationKey: authenticationKeyId,
-      keyAgreementKeys: keyAgreementKeyIds,
-      lastTxCounter: didDetail.lastTxCounter,
-    }
-    if (didDetail.endpointUrl.isSome) {
-      didRecord.endpointUrl = decodeEndpointUrl(didDetail.endpointUrl.unwrap())
-    }
-    if (didDetail.delegationKey.isSome) {
-      didRecord.delegationKey = didDetail.delegationKey.unwrap().toHex()
-    }
-    if (didDetail.attestationKey.isSome) {
-      didRecord.attestationKey = didDetail.attestationKey.unwrap().toHex()
-    }
-    return didRecord
+    return decodeDidChainRecord(
+      result.unwrap(),
+      getKiltDidFromIdentifier(didIdentifier)
+    )
   }
   return null
 }
 
 export async function queryByDID(
-  did: IDid['identifier']
-): Promise<IDidRecord | null> {
+  did: IDidChainRecordJSON['did']
+): Promise<IDidChainRecordJSON | null> {
   // we will have to extract the id part from the did string
-  const didId = getIdentifierFromDid(did)
+  const didId = getIdentifierFromKiltDid(did)
   return queryById(didId)
 }
 
-export async function generateCreateTx(
-  createOptions: IDidCreationOptions,
-  authenticationKeypair: ISigningKeyPair
-): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = encodeDidCreationOperation(
-    blockchain.api.registry,
-    createOptions
-  )
-  const { payload, signature } = signCodec(encoded, authenticationKeypair)
-  return blockchain.api.tx.did.submitDidCreateOperation(payload, signature)
+export async function queryKey(
+  did: string,
+  keyId: string
+): Promise<IDidKeyDetails | null> {
+  const encoded = await queryEncoded(getIdentifierFromKiltDid(did))
+  if (encoded.isNone) return null
+  const keyIdU8a = Crypto.coToUInt8(keyId)
+  let key: IDidKeyDetails | null = null
+  encoded.unwrap().publicKeys.forEach((keyDetails, id) => {
+    if (id.eq(keyIdU8a)) {
+      key = decodeDidPublicKeyDetails(did, id, keyDetails)
+    }
+  })
+  return key
 }
 
-export async function generateUpdateTx(
-  updateOptions: IDidUpdateOptions,
-  authenticationKeypair: ISigningKeyPair
-): Promise<SubmittableExtrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = encodeDidUpdateOperation(
-    blockchain.api.registry,
-    updateOptions
-  )
-  const { payload, signature } = signCodec(encoded, authenticationKeypair)
-
-  return blockchain.api.tx.did.submitDidUpdateOperation(payload, signature)
+export async function queryLastTxIndex(did: string): Promise<BN> {
+  const encoded = await queryEncoded(getIdentifierFromKiltDid(did))
+  if (encoded.isNone) return new BN(0)
+  return encoded.unwrap().lastTxCounter.toBn()
 }
 
-export async function generateDeleteTx(
-  deleteOptions: IDidDeletionOptions,
-  authenticationKeypair: ISigningKeyPair
-): Promise<SubmittableExtrinsic> {
+// ### EXTRINSICS
+
+export async function generateCreateTx({
+  signer,
+  signingPublicKey,
+  alg,
+  didIdentifier,
+  keys = {},
+  endpointData,
+}: IDidCreationOptions & KeystoreSigningOptions): Promise<
+  SubmittableExtrinsic
+> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = encodeDidDeletionOperation(
-    blockchain.api.registry,
-    deleteOptions
-  )
-  const { payload, signature } = signCodec(encoded, authenticationKeypair)
-  return blockchain.api.tx.did.submitDidDeleteOperation(payload, signature)
+  const encoded = encodeDidCreationOperation(blockchain.api.registry, {
+    didIdentifier,
+    keys,
+    endpointData,
+  })
+  const signature = await signer.sign({
+    data: encoded.toU8a(),
+    meta: {},
+    publicKey: Crypto.coToUInt8(signingPublicKey),
+    alg,
+  })
+  return blockchain.api.tx.did.create(encoded, {
+    [signature.alg]: signature.data,
+  })
 }
 
-export async function generateDidAuthenticatedTx(
-  callAuthorizationOptions: IAuthorizeCallOptions,
-  signingKeypair: ISigningKeyPair
-): Promise<SubmittableExtrinsic> {
+export async function getSetKeyExtrinsic(
+  keyRelationship: KeyRelationship,
+  key: INewPublicKey
+): Promise<Extrinsic> {
+  const keyAsEnum = formatPublicKey(key)
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  switch (keyRelationship) {
+    case KeyRelationship.authentication:
+      return api.tx.did.setAuthenticationKey(keyAsEnum)
+    case KeyRelationship.capabilityDelegation:
+      return api.tx.did.setDelegationKey(keyAsEnum)
+    case KeyRelationship.assertionMethod:
+      return api.tx.did.setAttestationKey(keyAsEnum)
+    default:
+      throw new Error(
+        `setting a key is only allowed for the following key types: ${[
+          KeyRelationship.authentication,
+          KeyRelationship.capabilityDelegation,
+          KeyRelationship.assertionMethod,
+        ]}`
+      )
+  }
+}
+
+export async function getRemoveKeyExtrinsic(
+  keyRelationship: KeyRelationship,
+  keyId?: string
+): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  switch (keyRelationship) {
+    case KeyRelationship.capabilityDelegation:
+      return api.tx.did.removeDelegationKey()
+    case KeyRelationship.assertionMethod:
+      return api.tx.did.removeAttestationKey()
+    case KeyRelationship.keyAgreement:
+      if (!keyId) {
+        throw new Error(
+          `When removing a ${KeyRelationship.keyAgreement} key it is required to specify the id of the key to be removed.`
+        )
+      }
+      return api.tx.did.removeKeyAgreementKey(keyId)
+    default:
+      throw new Error(
+        `key removal is only allowed for the following key types: ${[
+          KeyRelationship.keyAgreement,
+          KeyRelationship.capabilityDelegation,
+          KeyRelationship.assertionMethod,
+        ]}`
+      )
+  }
+}
+
+export async function getAddKeyExtrinsic(
+  keyRelationship: KeyRelationship,
+  key: INewPublicKey
+): Promise<Extrinsic> {
+  const keyAsEnum = formatPublicKey(key)
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  if (keyRelationship === KeyRelationship.keyAgreement) {
+    return api.tx.did.addKeyAgreementKey(keyAsEnum)
+  }
+  throw new Error(
+    `adding to the key set is only allowed for the following key types:  ${[
+      KeyRelationship.keyAgreement,
+    ]}`
+  )
+}
+
+export async function getSetEndpointDataExtrinsic({
+  urls,
+  contentHash,
+  contentType,
+}: EndpointData): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.did.setServiceEndpoints({
+    urls: urls.map((url) => encodeEndpointUrl(url)),
+    contentHash,
+    contentType,
+  })
+}
+
+export async function getRemoveEndpointDataExtrinsic(): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.did.removeServiceEndpoints()
+}
+
+export async function getDeleteDidExtrinsic(): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.did.delete()
+}
+
+export async function generateDidAuthenticatedTx({
+  signingPublicKey,
+  alg,
+  signer,
+  txCounter,
+  didIdentifier,
+  call,
+}: IAuthorizeCallOptions & KeystoreSigningOptions): Promise<
+  SubmittableExtrinsic
+> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const signableCall = encodeDidAuthorizedCallOperation(
     blockchain.api.registry,
-    callAuthorizationOptions
+    { txCounter, didIdentifier, call }
   )
-  const { payload, signature } = signCodec(signableCall, signingKeypair)
-  return blockchain.api.tx.did.submitDidCall(payload, signature)
+  const signature = await signer.sign({
+    data: signableCall.toU8a(),
+    meta: {
+      method: call.method.toHex(),
+      version: call.version,
+      specVersion: blockchain.api.runtimeVersion.specVersion.toString(),
+      transactionVersion: blockchain.api.runtimeVersion.transactionVersion.toString(),
+      genesisHash: blockchain.api.genesisHash.toHex(),
+      nonce: signableCall.txCounter.toHex(),
+      address: Crypto.encodeAddress(signableCall.did),
+    },
+    publicKey: Crypto.coToUInt8(signingPublicKey),
+    alg,
+  })
+  return blockchain.api.tx.did.submitDidCall(signableCall, {
+    [signature.alg]: signature.data,
+  })
 }

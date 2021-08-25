@@ -9,8 +9,8 @@
  * @packageDocumentation
  * @module IClaim
  */
+import type { IDidDetails } from './DidDetails'
 import type { ICType } from './CType'
-import type { IPublicIdentity } from './PublicIdentity'
 
 /**
  * The minimal partial claim from which a JSON-LD representation can be built.
@@ -24,7 +24,7 @@ export type IClaimContents = Record<
 export interface IClaim {
   cTypeHash: ICType['hash']
   contents: IClaimContents
-  owner: IPublicIdentity['address']
+  owner: IDidDetails['did']
 }
 
 export type CompressedClaim = [

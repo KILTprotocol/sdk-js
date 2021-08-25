@@ -9,20 +9,22 @@
  * @group integration/balance
  */
 
-import BN from 'bn.js/'
+import { BN } from '@polkadot/util'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { KeyringPair } from '@polkadot/keyring/types'
 import {
   getBalances,
   listenToBalanceChanges,
   makeTransfer,
 } from '../balance/Balance.chain'
 import { config, disconnect } from '../kilt'
-import Identity from '../identity/Identity'
 import {
-  MIN_TRANSACTION,
-  wannabeAlice,
-  wannabeBob,
-  wannabeFaucet,
+  addressFromRandom,
+  EXISTENTIAL_DEPOSIT,
+  keypairFromRandom,
+  devAlice,
+  devBob,
+  devFaucet,
   WS_ADDRESS,
 } from './utils'
 
@@ -31,14 +33,14 @@ beforeAll(async () => {
 })
 
 describe('when there is a dev chain with a faucet', () => {
-  let faucet: Identity
-  let bob: Identity
-  let alice: Identity
+  let faucet: KeyringPair
+  let bob: KeyringPair
+  let alice: KeyringPair
 
   beforeAll(async () => {
-    faucet = wannabeFaucet
-    bob = wannabeBob
-    alice = wannabeAlice
+    faucet = devFaucet
+    bob = devBob
+    alice = devAlice
   })
 
   it('should have enough coins available on the faucet', async () => {
@@ -57,20 +59,18 @@ describe('when there is a dev chain with a faucet', () => {
     expect(balance.free.gt(new BN(100_000_000))).toBeTruthy()
   })
 
-  it('getBalances should return 0 for new identity', async () => {
+  it('getBalances should return 0 for new address', async () => {
     return expect(
-      getBalances(
-        Identity.buildFromMnemonic(Identity.generateMnemonic()).address
-      ).then((n) => n.free.toNumber())
+      getBalances(addressFromRandom()).then((n) => n.free.toNumber())
     ).resolves.toEqual(0)
   })
 
-  it('should be able to faucet coins to a new identity', async () => {
-    const ident = Identity.buildFromMnemonic(Identity.generateMnemonic())
+  it('should be able to faucet coins to a new address', async () => {
+    const address: string = addressFromRandom()
     const funny = jest.fn()
-    listenToBalanceChanges(ident.address, funny)
+    listenToBalanceChanges(address, funny)
     const balanceBefore = await getBalances(faucet.address)
-    await makeTransfer(ident.address, MIN_TRANSACTION).then((tx) =>
+    await makeTransfer(address, EXISTENTIAL_DEPOSIT).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, faucet, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
@@ -78,44 +78,44 @@ describe('when there is a dev chain with a faucet', () => {
     )
     const [balanceAfter, balanceIdent] = await Promise.all([
       getBalances(faucet.address),
-      getBalances(ident.address),
+      getBalances(address),
     ])
     expect(
-      balanceBefore.free.sub(balanceAfter.free).gt(MIN_TRANSACTION)
+      balanceBefore.free.sub(balanceAfter.free).gt(EXISTENTIAL_DEPOSIT)
     ).toBeTruthy()
-    expect(balanceIdent.free.toNumber()).toBe(MIN_TRANSACTION.toNumber())
+    expect(balanceIdent.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
     expect(funny).toBeCalled()
   }, 30_000)
 })
 
 describe('When there are haves and have-nots', () => {
-  let bobbyBroke: Identity
-  let richieRich: Identity
-  let stormyD: Identity
-  let faucet: Identity
+  let bobbyBroke: KeyringPair
+  let richieRich: KeyringPair
+  let stormyD: KeyringPair
+  let faucet: KeyringPair
 
   beforeAll(async () => {
-    bobbyBroke = Identity.buildFromMnemonic(Identity.generateMnemonic())
-    richieRich = wannabeAlice
-    faucet = wannabeFaucet
-    stormyD = Identity.buildFromMnemonic(Identity.generateMnemonic())
+    bobbyBroke = keypairFromRandom()
+    richieRich = devAlice
+    faucet = devFaucet
+    stormyD = keypairFromRandom()
   })
 
   it('can transfer tokens from the rich to the poor', async () => {
-    await makeTransfer(stormyD.address, MIN_TRANSACTION).then((tx) =>
+    await makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, richieRich, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
     )
     const balanceTo = await getBalances(stormyD.address)
-    expect(balanceTo.free.toNumber()).toBe(MIN_TRANSACTION.toNumber())
+    expect(balanceTo.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
   }, 40_000)
 
-  it('should not accept transactions from identity with zero balance', async () => {
+  it('should not accept transactions from KeyringPair with zero balance', async () => {
     const originalBalance = await getBalances(stormyD.address)
     await expect(
-      makeTransfer(stormyD.address, MIN_TRANSACTION).then((tx) =>
+      makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -151,13 +151,13 @@ describe('When there are haves and have-nots', () => {
   it('should be able to make a new transaction once the last is ready', async () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
-    await makeTransfer(richieRich.address, MIN_TRANSACTION).then((tx) =>
+    await makeTransfer(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, faucet, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
     )
-    await makeTransfer(stormyD.address, MIN_TRANSACTION).then((tx) =>
+    await makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, faucet, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
@@ -176,13 +176,13 @@ describe('When there are haves and have-nots', () => {
     const listener = jest.fn()
     listenToBalanceChanges(faucet.address, listener)
     await Promise.all([
-      makeTransfer(richieRich.address, MIN_TRANSACTION).then((tx) =>
+      makeTransfer(richieRich.address, EXISTENTIAL_DEPOSIT).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, faucet, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
         })
       ),
-      makeTransfer(stormyD.address, MIN_TRANSACTION).then((tx) =>
+      makeTransfer(stormyD.address, EXISTENTIAL_DEPOSIT).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, faucet, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,

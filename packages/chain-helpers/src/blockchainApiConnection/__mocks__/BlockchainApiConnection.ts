@@ -52,7 +52,7 @@ import type {
 } from '@polkadot/types/interfaces'
 import { GenericEventData, U64 } from '@polkadot/types'
 import type {
-  IPublicIdentity,
+  IIdentity,
   ISubmittableResult,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -231,9 +231,11 @@ const __mocked_api: any = {
       createHierarchy: jest.fn((rootId, _ctypeHash) => {
         return __getMockSubmittableExtrinsic()
       }),
-      addDelegation: jest.fn((delegationId, parent_id, owner, permissions, signature) => {
-        return __getMockSubmittableExtrinsic()
-      }),
+      addDelegation: jest.fn(
+        (delegationId, parent_id, owner, permissions, signature) => {
+          return __getMockSubmittableExtrinsic()
+        }
+      ),
       revokeDelegation: jest.fn((delegationId) => {
         return __getMockSubmittableExtrinsic()
       }),
@@ -260,7 +262,7 @@ const __mocked_api: any = {
       // default return value decodes to AccountInfo with all entries holding BN(0)
       account: jest.fn(
         async (
-          address: IPublicIdentity['address'],
+          address: IIdentity['address'],
           cb
         ): Promise<AccountInfoWithProviders> =>
           TYPE_REGISTRY.createType('AccountInfoWithProviders')

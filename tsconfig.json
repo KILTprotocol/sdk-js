@@ -7,7 +7,6 @@
     "baseUrl": "./packages",
     "sourceMap": true,
     "paths": {
-      "@kiltprotocol/actors-api": ["actors_api/src"],
       "@kiltprotocol/chain-helpers": ["chain-helpers/src"],
       "@kiltprotocol/config": ["config/src"],
       "@kiltprotocol/core": ["core/src"],
@@ -15,7 +14,8 @@
       "@kiltprotocol/sdk-js": ["sdk-js/src"],
       "@kiltprotocol/types": ["types/src"],
       "@kiltprotocol/utils": ["utils/src"],
-      "@kiltprotocol/vc-export": ["vc-export/src"]
+      "@kiltprotocol/vc-export": ["vc-export/src"],
+      "@kiltprotocol/did": ["kilt-did/src"]
     }
   },
   "skipLibCheck": true

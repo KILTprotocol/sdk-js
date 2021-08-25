@@ -17,18 +17,23 @@
  * @module Messaging
  */
 
-import { Identity } from '@kiltprotocol/core'
 import type {
-  IPublicIdentity,
   CompressedMessageBody,
   IMessage,
   ISubmitClaimsForCTypes,
   IEncryptedMessage,
   MessageBody,
   ICType,
+  IDidDetails,
+  IDidResolver,
+  IEncryptedMessageContents,
+  IDidKeyDetails,
+  NaclBoxCapable,
 } from '@kiltprotocol/types'
 import { MessageBodyType } from '@kiltprotocol/types'
-import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, UUID } from '@kiltprotocol/utils'
+import { DefaultResolver } from '@kiltprotocol/did'
+import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from '@polkadot/util'
 import {
   compressMessage,
   decompressMessage,
@@ -48,18 +53,17 @@ export default class Message implements IMessage {
    *
    * @param message The [[Message]] object which needs to be decrypted.
    * @param message.body The body of the [[Message]] which depends on the [[BodyType]].
-   * @param message.senderAddress The sender's public SS58 address of the [[Message]].
+   * @param message.sender The sender's DID taken from the [[IMessage]].
    * @throws [[ERROR_IDENTITY_MISMATCH]] when the sender does not match the owner of the content embedded in the message, e.g. A request for attestation or an attestation.
-   *
    */
-  public static ensureOwnerIsSender({ body, senderAddress }: IMessage): void {
+  public static ensureOwnerIsSender({ body, sender }: IMessage): void {
     switch (body.type) {
       case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM:
         {
           const requestAttestation = body
           if (
             requestAttestation.content.requestForAttestation.claim.owner !==
-            senderAddress
+            sender
           ) {
             throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender')
           }
@@ -68,7 +72,7 @@ export default class Message implements IMessage {
       case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
         {
           const submitAttestation = body
-          if (submitAttestation.content.attestation.owner !== senderAddress) {
+          if (submitAttestation.content.attestation.owner !== sender) {
             throw SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender')
           }
         }
@@ -77,7 +81,7 @@ export default class Message implements IMessage {
         {
           const submitClaimsForCtype: ISubmitClaimsForCTypes = body
           submitClaimsForCtype.content.forEach((claim) => {
-            if (claim.request.claim.owner !== senderAddress) {
+            if (claim.request.claim.owner !== sender) {
               throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')
             }
           })
@@ -88,73 +92,103 @@ export default class Message implements IMessage {
   }
 
   /**
-   * [STATIC] Verifies that neither the hash of [[Message]] nor the sender's signature on the hash have been tampered with.
-   *
-   * @param encrypted The encrypted [[Message]] object which needs to be decrypted.
-   * @param senderAddress The sender's public SS58 address of the [[Message]].
-   * @throws [[ERROR_NONCE_HASH_INVALID]] when either the hash or the signature could not be verified against the calculations.
-   *
-   */
-  public static ensureHashAndSignature(
-    encrypted: IEncryptedMessage,
-    senderAddress: IMessage['senderAddress']
-  ): void {
-    if (
-      Crypto.hashStr(
-        encrypted.ciphertext + encrypted.nonce + encrypted.createdAt
-      ) !== encrypted.hash
-    ) {
-      throw SDKErrors.ERROR_NONCE_HASH_INVALID(
-        { hash: encrypted.hash, nonce: encrypted.nonce },
-        'Message'
-      )
-    }
-    DataUtils.validateSignature(
-      encrypted.hash,
-      encrypted.signature,
-      senderAddress
-    )
-  }
-
-  /**
    * [STATIC] Symmetrically decrypts the result of [[Message.encrypt]].
    *
    * Uses [[Message.ensureHashAndSignature]] and [[Message.ensureOwnerIsSender]] internally.
    *
    * @param encrypted The encrypted message.
-   * @param receiver The [[Identity]] of the receiver.
+   * @param keystore
+   * @param resolutionOptions
+   * @param resolutionOptions.senderDetails
+   * @param resolutionOptions.receiverDetails
+   * @param resolutionOptions.resolver
    * @throws [[ERROR_DECODING_MESSAGE]] when encrypted message couldn't be decrypted.
    * @throws [[ERROR_PARSING_MESSAGE]] when the decoded message could not be parsed.
    * @returns The original [[Message]].
    */
-  public static decrypt(
+  public static async decrypt(
     encrypted: IEncryptedMessage,
-    receiver: Identity
-  ): IMessage {
-    // check validity of the message
-    Message.ensureHashAndSignature(encrypted, encrypted.senderAddress)
+    keystore: Pick<NaclBoxCapable, 'decrypt'>,
+    {
+      senderDetails,
+      receiverDetails,
+      resolver = DefaultResolver,
+    }: {
+      senderDetails?: IDidDetails
+      receiverDetails?: IDidDetails
+      resolver?: IDidResolver
+    } = {}
+  ): Promise<IMessage> {
+    const {
+      senderKeyId,
+      receiverKeyId,
+      ciphertext,
+      nonce,
+      receivedAt,
+    } = encrypted
 
-    const ea: Crypto.EncryptedAsymmetricString = {
-      box: encrypted.ciphertext,
-      nonce: encrypted.nonce,
+    // if we don't have the sender DID & receiver details already, fetch it via resolver
+    const resolveKey = async (keyId: string, didDetails?: IDidDetails) => {
+      // check if key is currently associated with DID
+      const keyDetails =
+        didDetails?.getKey(keyId) || (await resolver.resolveKey(keyId))
+      if (!keyDetails) {
+        throw Error(`key with id ${keyId} cannot be resolved`) // TODO: improve error
+      }
+      return keyDetails
     }
-    const decoded: string | false = receiver.decryptAsymmetricAsStr(
-      ea,
-      encrypted.senderBoxPublicKey
-    )
-    if (!decoded) {
-      throw SDKErrors.ERROR_DECODING_MESSAGE()
+
+    const senderKeyDetails = await resolveKey(senderKeyId, senderDetails)
+    const receiverKeyDetails = await resolveKey(receiverKeyId, receiverDetails)
+
+    // check key type
+    if (senderKeyDetails.type !== 'x25519') {
+      throw Error(
+        `key type mismatch for message sender: requires x25519, got ${senderKeyDetails.type}`
+      )
     }
+
+    const { data } = await keystore
+      .decrypt({
+        publicKey: hexToU8a(receiverKeyDetails.publicKeyHex),
+        alg: 'x25519-xsalsa20-poly1305', // TODO find better ways than hard-coding the alg
+        peerPublicKey: hexToU8a(senderKeyDetails.publicKeyHex),
+        data: hexToU8a(ciphertext),
+        nonce: hexToU8a(nonce),
+      })
+      .catch(() => {
+        throw SDKErrors.ERROR_DECODING_MESSAGE()
+      })
+
+    const decoded = u8aToString(data)
 
     try {
-      const messageBody: MessageBody = JSON.parse(decoded)
+      const {
+        body,
+        createdAt,
+        messageId,
+        inReplyTo,
+        references,
+        sender,
+        receiver,
+      } = JSON.parse(decoded) as IEncryptedMessageContents
       const decrypted: IMessage = {
-        ...encrypted,
-        body: messageBody,
+        receiver,
+        sender,
+        createdAt,
+        body,
+        messageId,
+        receivedAt,
+        inReplyTo,
+        references,
       }
 
-      // checks the messasge body
-      errorCheckMessageBody(messageBody)
+      if (sender !== senderKeyDetails.controller) {
+        throw SDKErrors.ERROR_IDENTITY_MISMATCH('Encryption key', 'Sender')
+      }
+
+      // checks the message body
+      errorCheckMessageBody(decrypted.body)
 
       // checks the message structure
       errorCheckMessage(decrypted)
@@ -167,13 +201,14 @@ export default class Message implements IMessage {
     }
   }
 
-  public messageId?: string
+  public messageId: string
   public receivedAt?: number
   public body: MessageBody
   public createdAt: number
-  public receiverAddress: IMessage['receiverAddress']
-  public senderAddress: IMessage['senderAddress']
-  public senderBoxPublicKey: IMessage['senderBoxPublicKey']
+  public receiver: IMessage['receiver']
+  public sender: IMessage['sender']
+  public inReplyTo?: IMessage['messageId']
+  public references?: Array<IMessage['messageId']>
 
   /**
    * Constructs a message which should be encrypted with [[Message.encrypt]] before sending to the receiver.
@@ -184,8 +219,8 @@ export default class Message implements IMessage {
    */
   public constructor(
     body: MessageBody | CompressedMessageBody,
-    sender: IPublicIdentity,
-    receiver: IPublicIdentity
+    sender: IMessage['sender'],
+    receiver: IMessage['receiver']
   ) {
     if (Array.isArray(body)) {
       this.body = decompressMessage(body)
@@ -193,43 +228,61 @@ export default class Message implements IMessage {
       this.body = body
     }
     this.createdAt = Date.now()
-    this.receiverAddress = receiver.address
-    this.senderAddress = sender.address
-    this.senderBoxPublicKey = sender.boxPublicKeyAsHex
+    this.receiver = receiver
+    this.sender = sender
+    this.messageId = UUID.generate()
   }
 
   /**
-   * Encrypts the [[Message]] symmetrically as a string. This can be reversed with [[Message.decrypt]].
+   * Encrypts the [[Message]] as a string. This can be reversed with [[Message.decrypt]].
    *
-   * @param sender The [[Identity]] of the sender.
-   * @param receiver The [[PublicIdentity]] of the receiver.
+   * @param senderKey
+   * @param receiverKey
+   * @param keystore
    * @returns The encrypted version of the original [[Message]], see [[IEncryptedMessage]].
    */
-  public encrypt(
-    sender: Identity,
-    receiver: IPublicIdentity
-  ): IEncryptedMessage {
-    const encryptedMessage: Crypto.EncryptedAsymmetricString = sender.encryptAsymmetricAsStr(
-      JSON.stringify(this.body),
-      receiver.boxPublicKeyAsHex
-    )
-    const ciphertext = encryptedMessage.box
-    const { nonce } = encryptedMessage
+  public async encrypt(
+    senderKey: IDidKeyDetails,
+    receiverKey: IDidKeyDetails,
+    keystore: Pick<NaclBoxCapable, 'encrypt'>
+  ): Promise<IEncryptedMessage> {
+    if (this.receiver !== receiverKey.controller) {
+      throw SDKErrors.ERROR_IDENTITY_MISMATCH(
+        'receiver public key',
+        'revceiver'
+      )
+    }
+    if (this.sender !== senderKey.controller) {
+      throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
+    }
 
-    const hashInput: string = ciphertext + nonce + this.createdAt
-    const hash = Crypto.hashStr(hashInput)
-    const signature = sender.signStr(hash)
-    return {
+    const toEncrypt: IEncryptedMessageContents = {
+      body: this.body,
+      createdAt: this.createdAt,
+      sender: this.sender,
+      receiver: this.receiver,
       messageId: this.messageId,
+      inReplyTo: this.inReplyTo,
+      references: this.references,
+    }
+
+    const serialized = stringToU8a(JSON.stringify(toEncrypt))
+
+    const encryted = await keystore.encrypt({
+      alg: 'x25519-xsalsa20-poly1305',
+      data: serialized,
+      publicKey: hexToU8a(senderKey.publicKeyHex),
+      peerPublicKey: hexToU8a(receiverKey.publicKeyHex),
+    })
+    const ciphertext = u8aToHex(encryted.data)
+    const nonce = u8aToHex(encryted.nonce)
+
+    return {
       receivedAt: this.receivedAt,
       ciphertext,
       nonce,
-      createdAt: this.createdAt,
-      hash,
-      signature,
-      receiverAddress: this.receiverAddress,
-      senderAddress: this.senderAddress,
-      senderBoxPublicKey: this.senderBoxPublicKey,
+      senderKeyId: senderKey.id,
+      receiverKeyId: receiverKey.id,
     }
   }
 

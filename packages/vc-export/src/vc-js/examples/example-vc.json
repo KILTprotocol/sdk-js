@@ -25,16 +25,13 @@
         {
             "type": "KILTSelfSigned2020",
             "proofPurpose": "assertionMethod",
-            "verificationMethod": {
-                "type": "Ed25519VerificationKey2018",
-                "publicKeyHex": "0x88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee"
-            },
+            "verificationMethod": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#authenticationKey-1",
             "signature": "0x00c374b5314d7192224bd620047f740c029af118eb5645a4662f76a2e3d70a877290f9a96cb9ee9ccc6c6bce24a0cf132a07edb603d0d0632f84210d528d2a7701"
         },
         {
             "type": "KILTAttestation2020",
             "proofPurpose": "assertionMethod",
-            "attesterAddress": "4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG"
+            "attester": "did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG"
         },
         {
             "type": "KILTCredentialDigest2020",

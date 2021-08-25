@@ -16,14 +16,10 @@
  */
 
 import type { UnsubscribePromise } from '@polkadot/api/types'
-import BN from 'bn.js'
-import type {
-  Balances,
-  IPublicIdentity,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import type { KeyringPair } from '@polkadot/keyring/types'
+import { BN } from '@polkadot/util'
+import type { Balances, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
-
 import BalanceUtils from './Balance.utils'
 
 /**
@@ -46,7 +42,7 @@ import BalanceUtils from './Balance.utils'
  * ```
  */
 export async function getBalances(
-  accountAddress: IPublicIdentity['address']
+  accountAddress: KeyringPair['address']
 ): Promise<Balances> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
@@ -67,7 +63,7 @@ export async function getBalances(
  * ```javascript
  * const address = ...
  * const unsubscribe = await sdk.Balance.listenToBalanceChanges(address,
- *   (account: IPublicIdentity['address'], balances: Balances, changes: Balances) => {
+ *   (account: KeyringPair['address'], balances: Balances, changes: Balances) => {
  *     console.log(`Balance has changed by ${changes.free.toNumber()} to ${balances.free.toNumber()}`)
  *   });
  * // later
@@ -75,9 +71,9 @@ export async function getBalances(
  * ```
  */
 export async function listenToBalanceChanges(
-  accountAddress: IPublicIdentity['address'],
+  accountAddress: KeyringPair['address'],
   listener: (
-    account: IPublicIdentity['address'],
+    account: KeyringPair['address'],
     balances: Balances,
     changes: Balances
   ) => void
@@ -134,7 +130,7 @@ export async function listenToBalanceChanges(
  * ```
  */
 export async function makeTransfer(
-  accountAddressTo: IPublicIdentity['address'],
+  accountAddressTo: KeyringPair['address'],
   amount: BN,
   exponent = -15
 ): Promise<SubmittableExtrinsic> {

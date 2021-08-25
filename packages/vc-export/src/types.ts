@@ -10,8 +10,7 @@
  * @module VCExportTypes
  */
 import type { AnyJson } from '@polkadot/types/types'
-import type { IDidDocumentPublicKey } from '@kiltprotocol/core'
-import type { ICType } from '@kiltprotocol/types'
+import type { ICType, IDidKeyDetails } from '@kiltprotocol/types'
 import type {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
@@ -29,17 +28,17 @@ export interface Proof {
   [key: string]: any
 }
 
-export type IPublicKeyRecord = Partial<IDidDocumentPublicKey> &
-  Pick<IDidDocumentPublicKey, 'publicKeyHex' | 'type'>
+export type IPublicKeyRecord = IDidKeyDetails
 
 export interface SelfSignedProof extends Proof {
   type: typeof KILT_SELF_SIGNED_PROOF_TYPE
   verificationMethod: string | IPublicKeyRecord
   signature: string
+  challenge?: string
 }
 export interface AttestedProof extends Proof {
   type: typeof KILT_ATTESTED_PROOF_TYPE
-  attesterAddress: string
+  attester: string
 }
 export interface CredentialDigestProof extends Proof {
   type: typeof KILT_CREDENTIAL_DIGEST_PROOF_TYPE

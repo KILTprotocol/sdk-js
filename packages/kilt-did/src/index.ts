@@ -5,5 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as chain from './Did.chain'
-export * as utils from './Did.utils'
+import type * as DidTypes from './index.types'
+
+export { DidTypes }
+export * as DidChain from './Did.chain'
+export * as DidUtils from './Did.utils'
+export * from './DemoKeystore/DemoKeystore'
+export * from './DidDetails'
+export * from './DidResolver/DefaultResolver'

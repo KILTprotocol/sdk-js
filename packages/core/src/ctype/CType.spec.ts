@@ -11,9 +11,6 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { SubmittableResult } from '@polkadot/api'
-import { TypeRegistry } from '@polkadot/types'
-import { Option } from '@polkadot/types/codec'
 import { SDKErrors } from '@kiltprotocol/utils'
 import type {
   ICType,
@@ -22,44 +19,27 @@ import type {
   ICTypeSchema,
   CompressedCTypeSchema,
 } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import Claim from '../claim/Claim'
-import Identity from '../identity/Identity'
 import requestForAttestation from '../requestforattestation/RequestForAttestation'
 import CType from './CType'
-import CTypeUtils, { getIdForSchema } from './CType.utils'
+import CTypeUtils from './CType.utils'
 import Kilt from '../kilt/Kilt'
+import { getOwner, isStored } from './CType.chain'
 
-jest.mock(
-  '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
-)
+jest.mock('./CType.chain')
+
+const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
+const didBob = 'did:kilt:4rDeMGr3Hi4NfxRUp8qVyhvgW3BSUBLneQisGa9ASkhh2sXB'
 
 describe('CType', () => {
-  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
-    .__mocked_api
-  const registry = new TypeRegistry()
-  let ctypeModel: ICType['schema']
   let ctypeSchemaWithoutId: CTypeSchemaWithoutId
   let rawCType: ICType['schema']
-  let identityAlice: Identity
-  let identityBob: Identity
   let claimCtype: CType
   let claimContents: any
   let claim: Claim
   let compressedCType: CompressedCType
   Kilt.config({ address: 'ws://testString' })
   beforeAll(async () => {
-    ctypeModel = {
-      $id: 'kilt:ctype:0x1',
-      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-      title: 'CtypeModel 1',
-      properties: {
-        'first-property': { type: 'integer' },
-        'second-property': { type: 'string' },
-      },
-      type: 'object',
-    }
-
     rawCType = {
       $id: 'kilt:ctype:0x2',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -80,20 +60,13 @@ describe('CType', () => {
       type: 'object',
     }
 
-    identityAlice = Identity.buildFromURI('//Alice')
-
-    claimCtype = CType.fromSchema(rawCType, identityAlice.address)
-    identityBob = Identity.buildFromURI('//Bob')
+    claimCtype = CType.fromSchema(rawCType, didAlice)
 
     claimContents = {
       name: 'Bob',
     }
 
-    claim = Claim.fromCTypeAndClaimContents(
-      claimCtype,
-      claimContents,
-      identityAlice.address
-    )
+    claim = Claim.fromCTypeAndClaimContents(claimCtype, claimContents, didAlice)
     compressedCType = [
       claimCtype.hash,
       claimCtype.owner,
@@ -111,20 +84,8 @@ describe('CType', () => {
     ]
   })
 
-  it('stores ctypes', async () => {
-    const ctype = CType.fromSchema(ctypeModel, identityAlice.address)
-
-    const tx = await ctype.store()
-    const result = await BlockchainUtils.signAndSubmitTx(tx, identityAlice, {
-      reSign: true,
-    })
-    expect(result).toBeInstanceOf(SubmittableResult)
-    expect(result.isFinalized).toBeTruthy()
-    expect(result.isCompleted).toBeTruthy()
-  })
-
   it('makes ctype object from schema without id', () => {
-    const ctype = CType.fromSchema(ctypeSchemaWithoutId, identityAlice.address)
+    const ctype = CType.fromSchema(ctypeSchemaWithoutId, didAlice)
 
     expect(ctype.schema.$id).toBe(
       'kilt:ctype:0xba15bf4960766b0a6ad7613aa3338edce95df6b22ed29dd72f6e72d740829b84'
@@ -149,7 +110,7 @@ describe('CType', () => {
     const invalidAddressCtype: ICType = {
       ...claimCtype,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      owner: claimCtype.owner!.replace('8', 'D'),
+      owner: claimCtype.owner!.replace('4', 'D'),
     }
 
     // This tst is not possible as it throws the error for malformed object first
@@ -173,22 +134,19 @@ describe('CType', () => {
     expect(() => CType.fromCType(faultySchemaCtype)).toThrowError(
       SDKErrors.ERROR_OBJECT_MALFORMED()
     )
-    expect(() => CType.fromCType(invalidAddressCtype)).toThrowError(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      SDKErrors.ERROR_ADDRESS_INVALID(invalidAddressCtype.owner!, 'CType owner')
-    )
-    expect(() => CType.fromCType(faultyAddressTypeCType)).toThrowError(
-      SDKErrors.ERROR_ADDRESS_INVALID(
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        faultyAddressTypeCType.owner!,
-        'CType owner'
-      )
-    )
-    expect(() => CType.fromCType(wrongSchemaIdCType)).toThrowError(
-      SDKErrors.ERROR_CTYPE_ID_NOT_MATCHING(
-        getIdForSchema(wrongSchemaIdCType.schema),
-        wrongSchemaIdCType.schema.$id
-      )
+    expect(() => CType.fromCType(invalidAddressCtype))
+      .toThrowErrorMatchingInlineSnapshot(`
+      "Provided DID identifier address invalid 
+
+          Address: Dp6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N"
+    `)
+    expect(() =>
+      CType.fromCType(faultyAddressTypeCType)
+    ).toThrowErrorMatchingInlineSnapshot(`"Not a KILT did: 4262626426"`)
+    expect(() =>
+      CType.fromCType(wrongSchemaIdCType)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"Provided $id \\"kilt:ctype:0xd5302762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\" and schema $id \\"kilt:ctype:0xd5301762c62114f6455e0b373cccce20631c2a717004a98f8953e738e17c5d3c\\" are not matching"`
     )
   })
 
@@ -230,32 +188,31 @@ describe('CType', () => {
 
     expect(() => claimCtype.compress()).toThrow()
   })
-  it('verifies whether a ctype is registered with the address on chain ', async () => {
-    blockchainApi.query.ctype.cTYPEs = jest.fn(async (hash: string) => {
-      return new Option(registry, 'AccountId', claimCtype.owner)
-    })
-    expect(await claimCtype.verifyStored()).toBeTruthy()
-    blockchainApi.query.ctype.cTYPEs = jest.fn(async (hash: string) => {
-      return new Option(registry, 'AccountId', identityBob.address)
-    })
-    expect(await claimCtype.verifyOwner()).toBeFalsy()
-    blockchainApi.query.ctype.cTYPEs = jest.fn(async (hash: string) => {
-      return new Option(registry, 'AccountId', null)
-    })
-    expect(await claimCtype.verifyStored()).toBeFalsy()
+
+  it('verifies whether a ctype is registered on chain ', async () => {
+    ;(isStored as jest.Mock).mockResolvedValue(false)
+    await expect(claimCtype.verifyStored()).resolves.toBe(false)
+    ;(isStored as jest.Mock).mockResolvedValue(true)
+    await expect(claimCtype.verifyStored()).resolves.toBe(true)
+  })
+
+  it('verifies ctype owner on chain', async () => {
+    ;(getOwner as jest.Mock).mockResolvedValue(didBob)
+    await expect(claimCtype.verifyOwner()).resolves.toBe(false)
+    ;(getOwner as jest.Mock).mockResolvedValue(claimCtype.owner)
+    await expect(claimCtype.verifyOwner()).resolves.toBe(true)
+    ;(getOwner as jest.Mock).mockResolvedValue(null)
+    await expect(claimCtype.verifyOwner()).resolves.toBe(false)
   })
 })
 
 describe('blank ctypes', () => {
-  let identityAlice: Identity
   let ctypeSchema1: ICType['schema']
   let ctypeSchema2: ICType['schema']
   let ctype1: CType
   let ctype2: CType
 
   beforeAll(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
-
     ctypeSchema1 = {
       $id: 'kilt:ctype:0x3',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -272,14 +229,8 @@ describe('blank ctypes', () => {
       type: 'object',
     }
 
-    ctype1 = CType.fromSchema(
-      ctypeSchema1,
-      identityAlice.signKeyringPair.address
-    )
-    ctype2 = CType.fromSchema(
-      ctypeSchema2,
-      identityAlice.signKeyringPair.address
-    )
+    ctype1 = CType.fromSchema(ctypeSchema1, didAlice)
+    ctype2 = CType.fromSchema(ctypeSchema2, didAlice)
   })
 
   it('two ctypes with no properties have different hashes if id is different', () => {
@@ -289,23 +240,11 @@ describe('blank ctypes', () => {
   })
 
   it('two claims on an empty ctypes will have different root hash', async () => {
-    const claimA1 = Claim.fromCTypeAndClaimContents(
-      ctype1,
-      {},
-      identityAlice.address
-    )
-    const claimA2 = Claim.fromCTypeAndClaimContents(
-      ctype2,
-      {},
-      identityAlice.address
-    )
+    const claimA1 = Claim.fromCTypeAndClaimContents(ctype1, {}, didAlice)
+    const claimA2 = Claim.fromCTypeAndClaimContents(ctype2, {}, didAlice)
 
-    expect(
-      requestForAttestation.fromClaimAndIdentity(claimA1, identityAlice)
-        .rootHash
-    ).not.toEqual(
-      requestForAttestation.fromClaimAndIdentity(claimA2, identityAlice)
-        .rootHash
+    expect(requestForAttestation.fromClaim(claimA1).rootHash).not.toEqual(
+      requestForAttestation.fromClaim(claimA2).rootHash
     )
   })
   it('typeguard returns true or false for complete or incomplete CTypes', () => {

@@ -18,12 +18,15 @@
 
 import Ajv from 'ajv'
 import type {
+  IDidDetails,
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
+  KeystoreSigner,
 } from '@kiltprotocol/types'
-import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import Identity from '../identity/Identity'
+import { KeyRelationship } from '@kiltprotocol/types'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { DidUtils } from '@kiltprotocol/did'
 import QuoteSchema from './QuoteSchema'
 
 /**
@@ -69,14 +72,16 @@ export function validateQuoteSchema(
  */
 
 export function fromAttesterSignedInput(
-  deserializedQuote: IQuoteAttesterSigned
+  deserializedQuote: IQuoteAttesterSigned,
+  attesterDid: IDidDetails
 ): IQuoteAttesterSigned {
   const { attesterSignature, ...basicQuote } = deserializedQuote
-  DataUtils.validateSignature(
-    Crypto.hashObjectAsStr(basicQuote),
-    attesterSignature,
-    deserializedQuote.attesterAddress
-  )
+  DidUtils.verifyDidSignature({
+    ...attesterSignature,
+    message: Crypto.hashObjectAsStr(basicQuote),
+    didDetails: attesterDid,
+    keyRelationship: KeyRelationship.authentication,
+  })
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
@@ -96,11 +101,16 @@ export function fromAttesterSignedInput(
  * @returns A signed [[Quote]] object.
  */
 
-export function createAttesterSignature(
+export async function createAttesterSignature(
   quoteInput: IQuote,
-  attesterIdentity: Identity
-): IQuoteAttesterSigned {
-  const signature = attesterIdentity.signStr(Crypto.hashObjectAsStr(quoteInput))
+  attesterIdentity: IDidDetails,
+  signer: KeystoreSigner
+): Promise<IQuoteAttesterSigned> {
+  const signature = await DidUtils.getDidAuthenticationSignature(
+    Crypto.hashObjectAsStr(quoteInput),
+    attesterIdentity,
+    signer
+  )
   return {
     ...quoteInput,
     attesterSignature: signature,
@@ -117,14 +127,15 @@ export function createAttesterSignature(
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
  */
 
-export function fromQuoteDataAndIdentity(
+export async function fromQuoteDataAndIdentity(
   quoteInput: IQuote,
-  identity: Identity
-): IQuoteAttesterSigned {
+  attesterIdentity: IDidDetails,
+  signer: KeystoreSigner
+): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
-  return createAttesterSignature(quoteInput, identity)
+  return createAttesterSignature(quoteInput, attesterIdentity, signer)
 }
 
 /**
@@ -137,20 +148,34 @@ export function fromQuoteDataAndIdentity(
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
 
-export function createQuoteAgreement(
-  claimerIdentity: Identity,
+export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
-  requestRootHash: string
-): IQuoteAgreement {
+  requestRootHash: string,
+  attesterIdentity: IDidDetails,
+  claimerIdentity: IDidDetails,
+  signer: KeystoreSigner
+): Promise<IQuoteAgreement> {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
-  DataUtils.validateSignature(
-    Crypto.hashObjectAsStr(basicQuote),
-    attesterSignature,
-    attesterSignedQuote.attesterAddress
+
+  if (attesterIdentity.did !== attesterSignedQuote.attesterDid)
+    throw SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(
+      attesterIdentity.did,
+      attesterSignedQuote.attesterDid
+    )
+
+  DidUtils.verifyDidSignature({
+    ...attesterSignature,
+    message: Crypto.hashObjectAsStr(basicQuote),
+    didDetails: attesterIdentity,
+    keyRelationship: KeyRelationship.authentication,
+  })
+
+  const signature = await DidUtils.getDidAuthenticationSignature(
+    Crypto.hashObjectAsStr(attesterSignedQuote),
+    claimerIdentity,
+    signer
   )
-  const signature = claimerIdentity.signStr(
-    Crypto.hashObjectAsStr(attesterSignedQuote)
-  )
+
   return {
     ...attesterSignedQuote,
     rootHash: requestRootHash,

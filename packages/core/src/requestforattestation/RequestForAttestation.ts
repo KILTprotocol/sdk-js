@@ -24,19 +24,27 @@ import type {
   IDelegationNode,
   IClaim,
   IAttestedClaim,
+  IDidKeyDetails,
+  KeystoreSigner,
+  IDidDetails,
+  IDidResolver,
+  DidSignature,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { DefaultResolver, DidUtils, DidDetailsUtils } from '@kiltprotocol/did'
 import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
-import Identity from '../identity/Identity'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 
-function verifyClaimerSignature(reqForAtt: IRequestForAttestation): boolean {
-  return Crypto.verify(
-    reqForAtt.rootHash,
-    reqForAtt.claimerSignature,
-    reqForAtt.claim.owner
-  )
+function makeSigningData(
+  input: IRequestForAttestation,
+  challenge?: string
+): Uint8Array {
+  return new Uint8Array([
+    ...Crypto.coToUInt8(input.rootHash),
+    ...Crypto.coToUInt8(challenge),
+  ])
 }
 
 function getHashRoot(leaves: Uint8Array[]): Uint8Array {
@@ -73,25 +81,18 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * [STATIC] Builds a new instance of [[RequestForAttestation]], from a complete set of required parameters.
    *
    * @param claim An `IClaim` object the request for attestation is built for.
-   * @param identity The Claimer's [[Identity]].
    * @param option Container for different options that can be passed to this method.
    * @param option.legitimations Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
-   * @throws [[ERROR_IDENTITY_MISMATCH]] when claimInput's owner address does not match the supplied identity's address.
    * @returns A new [[RequestForAttestation]] object.
    * @example ```javascript
-   * const input = RequestForAttestation.fromClaimAndIdentity(claim, alice);
+   * const input = RequestForAttestation.fromClaim(claim);
    * ```
    */
-  public static fromClaimAndIdentity(
+  public static fromClaim(
     claim: IClaim,
-    identity: Identity,
     { legitimations, delegationId }: Options = {}
   ): RequestForAttestation {
-    if (claim.owner !== identity.address) {
-      throw SDKErrors.ERROR_IDENTITY_MISMATCH()
-    }
-
     const {
       hashes: claimHashes,
       nonceMap: claimNonceMap,
@@ -103,13 +104,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
       delegationId,
     })
 
+    // signature will be added afterwards!
     return new RequestForAttestation({
       claim,
       legitimations: legitimations || [],
       claimHashes,
       claimNonceMap,
       rootHash,
-      claimerSignature: RequestForAttestation.sign(identity, rootHash),
       delegationId: delegationId || null,
     })
   }
@@ -134,7 +135,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
   public claim: IClaim
   public legitimations: AttestedClaim[]
-  public claimerSignature: string
+  public claimerSignature?: DidSignature & { challenge?: string }
   public claimHashes: string[]
   public claimNonceMap: Record<string, string>
   public rootHash: Hash
@@ -168,7 +169,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
     this.delegationId = requestForAttestationInput.delegationId
     this.rootHash = requestForAttestationInput.rootHash
     this.claimerSignature = requestForAttestationInput.claimerSignature
-    this.verifySignature()
     this.verifyData()
   }
 
@@ -183,10 +183,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *   age: 29,
    * };
    * const claim = Claim.fromCTypeAndClaimContents(ctype, rawClaim, alice);
-   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity({
+   * const reqForAtt = RequestForAttestation.fromClaim(
    *   claim,
-   *   identity: alice,
-   * });
+   * );
    * reqForAtt.removeClaimProperties(['name']);
    * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
    * ```
@@ -201,35 +200,14 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * Removes the [[Claim]] owner from the [[RequestForAttestation]] object.
-   *
-   * @example ```javascript
-   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity({
-   *   claim,
-   *   identity: alice,
-   * });
-   * reqForAtt.removeClaimOwner();
-   * // `input` does not contain the claim `owner` or the `claimOwner`'s nonce anymore.
-   * ```
-   * @deprecated Do not use. This method produces an unverifiable [[RequestForAttestation]], as the owner's public key is required for signature verification.
-   */
-  public removeClaimOwner(): void {
-    // @ts-ignore
-    delete this.claim.owner
-    this.claimNonceMap = ClaimUtils.hashClaimContents(this.claim, {
-      nonces: this.claimNonceMap,
-    }).nonceMap
-  }
-
-  /**
    * Verifies the data of the [[RequestForAttestation]] object; used to check that the data was not tampered with, by checking the data against hashes.
    *
    * @param input - The [[RequestForAttestation]] for which to verify data.
    * @returns Whether the data is valid.
    * @throws [[ERROR_CLAIM_NONCE_MAP_MALFORMED]] when any key of the claim contents could not be found in the claimHashTree.
-   * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] or [[ERROR_SIGNATURE_UNVERIFIABLE]] when either the rootHash or the signature are not verifiable respectively.
+   * @throws [[ERROR_ROOT_HASH_UNVERIFIABLE]] when the rootHash is not verifiable.
    * @example ```javascript
-   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity(claim, alice);
+   * const reqForAtt = RequestForAttestation.fromClaim(claim);
    * RequestForAttestation.verifyData(reqForAtt); // returns true if the data is correct
    * ```
    */
@@ -237,10 +215,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
     // check claim hash
     if (!RequestForAttestation.verifyRootHash(input)) {
       throw SDKErrors.ERROR_ROOT_HASH_UNVERIFIABLE()
-    }
-    // check signature
-    if (!RequestForAttestation.verifySignature(input)) {
-      throw SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE()
     }
 
     // verify properties against selective disclosure proof
@@ -268,22 +242,59 @@ export default class RequestForAttestation implements IRequestForAttestation {
   /**
    * Verifies the signature of the [[RequestForAttestation]] object.
    *
-   * @param input - [[RequestForAttestation]] .
+   * @param input - [[RequestForAttestation]].
+   * @param verificationOpts
+   * @param verificationOpts.claimerDid - The claimer's identity as an [[IDidDetails]] object.
+   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
+   * Defaults to the DefaultResolver.
+   * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
+   * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner.
    * @returns Whether the signature is correct.
    * @example ```javascript
-   * const reqForAtt = RequestForAttestation.fromClaimAndIdentity({
-   *   claim,
-   *   identity: alice,
-   * });
-   * RequestForAttestation.verifySignature(reqForAtt); // returns `true` if the signature is correct
+   * const reqForAtt = RequestForAttestation.fromClaim(
+   * claim,
+   * );
+   * await reqForAtt.signWithDid(myKeystore, myDidDetails)
+   * RequestForAttestation.verifySignature(reqForAtt, myDidDetails); // returns `true` if the signature is correct
    * ```
    */
-  public static verifySignature(input: IRequestForAttestation): boolean {
-    return verifyClaimerSignature(input)
+  public static async verifySignature(
+    input: IRequestForAttestation,
+    {
+      challenge,
+      claimerDid,
+      resolver = DefaultResolver,
+    }: {
+      claimerDid?: IDidDetails
+      resolver?: IDidResolver
+      challenge?: string
+    } = {}
+  ): Promise<boolean> {
+    const { claimerSignature } = input
+    if (!claimerSignature) return false
+    if (challenge && challenge !== claimerSignature.challenge) return false
+    const verifyData = makeSigningData(input, claimerSignature.challenge)
+    const { verified, didDetails } = await DidUtils.verifyDidSignatureAsync({
+      ...claimerSignature,
+      message: verifyData,
+      didDetails: claimerDid,
+      keyRelationship: KeyRelationship.authentication,
+      resolver,
+    })
+    if (input.claim.owner !== didDetails?.did) {
+      throw SDKErrors.ERROR_IDENTITY_MISMATCH()
+    }
+    return verified
   }
 
-  public verifySignature(): boolean {
-    return RequestForAttestation.verifySignature(this)
+  public async verifySignature(
+    resolverOpts: {
+      claimerDid?: IDidDetails
+      resolver?: IDidResolver
+      challenge?: string
+    } = {}
+  ): Promise<boolean> {
+    return RequestForAttestation.verifySignature(this, resolverOpts)
   }
 
   public static verifyRootHash(input: IRequestForAttestation): boolean {
@@ -294,8 +305,41 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return RequestForAttestation.verifyRootHash(this)
   }
 
-  private static sign(identity: Identity, rootHash: Hash): string {
-    return identity.signStr(rootHash)
+  public async addSignature(
+    sig: string | Uint8Array,
+    keyId: string,
+    challenge?: string
+  ): Promise<this> {
+    const signature = typeof sig === 'string' ? sig : Crypto.u8aToHex(sig)
+    this.claimerSignature = { signature, keyId, challenge }
+    return this
+  }
+
+  public async signWithDid(
+    signer: KeystoreSigner,
+    did: IDidDetails,
+    challenge?: string
+  ): Promise<this> {
+    const { signature, keyId } = await DidDetailsUtils.signWithDid(
+      makeSigningData(this, challenge),
+      did,
+      signer,
+      KeyRelationship.authentication
+    )
+    return this.addSignature(signature, keyId, challenge)
+  }
+
+  public async signWithKey(
+    signer: KeystoreSigner<string>,
+    key: IDidKeyDetails,
+    challenge?: string
+  ): Promise<this> {
+    const { signature } = await DidDetailsUtils.signWithKey(
+      makeSigningData(this, challenge),
+      key,
+      signer
+    )
+    return this.addSignature(signature, key.id, challenge)
   }
 
   private static getHashLeaves(
