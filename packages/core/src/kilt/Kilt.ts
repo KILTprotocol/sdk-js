@@ -20,7 +20,7 @@ import {
   BlockchainApiConnection,
   Blockchain,
 } from '@kiltprotocol/chain-helpers'
-import { Identity } from '../identity'
+import { cryptoWaitReady } from '@polkadot/util-crypto'
 
 export function connect(): Promise<Blockchain> {
   return BlockchainApiConnection.getConnectionOrConnect()
@@ -42,7 +42,7 @@ export async function init<K extends Partial<ConfigService.configOpts>>(
   configs?: K
 ): Promise<void> {
   config(configs || {})
-  await Identity.cryptoWaitReady()
+  await cryptoWaitReady()
 }
 export const { disconnect } = BlockchainApiConnection
 

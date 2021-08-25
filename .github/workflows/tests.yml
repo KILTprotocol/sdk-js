@@ -108,7 +108,7 @@ jobs:
     strategy:
       matrix:
         image: ['latest-rc']
-        required: ['required']
+        required: ['optional']
         include:
           - image: 'latest-develop'
             required: 'optional'

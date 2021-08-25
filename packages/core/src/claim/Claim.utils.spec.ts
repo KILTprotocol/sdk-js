@@ -21,7 +21,7 @@ const claim: IClaim = {
     number: 26,
     optIn: true,
   },
-  owner: '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
+  owner: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
 }
 
 it('exports claim as json-ld', () => {

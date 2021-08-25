@@ -9,14 +9,14 @@
  * @packageDocumentation
  * @module IAttestation
  */
+import type { IDidDetails } from './DidDetails'
 import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
-import type { IPublicIdentity } from './PublicIdentity'
 
 export interface IAttestation {
   claimHash: string
   cTypeHash: ICType['hash']
-  owner: IPublicIdentity['address']
+  owner: IDidDetails['did']
   delegationId: IDelegationNode['id'] | null
   revoked: boolean
 }

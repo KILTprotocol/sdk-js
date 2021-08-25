@@ -11,13 +11,6 @@ import { Balance, BalanceUtils } from './balance'
 import Claim, { ClaimUtils } from './claim'
 import { CType, CTypeMetadata, CTypeSchema, CTypeUtils } from './ctype'
 import { DelegationNode, DelegationNodeUtils } from './delegation'
-import Did, {
-  IDid,
-  IDidDocument,
-  IDidDocumentPublicKey,
-  IDidDocumentSigned,
-} from './did'
-import { Identity, IURLResolver, PublicIdentity } from './identity'
 import Quote, { QuoteSchema, QuoteUtils } from './quote'
 import RequestForAttestation, {
   RequestForAttestationUtils,
@@ -30,9 +23,6 @@ export { SDKErrors } from '@kiltprotocol/utils'
 export {
   Balance,
   BalanceUtils,
-  Identity,
-  PublicIdentity,
-  IURLResolver,
   CType,
   CTypeMetadata,
   CTypeUtils,
@@ -47,11 +37,6 @@ export {
   AttestedClaimUtils,
   DelegationNode,
   DelegationNodeUtils,
-  Did,
-  IDid,
-  IDidDocument,
-  IDidDocumentPublicKey,
-  IDidDocumentSigned,
   Quote,
   QuoteUtils,
   QuoteSchema,

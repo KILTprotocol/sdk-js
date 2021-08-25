@@ -5,8 +5,4 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import Identity from './Identity'
-import PublicIdentity, { IURLResolver } from './PublicIdentity'
-
-export { Identity, PublicIdentity, IURLResolver }
-export default Identity
+export * from './types'

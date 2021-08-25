@@ -10,7 +10,7 @@
  * @module IBalance
  */
 
-import type BN from 'bn.js'
+import type { BN } from '@polkadot/util'
 
 export type Balances = {
   free: BN

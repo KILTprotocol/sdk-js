@@ -16,7 +16,7 @@ const QuoteSchema = {
   type: 'object',
   title: 'Quote',
   properties: {
-    attesterAddress: {
+    attesterDid: {
       type: 'string',
     },
     cTypeHash: {
@@ -49,7 +49,7 @@ const QuoteSchema = {
     },
   },
   required: [
-    'attesterAddress',
+    'attesterDid',
     'cTypeHash',
     'cost',
     'currency',

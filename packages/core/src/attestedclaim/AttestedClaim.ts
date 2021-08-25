@@ -21,6 +21,10 @@ import type {
   CompressedAttestedClaim,
   IAttestation,
   IRequestForAttestation,
+  IDidDetails,
+  IDidResolver,
+  KeystoreSigner,
+  IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
@@ -111,22 +115,44 @@ export default class AttestedClaim implements IAttestedClaim {
    * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
    *
    * @param attestedClaim - The attested claim to check for validity.
+   * @param verificationOpts
+   * @param verificationOpts.claimerDid - The claimer's identity as an [[IDidDetails]] object.
+   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
+   * Defaults to the DefaultResolver.
+   * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @returns A promise containing whether this attested claim is valid.
    * @example ```javascript
    * attestedClaim.verify().then((isVerified) => {
-   *   // `isVerified` is true if the attestation is verified, false otherwise
+   * // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```
    */
-  public static async verify(attestedClaim: IAttestedClaim): Promise<boolean> {
+  public static async verify(
+    attestedClaim: IAttestedClaim,
+    verificationOpts: {
+      claimerDid?: IDidDetails
+      resolver?: IDidResolver
+      challenge?: string
+    } = {}
+  ): Promise<boolean> {
     return (
       AttestedClaim.verifyData(attestedClaim) &&
+      (await RequestForAttestation.verifySignature(
+        attestedClaim.request,
+        verificationOpts
+      )) &&
       Attestation.checkValidity(attestedClaim.attestation)
     )
   }
 
-  public async verify(): Promise<boolean> {
-    return AttestedClaim.verify(this)
+  public async verify(
+    verificationOpts: {
+      claimerDid?: IDidDetails
+      resolver?: IDidResolver
+      challenge?: string
+    } = {}
+  ): Promise<boolean> {
+    return AttestedClaim.verify(this, verificationOpts)
   }
 
   /**
@@ -195,13 +221,30 @@ export default class AttestedClaim implements IAttestedClaim {
 
   /**
    * Creates a public presentation which can be sent to a verifier.
+   * This presentation is signed.
    *
-   * @param publicAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
-   * If kept empty, we hide all attributes inside the claim for the presentation.
-   *
+   * @param presentationOptions
+   * @param presentationOptions.signer Keystore signer to sign the presentation.
+   * @param presentationOptions.claimerSigningKey If passed, this key is used for signing.
+   * @param presentationOptions.claimerDid If no signing key is passed, the required key is fetched from the claimerDid (mandatory in that case).
+   * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
+   * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
+   * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
    * @returns A deep copy of the AttestedClaim with all but `publicAttributes` removed.
    */
-  public createPresentation(publicAttributes: string[]): AttestedClaim {
+  public async createPresentation({
+    selectedAttributes,
+    signer,
+    challenge,
+    claimerSigningKey,
+    claimerDid,
+  }: {
+    signer: KeystoreSigner
+    claimerSigningKey?: IDidKeyDetails
+    claimerDid?: IDidDetails
+    challenge?: string
+    selectedAttributes?: string[]
+  }): Promise<AttestedClaim> {
     const attClaim = new AttestedClaim(
       // clone the attestation and request for attestation because properties will be deleted later.
       // TODO: find a nice way to clone stuff
@@ -209,13 +252,24 @@ export default class AttestedClaim implements IAttestedClaim {
     )
 
     // filter attributes that are not in public attributes
-    const excludedClaimProperties = Array.from(this.getAttributes()).filter(
-      (property) => !publicAttributes.includes(property)
-    )
+    const excludedClaimProperties = selectedAttributes
+      ? Array.from(this.getAttributes()).filter(
+          (property) => !selectedAttributes.includes(property)
+        )
+      : []
 
     // remove these attributes
     attClaim.request.removeClaimProperties(excludedClaimProperties)
 
+    if (claimerDid) {
+      await attClaim.request.signWithDid(signer, claimerDid, challenge)
+    } else if (claimerSigningKey) {
+      await attClaim.request.signWithKey(signer, claimerSigningKey, challenge)
+    } else {
+      throw new Error(
+        'Either a key or claimer did details are required for signing'
+      )
+    }
     return attClaim
   }
 

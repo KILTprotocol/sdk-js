@@ -10,7 +10,7 @@
  * @module IDelegation
  */
 import type { ICType } from './CType'
-import type { IPublicIdentity } from './PublicIdentity'
+import type { IDidDetails } from './DidDetails'
 
 /* eslint-disable no-bitwise */
 export enum Permission {
@@ -23,7 +23,7 @@ export interface IDelegationNode {
   hierarchyId: IDelegationNode['id']
   parentId?: IDelegationNode['id']
   childrenIds: Array<IDelegationNode['id']>
-  account: IPublicIdentity['address']
+  account: IDidDetails['did']
   permissions: Permission[]
   revoked: boolean
 }

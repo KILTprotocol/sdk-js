@@ -15,6 +15,7 @@ import type {
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
+  DidSignature,
   ICostBreakdown,
   IQuote,
   IQuoteAgreement,
@@ -65,7 +66,7 @@ export function decompressCost(cost: CompressedCostBreakdown): ICostBreakdown {
 
 export function compressQuote(quote: IQuote): CompressedQuote {
   if (
-    !quote.attesterAddress ||
+    !quote.attesterDid ||
     !quote.cTypeHash ||
     !quote.cost ||
     !quote.currency ||
@@ -75,7 +76,7 @@ export function compressQuote(quote: IQuote): CompressedQuote {
     throw SDKErrors.ERROR_COMPRESS_OBJECT(quote, 'Quote')
   }
   return [
-    quote.attesterAddress,
+    quote.attesterDid,
     quote.cTypeHash,
     compressCost(quote.cost),
     quote.currency,
@@ -97,13 +98,21 @@ export function decompressQuote(quote: CompressedQuote): IQuote {
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
-    attesterAddress: quote[0],
+    attesterDid: quote[0],
     cTypeHash: quote[1],
     cost: decompressCost(quote[2]),
     currency: quote[3],
     termsAndConditions: quote[4],
     timeframe: quote[5],
   }
+}
+
+function compressSignature(comp: DidSignature): [string, string] {
+  return [comp.signature, comp.keyId]
+}
+
+function decompressSignature(comp: [string, string]): DidSignature {
+  return { signature: comp[0], keyId: comp[1] }
 }
 
 /**
@@ -118,14 +127,24 @@ export function decompressQuote(quote: CompressedQuote): IQuote {
 export function compressAttesterSignedQuote(
   attesterSignedQuote: IQuoteAttesterSigned
 ): CompressedQuoteAttesterSigned {
+  const {
+    attesterDid,
+    cTypeHash,
+    cost,
+    currency,
+    termsAndConditions,
+    timeframe,
+    attesterSignature,
+  } = attesterSignedQuote
   if (
-    !attesterSignedQuote.attesterAddress ||
-    !attesterSignedQuote.cTypeHash ||
-    !attesterSignedQuote.cost ||
-    !attesterSignedQuote.currency ||
-    !attesterSignedQuote.termsAndConditions ||
-    !attesterSignedQuote.timeframe ||
-    !attesterSignedQuote.attesterSignature
+    !attesterDid ||
+    !cTypeHash ||
+    !cost ||
+    !currency ||
+    !termsAndConditions ||
+    !timeframe ||
+    !attesterSignature.signature ||
+    !attesterSignature.keyId
   ) {
     throw SDKErrors.ERROR_COMPRESS_OBJECT(
       attesterSignedQuote,
@@ -133,13 +152,13 @@ export function compressAttesterSignedQuote(
     )
   }
   return [
-    attesterSignedQuote.attesterAddress,
-    attesterSignedQuote.cTypeHash,
-    compressCost(attesterSignedQuote.cost),
-    attesterSignedQuote.currency,
-    attesterSignedQuote.termsAndConditions,
-    attesterSignedQuote.timeframe,
-    attesterSignedQuote.attesterSignature,
+    attesterDid,
+    cTypeHash,
+    compressCost(cost),
+    currency,
+    termsAndConditions,
+    timeframe,
+    compressSignature(attesterSignature),
   ]
 }
 
@@ -159,13 +178,13 @@ export function decompressAttesterSignedQuote(
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
-    attesterAddress: attesterSignedQuote[0],
+    attesterDid: attesterSignedQuote[0],
     cTypeHash: attesterSignedQuote[1],
     cost: decompressCost(attesterSignedQuote[2]),
     currency: attesterSignedQuote[3],
     termsAndConditions: attesterSignedQuote[4],
     timeframe: attesterSignedQuote[5],
-    attesterSignature: attesterSignedQuote[6],
+    attesterSignature: decompressSignature(attesterSignedQuote[6]),
   }
 }
 
@@ -182,7 +201,7 @@ export function compressQuoteAgreement(
   quoteAgreement: IQuoteAgreement
 ): CompressedQuoteAgreed {
   if (
-    !quoteAgreement.attesterAddress ||
+    !quoteAgreement.attesterDid ||
     !quoteAgreement.cTypeHash ||
     !quoteAgreement.cost ||
     !quoteAgreement.currency ||
@@ -193,14 +212,14 @@ export function compressQuoteAgreement(
     throw SDKErrors.ERROR_COMPRESS_OBJECT(quoteAgreement, 'Quote Agreement')
   }
   return [
-    quoteAgreement.attesterAddress,
+    quoteAgreement.attesterDid,
     quoteAgreement.cTypeHash,
     compressCost(quoteAgreement.cost),
     quoteAgreement.currency,
     quoteAgreement.termsAndConditions,
     quoteAgreement.timeframe,
-    quoteAgreement.attesterSignature,
-    quoteAgreement.claimerSignature,
+    compressSignature(quoteAgreement.attesterSignature),
+    compressSignature(quoteAgreement.claimerSignature),
     quoteAgreement.rootHash,
   ]
 }
@@ -221,14 +240,14 @@ export function decompressQuoteAgreement(
     throw SDKErrors.ERROR_DECOMPRESSION_ARRAY()
   }
   return {
-    attesterAddress: quoteAgreement[0],
+    attesterDid: quoteAgreement[0],
     cTypeHash: quoteAgreement[1],
     cost: decompressCost(quoteAgreement[2]),
     currency: quoteAgreement[3],
     termsAndConditions: quoteAgreement[4],
     timeframe: quoteAgreement[5],
-    attesterSignature: quoteAgreement[6],
-    claimerSignature: quoteAgreement[7],
+    attesterSignature: decompressSignature(quoteAgreement[6]),
+    claimerSignature: decompressSignature(quoteAgreement[7]),
     rootHash: quoteAgreement[8],
   }
 }

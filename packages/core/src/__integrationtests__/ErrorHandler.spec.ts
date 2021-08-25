@@ -9,28 +9,40 @@
  * @group integration/errorhandler
  */
 
-import BN from 'bn.js'
+import { BN } from '@polkadot/util'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
+import { KeyringPair } from '@polkadot/keyring/types'
+import {
+  createOnChainDidFromSeed,
+  DemoKeystore,
+  FullDidDetails,
+} from '@kiltprotocol/did'
+import { randomAsHex } from '@polkadot/util-crypto'
 import { Attestation } from '..'
 import { makeTransfer } from '../balance/Balance.chain'
-import Identity from '../identity'
 import { config, disconnect } from '../kilt'
-import { wannabeAlice, WS_ADDRESS } from './utils'
+import { addressFromRandom, devAlice, WS_ADDRESS } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
-let alice: Identity
+let paymentAccount: KeyringPair
+let someDid: FullDidDetails
+const keystore = new DemoKeystore()
 
 beforeAll(async () => {
   config({ address: WS_ADDRESS })
-  alice = wannabeAlice
+  paymentAccount = devAlice
+  someDid = await createOnChainDidFromSeed(
+    paymentAccount,
+    keystore,
+    randomAsHex(32)
+  )
 })
 
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
-  const to = Identity.buildFromMnemonic('')
   await expect(
-    makeTransfer(to.address, new BN(1)).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, alice, {
+    makeTransfer(addressFromRandom(), new BN(1)).then((tx) =>
+      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
       })
@@ -45,12 +57,14 @@ it('records an extrinsic error when ctype does not exist', async () => {
     cTypeHash:
       '0x103752ecd8e284b1c9677337ccc91ea255ac8e6651dc65d90f0504f31d7e54f0',
     delegationId: null,
-    owner: alice.address,
+    owner: someDid.did,
     revoked: false,
   })
-  const tx = await attestation.store()
+  const tx = await attestation
+    .store()
+    .then((ex) => someDid.authorizeExtrinsic(ex, keystore))
   await expect(
-    BlockchainUtils.signAndSubmitTx(tx, alice, {
+    BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
       reSign: true,
     })
