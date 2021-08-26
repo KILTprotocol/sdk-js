@@ -38,9 +38,6 @@ export class LightDidDetails implements IDidDetails {
     encryptionKey = undefined,
     services = [],
   }: LightDidDetailsCreationOpts) {
-    this.did = did
-    this.identifier = getIdentifierFromDid(this.did)
-
     this.keys = new Map([[authenticationKey.id, authenticationKey]])
     this.keyRelationships = {
       Authentication: [authenticationKey.id],
@@ -52,6 +49,10 @@ export class LightDidDetails implements IDidDetails {
     }
 
     this.services = services
+
+    // TODO: If at least one between encryption key and service endpoints is not undefined, generate a JSON document, serialise/encode it and append it to the DID identifier.
+    this.did = did
+    this.identifier = getIdentifierFromDid(this.did)
   }
 
   public getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined {
