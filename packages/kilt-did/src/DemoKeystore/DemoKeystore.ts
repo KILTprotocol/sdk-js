@@ -31,9 +31,9 @@ import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import { u8aEq } from '@polkadot/util'
 import { getKiltDidFromIdentifier } from '../Did.utils'
-import { DidDetails, DidDetailsUtils } from '../DidDetails'
+import { FullDidDetails, LightDidDetails, DidDetailsUtils } from '../DidDetails'
 import { DefaultResolver, DidUtils } from '..'
-import { PublicKeyRoleAssignment } from '../types'
+import { DidPublicKeyDetails, PublicKeyRoleAssignment } from '../types'
 
 export enum SigningAlgorithms {
   Ed25519 = 'ed25519',
@@ -285,7 +285,7 @@ export async function createLocalDemoDidFromSeed(
   keystore: DemoKeystore,
   mnemonicOrHexSeed: string,
   signingKeyType = SigningAlgorithms.Ed25519
-): Promise<DidDetails> {
+): Promise<FullDidDetails> {
   const did = getKiltDidFromIdentifier(
     encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38)
   )
@@ -335,12 +335,43 @@ export async function createLocalDemoDidFromSeed(
   })
 }
 
+export async function createOffChainDidFromSeed(
+  keystore: DemoKeystore,
+  mnemonicOrHexSeed: string,
+  signingKeyType = SigningAlgorithms.Ed25519
+): Promise<LightDidDetails> {
+  // This block is very similar to `createLocalDemoDidFromSeed` so we might want to refactor in the future to specify what keys should be created, so that the same logic can be used for a demo full DID or for a light DID,
+  const kiltAddress = encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38)
+  const did = getKiltDidFromIdentifier(kiltAddress)
+
+  const generateKeypairForDid = async (keytype: string) => {
+    const keyId = `${did}#${blake2AsHex(mnemonicOrHexSeed, 64)}`
+    const { publicKey } = await keystore.generateKeypair<any>({
+      alg: keytype,
+      seed: mnemonicOrHexSeed,
+    })
+    return {
+      id: keyId,
+      controller: did,
+      type: keytype,
+      publicKeyHex: Crypto.u8aToHex(publicKey),
+    }
+  }
+
+  const authenticationKey = await generateKeypairForDid(signingKeyType)
+
+  return new LightDidDetails({
+    did: getKiltDidFromIdentifier(kiltAddress),
+    authenticationKey,
+  })
+}
+
 export async function createOnChainDidFromSeed(
   paymentAccount: KeyringPair,
   keystore: DemoKeystore,
   mnemonicOrHexSeed: string,
   signingKeyType = SigningAlgorithms.Ed25519
-): Promise<DidDetails> {
+): Promise<FullDidDetails> {
   const makeKey = (seed: string, alg: string) =>
     keystore
       .generateKeypair({
@@ -378,7 +409,7 @@ export async function createOnChainDidFromSeed(
   })
   const queried = await DefaultResolver.resolveDoc(did)
   if (queried) {
-    return queried as DidDetails
+    return queried as FullDidDetails
   }
   throw Error(`failed to write Did${did}`)
 }
