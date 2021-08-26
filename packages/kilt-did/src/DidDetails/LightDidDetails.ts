@@ -12,12 +12,13 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN, BN_ZERO } from '@polkadot/util'
+import { encodeAddress } from 'utils/src/Crypto'
 import { EncryptionAlgorithms } from '..'
-import { getIdentifierFromDid } from '../Did.utils'
+import { encodeDidPublicKey, getIdentifierFromDid, getKiltDidFromIdentifier } from '../Did.utils'
 import { MapKeyToRelationship } from '../types'
+import { serializeAndEncodeAdditionalLightDidDetails } from './utils'
 
 export interface LightDidDetailsCreationOpts {
-  did: string
   authenticationKey: IDidKeyDetails
   encryptionKey?: IDidKeyDetails
   services?: ServiceDetails[]
@@ -33,7 +34,6 @@ export class LightDidDetails implements IDidDetails {
   }
 
   constructor({
-    did,
     authenticationKey,
     encryptionKey = undefined,
     services = [],
@@ -50,9 +50,13 @@ export class LightDidDetails implements IDidDetails {
 
     this.services = services
 
-    // TODO: If at least one between encryption key and service endpoints is not undefined, generate a JSON document, serialise/encode it and append it to the DID identifier.
-    this.did = did
-    this.identifier = getIdentifierFromDid(this.did)
+    // TODO: to improve. This is just a PoC
+    const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
+      encryptionKey,
+      services,
+    })
+    this.identifier = encodeAddress(authenticationKey.publicKeyHex, 38)
+    this.did = getKiltDidFromIdentifier(this.identifier) + encodedDetails
   }
 
   public getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined {

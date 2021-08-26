@@ -92,7 +92,6 @@ export class FullDidDetails extends LightDidDetails {
 
     // Initialise only did and authentication key from light DID class. The rest is initialised here
     super({
-      did,
       authenticationKey,
     })
 

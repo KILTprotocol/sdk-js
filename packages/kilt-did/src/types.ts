@@ -31,10 +31,6 @@ import type {
 
 /* SDK TYPES */
 
-export enum SupportedVerificationKeyTypes {
-  
-}
-
 export type MapKeyToRelationship = Partial<
   Record<KeyRelationship, Array<IDidKeyDetails['id']>>
 >

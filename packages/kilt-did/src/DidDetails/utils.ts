@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { ApiPromise, } from '@polkadot/api'
+import { ApiPromise } from '@polkadot/api'
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { TypeRegistry } from '@polkadot/types'
 import type {
@@ -19,8 +19,9 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import { BN } from '@polkadot/util'
-import { DidDetails, MapKeyToRelationship } from './DidDetails'
+import { BN, stringToHex } from '@polkadot/util'
+import type { KeypairType } from '@polkadot/util-crypto/types'
+import { FullDidDetails, MapKeyToRelationship } from './FullDidDetails'
 import { PublicKeyRoleAssignment } from '../types'
 import { DidChain, DidUtils } from '..'
 import {
@@ -29,7 +30,7 @@ import {
   getKiltDidFromIdentifier,
   getSignatureAlgForKeyType,
 } from '../Did.utils'
-import type { KeypairType } from '@polkadot/util-crypto/types'
+import type { LightDidDetailsCreationOpts } from './LightDidDetails'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -245,4 +246,19 @@ export function deriveDidPublicKey<T extends string>(
     type,
     publicKeyHex,
   }
+}
+
+export function serializeAndEncodeAdditionalLightDidDetails({
+  encryptionKey,
+  services,
+}: Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'services'>): string {
+  const objectToSerialize: any = {}
+  if (encryptionKey) {
+    objectToSerialize.encryptionKey = encryptionKey
+  }
+  if (services) {
+    objectToSerialize.services = services
+  }
+
+  return stringToHex(JSON.stringify(objectToSerialize))
 }
