@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { ApiPromise } from '@polkadot/api'
+import { ApiPromise, } from '@polkadot/api'
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { TypeRegistry } from '@polkadot/types'
 import type {
@@ -29,6 +29,7 @@ import {
   getKiltDidFromIdentifier,
   getSignatureAlgForKeyType,
 } from '../Did.utils'
+import type { KeypairType } from '@polkadot/util-crypto/types'
 
 interface MethodMapping<V extends string> {
   default: V

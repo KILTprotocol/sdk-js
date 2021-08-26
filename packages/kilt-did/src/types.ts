@@ -31,6 +31,14 @@ import type {
 
 /* SDK TYPES */
 
+export enum SupportedVerificationKeyTypes {
+  
+}
+
+export type MapKeyToRelationship = Partial<
+  Record<KeyRelationship, Array<IDidKeyDetails['id']>>
+>
+
 export interface INewPublicKey<T extends string = string> {
   publicKey: Uint8Array
   type: T

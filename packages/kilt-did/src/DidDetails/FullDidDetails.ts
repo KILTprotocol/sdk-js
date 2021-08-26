@@ -17,17 +17,15 @@ import type {
   ServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
+import { MapKeyToRelationship } from '../types'
 
 import type { BN } from '@polkadot/util'
 import { generateDidAuthenticatedTx, queryLastTxIndex } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './utils'
 import { getIdentifierFromDid, getSignatureAlgForKeyType } from '../Did.utils'
+import { LightDidDetails } from './LightDidDetails'
 
-export type MapKeyToRelationship = Partial<
-  Record<KeyRelationship, Array<IDidKeyDetails['id']>>
->
-
-export interface DidDetailsCreationOpts {
+export interface FullDidDetailsCreationOpts {
   did: string
   keys: IDidKeyDetails[]
   keyRelationships: MapKeyToRelationship
@@ -39,14 +37,14 @@ function errorCheck({
   did,
   keys,
   keyRelationships,
-}: Required<DidDetailsCreationOpts>): void {
+}: Required<FullDidDetailsCreationOpts>): void {
   if (!did) {
     throw Error('did is required for DidDetails')
   }
   const keyIds = new Set(keys.map((key) => key.id))
-  if (!keyRelationships[KeyRelationship.authentication]?.length) {
+  if (keyRelationships[KeyRelationship.authentication]?.length !== 1) {
     throw Error(
-      `At least one ${KeyRelationship.authentication} key is required on DidDetails`
+      `One and only one ${KeyRelationship.authentication} key is required on DidDetails`
     )
   }
   const allowedKeyRelationships: string[] = [
@@ -68,15 +66,7 @@ function errorCheck({
   })
 }
 
-export class DidDetails implements IDidDetails {
-  public readonly did: string
-  public readonly identifier: string
-  protected services: ServiceDetails[]
-  protected keys: Map<IDidKeyDetails['id'], IDidKeyDetails>
-  protected keyRelationships: MapKeyToRelationship & {
-    none?: Array<IDidKeyDetails['id']>
-  }
-
+export class FullDidDetails extends LightDidDetails {
   private lastTxIndex: BN
 
   constructor({
@@ -85,7 +75,7 @@ export class DidDetails implements IDidDetails {
     keyRelationships = {},
     lastTxIndex,
     services = [],
-  }: DidDetailsCreationOpts) {
+  }: FullDidDetailsCreationOpts) {
     errorCheck({
       did,
       keys,
@@ -94,11 +84,20 @@ export class DidDetails implements IDidDetails {
       lastTxIndex,
     })
 
-    this.did = did
+    // We are sure that there is one and only one authentication key because the condition is checked in `errorCheck`
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const authenticationKeyId = keyRelationships.Authentication![0]
+    // Same way, we know the key exists because the match between keys and relationships is verified in `errorCheck`
+    const authenticationKey = keys[authenticationKeyId]
+
+    // Initialise only did and authentication key from light DID class. The rest is initialised here
+    super({
+      did,
+      authenticationKey,
+    })
+
     this.keys = new Map(keys.map((key) => [key.id, key]))
     this.lastTxIndex = lastTxIndex
-    this.services = services
-    this.identifier = getIdentifierFromDid(this.did)
     this.keyRelationships = keyRelationships
     this.keyRelationships.none = []
     const keysWithRelationship = new Set<string>(
@@ -109,37 +108,6 @@ export class DidDetails implements IDidDetails {
         this.keyRelationships.none?.push(id)
       }
     })
-  }
-
-  public getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined {
-    return this.keys.get(id)
-  }
-
-  public getService(id: ServiceDetails['id']): ServiceDetails | undefined {
-    return this.services.find((s) => s.id === id)
-  }
-
-  public getKeys(relationship?: KeyRelationship | 'none'): IDidKeyDetails[] {
-    if (relationship) {
-      return this.getKeyIds(relationship).map((id) => this.getKey(id)!)
-    }
-    return [...this.keys.values()]
-  }
-
-  public getKeyIds(
-    relationship?: KeyRelationship | 'none'
-  ): Array<IDidKeyDetails['id']> {
-    if (relationship) {
-      return this.keyRelationships[relationship] || []
-    }
-    return [...this.keys.keys()]
-  }
-
-  public getServices(type?: string): ServiceDetails[] {
-    if (type) {
-      return this.services.filter((service) => service.type === type)
-    }
-    return this.services
   }
 
   public getNextTxIndex(increment = true): BN {
