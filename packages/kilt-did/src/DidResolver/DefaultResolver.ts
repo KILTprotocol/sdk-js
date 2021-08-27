@@ -12,14 +12,14 @@ import type {
   ServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { DidDetails, DidDetailsCreationOpts } from '../DidDetails/DidDetails'
+import { FullDidDetails } from '../DidDetails/FullDidDetails'
 import { queryById, queryKey } from '../Did.chain'
 import { getKiltDidFromIdentifier, parseDidUrl } from '../Did.utils'
 
 async function detailsFromIdentifier(
   identifier: string,
   { servicesResolver }: ResolverOpts
-): Promise<DidDetails | null> {
+): Promise<FullDidDetails | null> {
   const didRec = await queryById(identifier)
   if (!didRec) return null
   const {
@@ -32,7 +32,7 @@ async function detailsFromIdentifier(
     lastTxCounter,
   } = didRec
 
-  const keyRelationships: DidDetailsCreationOpts['keyRelationships'] = {
+  const keyRelationships: FullDidDetails['keyRelationships'] = {
     [KeyRelationship.authentication]: [authenticationKey],
     [KeyRelationship.keyAgreement]: keyAgreementKeys,
   }
@@ -44,17 +44,20 @@ async function detailsFromIdentifier(
       capabilityDelegationKey,
     ]
   }
-  const didDetails: DidDetailsCreationOpts = {
+
+  let services: ServiceDetails[] = []
+  if (servicesResolver && endpointData) {
+    const { contentHash, contentType, urls } = endpointData
+    services = await servicesResolver(contentHash, urls, contentType)
+  }
+
+  return new FullDidDetails({
     did: getKiltDidFromIdentifier(identifier),
     keys: publicKeys,
     keyRelationships,
     lastTxIndex: lastTxCounter.toBn(),
-  }
-  if (servicesResolver && endpointData) {
-    const { contentHash, contentType, urls } = endpointData
-    didDetails.services = await servicesResolver(contentHash, urls, contentType)
-  }
-  return new DidDetails(didDetails)
+    services,
+  })
 }
 
 export async function resolveKey(
@@ -67,7 +70,7 @@ export async function resolveKey(
 export async function resolveDoc(
   did: string,
   opts: ResolverOpts = {}
-): Promise<DidDetails | null> {
+): Promise<FullDidDetails | null> {
   const { identifier } = parseDidUrl(did)
   return detailsFromIdentifier(identifier, opts)
 }
@@ -75,7 +78,7 @@ export async function resolveDoc(
 export async function resolve(
   didUri: string,
   opts: ResolverOpts = {}
-): Promise<DidDetails | IDidKeyDetails | ServiceDetails | null> {
+): Promise<FullDidDetails | IDidKeyDetails | ServiceDetails | null> {
   const { fragment, identifier } = parseDidUrl(didUri)
   const details = await detailsFromIdentifier(identifier, opts)
   if (!fragment || !details) {

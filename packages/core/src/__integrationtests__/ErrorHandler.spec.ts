@@ -15,7 +15,7 @@ import { KeyringPair } from '@polkadot/keyring/types'
 import {
   createOnChainDidFromSeed,
   DemoKeystore,
-  DidDetails,
+  FullDidDetails,
 } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { Attestation } from '..'
@@ -26,7 +26,7 @@ import { addressFromRandom, devAlice, WS_ADDRESS } from './utils'
 import '../../../../testingTools/jestErrorCodeMatcher'
 
 let paymentAccount: KeyringPair
-let someDid: DidDetails
+let someDid: FullDidDetails
 const keystore = new DemoKeystore()
 
 beforeAll(async () => {

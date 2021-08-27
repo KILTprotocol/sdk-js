@@ -11,7 +11,7 @@
 
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
-import { DidDetails, DidDetailsCreationOpts } from './DidDetails'
+import { FullDidDetails, DidDetailsCreationOpts } from './FullDidDetails'
 
 describe('functional tests', () => {
   const did = 'did:kilt:test'
@@ -69,8 +69,8 @@ describe('functional tests', () => {
     services,
   }
 
-  it('creates DidDetails', () => {
-    const dd = new DidDetails(didDetails)
+  it('creates FullDidDetails', () => {
+    const dd = new FullDidDetails(didDetails)
     expect(dd.did).toEqual(did)
     expect(dd.identifier).toMatchInlineSnapshot(`"test"`)
     expect(dd.getKeys()).toMatchInlineSnapshot(`
@@ -122,7 +122,7 @@ describe('functional tests', () => {
   })
 
   it('gets keys via role', () => {
-    let dd = new DidDetails(didDetails)
+    let dd = new FullDidDetails(didDetails)
     expect(dd.getKeyIds(KeyRelationship.authentication)).toEqual([keys[0].id])
     expect(dd.getKeys(KeyRelationship.authentication)).toEqual([keys[0]])
     expect(dd.getKeyIds(KeyRelationship.keyAgreement)).toEqual(
@@ -133,7 +133,7 @@ describe('functional tests', () => {
     ).toEqual(didDetails.keyRelationships[KeyRelationship.keyAgreement])
     expect(dd.getKeyIds(KeyRelationship.assertionMethod)).toEqual([keys[3].id])
 
-    dd = new DidDetails({
+    dd = new FullDidDetails({
       ...didDetails,
       keyRelationships: { [KeyRelationship.authentication]: [keys[3].id] },
     })
@@ -144,7 +144,7 @@ describe('functional tests', () => {
   })
 
   it('gets service via type', () => {
-    const dd = new DidDetails(didDetails)
+    const dd = new FullDidDetails(didDetails)
     expect(dd.getServices('messaging').map((s) => s.type)).toEqual([
       'messaging',
     ])
@@ -154,14 +154,14 @@ describe('functional tests', () => {
   })
 
   it('returns the next nonce', () => {
-    let dd = new DidDetails(didDetails)
+    let dd = new FullDidDetails(didDetails)
     expect(dd.getNextTxIndex().toString()).toEqual(
       didDetails.lastTxIndex.addn(1).toString()
     )
     expect(dd.getNextTxIndex().toString()).toEqual(
       didDetails.lastTxIndex.addn(2).toString()
     )
-    dd = new DidDetails(didDetails)
+    dd = new FullDidDetails(didDetails)
     expect(dd.getNextTxIndex(false).toString()).toEqual(
       didDetails.lastTxIndex.addn(1).toString()
     )
@@ -171,7 +171,7 @@ describe('functional tests', () => {
   })
 
   it('gets the correct keys for each pallet', () => {
-    const dd = new DidDetails({
+    const dd = new FullDidDetails({
       ...didDetails,
       keyRelationships: {
         [KeyRelationship.authentication]: [keys[0].id],

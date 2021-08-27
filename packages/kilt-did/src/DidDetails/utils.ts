@@ -20,9 +20,8 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { BN, stringToHex } from '@polkadot/util'
-import type { KeypairType } from '@polkadot/util-crypto/types'
-import { FullDidDetails, MapKeyToRelationship } from './FullDidDetails'
-import { PublicKeyRoleAssignment } from '../types'
+import { FullDidDetails } from '.'
+import type { PublicKeyRoleAssignment, MapKeyToRelationship } from '../types'
 import { DidChain, DidUtils } from '..'
 import {
   computeKeyId,
@@ -129,7 +128,7 @@ export function newDidDetailsfromKeys(
   keys: Partial<Record<KeyRelationship, IDidKeyDetails>> & {
     [KeyRelationship.authentication]: IDidKeyDetails
   }
-): DidDetails {
+): FullDidDetails {
   const did = keys[KeyRelationship.authentication].controller
   const allKeys: IDidKeyDetails[] = []
   const keyRelationships: MapKeyToRelationship = {}
@@ -139,7 +138,7 @@ export function newDidDetailsfromKeys(
       allKeys.push(thisKey)
     }
   })
-  return new DidDetails({
+  return new FullDidDetails({
     did,
     keys: allKeys,
     keyRelationships,
@@ -206,7 +205,7 @@ export async function signWithDid(
     key = did.getKey(whichKey)
   }
   if (!key) {
-    throw Error(`failed to find key on DidDetails (${did.did}): ${whichKey}`)
+    throw Error(`failed to find key on FullDidDetails (${did.did}): ${whichKey}`)
   }
   return signWithKey(toSign, key, signer)
 }

@@ -13,16 +13,14 @@ import type {
   SubmittableExtrinsic,
   ApiOrMetadata,
   CallMeta,
-  IDidDetails,
   ServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { MapKeyToRelationship } from '../types'
-
 import type { BN } from '@polkadot/util'
+import { MapKeyToRelationship } from '../types'
 import { generateDidAuthenticatedTx, queryLastTxIndex } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './utils'
-import { getIdentifierFromDid, getSignatureAlgForKeyType } from '../Did.utils'
+import { getSignatureAlgForKeyType } from '../Did.utils'
 import { LightDidDetails } from './LightDidDetails'
 
 export interface FullDidDetailsCreationOpts {
@@ -39,12 +37,12 @@ function errorCheck({
   keyRelationships,
 }: Required<FullDidDetailsCreationOpts>): void {
   if (!did) {
-    throw Error('did is required for DidDetails')
+    throw Error('did is required for FullDidDetails')
   }
   const keyIds = new Set(keys.map((key) => key.id))
   if (keyRelationships[KeyRelationship.authentication]?.length !== 1) {
     throw Error(
-      `One and only one ${KeyRelationship.authentication} key is required on DidDetails`
+      `One and only one ${KeyRelationship.authentication} key is required on FullDidDetails`
     )
   }
   const allowedKeyRelationships: string[] = [

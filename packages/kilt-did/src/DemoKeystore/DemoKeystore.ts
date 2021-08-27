@@ -33,7 +33,7 @@ import { u8aEq } from '@polkadot/util'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import { FullDidDetails, LightDidDetails, DidDetailsUtils } from '../DidDetails'
 import { DefaultResolver, DidUtils } from '..'
-import { DidPublicKeyDetails, PublicKeyRoleAssignment } from '../types'
+import { PublicKeyRoleAssignment } from '../types'
 
 export enum SigningAlgorithms {
   Ed25519 = 'ed25519',
@@ -361,7 +361,6 @@ export async function createOffChainDidFromSeed(
   const authenticationKey = await generateKeypairForDid(signingKeyType)
 
   return new LightDidDetails({
-    did: getKiltDidFromIdentifier(kiltAddress),
     authenticationKey,
   })
 }

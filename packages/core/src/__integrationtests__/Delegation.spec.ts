@@ -16,7 +16,7 @@ import type { KeyringPair } from '@polkadot/keyring/types'
 import {
   createOnChainDidFromSeed,
   DemoKeystore,
-  DidDetails,
+  FullDidDetails,
 } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import Attestation from '../attestation/Attestation'
@@ -30,12 +30,12 @@ import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
 let paymentAccount: KeyringPair
 let signer: DemoKeystore
-let root: DidDetails
-let claimer: DidDetails
-let attester: DidDetails
+let root: FullDidDetails
+let claimer: FullDidDetails
+let attester: FullDidDetails
 
 async function writeHierarchy(
-  delegator: DidDetails,
+  delegator: FullDidDetails,
   ctypeHash: ICType['hash']
 ): Promise<DelegationNode> {
   const rootNode = DelegationNode.newRoot({
@@ -60,8 +60,8 @@ async function writeHierarchy(
 async function addDelegation(
   hierarchyId: IDelegationNode['id'],
   parentId: DelegationNode['id'],
-  delegator: DidDetails,
-  delegee: DidDetails,
+  delegator: FullDidDetails,
+  delegee: FullDidDetails,
   permissions: Permission[] = [Permission.ATTEST, Permission.DELEGATE]
 ): Promise<DelegationNode> {
   const delegationNode = DelegationNode.newNode({

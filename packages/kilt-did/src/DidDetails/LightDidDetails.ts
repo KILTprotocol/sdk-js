@@ -11,10 +11,9 @@ import type {
   ServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { BN, BN_ZERO } from '@polkadot/util'
-import { encodeAddress } from 'utils/src/Crypto'
-import { EncryptionAlgorithms } from '..'
-import { encodeDidPublicKey, getIdentifierFromDid, getKiltDidFromIdentifier } from '../Did.utils'
+import { BN } from '@polkadot/util'
+import { encodeAddress } from '@polkadot/util-crypto'
+import { getKiltDidFromIdentifier } from '../Did.utils'
 import { MapKeyToRelationship } from '../types'
 import { serializeAndEncodeAdditionalLightDidDetails } from './utils'
 
