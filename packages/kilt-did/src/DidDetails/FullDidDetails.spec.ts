@@ -11,7 +11,7 @@
 
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
-import { FullDidDetails, DidDetailsCreationOpts } from './FullDidDetails'
+import { FullDidDetails, FullDidDetailsCreationOpts } from './FullDidDetails'
 
 describe('functional tests', () => {
   const did = 'did:kilt:test'
@@ -57,7 +57,7 @@ describe('functional tests', () => {
       serviceEndpoint: '123344',
     },
   ]
-  const didDetails: DidDetailsCreationOpts = {
+  const didDetails: FullDidDetailsCreationOpts = {
     did,
     keys,
     keyRelationships: {

@@ -11,7 +11,7 @@ import type {
   ServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { BN } from '@polkadot/util'
+import { BN, hexToU8a } from '@polkadot/util'
 import { encodeAddress } from '@polkadot/util-crypto'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import { MapKeyToRelationship } from '../types'
@@ -54,7 +54,10 @@ export class LightDidDetails implements IDidDetails {
       encryptionKey,
       services,
     })
-    this.identifier = encodeAddress(authenticationKey.publicKeyHex, 38)
+    this.identifier = encodeAddress(
+      hexToU8a(authenticationKey.publicKeyHex),
+      38
+    )
     this.did = getKiltDidFromIdentifier(this.identifier) + encodedDetails
   }
 

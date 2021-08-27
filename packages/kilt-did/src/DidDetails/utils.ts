@@ -19,7 +19,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import { BN, stringToHex } from '@polkadot/util'
+import { BN } from '@polkadot/util'
 import { FullDidDetails } from '.'
 import type { PublicKeyRoleAssignment, MapKeyToRelationship } from '../types'
 import { DidChain, DidUtils } from '..'
@@ -30,6 +30,7 @@ import {
   getSignatureAlgForKeyType,
 } from '../Did.utils'
 import type { LightDidDetailsCreationOpts } from './LightDidDetails'
+import { base64Encode } from '@polkadot/util-crypto'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -259,5 +260,8 @@ export function serializeAndEncodeAdditionalLightDidDetails({
     objectToSerialize.services = services
   }
 
-  return stringToHex(JSON.stringify(objectToSerialize))
+  // TODO: take only needed information for encryption keys and JSON.stringify() only the service endpoints (by stripping the service ID from the whole DID URI)
+  // TODO: Decide on a better encoding then HEX. Perhaps Base64 or Base58? Also, think about possible compression
+  // TODO: Replace JSON.stringify() with another serialization? Then, check whether it makes sense to compress and encode, to encode and compress, or to simply encode.
+  return base64Encode(JSON.stringify(objectToSerialize))
 }
