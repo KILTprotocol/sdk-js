@@ -31,6 +31,7 @@
     "@polkadot/keyring": "^7.1.2",
     "@polkadot/types": "^5.4.1",
     "@polkadot/util": "^7.1.2",
-    "@polkadot/util-crypto": "^7.1.2"
+    "@polkadot/util-crypto": "^7.1.2",
+    "cbor": "^8.0.0"
   }
 }

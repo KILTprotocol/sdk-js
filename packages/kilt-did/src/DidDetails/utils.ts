@@ -20,6 +20,7 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { BN } from '@polkadot/util'
+import { encode as cborEncode } from 'cbor'
 import { FullDidDetails } from '.'
 import type { PublicKeyRoleAssignment, MapKeyToRelationship } from '../types'
 import { DidChain, DidUtils } from '..'
@@ -30,7 +31,6 @@ import {
   getSignatureAlgForKeyType,
 } from '../Did.utils'
 import type { LightDidDetailsCreationOpts } from './LightDidDetails'
-import { base64Encode } from '@polkadot/util-crypto'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -248,20 +248,39 @@ export function deriveDidPublicKey<T extends string>(
   }
 }
 
+const ENCRYPTION_KEY_MAP_KEY = 'encryptionKey'
+const SERVICES_MAP_KEY = 'services'
+
+/**
+ * Serialize the optional encryption key and service endpoints of an off-chain DID using the CBOR serialization algorithm and encoding the result in Base64 format.
+ *
+ * @param input.encrytpionKey The optional encryption key associated with the off-chain DID.
+ * @param input.services The optional service endpoints associated with the off-chain DID.
+ * @returns The Base64-encoded and CBOR-serialized off-chain DID optional details.
+ */
 export function serializeAndEncodeAdditionalLightDidDetails({
   encryptionKey,
   services,
-}: Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'services'>): string {
-  const objectToSerialize: any = {}
+}: Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'services'>):
+  | string
+  | null {
+  const objectToSerialize: Map<string, any> = new Map()
   if (encryptionKey) {
-    objectToSerialize.encryptionKey = encryptionKey
+    objectToSerialize.set(ENCRYPTION_KEY_MAP_KEY, encryptionKey)
   }
-  if (services) {
-    objectToSerialize.services = services
+  if (services && services.length) {
+    objectToSerialize.set(SERVICES_MAP_KEY, services)
   }
 
-  // TODO: take only needed information for encryption keys and JSON.stringify() only the service endpoints (by stripping the service ID from the whole DID URI)
-  // TODO: Decide on a better encoding then HEX. Perhaps Base64 or Base58? Also, think about possible compression
-  // TODO: Replace JSON.stringify() with another serialization? Then, check whether it makes sense to compress and encode, to encode and compress, or to simply encode.
-  return base64Encode(JSON.stringify(objectToSerialize))
+  if (!objectToSerialize.size) {
+    return null
+  }
+
+  // TODO: add versioning
+  return cborEncode(objectToSerialize).toString('base64')
 }
+
+// export function decodeAndDeserializeAdditionalLightDidDetails(rawInput: string): Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'services'> {
+//   const decodedPayload = cborDecode(rawInput)
+
+// }

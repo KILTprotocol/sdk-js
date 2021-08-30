@@ -58,7 +58,11 @@ export class LightDidDetails implements IDidDetails {
       hexToU8a(authenticationKey.publicKeyHex),
       38
     )
-    this.did = getKiltDidFromIdentifier(this.identifier) + encodedDetails
+    let did = getKiltDidFromIdentifier(this.identifier)
+    if (encodedDetails) {
+      did = did.concat(':', encodedDetails)
+    }
+    this.did = did
   }
 
   public getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined {

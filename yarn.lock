@@ -869,6 +869,7 @@ __metadata:
     "@polkadot/types": ^5.4.1
     "@polkadot/util": ^7.1.2
     "@polkadot/util-crypto": ^7.1.2
+    cbor: ^8.0.0
     rimraf: ^3.0.2
     typescript: ^4.2.2
   languageName: unknown
@@ -2676,6 +2677,15 @@ __metadata:
   version: 0.12.0
   resolution: "caseless@npm:0.12.0"
   checksum: 147f48bff9bebf029d7050e2335da3f8d295f26d157edf08d8c3282c804dae04a462c4cd6efa8179755686aa3aeaca5c28f3e7f3559698bc0484c65e46c36c5b
+  languageName: node
+  linkType: hard
+
+"cbor@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "cbor@npm:8.0.0"
+  dependencies:
+    nofilter: ^3.0.2
+  checksum: 653a8f048108ecae07992c98fcc670f3d4d8fa4a2f9df6649b843dec31b4b10ccf5c6927da54bdb9cbf1c56bd3e7c52d9ac87500688b973362bd3fec8e06fef7
   languageName: node
   linkType: hard
 
@@ -6704,6 +6714,13 @@ fsevents@^2.1.2:
   version: 1.1.71
   resolution: "node-releases@npm:1.1.71"
   checksum: 9e283003f1deafd0ca7f9bbde9c4b5b05d880ca165217f5227b37406626d6689a246a5c4c72f9a8512be65cd51b13cc7d0f5d8bc68ad36089b620f1810292340
+  languageName: node
+  linkType: hard
+
+"nofilter@npm:^3.0.2":
+  version: 3.0.3
+  resolution: "nofilter@npm:3.0.3"
+  checksum: 3fc69efbe5c1b547f393bc2ec107f1ede7ae4da7e9c4fff4c7a8c8d1736a53926110d017d5bea6ffded141c434f09f473848ba511e704c613b923abb9fa25e65
   languageName: node
   linkType: hard
 
