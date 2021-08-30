@@ -11,7 +11,7 @@ import type {
   ServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { BN, hexToU8a } from '@polkadot/util'
+import { hexToU8a } from '@polkadot/util'
 import { encodeAddress } from '@polkadot/util-crypto'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import { MapKeyToRelationship } from '../types'
@@ -90,11 +90,5 @@ export class LightDidDetails implements IDidDetails {
       return this.services.filter((service) => service.type === type)
     }
     return this.services
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  public getNextTxIndex(): BN {
-    // Not really used for off-chain DIDs
-    return new BN(0)
   }
 }

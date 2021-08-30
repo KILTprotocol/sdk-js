@@ -107,6 +107,12 @@ export class FullDidDetails extends LightDidDetails {
     })
   }
 
+  /**
+   * Gets the next nonce/transaction index required for DID authorized blockchain transactions.
+   *
+   * @param increment Flag indicating whether the retrieved tx index should be increased.
+   * @returns A [[BN]] indicating the next transaction index.
+   */
   public getNextTxIndex(increment = true): BN {
     const nextIndex = this.lastTxIndex.addn(1)
     if (increment) this.lastTxIndex = nextIndex

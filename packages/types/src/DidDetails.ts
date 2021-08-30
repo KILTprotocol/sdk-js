@@ -7,7 +7,6 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { Metadata } from '@polkadot/types'
-import type { BN } from '@polkadot/util'
 
 /**
  * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.
@@ -119,12 +118,6 @@ export interface IDidDetails {
    * @returns An array of all or selected [[ServiceDetails]], depending on the `type` parameter.
    */
   getServices(type?: string): ServiceDetails[]
-  /**
-   * Gets the next nonce/transaction index required for DID authorized blockchain transactions.
-   *
-   * @returns A [[BN]] indicating the next transaction index.
-   */
-  getNextTxIndex(): BN
 }
 
 export type ApiOrMetadata = ApiPromise | Metadata
