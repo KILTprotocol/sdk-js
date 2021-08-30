@@ -65,7 +65,7 @@ export enum ErrorCode {
   ERROR_PE_MISMATCH = 20015,
   ERROR_DID_IDENTIFIER_MISMATCH = 20016,
   ERROR_HIERARCHY_QUERY = 20017,
-  ERROR_INVALID_DID_PREFIX = 20018,
+  ERROR_INVALID_DID_FORMAT = 20018,
   ERROR_MESSAGE_BODY_MALFORMED = 20019,
   ERROR_NODE_QUERY = 20020,
 
@@ -422,12 +422,12 @@ export const ERROR_NODE_QUERY: (nodeId: string) => SDKError = (
     `Could not find node with id ${nodeId}`
   )
 }
-export const ERROR_INVALID_DID_PREFIX: (identifier: string) => SDKError = (
+export const ERROR_INVALID_DID_FORMAT: (identifier: string) => SDKError = (
   identifier: string
 ) => {
   return new SDKError(
-    ErrorCode.ERROR_INVALID_DID_PREFIX,
-    `Not a KILT did: ${identifier}`
+    ErrorCode.ERROR_INVALID_DID_FORMAT,
+    `Not a valid KILT did: ${identifier}`
   )
 }
 

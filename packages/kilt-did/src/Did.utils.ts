@@ -66,34 +66,45 @@ export function getSignatureAlgForKeyType(keyType: string): string {
   return SignatureAlgForKeyType[keyType] || keyType
 }
 
-export function getKiltDidFromIdentifier(identifier: string): string {
+export function getKiltDidFromIdentifier(
+  identifier: string,
+  didType: 'full' | 'light',
+  didVersion = 1
+): string {
   if (identifier.startsWith(KILT_DID_PREFIX)) {
     return identifier
   }
-  return KILT_DID_PREFIX + identifier
+  return KILT_DID_PREFIX.concat(`${didType}:v${didVersion}:${identifier}`)
 }
 
 export function getIdentifierFromKiltDid(did: string): string {
   if (!did.startsWith(KILT_DID_PREFIX)) {
-    throw SDKErrors.ERROR_INVALID_DID_PREFIX(did)
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
   }
-  return did.substr(KILT_DID_PREFIX.length)
+  const didParts = did.split(':')
+  // A minimal DID has to be did:kilt:v<version_number>:<light|full>:<kilt_address>[:<encoded_details>)]. So minimum 5 and maximum 6.
+  if (didParts.length < 5 || didParts.length > 6) {
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
+  }
+  // Return always the 5th element, which corresponds to the KILT address in the DID
+  return didParts[5]
 }
 
 export function getIdentifierFromDid(did: string): string {
   const secondColonAt = did.indexOf(':', did.indexOf(':') + 1)
   const identifier = did.substring(secondColonAt + 1)
   if (!identifier) {
-    throw SDKErrors.ERROR_INVALID_DID_PREFIX(did)
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
   }
   return identifier
 }
 
 export function parseDidUrl(didUrl: string) {
   const { identifier, fragment } = didUrl.match(KILT_DID_REGEX)?.groups || {}
-  if (!identifier) throw SDKErrors.ERROR_INVALID_DID_PREFIX(didUrl)
+  if (!identifier) throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUrl)
   return {
-    did: getKiltDidFromIdentifier(identifier),
+    // TODO: TO CHANGE WHEN WORKING ON THE RESOLVER
+    did: getKiltDidFromIdentifier(identifier, 'full'),
     identifier,
     fragment: fragment?.substr(1),
   }
@@ -348,7 +359,7 @@ export async function writeDidfromPublicKeys(
     signingPublicKey: authenticationKey.publicKey,
     endpointData,
   })
-  return { submittable, did: getKiltDidFromIdentifier(didIdentifier) }
+  return { submittable, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
 }
 
 export function writeDidfromIdentity(

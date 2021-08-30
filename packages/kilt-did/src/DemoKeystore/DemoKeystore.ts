@@ -287,7 +287,8 @@ export async function createLocalDemoDidFromSeed(
   signingKeyType = SigningAlgorithms.Ed25519
 ): Promise<FullDidDetails> {
   const did = getKiltDidFromIdentifier(
-    encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38)
+    encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38),
+    'full'
   )
 
   const generateKeypairForDid = async (
@@ -342,7 +343,7 @@ export async function createOffChainDidFromSeed(
 ): Promise<LightDidDetails> {
   // This block is very similar to `createLocalDemoDidFromSeed` so we might want to refactor in the future to specify what keys should be created, so that the same logic can be used for a demo full DID or for a light DID,
   const kiltAddress = encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38)
-  const did = getKiltDidFromIdentifier(kiltAddress)
+  const did = getKiltDidFromIdentifier(kiltAddress, 'light')
 
   const generateKeypairForDid = async (keytype: string) => {
     const keyId = `${did}#${blake2AsHex(mnemonicOrHexSeed, 64)}`

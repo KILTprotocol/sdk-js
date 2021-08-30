@@ -42,7 +42,7 @@ export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
 export function decode(encoded: Option<AccountId>): IDidDetails['did'] | null {
   DecoderUtils.assertCodecIsType(encoded, ['Option<CtypeCreatorOf>'])
   return encoded.isSome
-    ? DidUtils.getKiltDidFromIdentifier(encoded.unwrap().toString())
+    ? DidUtils.getKiltDidFromIdentifier(encoded.unwrap().toString(), 'full')
     : null
 }
 

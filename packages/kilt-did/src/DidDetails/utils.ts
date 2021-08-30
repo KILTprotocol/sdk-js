@@ -8,6 +8,7 @@
 import { ApiPromise } from '@polkadot/api'
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { TypeRegistry } from '@polkadot/types'
+// import { encode as cborEncode } from 'cbor'
 import type {
   ApiOrMetadata,
   CallMeta,
@@ -20,8 +21,7 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { BN } from '@polkadot/util'
-import { encode as cborEncode } from 'cbor'
-import { FullDidDetails } from '.'
+import { FullDidDetails } from './FullDidDetails'
 import type { PublicKeyRoleAssignment, MapKeyToRelationship } from '../types'
 import { DidChain, DidUtils } from '..'
 import {
@@ -206,7 +206,9 @@ export async function signWithDid(
     key = did.getKey(whichKey)
   }
   if (!key) {
-    throw Error(`failed to find key on FullDidDetails (${did.did}): ${whichKey}`)
+    throw Error(
+      `failed to find key on FullDidDetails (${did.did}): ${whichKey}`
+    )
   }
   return signWithKey(toSign, key, signer)
 }
@@ -239,7 +241,7 @@ export function deriveDidPublicKey<T extends string>(
   )
   const did =
     controller ||
-    getKiltDidFromIdentifier(Crypto.encodeAddress(publicKeyU8a, 38))
+    getKiltDidFromIdentifier(Crypto.encodeAddress(publicKeyU8a, 38), 'full')
   return {
     id: `${did}#${keyIdentifier}`,
     controller: did,
@@ -276,8 +278,8 @@ export function serializeAndEncodeAdditionalLightDidDetails({
     return null
   }
 
-  // TODO: add versioning
-  return cborEncode(objectToSerialize).toString('base64')
+  return ''
+  // return cborEncode(objectToSerialize).toString('base64')
 }
 
 // export function decodeAndDeserializeAdditionalLightDidDetails(rawInput: string): Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'services'> {

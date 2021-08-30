@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * Copyright 2018-2021 BOTLabs GmbH.
  *
  * This source code is licensed under the BSD 4-Clause "Original" license
  * found in the LICENSE file in the root directory of this source tree.
  */
+
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 /**
  * @group unit/did
@@ -24,7 +25,9 @@ describe('Light DID tests', () => {
   const encPublicKeyHex =
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   const testDid = getKiltDidFromIdentifier(
-    encodeAddress(hexToU8a(authPublicKeyHex), 38)
+    encodeAddress(hexToU8a(authPublicKeyHex), 38),
+    'light',
+    LightDidDetails.LIGHT_DID_VERSION
   )
   const authenticationDidKeyDetails = {
     id: `${testDid}#1`,

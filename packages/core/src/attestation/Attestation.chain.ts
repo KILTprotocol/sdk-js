@@ -62,7 +62,8 @@ function decode(
       claimHash,
       cTypeHash: chainAttestation.ctypeHash.toString(),
       owner: DidUtils.getKiltDidFromIdentifier(
-        chainAttestation.attester.toString()
+        chainAttestation.attester.toString(),
+        'full'
       ),
       delegationId:
         chainAttestation.delegationId.unwrapOr(null)?.toString() || null,

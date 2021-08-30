@@ -5,6 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 import type {
   IDidKeyDetails,
   IDidDetails,
@@ -32,6 +34,8 @@ export class LightDidDetails implements IDidDetails {
     none?: Array<IDidKeyDetails['id']>
   }
 
+  public static readonly LIGHT_DID_VERSION = 1
+
   constructor({
     authenticationKey,
     encryptionKey = undefined,
@@ -58,7 +62,11 @@ export class LightDidDetails implements IDidDetails {
       hexToU8a(authenticationKey.publicKeyHex),
       38
     )
-    let did = getKiltDidFromIdentifier(this.identifier)
+    let did = getKiltDidFromIdentifier(
+      this.identifier,
+      'light',
+      LightDidDetails.LIGHT_DID_VERSION
+    )
     if (encodedDetails) {
       did = did.concat(':', encodedDetails)
     }

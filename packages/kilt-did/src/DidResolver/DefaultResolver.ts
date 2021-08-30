@@ -52,7 +52,7 @@ async function detailsFromIdentifier(
   }
 
   return new FullDidDetails({
-    did: getKiltDidFromIdentifier(identifier),
+    did: getKiltDidFromIdentifier(identifier, 'full'),
     keys: publicKeys,
     keyRelationships,
     lastTxIndex: lastTxCounter.toBn(),
