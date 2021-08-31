@@ -869,6 +869,7 @@ __metadata:
     "@polkadot/types": ^5.4.1
     "@polkadot/util": ^7.1.2
     "@polkadot/util-crypto": ^7.1.2
+    "@types/node": ^16.7.8
     cbor: ^8.0.0
     rimraf: ^3.0.2
     typescript: ^4.2.2
@@ -1451,6 +1452,13 @@ __metadata:
   version: 14.0.27
   resolution: "@types/node@npm:14.0.27"
   checksum: 54ecf408eb94f44685e12ef395d8d9d5789cb9e209f171153b6b951272af6b8da099778d09d66454aa5d35ce246f3922ebd7476ed768bf3bd4267306c12a6703
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^16.7.8":
+  version: 16.7.8
+  resolution: "@types/node@npm:16.7.8"
+  checksum: 393a93639c0a83420b1fddc27dfd50c57331a670ac4b36ce926a2debdfebb97ae1932e42ece1f34fed3759a1d0c0e13aa00aedf89793d7e65a727d88f6293a83
   languageName: node
   linkType: hard
 
