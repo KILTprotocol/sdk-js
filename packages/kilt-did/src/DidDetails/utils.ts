@@ -21,6 +21,7 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { BN } from '@polkadot/util'
+import { encode as cborEncode } from 'cbor'
 import { FullDidDetails } from './FullDidDetails'
 import type { PublicKeyRoleAssignment, MapKeyToRelationship } from '../types'
 import { DidChain, DidUtils } from '..'
@@ -278,8 +279,7 @@ export function serializeAndEncodeAdditionalLightDidDetails({
     return null
   }
 
-  return ''
-  // return cborEncode(objectToSerialize).toString('base64')
+  return cborEncode(objectToSerialize).toString('base64')
 }
 
 // export function decodeAndDeserializeAdditionalLightDidDetails(rawInput: string): Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'services'> {
