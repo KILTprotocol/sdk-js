@@ -33,12 +33,25 @@ import type {
   INewPublicKey,
   PublicKeyRoleAssignment,
   EndpointData,
+  IDidParsingResult,
 } from './types'
 import { generateCreateTx } from './Did.chain'
 import { signWithDid } from './DidDetails/utils'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
-export const KILT_DID_REGEX = /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#.+)?$/
+
+// Matches the following full DIDs
+// - did:kilt:v1:<kilt_address>
+// - did:kilt:v1:<kilt_address>#<fragment>
+// - did:kilt:v1:light:<kilt_address>:<encoded_details>#<fragment>
+export const FULL_KILT_DID_REGEX = /^did:kilt:v(?<version>[1-9]):(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#[^#\n]+)?$/
+
+// Matches the following light DIDs
+// - did:kilt:v1:light:<kilt_address>
+// - did:kilt:v1:light:<kilt_address>:<encoded_details>
+// - did:kilt:v1:light:<kilt_address>#<fragment>
+// - did:kilt:v1:light:<kilt_address>:<encoded_details>#<fragment>
+export const LIGHT_KILT_DID_REGEX = /^did:kilt:light:v(?<version>[1-9]):(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
 export enum CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES {
   ed25519 = 'ed25519',
@@ -66,6 +79,14 @@ export function getSignatureAlgForKeyType(keyType: string): string {
   return SignatureAlgForKeyType[keyType] || keyType
 }
 
+function getLightDidFromIdentifier(identifier: string, didVersion = 1): string {
+  return KILT_DID_PREFIX.concat(`light:v${didVersion}:${identifier}`)
+}
+
+function getFullDidFromIdentifier(identifier: string, didVersion = 1): string {
+  return KILT_DID_PREFIX.concat(`full:v${didVersion}:${identifier}`)
+}
+
 export function getKiltDidFromIdentifier(
   identifier: string,
   didType: 'full' | 'light',
@@ -74,40 +95,52 @@ export function getKiltDidFromIdentifier(
   if (identifier.startsWith(KILT_DID_PREFIX)) {
     return identifier
   }
-  return KILT_DID_PREFIX.concat(`${didType}:v${didVersion}:${identifier}`)
+
+  if (didType === 'full') {
+    return getFullDidFromIdentifier(identifier, didVersion)
+  }
+
+  return getLightDidFromIdentifier(identifier, didVersion)
+}
+
+export function parseDidUrl(didUrl: string): IDidParsingResult {
+  let matches = FULL_KILT_DID_REGEX.exec(didUrl)?.groups
+  if (matches && matches.identifier && matches.version) {
+    return {
+      did: getKiltDidFromIdentifier(
+        matches.identifier,
+        'full',
+        parseInt(matches.version, 10)
+      ),
+      version: parseInt(matches.version, 10),
+      type: 'full',
+      identifier: matches.identifier,
+      fragment: matches.fragment?.substr(1),
+    }
+  }
+
+  // If it fails to parse full DID, try with light DID
+  matches = LIGHT_KILT_DID_REGEX.exec(didUrl)?.groups
+  if (matches && matches.identifier && matches.version) {
+    return {
+      did: getKiltDidFromIdentifier(
+        matches.identifier,
+        'light',
+        parseInt(matches.version, 10)
+      ),
+      version: parseInt(matches.version, 10),
+      type: 'light',
+      identifier: matches.identifier,
+      fragment: matches.fragment?.substr(1),
+      encodedDetails: matches.encoded_details.substr(1),
+    }
+  }
+
+  throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUrl)
 }
 
 export function getIdentifierFromKiltDid(did: string): string {
-  if (!did.startsWith(KILT_DID_PREFIX)) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
-  }
-  const didParts = did.split(':')
-  // A minimal DID has to be did:kilt:v<version_number>:<light|full>:<kilt_address>[:<encoded_details>)]. So minimum 5 and maximum 6.
-  if (didParts.length < 5 || didParts.length > 6) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
-  }
-  // Return always the 5th element, which corresponds to the KILT address in the DID
-  return didParts[5]
-}
-
-export function getIdentifierFromDid(did: string): string {
-  const secondColonAt = did.indexOf(':', did.indexOf(':') + 1)
-  const identifier = did.substring(secondColonAt + 1)
-  if (!identifier) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
-  }
-  return identifier
-}
-
-export function parseDidUrl(didUrl: string) {
-  const { identifier, fragment } = didUrl.match(KILT_DID_REGEX)?.groups || {}
-  if (!identifier) throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUrl)
-  return {
-    // TODO: TO CHANGE WHEN WORKING ON THE RESOLVER
-    did: getKiltDidFromIdentifier(identifier, 'full'),
-    identifier,
-    fragment: fragment?.substr(1),
-  }
+  return parseDidUrl(did).identifier
 }
 
 export function validateKiltDid(
@@ -119,9 +152,7 @@ export function validateKiltDid(
   }
   const { identifier, did } = parseDidUrl(input)
   if (!allowFragment && did !== input) {
-    throw new Error(
-      `Expected DID of format kilt:did:<ss58 identifier>, got ${input}`
-    )
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT(input)
   }
   if (!checkAddress(identifier, 38)[0]) {
     throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
@@ -167,7 +198,7 @@ export function encodeEndpointUrl(url: string): UrlEnum {
   })
   if (!matched)
     throw new Error(
-      'only endpoint urls starting with http/https, ftp, and ipfs are accepted'
+      'Only endpoint urls starting with http/https, ftp, and ipfs are accepted'
     )
   return typedUrl as UrlEnum
 }

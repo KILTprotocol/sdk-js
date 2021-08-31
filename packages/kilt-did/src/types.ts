@@ -8,6 +8,7 @@
 import type {
   IIdentity,
   IDidKeyDetails,
+  IDidDetails,
   KeyRelationship,
 } from '@kiltprotocol/types'
 import type { AnyNumber } from '@polkadot/types/types'
@@ -30,6 +31,15 @@ import type {
 } from '@polkadot/types/interfaces'
 
 /* SDK TYPES */
+
+export type IDidParsingResult = {
+  did: IDidDetails['did']
+  version: number
+  type: 'light' | 'full'
+  identifier: IIdentity['address']
+  fragment?: string
+  encodedDetails?: string
+}
 
 export type MapKeyToRelationship = Partial<
   Record<KeyRelationship, Array<IDidKeyDetails['id']>>

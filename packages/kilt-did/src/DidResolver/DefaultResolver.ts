@@ -8,17 +8,26 @@
 import type {
   IDidResolver,
   IDidKeyDetails,
+  IDidDetails,
   ResolverOpts,
   ServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { FullDidDetails } from '../DidDetails/FullDidDetails'
+import {
+  LightDidDetails,
+  LightDidDetailsCreationOpts,
+} from '../DidDetails/LightDidDetails'
+import { decodeAndDeserializeAdditionalLightDidDetails } from '../DidDetails/utils'
 import { queryById, queryKey } from '../Did.chain'
 import { getKiltDidFromIdentifier, parseDidUrl } from '../Did.utils'
 
-async function detailsFromIdentifier(
+async function queryFullDetailsFromIdentifier(
   identifier: string,
-  { servicesResolver }: ResolverOpts
+  { servicesResolver }: ResolverOpts,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  version = 1
 ): Promise<FullDidDetails | null> {
   const didRec = await queryById(identifier)
   if (!didRec) return null
@@ -60,31 +69,81 @@ async function detailsFromIdentifier(
   })
 }
 
-export async function resolveKey(
-  didUri: string
-): Promise<IDidKeyDetails | null> {
-  const { did, fragment } = parseDidUrl(didUri)
-  return queryKey(did, fragment)
+export async function resolve(
+  didUri: string,
+  opts: ResolverOpts = {}
+): Promise<IDidDetails | IDidKeyDetails | ServiceDetails | null> {
+  const { identifier, type, version, fragment, encodedDetails } = parseDidUrl(
+    didUri
+  )
+  if (type === 'full') {
+    const details = await queryFullDetailsFromIdentifier(
+      identifier,
+      opts,
+      version
+    )
+    if (!fragment || !details) {
+      return details
+    }
+
+    return details?.getKey(didUri) || details?.getService(didUri) || null
+  }
+
+  // If type === 'light'
+  const lightDidCreationOptions: LightDidDetailsCreationOpts = {
+    authenticationKey: {
+      publicKey: Crypto.decodeAddress(identifier, true, 38),
+      type: 'ed25519',
+    },
+  }
+
+  if (encodedDetails) {
+    const decodedDetails = decodeAndDeserializeAdditionalLightDidDetails(
+      encodedDetails
+    )
+    lightDidCreationOptions.encryptionKey = decodedDetails.encryptionKey
+    lightDidCreationOptions.services = decodedDetails.services
+  }
+
+  const details = new LightDidDetails(lightDidCreationOptions)
+
+  if (!fragment || !details) {
+    return details
+  }
+
+  return details?.getKey(didUri) || details?.getService(didUri) || null
 }
 
 export async function resolveDoc(
   did: string,
   opts: ResolverOpts = {}
-): Promise<FullDidDetails | null> {
-  const { identifier } = parseDidUrl(did)
-  return detailsFromIdentifier(identifier, opts)
+): Promise<IDidDetails | null> {
+  const { fragment } = parseDidUrl(did)
+
+  // A fragment must not be present when resolving a whole document
+  if (fragment) {
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
+  }
+
+  return resolve(did, opts) as Promise<IDidDetails | null>
 }
 
-export async function resolve(
-  didUri: string,
-  opts: ResolverOpts = {}
-): Promise<FullDidDetails | IDidKeyDetails | ServiceDetails | null> {
-  const { fragment, identifier } = parseDidUrl(didUri)
-  const details = await detailsFromIdentifier(identifier, opts)
-  if (!fragment || !details) {
-    return details
+export async function resolveKey(
+  didUri: string
+): Promise<IDidKeyDetails | null> {
+  const { did, fragment, type } = parseDidUrl(didUri)
+
+  if (!fragment) {
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT
   }
-  return details?.getKey(didUri) || details?.getService(didUri) || null
+
+  if (type === 'full') {
+    return queryKey(did, fragment)
+  }
+
+  // If type === 'light'
+  const lightDidDetails = (await resolveDoc(didUri)) as LightDidDetails
+  return lightDidDetails.getKey(fragment.substr(1)) || null
 }
 
 export const DefaultResolver: IDidResolver = { resolveDoc, resolveKey, resolve }

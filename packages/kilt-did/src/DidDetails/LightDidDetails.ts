@@ -13,15 +13,16 @@ import type {
   ServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
+import { Crypto } from '@kiltprotocol/utils'
 import { hexToU8a } from '@polkadot/util'
 import { encodeAddress } from '@polkadot/util-crypto'
 import { getKiltDidFromIdentifier } from '../Did.utils'
-import { MapKeyToRelationship } from '../types'
+import type { MapKeyToRelationship, INewPublicKey } from '../types'
 import { serializeAndEncodeAdditionalLightDidDetails } from './utils'
 
 export interface LightDidDetailsCreationOpts {
-  authenticationKey: IDidKeyDetails
-  encryptionKey?: IDidKeyDetails
+  authenticationKey: INewPublicKey
+  encryptionKey?: INewPublicKey
   services?: ServiceDetails[]
 }
 
@@ -41,25 +42,13 @@ export class LightDidDetails implements IDidDetails {
     encryptionKey = undefined,
     services = [],
   }: LightDidDetailsCreationOpts) {
-    this.keys = new Map([[authenticationKey.id, authenticationKey]])
-    this.keyRelationships = {
-      Authentication: [authenticationKey.id],
-    }
-
-    if (encryptionKey) {
-      this.keys[encryptionKey.id] = encryptionKey
-      this.keyRelationships.KeyAgreement = [encryptionKey.id]
-    }
-
-    this.services = services
-
     // TODO: to improve. This is just a PoC
     const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
       encryptionKey,
       services,
     })
     this.identifier = encodeAddress(
-      hexToU8a(authenticationKey.publicKeyHex),
+      hexToU8a(Crypto.u8aToHex(authenticationKey.publicKey)),
       38
     )
     let did = getKiltDidFromIdentifier(
@@ -71,6 +60,28 @@ export class LightDidDetails implements IDidDetails {
       did = did.concat(':', encodedDetails)
     }
     this.did = did
+
+    this.keys = new Map([
+      [
+        `${this.did}#authentication`,
+        {
+          controller: this.did,
+          id: `${this.did}#authentication`,
+          publicKeyHex: Crypto.u8aToHex(authenticationKey.publicKey),
+          type: 'ed25519',
+        },
+      ],
+    ])
+    this.keyRelationships = {
+      Authentication: [`${this.did}#authentication`],
+    }
+
+    if (encryptionKey) {
+      this.keys[`${this.did}#encryption`] = encryptionKey
+      this.keyRelationships.KeyAgreement = [`${this.did}#encryption`]
+    }
+
+    this.services = services
   }
 
   public getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined {

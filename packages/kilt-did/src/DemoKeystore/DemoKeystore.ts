@@ -29,7 +29,7 @@ import {
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { KeypairType } from '@polkadot/util-crypto/types'
-import { u8aEq } from '@polkadot/util'
+import { hexToU8a, u8aEq } from '@polkadot/util'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import { FullDidDetails, LightDidDetails, DidDetailsUtils } from '../DidDetails'
 import { DefaultResolver, DidUtils } from '..'
@@ -362,7 +362,10 @@ export async function createOffChainDidFromSeed(
   const authenticationKey = await generateKeypairForDid(signingKeyType)
 
   return new LightDidDetails({
-    authenticationKey,
+    authenticationKey: {
+      publicKey: hexToU8a(authenticationKey.publicKeyHex),
+      type: signingKeyType,
+    },
   })
 }
 
