@@ -26,14 +26,16 @@ jest.mock('../Did.chain', () => {
           id: `${did}#auth`,
           type: 'ed25519',
           controller: did,
-          publicKeyHex: '0x123',
+          publicKeyHex:
+            '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           includedAt: 200,
         },
         {
           id: `${did}#x25519`,
           type: 'x25519',
           controller: did,
-          publicKeyHex: '0x25519',
+          publicKeyHex:
+            '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
           includedAt: 250,
         },
       ],
@@ -49,54 +51,58 @@ jest.mock('../Did.chain', () => {
     queryByDID,
     queryById: jest.fn(
       async (id: string): Promise<IDidChainRecordJSON | null> =>
-        queryByDID(`did:kilt:${id}`)
+        queryByDID(`did:kilt:v1:${id}`)
     ),
   }
 })
 
 const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
-const did = `did:kilt:${identifier}`
+const fullDid = `did:kilt:v1:${identifier}`
 
 it('resolves stuff', async () => {
-  await expect(DefaultResolver.resolveDoc(did)).resolves.toMatchObject({
-    did,
+  await expect(DefaultResolver.resolveDoc(fullDid)).resolves.toMatchObject({
+    did: fullDid,
     identifier,
   })
 })
 
 it('has the right keys', async () => {
-  const didRecord = await DefaultResolver.resolveDoc(did)
-  expect(didRecord?.getKeyIds()).toStrictEqual([`${did}#auth`, `${did}#x25519`])
+  const didRecord = await DefaultResolver.resolveDoc(fullDid)
+  expect(didRecord?.getKeyIds()).toStrictEqual([
+    `${fullDid}#auth`,
+    `${fullDid}#x25519`,
+  ])
   expect(didRecord?.getKeyIds(KeyRelationship.authentication)).toStrictEqual([
-    `${did}#auth`,
+    `${fullDid}#auth`,
   ])
   expect(didRecord?.getKeys(KeyRelationship.keyAgreement)).toStrictEqual([
     {
-      id: `${did}#x25519`,
-      controller: did,
+      id: `${fullDid}#x25519`,
+      controller: fullDid,
       includedAt: 250,
       type: 'x25519',
-      publicKeyHex: '0x25519',
+      publicKeyHex:
+        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     },
   ])
 })
 
 it('adds services when service resolver is present', async () => {
   const service = {
-    id: `${did}#messaging`,
+    id: `${fullDid}#messaging`,
     type: 'DidComm messaging',
-    serviceEndpoint: `example.com/didcomm/${did}`,
+    serviceEndpoint: `example.com/didcomm/${fullDid}`,
   }
   const servicesResolver: ServicesResolver = jest.fn(async () => [service])
 
   await expect(
-    DefaultResolver.resolveDoc(did).then((didDetails) =>
+    DefaultResolver.resolveDoc(fullDid).then((didDetails) =>
       didDetails?.getServices('DidComm messaging')
     )
   ).resolves.toMatchObject([])
 
   await expect(
-    DefaultResolver.resolveDoc(did, {
+    DefaultResolver.resolveDoc(fullDid, {
       servicesResolver,
     }).then((didDetails) => didDetails?.getServices('DidComm messaging'))
   ).resolves.toMatchObject([service])

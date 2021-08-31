@@ -84,7 +84,8 @@ function getLightDidFromIdentifier(identifier: string, didVersion = 1): string {
 }
 
 function getFullDidFromIdentifier(identifier: string, didVersion = 1): string {
-  return KILT_DID_PREFIX.concat(`full:v${didVersion}:${identifier}`)
+  const did = KILT_DID_PREFIX.concat(`v${didVersion}:${identifier}`)
+  return did
 }
 
 export function getKiltDidFromIdentifier(
@@ -105,7 +106,6 @@ export function getKiltDidFromIdentifier(
 
 export function parseDidUrl(didUrl: string): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUrl)?.groups
-  console.log(FULL_KILT_DID_REGEX.exec(didUrl))
   if (matches && matches.identifier && matches.version) {
     return {
       did: getKiltDidFromIdentifier(

@@ -72,7 +72,7 @@ describe('write and didDeleteTx', () => {
     await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
       Partial<DidTypes.IDidChainRecordJSON>
     >({
-      did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
+      did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
     })
   }, 30_000)
 
@@ -80,7 +80,7 @@ describe('write and didDeleteTx', () => {
     await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
       Partial<DidTypes.IDidChainRecordJSON>
     >({
-      did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
+      did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
     })
 
     const call = await DidChain.getDeleteDidExtrinsic()
@@ -132,7 +132,7 @@ it('creates and updates DID', async () => {
   await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
     Partial<DidTypes.IDidChainRecordJSON>
   >({
-    did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
+    did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
     endpointData: {
       urls: ['https://example.com'],
       contentType: 'application/json',
@@ -164,7 +164,7 @@ it('creates and updates DID', async () => {
   await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
     Partial<DidTypes.IDidChainRecordJSON>
   >({
-    did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
+    did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
     endpointData: {
       urls: ['ftp://example.com/abc'],
       contentType: 'application/ld+json',
@@ -181,7 +181,7 @@ describe('DID authorization', () => {
     const { publicKey, alg } = await keystore.generateKeypair({
       alg: SigningAlgorithms.Ed25519,
     })
-    didIdentifier = encodeAddress(publicKey)
+    didIdentifier = encodeAddress(publicKey, 38)
     key = { publicKey, type: alg }
     const tx = await DidChain.generateCreateTx({
       didIdentifier,
@@ -202,13 +202,13 @@ describe('DID authorization', () => {
     await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
       Partial<DidTypes.IDidChainRecordJSON>
     >({
-      did: DidUtils.getKiltDidFromIdentifier(didIdentifier),
+      did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
     })
   }, 30_000)
 
   beforeEach(async () => {
     lastTxIndex = await DidChain.queryLastTxIndex(
-      DidUtils.getKiltDidFromIdentifier(didIdentifier)
+      DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
     )
   })
 

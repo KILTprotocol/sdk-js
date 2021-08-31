@@ -159,7 +159,8 @@ export async function queryKey(
 }
 
 export async function queryLastTxIndex(did: string): Promise<BN> {
-  const encoded = await queryEncoded(getIdentifierFromKiltDid(did))
+  const identifier = getIdentifierFromKiltDid(did)
+  const encoded = await queryEncoded(identifier)
   if (encoded.isNone) return new BN(0)
   return encoded.unwrap().lastTxCounter.toBn()
 }
