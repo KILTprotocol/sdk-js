@@ -12,40 +12,37 @@
  */
 
 import { encodeAddress } from '@kiltprotocol/utils/src/Crypto'
-import type { IDidKeyDetails, ServiceDetails } from '@kiltprotocol/types'
+import type { ServiceDetails } from '@kiltprotocol/types'
 import { hexToU8a } from '@polkadot/util'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import { LightDidDetails } from './LightDidDetails'
 import type { LightDidDetailsCreationOpts } from './LightDidDetails'
 import { serializeAndEncodeAdditionalLightDidDetails } from './utils'
+import type { INewPublicKey } from '../types'
 
 describe('Light DID tests', () => {
-  const authPublicKeyHex =
+  const authPublicKey = hexToU8a(
     '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-  const encPublicKeyHex =
+  )
+  const encPublicKey = hexToU8a(
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+  )
   const testDid = getKiltDidFromIdentifier(
-    encodeAddress(hexToU8a(authPublicKeyHex), 38),
+    encodeAddress(authPublicKey, 38),
     'light',
     LightDidDetails.LIGHT_DID_VERSION
   )
-  const authenticationDidKeyDetails = {
-    id: `${testDid}#1`,
-    controller: testDid,
-    includedAt: 100,
+  const authenticationDidKeyDetails: INewPublicKey = {
+    publicKey: authPublicKey,
     type: 'ed25519',
-    publicKeyHex: authPublicKeyHex,
   }
-  let encryptionDidKeyDetails: IDidKeyDetails | undefined
+  let encryptionDidKeyDetails: INewPublicKey | undefined
   let services: ServiceDetails[] | undefined
 
   it('creates LightDidDetails from authentication key, encryption key, and service endpoints', () => {
     encryptionDidKeyDetails = {
-      id: `${testDid}#2`,
-      controller: testDid,
-      includedAt: 101,
+      publicKey: encPublicKey,
       type: 'x25519',
-      publicKeyHex: encPublicKeyHex,
     }
     services = [
       {
@@ -76,11 +73,8 @@ describe('Light DID tests', () => {
 
   it('creates LightDidDetails from authentication key and encryption key only', () => {
     encryptionDidKeyDetails = {
-      id: `${testDid}#2`,
-      controller: testDid,
-      includedAt: 101,
+      publicKey: encPublicKey,
       type: 'x25519',
-      publicKeyHex: encPublicKeyHex,
     }
 
     const didCreationDetails: LightDidDetailsCreationOpts = {

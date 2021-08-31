@@ -27,8 +27,8 @@ export interface LightDidDetailsCreationOpts {
 }
 
 export class LightDidDetails implements IDidDetails {
-  public readonly did: string
-  public readonly identifier: string
+  protected didUri: string
+  protected id: string
   protected services: ServiceDetails[]
   protected keys: Map<IDidKeyDetails['id'], IDidKeyDetails>
   protected keyRelationships: MapKeyToRelationship & {
@@ -47,19 +47,19 @@ export class LightDidDetails implements IDidDetails {
       encryptionKey,
       services,
     })
-    this.identifier = encodeAddress(
+    this.id = encodeAddress(
       hexToU8a(Crypto.u8aToHex(authenticationKey.publicKey)),
       38
     )
     let did = getKiltDidFromIdentifier(
-      this.identifier,
+      this.id,
       'light',
       LightDidDetails.LIGHT_DID_VERSION
     )
     if (encodedDetails) {
       did = did.concat(':', encodedDetails)
     }
-    this.did = did
+    this.didUri = did
 
     this.keys = new Map([
       [
@@ -73,15 +73,23 @@ export class LightDidDetails implements IDidDetails {
       ],
     ])
     this.keyRelationships = {
-      Authentication: [`${this.did}#authentication`],
+      Authentication: [`${this.didUri}#authentication`],
     }
 
     if (encryptionKey) {
-      this.keys[`${this.did}#encryption`] = encryptionKey
-      this.keyRelationships.KeyAgreement = [`${this.did}#encryption`]
+      this.keys[`${this.didUri}#encryption`] = encryptionKey
+      this.keyRelationships.KeyAgreement = [`${this.didUri}#encryption`]
     }
 
     this.services = services
+  }
+
+  public get did(): string {
+    return this.didUri
+  }
+
+  public get identifier(): string {
+    return this.id
   }
 
   public getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined {

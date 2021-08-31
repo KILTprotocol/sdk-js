@@ -14,35 +14,40 @@ import { BN } from '@polkadot/util'
 import { FullDidDetails, FullDidDetailsCreationOpts } from './FullDidDetails'
 
 describe('functional tests', () => {
-  const did = 'did:kilt:test'
+  const identifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
+  const did = `did:kilt:v1:${identifier}`
   const keys = [
     {
       id: `${did}#1`,
       controller: did,
       includedAt: 100,
       type: 'ed25519',
-      publicKeyHex: '0xed25519',
+      publicKeyHex:
+        '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     },
     {
       id: `${did}#2`,
       controller: did,
       includedAt: 250,
       type: 'x25519',
-      publicKeyHex: '0x255191',
+      publicKeyHex:
+        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     },
     {
       id: `${did}#3`,
       controller: did,
       includedAt: 250,
       type: 'x25519',
-      publicKeyHex: '0x255192',
+      publicKeyHex:
+        '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
     },
     {
       id: `${did}#4`,
       controller: did,
       includedAt: 200,
       type: 'sr25519',
-      publicKeyHex: '0xbeef',
+      publicKeyHex:
+        '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
     },
   ]
   const services = [
@@ -72,35 +77,35 @@ describe('functional tests', () => {
   it('creates FullDidDetails', () => {
     const dd = new FullDidDetails(didDetails)
     expect(dd.did).toEqual(did)
-    expect(dd.identifier).toMatchInlineSnapshot(`"test"`)
+    expect(dd.identifier).toEqual(identifier)
     expect(dd.getKeys()).toMatchInlineSnapshot(`
       Array [
         Object {
-          "controller": "did:kilt:test",
-          "id": "did:kilt:test#1",
+          "controller": "${did}",
+          "id": "${did}#1",
           "includedAt": 100,
-          "publicKeyHex": "0xed25519",
+          "publicKeyHex": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           "type": "ed25519",
         },
         Object {
-          "controller": "did:kilt:test",
-          "id": "did:kilt:test#2",
+          "controller": "${did}",
+          "id": "${did}#2",
           "includedAt": 250,
-          "publicKeyHex": "0x255191",
+          "publicKeyHex": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
           "type": "x25519",
         },
         Object {
-          "controller": "did:kilt:test",
-          "id": "did:kilt:test#3",
+          "controller": "${did}",
+          "id": "${did}#3",
           "includedAt": 250,
-          "publicKeyHex": "0x255192",
+          "publicKeyHex": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
           "type": "x25519",
         },
         Object {
-          "controller": "did:kilt:test",
-          "id": "did:kilt:test#4",
+          "controller": "${did}",
+          "id": "${did}#4",
           "includedAt": 200,
-          "publicKeyHex": "0xbeef",
+          "publicKeyHex": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
           "type": "sr25519",
         },
       ]
@@ -108,12 +113,12 @@ describe('functional tests', () => {
     expect(dd.getServices()).toMatchInlineSnapshot(`
       Array [
         Object {
-          "id": "did:kilt:test#service1",
+          "id": "${did}#service1",
           "serviceEndpoint": "example.com",
           "type": "messaging",
         },
         Object {
-          "id": "did:kilt:test#service2",
+          "id": "${did}#service2",
           "serviceEndpoint": "123344",
           "type": "telephone",
         },
@@ -185,7 +190,7 @@ describe('functional tests', () => {
         .map((key) => key.id)
     ).toMatchInlineSnapshot(`
       Array [
-        "did:kilt:test#4",
+        "${did}#4",
       ]
     `)
     expect(
@@ -194,7 +199,7 @@ describe('functional tests', () => {
         .map((key) => key.id)
     ).toMatchInlineSnapshot(`
       Array [
-        "did:kilt:test#2",
+        "${did}#2",
       ]
     `)
     expect(
@@ -203,7 +208,7 @@ describe('functional tests', () => {
         .map((key) => key.id)
     ).toMatchInlineSnapshot(`
       Array [
-        "did:kilt:test#4",
+        "${did}#4",
       ]
     `)
   })

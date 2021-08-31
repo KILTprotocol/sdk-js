@@ -105,6 +105,7 @@ export function getKiltDidFromIdentifier(
 
 export function parseDidUrl(didUrl: string): IDidParsingResult {
   let matches = FULL_KILT_DID_REGEX.exec(didUrl)?.groups
+  console.log(FULL_KILT_DID_REGEX.exec(didUrl))
   if (matches && matches.identifier && matches.version) {
     return {
       did: getKiltDidFromIdentifier(

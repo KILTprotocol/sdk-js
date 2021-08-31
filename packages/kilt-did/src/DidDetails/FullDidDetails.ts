@@ -16,11 +16,14 @@ import type {
   ServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import type { BN } from '@polkadot/util'
+import { BN, hexToU8a } from '@polkadot/util'
 import { MapKeyToRelationship } from '../types'
 import { generateDidAuthenticatedTx, queryLastTxIndex } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './utils'
-import { getSignatureAlgForKeyType } from '../Did.utils'
+import {
+  getSignatureAlgForKeyType,
+  getIdentifierFromKiltDid,
+} from '../Did.utils'
 import { LightDidDetails } from './LightDidDetails'
 
 export interface FullDidDetailsCreationOpts {
@@ -86,11 +89,17 @@ export class FullDidDetails extends LightDidDetails {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const authenticationKeyId = keyRelationships.Authentication![0]
     // Same way, we know the key exists because the match between keys and relationships is verified in `errorCheck`
-    const authenticationKey = keys[authenticationKeyId]
+    const authenticationKey = keys.filter(
+      (key) => key.id === authenticationKeyId
+    )[0]
 
     // Initialise only did and authentication key from light DID class. The rest is initialised here
     super({
-      authenticationKey,
+      authenticationKey: {
+        publicKey: hexToU8a(authenticationKey.publicKeyHex),
+        type: authenticationKey.type,
+      },
+      services,
     })
 
     this.keys = new Map(keys.map((key) => [key.id, key]))
@@ -105,6 +114,8 @@ export class FullDidDetails extends LightDidDetails {
         this.keyRelationships.none?.push(id)
       }
     })
+    this.didUri = did
+    this.id = getIdentifierFromKiltDid(did)
   }
 
   /**
