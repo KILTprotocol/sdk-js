@@ -17,6 +17,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN, hexToU8a } from '@polkadot/util'
+import { LightDidDetails } from './LightDidDetails'
 import { MapKeyToRelationship } from '../types'
 import { generateDidAuthenticatedTx, queryLastTxIndex } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './utils'
@@ -24,7 +25,6 @@ import {
   getSignatureAlgForKeyType,
   getIdentifierFromKiltDid,
 } from '../Did.utils'
-import { LightDidDetails } from './LightDidDetails'
 
 export interface FullDidDetailsCreationOpts {
   did: string

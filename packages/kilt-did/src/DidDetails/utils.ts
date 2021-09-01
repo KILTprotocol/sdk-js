@@ -8,7 +8,6 @@
 import { ApiPromise } from '@polkadot/api'
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { TypeRegistry } from '@polkadot/types'
-// import { encode as cborEncode } from 'cbor'
 import type {
   ApiOrMetadata,
   CallMeta,
@@ -290,7 +289,7 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
   })
 
   return {
-    encryptionKey: decodedPayload.get(ENCRYPTION_KEY_MAP_KEY),
-    services: decodedPayload.get(SERVICES_MAP_KEY),
+    encryptionKey: decodedPayload[ENCRYPTION_KEY_MAP_KEY],
+    services: decodedPayload[SERVICES_MAP_KEY],
   }
 }

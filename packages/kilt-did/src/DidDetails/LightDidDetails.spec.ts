@@ -15,8 +15,7 @@ import { encodeAddress } from '@kiltprotocol/utils/src/Crypto'
 import type { ServiceDetails } from '@kiltprotocol/types'
 import { hexToU8a } from '@polkadot/util'
 import { getKiltDidFromIdentifier } from '../Did.utils'
-import { LightDidDetails } from './LightDidDetails'
-import type { LightDidDetailsCreationOpts } from './LightDidDetails'
+import { LightDidDetails, LightDidDetailsCreationOpts } from './LightDidDetails'
 import { serializeAndEncodeAdditionalLightDidDetails } from './utils'
 import type { INewPublicKey } from '../types'
 
@@ -46,12 +45,12 @@ describe('Light DID tests', () => {
     }
     services = [
       {
-        id: `${testDid}#service1`,
+        id: `service1`,
         type: 'messaging',
         serviceEndpoint: 'example.com',
       },
       {
-        id: `${testDid}#service2`,
+        id: `service2`,
         type: 'telephone',
         serviceEndpoint: '123344',
       },
@@ -93,12 +92,12 @@ describe('Light DID tests', () => {
   it('creates LightDidDetails from authentication key and service endpoints only', () => {
     services = [
       {
-        id: `${testDid}#service1`,
+        id: `service1`,
         type: 'messaging',
         serviceEndpoint: 'example.com',
       },
       {
-        id: `${testDid}#service2`,
+        id: `service2`,
         type: 'telephone',
         serviceEndpoint: '123344',
       },

@@ -14,14 +14,16 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { LightDidDetails } from '../DidDetails/LightDidDetails'
 import { FullDidDetails } from '../DidDetails/FullDidDetails'
-import {
-  LightDidDetails,
-  LightDidDetailsCreationOpts,
-} from '../DidDetails/LightDidDetails'
+import type { LightDidDetailsCreationOpts } from '../DidDetails/LightDidDetails'
 import { decodeAndDeserializeAdditionalLightDidDetails } from '../DidDetails/utils'
 import { queryById, queryKey } from '../Did.chain'
-import { getKiltDidFromIdentifier, parseDidUrl } from '../Did.utils'
+import {
+  getKiltDidFromIdentifier,
+  getSigningKeyTypeFromEncoding,
+  parseDidUrl,
+} from '../Did.utils'
 
 async function queryFullDetailsFromIdentifier(
   identifier: string,
@@ -90,10 +92,16 @@ export async function resolve(
   }
 
   // If type === 'light'
+  const kiltIdentifier = identifier.substr(2)
+  const keyTypeEncoding = identifier.substr(0, 2)
+  const keyType = getSigningKeyTypeFromEncoding(keyTypeEncoding)
+  if (!keyType) {
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+  }
   const lightDidCreationOptions: LightDidDetailsCreationOpts = {
     authenticationKey: {
-      publicKey: Crypto.decodeAddress(identifier, true, 38),
-      type: 'ed25519',
+      publicKey: Crypto.decodeAddress(kiltIdentifier, true, 38),
+      type: keyType,
     },
   }
 
