@@ -14,7 +14,10 @@
 import { encodeAddress } from '@kiltprotocol/utils/src/Crypto'
 import type { ServiceDetails } from '@kiltprotocol/types'
 import { hexToU8a } from '@polkadot/util'
-import { getKiltDidFromIdentifier } from '../Did.utils'
+import {
+  getEncodingForSigningKeyType,
+  getKiltDidFromIdentifier,
+} from '../Did.utils'
 import { LightDidDetails, LightDidDetailsCreationOpts } from './LightDidDetails'
 import { serializeAndEncodeAdditionalLightDidDetails } from './utils'
 import type { INewPublicKey } from '../types'
@@ -27,7 +30,9 @@ describe('Light DID tests', () => {
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
   const testDid = getKiltDidFromIdentifier(
-    encodeAddress(authPublicKey, 38),
+    getEncodingForSigningKeyType('ed25519').concat(
+      encodeAddress(authPublicKey, 38)
+    ),
     'light',
     LightDidDetails.LIGHT_DID_VERSION
   )

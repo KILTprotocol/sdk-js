@@ -21,16 +21,17 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
 import { BN } from '@polkadot/util'
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
-import { FullDidDetails } from './FullDidDetails'
 import type { PublicKeyRoleAssignment, MapKeyToRelationship } from '../types'
-import { DidChain, DidUtils } from '..'
+import type { LightDidDetailsCreationOpts } from './LightDidDetails'
+import { FullDidDetails } from './FullDidDetails'
+import { generateCreateTx } from '../Did.chain'
 import {
   computeKeyId,
   encodeDidPublicKey,
   getKiltDidFromIdentifier,
   getSignatureAlgForKeyType,
+  getIdentifierFromKiltDid,
 } from '../Did.utils'
-import type { LightDidDetailsCreationOpts } from './LightDidDetails'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -170,11 +171,11 @@ export async function writeNewDidFromDidDetails(
       publicKey: Crypto.coToUInt8(keyAgreement.publicKeyHex),
     },
   }
-  return DidChain.generateCreateTx({
+  return generateCreateTx({
     signer,
     signingPublicKey: signingKey.publicKeyHex,
     alg: getSignatureAlgForKeyType(signingKey.type),
-    didIdentifier: DidUtils.getIdentifierFromKiltDid(didDetails.did),
+    didIdentifier: getIdentifierFromKiltDid(didDetails.did),
     keys,
   })
 }

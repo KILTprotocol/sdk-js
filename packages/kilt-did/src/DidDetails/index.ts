@@ -5,6 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * from './FullDidDetails'
 export * from './LightDidDetails'
+export * from './FullDidDetails'
 export * as DidDetailsUtils from './utils'

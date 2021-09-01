@@ -7,11 +7,7 @@
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import type {
-  IDidKeyDetails,
-  IDidDetails,
-  ServiceDetails,
-} from '@kiltprotocol/types'
+import type { IDidKeyDetails, ServiceDetails } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { hexToU8a } from '@polkadot/util'
@@ -20,7 +16,8 @@ import {
   getEncodingForSigningKeyType,
   getKiltDidFromIdentifier,
 } from '../Did.utils'
-import type { MapKeyToRelationship, INewPublicKey } from '../types'
+import type { INewPublicKey } from '../types'
+import { DidDetails } from './DidDetails'
 import { serializeAndEncodeAdditionalLightDidDetails } from './utils'
 
 export interface LightDidDetailsCreationOpts {
@@ -30,15 +27,7 @@ export interface LightDidDetailsCreationOpts {
   services?: ServiceDetails[]
 }
 
-export class LightDidDetails implements IDidDetails {
-  protected didUri: string
-  protected id: string
-  protected services: ServiceDetails[]
-  protected keys: Map<IDidKeyDetails['id'], IDidKeyDetails>
-  protected keyRelationships: MapKeyToRelationship & {
-    none?: Array<IDidKeyDetails['id']>
-  }
-
+export class LightDidDetails extends DidDetails {
   public static readonly LIGHT_DID_VERSION = 1
 
   constructor({
@@ -58,18 +47,27 @@ export class LightDidDetails implements IDidDetails {
       throw SDKErrors.ERROR_UNSUPPORTED_KEY
     }
 
-    this.id = authenticationKeyTypeEncoding.concat(
+    const id = authenticationKeyTypeEncoding.concat(
       encodeAddress(hexToU8a(Crypto.u8aToHex(authenticationKey.publicKey)), 38)
     )
     let did = getKiltDidFromIdentifier(
-      this.id,
+      id,
       'light',
       LightDidDetails.LIGHT_DID_VERSION
     )
     if (encodedDetails) {
       did = did.concat(':', encodedDetails)
     }
-    this.didUri = did
+
+    super(
+      did,
+      id,
+      services.map((service) => {
+        const s = service
+        s.id = `${did}#${service.id}`
+        return s
+      })
+    )
 
     this.keys = new Map([
       [
@@ -95,12 +93,6 @@ export class LightDidDetails implements IDidDetails {
       })
       this.keyRelationships.KeyAgreement = [`${this.didUri}#encryption`]
     }
-
-    this.services = services.map((service) => {
-      const s = service
-      s.id = `${this.did}#${service.id}`
-      return s
-    })
   }
 
   public get did(): string {
