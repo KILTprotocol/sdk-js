@@ -83,6 +83,7 @@ export enum ErrorCode {
   ERROR_NESTED_CLAIM_UNVERIFIABLE = 30011,
   ERROR_INVALID_PROOF_FOR_STATEMENT = 30012,
   ERROR_CTYPE_PROPERTIES_NOT_MATCHING = 30013,
+  ERROR_UNSUPPORTED_KEY = 30014,
 
   // Compression / Decompressions
   ERROR_DECOMPRESSION_ARRAY = 40001,
@@ -172,6 +173,15 @@ export const ERROR_CTYPE_PROPERTIES_NOT_MATCHING: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CTYPE_PROPERTIES_NOT_MATCHING,
     'Required properties do not match CType properties'
+  )
+}
+
+export const ERROR_UNSUPPORTED_KEY: (keyType: string) => SDKError = (
+  keyType: string
+) => {
+  return new SDKError(
+    ErrorCode.ERROR_UNSUPPORTED_KEY,
+    `The provided key type "${keyType}" is currently not supported.`
   )
 }
 

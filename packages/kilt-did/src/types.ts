@@ -36,7 +36,7 @@ export type IDidParsingResult = {
   did: IDidDetails['did']
   version: number
   type: 'light' | 'full'
-  identifier: IIdentity['address']
+  identifier: string
   fragment?: string
   encodedDetails?: string
 }

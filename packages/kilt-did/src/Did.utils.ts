@@ -47,11 +47,11 @@ export const KILT_DID_PREFIX = 'did:kilt:'
 export const FULL_KILT_DID_REGEX = /^did:kilt:v(?<version>[1-9]):(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#[^#\n]+)?$/
 
 // Matches the following light DIDs
-// - did:kilt:v1:light:<kilt_address>
-// - did:kilt:v1:light:<kilt_address>:<encoded_details>
-// - did:kilt:v1:light:<kilt_address>#<fragment>
-// - did:kilt:v1:light:<kilt_address>:<encoded_details>#<fragment>
-export const LIGHT_KILT_DID_REGEX = /^did:kilt:light:v(?<version>[1-9]):(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
+// - did:kilt:v1:light:00<kilt_address>
+// - did:kilt:v1:light:01<kilt_address>:<encoded_details>
+// - did:kilt:v1:light:10<kilt_address>#<fragment>
+// - did:kilt:v1:light:99<kilt_address>:<encoded_details>#<fragment>
+export const LIGHT_KILT_DID_REGEX = /^did:kilt:light:v(?<version>[1-9]):(?<auth_key_type>[0-9]{2})(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
 export enum CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES {
   ed25519 = 'ed25519',
@@ -77,6 +77,32 @@ const SignatureAlgForKeyType = {
 
 export function getSignatureAlgForKeyType(keyType: string): string {
   return SignatureAlgForKeyType[keyType] || keyType
+}
+
+export enum LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES {
+  ed25519 = 'ed25519',
+  sr25519 = 'sr25519',
+  ecdsa = 'ecdsa',
+}
+
+const EncodingForSigningKeyType = {
+  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519]: '00',
+  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519]: '01',
+  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ecdsa]: '02',
+}
+
+const SigningKeyTypeFromEncoding = {
+  '00': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519,
+  '01': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519,
+  '02': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ecdsa,
+}
+
+export function getEncodingForSigningKeyType(keyType: string): string {
+  return EncodingForSigningKeyType[keyType] || null
+}
+
+export function getSigningKeyTypeFromEncoding(encoding: string): string {
+  return SigningKeyTypeFromEncoding[encoding]?.toString() || null
 }
 
 function getLightDidFromIdentifier(identifier: string, didVersion = 1): string {
@@ -122,18 +148,23 @@ export function parseDidUrl(didUrl: string): IDidParsingResult {
 
   // If it fails to parse full DID, try with light DID
   matches = LIGHT_KILT_DID_REGEX.exec(didUrl)?.groups
-  if (matches && matches.identifier && matches.version) {
+  if (
+    matches &&
+    matches.identifier &&
+    matches.version &&
+    matches.auth_key_type
+  ) {
     return {
       did: getKiltDidFromIdentifier(
-        matches.identifier,
+        matches.auth_key_type.concat(matches.identifier),
         'light',
         parseInt(matches.version, 10)
       ),
       version: parseInt(matches.version, 10),
       type: 'light',
-      identifier: matches.identifier,
+      identifier: matches.auth_key_type.concat(matches.identifier),
       fragment: matches.fragment?.substr(1),
-      encodedDetails: matches.encoded_details.substr(1),
+      encodedDetails: matches.encoded_details?.substr(1),
     }
   }
 
@@ -151,11 +182,13 @@ export function validateKiltDid(
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { identifier, did } = parseDidUrl(input)
+  const { identifier, did, type } = parseDidUrl(input)
   if (!allowFragment && did !== input) {
     throw SDKErrors.ERROR_INVALID_DID_FORMAT(input)
   }
-  if (!checkAddress(identifier, 38)[0]) {
+  if (type === 'full' && !checkAddress(identifier, 38)[0]) {
+    throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+  } else if (type === 'light' && !checkAddress(identifier.substr(2), 38)[0]) {
     throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
   }
   return true
