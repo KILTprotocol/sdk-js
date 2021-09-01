@@ -52,12 +52,12 @@ describe('functional tests', () => {
   ]
   const services = [
     {
-      id: `${did}#service1`,
+      id: `service1`,
       type: 'messaging',
       serviceEndpoint: 'example.com',
     },
     {
-      id: `${did}#service2`,
+      id: `service2`,
       type: 'telephone',
       serviceEndpoint: '123344',
     },

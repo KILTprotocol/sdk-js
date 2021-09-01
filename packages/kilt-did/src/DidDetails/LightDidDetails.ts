@@ -59,15 +59,7 @@ export class LightDidDetails extends DidDetails {
       did = did.concat(':', encodedDetails)
     }
 
-    super(
-      did,
-      id,
-      services.map((service) => {
-        const s = service
-        s.id = `${did}#${service.id}`
-        return s
-      })
-    )
+    super(did, id, services)
 
     this.keys = new Map([
       [

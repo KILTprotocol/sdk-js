@@ -64,7 +64,7 @@ export interface IDidKeyDetails<T extends string = string> {
  */
 export interface ServiceDetails {
   /**
-   * Service id, consisting of did:kilt:<did identifier>#<service identifier>.
+   * Service id.
    */
   id: string
   /**

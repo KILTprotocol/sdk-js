@@ -28,7 +28,11 @@ export abstract class DidDetails implements IDidDetails {
   constructor(didUri: string, id: string, services: ServiceDetails[]) {
     this.didUri = didUri
     this.id = id
-    this.services = services
+    this.services = services.map((service) => {
+      const s = service
+      s.id = `${didUri}#${service.id}`
+      return s
+    })
   }
 
   public get did(): string {
