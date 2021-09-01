@@ -7,7 +7,7 @@
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import type { IDidKeyDetails, ServiceDetails } from '@kiltprotocol/types'
+import type { IDidKeyDetails, IServiceDetails } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { hexToU8a } from '@polkadot/util'
@@ -18,13 +18,13 @@ import {
 } from '../Did.utils'
 import type { INewPublicKey } from '../types'
 import { DidDetails } from './DidDetails'
-import { serializeAndEncodeAdditionalLightDidDetails } from './utils'
+import { serializeAndEncodeAdditionalLightDidDetails } from './LightDidDetails.utils'
 
 export interface LightDidDetailsCreationOpts {
   authenticationKey: INewPublicKey
   encryptionKey?: INewPublicKey
   // For services, the ID is the simple service ID, not the whole KILT ID.
-  services?: ServiceDetails[]
+  services?: IServiceDetails[]
 }
 
 export class LightDidDetails extends DidDetails {
@@ -99,7 +99,7 @@ export class LightDidDetails extends DidDetails {
     return this.keys.get(id)
   }
 
-  public getService(id: ServiceDetails['id']): ServiceDetails | undefined {
+  public getService(id: IServiceDetails['id']): IServiceDetails | undefined {
     return this.services.find((s) => s.id === id)
   }
 
@@ -119,7 +119,7 @@ export class LightDidDetails extends DidDetails {
     return [...this.keys.keys()]
   }
 
-  public getServices(type?: string): ServiceDetails[] {
+  public getServices(type?: string): IServiceDetails[] {
     if (type) {
       return this.services.filter((service) => service.type === type)
     }

@@ -13,13 +13,13 @@ import type {
   SubmittableExtrinsic,
   ApiOrMetadata,
   CallMeta,
-  ServiceDetails,
+  IServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
 import { MapKeyToRelationship } from '../types'
 import { generateDidAuthenticatedTx, queryLastTxIndex } from '../Did.chain'
-import { getKeysForCall, getKeysForExtrinsic } from './utils'
+import { getKeysForCall, getKeysForExtrinsic } from './FullDidDetails.utils'
 import {
   getSignatureAlgForKeyType,
   getIdentifierFromKiltDid,
@@ -31,7 +31,7 @@ export interface FullDidDetailsCreationOpts {
   keys: IDidKeyDetails[]
   keyRelationships: MapKeyToRelationship
   lastTxIndex: BN
-  services?: ServiceDetails[]
+  services?: IServiceDetails[]
 }
 
 function errorCheck({

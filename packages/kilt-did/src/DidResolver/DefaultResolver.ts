@@ -10,14 +10,14 @@ import type {
   IDidKeyDetails,
   IDidDetails,
   ResolverOpts,
-  ServiceDetails,
+  IServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { LightDidDetails } from '../DidDetails/LightDidDetails'
 import { FullDidDetails } from '../DidDetails/FullDidDetails'
 import type { LightDidDetailsCreationOpts } from '../DidDetails/LightDidDetails'
-import { decodeAndDeserializeAdditionalLightDidDetails } from '../DidDetails/utils'
+import { decodeAndDeserializeAdditionalLightDidDetails } from '../DidDetails/LightDidDetails.utils'
 import { queryById, queryKey } from '../Did.chain'
 import {
   getKiltDidFromIdentifier,
@@ -56,7 +56,7 @@ async function queryFullDetailsFromIdentifier(
     ]
   }
 
-  let services: ServiceDetails[] = []
+  let services: IServiceDetails[] = []
   if (servicesResolver && endpointData) {
     const { contentHash, contentType, urls } = endpointData
     services = await servicesResolver(contentHash, urls, contentType)
@@ -74,7 +74,7 @@ async function queryFullDetailsFromIdentifier(
 export async function resolve(
   didUri: string,
   opts: ResolverOpts = {}
-): Promise<IDidDetails | IDidKeyDetails | ServiceDetails | null> {
+): Promise<IDidDetails | IDidKeyDetails | IServiceDetails | null> {
   const { identifier, type, version, fragment, encodedDetails } = parseDidUrl(
     didUri
   )

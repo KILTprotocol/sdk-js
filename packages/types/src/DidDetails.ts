@@ -62,7 +62,7 @@ export interface IDidKeyDetails<T extends string = string> {
 /**
  * A service record associated with a DID record.
  */
-export interface ServiceDetails {
+export interface IServiceDetails {
   /**
    * Service id.
    */
@@ -117,7 +117,7 @@ export interface IDidDetails {
    * @param type A type string to filter out services with a specific type.
    * @returns An array of all or selected [[ServiceDetails]], depending on the `type` parameter.
    */
-  getServices(type?: string): ServiceDetails[]
+  getServices(type?: string): IServiceDetails[]
 }
 
 export type ApiOrMetadata = ApiPromise | Metadata

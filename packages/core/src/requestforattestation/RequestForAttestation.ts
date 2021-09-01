@@ -32,7 +32,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { DefaultResolver, DidUtils, DidDetailsUtils } from '@kiltprotocol/did'
+import { DefaultResolver, DidUtils } from '@kiltprotocol/did'
 import ClaimUtils from '../claim/Claim.utils'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
@@ -320,7 +320,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     did: IDidDetails,
     challenge?: string
   ): Promise<this> {
-    const { signature, keyId } = await DidDetailsUtils.signWithDid(
+    const { signature, keyId } = await DidUtils.signWithDid(
       makeSigningData(this, challenge),
       did,
       signer,
@@ -334,7 +334,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     key: IDidKeyDetails,
     challenge?: string
   ): Promise<this> {
-    const { signature } = await DidDetailsUtils.signWithKey(
+    const { signature } = await DidUtils.signWithKey(
       makeSigningData(this, challenge),
       key,
       signer

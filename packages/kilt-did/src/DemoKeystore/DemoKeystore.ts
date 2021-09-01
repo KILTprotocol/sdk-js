@@ -31,9 +31,10 @@ import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import { hexToU8a, u8aEq } from '@polkadot/util'
 import { getKiltDidFromIdentifier } from '../Did.utils'
-import { FullDidDetails, LightDidDetails, DidDetailsUtils } from '../DidDetails'
+import { FullDidDetails, LightDidDetails } from '../DidDetails'
 import { DefaultResolver, DidUtils } from '..'
 import { PublicKeyRoleAssignment } from '../types'
+import { newFullDidDetailsfromKeys } from '../DidDetails/FullDidDetails.utils'
 
 export enum SigningAlgorithms {
   Ed25519 = 'ed25519',
@@ -312,7 +313,7 @@ export async function createLocalDemoDidFromSeed(
     }
   }
 
-  return DidDetailsUtils.newDidDetailsfromKeys({
+  return newFullDidDetailsfromKeys({
     [KeyRelationship.authentication]: await generateKeypairForDid(
       '',
       signingKeyType,

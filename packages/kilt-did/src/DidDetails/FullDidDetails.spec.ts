@@ -11,6 +11,7 @@
 
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
+import { mapCallToKeyRelationship } from './FullDidDetails.utils'
 import { FullDidDetails, FullDidDetailsCreationOpts } from './FullDidDetails'
 
 describe('functional tests', () => {
@@ -211,5 +212,55 @@ describe('functional tests', () => {
         "${did}#4",
       ]
     `)
+  })
+})
+
+describe('Key mapping tests', () => {
+  it('gets the right key relationship for each pallet', () => {
+    // CTYPE
+    expect(
+      mapCallToKeyRelationship({ section: 'ctype', method: 'add' })
+    ).toMatchInlineSnapshot(`"assertionMethod"`)
+    // DELEGATION
+    expect(
+      mapCallToKeyRelationship({
+        section: 'delegation',
+        method: 'addDelegation',
+      })
+    ).toMatchInlineSnapshot(`"capabilityDelegation"`)
+    expect(
+      mapCallToKeyRelationship({
+        section: 'delegation',
+        method: 'revokeDelegation',
+      })
+    ).toMatchInlineSnapshot(`"capabilityDelegation"`)
+    // ATTESTATION
+    expect(
+      mapCallToKeyRelationship({ section: 'attestation', method: 'add' })
+    ).toMatchInlineSnapshot(`"assertionMethod"`)
+    expect(
+      mapCallToKeyRelationship({ section: 'attestation', method: 'revoke' })
+    ).toMatchInlineSnapshot(`"assertionMethod"`)
+
+    // DID
+    expect(
+      mapCallToKeyRelationship({
+        section: 'did',
+        method: 'create',
+      })
+    ).toMatchInlineSnapshot(`"paymentAccount"`)
+    expect(
+      mapCallToKeyRelationship({
+        section: 'did',
+        method: 'update',
+      })
+    ).toMatchInlineSnapshot(`"authentication"`)
+    expect(
+      mapCallToKeyRelationship({ section: 'did', method: 'submitDidCall' })
+    ).toMatchInlineSnapshot(`"paymentAccount"`)
+    // BALANCES
+    expect(
+      mapCallToKeyRelationship({ section: 'balances', method: 'transfer' })
+    ).toMatchInlineSnapshot(`"paymentAccount"`)
   })
 })

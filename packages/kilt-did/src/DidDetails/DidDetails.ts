@@ -10,7 +10,7 @@
 
 import type {
   IDidDetails,
-  ServiceDetails,
+  IServiceDetails,
   IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
@@ -19,13 +19,13 @@ import type { MapKeyToRelationship } from '../types'
 export abstract class DidDetails implements IDidDetails {
   protected didUri: string
   protected id: string
-  protected services: ServiceDetails[] = []
+  protected services: IServiceDetails[] = []
   protected keys: Map<IDidKeyDetails['id'], IDidKeyDetails> = new Map()
   protected keyRelationships: MapKeyToRelationship & {
     none?: Array<IDidKeyDetails['id']>
   } = {}
 
-  constructor(didUri: string, id: string, services: ServiceDetails[]) {
+  constructor(didUri: string, id: string, services: IServiceDetails[]) {
     this.didUri = didUri
     this.id = id
     this.services = services.map((service) => {
@@ -47,7 +47,7 @@ export abstract class DidDetails implements IDidDetails {
     return this.keys.get(id)
   }
 
-  public getService(id: ServiceDetails['id']): ServiceDetails | undefined {
+  public getService(id: IServiceDetails['id']): IServiceDetails | undefined {
     return this.services.find((s) => s.id === id)
   }
 
@@ -67,7 +67,7 @@ export abstract class DidDetails implements IDidDetails {
     return [...this.keys.keys()]
   }
 
-  public getServices(type?: string): ServiceDetails[] {
+  public getServices(type?: string): IServiceDetails[] {
     if (type) {
       return this.services.filter((service) => service.type === type)
     }

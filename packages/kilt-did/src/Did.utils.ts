@@ -36,7 +36,6 @@ import type {
   IDidParsingResult,
 } from './types'
 import { generateCreateTx } from './Did.chain'
-import { signWithDid } from './DidDetails/utils'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 
@@ -393,20 +392,6 @@ export async function verifyDidSignatureAsync({
   }
 }
 
-export async function getDidAuthenticationSignature(
-  toSign: Uint8Array | string,
-  did: IDidDetails,
-  signer: KeystoreSigner
-): Promise<DidSignature> {
-  const { keyId, signature } = await signWithDid(
-    toSign,
-    did,
-    signer,
-    KeyRelationship.authentication
-  )
-  return { keyId, signature: Crypto.u8aToHex(signature) }
-}
-
 export async function writeDidfromPublicKeys(
   signer: KeystoreSigner,
   publicKeys: PublicKeyRoleAssignment,
@@ -442,4 +427,52 @@ export function writeDidfromIdentity(
     [KeyRelationship.authentication]: signKeyringPair,
     [KeyRelationship.keyAgreement]: { ...identity.boxKeyPair, type: 'x25519' },
   })
+}
+
+export async function signWithKey(
+  toSign: Uint8Array | string,
+  key: IDidKeyDetails,
+  signer: KeystoreSigner
+): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
+  const alg = getSignatureAlgForKeyType(key.type)
+  const { data: signature } = await signer.sign({
+    publicKey: Crypto.coToUInt8(key.publicKeyHex),
+    alg,
+    data: Crypto.coToUInt8(toSign),
+  })
+  return { keyId: key.id, signature, alg }
+}
+
+export async function signWithDid(
+  toSign: Uint8Array | string,
+  did: IDidDetails,
+  signer: KeystoreSigner,
+  whichKey: KeyRelationship | IDidKeyDetails['id']
+): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
+  let key: IDidKeyDetails | undefined
+  if (Object.values(KeyRelationship).includes(whichKey as KeyRelationship)) {
+    ;[key] = did.getKeys(KeyRelationship.authentication)
+  } else {
+    key = did.getKey(whichKey)
+  }
+  if (!key) {
+    throw Error(
+      `failed to find key on FullDidDetails (${did.did}): ${whichKey}`
+    )
+  }
+  return signWithKey(toSign, key, signer)
+}
+
+export async function getDidAuthenticationSignature(
+  toSign: Uint8Array | string,
+  did: IDidDetails,
+  signer: KeystoreSigner
+): Promise<DidSignature> {
+  const { keyId, signature } = await signWithDid(
+    toSign,
+    did,
+    signer,
+    KeyRelationship.authentication
+  )
+  return { keyId, signature: Crypto.u8aToHex(signature) }
 }

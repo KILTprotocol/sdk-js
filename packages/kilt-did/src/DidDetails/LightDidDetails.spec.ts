@@ -12,14 +12,14 @@
  */
 
 import { encodeAddress } from '@kiltprotocol/utils/src/Crypto'
-import type { ServiceDetails } from '@kiltprotocol/types'
+import type { IServiceDetails } from '@kiltprotocol/types'
 import { hexToU8a } from '@polkadot/util'
 import {
   getEncodingForSigningKeyType,
   getKiltDidFromIdentifier,
 } from '../Did.utils'
 import { LightDidDetails, LightDidDetailsCreationOpts } from './LightDidDetails'
-import { serializeAndEncodeAdditionalLightDidDetails } from './utils'
+import { serializeAndEncodeAdditionalLightDidDetails } from './LightDidDetails.utils'
 import type { INewPublicKey } from '../types'
 
 describe('Light DID tests', () => {
@@ -41,7 +41,7 @@ describe('Light DID tests', () => {
     type: 'ed25519',
   }
   let encryptionDidKeyDetails: INewPublicKey | undefined
-  let services: ServiceDetails[] | undefined
+  let services: IServiceDetails[] | undefined
 
   it('creates LightDidDetails from authentication key, encryption key, and service endpoints', () => {
     encryptionDidKeyDetails = {

@@ -33,7 +33,7 @@ import {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
-import { DidTypes, DidDetailsUtils } from '@kiltprotocol/did'
+import { DidTypes, DidUtils } from '@kiltprotocol/did'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { query as queryAttestation } from '../attestation/Attestation.chain'
 import {
@@ -275,7 +275,7 @@ export default class DelegationNode implements IDelegationNode {
     delegeeDid: IDidDetails,
     signer: KeystoreSigner
   ): Promise<DidTypes.SignatureEnum> {
-    const { alg, signature } = await DidDetailsUtils.signWithDid(
+    const { alg, signature } = await DidUtils.signWithDid(
       Crypto.coToUInt8(this.generateHash()),
       delegeeDid,
       signer,

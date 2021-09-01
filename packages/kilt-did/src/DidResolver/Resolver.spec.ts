@@ -13,7 +13,7 @@
 // import { TypeRegistry } from '@kiltprotocol/chain-helpers'
 // import { KeyRelationship, ServicesResolver } from '@kiltprotocol/types'
 // import { Crypto } from '@kiltprotocol/utils'
-import type { IDidDetails, ServiceDetails } from '@kiltprotocol/types'
+import type { IDidDetails, IServiceDetails } from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/api'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import { hexToU8a, u8aToHex } from '@polkadot/util'
@@ -128,7 +128,7 @@ describe('Light DID tests', () => {
   let keypair: KeyringPair
   let publicAuthKey: INewPublicKey
   let encryptionKey: INewPublicKey
-  let services: ServiceDetails[]
+  let services: IServiceDetails[]
 
   it('Correctly resolves a light DID created with only an ed25519 authentication key', async () => {
     keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
