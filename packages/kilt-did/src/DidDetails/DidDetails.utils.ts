@@ -24,6 +24,13 @@ import {
   getIdentifierFromKiltDid,
 } from '../Did.utils'
 
+/**
+ * Write on the KILT blockchain a new (full) DID with the provided details.
+ *
+ * @param didDetails The details of the new DID to write on chain.
+ * @param signer The signer (a KILT account) to be used to sign the resulting operation.
+ * @returns The signed extrinsic that can be submitted to the KILT blockchain to create the new DID.
+ */
 export async function writeNewDidFromDidDetails(
   didDetails: IDidDetails,
   signer: KeystoreSigner

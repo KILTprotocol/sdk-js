@@ -10,7 +10,6 @@
 import type { IDidKeyDetails, IServiceDetails } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
-import { hexToU8a } from '@polkadot/util'
 import { encodeAddress } from '@polkadot/util-crypto'
 import {
   getEncodingForSigningKeyType,
@@ -23,11 +22,11 @@ import { serializeAndEncodeAdditionalLightDidDetails } from './LightDidDetails.u
 export interface LightDidDetailsCreationOpts {
   authenticationKey: INewPublicKey
   encryptionKey?: INewPublicKey
-  // For services, the ID is the simple service ID, not the whole KILT ID.
   services?: IServiceDetails[]
 }
 
 export class LightDidDetails extends DidDetails {
+  /// The latest version for KILT light DIDs.
   public static readonly LIGHT_DID_VERSION = 1
 
   constructor({
@@ -35,7 +34,6 @@ export class LightDidDetails extends DidDetails {
     encryptionKey = undefined,
     services = [],
   }: LightDidDetailsCreationOpts) {
-    // TODO: to improve. This is just a PoC
     const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
       encryptionKey,
       services,
@@ -47,8 +45,9 @@ export class LightDidDetails extends DidDetails {
       throw SDKErrors.ERROR_UNSUPPORTED_KEY
     }
 
+    // A KILT light DID identifier becomes <key_type_encoding><kilt_address>
     const id = authenticationKeyTypeEncoding.concat(
-      encodeAddress(hexToU8a(Crypto.u8aToHex(authenticationKey.publicKey)), 38)
+      encodeAddress(authenticationKey.publicKey, 38)
     )
     let did = getKiltDidFromIdentifier(
       id,
@@ -61,6 +60,7 @@ export class LightDidDetails extends DidDetails {
 
     super(did, id, services)
 
+    // Authentication key always has the #authentication ID.
     this.keys = new Map([
       [
         `${this.did}#authentication`,
@@ -76,6 +76,7 @@ export class LightDidDetails extends DidDetails {
       authentication: [`${this.didUri}#authentication`],
     }
 
+    // Encryption key always has the #encryption ID.
     if (encryptionKey) {
       this.keys.set(`${this.didUri}#encryption`, {
         controller: this.did,

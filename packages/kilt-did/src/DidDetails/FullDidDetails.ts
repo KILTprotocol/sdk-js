@@ -23,10 +23,12 @@ import { getKeysForCall, getKeysForExtrinsic } from './FullDidDetails.utils'
 import {
   getSignatureAlgForKeyType,
   getIdentifierFromKiltDid,
+  parseDidUrl,
 } from '../Did.utils'
 import { DidDetails } from './DidDetails'
 
 export interface FullDidDetailsCreationOpts {
+  // The full DID URI, following the scheme did:kilt:<version_identifier>:<kilt_address>
   did: string
   keys: IDidKeyDetails[]
   keyRelationships: MapKeyToRelationship
@@ -41,6 +43,10 @@ function errorCheck({
 }: Required<FullDidDetailsCreationOpts>): void {
   if (!did) {
     throw Error('did is required for FullDidDetails')
+  }
+  const { type } = parseDidUrl(did)
+  if (type !== 'full') {
+    throw Error('Only a full DID URI is allowed.')
   }
   const keyIds = new Set(keys.map((key) => key.id))
   if (keyRelationships[KeyRelationship.authentication]?.length !== 1) {
@@ -95,9 +101,9 @@ export class FullDidDetails extends DidDetails {
     const keysWithRelationship = new Set<string>(
       Array.prototype.concat(...Object.values(keyRelationships))
     )
-    this.keys.forEach((_, id) => {
-      if (!keysWithRelationship.has(id)) {
-        this.keyRelationships.none?.push(id)
+    this.keys.forEach((_, keyId) => {
+      if (!keysWithRelationship.has(keyId)) {
+        this.keyRelationships.none?.push(keyId)
       }
     })
   }
@@ -114,10 +120,23 @@ export class FullDidDetails extends DidDetails {
     return nextIndex
   }
 
+  /**
+   * Returns all the DID keys that could be used to authorize the submission of the provided call.
+   *
+   * @param call The call to submit.
+   * @returns The set of keys that could be used to sign the call.
+   */
   public getKeysForCall(call: CallMeta): IDidKeyDetails[] {
     return getKeysForCall(this, call)
   }
 
+  /**
+   * Returns all the DID keys that could be used to authorize the submission of the provided extrinsic.
+   *
+   * @param apiOrMetadata The node runtime information to use to retrieve the required information.
+   * @param extrinsic The extrinsic to submit.
+   * @returns The set of keys that could be used to sign the extrinsic.
+   */
   public getKeysForExtrinsic(
     apiOrMetadata: ApiOrMetadata,
     extrinsic: Extrinsic
@@ -125,6 +144,14 @@ export class FullDidDetails extends DidDetails {
     return getKeysForExtrinsic(apiOrMetadata, this, extrinsic)
   }
 
+  /**
+   * Signs and returns the provided unsigned extrinsic with the right DID key, if present. Otherwise, it will return an error.
+   *
+   * @param extrinsic The unsigned extrinsic to sign.
+   * @param signer The keystore to be used to sign the encoded extrinsic.
+   * @param incrementTxIndex Flag indicating whether the DID nonce should be increased before submitting the operation or not.
+   * @returns The DID-signed submittable extrinsic.
+   */
   public async authorizeExtrinsic(
     extrinsic: Extrinsic,
     signer: KeystoreSigner,
@@ -147,6 +174,11 @@ export class FullDidDetails extends DidDetails {
     })
   }
 
+  /**
+   * Retrieve from the chain the last used nonce for the DID.
+   *
+   * @returns The last used nonce.
+   */
   public async refreshTxIndex(): Promise<this> {
     this.lastTxIndex = await queryLastTxIndex(this.did)
     return this

@@ -25,10 +25,16 @@ import {
   parseDidUrl,
 } from '../Did.utils'
 
+/**
+ * Retrieves all the details associated with a DID from the KILT blockchain.
+ * @param identifier The full DID identifier.
+ * @param serviceResolver The optional service resolver to resolve the DID service endpoints.
+ * @param version The DID version number.
+ * @returns 
+ */
 async function queryFullDetailsFromIdentifier(
   identifier: string,
   { servicesResolver }: ResolverOpts,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   version = 1
 ): Promise<FullDidDetails | null> {
   const didRec = await queryById(identifier)
@@ -63,7 +69,7 @@ async function queryFullDetailsFromIdentifier(
   }
 
   return new FullDidDetails({
-    did: getKiltDidFromIdentifier(identifier, 'full'),
+    did: getKiltDidFromIdentifier(identifier, 'full', version),
     keys: publicKeys,
     keyRelationships,
     lastTxIndex: lastTxCounter.toBn(),
@@ -71,6 +77,13 @@ async function queryFullDetailsFromIdentifier(
   })
 }
 
+/**
+ * Resolve a DID URI (including a key ID or a service endpoint ID).
+ *
+ * @param didUri The DID URI to resolve.
+ * @param opts The options to provide to the service resolver.
+ * @returns The DID, key, or service endpoint details depending on the input URI. If not resource can be resolved, null is returned.
+ */
 export async function resolve(
   didUri: string,
   opts: ResolverOpts = {}
@@ -86,14 +99,17 @@ export async function resolve(
         opts,
         version
       )
-      if (!fragment || !details) {
+      // If the URI is a subject DID, return the retrieved details.
+      if (!fragment) {
         return details
       }
 
+      // Otherwise, return either the key or the service endpoints referenced by the URI.
       return details?.getKey(didUri) || details?.getService(didUri) || null
     }
     case 'light': {
       // In light DIDs the key type encoding (first two chars) is part of the identifier.
+      // We are sure the URI follows the expected structure as it has been checked in `parseDidUrl`.
       const keyTypeEncoding = identifier.substring(0, 2)
       const keyType = getSigningKeyTypeFromEncoding(keyTypeEncoding)
       if (!keyType) {
@@ -118,7 +134,7 @@ export async function resolve(
 
       const details = new LightDidDetails(lightDidCreationOptions)
 
-      if (!fragment || !details) {
+      if (!fragment) {
         return details
       }
 
@@ -129,6 +145,13 @@ export async function resolve(
   }
 }
 
+/**
+ * Resolve a DID URI (including a key or a service endpoint reference) to the details of the DID subject.
+ *
+ * @param did The subject', the key, or the service endpoint identifier.
+ * @param opts The options to provide to the service resolver.
+ * @returns The details associated with the DID subject.
+ */
 export async function resolveDoc(
   did: string,
   opts: ResolverOpts = {}
@@ -144,6 +167,12 @@ export async function resolveDoc(
   return resolve(didToResolve, opts) as Promise<IDidDetails | null>
 }
 
+/**
+ * Resolve a DID key URI to the key details.
+ *
+ * @param didUri The DID key URI.
+ * @returns The details associated with the key.
+ */
 export async function resolveKey(
   didUri: string
 ): Promise<IDidKeyDetails | null> {

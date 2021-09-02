@@ -16,11 +16,19 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import type { MapKeyToRelationship } from '../types'
 
+/**
+ * An abstract instance for some details associated with a KILT DID.
+ */
 export abstract class DidDetails implements IDidDetails {
+  // The complete DID URI, such as did:kilt:v1:<kilt_address> for full DIDs and did:kilt:light:v1:<kilt_address>
   protected didUri: string
+  // The identifier of the DID, meaning either the KILT address for full DIDs or the KILT address + the encoded authentication key type for light DIDs.
   protected id: string
+  // The set of service endpoints associated with the DID.
   protected services: IServiceDetails[] = []
+  // A map from key ID to key details, which allows for efficient retrieval of a key information given its ID.
   protected keys: Map<IDidKeyDetails['id'], IDidKeyDetails> = new Map()
+  // A map from key relationship type (authentication, assertion method, etc.) to key ID, which can then be used to retrieve the key details if needed.
   protected keyRelationships: MapKeyToRelationship & {
     none?: Array<IDidKeyDetails['id']>
   } = {}
@@ -29,9 +37,11 @@ export abstract class DidDetails implements IDidDetails {
     this.didUri = didUri
     this.id = id
     this.services = services.map((service) => {
-      const s = service
-      s.id = `${didUri}#${service.id}`
-      return s
+      return {
+        ...service,
+        // Maps the service ID to the complete service URI, which includes also the subject's DID.
+        id: `${didUri}#${service.id}`,
+      }
     })
   }
 
