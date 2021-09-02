@@ -73,7 +73,7 @@ export class LightDidDetails extends DidDetails {
       ],
     ])
     this.keyRelationships = {
-      Authentication: [`${this.didUri}#authentication`],
+      authentication: [`${this.didUri}#authentication`],
     }
 
     if (encryptionKey) {
@@ -83,7 +83,7 @@ export class LightDidDetails extends DidDetails {
         publicKeyHex: Crypto.u8aToHex(encryptionKey.publicKey),
         type: encryptionKey.type,
       })
-      this.keyRelationships.KeyAgreement = [`${this.didUri}#encryption`]
+      this.keyRelationships.keyAgreement = [`${this.didUri}#encryption`]
     }
   }
 

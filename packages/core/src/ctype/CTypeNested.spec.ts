@@ -15,7 +15,8 @@ import Claim from '../claim/Claim'
 import CTypeUtils from './CType.utils'
 
 describe('Nested CTypes', () => {
-  const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
+  const didAlice =
+    'did:kilt:v1:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
   let passportCType: ICType['schema']
   let kycCType: ICType['schema']
   let passport: CType

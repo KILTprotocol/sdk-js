@@ -12,10 +12,10 @@ import type { Metadata } from '@polkadot/types'
  * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.
  */
 export enum KeyRelationship {
-  authentication = 'Authentication',
-  capabilityDelegation = 'CapabilityDelegation',
-  assertionMethod = 'AssertionMethod',
-  keyAgreement = 'KeyAgreement',
+  authentication = 'authentication',
+  capabilityDelegation = 'capabilityDelegation',
+  assertionMethod = 'assertionMethod',
+  keyAgreement = 'keyAgreement',
 }
 
 /**

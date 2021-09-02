@@ -22,7 +22,7 @@ import { LightDidDetails, LightDidDetailsCreationOpts } from './LightDidDetails'
 import { serializeAndEncodeAdditionalLightDidDetails } from './LightDidDetails.utils'
 import type { INewPublicKey } from '../types'
 
-describe('Light DID tests', () => {
+describe('Light DID v1 tests', () => {
   const authPublicKey = hexToU8a(
     '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
   )

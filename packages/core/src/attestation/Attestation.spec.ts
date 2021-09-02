@@ -35,9 +35,9 @@ jest.mock(
 describe('Attestation', () => {
   Kilt.config({ address: 'ws://testString' })
   const identityAlice =
-    'did:kilt:4nwPAmtsK5toZfBM9WvmAe4Fa3LyZ3X3JHt7EUFfrcPPAZAm'
+    'did:kilt:v1:4nwPAmtsK5toZfBM9WvmAe4Fa3LyZ3X3JHt7EUFfrcPPAZAm'
   const identityBob =
-    'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
+    'did:kilt:v1:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
   let rawCTypeSchema: ICType['schema']
   let testCType: CType
   let testcontents: any

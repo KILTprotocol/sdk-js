@@ -9,7 +9,7 @@
     ],
     "id": "kilt:cred:0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad",
     "credentialSubject": {
-        "@id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
+        "@id": "did:kilt:v1:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
         "@context": {
             "@vocab": "kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf#"
         },
@@ -18,20 +18,20 @@
         "premium": true
     },
     "legitimationIds": [],
-    "issuer": "did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG",
+    "issuer": "did:kilt:v1:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG",
     "issuanceDate": "2021-03-25T10:20:44.242Z",
     "nonTransferable": true,
     "proof": [
         {
             "type": "KILTSelfSigned2020",
             "proofPurpose": "assertionMethod",
-            "verificationMethod": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#authenticationKey-1",
+            "verificationMethod": "did:kilt:v1:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#authenticationKey-1",
             "signature": "0x00c374b5314d7192224bd620047f740c029af118eb5645a4662f76a2e3d70a877290f9a96cb9ee9ccc6c6bce24a0cf132a07edb603d0d0632f84210d528d2a7701"
         },
         {
             "type": "KILTAttestation2020",
             "proofPurpose": "assertionMethod",
-            "attester": "did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG"
+            "attester": "did:kilt:v1:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG"
         },
         {
             "type": "KILTCredentialDigest2020",

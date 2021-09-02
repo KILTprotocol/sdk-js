@@ -19,7 +19,8 @@ import CTypeMetadata from './CTypeMetadata'
 import { MetadataModel } from './CTypeSchema'
 
 describe('CType', () => {
-  const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
+  const didAlice =
+    'did:kilt:v1:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
   let rawCType: ICType['schema']
   let ctype: ICType
   let ctypeMetadata: ICTypeMetadata['metadata']

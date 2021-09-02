@@ -21,7 +21,7 @@ const claim: IClaim = {
     number: 26,
     optIn: true,
   },
-  owner: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
+  owner: 'did:kilt:v1:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
 }
 
 it('exports claim as json-ld', () => {
@@ -33,7 +33,7 @@ it('exports claim as json-ld', () => {
         "@id": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2",
       },
       "https://www.w3.org/2018/credentials#credentialSubject": Object {
-        "@id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
+        "@id": "did:kilt:v1:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
         "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#address": "homestreet, home",
         "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#name": "John",
         "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#number": 26,
@@ -58,7 +58,7 @@ it('exports claim as json-ld', () => {
         "@context": Object {
           "@vocab": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#",
         },
-        "@id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
+        "@id": "did:kilt:v1:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
         "address": "homestreet, home",
         "name": "John",
         "number": 26,
@@ -88,11 +88,11 @@ it('validates hashes from snapshot', () => {
   expect(hashed.nonceMap).toEqual(nonceMap)
   expect(hashed.hashes).toMatchInlineSnapshot(`
     Array [
-      "0x3c2ae125a0baf4ed64a30b7ad012810b4622628a2eb5ad32e769e6a1d356d58d",
-      "0x69aae66efd954c3712e91dd2761dab08ea941e6516e7cf6ddf6e3b90ddc5bdf3",
-      "0x8d5736197583931c4e4d3dce0503596760f7a13e8187cc440b7de1edd4370d6a",
-      "0xad82658110207f8e65e1c2ae196ec7952aacda0aa9f19c83ce18b60612fe909a",
-      "0xf5db5c377a5e85ba94a457d5be8b8ec05419c3e0a666147d6ed86b45089374bd",
+      "0x0273330883aa3fbd5fb4c6ec5d21e9f49ac0d34351fe65fd7e6c3bffde993446",
+      "0x212adfffe4314b9a05a3a6640782be1150258f17f2760208afc81e86cc91e9ef",
+      "0x8a8089c46e1b363be1744120c122671260c77133fa680217cffcb8aa45521b9c",
+      "0x90ae04b86e405bc258b944150cc97539f0561d14862e64ab739e4ff5db277058",
+      "0xf19a54a1d85c6b4c457145f4acac0fb8112805c7ec60afe4208d0585adb5db03",
     ]
   `)
 })

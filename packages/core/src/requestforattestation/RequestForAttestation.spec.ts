@@ -64,11 +64,11 @@ function buildRequestForAttestation(
 
 describe('RequestForAttestation', () => {
   const identityAlice =
-    'did:kilt:4nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS'
+    'did:kilt:v1:4nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS'
   const identityBob =
-    'did:kilt:4s5d7QHWSX9xx4DLafDtnTHK87n5e9G3UoKRrCDQ2gnrzYmZ'
+    'did:kilt:v1:4s5d7QHWSX9xx4DLafDtnTHK87n5e9G3UoKRrCDQ2gnrzYmZ'
   const identityCharlie =
-    'did:kilt:4rVHmxSCxGTEv6rZwQUvZa6HTis4haefXPuEqj4zGafug7xL'
+    'did:kilt:v1:4rVHmxSCxGTEv6rZwQUvZa6HTis4haefXPuEqj4zGafug7xL'
   let legitimationRequest: RequestForAttestation
   let legitimationAttestation: Attestation
   let legitimation: AttestedClaim
