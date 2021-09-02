@@ -29,7 +29,7 @@ import {
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { KeypairType } from '@polkadot/util-crypto/types'
-import { hexToU8a, u8aEq } from '@polkadot/util'
+import { u8aEq } from '@polkadot/util'
 import { getKiltDidFromIdentifier } from '../Did.utils'
 import { FullDidDetails, LightDidDetails } from '../DidDetails'
 import { DefaultResolver, DidUtils } from '..'
@@ -337,35 +337,20 @@ export async function createLocalDemoDidFromSeed(
   })
 }
 
-export async function createOffChainDidFromSeed(
+export async function createLightDidFromSeed(
   keystore: DemoKeystore,
   mnemonicOrHexSeed: string,
-  signingKeyType = SigningAlgorithms.Ed25519
+  signingKeyType = SigningAlgorithms.Sr25519
 ): Promise<LightDidDetails> {
-  // This block is very similar to `createLocalDemoDidFromSeed` so we might want to refactor in the future to specify what keys should be created, so that the same logic can be used for a demo full DID or for a light DID,
-  const kiltAddress = encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38)
-  const did = getKiltDidFromIdentifier(kiltAddress, 'light')
-
-  const generateKeypairForDid = async (keytype: string) => {
-    const keyId = `${did}#${blake2AsHex(mnemonicOrHexSeed, 64)}`
-    const { publicKey } = await keystore.generateKeypair<any>({
-      alg: keytype,
-      seed: mnemonicOrHexSeed,
-    })
-    return {
-      id: keyId,
-      controller: did,
-      type: keytype,
-      publicKeyHex: Crypto.u8aToHex(publicKey),
-    }
-  }
-
-  const authenticationKey = await generateKeypairForDid(signingKeyType)
+  const authenticationPublicKey = await keystore.generateKeypair({
+    alg: signingKeyType,
+    seed: mnemonicOrHexSeed,
+  })
 
   return new LightDidDetails({
     authenticationKey: {
-      publicKey: hexToU8a(authenticationKey.publicKeyHex),
-      type: signingKeyType,
+      publicKey: authenticationPublicKey.publicKey,
+      type: authenticationPublicKey.alg,
     },
   })
 }
