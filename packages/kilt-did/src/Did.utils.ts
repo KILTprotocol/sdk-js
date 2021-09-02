@@ -119,14 +119,25 @@ export function getKiltDidFromIdentifier(
   didVersion = 1
 ): string {
   if (identifier.startsWith(KILT_DID_PREFIX)) {
-    return identifier
+    if (
+      FULL_KILT_DID_REGEX.exec(identifier) ||
+      LIGHT_KILT_DID_REGEX.exec(identifier)
+    ) {
+      return identifier
+    }
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT
   }
 
-  if (didType === 'full') {
-    return getFullDidFromIdentifier(identifier, didVersion)
+  switch (didType) {
+    case 'full':
+      return getFullDidFromIdentifier(identifier, didVersion)
+      break
+    case 'light':
+      return getLightDidFromIdentifier(identifier, didVersion)
+      break
+    default:
+      throw SDKErrors.ERROR_UNSUPPORTED_DID(didType)
   }
-
-  return getLightDidFromIdentifier(identifier, didVersion)
 }
 
 export function parseDidUrl(didUrl: string): IDidParsingResult {
@@ -141,7 +152,7 @@ export function parseDidUrl(didUrl: string): IDidParsingResult {
       version: parseInt(matches.version, 10),
       type: 'full',
       identifier: matches.identifier,
-      fragment: matches.fragment?.substr(1),
+      fragment: matches.fragment?.substring(1),
     }
   }
 
@@ -153,17 +164,18 @@ export function parseDidUrl(didUrl: string): IDidParsingResult {
     matches.version &&
     matches.auth_key_type
   ) {
+    const lightDidIdentifier = matches.auth_key_type.concat(matches.identifier)
     return {
       did: getKiltDidFromIdentifier(
-        matches.auth_key_type.concat(matches.identifier),
+        lightDidIdentifier,
         'light',
         parseInt(matches.version, 10)
       ),
       version: parseInt(matches.version, 10),
       type: 'light',
       identifier: matches.auth_key_type.concat(matches.identifier),
-      fragment: matches.fragment?.substr(1),
-      encodedDetails: matches.encoded_details?.substr(1),
+      fragment: matches.fragment?.substring(1),
+      encodedDetails: matches.encoded_details?.substring(1),
     }
   }
 
@@ -181,14 +193,24 @@ export function validateKiltDid(
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { identifier, did, type } = parseDidUrl(input)
-  if (!allowFragment && did !== input) {
+  const { identifier, type, fragment } = parseDidUrl(input)
+  if (!allowFragment && fragment) {
     throw SDKErrors.ERROR_INVALID_DID_FORMAT(input)
   }
-  if (type === 'full' && !checkAddress(identifier, 38)[0]) {
-    throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
-  } else if (type === 'light' && !checkAddress(identifier.substr(2), 38)[0]) {
-    throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+
+  switch (type) {
+    case 'full':
+      if (!checkAddress(identifier, 38)[0]) {
+        throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+      }
+      break
+    case 'light':
+      if (!checkAddress(identifier.substring(2), 38)[0]) {
+        throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+      }
+      break
+    default:
+      throw SDKErrors.ERROR_UNSUPPORTED_DID(input)
   }
   return true
 }

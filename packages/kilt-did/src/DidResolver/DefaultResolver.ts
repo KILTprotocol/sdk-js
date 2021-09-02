@@ -78,48 +78,55 @@ export async function resolve(
   const { identifier, type, version, fragment, encodedDetails } = parseDidUrl(
     didUri
   )
-  if (type === 'full') {
-    const details = await queryFullDetailsFromIdentifier(
-      identifier,
-      opts,
-      version
-    )
-    if (!fragment || !details) {
-      return details
+
+  switch (type) {
+    case 'full': {
+      const details = await queryFullDetailsFromIdentifier(
+        identifier,
+        opts,
+        version
+      )
+      if (!fragment || !details) {
+        return details
+      }
+
+      return details?.getKey(didUri) || details?.getService(didUri) || null
     }
+    case 'light': {
+      // In light DIDs the key type encoding (first two chars) is part of the identifier.
+      const keyTypeEncoding = identifier.substring(0, 2)
+      const keyType = getSigningKeyTypeFromEncoding(keyTypeEncoding)
+      if (!keyType) {
+        throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+      }
+      const kiltIdentifier = identifier.substring(2)
+      const lightDidCreationOptions: LightDidDetailsCreationOpts = {
+        authenticationKey: {
+          publicKey: Crypto.decodeAddress(kiltIdentifier, true, 38),
+          type: keyType,
+        },
+      }
 
-    return details?.getKey(didUri) || details?.getService(didUri) || null
+      if (encodedDetails) {
+        const decodedDetails = decodeAndDeserializeAdditionalLightDidDetails(
+          encodedDetails,
+          version
+        )
+        lightDidCreationOptions.encryptionKey = decodedDetails.encryptionKey
+        lightDidCreationOptions.services = decodedDetails.services
+      }
+
+      const details = new LightDidDetails(lightDidCreationOptions)
+
+      if (!fragment || !details) {
+        return details
+      }
+
+      return details?.getKey(didUri) || details?.getService(didUri) || null
+    }
+    default:
+      throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
   }
-
-  // If type === 'light'
-  const kiltIdentifier = identifier.substr(2)
-  const keyTypeEncoding = identifier.substr(0, 2)
-  const keyType = getSigningKeyTypeFromEncoding(keyTypeEncoding)
-  if (!keyType) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
-  }
-  const lightDidCreationOptions: LightDidDetailsCreationOpts = {
-    authenticationKey: {
-      publicKey: Crypto.decodeAddress(kiltIdentifier, true, 38),
-      type: keyType,
-    },
-  }
-
-  if (encodedDetails) {
-    const decodedDetails = decodeAndDeserializeAdditionalLightDidDetails(
-      encodedDetails
-    )
-    lightDidCreationOptions.encryptionKey = decodedDetails.encryptionKey
-    lightDidCreationOptions.services = decodedDetails.services
-  }
-
-  const details = new LightDidDetails(lightDidCreationOptions)
-
-  if (!fragment || !details) {
-    return details
-  }
-
-  return details?.getKey(didUri) || details?.getService(didUri) || null
 }
 
 export async function resolveDoc(
@@ -141,17 +148,25 @@ export async function resolveKey(
 ): Promise<IDidKeyDetails | null> {
   const { did, fragment, type } = parseDidUrl(didUri)
 
+  // A fragment IS expected to resolve a key
   if (!fragment) {
     throw SDKErrors.ERROR_INVALID_DID_FORMAT
   }
 
-  if (type === 'full') {
-    return queryKey(did, fragment)
+  switch (type) {
+    case 'full':
+      return queryKey(did, fragment)
+    case 'light': {
+      const resolvedDetails = await resolveDoc(didUri)
+      if (!resolvedDetails) {
+        throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+      }
+      // The fragment includes the '#' symbol which we do not need
+      return resolvedDetails.getKey(fragment.substring(1)) || null
+    }
+    default:
+      throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
   }
-
-  // If type === 'light'
-  const lightDidDetails = (await resolveDoc(didUri)) as LightDidDetails
-  return lightDidDetails.getKey(fragment.substr(1)) || null
 }
 
 export const DefaultResolver: IDidResolver = { resolveDoc, resolveKey, resolve }

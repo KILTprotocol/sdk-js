@@ -40,7 +40,9 @@ export function serializeAndEncodeAdditionalLightDidDetails({
 }
 
 export function decodeAndDeserializeAdditionalLightDidDetails(
-  rawInput: string
+  rawInput: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  version = 1
 ): Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'services'> {
   const decodedPayload: Map<string, any> = cborDecode(rawInput, {
     encoding: 'base64',

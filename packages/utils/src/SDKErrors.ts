@@ -68,6 +68,7 @@ export enum ErrorCode {
   ERROR_INVALID_DID_FORMAT = 20018,
   ERROR_MESSAGE_BODY_MALFORMED = 20019,
   ERROR_NODE_QUERY = 20020,
+  ERROR_UNSUPPORTED_DID = 20021,
 
   // Data is invalid
   ERROR_ADDRESS_INVALID = 30001,
@@ -438,6 +439,14 @@ export const ERROR_INVALID_DID_FORMAT: (identifier: string) => SDKError = (
   return new SDKError(
     ErrorCode.ERROR_INVALID_DID_FORMAT,
     `Not a valid KILT did: ${identifier}`
+  )
+}
+export const ERROR_UNSUPPORTED_DID: (input: string) => SDKError = (
+  input: string
+) => {
+  return new SDKError(
+    ErrorCode.ERROR_UNSUPPORTED_DID,
+    `The DID ${input} is not supported.`
   )
 }
 
