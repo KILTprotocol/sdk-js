@@ -135,12 +135,13 @@ export async function resolveDoc(
 ): Promise<IDidDetails | null> {
   const { fragment } = parseDidUrl(did)
 
-  // A fragment must not be present when resolving a whole document
+  let didToResolve = did
   if (fragment) {
-    throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
+    // eslint-disable-next-line prefer-destructuring
+    didToResolve = didToResolve.split('#')[0]
   }
 
-  return resolve(did, opts) as Promise<IDidDetails | null>
+  return resolve(didToResolve, opts) as Promise<IDidDetails | null>
 }
 
 export async function resolveKey(
