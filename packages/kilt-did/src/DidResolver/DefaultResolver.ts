@@ -30,6 +30,7 @@ import {
  *
  * @param identifier The full DID identifier.
  * @param serviceResolver The optional service resolver to resolve the DID service endpoints.
+ * @param serviceResolver.servicesResolver
  * @param version The DID version number.
  * @returns The full DID details queried from the KILT blockchain.
  */
