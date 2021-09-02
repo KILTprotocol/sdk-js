@@ -69,8 +69,6 @@ async function queryFullDetailsFromIdentifier(
     const { contentHash, contentType, urls } = endpointData
     services = await servicesResolver(contentHash, urls, contentType)
   }
-  console.log('Services: ')
-  console.log(services)
 
   return new FullDidDetails({
     did: getKiltDidFromIdentifier(identifier, 'full', version),
