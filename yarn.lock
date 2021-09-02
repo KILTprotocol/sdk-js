@@ -865,6 +865,7 @@ __metadata:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
+    "@polkadot/api": ^5.4.1
     "@polkadot/keyring": ^7.1.2
     "@polkadot/types": ^5.4.1
     "@polkadot/util": ^7.1.2
