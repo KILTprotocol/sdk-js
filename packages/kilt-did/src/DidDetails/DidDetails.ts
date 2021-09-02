@@ -36,13 +36,7 @@ export abstract class DidDetails implements IDidDetails {
   constructor(didUri: string, id: string, services: IServiceDetails[]) {
     this.didUri = didUri
     this.id = id
-    this.services = services.map((service) => {
-      return {
-        ...service,
-        // Maps the service ID to the complete service URI, which includes also the subject's DID.
-        id: `${didUri}#${service.id}`,
-      }
-    })
+    this.services = services
   }
 
   public get did(): string {

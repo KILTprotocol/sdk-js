@@ -16,7 +16,7 @@ const SERVICES_MAP_KEY = 'services'
  *
  * @returns The Base64-encoded and CBOR-serialized off-chain DID optional details.
  */
-export default function serializeAndEncodeAdditionalLightDidDetails({
+export function serializeAndEncodeAdditionalLightDidDetails({
   encryptionKey,
   services,
 }: Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'services'>):

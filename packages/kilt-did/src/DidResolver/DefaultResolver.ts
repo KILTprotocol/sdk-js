@@ -27,10 +27,11 @@ import {
 
 /**
  * Retrieves all the details associated with a DID from the KILT blockchain.
+ *
  * @param identifier The full DID identifier.
  * @param serviceResolver The optional service resolver to resolve the DID service endpoints.
  * @param version The DID version number.
- * @returns 
+ * @returns The full DID details queried from the KILT blockchain.
  */
 async function queryFullDetailsFromIdentifier(
   identifier: string,
@@ -67,6 +68,8 @@ async function queryFullDetailsFromIdentifier(
     const { contentHash, contentType, urls } = endpointData
     services = await servicesResolver(contentHash, urls, contentType)
   }
+  console.log('Services: ')
+  console.log(services)
 
   return new FullDidDetails({
     did: getKiltDidFromIdentifier(identifier, 'full', version),
