@@ -42,7 +42,6 @@ export const KILT_DID_PREFIX = 'did:kilt:'
 // Matches the following full DIDs
 // - did:kilt:v1:<kilt_address>
 // - did:kilt:v1:<kilt_address>#<fragment>
-// - did:kilt:v1:light:<kilt_address>:<encoded_details>#<fragment>
 export const FULL_KILT_DID_REGEX = /^did:kilt:v(?<version>[1-9]):(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#[^#\n]+)?$/
 
 // Matches the following light DIDs
@@ -109,8 +108,7 @@ function getLightDidFromIdentifier(identifier: string, didVersion = 1): string {
 }
 
 function getFullDidFromIdentifier(identifier: string, didVersion = 1): string {
-  const did = KILT_DID_PREFIX.concat(`v${didVersion}:${identifier}`)
-  return did
+  return KILT_DID_PREFIX.concat(`v${didVersion}:${identifier}`)
 }
 
 export function getKiltDidFromIdentifier(
@@ -131,10 +129,8 @@ export function getKiltDidFromIdentifier(
   switch (didType) {
     case 'full':
       return getFullDidFromIdentifier(identifier, didVersion)
-      break
     case 'light':
       return getLightDidFromIdentifier(identifier, didVersion)
-      break
     default:
       throw SDKErrors.ERROR_UNSUPPORTED_DID(didType)
   }
@@ -205,6 +201,7 @@ export function validateKiltDid(
       }
       break
     case 'light':
+      // Identifier includes the first two characters for the key type encoding
       if (!checkAddress(identifier.substring(2), 38)[0]) {
         throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
       }
