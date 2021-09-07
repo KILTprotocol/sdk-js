@@ -11,7 +11,7 @@
  * @group unit/did
  */
 
-import { encodeAddress } from '@kiltprotocol/utils/src/Crypto'
+import { Crypto } from '@kiltprotocol/utils'
 import type { IServiceDetails } from '@kiltprotocol/types'
 import { hexToU8a } from '@polkadot/util'
 import { LightDidDetails, LightDidDetailsCreationOpts } from './LightDidDetails'
@@ -24,7 +24,7 @@ describe('Light DID v1 tests', () => {
   const encPublicKey = hexToU8a(
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
-  const address = encodeAddress(authPublicKey, 38)
+  const address = Crypto.encodeAddress(authPublicKey, 38)
   const authenticationDidKeyDetails: INewPublicKey = {
     publicKey: authPublicKey,
     type: 'ed25519',
