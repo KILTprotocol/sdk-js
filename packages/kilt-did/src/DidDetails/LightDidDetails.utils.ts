@@ -8,8 +8,8 @@
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
 import type { LightDidDetailsCreationOpts } from './LightDidDetails'
 
-const ENCRYPTION_KEY_MAP_KEY = 'encryptionKey'
-const SERVICES_MAP_KEY = 'services'
+const ENCRYPTION_KEY_MAP_KEY = 'e'
+const SERVICES_MAP_KEY = 's'
 
 /**
  * Serialize the optional encryption key and service endpoints of an off-chain DID using the CBOR serialization algorithm and encoding the result in Base64 format.

@@ -14,12 +14,7 @@
 import { encodeAddress } from '@kiltprotocol/utils/src/Crypto'
 import type { IServiceDetails } from '@kiltprotocol/types'
 import { hexToU8a } from '@polkadot/util'
-import {
-  getEncodingForSigningKeyType,
-  getKiltDidFromIdentifier,
-} from '../Did.utils'
 import { LightDidDetails, LightDidDetailsCreationOpts } from './LightDidDetails'
-import { serializeAndEncodeAdditionalLightDidDetails } from './LightDidDetails.utils'
 import type { INewPublicKey } from '../types'
 
 describe('Light DID v1 tests', () => {
@@ -29,13 +24,7 @@ describe('Light DID v1 tests', () => {
   const encPublicKey = hexToU8a(
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
-  const testDid = getKiltDidFromIdentifier(
-    getEncodingForSigningKeyType('ed25519').concat(
-      encodeAddress(authPublicKey, 38)
-    ),
-    'light',
-    1
-  )
+  const address = encodeAddress(authPublicKey, 38)
   const authenticationDidKeyDetails: INewPublicKey = {
     publicKey: authPublicKey,
     type: 'ed25519',
@@ -67,12 +56,10 @@ describe('Light DID v1 tests', () => {
       services,
     }
 
-    const encodedAdditionalDetails = serializeAndEncodeAdditionalLightDidDetails(
-      didCreationDetails
-    )!
-
     const did = new LightDidDetails(didCreationDetails)
-    expect(did.did).toEqual(testDid.concat(':', encodedAdditionalDetails))
+    expect(did.did).toEqual(
+      `did:kilt:light:01${address}:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGhzZXJ2aWNlMWR0eXBlaW1lc3NhZ2luZ29zZXJ2aWNlRW5kcG9pbnRrZXhhbXBsZS5jb22jYmlkaHNlcnZpY2UyZHR5cGVpdGVsZXBob25lb3NlcnZpY2VFbmRwb2ludGYxMjMzNDQ=`
+    )
   })
 
   it('creates LightDidDetails from authentication key and encryption key only', () => {
@@ -86,12 +73,10 @@ describe('Light DID v1 tests', () => {
       encryptionKey: encryptionDidKeyDetails,
     }
 
-    const encodedAdditionalDetails = serializeAndEncodeAdditionalLightDidDetails(
-      didCreationDetails
-    )!
-
     const did = new LightDidDetails(didCreationDetails)
-    expect(did.did).toEqual(testDid.concat(':', encodedAdditionalDetails))
+    expect(did.did).toEqual(
+      `did:kilt:light:01${address}:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5`
+    )
   })
 
   it('creates LightDidDetails from authentication key and service endpoints only', () => {
@@ -113,12 +98,10 @@ describe('Light DID v1 tests', () => {
       services,
     }
 
-    const encodedAdditionalDetails = serializeAndEncodeAdditionalLightDidDetails(
-      didCreationDetails
-    )!
-
     const did = new LightDidDetails(didCreationDetails)
-    expect(did.did).toEqual(testDid.concat(':', encodedAdditionalDetails))
+    expect(did.did).toEqual(
+      `did:kilt:light:01${address}:oWFzgqNiaWRoc2VydmljZTFkdHlwZWltZXNzYWdpbmdvc2VydmljZUVuZHBvaW50a2V4YW1wbGUuY29to2JpZGhzZXJ2aWNlMmR0eXBlaXRlbGVwaG9uZW9zZXJ2aWNlRW5kcG9pbnRmMTIzMzQ0`
+    )
   })
 
   it('creates LightDidDetails from authentication key only', () => {
@@ -128,6 +111,6 @@ describe('Light DID v1 tests', () => {
 
     const did = new LightDidDetails(didCreationDetails)
     // no concat of : and encoded details
-    expect(did.did).toEqual(testDid)
+    expect(did.did).toEqual(`did:kilt:light:01${address}`)
   })
 })

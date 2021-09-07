@@ -24,6 +24,7 @@ import {
   getSigningKeyTypeFromEncoding,
   parseDidUrl,
 } from '../Did.utils'
+import type { IDidParsingResult } from '../types'
 
 /**
  * Retrieves all the details associated with a DID from the KILT blockchain.
@@ -79,6 +80,41 @@ async function queryFullDetailsFromIdentifier(
   })
 }
 
+function buildLightDetailsFromMatch({
+  identifier,
+  version,
+  encodedDetails,
+}: Pick<
+  IDidParsingResult,
+  'identifier' | 'version' | 'encodedDetails'
+>): LightDidDetails {
+  // In light DIDs the key type encoding (first two chars) is part of the identifier.
+  // We are sure the URI follows the expected structure as it has been checked in `parseDidUrl`.
+  const keyTypeEncoding = identifier.substring(0, 2)
+  const keyType = getSigningKeyTypeFromEncoding(keyTypeEncoding)
+  if (!keyType) {
+    throw Error()
+  }
+  const kiltIdentifier = identifier.substring(2)
+  const lightDidCreationOptions: LightDidDetailsCreationOpts = {
+    authenticationKey: {
+      publicKey: Crypto.decodeAddress(kiltIdentifier, true, 38),
+      type: keyType,
+    },
+  }
+
+  if (encodedDetails) {
+    const decodedDetails = decodeAndDeserializeAdditionalLightDidDetails(
+      encodedDetails,
+      version
+    )
+    lightDidCreationOptions.encryptionKey = decodedDetails.encryptionKey
+    lightDidCreationOptions.services = decodedDetails.services
+  }
+
+  return new LightDidDetails(lightDidCreationOptions)
+}
+
 /**
  * Resolve a DID URI (including a key ID or a service endpoint ID).
  *
@@ -110,32 +146,17 @@ export async function resolve(
       return details?.getKey(didUri) || details?.getService(didUri) || null
     }
     case 'light': {
-      // In light DIDs the key type encoding (first two chars) is part of the identifier.
-      // We are sure the URI follows the expected structure as it has been checked in `parseDidUrl`.
-      const keyTypeEncoding = identifier.substring(0, 2)
-      const keyType = getSigningKeyTypeFromEncoding(keyTypeEncoding)
-      if (!keyType) {
+      let details: LightDidDetails
+      try {
+        details = buildLightDetailsFromMatch({
+          identifier,
+          version,
+          encodedDetails,
+        })
+      } catch {
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
       }
-      const kiltIdentifier = identifier.substring(2)
-      const lightDidCreationOptions: LightDidDetailsCreationOpts = {
-        authenticationKey: {
-          publicKey: Crypto.decodeAddress(kiltIdentifier, true, 38),
-          type: keyType,
-        },
-      }
-
-      if (encodedDetails) {
-        const decodedDetails = decodeAndDeserializeAdditionalLightDidDetails(
-          encodedDetails,
-          version
-        )
-        lightDidCreationOptions.encryptionKey = decodedDetails.encryptionKey
-        lightDidCreationOptions.services = decodedDetails.services
-      }
-
-      const details = new LightDidDetails(lightDidCreationOptions)
-
+      // If the URI is a subject DID, return the retrieved details.
       if (!fragment) {
         return details
       }

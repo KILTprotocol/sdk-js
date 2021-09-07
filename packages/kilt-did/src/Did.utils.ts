@@ -461,7 +461,8 @@ export async function signWithDid(
 ): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
   let key: IDidKeyDetails | undefined
   if (Object.values(KeyRelationship).includes(whichKey as KeyRelationship)) {
-    ;[key] = did.getKeys(KeyRelationship.authentication)
+    // eslint-disable-next-line prefer-destructuring
+    key = did.getKeys(KeyRelationship.authentication)[0]
   } else {
     key = did.getKey(whichKey)
   }
