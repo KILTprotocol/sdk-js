@@ -13,7 +13,7 @@ import type { ICType } from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import { KeyringPair } from '@polkadot/keyring/types'
 import {
-  DidDetails,
+  FullDidDetails,
   DemoKeystore,
   createOnChainDidFromSeed,
 } from '@kiltprotocol/did'
@@ -31,7 +31,7 @@ beforeAll(async () => {
 })
 
 describe('When there is an CtypeCreator and a verifier', () => {
-  let ctypeCreator: DidDetails
+  let ctypeCreator: FullDidDetails
   let paymentAccount: KeyringPair
   let ctypeCounter = 0
   const keystore = new DemoKeystore()

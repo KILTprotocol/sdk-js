@@ -18,7 +18,11 @@ import type {
   IDidDetails,
   IDidResolver,
 } from '@kiltprotocol/types'
-import { DemoKeystore, createLocalDemoDidFromSeed } from '@kiltprotocol/did'
+import {
+  DemoKeystore,
+  createLocalDemoDidFromSeed,
+  createLightDidFromSeed,
+} from '@kiltprotocol/did'
 import { UUID } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
@@ -120,7 +124,7 @@ describe('RequestForAttestation', () => {
     ]
   })
 
-  it('verify attested claims', async () => {
+  it('verify attested claims signed by a full DID', async () => {
     const attestedClaim = await buildAttestedClaim(
       identityCharlie,
       identityAlice,
@@ -139,6 +143,28 @@ describe('RequestForAttestation', () => {
     expect(AttestedClaim.verifyData(attestedClaim)).toBeTruthy()
     await expect(
       AttestedClaim.verify(attestedClaim, { claimerDid: identityCharlie })
+    ).resolves.toBe(true)
+  })
+  it('verify attested claims signed by a light DID', async () => {
+    const identityDave = await createLightDidFromSeed(keystore, '//Dave')
+    const attestedClaim = await buildAttestedClaim(
+      identityDave,
+      identityAlice,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation],
+      keystore
+    )
+
+    ;(query as jest.Mock).mockResolvedValue(attestedClaim.attestation)
+
+    // check proof on complete data
+    expect(AttestedClaim.verifyData(attestedClaim)).toBeTruthy()
+    await expect(
+      AttestedClaim.verify(attestedClaim, { claimerDid: identityDave })
     ).resolves.toBe(true)
   })
 
@@ -269,7 +295,7 @@ describe('create presentation', () => {
     expect(cred).toBeDefined()
   })
 
-  it('should create presentation and exclude specific attributes', async () => {
+  it('should create presentation and exclude specific attributes using a full DID', async () => {
     const mockResolver: IDidResolver = {
       resolveDoc: async (did: string) => {
         if (did.startsWith(claimer.did)) return claimer
@@ -291,6 +317,47 @@ describe('create presentation', () => {
     await expect(
       AttestedClaim.verify(att, { resolver: mockResolver })
     ).resolves.toBe(true)
+    expect(att.request.claimerSignature?.challenge).toEqual(challenge)
+  })
+  it('should create presentation and exclude specific attributes using a light DID', async () => {
+    claimer = await createLightDidFromSeed(keystore, '//Attester')
+    const rawCType: ICType['schema'] = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'credential',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+    ctype = CType.fromSchema(rawCType, attester.did)
+
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = RequestForAttestation.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        claimer.did
+      )
+    )
+
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    ;(query as jest.Mock).mockResolvedValue(attestation)
+
+    const cred = AttestedClaim.fromRequestAndAttestation(reqForAtt, attestation)
+
+    const challenge = UUID.generate()
+    const att = await cred.createPresentation({
+      selectedAttributes: ['name'],
+      signer: keystore,
+      claimerDid: claimer,
+      challenge,
+    })
+    expect(att.getAttributes()).toEqual(new Set(['name']))
+    await expect(AttestedClaim.verify(att)).resolves.toBe(true)
     expect(att.request.claimerSignature?.challenge).toEqual(challenge)
   })
 

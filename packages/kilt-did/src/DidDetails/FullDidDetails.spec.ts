@@ -11,38 +11,44 @@
 
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
-import { DidDetails, DidDetailsCreationOpts } from './DidDetails'
+import { mapCallToKeyRelationship } from './FullDidDetails.utils'
+import { FullDidDetails, FullDidDetailsCreationOpts } from './FullDidDetails'
 
 describe('functional tests', () => {
-  const did = 'did:kilt:test'
+  const identifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
+  const did = `did:kilt:${identifier}`
   const keys = [
     {
       id: `${did}#1`,
       controller: did,
       includedAt: 100,
       type: 'ed25519',
-      publicKeyHex: '0xed25519',
+      publicKeyHex:
+        '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     },
     {
       id: `${did}#2`,
       controller: did,
       includedAt: 250,
       type: 'x25519',
-      publicKeyHex: '0x255191',
+      publicKeyHex:
+        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     },
     {
       id: `${did}#3`,
       controller: did,
       includedAt: 250,
       type: 'x25519',
-      publicKeyHex: '0x255192',
+      publicKeyHex:
+        '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
     },
     {
       id: `${did}#4`,
       controller: did,
       includedAt: 200,
       type: 'sr25519',
-      publicKeyHex: '0xbeef',
+      publicKeyHex:
+        '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
     },
   ]
   const services = [
@@ -57,7 +63,7 @@ describe('functional tests', () => {
       serviceEndpoint: '123344',
     },
   ]
-  const didDetails: DidDetailsCreationOpts = {
+  const didDetails: FullDidDetailsCreationOpts = {
     did,
     keys,
     keyRelationships: {
@@ -69,38 +75,38 @@ describe('functional tests', () => {
     services,
   }
 
-  it('creates DidDetails', () => {
-    const dd = new DidDetails(didDetails)
+  it('creates FullDidDetails', () => {
+    const dd = new FullDidDetails(didDetails)
     expect(dd.did).toEqual(did)
-    expect(dd.identifier).toMatchInlineSnapshot(`"test"`)
+    expect(dd.identifier).toEqual(identifier)
     expect(dd.getKeys()).toMatchInlineSnapshot(`
       Array [
         Object {
-          "controller": "did:kilt:test",
-          "id": "did:kilt:test#1",
+          "controller": "${did}",
+          "id": "${did}#1",
           "includedAt": 100,
-          "publicKeyHex": "0xed25519",
+          "publicKeyHex": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           "type": "ed25519",
         },
         Object {
-          "controller": "did:kilt:test",
-          "id": "did:kilt:test#2",
+          "controller": "${did}",
+          "id": "${did}#2",
           "includedAt": 250,
-          "publicKeyHex": "0x255191",
+          "publicKeyHex": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
           "type": "x25519",
         },
         Object {
-          "controller": "did:kilt:test",
-          "id": "did:kilt:test#3",
+          "controller": "${did}",
+          "id": "${did}#3",
           "includedAt": 250,
-          "publicKeyHex": "0x255192",
+          "publicKeyHex": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
           "type": "x25519",
         },
         Object {
-          "controller": "did:kilt:test",
-          "id": "did:kilt:test#4",
+          "controller": "${did}",
+          "id": "${did}#4",
           "includedAt": 200,
-          "publicKeyHex": "0xbeef",
+          "publicKeyHex": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
           "type": "sr25519",
         },
       ]
@@ -108,12 +114,12 @@ describe('functional tests', () => {
     expect(dd.getServices()).toMatchInlineSnapshot(`
       Array [
         Object {
-          "id": "did:kilt:test#service1",
+          "id": "${did}#service1",
           "serviceEndpoint": "example.com",
           "type": "messaging",
         },
         Object {
-          "id": "did:kilt:test#service2",
+          "id": "${did}#service2",
           "serviceEndpoint": "123344",
           "type": "telephone",
         },
@@ -122,7 +128,7 @@ describe('functional tests', () => {
   })
 
   it('gets keys via role', () => {
-    let dd = new DidDetails(didDetails)
+    let dd = new FullDidDetails(didDetails)
     expect(dd.getKeyIds(KeyRelationship.authentication)).toEqual([keys[0].id])
     expect(dd.getKeys(KeyRelationship.authentication)).toEqual([keys[0]])
     expect(dd.getKeyIds(KeyRelationship.keyAgreement)).toEqual(
@@ -133,7 +139,7 @@ describe('functional tests', () => {
     ).toEqual(didDetails.keyRelationships[KeyRelationship.keyAgreement])
     expect(dd.getKeyIds(KeyRelationship.assertionMethod)).toEqual([keys[3].id])
 
-    dd = new DidDetails({
+    dd = new FullDidDetails({
       ...didDetails,
       keyRelationships: { [KeyRelationship.authentication]: [keys[3].id] },
     })
@@ -144,7 +150,7 @@ describe('functional tests', () => {
   })
 
   it('gets service via type', () => {
-    const dd = new DidDetails(didDetails)
+    const dd = new FullDidDetails(didDetails)
     expect(dd.getServices('messaging').map((s) => s.type)).toEqual([
       'messaging',
     ])
@@ -154,14 +160,14 @@ describe('functional tests', () => {
   })
 
   it('returns the next nonce', () => {
-    let dd = new DidDetails(didDetails)
+    let dd = new FullDidDetails(didDetails)
     expect(dd.getNextTxIndex().toString()).toEqual(
       didDetails.lastTxIndex.addn(1).toString()
     )
     expect(dd.getNextTxIndex().toString()).toEqual(
       didDetails.lastTxIndex.addn(2).toString()
     )
-    dd = new DidDetails(didDetails)
+    dd = new FullDidDetails(didDetails)
     expect(dd.getNextTxIndex(false).toString()).toEqual(
       didDetails.lastTxIndex.addn(1).toString()
     )
@@ -171,7 +177,7 @@ describe('functional tests', () => {
   })
 
   it('gets the correct keys for each pallet', () => {
-    const dd = new DidDetails({
+    const dd = new FullDidDetails({
       ...didDetails,
       keyRelationships: {
         [KeyRelationship.authentication]: [keys[0].id],
@@ -185,7 +191,7 @@ describe('functional tests', () => {
         .map((key) => key.id)
     ).toMatchInlineSnapshot(`
       Array [
-        "did:kilt:test#4",
+        "${did}#4",
       ]
     `)
     expect(
@@ -194,7 +200,7 @@ describe('functional tests', () => {
         .map((key) => key.id)
     ).toMatchInlineSnapshot(`
       Array [
-        "did:kilt:test#2",
+        "${did}#2",
       ]
     `)
     expect(
@@ -203,8 +209,58 @@ describe('functional tests', () => {
         .map((key) => key.id)
     ).toMatchInlineSnapshot(`
       Array [
-        "did:kilt:test#4",
+        "${did}#4",
       ]
     `)
+  })
+})
+
+describe('Key mapping tests', () => {
+  it('gets the right key relationship for each pallet', () => {
+    // CTYPE
+    expect(
+      mapCallToKeyRelationship({ section: 'ctype', method: 'add' })
+    ).toMatchInlineSnapshot(`"assertionMethod"`)
+    // DELEGATION
+    expect(
+      mapCallToKeyRelationship({
+        section: 'delegation',
+        method: 'addDelegation',
+      })
+    ).toMatchInlineSnapshot(`"capabilityDelegation"`)
+    expect(
+      mapCallToKeyRelationship({
+        section: 'delegation',
+        method: 'revokeDelegation',
+      })
+    ).toMatchInlineSnapshot(`"capabilityDelegation"`)
+    // ATTESTATION
+    expect(
+      mapCallToKeyRelationship({ section: 'attestation', method: 'add' })
+    ).toMatchInlineSnapshot(`"assertionMethod"`)
+    expect(
+      mapCallToKeyRelationship({ section: 'attestation', method: 'revoke' })
+    ).toMatchInlineSnapshot(`"assertionMethod"`)
+
+    // DID
+    expect(
+      mapCallToKeyRelationship({
+        section: 'did',
+        method: 'create',
+      })
+    ).toMatchInlineSnapshot(`"paymentAccount"`)
+    expect(
+      mapCallToKeyRelationship({
+        section: 'did',
+        method: 'update',
+      })
+    ).toMatchInlineSnapshot(`"authentication"`)
+    expect(
+      mapCallToKeyRelationship({ section: 'did', method: 'submitDidCall' })
+    ).toMatchInlineSnapshot(`"paymentAccount"`)
+    // BALANCES
+    expect(
+      mapCallToKeyRelationship({ section: 'balances', method: 'transfer' })
+    ).toMatchInlineSnapshot(`"paymentAccount"`)
   })
 })

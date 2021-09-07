@@ -33,12 +33,23 @@ import type {
   INewPublicKey,
   PublicKeyRoleAssignment,
   EndpointData,
+  IDidParsingResult,
 } from './types'
 import { generateCreateTx } from './Did.chain'
-import { signWithDid } from './DidDetails/utils'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
-export const KILT_DID_REGEX = /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#.+)?$/
+
+// Matches the following full DIDs
+// - did:kilt:<kilt_address>
+// - did:kilt:<kilt_address>#<fragment>
+export const FULL_KILT_DID_REGEX = /^did:kilt:(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48})(?<fragment>#[^#\n]+)?$/
+
+// Matches the following light DIDs
+// - did:kilt:light:00<kilt_address>
+// - did:kilt:light:01<kilt_address>:<encoded_details>
+// - did:kilt:light:10<kilt_address>#<fragment>
+// - did:kilt:light:99<kilt_address>:<encoded_details>#<fragment>
+export const LIGHT_KILT_DID_REGEX = /^did:kilt:light:(?<auth_key_type>[0-9]{2})(?<identifier>[1-9a-km-zA-HJ-NP-Z]{48,49})(?<encoded_details>:.+?)?(?<fragment>#[^#\n]+)?$/
 
 export enum CHAIN_SUPPORTED_SIGNATURE_KEY_TYPES {
   ed25519 = 'ed25519',
@@ -66,37 +77,100 @@ export function getSignatureAlgForKeyType(keyType: string): string {
   return SignatureAlgForKeyType[keyType] || keyType
 }
 
-export function getKiltDidFromIdentifier(identifier: string): string {
+export enum LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES {
+  ed25519 = 'ed25519',
+  sr25519 = 'sr25519',
+  ecdsa = 'ecdsa',
+}
+
+const EncodingForSigningKeyType = {
+  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519]: '00',
+  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519]: '01',
+  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ecdsa]: '02',
+}
+
+const SigningKeyTypeFromEncoding = {
+  '00': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519,
+  '01': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519,
+  '02': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ecdsa,
+}
+
+export function getEncodingForSigningKeyType(keyType: string): string {
+  return EncodingForSigningKeyType[keyType] || null
+}
+
+export function getSigningKeyTypeFromEncoding(encoding: string): string {
+  return SigningKeyTypeFromEncoding[encoding]?.toString() || null
+}
+
+function getLightDidFromIdentifier(identifier: string, didVersion = 1): string {
+  const versionString = didVersion === 1 ? '' : `:v${didVersion}`
+  return KILT_DID_PREFIX.concat(`light${versionString}:${identifier}`)
+}
+
+function getFullDidFromIdentifier(identifier: string, didVersion = 1): string {
+  const versionString = didVersion === 1 ? '' : `v${didVersion}:`
+  return KILT_DID_PREFIX.concat(`${versionString}${identifier}`)
+}
+
+export function getKiltDidFromIdentifier(
+  identifier: string,
+  didType: 'full' | 'light',
+  didVersion = 1
+): string {
   if (identifier.startsWith(KILT_DID_PREFIX)) {
-    return identifier
+    if (
+      FULL_KILT_DID_REGEX.exec(identifier) ||
+      LIGHT_KILT_DID_REGEX.exec(identifier)
+    ) {
+      return identifier
+    }
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT
   }
-  return KILT_DID_PREFIX + identifier
+
+  switch (didType) {
+    case 'full':
+      return getFullDidFromIdentifier(identifier, didVersion)
+    case 'light':
+      return getLightDidFromIdentifier(identifier, didVersion)
+    default:
+      throw SDKErrors.ERROR_UNSUPPORTED_DID(didType)
+  }
+}
+
+export function parseDidUrl(didUrl: string): IDidParsingResult {
+  let matches = FULL_KILT_DID_REGEX.exec(didUrl)?.groups
+  if (matches && matches.identifier) {
+    const version = matches.version ? parseInt(matches.version, 10) : 1
+    return {
+      did: getKiltDidFromIdentifier(matches.identifier, 'full', version),
+      version,
+      type: 'full',
+      identifier: matches.identifier,
+      fragment: matches.fragment?.substring(1),
+    }
+  }
+
+  // If it fails to parse full DID, try with light DID
+  matches = LIGHT_KILT_DID_REGEX.exec(didUrl)?.groups
+  if (matches && matches.identifier && matches.auth_key_type) {
+    const version = matches.version ? parseInt(matches.version, 10) : 1
+    const lightDidIdentifier = matches.auth_key_type.concat(matches.identifier)
+    return {
+      did: getKiltDidFromIdentifier(lightDidIdentifier, 'light', version),
+      version,
+      type: 'light',
+      identifier: matches.auth_key_type.concat(matches.identifier),
+      fragment: matches.fragment?.substring(1),
+      encodedDetails: matches.encoded_details?.substring(1),
+    }
+  }
+
+  throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUrl)
 }
 
 export function getIdentifierFromKiltDid(did: string): string {
-  if (!did.startsWith(KILT_DID_PREFIX)) {
-    throw SDKErrors.ERROR_INVALID_DID_PREFIX(did)
-  }
-  return did.substr(KILT_DID_PREFIX.length)
-}
-
-export function getIdentifierFromDid(did: string): string {
-  const secondColonAt = did.indexOf(':', did.indexOf(':') + 1)
-  const identifier = did.substring(secondColonAt + 1)
-  if (!identifier) {
-    throw SDKErrors.ERROR_INVALID_DID_PREFIX(did)
-  }
-  return identifier
-}
-
-export function parseDidUrl(didUrl: string) {
-  const { identifier, fragment } = didUrl.match(KILT_DID_REGEX)?.groups || {}
-  if (!identifier) throw SDKErrors.ERROR_INVALID_DID_PREFIX(didUrl)
-  return {
-    did: getKiltDidFromIdentifier(identifier),
-    identifier,
-    fragment: fragment?.substr(1),
-  }
+  return parseDidUrl(did).identifier
 }
 
 export function validateKiltDid(
@@ -106,14 +180,25 @@ export function validateKiltDid(
   if (typeof input !== 'string') {
     throw TypeError(`DID string expected, got ${typeof input}`)
   }
-  const { identifier, did } = parseDidUrl(input)
-  if (!allowFragment && did !== input) {
-    throw new Error(
-      `Expected DID of format kilt:did:<ss58 identifier>, got ${input}`
-    )
+  const { identifier, type, fragment } = parseDidUrl(input)
+  if (!allowFragment && fragment) {
+    throw SDKErrors.ERROR_INVALID_DID_FORMAT(input)
   }
-  if (!checkAddress(identifier, 38)[0]) {
-    throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+
+  switch (type) {
+    case 'full':
+      if (!checkAddress(identifier, 38)[0]) {
+        throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+      }
+      break
+    case 'light':
+      // Identifier includes the first two characters for the key type encoding
+      if (!checkAddress(identifier.substring(2), 38)[0]) {
+        throw SDKErrors.ERROR_ADDRESS_INVALID(identifier, 'DID identifier')
+      }
+      break
+    default:
+      throw SDKErrors.ERROR_UNSUPPORTED_DID(input)
   }
   return true
 }
@@ -156,7 +241,7 @@ export function encodeEndpointUrl(url: string): UrlEnum {
   })
   if (!matched)
     throw new Error(
-      'only endpoint urls starting with http/https, ftp, and ipfs are accepted'
+      'Only endpoint urls starting with http/https, ftp, and ipfs are accepted'
     )
   return typedUrl as UrlEnum
 }
@@ -317,20 +402,6 @@ export async function verifyDidSignatureAsync({
   }
 }
 
-export async function getDidAuthenticationSignature(
-  toSign: Uint8Array | string,
-  did: IDidDetails,
-  signer: KeystoreSigner
-): Promise<DidSignature> {
-  const { keyId, signature } = await signWithDid(
-    toSign,
-    did,
-    signer,
-    KeyRelationship.authentication
-  )
-  return { keyId, signature: Crypto.u8aToHex(signature) }
-}
-
 export async function writeDidfromPublicKeys(
   signer: KeystoreSigner,
   publicKeys: PublicKeyRoleAssignment,
@@ -348,7 +419,7 @@ export async function writeDidfromPublicKeys(
     signingPublicKey: authenticationKey.publicKey,
     endpointData,
   })
-  return { submittable, did: getKiltDidFromIdentifier(didIdentifier) }
+  return { submittable, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
 }
 
 export function writeDidfromIdentity(
@@ -366,4 +437,53 @@ export function writeDidfromIdentity(
     [KeyRelationship.authentication]: signKeyringPair,
     [KeyRelationship.keyAgreement]: { ...identity.boxKeyPair, type: 'x25519' },
   })
+}
+
+export async function signWithKey(
+  toSign: Uint8Array | string,
+  key: IDidKeyDetails,
+  signer: KeystoreSigner
+): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
+  const alg = getSignatureAlgForKeyType(key.type)
+  const { data: signature } = await signer.sign({
+    publicKey: Crypto.coToUInt8(key.publicKeyHex),
+    alg,
+    data: Crypto.coToUInt8(toSign),
+  })
+  return { keyId: key.id, signature, alg }
+}
+
+export async function signWithDid(
+  toSign: Uint8Array | string,
+  did: IDidDetails,
+  signer: KeystoreSigner,
+  whichKey: KeyRelationship | IDidKeyDetails['id']
+): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
+  let key: IDidKeyDetails | undefined
+  if (Object.values(KeyRelationship).includes(whichKey as KeyRelationship)) {
+    // eslint-disable-next-line prefer-destructuring
+    key = did.getKeys(KeyRelationship.authentication)[0]
+  } else {
+    key = did.getKey(whichKey)
+  }
+  if (!key) {
+    throw Error(
+      `failed to find key on FullDidDetails (${did.did}): ${whichKey}`
+    )
+  }
+  return signWithKey(toSign, key, signer)
+}
+
+export async function getDidAuthenticationSignature(
+  toSign: Uint8Array | string,
+  did: IDidDetails,
+  signer: KeystoreSigner
+): Promise<DidSignature> {
+  const { keyId, signature } = await signWithDid(
+    toSign,
+    did,
+    signer,
+    KeyRelationship.authentication
+  )
+  return { keyId, signature: Crypto.u8aToHex(signature) }
 }

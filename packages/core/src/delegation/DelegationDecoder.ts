@@ -116,7 +116,8 @@ export function decodeDelegationNode(
       : undefined,
     childrenIds: [...delegationNode.children.keys()].map((id) => id.toHex()),
     account: DidUtils.getKiltDidFromIdentifier(
-      delegationNode.details.owner.toString()
+      delegationNode.details.owner.toString(),
+      'full'
     ),
     permissions: decodePermissions(
       delegationNode.details.permissions.toNumber()

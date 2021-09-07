@@ -977,15 +977,15 @@ describe('Messaging Utilities', () => {
     messageRequestTerms.receiver = 'did:kilt:thisisnotareceiveraddress'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRequestTerms)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_PREFIX(''))
+    ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_FORMAT(''))
     messageSubmitTerms.sender = 'this is not a sender did'
     expect(() =>
       MessageUtils.errorCheckMessage(messageSubmitTerms)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_PREFIX(''))
+    ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_FORMAT(''))
     messageRejectTerms.sender = 'this is not a sender address'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRejectTerms)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_PREFIX(''))
+    ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_FORMAT(''))
   })
   it('error check should throw errors on faulty bodies', () => {
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'

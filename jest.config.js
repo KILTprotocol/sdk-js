@@ -3,7 +3,8 @@ module.exports = {
   testEnvironment: 'node',
   clearMocks: true,
   runner: 'groups',
-  testTimeout: 10000,
+  // Parachain block time is 12s
+  testTimeout: 15000,
   setupFilesAfterEnv: ['../testingTools/setup.js'],
   transformIgnorePatterns:['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
   coverageThreshold: {

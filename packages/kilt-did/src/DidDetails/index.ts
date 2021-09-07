@@ -6,4 +6,8 @@
  */
 
 export * from './DidDetails'
-export * as DidDetailsUtils from './utils'
+export * from './DidDetails.utils'
+export * from './FullDidDetails'
+export * from './FullDidDetails.utils'
+export * from './LightDidDetails'
+export * from './LightDidDetails.utils'

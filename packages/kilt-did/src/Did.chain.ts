@@ -77,7 +77,10 @@ function decodeEndpointUrl(url: Url): string {
   return (url.value as UrlEncoding).payload.toString()
 }
 
-function decodeDidChainRecord(didDetail: IDidChainRecordCodec, did: string) {
+function decodeDidChainRecord(
+  didDetail: IDidChainRecordCodec,
+  did: string
+): IDidChainRecordJSON {
   const publicKeys: IDidKeyDetails[] = Array.from(
     didDetail.publicKeys.entries()
   ).map(([keyId, keyDetails]) => {
@@ -125,7 +128,7 @@ export async function queryById(
   if (result.isSome) {
     return decodeDidChainRecord(
       result.unwrap(),
-      getKiltDidFromIdentifier(didIdentifier)
+      getKiltDidFromIdentifier(didIdentifier, 'full')
     )
   }
   return null
@@ -156,7 +159,8 @@ export async function queryKey(
 }
 
 export async function queryLastTxIndex(did: string): Promise<BN> {
-  const encoded = await queryEncoded(getIdentifierFromKiltDid(did))
+  const identifier = getIdentifierFromKiltDid(did)
+  const encoded = await queryEncoded(identifier)
   if (encoded.isNone) return new BN(0)
   return encoded.unwrap().lastTxCounter.toBn()
 }

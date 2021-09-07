@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { IDidDetails, IDidKeyDetails, ServiceDetails } from './DidDetails'
+import type { IDidDetails, IDidKeyDetails, IServiceDetails } from './DidDetails'
 
 /**
  * A URL resolver for additional service endpoints data associated with a DID. It takes the hash of
@@ -22,7 +22,7 @@ export type ServicesResolver = (
   resourceHash: string,
   endpoints: string[],
   contentType: string
-) => Promise<ServiceDetails[]>
+) => Promise<IServiceDetails[]>
 
 export interface ResolverOpts {
   servicesResolver?: ServicesResolver
@@ -45,7 +45,7 @@ export interface IDidResolver {
   resolve: (
     didUri: string,
     opts?: ResolverOpts
-  ) => Promise<IDidDetails | IDidKeyDetails | ServiceDetails | null>
+  ) => Promise<IDidDetails | IDidKeyDetails | IServiceDetails | null>
   /**
    * Resolves a DID (or DID URI), returning the full contents of the DID document.
    *

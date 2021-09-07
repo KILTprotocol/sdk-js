@@ -865,10 +865,12 @@ __metadata:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
+    "@polkadot/api": ^5.4.1
     "@polkadot/keyring": ^7.1.2
     "@polkadot/types": ^5.4.1
     "@polkadot/util": ^7.1.2
     "@polkadot/util-crypto": ^7.1.2
+    cbor: ^6.0.0
     rimraf: ^3.0.2
     typescript: ^4.2.2
   languageName: unknown
@@ -2363,6 +2365,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bignumber.js@npm:^9.0.1":
+  version: 9.0.1
+  resolution: "bignumber.js@npm:9.0.1"
+  checksum: 605e9639c413f344c37b23e919254f60a5017cc5ccd925e2f8fb79b36aa3d54f356df9c726f38465263236455f685d60dcf38dbe32cb0b7e4d2a32c94b035476
+  languageName: node
+  linkType: hard
+
 "blakejs@npm:^1.1.1":
   version: 1.1.1
   resolution: "blakejs@npm:1.1.1"
@@ -2676,6 +2685,16 @@ __metadata:
   version: 0.12.0
   resolution: "caseless@npm:0.12.0"
   checksum: 147f48bff9bebf029d7050e2335da3f8d295f26d157edf08d8c3282c804dae04a462c4cd6efa8179755686aa3aeaca5c28f3e7f3559698bc0484c65e46c36c5b
+  languageName: node
+  linkType: hard
+
+"cbor@npm:^6.0.0":
+  version: 6.0.1
+  resolution: "cbor@npm:6.0.1"
+  dependencies:
+    bignumber.js: ^9.0.1
+    nofilter: ^1.0.4
+  checksum: 57bad020415bedaa7d7b1c04c94592696f183c8fbf3675baac258754da373495fe03078afacf95c352403631154031cf383d1e5899b77105d5bd219d400050d6
   languageName: node
   linkType: hard
 
@@ -6704,6 +6723,13 @@ fsevents@^2.1.2:
   version: 1.1.71
   resolution: "node-releases@npm:1.1.71"
   checksum: 9e283003f1deafd0ca7f9bbde9c4b5b05d880ca165217f5227b37406626d6689a246a5c4c72f9a8512be65cd51b13cc7d0f5d8bc68ad36089b620f1810292340
+  languageName: node
+  linkType: hard
+
+"nofilter@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "nofilter@npm:1.0.4"
+  checksum: af46b9255190250595702f75623d3de4bc5e07822d16d2b3b2e47dc892825273efedc326710e884689e4a74bfc9863c61ca8d6b4115c7bcac40a4e787ae5a8c9
   languageName: node
   linkType: hard
 

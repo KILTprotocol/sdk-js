@@ -14,7 +14,7 @@ import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import {
   createOnChainDidFromSeed,
   DemoKeystore,
-  DidDetails,
+  FullDidDetails,
 } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { randomAsHex } from '@polkadot/util-crypto'
@@ -39,9 +39,9 @@ import '../../../../testingTools/jestErrorCodeMatcher'
 
 let tokenHolder: KeyringPair
 let signer: DemoKeystore
-let attester: DidDetails
-let anotherAttester: DidDetails
-let claimer: DidDetails
+let attester: FullDidDetails
+let anotherAttester: FullDidDetails
+let claimer: FullDidDetails
 
 beforeAll(async () => {
   await init({ address: WS_ADDRESS })

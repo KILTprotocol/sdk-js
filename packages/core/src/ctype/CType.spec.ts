@@ -142,7 +142,7 @@ describe('CType', () => {
     `)
     expect(() =>
       CType.fromCType(faultyAddressTypeCType)
-    ).toThrowErrorMatchingInlineSnapshot(`"Not a KILT did: 4262626426"`)
+    ).toThrowErrorMatchingInlineSnapshot(`"Not a valid KILT did: 4262626426"`)
     expect(() =>
       CType.fromCType(wrongSchemaIdCType)
     ).toThrowErrorMatchingInlineSnapshot(

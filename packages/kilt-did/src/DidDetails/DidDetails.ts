@@ -5,117 +5,53 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import type { Extrinsic } from '@polkadot/types/interfaces'
-import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable import/prefer-default-export */
+
 import type {
-  IDidKeyDetails,
-  KeystoreSigner,
-  SubmittableExtrinsic,
-  ApiOrMetadata,
-  CallMeta,
   IDidDetails,
-  ServiceDetails,
+  IServiceDetails,
+  IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
+import type { MapKeyToRelationship } from '../types'
 
-import type { BN } from '@polkadot/util'
-import { generateDidAuthenticatedTx, queryLastTxIndex } from '../Did.chain'
-import { getKeysForCall, getKeysForExtrinsic } from './utils'
-import { getIdentifierFromDid, getSignatureAlgForKeyType } from '../Did.utils'
-
-export type MapKeyToRelationship = Partial<
-  Record<KeyRelationship, Array<IDidKeyDetails['id']>>
->
-
-export interface DidDetailsCreationOpts {
-  did: string
-  keys: IDidKeyDetails[]
-  keyRelationships: MapKeyToRelationship
-  lastTxIndex: BN
-  services?: ServiceDetails[]
-}
-
-function errorCheck({
-  did,
-  keys,
-  keyRelationships,
-}: Required<DidDetailsCreationOpts>): void {
-  if (!did) {
-    throw Error('did is required for DidDetails')
-  }
-  const keyIds = new Set(keys.map((key) => key.id))
-  if (!keyRelationships[KeyRelationship.authentication]?.length) {
-    throw Error(
-      `At least one ${KeyRelationship.authentication} key is required on DidDetails`
-    )
-  }
-  const allowedKeyRelationships: string[] = [
-    ...Object.values(KeyRelationship),
-    'none',
-  ]
-  Object.keys(keyRelationships).forEach((kr) => {
-    if (!allowedKeyRelationships.includes(kr)) {
-      throw Error(
-        `key relationship ${kr} is not recognized. Allowed: ${KeyRelationship}`
-      )
-    }
-  })
-  const keyReferences = new Set<string>(
-    Array.prototype.concat(...Object.values(keyRelationships))
-  )
-  keyReferences.forEach((id) => {
-    if (!keyIds.has(id)) throw new Error(`No key with id ${id} in "keys"`)
-  })
-}
-
-export class DidDetails implements IDidDetails {
-  public readonly did: string
-  public readonly identifier: string
-  protected services: ServiceDetails[]
-  protected keys: Map<IDidKeyDetails['id'], IDidKeyDetails>
+/**
+ * An abstract instance for some details associated with a KILT DID.
+ */
+export abstract class DidDetails implements IDidDetails {
+  // The complete DID URI, such as did:kilt:<kilt_address> for full DIDs and did:kilt:light:v1:<kilt_address>
+  protected didUri: string
+  // The identifier of the DID, meaning either the KILT address for full DIDs or the KILT address + the encoded authentication key type for light DIDs.
+  protected id: string
+  // The set of service endpoints associated with the DID.
+  protected services: IServiceDetails[] = []
+  // A map from key ID to key details, which allows for efficient retrieval of a key information given its ID.
+  protected keys: Map<IDidKeyDetails['id'], IDidKeyDetails> = new Map()
+  // A map from key relationship type (authentication, assertion method, etc.) to key ID, which can then be used to retrieve the key details if needed.
   protected keyRelationships: MapKeyToRelationship & {
     none?: Array<IDidKeyDetails['id']>
+  } = {}
+
+  constructor(didUri: string, id: string, services: IServiceDetails[]) {
+    this.didUri = didUri
+    this.id = id
+    this.services = services
   }
 
-  private lastTxIndex: BN
+  public get did(): string {
+    return this.didUri
+  }
 
-  constructor({
-    did,
-    keys,
-    keyRelationships = {},
-    lastTxIndex,
-    services = [],
-  }: DidDetailsCreationOpts) {
-    errorCheck({
-      did,
-      keys,
-      keyRelationships,
-      services,
-      lastTxIndex,
-    })
-
-    this.did = did
-    this.keys = new Map(keys.map((key) => [key.id, key]))
-    this.lastTxIndex = lastTxIndex
-    this.services = services
-    this.identifier = getIdentifierFromDid(this.did)
-    this.keyRelationships = keyRelationships
-    this.keyRelationships.none = []
-    const keysWithRelationship = new Set<string>(
-      Array.prototype.concat(...Object.values(keyRelationships))
-    )
-    this.keys.forEach((_, id) => {
-      if (!keysWithRelationship.has(id)) {
-        this.keyRelationships.none?.push(id)
-      }
-    })
+  public get identifier(): string {
+    return this.id
   }
 
   public getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined {
     return this.keys.get(id)
   }
 
-  public getService(id: ServiceDetails['id']): ServiceDetails | undefined {
+  public getService(id: IServiceDetails['id']): IServiceDetails | undefined {
     return this.services.find((s) => s.id === id)
   }
 
@@ -135,54 +71,10 @@ export class DidDetails implements IDidDetails {
     return [...this.keys.keys()]
   }
 
-  public getServices(type?: string): ServiceDetails[] {
+  public getServices(type?: string): IServiceDetails[] {
     if (type) {
       return this.services.filter((service) => service.type === type)
     }
     return this.services
-  }
-
-  public getNextTxIndex(increment = true): BN {
-    const nextIndex = this.lastTxIndex.addn(1)
-    if (increment) this.lastTxIndex = nextIndex
-    return nextIndex
-  }
-
-  public getKeysForCall(call: CallMeta): IDidKeyDetails[] {
-    return getKeysForCall(this, call)
-  }
-
-  public getKeysForExtrinsic(
-    apiOrMetadata: ApiOrMetadata,
-    extrinsic: Extrinsic
-  ): IDidKeyDetails[] {
-    return getKeysForExtrinsic(apiOrMetadata, this, extrinsic)
-  }
-
-  public async authorizeExtrinsic(
-    extrinsic: Extrinsic,
-    signer: KeystoreSigner,
-    incrementTxIndex = true
-  ): Promise<SubmittableExtrinsic> {
-    const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-    const [signingKey] = this.getKeysForExtrinsic(api, extrinsic)
-    if (!signingKey) {
-      throw new Error(
-        `The details for did ${this.did} do not contain the required keys for this operation`
-      )
-    }
-    return generateDidAuthenticatedTx({
-      didIdentifier: this.identifier,
-      signingPublicKey: signingKey.publicKeyHex,
-      alg: getSignatureAlgForKeyType(signingKey.type),
-      signer,
-      call: extrinsic,
-      txCounter: this.getNextTxIndex(incrementTxIndex),
-    })
-  }
-
-  public async refreshTxIndex(): Promise<this> {
-    this.lastTxIndex = await queryLastTxIndex(this.did)
-    return this
   }
 }

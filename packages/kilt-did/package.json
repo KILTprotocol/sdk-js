@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/did",
-  "version": "0.22.2-2",
+  "version": "0.24.0-0",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
@@ -28,9 +28,11 @@
     "@kiltprotocol/chain-helpers": "workspace:*",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
+    "@polkadot/api": "^5.4.1",
     "@polkadot/keyring": "^7.1.2",
     "@polkadot/types": "^5.4.1",
     "@polkadot/util": "^7.1.2",
-    "@polkadot/util-crypto": "^7.1.2"
+    "@polkadot/util-crypto": "^7.1.2",
+    "cbor": "^6.0.0"
   }
 }

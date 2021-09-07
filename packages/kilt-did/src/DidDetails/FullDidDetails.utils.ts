@@ -8,27 +8,17 @@
 import type { ApiPromise } from '@polkadot/api'
 import type { Extrinsic } from '@polkadot/types/interfaces'
 import { TypeRegistry } from '@polkadot/types'
+import { BN } from '@polkadot/util'
 import type {
   ApiOrMetadata,
   CallMeta,
   IDidDetails,
   IDidKeyDetails,
-  KeystoreSigner,
-  SubmittableExtrinsic,
   VerificationKeyRelationship,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
-import { BN } from '@polkadot/util'
-import { DidDetails, MapKeyToRelationship } from './DidDetails'
-import { PublicKeyRoleAssignment } from '../types'
-import { DidChain, DidUtils } from '..'
-import {
-  computeKeyId,
-  encodeDidPublicKey,
-  getKiltDidFromIdentifier,
-  getSignatureAlgForKeyType,
-} from '../Did.utils'
+import type { MapKeyToRelationship } from '../types'
+import { FullDidDetails } from './FullDidDetails'
 
 interface MethodMapping<V extends string> {
   default: V
@@ -123,11 +113,11 @@ export function getKeyIdsForExtrinsic(
   return getKeyIdsForCall(didDetails, callMeta)
 }
 
-export function newDidDetailsfromKeys(
+export function newFullDidDetailsfromKeys(
   keys: Partial<Record<KeyRelationship, IDidKeyDetails>> & {
     [KeyRelationship.authentication]: IDidKeyDetails
   }
-): DidDetails {
+): FullDidDetails {
   const did = keys[KeyRelationship.authentication].controller
   const allKeys: IDidKeyDetails[] = []
   const keyRelationships: MapKeyToRelationship = {}
@@ -137,111 +127,10 @@ export function newDidDetailsfromKeys(
       allKeys.push(thisKey)
     }
   })
-  return new DidDetails({
+  return new FullDidDetails({
     did,
     keys: allKeys,
     keyRelationships,
     lastTxIndex: new BN(0),
   })
-}
-
-export async function writeNewDidFromDidDetails(
-  didDetails: IDidDetails,
-  signer: KeystoreSigner
-): Promise<SubmittableExtrinsic> {
-  const [signingKey] = didDetails.getKeys(KeyRelationship.authentication)
-  const [assertionMethod] = didDetails.getKeys(KeyRelationship.assertionMethod)
-  const [delegation] = didDetails.getKeys(KeyRelationship.capabilityDelegation)
-  const [keyAgreement] = didDetails.getKeys(KeyRelationship.keyAgreement)
-
-  const keys: PublicKeyRoleAssignment = {
-    [KeyRelationship.assertionMethod]: {
-      ...assertionMethod,
-      publicKey: Crypto.coToUInt8(assertionMethod.publicKeyHex),
-    },
-    [KeyRelationship.capabilityDelegation]: {
-      ...delegation,
-      publicKey: Crypto.coToUInt8(delegation.publicKeyHex),
-    },
-    [KeyRelationship.keyAgreement]: {
-      ...keyAgreement,
-      publicKey: Crypto.coToUInt8(keyAgreement.publicKeyHex),
-    },
-  }
-  return DidChain.generateCreateTx({
-    signer,
-    signingPublicKey: signingKey.publicKeyHex,
-    alg: getSignatureAlgForKeyType(signingKey.type),
-    didIdentifier: DidUtils.getIdentifierFromKiltDid(didDetails.did),
-    keys,
-  })
-}
-
-export async function signWithKey(
-  toSign: Uint8Array | string,
-  key: IDidKeyDetails,
-  signer: KeystoreSigner
-): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
-  const alg = getSignatureAlgForKeyType(key.type)
-  const { data: signature } = await signer.sign({
-    publicKey: Crypto.coToUInt8(key.publicKeyHex),
-    alg,
-    data: Crypto.coToUInt8(toSign),
-  })
-  return { keyId: key.id, signature, alg }
-}
-
-export async function signWithDid(
-  toSign: Uint8Array | string,
-  did: IDidDetails,
-  signer: KeystoreSigner,
-  whichKey: KeyRelationship | IDidKeyDetails['id']
-): Promise<{ keyId: string; alg: string; signature: Uint8Array }> {
-  let key: IDidKeyDetails | undefined
-  if (Object.values(KeyRelationship).includes(whichKey as KeyRelationship)) {
-    ;[key] = did.getKeys(KeyRelationship.authentication)
-  } else {
-    key = did.getKey(whichKey)
-  }
-  if (!key) {
-    throw Error(`failed to find key on DidDetails (${did.did}): ${whichKey}`)
-  }
-  return signWithKey(toSign, key, signer)
-}
-
-/**
- * A tool to predict public key details if a given key would be added to an on-chain DID.
- * Especially handy for predicting the key id or for deriving which DID may be claimed with a
- * given authentication key.
- *
- * @param typeRegistry A TypeRegistry instance to which @kiltprotocol/types have been registered.
- * @param publicKey The public key in hex or U8a encoding.
- * @param type The [[CHAIN_SUPPORTED_KEY_TYPES]] variant indicating the key type.
- * @param controller Optionally, set the the DID to which this key would be added.
- * If left blank, the controller DID is inferred from the public key, mimicing the link between a new
- * DID and its authentication key.
- * @returns The [[IDidKeyDetails]] including key id, controller, type, and the public key hex encoded.
- */
-export function deriveDidPublicKey<T extends string>(
-  typeRegistry: TypeRegistry,
-  publicKey: string | Uint8Array,
-  type: T,
-  controller?: string
-): IDidKeyDetails<T> {
-  const publicKeyHex =
-    typeof publicKey === 'string' ? publicKey : Crypto.u8aToHex(publicKey)
-  const publicKeyU8a =
-    publicKey instanceof Uint8Array ? publicKey : Crypto.coToUInt8(publicKey)
-  const keyIdentifier = computeKeyId(
-    encodeDidPublicKey(typeRegistry, { publicKey: publicKeyU8a, type })
-  )
-  const did =
-    controller ||
-    getKiltDidFromIdentifier(Crypto.encodeAddress(publicKeyU8a, 38))
-  return {
-    id: `${did}#${keyIdentifier}`,
-    controller: did,
-    type,
-    publicKeyHex,
-  }
 }

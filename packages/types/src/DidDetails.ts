@@ -7,16 +7,15 @@
 
 import type { ApiPromise } from '@polkadot/api'
 import type { Metadata } from '@polkadot/types'
-import type { BN } from '@polkadot/util'
 
 /**
  * DID keys are purpose-bound. Their role or purpose is indicated by the verification or key relationship type.
  */
 export enum KeyRelationship {
-  authentication = 'Authentication',
-  capabilityDelegation = 'CapabilityDelegation',
-  assertionMethod = 'AssertionMethod',
-  keyAgreement = 'KeyAgreement',
+  authentication = 'authentication',
+  capabilityDelegation = 'capabilityDelegation',
+  assertionMethod = 'assertionMethod',
+  keyAgreement = 'keyAgreement',
 }
 
 /**
@@ -63,9 +62,9 @@ export interface IDidKeyDetails<T extends string = string> {
 /**
  * A service record associated with a DID record.
  */
-export interface ServiceDetails {
+export interface IServiceDetails {
   /**
-   * Service id, consisting of did:kilt:<did identifier>#<service identifier>.
+   * Service id.
    */
   id: string
   /**
@@ -118,13 +117,7 @@ export interface IDidDetails {
    * @param type A type string to filter out services with a specific type.
    * @returns An array of all or selected [[ServiceDetails]], depending on the `type` parameter.
    */
-  getServices(type?: string): ServiceDetails[]
-  /**
-   * Gets the next nonce/transaction index required for DID authorized blockchain transactions.
-   *
-   * @returns A [[BN]] indicating the next transaction index.
-   */
-  getNextTxIndex(): BN
+  getServices(type?: string): IServiceDetails[]
 }
 
 export type ApiOrMetadata = ApiPromise | Metadata

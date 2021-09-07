@@ -31,9 +31,10 @@ import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import { u8aEq } from '@polkadot/util'
 import { getKiltDidFromIdentifier } from '../Did.utils'
-import { DidDetails, DidDetailsUtils } from '../DidDetails'
+import { FullDidDetails, LightDidDetails } from '../DidDetails'
 import { DefaultResolver, DidUtils } from '..'
 import { PublicKeyRoleAssignment } from '../types'
+import { newFullDidDetailsfromKeys } from '../DidDetails/FullDidDetails.utils'
 
 export enum SigningAlgorithms {
   Ed25519 = 'ed25519',
@@ -285,9 +286,10 @@ export async function createLocalDemoDidFromSeed(
   keystore: DemoKeystore,
   mnemonicOrHexSeed: string,
   signingKeyType = SigningAlgorithms.Ed25519
-): Promise<DidDetails> {
+): Promise<FullDidDetails> {
   const did = getKiltDidFromIdentifier(
-    encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38)
+    encodeAddress(blake2AsU8a(mnemonicOrHexSeed, 32 * 8), 38),
+    'full'
   )
 
   const generateKeypairForDid = async (
@@ -311,7 +313,7 @@ export async function createLocalDemoDidFromSeed(
     }
   }
 
-  return DidDetailsUtils.newDidDetailsfromKeys({
+  return newFullDidDetailsfromKeys({
     [KeyRelationship.authentication]: await generateKeypairForDid(
       '',
       signingKeyType,
@@ -335,12 +337,30 @@ export async function createLocalDemoDidFromSeed(
   })
 }
 
+export async function createLightDidFromSeed(
+  keystore: DemoKeystore,
+  mnemonicOrHexSeed: string,
+  signingKeyType = SigningAlgorithms.Sr25519
+): Promise<LightDidDetails> {
+  const authenticationPublicKey = await keystore.generateKeypair({
+    alg: signingKeyType,
+    seed: mnemonicOrHexSeed,
+  })
+
+  return new LightDidDetails({
+    authenticationKey: {
+      publicKey: authenticationPublicKey.publicKey,
+      type: authenticationPublicKey.alg,
+    },
+  })
+}
+
 export async function createOnChainDidFromSeed(
   paymentAccount: KeyringPair,
   keystore: DemoKeystore,
   mnemonicOrHexSeed: string,
   signingKeyType = SigningAlgorithms.Ed25519
-): Promise<DidDetails> {
+): Promise<FullDidDetails> {
   const makeKey = (seed: string, alg: string) =>
     keystore
       .generateKeypair({
@@ -378,7 +398,7 @@ export async function createOnChainDidFromSeed(
   })
   const queried = await DefaultResolver.resolveDoc(did)
   if (queried) {
-    return queried as DidDetails
+    return queried as FullDidDetails
   }
   throw Error(`failed to write Did${did}`)
 }
