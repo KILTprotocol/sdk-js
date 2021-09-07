@@ -16,7 +16,7 @@ import { FullDidDetails, FullDidDetailsCreationOpts } from './FullDidDetails'
 
 describe('functional tests', () => {
   const identifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
-  const did = `did:kilt:v1:${identifier}`
+  const did = `did:kilt:${identifier}`
   const keys = [
     {
       id: `${did}#1`,

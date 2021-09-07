@@ -26,7 +26,7 @@ describe('Claim', () => {
   let compressedClaim: CompressedClaim
 
   beforeAll(async () => {
-    did = 'did:kilt:v1:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
+    did = 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 
     claimContents = {
       name: 'Bob',

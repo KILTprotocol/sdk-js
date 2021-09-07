@@ -974,7 +974,7 @@ describe('Messaging Utilities', () => {
     ).not.toThrowError()
   })
   it('error check should throw errors on message', () => {
-    messageRequestTerms.receiver = 'did:kilt:v1:thisisnotareceiveraddress'
+    messageRequestTerms.receiver = 'did:kilt:thisisnotareceiveraddress'
     expect(() =>
       MessageUtils.errorCheckMessage(messageRequestTerms)
     ).toThrowErrorWithCode(SDKErrors.ERROR_INVALID_DID_FORMAT(''))

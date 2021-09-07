@@ -123,7 +123,7 @@ describe('Messaging', () => {
   })
 
   it('verifies the sender is the sender key owner', async () => {
-    const wrongSender = `did:kilt:v1:${Crypto.encodeAddress(
+    const wrongSender = `did:kilt:${Crypto.encodeAddress(
       new Uint8Array(32),
       38
     )}`

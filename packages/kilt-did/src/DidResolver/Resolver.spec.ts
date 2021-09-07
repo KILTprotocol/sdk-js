@@ -59,13 +59,13 @@ jest.mock('../Did.chain', () => {
     queryByDID,
     queryById: jest.fn(
       async (id: string): Promise<IDidChainRecordJSON | null> =>
-        queryByDID(`did:kilt:v1:${id}`)
+        queryByDID(`did:kilt:${id}`)
     ),
   }
 })
 
 const identifier = '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
-const fullDid = `did:kilt:v1:${identifier}`
+const fullDid = `did:kilt:${identifier}`
 
 it('resolves stuff', async () => {
   await expect(DefaultResolver.resolveDoc(fullDid)).resolves.toMatchObject({

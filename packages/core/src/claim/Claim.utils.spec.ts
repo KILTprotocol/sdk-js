@@ -21,7 +21,7 @@ const claim: IClaim = {
     number: 26,
     optIn: true,
   },
-  owner: 'did:kilt:v1:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
+  owner: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
 }
 
 it('exports claim as json-ld', () => {
@@ -33,7 +33,7 @@ it('exports claim as json-ld', () => {
         "@id": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2",
       },
       "https://www.w3.org/2018/credentials#credentialSubject": Object {
-        "@id": "did:kilt:v1:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
+        "@id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
         "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#address": "homestreet, home",
         "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#name": "John",
         "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#number": 26,
@@ -58,7 +58,7 @@ it('exports claim as json-ld', () => {
         "@context": Object {
           "@vocab": "kilt:ctype:0x90364302f3b6ccfa50f3d384ec0ab6369711e13298ba4a5316d7e2addd5647b2#",
         },
-        "@id": "did:kilt:v1:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
+        "@id": "did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs",
         "address": "homestreet, home",
         "name": "John",
         "number": 26,

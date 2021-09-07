@@ -37,7 +37,7 @@ import {
 async function queryFullDetailsFromIdentifier(
   identifier: string,
   { servicesResolver }: ResolverOpts,
-  version = 1
+  version = FullDidDetails.FULL_DID_LATEST_VERSION
 ): Promise<FullDidDetails | null> {
   const didRec = await queryById(identifier)
   if (!didRec) return null

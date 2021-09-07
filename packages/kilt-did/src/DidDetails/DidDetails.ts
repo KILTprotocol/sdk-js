@@ -20,7 +20,7 @@ import type { MapKeyToRelationship } from '../types'
  * An abstract instance for some details associated with a KILT DID.
  */
 export abstract class DidDetails implements IDidDetails {
-  // The complete DID URI, such as did:kilt:v1:<kilt_address> for full DIDs and did:kilt:light:v1:<kilt_address>
+  // The complete DID URI, such as did:kilt:<kilt_address> for full DIDs and did:kilt:light:v1:<kilt_address>
   protected didUri: string
   // The identifier of the DID, meaning either the KILT address for full DIDs or the KILT address + the encoded authentication key type for light DIDs.
   protected id: string

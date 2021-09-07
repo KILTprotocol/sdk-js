@@ -28,7 +28,7 @@ import {
 import { DidDetails } from './DidDetails'
 
 export interface FullDidDetailsCreationOpts {
-  // The full DID URI, following the scheme did:kilt:<version_identifier>:<kilt_address>
+  // The full DID URI, following the scheme did:kilt:<kilt_address>
   did: string
   keys: IDidKeyDetails[]
   keyRelationships: MapKeyToRelationship
@@ -74,6 +74,9 @@ function errorCheck({
 }
 
 export class FullDidDetails extends DidDetails {
+  /// The latest version for KILT full DIDs.
+  public static readonly FULL_DID_LATEST_VERSION = 1
+
   private lastTxIndex: BN
 
   constructor({

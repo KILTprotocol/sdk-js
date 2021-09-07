@@ -34,7 +34,7 @@ describe('Light DID v1 tests', () => {
       encodeAddress(authPublicKey, 38)
     ),
     'light',
-    LightDidDetails.LIGHT_DID_VERSION
+    1
   )
   const authenticationDidKeyDetails: INewPublicKey = {
     publicKey: authPublicKey,

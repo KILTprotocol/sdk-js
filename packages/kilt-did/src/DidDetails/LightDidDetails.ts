@@ -28,7 +28,7 @@ export interface LightDidDetailsCreationOpts {
 
 export class LightDidDetails extends DidDetails {
   /// The latest version for KILT light DIDs.
-  public static readonly LIGHT_DID_VERSION = 1
+  public static readonly LIGHT_DID_LATEST_VERSION = 1
 
   constructor({
     authenticationKey,
@@ -53,7 +53,7 @@ export class LightDidDetails extends DidDetails {
     let did = getKiltDidFromIdentifier(
       id,
       'light',
-      LightDidDetails.LIGHT_DID_VERSION
+      LightDidDetails.LIGHT_DID_LATEST_VERSION
     )
     if (encodedDetails) {
       did = did.concat(':', encodedDetails)

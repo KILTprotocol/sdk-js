@@ -58,8 +58,8 @@ jest.mock('./DelegationHierarchyDetails.chain', () => ({
   query: jest.fn(async (id: string) => hierarchiesDetails[id] || null),
 }))
 
-const didAlice = 'did:kilt:v1:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
-const didBob = 'did:kilt:v1:4rDeMGr3Hi4NfxRUp8qVyhvgW3BSUBLneQisGa9ASkhh2sXB'
+const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
+const didBob = 'did:kilt:4rDeMGr3Hi4NfxRUp8qVyhvgW3BSUBLneQisGa9ASkhh2sXB'
 
 describe('DelegationNode', () => {
   let id: string
