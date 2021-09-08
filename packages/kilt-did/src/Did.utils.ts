@@ -402,7 +402,7 @@ export async function verifyDidSignatureAsync({
   }
 }
 
-export async function writeDidfromPublicKeys(
+export async function writeDidFromPublicKeys(
   signer: KeystoreSigner,
   publicKeys: PublicKeyRoleAssignment,
   endpointData?: EndpointData
@@ -422,7 +422,7 @@ export async function writeDidfromPublicKeys(
   return { submittable, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
 }
 
-export function writeDidfromIdentity(
+export function writeDidFromIdentity(
   identity: IIdentity
 ): Promise<{ submittable: SubmittableExtrinsic; did: string }> {
   const { signKeyringPair } = identity
@@ -433,7 +433,7 @@ export function writeDidfromIdentity(
         alg: getSignatureAlgForKeyType(signKeyringPair.type) as any,
       }),
   }
-  return writeDidfromPublicKeys(signer, {
+  return writeDidFromPublicKeys(signer, {
     [KeyRelationship.authentication]: signKeyringPair,
     [KeyRelationship.keyAgreement]: { ...identity.boxKeyPair, type: 'x25519' },
   })

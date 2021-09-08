@@ -38,7 +38,7 @@ async function main(): Promise<void> {
 
   // Generate the DID-signed creation extrinsic.
   // The extrinsic is unsigned and contains the DID creation operation signed with the DID authentication key.
-  const { submittable, did } = await DidUtils.writeDidfromPublicKeys(keystore, {
+  const { submittable, did } = await DidUtils.writeDidFromPublicKeys(keystore, {
     [KeyRelationship.authentication]: {
       publicKey: authenticationKeyPublicDetails.publicKey,
       type: authenticationKeyPublicDetails.alg,

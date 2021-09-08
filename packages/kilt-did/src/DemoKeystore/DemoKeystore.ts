@@ -388,7 +388,7 @@ export async function createOnChainDidFromSeed(
     ),
   }
 
-  const { submittable, did } = await DidUtils.writeDidfromPublicKeys(
+  const { submittable, did } = await DidUtils.writeDidFromPublicKeys(
     keystore,
     keys
   )
