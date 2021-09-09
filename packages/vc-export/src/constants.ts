@@ -38,4 +38,5 @@ export const KeyTypesMap = {
   // these are part of current w3 security vocab, see e.g. https://www.w3.org/ns/did/v1
   ed25519: 'Ed25519VerificationKey2018',
   ecdsa: 'EcdsaSecp256k1VerificationKey2019',
+  x25519: 'X25519KeyAgreementKey2019',
 }
