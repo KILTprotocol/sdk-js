@@ -14,7 +14,7 @@ The simplest type of KILT DID is a **light DID**, called this way because it can
 An example of a light KILT DID is the following:
 
 ```
-did:kilt:light:104rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e
+did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar
 ```
 
 Beyond the standard prefix `did:kilt:`, the `light:` component indicates that this DID is a light DID, hence it can be resolved and utilized offline.
@@ -22,7 +22,7 @@ Beyond the standard prefix `did:kilt:`, the `light:` component indicates that th
 Light DIDs optionally support the specification of an **encryption key** (of one of the supported key types) and **service endpoints**, which are serialised and encoded and added at the end of the DID, like the following:
 
 ```
-did:kilt:light:10oWFzgqNiaWRoc2VydmljZTFkdHlwZWltZXNzYWdpbmdvc2VydmljZUVuZHBvaW50a2V4YW1wbGUuY29to2JpZGhzZXJ2aWNlMmR0eXBlaXRlbGVwaG9uZW9zZXJ2aWNlRW5kcG9pbnRmMTIzMzQ0
+did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:omFlomlwdWJsaWNLZXlYID9hc7PRyRlUp+syykH3KrsVZlObWlfqtegO1KRzuo8zZHR5cGV4GHgyNTUxOS14c2Fsc2EyMC1wb2x5MTMwNWFzgaNiaWRlZW1haWxvc2VydmljZUVuZHBvaW50bG15QGVtYWlsLm9yZ2R0eXBlbEVtYWlsU2VydmljZQ==
 ```
 
 ### Creating a light DID
