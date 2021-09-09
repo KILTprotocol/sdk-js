@@ -14,6 +14,7 @@
 import { Crypto } from '@kiltprotocol/utils'
 import type { IServiceDetails } from '@kiltprotocol/types'
 import { hexToU8a } from '@polkadot/util'
+import { base58Encode } from '@polkadot/util-crypto'
 import { LightDidDetails, LightDidDetailsCreationOpts } from './LightDidDetails'
 import type { INewPublicKey } from '../types'
 
@@ -112,5 +113,72 @@ describe('Light DID v1 tests', () => {
     const did = new LightDidDetails(didCreationDetails)
     // no concat of : and encoded details
     expect(did.did).toEqual(`did:kilt:light:01${address}`)
+  })
+
+  it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, an x25519 encryption key, and some service endpoints', () => {
+    encryptionDidKeyDetails = {
+      publicKey: encPublicKey,
+      type: 'x25519',
+    }
+    services = [
+      {
+        id: `service1`,
+        type: 'messaging',
+        serviceEndpoint: 'example.com',
+      },
+      {
+        id: `service2`,
+        type: 'telephone',
+        serviceEndpoint: '123344',
+      },
+    ]
+
+    const didCreationDetails: LightDidDetailsCreationOpts = {
+      authenticationKey: authenticationDidKeyDetails,
+      encryptionKey: encryptionDidKeyDetails,
+      services,
+    }
+    const didDetails = new LightDidDetails(didCreationDetails)
+    const didDoc = didDetails.toDidDocument('application/json')
+
+    expect(didDoc.id).toMatch(didDetails.did)
+
+    expect(didDoc.authentication).toHaveLength(1)
+    expect(didDoc.authentication).toContainEqual(
+      `${didDetails.did}#authentication`
+    )
+
+    expect(didDoc.keyAgreement).toHaveLength(1)
+    expect(didDoc.keyAgreement).toContainEqual(`${didDetails.did}#encryption`)
+
+    expect(didDoc.assertionMethod).toBeUndefined()
+
+    expect(didDoc.capabilityDelegation).toBeUndefined()
+
+    expect(didDoc.verificationMethod).toHaveLength(2)
+    expect(didDoc.verificationMethod).toContainEqual({
+      id: `${didDetails.did}#authentication`,
+      controller: didDetails.did,
+      type: 'Ed25519VerificationKey2018',
+      publicKeyBase58: base58Encode(authenticationDidKeyDetails.publicKey),
+    })
+    expect(didDoc.verificationMethod).toContainEqual({
+      id: `${didDetails.did}#encryption`,
+      controller: didDetails.did,
+      type: 'X25519KeyAgreementKey2019',
+      publicKeyBase58: base58Encode(encryptionDidKeyDetails.publicKey),
+    })
+
+    expect(didDoc.service).toHaveLength(2)
+    expect(didDoc.service).toContainEqual({
+      id: `${didDetails.did}#service1`,
+      type: 'messaging',
+      serviceEndpoint: 'example.com',
+    })
+    expect(didDoc.service).toContainEqual({
+      id: `${didDetails.did}#service2`,
+      type: 'telephone',
+      serviceEndpoint: '123344',
+    })
   })
 })
