@@ -137,7 +137,12 @@ import Keyring from '@polkadot/keyring'
 
 import Kilt from '@kiltprotocol/sdk-js'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { DemoKeystore, DidUtils, SigningAlgorithms } from '@kiltprotocol/did'
+import {
+  DefaultResolver,
+  DemoKeystore,
+  DidUtils,
+  SigningAlgorithms
+} from '@kiltprotocol/did'
 import { KeyRelationship } from '@kiltprotocol/types'
 
 // Initialise connection to a KILT blockchain node.
@@ -178,6 +183,8 @@ console.log(did)
 await BlockchainUtils.signAndSubmitTx(submittable, aliceKiltAccount, {
   resolveOn: BlockchainUtils.IS_IN_BLOCK,
 })
+
+const fullDid = (await DefaultResolver.resolveDoc(did)) as FullDidDetails
 ```
 
 If additional keys and external services are to be specified, then they can be included in the DID create operation.
@@ -242,6 +249,72 @@ console.log(did)
 await BlockchainUtils.signAndSubmitTx(submittable, aliceKiltAccount, {
   resolveOn: BlockchainUtils.IS_IN_BLOCK,
 })
+
+const fullDid = (await DefaultResolver.resolveDoc(did)) as FullDidDetails
+```
+
+## Updating a full DID
+
+Once anchored on the KILT blockchain, a KILT full DID can be updated by signing the operation with a valid authentication key. For instance, the following snippet shows how to update the authentication key of a full DID and set it to a new sr25519 key.
+
+```typescript
+// Generate seed for the new authentication key.
+const newAuthenticationKeySeed = '0xabcdeffedcba'
+
+// Ask the keystore to generate a new keypar to use for authentication.
+const newAuthenticationKeyPublicDetails = await keystore.generateKeypair({
+  seed: newAuthenticationKeySeed,
+  alg: SigningAlgorithms.Ed25519,
+})
+
+// Create a DID operation to replace the authentication key with the new one generated.
+const didUpdateExtrinsic = await DidChain.getSetKeyExtrinsic(
+  KeyRelationship.authentication,
+  {
+    publicKey: newAuthenticationKeyPublicDetails.publicKey,
+    type: newAuthenticationKeyPublicDetails.alg,
+  }
+)
+
+// Sign the DID operation using the old DID authentication key.
+// This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain.
+const didSignedUpdateExtrinsic = await fullDID.authorizeExtrinsic(
+  didUpdateExtrinsic,
+  keystore as KeystoreSigner<string>
+)
+
+// Submit the DID update tx to the KILT blockchain after signing it with the KILT account specified.
+await BlockchainUtils.signAndSubmitTx(
+  didSignedUpdateExtrinsic,
+  aliceKiltAccount,
+  {
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  }
+)
+```
+
+## Deleting a full DID
+
+Once not needed anymore, it is recommended to remove the DID details from the KILT blockchain. The following snippet shows how to do it:
+
+```typescript
+// Create a DID deletion operation.
+const didDeletionExtrinsic = await DidChain.getDeleteDidExtrinsic()
+
+// Sign the DID deletion operation using the DID authentication key.
+// This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain.
+const didSignedDeletionExtrinsic = await fullDID.authorizeExtrinsic(
+  didDeletionExtrinsic,
+  keystore as KeystoreSigner<string>
+)
+
+await BlockchainUtils.signAndSubmitTx(
+  didSignedDeletionExtrinsic,
+  aliceKiltAccount,
+  {
+    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  }
+)
 ```
 
 ## Migrating a light DID to a full DID
