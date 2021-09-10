@@ -19,7 +19,7 @@ did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar
 
 Beyond the standard prefix `did:kilt:`, the `light:` component indicates that this DID is a light DID, hence it can be resolved and utilized offline.
 
-Light DIDs optionally support the specification of an **encryption key** (of one of the supported key types) and **service endpoints**, which are serialised and encoded and added at the end of the DID, like the following:
+Light DIDs optionally support the specification of an **encryption key** (of one of the supported key types) and **service endpoints**, which are serialised, encoded and added at the end of the DID, like the following:
 
 ```
 did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:omFlomlwdWJsaWNLZXlYID9hc7PRyRlUp+syykH3KrsVZlObWlfqtegO1KRzuo8zZHR5cGV4GHgyNTUxOS14c2Fsc2EyMC1wb2x5MTMwNWFzgaNiaWRlZW1haWxvc2VydmljZUVuZHBvaW50bG15QGVtYWlsLm9yZ2R0eXBlbEVtYWlsU2VydmljZQ==
@@ -45,7 +45,8 @@ import type { IServiceDetails } from '@kiltprotocol/types'
 // Instantiate the demo keystore.
 const keystore = new DemoKeystore()
 
-// Generate seed for the authentication key/
+// Generate seed for the authentication key.
+// For random mnemonic generation, refer to the `UUID` module of the `@kiltprotocol/utils` package.
 const authenticationSeed = '0x123456789'
 
 // Ask the keystore to generate a new keypair to use for authentication with the generated seed.
@@ -58,7 +59,9 @@ const authenticationKeyPublicDetails = await keystore.generateKeypair({
 const lightDID = new LightDidDetails({
   authenticationKey: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: authenticationKeyPublicDetails.alg,
+    type: DemoKeystore.getKeypairTypeForAlg(
+      authenticationKeyPublicDetails.alg
+    )
   },
 })
 // Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
@@ -99,16 +102,20 @@ const serviceEndpoints: IServiceDetails[] = [
 const lightDID = new LightDidDetails({
   authenticationKey: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: authenticationKeyPublicDetails.alg,
+    type: DemoKeystore.getKeypairTypeForAlg(
+      authenticationKeyPublicDetails.alg
+    ),
   },
   encryptionKey: {
     publicKey: encryptionKeyPublicDetails.publicKey,
-    type: encryptionKeyPublicDetails.alg,
+    type: DemoKeystore.getKeypairTypeForAlg(
+      encryptionKeyPublicDetails.alg
+    ),
   },
   services: serviceEndpoints,
 })
 
-// Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:omFlomlwdWJsaWNLZXlYID9hc7PRyRlUp+syykH3KrsVZlObWlfqtegO1KRzuo8zZHR5cGV4GHgyNTUxOS14c2Fsc2EyMC1wb2x5MTMwNWFzgaNiaWRlZW1haWxvc2VydmljZUVuZHBvaW50bG15QGVtYWlsLm9yZ2R0eXBlbEVtYWlsU2VydmljZQ==`.
+// Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:omFlomlwdWJsaWNLZXlYID9hc7PRyRlUp+syykH3KrsVZlObWlfqtegO1KRzuo8zZHR5cGVmeDI1NTE5YXOBo2JpZGVlbWFpbG9zZXJ2aWNlRW5kcG9pbnRsbXlAZW1haWwub3JnZHR5cGVsRW1haWxTZXJ2aWNl`.
 console.log(lightDID.did)
 ```
 
@@ -130,23 +137,28 @@ Beyond an authentication key, and encryption key, and external services, a full 
 
 ### Creating and anchoring a full DID
 
-The following is an example of how to create and write a full DID on chain that specifies only an authentication key.
+The following is an example of how to create and write on blockchain a full DID that specifies only an authentication key.
 
 ```typescript
 import Keyring from '@polkadot/keyring'
 
-import Kilt from '@kiltprotocol/sdk-js'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { init as kiltInit } from '@kiltprotocol/core'
 import {
   DefaultResolver,
   DemoKeystore,
   DidUtils,
-  SigningAlgorithms
+  FullDidDetails,
+  SigningAlgorithms,
 } from '@kiltprotocol/did'
+import { getDeleteDidExtrinsic, getSetKeyExtrinsic } from '@kiltprotocol/did/src/Did.chain'
 import { KeyRelationship } from '@kiltprotocol/types'
 
-// Initialise connection to a KILT blockchain node.
-await Kilt.init({ address: 'ws://127.0.0.1:9944' })
+// Configure the resolution promise to wait for transactions to be finalized or simply included in a block depending on the environment.
+const resolveOn = process.env.NODE_ENV === 'production' ? BlockchainUtils.IS_FINALIZED : BlockchainUtils.IS_IN_BLOCK
+
+// Initialise connection to the public KILT test network.
+await kiltInit({ address: 'wss://kilt-peregrine-k8s.kilt.io' })
 
 // Generate the KILT account that will submit the DID creation tx to the KILT blockchain.
 // It must have enough funds to pay for the tx execution fees.
@@ -170,27 +182,32 @@ const authenticationKeyPublicDetails = await keystore.generateKeypair({
 
 // Generate the DID-signed creation extrinsic.
 // The extrinsic is unsigned and contains the DID creation operation signed with the DID authentication key.
-const { submittable, did } = await DidUtils.writeDidfromPublicKeys(keystore, {
+const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(keystore, {
   [KeyRelationship.authentication]: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: authenticationKeyPublicDetails.alg,
+    type: DemoKeystore.getKeypairTypeForAlg(
+      authenticationKeyPublicDetails.alg
+    ),
   },
 })
 // Will print `did:kilt:4sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
 console.log(did)
 
 // Submit the DID creation tx to the KILT blockchain after signing it with the KILT account specified.
-await BlockchainUtils.signAndSubmitTx(submittable, aliceKiltAccount, {
-  resolveOn: BlockchainUtils.IS_IN_BLOCK,
+await BlockchainUtils.signAndSubmitTx(extrinsic, aliceKiltAccount, {
+  resolveOn,
 })
 
-const fullDid = (await DefaultResolver.resolveDoc(did)) as FullDidDetails
+// Retrieve the newly created DID from the KILT blockchain.
+const fullDid = await DefaultResolver.resolveDoc(did)
 ```
 
 If additional keys and external services are to be specified, then they can be included in the DID create operation.
 
 ```typescript
-await Kilt.init({ address: 'ws://127.0.0.1:9944' })
+const resolveOn = process.env.NODE_ENV === 'production' ? BlockchainUtils.IS_FINALIZED : BlockchainUtils.IS_IN_BLOCK
+
+await kiltInit({ address: 'wss://kilt-peregrine-k8s.kilt.io' })
 
 const aliceKiltAccount = new Keyring({
   type: 'ed25519',
@@ -216,7 +233,6 @@ const encryptionKeyPublicDetails = await keystore.generateKeypair({
 })
 
 // Define the set of URLs pointing to the external services exposed by the DID subject.
-// All URLs must point to the same resource, which must match the provided hash.
 const serviceEndpoints: EndpointData = {
   contentHash: 'external-endpoints-content-hash00',
   contentType: 'application/json',
@@ -228,17 +244,20 @@ const serviceEndpoints: EndpointData = {
 }
 
 // Generate the DID-signed creation extrinsic with the provided keys and service endpoints.
-const { submittable, did } = await DidUtils.writeDidfromPublicKeys(
+const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
   keystore,
   {
     [KeyRelationship.authentication]: {
       publicKey: authenticationKeyPublicDetails.publicKey,
-      type: authenticationKeyPublicDetails.alg,
+      type: DemoKeystore.getKeypairTypeForAlg(
+        authenticationKeyPublicDetails.alg
+      ),
     },
     [KeyRelationship.keyAgreement]: {
       publicKey: encryptionKeyPublicDetails.publicKey,
-      // The chain-supported type is called differently than the type supported in the keystore
-      type: 'x25519',
+      type: DemoKeystore.getKeypairTypeForAlg(
+        encryptionKeyPublicDetails.alg
+      ),
     },
   },
   serviceEndpoints
@@ -246,11 +265,11 @@ const { submittable, did } = await DidUtils.writeDidfromPublicKeys(
 // Will print `did:kilt:4sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
 console.log(did)
 
-await BlockchainUtils.signAndSubmitTx(submittable, aliceKiltAccount, {
-  resolveOn: BlockchainUtils.IS_IN_BLOCK,
+await BlockchainUtils.signAndSubmitTx(extrinsic, aliceKiltAccount, {
+  resolveOn,
 })
 
-const fullDid = (await DefaultResolver.resolveDoc(did)) as FullDidDetails
+const fullDid = await DefaultResolver.resolveDoc(did)
 ```
 
 ## Updating a full DID
@@ -268,11 +287,13 @@ const newAuthenticationKeyPublicDetails = await keystore.generateKeypair({
 })
 
 // Create a DID operation to replace the authentication key with the new one generated.
-const didUpdateExtrinsic = await DidChain.getSetKeyExtrinsic(
+const didUpdateExtrinsic = await getSetKeyExtrinsic(
   KeyRelationship.authentication,
   {
     publicKey: newAuthenticationKeyPublicDetails.publicKey,
-    type: newAuthenticationKeyPublicDetails.alg,
+    type: DemoKeystore.getKeypairTypeForAlg(
+      newAuthenticationKeyPublicDetails.alg
+    ),
   }
 )
 
@@ -288,7 +309,7 @@ await BlockchainUtils.signAndSubmitTx(
   didSignedUpdateExtrinsic,
   aliceKiltAccount,
   {
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    resolveOn,
   }
 )
 ```
@@ -299,7 +320,7 @@ Once not needed anymore, it is recommended to remove the DID details from the KI
 
 ```typescript
 // Create a DID deletion operation.
-const didDeletionExtrinsic = await DidChain.getDeleteDidExtrinsic()
+const didDeletionExtrinsic = await getDeleteDidExtrinsic()
 
 // Sign the DID deletion operation using the DID authentication key.
 // This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain.
@@ -312,7 +333,7 @@ await BlockchainUtils.signAndSubmitTx(
   didSignedDeletionExtrinsic,
   aliceKiltAccount,
   {
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    resolveOn,
   }
 )
 ```
