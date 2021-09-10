@@ -406,12 +406,12 @@ export async function writeDidFromPublicKeys(
   signer: KeystoreSigner,
   publicKeys: PublicKeyRoleAssignment,
   endpointData?: EndpointData
-): Promise<{ submittable: SubmittableExtrinsic; did: string }> {
+): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
   const { [KeyRelationship.authentication]: authenticationKey } = publicKeys
   if (!authenticationKey)
     throw Error(`${KeyRelationship.authentication} key is required`)
   const didIdentifier = encodeAddress(authenticationKey.publicKey, 38)
-  const submittable = await generateCreateTx({
+  const extrinsic = await generateCreateTx({
     signer,
     didIdentifier,
     keys: publicKeys,
@@ -419,12 +419,12 @@ export async function writeDidFromPublicKeys(
     signingPublicKey: authenticationKey.publicKey,
     endpointData,
   })
-  return { submittable, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
+  return { extrinsic, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
 }
 
 export function writeDidFromIdentity(
   identity: IIdentity
-): Promise<{ submittable: SubmittableExtrinsic; did: string }> {
+): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
   const { signKeyringPair } = identity
   const signer: KeystoreSigner = {
     sign: ({ data }) =>
