@@ -251,4 +251,50 @@ describe('Light DID v1 tests', () => {
 
     expect(didDoc.service).toBeUndefined()
   })
+
+  it('exports the expected application/json+ld W3C DID Document with only an authentication key', () => {
+    authenticationDidKeyDetails = {
+      publicKey: authPublicKey,
+      type: 'sr25519',
+    }
+    const didCreationDetails: LightDidDetailsCreationOpts = {
+      authenticationKey: authenticationDidKeyDetails,
+    }
+    const didDetails = new LightDidDetails(didCreationDetails)
+    const didDoc = didDetails.toDidDocument('application/json+ld')
+
+    expect(didDoc.id).toMatch(didDetails.did)
+
+    expect(didDoc['@context']).toHaveLength(1)
+    expect(didDoc['@context']).toContainEqual('https://www.w3.org/ns/did/v1')
+
+    expect(didDoc.authentication).toHaveLength(1)
+    expect(didDoc.authentication).toContainEqual(
+      `${didDetails.did}#authentication`
+    )
+
+    expect(didDoc.keyAgreement).toBeUndefined()
+
+    expect(didDoc.assertionMethod).toBeUndefined()
+
+    expect(didDoc.capabilityDelegation).toBeUndefined()
+
+    expect(didDoc.verificationMethod).toHaveLength(1)
+    expect(didDoc.verificationMethod).toContainEqual({
+      id: `${didDetails.did}#authentication`,
+      controller: didDetails.did,
+      type: 'Sr25519VerificationKey2020',
+      publicKeyBase58: base58Encode(authenticationDidKeyDetails.publicKey),
+    })
+
+    expect(didDoc.service).toBeUndefined()
+  })
+
+  it('does not export a DID Document with an unsupported format', () => {
+    const didCreationDetails: LightDidDetailsCreationOpts = {
+      authenticationKey: authenticationDidKeyDetails,
+    }
+    const didDetails = new LightDidDetails(didCreationDetails)
+    expect(() => didDetails.toDidDocument('text/html')).toThrow()
+  })
 })
