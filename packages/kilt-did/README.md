@@ -19,7 +19,7 @@ did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar
 
 Beyond the standard prefix `did:kilt:`, the `light:` component indicates that this DID is a light DID, hence it can be resolved and utilized offline.
 
-Light DIDs optionally support the specification of an **encryption key** (of one of the supported key types) and **service endpoints**, which are serialised and encoded and added at the end of the DID, like the following:
+Light DIDs optionally support the specification of an **encryption key** (of one of the supported key types) and **service endpoints**, which are serialised, encoded and added at the end of the DID, like the following:
 
 ```
 did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:omFlomlwdWJsaWNLZXlYID9hc7PRyRlUp+syykH3KrsVZlObWlfqtegO1KRzuo8zZHR5cGV4GHgyNTUxOS14c2Fsc2EyMC1wb2x5MTMwNWFzgaNiaWRlZW1haWxvc2VydmljZUVuZHBvaW50bG15QGVtYWlsLm9yZ2R0eXBlbEVtYWlsU2VydmljZQ==
@@ -45,7 +45,8 @@ import type { IServiceDetails } from '@kiltprotocol/types'
 // Instantiate the demo keystore.
 const keystore = new DemoKeystore()
 
-// Generate seed for the authentication key/
+// Generate seed for the authentication key.
+// For random mnemonic generation, refer to the `UUID` module of the `@kiltprotocol/utils` package.
 const authenticationSeed = '0x123456789'
 
 // Ask the keystore to generate a new keypair to use for authentication with the generated seed.
@@ -148,8 +149,9 @@ import {
   DemoKeystore,
   DidUtils,
   FullDidDetails,
-  SigningAlgorithms
+  SigningAlgorithms,
 } from '@kiltprotocol/did'
+import { getDeleteDidExtrinsic, getSetKeyExtrinsic } from '@kiltprotocol/did/src/Did.chain'
 import { KeyRelationship } from '@kiltprotocol/types'
 
 // Configure the resolution promise to wait for transactions to be finalized or simply included in a block depending on the environment.
@@ -285,7 +287,7 @@ const newAuthenticationKeyPublicDetails = await keystore.generateKeypair({
 })
 
 // Create a DID operation to replace the authentication key with the new one generated.
-const didUpdateExtrinsic = await DidChain.getSetKeyExtrinsic(
+const didUpdateExtrinsic = await getSetKeyExtrinsic(
   KeyRelationship.authentication,
   {
     publicKey: newAuthenticationKeyPublicDetails.publicKey,
@@ -318,7 +320,7 @@ Once not needed anymore, it is recommended to remove the DID details from the KI
 
 ```typescript
 // Create a DID deletion operation.
-const didDeletionExtrinsic = await DidChain.getDeleteDidExtrinsic()
+const didDeletionExtrinsic = await getDeleteDidExtrinsic()
 
 // Sign the DID deletion operation using the DID authentication key.
 // This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain.
