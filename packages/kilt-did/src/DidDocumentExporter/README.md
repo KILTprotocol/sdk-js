@@ -15,7 +15,7 @@ import {
   LightDidDetails
 } from '@kiltprotocol/did'
 
-import type { IDidDocument } from '@kiltprotocol/types'
+import type { IDidDocument, IJsonLDDidDocument } from '@kiltprotocol/types'
 
 // Create an instance of `LightDidDetails` with the required information
 const lightDidDetails = new LightDidDetails({...})
