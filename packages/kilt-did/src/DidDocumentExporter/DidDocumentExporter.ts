@@ -21,7 +21,11 @@ import type {
   IDidDetails,
   IDidDocumentExporter,
 } from '@kiltprotocol/types'
-import { KeyRelationship, KeyTypesMap } from '@kiltprotocol/types'
+import {
+  KeyRelationship,
+  VerificationKeyTypesMap,
+  EncryptionKeyTypesMap,
+} from '@kiltprotocol/types'
 
 function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
   const result: any = {}
@@ -36,7 +40,7 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
       result.verificationMethod.push({
         id: authKey.id,
         controller: details.did,
-        type: KeyTypesMap[authKey.type],
+        type: VerificationKeyTypesMap[authKey.type],
         publicKeyBase58: base58Encode(hexToU8a(authKey.publicKeyHex)),
       })
       // Parse only the key ID from the complete key URI
@@ -52,7 +56,7 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
       result.verificationMethod.push({
         id: keyAgrKey.id,
         controller: details.did,
-        type: KeyTypesMap[keyAgrKey.type],
+        type: EncryptionKeyTypesMap[keyAgrKey.type],
         publicKeyBase58: base58Encode(hexToU8a(keyAgrKey.publicKeyHex)),
       })
       return keyAgrKey.id
@@ -67,7 +71,7 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
       result.verificationMethod.push({
         id: assKey.id,
         controller: details.did,
-        type: KeyTypesMap[assKey.type],
+        type: VerificationKeyTypesMap[assKey.type],
         publicKeyBase58: base58Encode(hexToU8a(assKey.publicKeyHex)),
       })
       return assKey.id
@@ -82,7 +86,7 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
       result.verificationMethod.push({
         id: delKey.id,
         controller: details.did,
-        type: KeyTypesMap[delKey.type],
+        type: VerificationKeyTypesMap[delKey.type],
         publicKeyBase58: base58Encode(hexToU8a(delKey.publicKeyHex)),
       })
       return delKey.id

@@ -14,7 +14,7 @@ import type {
   IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { DidDocumentExporter } from '../DidDocumentExporter/DidDocumentExporter'
+import { DidDocumentExporter } from '../DidDocumentExporter'
 import type { MapKeyToRelationship } from '../types'
 
 /**

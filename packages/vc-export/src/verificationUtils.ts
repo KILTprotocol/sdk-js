@@ -17,11 +17,11 @@ import Ajv from 'ajv'
 import { Attestation, CTypeSchema } from '@kiltprotocol/core'
 import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
+import { VerificationKeyTypesMap } from '@kiltprotocol/types'
 import {
   KILT_SELF_SIGNED_PROOF_TYPE,
   KILT_ATTESTED_PROOF_TYPE,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
-  KeyTypesMap,
 } from './constants'
 import type {
   VerifiableCredential,
@@ -100,10 +100,10 @@ export async function verifySelfSignedProof(
     if (!verificationMethod.controller === credentialOwner)
       throw new Error('credential subject is not owner of signing key')
     const keyType = verificationMethod.type || verificationMethod['@type']
-    if (!Object.values(KeyTypesMap).includes(keyType))
+    if (!Object.values(VerificationKeyTypesMap).includes(keyType))
       throw PROOF_MALFORMED_ERROR(
         `signature type unknown; expected one of ${JSON.stringify(
-          Object.values(KeyTypesMap)
+          Object.values(VerificationKeyTypesMap)
         )}, got "${verificationMethod.type}"`
       )
     const signerPubKey = verificationMethod.publicKeyHex
@@ -119,7 +119,10 @@ export async function verifySelfSignedProof(
       signerPubKey
     )
     if (
-      !(verification.isValid && KeyTypesMap[verification.crypto] === keyType)
+      !(
+        verification.isValid &&
+        VerificationKeyTypesMap[verification.crypto] === keyType
+      )
     ) {
       throw new Error('signature could not be verified')
     }

@@ -19,12 +19,15 @@ export enum DidDocumentPublicKeyType {
   X25519EncryptionKey = 'X25519KeyAgreementKey2019',
 }
 
-export const KeyTypesMap = {
+export const VerificationKeyTypesMap = {
   // proposed and used by dock.io, e.g. https://github.com/w3c-ccg/security-vocab/issues/32, https://github.com/docknetwork/sdk/blob/9c818b03bfb4fdf144c20678169c7aad3935ad96/src/utils/vc/contexts/security_context.js
   sr25519: DidDocumentPublicKeyType.Sr25519VerificationKey,
   // these are part of current w3 security vocab, see e.g. https://www.w3.org/ns/did/v1
   ed25519: DidDocumentPublicKeyType.Ed25519VerificationKey,
   ecdsa: DidDocumentPublicKeyType.EcdsaVerificationKey,
+}
+
+export const EncryptionKeyTypesMap = {
   x25519: DidDocumentPublicKeyType.X25519EncryptionKey,
 }
 
