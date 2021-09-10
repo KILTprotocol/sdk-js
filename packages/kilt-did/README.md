@@ -152,6 +152,9 @@ import {
 } from '@kiltprotocol/did'
 import { KeyRelationship } from '@kiltprotocol/types'
 
+// Configure the resolution promise to wait for transactions to be finalized or simply included in a block depending on the environment.
+const resolveOn = process.env.NODE_ENV === 'production' ? BlockchainUtils.IS_FINALIZED : BlockchainUtils.IS_IN_BLOCK
+
 // Initialise connection to the public KILT test network.
 await kiltInit({ address: 'wss://kilt-peregrine-k8s.kilt.io' })
 
@@ -190,7 +193,7 @@ console.log(did)
 
 // Submit the DID creation tx to the KILT blockchain after signing it with the KILT account specified.
 await BlockchainUtils.signAndSubmitTx(extrinsic, aliceKiltAccount, {
-  resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  resolveOn,
 })
 
 // Retrieve the newly created DID from the KILT blockchain.
@@ -200,6 +203,8 @@ const fullDid = await DefaultResolver.resolveDoc(did)
 If additional keys and external services are to be specified, then they can be included in the DID create operation.
 
 ```typescript
+const resolveOn = process.env.NODE_ENV === 'production' ? BlockchainUtils.IS_FINALIZED : BlockchainUtils.IS_IN_BLOCK
+
 await kiltInit({ address: 'wss://kilt-peregrine-k8s.kilt.io' })
 
 const aliceKiltAccount = new Keyring({
@@ -259,7 +264,7 @@ const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
 console.log(did)
 
 await BlockchainUtils.signAndSubmitTx(extrinsic, aliceKiltAccount, {
-  resolveOn: BlockchainUtils.IS_IN_BLOCK,
+  resolveOn,
 })
 
 const fullDid = await DefaultResolver.resolveDoc(did)
@@ -302,7 +307,7 @@ await BlockchainUtils.signAndSubmitTx(
   didSignedUpdateExtrinsic,
   aliceKiltAccount,
   {
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    resolveOn,
   }
 )
 ```
@@ -326,7 +331,7 @@ await BlockchainUtils.signAndSubmitTx(
   didSignedDeletionExtrinsic,
   aliceKiltAccount,
   {
-    resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    resolveOn,
   }
 )
 ```
