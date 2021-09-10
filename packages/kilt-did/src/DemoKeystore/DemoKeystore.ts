@@ -75,10 +75,6 @@ const KeypairTypeForAlg: Record<string, string> = {
   'x25519-xsalsa20-poly1305': 'x25519',
 }
 
-function getKeypairTypeForAlg(alg: string): KeypairType {
-  return KeypairTypeForAlg[alg.toLowerCase()] as KeypairType
-}
-
 /**
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!
  */
@@ -90,7 +86,7 @@ export class DemoKeystore
   private getSigningKeyPair(publicKey: Uint8Array, alg: string): KeyringPair {
     if (!signingSupported(alg))
       throw new Error(`alg ${alg} is not supported for signing`)
-    const keyType = getKeypairTypeForAlg(alg)
+    const keyType = DemoKeystore.getKeypairTypeForAlg(alg)
     try {
       const keypair = this.signingKeyring.getPair(publicKey)
       if (keypair && keyType === keypair.type) return keypair
@@ -121,7 +117,7 @@ export class DemoKeystore
     const { seed, alg } = opts
     await cryptoWaitReady()
 
-    const keypairType = getKeypairTypeForAlg(alg)
+    const keypairType = DemoKeystore.getKeypairTypeForAlg(alg)
     const keypair = this.signingKeyring.addFromUri(
       seed || randomAsHex(32),
       {},
@@ -173,7 +169,7 @@ export class DemoKeystore
     await cryptoWaitReady()
     if (this.signingKeyring.publicKeys.some((i) => u8aEq(publicKey, i)))
       throw new Error('public key already stored')
-    const keypairType = getKeypairTypeForAlg(alg)
+    const keypairType = DemoKeystore.getKeypairTypeForAlg(alg)
     const keypair = this.signingKeyring.addFromPair(
       { publicKey, secretKey },
       {},
@@ -273,6 +269,10 @@ export class DemoKeystore
     ]
     return keys.map((key) => knownKeys.some((i) => u8aEq(key.publicKey, i)))
   }
+
+  public static getKeypairTypeForAlg(alg: string): KeypairType {
+    return KeypairTypeForAlg[alg.toLowerCase()] as KeypairType
+  }
 }
 
 /**
@@ -367,7 +367,7 @@ export async function createOnChainDidFromSeed(
         alg: signingKeyType,
         seed,
       })
-      .then((key) => ({ ...key, type: getKeypairTypeForAlg(alg) }))
+      .then((key) => ({ ...key, type: DemoKeystore.getKeypairTypeForAlg(alg) }))
 
   const keys: PublicKeyRoleAssignment = {
     [KeyRelationship.authentication]: await makeKey(
@@ -388,11 +388,11 @@ export async function createOnChainDidFromSeed(
     ),
   }
 
-  const { submittable, did } = await DidUtils.writeDidfromPublicKeys(
+  const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
     keystore,
     keys
   )
-  await BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
+  await BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
     reSign: true,
     resolveOn: BlockchainUtils.IS_IN_BLOCK,
   })
