@@ -77,144 +77,144 @@ describe('functional tests', () => {
     services,
   }
 
-  // it('creates FullDidDetails', () => {
-  //   const dd = new FullDidDetails(didDetails)
-  //   expect(dd.did).toEqual(did)
-  //   expect(dd.identifier).toEqual(identifier)
-  //   expect(dd.getKeys()).toMatchInlineSnapshot(`
-  //     Array [
-  //       Object {
-  //         "controller": "${did}",
-  //         "id": "${did}#1",
-  //         "includedAt": 100,
-  //         "publicKeyHex": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  //         "type": "ed25519",
-  //       },
-  //       Object {
-  //         "controller": "${did}",
-  //         "id": "${did}#2",
-  //         "includedAt": 250,
-  //         "publicKeyHex": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-  //         "type": "x25519",
-  //       },
-  //       Object {
-  //         "controller": "${did}",
-  //         "id": "${did}#3",
-  //         "includedAt": 250,
-  //         "publicKeyHex": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-  //         "type": "x25519",
-  //       },
-  //       Object {
-  //         "controller": "${did}",
-  //         "id": "${did}#4",
-  //         "includedAt": 200,
-  //         "publicKeyHex": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-  //         "type": "sr25519",
-  //       },
-  //     ]
-  //   `)
-  //   expect(dd.getServices()).toMatchInlineSnapshot(`
-  //     Array [
-  //       Object {
-  //         "id": "${did}#service1",
-  //         "serviceEndpoint": "example.com",
-  //         "type": "messaging",
-  //       },
-  //       Object {
-  //         "id": "${did}#service2",
-  //         "serviceEndpoint": "123344",
-  //         "type": "telephone",
-  //       },
-  //     ]
-  //   `)
-  // })
+  it('creates FullDidDetails', () => {
+    const dd = new FullDidDetails(didDetails)
+    expect(dd.did).toEqual(did)
+    expect(dd.identifier).toEqual(identifier)
+    expect(dd.getKeys()).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "controller": "${did}",
+          "id": "${did}#1",
+          "includedAt": 100,
+          "publicKeyHex": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "type": "ed25519",
+        },
+        Object {
+          "controller": "${did}",
+          "id": "${did}#2",
+          "includedAt": 250,
+          "publicKeyHex": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "type": "x25519",
+        },
+        Object {
+          "controller": "${did}",
+          "id": "${did}#3",
+          "includedAt": 250,
+          "publicKeyHex": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "type": "x25519",
+        },
+        Object {
+          "controller": "${did}",
+          "id": "${did}#4",
+          "includedAt": 200,
+          "publicKeyHex": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "type": "sr25519",
+        },
+      ]
+    `)
+    expect(dd.getServices()).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "id": "${did}#service1",
+          "serviceEndpoint": "example.com",
+          "type": "messaging",
+        },
+        Object {
+          "id": "${did}#service2",
+          "serviceEndpoint": "123344",
+          "type": "telephone",
+        },
+      ]
+    `)
+  })
 
-  // it('gets keys via role', () => {
-  //   let dd = new FullDidDetails(didDetails)
-  //   expect(dd.getKeyIds(KeyRelationship.authentication)).toEqual([keys[0].id])
-  //   expect(dd.getKeys(KeyRelationship.authentication)).toEqual([keys[0]])
-  //   expect(dd.getKeyIds(KeyRelationship.keyAgreement)).toEqual(
-  //     didDetails.keyRelationships[KeyRelationship.keyAgreement]
-  //   )
-  //   expect(
-  //     dd.getKeys(KeyRelationship.keyAgreement).map((key) => key.id)
-  //   ).toEqual(didDetails.keyRelationships[KeyRelationship.keyAgreement])
-  //   expect(dd.getKeyIds(KeyRelationship.assertionMethod)).toEqual([keys[3].id])
+  it('gets keys via role', () => {
+    let dd = new FullDidDetails(didDetails)
+    expect(dd.getKeyIds(KeyRelationship.authentication)).toEqual([keys[0].id])
+    expect(dd.getKeys(KeyRelationship.authentication)).toEqual([keys[0]])
+    expect(dd.getKeyIds(KeyRelationship.keyAgreement)).toEqual(
+      didDetails.keyRelationships[KeyRelationship.keyAgreement]
+    )
+    expect(
+      dd.getKeys(KeyRelationship.keyAgreement).map((key) => key.id)
+    ).toEqual(didDetails.keyRelationships[KeyRelationship.keyAgreement])
+    expect(dd.getKeyIds(KeyRelationship.assertionMethod)).toEqual([keys[3].id])
 
-  //   dd = new FullDidDetails({
-  //     ...didDetails,
-  //     keyRelationships: { [KeyRelationship.authentication]: [keys[3].id] },
-  //   })
-  //   expect(
-  //     dd.getKeys(KeyRelationship.authentication).map((key) => key.id)
-  //   ).toEqual([keys[3].id])
-  //   expect(dd.getKeyIds('none')).toEqual(keys.slice(0, 3).map((key) => key.id))
-  // })
+    dd = new FullDidDetails({
+      ...didDetails,
+      keyRelationships: { [KeyRelationship.authentication]: [keys[3].id] },
+    })
+    expect(
+      dd.getKeys(KeyRelationship.authentication).map((key) => key.id)
+    ).toEqual([keys[3].id])
+    expect(dd.getKeyIds('none')).toEqual(keys.slice(0, 3).map((key) => key.id))
+  })
 
-  // it('gets service via type', () => {
-  //   const dd = new FullDidDetails(didDetails)
-  //   expect(dd.getServices('messaging').map((s) => s.type)).toEqual([
-  //     'messaging',
-  //   ])
-  //   expect(dd.getServices('telephone').map((s) => s.type)).toEqual([
-  //     'telephone',
-  //   ])
-  // })
+  it('gets service via type', () => {
+    const dd = new FullDidDetails(didDetails)
+    expect(dd.getServices('messaging').map((s) => s.type)).toEqual([
+      'messaging',
+    ])
+    expect(dd.getServices('telephone').map((s) => s.type)).toEqual([
+      'telephone',
+    ])
+  })
 
-  // it('returns the next nonce', () => {
-  //   let dd = new FullDidDetails(didDetails)
-  //   expect(dd.getNextTxIndex().toString()).toEqual(
-  //     didDetails.lastTxIndex.addn(1).toString()
-  //   )
-  //   expect(dd.getNextTxIndex().toString()).toEqual(
-  //     didDetails.lastTxIndex.addn(2).toString()
-  //   )
-  //   dd = new FullDidDetails(didDetails)
-  //   expect(dd.getNextTxIndex(false).toString()).toEqual(
-  //     didDetails.lastTxIndex.addn(1).toString()
-  //   )
-  //   expect(dd.getNextTxIndex(false).toString()).toEqual(
-  //     didDetails.lastTxIndex.addn(1).toString()
-  //   )
-  // })
+  it('returns the next nonce', () => {
+    let dd = new FullDidDetails(didDetails)
+    expect(dd.getNextTxIndex().toString()).toEqual(
+      didDetails.lastTxIndex.addn(1).toString()
+    )
+    expect(dd.getNextTxIndex().toString()).toEqual(
+      didDetails.lastTxIndex.addn(2).toString()
+    )
+    dd = new FullDidDetails(didDetails)
+    expect(dd.getNextTxIndex(false).toString()).toEqual(
+      didDetails.lastTxIndex.addn(1).toString()
+    )
+    expect(dd.getNextTxIndex(false).toString()).toEqual(
+      didDetails.lastTxIndex.addn(1).toString()
+    )
+  })
 
-  // it('gets the correct keys for each pallet', () => {
-  //   const dd = new FullDidDetails({
-  //     ...didDetails,
-  //     keyRelationships: {
-  //       [KeyRelationship.authentication]: [keys[0].id],
-  //       [KeyRelationship.capabilityDelegation]: [keys[1].id],
-  //       [KeyRelationship.assertionMethod]: [keys[3].id],
-  //     },
-  //   })
-  //   expect(
-  //     dd
-  //       .getKeysForCall({ section: 'ctype', method: 'add' })
-  //       .map((key) => key.id)
-  //   ).toMatchInlineSnapshot(`
-  //     Array [
-  //       "${did}#4",
-  //     ]
-  //   `)
-  //   expect(
-  //     dd
-  //       .getKeysForCall({ section: 'delegation', method: 'revokeDelegation' })
-  //       .map((key) => key.id)
-  //   ).toMatchInlineSnapshot(`
-  //     Array [
-  //       "${did}#2",
-  //     ]
-  //   `)
-  //   expect(
-  //     dd
-  //       .getKeysForCall({ section: 'attestation', method: 'add' })
-  //       .map((key) => key.id)
-  //   ).toMatchInlineSnapshot(`
-  //     Array [
-  //       "${did}#4",
-  //     ]
-  //   `)
-  // })
+  it('gets the correct keys for each pallet', () => {
+    const dd = new FullDidDetails({
+      ...didDetails,
+      keyRelationships: {
+        [KeyRelationship.authentication]: [keys[0].id],
+        [KeyRelationship.capabilityDelegation]: [keys[1].id],
+        [KeyRelationship.assertionMethod]: [keys[3].id],
+      },
+    })
+    expect(
+      dd
+        .getKeysForCall({ section: 'ctype', method: 'add' })
+        .map((key) => key.id)
+    ).toMatchInlineSnapshot(`
+      Array [
+        "${did}#4",
+      ]
+    `)
+    expect(
+      dd
+        .getKeysForCall({ section: 'delegation', method: 'revokeDelegation' })
+        .map((key) => key.id)
+    ).toMatchInlineSnapshot(`
+      Array [
+        "${did}#2",
+      ]
+    `)
+    expect(
+      dd
+        .getKeysForCall({ section: 'attestation', method: 'add' })
+        .map((key) => key.id)
+    ).toMatchInlineSnapshot(`
+      Array [
+        "${did}#4",
+      ]
+    `)
+  })
 
   it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and some service endpoints', () => {
     const ecdsaKey: IDidKeyDetails = {

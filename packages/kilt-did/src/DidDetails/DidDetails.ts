@@ -14,23 +14,12 @@ import type {
   IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { hexToU8a } from '@polkadot/util'
-import { base58Encode } from '@polkadot/util-crypto'
+import { exportToDidDocument } from './DidDetails.utils'
 import type {
   JsonDidDocument,
   JsonLDDidDocument,
   MapKeyToRelationship,
 } from '../types'
-
-// TODO: Should re-use (or move to a common package somewhere else) the definitions of vc-export
-const KeyTypesMap = {
-  // proposed and used by dock.io, e.g. https://github.com/w3c-ccg/security-vocab/issues/32, https://github.com/docknetwork/sdk/blob/9c818b03bfb4fdf144c20678169c7aad3935ad96/src/utils/vc/contexts/security_context.js
-  sr25519: 'Sr25519VerificationKey2020',
-  // these are part of current w3 security vocab, see e.g. https://www.w3.org/ns/did/v1
-  ed25519: 'Ed25519VerificationKey2018',
-  ecdsa: 'EcdsaSecp256k1VerificationKey2019',
-  x25519: 'X25519KeyAgreementKey2019',
-}
 
 /**
  * An abstract instance for some details associated with a KILT DID.
@@ -97,85 +86,6 @@ export abstract class DidDetails implements IDidDetails {
   public toDidDocument(
     mimeType = 'application/json'
   ): JsonDidDocument | JsonLDDidDocument {
-    if (!['application/json', 'application/json+ld'].includes(mimeType)) {
-      throw Error(`Unsupported resolution mimeType ${mimeType}`)
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = {}
-
-    result.id = this.did
-    result.verificationMethod = new Array<string>()
-
-    // Populate the `verificationMethod` array and then sets the `authentication` array with the key IDs (or undefined if no auth key is present - which should never happen)
-    const authenticationKeysIds = this.getKeys(
-      KeyRelationship.authentication
-    ).map((authKey) => {
-      result.verificationMethod.push({
-        id: authKey.id,
-        controller: this.did,
-        type: KeyTypesMap[authKey.type],
-        publicKeyBase58: base58Encode(hexToU8a(authKey.publicKeyHex)),
-      })
-      // Parse only the key ID from the complete key URI
-      return authKey.id
-    })
-    result.authentication = authenticationKeysIds.length
-      ? authenticationKeysIds
-      : undefined
-
-    const keyAgreementKeysIds = this.getKeys(KeyRelationship.keyAgreement).map(
-      (keyAgrKey) => {
-        result.verificationMethod.push({
-          id: keyAgrKey.id,
-          controller: this.did,
-          type: KeyTypesMap[keyAgrKey.type],
-          publicKeyBase58: base58Encode(hexToU8a(keyAgrKey.publicKeyHex)),
-        })
-        return keyAgrKey.id
-      }
-    )
-    result.keyAgreement = keyAgreementKeysIds.length
-      ? keyAgreementKeysIds
-      : undefined
-
-    const assertionKeysIds = this.getKeys(KeyRelationship.assertionMethod).map(
-      (assKey) => {
-        result.verificationMethod.push({
-          id: assKey.id,
-          controller: this.did,
-          type: KeyTypesMap[assKey.type],
-          publicKeyBase58: base58Encode(hexToU8a(assKey.publicKeyHex)),
-        })
-        return assKey.id
-      }
-    )
-    result.assertionMethod = assertionKeysIds.length
-      ? assertionKeysIds
-      : undefined
-
-    const delegationKeyIds = this.getKeys(
-      KeyRelationship.capabilityDelegation
-    ).map((delKey) => {
-      result.verificationMethod.push({
-        id: delKey.id,
-        controller: this.did,
-        type: KeyTypesMap[delKey.type],
-        publicKeyBase58: base58Encode(hexToU8a(delKey.publicKeyHex)),
-      })
-      return delKey.id
-    })
-    result.capabilityDelegation = delegationKeyIds.length
-      ? delegationKeyIds
-      : undefined
-
-    if (this.services.length) {
-      result.service = this.services
-    }
-
-    if (mimeType === 'application/json+ld') {
-      result['@context'] = ['https://www.w3.org/ns/did/v1']
-      return result as JsonLDDidDocument
-    }
-    return result as JsonDidDocument
+    return exportToDidDocument(this, mimeType)
   }
 }
