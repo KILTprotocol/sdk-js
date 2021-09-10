@@ -284,7 +284,7 @@ describe('Light DID Document exporting tests', () => {
       services,
     }
     const didDetails = new LightDidDetails(didCreationDetails)
-    const didDoc = didDetails.toDidDocument('application/json')
+    const didDoc = exportToDidDocument(didDetails, 'application/json')
 
     expect(didDoc.id).toMatch(didDetails.did)
 
@@ -336,7 +336,7 @@ describe('Light DID Document exporting tests', () => {
       authenticationKey: authenticationDidKeyDetails,
     }
     const didDetails = new LightDidDetails(didCreationDetails)
-    const didDoc = didDetails.toDidDocument('application/json')
+    const didDoc = exportToDidDocument(didDetails, 'application/json')
 
     expect(didDoc.id).toMatch(didDetails.did)
 
@@ -371,7 +371,7 @@ describe('Light DID Document exporting tests', () => {
       authenticationKey: authenticationDidKeyDetails,
     }
     const didDetails = new LightDidDetails(didCreationDetails)
-    const didDoc = didDetails.toDidDocument('application/json')
+    const didDoc = exportToDidDocument(didDetails, 'application/json')
 
     expect(didDoc.id).toMatch(didDetails.did)
 
@@ -406,7 +406,7 @@ describe('Light DID Document exporting tests', () => {
       authenticationKey: authenticationDidKeyDetails,
     }
     const didDetails = new LightDidDetails(didCreationDetails)
-    const didDoc = didDetails.toDidDocument('application/json+ld')
+    const didDoc = exportToDidDocument(didDetails, 'application/json+ld')
 
     expect(didDoc.id).toMatch(didDetails.did)
 
@@ -440,6 +440,6 @@ describe('Light DID Document exporting tests', () => {
       authenticationKey: authenticationDidKeyDetails,
     }
     const didDetails = new LightDidDetails(didCreationDetails)
-    expect(() => didDetails.toDidDocument('text/html')).toThrow()
+    expect(() => exportToDidDocument(didDetails, 'text/html')).toThrow()
   })
 })
