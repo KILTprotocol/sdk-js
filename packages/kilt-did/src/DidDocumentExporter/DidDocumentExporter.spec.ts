@@ -22,7 +22,7 @@ import {
   LightDidDetails,
   LightDidDetailsCreationOpts,
 } from '../DidDetails/LightDidDetails'
-import { DidDocumentExporter } from './DidDocumentExporter'
+import { exportToDidDocument } from './DidDocumentExporter'
 
 describe('Full DID Document exporting tests', () => {
   const identifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
@@ -105,10 +105,7 @@ describe('Full DID Document exporting tests', () => {
       keys: keys.concat([ecdsaKey]),
     })
 
-    const didDoc = DidDocumentExporter.exportToDidDocument(
-      fullDidDetails,
-      'application/json'
-    )
+    const didDoc = exportToDidDocument(fullDidDetails, 'application/json')
 
     expect(didDoc.id).toMatch(fullDidDetails.did)
 
@@ -184,10 +181,7 @@ describe('Full DID Document exporting tests', () => {
       keys: keys.concat([ecdsaKey]),
     })
 
-    const didDoc = DidDocumentExporter.exportToDidDocument(
-      fullDidDetails,
-      'application/json+ld'
-    )
+    const didDoc = exportToDidDocument(fullDidDetails, 'application/json+ld')
 
     expect(didDoc.id).toMatch(fullDidDetails.did)
 

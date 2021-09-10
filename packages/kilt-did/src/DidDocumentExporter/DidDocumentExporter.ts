@@ -104,7 +104,7 @@ function exportToJsonLdDidDocument(details: IDidDetails): IJsonLDDidDocument {
   return document as IJsonLDDidDocument
 }
 
-function exportToDidDocument(
+export function exportToDidDocument(
   details: IDidDetails,
   mimeType: string
 ): IDidDocument {
