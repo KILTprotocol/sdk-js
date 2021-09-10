@@ -78,8 +78,4 @@ export abstract class DidDetails implements IDidDetails {
     }
     return this.services
   }
-
-  public toDidDocument(mimeType = 'application/json'): any {
-    return DidDocumentExporter.exportToDidDocument(this, mimeType)
-  }
 }
