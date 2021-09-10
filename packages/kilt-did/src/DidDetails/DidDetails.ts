@@ -14,6 +14,7 @@ import type {
   IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
+import { DidDocumentExporter } from '../DidDocumentExporter/DidDocumentExporter'
 import type { MapKeyToRelationship } from '../types'
 
 /**
@@ -76,5 +77,9 @@ export abstract class DidDetails implements IDidDetails {
       return this.services.filter((service) => service.type === type)
     }
     return this.services
+  }
+
+  public toDidDocument(mimeType = 'application/json'): any {
+    return DidDocumentExporter.exportToDidDocument(this, mimeType)
   }
 }

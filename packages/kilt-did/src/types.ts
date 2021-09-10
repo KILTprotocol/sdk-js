@@ -9,6 +9,7 @@ import type {
   IIdentity,
   IDidKeyDetails,
   IDidDetails,
+  IServiceDetails,
   KeyRelationship,
 } from '@kiltprotocol/types'
 import type { AnyNumber } from '@polkadot/types/types'
@@ -201,3 +202,17 @@ export interface DidAuthorizedCallOperation extends Struct {
   txCounter: u64
   call: Call
 }
+
+export type JsonDidDocument = {
+  id: IDidDetails['did']
+  verificationMethod: Pick<IDidKeyDetails, 'id' | 'controller' | 'type'> & {
+    publicKeyBase58: string
+  }
+  authentication: string[]
+  assertionMethod?: string[]
+  keyAgreement?: string[]
+  capabilityDelegation?: string[]
+  service?: IServiceDetails[]
+}
+
+export type JsonLDDidDocument = JsonDidDocument & { '@context': string[] }
