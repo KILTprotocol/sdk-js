@@ -150,7 +150,7 @@ export abstract class DidDetails implements IDidDetails {
       }
     )
     result.assertionMethod = assertionKeysIds.length
-      ? authenticationKeysIds
+      ? assertionKeysIds
       : undefined
 
     const delegationKeyIds = this.getKeys(
