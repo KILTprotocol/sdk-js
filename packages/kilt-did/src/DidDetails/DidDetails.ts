@@ -14,12 +14,8 @@ import type {
   IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
-import { exportToDidDocument } from './DidDetails.utils'
-import type {
-  JsonDidDocument,
-  JsonLDDidDocument,
-  MapKeyToRelationship,
-} from '../types'
+import { DidDocumentExporter } from '../DidDocumentExporter/DidDocumentExporter'
+import type { MapKeyToRelationship } from '../types'
 
 /**
  * An abstract instance for some details associated with a KILT DID.
@@ -83,9 +79,7 @@ export abstract class DidDetails implements IDidDetails {
     return this.services
   }
 
-  public toDidDocument(
-    mimeType = 'application/json'
-  ): JsonDidDocument | JsonLDDidDocument {
-    return exportToDidDocument(this, mimeType)
+  public toDidDocument(mimeType = 'application/json'): any {
+    return DidDocumentExporter.exportToDidDocument(this, mimeType)
   }
 }
