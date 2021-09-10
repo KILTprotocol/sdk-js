@@ -242,9 +242,7 @@ describe('Full DID Document exporting tests', () => {
 
   it('does not export a DID Document with an unsupported format', () => {
     const fullDidDetails = new FullDidDetails(didDetails)
-    expect(() =>
-      DidDocumentExporter.exportToDidDocument(fullDidDetails, 'text/html')
-    ).toThrow()
+    expect(() => exportToDidDocument(fullDidDetails, 'text/html')).toThrow()
   })
 })
 
