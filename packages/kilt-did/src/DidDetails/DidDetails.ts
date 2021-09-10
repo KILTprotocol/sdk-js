@@ -168,7 +168,7 @@ export abstract class DidDetails implements IDidDetails {
       ? delegationKeyIds
       : undefined
 
-    if (this.services) {
+    if (this.services.length) {
       result.service = this.services
     }
 

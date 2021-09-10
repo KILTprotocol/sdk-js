@@ -26,7 +26,7 @@ describe('Light DID v1 tests', () => {
     '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   )
   const address = Crypto.encodeAddress(authPublicKey, 38)
-  const authenticationDidKeyDetails: INewPublicKey = {
+  let authenticationDidKeyDetails: INewPublicKey = {
     publicKey: authPublicKey,
     type: 'ed25519',
   }
@@ -180,5 +180,75 @@ describe('Light DID v1 tests', () => {
       type: 'telephone',
       serviceEndpoint: '123344',
     })
+  })
+
+  it('exports the expected application/json W3C DID Document with an Sr25519 authentication key', () => {
+    authenticationDidKeyDetails = {
+      publicKey: authPublicKey,
+      type: 'sr25519',
+    }
+    const didCreationDetails: LightDidDetailsCreationOpts = {
+      authenticationKey: authenticationDidKeyDetails,
+    }
+    const didDetails = new LightDidDetails(didCreationDetails)
+    const didDoc = didDetails.toDidDocument('application/json')
+
+    expect(didDoc.id).toMatch(didDetails.did)
+
+    expect(didDoc.authentication).toHaveLength(1)
+    expect(didDoc.authentication).toContainEqual(
+      `${didDetails.did}#authentication`
+    )
+
+    expect(didDoc.keyAgreement).toBeUndefined()
+
+    expect(didDoc.assertionMethod).toBeUndefined()
+
+    expect(didDoc.capabilityDelegation).toBeUndefined()
+
+    expect(didDoc.verificationMethod).toHaveLength(1)
+    expect(didDoc.verificationMethod).toContainEqual({
+      id: `${didDetails.did}#authentication`,
+      controller: didDetails.did,
+      type: 'Sr25519VerificationKey2020',
+      publicKeyBase58: base58Encode(authenticationDidKeyDetails.publicKey),
+    })
+
+    expect(didDoc.service).toBeUndefined()
+  })
+
+  it('exports the expected application/json W3C DID Document with an Ecdsa authentication key', () => {
+    authenticationDidKeyDetails = {
+      publicKey: authPublicKey,
+      type: 'ecdsa',
+    }
+    const didCreationDetails: LightDidDetailsCreationOpts = {
+      authenticationKey: authenticationDidKeyDetails,
+    }
+    const didDetails = new LightDidDetails(didCreationDetails)
+    const didDoc = didDetails.toDidDocument('application/json')
+
+    expect(didDoc.id).toMatch(didDetails.did)
+
+    expect(didDoc.authentication).toHaveLength(1)
+    expect(didDoc.authentication).toContainEqual(
+      `${didDetails.did}#authentication`
+    )
+
+    expect(didDoc.keyAgreement).toBeUndefined()
+
+    expect(didDoc.assertionMethod).toBeUndefined()
+
+    expect(didDoc.capabilityDelegation).toBeUndefined()
+
+    expect(didDoc.verificationMethod).toHaveLength(1)
+    expect(didDoc.verificationMethod).toContainEqual({
+      id: `${didDetails.did}#authentication`,
+      controller: didDetails.did,
+      type: 'EcdsaSecp256k1VerificationKey2019',
+      publicKeyBase58: base58Encode(authenticationDidKeyDetails.publicKey),
+    })
+
+    expect(didDoc.service).toBeUndefined()
   })
 })
