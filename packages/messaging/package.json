@@ -1,6 +1,6 @@
 {
     "name": "@kiltprotocol/messaging",
-    "version": "0.24.0-1",
+    "version": "0.24.1-rc.1",
     "description": "",
     "main": "./lib/index.js",
     "typings": "./lib/index.d.ts",
