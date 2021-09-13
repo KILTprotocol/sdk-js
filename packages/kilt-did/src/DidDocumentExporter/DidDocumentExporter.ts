@@ -46,9 +46,9 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
       // Parse only the key ID from the complete key URI
       return authKey.id
     })
-  result.authentication = authenticationKeysIds.length
-    ? authenticationKeysIds
-    : undefined
+  if (authenticationKeysIds.length) {
+    result.authentication = authenticationKeysIds
+  }
 
   const keyAgreementKeysIds = details
     .getKeys(KeyRelationship.keyAgreement)
@@ -61,9 +61,9 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
       })
       return keyAgrKey.id
     })
-  result.keyAgreement = keyAgreementKeysIds.length
-    ? keyAgreementKeysIds
-    : undefined
+  if (keyAgreementKeysIds.length) {
+    result.keyAgreement = keyAgreementKeysIds
+  }
 
   const assertionKeysIds = details
     .getKeys(KeyRelationship.assertionMethod)
@@ -76,9 +76,9 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
       })
       return assKey.id
     })
-  result.assertionMethod = assertionKeysIds.length
-    ? assertionKeysIds
-    : undefined
+  if (assertionKeysIds.length) {
+    result.assertionMethod = assertionKeysIds
+  }
 
   const delegationKeyIds = details
     .getKeys(KeyRelationship.capabilityDelegation)
@@ -91,9 +91,9 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
       })
       return delKey.id
     })
-  result.capabilityDelegation = delegationKeyIds.length
-    ? delegationKeyIds
-    : undefined
+  if (delegationKeyIds.length) {
+    result.capabilityDelegation = delegationKeyIds
+  }
 
   if (details.getServices().length) {
     result.service = details.getServices()
