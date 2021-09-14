@@ -69,7 +69,7 @@ describe('Balance', () => {
     alice = keyring.addFromUri('//Alice')
     bob = keyring.addFromUri('//Bob')
   })
-  it('should listen to balance changes', async (done) => {
+  it('should listen to balance changes', async () => {
     const listener = (
       account: string,
       balances: Balances,
@@ -78,7 +78,6 @@ describe('Balance', () => {
       expect(account).toBe(bob.address)
       expect(balances.free.toNumber()).toBe(BALANCE)
       expect(changes.free.toNumber()).toBe(FEE)
-      done()
     }
 
     await listenToBalanceChanges(bob.address, listener)

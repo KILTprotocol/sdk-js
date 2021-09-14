@@ -32,6 +32,7 @@ module.exports = {
   coverageDirectory: 'coverage',
   moduleDirectories: [
     "node_modules",
-    "packages/*/src"
+    "packages/*/src",
+    "packages/**"
   ]
 }
