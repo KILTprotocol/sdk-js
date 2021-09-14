@@ -17,7 +17,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
-import { isHex } from '@polkadot/util'
+import { hexToU8a, isHex } from '@polkadot/util'
 import type { Registry } from '@polkadot/types/types'
 import { checkAddress, encodeAddress } from '@polkadot/util-crypto'
 import { DefaultResolver } from './DidResolver/DefaultResolver'
@@ -36,6 +36,7 @@ import type {
   IDidParsingResult,
 } from './types'
 import { generateCreateTx } from './Did.chain'
+import { LightDidDetails } from '.'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 
@@ -486,4 +487,34 @@ export async function getDidAuthenticationSignature(
     KeyRelationship.authentication
   )
   return { keyId, signature: Crypto.u8aToHex(signature) }
+}
+
+export async function upgradeDid(
+  lightDid: LightDidDetails,
+  signer: KeystoreSigner,
+  includeServices = false
+): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
+  if (includeServices) {
+    // TODO: Update this when the service resolver is implemented.
+    throw new Error(`Upgrade of services from a light DID not yet implemented.`)
+  }
+  const didAuthenticationKey = lightDid.getKeys(
+    KeyRelationship.authentication
+  )[0]
+  const didEncryptionKey = lightDid.getKeys(KeyRelationship.keyAgreement)[0]
+
+  const newDidPublicKeys: PublicKeyRoleAssignment = {
+    authentication: {
+      publicKey: hexToU8a(didAuthenticationKey.publicKeyHex),
+      type: didAuthenticationKey.type,
+    },
+  }
+  if (didEncryptionKey) {
+    newDidPublicKeys.keyAgreement = {
+      publicKey: hexToU8a(didEncryptionKey.publicKeyHex),
+      type: didEncryptionKey.type,
+    }
+  }
+
+  return writeDidFromPublicKeys(signer, newDidPublicKeys)
 }
