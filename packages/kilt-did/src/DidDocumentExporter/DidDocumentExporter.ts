@@ -115,7 +115,7 @@ export function exportToDidDocument(
   switch (mimeType) {
     case 'application/json':
       return exportToJsonDidDocument(details)
-    case 'application/json+ld':
+    case 'application/ld+json':
       return exportToJsonLdDidDocument(details)
     default:
       throw new Error(

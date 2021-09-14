@@ -161,7 +161,7 @@ describe('Full DID Document exporting tests', () => {
     expect(didDoc.service).toContainEqual(services[1])
   })
 
-  it('exports the expected application/json+ld W3C DID Document with only an authentication key', () => {
+  it('exports the expected application/ld+json W3C DID Document with only an authentication key', () => {
     const ecdsaKey: IDidKeyDetails = {
       id: `${did}#5`,
       controller: did,
@@ -181,7 +181,7 @@ describe('Full DID Document exporting tests', () => {
       keys: keys.concat([ecdsaKey]),
     })
 
-    const didDoc = exportToDidDocument(fullDidDetails, 'application/json+ld')
+    const didDoc = exportToDidDocument(fullDidDetails, 'application/ld+json')
 
     expect(didDoc.id).toMatch(fullDidDetails.did)
 
@@ -397,7 +397,7 @@ describe('Light DID Document exporting tests', () => {
     expect(didDoc.service).toBeUndefined()
   })
 
-  it('exports the expected application/json+ld W3C DID Document with only an authentication key', () => {
+  it('exports the expected application/ld+json W3C DID Document with only an authentication key', () => {
     authenticationDidKeyDetails = {
       publicKey: authPublicKey,
       type: 'sr25519',
@@ -406,7 +406,7 @@ describe('Light DID Document exporting tests', () => {
       authenticationKey: authenticationDidKeyDetails,
     }
     const didDetails = new LightDidDetails(didCreationDetails)
-    const didDoc = exportToDidDocument(didDetails, 'application/json+ld')
+    const didDoc = exportToDidDocument(didDetails, 'application/ld+json')
 
     expect(didDoc.id).toMatch(didDetails.did)
 

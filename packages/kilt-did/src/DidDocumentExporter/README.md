@@ -6,7 +6,7 @@ The DID Document exporter provides the functionality needed to convert an instan
 
 The exporter interface and used types are part of the `@kiltprotocol/types` package, while the actual `DidDocumentExporter` is part of this module. The following shows how to use the exporter to generate a DID Document for both a light and a full DID.
 
-Currently, the exporter supports DID Documents in `application/json` and `application/json+ld` format.
+Currently, the exporter supports DID Documents in `application/json` and `application/ld+json` format.
 
 ```typescript
 import {
@@ -40,12 +40,12 @@ console.log(lightDidDocument.capabilityDelegation)
 // Will print all the external services referenced inside the `IDidDetails` instance.
 console.log(lightDidDocument.service)
 
-// Let's export an instance of `FullDidDetails` using the `application/json+ld` format.
+// Let's export an instance of `FullDidDetails` using the `application/ld+json` format.
 
 const fullDidDetails = new FullDidDetails({...})
 
 // The document type will be a `IJsonLDDidDocument`, which extends the simpler `IDidDocument`.
-const fullDidDocument: IJsonLDDidDocument = exportToDidDocument(fullDidDetails, 'application/json+ld')
+const fullDidDocument: IJsonLDDidDocument = exportToDidDocument(fullDidDetails, 'application/ld+json')
 
 // The same properties of `IDidDocument` can be accessed, plus a `@context` property required by the JSON-LD specification.
 console.log(fullDidDocument['@context'])
