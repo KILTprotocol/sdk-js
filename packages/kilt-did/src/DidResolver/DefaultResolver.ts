@@ -10,6 +10,8 @@ import type {
   IDidKeyDetails,
   IDidDetails,
   ResolverOpts,
+  IDidResolvedDetails,
+  IDidResolutionDocumentMetadata,
   IServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
@@ -125,7 +127,7 @@ function buildLightDetailsFromMatch({
 export async function resolve(
   didUri: string,
   opts: ResolverOpts = {}
-): Promise<IDidDetails | IDidKeyDetails | IServiceDetails | null> {
+): Promise<IDidResolvedDetails | IDidKeyDetails | IServiceDetails | null> {
   const { identifier, type, version, fragment, encodedDetails } = parseDidUrl(
     didUri
   )
@@ -139,7 +141,7 @@ export async function resolve(
       )
       // If the URI is a subject DID, return the retrieved details.
       if (!fragment) {
-        return details
+        return { details } as IDidResolvedDetails
       }
 
       // Otherwise, return either the key or the service endpoints referenced by the URI.
@@ -158,7 +160,20 @@ export async function resolve(
       }
       // If the URI is a subject DID, return the retrieved details.
       if (!fragment) {
-        return details
+        const didResolvedDetails: IDidResolvedDetails = {
+          details,
+        }
+
+        const fullDidDetails = await queryFullDetailsFromIdentifier(
+          identifier,
+          opts
+        )
+        if (fullDidDetails) {
+          didResolvedDetails.metadata = {
+            canonicalId: getKiltDidFromIdentifier(identifier, 'full'),
+          }
+        }
+        return didResolvedDetails
       }
 
       return details?.getKey(didUri) || details?.getService(didUri) || null
@@ -178,7 +193,7 @@ export async function resolve(
 export async function resolveDoc(
   did: string,
   opts: ResolverOpts = {}
-): Promise<IDidDetails | null> {
+): Promise<IDidResolvedDetails | null> {
   const { fragment } = parseDidUrl(did)
 
   let didToResolve = did

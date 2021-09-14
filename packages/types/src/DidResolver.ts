@@ -28,6 +28,15 @@ export interface ResolverOpts {
   servicesResolver?: ServicesResolver
 }
 
+export type IDidResolutionDocumentMetadata = {
+  canonicalId: string
+}
+
+export type IDidResolvedDetails = {
+  details: IDidDetails
+  metadata?: IDidResolutionDocumentMetadata
+}
+
 export interface IDidResolver {
   /**
    * Resolves a DID or DID URI and returns the respective resource.
@@ -38,14 +47,14 @@ export interface IDidResolver {
    * @param opts.servicesResolver Optionally specify a URL resolver for additional services endpoint
    * data to which the on-chain did record links. If not specified, service endpoints will be
    * omitted and URIs pointing to service endpoints cannot be resolved.
-   * @returns A promise of a [[IDidDetails]] object if the didUri is a DID, [[IDidKeyDetails]] or
+   * @returns A promise of a [[IDidResolvedDetails]] object if the didUri is a DID, [[IDidKeyDetails]] or
    * [[ServiceDetails]] if didUri contains a fragment (i.e. Did:kilt:<identifier>#<fragment>), null
    * if a resource cannot be resolved.
    */
   resolve: (
     didUri: string,
     opts?: ResolverOpts
-  ) => Promise<IDidDetails | IDidKeyDetails | IServiceDetails | null>
+  ) => Promise<IDidResolvedDetails | IDidKeyDetails | IServiceDetails | null>
   /**
    * Resolves a DID (or DID URI), returning the full contents of the DID document.
    *
@@ -55,10 +64,13 @@ export interface IDidResolver {
    * @param opts.servicesResolver Optionally specify a URL resolver for additional services endpoint
    * data to which the on-chain did record links. If not specified, service endpoints will be
    * omitted from the result.
-   * @returns A promise of a [[IDidDetails]] object representing the DID document or null if the DID
+   * @returns A promise of a [[IDidResolvedDetails]] object representing the DID document or null if the DID
    * cannot be resolved.
    */
-  resolveDoc: (did: string, opts?: ResolverOpts) => Promise<IDidDetails | null>
+  resolveDoc: (
+    did: string,
+    opts?: ResolverOpts
+  ) => Promise<IDidResolvedDetails | null>
   /**
    * Resolves a DID URI identifying a public key associated with a DID.
    *
