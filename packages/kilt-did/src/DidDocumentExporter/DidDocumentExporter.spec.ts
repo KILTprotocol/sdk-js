@@ -60,6 +60,14 @@ describe('Full DID Document exporting tests', () => {
       publicKeyHex:
         '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
     },
+    {
+      id: `${did}#5`,
+      controller: did,
+      includedAt: 200,
+      type: 'sr25519',
+      publicKeyHex:
+        '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+    },
   ]
   const services = [
     {
@@ -85,24 +93,15 @@ describe('Full DID Document exporting tests', () => {
     services,
   }
 
-  it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and some service endpoints', () => {
-    const ecdsaKey: IDidKeyDetails = {
-      id: `${did}#5`,
-      controller: did,
-      includedAt: 200,
-      type: 'ecdsa',
-      publicKeyHex:
-        '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-    }
+  it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Sr25519 delegation key, and some service endpoints', () => {
     const fullDidDetails = new FullDidDetails({
       ...didDetails,
       keyRelationships: {
         [KeyRelationship.authentication]: [keys[0].id],
         [KeyRelationship.keyAgreement]: [keys[1].id, keys[2].id],
         [KeyRelationship.assertionMethod]: [keys[3].id],
-        [KeyRelationship.capabilityDelegation]: [ecdsaKey.id],
+        [KeyRelationship.capabilityDelegation]: [keys[4].id],
       },
-      keys: keys.concat([ecdsaKey]),
     })
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/json')
@@ -152,8 +151,8 @@ describe('Full DID Document exporting tests', () => {
     expect(didDoc.verificationMethod).toContainEqual({
       id: `${fullDidDetails.did}#5`,
       controller: fullDidDetails.did,
-      type: 'EcdsaSecp256k1VerificationKey2019',
-      publicKeyBase58: base58Encode(ecdsaKey.publicKeyHex),
+      type: 'Sr25519VerificationKey2020',
+      publicKeyBase58: base58Encode(keys[4].publicKeyHex),
     })
 
     expect(didDoc.service).toHaveLength(2)
@@ -162,23 +161,14 @@ describe('Full DID Document exporting tests', () => {
   })
 
   it('exports the expected application/ld+json W3C DID Document with only an authentication key', () => {
-    const ecdsaKey: IDidKeyDetails = {
-      id: `${did}#5`,
-      controller: did,
-      includedAt: 200,
-      type: 'ecdsa',
-      publicKeyHex:
-        '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-    }
     const fullDidDetails = new FullDidDetails({
       ...didDetails,
       keyRelationships: {
         [KeyRelationship.authentication]: [keys[0].id],
         [KeyRelationship.keyAgreement]: [keys[1].id, keys[2].id],
         [KeyRelationship.assertionMethod]: [keys[3].id],
-        [KeyRelationship.capabilityDelegation]: [ecdsaKey.id],
+        [KeyRelationship.capabilityDelegation]: [keys[4].id],
       },
-      keys: keys.concat([ecdsaKey]),
     })
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/ld+json')
@@ -231,8 +221,8 @@ describe('Full DID Document exporting tests', () => {
     expect(didDoc.verificationMethod).toContainEqual({
       id: `${fullDidDetails.did}#5`,
       controller: fullDidDetails.did,
-      type: 'EcdsaSecp256k1VerificationKey2019',
-      publicKeyBase58: base58Encode(ecdsaKey.publicKeyHex),
+      type: 'Sr25519VerificationKey2020',
+      publicKeyBase58: base58Encode(keys[4].publicKeyHex),
     })
 
     expect(didDoc.service).toHaveLength(2)
@@ -356,41 +346,6 @@ describe('Light DID Document exporting tests', () => {
       id: `${didDetails.did}#authentication`,
       controller: didDetails.did,
       type: 'Sr25519VerificationKey2020',
-      publicKeyBase58: base58Encode(authenticationDidKeyDetails.publicKey),
-    })
-
-    expect(didDoc.service).toBeUndefined()
-  })
-
-  it('exports the expected application/json W3C DID Document with an Ecdsa authentication key', () => {
-    authenticationDidKeyDetails = {
-      publicKey: authPublicKey,
-      type: 'ecdsa',
-    }
-    const didCreationDetails: LightDidDetailsCreationOpts = {
-      authenticationKey: authenticationDidKeyDetails,
-    }
-    const didDetails = new LightDidDetails(didCreationDetails)
-    const didDoc = exportToDidDocument(didDetails, 'application/json')
-
-    expect(didDoc.id).toMatch(didDetails.did)
-
-    expect(didDoc.authentication).toHaveLength(1)
-    expect(didDoc.authentication).toContainEqual(
-      `${didDetails.did}#authentication`
-    )
-
-    expect(didDoc.keyAgreement).toBeUndefined()
-
-    expect(didDoc.assertionMethod).toBeUndefined()
-
-    expect(didDoc.capabilityDelegation).toBeUndefined()
-
-    expect(didDoc.verificationMethod).toHaveLength(1)
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${didDetails.did}#authentication`,
-      controller: didDetails.did,
-      type: 'EcdsaSecp256k1VerificationKey2019',
       publicKeyBase58: base58Encode(authenticationDidKeyDetails.publicKey),
     })
 

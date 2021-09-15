@@ -81,19 +81,16 @@ export function getSignatureAlgForKeyType(keyType: string): string {
 export enum LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES {
   ed25519 = 'ed25519',
   sr25519 = 'sr25519',
-  ecdsa = 'ecdsa',
 }
 
 const EncodingForSigningKeyType = {
   [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519]: '00',
   [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519]: '01',
-  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ecdsa]: '02',
 }
 
 const SigningKeyTypeFromEncoding = {
   '00': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519,
   '01': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519,
-  '02': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ecdsa,
 }
 
 export function getEncodingForSigningKeyType(keyType: string): string {

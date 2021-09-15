@@ -163,12 +163,15 @@ export async function resolve(
         }
 
         const fullDidDetails = await queryFullDetailsFromIdentifier(
-          identifier,
+          identifier.substring(2),
           opts
         )
         if (fullDidDetails) {
           didResolvedDetails.metadata = {
-            canonicalId: getKiltDidFromIdentifier(identifier, 'full'),
+            canonicalId: getKiltDidFromIdentifier(
+              identifier.substring(2),
+              'full'
+            ),
           }
         }
         return didResolvedDetails

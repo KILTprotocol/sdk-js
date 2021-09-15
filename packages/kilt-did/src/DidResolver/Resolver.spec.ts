@@ -14,7 +14,7 @@
 import { TypeRegistry } from '@kiltprotocol/chain-helpers'
 import { KeyRelationship, ServicesResolver } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
-import type { IDidDetails, IServiceDetails } from '@kiltprotocol/types'
+import type { IDidResolvedDetails, IServiceDetails } from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/api'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import { hexToU8a, u8aToHex } from '@polkadot/util'
@@ -69,21 +69,25 @@ const fullDid = `did:kilt:${identifier}`
 
 it('resolves stuff', async () => {
   await expect(DefaultResolver.resolveDoc(fullDid)).resolves.toMatchObject({
-    did: fullDid,
-    identifier,
+    details: {
+      did: fullDid,
+      identifier,
+    },
   })
 })
 
 it('has the right keys', async () => {
   const didRecord = await DefaultResolver.resolveDoc(fullDid)
-  expect(didRecord?.getKeyIds()).toStrictEqual([
+  expect(didRecord?.details.getKeyIds()).toStrictEqual([
     `${fullDid}#auth`,
     `${fullDid}#x25519`,
   ])
-  expect(didRecord?.getKeyIds(KeyRelationship.authentication)).toStrictEqual([
-    `${fullDid}#auth`,
-  ])
-  expect(didRecord?.getKeys(KeyRelationship.keyAgreement)).toStrictEqual([
+  expect(
+    didRecord?.details.getKeyIds(KeyRelationship.authentication)
+  ).toStrictEqual([`${fullDid}#auth`])
+  expect(
+    didRecord?.details.getKeys(KeyRelationship.keyAgreement)
+  ).toStrictEqual([
     {
       id: `${fullDid}#x25519`,
       controller: fullDid,
@@ -105,14 +109,14 @@ it('adds services when service resolver is present', async () => {
 
   await expect(
     DefaultResolver.resolveDoc(fullDid).then((didDetails) =>
-      didDetails?.getServices('DidComm messaging')
+      didDetails?.details.getServices('DidComm messaging')
     )
   ).resolves.toMatchObject([])
 
   await expect(
     DefaultResolver.resolveDoc(fullDid, {
       servicesResolver,
-    }).then((didDetails) => didDetails?.getServices('DidComm messaging'))
+    }).then((didDetails) => didDetails?.details.getServices('DidComm messaging'))
   ).resolves.toMatchObject([service])
 
   expect(servicesResolver).toHaveBeenCalledWith(
@@ -142,8 +146,8 @@ describe('Light DID tests', () => {
     })
     const resolutionResult = (await DefaultResolver.resolve(
       lightDID.did
-    )) as IDidDetails
-    const derivedAuthenticationPublicKey = resolutionResult.getKey(
+    )) as IDidResolvedDetails
+    const derivedAuthenticationPublicKey = resolutionResult.details.getKey(
       `${lightDID.did}#authentication`
     )
     expect(derivedAuthenticationPublicKey).toBeDefined()
@@ -163,29 +167,8 @@ describe('Light DID tests', () => {
     })
     const resolutionResult = (await DefaultResolver.resolve(
       lightDID.did
-    )) as IDidDetails
-    const derivedAuthenticationPublicKey = resolutionResult.getKey(
-      `${lightDID.did}#authentication`
-    )
-    expect(derivedAuthenticationPublicKey).toBeDefined()
-    expect(derivedAuthenticationPublicKey!.publicKeyHex).toEqual(
-      u8aToHex(publicAuthKey.publicKey)
-    )
-  })
-
-  it('Correctly resolves a light DID created with only an ecdsa authentication key', async () => {
-    keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ecdsa')
-    publicAuthKey = {
-      publicKey: keypair.publicKey,
-      type: 'ecdsa',
-    }
-    const lightDID = new LightDidDetails({
-      authenticationKey: publicAuthKey,
-    })
-    const resolutionResult = (await DefaultResolver.resolve(
-      lightDID.did
-    )) as IDidDetails
-    const derivedAuthenticationPublicKey = resolutionResult.getKey(
+    )) as IDidResolvedDetails
+    const derivedAuthenticationPublicKey = resolutionResult.details.getKey(
       `${lightDID.did}#authentication`
     )
     expect(derivedAuthenticationPublicKey).toBeDefined()
@@ -198,7 +181,7 @@ describe('Light DID tests', () => {
     keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
     publicAuthKey = {
       publicKey: keypair.publicKey,
-      type: 'ecdsa',
+      type: 'sr25519',
     }
     encryptionKey = {
       publicKey: hexToU8a(
@@ -212,16 +195,16 @@ describe('Light DID tests', () => {
     })
     const resolutionResult = (await DefaultResolver.resolve(
       lightDID.did
-    )) as IDidDetails
+    )) as IDidResolvedDetails
 
-    const derivedAuthenticationPublicKey = resolutionResult.getKey(
+    const derivedAuthenticationPublicKey = resolutionResult.details.getKey(
       `${lightDID.did}#authentication`
     )
     expect(derivedAuthenticationPublicKey).toBeDefined()
     expect(derivedAuthenticationPublicKey!.publicKeyHex).toEqual(
       u8aToHex(publicAuthKey.publicKey)
     )
-    const derivedEncryptionPublicKey = resolutionResult.getKey(
+    const derivedEncryptionPublicKey = resolutionResult.details.getKey(
       `${lightDID.did}#encryption`
     )
     expect(derivedEncryptionPublicKey).toBeDefined()
@@ -234,7 +217,7 @@ describe('Light DID tests', () => {
     keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
     publicAuthKey = {
       publicKey: keypair.publicKey,
-      type: 'ecdsa',
+      type: 'ed25519',
     }
     encryptionKey = {
       publicKey: hexToU8a(
@@ -261,23 +244,23 @@ describe('Light DID tests', () => {
     })
     const resolutionResult = (await DefaultResolver.resolve(
       lightDID.did
-    )) as IDidDetails
+    )) as IDidResolvedDetails
 
-    const derivedAuthenticationPublicKey = resolutionResult.getKey(
+    const derivedAuthenticationPublicKey = resolutionResult.details.getKey(
       `${lightDID.did}#authentication`
     )
     expect(derivedAuthenticationPublicKey).toBeDefined()
     expect(derivedAuthenticationPublicKey!.publicKeyHex).toEqual(
       u8aToHex(publicAuthKey.publicKey)
     )
-    const derivedEncryptionPublicKey = resolutionResult.getKey(
+    const derivedEncryptionPublicKey = resolutionResult.details.getKey(
       `${lightDID.did}#encryption`
     )
     expect(derivedEncryptionPublicKey).toBeDefined()
     expect(derivedEncryptionPublicKey!.publicKeyHex).toEqual(
       '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     )
-    const derivedServices = resolutionResult.getServices()
+    const derivedServices = resolutionResult.details.getServices()
     expect(derivedServices).toMatchInlineSnapshot(`
       Array [
         Object {
