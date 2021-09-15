@@ -8,10 +8,8 @@
 import type {
   IDidResolver,
   IDidKeyDetails,
-  IDidDetails,
   ResolverOpts,
   IDidResolvedDetails,
-  IDidResolutionDocumentMetadata,
   IServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
@@ -202,7 +200,7 @@ export async function resolveDoc(
     didToResolve = didToResolve.split('#')[0]
   }
 
-  return resolve(didToResolve, opts) as Promise<IDidDetails | null>
+  return resolve(didToResolve, opts) as Promise<IDidResolvedDetails | null>
 }
 
 /**
@@ -230,7 +228,7 @@ export async function resolveKey(
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
       }
       // The fragment includes the '#' symbol which we do not need
-      return resolvedDetails.getKey(fragment.substring(1)) || null
+      return resolvedDetails.details.getKey(fragment.substring(1)) || null
     }
     default:
       throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)

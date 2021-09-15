@@ -9,7 +9,6 @@
  * @group integration/did
  */
 
-import type { KeystoreSigner } from '@kiltprotocol/types'
 import { Crypto, UUID } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
 import {
@@ -18,12 +17,14 @@ import {
   DidTypes,
   DidUtils,
   SigningAlgorithms,
+  EncryptionAlgorithms,
+  LightDidDetails,
 } from '@kiltprotocol/did'
 import {
   BlockchainUtils,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
-import { KeyRelationship } from '@kiltprotocol/types'
+import { KeyRelationship, KeystoreSigner } from '@kiltprotocol/types'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BN } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
@@ -172,6 +173,102 @@ it('creates and updates DID', async () => {
     },
   })
 }, 40_000)
+
+describe('DID migration', () => {
+  it('migrates light DID with ed25519 auth key and encryption key', async () => {
+    const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Ed25519,
+    })
+    const didEncryptionKeyDetails = await keystore.generateKeypair({
+      seed:
+        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      alg: EncryptionAlgorithms.NaclBox,
+    })
+    const lightDidDetails = new LightDidDetails({
+      authenticationKey: {
+        publicKey: didEd25519AuthenticationKeyDetails.publicKey,
+        type: DemoKeystore.getKeypairTypeForAlg(
+          didEd25519AuthenticationKeyDetails.alg
+        ),
+      },
+      encryptionKey: {
+        publicKey: didEncryptionKeyDetails.publicKey,
+        type: DemoKeystore.getKeypairTypeForAlg(didEncryptionKeyDetails.alg),
+      },
+    })
+    const { extrinsic, did } = await DidUtils.upgradeDid(
+      lightDidDetails,
+      keystore
+    )
+
+    await expect(
+      BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    ).resolves.not.toThrow()
+
+    await expect(
+      DidChain.queryById(DidUtils.getIdentifierFromKiltDid(did))
+    ).resolves.not.toBeNull()
+  })
+
+  it('migrates light DID with sr25519 auth key', async () => {
+    const didSr25519AuthenticationKeyDetails = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Sr25519,
+    })
+    const lightDidDetails = new LightDidDetails({
+      authenticationKey: {
+        publicKey: didSr25519AuthenticationKeyDetails.publicKey,
+        type: DemoKeystore.getKeypairTypeForAlg(
+          didSr25519AuthenticationKeyDetails.alg
+        ),
+      },
+    })
+    const { extrinsic, did } = await DidUtils.upgradeDid(
+      lightDidDetails,
+      keystore
+    )
+
+    await expect(
+      BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    ).resolves.not.toThrow()
+
+    await expect(
+      DidChain.queryById(DidUtils.getIdentifierFromKiltDid(did))
+    ).resolves.not.toBeNull()
+  })
+
+  // TODO: Fix failing test case
+  it('migrates light DID with ecdsa auth key', async () => {
+    const didEcdsaAuthenticationKeyDetails = await keystore.generateKeypair({
+      alg: SigningAlgorithms.EcdsaSecp256k1,
+    })
+    const lightDidDetails = new LightDidDetails({
+      authenticationKey: {
+        publicKey: didEcdsaAuthenticationKeyDetails.publicKey,
+        type: DemoKeystore.getKeypairTypeForAlg(
+          didEcdsaAuthenticationKeyDetails.alg
+        ),
+      },
+    })
+    const { extrinsic, did } = await DidUtils.upgradeDid(
+      lightDidDetails,
+      keystore
+    )
+
+    await expect(
+      BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    ).resolves.not.toThrow()
+
+    await expect(
+      DidChain.queryById(DidUtils.getIdentifierFromKiltDid(did))
+    ).resolves.not.toBeNull()
+  })
+})
 
 describe('DID authorization', () => {
   let didIdentifier: string

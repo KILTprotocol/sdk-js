@@ -385,7 +385,7 @@ export async function verifyDidSignatureAsync({
       throw new Error(
         'Either the claimer DidDetails or a DID resolver is required for verification'
       )
-    didOrNot = await resolver.resolveDoc(keyId)
+    didOrNot = (await resolver.resolveDoc(keyId))?.details
   } else {
     didOrNot = didDetails
   }
@@ -489,6 +489,7 @@ export async function getDidAuthenticationSignature(
   return { keyId, signature: Crypto.u8aToHex(signature) }
 }
 
+// This function is tested in the DID integration tests, in the `DID migration` test case.
 export async function upgradeDid(
   lightDid: LightDidDetails,
   signer: KeystoreSigner,
