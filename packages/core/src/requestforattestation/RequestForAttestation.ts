@@ -260,24 +260,23 @@ export default class RequestForAttestation implements IRequestForAttestation {
    */
   public static async verifySignature(
     input: IRequestForAttestation,
+    claimerDid: IDidDetails['did'],
     {
       challenge,
-      claimerDid,
       resolver = DefaultResolver,
     }: {
-      claimerDid?: IDidDetails
       resolver?: IDidResolver
       challenge?: string
-    } = {}
+    }
   ): Promise<boolean> {
     const { claimerSignature } = input
     if (!claimerSignature) return false
     if (challenge && challenge !== claimerSignature.challenge) return false
     const verifyData = makeSigningData(input, claimerSignature.challenge)
-    const { verified, didDetails } = await DidUtils.verifyDidSignatureAsync({
+    const { verified, didDetails } = await DidUtils.verifyDidSignature({
       ...claimerSignature,
       message: verifyData,
-      didDetails: claimerDid,
+      did: claimerDid,
       keyRelationship: KeyRelationship.authentication,
       resolver,
     })
@@ -288,13 +287,13 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   public async verifySignature(
+    claimerDid: IDidDetails['did'],
     resolverOpts: {
-      claimerDid?: IDidDetails
       resolver?: IDidResolver
       challenge?: string
-    } = {}
+    }
   ): Promise<boolean> {
-    return RequestForAttestation.verifySignature(this, resolverOpts)
+    return RequestForAttestation.verifySignature(this, claimerDid, resolverOpts)
   }
 
   public static verifyRootHash(input: IRequestForAttestation): boolean {

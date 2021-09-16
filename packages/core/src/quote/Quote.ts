@@ -71,15 +71,15 @@ export function validateQuoteSchema(
  * @returns A [[Quote]] object signed by an Attester.
  */
 
-export function fromAttesterSignedInput(
+export async function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned,
   attesterDid: IDidDetails
-): IQuoteAttesterSigned {
+): Promise<IQuoteAttesterSigned> {
   const { attesterSignature, ...basicQuote } = deserializedQuote
-  DidUtils.verifyDidSignature({
+  await DidUtils.verifyDidSignature({
     ...attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    didDetails: attesterDid,
+    did: attesterDid.did,
     keyRelationship: KeyRelationship.authentication,
   })
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
@@ -163,10 +163,10 @@ export async function createQuoteAgreement(
       attesterSignedQuote.attesterDid
     )
 
-  DidUtils.verifyDidSignature({
+  await DidUtils.verifyDidSignature({
     ...attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    didDetails: attesterIdentity,
+    did: attesterIdentity.did,
     keyRelationship: KeyRelationship.authentication,
   })
 

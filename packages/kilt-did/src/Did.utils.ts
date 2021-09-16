@@ -328,7 +328,7 @@ export type VerficationResult = {
   key?: IDidKeyDetails
 }
 
-export function verifyDidSignature({
+function verifyDidSignatureFromDetails({
   message,
   signature,
   keyId,
@@ -361,43 +361,52 @@ export function verifyDidSignature({
   }
 }
 
-export async function verifyDidSignatureAsync({
+export async function verifyDidSignature({
   message,
   signature,
   keyId,
   keyRelationship,
   resolver = DefaultResolver,
-  didDetails,
+  did,
+  checkForMigration = true,
 }: {
   message: string | Uint8Array
   signature: string | Uint8Array
   keyId: string
   resolver?: IDidResolver
-  didDetails?: IDidDetails
+  did: IDidDetails['did']
   keyRelationship?: VerificationKeyRelationship
+  checkForMigration?: boolean
 }): Promise<VerficationResult> {
-  let didOrNot: IDidDetails | undefined | null
-  if (!didDetails) {
-    if (typeof resolver?.resolveDoc !== 'function')
-      throw new Error(
-        'Either the claimer DidDetails or a DID resolver is required for verification'
-      )
-    didOrNot = (await resolver.resolveDoc(keyId))?.details
-  } else {
-    didOrNot = didDetails
+  const { identifier } = parseDidUrl(did)
+  // If the identifier could not be parsed, it is a malformed URL
+  if (!identifier) {
+    throw new Error(`Invalid DID passed for signature verification - ${did}`)
   }
-  if (didOrNot) {
-    return verifyDidSignature({
-      message,
-      signature,
-      keyId,
-      keyRelationship,
-      didDetails: didOrNot,
-    })
+  // Resolve DID details regardless of the DID type
+  let details = await resolver.resolveDoc(did)
+  // If no details can be resolved, it is clearly an error, so we return false
+  if (!details) {
+    return {
+      verified: false,
+    }
   }
-  return {
-    verified: false,
+  // If we want to check for migration, and there is actually a canonical (on-chain) DID, we fetch those details
+  if (checkForMigration && details.metadata) {
+    const fullDidIdentifier = getKiltDidFromIdentifier(
+      identifier.substring(2),
+      'full'
+    )
+    // If we fail to resolve, then we keep the off-chain DID details
+    details = (await resolver.resolveDoc(fullDidIdentifier)) || details
   }
+  return verifyDidSignatureFromDetails({
+    message,
+    signature,
+    keyId,
+    keyRelationship,
+    didDetails: details.details,
+  })
 }
 
 export async function writeDidFromPublicKeys(

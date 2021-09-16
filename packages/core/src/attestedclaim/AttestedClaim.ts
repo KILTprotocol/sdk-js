@@ -129,16 +129,17 @@ export default class AttestedClaim implements IAttestedClaim {
    */
   public static async verify(
     attestedClaim: IAttestedClaim,
+    claimerDid: IDidDetails['did'],
     verificationOpts: {
-      claimerDid?: IDidDetails
       resolver?: IDidResolver
       challenge?: string
-    } = {}
+    }
   ): Promise<boolean> {
     return (
       AttestedClaim.verifyData(attestedClaim) &&
       (await RequestForAttestation.verifySignature(
         attestedClaim.request,
+        claimerDid,
         verificationOpts
       )) &&
       Attestation.checkValidity(attestedClaim.attestation)
@@ -146,13 +147,13 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   public async verify(
+    claimerDid: IDidDetails['did'],
     verificationOpts: {
-      claimerDid?: IDidDetails
       resolver?: IDidResolver
       challenge?: string
     } = {}
   ): Promise<boolean> {
-    return AttestedClaim.verify(this, verificationOpts)
+    return AttestedClaim.verify(this, claimerDid, verificationOpts)
   }
 
   /**
