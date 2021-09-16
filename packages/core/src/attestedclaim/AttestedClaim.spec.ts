@@ -86,6 +86,33 @@ describe('RequestForAttestation', () => {
   let legitimation: AttestedClaim
   let compressedLegitimation: CompressedAttestedClaim
 
+  let mockResolver: IDidResolver = {
+    resolve: async (didUri: string) => {
+      if (didUri === identityAlice.did) {
+        return { details: identityAlice }
+      }
+      if (didUri === identityBob.did) {
+        return { details: identityBob }
+      }
+      if (didUri === identityCharlie.did) {
+        return { details: identityCharlie }
+      }
+      return null
+    },
+    resolveDoc: async (didUri: string) => {
+      if (didUri === identityAlice.did) {
+        return { details: identityAlice }
+      }
+      if (didUri === identityBob.did) {
+        return { details: identityBob }
+      }
+      if (didUri === identityCharlie.did) {
+        return { details: identityCharlie }
+      }
+      return null
+    },
+  } as IDidResolver
+
   beforeAll(async () => {
     keystore = new DemoKeystore()
 
@@ -142,11 +169,45 @@ describe('RequestForAttestation', () => {
     // check proof on complete data
     expect(AttestedClaim.verifyData(attestedClaim)).toBeTruthy()
     await expect(
-      AttestedClaim.verify(attestedClaim, { claimerDid: identityCharlie })
+      AttestedClaim.verify(attestedClaim, identityCharlie.did, {
+        resolver: mockResolver,
+      })
     ).resolves.toBe(true)
   })
   it('verify attested claims signed by a light DID', async () => {
     const identityDave = await createLightDidFromSeed(keystore, '//Dave')
+    mockResolver = {
+      resolveDoc: async (didUri: string) => {
+        if (didUri === identityAlice.did) {
+          return { details: identityAlice }
+        }
+        if (didUri === identityBob.did) {
+          return { details: identityBob }
+        }
+        if (didUri === identityCharlie.did) {
+          return { details: identityCharlie }
+        }
+        if (didUri === identityDave.did) {
+          return { details: identityDave }
+        }
+        return null
+      },
+      resolve: async (didUri: string) => {
+        if (didUri === identityAlice.did) {
+          return { details: identityAlice }
+        }
+        if (didUri === identityBob.did) {
+          return { details: identityBob }
+        }
+        if (didUri === identityCharlie.did) {
+          return { details: identityCharlie }
+        }
+        if (didUri === identityDave.did) {
+          return { details: identityDave }
+        }
+        return null
+      },
+    } as IDidResolver
     const attestedClaim = await buildAttestedClaim(
       identityDave,
       identityAlice,
@@ -164,7 +225,9 @@ describe('RequestForAttestation', () => {
     // check proof on complete data
     expect(AttestedClaim.verifyData(attestedClaim)).toBeTruthy()
     await expect(
-      AttestedClaim.verify(attestedClaim, { claimerDid: identityDave })
+      AttestedClaim.verify(attestedClaim, identityDave.did, {
+        resolver: mockResolver,
+      })
     ).resolves.toBe(true)
   })
 
@@ -258,6 +321,27 @@ describe('create presentation', () => {
   let reqForAtt: RequestForAttestation
   let attestation: Attestation
 
+  const mockResolver: IDidResolver = {
+    resolve: async (didUri: string) => {
+      if (didUri === claimer.did) {
+        return { details: claimer }
+      }
+      if (didUri === attester.did) {
+        return { details: attester }
+      }
+      return null
+    },
+    resolveDoc: async (didUri: string) => {
+      if (didUri === claimer.did) {
+        return { details: claimer }
+      }
+      if (didUri === attester.did) {
+        return { details: attester }
+      }
+      return null
+    },
+  } as IDidResolver
+
   beforeAll(async () => {
     keystore = new DemoKeystore()
     attester = await createLocalDemoDidFromSeed(keystore, '//Attester')
@@ -296,12 +380,6 @@ describe('create presentation', () => {
   })
 
   it('should create presentation and exclude specific attributes using a full DID', async () => {
-    const mockResolver: IDidResolver = {
-      resolveDoc: async (did: string) => {
-        if (did.startsWith(claimer.did)) return claimer
-        return null
-      },
-    } as IDidResolver
     ;(query as jest.Mock).mockResolvedValue(attestation)
 
     const cred = AttestedClaim.fromRequestAndAttestation(reqForAtt, attestation)
@@ -315,7 +393,7 @@ describe('create presentation', () => {
     })
     expect(att.getAttributes()).toEqual(new Set(['name']))
     await expect(
-      AttestedClaim.verify(att, { resolver: mockResolver })
+      AttestedClaim.verify(att, claimer.did, { resolver: mockResolver })
     ).resolves.toBe(true)
     expect(att.request.claimerSignature?.challenge).toEqual(challenge)
   })
@@ -357,7 +435,9 @@ describe('create presentation', () => {
       challenge,
     })
     expect(att.getAttributes()).toEqual(new Set(['name']))
-    await expect(AttestedClaim.verify(att)).resolves.toBe(true)
+    await expect(
+      AttestedClaim.verify(att, claimer.did, { resolver: mockResolver })
+    ).resolves.toBe(true)
     expect(att.request.claimerSignature?.challenge).toEqual(challenge)
   })
 
