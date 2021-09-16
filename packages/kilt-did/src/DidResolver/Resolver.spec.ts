@@ -22,6 +22,8 @@ import { LightDidDetails } from '../DidDetails'
 import type { INewPublicKey } from '../types'
 import { IDidChainRecordJSON } from '../types'
 import { DefaultResolver } from './DefaultResolver'
+import { upgradeDid } from '../Did.utils'
+import { DemoKeystore } from '..'
 
 jest.mock('../Did.chain', () => {
   const queryByDID = jest.fn(
@@ -116,7 +118,9 @@ it('adds services when service resolver is present', async () => {
   await expect(
     DefaultResolver.resolveDoc(fullDid, {
       servicesResolver,
-    }).then((didDetails) => didDetails?.details.getServices('DidComm messaging'))
+    }).then((didDetails) =>
+      didDetails?.details.getServices('DidComm messaging')
+    )
   ).resolves.toMatchObject([service])
 
   expect(servicesResolver).toHaveBeenCalledWith(

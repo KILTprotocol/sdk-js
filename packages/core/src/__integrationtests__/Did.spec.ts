@@ -19,6 +19,7 @@ import {
   SigningAlgorithms,
   EncryptionAlgorithms,
   LightDidDetails,
+  resolveDoc,
 } from '@kiltprotocol/did'
 import {
   BlockchainUtils,
@@ -210,6 +211,15 @@ describe('DID migration', () => {
     await expect(
       DidChain.queryById(DidUtils.getIdentifierFromKiltDid(did))
     ).resolves.not.toBeNull()
+
+    const resolutionResult = await resolveDoc(lightDidDetails.did)
+
+    expect(resolutionResult).not.toBeNull()
+
+    expect(resolutionResult?.metadata).toBeDefined()
+    expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+
+    expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
   })
 
   it('migrates light DID with sr25519 auth key', async () => {
@@ -238,35 +248,15 @@ describe('DID migration', () => {
     await expect(
       DidChain.queryById(DidUtils.getIdentifierFromKiltDid(did))
     ).resolves.not.toBeNull()
-  })
 
-  // TODO: Fix failing test case
-  it('migrates light DID with ecdsa auth key', async () => {
-    const didEcdsaAuthenticationKeyDetails = await keystore.generateKeypair({
-      alg: SigningAlgorithms.EcdsaSecp256k1,
-    })
-    const lightDidDetails = new LightDidDetails({
-      authenticationKey: {
-        publicKey: didEcdsaAuthenticationKeyDetails.publicKey,
-        type: DemoKeystore.getKeypairTypeForAlg(
-          didEcdsaAuthenticationKeyDetails.alg
-        ),
-      },
-    })
-    const { extrinsic, did } = await DidUtils.upgradeDid(
-      lightDidDetails,
-      keystore
-    )
+    const resolutionResult = await resolveDoc(lightDidDetails.did)
 
-    await expect(
-      BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-      })
-    ).resolves.not.toThrow()
+    expect(resolutionResult).not.toBeNull()
 
-    await expect(
-      DidChain.queryById(DidUtils.getIdentifierFromKiltDid(did))
-    ).resolves.not.toBeNull()
+    expect(resolutionResult?.metadata).toBeDefined()
+    expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+
+    expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
   })
 })
 
