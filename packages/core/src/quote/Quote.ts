@@ -73,13 +73,13 @@ export function validateQuoteSchema(
 
 export async function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned,
-  attesterDid: IDidDetails
+  attesterDid: IDidDetails['did']
 ): Promise<IQuoteAttesterSigned> {
   const { attesterSignature, ...basicQuote } = deserializedQuote
   await DidUtils.verifyDidSignature({
     ...attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    did: attesterDid.did,
+    did: attesterDid,
     keyRelationship: KeyRelationship.authentication,
   })
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
@@ -151,22 +151,22 @@ export async function fromQuoteDataAndIdentity(
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: string,
-  attesterIdentity: IDidDetails,
+  attesterIdentity: IDidDetails['did'],
   claimerIdentity: IDidDetails,
   signer: KeystoreSigner
 ): Promise<IQuoteAgreement> {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
-  if (attesterIdentity.did !== attesterSignedQuote.attesterDid)
+  if (attesterIdentity !== attesterSignedQuote.attesterDid)
     throw SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(
-      attesterIdentity.did,
+      attesterIdentity,
       attesterSignedQuote.attesterDid
     )
 
   await DidUtils.verifyDidSignature({
     ...attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    did: attesterIdentity.did,
+    did: attesterIdentity,
     keyRelationship: KeyRelationship.authentication,
   })
 
