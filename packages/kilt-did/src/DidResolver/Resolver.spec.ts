@@ -22,8 +22,6 @@ import { LightDidDetails } from '../DidDetails'
 import type { INewPublicKey } from '../types'
 import { IDidChainRecordJSON } from '../types'
 import { DefaultResolver } from './DefaultResolver'
-import { upgradeDid } from '../Did.utils'
-import { DemoKeystore } from '..'
 
 jest.mock('../Did.chain', () => {
   const queryByDID = jest.fn(

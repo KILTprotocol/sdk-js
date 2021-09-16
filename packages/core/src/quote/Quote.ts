@@ -20,13 +20,14 @@ import Ajv from 'ajv'
 import type {
   IDidDetails,
   IQuote,
+  IDidResolver,
   IQuoteAgreement,
   IQuoteAttesterSigned,
   KeystoreSigner,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { DidUtils } from '@kiltprotocol/did'
+import { DidUtils, DefaultResolver } from '@kiltprotocol/did'
 import QuoteSchema from './QuoteSchema'
 
 /**
@@ -73,7 +74,8 @@ export function validateQuoteSchema(
 
 export async function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned,
-  attesterDid: IDidDetails['did']
+  attesterDid: IDidDetails['did'],
+  resolver: IDidResolver = DefaultResolver
 ): Promise<IQuoteAttesterSigned> {
   const { attesterSignature, ...basicQuote } = deserializedQuote
   await DidUtils.verifyDidSignature({
@@ -81,6 +83,7 @@ export async function fromAttesterSignedInput(
     message: Crypto.hashObjectAsStr(basicQuote),
     did: attesterDid,
     keyRelationship: KeyRelationship.authentication,
+    resolver,
   })
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
@@ -153,7 +156,8 @@ export async function createQuoteAgreement(
   requestRootHash: string,
   attesterIdentity: IDidDetails['did'],
   claimerIdentity: IDidDetails,
-  signer: KeystoreSigner
+  signer: KeystoreSigner,
+  resolver: IDidResolver = DefaultResolver
 ): Promise<IQuoteAgreement> {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
@@ -168,6 +172,7 @@ export async function createQuoteAgreement(
     message: Crypto.hashObjectAsStr(basicQuote),
     did: attesterIdentity,
     keyRelationship: KeyRelationship.authentication,
+    resolver,
   })
 
   const signature = await DidUtils.getDidAuthenticationSignature(

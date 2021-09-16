@@ -17,6 +17,7 @@ import type {
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
+  IDidResolver,
   ICostBreakdown,
   IQuote,
   IQuoteAgreement,
@@ -56,6 +57,27 @@ describe('Claim', () => {
   let compressedQuote: CompressedQuote
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
+
+  const mockResolver: IDidResolver = {
+    resolve: async (didUri: string) => {
+      if (didUri === claimerIdentity.did) {
+        return { details: claimerIdentity }
+      }
+      if (didUri === attesterIdentity.did) {
+        return { details: attesterIdentity }
+      }
+      return null
+    },
+    resolveDoc: async (didUri: string) => {
+      if (didUri === claimerIdentity.did) {
+        return { details: claimerIdentity }
+      }
+      if (didUri === attesterIdentity.did) {
+        return { details: attesterIdentity }
+      }
+      return null
+    },
+  } as IDidResolver
 
   beforeAll(async () => {
     keystore = new DemoKeystore()
@@ -138,9 +160,10 @@ describe('Claim', () => {
     quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
       request.rootHash,
-      attesterIdentity,
+      attesterIdentity.did,
       claimerIdentity,
-      keystore
+      keystore,
+      mockResolver
     )
     invalidPropertiesQuote = invalidPropertiesQuoteData
     invalidCostQuote = invalidCostQuoteData
@@ -225,7 +248,11 @@ describe('Claim', () => {
       )
     ).toBeTruthy()
     expect(
-      Quote.fromAttesterSignedInput(validAttesterSignedQuote, attesterIdentity)
+      await Quote.fromAttesterSignedInput(
+        validAttesterSignedQuote,
+        attesterIdentity.did,
+        mockResolver
+      )
     ).toEqual(validAttesterSignedQuote)
     expect(
       await Quote.fromQuoteDataAndIdentity(
