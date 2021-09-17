@@ -583,6 +583,54 @@ describe('create presentation', () => {
     expect(att.request.claimerSignature?.challenge).toEqual(challenge)
   })
 
+  it('should fail to create a valid presentation and exclude specific attributes using a light DID after it has been migrated', async () => {
+    const rawCType: ICType['schema'] = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'credential',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+    ctype = CType.fromSchema(rawCType, attester.did)
+
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = RequestForAttestation.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        // Use of light DID in the claim.
+        migratedClaimerLightDid.did
+      )
+    )
+
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    ;(query as jest.Mock).mockResolvedValue(attestation)
+
+    const cred = AttestedClaim.fromRequestAndAttestation(reqForAtt, attestation)
+
+    const challenge = UUID.generate()
+    const att = await cred.createPresentation({
+      selectedAttributes: ['name'],
+      signer: keystore,
+      // Still using the light DID, which should fail since it has been migrated
+      claimerDid: migratedClaimerLightDid,
+      challenge,
+    })
+    expect(att.getAttributes()).toEqual(new Set(['name']))
+    await expect(
+      AttestedClaim.verify(att, {
+        resolver: mockResolver,
+      })
+    ).rejects.toThrowErrorMatchingSnapshot(
+      '[Error: Addresses expected to be equal mismatched]'
+    )
+  })
+
   it('should get attribute keys', async () => {
     const cred = AttestedClaim.fromRequestAndAttestation(reqForAtt, attestation)
     expect(cred.getAttributes()).toEqual(new Set(['age', 'name']))
