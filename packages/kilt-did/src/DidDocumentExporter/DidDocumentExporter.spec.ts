@@ -9,7 +9,6 @@
  * @group unit/did
  */
 
-import { base58Encode } from '@polkadot/util-crypto'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN, hexToU8a } from '@polkadot/util'
 import type { IDidKeyDetails, IServiceDetails } from '@kiltprotocol/types'
@@ -107,58 +106,73 @@ describe('Full DID Document exporting tests', () => {
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/json')
 
-    expect(didDoc.id).toMatch(fullDidDetails.did)
-
-    expect(didDoc.authentication).toHaveLength(1)
-    expect(didDoc.authentication).toContainEqual(`${fullDidDetails.did}#1`)
-
-    expect(didDoc.keyAgreement).toHaveLength(2)
-    expect(didDoc.keyAgreement).toContainEqual(`${fullDidDetails.did}#2`)
-    expect(didDoc.keyAgreement).toContainEqual(`${fullDidDetails.did}#3`)
-
-    expect(didDoc.assertionMethod).toHaveLength(1)
-    expect(didDoc.assertionMethod).toContainEqual(`${fullDidDetails.did}#4`)
-
-    expect(didDoc.capabilityDelegation).toHaveLength(1)
-    expect(didDoc.capabilityDelegation).toContainEqual(
-      `${fullDidDetails.did}#5`
-    )
-
-    expect(didDoc.verificationMethod).toHaveLength(5)
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${fullDidDetails.did}#1`,
-      controller: fullDidDetails.did,
-      type: 'Ed25519VerificationKey2018',
-      publicKeyBase58: base58Encode(keys[0].publicKeyHex),
+    expect(didDoc).toStrictEqual({
+      id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+      verificationMethod: [
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#1',
+          controller:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+          type: 'Ed25519VerificationKey2018',
+          publicKeyBase58: 'CVDFLCAjXhVWiPXH9nTCTpCgVzmDVoiPzNJYuccr1dqB',
+        },
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#2',
+          controller:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+          type: 'X25519KeyAgreementKey2019',
+          publicKeyBase58: 'DdqGmK5uamYN5vmuZrzpQhKeehLdwtPLVJdhu5P2iJKC',
+        },
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#3',
+          controller:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+          type: 'X25519KeyAgreementKey2019',
+          publicKeyBase58: 'EnTJCS15dqbDTU2XywYSMaScoPv4Py4GzExrtY9DQxoD',
+        },
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#4',
+          controller:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+          type: 'Sr25519VerificationKey2020',
+          publicKeyBase58: 'Fw5KdYvFgue4q1HAQ264JTZax6VUr3jDVBJ1szuQ7dHE',
+        },
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#5',
+          controller:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+          type: 'EcdsaSecp256k1VerificationKey2019',
+          publicKeyBase58: '2pEER9q8Tu5XVwfBQeU2NE883JsUTX9jbbmVg3SL1g2fKCSd17',
+        },
+      ],
+      authentication: [
+        'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#1',
+      ],
+      keyAgreement: [
+        'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#2',
+        'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#3',
+      ],
+      assertionMethod: [
+        'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#4',
+      ],
+      capabilityDelegation: [
+        'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#5',
+      ],
+      service: [
+        {
+          id:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#service1',
+          type: 'messaging',
+          serviceEndpoint: 'example.com',
+        },
+        {
+          id:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#service2',
+          type: 'telephone',
+          serviceEndpoint: '123344',
+        },
+      ],
     })
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${fullDidDetails.did}#2`,
-      controller: fullDidDetails.did,
-      type: 'X25519KeyAgreementKey2019',
-      publicKeyBase58: base58Encode(keys[1].publicKeyHex),
-    })
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${fullDidDetails.did}#3`,
-      controller: fullDidDetails.did,
-      type: 'X25519KeyAgreementKey2019',
-      publicKeyBase58: base58Encode(keys[2].publicKeyHex),
-    })
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${fullDidDetails.did}#4`,
-      controller: fullDidDetails.did,
-      type: 'Sr25519VerificationKey2020',
-      publicKeyBase58: base58Encode(keys[3].publicKeyHex),
-    })
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${fullDidDetails.did}#5`,
-      controller: fullDidDetails.did,
-      type: 'EcdsaSecp256k1VerificationKey2019',
-      publicKeyBase58: base58Encode(ecdsaKey.publicKeyHex),
-    })
-
-    expect(didDoc.service).toHaveLength(2)
-    expect(didDoc.service).toContainEqual(services[0])
-    expect(didDoc.service).toContainEqual(services[1])
   })
 
   it('exports the expected application/ld+json W3C DID Document with only an authentication key', () => {
@@ -183,66 +197,74 @@ describe('Full DID Document exporting tests', () => {
 
     const didDoc = exportToDidDocument(fullDidDetails, 'application/ld+json')
 
-    expect(didDoc.id).toMatch(fullDidDetails.did)
-
-    expect(didDoc['@context']).toHaveLength(1)
-    expect(didDoc['@context']).toContainEqual('https://www.w3.org/ns/did/v1')
-
-    expect(didDoc.authentication).toHaveLength(1)
-    expect(didDoc.authentication).toContainEqual(`${fullDidDetails.did}#1`)
-
-    expect(didDoc.keyAgreement).toHaveLength(2)
-    expect(didDoc.keyAgreement).toContainEqual(`${fullDidDetails.did}#2`)
-    expect(didDoc.keyAgreement).toContainEqual(`${fullDidDetails.did}#3`)
-
-    expect(didDoc.assertionMethod).toHaveLength(1)
-    expect(didDoc.assertionMethod).toContainEqual(`${fullDidDetails.did}#4`)
-
-    expect(didDoc.capabilityDelegation).toHaveLength(1)
-    expect(didDoc.capabilityDelegation).toContainEqual(
-      `${fullDidDetails.did}#5`
-    )
-
-    expect(didDoc.verificationMethod).toHaveLength(5)
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${fullDidDetails.did}#1`,
-      controller: fullDidDetails.did,
-      type: 'Ed25519VerificationKey2018',
-      publicKeyBase58: base58Encode(keys[0].publicKeyHex),
+    expect(didDoc).toStrictEqual({
+      '@context': ['https://www.w3.org/ns/did/v1'],
+      id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+      verificationMethod: [
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#1',
+          controller:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+          type: 'Ed25519VerificationKey2018',
+          publicKeyBase58: 'CVDFLCAjXhVWiPXH9nTCTpCgVzmDVoiPzNJYuccr1dqB',
+        },
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#2',
+          controller:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+          type: 'X25519KeyAgreementKey2019',
+          publicKeyBase58: 'DdqGmK5uamYN5vmuZrzpQhKeehLdwtPLVJdhu5P2iJKC',
+        },
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#3',
+          controller:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+          type: 'X25519KeyAgreementKey2019',
+          publicKeyBase58: 'EnTJCS15dqbDTU2XywYSMaScoPv4Py4GzExrtY9DQxoD',
+        },
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#4',
+          controller:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+          type: 'Sr25519VerificationKey2020',
+          publicKeyBase58: 'Fw5KdYvFgue4q1HAQ264JTZax6VUr3jDVBJ1szuQ7dHE',
+        },
+        {
+          id: 'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#5',
+          controller:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e',
+          type: 'EcdsaSecp256k1VerificationKey2019',
+          publicKeyBase58: '2pEER9q8Tu5XVwfBQeU2NE883JsUTX9jbbmVg3SL1g2fKCSd17',
+        },
+      ],
+      authentication: [
+        'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#1',
+      ],
+      keyAgreement: [
+        'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#2',
+        'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#3',
+      ],
+      assertionMethod: [
+        'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#4',
+      ],
+      capabilityDelegation: [
+        'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#5',
+      ],
+      service: [
+        {
+          id:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#service1',
+          type: 'messaging',
+          serviceEndpoint: 'example.com',
+        },
+        {
+          id:
+            'did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e#service2',
+          type: 'telephone',
+          serviceEndpoint: '123344',
+        },
+      ],
     })
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${fullDidDetails.did}#2`,
-      controller: fullDidDetails.did,
-      type: 'X25519KeyAgreementKey2019',
-      publicKeyBase58: base58Encode(keys[1].publicKeyHex),
-    })
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${fullDidDetails.did}#3`,
-      controller: fullDidDetails.did,
-      type: 'X25519KeyAgreementKey2019',
-      publicKeyBase58: base58Encode(keys[2].publicKeyHex),
-    })
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${fullDidDetails.did}#4`,
-      controller: fullDidDetails.did,
-      type: 'Sr25519VerificationKey2020',
-      publicKeyBase58: base58Encode(keys[3].publicKeyHex),
-    })
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${fullDidDetails.did}#5`,
-      controller: fullDidDetails.did,
-      type: 'EcdsaSecp256k1VerificationKey2019',
-      publicKeyBase58: base58Encode(ecdsaKey.publicKeyHex),
-    })
-
-    expect(didDoc.service).toHaveLength(2)
-    expect(didDoc.service).toContainEqual(services[0])
-    expect(didDoc.service).toContainEqual(services[1])
-  })
-
-  it('does not export a DID Document with an unsupported format', () => {
-    const fullDidDetails = new FullDidDetails(didDetails)
-    expect(() => exportToDidDocument(fullDidDetails, 'text/html')).toThrow()
   })
 })
 
@@ -286,44 +308,47 @@ describe('Light DID Document exporting tests', () => {
     const didDetails = new LightDidDetails(didCreationDetails)
     const didDoc = exportToDidDocument(didDetails, 'application/json')
 
-    expect(didDoc.id).toMatch(didDetails.did)
-
-    expect(didDoc.authentication).toHaveLength(1)
-    expect(didDoc.authentication).toContainEqual(
-      `${didDetails.did}#authentication`
-    )
-
-    expect(didDoc.keyAgreement).toHaveLength(1)
-    expect(didDoc.keyAgreement).toContainEqual(`${didDetails.did}#encryption`)
-
-    expect(didDoc.assertionMethod).toBeUndefined()
-
-    expect(didDoc.capabilityDelegation).toBeUndefined()
-
-    expect(didDoc.verificationMethod).toHaveLength(2)
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${didDetails.did}#authentication`,
-      controller: didDetails.did,
-      type: 'Ed25519VerificationKey2018',
-      publicKeyBase58: base58Encode(authenticationDidKeyDetails.publicKey),
-    })
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${didDetails.did}#encryption`,
-      controller: didDetails.did,
-      type: 'X25519KeyAgreementKey2019',
-      publicKeyBase58: base58Encode(encryptionDidKeyDetails.publicKey),
-    })
-
-    expect(didDoc.service).toHaveLength(2)
-    expect(didDoc.service).toContainEqual({
-      id: `${didDetails.did}#service1`,
-      type: 'messaging',
-      serviceEndpoint: 'example.com',
-    })
-    expect(didDoc.service).toContainEqual({
-      id: `${didDetails.did}#service2`,
-      type: 'telephone',
-      serviceEndpoint: '123344',
+    expect(didDoc).toStrictEqual({
+      id:
+        'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGhzZXJ2aWNlMWR0eXBlaW1lc3NhZ2luZ29zZXJ2aWNlRW5kcG9pbnRrZXhhbXBsZS5jb22jYmlkaHNlcnZpY2UyZHR5cGVpdGVsZXBob25lb3NlcnZpY2VFbmRwb2ludGYxMjMzNDQ=',
+      verificationMethod: [
+        {
+          id:
+            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGhzZXJ2aWNlMWR0eXBlaW1lc3NhZ2luZ29zZXJ2aWNlRW5kcG9pbnRrZXhhbXBsZS5jb22jYmlkaHNlcnZpY2UyZHR5cGVpdGVsZXBob25lb3NlcnZpY2VFbmRwb2ludGYxMjMzNDQ=#authentication',
+          controller:
+            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGhzZXJ2aWNlMWR0eXBlaW1lc3NhZ2luZ29zZXJ2aWNlRW5kcG9pbnRrZXhhbXBsZS5jb22jYmlkaHNlcnZpY2UyZHR5cGVpdGVsZXBob25lb3NlcnZpY2VFbmRwb2ludGYxMjMzNDQ=',
+          type: 'Ed25519VerificationKey2018',
+          publicKeyBase58: 'CVDFLCAjXhVWiPXH9nTCTpCgVzmDVoiPzNJYuccr1dqB',
+        },
+        {
+          id:
+            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGhzZXJ2aWNlMWR0eXBlaW1lc3NhZ2luZ29zZXJ2aWNlRW5kcG9pbnRrZXhhbXBsZS5jb22jYmlkaHNlcnZpY2UyZHR5cGVpdGVsZXBob25lb3NlcnZpY2VFbmRwb2ludGYxMjMzNDQ=#encryption',
+          controller:
+            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGhzZXJ2aWNlMWR0eXBlaW1lc3NhZ2luZ29zZXJ2aWNlRW5kcG9pbnRrZXhhbXBsZS5jb22jYmlkaHNlcnZpY2UyZHR5cGVpdGVsZXBob25lb3NlcnZpY2VFbmRwb2ludGYxMjMzNDQ=',
+          type: 'X25519KeyAgreementKey2019',
+          publicKeyBase58: 'DdqGmK5uamYN5vmuZrzpQhKeehLdwtPLVJdhu5P2iJKC',
+        },
+      ],
+      authentication: [
+        'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGhzZXJ2aWNlMWR0eXBlaW1lc3NhZ2luZ29zZXJ2aWNlRW5kcG9pbnRrZXhhbXBsZS5jb22jYmlkaHNlcnZpY2UyZHR5cGVpdGVsZXBob25lb3NlcnZpY2VFbmRwb2ludGYxMjMzNDQ=#authentication',
+      ],
+      keyAgreement: [
+        'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGhzZXJ2aWNlMWR0eXBlaW1lc3NhZ2luZ29zZXJ2aWNlRW5kcG9pbnRrZXhhbXBsZS5jb22jYmlkaHNlcnZpY2UyZHR5cGVpdGVsZXBob25lb3NlcnZpY2VFbmRwb2ludGYxMjMzNDQ=#encryption',
+      ],
+      service: [
+        {
+          id:
+            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGhzZXJ2aWNlMWR0eXBlaW1lc3NhZ2luZ29zZXJ2aWNlRW5kcG9pbnRrZXhhbXBsZS5jb22jYmlkaHNlcnZpY2UyZHR5cGVpdGVsZXBob25lb3NlcnZpY2VFbmRwb2ludGYxMjMzNDQ=#service1',
+          type: 'messaging',
+          serviceEndpoint: 'example.com',
+        },
+        {
+          id:
+            'did:kilt:light:014rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOCo2JpZGhzZXJ2aWNlMWR0eXBlaW1lc3NhZ2luZ29zZXJ2aWNlRW5kcG9pbnRrZXhhbXBsZS5jb22jYmlkaHNlcnZpY2UyZHR5cGVpdGVsZXBob25lb3NlcnZpY2VFbmRwb2ludGYxMjMzNDQ=#service2',
+          type: 'telephone',
+          serviceEndpoint: '123344',
+        },
+      ],
     })
   })
 
@@ -338,28 +363,22 @@ describe('Light DID Document exporting tests', () => {
     const didDetails = new LightDidDetails(didCreationDetails)
     const didDoc = exportToDidDocument(didDetails, 'application/json')
 
-    expect(didDoc.id).toMatch(didDetails.did)
-
-    expect(didDoc.authentication).toHaveLength(1)
-    expect(didDoc.authentication).toContainEqual(
-      `${didDetails.did}#authentication`
-    )
-
-    expect(didDoc.keyAgreement).toBeUndefined()
-
-    expect(didDoc.assertionMethod).toBeUndefined()
-
-    expect(didDoc.capabilityDelegation).toBeUndefined()
-
-    expect(didDoc.verificationMethod).toHaveLength(1)
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${didDetails.did}#authentication`,
-      controller: didDetails.did,
-      type: 'Sr25519VerificationKey2020',
-      publicKeyBase58: base58Encode(authenticationDidKeyDetails.publicKey),
+    expect(didDoc).toStrictEqual({
+      id: 'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
+      verificationMethod: [
+        {
+          id:
+            'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
+          controller:
+            'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
+          type: 'Sr25519VerificationKey2020',
+          publicKeyBase58: 'CVDFLCAjXhVWiPXH9nTCTpCgVzmDVoiPzNJYuccr1dqB',
+        },
+      ],
+      authentication: [
+        'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
+      ],
     })
-
-    expect(didDoc.service).toBeUndefined()
   })
 
   it('exports the expected application/json W3C DID Document with an Ecdsa authentication key', () => {
@@ -373,28 +392,22 @@ describe('Light DID Document exporting tests', () => {
     const didDetails = new LightDidDetails(didCreationDetails)
     const didDoc = exportToDidDocument(didDetails, 'application/json')
 
-    expect(didDoc.id).toMatch(didDetails.did)
-
-    expect(didDoc.authentication).toHaveLength(1)
-    expect(didDoc.authentication).toContainEqual(
-      `${didDetails.did}#authentication`
-    )
-
-    expect(didDoc.keyAgreement).toBeUndefined()
-
-    expect(didDoc.assertionMethod).toBeUndefined()
-
-    expect(didDoc.capabilityDelegation).toBeUndefined()
-
-    expect(didDoc.verificationMethod).toHaveLength(1)
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${didDetails.did}#authentication`,
-      controller: didDetails.did,
-      type: 'EcdsaSecp256k1VerificationKey2019',
-      publicKeyBase58: base58Encode(authenticationDidKeyDetails.publicKey),
+    expect(didDoc).toStrictEqual({
+      id: 'did:kilt:light:024rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
+      verificationMethod: [
+        {
+          id:
+            'did:kilt:light:024rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
+          controller:
+            'did:kilt:light:024rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
+          type: 'EcdsaSecp256k1VerificationKey2019',
+          publicKeyBase58: 'CVDFLCAjXhVWiPXH9nTCTpCgVzmDVoiPzNJYuccr1dqB',
+        },
+      ],
+      authentication: [
+        'did:kilt:light:024rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
+      ],
     })
-
-    expect(didDoc.service).toBeUndefined()
   })
 
   it('exports the expected application/ld+json W3C DID Document with only an authentication key', () => {
@@ -408,31 +421,23 @@ describe('Light DID Document exporting tests', () => {
     const didDetails = new LightDidDetails(didCreationDetails)
     const didDoc = exportToDidDocument(didDetails, 'application/ld+json')
 
-    expect(didDoc.id).toMatch(didDetails.did)
-
-    expect(didDoc['@context']).toHaveLength(1)
-    expect(didDoc['@context']).toContainEqual('https://www.w3.org/ns/did/v1')
-
-    expect(didDoc.authentication).toHaveLength(1)
-    expect(didDoc.authentication).toContainEqual(
-      `${didDetails.did}#authentication`
-    )
-
-    expect(didDoc.keyAgreement).toBeUndefined()
-
-    expect(didDoc.assertionMethod).toBeUndefined()
-
-    expect(didDoc.capabilityDelegation).toBeUndefined()
-
-    expect(didDoc.verificationMethod).toHaveLength(1)
-    expect(didDoc.verificationMethod).toContainEqual({
-      id: `${didDetails.did}#authentication`,
-      controller: didDetails.did,
-      type: 'Sr25519VerificationKey2020',
-      publicKeyBase58: base58Encode(authenticationDidKeyDetails.publicKey),
+    expect(didDoc).toStrictEqual({
+      '@context': ['https://www.w3.org/ns/did/v1'],
+      id: 'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
+      verificationMethod: [
+        {
+          id:
+            'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
+          controller:
+            'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
+          type: 'Sr25519VerificationKey2020',
+          publicKeyBase58: 'CVDFLCAjXhVWiPXH9nTCTpCgVzmDVoiPzNJYuccr1dqB',
+        },
+      ],
+      authentication: [
+        'did:kilt:light:004rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
+      ],
     })
-
-    expect(didDoc.service).toBeUndefined()
   })
 
   it('does not export a DID Document with an unsupported format', () => {
