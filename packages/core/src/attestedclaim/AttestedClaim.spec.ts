@@ -86,7 +86,7 @@ async function buildAttestedClaim(
 // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
 function createMinimalFullDidFromLightDid(
   lightDidForId: LightDidDetails,
-  lightDidForAuthenticationKey?: LightDidDetails,
+  lightDidForAuthenticationKey?: LightDidDetails
 ): FullDidDetails {
   const { identifier } = DidUtils.parseDidUrl(lightDidForId.did)
   const did = DidUtils.getKiltDidFromIdentifier(

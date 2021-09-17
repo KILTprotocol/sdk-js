@@ -325,7 +325,7 @@ describe('Messaging Utilities', () => {
     bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       legitimation.request.rootHash,
-      identityAlice,
+      identityAlice.did,
       identityBob,
       keystore
     )

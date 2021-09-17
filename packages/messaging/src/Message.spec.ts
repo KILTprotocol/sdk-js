@@ -14,6 +14,8 @@ import type {
   IClaim,
   IEncryptedMessage,
   IQuote,
+  IDidResolvedDetails,
+  IDidKeyDetails,
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
   ISubmitClaimsForCTypes,
@@ -40,18 +42,20 @@ describe('Messaging', () => {
     identityAlice = await createLocalDemoDidFromSeed(keystore, '//Alice')
     identityBob = await createLocalDemoDidFromSeed(keystore, '//Bob')
 
-    const resolveDoc = async (did: string) => {
+    const resolveDoc = async (
+      did: string
+    ): Promise<IDidResolvedDetails | null> => {
       if (did.startsWith(identityAlice.did)) {
-        return identityAlice
+        return { details: identityAlice }
       }
       if (did.startsWith(identityBob.did)) {
-        return identityBob
+        return { details: identityBob }
       }
       return null
     }
-    const resolveKey = async (did: string) => {
+    const resolveKey = async (did: string): Promise<IDidKeyDetails | null> => {
       const details = await resolveDoc(did)
-      return details?.getKey(did) || null
+      return details?.details.getKey(did) || null
     }
     mockResolver = {
       resolve: async (did) => {
@@ -181,7 +185,7 @@ describe('Messaging', () => {
     const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
       content.rootHash,
-      identityAlice,
+      identityAlice.did,
       identityBob,
       keystore
     )

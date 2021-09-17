@@ -132,7 +132,7 @@ export default class AttestedClaim implements IAttestedClaim {
     verificationOpts: {
       resolver?: IDidResolver
       challenge?: string
-    }
+    } = {}
   ): Promise<boolean> {
     return (
       AttestedClaim.verifyData(attestedClaim) &&

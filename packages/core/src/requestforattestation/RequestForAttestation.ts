@@ -295,10 +295,12 @@ export default class RequestForAttestation implements IRequestForAttestation {
     return verified
   }
 
-  public async verifySignature(resolverOpts: {
-    resolver?: IDidResolver
-    challenge?: string
-  }): Promise<boolean> {
+  public async verifySignature(
+    resolverOpts: {
+      resolver?: IDidResolver
+      challenge?: string
+    } = {}
+  ): Promise<boolean> {
     return RequestForAttestation.verifySignature(this, resolverOpts)
   }
 
