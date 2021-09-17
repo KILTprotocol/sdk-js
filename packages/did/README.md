@@ -59,7 +59,9 @@ const authenticationKeyPublicDetails = await keystore.generateKeypair({
 const lightDID = new LightDidDetails({
   authenticationKey: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
+    type: DemoKeystore.getKeypairTypeForAlg(
+      authenticationKeyPublicDetails.alg
+    ),
   },
 })
 // Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
@@ -100,11 +102,15 @@ const serviceEndpoints: IServiceDetails[] = [
 const lightDID = new LightDidDetails({
   authenticationKey: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
+    type: DemoKeystore.getKeypairTypeForAlg(
+      authenticationKeyPublicDetails.alg
+    ),
   },
   encryptionKey: {
     publicKey: encryptionKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
+    type: DemoKeystore.getKeypairTypeForAlg(
+      encryptionKeyPublicDetails.alg
+    ),
   },
   services: serviceEndpoints,
 })
@@ -185,7 +191,9 @@ const authenticationKeyPublicDetails = await keystore.generateKeypair({
 const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(keystore, {
   [KeyRelationship.authentication]: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
+    type: DemoKeystore.getKeypairTypeForAlg(
+      authenticationKeyPublicDetails.alg
+    ),
   },
 })
 // Will print `did:kilt:4sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
@@ -256,7 +264,9 @@ const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
     },
     [KeyRelationship.keyAgreement]: {
       publicKey: encryptionKeyPublicDetails.publicKey,
-      type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
+      type: DemoKeystore.getKeypairTypeForAlg(
+        encryptionKeyPublicDetails.alg
+      ),
     },
   },
   serviceEndpoints
