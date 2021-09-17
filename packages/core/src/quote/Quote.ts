@@ -74,7 +74,6 @@ export function validateQuoteSchema(
 
 export async function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned,
-  attesterDid: IDidDetails['did'],
   resolver: IDidResolver = DefaultResolver
 ): Promise<IQuoteAttesterSigned> {
   const { attesterSignature, ...basicQuote } = deserializedQuote
