@@ -32,6 +32,11 @@ export type IDidResolutionDocumentMetadata = {
   canonicalId: string
 }
 
+/**
+ * The result of a DID resolution.
+ *
+ * In includes the DID details, and any optional document metadata as specified in the [W3C standard](https://www.w3.org/TR/did-core/#did-document-metadata).
+ */
 export type IDidResolvedDetails = {
   details: IDidDetails
   metadata?: IDidResolutionDocumentMetadata
@@ -48,7 +53,7 @@ export interface IDidResolver {
    * data to which the on-chain did record links. If not specified, service endpoints will be
    * omitted and URIs pointing to service endpoints cannot be resolved.
    * @returns A promise of a [[IDidResolvedDetails]] object if the didUri is a DID, [[IDidKeyDetails]] or
-   * [[ServiceDetails]] if didUri contains a fragment (i.e. Did:kilt:<identifier>#<fragment>), null
+   * [[ServiceDetails]] if didUri contains a fragment (i.e. did:kilt:<identifier>#<fragment>), null
    * if a resource cannot be resolved.
    */
   resolve: (

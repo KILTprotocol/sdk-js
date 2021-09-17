@@ -240,22 +240,23 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   /**
-   * Verifies the signature of the [[RequestForAttestation]] object.
+   * [STATIC] [ASYNC] Verifies the signature of the [[RequestForAttestation]] object.
+   * It supports migrated DIDs, meaning that if the original claim within the [[RequestForAttestation]] included a light DID that was afterwards upgraded,
+   * the signature over the presentation must be generated with the full DID in order for the verification to be successful.
    *
    * @param input - [[RequestForAttestation]].
    * @param verificationOpts
-   * @param verificationOpts.claimerDid - The claimer's identity as an [[IDidDetails]] object.
-   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
+   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity.
    * Defaults to the DefaultResolver.
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
-   * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner.
+   * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner or if the light DID is used after it has been upgraded.
    * @returns Whether the signature is correct.
    * @example ```javascript
    * const reqForAtt = RequestForAttestation.fromClaim(
    * claim,
    * );
    * await reqForAtt.signWithDid(myKeystore, myDidDetails)
-   * RequestForAttestation.verifySignature(reqForAtt, myDidDetails); // returns `true` if the signature is correct
+   * RequestForAttestation.verifySignature(reqForAtt); // returns `true` if the signature is correct
    * ```
    */
   public static async verifySignature(
