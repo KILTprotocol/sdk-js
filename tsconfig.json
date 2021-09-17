@@ -15,7 +15,7 @@
       "@kiltprotocol/types": ["types/src"],
       "@kiltprotocol/utils": ["utils/src"],
       "@kiltprotocol/vc-export": ["vc-export/src"],
-      "@kiltprotocol/did": ["kilt-did/src"]
+      "@kiltprotocol/did": ["did/src"]
     }
   },
   "skipLibCheck": true

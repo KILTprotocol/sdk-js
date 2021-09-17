@@ -858,9 +858,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/did@workspace:*, @kiltprotocol/did@workspace:packages/kilt-did":
+"@kiltprotocol/did@workspace:*, @kiltprotocol/did@workspace:packages/did":
   version: 0.0.0-use.local
-  resolution: "@kiltprotocol/did@workspace:packages/kilt-did"
+  resolution: "@kiltprotocol/did@workspace:packages/did"
   dependencies:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
