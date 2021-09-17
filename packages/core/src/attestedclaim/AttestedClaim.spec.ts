@@ -83,17 +83,20 @@ async function buildAttestedClaim(
   return attestedClaim
 }
 
-// Returns a full DID that has the same authentication key (and nothing more) than the provided light DID.
+// Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
 function createMinimalFullDidFromLightDid(
-  lightDid: LightDidDetails
+  lightDidForId: LightDidDetails,
+  lightDidForAuthenticationKey?: LightDidDetails,
 ): FullDidDetails {
-  const { identifier } = DidUtils.parseDidUrl(lightDid.did)
+  const { identifier } = DidUtils.parseDidUrl(lightDidForId.did)
   const did = DidUtils.getKiltDidFromIdentifier(
     identifier.substring(2),
     'full',
     FullDidDetails.FULL_DID_LATEST_VERSION
   )
-  const authKey = lightDid.getKeys(KeyRelationship.authentication)[0]
+  const authKey =
+    lightDidForAuthenticationKey?.getKeys(KeyRelationship.authentication)[0] ||
+    lightDidForId.getKeys(KeyRelationship.authentication)[0]
   return new FullDidDetails({
     did,
     keys: [
@@ -401,16 +404,19 @@ describe('create presentation', () => {
   beforeAll(async () => {
     keystore = new DemoKeystore()
     attester = await createLocalDemoDidFromSeed(keystore, '//Attester')
+    unmigratedClaimerLightDid = await createLightDidFromSeed(
+      keystore,
+      '//UnmigratedClaimer'
+    )
     migratedClaimerLightDid = await createLightDidFromSeed(
       keystore,
       '//MigratedClaimer'
     )
+    // Change also the authentication key of the full DID to properly verify signature verification,
+    // so that it uses a completely different key and the attested claim is still correctly verified.
     migratedClaimerFullDid = createMinimalFullDidFromLightDid(
-      migratedClaimerLightDid as LightDidDetails
-    )
-    unmigratedClaimerLightDid = await createLightDidFromSeed(
-      keystore,
-      '//UnmigratedClaimer'
+      migratedClaimerLightDid as LightDidDetails,
+      await createLightDidFromSeed(keystore, '//RandomSeed')
     )
 
     const rawCType: ICType['schema'] = {
