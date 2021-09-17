@@ -108,6 +108,13 @@ function exportToJsonLdDidDocument(details: IDidDetails): IJsonLDDidDocument {
   return document as IJsonLDDidDocument
 }
 
+/**
+ * Export an instance of [[IDidDetails]] to a W3c-compliant DID Document in the format provided.
+ *
+ * @param details The [[IDidDetails]] instance.
+ * @param mimeType The format for the output DID Document. Accepted values are `application/json` and `application/ld+json`.
+ * @returns The DID Document formatted according to the mime type provided, or an error if the format specified is not supported.
+ */
 export function exportToDidDocument(
   details: IDidDetails,
   mimeType: string
