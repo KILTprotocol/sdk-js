@@ -26,8 +26,10 @@ import {
   FullDidDetails,
   LightDidDetails,
   DidUtils,
+  DidTypes,
+  SigningAlgorithms,
 } from '@kiltprotocol/did'
-import { BN } from '@polkadot/util'
+import { BN, hexToU8a, u8aToHex } from '@polkadot/util'
 import { UUID } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
@@ -86,7 +88,7 @@ async function buildAttestedClaim(
 // Returns a full DID that has the same identifier of the first light DID, but the same key authentication key as the second one, if provided, or as the first one otherwise.
 function createMinimalFullDidFromLightDid(
   lightDidForId: LightDidDetails,
-  lightDidForAuthenticationKey?: LightDidDetails
+  newAuthenticationKey?: DidTypes.INewPublicKey
 ): FullDidDetails {
   const { identifier } = DidUtils.parseDidUrl(lightDidForId.did)
   const did = DidUtils.getKiltDidFromIdentifier(
@@ -94,9 +96,18 @@ function createMinimalFullDidFromLightDid(
     'full',
     FullDidDetails.FULL_DID_LATEST_VERSION
   )
-  const authKey =
-    lightDidForAuthenticationKey?.getKeys(KeyRelationship.authentication)[0] ||
-    lightDidForId.getKeys(KeyRelationship.authentication)[0]
+  const lightDidAuthKey = lightDidForId.getKeys(
+    KeyRelationship.authentication
+  )[0]
+
+  let authKey: DidTypes.INewPublicKey = {
+    publicKey: hexToU8a(lightDidAuthKey.publicKeyHex),
+    type: lightDidAuthKey.type,
+  }
+  if (newAuthenticationKey) {
+    authKey = newAuthenticationKey
+  }
+
   return new FullDidDetails({
     did,
     keys: [
@@ -104,6 +115,7 @@ function createMinimalFullDidFromLightDid(
         ...authKey,
         id: `${did}#authentication`,
         controller: did,
+        publicKeyHex: u8aToHex(authKey.publicKey),
       },
     ],
     keyRelationships: {
@@ -414,9 +426,18 @@ describe('create presentation', () => {
     )
     // Change also the authentication key of the full DID to properly verify signature verification,
     // so that it uses a completely different key and the attested claim is still correctly verified.
+    const newKeyForMigratedClaimerDid = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Sr25519,
+      seed: '//RandomSeed',
+    })
     migratedClaimerFullDid = createMinimalFullDidFromLightDid(
       migratedClaimerLightDid as LightDidDetails,
-      await createLightDidFromSeed(keystore, '//RandomSeed')
+      {
+        type: DemoKeystore.getKeypairTypeForAlg(
+          newKeyForMigratedClaimerDid.alg
+        ),
+        publicKey: newKeyForMigratedClaimerDid.publicKey,
+      }
     )
 
     const rawCType: ICType['schema'] = {
