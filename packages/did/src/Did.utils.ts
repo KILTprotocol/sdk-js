@@ -374,7 +374,6 @@ export async function verifyDidSignature({
   keyId: string
   resolver?: IDidResolver
   keyRelationship?: VerificationKeyRelationship
-  checkForMigration?: boolean
 }): Promise<VerficationResult> {
   const { identifier, type, version } = parseDidUrl(keyId)
   // If the identifier could not be parsed, it is a malformed URL
