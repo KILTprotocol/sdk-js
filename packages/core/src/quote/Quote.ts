@@ -81,7 +81,6 @@ export async function fromAttesterSignedInput(
   await DidUtils.verifyDidSignature({
     ...attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    did: attesterDid,
     keyRelationship: KeyRelationship.authentication,
     resolver,
   })
@@ -170,7 +169,6 @@ export async function createQuoteAgreement(
   await DidUtils.verifyDidSignature({
     ...attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    did: attesterIdentity,
     keyRelationship: KeyRelationship.authentication,
     resolver,
   })

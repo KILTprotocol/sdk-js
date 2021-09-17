@@ -139,7 +139,6 @@ export default class AttestedClaim implements IAttestedClaim {
       AttestedClaim.verifyData(attestedClaim) &&
       (await RequestForAttestation.verifySignature(
         attestedClaim.request,
-        claimerDid,
         verificationOpts
       )) &&
       Attestation.checkValidity(attestedClaim.attestation)
