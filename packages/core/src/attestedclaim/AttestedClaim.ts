@@ -116,7 +116,7 @@ export default class AttestedClaim implements IAttestedClaim {
    *
    * @param attestedClaim - The attested claim to check for validity.
    * @param verificationOpts
-   * @param verificationOpts.claimerDid - The claimer's identity as an [[IDidDetails]] object.
+   * @param verificationOpts.claimerDid - The claimer's DID.
    * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
    * Defaults to the DefaultResolver.
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
@@ -224,7 +224,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param presentationOptions
    * @param presentationOptions.signer Keystore signer to sign the presentation.
    * @param presentationOptions.claimerSigningKey If passed, this key is used for signing.
-   * @param presentationOptions.claimerDid If no signing key is passed, the required key is fetched from the claimerDid (mandatory in that case).
+   * @param presentationOptions.claimerDid If no signing key is passed, the authentication key is fetched from the claimerDid (mandatory in that case).
    * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
    * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
    * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
