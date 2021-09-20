@@ -231,7 +231,7 @@ export async function resolveKey(
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
       }
       // The fragment includes the '#' symbol which we do not need
-      return resolvedDetails.details.getKey(fragment.substring(1)) || null
+      return resolvedDetails.details.getKey(didUri) || null
     }
     default:
       throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
