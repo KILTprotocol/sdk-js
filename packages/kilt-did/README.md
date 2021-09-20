@@ -59,9 +59,7 @@ const authenticationKeyPublicDetails = await keystore.generateKeypair({
 const lightDID = new LightDidDetails({
   authenticationKey: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(
-      authenticationKeyPublicDetails.alg
-    )
+    type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
   },
 })
 // Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
@@ -102,15 +100,11 @@ const serviceEndpoints: IServiceDetails[] = [
 const lightDID = new LightDidDetails({
   authenticationKey: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(
-      authenticationKeyPublicDetails.alg
-    ),
+    type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
   },
   encryptionKey: {
     publicKey: encryptionKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(
-      encryptionKeyPublicDetails.alg
-    ),
+    type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
   },
   services: serviceEndpoints,
 })
@@ -151,11 +145,17 @@ import {
   FullDidDetails,
   SigningAlgorithms,
 } from '@kiltprotocol/did'
-import { getDeleteDidExtrinsic, getSetKeyExtrinsic } from '@kiltprotocol/did/src/Did.chain'
+import {
+  getDeleteDidExtrinsic,
+  getSetKeyExtrinsic,
+} from '@kiltprotocol/did/src/Did.chain'
 import { KeyRelationship } from '@kiltprotocol/types'
 
 // Configure the resolution promise to wait for transactions to be finalized or simply included in a block depending on the environment.
-const resolveOn = process.env.NODE_ENV === 'production' ? BlockchainUtils.IS_FINALIZED : BlockchainUtils.IS_IN_BLOCK
+const resolveOn =
+  process.env.NODE_ENV === 'production'
+    ? BlockchainUtils.IS_FINALIZED
+    : BlockchainUtils.IS_IN_BLOCK
 
 // Initialise connection to the public KILT test network.
 await kiltInit({ address: 'wss://kilt-peregrine-k8s.kilt.io' })
@@ -185,9 +185,7 @@ const authenticationKeyPublicDetails = await keystore.generateKeypair({
 const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(keystore, {
   [KeyRelationship.authentication]: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(
-      authenticationKeyPublicDetails.alg
-    ),
+    type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
   },
 })
 // Will print `did:kilt:4sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
@@ -205,7 +203,10 @@ const fullDid = await DefaultResolver.resolveDoc(did)
 If additional keys and external services are to be specified, then they can be included in the DID create operation.
 
 ```typescript
-const resolveOn = process.env.NODE_ENV === 'production' ? BlockchainUtils.IS_FINALIZED : BlockchainUtils.IS_IN_BLOCK
+const resolveOn =
+  process.env.NODE_ENV === 'production'
+    ? BlockchainUtils.IS_FINALIZED
+    : BlockchainUtils.IS_IN_BLOCK
 
 await kiltInit({ address: 'wss://kilt-peregrine-k8s.kilt.io' })
 
@@ -255,9 +256,7 @@ const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
     },
     [KeyRelationship.keyAgreement]: {
       publicKey: encryptionKeyPublicDetails.publicKey,
-      type: DemoKeystore.getKeypairTypeForAlg(
-        encryptionKeyPublicDetails.alg
-      ),
+      type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
     },
   },
   serviceEndpoints

@@ -11,13 +11,14 @@
 
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
+import type { IDidKeyDetails } from '@kiltprotocol/types'
 import { mapCallToKeyRelationship } from './FullDidDetails.utils'
 import { FullDidDetails, FullDidDetailsCreationOpts } from './FullDidDetails'
 
 describe('functional tests', () => {
   const identifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
   const did = `did:kilt:${identifier}`
-  const keys = [
+  const keys: IDidKeyDetails[] = [
     {
       id: `${did}#1`,
       controller: did,
