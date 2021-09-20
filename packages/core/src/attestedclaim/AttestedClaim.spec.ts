@@ -626,7 +626,7 @@ describe('create presentation', () => {
       AttestedClaim.verify(att, {
         resolver: mockResolver,
       })
-    ).rejects.toThrowErrorMatchingSnapshot(
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
       '[Error: Addresses expected to be equal mismatched]'
     )
   })
