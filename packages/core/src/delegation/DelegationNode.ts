@@ -264,7 +264,7 @@ export default class DelegationNode implements IDelegationNode {
    * const extrinsic = newDelegationNode.store(signature)
    *
    * // now the delegating DID must sign as well
-   * const submittable = delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore)
+   * const submittable = delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore, submitterAccount)
    *
    * // and we can put it on chain
    * await submittable.signAndSend()

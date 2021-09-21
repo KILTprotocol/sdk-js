@@ -107,6 +107,7 @@ export interface IAuthorizeCallOptions {
   didIdentifier: IIdentity['address']
   txCounter: AnyNumber
   call: Extrinsic
+  txSubmitter: IIdentity['address']
 }
 
 /* CHAIN TYPES / CODECS */
@@ -201,6 +202,7 @@ export interface DidAuthorizedCallOperation extends Struct {
   did: DidIdentifier
   txCounter: u64
   call: Call
+  submitter: AccountId
 }
 
 export type JsonDidDocument = {

@@ -809,7 +809,7 @@ __metadata:
   resolution: "@kiltprotocol/chain-helpers@workspace:packages/chain-helpers"
   dependencies:
     "@kiltprotocol/config": "workspace:*"
-    "@kiltprotocol/type-definitions": 0.1.14
+    "@kiltprotocol/type-definitions": "file:.yalc/@kiltprotocol/type-definitions"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
     "@polkadot/api": ^5.4.1
@@ -914,10 +914,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/type-definitions@npm:0.1.14":
-  version: 0.1.14
-  resolution: "@kiltprotocol/type-definitions@npm:0.1.14"
-  checksum: 5c89786317914f9fd196c15f24ce434998a4084609b40527ce4b55746250f0458fff69fad391223729b3fe7ad94c196137f5240510824c996777bd1346d3f200
+"@kiltprotocol/type-definitions@file:.yalc/@kiltprotocol/type-definitions::locator=%40kiltprotocol%2Fchain-helpers%40workspace%3Apackages%2Fchain-helpers":
+  version: 0.1.16
+  resolution: "@kiltprotocol/type-definitions@file:.yalc/@kiltprotocol/type-definitions#.yalc/@kiltprotocol/type-definitions::hash=886714&locator=%40kiltprotocol%2Fchain-helpers%40workspace%3Apackages%2Fchain-helpers"
+  checksum: c27c71b060776e74bf5140c6c718809e7d45c0500d1c1d9374ba91b0272f8068689f97f7224609b806665dc2e8ae666f00dcc8a1f22d9475c0008612aefd39de
   languageName: node
   linkType: hard
 
@@ -9382,11 +9382,11 @@ typescript@^4.2.2:
 
 "typescript@patch:typescript@^4.2.2#builtin<compat/typescript>":
   version: 4.3.5
-  resolution: "typescript@patch:typescript@npm%3A4.3.5#builtin<compat/typescript>::version=4.3.5&hash=ddfc1b"
+  resolution: "typescript@patch:typescript@npm%3A4.3.5#builtin<compat/typescript>::version=4.3.5&hash=8133ad"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 7f0b8343f71ecac18095be1476b398aca420ab60dc207cc1efe078f381eef5527b80a518297720257114cdbda65612f8839e4b63e85dc95e67ac5cbbade8bdf0
+  checksum: 7e9040a3ee8b62c9f499fdaeeb2ea143c079e88fadeba562ce2f7ee878cf3eba9cf6097bf8a4ead0de4b35582f71a4866d9f475af9b064fde430d55d9fc6aaac
   languageName: node
   linkType: hard
 

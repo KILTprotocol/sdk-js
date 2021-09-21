@@ -62,7 +62,9 @@ it('records an extrinsic error when ctype does not exist', async () => {
   })
   const tx = await attestation
     .store()
-    .then((ex) => someDid.authorizeExtrinsic(ex, keystore))
+    .then((ex) =>
+      someDid.authorizeExtrinsic(ex, keystore, paymentAccount.address)
+    )
   await expect(
     BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,

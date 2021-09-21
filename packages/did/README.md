@@ -300,7 +300,8 @@ const didUpdateExtrinsic = await getSetKeyExtrinsic(
 // This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain.
 const didSignedUpdateExtrinsic = await fullDID.authorizeExtrinsic(
   didUpdateExtrinsic,
-  keystore as KeystoreSigner<string>
+  keystore as KeystoreSigner<string>,
+  aliceKiltAccount.address
 )
 
 // Submit the DID update tx to the KILT blockchain after signing it with the KILT account specified.
@@ -325,7 +326,8 @@ const didDeletionExtrinsic = await getDeleteDidExtrinsic()
 // This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain.
 const didSignedDeletionExtrinsic = await fullDID.authorizeExtrinsic(
   didDeletionExtrinsic,
-  keystore as KeystoreSigner<string>
+  keystore as KeystoreSigner<string>,
+  aliceKiltAccount.address
 )
 
 await BlockchainUtils.signAndSubmitTx(

@@ -292,14 +292,16 @@ export async function generateDidAuthenticatedTx({
   txCounter,
   didIdentifier,
   call,
+  txSubmitter,
 }: IAuthorizeCallOptions & KeystoreSigningOptions): Promise<
   SubmittableExtrinsic
 > {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const signableCall = encodeDidAuthorizedCallOperation(
     blockchain.api.registry,
-    { txCounter, didIdentifier, call }
+    { txCounter, didIdentifier, call, txSubmitter }
   )
+  console.log(signableCall)
   const signature = await signer.sign({
     data: signableCall.toU8a(),
     meta: {
@@ -314,6 +316,7 @@ export async function generateDidAuthenticatedTx({
     publicKey: Crypto.coToUInt8(signingPublicKey),
     alg,
   })
+  console.log(signature)
   return blockchain.api.tx.did.submitDidCall(signableCall, {
     [signature.alg]: signature.data,
   })

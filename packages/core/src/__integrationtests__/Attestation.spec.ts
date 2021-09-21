@@ -69,7 +69,9 @@ describe('handling attestations that do not exist', () => {
   it('Attestation.revoke', async () => {
     return expect(
       Attestation.revoke(claimHash, 0)
-        .then((tx) => attester.authorizeExtrinsic(tx, signer))
+        .then((tx) =>
+          attester.authorizeExtrinsic(tx, signer, tokenHolder.address)
+        )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -85,7 +87,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const ctypeExists = await CtypeOnChain(DriversLicense)
     if (!ctypeExists) {
       attester
-        .authorizeExtrinsic(await DriversLicense.store(), signer)
+        .authorizeExtrinsic(
+          await DriversLicense.store(),
+          signer,
+          tokenHolder.address
+        )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -124,7 +130,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await attestation
       .store()
-      .then((call) => attester.authorizeExtrinsic(call, signer))
+      .then((call) =>
+        attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+      )
       .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -155,7 +163,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     await expect(
       attestation
         .store()
-        .then((call) => attester.authorizeExtrinsic(call, signer))
+        .then((call) =>
+          attester.authorizeExtrinsic(call, signer, bobbyBroke.address)
+        )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -195,7 +205,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     await expect(
       attestation
         .store()
-        .then((call) => attester.authorizeExtrinsic(call, signer))
+        .then((call) =>
+          attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+        )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -222,7 +234,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       const attestation = Attestation.fromRequestAndDid(request, attester.did)
       await attestation
         .store()
-        .then((call) => attester.authorizeExtrinsic(call, signer))
+        .then((call) =>
+          attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+        )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -237,7 +251,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       await expect(
         attClaim.attestation
           .store()
-          .then((call) => attester.authorizeExtrinsic(call, signer))
+          .then((call) =>
+            attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+          )
           .then((tx) =>
             BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
               resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -269,7 +285,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(
         revoke(attClaim.getHash(), 0)
-          .then((call) => claimer.authorizeExtrinsic(call, signer))
+          .then((call) =>
+            claimer.authorizeExtrinsic(call, signer, tokenHolder.address)
+          )
           .then((tx) =>
             BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
               resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -283,7 +301,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     it('should be possible for the attester to revoke an attestation', async () => {
       await expect(attClaim.verify()).resolves.toBe(true)
       await revoke(attClaim.getHash(), 0)
-        .then((call) => attester.authorizeExtrinsic(call, signer))
+        .then((call) =>
+          attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+        )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -298,7 +318,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     beforeAll(async () => {
       if (!(await CtypeOnChain(IsOfficialLicenseAuthority))) {
         await IsOfficialLicenseAuthority.store()
-          .then((call) => attester.authorizeExtrinsic(call, signer))
+          .then((call) =>
+            attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+          )
           .then((tx) =>
             BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
               resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -327,7 +349,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       await licenseAuthorizationGranted
         .store()
-        .then((call) => anotherAttester.authorizeExtrinsic(call, signer))
+        .then((call) =>
+          anotherAttester.authorizeExtrinsic(call, signer, tokenHolder.address)
+        )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -354,7 +378,9 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         attester.did
       )
       await LicenseGranted.store()
-        .then((call) => attester.authorizeExtrinsic(call, signer))
+        .then((call) =>
+          attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+        )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,

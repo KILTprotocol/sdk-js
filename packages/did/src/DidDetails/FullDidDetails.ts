@@ -14,6 +14,7 @@ import type {
   ApiOrMetadata,
   CallMeta,
   IServiceDetails,
+  IIdentity,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
@@ -152,12 +153,14 @@ export class FullDidDetails extends DidDetails {
    *
    * @param extrinsic The unsigned extrinsic to sign.
    * @param signer The keystore to be used to sign the encoded extrinsic.
+   * @param submitterAccount The KILT account to bind the DID operation to (to avoid MitM and replay attacks).
    * @param incrementTxIndex Flag indicating whether the DID nonce should be increased before submitting the operation or not.
    * @returns The DID-signed submittable extrinsic.
    */
   public async authorizeExtrinsic(
     extrinsic: Extrinsic,
     signer: KeystoreSigner,
+    submitterAccount: IIdentity['address'],
     incrementTxIndex = true
   ): Promise<SubmittableExtrinsic> {
     const { api } = await BlockchainApiConnection.getConnectionOrConnect()
@@ -174,6 +177,7 @@ export class FullDidDetails extends DidDetails {
       signer,
       call: extrinsic,
       txCounter: this.getNextTxIndex(incrementTxIndex),
+      txSubmitter: submitterAccount,
     })
   }
 

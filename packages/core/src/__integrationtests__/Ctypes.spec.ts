@@ -76,7 +76,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     await ctype
       .store()
-      .then((tx) => ctypeCreator.authorizeExtrinsic(tx, keystore))
+      .then((tx) =>
+        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+      )
       .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -95,7 +97,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     await ctype
       .store()
-      .then((tx) => ctypeCreator.authorizeExtrinsic(tx, keystore))
+      .then((tx) =>
+        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+      )
       .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -105,7 +109,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await expect(
       ctype
         .store()
-        .then((tx) => ctypeCreator.authorizeExtrinsic(tx, keystore))
+        .then((tx) =>
+          ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+        )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,

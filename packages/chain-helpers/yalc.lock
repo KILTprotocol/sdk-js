@@ -1,0 +1,10 @@
+{
+  "version": "v1",
+  "packages": {
+    "@kiltprotocol/type-definitions": {
+      "signature": "25b0050cd1636736986d8f1e752abe44",
+      "file": true,
+      "replaced": "git+https://github.com/KILTprotocol/type-definitions.git#aw-did-call-this-time-for-real"
+    }
+  }
+}
