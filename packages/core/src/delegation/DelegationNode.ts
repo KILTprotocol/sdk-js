@@ -301,7 +301,7 @@ export class DelegationNode implements IDelegationNode {
   }
 
   /**
-   * [ASYNC] Syncronise the delegation node state with the latest state as stored on the blockchain.
+   * [ASYNC] Synchronise the delegation node state with the latest state as stored on the blockchain.
    *
    * @returns An updated instance of the same [DelegationNode] containing the up-to-date state fetched from the chain.
    */

@@ -50,7 +50,7 @@ On top of the the linting rules mentioned above (must document all parameters, m
 * Make sure you explain opaque abbreviations or jargon (example: TxStatus = transaction status);
 * When referring to SDK Classes and methods, make sure you link them in, using `[[]]`;
 
-💡The linting rules for the example snippet are **not** the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolumns. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter should be enough to help you figure the rules out.
+💡The linting rules for the example snippet are **not** the same as the SDK codebase linting rules. For example, the example snippet should make use of semicolons. You can see the full ruleset in `.eslintrc-jsdoc.json`, but the linter should be enough to help you figure the rules out.
 
 Example of a method docBlock that follows these guidelines:
 
