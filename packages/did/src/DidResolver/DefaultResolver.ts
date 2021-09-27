@@ -230,7 +230,6 @@ export async function resolveKey(
       if (!resolvedDetails) {
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
       }
-      // The fragment includes the '#' symbol which we do not need
       return resolvedDetails.details.getKey(didUri) || null
     }
     default:
