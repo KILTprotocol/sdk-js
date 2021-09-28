@@ -239,8 +239,14 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveKey = async (keyId: string) => {
-      const { identifier, type, version, fragment } = DidUtils.parseDidUrl(keyId)
-      const didSubject = DidUtils.getKiltDidFromIdentifier(identifier, type, version)
+      const { identifier, type, version, fragment } = DidUtils.parseDidUrl(
+        keyId
+      )
+      const didSubject = DidUtils.getKiltDidFromIdentifier(
+        identifier,
+        type,
+        version
+      )
       if (didSubject === identityAlice.did) {
         return identityAlice.getKey(fragment!) || null
       }
