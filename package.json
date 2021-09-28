@@ -23,13 +23,8 @@
     "test:ci": "yarn test --ci",
     "test:integration:run": "jest --group=integration -b -w 3 --silent",
     "test:integration": "{ lsof -i :9944 > /dev/null && yarn test:integration:run; } || echo 'Can not connect to chain. Is it running?'; exit 1;",
-    "test:watch": "yarn test --watch"
-  },
-  "husky": {
-    "hooks": {
-      "pre-push": "yarn lint && yarn style",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
+    "test:watch": "yarn test --watch",
+    "postinstall": "husky install"
   },
   "commitlint": {
     "extends": [
@@ -51,7 +46,7 @@
     "eslint-plugin-license-header": "^0.2.0",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-tsc": "^1.2.0",
-    "husky": "^4.2.5",
+    "husky": "^7.0.0",
     "jest": "^26.2.0",
     "jest-docblock": "^26.0.0",
     "jest-runner": "^26.2.0",
