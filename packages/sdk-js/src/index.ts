@@ -9,11 +9,12 @@ import * as core from '@kiltprotocol/core'
 import Message, * as Messaging from '@kiltprotocol/messaging'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import * as ChainHelpers from '@kiltprotocol/chain-helpers'
+import * as Did from '@kiltprotocol/did'
 import * as Utils from '@kiltprotocol/utils'
 
-export * from '@kiltprotocol/types'
 export * from '@kiltprotocol/core'
-export { Message, Messaging, BlockchainUtils, ChainHelpers, Utils }
+export * from '@kiltprotocol/types'
+export { Message, Messaging, BlockchainUtils, ChainHelpers, Utils, Did }
 
 export default {
   ...core,
@@ -21,5 +22,6 @@ export default {
   Messaging,
   BlockchainUtils,
   ChainHelpers,
+  Did,
   Utils,
 }
