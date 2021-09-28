@@ -21,6 +21,7 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'prettier', 'jsdoc', 'license-header'],
   rules: {
+    'jsdoc/no-multi-asterisks': 'off',
     'jsdoc/tag-lines': 'off',
     'no-use-before-define': 'off',
     '@typescript-eslint/no-use-before-define': ['error'],
