@@ -152,12 +152,11 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
           requestClaimsForCTypes.acceptedAttester?.map((did) =>
             DidUtils.validateKiltDid(did)
           )
-          requestClaimsForCTypes.requiredProperties?.map((requiredProps) => {
-            if (typeof requiredProps !== 'string')
-              throw new TypeError(
-                'required properties is expected to be a string'
-              )
-          })
+          requestClaimsForCTypes.requiredProperties?.map(
+            (requiredProps) =>
+              typeof requiredProps !== 'string' &&
+              new TypeError('required properties is expected to be a string')
+          )
         }
       )
       break

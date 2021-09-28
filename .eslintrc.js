@@ -7,8 +7,7 @@ module.exports = {
   extends: [
     'airbnb-base',
     'plugin:@typescript-eslint/recommended',
-    'prettier',
-    'prettier/@typescript-eslint',
+    'plugin:prettier/recommended',
     'plugin:jsdoc/recommended',
   ],
   globals: {
@@ -22,6 +21,10 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'prettier', 'jsdoc', 'license-header'],
   rules: {
+    'no-use-before-define': 'off',
+    '@typescript-eslint/no-use-before-define': ['error'],
+    'no-shadow': 'off',
+    '@typescript-eslint/no-shadow': 'error',
     'import/no-cycle': 2,
     'import/extensions': [
       'error',
