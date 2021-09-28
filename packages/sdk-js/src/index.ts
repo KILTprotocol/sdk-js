@@ -13,9 +13,8 @@ import * as Did from '@kiltprotocol/did'
 import * as Utils from '@kiltprotocol/utils'
 
 export * from '@kiltprotocol/core'
-export * from '@kiltprotocol/did'
 export * from '@kiltprotocol/types'
-export { Message, Messaging, BlockchainUtils, ChainHelpers, Utils }
+export { Message, Messaging, BlockchainUtils, ChainHelpers, Utils, Did }
 
 export default {
   ...core,
