@@ -133,7 +133,7 @@ describe('RequestForAttestation', () => {
   let legitimation: AttestedClaim
   let compressedLegitimation: CompressedAttestedClaim
 
-  const mockResolver: IDidResolver = {
+  let mockResolver: IDidResolver = {
     resolve: async (didUri: string) => {
       if (didUri === identityAlice.did) {
         return { details: identityAlice }
