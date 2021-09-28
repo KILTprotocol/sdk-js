@@ -187,7 +187,8 @@ describe('Messaging', () => {
       content.rootHash,
       identityAlice.did,
       identityBob,
-      keystore
+      keystore,
+      mockResolver
     )
     const requestAttestationBody: IRequestAttestationForClaim = {
       content: {

@@ -381,35 +381,6 @@ describe('Light DID Document exporting tests', () => {
     })
   })
 
-  it('exports the expected application/json W3C DID Document with an Ecdsa authentication key', () => {
-    authenticationDidKeyDetails = {
-      publicKey: authPublicKey,
-      type: 'ecdsa',
-    }
-    const didCreationDetails: LightDidDetailsCreationOpts = {
-      authenticationKey: authenticationDidKeyDetails,
-    }
-    const didDetails = new LightDidDetails(didCreationDetails)
-    const didDoc = exportToDidDocument(didDetails, 'application/json')
-
-    expect(didDoc).toStrictEqual({
-      id: 'did:kilt:light:024rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
-      verificationMethod: [
-        {
-          id:
-            'did:kilt:light:024rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
-          controller:
-            'did:kilt:light:024rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF',
-          type: 'EcdsaSecp256k1VerificationKey2019',
-          publicKeyBase58: 'CVDFLCAjXhVWiPXH9nTCTpCgVzmDVoiPzNJYuccr1dqB',
-        },
-      ],
-      authentication: [
-        'did:kilt:light:024rmqfMwFrv9mhwJwMb1vGWcmKmCNTRM8J365TRsJuPzXDNGF#authentication',
-      ],
-    })
-  })
-
   it('exports the expected application/ld+json W3C DID Document with only an authentication key', () => {
     authenticationDidKeyDetails = {
       publicKey: authPublicKey,

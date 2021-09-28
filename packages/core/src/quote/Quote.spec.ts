@@ -250,7 +250,6 @@ describe('Claim', () => {
     expect(
       await Quote.fromAttesterSignedInput(
         validAttesterSignedQuote,
-        attesterIdentity.did,
         mockResolver
       )
     ).toEqual(validAttesterSignedQuote)

@@ -1,3 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`create presentation should fail to create a valid presentation and exclude specific attributes using a light DID after it has been migrated: [Error: Addresses expected to be equal mismatched] 1`] = `"Addresses expected to be equal mismatched"`;

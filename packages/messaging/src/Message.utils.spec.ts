@@ -16,6 +16,7 @@ import type {
   CompressedQuoteAgreed,
   ICType,
   IClaim,
+  IDidResolver,
   IQuote,
   IQuoteAttesterSigned,
   IQuoteAgreement,
@@ -138,6 +139,7 @@ describe('Messaging Utilities', () => {
   let keystore: DemoKeystore
   let identityAlice: IDidDetails
   let identityBob: IDidDetails
+  let mockResolver: IDidResolver
   let date: Date
   let rawCType: ICType['schema']
   let rawCTypeWithMultipleProperties: ICType['schema']
@@ -224,6 +226,36 @@ describe('Messaging Utilities', () => {
     date = new Date(2019, 11, 10)
     claimContents = {
       name: 'Bob',
+    }
+
+    const resolveDoc = async (didUri: string) => {
+      if (didUri === identityAlice.did) {
+        return { details: identityAlice }
+      }
+      if (didUri === identityBob.did) {
+        return { details: identityBob }
+      }
+      return null
+    }
+
+    const resolveKey = async (keyId: string) => {
+      const { identifier, type, version, fragment } = DidUtils.parseDidUrl(keyId)
+      const didSubject = DidUtils.getKiltDidFromIdentifier(identifier, type, version)
+      if (didSubject === identityAlice.did) {
+        return identityAlice.getKey(fragment!) || null
+      }
+      if (didSubject === identityBob.did) {
+        return identityBob.getKey(fragment!) || null
+      }
+      return null
+    }
+
+    mockResolver = {
+      resolveDoc,
+      resolveKey,
+      resolve: async (did: string) => {
+        return resolveKey(did) || resolveDoc(did)
+      },
     }
 
     rawCTypeWithMultipleProperties = {
@@ -327,7 +359,8 @@ describe('Messaging Utilities', () => {
       legitimation.request.rootHash,
       identityAlice.did,
       identityBob,
-      keystore
+      keystore,
+      mockResolver
     )
     // Compressed Quote Agreement
     compressedQuoteAgreement = [

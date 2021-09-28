@@ -627,7 +627,7 @@ describe('create presentation', () => {
         resolver: mockResolver,
       })
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '[Error: Addresses expected to be equal mismatched]'
+      '"Addresses expected to be equal mismatched"'
     )
   })
 
