@@ -398,7 +398,7 @@ export async function createOnChainDidFromSeed(
   })
   const queried = await DefaultResolver.resolveDoc(did)
   if (queried) {
-    return queried as FullDidDetails
+    return queried.details as FullDidDetails
   }
   throw Error(`failed to write Did${did}`)
 }

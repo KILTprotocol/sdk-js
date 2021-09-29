@@ -20,13 +20,14 @@ import Ajv from 'ajv'
 import type {
   IDidDetails,
   IQuote,
+  IDidResolver,
   IQuoteAgreement,
   IQuoteAttesterSigned,
   KeystoreSigner,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { DidUtils } from '@kiltprotocol/did'
+import { DidUtils, DefaultResolver } from '@kiltprotocol/did'
 import QuoteSchema from './QuoteSchema'
 
 /**
@@ -71,16 +72,16 @@ export function validateQuoteSchema(
  * @returns A [[Quote]] object signed by an Attester.
  */
 
-export function fromAttesterSignedInput(
+export async function fromAttesterSignedInput(
   deserializedQuote: IQuoteAttesterSigned,
-  attesterDid: IDidDetails
-): IQuoteAttesterSigned {
+  resolver: IDidResolver = DefaultResolver
+): Promise<IQuoteAttesterSigned> {
   const { attesterSignature, ...basicQuote } = deserializedQuote
-  DidUtils.verifyDidSignature({
+  await DidUtils.verifyDidSignature({
     ...attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    didDetails: attesterDid,
     keyRelationship: KeyRelationship.authentication,
+    resolver,
   })
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
@@ -151,23 +152,24 @@ export async function fromQuoteDataAndIdentity(
 export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
   requestRootHash: string,
-  attesterIdentity: IDidDetails,
+  attesterIdentity: IDidDetails['did'],
   claimerIdentity: IDidDetails,
-  signer: KeystoreSigner
+  signer: KeystoreSigner,
+  resolver: IDidResolver = DefaultResolver
 ): Promise<IQuoteAgreement> {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
 
-  if (attesterIdentity.did !== attesterSignedQuote.attesterDid)
+  if (attesterIdentity !== attesterSignedQuote.attesterDid)
     throw SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(
-      attesterIdentity.did,
+      attesterIdentity,
       attesterSignedQuote.attesterDid
     )
 
-  DidUtils.verifyDidSignature({
+  await DidUtils.verifyDidSignature({
     ...attesterSignature,
     message: Crypto.hashObjectAsStr(basicQuote),
-    didDetails: attesterIdentity,
     keyRelationship: KeyRelationship.authentication,
+    resolver,
   })
 
   const signature = await DidUtils.getDidAuthenticationSignature(

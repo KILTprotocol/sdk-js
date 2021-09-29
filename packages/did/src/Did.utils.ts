@@ -17,7 +17,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
-import { isHex } from '@polkadot/util'
+import { hexToU8a, isHex } from '@polkadot/util'
 import type { Registry } from '@polkadot/types/types'
 import { checkAddress, encodeAddress } from '@polkadot/util-crypto'
 import { DefaultResolver } from './DidResolver/DefaultResolver'
@@ -36,6 +36,7 @@ import type {
   IDidParsingResult,
 } from './types'
 import { generateCreateTx } from './Did.chain'
+import { LightDidDetails } from '.'
 
 export const KILT_DID_PREFIX = 'did:kilt:'
 
@@ -80,19 +81,16 @@ export function getSignatureAlgForKeyType(keyType: string): string {
 export enum LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES {
   ed25519 = 'ed25519',
   sr25519 = 'sr25519',
-  ecdsa = 'ecdsa',
 }
 
 const EncodingForSigningKeyType = {
   [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519]: '00',
   [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519]: '01',
-  [LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ecdsa]: '02',
 }
 
 const SigningKeyTypeFromEncoding = {
   '00': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.sr25519,
   '01': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ed25519,
-  '02': LIGHT_DID_SUPPORTED_SIGNING_KEY_TYPES.ecdsa,
 }
 
 export function getEncodingForSigningKeyType(keyType: string): string {
@@ -330,7 +328,7 @@ export type VerficationResult = {
   key?: IDidKeyDetails
 }
 
-export function verifyDidSignature({
+function verifyDidSignatureFromDetails({
   message,
   signature,
   keyId,
@@ -363,43 +361,43 @@ export function verifyDidSignature({
   }
 }
 
-export async function verifyDidSignatureAsync({
+// Verify a DID signature given the key ID of the signature
+export async function verifyDidSignature({
   message,
   signature,
   keyId,
   keyRelationship,
   resolver = DefaultResolver,
-  didDetails,
 }: {
   message: string | Uint8Array
   signature: string | Uint8Array
   keyId: string
   resolver?: IDidResolver
-  didDetails?: IDidDetails
   keyRelationship?: VerificationKeyRelationship
 }): Promise<VerficationResult> {
-  let didOrNot: IDidDetails | undefined | null
-  if (!didDetails) {
-    if (typeof resolver?.resolveDoc !== 'function')
-      throw new Error(
-        'Either the claimer DidDetails or a DID resolver is required for verification'
-      )
-    didOrNot = await resolver.resolveDoc(keyId)
-  } else {
-    didOrNot = didDetails
+  const { identifier, type, version } = parseDidUrl(keyId)
+  // If the identifier could not be parsed, it is a malformed URL
+  if (!identifier) {
+    throw new Error(
+      `Invalid key ID provided for signature verification  - ${keyId}`
+    )
   }
-  if (didOrNot) {
-    return verifyDidSignature({
-      message,
-      signature,
-      keyId,
-      keyRelationship,
-      didDetails: didOrNot,
-    })
+  // Resolve DID details regardless of the DID type
+  const did = getKiltDidFromIdentifier(identifier, type, version)
+  const details = await resolver.resolveDoc(did)
+  // If no details can be resolved, it is clearly an error, so we return false
+  if (!details) {
+    return {
+      verified: false,
+    }
   }
-  return {
-    verified: false,
-  }
+  return verifyDidSignatureFromDetails({
+    message,
+    signature,
+    keyId,
+    keyRelationship,
+    didDetails: details.details,
+  })
 }
 
 export async function writeDidFromPublicKeys(
@@ -486,4 +484,35 @@ export async function getDidAuthenticationSignature(
     KeyRelationship.authentication
   )
   return { keyId, signature: Crypto.u8aToHex(signature) }
+}
+
+// This function is tested in the DID integration tests, in the `DID migration` test case.
+export async function upgradeDid(
+  lightDid: LightDidDetails,
+  signer: KeystoreSigner,
+  includeServices = false
+): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
+  if (includeServices) {
+    // TODO: Update this when the service resolver is implemented.
+    throw new Error(`Upgrade of services from a light DID not yet implemented.`)
+  }
+  const didAuthenticationKey = lightDid.getKeys(
+    KeyRelationship.authentication
+  )[0]
+  const didEncryptionKey = lightDid.getKeys(KeyRelationship.keyAgreement)[0]
+
+  const newDidPublicKeys: PublicKeyRoleAssignment = {
+    authentication: {
+      publicKey: hexToU8a(didAuthenticationKey.publicKeyHex),
+      type: didAuthenticationKey.type,
+    },
+  }
+  if (didEncryptionKey) {
+    newDidPublicKeys.keyAgreement = {
+      publicKey: hexToU8a(didEncryptionKey.publicKeyHex),
+      type: didEncryptionKey.type,
+    }
+  }
+
+  return writeDidFromPublicKeys(signer, newDidPublicKeys)
 }

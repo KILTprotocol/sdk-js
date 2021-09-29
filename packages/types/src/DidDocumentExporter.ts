@@ -38,6 +38,9 @@ export type IDidPublicKeyDetails = Pick<IDidKeyDetails, 'id' | 'controller'> & {
 
 export type IDidPublicKeyId = Pick<IDidKeyDetails, 'id'>
 
+/**
+ * A DID Document according to the [W3C DID Core specification](https://www.w3.org/TR/did-core/).
+ */
 export type IDidDocument = {
   id: IDidDetails['did']
   verificationMethod: IDidPublicKeyDetails[]
@@ -48,8 +51,16 @@ export type IDidDocument = {
   service?: IServiceDetails[]
 }
 
+/**
+ * A JSON+LD DID Document that extends a traditional DID Document with additional semantic informatiion.
+ */
 export type IJsonLDDidDocument = IDidDocument & { '@context': string[] }
 
+/**
+ * An interface for any DID Document exporter to implement.
+ *
+ * It is purposefully general with regard to the mime types supported, so that multiple exporters might support different encoding types.
+ */
 export interface IDidDocumentExporter {
   exportToDidDocument: (details: IDidDetails, mimeType: string) => IDidDocument
 }

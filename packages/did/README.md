@@ -59,7 +59,9 @@ const authenticationKeyPublicDetails = await keystore.generateKeypair({
 const lightDID = new LightDidDetails({
   authenticationKey: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
+    type: DemoKeystore.getKeypairTypeForAlg(
+      authenticationKeyPublicDetails.alg
+    ),
   },
 })
 // Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
@@ -100,11 +102,15 @@ const serviceEndpoints: IServiceDetails[] = [
 const lightDID = new LightDidDetails({
   authenticationKey: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
+    type: DemoKeystore.getKeypairTypeForAlg(
+      authenticationKeyPublicDetails.alg
+    ),
   },
   encryptionKey: {
     publicKey: encryptionKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
+    type: DemoKeystore.getKeypairTypeForAlg(
+      encryptionKeyPublicDetails.alg
+    ),
   },
   services: serviceEndpoints,
 })
@@ -185,7 +191,9 @@ const authenticationKeyPublicDetails = await keystore.generateKeypair({
 const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(keystore, {
   [KeyRelationship.authentication]: {
     publicKey: authenticationKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
+    type: DemoKeystore.getKeypairTypeForAlg(
+      authenticationKeyPublicDetails.alg
+    ),
   },
 })
 // Will print `did:kilt:4sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
@@ -256,7 +264,9 @@ const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
     },
     [KeyRelationship.keyAgreement]: {
       publicKey: encryptionKeyPublicDetails.publicKey,
-      type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
+      type: DemoKeystore.getKeypairTypeForAlg(
+        encryptionKeyPublicDetails.alg
+      ),
     },
   },
   serviceEndpoints
@@ -339,4 +349,46 @@ await BlockchainUtils.signAndSubmitTx(
 
 ## Migrating a light DID to a full DID
 
-This feature is a work in progress and this section will be updated when it will be added to the SDK.
+The **migration** of a DID means that a light, off-chain DID is anchored to the KILT blockchain, supporting all the features that full DIDs provide. In the current version (v1) of the KILT DID protocol, a light DID of the form `did:kilt:light:004sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar` would become a full DID of the form `did:kilt:4sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`. Note that the identifier of the two DIDs, apart from the initial `00` sequence of the light DID, are equal since both DIDs are derived from the same KILT account.
+
+Once a light DID is migrated, all the attested claims (i.e., attestations) generated using that light DID can only be presented using the migrated on-chain DID. This is by design, as it is assumed that the user had valid reasons to migrate the DID on chain, and as on-chain DIDs offer greater security guarantees, KILT will reject light DID signatures for presentations even in case the original claim in the attestation was generated with that off-chain DID.
+
+The following code shows how to migrate a light DID to a full DID. Attested claim presentations and verifications remain unchanged as adding support for DID migration does not affect the public API that the SDK exposes.
+
+```typescript
+const resolveOn =
+  process.env.NODE_ENV === 'production'
+    ? BlockchainUtils.IS_FINALIZED
+    : BlockchainUtils.IS_IN_BLOCK
+
+await kiltInit({ address: 'wss://kilt-peregrine-k8s.kilt.io' })
+
+const aliceKiltAccount = new Keyring({
+  type: 'ed25519',
+  ss58Format: 38,
+}).createFromUri('//Alice')
+
+const lightDidDetails = new LightDidDetails({
+  authenticationKey: {
+    publicKey: aliceKiltAccount.publicKey,
+    type: DemoKeystore.getKeypairTypeForAlg(
+      aliceKiltAccount.type
+    ),
+  },
+})
+
+// Generate the DID creation extrinsic with the authentication and encryption keys taken from the light DID.
+const { extrinsic, did } = await upgradeDid(lightDidDetails, keystore as KeystoreSigner<string>)
+
+// The extrinsic can then be submitted as usual.
+await BlockchainUtils.signAndSubmitTx(
+  extrinsic,
+  aliceKiltAccount,
+  {
+    resolveOn,
+  }
+)
+
+// The full DID details can then be resolved after it has been stored on the chain.
+const fullDidDetails = await resolve(did)
+```

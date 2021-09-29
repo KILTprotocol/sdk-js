@@ -7,8 +7,7 @@
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import type { IDidKeyDetails, IServiceDetails } from '@kiltprotocol/types'
-import { KeyRelationship } from '@kiltprotocol/types'
+import type { IServiceDetails } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/util-crypto'
 import {
@@ -93,44 +92,5 @@ export class LightDidDetails extends DidDetails {
       })
       this.keyRelationships.keyAgreement = [`${this.didUri}#encryption`]
     }
-  }
-
-  public get did(): string {
-    return this.didUri
-  }
-
-  public get identifier(): string {
-    return this.id
-  }
-
-  public getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined {
-    return this.keys.get(id)
-  }
-
-  public getService(id: IServiceDetails['id']): IServiceDetails | undefined {
-    return this.services.find((s) => s.id === id)
-  }
-
-  public getKeys(relationship?: KeyRelationship | 'none'): IDidKeyDetails[] {
-    if (relationship) {
-      return this.getKeyIds(relationship).map((id) => this.getKey(id)!)
-    }
-    return [...this.keys.values()]
-  }
-
-  public getKeyIds(
-    relationship?: KeyRelationship | 'none'
-  ): Array<IDidKeyDetails['id']> {
-    if (relationship) {
-      return this.keyRelationships[relationship] || []
-    }
-    return [...this.keys.keys()]
-  }
-
-  public getServices(type?: string): IServiceDetails[] {
-    if (type) {
-      return this.services.filter((service) => service.type === type)
-    }
-    return this.services
   }
 }

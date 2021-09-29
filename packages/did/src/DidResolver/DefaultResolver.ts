@@ -8,8 +8,8 @@
 import type {
   IDidResolver,
   IDidKeyDetails,
-  IDidDetails,
   ResolverOpts,
+  IDidResolvedDetails,
   IServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
@@ -125,7 +125,7 @@ function buildLightDetailsFromMatch({
 export async function resolve(
   didUri: string,
   opts: ResolverOpts = {}
-): Promise<IDidDetails | IDidKeyDetails | IServiceDetails | null> {
+): Promise<IDidResolvedDetails | IDidKeyDetails | IServiceDetails | null> {
   const { identifier, type, version, fragment, encodedDetails } = parseDidUrl(
     didUri
   )
@@ -139,7 +139,7 @@ export async function resolve(
       )
       // If the URI is a subject DID, return the retrieved details.
       if (!fragment) {
-        return details
+        return { details } as IDidResolvedDetails
       }
 
       // Otherwise, return either the key or the service endpoints referenced by the URI.
@@ -158,7 +158,23 @@ export async function resolve(
       }
       // If the URI is a subject DID, return the retrieved details.
       if (!fragment) {
-        return details
+        const didResolvedDetails: IDidResolvedDetails = {
+          details,
+        }
+
+        const fullDidDetails = await queryFullDetailsFromIdentifier(
+          identifier.substring(2),
+          opts
+        )
+        if (fullDidDetails) {
+          didResolvedDetails.metadata = {
+            canonicalId: getKiltDidFromIdentifier(
+              identifier.substring(2),
+              'full'
+            ),
+          }
+        }
+        return didResolvedDetails
       }
 
       return details?.getKey(didUri) || details?.getService(didUri) || null
@@ -178,7 +194,7 @@ export async function resolve(
 export async function resolveDoc(
   did: string,
   opts: ResolverOpts = {}
-): Promise<IDidDetails | null> {
+): Promise<IDidResolvedDetails | null> {
   const { fragment } = parseDidUrl(did)
 
   let didToResolve = did
@@ -187,7 +203,7 @@ export async function resolveDoc(
     didToResolve = didToResolve.split('#')[0]
   }
 
-  return resolve(didToResolve, opts) as Promise<IDidDetails | null>
+  return resolve(didToResolve, opts) as Promise<IDidResolvedDetails | null>
 }
 
 /**
@@ -214,8 +230,7 @@ export async function resolveKey(
       if (!resolvedDetails) {
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
       }
-      // The fragment includes the '#' symbol which we do not need
-      return resolvedDetails.getKey(fragment.substring(1)) || null
+      return resolvedDetails.details.getKey(didUri) || null
     }
     default:
       throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
