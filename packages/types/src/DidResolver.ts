@@ -35,7 +35,7 @@ export type IDidResolutionDocumentMetadata = {
 /**
  * The result of a DID resolution.
  *
- * In includes the DID details, and any optional document metadata as specified in the [W3C standard](https://www.w3.org/TR/did-core/#did-document-metadata).
+ * It includes the DID details, and any optional document metadata as specified in the [W3C standard](https://www.w3.org/TR/did-core/#did-document-metadata).
  */
 export type IDidResolvedDetails = {
   details: IDidDetails

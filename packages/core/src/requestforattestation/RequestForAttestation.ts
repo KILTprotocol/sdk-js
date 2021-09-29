@@ -267,7 +267,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
     }: {
       resolver?: IDidResolver
       challenge?: string
-    }
+    } = {}
   ): Promise<boolean> {
     const { claimerSignature } = input
     if (!claimerSignature) return false

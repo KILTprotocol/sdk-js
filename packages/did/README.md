@@ -368,6 +368,15 @@ const aliceKiltAccount = new Keyring({
   ss58Format: 38,
 }).createFromUri('//Alice')
 
+const lightDidDetails = new LightDidDetails({
+  authenticationKey: {
+    publicKey: aliceKiltAccount.publicKey,
+    type: DemoKeystore.getKeypairTypeForAlg(
+      aliceKiltAccount.type
+    ),
+  },
+})
+
 // Generate the DID creation extrinsic with the authentication and encryption keys taken from the light DID.
 const { extrinsic, did } = await upgradeDid(lightDidDetails, keystore as KeystoreSigner<string>)
 
