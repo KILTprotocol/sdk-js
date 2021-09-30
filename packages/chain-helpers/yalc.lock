@@ -2,7 +2,8 @@
   "version": "v1",
   "packages": {
     "@kiltprotocol/type-definitions": {
-      "signature": "25b0050cd1636736986d8f1e752abe44",
+      "version": "0.1.18",
+      "signature": "34d2fa60a8592dea8455bb82b2321add",
       "file": true,
       "replaced": "git+https://github.com/KILTprotocol/type-definitions.git#aw-did-call-this-time-for-real"
     }

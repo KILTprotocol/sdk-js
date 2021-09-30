@@ -26,7 +26,7 @@ import { BN } from '@polkadot/util'
 import type {
   Url,
   UrlEncoding,
-  IAuthorizeCallOptions,
+  AuthenticationTxCreationInput,
   IDidCreationOptions,
   IDidChainRecordJSON,
   DidPublicKeyDetails,
@@ -285,6 +285,8 @@ export async function getDeleteDidExtrinsic(): Promise<Extrinsic> {
   return api.tx.did.delete()
 }
 
+// The block number can either be provided by the DID subject,
+// or the latest one will automatically be fetched from the blockchain.
 export async function generateDidAuthenticatedTx({
   signingPublicKey,
   alg,
@@ -293,15 +295,16 @@ export async function generateDidAuthenticatedTx({
   didIdentifier,
   call,
   txSubmitter,
-}: IAuthorizeCallOptions & KeystoreSigningOptions): Promise<
+  blockNumber,
+}: AuthenticationTxCreationInput & KeystoreSigningOptions): Promise<
   SubmittableExtrinsic
 > {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const block = blockNumber || (await blockchain.api.query.system.number())
   const signableCall = encodeDidAuthorizedCallOperation(
     blockchain.api.registry,
-    { txCounter, didIdentifier, call, txSubmitter }
+    { txCounter, didIdentifier, call, txSubmitter, blockNumber: block }
   )
-  console.log(signableCall)
   const signature = await signer.sign({
     data: signableCall.toU8a(),
     meta: {
@@ -316,7 +319,6 @@ export async function generateDidAuthenticatedTx({
     publicKey: Crypto.coToUInt8(signingPublicKey),
     alg,
   })
-  console.log(signature)
   return blockchain.api.tx.did.submitDidCall(signableCall, {
     [signature.alg]: signature.data,
   })

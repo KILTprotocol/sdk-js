@@ -278,7 +278,13 @@ export function encodeDidCreationOperation(
 
 export function encodeDidAuthorizedCallOperation(
   registry: Registry,
-  { didIdentifier, txCounter, call, txSubmitter }: IAuthorizeCallOptions
+  {
+    didIdentifier,
+    txCounter,
+    call,
+    txSubmitter,
+    blockNumber,
+  }: IAuthorizeCallOptions
 ): DidAuthorizedCallOperation {
   return new (registry.getOrThrow<DidAuthorizedCallOperation>(
     'DidAuthorizedCallOperation'
@@ -286,6 +292,7 @@ export function encodeDidAuthorizedCallOperation(
     did: didIdentifier,
     txCounter,
     call,
+    blockNumber,
     submitter: txSubmitter,
   })
 }

@@ -108,7 +108,14 @@ export interface IAuthorizeCallOptions {
   txCounter: AnyNumber
   call: Extrinsic
   txSubmitter: IIdentity['address']
+  blockNumber: AnyNumber
 }
+
+// Like IAuthorizeCallOptions above, but allows for an optional blockNumber.
+export type AuthenticationTxCreationInput = Omit<
+  IAuthorizeCallOptions,
+  'blockNumber'
+> & { blockNumber?: AnyNumber }
 
 /* CHAIN TYPES / CODECS */
 
