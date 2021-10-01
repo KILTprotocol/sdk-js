@@ -52,18 +52,6 @@ describe('functional tests', () => {
         '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
     },
   ]
-  const services = [
-    {
-      id: `${did}#service1`,
-      type: 'messaging',
-      serviceEndpoint: 'example.com',
-    },
-    {
-      id: `${did}#service2`,
-      type: 'telephone',
-      serviceEndpoint: '123344',
-    },
-  ]
   const didDetails: FullDidDetailsCreationOpts = {
     did,
     keys,
@@ -73,7 +61,6 @@ describe('functional tests', () => {
       [KeyRelationship.assertionMethod]: [keys[3].id],
     },
     lastTxIndex: new BN(10),
-    services,
   }
 
   it('creates FullDidDetails', () => {
@@ -112,20 +99,6 @@ describe('functional tests', () => {
         },
       ]
     `)
-    expect(dd.getServices()).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "id": "${did}#service1",
-          "serviceEndpoint": "example.com",
-          "type": "messaging",
-        },
-        Object {
-          "id": "${did}#service2",
-          "serviceEndpoint": "123344",
-          "type": "telephone",
-        },
-      ]
-    `)
   })
 
   it('gets keys via role', () => {
@@ -148,16 +121,6 @@ describe('functional tests', () => {
       dd.getKeys(KeyRelationship.authentication).map((key) => key.id)
     ).toEqual([keys[3].id])
     expect(dd.getKeyIds('none')).toEqual(keys.slice(0, 3).map((key) => key.id))
-  })
-
-  it('gets service via type', () => {
-    const dd = new FullDidDetails(didDetails)
-    expect(dd.getServices('messaging').map((s) => s.type)).toEqual([
-      'messaging',
-    ])
-    expect(dd.getServices('telephone').map((s) => s.type)).toEqual([
-      'telephone',
-    ])
   })
 
   it('returns the next nonce', () => {

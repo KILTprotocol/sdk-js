@@ -23,16 +23,13 @@ import { checkAddress, encodeAddress } from '@polkadot/util-crypto'
 import { DefaultResolver } from './DidResolver/DefaultResolver'
 import type {
   PublicKeyEnum,
-  UrlEnum,
   IDidCreationOptions,
   IAuthorizeCallOptions,
-  UrlEncodingJson,
   DidAuthorizedCallOperation,
   DidCreationDetails,
   DidPublicKey,
   INewPublicKey,
   PublicKeyRoleAssignment,
-  EndpointData,
   IDidParsingResult,
 } from './types'
 import { generateCreateTx } from './Did.chain'
@@ -228,25 +225,9 @@ export function isINewPublicKey(key: unknown): key is INewPublicKey {
   return false
 }
 
-export function encodeEndpointUrl(url: string): UrlEnum {
-  const typedUrl: Record<string, UrlEncodingJson> = {}
-  const matched = Array.from(['http', 'ftp', 'ipfs']).some((type) => {
-    if (url.startsWith(type)) {
-      typedUrl[type] = { payload: url }
-      return true
-    }
-    return false
-  })
-  if (!matched)
-    throw new Error(
-      'Only endpoint urls starting with http/https, ftp, and ipfs are accepted'
-    )
-  return typedUrl as UrlEnum
-}
-
 export function encodeDidCreationOperation(
   registry: Registry,
-  { didIdentifier, keys = {}, endpointData }: IDidCreationOptions
+  { didIdentifier, keys = {} }: IDidCreationOptions
 ): DidCreationDetails {
   const {
     [KeyRelationship.assertionMethod]: assertionMethodKey,
@@ -262,12 +243,6 @@ export function encodeDidCreationOperation(
       : undefined,
     newCapabilityDelegationKey: delegationKey
       ? formatPublicKey(delegationKey)
-      : undefined,
-    newServiceEndpoints: endpointData
-      ? {
-          ...endpointData,
-          urls: endpointData.urls.map((url) => encodeEndpointUrl(url)),
-        }
       : undefined,
   }
   return new (registry.getOrThrow<DidCreationDetails>('DidCreationDetails'))(
@@ -330,7 +305,7 @@ export function computeKeyId(publicKey: DidPublicKey): string {
   return Crypto.hashStr(publicKey.toU8a())
 }
 
-export type VerficationResult = {
+export type VerificationResult = {
   verified: boolean
   didDetails?: IDidDetails
   key?: IDidKeyDetails
@@ -348,7 +323,7 @@ function verifyDidSignatureFromDetails({
   keyId: string
   didDetails: IDidDetails
   keyRelationship?: VerificationKeyRelationship
-}): VerficationResult {
+}): VerificationResult {
   const key = keyRelationship
     ? didDetails?.getKeys(keyRelationship).find((k) => k.id === keyId)
     : didDetails?.getKey(keyId)
@@ -382,7 +357,7 @@ export async function verifyDidSignature({
   keyId: string
   resolver?: IDidResolver
   keyRelationship?: VerificationKeyRelationship
-}): Promise<VerficationResult> {
+}): Promise<VerificationResult> {
   const { identifier, type, version } = parseDidUrl(keyId)
   // If the identifier could not be parsed, it is a malformed URL
   if (!identifier) {
@@ -410,8 +385,7 @@ export async function verifyDidSignature({
 
 export async function writeDidFromPublicKeys(
   signer: KeystoreSigner,
-  publicKeys: PublicKeyRoleAssignment,
-  endpointData?: EndpointData
+  publicKeys: PublicKeyRoleAssignment
 ): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
   const { [KeyRelationship.authentication]: authenticationKey } = publicKeys
   if (!authenticationKey)
@@ -423,7 +397,6 @@ export async function writeDidFromPublicKeys(
     keys: publicKeys,
     alg: getSignatureAlgForKeyType(authenticationKey.type),
     signingPublicKey: authenticationKey.publicKey,
-    endpointData,
   })
   return { extrinsic, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
 }
@@ -498,12 +471,7 @@ export async function getDidAuthenticationSignature(
 export async function upgradeDid(
   lightDid: LightDidDetails,
   signer: KeystoreSigner,
-  includeServices = false
 ): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
-  if (includeServices) {
-    // TODO: Update this when the service resolver is implemented.
-    throw new Error(`Upgrade of services from a light DID not yet implemented.`)
-  }
   const didAuthenticationKey = lightDid.getKeys(
     KeyRelationship.authentication
   )[0]

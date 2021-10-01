@@ -55,11 +55,6 @@ describe('write and didDeleteTx', () => {
   it('writes a new DID record to chain', async () => {
     const tx = await DidChain.generateCreateTx({
       didIdentifier,
-      endpointData: {
-        urls: ['https://example.com'],
-        contentHash: Crypto.hashStr('look I made you some content!'),
-        contentType: 'application/json',
-      },
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
@@ -139,11 +134,6 @@ it('creates and updates DID', async () => {
 
   const tx = await DidChain.generateCreateTx({
     didIdentifier,
-    endpointData: {
-      urls: ['https://example.com'],
-      contentHash: Crypto.hashStr('daddy made you your favorite, open wide'),
-      contentType: 'application/json',
-    },
     signer: keystore as KeystoreSigner<string>,
     signingPublicKey: key.publicKey,
     alg: key.type,
@@ -159,23 +149,25 @@ it('creates and updates DID', async () => {
     Partial<DidTypes.IDidChainRecordJSON>
   >({
     did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
-    endpointData: {
-      urls: ['https://example.com'],
-      contentType: 'application/json',
-      contentHash: expect.any(String),
-    },
   })
 
-  const updateEndpointCall = await DidChain.getSetEndpointDataExtrinsic({
-    urls: ['ftp://example.com/abc'],
-    contentHash: Crypto.hashStr('here comes the content'),
-    contentType: 'application/ld+json',
+  const newKeypair = await keystore.generateKeypair({
+    alg: SigningAlgorithms.Ed25519,
   })
+  const newKeyDetails: DidTypes.INewPublicKey = {
+    publicKey: newKeypair.publicKey,
+    type: newKeypair.alg,
+  }
+
+  const updateAuthenticationKeyCall = await DidChain.getSetKeyExtrinsic(
+    KeyRelationship.authentication,
+    newKeyDetails
+  )
 
   const tx2 = await DidChain.generateDidAuthenticatedTx({
     didIdentifier,
     txCounter: 1,
-    call: updateEndpointCall,
+    call: updateAuthenticationKeyCall,
     signer: keystore as KeystoreSigner<string>,
     signingPublicKey: key.publicKey,
     alg: key.type,
@@ -192,11 +184,6 @@ it('creates and updates DID', async () => {
     Partial<DidTypes.IDidChainRecordJSON>
   >({
     did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
-    endpointData: {
-      urls: ['ftp://example.com/abc'],
-      contentType: 'application/ld+json',
-      contentHash: expect.any(String),
-    },
   })
 }, 40_000)
 

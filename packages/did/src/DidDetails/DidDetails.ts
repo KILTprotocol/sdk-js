@@ -8,11 +8,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable import/prefer-default-export */
 
-import type {
-  IDidDetails,
-  IServiceDetails,
-  IDidKeyDetails,
-} from '@kiltprotocol/types'
+import type { IDidDetails, IDidKeyDetails } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import type { MapKeyToRelationship } from '../types'
 
@@ -24,8 +20,6 @@ export abstract class DidDetails implements IDidDetails {
   protected didUri: string
   // The identifier of the DID, meaning either the KILT address for full DIDs or the KILT address + the encoded authentication key type for light DIDs.
   protected id: string
-  // The set of service endpoints associated with the DID.
-  protected services: IServiceDetails[] = []
   // A map from key ID to key details, which allows for efficient retrieval of a key information given its ID.
   protected keys: Map<IDidKeyDetails['id'], IDidKeyDetails> = new Map()
   // A map from key relationship type (authentication, assertion method, etc.) to key ID, which can then be used to retrieve the key details if needed.
@@ -33,10 +27,9 @@ export abstract class DidDetails implements IDidDetails {
     none?: Array<IDidKeyDetails['id']>
   } = {}
 
-  constructor(didUri: string, id: string, services: IServiceDetails[]) {
+  constructor(didUri: string, id: string) {
     this.didUri = didUri
     this.id = id
-    this.services = services
   }
 
   public get did(): string {
@@ -49,10 +42,6 @@ export abstract class DidDetails implements IDidDetails {
 
   public getKey(id: IDidKeyDetails['id']): IDidKeyDetails | undefined {
     return this.keys.get(id)
-  }
-
-  public getService(id: IServiceDetails['id']): IServiceDetails | undefined {
-    return this.services.find((s) => s.id === id)
   }
 
   public getKeys(relationship?: KeyRelationship | 'none'): IDidKeyDetails[] {
@@ -69,12 +58,5 @@ export abstract class DidDetails implements IDidDetails {
       return this.keyRelationships[relationship] || []
     }
     return [...this.keys.keys()]
-  }
-
-  public getServices(type?: string): IServiceDetails[] {
-    if (type) {
-      return this.services.filter((service) => service.type === type)
-    }
-    return this.services
   }
 }

@@ -60,25 +60,6 @@ export interface IDidKeyDetails<T extends string = string> {
 }
 
 /**
- * A service record associated with a DID record.
- */
-export interface IServiceDetails {
-  /**
-   * Service id.
-   */
-  id: string
-  /**
-   * One or multiple service types.
-   */
-  type: string | string[]
-  /**
-   * One or multiple URLs.
-   */
-  serviceEndpoint: string | string[]
-  [x: string]: unknown
-}
-
-/**
  * An internal representation of data associated with a DID, equivalent to a DID document.
  */
 export interface IDidDetails {
@@ -111,13 +92,6 @@ export interface IDidDetails {
    * @returns An array of all or selected [[IDidKeyDetails]], depending on the `relationship` parameter.
    */
   getKeys(relationship?: KeyRelationship | 'none'): IDidKeyDetails[]
-  /**
-   * Retrieves service details from the [[IDidDetails]], optionally filtering by service type.
-   *
-   * @param type A type string to filter out services with a specific type.
-   * @returns An array of all or selected [[ServiceDetails]], depending on the `type` parameter.
-   */
-  getServices(type?: string): IServiceDetails[]
 }
 
 export type ApiOrMetadata = ApiPromise | Metadata

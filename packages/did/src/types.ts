@@ -9,7 +9,6 @@ import type {
   IIdentity,
   IDidKeyDetails,
   IDidDetails,
-  IServiceDetails,
   KeyRelationship,
 } from '@kiltprotocol/types'
 import type { AnyNumber } from '@polkadot/types/types'
@@ -55,12 +54,6 @@ export type PublicKeyRoleAssignment = Partial<
   Record<KeyRelationship, INewPublicKey>
 >
 
-export interface IEndpointData {
-  contentHash: string
-  contentType: string
-  urls: string[]
-}
-
 export interface IDidChainRecordJSON {
   did: IIdentity['address']
   authenticationKey: IDidKeyDetails['id']
@@ -68,7 +61,6 @@ export interface IDidChainRecordJSON {
   capabilityDelegationKey?: IDidKeyDetails['id']
   assertionMethodKey?: IDidKeyDetails['id']
   publicKeys: IDidKeyDetails[]
-  endpointData?: IEndpointData
   lastTxCounter: u64
 }
 
@@ -77,30 +69,14 @@ export type Nullable<T> = { [P in keyof T]: T[P] | null }
 export type PublicKeyEnum = Record<string, Uint8Array>
 export type SignatureEnum = Record<string, Uint8Array>
 
-export interface UrlEncodingJson {
-  payload: string
-}
-
-export type UrlEnum =
-  | { Http: UrlEncodingJson }
-  | { Ftp: UrlEncodingJson }
-  | { Ipfs: UrlEncodingJson }
-
 export interface DidSigned<PayloadType> {
   payload: PayloadType
   signature: SignatureEnum
 }
 
-export interface EndpointData {
-  contentHash: string
-  contentType: ContentType['type']
-  urls: string[]
-}
-
 export interface IDidCreationOptions {
   didIdentifier: IIdentity['address']
   keys?: PublicKeyRoleAssignment
-  endpointData?: EndpointData
 }
 
 export interface IAuthorizeCallOptions {
@@ -145,19 +121,6 @@ export type KeyId = Hash
 
 export type DidIdentifier = AccountId
 
-export interface UrlEncoding extends Struct {
-  payload: Vec<u8>
-}
-
-export interface Url extends Enum {
-  isHttp: boolean
-  isFtp: boolean
-  isIpfs: boolean
-  asHttp: UrlEncoding
-  asFtp: UrlEncoding
-  asIpfs: UrlEncoding
-}
-
 export interface DidPublicKey extends Enum {
   isPublicVerificationKey: boolean
   asPublicVerificationKey: DidVerificationKey
@@ -172,18 +135,6 @@ export interface DidPublicKeyDetails extends Struct {
   blockNumber: BlockNumber
 }
 
-export interface ContentType extends Enum {
-  'isApplication/json': boolean
-  'isApplication/ld+json': boolean
-  type: 'application/json' | 'application/ld+json'
-}
-
-export interface ServiceEndpoints extends Struct {
-  contentHash: Hash
-  urls: Vec<Url>
-  contentType: ContentType
-}
-
 export type DidKeyAgreementKeys = BTreeSet<KeyId>
 export type DidPublicKeyMap = BTreeMap<KeyId, DidPublicKeyDetails>
 
@@ -193,7 +144,6 @@ export interface IDidChainRecordCodec extends Struct {
   capabilityDelegationKey: Option<KeyId>
   assertionMethodKey: Option<KeyId>
   publicKeys: DidPublicKeyMap
-  serviceEndpoints: Option<ServiceEndpoints>
   lastTxCounter: u64
 }
 
@@ -202,7 +152,6 @@ export interface DidCreationDetails extends Struct {
   newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
   newAssertionMethodKey: Option<DidVerificationKey>
   newDelegationKey: Option<DidVerificationKey>
-  newServiceEndpoints: Option<ServiceEndpoints>
 }
 
 export interface DidAuthorizedCallOperation extends Struct {
@@ -221,7 +170,6 @@ export type JsonDidDocument = {
   assertionMethod?: string[]
   keyAgreement?: string[]
   capabilityDelegation?: string[]
-  service?: IServiceDetails[]
 }
 
 export type JsonLDDidDocument = JsonDidDocument & { '@context': string[] }
