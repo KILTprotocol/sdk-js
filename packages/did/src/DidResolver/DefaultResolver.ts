@@ -96,7 +96,6 @@ function buildLightDetailsFromMatch({
       version
     )
     lightDidCreationOptions.encryptionKey = decodedDetails.encryptionKey
-    lightDidCreationOptions.services = decodedDetails.services
   }
 
   return new LightDidDetails(lightDidCreationOptions)

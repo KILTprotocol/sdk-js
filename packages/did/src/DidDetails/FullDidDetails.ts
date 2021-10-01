@@ -13,7 +13,6 @@ import type {
   SubmittableExtrinsic,
   ApiOrMetadata,
   CallMeta,
-  IServiceDetails,
   IIdentity,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
@@ -34,7 +33,6 @@ export interface FullDidDetailsCreationOpts {
   keys: IDidKeyDetails[]
   keyRelationships: MapKeyToRelationship
   lastTxIndex: BN
-  services?: IServiceDetails[]
 }
 
 function errorCheck({
@@ -85,18 +83,16 @@ export class FullDidDetails extends DidDetails {
     keys,
     keyRelationships = {},
     lastTxIndex,
-    services = [],
   }: FullDidDetailsCreationOpts) {
     errorCheck({
       did,
       keys,
       keyRelationships,
-      services,
       lastTxIndex,
     })
 
     const id = getIdentifierFromKiltDid(did)
-    super(did, id, services)
+    super(did, id)
 
     this.keys = new Map(keys.map((key) => [key.id, key]))
     this.lastTxIndex = lastTxIndex

@@ -10,7 +10,7 @@
  * @module IDidDocumentExporter
  */
 
-import type { IDidDetails, IDidKeyDetails, IServiceDetails } from '.'
+import type { IDidDetails, IDidKeyDetails } from '.'
 
 export enum DidDocumentPublicKeyType {
   Ed25519VerificationKey = 'Ed25519VerificationKey2018',
@@ -48,7 +48,6 @@ export type IDidDocument = {
   assertionMethod?: IDidPublicKeyId[]
   keyAgreement?: IDidPublicKeyId[]
   capabilityDelegation?: IDidPublicKeyId[]
-  service?: IServiceDetails[]
 }
 
 /**

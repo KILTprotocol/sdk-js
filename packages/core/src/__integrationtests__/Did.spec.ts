@@ -9,7 +9,7 @@
  * @group integration/did
  */
 
-import { Crypto, UUID } from '@kiltprotocol/utils'
+import { UUID } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
 import {
   DemoKeystore,
