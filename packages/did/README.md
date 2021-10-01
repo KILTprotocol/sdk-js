@@ -19,10 +19,10 @@ did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar
 
 Beyond the standard prefix `did:kilt:`, the `light:` component indicates that this DID is a light DID, hence it can be resolved and utilized offline.
 
-Light DIDs optionally support the specification of an **encryption key** (of one of the supported key types) and **service endpoints**, which are serialised, encoded and added at the end of the DID, like the following:
+Light DIDs optionally support the specification of an **encryption key** (of one of the supported key types), which is serialised, encoded and added at the end of the DID, like the following:
 
 ```
-did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:omFlomlwdWJsaWNLZXlYID9hc7PRyRlUp+syykH3KrsVZlObWlfqtegO1KRzuo8zZHR5cGV4GHgyNTUxOS14c2Fsc2EyMC1wb2x5MTMwNWFzgaNiaWRlZW1haWxvc2VydmljZUVuZHBvaW50bG15QGVtYWlsLm9yZ2R0eXBlbEVtYWlsU2VydmljZQ==
+did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5
 ```
 
 ### Creating a light DID
@@ -40,7 +40,6 @@ import {
   LightDidDetails,
   SigningAlgorithms,
 } from '@kiltprotocol/did'
-import type { IServiceDetails } from '@kiltprotocol/types'
 
 // Instantiate the demo keystore.
 const keystore = new DemoKeystore()
@@ -66,7 +65,7 @@ const lightDID = new LightDidDetails({
 console.log(lightDID.did)
 ```
 
-For cases in which also an encryption key and some external services need to be added to a light DID:
+For cases in which also an encryption key needs to be added to a light DID:
 
 ```typescript
 const keystore = new DemoKeystore()
@@ -87,15 +86,6 @@ const encryptionKeyPublicDetails = await keystore.generateKeypair({
   seed: encryptionSeed,
 })
 
-// Specify the endpoints the DID wishes to expose to other parties.
-const serviceEndpoints: IServiceDetails[] = [
-  {
-    id: 'email',
-    serviceEndpoint: 'my@email.org',
-    type: 'EmailService',
-  },
-]
-
 // Generate the KILT light DID with the information generated.
 const lightDID = new LightDidDetails({
   authenticationKey: {
@@ -105,11 +95,10 @@ const lightDID = new LightDidDetails({
   encryptionKey: {
     publicKey: encryptionKeyPublicDetails.publicKey,
     type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
-  },
-  services: serviceEndpoints,
+  }
 })
 
-// Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:omFlomlwdWJsaWNLZXlYID9hc7PRyRlUp+syykH3KrsVZlObWlfqtegO1KRzuo8zZHR5cGVmeDI1NTE5YXOBo2JpZGVlbWFpbG9zZXJ2aWNlRW5kcG9pbnRsbXlAZW1haWwub3JnZHR5cGVsRW1haWxTZXJ2aWNl`.
+// Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5`.
 console.log(lightDID.did)
 ```
 
@@ -127,7 +116,7 @@ did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e
 
 Here, there is no `light:` component, which indicates that the DID is a full DID and that the keys associated with it must not be derived from the DID identifier but must be retrieved from the KILT blockchain.
 
-Beyond an authentication key, and encryption key, and external services, a full DID also supports an **attestation key**, which must be used to write CTypes and attestations on the blockchain, and a **delegation key**, which must be used to write delegations on the blockchain.
+Beyond an authentication key and encryption key, a full DID also supports an **attestation key**, which must be used to write CTypes and attestations on the blockchain, and a **delegation key**, which must be used to write delegations on the blockchain.
 
 ### Creating and anchoring a full DID
 
@@ -200,7 +189,7 @@ await BlockchainUtils.signAndSubmitTx(extrinsic, aliceKiltAccount, {
 const fullDid = await DefaultResolver.resolveDoc(did)
 ```
 
-If additional keys and external services are to be specified, then they can be included in the DID create operation.
+If additional keys are to be specified, then they can be included in the DID create operation.
 
 ```typescript
 const resolveOn =
@@ -233,18 +222,7 @@ const encryptionKeyPublicDetails = await keystore.generateKeypair({
   alg: EncryptionAlgorithms.NaclBox,
 })
 
-// Define the set of URLs pointing to the external services exposed by the DID subject.
-const serviceEndpoints: EndpointData = {
-  contentHash: 'external-endpoints-content-hash00',
-  contentType: 'application/json',
-  urls: [
-    'https://myendpoint.io?endpoint_id=my_endpoint',
-    'ipfs://Qme7ss3ARVgxv6rXqVPiikMJ8u2NLgmgszg13pYrDKEoiu',
-    'ftp://myendpoint.io/endpoints/example.json',
-  ],
-}
-
-// Generate the DID-signed creation extrinsic with the provided keys and service endpoints.
+// Generate the DID-signed creation extrinsic with the provided keys.
 const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
   keystore,
   {
@@ -258,8 +236,7 @@ const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
       publicKey: encryptionKeyPublicDetails.publicKey,
       type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
     },
-  },
-  serviceEndpoints
+  }
 )
 // Will print `did:kilt:4sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
 console.log(did)
