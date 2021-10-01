@@ -108,7 +108,7 @@ function buildLightDetailsFromMatch({
  * @returns The DID or key details depending on the input URI. If not resource can be resolved, null is returned.
  */
 export async function resolve(
-  didUri: string,
+  didUri: string
 ): Promise<IDidResolvedDetails | IDidKeyDetails | null> {
   const { identifier, type, version, fragment, encodedDetails } = parseDidUrl(
     didUri
@@ -143,7 +143,7 @@ export async function resolve(
         }
 
         const fullDidDetails = await queryFullDetailsFromIdentifier(
-          identifier.substring(2),
+          identifier.substring(2)
         )
         if (fullDidDetails) {
           didResolvedDetails.metadata = {

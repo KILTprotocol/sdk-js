@@ -470,7 +470,7 @@ export async function getDidAuthenticationSignature(
 // This function is tested in the DID integration tests, in the `DID migration` test case.
 export async function upgradeDid(
   lightDid: LightDidDetails,
-  signer: KeystoreSigner,
+  signer: KeystoreSigner
 ): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
   const didAuthenticationKey = lightDid.getKeys(
     KeyRelationship.authentication
