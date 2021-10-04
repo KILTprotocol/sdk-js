@@ -2,8 +2,7 @@
   "version": "v1",
   "packages": {
     "@kiltprotocol/type-definitions": {
-      "version": "0.1.19",
-      "signature": "332db09c3624a23a5d3ae5efc8759fc7",
+      "signature": "1bcb43e765af740fb40d4242063d3121",
       "file": true,
       "replaced": "0.1.18"
     }

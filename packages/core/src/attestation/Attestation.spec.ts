@@ -75,6 +75,7 @@ describe('Attestation', () => {
         DidUtils.getIdentifierFromKiltDid(identityAlice),
         null,
         false,
+        [DidUtils.getIdentifierFromKiltDid(identityAlice), 10],
       ])
     )
 
@@ -107,6 +108,7 @@ describe('Attestation', () => {
         DidUtils.getIdentifierFromKiltDid(identityAlice),
         null,
         true,
+        [DidUtils.getIdentifierFromKiltDid(identityAlice), 10],
       ])
     )
 
