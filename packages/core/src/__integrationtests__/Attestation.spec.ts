@@ -144,7 +144,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     await expect(aClaim.verify()).resolves.toBe(true)
   }, 60_000)
 
-  it('should not be possible to attest a claim w/o tokens', async () => {
+  it('should not be possible to attest a claim without enough tokens', async () => {
     const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
 
     const claim = Claim.fromCTypeAndClaimContents(
