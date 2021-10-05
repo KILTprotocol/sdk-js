@@ -64,6 +64,14 @@ jobs:
           name: build-${{ matrix.node-version }}
           path: build.zip
 
+  bundle:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: yarn bundle
+        run: yarn bundle
+
   lint:
     runs-on: ubuntu-latest
     needs: build
