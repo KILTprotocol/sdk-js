@@ -96,11 +96,14 @@ export async function connected(): Promise<boolean> {
  * @returns If there was a cached and connected connection, or not.
  */
 export async function disconnect(): Promise<boolean> {
-  const isConnected = await connected()
-  if (isConnected) {
-    const resolved = await instance
-    await resolved?.api.disconnect()
-  }
+  const oldInstance = instance
   clearCache()
+
+  if (!oldInstance) return false
+
+  const resolved = await oldInstance
+  const { isConnected } = resolved.api
+  await resolved.api.disconnect()
+
   return isConnected
 }
