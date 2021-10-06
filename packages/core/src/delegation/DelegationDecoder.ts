@@ -22,6 +22,7 @@ import type {
   IDelegationNode,
   IDelegationHierarchyDetails,
 } from '@kiltprotocol/types'
+import { IDeposit } from '../common'
 import { Permission } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
 import type { BTreeSet, Struct } from '@polkadot/types/codec'
@@ -90,6 +91,7 @@ export interface IChainDelegationNode extends Struct {
   readonly parent: Option<DelegationNodeId>
   readonly children: BTreeSet<DelegationNodeId>
   readonly details: IChainDelegationDetails
+  readonly deposit: IDeposit
 }
 
 type DelegationOwnerIdentifier = AccountId

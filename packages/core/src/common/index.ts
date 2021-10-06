@@ -20,4 +20,4 @@
 
 /* eslint-disable import/prefer-default-export */
 
-export { Deposit } from './Deposit'
+export { IDeposit } from './Deposit'

@@ -24,7 +24,7 @@ import { Struct } from '@polkadot/types'
 /**
  * @internal
  */
-export interface Deposit extends Struct {
+export interface IDeposit extends Struct {
   owner: AccountId
   amount: Balance
 }
