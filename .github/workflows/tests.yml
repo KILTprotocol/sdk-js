@@ -56,8 +56,6 @@ jobs:
         run: yarn install --immutable
       - name: yarn build
         run: yarn build
-      - name: yarn bundle
-        run: yarn bundle
       - name: zip build
         run: zip -r build.zip .
       - name: upload build
