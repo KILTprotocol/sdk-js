@@ -211,7 +211,7 @@ describe('revocation', () => {
     secondDelegee = claimer
   })
 
-  it('delegator can revoke delegation', async () => {
+  it('delegator can revoke and remove delegation', async () => {
     const rootNode = await writeHierarchy(delegator, DriversLicense.hash)
     const delegationA = await addDelegation(
       rootNode.id,
@@ -219,6 +219,8 @@ describe('revocation', () => {
       delegator,
       firstDelegee
     )
+
+    // Test revocation
     await expect(
       delegationA
         .revoke(delegator.did)
@@ -232,6 +234,23 @@ describe('revocation', () => {
           })
         )
     ).resolves.not.toThrow()
+    await expect(delegationA.verify()).resolves.toBe(false)
+
+    // Test removal with deposit payer's account.
+    await expect(
+      delegationA
+        .remove()
+        .then((tx) =>
+          delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
+        )
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
+        )
+    ).resolves.not.toThrow()
+    await expect(DelegationNode.query(delegationA.id)).resolves.toBeNull()
     await expect(delegationA.verify()).resolves.toBe(false)
   }, 40_000)
 

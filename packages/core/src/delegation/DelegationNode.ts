@@ -40,6 +40,7 @@ import {
   getChildren,
   getAttestationHashes,
   query,
+  remove,
   revoke,
   storeAsDelegation,
   storeAsRoot,
@@ -396,6 +397,17 @@ export default class DelegationNode implements IDelegationNode {
       `:: revoke(${this.id}) with maxRevocations=${childrenCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${did}`
     )
     return revoke(this.id, steps, childrenCount)
+  }
+
+  /**
+   * [ASYNC] Removes the delegation node from the chain.
+   *
+   * @returns Promise containing an unsigned SubmittableExtrinsic.
+   */
+  public async remove(): Promise<SubmittableExtrinsic> {
+    const childrenCount = await this.subtreeNodeCount()
+    log.debug(`:: remove(${this.id}) with maxRevocations=${childrenCount}`)
+    return remove(this.id, childrenCount)
   }
 
   /**

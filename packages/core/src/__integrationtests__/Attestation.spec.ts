@@ -9,25 +9,30 @@
  * @group integration/attestation
  */
 
-import type { IClaim } from '@kiltprotocol/types'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import type { IAttestedClaim, IClaim } from '@kiltprotocol/types'
+import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import {
   createOnChainDidFromSeed,
   DemoKeystore,
   FullDidDetails,
 } from '@kiltprotocol/did'
+import { Crypto } from '@kiltprotocol/utils'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { KeyringPair } from '@polkadot/keyring/types'
 import Attestation from '../attestation/Attestation'
+import { revoke, remove } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { disconnect, init } from '../kilt'
 import Claim from '../claim/Claim'
+import CType from '../ctype/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import {
   CtypeOnChain,
   DriversLicense,
+  IsOfficialLicenseAuthority,
   devFaucet,
   WS_ADDRESS,
+  keypairFromRandom,
 } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
