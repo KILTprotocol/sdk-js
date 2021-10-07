@@ -115,3 +115,38 @@ export async function revoke(
   )
   return tx
 }
+
+/**
+ * @param claimHash
+ * @param maxDepth
+ * @internal
+ */
+export async function remove(
+  claimHash: string,
+  maxDepth: number
+): Promise<SubmittableExtrinsic> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  log.debug(() => `Removing attestation with claim hash ${claimHash}`)
+  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.remove(
+    claimHash,
+    maxDepth
+  )
+  return tx
+}
+
+/**
+ * @param claimHash
+ * @internal
+ */
+export async function reclaimDeposit(
+  claimHash: string
+): Promise<SubmittableExtrinsic> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  log.debug(
+    () => `Claiming deposit for the attestation with claim hash ${claimHash}`
+  )
+  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.reclaimDeposit(
+    claimHash
+  )
+  return tx
+}

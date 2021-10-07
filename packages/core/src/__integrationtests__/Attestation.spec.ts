@@ -9,30 +9,25 @@
  * @group integration/attestation
  */
 
-import type { IAttestedClaim, IClaim } from '@kiltprotocol/types'
-import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
+import type { IClaim } from '@kiltprotocol/types'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
   createOnChainDidFromSeed,
   DemoKeystore,
   FullDidDetails,
 } from '@kiltprotocol/did'
-import { Crypto } from '@kiltprotocol/utils'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { KeyringPair } from '@polkadot/keyring/types'
 import Attestation from '../attestation/Attestation'
-import { revoke } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import { disconnect, init } from '../kilt'
 import Claim from '../claim/Claim'
-import CType from '../ctype/CType'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import {
   CtypeOnChain,
   DriversLicense,
-  IsOfficialLicenseAuthority,
   devFaucet,
   WS_ADDRESS,
-  keypairFromRandom,
 } from './utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
@@ -80,6 +75,21 @@ describe('handling attestations that do not exist', () => {
         )
     ).rejects.toThrow()
   }, 30_000)
+
+  it('Attestation.remove', async () => {
+    return expect(
+      Attestation.remove(claimHash, 0)
+        .then((tx) =>
+          attester.authorizeExtrinsic(tx, signer, tokenHolder.address)
+        )
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
+        )
+    ).rejects.toThrow()
+  }, 30_000)
 })
 
 describe('When there is an attester, claimer and ctype drivers license', () => {
@@ -115,7 +125,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     expect(request.claim.contents).toMatchObject(content)
   })
 
-  it('should be possible to attest a claim', async () => {
+  it('should be possible to attest a claim and then claim the attestation deposit back', async () => {
     const content: IClaim['contents'] = { name: 'Ralph', age: 12 }
 
     const claim = Claim.fromCTypeAndClaimContents(
@@ -142,6 +152,18 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
     expect(aClaim.verifyData()).toBe(true)
     await expect(aClaim.verify()).resolves.toBe(true)
+
+    // Claim the deposit back by submitting the reclaimDeposit extrinsic with the deposit payer's account.
+    await attestation.reclaimDeposit().then((tx) =>
+      BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    )
+
+    // Test that the attestation has been deleted.
+    await expect(Attestation.query(attestation.claimHash)).resolves.toBeNull()
+    await expect(attestation.checkValidity()).resolves.toBeFalsy()
   }, 60_000)
 
   it('should not be possible to attest a claim without enough tokens', async () => {
@@ -311,6 +333,19 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           })
         )
       await expect(attClaim.verify()).resolves.toBeFalsy()
+    }, 40_000)
+
+    it('should be possible for the deposit payer to remove an attestation', async () => {
+      await remove(attClaim.getHash(), 0)
+        .then((call) =>
+          attester.authorizeExtrinsic(call, signer, tokenHolder.address)
+        )
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
+        )
     }, 40_000)
   })
 

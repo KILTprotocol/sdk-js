@@ -218,6 +218,12 @@ const __mocked_api: any = {
       revoke: jest.fn((claimHash: string) => {
         return __getMockSubmittableExtrinsic()
       }),
+      remove: jest.fn((claimHash: string) => {
+        return __getMockSubmittableExtrinsic()
+      }),
+      reclaimDeposit: jest.fn((claimHash: string) => {
+        return __getMockSubmittableExtrinsic()
+      }),
     },
     balances: {
       transfer: jest.fn(() => __getMockSubmittableExtrinsic()),
@@ -294,6 +300,10 @@ const __mocked_api: any = {
           '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',  // Account
           null,                                                // delegation-id?
           true,                                                // revoked flag
+          '{
+            '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs,
+            10
+          }',                                                  // deposit details
         ]
       )
       */
@@ -330,6 +340,10 @@ const __mocked_api: any = {
           '0x1234',                                                     // parent-id?
           '[0x2345,0x3456]                                              // children ids
           '{4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs,false,0}', // {owner, revocation status, permissions}
+          '{
+            '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs,
+            10
+          }',                                                           // deposit details
         ]
       )
       */
