@@ -91,7 +91,8 @@ export function getHashForSchema(schema: schemaPropsForHashing): string {
     title: schema.title,
     type: schema.type,
   }
-  return Crypto.hashObjectAsStr(hashVal)
+  const hash = Crypto.hashObjectAsStr(hashVal)
+  return hash
 }
 
 export function getIdForCTypeHash(hash: string): string {

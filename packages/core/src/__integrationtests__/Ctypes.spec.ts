@@ -38,7 +38,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
 
   function makeCType(): CType {
     ctypeCounter += 1
-    return CType.fromSchema({
+    const ctype = CType.fromSchema({
       $id: `kilt:ctype:0x${ctypeCounter}`,
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
       title: `ctype1${ctypeCounter}`,
@@ -47,6 +47,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
       },
       type: 'object',
     } as ICType['schema'])
+    return ctype
   }
 
   beforeAll(async () => {
