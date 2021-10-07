@@ -22,7 +22,6 @@ import type {
   IDelegationNode,
   IDelegationHierarchyDetails,
 } from '@kiltprotocol/types'
-import { IDeposit } from '../common'
 import { Permission } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
 import type { BTreeSet, Struct } from '@polkadot/types/codec'
@@ -30,6 +29,7 @@ import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
 import type { Bool, u32 } from '@polkadot/types/primitive'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
+import { IDeposit } from '../common'
 
 export type CodecWithId<C> = {
   id: string
