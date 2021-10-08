@@ -254,7 +254,7 @@ describe('revocation', () => {
     // Check that delegation fails to verify and that it is not stored on the blockchain anymore.
     await expect(DelegationNode.query(delegationA.id)).resolves.toBeNull()
     await expect(delegationA.verify()).resolves.toBe(false)
-  }, 40_000)
+  }, 60_000)
 
   it('delegee cannot revoke root but can revoke own delegation', async () => {
     const delegationRoot = await writeHierarchy(delegator, DriversLicense.hash)
