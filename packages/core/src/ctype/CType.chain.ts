@@ -15,13 +15,13 @@ import type { AccountId } from '@polkadot/types/interfaces'
 import { DecoderUtils, Crypto } from '@kiltprotocol/utils'
 import type {
   ICType,
-  ICTypeSchema,
   IDidDetails,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DidUtils } from '@kiltprotocol/did'
+import { getSchemaPropertiesForHash } from './CType.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('CType')
 
@@ -32,16 +32,8 @@ const log = ConfigService.LoggingFactory.getLogger('CType')
 export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Create tx for 'ctype.add'`)
-  // We need to remove the CType ID from the CType before storing it on the blockchain
-  // otherwise the resulting hash will be different.
-  const schemaWithoutId: Omit<ICTypeSchema, '$id'> = {
-    $schema: ctype.schema.$schema,
-    properties: ctype.schema.properties,
-    title: ctype.schema.title,
-    type: ctype.schema.type,
-  }
   const tx: SubmittableExtrinsic = blockchain.api.tx.ctype.add(
-    Crypto.encodeObjectAsStr(schemaWithoutId)
+    Crypto.encodeObjectAsStr(getSchemaPropertiesForHash(ctype.schema))
   )
   return tx
 }

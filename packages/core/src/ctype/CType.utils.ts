@@ -84,15 +84,19 @@ type schemaPropsForHashing = {
   type: ICType['schema']['type']
 }
 
+export function getSchemaPropertiesForHash(
+  ctypeSchema: ICType['schema']
+): schemaPropsForHashing {
+  // We need to remove the CType ID from the CType before storing it on the blockchain
+  // otherwise the resulting hash will be different, as the hash on chain would contain the CType ID,
+  // which is itself a hash of the CType schema.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { $id, ...schemaWithoutId } = ctypeSchema
+  return schemaWithoutId
+}
+
 export function getHashForSchema(schema: schemaPropsForHashing): string {
-  const hashVal = {
-    $schema: schema.$schema,
-    properties: schema.properties,
-    title: schema.title,
-    type: schema.type,
-  }
-  const hash = Crypto.hashObjectAsStr(hashVal)
-  return hash
+  return Crypto.hashObjectAsStr(schema)
 }
 
 export function getIdForCTypeHash(hash: string): string {

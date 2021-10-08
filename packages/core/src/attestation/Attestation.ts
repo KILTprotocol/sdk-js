@@ -88,7 +88,7 @@ export default class Attestation implements IAttestation {
   /**
    * [STATIC] [ASYNC] Reclaims the deposit of an attestation and removes the attestation. Also available as an instance method.
    *
-   * This call is only be successfully executed if the submitter of the transaction is the original payer of the attestation deposit.
+   * This call can only be successfully executed if the submitter of the transaction is the original payer of the attestation deposit.
    *
    * @param claimHash - The hash of the claim that corresponds to the attestation to remove and its deposit to be returned to the original payer.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
@@ -246,7 +246,7 @@ export default class Attestation implements IAttestation {
   /**
    * [STATIC] [ASYNC] Reclaims the deposit of an attestation and removes the attestation. Also available as an instance method.
    *
-   * This call is only be successfully executed if the submitter of the transaction is the original payer of the attestation deposit.
+   * This call can only be successfully executed if the submitter of the transaction is the original payer of the attestation deposit.
    *
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    */

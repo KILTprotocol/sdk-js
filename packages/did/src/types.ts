@@ -159,6 +159,7 @@ export interface DidAuthorizedCallOperation extends Struct {
   txCounter: u64
   call: Call
   submitter: AccountId
+  blockNumber: AnyNumber
 }
 
 export type JsonDidDocument = {

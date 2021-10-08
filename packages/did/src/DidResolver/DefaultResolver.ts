@@ -122,7 +122,7 @@ export async function resolve(
         return { details } as IDidResolvedDetails
       }
 
-      // Otherwise, return either the key referenced by the URI.
+      // Otherwise, return either the key referenced by the URI or null.
       return details?.getKey(didUri) || null
     }
     case 'light': {
