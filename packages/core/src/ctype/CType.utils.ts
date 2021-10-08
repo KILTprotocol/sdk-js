@@ -16,6 +16,7 @@ import type {
   IClaim,
   CompressedCType,
   CompressedCTypeSchema,
+  CTypeSchemaWithoutId,
 } from '@kiltprotocol/types'
 import { jsonabc, Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
@@ -77,33 +78,34 @@ export async function verifyOwner(ctype: ICType): Promise<boolean> {
   return owner ? owner === ctype.owner : false
 }
 
-type schemaPropsForHashing = {
-  $schema: ICType['schema']['$schema']
-  properties: ICType['schema']['properties']
-  title: ICType['schema']['title']
-  type: ICType['schema']['type']
-}
-
 export function getSchemaPropertiesForHash(
-  ctypeSchema: ICType['schema']
-): schemaPropsForHashing {
+  ctypeSchema: CTypeSchemaWithoutId | ICType['schema']
+): CTypeSchemaWithoutId {
   // We need to remove the CType ID from the CType before storing it on the blockchain
   // otherwise the resulting hash will be different, as the hash on chain would contain the CType ID,
   // which is itself a hash of the CType schema.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { $id, ...schemaWithoutId } = ctypeSchema
-  return schemaWithoutId
+  if ((ctypeSchema as ICType['schema']).$id) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { $id, ...schemaWithoutId } = ctypeSchema as ICType['schema']
+    return schemaWithoutId
+  }
+  return ctypeSchema
 }
 
-export function getHashForSchema(schema: schemaPropsForHashing): string {
-  return Crypto.hashObjectAsStr(schema)
+export function getHashForSchema(
+  schema: CTypeSchemaWithoutId | ICType['schema']
+): string {
+  const preparedSchema = getSchemaPropertiesForHash(schema)
+  return Crypto.hashObjectAsStr(preparedSchema)
 }
 
 export function getIdForCTypeHash(hash: string): string {
   return `kilt:ctype:${hash}`
 }
 
-export function getIdForSchema(schema: schemaPropsForHashing): string {
+export function getIdForSchema(
+  schema: CTypeSchemaWithoutId | ICType['schema']
+): string {
   return getIdForCTypeHash(getHashForSchema(schema))
 }
 
@@ -269,5 +271,6 @@ export default {
   verifyOwner,
   getHashForSchema,
   getIdForSchema,
+  getSchemaPropertiesForHash,
   validateNestedSchemas,
 }
