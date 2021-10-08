@@ -7,14 +7,13 @@
 
 /**
  * @packageDocumentation
- * @module Claim
+ * @module Deposit
  */
 
 import type { AccountId, Balance } from '@polkadot/types/interfaces'
 import { Struct } from '@polkadot/types'
 
 /**
- * @packageDocumentation
  * @internal
  */
 export interface IDeposit extends Struct {

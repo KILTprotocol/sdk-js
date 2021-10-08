@@ -9,7 +9,7 @@
 
 /**
  * @packageDocumentation
- * @internal
+ * @module Common
  */
 
 export { IDeposit } from './Deposit'

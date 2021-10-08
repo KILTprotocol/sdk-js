@@ -80,7 +80,7 @@ export async function verifyOwner(ctype: ICType): Promise<boolean> {
 
 export function getSchemaPropertiesForHash(
   ctypeSchema: CTypeSchemaWithoutId | ICType['schema']
-): CTypeSchemaWithoutId {
+): Partial<ICType['schema']> {
   // We need to remove the CType ID from the CType before storing it on the blockchain
   // otherwise the resulting hash will be different, as the hash on chain would contain the CType ID,
   // which is itself a hash of the CType schema.
