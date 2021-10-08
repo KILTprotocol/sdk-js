@@ -69,6 +69,8 @@ describe('when there is a dev chain with a faucet', () => {
   // in the other test cases.
   it.skip('should be able to faucet coins to a new address', async () => {
     const address: string = addressFromRandom()
+    const funny = jest.fn()
+    listenToBalanceChanges(address, funny)
     const balanceBefore = await getBalances(faucet.address)
     await makeTransfer(address, EXISTENTIAL_DEPOSIT).then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, faucet, {
@@ -84,6 +86,7 @@ describe('when there is a dev chain with a faucet', () => {
       balanceBefore.free.sub(balanceAfter.free).gt(EXISTENTIAL_DEPOSIT)
     ).toBeTruthy()
     expect(balanceIdent.free.toNumber()).toBe(EXISTENTIAL_DEPOSIT.toNumber())
+    expect(funny).toBeCalled()
   }, 30_000)
 })
 
