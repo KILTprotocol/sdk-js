@@ -876,6 +876,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@kiltprotocol/docs@workspace:docs":
+  version: 0.0.0-use.local
+  resolution: "@kiltprotocol/docs@workspace:docs"
+  dependencies:
+    "@kiltprotocol/sdk-js": "workspace:*"
+    "@polkadot/keyring": ^7.1.2
+    "@polkadot/types": ^5.4.1
+    "@polkadot/util": ^7.1.2
+    typescript-logging: ^0.6.4
+  languageName: unknown
+  linkType: soft
+
 "@kiltprotocol/messaging@workspace:*, @kiltprotocol/messaging@workspace:packages/messaging":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/messaging@workspace:packages/messaging"
@@ -890,7 +902,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kiltprotocol/sdk-js@workspace:packages/sdk-js":
+"@kiltprotocol/sdk-js@workspace:*, @kiltprotocol/sdk-js@workspace:packages/sdk-js":
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/sdk-js@workspace:packages/sdk-js"
   dependencies:
