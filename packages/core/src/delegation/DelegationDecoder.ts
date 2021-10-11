@@ -29,7 +29,7 @@ import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
 import type { Bool, u32 } from '@polkadot/types/primitive'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
-import { IDeposit } from '../common'
+import { Deposit } from '../common'
 
 export type CodecWithId<C> = {
   id: string
@@ -91,7 +91,7 @@ export interface IChainDelegationNode extends Struct {
   readonly parent: Option<DelegationNodeId>
   readonly children: BTreeSet<DelegationNodeId>
   readonly details: IChainDelegationDetails
-  readonly deposit: IDeposit
+  readonly deposit: Deposit
 }
 
 type DelegationOwnerIdentifier = AccountId
