@@ -17,7 +17,7 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DidUtils } from '@kiltprotocol/did'
 import Attestation from './Attestation'
-import { IDeposit } from '../common'
+import { Deposit } from '../common'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
@@ -50,7 +50,7 @@ export interface AttestationDetails extends Struct {
   readonly attester: AccountId
   readonly delegationId: Option<DelegationNodeId>
   readonly revoked: boolean
-  readonly deposit: IDeposit
+  readonly deposit: Deposit
 }
 
 function decode(

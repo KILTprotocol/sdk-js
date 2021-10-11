@@ -12,4 +12,4 @@
  * @module Common
  */
 
-export { IDeposit } from './Deposit'
+export { Deposit } from './Deposit'
