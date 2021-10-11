@@ -65,7 +65,12 @@ describe('When there is an CtypeCreator and a verifier', () => {
       ctype
         .store()
         .then((tx) =>
-          ctypeCreator.authorizeExtrinsic(tx, keystore, bobbyBroke.address)
+          ctypeCreator.authorizeExtrinsic(
+            tx,
+            keystore,
+            bobbyBroke.address,
+            false
+          )
         )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
