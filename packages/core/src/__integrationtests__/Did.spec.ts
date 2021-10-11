@@ -86,7 +86,7 @@ describe('write and didDeleteTx', () => {
       signingPublicKey: key.publicKey,
       alg: key.type,
       // Use a different account than the submitter one
-      txSubmitter: otherAccount.address,
+      submitter: otherAccount.address,
     })
 
     await expect(
@@ -112,7 +112,7 @@ describe('write and didDeleteTx', () => {
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
-      txSubmitter: paymentAccount.address,
+      submitter: paymentAccount.address,
     })
 
     await expect(
@@ -171,7 +171,7 @@ it('creates and updates DID', async () => {
     signer: keystore as KeystoreSigner<string>,
     signingPublicKey: key.publicKey,
     alg: key.type,
-    txSubmitter: paymentAccount.address,
+    submitter: paymentAccount.address,
   })
 
   await expect(
@@ -326,7 +326,7 @@ describe('DID authorization', () => {
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
-      txSubmitter: paymentAccount.address,
+      submitter: paymentAccount.address,
     })
     await expect(
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -361,7 +361,7 @@ describe('DID authorization', () => {
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
-      txSubmitter: paymentAccount.address,
+      submitter: paymentAccount.address,
     })
     await expect(
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -382,7 +382,7 @@ describe('DID authorization', () => {
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
-      txSubmitter: paymentAccount.address,
+      submitter: paymentAccount.address,
     })
 
     await expect(
@@ -405,7 +405,7 @@ describe('DID authorization', () => {
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
-      txSubmitter: paymentAccount.address,
+      submitter: paymentAccount.address,
     })
     await expect(
       BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {

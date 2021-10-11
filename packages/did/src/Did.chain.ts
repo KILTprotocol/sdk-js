@@ -258,7 +258,7 @@ export async function generateDidAuthenticatedTx({
   txCounter,
   didIdentifier,
   call,
-  txSubmitter,
+  submitter,
   blockNumber,
 }: AuthenticationTxCreationInput & KeystoreSigningOptions): Promise<
   SubmittableExtrinsic
@@ -267,7 +267,7 @@ export async function generateDidAuthenticatedTx({
   const block = blockNumber || (await blockchain.api.query.system.number())
   const signableCall = encodeDidAuthorizedCallOperation(
     blockchain.api.registry,
-    { txCounter, didIdentifier, call, txSubmitter, blockNumber: block }
+    { txCounter, didIdentifier, call, submitter, blockNumber: block }
   )
   const signature = await signer.sign({
     data: signableCall.toU8a(),

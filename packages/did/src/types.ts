@@ -83,7 +83,7 @@ export interface IAuthorizeCallOptions {
   didIdentifier: IIdentity['address']
   txCounter: AnyNumber
   call: Extrinsic
-  txSubmitter: IIdentity['address']
+  submitter: IIdentity['address']
   blockNumber: AnyNumber
 }
 

@@ -257,7 +257,7 @@ export function encodeDidAuthorizedCallOperation(
     didIdentifier,
     txCounter,
     call,
-    txSubmitter,
+    submitter,
     blockNumber,
   }: IAuthorizeCallOptions
 ): DidAuthorizedCallOperation {
@@ -268,7 +268,7 @@ export function encodeDidAuthorizedCallOperation(
     txCounter,
     call,
     blockNumber,
-    submitter: txSubmitter,
+    submitter,
   })
 }
 

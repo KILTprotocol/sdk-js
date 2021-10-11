@@ -173,7 +173,7 @@ export class FullDidDetails extends DidDetails {
       signer,
       call: extrinsic,
       txCounter: this.getNextTxIndex(incrementTxIndex),
-      txSubmitter: submitterAccount,
+      submitter: submitterAccount,
     })
   }
 
