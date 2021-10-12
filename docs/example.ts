@@ -1,20 +1,34 @@
+/**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
 /* eslint-disable no-console */
-import Kilt from '@kiltprotocol/sdk-js'
+import Kilt, {
+  IAcceptClaimsForCTypes,
+  IRequestAttestationForClaim,
+  ISubmitAttestationForClaim,
+  ISubmitClaimsForCTypes,
+  KeyRelationship,
+} from '@kiltprotocol/sdk-js'
 import type {
   AttestedClaim,
-  Actors,
   Claim,
   CType,
   ICType,
-  Identity,
+  Did,
 } from '@kiltprotocol/sdk-js'
+import { KeyringPair } from '@polkadot/keyring/types'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
 const SEP = '_'
 
 async function setup(): Promise<{
-  claimer: Identity
-  attester: Identity
+  claimerLightDid: Did.LightDidDetails
+  attesterOnChainDid: Did.FullDidDetails
+  attester: KeyringPair
   claim: Claim
   ctype: CType
 }> {
@@ -27,9 +41,15 @@ async function setup(): Promise<{
 
   // To get an attestation, we need an Attester
   // we can generate a new keypair:
-  // const attester = await Kilt.AttesterIdentity.buildFromMnemonic("...")
+  const keyring = new Kilt.Utils.Keyring.Keyring({
+    // KILT has registered the ss58 prefix 38
+    ss58Format: 38,
+    type: 'ed25519',
+  })
+  // generate a Mnemonic for the attester
+  // const generateAttesterMnemonic = Kilt.Utils.UUID.generate()
   // or we just use unsafe precalculated keys (just for demo purposes!):
-  const attester = Kilt.Identity.buildFromMnemonic(
+  const attester = keyring.addFromMnemonic(
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together',
     // using ed25519 bc this identity has test coins from the start on the development chain spec
     { signingKeyPairType: 'ed25519' }
@@ -38,6 +58,18 @@ async function setup(): Promise<{
     'Attester free balance is:',
     (await Kilt.Balance.getBalances(attester.address)).free.toString()
   )
+
+  // Build an on chain DID for the attester to make transactions on the KILT chain, using our demo keystore
+  const keystore = new Kilt.Did.DemoKeystore()
+  const attesterOnChainDid = await Kilt.Did.createOnChainDidFromSeed(
+    attester,
+    keystore,
+    // using ed25519 as key type because this is how the endowed identity is set up
+    'ed25519'
+  )
+
+  // Will print `did:kilt:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
+  console.log(attesterOnChainDid.did)
 
   // ------------------------- CType    ----------------------------------------
   // First build a schema
@@ -76,6 +108,7 @@ async function setup(): Promise<{
   try {
     await ctype
       .store()
+      .then((tx) => attesterOnChainDid.authorizeExtrinsic(tx, keystore))
       .then((tx) => Kilt.BlockchainUtils.signAndSubmitTx(tx, attester))
   } catch (e) {
     console.log(
@@ -86,34 +119,42 @@ async function setup(): Promise<{
 
   // ------------------------- Claimer  ----------------------------------------
   // How to generate an Identity
-  // const mnemonic = Kilt.Identity.generateMnemonic()
-  const claimer = Kilt.Identity.buildFromMnemonic(
+  // const mnemonic = Kilt.Utils.UUID.generate()
+  const claimerMnemonic =
     'wish rather clinic rather connect culture frown like quote effort cart faculty'
+
+  // Create a light DID from the generated authentication key.
+  const claimerLightDid = await Kilt.Did.createLightDidFromSeed(
+    keystore,
+    claimerMnemonic
   )
-  // const address = claimer.address
+
+  // const did = claimer.did
 
   // At this point the generated Identity has no tokens.
   // If you want to interact with the blockchain, you will have to get some.
   // Contact faucet@kilt.io and provide the address of the identity
+  // All tokens generated are play tokens and hold no value
 
   const rawClaim = {
     name: 'Alice',
     age: 29,
   }
 
-  const claim = new Kilt.Claim({
-    cTypeHash: ctypeHash,
-    contents: rawClaim,
-    owner: claimer.address,
-  })
+  const claim = Kilt.Claim.fromCTypeAndClaimContents(
+    ctype,
+    rawClaim,
+    claimerLightDid.did
+  )
 
-  console.log('Claimer', claimer.address, '\n')
-  console.log('Attester', attester.address, '\n')
+  console.log('Claimer', claimerLightDid.did, '\n')
+  console.log('Attester', attesterOnChainDid.did, '\n')
   console.log('Ctype', ctype, '\n')
   console.log('Claim', claim, '\n')
 
   return {
-    claimer,
+    claimerLightDid,
+    attesterOnChainDid,
     attester,
     ctype,
     claim,
@@ -121,99 +162,128 @@ async function setup(): Promise<{
 }
 
 async function doAttestation(
-  claimer: Identity,
-  attester: Identity,
+  claimerLightDid: Did.LightDidDetails,
+  attesterOnChainDid: Did.FullDidDetails,
+  attester: KeyringPair,
   claim: Claim
 ): Promise<{
   credential: AttestedClaim
-  revocationHandle: Actors.types.IRevocationHandle
 }> {
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' ATTESTATION ')
   )
-  // ------------------------- Attester ----------------------------------------
-
-  // const {
-  //   message: initiateAttestationMessage,
-  //   session: attestersSession,
-  // } = await Attester.initiateAttestation(attester, claimer.getPublicIdentity())
+  // Initialize the demo keystore
+  const keystore = new Kilt.Did.DemoKeystore()
 
   // ------------------------- CLAIMER -----------------------------------------
   // And we need to build a request for an attestation
 
-  const {
-    message: reqAttestation,
-    session: claimerSession,
-  } = Kilt.Actors.Claimer.requestAttestation(
-    claim,
-    claimer,
-    attester.getPublicIdentity()
-    // {
-    //   initiateAttestationMsg: initiateAttestationMessage,
-    // }
+  const requestForAttestation = Kilt.RequestForAttestation.fromClaim(claim)
+  await requestForAttestation.signWithDid(keystore, claimerLightDid)
+  // The claimer can send a message to the attester requesting to do the attestation
+  const claimerRequestMessage = new Kilt.Message(
+    {
+      type: Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      content: { requestForAttestation },
+    },
+    claimerLightDid.did,
+    attesterOnChainDid.did
   )
 
   // The message can be encrypted as follows
-  const reqAttestationEnc = reqAttestation.encrypt(
-    claimer,
-    attester.getPublicIdentity()
+  const encryptMessage = await claimerRequestMessage.encrypt(
+    claimerLightDid.getKey(KeyRelationship.keyAgreement)[0],
+    attesterOnChainDid.getKey(KeyRelationship.keyAgreement)[0],
+    keystore
   )
 
   // claimer sends [[encrypted]] to the attester
 
   // ------------------------- Attester ----------------------------------------
-  // Check the validity of the message
-  Kilt.Message.ensureHashAndSignature(reqAttestationEnc, claimer.address)
-  // When the Attester receives the message, she can decrypt it
-  const reqAttestationDec = Kilt.Message.decrypt(reqAttestationEnc, attester)
-
-  // And make sure, that the sender is the owner of the identity
-  Kilt.Message.ensureOwnerIsSender(reqAttestationDec)
-
-  const {
-    revocationHandle,
-    message: submitAttestation,
-  } = await Kilt.Actors.Attester.issueAttestation(
-    attester,
-    reqAttestationDec,
-    claimer.getPublicIdentity()
-    // attestersSession
-  )
-  console.log(
-    'revocationHandle should be stored for revocation: ',
-    revocationHandle
+  // When the Attester receives the message, she can decrypt it,
+  // internally checks the sender is the owner of the identity
+  // and checks the hash and signature of the message
+  const reqAttestationDec = await Kilt.Message.decrypt(
+    encryptMessage,
+    keystore,
+    {
+      resolver: attesterOnChainDid.getKey(KeyRelationship.keyAgreement)[0],
+    }
   )
 
+  const claimersRequest = Kilt.RequestForAttestation.fromRequest(
+    (reqAttestationDec.body as IRequestAttestationForClaim).content
+      .requestForAttestation
+  )
+  // Attester can check the data and verify the data has not been tampered with
+  if (!claimersRequest.verifyData()) {
+    console.log('data is false')
+  }
+
+  // Attester can check if the signature of the claimer matches the request for attestation object
+  claimersRequest.verifySignature({
+    resolver: claimerLightDid.getKey(KeyRelationship.keyAgreement)[0],
+  })
+
+  const attestation = Kilt.Attestation.fromRequestAndDid(
+    claimersRequest,
+    attesterOnChainDid.did
+  )
+  console.log('the attestation: ', attestation)
+  await attestation
+    .store()
+    .then((tx) => attesterOnChainDid.authorizeExtrinsic(tx, keystore))
+    .then((tx) =>
+      Kilt.BlockchainUtils.signAndSubmitTx(tx, attester, {
+        resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    )
   // And send a message back
-  const submitAttestationEnc = submitAttestation.encrypt(
-    attester,
-    claimer.getPublicIdentity()
+  const attesterAttestationMessage = new Kilt.Message(
+    {
+      type: Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      content: { attestation },
+    },
+    attesterOnChainDid.did,
+    claimerLightDid.did
+  )
+
+  const submitAttestationEnc = await attesterAttestationMessage.encrypt(
+    attesterOnChainDid.getKey(KeyRelationship.keyAgreement)[0],
+    claimerLightDid.getKey(KeyRelationship.keyAgreement)[0],
+    keystore
   )
 
   // ------------------------- CLAIMER -----------------------------------------
-  Kilt.Message.ensureHashAndSignature(submitAttestationEnc, attester.address)
-  const submitAttestationDec = Kilt.Message.decrypt(
+  // internally, the decrypt checks the sender is the owner of the identity
+  // and checks the hash and signature of the message
+  const submitAttestationDec = await Kilt.Message.decrypt(
     submitAttestationEnc,
-    claimer
+    keystore,
+    {
+      resolver: claimerLightDid.getKey(KeyRelationship.keyAgreement)[0],
+    }
   )
 
-  const credential = Kilt.Actors.Claimer.buildCredential(
-    submitAttestationDec,
-    claimerSession
+  const credential = Kilt.AttestedClaim.fromRequestAndAttestation(
+    // The claimer has access to the request for attestation
+    requestForAttestation,
+    (submitAttestationDec.body as ISubmitAttestationForClaim).content
+      .attestation
   )
 
-  console.log('RFO Message', reqAttestation.body, '\n')
-  console.log('Submit attestation:', submitAttestation.body, '\n')
+  console.log('RFA Message', reqAttestationDec.body, '\n')
+  console.log('Submit attestation:', submitAttestationDec.body, '\n')
   console.log('AttestedClaim', credential, '\n')
 
   return {
     credential,
-    revocationHandle,
   }
 }
 
 async function doVerification(
-  claimer: Identity,
+  claimerLightDid: Did.LightDidDetails,
   credential: AttestedClaim
 ): Promise<void> {
   console.log(
@@ -221,56 +291,108 @@ async function doVerification(
       ' VERIFICATION '
     )
   )
-  const verifierMnemonic = Kilt.Identity.generateMnemonic()
-  const verifier = Kilt.Identity.buildFromMnemonic(verifierMnemonic)
+  const keyring = new Kilt.Utils.Keyring.Keyring({
+    // KILT has registered the ss58 prefix 38
+    ss58Format: 38,
+    type: 'ed25519',
+  })
+  const keystore = new Kilt.Did.DemoKeystore()
+  const verifierMnemonic = Kilt.Utils.UUID.generate()
+  const verifier = keyring.addFromMnemonic(verifierMnemonic)
+  const verifierLightDid = await Kilt.Did.createLightDidFromSeed(
+    keystore,
+    verifierMnemonic
+  )
   // ------------------------- Verifier ----------------------------------------
-  const { session, message: request } = Kilt.Actors.Verifier.newRequestBuilder()
-    .requestPresentationForCtype({
-      ctypeHash: credential.attestation.cTypeHash,
-      requestUpdatedAfter: new Date(),
-      properties: ['age'],
-    })
-    .finalize(verifier, claimer.getPublicIdentity())
+  const verifierAcceptedClaimsMessage = new Kilt.Message(
+    {
+      type: Kilt.Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES,
+      content: [credential.request.claim.cTypeHash],
+    },
+    verifierLightDid.did,
+    claimerLightDid.did
+  )
+
+  const verifierAcceptedClaimsMessageEnc = await verifierAcceptedClaimsMessage.encrypt(
+    verifierLightDid.getKey(KeyRelationship.keyAgreement[0]),
+    claimerLightDid.getKey(KeyRelationship.keyAgreement[0]),
+    keystore
+  )
 
   // ------------------------- Claimer -----------------------------------------
-  const presentation = Kilt.Actors.Claimer.createPresentation(
-    claimer,
-    request,
-    verifier.getPublicIdentity(),
-    [credential]
+  // The claimer receives a message from the verifier of the accepted ctypes
+  const verifierAcceptedClaimsMessageDec = await Kilt.Message.decrypt(
+    verifierAcceptedClaimsMessageEnc,
+    keystore
+  )
+
+  const ctypeHash = (verifierAcceptedClaimsMessageDec.body as IAcceptClaimsForCTypes)
+    .content[0]
+  console.log('claimer checks the ctypeHash matches', ctypeHash)
+  // The claimer can create a challenge for the verifier
+  const challenge = Kilt.Utils.UUID.generate()
+
+  const presentation = await credential.createPresentation({
+    signer: keystore,
+    claimerDid: claimerLightDid,
+    challenge,
+  })
+  // Sending the presentation with challenge
+  const claimerSubmitClaimsMessage = new Kilt.Message(
+    {
+      type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      content: [presentation],
+    },
+    claimerLightDid.did,
+    verifierLightDid.did
+  )
+  // Claimer encrypts the claims message to the verifier
+  const claimerSubmitClaimsMessageEnc = await claimerSubmitClaimsMessage.encrypt(
+    claimerLightDid.getKey(KeyRelationship.keyAgreement[0]),
+    verifierLightDid.getKey(KeyRelationship.keyAgreement[0]),
+    keystore
   )
 
   // ------------------------- Verifier ----------------------------------------
   // The verifier needs the public identity of the attester. Either he already has a list of trusted
   // attesters or he needs to resolve them differently. A Decentralized Identity (DID) would be an
   // option for that.
-  const { verified, claims } = await Kilt.Actors.Verifier.verifyPresentation(
-    presentation,
-    session
+
+  const verifierSubmitClaimsMessageDec = await Kilt.Message.decrypt(
+    claimerSubmitClaimsMessageEnc,
+    keystore
   )
-  console.log('Received claims: ', JSON.stringify(claims))
+  const presentationMessage = (verifierSubmitClaimsMessageDec.body as ISubmitClaimsForCTypes)
+    .content
+  const verifierablePresentation = Kilt.AttestedClaim.fromAttestedClaim(
+    presentationMessage[0]
+  )
+  const verified = verifierablePresentation.verify({ challenge })
+
+  console.log('Received claims: ', JSON.stringify(presentationMessage))
   console.log('All valid? ', verified)
 }
 
 // do an attestation and a verification
 async function example(): Promise<boolean> {
-  const { claimer, attester, claim } = await setup()
+  const { claimerLightDid, attesterOnChainDid, claim, attester } = await setup()
 
-  const { credential, revocationHandle } = await doAttestation(
-    claimer,
+  const { credential } = await doAttestation(
+    claimerLightDid,
+    attesterOnChainDid,
     attester,
     claim
   )
   // should succeed
-  await doVerification(claimer, credential)
-  await doVerification(claimer, credential)
+  await doVerification(claimerLightDid, credential)
+  await doVerification(claimerLightDid, credential)
 
   // revoke
-  await Kilt.Actors.Attester.revokeAttestation(attester, revocationHandle)
+  await Kilt.Attestation.revoke(credential.getHash(), 0)
 
   // should fail
-  await doVerification(claimer, credential)
-  await doVerification(claimer, credential)
+  await doVerification(claimerLightDid, credential)
+  await doVerification(claimerLightDid, credential)
 
   return true
 }

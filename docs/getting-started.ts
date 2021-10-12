@@ -73,9 +73,10 @@ async function main(): Promise<void> {
     // using ed25519 as key type because this is how the endowed identity is set up
     'ed25519'
   )
+
   tx = await ctype.store()
   authorizedTx = await onChainDidIdentity.authorizeExtrinsic(tx, keystore)
-  Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity)
+  await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity)
 
   /* signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria, set tip value, or activate re-sign-re-send capabilities:
   // await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
