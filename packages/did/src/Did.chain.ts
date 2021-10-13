@@ -156,6 +156,7 @@ export async function generateCreateTx({
   signingPublicKey,
   alg,
   didIdentifier,
+  submitter,
   keys = {},
 }: IDidCreationOptions & KeystoreSigningOptions): Promise<
   SubmittableExtrinsic
@@ -163,6 +164,7 @@ export async function generateCreateTx({
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = encodeDidCreationOperation(blockchain.api.registry, {
     didIdentifier,
+    submitter,
     keys,
   })
   const signature = await signer.sign({

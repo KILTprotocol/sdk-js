@@ -227,7 +227,7 @@ export function isINewPublicKey(key: unknown): key is INewPublicKey {
 
 export function encodeDidCreationOperation(
   registry: Registry,
-  { didIdentifier, keys = {} }: IDidCreationOptions
+  { didIdentifier, submitter, keys = {} }: IDidCreationOptions
 ): DidCreationDetails {
   const {
     [KeyRelationship.assertionMethod]: assertionMethodKey,
@@ -237,6 +237,7 @@ export function encodeDidCreationOperation(
   // build did create object
   const didCreateRaw = {
     did: didIdentifier,
+    submitter,
     newKeyAgreementKeys: encryptionKey ? [formatPublicKey(encryptionKey)] : [],
     newAssertionMethodKey: assertionMethodKey
       ? formatPublicKey(assertionMethodKey)
@@ -385,6 +386,7 @@ export async function verifyDidSignature({
 
 export async function writeDidFromPublicKeys(
   signer: KeystoreSigner,
+  submitter: IIdentity['address'],
   publicKeys: PublicKeyRoleAssignment
 ): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
   const { [KeyRelationship.authentication]: authenticationKey } = publicKeys
@@ -393,6 +395,7 @@ export async function writeDidFromPublicKeys(
   const didIdentifier = encodeAddress(authenticationKey.publicKey, 38)
   const extrinsic = await generateCreateTx({
     signer,
+    submitter,
     didIdentifier,
     keys: publicKeys,
     alg: getSignatureAlgForKeyType(authenticationKey.type),
@@ -402,7 +405,8 @@ export async function writeDidFromPublicKeys(
 }
 
 export function writeDidFromIdentity(
-  identity: IIdentity
+  identity: IIdentity,
+  submitter: IIdentity['address']
 ): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
   const { signKeyringPair } = identity
   const signer: KeystoreSigner = {
@@ -412,7 +416,7 @@ export function writeDidFromIdentity(
         alg: getSignatureAlgForKeyType(signKeyringPair.type) as any,
       }),
   }
-  return writeDidFromPublicKeys(signer, {
+  return writeDidFromPublicKeys(signer, submitter, {
     [KeyRelationship.authentication]: signKeyringPair,
     [KeyRelationship.keyAgreement]: { ...identity.boxKeyPair, type: 'x25519' },
   })
@@ -470,6 +474,7 @@ export async function getDidAuthenticationSignature(
 // This function is tested in the DID integration tests, in the `DID migration` test case.
 export async function upgradeDid(
   lightDid: LightDidDetails,
+  submitter: IIdentity['address'],
   signer: KeystoreSigner
 ): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
   const didAuthenticationKey = lightDid.getKeys(
@@ -490,5 +495,5 @@ export async function upgradeDid(
     }
   }
 
-  return writeDidFromPublicKeys(signer, newDidPublicKeys)
+  return writeDidFromPublicKeys(signer, submitter, newDidPublicKeys)
 }

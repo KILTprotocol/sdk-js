@@ -56,6 +56,7 @@ describe('write and didDeleteTx', () => {
     const tx = await DidChain.generateCreateTx({
       didIdentifier,
       signer: keystore as KeystoreSigner<string>,
+      submitter: paymentAccount.address,
       signingPublicKey: key.publicKey,
       alg: key.type,
     })
@@ -135,6 +136,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const tx = await DidChain.generateCreateTx({
     didIdentifier,
     signer: keystore as KeystoreSigner<string>,
+    submitter: paymentAccount.address,
     signingPublicKey: key.publicKey,
     alg: key.type,
   })
@@ -185,6 +187,11 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   >({
     did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
   })
+
+  const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic()
+  await expect(
+    BlockchainUtils.signAndSubmitTx(reclaimDepositTx, p)
+  )
 }, 40_000)
 
 describe('DID migration', () => {
@@ -211,6 +218,7 @@ describe('DID migration', () => {
     })
     const { extrinsic, did } = await DidUtils.upgradeDid(
       lightDidDetails,
+      paymentAccount.address,
       keystore
     )
 
@@ -248,6 +256,7 @@ describe('DID migration', () => {
     })
     const { extrinsic, did } = await DidUtils.upgradeDid(
       lightDidDetails,
+      paymentAccount.address,
       keystore
     )
 
@@ -284,6 +293,7 @@ describe('DID authorization', () => {
     key = { publicKey, type: alg }
     const tx = await DidChain.generateCreateTx({
       didIdentifier,
+      submitter: paymentAccount.address,
       keys: {
         [KeyRelationship.assertionMethod]: key,
         [KeyRelationship.capabilityDelegation]: key,

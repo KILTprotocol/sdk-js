@@ -77,6 +77,7 @@ export interface DidSigned<PayloadType> {
 
 export interface IDidCreationOptions {
   didIdentifier: IIdentity['address']
+  submitter: IIdentity['address']
   keys?: PublicKeyRoleAssignment
 }
 
