@@ -19,6 +19,7 @@
  * Dummy comment needed for correct doc display, do not remove.
  */
 import type {
+  Deposit,
   IDelegationNode,
   IDelegationHierarchyDetails,
 } from '@kiltprotocol/types'
@@ -29,7 +30,6 @@ import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
 import type { Bool, u32 } from '@polkadot/types/primitive'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
-import { Deposit } from '../common'
 
 export type CodecWithId<C> = {
   id: string

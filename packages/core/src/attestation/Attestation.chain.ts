@@ -10,14 +10,17 @@
  * @module Attestation
  */
 import { Option, Struct } from '@polkadot/types'
-import type { IAttestation, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type {
+  IAttestation,
+  Deposit,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import type { AccountId, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DidUtils } from '@kiltprotocol/did'
 import Attestation from './Attestation'
-import { Deposit } from '../common'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
