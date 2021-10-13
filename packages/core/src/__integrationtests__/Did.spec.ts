@@ -125,7 +125,7 @@ describe('write and didDeleteTx', () => {
   }, 30_000)
 })
 
-it('creates and updates DID', async () => {
+it('creates and updates DID, and then reclaims the deposit back', async () => {
   const { publicKey, alg } = await keystore.generateKeypair({
     alg: SigningAlgorithms.Ed25519,
   })

@@ -1,0 +1,21 @@
+{
+  "name": "@kiltprotocol/type-definitions",
+  "repository": "https://github.com/kiltprotocol/type-definitions",
+  "description": "polkadot js type definitions for kilt",
+  "main": "./lib/index.js",
+  "files": [
+    "/lib"
+  ],
+  "license": "BSD-4-Clause",
+  "scripts": {
+    "build": "tsc",
+    "generate-types": "ts-node scripts/generate-types.ts"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": "https://github.com/KILTprotocol/type-definitions/issues",
+  "homepage": "https://github.com/KILTprotocol/type-definitions#readme",
+  "version": "0.1.22",
+  "yalcSig": "e656072173890351be6136f2eff994d0"
+}

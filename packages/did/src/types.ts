@@ -6,6 +6,7 @@
  */
 
 import type {
+  Deposit,
   IIdentity,
   IDidKeyDetails,
   IDidDetails,
@@ -145,6 +146,7 @@ export interface IDidChainRecordCodec extends Struct {
   assertionMethodKey: Option<KeyId>
   publicKeys: DidPublicKeyMap
   lastTxCounter: u64
+  deposit: Deposit
 }
 
 export interface DidCreationDetails extends Struct {
