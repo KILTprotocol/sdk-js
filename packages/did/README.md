@@ -172,7 +172,9 @@ const authenticationKeyPublicDetails = await keystore.generateKeypair({
 
 // Generate the DID-signed creation extrinsic.
 // The extrinsic is unsigned and contains the DID creation operation signed with the DID authentication key.
-const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(keystore, {
+// The second argument, the submitter account, ensures that only an entity authorised by the DID subject
+// can submit the extrinsic to the KILT blockchain.
+const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(keystore, aliceKiltAccount.address, {
   [KeyRelationship.authentication]: {
     publicKey: authenticationKeyPublicDetails.publicKey,
     type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
@@ -181,7 +183,7 @@ const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(keystore, {
 // Will print `did:kilt:4sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
 console.log(did)
 
-// Submit the DID creation tx to the KILT blockchain after signing it with the KILT account specified.
+// Submit the DID creation tx to the KILT blockchain after signing it with the KILT account specified in the creation operation.
 await BlockchainUtils.signAndSubmitTx(extrinsic, aliceKiltAccount, {
   resolveOn,
 })
@@ -226,6 +228,7 @@ const encryptionKeyPublicDetails = await keystore.generateKeypair({
 // Generate the DID-signed creation extrinsic with the provided keys.
 const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
   keystore,
+  aliceKiltAccount.address,
   {
     [KeyRelationship.authentication]: {
       publicKey: authenticationKeyPublicDetails.publicKey,
@@ -257,7 +260,7 @@ Once anchored on the KILT blockchain, a KILT full DID can be updated by signing 
 // Generate seed for the new authentication key.
 const newAuthenticationKeySeed = '0xabcdeffedcba'
 
-// Ask the keystore to generate a new keypar to use for authentication.
+// Ask the keystore to generate a new keypair to use for authentication.
 const newAuthenticationKeyPublicDetails = await keystore.generateKeypair({
   seed: newAuthenticationKeySeed,
   alg: SigningAlgorithms.Ed25519,
@@ -275,14 +278,15 @@ const didUpdateExtrinsic = await getSetKeyExtrinsic(
 )
 
 // Sign the DID operation using the old DID authentication key.
-// This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain.
+// This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain by the account
+// authorised in this operation, in this case Alice.
 const didSignedUpdateExtrinsic = await fullDID.authorizeExtrinsic(
   didUpdateExtrinsic,
   keystore as KeystoreSigner<string>,
   aliceKiltAccount.address
 )
 
-// Submit the DID update tx to the KILT blockchain after signing it with the KILT account specified.
+// Submit the DID update tx to the KILT blockchain after signing it with the authorised KILT account.
 await BlockchainUtils.signAndSubmitTx(
   didSignedUpdateExtrinsic,
   aliceKiltAccount,
@@ -301,7 +305,8 @@ Once not needed anymore, it is recommended to remove the DID details from the KI
 const didDeletionExtrinsic = await getDeleteDidExtrinsic()
 
 // Sign the DID deletion operation using the DID authentication key.
-// This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain.
+// This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain by the account
+// authorised in this operation, in this case Alice.
 const didSignedDeletionExtrinsic = await fullDID.authorizeExtrinsic(
   didDeletionExtrinsic,
   keystore as KeystoreSigner<string>,
@@ -310,6 +315,30 @@ const didSignedDeletionExtrinsic = await fullDID.authorizeExtrinsic(
 
 await BlockchainUtils.signAndSubmitTx(
   didSignedDeletionExtrinsic,
+  aliceKiltAccount,
+  {
+    resolveOn,
+  }
+)
+```
+
+### Claiming back a DID deposit
+
+As the creation of a full DID requires a deposit that will lock some funds from the balance of the creation tx submitter (which, once again, might differ from the DID subject), the deposit owner is allowed to claim the deposit back by deleting the DID associated with its deposit. This is one a full DID creation operation requires the tx submitter, which will be signed by the DID subject: to make sure that only the DID subject themselves and an authorised account are able to delete the DID information from the chain.
+
+Claiming back the deposit of a DID is semantically equivalent to deleting the DID, with the difference that the extrinsic to claim the deposit can only be called by the deposit owner:
+
+```typescript
+import {
+  generateReclaimDepositExtrinsic,
+} from '@kiltprotocol/did/src/Did.chain'
+
+// Generate the submittable extrinsic to claim the deposit back, by including the DID identifier for which the deposit needs to be returned.
+const depositClaimExtrinsic = await generateReclaimDepositExtrinsic(fullDID.did)
+
+// The submission will fail if `aliceKiltAccount` is not the owner of the deposit associated with the given DID identifier.
+await BlockchainUtils.signAndSubmitTx(
+  depositClaimExtrinsic,
   aliceKiltAccount,
   {
     resolveOn,
@@ -348,14 +377,15 @@ const lightDidDetails = new LightDidDetails({
 // Generate the DID creation extrinsic with the authentication and encryption keys taken from the light DID.
 const { extrinsic, did } = await upgradeDid(
   lightDidDetails,
+  aliceKiltAccount.address,
   keystore as KeystoreSigner<string>
 )
 
-// The extrinsic can then be submitted as usual.
+// The extrinsic can then be submitted by the authorised account as usual.
 await BlockchainUtils.signAndSubmitTx(extrinsic, aliceKiltAccount, {
   resolveOn,
 })
 
-// The full DID details can then be resolved after it has been stored on the chain.
+// The full DID details can then be resolved after they have been stored on the chain.
 const fullDidDetails = await resolve(did)
 ```
