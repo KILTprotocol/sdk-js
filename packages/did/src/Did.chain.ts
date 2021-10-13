@@ -251,9 +251,11 @@ export async function getDeleteDidExtrinsic(): Promise<Extrinsic> {
   return api.tx.did.delete()
 }
 
-export async function getReclaimDepositExtrinsic(): Promise<Extrinsic> {
+export async function generateReclaimDepositExtrinsic(
+  identifier: IIdentity['address']
+): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.reclaimDeposit()
+  return api.tx.did.reclaimDeposit(identifier)
 }
 
 // The block number can either be provided by the DID subject,

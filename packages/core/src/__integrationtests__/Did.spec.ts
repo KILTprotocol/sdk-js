@@ -9,7 +9,6 @@
  * @group integration/did
  */
 
-import { UUID } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
 import {
   DemoKeystore,
@@ -21,16 +20,12 @@ import {
   LightDidDetails,
   resolveDoc,
 } from '@kiltprotocol/did'
-import {
-  BlockchainUtils,
-  BlockchainApiConnection,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { KeyRelationship, KeystoreSigner } from '@kiltprotocol/types'
 import { KeyringPair } from '@polkadot/keyring/types'
-import { BN } from '@polkadot/util'
+// import { BN } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
 
-import { CType } from '../ctype'
 import { devAlice, devBob } from './utils'
 
 let paymentAccount: KeyringPair
@@ -51,6 +46,24 @@ describe('write and didDeleteTx', () => {
     didIdentifier = encodeAddress(publicKey)
     key = { publicKey, type: alg }
   })
+
+  it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
+    const otherAccount = devBob
+    const tx = await DidChain.generateCreateTx({
+      didIdentifier,
+      signer: keystore as KeystoreSigner<string>,
+      // A different address than the one submitting the tx (paymentAccount) is specified
+      submitter: otherAccount.address,
+      signingPublicKey: key.publicKey,
+      alg: key.type,
+    })
+
+    await expect(
+      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    ).rejects.toThrow()
+  }, 30_000)
 
   it('writes a new DID record to chain', async () => {
     const tx = await DidChain.generateCreateTx({
@@ -130,7 +143,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   const { publicKey, alg } = await keystore.generateKeypair({
     alg: SigningAlgorithms.Ed25519,
   })
-  const didIdentifier = encodeAddress(publicKey)
+  const didIdentifier = encodeAddress(publicKey, 38)
   const key: DidTypes.INewPublicKey = { publicKey, type: alg }
 
   const tx = await DidChain.generateCreateTx({
@@ -188,10 +201,17 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
   })
 
-  const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic()
-  await expect(
-    BlockchainUtils.signAndSubmitTx(reclaimDepositTx, p)
+  // Claim the deposit back
+  const reclaimDepositTx = await DidChain.generateReclaimDepositExtrinsic(
+    didIdentifier
   )
+  await expect(
+    BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    })
+  ).resolves.not.toThrow()
+  // Verify that the DID has been deleted
+  await expect(DidChain.queryById(didIdentifier)).resolves.toBeNull()
 }, 40_000)
 
 describe('DID migration', () => {
