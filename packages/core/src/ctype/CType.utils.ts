@@ -84,12 +84,13 @@ export function getSchemaPropertiesForHash(
   // We need to remove the CType ID from the CType before storing it on the blockchain
   // otherwise the resulting hash will be different, as the hash on chain would contain the CType ID,
   // which is itself a hash of the CType schema.
-  if ((ctypeSchema as ICType['schema']).$id) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { $id, ...schemaWithoutId } = ctypeSchema as ICType['schema']
-    return schemaWithoutId
-  }
-  return ctypeSchema
+  const schemaWithoutId: Partial<ICType['schema']> =
+    '$id' in ctypeSchema
+      ? (ctypeSchema as ICType['schema'])
+      : (ctypeSchema as CTypeSchemaWithoutId)
+  const shallowCopy = { ...schemaWithoutId }
+  delete shallowCopy.$id
+  return shallowCopy
 }
 
 export function getHashForSchema(
