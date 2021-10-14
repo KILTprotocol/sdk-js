@@ -113,6 +113,27 @@ export async function revoke(
 }
 
 /**
+ * @internal
+ *
+ * Revokes and removes part of a delegation tree at specified node, also removing all nodes below.
+ *
+ * @param delegationId The id of the node in the delegation tree at which to remove.
+ * @param maxRevocations How many delegation nodes may be removed during the process. Each removal adds to the transaction fee. A higher number will require more fees to be locked while an insufficiently high number will lead to premature abortion of the removal process, leaving some nodes unremoved. Removals will first be performed on child nodes, therefore the current node is only removed when this is accurate.
+ * @returns An unsigned SubmittableExtrinsic ready to be signed and dispatched.
+ */
+export async function remove(
+  delegationId: IDelegationNode['id'],
+  maxRevocations: number
+): Promise<SubmittableExtrinsic> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.removeDelegation(
+    delegationId,
+    maxRevocations
+  )
+  return tx
+}
+
+/**
  * @param delegationNodeId
  * @param delegationNode
  * @internal

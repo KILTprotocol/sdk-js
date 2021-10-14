@@ -224,6 +224,29 @@ export function hashStr(value: CryptoInput): string {
 }
 
 /**
+ * Stringifies numbers, booleans, and objects. Object keys are sorted to yield consistent hashing.
+ *
+ * @param value Object or value to be hashed.
+ * @returns Stringified representation of the given object.
+ */
+export function encodeObjectAsStr(
+  value: Record<string, any> | string | number | boolean
+): string {
+  const input =
+    // eslint-disable-next-line no-nested-ternary
+    typeof value === 'object' && value !== null
+      ? JSON.stringify(jsonabc.sortObj(value))
+      : // eslint-disable-next-line no-nested-ternary
+      typeof value === 'number' && value !== null
+      ? value.toString()
+      : typeof value === 'boolean' && value !== null
+      ? JSON.stringify(value)
+      : value
+
+  return input
+}
+
+/**
  * Hashes numbers, booleans, and objects by stringifying them. Object keys are sorted to yield consistent hashing.
  *
  * @param value Object or value to be hashed.
@@ -234,20 +257,11 @@ export function hashObjectAsStr(
   value: Record<string, any> | string | number | boolean,
   nonce?: string
 ): string {
-  let input =
-    // eslint-disable-next-line no-nested-ternary
-    typeof value === 'object' && value !== null
-      ? JSON.stringify(jsonabc.sortObj(value))
-      : // eslint-disable-next-line no-nested-ternary
-      typeof value === 'number' && value !== null
-      ? value.toString()
-      : typeof value === 'boolean' && value !== null
-      ? JSON.stringify(value)
-      : value
+  let objectAsStr = encodeObjectAsStr(value)
   if (nonce) {
-    input = nonce + input
+    objectAsStr = nonce + objectAsStr
   }
-  return hashStr(input)
+  return hashStr(objectAsStr)
 }
 
 /**

@@ -7,7 +7,6 @@
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import type { IServiceDetails } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/util-crypto'
 import {
@@ -21,8 +20,6 @@ import { serializeAndEncodeAdditionalLightDidDetails } from './LightDidDetails.u
 export interface LightDidDetailsCreationOpts {
   authenticationKey: INewPublicKey
   encryptionKey?: INewPublicKey
-  // For light DIDs, the service IDs do not have to include the whole DID URI, but just the service ID. The complete URI is generated internally in the constructor.
-  services?: IServiceDetails[]
 }
 
 export class LightDidDetails extends DidDetails {
@@ -32,11 +29,9 @@ export class LightDidDetails extends DidDetails {
   constructor({
     authenticationKey,
     encryptionKey = undefined,
-    services = [],
   }: LightDidDetailsCreationOpts) {
     const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
       encryptionKey,
-      services,
     })
     const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
       authenticationKey.type
@@ -58,13 +53,7 @@ export class LightDidDetails extends DidDetails {
       did = did.concat(':', encodedDetails)
     }
 
-    super(
-      did,
-      id,
-      services.map((service) => {
-        return { ...service, id: `${did}#${service.id}` }
-      })
-    )
+    super(did, id)
 
     // Authentication key always has the #authentication ID.
     this.keys = new Map([

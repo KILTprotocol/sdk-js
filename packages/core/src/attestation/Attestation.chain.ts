@@ -10,7 +10,11 @@
  * @module Attestation
  */
 import { Option, Struct } from '@polkadot/types'
-import type { IAttestation, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type {
+  IAttestation,
+  Deposit,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import type { AccountId, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
@@ -49,6 +53,7 @@ export interface AttestationDetails extends Struct {
   readonly attester: AccountId
   readonly delegationId: Option<DelegationNodeId>
   readonly revoked: boolean
+  readonly deposit: Deposit
 }
 
 function decode(
@@ -110,6 +115,41 @@ export async function revoke(
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash,
     maxDepth
+  )
+  return tx
+}
+
+/**
+ * @param claimHash
+ * @param maxDepth
+ * @internal
+ */
+export async function remove(
+  claimHash: string,
+  maxDepth: number
+): Promise<SubmittableExtrinsic> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  log.debug(() => `Removing attestation with claim hash ${claimHash}`)
+  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.remove(
+    claimHash,
+    maxDepth
+  )
+  return tx
+}
+
+/**
+ * @param claimHash
+ * @internal
+ */
+export async function reclaimDeposit(
+  claimHash: string
+): Promise<SubmittableExtrinsic> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  log.debug(
+    () => `Claiming deposit for the attestation with claim hash ${claimHash}`
+  )
+  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.reclaimDeposit(
+    claimHash
   )
   return tx
 }

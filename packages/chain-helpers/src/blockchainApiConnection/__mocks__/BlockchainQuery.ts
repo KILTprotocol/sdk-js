@@ -40,7 +40,7 @@ const chainQueryReturnTuples: {
     delegations: TYPE_REGISTRY.getOrUnknown('DelegationNode'),
   },
   attestation: {
-    // Attestations: claim-hash -> (ctype-hash, attester-account, delegation-id?, revoked)?
+    // Attestations: claim-hash -> (ctype-hash, attester-account, delegation-id?, revoked, deposit)?
     attestations: TYPE_REGISTRY.getOrUnknown('AttestationDetails'),
     // DelegatedAttestations: delegation-id -> [claim-hash]
     delegatedAttestations: TYPE_REGISTRY.getOrUnknown('Hash'),

@@ -62,12 +62,22 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     const bobbyBroke = keypairFromRandom()
     await expect(
-      ctype.store().then((tx) =>
-        BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
-          resolveOn: BlockchainUtils.IS_IN_BLOCK,
-          reSign: true,
-        })
-      )
+      ctype
+        .store()
+        .then((tx) =>
+          ctypeCreator.authorizeExtrinsic(
+            tx,
+            keystore,
+            bobbyBroke.address,
+            false
+          )
+        )
+        .then((tx) =>
+          BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
+            resolveOn: BlockchainUtils.IS_IN_BLOCK,
+            reSign: true,
+          })
+        )
     ).rejects.toThrowError()
     await expect(ctype.verifyStored()).resolves.toBeFalsy()
   }, 20_000)
@@ -76,7 +86,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     await ctype
       .store()
-      .then((tx) => ctypeCreator.authorizeExtrinsic(tx, keystore))
+      .then((tx) =>
+        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+      )
       .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -95,7 +107,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     await ctype
       .store()
-      .then((tx) => ctypeCreator.authorizeExtrinsic(tx, keystore))
+      .then((tx) =>
+        ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+      )
       .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -105,7 +119,9 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await expect(
       ctype
         .store()
-        .then((tx) => ctypeCreator.authorizeExtrinsic(tx, keystore))
+        .then((tx) =>
+          ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
+        )
         .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
