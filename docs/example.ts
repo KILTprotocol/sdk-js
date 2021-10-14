@@ -97,7 +97,7 @@ async function setup(): Promise<{
   const rawCtype: ICType = {
     schema: ctypeSchema,
     hash: ctypeHash,
-    owner: attester.address,
+    owner: attesterOnChainDid.did,
   }
 
   // Build the CType object
