@@ -104,7 +104,7 @@ console.log(lightDID.did)
 
 ## Full DIDs
 
-As mentioned above, the creation of a full DID requires interaction with the KILT blockchain. Therefore, it is necessary for the DID creation operation to be submitted by a KILT address with enough funds to pay the transaction fees and the required deposit.
+As mentioned above, the creation of a full DID requires interaction with the KILT blockchain. Therefore, it is necessary for the DID creation operation to be submitted by a KILT address with enough funds to pay the transaction fees and the required deposit (0,1 KILT).
 While transaction fees are "burned" during the creation operation, the deposit is returned once and if the DID is deleted from the blockchain: this is to incentivise users to clean the data from the blockchain once such data is not needed anymore.
 
 By design, DID signatures and Substrate signatures are decoupled, meaning that the encoded and signed DID creation operation can then be signed and submitted by a different KILT account than the DID subject. We think this opens the path for a wider range of use cases in which, for instance, a service provider might be willing to offer a DID-as-a-Service option for its customers.
@@ -279,7 +279,7 @@ const didUpdateExtrinsic = await getSetKeyExtrinsic(
 
 // Sign the DID operation using the old DID authentication key.
 // This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain by the account
-// authorised in this operation, in this case Alice.
+// authorised in this operation, Alice in this case.
 const didSignedUpdateExtrinsic = await fullDID.authorizeExtrinsic(
   didUpdateExtrinsic,
   keystore as KeystoreSigner<string>,
@@ -306,7 +306,7 @@ const didDeletionExtrinsic = await getDeleteDidExtrinsic()
 
 // Sign the DID deletion operation using the DID authentication key.
 // This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain by the account
-// authorised in this operation, in this case Alice.
+// authorised in this operation, Alice in this case.
 const didSignedDeletionExtrinsic = await fullDID.authorizeExtrinsic(
   didDeletionExtrinsic,
   keystore as KeystoreSigner<string>,
@@ -324,9 +324,9 @@ await BlockchainUtils.signAndSubmitTx(
 
 ### Claiming back a DID deposit
 
-As the creation of a full DID requires a deposit that will lock some funds from the balance of the creation tx submitter (which, once again, might differ from the DID subject), the deposit owner is allowed to claim the deposit back by deleting the DID associated with its deposit. This is one a full DID creation operation requires the tx submitter, which will be signed by the DID subject: to make sure that only the DID subject themselves and an authorised account are able to delete the DID information from the chain.
+As the creation of a full DID requires a deposit that will lock 0,1 KILT from the balance of the creation tx submitter (which, once again, might differ from the DID subject), the deposit owner is allowed to claim the deposit back by deleting the DID associated with its deposit. This is the reason why full DID creation operations require the tx submitter to be included and signed by the DID subject: to make sure that only the DID subject themselves and the authorised account are ever able to delete the DID information from the chain.
 
-Claiming back the deposit of a DID is semantically equivalent to deleting the DID, with the difference that the extrinsic to claim the deposit can only be called by the deposit owner:
+Claiming back the deposit of a DID is semantically equivalent to deleting the DID, with the difference that the extrinsic to claim the deposit can only be called by the deposit owner and does not require a valid signature by the DID subject:
 
 ```typescript
 import {
