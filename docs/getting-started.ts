@@ -11,6 +11,8 @@ import type {
   SubmittableExtrinsic,
   IRequestForAttestation,
   MessageBody,
+  IDidResolvedDetails,
+  IDidKeyDetails,
 } from '@kiltprotocol/sdk-js'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
@@ -38,7 +40,7 @@ async function main(): Promise<void> {
     seed: generateClaimerMnemonic,
   })
   // Create a light DID from the generated authentication key.
-  const claimerLightDID = new Kilt.Did.LightDidDetails({
+  const claimerLightDid = new Kilt.Did.LightDidDetails({
     authenticationKey: {
       publicKey: authenticationKeyPublicDetails.publicKey,
       type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
@@ -47,7 +49,7 @@ async function main(): Promise<void> {
     },
   })
   // Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
-  console.log(claimerLightDID.did)
+  console.log(claimerLightDid.did)
 
   /* 3.1. Building a CTYPE */
   const ctype = Kilt.CType.fromSchema({
@@ -110,7 +112,7 @@ async function main(): Promise<void> {
   const claim = Kilt.Claim.fromCTypeAndClaimContents(
     ctype,
     rawClaim,
-    claimerLightDID.did
+    claimerLightDid.did
   )
 
   /* As a result we get the following KILT claim: */
@@ -123,7 +125,9 @@ async function main(): Promise<void> {
   console.log(requestForAttestation)
 
   /* Before we can send the request for an attestation to an Attester, we should first fetch the on chain did and create an encryption key. */
-  const attesterOnChainDid = await Kilt.Did.resolveDoc(onChainDidIdentity.did)
+  const attesterOnChainDid = (await Kilt.Did.resolveDoc(
+    onChainDidIdentity.did
+  )) as IDidResolvedDetails
 
   /* Creating an encryption key */
 
@@ -134,17 +138,24 @@ async function main(): Promise<void> {
   }
   const message = new Kilt.Message(
     messageBody,
-    claimerLightDID.did,
+    claimerLightDid.did,
     attesterOnChainDid.details.did
   )
 
   /* The complete `message` looks as follows: */
   console.log(message)
 
+  const claimerKeyAgreement = claimerLightDid.getKey(
+    KeyRelationship.keyAgreement
+  ) as IDidKeyDetails
+  const attesterKeyAgreement = attesterOnChainDid.details.getKey(
+    KeyRelationship.keyAgreement
+  ) as IDidKeyDetails<string>
+
   /* The message can be encrypted as follows: */
   const encryptedMessage = await message.encrypt(
-    claimerLightDID.getKey(KeyRelationship.keyAgreement)[0],
-    attesterOnChainDid.details.getKey(KeyRelationship.keyAgreement)[0],
+    claimerKeyAgreement[0],
+    attesterKeyAgreement[0],
     keystore
   )
 
@@ -194,7 +205,7 @@ async function main(): Promise<void> {
     const messageBack = new Kilt.Message(
       messageBodyBack,
       attesterOnChainDid.details.did,
-      claimerLightDID.did
+      claimerLightDid.did
     )
 
     /* The complete `messageBack` message then looks as follows: */
@@ -238,7 +249,7 @@ async function main(): Promise<void> {
       const messageForClaimer = new Kilt.Message(
         messageBodyForClaimer,
         verifierLightDID.did,
-        claimerLightDID.did
+        claimerLightDid.did
       )
 
       /* Now the claimer can send a message to verifier including the attested claim: */
@@ -255,7 +266,7 @@ async function main(): Promise<void> {
       }
       const messageForVerifier = new Kilt.Message(
         messageBodyForVerifier,
-        claimerLightDID.did,
+        claimerLightDid.did,
         verifierLightDID.did
       )
 

@@ -6,19 +6,18 @@
  */
 
 /* eslint-disable no-console */
-import Kilt, {
-  IAcceptClaimsForCTypes,
-  IRequestAttestationForClaim,
-  ISubmitAttestationForClaim,
-  ISubmitClaimsForCTypes,
-  KeyRelationship,
-} from '@kiltprotocol/sdk-js'
+import Kilt, { KeyRelationship } from '@kiltprotocol/sdk-js'
 import type {
   AttestedClaim,
   Claim,
   CType,
   ICType,
   Did,
+  IAcceptClaimsForCTypes,
+  IRequestAttestationForClaim,
+  ISubmitAttestationForClaim,
+  ISubmitClaimsForCTypes,
+  IDidKeyDetails,
 } from '@kiltprotocol/sdk-js'
 import { KeyringPair } from '@polkadot/keyring/types'
 
@@ -195,10 +194,17 @@ async function doAttestation(
     attesterOnChainDid.did
   )
 
+  const claimerKeyAgreement = claimerLightDid.getKey(
+    KeyRelationship.keyAgreement
+  ) as IDidKeyDetails<string>
+  const attesterKeyAgreement = attesterOnChainDid.getKey(
+    KeyRelationship.keyAgreement
+  ) as IDidKeyDetails<string>
+
   // The message can be encrypted as follows
   const encryptMessage = await claimerRequestMessage.encrypt(
-    claimerLightDid.getKey(KeyRelationship.keyAgreement)[0],
-    attesterOnChainDid.getKey(KeyRelationship.keyAgreement)[0],
+    claimerKeyAgreement[0],
+    attesterKeyAgreement[0],
     keystore
   )
 
@@ -212,7 +218,7 @@ async function doAttestation(
     encryptMessage,
     keystore,
     {
-      resolver: attesterOnChainDid.getKey(KeyRelationship.keyAgreement)[0],
+      resolver: attesterKeyAgreement[0],
     }
   )
 
@@ -227,7 +233,7 @@ async function doAttestation(
 
   // Attester can check if the signature of the claimer matches the request for attestation object
   claimersRequest.verifySignature({
-    resolver: claimerLightDid.getKey(KeyRelationship.keyAgreement)[0],
+    resolver: claimerKeyAgreement[0],
   })
 
   const attestation = Kilt.Attestation.fromRequestAndDid(
@@ -257,8 +263,8 @@ async function doAttestation(
   )
 
   const submitAttestationEnc = await attesterAttestationMessage.encrypt(
-    attesterOnChainDid.getKey(KeyRelationship.keyAgreement)[0],
-    claimerLightDid.getKey(KeyRelationship.keyAgreement)[0],
+    attesterKeyAgreement[0],
+    claimerKeyAgreement[0],
     keystore
   )
 
@@ -269,7 +275,7 @@ async function doAttestation(
     submitAttestationEnc,
     keystore,
     {
-      resolver: claimerLightDid.getKey(KeyRelationship.keyAgreement)[0],
+      resolver: claimerKeyAgreement[0],
     }
   )
 
@@ -312,6 +318,12 @@ async function doVerification(
     keystore,
     verifierMnemonic
   )
+  const claimerKeyAgreement = claimerLightDid.getKey(
+    KeyRelationship.keyAgreement
+  ) as IDidKeyDetails<string>
+  const verifierKeyAgreement = claimerLightDid.getKey(
+    KeyRelationship.keyAgreement
+  ) as IDidKeyDetails<string>
   // ------------------------- Verifier ----------------------------------------
   const verifierAcceptedClaimsMessage = new Kilt.Message(
     {
@@ -323,8 +335,8 @@ async function doVerification(
   )
 
   const verifierAcceptedClaimsMessageEnc = await verifierAcceptedClaimsMessage.encrypt(
-    verifierLightDid.getKey(KeyRelationship.keyAgreement[0]),
-    claimerLightDid.getKey(KeyRelationship.keyAgreement[0]),
+    verifierKeyAgreement,
+    claimerKeyAgreement,
     keystore
   )
 
@@ -357,8 +369,8 @@ async function doVerification(
   )
   // Claimer encrypts the claims message to the verifier
   const claimerSubmitClaimsMessageEnc = await claimerSubmitClaimsMessage.encrypt(
-    claimerLightDid.getKey(KeyRelationship.keyAgreement[0]),
-    verifierLightDid.getKey(KeyRelationship.keyAgreement[0]),
+    claimerKeyAgreement,
+    verifierKeyAgreement,
     keystore
   )
 
