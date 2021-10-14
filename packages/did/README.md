@@ -1,5 +1,4 @@
-[![](https://user-images.githubusercontent.com/39338561/122415864-8d6a7c00-cf88-11eb-846f-a98a936f88da.png)
-](https://kilt.io)
+[![](https://user-images.githubusercontent.com/39338561/122415864-8d6a7c00-cf88-11eb-846f-a98a936f88da.png)](https://kilt.io)
 
 ![Lint and Test](https://github.com/KILTprotocol/sdk-js/workflows/Lint%20and%20Test/badge.svg)
 
@@ -95,7 +94,7 @@ const lightDID = new LightDidDetails({
   encryptionKey: {
     publicKey: encryptionKeyPublicDetails.publicKey,
     type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
-  }
+  },
 })
 
 // Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5`.
@@ -224,21 +223,16 @@ const encryptionKeyPublicDetails = await keystore.generateKeypair({
 })
 
 // Generate the DID-signed creation extrinsic with the provided keys.
-const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
-  keystore,
-  {
-    [KeyRelationship.authentication]: {
-      publicKey: authenticationKeyPublicDetails.publicKey,
-      type: DemoKeystore.getKeypairTypeForAlg(
-        authenticationKeyPublicDetails.alg
-      ),
-    },
-    [KeyRelationship.keyAgreement]: {
-      publicKey: encryptionKeyPublicDetails.publicKey,
-      type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
-    },
-  }
-)
+const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(keystore, {
+  [KeyRelationship.authentication]: {
+    publicKey: authenticationKeyPublicDetails.publicKey,
+    type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
+  },
+  [KeyRelationship.keyAgreement]: {
+    publicKey: encryptionKeyPublicDetails.publicKey,
+    type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
+  },
+})
 // Will print `did:kilt:4sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
 console.log(did)
 
