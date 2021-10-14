@@ -9,6 +9,7 @@
  * @group integration/did
  */
 
+import { UUID } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
 import {
   DemoKeystore,
@@ -20,12 +21,16 @@ import {
   LightDidDetails,
   resolveDoc,
 } from '@kiltprotocol/did'
-import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import {
+  BlockchainUtils,
+  BlockchainApiConnection,
+} from '@kiltprotocol/chain-helpers'
 import { KeyRelationship, KeystoreSigner } from '@kiltprotocol/types'
 import { KeyringPair } from '@polkadot/keyring/types'
-// import { BN } from '@polkadot/util'
+import { BN } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
 
+import { CType } from '../ctype'
 import { devAlice, devBob } from './utils'
 
 let paymentAccount: KeyringPair
