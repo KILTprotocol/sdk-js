@@ -64,18 +64,24 @@ async function main(): Promise<void> {
     type: 'object',
   })
   /* To store the CTYPE on the blockchain, you have to call: */
-  const identity = keyring.createFromUri(
+  const identityMnemonic =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-  )
+  const identity = keyring.addFromMnemonic(identityMnemonic)
+
   const onChainDidIdentity = await Kilt.Did.createOnChainDidFromSeed(
     identity,
     keystore,
+    identityMnemonic,
     // using ed25519 as key type because this is how the endowed identity is set up
-    'ed25519'
+    Kilt.Did.SigningAlgorithms.Ed25519
   )
 
   tx = await ctype.store()
-  authorizedTx = await onChainDidIdentity.authorizeExtrinsic(tx, keystore)
+  authorizedTx = await onChainDidIdentity.authorizeExtrinsic(
+    tx,
+    keystore,
+    identity.address
+  )
   await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity)
 
   /* signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria, set tip value, or activate re-sign-re-send capabilities:
@@ -163,7 +169,11 @@ async function main(): Promise<void> {
 
     /* Now the Attester can store and authorize the attestation on the blockchain, which also costs tokens: */
     tx = await attestation.store()
-    authorizedTx = await onChainDidIdentity.authorizeExtrinsic(tx, keystore)
+    authorizedTx = await onChainDidIdentity.authorizeExtrinsic(
+      tx,
+      keystore,
+      identity.address
+    )
     await Kilt.BlockchainUtils.submitSignedTx(authorizedTx, {
       resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
     })

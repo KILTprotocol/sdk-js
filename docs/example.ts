@@ -48,9 +48,11 @@ async function setup(): Promise<{
   })
   // generate a Mnemonic for the attester
   // const generateAttesterMnemonic = Kilt.Utils.UUID.generate()
+  const attesterMnemonic =
+    'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   // or we just use unsafe precalculated keys (just for demo purposes!):
   const attester = keyring.addFromMnemonic(
-    'receive clutch item involve chaos clutch furnace arrest claw isolate okay together',
+    attesterMnemonic,
     // using ed25519 bc this identity has test coins from the start on the development chain spec
     { signingKeyPairType: 'ed25519' }
   )
@@ -64,8 +66,9 @@ async function setup(): Promise<{
   const attesterOnChainDid = await Kilt.Did.createOnChainDidFromSeed(
     attester,
     keystore,
+    attesterMnemonic,
     // using ed25519 as key type because this is how the endowed identity is set up
-    'ed25519'
+    Kilt.Did.SigningAlgorithms.Ed25519
   )
 
   // Will print `did:kilt:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
@@ -108,7 +111,9 @@ async function setup(): Promise<{
   try {
     await ctype
       .store()
-      .then((tx) => attesterOnChainDid.authorizeExtrinsic(tx, keystore))
+      .then((tx) =>
+        attesterOnChainDid.authorizeExtrinsic(tx, keystore, attester.address)
+      )
       .then((tx) => Kilt.BlockchainUtils.signAndSubmitTx(tx, attester))
   } catch (e) {
     console.log(
@@ -232,7 +237,9 @@ async function doAttestation(
   console.log('the attestation: ', attestation)
   await attestation
     .store()
-    .then((tx) => attesterOnChainDid.authorizeExtrinsic(tx, keystore))
+    .then((tx) =>
+      attesterOnChainDid.authorizeExtrinsic(tx, keystore, attester.address)
+    )
     .then((tx) =>
       Kilt.BlockchainUtils.signAndSubmitTx(tx, attester, {
         resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
@@ -299,6 +306,8 @@ async function doVerification(
   const keystore = new Kilt.Did.DemoKeystore()
   const verifierMnemonic = Kilt.Utils.UUID.generate()
   const verifier = keyring.addFromMnemonic(verifierMnemonic)
+  // The verifier address
+  console.log(verifier.address)
   const verifierLightDid = await Kilt.Did.createLightDidFromSeed(
     keystore,
     verifierMnemonic
