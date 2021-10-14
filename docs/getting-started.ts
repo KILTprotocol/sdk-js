@@ -35,17 +35,19 @@ async function main(): Promise<void> {
   // Create a mnemonic seed
   const generateClaimerMnemonic = Kilt.Utils.UUID.generate()
   // Generate a new keypair for authentication with the generated seed
-  const authenticationKeyPublicDetails = await keystore.generateKeypair({
+  const claimerKeypair = await keystore.generateKeypair({
     alg: Kilt.Did.SigningAlgorithms.Ed25519,
     seed: generateClaimerMnemonic,
   })
   // Create a light DID from the generated authentication key.
   const claimerLightDid = new Kilt.Did.LightDidDetails({
     authenticationKey: {
-      publicKey: authenticationKeyPublicDetails.publicKey,
-      type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-        authenticationKeyPublicDetails.alg
-      ),
+      publicKey: claimerKeypair.publicKey,
+      type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(claimerKeypair.alg),
+    },
+    encryptionKey: {
+      publicKey: claimerKeypair.publicKey,
+      type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(claimerKeypair.alg),
     },
   })
   // Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
@@ -145,17 +147,18 @@ async function main(): Promise<void> {
   /* The complete `message` looks as follows: */
   console.log(message)
 
-  const claimerKeyAgreement = claimerLightDid.getKey(
+  const attesterKeyAgreement = attesterOnChainDid.details.getKeys(
     KeyRelationship.keyAgreement
-  ) as IDidKeyDetails
-  const attesterKeyAgreement = attesterOnChainDid.details.getKey(
+  )[0] as IDidKeyDetails<string>
+
+  const claimerKeyAgreement = claimerLightDid.getKeys(
     KeyRelationship.keyAgreement
-  ) as IDidKeyDetails<string>
+  )[0] as IDidKeyDetails<string>
 
   /* The message can be encrypted as follows: */
   const encryptedMessage = await message.encrypt(
-    claimerKeyAgreement[0],
-    attesterKeyAgreement[0],
+    claimerKeyAgreement,
+    attesterKeyAgreement,
     keystore
   )
 
@@ -225,19 +228,19 @@ async function main(): Promise<void> {
 
       /* As in the attestation, you need a second identity to act as the verifier: */
       const generateVerifierMnemonic = Kilt.Utils.UUID.generate()
-      const verifierAuthenticationKeyPublicDetails = await keystore.generateKeypair(
-        {
-          alg: Kilt.Did.SigningAlgorithms.Ed25519,
-          seed: generateVerifierMnemonic,
-        }
-      )
+      const verifierKeypair = await keystore.generateKeypair({
+        alg: Kilt.Did.SigningAlgorithms.Ed25519,
+        seed: generateVerifierMnemonic,
+      })
       // Create the verifier's light DID from the generated authentication key.
       const verifierLightDID = new Kilt.Did.LightDidDetails({
         authenticationKey: {
-          publicKey: verifierAuthenticationKeyPublicDetails.publicKey,
-          type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-            verifierAuthenticationKeyPublicDetails.alg
-          ),
+          publicKey: verifierKeypair.publicKey,
+          type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(verifierKeypair.alg),
+        },
+        encryptionKey: {
+          publicKey: verifierKeypair.publicKey,
+          type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(verifierKeypair.alg),
         },
       })
 

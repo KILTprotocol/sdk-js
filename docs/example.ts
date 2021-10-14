@@ -194,17 +194,17 @@ async function doAttestation(
     attesterOnChainDid.did
   )
 
-  const claimerKeyAgreement = claimerLightDid.getKey(
+  const claimerKeyAgreement = claimerLightDid.getKeys(
     KeyRelationship.keyAgreement
-  ) as IDidKeyDetails<string>
-  const attesterKeyAgreement = attesterOnChainDid.getKey(
+  )[0] as IDidKeyDetails<string>
+  const attesterKeyAgreement = attesterOnChainDid.getKeys(
     KeyRelationship.keyAgreement
-  ) as IDidKeyDetails<string>
+  )[0] as IDidKeyDetails<string>
 
   // The message can be encrypted as follows
   const encryptMessage = await claimerRequestMessage.encrypt(
-    claimerKeyAgreement[0],
-    attesterKeyAgreement[0],
+    claimerKeyAgreement,
+    attesterKeyAgreement,
     keystore
   )
 
@@ -214,13 +214,7 @@ async function doAttestation(
   // When the Attester receives the message, she can decrypt it,
   // internally checks the sender is the owner of the identity
   // and checks the hash and signature of the message
-  const reqAttestationDec = await Kilt.Message.decrypt(
-    encryptMessage,
-    keystore,
-    {
-      resolver: attesterKeyAgreement[0],
-    }
-  )
+  const reqAttestationDec = await Kilt.Message.decrypt(encryptMessage, keystore)
 
   const claimersRequest = Kilt.RequestForAttestation.fromRequest(
     (reqAttestationDec.body as IRequestAttestationForClaim).content
@@ -232,9 +226,7 @@ async function doAttestation(
   }
 
   // Attester can check if the signature of the claimer matches the request for attestation object
-  claimersRequest.verifySignature({
-    resolver: claimerKeyAgreement[0],
-  })
+  claimersRequest.verifySignature()
 
   const attestation = Kilt.Attestation.fromRequestAndDid(
     claimersRequest,
@@ -263,8 +255,8 @@ async function doAttestation(
   )
 
   const submitAttestationEnc = await attesterAttestationMessage.encrypt(
-    attesterKeyAgreement[0],
-    claimerKeyAgreement[0],
+    attesterKeyAgreement,
+    claimerKeyAgreement,
     keystore
   )
 
@@ -273,10 +265,7 @@ async function doAttestation(
   // and checks the hash and signature of the message
   const submitAttestationDec = await Kilt.Message.decrypt(
     submitAttestationEnc,
-    keystore,
-    {
-      resolver: claimerKeyAgreement[0],
-    }
+    keystore
   )
 
   const credential = Kilt.AttestedClaim.fromRequestAndAttestation(
@@ -318,12 +307,12 @@ async function doVerification(
     keystore,
     verifierMnemonic
   )
-  const claimerKeyAgreement = claimerLightDid.getKey(
+  const claimerKeyAgreement = claimerLightDid.getKeys(
     KeyRelationship.keyAgreement
-  ) as IDidKeyDetails<string>
-  const verifierKeyAgreement = claimerLightDid.getKey(
+  )[0] as IDidKeyDetails<string>
+  const verifierKeyAgreement = claimerLightDid.getKeys(
     KeyRelationship.keyAgreement
-  ) as IDidKeyDetails<string>
+  )[0] as IDidKeyDetails<string>
   // ------------------------- Verifier ----------------------------------------
   const verifierAcceptedClaimsMessage = new Kilt.Message(
     {
