@@ -52,10 +52,29 @@ describe('write and didDeleteTx', () => {
     key = { publicKey, type: alg }
   })
 
+  it('fails to create a new DID on chain with a different submitter than the one in the creation operation', async () => {
+    const otherAccount = devBob
+    const tx = await DidChain.generateCreateTx({
+      didIdentifier,
+      signer: keystore as KeystoreSigner<string>,
+      // A different address than the one submitting the tx (paymentAccount) is specified
+      submitter: otherAccount.address,
+      signingPublicKey: key.publicKey,
+      alg: key.type,
+    })
+
+    await expect(
+      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    ).rejects.toThrow()
+  }, 30_000)
+
   it('writes a new DID record to chain', async () => {
     const tx = await DidChain.generateCreateTx({
       didIdentifier,
       signer: keystore as KeystoreSigner<string>,
+      submitter: paymentAccount.address,
       signingPublicKey: key.publicKey,
       alg: key.type,
     })
@@ -125,16 +144,17 @@ describe('write and didDeleteTx', () => {
   }, 30_000)
 })
 
-it('creates and updates DID', async () => {
+it('creates and updates DID, and then reclaims the deposit back', async () => {
   const { publicKey, alg } = await keystore.generateKeypair({
     alg: SigningAlgorithms.Ed25519,
   })
-  const didIdentifier = encodeAddress(publicKey)
+  const didIdentifier = encodeAddress(publicKey, 38)
   const key: DidTypes.INewPublicKey = { publicKey, type: alg }
 
   const tx = await DidChain.generateCreateTx({
     didIdentifier,
     signer: keystore as KeystoreSigner<string>,
+    submitter: paymentAccount.address,
     signingPublicKey: key.publicKey,
     alg: key.type,
   })
@@ -185,6 +205,18 @@ it('creates and updates DID', async () => {
   >({
     did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
   })
+
+  // Claim the deposit back
+  const reclaimDepositTx = await DidChain.generateReclaimDepositExtrinsic(
+    didIdentifier
+  )
+  await expect(
+    BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    })
+  ).resolves.not.toThrow()
+  // Verify that the DID has been deleted
+  await expect(DidChain.queryById(didIdentifier)).resolves.toBeNull()
 }, 40_000)
 
 describe('DID migration', () => {
@@ -211,6 +243,7 @@ describe('DID migration', () => {
     })
     const { extrinsic, did } = await DidUtils.upgradeDid(
       lightDidDetails,
+      paymentAccount.address,
       keystore
     )
 
@@ -248,6 +281,7 @@ describe('DID migration', () => {
     })
     const { extrinsic, did } = await DidUtils.upgradeDid(
       lightDidDetails,
+      paymentAccount.address,
       keystore
     )
 
@@ -284,6 +318,7 @@ describe('DID authorization', () => {
     key = { publicKey, type: alg }
     const tx = await DidChain.generateCreateTx({
       didIdentifier,
+      submitter: paymentAccount.address,
       keys: {
         [KeyRelationship.assertionMethod]: key,
         [KeyRelationship.capabilityDelegation]: key,

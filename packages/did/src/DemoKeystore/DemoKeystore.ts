@@ -390,6 +390,7 @@ export async function createOnChainDidFromSeed(
 
   const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
     keystore,
+    paymentAccount.address,
     keys
   )
   await BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
