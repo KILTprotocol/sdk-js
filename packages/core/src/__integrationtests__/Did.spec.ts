@@ -9,7 +9,7 @@
  * @group integration/did
  */
 
-import { Crypto, UUID } from '@kiltprotocol/utils'
+import { UUID } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/keyring'
 import {
   DemoKeystore,
@@ -31,7 +31,7 @@ import { BN } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
 
 import { CType } from '../ctype'
-import { devAlice } from './utils'
+import { devAlice, devBob } from './utils'
 
 let paymentAccount: KeyringPair
 const keystore = new DemoKeystore()
@@ -55,11 +55,6 @@ describe('write and didDeleteTx', () => {
   it('writes a new DID record to chain', async () => {
     const tx = await DidChain.generateCreateTx({
       didIdentifier,
-      endpointData: {
-        urls: ['https://example.com'],
-        contentHash: Crypto.hashStr('look I made you some content!'),
-        contentType: 'application/json',
-      },
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
@@ -78,6 +73,29 @@ describe('write and didDeleteTx', () => {
     })
   }, 30_000)
 
+  it('fails to delete the DID using a different submitter than the one specified in the DID operation', async () => {
+    const otherAccount = devBob
+
+    const call = await DidChain.getDeleteDidExtrinsic()
+
+    const submittable = await DidChain.generateDidAuthenticatedTx({
+      didIdentifier,
+      txCounter: 1,
+      call,
+      signer: keystore as KeystoreSigner<string>,
+      signingPublicKey: key.publicKey,
+      alg: key.type,
+      // Use a different account than the submitter one
+      submitter: otherAccount.address,
+    })
+
+    await expect(
+      BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      })
+    ).rejects.toThrow()
+  })
+
   it('deletes DID from previous step', async () => {
     await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
       Partial<DidTypes.IDidChainRecordJSON>
@@ -94,6 +112,7 @@ describe('write and didDeleteTx', () => {
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
+      submitter: paymentAccount.address,
     })
 
     await expect(
@@ -115,11 +134,6 @@ it('creates and updates DID', async () => {
 
   const tx = await DidChain.generateCreateTx({
     didIdentifier,
-    endpointData: {
-      urls: ['https://example.com'],
-      contentHash: Crypto.hashStr('daddy made you your favorite, open wide'),
-      contentType: 'application/json',
-    },
     signer: keystore as KeystoreSigner<string>,
     signingPublicKey: key.publicKey,
     alg: key.type,
@@ -135,26 +149,29 @@ it('creates and updates DID', async () => {
     Partial<DidTypes.IDidChainRecordJSON>
   >({
     did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
-    endpointData: {
-      urls: ['https://example.com'],
-      contentType: 'application/json',
-      contentHash: expect.any(String),
-    },
   })
 
-  const updateEndpointCall = await DidChain.getSetEndpointDataExtrinsic({
-    urls: ['ftp://example.com/abc'],
-    contentHash: Crypto.hashStr('here comes the content'),
-    contentType: 'application/ld+json',
+  const newKeypair = await keystore.generateKeypair({
+    alg: SigningAlgorithms.Ed25519,
   })
+  const newKeyDetails: DidTypes.INewPublicKey = {
+    publicKey: newKeypair.publicKey,
+    type: newKeypair.alg,
+  }
+
+  const updateAuthenticationKeyCall = await DidChain.getSetKeyExtrinsic(
+    KeyRelationship.authentication,
+    newKeyDetails
+  )
 
   const tx2 = await DidChain.generateDidAuthenticatedTx({
     didIdentifier,
     txCounter: 1,
-    call: updateEndpointCall,
+    call: updateAuthenticationKeyCall,
     signer: keystore as KeystoreSigner<string>,
     signingPublicKey: key.publicKey,
     alg: key.type,
+    submitter: paymentAccount.address,
   })
 
   await expect(
@@ -167,11 +184,6 @@ it('creates and updates DID', async () => {
     Partial<DidTypes.IDidChainRecordJSON>
   >({
     did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
-    endpointData: {
-      urls: ['ftp://example.com/abc'],
-      contentType: 'application/ld+json',
-      contentHash: expect.any(String),
-    },
   })
 }, 40_000)
 
@@ -314,6 +326,7 @@ describe('DID authorization', () => {
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
+      submitter: paymentAccount.address,
     })
     await expect(
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -348,6 +361,7 @@ describe('DID authorization', () => {
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
+      submitter: paymentAccount.address,
     })
     await expect(
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -368,6 +382,7 @@ describe('DID authorization', () => {
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
+      submitter: paymentAccount.address,
     })
 
     await expect(
@@ -390,6 +405,7 @@ describe('DID authorization', () => {
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
       alg: key.type,
+      submitter: paymentAccount.address,
     })
     await expect(
       BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {

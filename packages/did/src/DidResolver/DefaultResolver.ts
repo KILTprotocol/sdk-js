@@ -8,9 +8,7 @@
 import type {
   IDidResolver,
   IDidKeyDetails,
-  ResolverOpts,
   IDidResolvedDetails,
-  IServiceDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -30,14 +28,11 @@ import type { IDidParsingResult } from '../types'
  * Retrieves all the details associated with a DID from the KILT blockchain.
  *
  * @param identifier The full DID identifier.
- * @param serviceResolver The optional service resolver to resolve the DID service endpoints.
- * @param serviceResolver.servicesResolver
  * @param version The DID version number.
  * @returns The full DID details queried from the KILT blockchain.
  */
 async function queryFullDetailsFromIdentifier(
   identifier: string,
-  { servicesResolver }: ResolverOpts,
   version = FullDidDetails.FULL_DID_LATEST_VERSION
 ): Promise<FullDidDetails | null> {
   const didRec = await queryById(identifier)
@@ -47,7 +42,6 @@ async function queryFullDetailsFromIdentifier(
     assertionMethodKey,
     authenticationKey,
     capabilityDelegationKey,
-    endpointData,
     keyAgreementKeys,
     lastTxCounter,
   } = didRec
@@ -65,18 +59,11 @@ async function queryFullDetailsFromIdentifier(
     ]
   }
 
-  let services: IServiceDetails[] = []
-  if (servicesResolver && endpointData) {
-    const { contentHash, contentType, urls } = endpointData
-    services = await servicesResolver(contentHash, urls, contentType)
-  }
-
   return new FullDidDetails({
     did: getKiltDidFromIdentifier(identifier, 'full', version),
     keys: publicKeys,
     keyRelationships,
     lastTxIndex: lastTxCounter.toBn(),
-    services,
   })
 }
 
@@ -109,41 +96,34 @@ function buildLightDetailsFromMatch({
       version
     )
     lightDidCreationOptions.encryptionKey = decodedDetails.encryptionKey
-    lightDidCreationOptions.services = decodedDetails.services
   }
 
   return new LightDidDetails(lightDidCreationOptions)
 }
 
 /**
- * Resolve a DID URI (including a key ID or a service endpoint ID).
+ * Resolve a DID URI (including a key ID).
  *
  * @param didUri The DID URI to resolve.
- * @param opts The options to provide to the service resolver.
- * @returns The DID, key, or service endpoint details depending on the input URI. If not resource can be resolved, null is returned.
+ * @returns The DID or key details depending on the input URI. If not resource can be resolved, null is returned.
  */
 export async function resolve(
-  didUri: string,
-  opts: ResolverOpts = {}
-): Promise<IDidResolvedDetails | IDidKeyDetails | IServiceDetails | null> {
+  didUri: string
+): Promise<IDidResolvedDetails | IDidKeyDetails | null> {
   const { identifier, type, version, fragment, encodedDetails } = parseDidUrl(
     didUri
   )
 
   switch (type) {
     case 'full': {
-      const details = await queryFullDetailsFromIdentifier(
-        identifier,
-        opts,
-        version
-      )
+      const details = await queryFullDetailsFromIdentifier(identifier, version)
       // If the URI is a subject DID, return the retrieved details.
       if (!fragment) {
         return { details } as IDidResolvedDetails
       }
 
-      // Otherwise, return either the key or the service endpoints referenced by the URI.
-      return details?.getKey(didUri) || details?.getService(didUri) || null
+      // Otherwise, return either the key referenced by the URI or null.
+      return details?.getKey(didUri) || null
     }
     case 'light': {
       let details: LightDidDetails
@@ -163,8 +143,7 @@ export async function resolve(
         }
 
         const fullDidDetails = await queryFullDetailsFromIdentifier(
-          identifier.substring(2),
-          opts
+          identifier.substring(2)
         )
         if (fullDidDetails) {
           didResolvedDetails.metadata = {
@@ -177,7 +156,7 @@ export async function resolve(
         return didResolvedDetails
       }
 
-      return details?.getKey(didUri) || details?.getService(didUri) || null
+      return details?.getKey(didUri) || null
     }
     default:
       throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
@@ -185,15 +164,13 @@ export async function resolve(
 }
 
 /**
- * Resolve a DID URI (including a key or a service endpoint reference) to the details of the DID subject.
+ * Resolve a DID URI (including a key) to the details of the DID subject.
  *
- * @param did The subject', the key, or the service endpoint identifier.
- * @param opts The options to provide to the service resolver.
+ * @param did The subject's or the key identifier.
  * @returns The details associated with the DID subject.
  */
 export async function resolveDoc(
-  did: string,
-  opts: ResolverOpts = {}
+  did: string
 ): Promise<IDidResolvedDetails | null> {
   const { fragment } = parseDidUrl(did)
 
@@ -203,7 +180,7 @@ export async function resolveDoc(
     didToResolve = didToResolve.split('#')[0]
   }
 
-  return resolve(didToResolve, opts) as Promise<IDidResolvedDetails | null>
+  return resolve(didToResolve) as Promise<IDidResolvedDetails | null>
 }
 
 /**

@@ -25,7 +25,13 @@ import type {
   IRequestForAttestation,
   CompressedAttestation,
 } from '@kiltprotocol/types'
-import { revoke, query, store } from './Attestation.chain'
+import {
+  revoke,
+  query,
+  store,
+  remove,
+  reclaimDeposit,
+} from './Attestation.chain'
 import AttestationUtils from './Attestation.utils'
 import DelegationNode from '../delegation/DelegationNode'
 
@@ -63,6 +69,34 @@ export default class Attestation implements IAttestation {
     maxDepth: number
   ): Promise<SubmittableExtrinsic> {
     return revoke(claimHash, maxDepth)
+  }
+
+  /**
+   * [STATIC] [ASYNC] Removes an attestation. Also available as an instance method.
+   *
+   * @param claimHash - The hash of the claim that corresponds to the attestation to remove.
+   * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   */
+  public static async remove(
+    claimHash: string,
+    maxDepth: number
+  ): Promise<SubmittableExtrinsic> {
+    return remove(claimHash, maxDepth)
+  }
+
+  /**
+   * [STATIC] [ASYNC] Reclaims the deposit of an attestation and removes the attestation. Also available as an instance method.
+   *
+   * This call can only be successfully executed if the submitter of the transaction is the original payer of the attestation deposit.
+   *
+   * @param claimHash - The hash of the claim that corresponds to the attestation to remove and its deposit to be returned to the original payer.
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   */
+  public static async reclaimDeposit(
+    claimHash: string
+  ): Promise<SubmittableExtrinsic> {
+    return reclaimDeposit(claimHash)
   }
 
   /**
@@ -197,6 +231,27 @@ export default class Attestation implements IAttestation {
    */
   public async revoke(maxDepth: number): Promise<SubmittableExtrinsic> {
     return revoke(this.claimHash, maxDepth)
+  }
+
+  /**
+   * [ASYNC] Prepares an extrinsic to remove the attestation. Also available as a static method.
+   *
+   * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   */
+  public async remove(maxDepth: number): Promise<SubmittableExtrinsic> {
+    return remove(this.claimHash, maxDepth)
+  }
+
+  /**
+   * [STATIC] [ASYNC] Reclaims the deposit of an attestation and removes the attestation. Also available as an instance method.
+   *
+   * This call can only be successfully executed if the submitter of the transaction is the original payer of the attestation deposit.
+   *
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   */
+  public async reclaimDeposit(): Promise<SubmittableExtrinsic> {
+    return reclaimDeposit(this.claimHash)
   }
 
   /**

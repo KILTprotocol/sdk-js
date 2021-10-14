@@ -16,6 +16,7 @@ import type {
   IClaim,
   CompressedCType,
   CompressedCTypeSchema,
+  CTypeSchemaWithoutId,
 } from '@kiltprotocol/types'
 import { jsonabc, Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
@@ -77,28 +78,35 @@ export async function verifyOwner(ctype: ICType): Promise<boolean> {
   return owner ? owner === ctype.owner : false
 }
 
-type schemaPropsForHashing = {
-  $schema: ICType['schema']['$schema']
-  properties: ICType['schema']['properties']
-  title: ICType['schema']['title']
-  type: ICType['schema']['type']
+export function getSchemaPropertiesForHash(
+  ctypeSchema: CTypeSchemaWithoutId | ICType['schema']
+): Partial<ICType['schema']> {
+  // We need to remove the CType ID from the CType before storing it on the blockchain
+  // otherwise the resulting hash will be different, as the hash on chain would contain the CType ID,
+  // which is itself a hash of the CType schema.
+  const schemaWithoutId: Partial<ICType['schema']> =
+    '$id' in ctypeSchema
+      ? (ctypeSchema as ICType['schema'])
+      : (ctypeSchema as CTypeSchemaWithoutId)
+  const shallowCopy = { ...schemaWithoutId }
+  delete shallowCopy.$id
+  return shallowCopy
 }
 
-export function getHashForSchema(schema: schemaPropsForHashing): string {
-  const hashVal = {
-    $schema: schema.$schema,
-    properties: schema.properties,
-    title: schema.title,
-    type: schema.type,
-  }
-  return Crypto.hashObjectAsStr(hashVal)
+export function getHashForSchema(
+  schema: CTypeSchemaWithoutId | ICType['schema']
+): string {
+  const preparedSchema = getSchemaPropertiesForHash(schema)
+  return Crypto.hashObjectAsStr(preparedSchema)
 }
 
 export function getIdForCTypeHash(hash: string): string {
   return `kilt:ctype:${hash}`
 }
 
-export function getIdForSchema(schema: schemaPropsForHashing): string {
+export function getIdForSchema(
+  schema: CTypeSchemaWithoutId | ICType['schema']
+): string {
   return getIdForCTypeHash(getHashForSchema(schema))
 }
 
@@ -264,5 +272,6 @@ export default {
   verifyOwner,
   getHashForSchema,
   getIdForSchema,
+  getSchemaPropertiesForHash,
   validateNestedSchemas,
 }

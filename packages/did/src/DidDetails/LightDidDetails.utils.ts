@@ -9,28 +9,20 @@ import { encode as cborEncode, decode as cborDecode } from 'cbor'
 import type { LightDidDetailsCreationOpts } from './LightDidDetails'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
-const SERVICES_MAP_KEY = 's'
 
 /**
- * Serialize the optional encryption key and service endpoints of an off-chain DID using the CBOR serialization algorithm and encoding the result in Base64 format.
+ * Serialize the optional encryption key of an off-chain DID using the CBOR serialization algorithm and encoding the result in Base64 format.
  *
  * @param root0
  * @param root0.encryptionKey
- * @param root0.services
  * @returns The Base64-encoded and CBOR-serialized off-chain DID optional details.
  */
 export function serializeAndEncodeAdditionalLightDidDetails({
   encryptionKey,
-  services,
-}: Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'services'>):
-  | string
-  | null {
+}: Pick<LightDidDetailsCreationOpts, 'encryptionKey'>): string | null {
   const objectToSerialize: Map<string, any> = new Map()
   if (encryptionKey) {
     objectToSerialize.set(ENCRYPTION_KEY_MAP_KEY, encryptionKey)
-  }
-  if (services && services.length) {
-    objectToSerialize.set(SERVICES_MAP_KEY, services)
   }
 
   if (!objectToSerialize.size) {
@@ -45,13 +37,12 @@ export function decodeAndDeserializeAdditionalLightDidDetails(
   rawInput: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   version = 1
-): Pick<LightDidDetailsCreationOpts, 'encryptionKey' | 'services'> {
+): Pick<LightDidDetailsCreationOpts, 'encryptionKey'> {
   const decodedPayload: Map<string, any> = cborDecode(rawInput, {
     encoding: 'base64',
   })
 
   return {
     encryptionKey: decodedPayload[ENCRYPTION_KEY_MAP_KEY],
-    services: decodedPayload[SERVICES_MAP_KEY],
   }
 }

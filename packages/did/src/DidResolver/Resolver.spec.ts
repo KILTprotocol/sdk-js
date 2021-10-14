@@ -12,9 +12,8 @@
  */
 
 import { TypeRegistry } from '@kiltprotocol/chain-helpers'
-import { KeyRelationship, ServicesResolver } from '@kiltprotocol/types'
-import { Crypto } from '@kiltprotocol/utils'
-import type { IDidResolvedDetails, IServiceDetails } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
+import type { IDidResolvedDetails } from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/api'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import { hexToU8a, u8aToHex } from '@polkadot/util'
@@ -48,11 +47,6 @@ jest.mock('../Did.chain', () => {
         },
       ],
       lastTxCounter: TypeRegistry.createType('u64', 10),
-      endpointData: {
-        urls: ['ipfs://mydidstuff'],
-        contentHash: Crypto.hashStr('stuff'),
-        contentType: 'application/json',
-      },
     })
   )
   return {
@@ -99,35 +93,6 @@ it('has the right keys', async () => {
   ])
 })
 
-it('adds services when service resolver is present', async () => {
-  const service = {
-    id: `${fullDid}#messaging`,
-    type: 'DidComm messaging',
-    serviceEndpoint: `example.com/didcomm/${fullDid}`,
-  }
-  const servicesResolver: ServicesResolver = jest.fn(async () => [service])
-
-  await expect(
-    DefaultResolver.resolveDoc(fullDid).then((didDetails) =>
-      didDetails?.details.getServices('DidComm messaging')
-    )
-  ).resolves.toMatchObject([])
-
-  await expect(
-    DefaultResolver.resolveDoc(fullDid, {
-      servicesResolver,
-    }).then((didDetails) =>
-      didDetails?.details.getServices('DidComm messaging')
-    )
-  ).resolves.toMatchObject([service])
-
-  expect(servicesResolver).toHaveBeenCalledWith(
-    expect.any(String),
-    ['ipfs://mydidstuff'],
-    'application/json'
-  )
-})
-
 const mnemonic = 'testMnemonic'
 
 describe('Light DID tests', () => {
@@ -135,7 +100,6 @@ describe('Light DID tests', () => {
   let keypair: KeyringPair
   let publicAuthKey: INewPublicKey
   let encryptionKey: INewPublicKey
-  let services: IServiceDetails[]
 
   it('Correctly resolves a light DID created with only an ed25519 authentication key', async () => {
     keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
@@ -213,69 +177,5 @@ describe('Light DID tests', () => {
     expect(derivedEncryptionPublicKey!.publicKeyHex).toEqual(
       '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     )
-  })
-
-  it('Correctly resolves a light DID created with an authentication, an encryption key, and service endpoints', async () => {
-    keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
-    publicAuthKey = {
-      publicKey: keypair.publicKey,
-      type: 'ed25519',
-    }
-    encryptionKey = {
-      publicKey: hexToU8a(
-        '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-      ),
-      type: 'x25519',
-    }
-    services = [
-      {
-        id: `service1`,
-        type: 'messaging',
-        serviceEndpoint: 'example.com',
-      },
-      {
-        id: `service2`,
-        type: 'telephone',
-        serviceEndpoint: '123344',
-      },
-    ]
-    const lightDID = new LightDidDetails({
-      authenticationKey: publicAuthKey,
-      encryptionKey,
-      services,
-    })
-    const resolutionResult = (await DefaultResolver.resolve(
-      lightDID.did
-    )) as IDidResolvedDetails
-
-    const derivedAuthenticationPublicKey = resolutionResult.details.getKey(
-      `${lightDID.did}#authentication`
-    )
-    expect(derivedAuthenticationPublicKey).toBeDefined()
-    expect(derivedAuthenticationPublicKey!.publicKeyHex).toEqual(
-      u8aToHex(publicAuthKey.publicKey)
-    )
-    const derivedEncryptionPublicKey = resolutionResult.details.getKey(
-      `${lightDID.did}#encryption`
-    )
-    expect(derivedEncryptionPublicKey).toBeDefined()
-    expect(derivedEncryptionPublicKey!.publicKeyHex).toEqual(
-      '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-    )
-    const derivedServices = resolutionResult.details.getServices()
-    expect(derivedServices).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "id": "${lightDID.did}#service1",
-          "serviceEndpoint": "example.com",
-          "type": "messaging",
-        },
-        Object {
-          "id": "${lightDID.did}#service2",
-          "serviceEndpoint": "123344",
-          "type": "telephone",
-        },
-      ]
-    `)
   })
 })

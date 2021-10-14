@@ -24,15 +24,12 @@ import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { Codec } from '@polkadot/types/types'
 import { BN } from '@polkadot/util'
 import type {
-  Url,
-  UrlEncoding,
-  IAuthorizeCallOptions,
+  AuthenticationTxCreationInput,
   IDidCreationOptions,
   IDidChainRecordJSON,
   DidPublicKeyDetails,
   INewPublicKey,
   IDidChainRecordCodec,
-  EndpointData,
 } from './types'
 import {
   encodeDidAuthorizedCallOperation,
@@ -40,7 +37,6 @@ import {
   getKiltDidFromIdentifier,
   getIdentifierFromKiltDid,
   formatPublicKey,
-  encodeEndpointUrl,
 } from './Did.utils'
 
 // ### QUERYING
@@ -73,10 +69,6 @@ function decodeDidPublicKeyDetails(
   }
 }
 
-function decodeEndpointUrl(url: Url): string {
-  return (url.value as UrlEncoding).payload.toString()
-}
-
 function decodeDidChainRecord(
   didDetail: IDidChainRecordCodec,
   did: string
@@ -97,14 +89,6 @@ function decodeDidChainRecord(
     authenticationKey: authenticationKeyId,
     keyAgreementKeys: keyAgreementKeyIds,
     lastTxCounter: didDetail.lastTxCounter,
-  }
-  if (didDetail.serviceEndpoints.isSome) {
-    const endpointData = didDetail.serviceEndpoints.unwrap()
-    didRecord.endpointData = {
-      urls: endpointData.urls.map((e) => decodeEndpointUrl(e)),
-      contentType: endpointData.contentType.type,
-      contentHash: endpointData.contentHash.toHex(),
-    }
   }
   if (didDetail.capabilityDelegationKey.isSome) {
     didRecord.capabilityDelegationKey = assembleKeyId(
@@ -173,7 +157,6 @@ export async function generateCreateTx({
   alg,
   didIdentifier,
   keys = {},
-  endpointData,
 }: IDidCreationOptions & KeystoreSigningOptions): Promise<
   SubmittableExtrinsic
 > {
@@ -181,7 +164,6 @@ export async function generateCreateTx({
   const encoded = encodeDidCreationOperation(blockchain.api.registry, {
     didIdentifier,
     keys,
-    endpointData,
   })
   const signature = await signer.sign({
     data: encoded.toU8a(),
@@ -262,29 +244,13 @@ export async function getAddKeyExtrinsic(
   )
 }
 
-export async function getSetEndpointDataExtrinsic({
-  urls,
-  contentHash,
-  contentType,
-}: EndpointData): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.setServiceEndpoints({
-    urls: urls.map((url) => encodeEndpointUrl(url)),
-    contentHash,
-    contentType,
-  })
-}
-
-export async function getRemoveEndpointDataExtrinsic(): Promise<Extrinsic> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.removeServiceEndpoints()
-}
-
 export async function getDeleteDidExtrinsic(): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.did.delete()
 }
 
+// The block number can either be provided by the DID subject,
+// or the latest one will automatically be fetched from the blockchain.
 export async function generateDidAuthenticatedTx({
   signingPublicKey,
   alg,
@@ -292,13 +258,16 @@ export async function generateDidAuthenticatedTx({
   txCounter,
   didIdentifier,
   call,
-}: IAuthorizeCallOptions & KeystoreSigningOptions): Promise<
+  submitter,
+  blockNumber,
+}: AuthenticationTxCreationInput & KeystoreSigningOptions): Promise<
   SubmittableExtrinsic
 > {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const block = blockNumber || (await blockchain.api.query.system.number())
   const signableCall = encodeDidAuthorizedCallOperation(
     blockchain.api.registry,
-    { txCounter, didIdentifier, call }
+    { txCounter, didIdentifier, call, submitter, blockNumber: block }
   )
   const signature = await signer.sign({
     data: signableCall.toU8a(),

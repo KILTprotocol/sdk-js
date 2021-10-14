@@ -19,6 +19,7 @@
  * Dummy comment needed for correct doc display, do not remove.
  */
 import type {
+  Deposit,
   IDelegationNode,
   IDelegationHierarchyDetails,
 } from '@kiltprotocol/types'
@@ -90,6 +91,7 @@ export interface IChainDelegationNode extends Struct {
   readonly parent: Option<DelegationNodeId>
   readonly children: BTreeSet<DelegationNodeId>
   readonly details: IChainDelegationDetails
+  readonly deposit: Deposit
 }
 
 type DelegationOwnerIdentifier = AccountId

@@ -12,15 +12,16 @@
 
 import type { Option } from '@polkadot/types'
 import type { AccountId } from '@polkadot/types/interfaces'
+import { DecoderUtils, Crypto } from '@kiltprotocol/utils'
 import type {
   ICType,
   IDidDetails,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { DecoderUtils } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DidUtils } from '@kiltprotocol/did'
+import { getSchemaPropertiesForHash } from './CType.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('CType')
 
@@ -31,7 +32,10 @@ const log = ConfigService.LoggingFactory.getLogger('CType')
 export async function store(ctype: ICType): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Create tx for 'ctype.add'`)
-  const tx: SubmittableExtrinsic = blockchain.api.tx.ctype.add(ctype.hash)
+  const preparedSchema = Crypto.encodeObjectAsStr(
+    getSchemaPropertiesForHash(ctype.schema)
+  )
+  const tx: SubmittableExtrinsic = blockchain.api.tx.ctype.add(preparedSchema)
   return tx
 }
 

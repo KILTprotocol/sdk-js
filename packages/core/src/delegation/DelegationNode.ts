@@ -40,6 +40,7 @@ import {
   getChildren,
   getAttestationHashes,
   query,
+  remove,
   revoke,
   storeAsDelegation,
   storeAsRoot,
@@ -264,7 +265,7 @@ export default class DelegationNode implements IDelegationNode {
    * const extrinsic = newDelegationNode.store(signature)
    *
    * // now the delegating DID must sign as well
-   * const submittable = delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore)
+   * const submittable = delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore, submitterAccount)
    *
    * // and we can put it on chain
    * await submittable.signAndSend()
@@ -391,11 +392,22 @@ export default class DelegationNode implements IDelegationNode {
         `The DID ${did} is not among the delegators and may not revoke this node`
       )
     }
-    const childrenCount = await this.subtreeNodeCount()
+    const childCount = await this.subtreeNodeCount()
     log.debug(
-      `:: revoke(${this.id}) with maxRevocations=${childrenCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${did}`
+      `:: revoke(${this.id}) with maxRevocations=${childCount} and maxDepth = ${steps} through delegation node ${node?.id} and identity ${did}`
     )
-    return revoke(this.id, steps, childrenCount)
+    return revoke(this.id, steps, childCount)
+  }
+
+  /**
+   * [ASYNC] Removes the delegation node from the chain.
+   *
+   * @returns Promise containing an unsigned SubmittableExtrinsic.
+   */
+  public async remove(): Promise<SubmittableExtrinsic> {
+    const childCount = await this.subtreeNodeCount()
+    log.debug(`:: remove(${this.id}) with maxRevocations=${childCount}`)
+    return remove(this.id, childCount)
   }
 
   /**

@@ -95,10 +95,6 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
     result.capabilityDelegation = delegationKeyIds
   }
 
-  if (details.getServices().length) {
-    result.service = details.getServices()
-  }
-
   return result as IDidDocument
 }
 
