@@ -58,7 +58,7 @@ async function main(): Promise<void> {
       ),
     },
   })
-  // Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
+  // Will print `did:kilt:light:014rXt3vRYupKgtUJgjGjQG45PBa6uDbDzF48iFn96F9RYrBMB:oWFlomlwdWJsaWNLZXlYIABgPwMAHGu5yMbBpdiiFH2djWzJqbSpUc0ymDIVlqV0ZHR5cGVmeDI1NTE5`.
   console.log(claimerLightDid.did)
 
   /* 3.1. Building a CTYPE */
@@ -233,20 +233,26 @@ async function main(): Promise<void> {
 
       /* As in the attestation, you need a second identity to act as the verifier: */
       const generateVerifierMnemonic = Kilt.Utils.UUID.generate()
-      const verifierKeypair = await keystore.generateKeypair({
+      const verifierSigningKeypair = await keystore.generateKeypair({
         alg: Kilt.Did.SigningAlgorithms.Ed25519,
+        seed: generateVerifierMnemonic,
+      })
+      const verifierEncryptionKeypair = await keystore.generateKeypair({
+        alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
         seed: generateVerifierMnemonic,
       })
       // Create the verifier's light DID from the generated authentication key.
       const verifierLightDID = new Kilt.Did.LightDidDetails({
         authenticationKey: {
-          publicKey: verifierKeypair.publicKey,
-          type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(verifierKeypair.alg),
+          publicKey: verifierSigningKeypair.publicKey,
+          type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
+            verifierSigningKeypair.alg
+          ),
         },
         encryptionKey: {
-          publicKey: verifierKeypair.publicKey,
+          publicKey: verifierEncryptionKeypair.publicKey,
           type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
-            Kilt.Did.EncryptionAlgorithms.NaclBox
+            verifierEncryptionKeypair.alg
           ),
         },
       })
@@ -268,10 +274,15 @@ async function main(): Promise<void> {
       const copiedCredential = Kilt.AttestedClaim.fromAttestedClaim(
         JSON.parse(JSON.stringify(myAttestedClaim))
       )
-      copiedCredential.request.removeClaimProperties(['age'])
+
+      const credentialForVerifier = await copiedCredential.createPresentation({
+        selectedAttributes: ['name'],
+        signer: keystore,
+        claimerDid: claimerLightDid,
+      })
 
       const messageBodyForVerifier: MessageBody = {
-        content: [copiedCredential],
+        content: [credentialForVerifier],
         type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
       }
       const messageForVerifier = new Kilt.Message(
@@ -280,16 +291,31 @@ async function main(): Promise<void> {
         verifierLightDID.did
       )
 
+      const verifierKeyAgreement = verifierLightDID.getKeys(
+        KeyRelationship.keyAgreement
+      )[0] as IDidKeyDetails<string>
+
+      /* The message can be encrypted as follows: */
+      const encryptedMessageForVerifier = await messageForVerifier.encrypt(
+        claimerKeyAgreement,
+        verifierKeyAgreement,
+        keystore
+      )
+
+      /* Therefore, **during decryption** both the **sender identity and the validity of the message are checked automatically**. */
+      const decryptedMessageForVerifier = await Kilt.Message.decrypt(
+        encryptedMessageForVerifier,
+        keystore
+      )
+
       /* 6.2 Verify presentation */
       /* When verifying the claimer's message, the verifier has to use their session which was created during the CTYPE request: */
       if (
-        messageForVerifier.body.type ===
+        decryptedMessageForVerifier.body.type ===
         Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
       ) {
-        const claims = messageForVerifier.body.content
-        const isValid = await Kilt.AttestedClaim.fromAttestedClaim(
-          claims[0]
-        ).verify()
+        const claims = decryptedMessageForVerifier.body.content
+        const isValid = await Kilt.AttestedClaim.verify(claims[0])
         console.log('Verifcation success?', isValid)
         console.log('Attested claims from verifier perspective:\n', claims)
       }
