@@ -247,10 +247,7 @@ export default class Message implements IMessage {
     keystore: Pick<NaclBoxCapable, 'encrypt'>
   ): Promise<IEncryptedMessage> {
     if (this.receiver !== receiverKey.controller) {
-      throw SDKErrors.ERROR_IDENTITY_MISMATCH(
-        'receiver public key',
-        'revceiver'
-      )
+      throw SDKErrors.ERROR_IDENTITY_MISMATCH('receiver public key', 'receiver')
     }
     if (this.sender !== senderKey.controller) {
       throw SDKErrors.ERROR_IDENTITY_MISMATCH('sender public key', 'sender')
