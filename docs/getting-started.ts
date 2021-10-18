@@ -171,7 +171,10 @@ async function main(): Promise<void> {
   )
 
   /* Therefore, **during decryption** both the **sender identity and the validity of the message are checked automatically**. */
-  const decrypted = await Kilt.Message.decrypt(encryptedMessage, keystore)
+  const decrypted = await Kilt.Message.decrypt(encryptedMessage, keystore, {
+    senderDetails: claimerLightDid,
+    receiverDetails: attesterOnChainDid.details,
+  })
 
   /* At this point the Attester has the original request for attestation object: */
   if (
