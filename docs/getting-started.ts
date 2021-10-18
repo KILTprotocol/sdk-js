@@ -171,11 +171,7 @@ async function main(): Promise<void> {
   )
 
   /* Therefore, **during decryption** both the **sender identity and the validity of the message are checked automatically**. */
-  const decrypted = await Kilt.Message.decrypt(encryptedMessage, keystore, {
-    senderDetails: claimerLightDid,
-    receiverDetails: attesterOnChainDid.details,
-  })
-
+  const decrypted = await Kilt.Message.decrypt(encryptedMessage, keystore)
   /* At this point the Attester has the original request for attestation object: */
   if (
     decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
@@ -199,9 +195,7 @@ async function main(): Promise<void> {
       keystore,
       identity.address
     )
-    await Kilt.BlockchainUtils.submitSignedTx(authorizedTx, {
-      resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
-    })
+    await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity)
 
     /* The request for attestation is fulfilled with the attestation, but it needs to be combined into the `AttestedClaim` object before sending it back to the Claimer: */
     const attestedClaim = Kilt.AttestedClaim.fromRequestAndAttestation(
@@ -251,7 +245,9 @@ async function main(): Promise<void> {
         },
         encryptionKey: {
           publicKey: verifierKeypair.publicKey,
-          type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(verifierKeypair.alg),
+          type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
+            Kilt.Did.EncryptionAlgorithms.NaclBox
+          ),
         },
       })
 
