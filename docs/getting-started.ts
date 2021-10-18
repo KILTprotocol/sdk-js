@@ -35,19 +35,27 @@ async function main(): Promise<void> {
   // Create a mnemonic seed
   const generateClaimerMnemonic = Kilt.Utils.UUID.generate()
   // Generate a new keypair for authentication with the generated seed
-  const claimerKeypair = await keystore.generateKeypair({
+  const claimerSigningKeypair = await keystore.generateKeypair({
     alg: Kilt.Did.SigningAlgorithms.Ed25519,
     seed: generateClaimerMnemonic,
+  })
+  const claimerEncryptionKeypair = await keystore.generateKeypair({
+    seed: generateClaimerMnemonic,
+    alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
   })
   // Create a light DID from the generated authentication key.
   const claimerLightDid = new Kilt.Did.LightDidDetails({
     authenticationKey: {
-      publicKey: claimerKeypair.publicKey,
-      type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(claimerKeypair.alg),
+      publicKey: claimerSigningKeypair.publicKey,
+      type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
+        claimerSigningKeypair.alg
+      ),
     },
     encryptionKey: {
-      publicKey: claimerKeypair.publicKey,
-      type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(claimerKeypair.alg),
+      publicKey: claimerEncryptionKeypair.publicKey,
+      type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
+        claimerEncryptionKeypair.alg
+      ),
     },
   })
   // Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
