@@ -95,7 +95,7 @@ const lightDID = new LightDidDetails({
   encryptionKey: {
     publicKey: encryptionKeyPublicDetails.publicKey,
     type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
-  }
+  },
 })
 
 // Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5`.
@@ -174,12 +174,18 @@ const authenticationKeyPublicDetails = await keystore.generateKeypair({
 // The extrinsic is unsigned and contains the DID creation operation signed with the DID authentication key.
 // The second argument, the submitter account, ensures that only an entity authorised by the DID subject
 // can submit the extrinsic to the KILT blockchain.
-const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(keystore, aliceKiltAccount.address, {
-  [KeyRelationship.authentication]: {
-    publicKey: authenticationKeyPublicDetails.publicKey,
-    type: DemoKeystore.getKeypairTypeForAlg(authenticationKeyPublicDetails.alg),
-  },
-})
+const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
+  keystore,
+  aliceKiltAccount.address,
+  {
+    [KeyRelationship.authentication]: {
+      publicKey: authenticationKeyPublicDetails.publicKey,
+      type: DemoKeystore.getKeypairTypeForAlg(
+        authenticationKeyPublicDetails.alg
+      ),
+    },
+  }
+)
 // Will print `did:kilt:4sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
 console.log(did)
 
@@ -329,21 +335,15 @@ As the creation of a full DID requires a deposit that will lock 0,1 KILT from th
 Claiming back the deposit of a DID is semantically equivalent to deleting the DID, with the difference that the extrinsic to claim the deposit can only be called by the deposit owner and does not require a valid signature by the DID subject:
 
 ```typescript
-import {
-  generateReclaimDepositExtrinsic,
-} from '@kiltprotocol/did/src/Did.chain'
+import { generateReclaimDepositExtrinsic } from '@kiltprotocol/did/src/Did.chain'
 
 // Generate the submittable extrinsic to claim the deposit back, by including the DID identifier for which the deposit needs to be returned.
 const depositClaimExtrinsic = await generateReclaimDepositExtrinsic(fullDID.did)
 
 // The submission will fail if `aliceKiltAccount` is not the owner of the deposit associated with the given DID identifier.
-await BlockchainUtils.signAndSubmitTx(
-  depositClaimExtrinsic,
-  aliceKiltAccount,
-  {
-    resolveOn,
-  }
-)
+await BlockchainUtils.signAndSubmitTx(depositClaimExtrinsic, aliceKiltAccount, {
+  resolveOn,
+})
 ```
 
 ## Migrating a light DID to a full DID
