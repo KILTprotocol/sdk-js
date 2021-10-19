@@ -251,7 +251,7 @@ export async function getDeleteDidExtrinsic(): Promise<Extrinsic> {
   return api.tx.did.delete()
 }
 
-export async function generateReclaimDepositExtrinsic(
+export async function getReclaimDepositExtrinsic(
   identifier: IIdentity['address']
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
