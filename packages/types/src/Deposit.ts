@@ -14,7 +14,7 @@ import type { AccountId, Balance } from '@polkadot/types/interfaces'
 import { Struct } from '@polkadot/types'
 
 /**
- * An on-chain deposit, which includes the deposit owner and the amount of tokens locked.
+ * An on-chain deposit. It contains information about the deposit owner and the balance used.
  */
 export interface Deposit extends Struct {
   owner: AccountId

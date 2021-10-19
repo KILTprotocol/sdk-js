@@ -156,6 +156,7 @@ export async function generateCreateTx({
   signingPublicKey,
   alg,
   didIdentifier,
+  submitter,
   keys = {},
 }: IDidCreationOptions & KeystoreSigningOptions): Promise<
   SubmittableExtrinsic
@@ -163,6 +164,7 @@ export async function generateCreateTx({
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = encodeDidCreationOperation(blockchain.api.registry, {
     didIdentifier,
+    submitter,
     keys,
   })
   const signature = await signer.sign({
@@ -247,6 +249,13 @@ export async function getAddKeyExtrinsic(
 export async function getDeleteDidExtrinsic(): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.tx.did.delete()
+}
+
+export async function getReclaimDepositExtrinsic(
+  identifier: IIdentity['address']
+): Promise<SubmittableExtrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.did.reclaimDeposit(identifier)
 }
 
 // The block number can either be provided by the DID subject,

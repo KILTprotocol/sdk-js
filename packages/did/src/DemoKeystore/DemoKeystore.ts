@@ -361,10 +361,13 @@ export async function createOnChainDidFromSeed(
   mnemonicOrHexSeed: string,
   signingKeyType = SigningAlgorithms.Ed25519
 ): Promise<FullDidDetails> {
-  const makeKey = (seed: string, alg: string) =>
+  const makeKey = (
+    seed: string,
+    alg: SigningAlgorithms | EncryptionAlgorithms
+  ) =>
     keystore
       .generateKeypair({
-        alg: signingKeyType,
+        alg,
         seed,
       })
       .then((key) => ({ ...key, type: DemoKeystore.getKeypairTypeForAlg(alg) }))
@@ -390,6 +393,7 @@ export async function createOnChainDidFromSeed(
 
   const { extrinsic, did } = await DidUtils.writeDidFromPublicKeys(
     keystore,
+    paymentAccount.address,
     keys
   )
   await BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {

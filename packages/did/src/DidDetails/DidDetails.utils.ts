@@ -8,6 +8,7 @@
 import type {
   IDidDetails,
   IDidKeyDetails,
+  IIdentity,
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
@@ -28,11 +29,13 @@ import {
  * Write on the KILT blockchain a new (full) DID with the provided details.
  *
  * @param didDetails The details of the new DID to write on chain.
+ * @param submitter The account that is authorised to submit the creation operation to the blockchain.
  * @param signer The signer (a KILT account) to be used to sign the resulting operation.
  * @returns The signed extrinsic that can be submitted to the KILT blockchain to create the new DID.
  */
 export async function writeNewDidFromDidDetails(
   didDetails: IDidDetails,
+  submitter: IIdentity['address'],
   signer: KeystoreSigner
 ): Promise<SubmittableExtrinsic> {
   const [signingKey] = didDetails.getKeys(KeyRelationship.authentication)
@@ -59,6 +62,7 @@ export async function writeNewDidFromDidDetails(
     signingPublicKey: signingKey.publicKeyHex,
     alg: getSignatureAlgForKeyType(signingKey.type),
     didIdentifier: getIdentifierFromKiltDid(didDetails.did),
+    submitter,
     keys,
   })
 }
