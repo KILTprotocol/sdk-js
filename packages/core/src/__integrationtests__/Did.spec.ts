@@ -207,7 +207,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   })
 
   // Claim the deposit back
-  const reclaimDepositTx = await DidChain.generateReclaimDepositExtrinsic(
+  const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
     didIdentifier
   )
   await expect(
