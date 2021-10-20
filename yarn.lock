@@ -400,6 +400,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cfworker/json-schema@npm:^1.9.0":
+  version: 1.9.0
+  resolution: "@cfworker/json-schema@npm:1.9.0"
+  checksum: ace8b706986a3608cf984528d11ab8694163903dfdcc3993199d3ebe5b95442d5525eab3b2a26daada8532affd3a7bfeb11c7ff9a43b26f748adfb03a7068ce6
+  languageName: node
+  linkType: hard
+
 "@cnakazawa/watch@npm:^1.0.3":
   version: 1.0.4
   resolution: "@cnakazawa/watch@npm:1.0.4"
@@ -837,6 +844,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/core@workspace:packages/core"
   dependencies:
+    "@cfworker/json-schema": ^1.9.0
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
