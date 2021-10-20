@@ -79,7 +79,7 @@
           alg: Did.SigningAlgorithms.Ed25519,
         })
         .then(({ publicKey, alg }) => {
-          const didIdentifier = keyring.encodeAddress(publicKey)
+          const didIdentifier = Crypto.encodeAddress(publicKey)
           const key = { publicKey, type: alg }
           Did.DidChain.generateCreateTx({
             didIdentifier,

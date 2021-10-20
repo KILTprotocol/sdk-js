@@ -145,6 +145,20 @@ jobs:
           sleep 5s
           yarn test:integration:run
           docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
+  bundle_test:
+    runs-on: ubuntu-latest
+
+    needs: build
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: build-14.x
+      - name: unzip
+        run: unzip build.zip -d .
+      - name: bundle
+        run: yarn bundle
+      - name: embedding test
 
   run_example:
     runs-on: ubuntu-latest
