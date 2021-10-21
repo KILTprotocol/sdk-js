@@ -46,7 +46,6 @@
     </script>
     <script async>
       // Light Did Account creation workflow
-
       const authPublicKey = Crypto.coToUInt8(
         '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
       )
@@ -79,11 +78,11 @@
           alg: Did.SigningAlgorithms.Ed25519,
         })
         .then(({ publicKey, alg }) => {
-          const didIdentifier = Crypto.encodeAddress(publicKey)
+          const didIdentifier = Crypto.encodeAddress(publicKey,38)
           const key = { publicKey, type: alg }
           Did.DidChain.generateCreateTx({
             didIdentifier,
-            submitter: address,
+            submitter: devFaucet.address,
             signer: keystore,
             signingPublicKey: key.publicKey,
             alg: key.type,
@@ -108,6 +107,7 @@
                 .then(() => {
                   Did.DidChain.getDeleteDidExtrinsic().then((extrinsic) => {
                     Did.DidChain.generateDidAuthenticatedTx({
+                      submitter: devFaucet.address,
                       didIdentifier,
                       txCounter: 1,
                       call: extrinsic,
@@ -160,7 +160,7 @@
             new Error('did not created')
         )
         DriversLicense.store()
-          .then((tx) => alice.authorizeExtrinsic(tx, keystore))
+          .then((tx) => alice.authorizeExtrinsic(tx, keystore, devFaucet.address))
           .then((tx) =>
             BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
               resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -215,7 +215,7 @@
             new Error('Attested Claim data not verifiable')
           attestation
             .store()
-            .then((tx) => alice.authorizeExtrinsic(tx, keystore))
+            .then((tx) => alice.authorizeExtrinsic(tx, keystore, devFaucet.address))
             .then((tx) =>
               BlockchainUtils.signAndSubmitTx(tx, devFaucet, {
                 resolveOn: BlockchainUtils.IS_IN_BLOCK,

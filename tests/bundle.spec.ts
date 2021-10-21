@@ -10,9 +10,6 @@ import url from 'url'
 import path from 'path'
 
 test('html bundle integration test', async ({ page }) => {
-  page.on('pageerror', (exception) => {
-    console.error(`uncaught exception: "${exception}"`)
-  })
   const fileurl = url.pathToFileURL(path.join(__dirname, 'bundle-test.html'))
     .href
   await page.goto(fileurl)
@@ -20,9 +17,14 @@ test('html bundle integration test', async ({ page }) => {
   page.on('console', (msg) => {
     if (msg.type() === 'error') console.log(`Error text: "${msg.text()}"`)
   })
-
   page.on('console', (msg) => console.log(msg.text()))
   await page.evaluate(() => {
-    return new Promise((resolve) => setTimeout(resolve, 30000))
+    page.on('console', async (msg) => {
+
+    })
+    return new Promise((resolve) => setTimeout(resolve, 50000))
+
   })
+
+  page.close()
 })

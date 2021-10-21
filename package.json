@@ -24,7 +24,7 @@
     "test:integration:run": "jest --group=integration -b -w 3 --silent",
     "test:integration": "{ lsof -i :9944 > /dev/null && yarn test:integration:run; } || echo 'Can not connect to chain. Is it running?'; exit 1;",
     "test:watch": "yarn test --watch",
-    "test:bundle": "yarn ./tests playwright test"
+    "test:bundle": "yarn ./tests playwright test --config playwright.config.ts"
   },
   "husky": {
     "hooks": {
