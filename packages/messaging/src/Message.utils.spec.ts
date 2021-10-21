@@ -140,7 +140,7 @@ describe('Messaging Utilities', () => {
   let identityAlice: IDidDetails
   let identityBob: IDidDetails
   let mockResolver: IDidResolver
-  let date: Date
+  let date: string
   let rawCType: ICType['schema']
   let rawCTypeWithMultipleProperties: ICType['schema']
   let testCType: CType
@@ -223,7 +223,7 @@ describe('Messaging Utilities', () => {
     keystore = new DemoKeystore()
     identityAlice = await createLocalDemoDidFromSeed(keystore, '//Alice')
     identityBob = await createLocalDemoDidFromSeed(keystore, '//Bob')
-    date = new Date(2019, 11, 10)
+    date = new Date(2019, 11, 10).toISOString()
     claimContents = {
       name: 'Bob',
     }
