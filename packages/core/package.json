@@ -39,7 +39,6 @@
     "@polkadot/types-known": "^5.4.1",
     "@polkadot/util": "^7.1.2",
     "@polkadot/util-crypto": "^7.1.2",
-    "ajv": "^6.12.5",
     "tweetnacl": "^1.0.3",
     "typescript-logging": "^0.6.4"
   }
