@@ -26,7 +26,15 @@ module.exports = {
     '!**/kilt/*',
     '!**/blockchainApiConnection/*',
     '!**/types/**/*',
-    '!**/SDKErrors.ts'
+    '!**/SDKErrors.ts',
+    '!**/*.chain.ts',
+    // TODO: write tests for these files and remove here
+    '!did/src/index.types.ts',
+    '!did/src/Did.chain.ts',
+    '!did/src/Did.utils.ts',
+    '!did/src/DemoKeystore/DemoKeystore.ts',
+    '!did/src/DidDetails/DidDetails.utils.ts',
+    '!did/src/DidDetails/FullDidDetails.utils.ts',
   ],
   rootDir: 'packages',
   coverageDirectory: 'coverage',
