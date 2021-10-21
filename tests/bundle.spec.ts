@@ -6,13 +6,23 @@
  */
 
 import { test, expect } from '@playwright/test'
+import url from 'url'
+import path from 'path'
 
 test('html bundle integration test', async ({ page }) => {
-  page.on('pageerror', exception => {
+  page.on('pageerror', (exception) => {
     console.error(`uncaught exception: "${exception}"`)
   })
-  
-  await page.goto('file://$(pwd)/../bundle-test.html')
-  const title = page.locator('.navbar__inner .navbar__title')
-  await expect(title).toHaveText('Bundle tests')
+  const fileurl = url.pathToFileURL(path.join(__dirname, 'bundle-test.html'))
+    .href
+  await page.goto(fileurl)
+  await expect(page).toHaveTitle('Bundle tests')
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') console.log(`Error text: "${msg.text()}"`)
+  })
+
+  page.on('console', (msg) => console.log(msg.text()))
+  await page.evaluate(() => {
+    return new Promise((resolve) => setTimeout(resolve, 30000))
+  })
 })

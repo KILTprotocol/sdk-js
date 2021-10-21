@@ -76,11 +76,7 @@ keystore
     const key = { publicKey, type: alg }
     Did.DidChain.generateCreateTx({
       didIdentifier,
-      endpointData: {
-        urls: ['https://example.com'],
-        contentHash: Crypto.hashStr('look I made you some content!'),
-        contentType: 'application/json',
-      },
+      submitter: devFaucet.address,
       signer: keystore,
       signingPublicKey: key.publicKey,
       alg: key.type,
@@ -102,6 +98,7 @@ keystore
           .then(() => {
             Did.DidChain.getDeleteDidExtrinsic().then((extrinsic) => {
               Did.DidChain.generateDidAuthenticatedTx({
+                submitter: devFaucet.address,
                 didIdentifier,
                 txCounter: 1,
                 call: extrinsic,

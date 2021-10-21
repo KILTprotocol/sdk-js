@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="./packages/sdk-js/dist/sdk-js.umd.js"></script>
+    <script src="./..//packages/sdk-js/dist/sdk-js.umd.js"></script>
     <script>
       const {
         Claim,
@@ -83,11 +83,7 @@
           const key = { publicKey, type: alg }
           Did.DidChain.generateCreateTx({
             didIdentifier,
-            endpointData: {
-              urls: ['https://example.com'],
-              contentHash: Crypto.hashStr('look I made you some content!'),
-              contentType: 'application/json',
-            },
+            submitter: address,
             signer: keystore,
             signingPublicKey: key.publicKey,
             alg: key.type,
