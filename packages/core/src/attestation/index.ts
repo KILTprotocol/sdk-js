@@ -5,5 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+export { AttestationDetails } from './Attestation.chain'
 export { default } from './Attestation'
 export { default as AttestationUtils } from './Attestation.utils'
