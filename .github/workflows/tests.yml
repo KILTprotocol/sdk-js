@@ -6,14 +6,14 @@ on:
       - develop
       - master
     tags:
-      - '*'
+      - "*"
     paths-ignore:
-      - '**/*.md'
-      - 'LICENSE'
-      - 'Dockerfile'
-      - 'docker-compose.yml'
-      - 'dc.build.node.yml'
-      - '.github/workflows/*publish.yml'
+      - "**/*.md"
+      - "LICENSE"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - "dc.build.node.yml"
+      - ".github/workflows/*publish.yml"
   pull_request:
     branches:
       - develop
@@ -84,10 +84,10 @@ jobs:
     strategy:
       matrix:
         node-version: [14.x]
-        required: ['required']
+        required: ["required"]
         include:
           - node-version: 16.x
-            required: 'optional'
+            required: "optional"
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
@@ -107,11 +107,11 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-rc']
-        required: ['optional']
+        image: ["latest-rc"]
+        required: ["optional"]
         include:
-          - image: 'latest-develop'
-            required: 'optional'
+          - image: "latest-develop"
+            required: "optional"
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
@@ -197,12 +197,9 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --dev --ws-port 9944 --ws-external
           sleep 5s
-      - name: install playwright and deps
-        run: npx playwright install chromium --with-deps
-      - name: run HTML script
-        run: yarn test:bundle
-      - name: docker teardown
-        run: docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
+          npx playwright install chromium --with-deps
+          yarn test:bundle
+          docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
 
   run_example:
     runs-on: ubuntu-latest
@@ -211,11 +208,11 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-rc']
-        required: ['required']
+        image: ["latest-rc"]
+        required: ["required"]
         include:
-          - image: 'latest-develop'
-            required: 'optional'
+          - image: "latest-develop"
+            required: "optional"
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
@@ -257,11 +254,11 @@ jobs:
 
     strategy:
       matrix:
-        image: ['latest-rc']
-        required: ['required']
+        image: ["latest-rc"]
+        required: ["required"]
         include:
-          - image: 'latest-develop'
-            required: 'optional'
+          - image: "latest-develop"
+            required: "optional"
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
