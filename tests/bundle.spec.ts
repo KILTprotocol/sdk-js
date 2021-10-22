@@ -27,7 +27,7 @@ test('html bundle integration test', async ({ page }) => {
   await expect(page).toHaveTitle('Bundle tests')
 
   await page.evaluate(() => {
-    return new Promise((resolve) => setTimeout(resolve, 25000))
+    return new Promise((resolve) => setTimeout(resolve, 30000))
   })
   msgnr.forEach((value) => {
     if (value && typeof +value === 'number') {
