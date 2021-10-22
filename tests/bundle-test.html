@@ -27,7 +27,7 @@
 
       blockchain.then((chain) => {
         if (!chain) console.error('No blockchain connection established')
-        else chain.getStats().then((t) => console.info(t))
+        else chain.getStats().then((t) => console.log(t,0))
       })
       const keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
     </script>
@@ -67,8 +67,8 @@
       ;(testDid.did !==
         `did:kilt:light:01${address}:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5` &&
         new Error('Did Test Unsuccessful')) ||
-        console.info(
-          `light did successfully created: ${JSON.stringify(testDid, null, 2)}`
+        console.log(
+          `light did successfully created: ${JSON.stringify(testDid, null, 2)}`, 1
         )
     </script>
     <script async>
@@ -101,7 +101,7 @@
                         didIdentifier,
                         'full'
                       ) &&
-                      console.info('Did Identifiers matching!')) ||
+                      console.log('Did Identifiers matching!', 2)) ||
                     new Error('Did Identifiers not matching!')
                 )
                 .then(() => {
@@ -128,7 +128,7 @@
                         Did.DidChain.queryById(didIdentifier).then(
                           (didResult) =>
                             didResult === null &&
-                            console.info('Did successfully deleted!')
+                            console.log('Did successfully deleted!', 3)
                         )
                       )
                   })
@@ -171,7 +171,7 @@
             DriversLicense.verifyStored().then(
               (stored) =>
                 (stored &&
-                  console.info('CType successfully stored onchain!')) ||
+                  console.log('CType successfully stored onchain!', 4)) ||
                 new Error('ctype not stored!')
             )
             kilt.CTypeUtils.verifyOwner({
@@ -179,7 +179,7 @@
               owner: alice.did,
             }).then(
               (result) =>
-                (result && console.info('owner verified')) ||
+                (result && console.log('owner verified', 5)) ||
                 new Error('ctype owner does not match ctype creator did')
             )
           })
@@ -198,10 +198,10 @@
         const request = RequestForAttestation.fromClaim(claim)
         request.signWithDid(keystore, bob).then((signed) => {
           RequestForAttestation.isIRequestForAttestation(signed) &&
-            ((signed.verifyData() && console.info('Req4Att data verified')) ||
+            ((signed.verifyData() && console.log('Req4Att data verified', 6)) ||
               new Error('Req4Att not verifiable')) &&
             ((signed.verifySignature() &&
-              console.info('Req4Att signature verified')) ||
+              console.log('Req4Att signature verified', 7)) ||
               new Error('Req4Att Signature mismatch')) &&
             signed.claim.contents !== content &&
             new Error('Claim content inside Req4Att mismatching')
@@ -211,7 +211,7 @@
             attestation
           )
           ;(aClaim.verifyData() &&
-            console.info('Attested Claim Data verified!')) ||
+            console.log('Attested Claim Data verified!', 8)) ||
             new Error('Attested Claim data not verifiable')
           attestation
             .store()
@@ -222,7 +222,7 @@
                 reSign: true,
               }).then(
                 (aClaim.verify() &&
-                  console.info('Attested Claim verified with chain.')) ||
+                  console.log('Attested Claim verified with chain.', 9)) ||
                   new Error('attested Claim not verifiable with chain')
               )
             )
