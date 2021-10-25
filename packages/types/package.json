@@ -21,9 +21,9 @@
   "bugs": "https://github.com/KILTprotocol/sdk-js/issues",
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "dependencies": {
-    "@polkadot/api": "^5.4.1",
-    "@polkadot/keyring": "^7.1.2",
-    "@polkadot/types": "^5.4.1",
+    "@polkadot/api": "^6.4.2",
+    "@polkadot/keyring": "^7.5.1",
+    "@polkadot/types": "^6.4.2",
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {

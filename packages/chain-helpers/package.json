@@ -29,10 +29,10 @@
     "@kiltprotocol/type-definitions": "0.1.23",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^5.4.1",
-    "@polkadot/keyring": "^7.1.2",
-    "@polkadot/types": "^5.4.1",
-    "@polkadot/util": "^7.1.2",
+    "@polkadot/api": "^6.4.2",
+    "@polkadot/keyring": "^7.5.1",
+    "@polkadot/types": "^6.4.2",
+    "@polkadot/util": "^7.5.1",
     "typescript-logging": "^0.6.4"
   }
 }
