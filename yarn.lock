@@ -812,10 +812,10 @@ __metadata:
     "@kiltprotocol/type-definitions": 0.1.23
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@polkadot/api": ^6.4.2
-    "@polkadot/keyring": ^7.5.1
-    "@polkadot/types": ^6.4.2
-    "@polkadot/util": ^7.5.1
+    "@polkadot/api": 6.4.2
+    "@polkadot/keyring": 7.5.1
+    "@polkadot/types": 6.4.2
+    "@polkadot/util": 7.5.1
     rimraf: ^3.0.2
     typescript: ^4.2.2
     typescript-logging: ^0.6.4
@@ -842,12 +842,12 @@ __metadata:
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@polkadot/api": ^6.4.2
-    "@polkadot/keyring": ^7.5.1
-    "@polkadot/types": ^6.4.2
-    "@polkadot/types-known": ^6.4.2
-    "@polkadot/util": ^7.5.1
-    "@polkadot/util-crypto": ^7.5.1
+    "@polkadot/api": 6.4.2
+    "@polkadot/keyring": 7.5.1
+    "@polkadot/types": 6.4.2
+    "@polkadot/types-known": 6.4.2
+    "@polkadot/util": 7.5.1
+    "@polkadot/util-crypto": 7.5.1
     "@types/uuid": ^8.0.0
     ajv: ^6.12.5
     rimraf: ^3.0.2
@@ -865,11 +865,11 @@ __metadata:
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@polkadot/api": ^6.4.2
-    "@polkadot/keyring": ^7.5.1
-    "@polkadot/types": ^6.4.2
-    "@polkadot/util": ^7.5.1
-    "@polkadot/util-crypto": ^7.5.1
+    "@polkadot/api": 6.4.2
+    "@polkadot/keyring": 7.5.1
+    "@polkadot/types": 6.4.2
+    "@polkadot/util": 7.5.1
+    "@polkadot/util-crypto": 7.5.1
     cbor: ^6.0.0
     rimraf: ^3.0.2
     typescript: ^4.2.2
@@ -884,7 +884,7 @@ __metadata:
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@polkadot/util": ^7.5.1
+    "@polkadot/util": 7.5.1
     rimraf: ^3.0.2
     typescript: ^4.2.2
   languageName: unknown
@@ -925,9 +925,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/types@workspace:packages/types"
   dependencies:
-    "@polkadot/api": ^6.4.2
-    "@polkadot/keyring": ^7.5.1
-    "@polkadot/types": ^6.4.2
+    "@polkadot/api": 6.4.2
+    "@polkadot/keyring": 7.5.1
+    "@polkadot/types": 6.4.2
     rimraf: ^3.0.2
     ts-node: ^8.10.2
     tweetnacl: ^1.0.3
@@ -940,10 +940,10 @@ __metadata:
   resolution: "@kiltprotocol/utils@workspace:packages/utils"
   dependencies:
     "@kiltprotocol/types": "workspace:*"
-    "@polkadot/keyring": ^7.5.1
-    "@polkadot/types": ^6.4.2
-    "@polkadot/util": ^7.5.1
-    "@polkadot/util-crypto": ^7.5.1
+    "@polkadot/keyring": 7.5.1
+    "@polkadot/types": 6.4.2
+    "@polkadot/util": 7.5.1
+    "@polkadot/util-crypto": 7.5.1
     rimraf: ^3.0.2
     tweetnacl: ^1.0.3
     typescript: ^4.2.2
@@ -961,10 +961,10 @@ __metadata:
     "@kiltprotocol/did": "workspace:*"
     "@kiltprotocol/types": "workspace:*"
     "@kiltprotocol/utils": "workspace:*"
-    "@polkadot/keyring": ^7.5.1
-    "@polkadot/types": ^6.4.2
-    "@polkadot/util": ^7.5.1
-    "@polkadot/util-crypto": ^7.5.1
+    "@polkadot/keyring": 7.5.1
+    "@polkadot/types": 6.4.2
+    "@polkadot/util": 7.5.1
+    "@polkadot/util-crypto": 7.5.1
     "@types/jsonld": 1.5.1
     ajv: ^6.12.5
     crypto-ld: ^3.7.0
@@ -992,7 +992,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api@npm:6.4.2, @polkadot/api@npm:^6.4.2":
+"@polkadot/api@npm:6.4.2":
   version: 6.4.2
   resolution: "@polkadot/api@npm:6.4.2"
   dependencies:
@@ -1011,7 +1011,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/keyring@npm:^7.5.1":
+"@polkadot/keyring@npm:7.5.1, @polkadot/keyring@npm:^7.5.1":
   version: 7.5.1
   resolution: "@polkadot/keyring@npm:7.5.1"
   dependencies:
@@ -1063,7 +1063,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types-known@npm:6.4.2, @polkadot/types-known@npm:^6.4.2":
+"@polkadot/types-known@npm:6.4.2":
   version: 6.4.2
   resolution: "@polkadot/types-known@npm:6.4.2"
   dependencies:
@@ -1075,7 +1075,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:6.4.2, @polkadot/types@npm:^6.4.2":
+"@polkadot/types@npm:6.4.2":
   version: 6.4.2
   resolution: "@polkadot/types@npm:6.4.2"
   dependencies:
