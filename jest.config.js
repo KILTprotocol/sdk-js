@@ -6,7 +6,7 @@ module.exports = {
   // Parachain block time is 12s
   testTimeout: 15000,
   setupFilesAfterEnv: ['../testingTools/setup.js'],
-  transformIgnorePatterns:['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/|@cfworker)'],
+  transformIgnorePatterns:['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
   coverageThreshold: {
     global: {
       branches: 70,

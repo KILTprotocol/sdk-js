@@ -42,7 +42,7 @@ describe('Claim', () => {
   let attesterIdentity: IDidDetails
   let keystore: DemoKeystore
   let invalidCost: ICostBreakdown
-  let date: string
+  let date: Date
   let cTypeSchema: ICType['schema']
   let testCType: ICType
   let claim: IClaim
@@ -97,7 +97,7 @@ describe('Claim', () => {
       gross: 233,
       tax: { vat: 3.3 },
     } as unknown) as ICostBreakdown
-    date = new Date(2019, 11, 10).toISOString()
+    date = new Date(2019, 11, 10)
 
     cTypeSchema = {
       $id: 'kilt:ctype:0x1',
@@ -149,7 +149,7 @@ describe('Claim', () => {
         tax: { vat: 3.3 },
       },
       currency: 'Euro',
-      timeframe: new Date('12-04-2020').toISOString(),
+      timeframe: new Date('12-04-2020'),
       termsAndConditions: 'Lots of these',
     }
     validAttesterSignedQuote = await Quote.createAttesterSignature(

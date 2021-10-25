@@ -400,13 +400,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cfworker/json-schema@npm:^1.9.0":
-  version: 1.9.0
-  resolution: "@cfworker/json-schema@npm:1.9.0"
-  checksum: 51eb523463fb6bec9de50da3c9126c95866e3c3c027a8ed91db82b64f00c3a438ca454d6b03e6080b76e4434b37919c55c15f0e7f61b8fa494839121ed69f99a
-  languageName: node
-  linkType: hard
-
 "@cnakazawa/watch@npm:^1.0.3":
   version: 1.0.4
   resolution: "@cnakazawa/watch@npm:1.0.4"
@@ -844,7 +837,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/core@workspace:packages/core"
   dependencies:
-    "@cfworker/json-schema": ^1.9.0
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/did": "workspace:*"
@@ -857,6 +849,7 @@ __metadata:
     "@polkadot/util": ^7.1.2
     "@polkadot/util-crypto": ^7.1.2
     "@types/uuid": ^8.0.0
+    ajv: ^6.12.5
     rimraf: ^3.0.2
     tslib: ^2.0.0
     tweetnacl: ^1.0.3
@@ -962,7 +955,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kiltprotocol/vc-export@workspace:packages/vc-export"
   dependencies:
-    "@cfworker/json-schema": ^1.9.0
     "@kiltprotocol/chain-helpers": "workspace:*"
     "@kiltprotocol/config": "workspace:*"
     "@kiltprotocol/core": "workspace:*"
@@ -974,6 +966,7 @@ __metadata:
     "@polkadot/util": ^7.1.2
     "@polkadot/util-crypto": ^7.1.2
     "@types/jsonld": 1.5.1
+    ajv: ^6.12.5
     crypto-ld: ^3.7.0
     jsonld: ^2.0.2
     jsonld-signatures: ^5.0.0

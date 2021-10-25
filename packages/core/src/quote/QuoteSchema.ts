@@ -5,14 +5,12 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { Schema } from '@cfworker/json-schema'
-
 /**
  * @packageDocumentation
  * @module QuoteSchema
  */
 
-const QuoteSchema: Schema = {
+const QuoteSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'kilt:quote:v1',
   type: 'object',

@@ -23,7 +23,7 @@ export interface IQuote {
   cTypeHash: ICType['hash']
   cost: ICostBreakdown
   currency: string
-  timeframe: string
+  timeframe: Date
   termsAndConditions: string
 }
 export interface IQuoteAttesterSigned extends IQuote {

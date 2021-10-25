@@ -16,7 +16,7 @@
  * @module Quote
  */
 
-import { Validator, Schema } from '@cfworker/json-schema'
+import Ajv from 'ajv'
 import type {
   IDidDetails,
   IQuote,
@@ -41,21 +41,26 @@ import QuoteSchema from './QuoteSchema'
  */
 
 export function validateQuoteSchema(
-  schema: Schema,
+  schema: unknown,
   validate: unknown,
   messages?: string[]
 ): boolean {
-  const validator = new Validator(schema)
-  if (schema.$id !== QuoteSchema.$id) {
-    validator.addSchema(QuoteSchema)
+  const ajv = new Ajv()
+  ajv.addMetaSchema(QuoteSchema)
+  const result = ajv.validate(
+    JSON.parse(JSON.stringify(schema)),
+    JSON.parse(JSON.stringify(validate))
+  )
+  if (!result && ajv.errors) {
+    if (messages) {
+      ajv.errors.forEach((error: Ajv.ErrorObject) => {
+        if (typeof error.message === 'string') {
+          messages.push(error.message)
+        }
+      })
+    }
   }
-  const result = validator.validate(validate)
-  if (!result.valid && messages) {
-    result.errors.forEach((error) => {
-      messages.push(error.error)
-    })
-  }
-  return result.valid
+  return !!result
 }
 
 /**
@@ -78,9 +83,7 @@ export async function fromAttesterSignedInput(
     keyRelationship: KeyRelationship.authentication,
     resolver,
   })
-  const messages: string[] = []
-  if (!validateQuoteSchema(QuoteSchema, basicQuote, messages)) {
-    console.log(messages)
+  if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
 

@@ -152,7 +152,7 @@ describe('Nested CTypes', () => {
     )
   })
 
-  it('verify json-schema validator', () => {
+  it('verify ajv compiler', () => {
     expect(
       CTypeUtils.validateNestedSchemas(
         nestedCType.schema,
