@@ -6,7 +6,7 @@ module.exports = {
   // Parachain block time is 12s
   testTimeout: 15000,
   setupFilesAfterEnv: ['../testingTools/setup.js'],
-  transformIgnorePatterns:['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/|@cfworker)'],
+  transformIgnorePatterns:['/node_modules/(?!@polkadot|@babel/runtime/helpers/esm/)'],
   coverageThreshold: {
     global: {
       branches: 70,
@@ -26,15 +26,7 @@ module.exports = {
     '!**/kilt/*',
     '!**/blockchainApiConnection/*',
     '!**/types/**/*',
-    '!**/SDKErrors.ts',
-    '!**/*.chain.ts',
-    // TODO: write tests for these files and remove here
-    '!did/src/index.types.ts',
-    '!did/src/Did.chain.ts',
-    '!did/src/Did.utils.ts',
-    '!did/src/DemoKeystore/DemoKeystore.ts',
-    '!did/src/DidDetails/DidDetails.utils.ts',
-    '!did/src/DidDetails/FullDidDetails.utils.ts',
+    '!**/SDKErrors.ts'
   ],
   rootDir: 'packages',
   coverageDirectory: 'coverage',

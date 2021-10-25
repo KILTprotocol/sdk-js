@@ -9,9 +9,8 @@
  * @packageDocumentation
  * @module CTypeSchema
  */
-import { Schema } from '@cfworker/json-schema'
 
-export const CTypeModel: Schema = {
+export const CTypeModel = {
   $id: 'http://kilt-protocol.org/draft-01/ctype#',
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',

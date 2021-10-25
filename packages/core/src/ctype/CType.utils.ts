@@ -10,7 +10,7 @@
  * @module CTypeUtils
  */
 
-import { Validator } from '@cfworker/json-schema'
+import Ajv from 'ajv'
 import type {
   ICType,
   IClaim,
@@ -28,17 +28,19 @@ export function verifySchemaWithErrors(
   schema: Record<string, unknown>,
   messages?: string[]
 ): boolean {
-  const validator = new Validator(schema, '7', false)
-  if (schema.$id !== CTypeModel.$id) {
-    validator.addSchema(CTypeModel)
+  const ajv = new Ajv()
+  ajv.addMetaSchema(CTypeModel)
+  const result = ajv.validate(schema, object)
+  if (!result && ajv.errors) {
+    if (messages) {
+      ajv.errors.forEach((error: Ajv.ErrorObject) => {
+        if (typeof error.message === 'string') {
+          messages.push(error.message)
+        }
+      })
+    }
   }
-  const result = validator.validate(object)
-  if (!result.valid && messages) {
-    result.errors.forEach((error) => {
-      messages.push(error.error)
-    })
-  }
-  return result.valid
+  return !!result
 }
 
 export function verifySchema(
@@ -241,18 +243,20 @@ export function validateNestedSchemas(
   claimContents: Record<string, any>,
   messages?: string[]
 ): boolean {
-  const validator = new Validator(cType, '7', false)
-  nestedCTypes.forEach((ctype) => {
-    validator.addSchema(ctype)
-  })
-  validator.addSchema(CTypeModel)
-  const result = validator.validate(claimContents)
-  if (!result.valid && messages) {
-    result.errors.forEach((error) => {
-      messages.push(error.error)
-    })
+  const ajv = new Ajv()
+  ajv.addMetaSchema(CTypeModel)
+  const validate = ajv.addSchema(nestedCTypes).compile(cType)
+  const result = validate(claimContents)
+  if (!result && ajv.errors) {
+    if (messages) {
+      ajv.errors.forEach((error: Ajv.ErrorObject) => {
+        if (typeof error.message === 'string') {
+          messages.push(error.message)
+        }
+      })
+    }
   }
-  return result.valid
+  return !!result
 }
 
 export default {
