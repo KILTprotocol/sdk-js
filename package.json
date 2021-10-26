@@ -13,7 +13,6 @@
     "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
     "clean": "yarn workspaces foreach -p --no-private run clean",
     "clean:docs": "rm -rf docs/api",
-    "version": "yarn workspaces foreach version",
     "prepublish": "yarn workspaces foreach -p --no-private exec cp -f ../../LICENSE .",
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
     "lint": "eslint packages --format=codeframe",
@@ -64,6 +63,6 @@
     "typedoc-plugin-external-module-name": "^4.0.6",
     "typescript": "^4.2.2"
   },
-  "version": "0.24.0-4",
+  "version": "0.24.0-6",
   "packageManager": "yarn@2.4.3"
 }

@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { types26 as KILT_TYPES } from '@kiltprotocol/type-definitions'
+import { types2700 as KILT_TYPES } from '@kiltprotocol/type-definitions'
 import { TypeRegistry } from '@polkadot/types'
 
 const TYPE_REGISTRY = new TypeRegistry()
