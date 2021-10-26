@@ -66,6 +66,7 @@ describe('write and didDeleteTx', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).rejects.toThrow()
   }, 30_000)
@@ -82,6 +83,7 @@ describe('write and didDeleteTx', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).resolves.not.toThrow()
 
@@ -111,6 +113,7 @@ describe('write and didDeleteTx', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).rejects.toThrow()
   })
@@ -137,6 +140,7 @@ describe('write and didDeleteTx', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).resolves.not.toThrow()
 
@@ -162,6 +166,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await expect(
     BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
     })
   ).resolves.not.toThrow()
 
@@ -197,6 +202,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await expect(
     BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
     })
   ).resolves.not.toThrow()
 
@@ -213,6 +219,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await expect(
     BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
       resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
     })
   ).resolves.not.toThrow()
   // Verify that the DID has been deleted
@@ -289,6 +296,7 @@ describe('DID migration', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).resolves.not.toThrow()
 
@@ -331,6 +339,7 @@ describe('DID authorization', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).resolves.not.toThrow()
 
@@ -367,6 +376,7 @@ describe('DID authorization', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).resolves.not.toThrow()
 
@@ -402,6 +412,7 @@ describe('DID authorization', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).resolves.not.toThrow()
 
@@ -424,6 +435,7 @@ describe('DID authorization', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).resolves.not.toThrow()
 
@@ -446,6 +458,7 @@ describe('DID authorization', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(tx2, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).rejects.toThrow()
 
