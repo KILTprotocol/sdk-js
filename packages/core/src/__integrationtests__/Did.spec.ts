@@ -250,6 +250,7 @@ describe('DID migration', () => {
     await expect(
       BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
       })
     ).resolves.not.toThrow()
 
