@@ -10,7 +10,7 @@
  */
 
 import * as string from '@polkadot/util/string'
-import type { KeyringPair } from '@kiltprotocol/utils'
+import type { KeyringPair } from '@kiltprotocol/types'
 import nacl from 'tweetnacl'
 import { Keyring } from './index'
 import * as Crypto from './Crypto'
