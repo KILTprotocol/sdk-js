@@ -5,161 +5,276 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import Kilt, { Did } from '@kiltprotocol/sdk-js'
+/* eslint-disable no-console */
+
+import Kilt, {
+  Did,
+  KeystoreSigner,
+  KeyRelationship,
+  IRequestForAttestation,
+  ISubmittableResult,
+} from '@kiltprotocol/sdk-js'
 import type { SubmittableExtrinsic } from '@kiltprotocol/sdk-js'
 
 import { KeyringPair } from '@polkadot/keyring/types'
-import { BN } from '@polkadot/util'
 
 import {
   setup,
   ISetup,
   getBalance,
   ctypeCreator,
-  buildDidAndTxFromSeed,
-  queryDidTx,
-  queryAttestationTx,
+  createFullDid,
+  getDidDeposit,
+  createAttestation,
+  getAttestationDeposit,
+  createMinimalFullDidFromLightDid,
 } from './utils'
 
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
 
-interface ICheck {
-  deposit: BN
-  balanceBefore: BN
-  balanceAfter: BN
-  txFee: BN
-}
-
-async function checkRevokeFullDid(
+async function checkDeleteFullDid(
   identity: KeyringPair,
-  mnemonic: string,
+  fullDid: Did.FullDidDetails,
   keystore: Did.DemoKeystore
-): Promise<ICheck> {
-  const {
-    api,
-  } = await Kilt.ChainHelpers.BlockchainApiConnection.getConnectionOrConnect()
-  const testAccountBalanceBeforeDidCreation = await getBalance(identity.address)
+): Promise<boolean> {
+  const deleteDid = await Kilt.Did.DidChain.getDeleteDidExtrinsic()
+
+  const balanceBeforeDeleting = await getBalance(identity.address)
 
   console.log(
-    'balance before creating a DID on chain',
-    testAccountBalanceBeforeDidCreation.toString()
+    'free balance before deleting:',
+    balanceBeforeDeleting.free.toString()
+  )
+  console.log(
+    'reserved balance before deleting:',
+    balanceBeforeDeleting.reserved.toString()
   )
 
-  /* Generating the attesterFullDid and faucetFullDid from the demo keystore with the generated seed both with sr25519 */
-  const { extrinsic, did } = await buildDidAndTxFromSeed(
-    identity,
-    keystore,
-    mnemonic
-  )
-
-  await Kilt.BlockchainUtils.signAndSubmitTx(extrinsic, identity, {
-    reSign: true,
-    resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+  tx = await Kilt.Did.DidChain.generateDidAuthenticatedTx({
+    didIdentifier: identity.address,
+    txCounter: fullDid.getNextTxIndex(),
+    call: deleteDid,
+    signer: keystore as KeystoreSigner<string>,
+    signingPublicKey: fullDid.getKeys(KeyRelationship.authentication)[0]
+      .publicKeyHex,
+    alg: fullDid.getKeys(KeyRelationship.authentication)[0].type,
+    submitter: identity.address,
   })
 
-  const queried = await Did.DefaultResolver.resolveDoc(did)
-  if (!queried) throw Error(`failed to write Did${did}`)
-  const { partialFee } = await api.rpc.payment.queryInfo(extrinsic.toHex())
+  const didBeforeDepositRemoval = await getDidDeposit(identity.address)
 
-  console.log(partialFee.toBn().toString())
+  console.log('There should be deposit', didBeforeDepositRemoval.toString())
 
-  const result = await queryDidTx(extrinsic.toHex())
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
 
-  Kilt.Utils.DecoderUtils.assertCodecIsType(result, [
-    'Option<IDidChainRecordCodec>',
-  ])
+  const didDeposit = await getDidDeposit(identity.address)
 
-  console.log('The deposit amount: ', result.deposit.amount.toNumber())
+  console.log('There should be no deposit', didDeposit.toString())
 
-  console.log(did)
-
-  const testAccountBalanceAfterDidCreation = await getBalance(identity.address)
+  const balanceAfterDeleting = await getBalance(identity.address)
 
   console.log(
-    'balance after creating a DID on chain',
-    testAccountBalanceAfterDidCreation.toString()
+    'free balance After deleting:',
+    balanceAfterDeleting.free.toString()
+  )
+  console.log(
+    'reserved balance After deleting:',
+    balanceAfterDeleting.reserved.toString()
   )
 
-  return {
-    deposit: result.deposit.amount,
-    balanceBefore: testAccountBalanceBeforeDidCreation,
-    balanceAfter: testAccountBalanceAfterDidCreation,
-    txFee: partialFee.toBn(),
+  if (balanceAfterDeleting.reserved.toNumber() === didDeposit.toNumber()) {
+    return true
   }
+  return false
 }
 
-async function checkReclaimFullDid(
-  identity: KeyringPair,
-  mnemonic: string,
-  keystore: Did.DemoKeystore
-): Promise<boolean> {
-  return true
+async function checkReclaimFullDid(identity: KeyringPair): Promise<boolean> {
+  tx = await Kilt.Did.DidChain.getReclaimDepositExtrinsic(identity.address)
+
+  const balanceBeforeRevoking = await getBalance(identity.address)
+
+  console.log('balance before Revoking', balanceBeforeRevoking.toString())
+
+  const didDeposit = await getDidDeposit(identity.address)
+
+  console.log('There should be deposit', didDeposit.toString())
+
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
+
+  const didAfterDepositRemoval = await getDidDeposit(identity.address)
+
+  console.log('There should be no deposit', didAfterDepositRemoval.toString())
+  const balanceAfterRevoking = await getBalance(identity.address)
+
+  console.log('balance after Revoking', balanceAfterRevoking.toString())
+
+  if (
+    balanceAfterRevoking.reserved.toNumber() ===
+    didAfterDepositRemoval.toNumber()
+  ) {
+    return true
+  }
+  return false
 }
 
-async function checkRevokeLightMigratedDid(
+async function checkRemoveFullDidAttestation(
   identity: KeyringPair,
-  mnemonic: string,
-  keystore: Did.DemoKeystore
+  fullDid: Did.FullDidDetails,
+  keystore: Did.DemoKeystore,
+  requestForAttestation: IRequestForAttestation
 ): Promise<boolean> {
-  return true
-}
+  await createAttestation(identity, requestForAttestation, fullDid, keystore)
+  const balanceBeforeRemoving = await getBalance(identity.address)
+  const attestation = Kilt.Attestation.fromRequestAndDid(
+    requestForAttestation,
+    fullDid.did
+  )
+  console.log('balance before Removing', balanceBeforeRemoving.toString())
 
-async function checkReclaimLightMigratedDid(
-  identity: KeyringPair,
-  mnemonic: string,
-  keystore: Did.DemoKeystore
-): Promise<boolean> {
-  return true
-}
+  tx = await attestation.remove(0)
+  authorizedTx = await fullDid.authorizeExtrinsic(
+    tx,
+    keystore,
+    identity.address
+  )
 
-async function checkRevokeFullDidAttestation(
-  identity: KeyringPair,
-  mnemonic: string,
-  keystore: Did.DemoKeystore
-): Promise<boolean> {
+  const attestationDepositBefore = await getAttestationDeposit(
+    attestation.claimHash
+  )
+
+  console.log('There should be deposit', attestationDepositBefore.toString())
+
+  await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
+    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
+  const attestationDepositAfter = await getAttestationDeposit(
+    attestation.claimHash
+  )
+
+  console.log(
+    'There should be less deposit',
+    attestationDepositAfter.toString()
+  )
+
+  const balanceAfterRemoving = await getBalance(identity.address)
+
+  console.log('balance after Removing', balanceAfterRemoving.toString())
+
   return true
 }
 
 async function checkReclaimFullDidAttestation(
   identity: KeyringPair,
-  mnemonic: string,
-  keystore: Did.DemoKeystore
+  fullDid: Did.FullDidDetails,
+  keystore: Did.DemoKeystore,
+  requestForAttestation: IRequestForAttestation
 ): Promise<boolean> {
+  await createAttestation(identity, requestForAttestation, fullDid, keystore)
+  const balanceBeforeReclaiming = await getBalance(identity.address)
+  const attestation = Kilt.Attestation.fromRequestAndDid(
+    requestForAttestation,
+    fullDid.did
+  )
+  console.log('balance before Reclaiming', balanceBeforeReclaiming.toString())
+
+  tx = await attestation.reclaimDeposit()
+
+  console.log('reclaim full attestation transaction fee:')
+
+  const attestationDepositBefore = await getAttestationDeposit(
+    attestation.claimHash
+  )
+
+  console.log('There should be deposit', attestationDepositBefore.toString())
+
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
+  const attestationDepositAfter = await getAttestationDeposit(
+    attestation.claimHash
+  )
+
+  console.log('There should be deposit', attestationDepositAfter.toString())
+
+  const balanceAfterDeleting = await getBalance(identity.address)
+
+  console.log('balance after Deleting', balanceAfterDeleting.toString())
+
   return true
 }
 
-async function checkRevokeLightMigratedDidAttestation(
+async function checkDeletedDidReclaimAttestation(
   identity: KeyringPair,
-  mnemonic: string,
-  keystore: Did.DemoKeystore
-): Promise<boolean> {
-  return true
-}
+  fullDid: Did.FullDidDetails,
+  keystore: Did.DemoKeystore,
+  requestForAttestation: IRequestForAttestation
+): Promise<ISubmittableResult> {
+  await createAttestation(identity, requestForAttestation, fullDid, keystore)
+  const balanceBeforeReclaiming = await getBalance(identity.address)
+  const attestation = Kilt.Attestation.fromRequestAndDid(
+    requestForAttestation,
+    fullDid.did
+  )
 
-async function checkReclaimLightMigratedDidAttestation(
-  identity: KeyringPair,
-  mnemonic: string,
-  keystore: Did.DemoKeystore
-): Promise<boolean> {
-  return true
+  const deleteDid = await Kilt.Did.DidChain.getDeleteDidExtrinsic()
+
+  tx = await Kilt.Did.DidChain.generateDidAuthenticatedTx({
+    didIdentifier: identity.address,
+    txCounter: fullDid.getNextTxIndex(),
+    call: deleteDid,
+    signer: keystore as KeystoreSigner<string>,
+    signingPublicKey: fullDid.getKeys(KeyRelationship.authentication)[0]
+      .publicKeyHex,
+    alg: fullDid.getKeys(KeyRelationship.authentication)[0].type,
+    submitter: identity.address,
+  })
+
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
+
+  console.log('balance before Reclaiming', balanceBeforeReclaiming.toString())
+
+  tx = await attestation.reclaimDeposit()
+
+  const attestationDepositBefore = await getAttestationDeposit(
+    attestation.claimHash
+  )
+
+  console.log('There should be deposit', attestationDepositBefore.toString())
+
+  return Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
 }
 
 async function main() {
   const {
     keystore,
-    testIdentites,
+    testIdentities,
     testMnemonics,
-    actors: { claimer, attester },
+    claimer,
   }: ISetup = await setup()
 
-  const ctype = await ctypeCreator(attester.full, keystore, attester.identity)
+  const testDidOne = await createFullDid(
+    testIdentities[0],
+    testMnemonics[0],
+    keystore
+  )
+  if (!testDidOne) throw new Error('Creation of Test Full Did one failed')
+  console.log('test case one begins')
+  const testCaseOne = await checkDeleteFullDid(
+    testIdentities[0],
+    testDidOne,
+    keystore
+  )
 
-  const {
-    api,
-  } = await Kilt.ChainHelpers.BlockchainApiConnection.getConnectionOrConnect()
-
-  await checkRevokeFullDid(testIdentites[0], testMnemonics[0], keystore)
+  const ctype = await ctypeCreator(testDidOne, keystore, testIdentities[0])
 
   const rawClaim = {
     name: 'claimer',
@@ -175,58 +290,149 @@ async function main() {
   const requestForAttestation = Kilt.RequestForAttestation.fromClaim(claim)
   await requestForAttestation.signWithDid(keystore, claimer.light)
 
-  const attestation = Kilt.Attestation.fromRequestAndDid(
-    requestForAttestation,
-    attester.full.did
+  if (!testCaseOne) throw new Error('Test case one failed')
+  console.log('test case one Ends')
+  console.log('test case two begins')
+
+  const testDidTwo = await createFullDid(
+    testIdentities[1],
+    testMnemonics[1],
+    keystore
+  )
+  if (!testDidTwo) throw new Error('Creation of Test Full Did two failed')
+  await checkReclaimFullDid(testIdentities[1])
+  console.log('test case two ends')
+  console.log('test case three begins')
+
+  const testDidThree = await createFullDid(
+    testIdentities[2],
+    testMnemonics[2],
+    keystore
+  )
+  if (!testDidThree) throw new Error('Creation of Test Full Did three failed')
+  await checkRemoveFullDidAttestation(
+    testIdentities[2],
+    testDidThree,
+    keystore,
+    requestForAttestation
   )
 
-  const attestationVerified = await attestation.checkValidity()
-  console.log('The attestation is already on the chain', attestationVerified)
+  console.log('test case three ends')
+  console.log('test case four begins')
 
-  console.log(
-    'The attesters balance before making the attestation',
-    attester.balance.toString()
+  const testDidFour = await createFullDid(
+    testIdentities[3],
+    testMnemonics[3],
+    keystore
+  )
+  if (!testDidFour) throw new Error('Creation of Test Full Did four failed')
+
+  await checkReclaimFullDidAttestation(
+    testIdentities[3],
+    testDidFour,
+    keystore,
+    requestForAttestation
+  )
+  console.log('test case four ends')
+  console.log('test case five begins')
+
+  const testDidFive = await Kilt.Did.createLightDidFromSeed(
+    keystore,
+    testMnemonics[4]
   )
 
-  if (!attestationVerified) {
-    tx = await attestation.store()
-    authorizedTx = await attester.full.authorizeExtrinsic(
-      tx,
-      keystore,
-      attester.identity.address
-    )
-
-    await Kilt.BlockchainUtils.signAndSubmitTx(
-      authorizedTx,
-      attester.identity,
-      {
-        resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
-      }
-    )
-    const { partialFee } = await api.rpc.payment.queryInfo(tx.toHex())
-
-    console.log(partialFee.toBn().toString())
-  }
-
-  const newBalance = await getBalance(attester.identity.address)
-  queryAttestationTx(attestation.claimHash)
-  console.log(
-    'The new balance of the attester after the attestation',
-    newBalance.toString()
+  if (!testDidFive) throw new Error('Creation of Test Light Did five failed')
+  const testFullDidFive = await createMinimalFullDidFromLightDid(
+    testIdentities[4],
+    testDidFive,
+    keystore
   )
 
-  console.log('The complete attestation', attestation)
+  console.log('creation of the testFullDidFive')
+  await checkDeleteFullDid(testIdentities[4], testFullDidFive, keystore)
 
-  const attestedClaim = Kilt.AttestedClaim.fromRequestAndAttestation(
-    requestForAttestation,
-    attestation
+  console.log('test case five ends')
+  console.log('test case six begins')
+
+  const testDidSix = await Kilt.Did.createLightDidFromSeed(
+    keystore,
+    testMnemonics[5]
+  )
+  if (!testDidSix) throw new Error('Creation of Test Light Did six failed')
+
+  await createMinimalFullDidFromLightDid(
+    testIdentities[5],
+    testDidSix,
+    keystore
   )
 
-  console.log('The complete attested claim', attestedClaim)
+  await checkReclaimFullDid(testIdentities[5])
 
-  const attestedClaimVerified = await attestedClaim.verify()
+  console.log('test case six ends')
+  console.log('test case seven begins')
 
-  console.log('The verified attested claim', attestedClaimVerified)
+  const testDidSeven = await Kilt.Did.createLightDidFromSeed(
+    keystore,
+    testMnemonics[6]
+  )
+  if (!testDidSeven) throw new Error('Creation of Test Light Did seven failed')
+  const testFullDidSeven = await createMinimalFullDidFromLightDid(
+    testIdentities[6],
+    testDidSeven,
+    keystore
+  )
+
+  await checkRemoveFullDidAttestation(
+    testIdentities[6],
+    testFullDidSeven,
+    keystore,
+    requestForAttestation
+  )
+  console.log('test case seven ends')
+  console.log('test case eight begins')
+
+  const testDidEight = await Kilt.Did.createLightDidFromSeed(
+    keystore,
+    testMnemonics[7]
+  )
+  if (!testDidEight) throw new Error('Creation of Test Light Did eight failed')
+
+  const testFullDidEight = await createMinimalFullDidFromLightDid(
+    testIdentities[7],
+    testDidEight,
+    keystore
+  )
+
+  await checkReclaimFullDidAttestation(
+    testIdentities[7],
+    testFullDidEight,
+    keystore,
+    requestForAttestation
+  )
+
+  console.log('test case eight ends')
+  console.log('test case nice begins')
+
+  const testDidNine = await Kilt.Did.createLightDidFromSeed(
+    keystore,
+    testMnemonics[8]
+  )
+  if (!testDidNine) throw new Error('Creation of Test Light Did Nine failed')
+
+  const testFullDidNine = await createMinimalFullDidFromLightDid(
+    testIdentities[8],
+    testDidNine,
+    keystore
+  )
+
+  await checkDeletedDidReclaimAttestation(
+    testIdentities[8],
+    testFullDidNine,
+    keystore,
+    requestForAttestation
+  )
+
+  console.log('test case Nine ends')
 }
 
 main().finally(() => Kilt.disconnect())

@@ -5,17 +5,23 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/* eslint-disable no-console */
+
 import Kilt, {
   AttestationDetails,
+  Balances,
   Did,
+  IRequestForAttestation,
   KeyRelationship,
+  KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/sdk-js'
 import type { CTypeSchemaWithoutId, CType } from '@kiltprotocol/sdk-js'
 // import type { SubmittableExtrinsic } from '@kiltprotocol/sdk-js'
-import { BN } from '@polkadot/util'
+import { BN, hexToU8a } from '@polkadot/util'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { Option } from '@polkadot/types'
+import { mnemonicGenerate } from '@polkadot/util-crypto'
 
 // The following script setups the accounts and requests funds for each account
 // The full identities are sent
@@ -24,38 +30,26 @@ import { Option } from '@polkadot/types'
 type LightActor = {
   light: Did.LightDidDetails
   identity: KeyringPair
-  balance: BN
-}
-
-type FullActor = {
-  full: Did.FullDidDetails
-  identity: KeyringPair
-  balance: BN
-}
-
-export interface IActors {
-  claimer: LightActor
-  attester: FullActor
 }
 
 export interface ISetup {
-  actors: IActors
+  claimer: LightActor
   keystore: Did.DemoKeystore
-  testIdentites: KeyringPair[]
+  testIdentities: KeyringPair[]
   testMnemonics: string[]
 }
 
-const NODE_URL = 'ws://127.0.0.1:9944'
+const NODE_URL = 'wss://westend.kilt.io:9977'
 
-export async function getBalance(address: string): Promise<BN> {
-  return Kilt.Balance.getBalances(address).then((balance) => balance.free)
+export async function getBalance(address: string): Promise<Balances> {
+  return Kilt.Balance.getBalances(address).then((balance) => balance)
 }
 
 export async function initialTransfer(
   faucet: KeyringPair,
   addresses: Array<string | undefined>
 ): Promise<void> {
-  const initialAccountAmount = new BN(10 ** 13).muln(1000000)
+  const initialAccountAmount = new BN(10 ** 13).muln(10000)
   const filtered = addresses.filter(
     (val) => typeof val !== undefined
   ) as string[]
@@ -63,12 +57,13 @@ export async function initialTransfer(
     filtered.map((address) =>
       Kilt.Balance.makeTransfer(address, initialAccountAmount).then((tx) =>
         Kilt.BlockchainUtils.signAndSubmitTx(tx, faucet, {
-          resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+          resolve: Kilt.BlockchainUtils.IS_FINALIZED,
           reSign: true,
         }).catch((e) => console.log(e))
       )
     )
   )
+  console.log('fail')
 }
 
 export async function ctypeCreator(
@@ -99,12 +94,7 @@ export async function ctypeCreator(
     keystore,
     identity.address
   )
-  const awesome = await Kilt.BlockchainUtils.signAndSubmitTx(
-    authorizedTx,
-    identity
-  )
-
-  console.log(JSON.stringify(awesome.events, null, 4))
+  await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity)
 
   return ctype
 }
@@ -121,29 +111,28 @@ export async function setup(): Promise<ISetup> {
   // Initialize the demo keystore
   const keystore = new Kilt.Did.DemoKeystore()
   // Create the group of mnemonics for the script
-  const generateClaimerMnemonic = Kilt.Utils.UUID.generate()
-  const generateAttesterMnemonic = Kilt.Utils.UUID.generate()
+  const generateClaimerMnemonic = mnemonicGenerate()
 
   // Creating test mnemonics
   const testMnemonics: string[] = []
 
-  for (let i = 0; i < 8; i += 1) {
-    testMnemonics.push(Kilt.Utils.UUID.generate())
+  for (let i = 0; i < 9; i += 1) {
+    testMnemonics.push(mnemonicGenerate())
   }
 
   // the testing locally this should be //Alice
-  const faucetMnemonic = '//Alice'
+  const faucetMnemonic =
+    'print limb expire raw ecology regular crumble slot lab opera fold adjust'
   // const faucetMnemonic =
   //   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 
   /* Generating all the identities from the keyring  */
-  const testIdentites: KeyringPair[] = []
+  const testIdentities: KeyringPair[] = []
   testMnemonics.forEach((val) =>
-    testIdentites.push(keyring.addFromMnemonic(val))
+    testIdentities.push(keyring.addFromMnemonic(val))
   )
 
   const claimerIdentity = keyring.addFromMnemonic(generateClaimerMnemonic)
-  const attesterIdentity = keyring.addFromMnemonic(generateAttesterMnemonic)
   const faucetIdentity = keyring.createFromUri(faucetMnemonic, {
     type: 'sr25519',
   })
@@ -153,93 +142,25 @@ export async function setup(): Promise<ISetup> {
   if (!faucetBalance) throw new Error('The faucetBalance is empty')
 
   /* The faucet balance */
-  console.log('The current faucet balance', faucetBalance.toString())
+  console.log('The current faucet balance', faucetBalance.free.toString())
   // Sending tokens to all accounts
+  const testAddresses = testIdentities.map((val) => val.address)
 
-  const addressesToTransfer = [
-    claimerIdentity.address,
-    attesterIdentity.address,
-  ]
-  const testAddresses = testIdentites.map((val) => val.address)
-
-  await initialTransfer(faucetIdentity, addressesToTransfer)
   await initialTransfer(faucetIdentity, testAddresses)
 
-  const [claimerBalance, attesterBalance] = await Promise.all([
-    getBalance(addressesToTransfer[0]),
-    getBalance(addressesToTransfer[1]),
-  ])
-
-  /* The balances of the actors claimer, testOne and attester respectively */
-  const [one, two, three, four, five, six, seven, eight] = await Promise.all([
-    getBalance(testAddresses[0]),
-    getBalance(testAddresses[1]),
-    getBalance(testAddresses[2]),
-    getBalance(testAddresses[3]),
-    getBalance(testAddresses[4]),
-    getBalance(testAddresses[5]),
-    getBalance(testAddresses[6]),
-    getBalance(testAddresses[7]),
-  ])
-
-  console.log(
-    'The current claimer balance',
-    claimerBalance.toString(),
-    'The current attester balance',
-    attesterBalance.toString(),
-    'The current attester balance',
-    one.toString(),
-    'The current attester balance',
-    two.toString(),
-    'The current attester balance',
-    three.toString(),
-    'The current attester balance',
-    four.toString(),
-    'The current attester balance',
-    five.toString(),
-    'The current attester balance',
-    six.toString(),
-    'The current attester balance',
-    seven.toString(),
-    'The current attester balance',
-    eight.toString()
-  )
   /* Generating the claimerLightDid and testOneLightDid from the demo keystore with the generated seed both with sr25519 */
   const claimerLightDid = await Kilt.Did.createLightDidFromSeed(
     keystore,
     generateClaimerMnemonic
   )
-  /* Generating the attesterFullDid and faucetFullDid from the demo keystore with the generated seed both with sr25519 */
-  const attesterFullDid = await Kilt.Did.createOnChainDidFromSeed(
-    attesterIdentity,
-    keystore,
-    generateAttesterMnemonic
-  )
-
-  const attesterBalanceAfterDidCreation = await getBalance(
-    attesterIdentity.address
-  )
-
-  console.log(
-    'balance after creating a DID on chain',
-    attesterBalanceAfterDidCreation.toString()
-  )
 
   return {
     keystore,
-    actors: {
-      claimer: {
-        light: claimerLightDid,
-        identity: claimerIdentity,
-        balance: claimerBalance,
-      },
-      attester: {
-        full: attesterFullDid,
-        identity: attesterIdentity,
-        balance: attesterBalanceAfterDidCreation,
-      },
+    claimer: {
+      light: claimerLightDid,
+      identity: claimerIdentity,
     },
-    testIdentites,
+    testIdentities,
     testMnemonics,
   }
 }
@@ -290,18 +211,26 @@ export async function buildDidAndTxFromSeed(
   )
 }
 
-export async function queryDidTx(didIdentifier: string) {
+export async function getTxFee(tx: SubmittableExtrinsic): Promise<BN> {
   const {
     api,
   } = await Kilt.ChainHelpers.BlockchainApiConnection.getConnectionOrConnect()
-  const result = await api.query.did.did<
-    Option<Did.DidTypes.IDidChainRecordCodec>
-  >(didIdentifier)
+  const { partialFee } = await api.rpc.payment.queryInfo(tx.toHex())
 
-  return result.unwrap()
+  return partialFee.toBn()
 }
 
-export async function queryAttestationTx(claimHash: string) {
+export async function getDidDeposit(didIdentifier: string): Promise<BN> {
+  const {
+    api,
+  } = await Kilt.ChainHelpers.BlockchainApiConnection.getConnectionOrConnect()
+  const result = await api.query.did.did<Option<any>>(didIdentifier)
+  Kilt.Utils.DecoderUtils.assertCodecIsType(result, ['Option<DidDetails>'])
+  if (result.isSome) return result.unwrap().deposit.amount.toBn()
+  return new BN(0)
+}
+
+export async function getAttestationDeposit(claimHash: string): Promise<BN> {
   const {
     api,
   } = await Kilt.ChainHelpers.BlockchainApiConnection.getConnectionOrConnect()
@@ -312,6 +241,110 @@ export async function queryAttestationTx(claimHash: string) {
   Kilt.Utils.DecoderUtils.assertCodecIsType(result, [
     'Option<AttestationDetails>',
   ])
+  if (result.isSome) return result.unwrap().deposit.amount.toBn()
 
-  return result.unwrap()
+  return new BN(0)
+}
+
+export async function createFullDid(
+  identity: KeyringPair,
+  mnemonic: string,
+  keystore: Did.DemoKeystore
+): Promise<Did.FullDidDetails> {
+  const testAccountBalanceBeforeDidCreation = await getBalance(identity.address)
+
+  console.log(
+    'balance before creating a DID on chain',
+    testAccountBalanceBeforeDidCreation.toString()
+  )
+
+  /* Generating the attesterFullDid and faucetFullDid from the demo keystore with the generated seed both with sr25519 */
+  const { extrinsic, did } = await buildDidAndTxFromSeed(
+    identity,
+    keystore,
+    mnemonic,
+    Kilt.Did.SigningAlgorithms.Sr25519
+  )
+
+  await Kilt.BlockchainUtils.signAndSubmitTx(extrinsic, identity, {
+    reSign: true,
+    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
+
+  const queried = await Did.DefaultResolver.resolveDoc(did)
+
+  return queried?.details as Did.FullDidDetails
+}
+
+export async function createAttestation(
+  identity: KeyringPair,
+  requestForAttestation: IRequestForAttestation,
+  fullDid: Did.FullDidDetails,
+  keystore: Did.DemoKeystore
+): Promise<void> {
+  const attestation = Kilt.Attestation.fromRequestAndDid(
+    requestForAttestation,
+    fullDid.did
+  )
+
+  const tx = await attestation.store()
+  const authorizedTx = await fullDid.authorizeExtrinsic(
+    tx,
+    keystore,
+    identity.address
+  )
+
+  await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
+    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
+}
+
+export async function createMinimalFullDidFromLightDid(
+  identity: KeyringPair,
+  lightDidForId: Did.LightDidDetails,
+  keystore: Did.DemoKeystore
+): Promise<Did.FullDidDetails> {
+  const { extrinsic, did } = await Kilt.Did.DidUtils.upgradeDid(
+    lightDidForId,
+    identity.address,
+    keystore
+  )
+
+  await Kilt.BlockchainUtils.signAndSubmitTx(extrinsic, identity, {
+    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
+
+  const queried = await Did.DefaultResolver.resolveDoc(did)
+  if (!queried) throw new Error('Light Did to full did not made')
+
+  const key = {
+    publicKey: hexToU8a(
+      queried.details.getKeys(KeyRelationship.authentication)[0].publicKeyHex
+    ),
+    type: queried.details.getKeys(KeyRelationship.authentication)[0].type,
+  }
+
+  const addExtrinsic = await Kilt.Did.DidChain.getSetKeyExtrinsic(
+    KeyRelationship.assertionMethod,
+    key
+  )
+
+  const tx = await Kilt.Did.DidChain.generateDidAuthenticatedTx({
+    didIdentifier: identity.address,
+    txCounter: (queried.details as Did.FullDidDetails).getNextTxIndex(),
+    call: addExtrinsic,
+    signer: keystore as KeystoreSigner<string>,
+    signingPublicKey: queried.details.getKeys(KeyRelationship.authentication)[0]
+      .publicKeyHex,
+    alg: queried.details.getKeys(KeyRelationship.authentication)[0].type,
+    submitter: identity.address,
+  })
+
+  await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+  })
+
+  const refetchedDid = await Did.DefaultResolver.resolveDoc(did)
+  if (!refetchedDid) throw new Error('Light Did to full did not made')
+  return refetchedDid.details as Did.FullDidDetails
 }
