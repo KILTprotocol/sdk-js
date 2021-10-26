@@ -199,7 +199,11 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: install playwright with deps/chromium
+        run: npx playwright install chromium --with-deps
       - name: prepare bundle test
         timeout-minutes: 60
         env:
@@ -210,7 +214,6 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --dev --ws-port 9944 --ws-external
           sleep 5s
-          npx playwright install chromium --with-deps
           yarn test:bundle
           docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
 
