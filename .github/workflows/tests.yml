@@ -181,9 +181,6 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: build-14.x
-      - uses: actions/setup-node@v2
-        with:
-          name: build-14.x
       - name: unzip
         run: unzip build.zip -d .
       - uses: actions/download-artifact@v2
