@@ -7,7 +7,7 @@
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-const kilt = require('./packages/sdk-js/dist/sdk-js.umd')
+const kilt = require('../packages/sdk-js/dist/sdk-js.umd')
 
 const {
   Claim,
