@@ -67,7 +67,7 @@ async function checkDeleteFullDid(
   console.log('There should be deposit', didBeforeDepositRemoval.toString())
 
   await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   })
 
   const didDeposit = await getDidDeposit(identity.address)
@@ -103,7 +103,7 @@ async function checkReclaimFullDid(identity: KeyringPair): Promise<boolean> {
   console.log('There should be deposit', didDeposit.toString())
 
   await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   })
 
   const didAfterDepositRemoval = await getDidDeposit(identity.address)
@@ -150,7 +150,7 @@ async function checkRemoveFullDidAttestation(
   console.log('There should be deposit', attestationDepositBefore.toString())
 
   await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
-    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   })
   const attestationDepositAfter = await getAttestationDeposit(
     attestation.claimHash
@@ -193,7 +193,7 @@ async function checkReclaimFullDidAttestation(
   console.log('There should be deposit', attestationDepositBefore.toString())
 
   await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   })
   const attestationDepositAfter = await getAttestationDeposit(
     attestation.claimHash
@@ -235,7 +235,7 @@ async function checkDeletedDidReclaimAttestation(
   })
 
   await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   })
 
   console.log('balance before Reclaiming', balanceBeforeReclaiming.toString())
@@ -249,7 +249,7 @@ async function checkDeletedDidReclaimAttestation(
   console.log('There should be deposit', attestationDepositBefore.toString())
 
   return Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   })
 }
 

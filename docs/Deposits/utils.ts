@@ -57,7 +57,7 @@ export async function initialTransfer(
     filtered.map((address) =>
       Kilt.Balance.makeTransfer(address, initialAccountAmount).then((tx) =>
         Kilt.BlockchainUtils.signAndSubmitTx(tx, faucet, {
-          resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+          resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
           reSign: true,
         }).catch((e) => console.log(e))
       )
@@ -268,7 +268,7 @@ export async function createFullDid(
 
   await Kilt.BlockchainUtils.signAndSubmitTx(extrinsic, identity, {
     reSign: true,
-    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   })
 
   const queried = await Did.DefaultResolver.resolveDoc(did)
@@ -295,7 +295,7 @@ export async function createAttestation(
   )
 
   await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
-    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   })
 }
 
@@ -311,7 +311,7 @@ export async function createMinimalFullDidFromLightDid(
   )
 
   await Kilt.BlockchainUtils.signAndSubmitTx(extrinsic, identity, {
-    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   })
 
   const queried = await Did.DefaultResolver.resolveDoc(did)
@@ -341,7 +341,7 @@ export async function createMinimalFullDidFromLightDid(
   })
 
   await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
-    resolve: Kilt.BlockchainUtils.IS_FINALIZED,
+    resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   })
 
   const refetchedDid = await Did.DefaultResolver.resolveDoc(did)
