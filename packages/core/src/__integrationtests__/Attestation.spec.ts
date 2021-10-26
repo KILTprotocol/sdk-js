@@ -101,7 +101,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   beforeAll(async () => {
     const ctypeExists = await CtypeOnChain(DriversLicense)
     if (!ctypeExists) {
-      attester
+      await attester
         .authorizeExtrinsic(
           await DriversLicense.store(),
           signer,

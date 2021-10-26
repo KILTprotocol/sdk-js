@@ -25,7 +25,7 @@ import type {
 } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
-import type { BTreeSet, Struct } from '@polkadot/types/codec'
+import type { Struct, Vec } from '@polkadot/types/codec'
 import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
 import type { Bool, u32 } from '@polkadot/types/primitive'
 import { DecoderUtils } from '@kiltprotocol/utils'
@@ -51,7 +51,7 @@ export function decodeDelegationHierarchyDetails(
   encoded: Option<IChainDelegationHierarchyDetails>
 ): DelegationHierarchyDetailsRecord | null {
   DecoderUtils.assertCodecIsType(encoded, [
-    'Option<DelegationHierarchyDetails>',
+    'Option<DelegationDelegationHierarchyDelegationHierarchyDetails>',
   ])
   if (encoded.isNone) {
     return null
@@ -89,23 +89,29 @@ export type DelegationNodeId = Hash
 export interface IChainDelegationNode extends Struct {
   readonly hierarchyRootId: DelegationNodeId
   readonly parent: Option<DelegationNodeId>
-  readonly children: BTreeSet<DelegationNodeId>
+  readonly children: Vec<DelegationNodeId>
   readonly details: IChainDelegationDetails
   readonly deposit: Deposit
 }
 
 type DelegationOwnerIdentifier = AccountId
 
+interface IPermissions extends Struct {
+  bits: u32
+}
+
 export interface IChainDelegationDetails extends Struct {
   readonly owner: DelegationOwnerIdentifier
   readonly revoked: Bool
-  readonly permissions: u32
+  readonly permissions: IPermissions
 }
 
 export function decodeDelegationNode(
   encoded: Option<IChainDelegationNode>
 ): DelegationNodeRecord | null {
-  DecoderUtils.assertCodecIsType(encoded, ['Option<DelegationNode>'])
+  DecoderUtils.assertCodecIsType(encoded, [
+    'Option<DelegationDelegationHierarchyDelegationNode>',
+  ])
   if (encoded.isNone) {
     return null
   }
@@ -116,13 +122,13 @@ export function decodeDelegationNode(
     parentId: delegationNode.parent.isSome
       ? delegationNode.parent.toHex()
       : undefined,
-    childrenIds: [...delegationNode.children.keys()].map((id) => id.toHex()),
+    childrenIds: [...delegationNode.children].map((id) => id.toHex()),
     account: DidUtils.getKiltDidFromIdentifier(
       delegationNode.details.owner.toString(),
       'full'
     ),
     permissions: decodePermissions(
-      delegationNode.details.permissions.toNumber()
+      delegationNode.details.permissions.bits.toNumber()
     ),
     revoked: delegationNode.details.revoked.valueOf(),
   }

@@ -60,7 +60,9 @@ function decode(
   encoded: Option<AttestationDetails>,
   claimHash: string // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
-  DecoderUtils.assertCodecIsType(encoded, ['Option<AttestationDetails>'])
+  DecoderUtils.assertCodecIsType(encoded, [
+    'Option<AttestationAttestationsAttestationDetails>',
+  ])
   if (encoded.isSome) {
     const chainAttestation = encoded.unwrap()
     const attestation: IAttestation = {
