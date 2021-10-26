@@ -25,8 +25,11 @@ import {
   BlockchainUtils,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
-import { KeyRelationship, KeystoreSigner } from '@kiltprotocol/types'
-import { KeyringPair } from '@polkadot/keyring/types'
+import {
+  KeyRelationship,
+  KeyringPair,
+  KeystoreSigner,
+} from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
 

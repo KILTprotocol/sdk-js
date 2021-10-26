@@ -9,9 +9,8 @@
  * @group integration/ctype
  */
 
-import type { ICType } from '@kiltprotocol/types'
+import type { ICType, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
-import { KeyringPair } from '@polkadot/keyring/types'
 import {
   FullDidDetails,
   DemoKeystore,

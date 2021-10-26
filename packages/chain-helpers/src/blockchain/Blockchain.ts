@@ -23,14 +23,14 @@ import { BN } from '@polkadot/util'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type {
+  BlockchainStats,
   IIdentity,
   ISubmittableResult,
-  SubmittableExtrinsic,
   IBlockchainApi,
-  BlockchainStats,
+  KeyringPair,
+  SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import type { KeyringPair } from '@polkadot/keyring/types'
 import { submitSignedTx } from './Blockchain.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('Blockchain')

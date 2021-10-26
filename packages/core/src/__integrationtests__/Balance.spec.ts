@@ -11,7 +11,7 @@
 
 import { BN } from '@polkadot/util'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { KeyringPair } from '@polkadot/keyring/types'
+import type { KeyringPair } from '@kiltprotocol/types'
 import {
   getBalances,
   listenToBalanceChanges,
