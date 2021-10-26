@@ -6,14 +6,14 @@ on:
       - develop
       - master
     tags:
-      - "*"
+      - '*'
     paths-ignore:
-      - "**/*.md"
-      - "LICENSE"
-      - "Dockerfile"
-      - "docker-compose.yml"
-      - "dc.build.node.yml"
-      - ".github/workflows/*publish.yml"
+      - '**/*.md'
+      - 'LICENSE'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'dc.build.node.yml'
+      - '.github/workflows/*publish.yml'
   pull_request:
     branches:
       - develop
@@ -84,10 +84,10 @@ jobs:
     strategy:
       matrix:
         node-version: [14.x]
-        required: ["required"]
+        required: ['required']
         include:
           - node-version: 16.x
-            required: "optional"
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
@@ -107,11 +107,11 @@ jobs:
 
     strategy:
       matrix:
-        image: ["latest-rc"]
-        required: ["optional"]
+        image: ['latest-rc']
+        required: ['optional']
         include:
-          - image: "latest-develop"
-            required: "optional"
+          - image: 'latest-develop'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
@@ -148,7 +148,6 @@ jobs:
 
   bundle_check:
     runs-on: ubuntu-latest
-
     needs: build
 
     steps:
@@ -157,9 +156,13 @@ jobs:
           name: build-14.x
       - name: unzip
         run: unzip build.zip -d .
-      - name: bundle
+      - name: yarn bundle
         run: yarn bundle
-      - name: embedding test
+      - name: upload bundle artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: checked-nonmin-bundle
+          path: packages/sdk-js/dist/sdk-js.umd.js
 
   bundle_test:
     runs-on: ubuntu-latest
@@ -175,7 +178,9 @@ jobs:
           name: build-14.x
       - name: unzip
         run: unzip build.zip -d .
-
+      - uses: actions/download-artifact@v2
+        with:
+          name: checked-nonmin-bundle
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -208,11 +213,11 @@ jobs:
 
     strategy:
       matrix:
-        image: ["latest-rc"]
-        required: ["required"]
+        image: ['latest-rc']
+        required: ['required']
         include:
-          - image: "latest-develop"
-            required: "optional"
+          - image: 'latest-develop'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
@@ -254,11 +259,11 @@ jobs:
 
     strategy:
       matrix:
-        image: ["latest-rc"]
-        required: ["required"]
+        image: ['latest-rc']
+        required: ['required']
         include:
-          - image: "latest-develop"
-            required: "optional"
+          - image: 'latest-develop'
+            required: 'optional'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
 
