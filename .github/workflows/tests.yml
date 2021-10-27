@@ -186,6 +186,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: checked-nonmin-bundle
+          path: packages/sdk-js/dist
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -201,7 +202,7 @@ jobs:
           node-version: '16.x'
       - run: yarn install
       - run: yarn build
-      - run: .packages/sdk-js/dist/ ls
+      - run: ./packages/sdk-js/dist/ ls
       - name: prepare bundle test
         timeout-minutes: 60
         env:
