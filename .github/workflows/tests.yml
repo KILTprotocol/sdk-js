@@ -202,7 +202,7 @@ jobs:
           node-version: '16.x'
       - run: yarn install
       - run: yarn build
-      - run: ./packages/sdk-js/dist/ ls
+      - run: basename /packages/sdk-js/dist
       - name: prepare bundle test
         timeout-minutes: 60
         env:
