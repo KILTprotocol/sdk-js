@@ -94,7 +94,10 @@ async function main(): Promise<void> {
     keystore,
     identity.address
   )
-  await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity)
+  await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
+    resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+    reSign: true,
+  })
 
   /* signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria, set tip value, or activate re-sign-re-send capabilities:
   // await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
@@ -195,7 +198,10 @@ async function main(): Promise<void> {
       keystore,
       identity.address
     )
-    await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity)
+    await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
+      resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
 
     /* The request for attestation is fulfilled with the attestation, but it needs to be combined into the `AttestedClaim` object before sending it back to the Claimer: */
     const attestedClaim = Kilt.AttestedClaim.fromRequestAndAttestation(
