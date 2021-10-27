@@ -8,6 +8,8 @@ The next examples give you a simple skeleton on how to use the KILT SDK to creat
 - [1. How to install the SDK](#1-how-to-install-the-sdk)
   - [1.1. Prerequisites](#11-prerequisites)
 - [2. How to generate an Identity](#2-how-to-generate-an-identity)
+  - [2.1. Generate a Keystore](#21-generate-a-keystore)
+  - [2.2. Generate a light DID](#22-generate-a-light-did)
 - [3. How to build and store a Claim Type (CTYPE)](#3-how-to-build-and-store-a-claim-type-ctype)
   - [3.1. Building a CTYPE](#31-building-a-ctype)
   - [3.2. Storing a CTYPE](#32-storing-a-ctype)
@@ -80,22 +82,74 @@ await Kilt.init({ address: YOUR_CHAIN_ADDRESS })
 Again, this is asynchronous, so be sure to wrap this in an `async` function as described above.
 Add this line to the `async` functions wrapping the examples below if you run them individually.
 
-## 2. How to generate an Identity
+## 2. How to generate an Identity and DID
 
-To generate an Identity first you have to generate a [BIP39 mnemonic](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and then use it to create the Identity:
+To generate an Identity first you have to generate a [BIP39 mnemonic](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and then use it to create the on-chain Identity and DID:
 
 ```typescript
 import Kilt from '@kiltprotocol/sdk-js'
 
-const claimerMnemonic = Kilt.Identity.generateMnemonic()
+const keyring = new Kilt.Utils.Keyring.Keyring({
+  ss58Format: 38,
+  type: 'sr25519',
+})
 // mnemonic: coast ugly state lunch repeat step armed goose together pottery bind mention
-console.log('claimer mnemonic', claimerMnemonic)
-const claimer = Kilt.Identity.buildFromMnemonic(claimerMnemonic)
-// claimer.address: 4rjPNrzFDMrp9BudjmAV8ED7vzFBaF1Dgf8FwUjmWbso4Eyd
+const claimerMnemonic = Kilt.Utils.UUID.generate()
+
+const claimer = keyring.createFromUri(claimerMnemonic)
+
 console.log('claimer address', claimer.address)
 ```
 
 At this point the generated Identity has no tokens. If you want to interact with the blockchain, you will have to get some by [requesting them from our faucet](https://faucet.kilt.io/).
+
+### 2.1. Generate a Keystore
+
+To create a light DID, there needs to be a keystore instance that conforms to the [Keystore interface](../types/src/Keystore.ts). For the sake of ease of use, this package includes a [demo keystore](./src/DemoKeystore/DemoKeystore.ts) which can be used to generate key pairs that are kept in memory and disappear at the end of the program execution.
+
+**Using the demo keystore in production is highly discouraged as all the keys are kept in the memory and easily retrievable by malicious actors.**
+
+```typescript
+import Kilt from '@kiltprotocol/sdk-js'
+
+const keystore = new Kilt.Did.DemoKeystore()
+
+// Signing keypair
+const claimerSigningKeypair = await keystore.generateKeypair({
+  alg: Kilt.Did.SigningAlgorithms.Ed25519,
+  seed: generateClaimerMnemonic,
+})
+
+// Encryption keypair
+const claimerEncryptionKeypair = await keystore.generateKeypair({
+  alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
+  seed: generateClaimerMnemonic,
+})
+```
+
+### 2.2. Generate a light DID
+
+Using the keys from the demo keystore to generate the claimers light DID.
+
+```typescript
+import Kilt from '@kiltprotocol/sdk-js'
+
+const claimerLightDid = new Kilt.Did.LightDidDetails({
+  authenticationKey: {
+    publicKey: claimerSigningKeypair.publicKey,
+    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(claimerSigningKeypair.alg),
+  },
+  encryptionKey: {
+    publicKey: claimerEncryptionKeypair.publicKey,
+    type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
+      claimerEncryptionKeypair.alg
+    ),
+  },
+})
+
+// DID light: `did:kilt:light:014qFxmHnWw5sGMwjskdvMCrASF9Jvu5ggWRTWTK2NNYSLDg56:oWFlomlwdWJsaWNLZXlYIJuIow7rjSdf92qMKYtWV42lF9mctD1nFf8RM24auJhwZHR5cGVmeDI1NTE5`
+console.log(claimerLightDid.did)
+```
 
 ## 3. How to build and store a Claim Type (CTYPE)
 
