@@ -1,8 +1,5 @@
 {
   "extends": "./tsconfig.build.json",
-  "exclude": [
-    "docs/**/*"
-  ],
   "compilerOptions": {
     "baseUrl": "./packages",
     "sourceMap": true,

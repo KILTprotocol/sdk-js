@@ -40,8 +40,8 @@ async function main(): Promise<void> {
     seed: generateClaimerMnemonic,
   })
   const claimerEncryptionKeypair = await keystore.generateKeypair({
-    seed: generateClaimerMnemonic,
     alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
+    seed: generateClaimerMnemonic,
   })
   // Create a light DID from the generated authentication key.
   const claimerLightDid = new Kilt.Did.LightDidDetails({
@@ -130,7 +130,7 @@ async function main(): Promise<void> {
 
   /* 5.1.1. Requesting an Attestation */
   const requestForAttestation = Kilt.RequestForAttestation.fromClaim(claim)
-
+  await requestForAttestation.signWithDid(keystore, claimerLightDid)
   /* The `requestForAttestation` object looks like this: */
   console.log(requestForAttestation)
 
@@ -315,7 +315,10 @@ async function main(): Promise<void> {
         Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
       ) {
         const claims = decryptedMessageForVerifier.body.content
-        const isValid = await Kilt.AttestedClaim.verify(claims[0])
+        console.log('before verifying', credentialForVerifier)
+
+        const verifyingClaim = Kilt.AttestedClaim.fromAttestedClaim(claims[0])
+        const isValid = await verifyingClaim.verify()
         console.log('Verifcation success?', isValid)
         console.log('Attested claims from verifier perspective:\n', claims)
       }
