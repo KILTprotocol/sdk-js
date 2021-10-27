@@ -134,12 +134,10 @@ async function setup(): Promise<{
     'wish rather clinic rather connect culture frown like quote effort cart faculty'
 
   // Create a light DID from the generated authentication key.
-  const claimerLightDid = await Kilt.Did.createLightDidFromSeed(
+  const claimerLightDid = await Kilt.Did.createLocalDemoDidFromSeed(
     keystore,
     claimerMnemonic
   )
-
-  // const did = claimer.did
 
   // At this point the generated Identity has no tokens.
   // If you want to interact with the blockchain, you will have to get some.
@@ -215,12 +213,15 @@ async function doAttestation(
   )
 
   // claimer sends [[encrypted]] to the attester
-
   // ------------------------- Attester ----------------------------------------
   // When the Attester receives the message, she can decrypt it,
   // internally checks the sender is the owner of the identity
   // and checks the hash and signature of the message
-  const reqAttestationDec = await Kilt.Message.decrypt(encryptMessage, keystore)
+  const reqAttestationDec = await Kilt.Message.decrypt(
+    encryptMessage,
+    keystore,
+    { senderDetails: claimerLightDid, receiverDetails: attesterOnChainDid }
+  )
 
   const claimersRequest = Kilt.RequestForAttestation.fromRequest(
     (reqAttestationDec.body as IRequestAttestationForClaim).content
@@ -271,7 +272,8 @@ async function doAttestation(
   // and checks the hash and signature of the message
   const submitAttestationDec = await Kilt.Message.decrypt(
     submitAttestationEnc,
-    keystore
+    keystore,
+    { senderDetails: attesterOnChainDid, receiverDetails: claimerLightDid }
   )
 
   const credential = Kilt.AttestedClaim.fromRequestAndAttestation(
@@ -300,24 +302,18 @@ async function doVerification(
       ' VERIFICATION '
     )
   )
-  const keyring = new Kilt.Utils.Keyring.Keyring({
-    // KILT has registered the ss58 prefix 38
-    ss58Format: 38,
-    type: 'ed25519',
-  })
 
   const verifierMnemonic = Kilt.Utils.UUID.generate()
-  const verifier = keyring.addFromMnemonic(verifierMnemonic)
-  // The verifier address
-  console.log(verifier.address)
-  const verifierLightDid = await Kilt.Did.createLightDidFromSeed(
+
+  const verifierLightDid = await Kilt.Did.createLocalDemoDidFromSeed(
     keystore,
     verifierMnemonic
   )
+
   const claimerKeyAgreement = claimerLightDid.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
-  const verifierKeyAgreement = claimerLightDid.getKeys(
+  const verifierKeyAgreement = verifierLightDid.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
   // ------------------------- Verifier ----------------------------------------
@@ -340,7 +336,8 @@ async function doVerification(
   // The claimer receives a message from the verifier of the accepted ctypes
   const verifierAcceptedClaimsMessageDec = await Kilt.Message.decrypt(
     verifierAcceptedClaimsMessageEnc,
-    keystore
+    keystore,
+    { senderDetails: verifierLightDid, receiverDetails: claimerLightDid }
   )
 
   const ctypeHash = (verifierAcceptedClaimsMessageDec.body as IAcceptClaimsForCTypes)
@@ -377,14 +374,15 @@ async function doVerification(
 
   const verifierSubmitClaimsMessageDec = await Kilt.Message.decrypt(
     claimerSubmitClaimsMessageEnc,
-    keystore
+    keystore,
+    { senderDetails: claimerLightDid, receiverDetails: verifierLightDid }
   )
   const presentationMessage = (verifierSubmitClaimsMessageDec.body as ISubmitClaimsForCTypes)
     .content
   const verifierablePresentation = Kilt.AttestedClaim.fromAttestedClaim(
     presentationMessage[0]
   )
-  const verified = verifierablePresentation.verify({ challenge })
+  const verified = await verifierablePresentation.verify({ challenge })
 
   console.log('Received claims: ', JSON.stringify(presentationMessage))
   console.log('All valid? ', verified)
