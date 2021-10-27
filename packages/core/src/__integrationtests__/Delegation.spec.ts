@@ -342,7 +342,7 @@ describe('handling queries to data not on chain', () => {
   })
 })
 
-describe.only('hierarchyDetails', () => {
+describe('hierarchyDetails', () => {
   it('can fetch hierarchyDetails', async () => {
     const rootNode = await writeHierarchy(root, DriversLicense.hash)
     const delegatedNode = await addDelegation(

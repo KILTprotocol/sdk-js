@@ -7,9 +7,6 @@ const chainProperties = TYPE_REGISTRY.createType('ChainProperties', {
   ss58Format: 38,
 })
 TYPE_REGISTRY.setChainProperties(chainProperties)
-TYPE_REGISTRY.register({
-  AttestationAttestationsAttestationDetails: 'AttestationDetails',
-})
 
 const AccountId = TYPE_REGISTRY.getOrThrow('AccountId')
 
