@@ -157,8 +157,6 @@ function __makeSubmittableResult(
   const eventData = new GenericEventData(
     TYPE_REGISTRY,
     new Uint8Array([0]),
-    undefined,
-    undefined,
     {} as any,
     'system',
     'ExtrinsicSuccess'

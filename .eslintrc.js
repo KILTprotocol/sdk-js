@@ -1,3 +1,4 @@
+/* eslint-disable license-header/header */
 module.exports = {
   env: {
     browser: true,

@@ -143,8 +143,8 @@ export type DidPublicKeyMap = BTreeMap<KeyId, DidPublicKeyDetails>
 export interface IDidChainRecordCodec extends Struct {
   authenticationKey: KeyId
   keyAgreementKeys: DidKeyAgreementKeys
-  capabilityDelegationKey: Option<KeyId>
-  assertionMethodKey: Option<KeyId>
+  delegationKey: Option<KeyId>
+  attestationKey: Option<KeyId>
   publicKeys: DidPublicKeyMap
   lastTxCounter: u64
   deposit: Deposit
@@ -153,7 +153,7 @@ export interface IDidChainRecordCodec extends Struct {
 export interface DidCreationDetails extends Struct {
   did: DidIdentifier
   newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
-  newAssertionMethodKey: Option<DidVerificationKey>
+  newAttestationKey: Option<DidVerificationKey>
   newDelegationKey: Option<DidVerificationKey>
 }
 
