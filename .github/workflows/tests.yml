@@ -186,6 +186,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: checked-nonmin-bundle
+          path: packages/sdk-js/dist/sdk-js.umd.js
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
