@@ -153,7 +153,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: build-14.x
+          name: build-16.x
       - name: unzip
         run: unzip build.zip -d .
       - name: yarn bundle
@@ -180,7 +180,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: build-14.x
+          name: build-16.x
       - name: unzip
         run: unzip build.zip -d .
       - uses: actions/download-artifact@v2
@@ -198,9 +198,8 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
       - uses: actions/setup-node@v2
         with:
-          node-version: '14.x'
-      - run: npm i -g npm@7
-      - run: yarn install --dev
+          node-version: '16.x'
+      - run: yarn install
       - run: yarn build
       - name: prepare bundle test
         timeout-minutes: 60
@@ -212,7 +211,7 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --dev --ws-port 9944 --ws-external
           sleep 5s
-          yarn test:bundle
+          yarn test:ci:bundle
           docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
 
   run_example:
