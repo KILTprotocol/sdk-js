@@ -9,10 +9,9 @@
  * @group integration/delegation
  */
 
-import type { ICType, IDelegationNode } from '@kiltprotocol/types'
+import type { ICType, IDelegationNode, KeyringPair } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import type { KeyringPair } from '@polkadot/keyring/types'
 import {
   createOnChainDidFromSeed,
   DemoKeystore,

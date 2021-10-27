@@ -9,7 +9,8 @@
  * @group unit/utils
  */
 
-import Keyring, { encodeAddress } from '@polkadot/keyring'
+import { encodeAddress } from '@polkadot/keyring'
+import { Keyring } from './index'
 import { validateAddress, validateHash, validateSignature } from './DataUtils'
 import { ErrorCode } from './SDKErrors'
 import * as Crypto from './Crypto'

@@ -9,7 +9,7 @@
  * @group integration/attestation
  */
 
-import type { IAttestedClaim, IClaim } from '@kiltprotocol/types'
+import type { IAttestedClaim, IClaim, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import {
   createOnChainDidFromSeed,
@@ -18,7 +18,6 @@ import {
 } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { randomAsHex } from '@polkadot/util-crypto'
-import { KeyringPair } from '@polkadot/keyring/types'
 import Attestation from '../attestation/Attestation'
 import { revoke, remove } from '../attestation/Attestation.chain'
 import AttestedClaim from '../attestedclaim/AttestedClaim'

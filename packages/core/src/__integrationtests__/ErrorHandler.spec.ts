@@ -11,7 +11,7 @@
 
 import { BN } from '@polkadot/util'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
-import { KeyringPair } from '@polkadot/keyring/types'
+import type { KeyringPair } from '@kiltprotocol/types'
 import {
   createOnChainDidFromSeed,
   DemoKeystore,
