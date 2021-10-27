@@ -90,15 +90,15 @@ function decodeDidChainRecord(
     keyAgreementKeys: keyAgreementKeyIds,
     lastTxCounter: didDetail.lastTxCounter,
   }
-  if (didDetail.capabilityDelegationKey.isSome) {
+  if (didDetail.delegationKey.isSome) {
     didRecord.capabilityDelegationKey = assembleKeyId(
-      didDetail.capabilityDelegationKey.unwrap(),
+      didDetail.delegationKey.unwrap(),
       did
     )
   }
-  if (didDetail.assertionMethodKey.isSome) {
+  if (didDetail.attestationKey.isSome) {
     didRecord.assertionMethodKey = assembleKeyId(
-      didDetail.assertionMethodKey.unwrap(),
+      didDetail.attestationKey.unwrap(),
       did
     )
   }

@@ -342,6 +342,23 @@ describe('handling queries to data not on chain', () => {
   })
 })
 
+describe('hierarchyDetails', () => {
+  it('can fetch hierarchyDetails', async () => {
+    const rootNode = await writeHierarchy(root, DriversLicense.hash)
+    const delegatedNode = await addDelegation(
+      rootNode.id,
+      rootNode.id,
+      root,
+      attester
+    )
+
+    const details = await delegatedNode.getHierarchyDetails()
+
+    expect(details.cTypeHash).toBe(DriversLicense.hash)
+    expect(details.id).toBe(rootNode.id)
+  }, 60_000)
+})
+
 afterAll(() => {
   disconnect()
 })

@@ -7,6 +7,9 @@ const chainProperties = TYPE_REGISTRY.createType('ChainProperties', {
   ss58Format: 38,
 })
 TYPE_REGISTRY.setChainProperties(chainProperties)
+TYPE_REGISTRY.register({
+  AttestationAttestationsAttestationDetails: 'AttestationDetails',
+})
 
 const AccountId = TYPE_REGISTRY.getOrThrow('AccountId')
 
@@ -41,7 +44,9 @@ const chainQueryReturnTuples: {
   },
   attestation: {
     // Attestations: claim-hash -> (ctype-hash, attester-account, delegation-id?, revoked, deposit)?
-    attestations: TYPE_REGISTRY.getOrUnknown('AttestationDetails'),
+    attestations: TYPE_REGISTRY.getOrUnknown(
+      'AttestationAttestationsAttestationDetails'
+    ),
     // DelegatedAttestations: delegation-id -> [claim-hash]
     delegatedAttestations: TYPE_REGISTRY.getOrUnknown('Hash'),
   },

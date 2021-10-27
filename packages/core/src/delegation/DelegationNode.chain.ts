@@ -161,7 +161,7 @@ export async function getChildren(
  * @internal
  */
 function decodeDelegatedAttestations(queryResult: Option<Vec<Hash>>): string[] {
-  DecoderUtils.assertCodecIsType(queryResult, ['Option<Vec<ClaimHashOf>>'])
+  DecoderUtils.assertCodecIsType(queryResult, ['Option<Vec<H256>>'])
   return queryResult.unwrapOrDefault().map((hash) => hash.toHex())
 }
 
