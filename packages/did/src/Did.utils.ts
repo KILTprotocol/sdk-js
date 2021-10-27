@@ -239,17 +239,16 @@ export function encodeDidCreationOperation(
     did: didIdentifier,
     submitter,
     newKeyAgreementKeys: encryptionKey ? [formatPublicKey(encryptionKey)] : [],
-    newAssertionMethodKey: assertionMethodKey
+    newAttestationKey: assertionMethodKey
       ? formatPublicKey(assertionMethodKey)
       : undefined,
-    newCapabilityDelegationKey: delegationKey
+    newDelegationKey: delegationKey
       ? formatPublicKey(delegationKey)
       : undefined,
   }
-  return new (registry.getOrThrow<DidCreationDetails>('DidCreationDetails'))(
-    registry,
-    didCreateRaw
-  )
+  return new (registry.getOrThrow<DidCreationDetails>(
+    'DidDidDetailsDidCreationDetails'
+  ))(registry, didCreateRaw)
 }
 
 export function encodeDidAuthorizedCallOperation(
