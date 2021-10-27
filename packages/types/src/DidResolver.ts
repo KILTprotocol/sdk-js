@@ -5,6 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+import { IDidServiceEndpoint } from '.'
 import type { IDidDetails, IDidKeyDetails } from './DidDetails'
 
 export type IDidResolutionDocumentMetadata = {
@@ -33,7 +34,9 @@ export interface IDidResolver {
    */
   resolve: (
     didUri: string
-  ) => Promise<IDidResolvedDetails | IDidKeyDetails | null>
+  ) => Promise<
+    IDidResolvedDetails | IDidKeyDetails | IDidServiceEndpoint | null
+  >
   /**
    * Resolves a DID (or DID URI), returning the full contents of the DID document.
    *
@@ -52,4 +55,15 @@ export interface IDidResolver {
    * the DID or key URI cannot be resolved.
    */
   resolveKey: (didUri: string) => Promise<IDidKeyDetails | null>
+  /**
+   * Resolves a DID URI identifying a service endpoint associated with a DID.
+   *
+   * @param didUri A DID URI string (DID string plus fragment) identifying a service endpoint associated
+   * with a DID through the DID document.
+   * @returns A promise of a [[IDidServiceEndpoint]] object representing the DID public key or null if
+   * the DID or service endpoint URI cannot be resolved.
+   */
+  resolveServiceEndpoint: (
+    didUri: string
+  ) => Promise<IDidServiceEndpoint | null>
 }
