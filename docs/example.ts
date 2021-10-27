@@ -343,15 +343,12 @@ async function doVerification(
   const ctypeHash = (verifierAcceptedClaimsMessageDec.body as IAcceptClaimsForCTypes)
     .content[0]
   console.log('claimer checks the ctypeHash matches', ctypeHash)
-  // The claimer can create a challenge for the verifier
-  const challenge = Kilt.Utils.UUID.generate()
 
   const presentation = await credential.createPresentation({
     signer: keystore,
     claimerDid: claimerLightDid,
-    challenge,
   })
-  // Sending the presentation with challenge
+
   const claimerSubmitClaimsMessage = new Kilt.Message(
     {
       type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
@@ -382,7 +379,7 @@ async function doVerification(
   const verifierablePresentation = Kilt.AttestedClaim.fromAttestedClaim(
     presentationMessage[0]
   )
-  const verified = await verifierablePresentation.verify({ challenge })
+  const verified = await verifierablePresentation.verify()
 
   console.log('Received claims: ', JSON.stringify(presentationMessage))
   console.log('All valid? ', verified)
