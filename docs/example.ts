@@ -30,6 +30,7 @@ async function setup(): Promise<{
   attester: KeyringPair
   claim: Claim
   ctype: CType
+  keystore: Did.DemoKeystore
 }> {
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' SETUP ')
@@ -49,6 +50,7 @@ async function setup(): Promise<{
   // const generateAttesterMnemonic = Kilt.Utils.UUID.generate()
   const attesterMnemonic =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
+
   // or we just use unsafe precalculated keys (just for demo purposes!):
   const attester = keyring.addFromMnemonic(
     attesterMnemonic,
@@ -102,7 +104,6 @@ async function setup(): Promise<{
 
   // Build the CType object
   const ctype = new Kilt.CType(rawCtype)
-
   // Store ctype on blockchain
   // signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria, set tip value, or activate re-sign-re-send capabilities.
   // ! This costs tokens !
@@ -113,7 +114,12 @@ async function setup(): Promise<{
       .then((tx) =>
         attesterOnChainDid.authorizeExtrinsic(tx, keystore, attester.address)
       )
-      .then((tx) => Kilt.BlockchainUtils.signAndSubmitTx(tx, attester))
+      .then((tx) =>
+        Kilt.BlockchainUtils.signAndSubmitTx(tx, attester, {
+          resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
+        })
+      )
   } catch (e) {
     console.log(
       'Error while storing CType. Probably either insufficient funds or ctype does already exist.',
@@ -162,6 +168,7 @@ async function setup(): Promise<{
     attester,
     ctype,
     claim,
+    keystore,
   }
 }
 
@@ -169,15 +176,14 @@ async function doAttestation(
   claimerLightDid: Did.LightDidDetails,
   attesterOnChainDid: Did.FullDidDetails,
   attester: KeyringPair,
-  claim: Claim
+  claim: Claim,
+  keystore: Did.DemoKeystore
 ): Promise<{
   credential: AttestedClaim
 }> {
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' ATTESTATION ')
   )
-  // Initialize the demo keystore
-  const keystore = new Kilt.Did.DemoKeystore()
 
   // ------------------------- CLAIMER -----------------------------------------
   // And we need to build a request for an attestation
@@ -286,7 +292,8 @@ async function doAttestation(
 
 async function doVerification(
   claimerLightDid: Did.LightDidDetails,
-  credential: AttestedClaim
+  credential: AttestedClaim,
+  keystore: Did.DemoKeystore
 ): Promise<void> {
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(
@@ -298,7 +305,7 @@ async function doVerification(
     ss58Format: 38,
     type: 'ed25519',
   })
-  const keystore = new Kilt.Did.DemoKeystore()
+
   const verifierMnemonic = Kilt.Utils.UUID.generate()
   const verifier = keyring.addFromMnemonic(verifierMnemonic)
   // The verifier address
@@ -385,24 +392,31 @@ async function doVerification(
 
 // do an attestation and a verification
 async function example(): Promise<boolean> {
-  const { claimerLightDid, attesterOnChainDid, claim, attester } = await setup()
+  const {
+    claimerLightDid,
+    attesterOnChainDid,
+    claim,
+    attester,
+    keystore,
+  } = await setup()
 
   const { credential } = await doAttestation(
     claimerLightDid,
     attesterOnChainDid,
     attester,
-    claim
+    claim,
+    keystore
   )
   // should succeed
-  await doVerification(claimerLightDid, credential)
-  await doVerification(claimerLightDid, credential)
+  await doVerification(claimerLightDid, credential, keystore)
+  await doVerification(claimerLightDid, credential, keystore)
 
   // revoke
   await Kilt.Attestation.revoke(credential.getHash(), 0)
 
   // should fail
-  await doVerification(claimerLightDid, credential)
-  await doVerification(claimerLightDid, credential)
+  await doVerification(claimerLightDid, credential, keystore)
+  await doVerification(claimerLightDid, credential, keystore)
 
   return true
 }
