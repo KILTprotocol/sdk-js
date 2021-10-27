@@ -6,20 +6,44 @@
  */
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable import/prefer-default-export */
 
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/util-crypto'
 import {
   getEncodingForSigningKeyType,
   getKiltDidFromIdentifier,
+  parseDidUrl,
 } from '../Did.utils'
-import type { INewPublicKey } from '../types'
+import type { LightDidDetailsCreationOpts } from '../types'
 import { DidDetails } from './DidDetails'
 import { serializeAndEncodeAdditionalLightDidDetails } from './LightDidDetails.utils'
 
-export interface LightDidDetailsCreationOpts {
-  authenticationKey: INewPublicKey
-  encryptionKey?: INewPublicKey
+function checkLightDidCreationOptions(
+  options: LightDidDetailsCreationOpts
+): void {
+  // Check authentication key type
+  const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
+    options.authenticationKey.type
+  )
+  if (!authenticationKeyTypeEncoding) {
+    throw SDKErrors.ERROR_UNSUPPORTED_KEY
+  }
+
+  // Check service endpoints
+  if (!options.serviceEndpoints) {
+    return
+  }
+
+  options.serviceEndpoints?.forEach((service) => {
+    try {
+      parseDidUrl(service.id)
+      throw new Error(
+        `Invalid service ID provided: ${service.id}. The service ID should be a simple identifier and not a complete DID URI.`
+      )
+      // eslint-disable-next-line no-empty
+    } catch {}
+  })
 }
 
 export class LightDidDetails extends DidDetails {
@@ -29,16 +53,20 @@ export class LightDidDetails extends DidDetails {
   constructor({
     authenticationKey,
     encryptionKey = undefined,
+    serviceEndpoints = [],
   }: LightDidDetailsCreationOpts) {
+    checkLightDidCreationOptions({
+      authenticationKey,
+      encryptionKey,
+      serviceEndpoints,
+    })
     const encodedDetails = serializeAndEncodeAdditionalLightDidDetails({
       encryptionKey,
+      serviceEndpoints,
     })
     const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
       authenticationKey.type
     )
-    if (!authenticationKeyTypeEncoding) {
-      throw SDKErrors.ERROR_UNSUPPORTED_KEY
-    }
 
     // A KILT light DID identifier becomes <key_type_encoding><kilt_address>
     const id = authenticationKeyTypeEncoding.concat(
@@ -53,7 +81,13 @@ export class LightDidDetails extends DidDetails {
       did = did.concat(':', encodedDetails)
     }
 
-    super(did, id)
+    super(
+      did,
+      id,
+      serviceEndpoints.map((service) => {
+        return { ...service, id: `${did}#${service.id}` }
+      })
+    )
 
     // Authentication key always has the #authentication ID.
     this.keys = new Map([

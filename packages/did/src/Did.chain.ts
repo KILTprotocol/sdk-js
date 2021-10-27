@@ -10,11 +10,12 @@
  * @module DID
  */
 
-import type { Option } from '@polkadot/types'
+import type { Option, Text } from '@polkadot/types'
 import type {
   IIdentity,
   SubmittableExtrinsic,
   IDidKeyDetails,
+  IDidServiceEndpoint,
   KeystoreSigningOptions,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
@@ -30,6 +31,7 @@ import type {
   DidPublicKeyDetails,
   INewPublicKey,
   IDidChainRecordCodec,
+  IServiceEndpointChainRecordCodec,
 } from './types'
 import {
   encodeDidAuthorizedCallOperation,
@@ -37,17 +39,38 @@ import {
   getKiltDidFromIdentifier,
   getIdentifierFromKiltDid,
   formatPublicKey,
+  encodeServiceEndpoint,
 } from './Did.utils'
 
 // ### QUERYING
 
-export async function queryEncoded(
+export async function queryDidEncoded(
   didIdentifier: IIdentity['address']
 ): Promise<Option<IDidChainRecordCodec>> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   return blockchain.api.query.did.did<Option<IDidChainRecordCodec>>(
     didIdentifier
   )
+}
+
+export async function queryServiceEncoded(
+  didIdentifier: IIdentity['address'],
+  serviceId: IDidServiceEndpoint['id']
+): Promise<Option<IServiceEndpointChainRecordCodec>> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  return blockchain.api.query.did.serviceEndpoints<
+    Option<IServiceEndpointChainRecordCodec>
+  >(didIdentifier, serviceId)
+}
+
+export async function queryAllServicesEncoded(
+  didIdentifier: IIdentity['address']
+): Promise<IServiceEndpointChainRecordCodec[]> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const endpoints = await blockchain.api.query.did.serviceEndpoints.keys<
+    [Text, IServiceEndpointChainRecordCodec]
+  >(didIdentifier)
+  return endpoints.map(({ args: [, serviceDetails] }) => serviceDetails)
 }
 
 function assembleKeyId(keyId: Codec, did: string): string {
@@ -105,10 +128,21 @@ function decodeDidChainRecord(
   return didRecord
 }
 
+function decodeServiceChainRecord(
+  serviceDetails: IServiceEndpointChainRecordCodec,
+  did: string
+): IDidServiceEndpoint {
+  return {
+    id: `${did}#${serviceDetails.id.toString()}`,
+    types: serviceDetails.serviceTypes.map((type) => type.toString()),
+    urls: serviceDetails.urls.map((url) => url.toString()),
+  }
+}
+
 export async function queryById(
   didIdentifier: IIdentity['address']
 ): Promise<IDidChainRecordJSON | null> {
-  const result = await queryEncoded(didIdentifier)
+  const result = await queryDidEncoded(didIdentifier)
   if (result.isSome) {
     return decodeDidChainRecord(
       result.unwrap(),
@@ -130,7 +164,7 @@ export async function queryKey(
   did: string,
   keyId: string
 ): Promise<IDidKeyDetails | null> {
-  const encoded = await queryEncoded(getIdentifierFromKiltDid(did))
+  const encoded = await queryDidEncoded(getIdentifierFromKiltDid(did))
   if (encoded.isNone) return null
   const keyIdU8a = Crypto.coToUInt8(keyId)
   let key: IDidKeyDetails | null = null
@@ -142,9 +176,29 @@ export async function queryKey(
   return key
 }
 
+export async function queryServiceEndpoint(
+  did: string,
+  serviceId: string
+): Promise<IDidServiceEndpoint | null> {
+  const encoded = await queryServiceEncoded(
+    getIdentifierFromKiltDid(did),
+    serviceId
+  )
+  if (encoded.isNone) return null
+
+  return decodeServiceChainRecord(encoded.unwrap(), did)
+}
+
+export async function queryServiceEndpoints(
+  did: string
+): Promise<IDidServiceEndpoint[]> {
+  const encoded = await queryAllServicesEncoded(getIdentifierFromKiltDid(did))
+  return encoded.map((e) => decodeServiceChainRecord(e, did))
+}
+
 export async function queryLastTxIndex(did: string): Promise<BN> {
   const identifier = getIdentifierFromKiltDid(did)
-  const encoded = await queryEncoded(identifier)
+  const encoded = await queryDidEncoded(identifier)
   if (encoded.isNone) return new BN(0)
   return encoded.unwrap().lastTxCounter.toBn()
 }
@@ -158,6 +212,7 @@ export async function generateCreateTx({
   didIdentifier,
   submitter,
   keys = {},
+  endpoints = [],
 }: IDidCreationOptions & KeystoreSigningOptions): Promise<
   SubmittableExtrinsic
 > {
@@ -166,6 +221,7 @@ export async function generateCreateTx({
     didIdentifier,
     submitter,
     keys,
+    endpoints,
   })
   const signature = await signer.sign({
     data: encoded.toU8a(),
@@ -244,6 +300,21 @@ export async function getAddKeyExtrinsic(
       KeyRelationship.keyAgreement,
     ]}`
   )
+}
+
+export async function getAddEndpointExtrinsic(
+  endpoint: IDidServiceEndpoint
+): Promise<Extrinsic> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = encodeServiceEndpoint(blockchain.api.registry, endpoint)
+  return blockchain.api.tx.did.addServiceEndpoint(encoded)
+}
+
+export async function getRemoveEndpointExtrinsic(
+  endpointId: IDidServiceEndpoint['id']
+): Promise<Extrinsic> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.tx.did.removeServiceEndpoint(endpointId)
 }
 
 export async function getDeleteDidExtrinsic(): Promise<Extrinsic> {

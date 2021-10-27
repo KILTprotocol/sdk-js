@@ -14,6 +14,7 @@ import type {
   ApiOrMetadata,
   CallMeta,
   IIdentity,
+  IDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
@@ -27,18 +28,20 @@ import {
 } from '../Did.utils'
 import { DidDetails } from './DidDetails'
 
-export interface FullDidDetailsCreationOpts {
+export type FullDidDetailsCreationOpts = {
   // The full DID URI, following the scheme did:kilt:<kilt_address>
   did: string
   keys: IDidKeyDetails[]
-  keyRelationships: MapKeyToRelationship
+  keyRelationships?: MapKeyToRelationship
   lastTxIndex: BN
+  serviceEndpoints?: IDidServiceEndpoint[]
 }
 
 function errorCheck({
   did,
   keys,
   keyRelationships,
+  serviceEndpoints,
 }: Required<FullDidDetailsCreationOpts>): void {
   if (!did) {
     throw Error('did is required for FullDidDetails')
@@ -70,6 +73,17 @@ function errorCheck({
   keyReferences.forEach((id) => {
     if (!keyIds.has(id)) throw new Error(`No key with id ${id} in "keys"`)
   })
+
+  // Check service endpoints
+  serviceEndpoints.forEach((service) => {
+    try {
+      parseDidUrl(service.id)
+      throw new Error(
+        `Invalid service ID provided: ${service.id}. The service ID should be a simple identifier and not a complete DID URI.`
+      )
+      // eslint-disable-next-line no-empty
+    } catch {}
+  })
 }
 
 export class FullDidDetails extends DidDetails {
@@ -83,16 +97,18 @@ export class FullDidDetails extends DidDetails {
     keys,
     keyRelationships = {},
     lastTxIndex,
+    serviceEndpoints = [],
   }: FullDidDetailsCreationOpts) {
     errorCheck({
       did,
       keys,
       keyRelationships,
       lastTxIndex,
+      serviceEndpoints,
     })
 
     const id = getIdentifierFromKiltDid(did)
-    super(did, id)
+    super(did, id, serviceEndpoints)
 
     this.keys = new Map(keys.map((key) => [key.id, key]))
     this.lastTxIndex = lastTxIndex

@@ -14,6 +14,7 @@ import type {
   KeystoreSigner,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
+  IDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
@@ -31,6 +32,7 @@ import type {
   INewPublicKey,
   PublicKeyRoleAssignment,
   IDidParsingResult,
+  IServiceEndpointChainRecordCodec,
 } from './types'
 import { generateCreateTx } from './Did.chain'
 import { LightDidDetails } from '.'
@@ -227,7 +229,7 @@ export function isINewPublicKey(key: unknown): key is INewPublicKey {
 
 export function encodeDidCreationOperation(
   registry: Registry,
-  { didIdentifier, submitter, keys = {} }: IDidCreationOptions
+  { didIdentifier, submitter, keys = {}, endpoints = [] }: IDidCreationOptions
 ): DidCreationDetails {
   const {
     [KeyRelationship.assertionMethod]: assertionMethodKey,
@@ -245,6 +247,7 @@ export function encodeDidCreationOperation(
     newDelegationKey: delegationKey
       ? formatPublicKey(delegationKey)
       : undefined,
+    newServiceDetails: endpoints,
   }
   return new (registry.getOrThrow<DidCreationDetails>(
     'DidDidDetailsDidCreationDetails'
@@ -269,6 +272,19 @@ export function encodeDidAuthorizedCallOperation(
     call,
     blockNumber,
     submitter,
+  })
+}
+
+export function encodeServiceEndpoint(
+  registry: Registry,
+  endpoint: IDidServiceEndpoint
+): IServiceEndpointChainRecordCodec {
+  return new (registry.getOrThrow<IServiceEndpointChainRecordCodec>(
+    'DidServiceEndpointsDidEndpoint'
+  ))(registry, {
+    id: endpoint.id,
+    serviceTypes: endpoint.types,
+    urls: endpoint.urls,
   })
 }
 

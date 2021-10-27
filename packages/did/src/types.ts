@@ -10,6 +10,7 @@ import type {
   IIdentity,
   IDidKeyDetails,
   IDidDetails,
+  IDidServiceEndpoint,
   KeyRelationship,
 } from '@kiltprotocol/types'
 import type { AnyNumber } from '@polkadot/types/types'
@@ -19,6 +20,7 @@ import type {
   Enum,
   Option,
   Struct,
+  Text,
   u64,
   u8,
   Vec,
@@ -79,6 +81,7 @@ export interface IDidCreationOptions {
   didIdentifier: IIdentity['address']
   submitter: IIdentity['address']
   keys?: PublicKeyRoleAssignment
+  endpoints?: IDidServiceEndpoint[]
 }
 
 export interface IAuthorizeCallOptions {
@@ -150,11 +153,18 @@ export interface IDidChainRecordCodec extends Struct {
   deposit: Deposit
 }
 
+export interface IServiceEndpointChainRecordCodec extends Struct {
+  id: Text
+  serviceTypes: Vec<Text>
+  urls: Vec<Text>
+}
+
 export interface DidCreationDetails extends Struct {
   did: DidIdentifier
   newKeyAgreementKeys: BTreeSet<DidEncryptionKey>
   newAttestationKey: Option<DidVerificationKey>
   newDelegationKey: Option<DidVerificationKey>
+  newServiceDetails: Vec<IServiceEndpointChainRecordCodec>
 }
 
 export interface DidAuthorizedCallOperation extends Struct {
@@ -174,6 +184,41 @@ export type JsonDidDocument = {
   assertionMethod?: string[]
   keyAgreement?: string[]
   capabilityDelegation?: string[]
+  serviceEndpoints?: IDidServiceEndpoint[]
 }
 
 export type JsonLDDidDocument = JsonDidDocument & { '@context': string[] }
+
+/**
+ * The options that can be used to create a light DID.
+ */
+export type LightDidDetailsCreationOpts = {
+  /**
+   * The DID authentication key. This is mandatory and will be used as the first authentication key
+   * of the full DID upon migration.
+   */
+  authenticationKey: INewPublicKey
+  /**
+   * The optional DID encryption key. If present, it will be used as the first key agreement key
+   * of the full DID upon migration.
+   */
+  encryptionKey?: INewPublicKey
+  /**
+   * The set of service endpoints associated with this DID. Each service endpoint ID must be unique.
+   * The service ID must not contain the DID prefix when used to create a new DID.
+   *
+   * @example ```typescript
+   * const authenticationKey = exampleKey;
+   * const services = [
+   *   {
+   *     id: 'test-service',
+   *     types: ['CredentialExposureService'],
+   *     urls: ['http://my_domain.example.org'],
+   *   },
+   * ];
+   * const lightDid = new LightDid({ authenticationKey, services });
+   * RequestForAttestation.fromRequest(parsedRequest);
+   * ```
+   */
+  serviceEndpoints?: IDidServiceEndpoint[]
+}
