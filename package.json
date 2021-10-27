@@ -25,7 +25,8 @@
     "test:integration": "{ lsof -i :9944 > /dev/null && yarn test:integration:run; } || echo 'Can not connect to chain. Is it running?'; exit 1;",
     "test:watch": "yarn test --watch",
     "test:bundle": "yarn ./tests playwright test --config playwright.config.ts",
-    "test:ci:bundle": "yarn playwright install-deps && yarn playwright install chromium && yarn test:bundle"
+    "test:ci:bundle": "yarn test:ci:bundle:preparation && yarn test:bundle",
+    "test:ci:bundle:preparation": "yarn playwright install-deps && yarn playwright install chromium"
   },
   "husky": {
     "hooks": {
