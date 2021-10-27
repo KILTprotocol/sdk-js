@@ -213,10 +213,11 @@ jobs:
           docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --dev --ws-port 9944 --ws-external
           sleep 5s
       - name: run bundle test
-          yarn test:ci:bundle
-          sleep 5s
+        run: |
+            yarn test:ci:bundle
+            sleep 5s
       - name: cleanup
-          docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
+        run: docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
 
   run_example:
     runs-on: ubuntu-latest
