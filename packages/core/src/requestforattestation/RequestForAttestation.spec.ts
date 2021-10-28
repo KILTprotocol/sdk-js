@@ -401,6 +401,11 @@ describe('RequestForAttestation', () => {
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequest)
     ).not.toThrow()
+    expect(
+      RequestForAttestation.isIRequestForAttestation(
+        builtRequestWithLegitimation
+      )
+    ).toEqual(true)
     expect(() => {
       RequestForAttestationUtils.errorCheck(builtRequestWithLegitimation)
     }).not.toThrow()

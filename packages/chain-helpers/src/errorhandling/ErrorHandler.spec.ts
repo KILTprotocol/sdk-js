@@ -15,6 +15,7 @@ import { DispatchError, EventRecord } from '@polkadot/types/interfaces'
 import { ErrorHandler, PalletIndex } from '.'
 import { ExtrinsicError, ExtrinsicErrors } from './ExtrinsicError'
 import { TypeRegistry } from '../blockchainApiConnection'
+import { extrinsicSuccessful, SystemEvent } from './ErrorHandler'
 
 describe('ErrorHandler', () => {
   it('test extrinsic failed', () => {
@@ -83,5 +84,16 @@ describe('ErrorHandler', () => {
     expect(ErrorHandler.getExtrinsicError(submittableResult)).toStrictEqual(
       new ExtrinsicError(code, message)
     )
+  })
+  it('tests for extrinsic success', async () => {
+    const result = {
+      events: [
+        {
+          phase: { isApplyExtrinsic: true },
+          event: { index: { toHex: () => SystemEvent.ExtrinsicSuccess } },
+        },
+      ],
+    } as ISubmittableResult
+    expect(extrinsicSuccessful(result)).toEqual(true)
   })
 })
