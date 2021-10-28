@@ -25,7 +25,11 @@ import {
   BlockchainUtils,
   BlockchainApiConnection,
 } from '@kiltprotocol/chain-helpers'
-import { KeyRelationship, KeystoreSigner } from '@kiltprotocol/types'
+import {
+  KeyRelationship,
+  KeystoreSigner,
+  IDidServiceEndpoint,
+} from '@kiltprotocol/types'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BN } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
@@ -41,14 +45,14 @@ beforeAll(async () => {
   paymentAccount = devAlice
 })
 
-describe('write and didDeleteTx', () => {
+describe.only('write and didDeleteTx', () => {
   let didIdentifier: string
   let key: DidTypes.INewPublicKey
   beforeAll(async () => {
     const { publicKey, alg } = await keystore.generateKeypair({
       alg: SigningAlgorithms.Ed25519,
     })
-    didIdentifier = encodeAddress(publicKey)
+    didIdentifier = encodeAddress(publicKey, 38)
     key = { publicKey, type: alg }
   })
 
@@ -71,14 +75,28 @@ describe('write and didDeleteTx', () => {
     ).rejects.toThrow()
   }, 30_000)
 
-  it('writes a new DID record to chain', async () => {
+  it.only('writes a new DID record to chain', async () => {
     const tx = await DidChain.generateCreateTx({
       didIdentifier,
       signer: keystore as KeystoreSigner<string>,
       submitter: paymentAccount.address,
       signingPublicKey: key.publicKey,
       alg: key.type,
+      endpoints: [
+        {
+          id: 'test-id-1',
+          types: ['test-type-1'],
+          urls: ['test-url-1'],
+        },
+        {
+          id: 'test-id-2',
+          types: ['test-type-2'],
+          urls: ['test-url-2'],
+        },
+      ],
     })
+
+    const did = DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
 
     await expect(
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
@@ -87,11 +105,35 @@ describe('write and didDeleteTx', () => {
       })
     ).resolves.not.toThrow()
 
-    await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
+    await expect(DidChain.queryByDID(did)).resolves.toMatchObject<
       Partial<DidTypes.IDidChainRecordJSON>
     >({
-      did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
+      did,
     })
+    await expect(DidChain.queryServiceEndpoints(did)).resolves.toMatchObject<
+      IDidServiceEndpoint[]
+    >([
+      {
+        id: `${did}#test-id-1`,
+        types: ['test-type-1'],
+        urls: ['test-url-1'],
+      },
+      {
+        id: `${did}#test-id-2`,
+        types: ['test-type-2'],
+        urls: ['test-url-2'],
+      },
+    ])
+    // await expect(
+    //   DidChain.queryServiceEndpoint(
+    //     DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
+    //     'test-id-1'
+    //   )
+    // ).resolves.toMatchObject<IDidServiceEndpoint>({
+    //   id: 'test-id-1',
+    //   types: ['test-type-1'],
+    //   urls: ['test-url-1'],
+    // })
   }, 30_000)
 
   it('fails to delete the DID using a different submitter than the one specified in the DID operation', async () => {
@@ -226,7 +268,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await expect(DidChain.queryById(didIdentifier)).resolves.toBeNull()
 }, 40_000)
 
-describe('DID migration', () => {
+describe.skip('DID migration', () => {
   it('migrates light DID with ed25519 auth key and encryption key', async () => {
     const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
       alg: SigningAlgorithms.Ed25519,
@@ -315,7 +357,7 @@ describe('DID migration', () => {
   })
 })
 
-describe('DID authorization', () => {
+describe.skip('DID authorization', () => {
   let didIdentifier: string
   let key: DidTypes.INewPublicKey
   let lastTxIndex = new BN(0)

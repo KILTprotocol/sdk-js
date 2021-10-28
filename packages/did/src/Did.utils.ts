@@ -247,7 +247,10 @@ export function encodeDidCreationOperation(
     newDelegationKey: delegationKey
       ? formatPublicKey(delegationKey)
       : undefined,
-    newServiceDetails: endpoints,
+    newServiceDetails: endpoints.map((service) => {
+      const { id, urls } = service
+      return { id, urls, serviceTypes: service.types }
+    }),
   }
   return new (registry.getOrThrow<DidCreationDetails>(
     'DidDidDetailsDidCreationDetails'

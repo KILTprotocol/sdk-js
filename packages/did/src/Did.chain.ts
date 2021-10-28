@@ -10,7 +10,7 @@
  * @module DID
  */
 
-import type { Option, Text } from '@polkadot/types'
+import type { Option } from '@polkadot/types'
 import type {
   IIdentity,
   SubmittableExtrinsic,
@@ -23,7 +23,7 @@ import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { Crypto } from '@kiltprotocol/utils'
 import type { Extrinsic, Hash } from '@polkadot/types/interfaces'
 import type { Codec } from '@polkadot/types/types'
-import { BN } from '@polkadot/util'
+import { BN, hexToString } from '@polkadot/util'
 import type {
   AuthenticationTxCreationInput,
   IDidCreationOptions,
@@ -67,10 +67,10 @@ export async function queryAllServicesEncoded(
   didIdentifier: IIdentity['address']
 ): Promise<IServiceEndpointChainRecordCodec[]> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const endpoints = await blockchain.api.query.did.serviceEndpoints.keys<
-    [Text, IServiceEndpointChainRecordCodec]
+  const endpoints = await blockchain.api.query.did.serviceEndpoints.entries<
+    Option<IServiceEndpointChainRecordCodec>
   >(didIdentifier)
-  return endpoints.map(({ args: [, serviceDetails] }) => serviceDetails)
+  return endpoints.map(([, value]) => value.unwrap())
 }
 
 function assembleKeyId(keyId: Codec, did: string): string {
@@ -132,10 +132,13 @@ function decodeServiceChainRecord(
   serviceDetails: IServiceEndpointChainRecordCodec,
   did: string
 ): IDidServiceEndpoint {
+  const decodedId = hexToString(serviceDetails.id.toString())
   return {
-    id: `${did}#${serviceDetails.id.toString()}`,
-    types: serviceDetails.serviceTypes.map((type) => type.toString()),
-    urls: serviceDetails.urls.map((url) => url.toString()),
+    id: `${did}#${decodedId}`,
+    types: serviceDetails.serviceTypes.map((type) =>
+      hexToString(type.toString())
+    ),
+    urls: serviceDetails.urls.map((url) => hexToString(url.toString())),
   }
 }
 
