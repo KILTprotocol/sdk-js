@@ -42,7 +42,8 @@ async function setup(): Promise<{
 
   // To get an attestation, we need an Attester
   // we can generate a new keypair:
-  const keyring = new Kilt.Utils.Keyring.Keyring({
+
+  const keyring = new Kilt.Utils.Keyring({
     // KILT has registered the ss58 prefix 38
     ss58Format: 38,
     type: 'ed25519',

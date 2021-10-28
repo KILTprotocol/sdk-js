@@ -27,7 +27,7 @@ async function main(): Promise<void> {
 
   /* 2. How to generate an Identity with light DIDs */
   // Initialize a keyring
-  const keyring = new Kilt.Utils.Keyring.Keyring({
+  const keyring = new Kilt.Utils.Keyring({
     ss58Format: 38,
     type: 'ed25519',
   })
