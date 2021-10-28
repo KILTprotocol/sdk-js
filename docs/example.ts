@@ -20,6 +20,7 @@ import type {
   IDidKeyDetails,
 } from '@kiltprotocol/sdk-js'
 import { KeyringPair } from '@polkadot/keyring/types'
+import { mnemonicGenerate } from '@polkadot/util-crypto'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
 const SEP = '_'
@@ -303,7 +304,7 @@ async function doVerification(
     )
   )
 
-  const verifierMnemonic = Kilt.Utils.UUID.generate()
+  const verifierMnemonic = mnemonicGenerate()
 
   const verifierLightDid = await Kilt.Did.createLocalDemoDidFromSeed(
     keystore,
@@ -376,12 +377,13 @@ async function doVerification(
   )
   const presentationMessage = (verifierSubmitClaimsMessageDec.body as ISubmitClaimsForCTypes)
     .content
+
   const verifierablePresentation = Kilt.AttestedClaim.fromAttestedClaim(
     presentationMessage[0]
   )
   const verified = await verifierablePresentation.verify()
 
-  console.log('Received claims: ', JSON.stringify(presentationMessage))
+  console.log('Received claims: ', JSON.stringify(presentationMessage[0]))
   console.log('All valid? ', verified)
 }
 

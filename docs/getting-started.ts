@@ -14,6 +14,7 @@ import type {
   IDidResolvedDetails,
   IDidKeyDetails,
 } from '@kiltprotocol/sdk-js'
+import { mnemonicGenerate } from '@polkadot/util-crypto'
 
 const NODE_URL = 'ws://127.0.0.1:9944'
 
@@ -33,7 +34,7 @@ async function main(): Promise<void> {
   // Initialize the demo keystore
   const keystore = new Kilt.Did.DemoKeystore()
   // Create a mnemonic seed
-  const generateClaimerMnemonic = Kilt.Utils.UUID.generate()
+  const generateClaimerMnemonic = mnemonicGenerate()
   // Generate a new keypair for authentication with the generated seed
   const claimerSigningKeypair = await keystore.generateKeypair({
     alg: Kilt.Did.SigningAlgorithms.Ed25519,
