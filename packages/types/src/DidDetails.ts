@@ -115,7 +115,7 @@ export interface IDidDetails {
    *
    * @param id The identifier of the service endpoint, without the DID prefix.
    */
-  getEndpointById(id: string): IDidServiceEndpoint | null
+  getEndpointById(id: string): IDidServiceEndpoint | undefined
   /**
    * Retrieves all the service endpoints matching a given type.
    *

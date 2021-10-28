@@ -5,13 +5,15 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 /**
  * @group unit/did
  */
 
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
-import type { IDidKeyDetails } from '@kiltprotocol/types'
+import type { IDidKeyDetails, IDidServiceEndpoint } from '@kiltprotocol/types'
 import { mapCallToKeyRelationship } from './FullDidDetails.utils'
 import { FullDidDetails, FullDidDetailsCreationOpts } from './FullDidDetails'
 
@@ -52,6 +54,18 @@ describe('functional tests', () => {
         '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
     },
   ]
+  const serviceEndpoints: IDidServiceEndpoint[] = [
+    {
+      id: `${did}#service-1`,
+      types: ['type-1'],
+      urls: ['url-1'],
+    },
+    {
+      id: `${did}#service-2`,
+      types: ['type-2'],
+      urls: ['url-2'],
+    },
+  ]
   const didDetails: FullDidDetailsCreationOpts = {
     did,
     keys,
@@ -60,6 +74,7 @@ describe('functional tests', () => {
       [KeyRelationship.keyAgreement]: [keys[1].id, keys[2].id],
       [KeyRelationship.assertionMethod]: [keys[3].id],
     },
+    serviceEndpoints,
     lastTxIndex: new BN(10),
   }
 
@@ -99,6 +114,28 @@ describe('functional tests', () => {
         },
       ]
     `)
+    expect(dd.getEndpoints()).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "id": "${did}#service-1",
+          "types": Array [
+            "type-1",
+          ],
+          "urls": Array [
+            "url-1",
+          ],
+        },
+        Object {
+          "id": "${did}#service-2",
+          "types": Array [
+            "type-2",
+          ],
+          "urls": Array [
+            "url-2",
+          ],
+        },
+      ]
+    `)
   })
 
   it('gets keys via role', () => {
@@ -106,11 +143,11 @@ describe('functional tests', () => {
     expect(dd.getKeyIds(KeyRelationship.authentication)).toEqual([keys[0].id])
     expect(dd.getKeys(KeyRelationship.authentication)).toEqual([keys[0]])
     expect(dd.getKeyIds(KeyRelationship.keyAgreement)).toEqual(
-      didDetails.keyRelationships[KeyRelationship.keyAgreement]
+      didDetails.keyRelationships![KeyRelationship.keyAgreement]
     )
     expect(
       dd.getKeys(KeyRelationship.keyAgreement).map((key) => key.id)
-    ).toEqual(didDetails.keyRelationships[KeyRelationship.keyAgreement])
+    ).toEqual(didDetails.keyRelationships![KeyRelationship.keyAgreement])
     expect(dd.getKeyIds(KeyRelationship.assertionMethod)).toEqual([keys[3].id])
 
     dd = new FullDidDetails({
@@ -121,6 +158,21 @@ describe('functional tests', () => {
       dd.getKeys(KeyRelationship.authentication).map((key) => key.id)
     ).toEqual([keys[3].id])
     expect(dd.getKeyIds('none')).toEqual(keys.slice(0, 3).map((key) => key.id))
+  })
+
+  it('get the rights service endpoints', () => {
+    const dd = new FullDidDetails(didDetails)
+    expect(dd.getEndpoints()).toEqual(serviceEndpoints)
+    expect(dd.getEndpointById(`${dd.did}#service-1`)).toEqual(
+      serviceEndpoints[0]
+    )
+    expect(dd.getEndpointById(`${dd.did}#service-2`)).toEqual(
+      serviceEndpoints[1]
+    )
+    expect(dd.getEndpointById(`${dd.did}#service-3`)).toBeUndefined()
+    expect(dd.getEndpointsByType('type-1')).toEqual([serviceEndpoints[0]])
+    expect(dd.getEndpointsByType('type-2')).toEqual([serviceEndpoints[1]])
+    expect(dd.getEndpointsByType('type-3')).toHaveLength(0)
   })
 
   it('returns the next nonce', () => {

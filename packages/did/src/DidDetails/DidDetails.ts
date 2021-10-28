@@ -35,7 +35,7 @@ export abstract class DidDetails implements IDidDetails {
   } = {}
 
   // A map from service endpoint ID to service endpoint details.
-  protected services: Map<string, IDidServiceEndpoint> = new Map()
+  public services: Map<string, IDidServiceEndpoint> = new Map()
 
   constructor(didUri: string, id: string, services: IDidServiceEndpoint[]) {
     this.didUri = didUri
@@ -73,8 +73,8 @@ export abstract class DidDetails implements IDidDetails {
     return [...this.keys.keys()]
   }
 
-  getEndpointById(id: string): IDidServiceEndpoint | null {
-    return this.services[id] || null
+  getEndpointById(id: string): IDidServiceEndpoint | undefined {
+    return this.services.get(id)
   }
 
   getEndpoints(): IDidServiceEndpoint[] {

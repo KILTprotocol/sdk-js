@@ -41,7 +41,6 @@ function errorCheck({
   did,
   keys,
   keyRelationships,
-  serviceEndpoints,
 }: Required<FullDidDetailsCreationOpts>): void {
   if (!did) {
     throw Error('did is required for FullDidDetails')
@@ -72,17 +71,6 @@ function errorCheck({
   )
   keyReferences.forEach((id) => {
     if (!keyIds.has(id)) throw new Error(`No key with id ${id} in "keys"`)
-  })
-
-  // Check service endpoints
-  serviceEndpoints.forEach((service) => {
-    try {
-      parseDidUrl(service.id)
-      throw new Error(
-        `Invalid service ID provided: ${service.id}. The service ID should be a simple identifier and not a complete DID URI.`
-      )
-      // eslint-disable-next-line no-empty
-    } catch {}
   })
 }
 
