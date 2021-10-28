@@ -260,6 +260,7 @@ export class Attestation implements IAttestation {
    * BlockchainUtils.signAndSendTx(authorizedExtrinsic, submitter);
    * ```
    */
+  /* istanbul ignore next */
   public async store(): Promise<SubmittableExtrinsic> {
     return store(this)
   }
@@ -281,6 +282,7 @@ export class Attestation implements IAttestation {
    * });
    * ```
    */
+  /* istanbul ignore next */
   public async revoke(maxDepth: number): Promise<SubmittableExtrinsic> {
     return revoke(this.claimHash, maxDepth)
   }
@@ -302,6 +304,7 @@ export class Attestation implements IAttestation {
    * });
    * ```
    */
+  /* istanbul ignore next */
   public async remove(maxDepth: number): Promise<SubmittableExtrinsic> {
     return remove(this.claimHash, maxDepth)
   }
@@ -319,6 +322,7 @@ export class Attestation implements IAttestation {
    * });
    * ```
    */
+  /* istanbul ignore next */
   public async reclaimDeposit(): Promise<SubmittableExtrinsic> {
     return reclaimDeposit(this.claimHash)
   }
