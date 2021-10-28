@@ -73,6 +73,7 @@ export class Attestation implements IAttestation {
    * );
    * ```
    */
+  /* istanbul ignore next */
   public static async revoke(
     claimHash: string,
     maxDepth: number
@@ -98,6 +99,7 @@ export class Attestation implements IAttestation {
    * });
    * ```
    */
+  /* istanbul ignore next */
   public static async remove(
     claimHash: string,
     maxDepth: number
@@ -121,6 +123,7 @@ export class Attestation implements IAttestation {
    * );
    * ```
    */
+  /* istanbul ignore next */
   public static async reclaimDeposit(
     claimHash: string
   ): Promise<SubmittableExtrinsic> {
@@ -172,6 +175,7 @@ export class Attestation implements IAttestation {
    * @param delegationId - The Id of the Delegation stored in [[Attestation]].
    * @returns A promise of either null if querying was not successful or the affiliated [[DelegationNode]].
    */
+  /* istanbul ignore next */
   public static async getDelegationDetails(
     delegationId: IAttestation['delegationId'] | null
   ): Promise<IDelegationHierarchyDetails | null> {
@@ -187,6 +191,7 @@ export class Attestation implements IAttestation {
     return delegationNode.getHierarchyDetails()
   }
 
+  /* istanbul ignore next */
   public async getDelegationDetails(): Promise<IDelegationHierarchyDetails | null> {
     return Attestation.getDelegationDetails(this.delegationId)
   }
