@@ -211,14 +211,11 @@ jobs:
           IMAGE_TAG: ${{ matrix.image }}
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker run -d --rm -p 9945:9945 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --dev --ws-port 9945 --ws-external
+          docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --dev --ws-port 9944 --ws-external
           sleep 5s
-      - name: run bundle test
-        run: |
-            yarn test:ci:bundle
-            sleep 5s
-      - name: cleanup
-        run: docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
+          yarn test:ci:bundle
+          sleep 5s
+          docker stop $(docker ps -f ancestor=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -q)
 
   run_example:
     runs-on: ubuntu-latest
