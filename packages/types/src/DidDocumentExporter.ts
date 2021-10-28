@@ -48,7 +48,7 @@ export type IDidDocument = {
   assertionMethod?: IDidPublicKeyId[]
   keyAgreement?: IDidPublicKeyId[]
   capabilityDelegation?: IDidPublicKeyId[]
-  serviceEndpoints?: IDidServiceEndpoint[]
+  service?: IDidServiceEndpoint[]
 }
 
 /**
