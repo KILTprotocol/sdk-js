@@ -11,7 +11,10 @@
 
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { SubscriptionPromise } from '@kiltprotocol/types'
-import { makeSubscriptionPromise } from './SubscriptionPromise'
+import {
+  makeSubscriptionPromise,
+  makeSubscriptionPromiseMulti,
+} from './SubscriptionPromise'
 
 const RESOLVE = 'resolve'
 const REJECT = 'reject'
@@ -48,4 +51,31 @@ it('rejects the promise', async () => {
   })
   subscription(REJECT)
   await expect(promise).rejects.toEqual('error')
+})
+describe('makeSubscriptionPromiseMulti', () => {
+  it('rejects promise dependent on each timeout', async () => {
+    const ALTERNATE_RESOLVE: SubscriptionPromise.Evaluator<string> = (value) =>
+      value === 'resolving'
+    const ALTERNATE_REJECT: SubscriptionPromise.Evaluator<string> = (value) =>
+      value === 'resolving' && 'error'
+    const { promises, subscription } = makeSubscriptionPromiseMulti([
+      {
+        resolveOn: RESOLVE_ON,
+        rejectOn: REJECT_ON,
+        timeout: 500,
+      },
+      {
+        resolveOn: ALTERNATE_RESOLVE,
+        rejectOn: REJECT_ON,
+      },
+      {
+        resolveOn: RESOLVE_ON,
+        rejectOn: ALTERNATE_REJECT,
+      },
+    ])
+    subscription('resolving')
+    await expect(promises[1]).resolves.toEqual('resolving')
+    await expect(promises[2]).rejects.toEqual('error')
+    await expect(promises[0]).rejects.toThrow(SDKErrors.ERROR_TIMEOUT())
+  })
 })
