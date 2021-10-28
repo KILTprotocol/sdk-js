@@ -74,7 +74,7 @@ export abstract class DidDetails implements IDidDetails {
   }
 
   getEndpointById(id: string): IDidServiceEndpoint | null {
-    return this.services[id]
+    return this.services[id] || null
   }
 
   getEndpoints(): IDidServiceEndpoint[] {

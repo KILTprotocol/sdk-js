@@ -41,6 +41,12 @@ function checkLightDidCreationOptions(
       throw new Error(
         `Invalid service ID provided: ${service.id}. The service ID should be a simple identifier and not a complete DID URI.`
       )
+      // A service ID cannot have a reserved ID that is used for key IDs.
+      if (service.id === 'authentication' || service.id === 'encryption') {
+        throw new Error(
+          `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
+        )
+      }
       // eslint-disable-next-line no-empty
     } catch {}
   })

@@ -419,6 +419,28 @@ export async function writeDidFromPublicKeys(
   return { extrinsic, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
 }
 
+export async function writeDidFromPublicKeysAndServices(
+  signer: KeystoreSigner,
+  submitter: IIdentity['address'],
+  publicKeys: PublicKeyRoleAssignment,
+  endpoints: IDidServiceEndpoint[]
+): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
+  const { [KeyRelationship.authentication]: authenticationKey } = publicKeys
+  if (!authenticationKey)
+    throw Error(`${KeyRelationship.authentication} key is required`)
+  const didIdentifier = encodeAddress(authenticationKey.publicKey, 38)
+  const extrinsic = await generateCreateTx({
+    signer,
+    submitter,
+    didIdentifier,
+    keys: publicKeys,
+    alg: getSignatureAlgForKeyType(authenticationKey.type),
+    signingPublicKey: authenticationKey.publicKey,
+    endpoints,
+  })
+  return { extrinsic, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
+}
+
 export function writeDidFromIdentity(
   identity: IIdentity,
   submitter: IIdentity['address']
@@ -510,5 +532,10 @@ export async function upgradeDid(
     }
   }
 
-  return writeDidFromPublicKeys(signer, submitter, newDidPublicKeys)
+  return writeDidFromPublicKeysAndServices(
+    signer,
+    submitter,
+    newDidPublicKeys,
+    lightDid.getEndpoints()
+  )
 }
