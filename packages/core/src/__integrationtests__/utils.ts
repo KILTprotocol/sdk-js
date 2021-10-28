@@ -1,7 +1,7 @@
 /* eslint-disable */
 
-import Keyring from '@polkadot/keyring'
-import { KeyringPair } from '@polkadot/keyring/types'
+import { Keyring } from '@kiltprotocol/utils'
+import type { KeyringPair } from '@kiltprotocol/types'
 import { randomAsU8a } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'
 import CType from '../ctype/CType'
