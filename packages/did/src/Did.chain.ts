@@ -10,7 +10,7 @@
  * @module DID
  */
 
-import type { Option } from '@polkadot/types'
+import type { Option, u32 } from '@polkadot/types'
 import type {
   IIdentity,
   SubmittableExtrinsic,
@@ -199,6 +199,14 @@ export async function queryServiceEndpoints(
   return encoded.map((e) => decodeServiceChainRecord(e, did))
 }
 
+export async function queryEndpointsCounts(did: string): Promise<number> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  const count = await blockchain.api.query.did.didEndpointsCount<u32>(
+    getIdentifierFromKiltDid(did)
+  )
+  return count.toNumber()
+}
+
 export async function queryLastTxIndex(did: string): Promise<BN> {
   const identifier = getIdentifierFromKiltDid(did)
   const encoded = await queryDidEncoded(identifier)
@@ -320,16 +328,30 @@ export async function getRemoveEndpointExtrinsic(
   return api.tx.did.removeServiceEndpoint(endpointId)
 }
 
-export async function getDeleteDidExtrinsic(): Promise<Extrinsic> {
+export async function getDeleteDidExtrinsic({
+  endpointsCount,
+  did,
+}: {
+  endpointsCount?: number
+  did?: string
+}): Promise<Extrinsic> {
+  if (!endpointsCount && !did) {
+    throw new Error('One of enpointsCount or did must be specified.')
+  }
+  const number = endpointsCount || (await queryEndpointsCounts(did!))
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.delete()
+  return api.tx.did.delete(number)
 }
 
 export async function getReclaimDepositExtrinsic(
-  identifier: IIdentity['address']
+  identifier: IIdentity['address'],
+  endpointsCount?: number
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.reclaimDeposit(identifier)
+  const number =
+    endpointsCount ||
+    (await queryEndpointsCounts(getKiltDidFromIdentifier(identifier!, 'full')))
+  return api.tx.did.reclaimDeposit(identifier, number)
 }
 
 // The block number can either be provided by the DID subject,

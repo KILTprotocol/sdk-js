@@ -45,7 +45,7 @@ beforeAll(async () => {
   paymentAccount = devAlice
 })
 
-describe.only('write and didDeleteTx', () => {
+describe('write and didDeleteTx', () => {
   let didIdentifier: string
   let key: DidTypes.INewPublicKey
   beforeAll(async () => {
@@ -75,7 +75,7 @@ describe.only('write and didDeleteTx', () => {
     ).rejects.toThrow()
   }, 30_000)
 
-  it.only('writes a new DID record to chain', async () => {
+  it('writes a new DID record to chain', async () => {
     const tx = await DidChain.generateCreateTx({
       didIdentifier,
       signer: keystore as KeystoreSigner<string>,
@@ -124,22 +124,39 @@ describe.only('write and didDeleteTx', () => {
         urls: ['test-url-2'],
       },
     ])
-    // await expect(
-    //   DidChain.queryServiceEndpoint(
-    //     DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
-    //     'test-id-1'
-    //   )
-    // ).resolves.toMatchObject<IDidServiceEndpoint>({
-    //   id: 'test-id-1',
-    //   types: ['test-type-1'],
-    //   urls: ['test-url-1'],
-    // })
+    await expect(
+      DidChain.queryServiceEndpoint(
+        DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
+        'test-id-1'
+      )
+    ).resolves.toMatchObject<IDidServiceEndpoint>({
+      id: `${did}#test-id-1`,
+      types: ['test-type-1'],
+      urls: ['test-url-1'],
+    })
+    // Test that the negative results are also properly returned
+    const emptyDid = DidUtils.getKiltDidFromIdentifier(
+      paymentAccount.address,
+      'full'
+    )
+    // Should be defined and have 0 elements
+    await expect(
+      DidChain.queryServiceEndpoints(emptyDid)
+    ).resolves.toBeDefined()
+    await expect(
+      DidChain.queryServiceEndpoints(emptyDid)
+    ).resolves.toHaveLength(0)
+    // Should return null
+    await expect(
+      DidChain.queryServiceEndpoint(emptyDid, 'non-existing-service-id')
+    ).resolves.toBeNull
   }, 30_000)
 
   it('fails to delete the DID using a different submitter than the one specified in the DID operation', async () => {
     const otherAccount = devBob
 
-    const call = await DidChain.getDeleteDidExtrinsic()
+    // 10 is an example value. It is not used here since we are testing the error
+    const call = await DidChain.getDeleteDidExtrinsic({ endpointsCount: 10 })
 
     const submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
@@ -161,13 +178,14 @@ describe.only('write and didDeleteTx', () => {
   })
 
   it('deletes DID from previous step', async () => {
+    const did = DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
     await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
       Partial<DidTypes.IDidChainRecordJSON>
     >({
       did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
     })
 
-    const call = await DidChain.getDeleteDidExtrinsic()
+    const call = await DidChain.getDeleteDidExtrinsic({ did })
 
     const submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
@@ -195,6 +213,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     alg: SigningAlgorithms.Ed25519,
   })
   const didIdentifier = encodeAddress(publicKey, 38)
+  const did = DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
   const key: DidTypes.INewPublicKey = { publicKey, type: alg }
 
   const tx = await DidChain.generateCreateTx({
@@ -254,6 +273,63 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
   })
 
+  // Add a new service endpoint
+  const newEndpoint: IDidServiceEndpoint = {
+    id: 'new-endpoint',
+    types: ['new-type'],
+    urls: ['new-url'],
+  }
+  const updateEndpointCall = await DidChain.getAddEndpointExtrinsic(newEndpoint)
+
+  const tx3 = await DidChain.generateDidAuthenticatedTx({
+    didIdentifier,
+    txCounter: 2,
+    call: updateEndpointCall,
+    signer: keystore as KeystoreSigner<string>,
+    signingPublicKey: newKeyDetails.publicKey,
+    alg: newKeyDetails.type,
+    submitter: paymentAccount.address,
+  })
+  await expect(
+    BlockchainUtils.signAndSubmitTx(tx3, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+  ).resolves.not.toThrow()
+  await expect(
+    DidChain.queryServiceEndpoint(did, 'new-endpoint')
+  ).resolves.toMatchObject<IDidServiceEndpoint>({
+    ...newEndpoint,
+    id: `${did}#${newEndpoint.id}`,
+  })
+
+  // Delete the added service endpoint
+  const removeEndpointCall = await DidChain.getRemoveEndpointExtrinsic(
+    newEndpoint.id
+  )
+
+  const tx4 = await DidChain.generateDidAuthenticatedTx({
+    didIdentifier,
+    txCounter: 3,
+    call: removeEndpointCall,
+    signer: keystore as KeystoreSigner<string>,
+    signingPublicKey: newKeyDetails.publicKey,
+    alg: newKeyDetails.type,
+    submitter: paymentAccount.address,
+  })
+
+  await expect(
+    BlockchainUtils.signAndSubmitTx(tx4, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+      reSign: true,
+    })
+  ).resolves.not.toThrow()
+
+  // There should not be any endpoint with the given ID now.
+  await expect(
+    DidChain.queryServiceEndpoint(did, 'new-endpoint')
+  ).resolves.toBeNull()
+
   // Claim the deposit back
   const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
     didIdentifier
@@ -266,9 +342,11 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   ).resolves.not.toThrow()
   // Verify that the DID has been deleted
   await expect(DidChain.queryById(didIdentifier)).resolves.toBeNull()
-}, 40_000)
+  await expect(DidChain.queryServiceEndpoints(did)).resolves.toHaveLength(0)
+  await expect(DidChain.queryEndpointsCounts(did)).resolves.toBe(0)
+}, 80_000)
 
-describe.skip('DID migration', () => {
+describe('DID migration', () => {
   it('migrates light DID with ed25519 auth key and encryption key', async () => {
     const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
       alg: SigningAlgorithms.Ed25519,
@@ -357,7 +435,7 @@ describe.skip('DID migration', () => {
   })
 })
 
-describe.skip('DID authorization', () => {
+describe('DID authorization', () => {
   let didIdentifier: string
   let key: DidTypes.INewPublicKey
   let lastTxIndex = new BN(0)
@@ -425,7 +503,7 @@ describe.skip('DID authorization', () => {
     await expect(ctype.verifyStored()).resolves.toEqual(true)
   }, 30_000)
 
-  it.skip('authorizes batch with DID signature', async () => {
+  it('authorizes batch with DID signature', async () => {
     const ctype1 = CType.fromSchema({
       title: UUID.generate(),
       properties: {},
@@ -463,7 +541,8 @@ describe.skip('DID authorization', () => {
   }, 30_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
-    const deleteCall = await DidChain.getDeleteDidExtrinsic()
+    const did = DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
+    const deleteCall = await DidChain.getDeleteDidExtrinsic({ did })
     const tx = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
       txCounter: lastTxIndex.addn(1),
