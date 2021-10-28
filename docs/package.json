@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/docs",
-  "version": "0.24.0-3",
+  "version": "0.24.0-7",
   "description": "",
   "scripts": {
     "clean": "rimraf ./lib",

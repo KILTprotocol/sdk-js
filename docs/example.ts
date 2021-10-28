@@ -135,10 +135,29 @@ async function setup(): Promise<{
     'wish rather clinic rather connect culture frown like quote effort cart faculty'
 
   // Create a light DID from the generated authentication key.
-  const claimerLightDid = await Kilt.Did.createLocalDemoDidFromSeed(
-    keystore,
-    claimerMnemonic
-  )
+  const claimerSigningKeypair = await keystore.generateKeypair({
+    alg: Kilt.Did.SigningAlgorithms.Ed25519,
+    seed: claimerMnemonic,
+  })
+  const claimerEncryptionKeypair = await keystore.generateKeypair({
+    alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
+    seed: claimerMnemonic,
+  })
+  // Create a light DID from the generated authentication key.
+  const claimerLightDid = new Kilt.Did.LightDidDetails({
+    authenticationKey: {
+      publicKey: claimerSigningKeypair.publicKey,
+      type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
+        claimerSigningKeypair.alg
+      ),
+    },
+    encryptionKey: {
+      publicKey: claimerEncryptionKeypair.publicKey,
+      type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
+        claimerEncryptionKeypair.alg
+      ),
+    },
+  })
 
   // At this point the generated Identity has no tokens.
   // If you want to interact with the blockchain, you will have to get some.
@@ -306,10 +325,29 @@ async function doVerification(
 
   const verifierMnemonic = mnemonicGenerate()
 
-  const verifierLightDid = await Kilt.Did.createLocalDemoDidFromSeed(
-    keystore,
-    verifierMnemonic
-  )
+  const verifierSigningKeypair = await keystore.generateKeypair({
+    alg: Kilt.Did.SigningAlgorithms.Ed25519,
+    seed: verifierMnemonic,
+  })
+  const verifierEncryptionKeypair = await keystore.generateKeypair({
+    alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
+    seed: verifierMnemonic,
+  })
+  // Create a light DID from the generated authentication key.
+  const verifierLightDid = new Kilt.Did.LightDidDetails({
+    authenticationKey: {
+      publicKey: verifierSigningKeypair.publicKey,
+      type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
+        verifierSigningKeypair.alg
+      ),
+    },
+    encryptionKey: {
+      publicKey: verifierEncryptionKeypair.publicKey,
+      type: Kilt.Did.DemoKeystore.getKeypairTypeForAlg(
+        verifierEncryptionKeypair.alg
+      ),
+    },
+  })
 
   const claimerKeyAgreement = claimerLightDid.getKeys(
     KeyRelationship.keyAgreement
@@ -345,11 +383,13 @@ async function doVerification(
     .content[0]
   console.log('claimer checks the ctypeHash matches', ctypeHash)
 
+  const challenge = Kilt.Utils.UUID.generate()
+
   const presentation = await credential.createPresentation({
     signer: keystore,
     claimerDid: claimerLightDid,
+    challenge,
   })
-
   const claimerSubmitClaimsMessage = new Kilt.Message(
     {
       type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
@@ -381,8 +421,7 @@ async function doVerification(
   const verifierablePresentation = Kilt.AttestedClaim.fromAttestedClaim(
     presentationMessage[0]
   )
-  const verified = await verifierablePresentation.verify()
-
+  const verified = await verifierablePresentation.verify({ challenge })
   console.log('Received claims: ', JSON.stringify(presentationMessage[0]))
   console.log('All valid? ', verified)
 }
