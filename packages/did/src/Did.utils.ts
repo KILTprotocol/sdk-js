@@ -359,6 +359,7 @@ export async function verifyDidSignature({
   keyRelationship?: VerificationKeyRelationship
 }): Promise<VerificationResult> {
   const { identifier, type, version } = parseDidUrl(keyId)
+
   // If the identifier could not be parsed, it is a malformed URL
   if (!identifier) {
     throw new Error(
@@ -366,7 +367,7 @@ export async function verifyDidSignature({
     )
   }
   // Resolve DID details regardless of the DID type
-  const did = getKiltDidFromIdentifier(identifier, type, version)
+  const did = getKiltDidFromIdentifier(keyId, type, version)
   const details = await resolver.resolveDoc(did)
   // If no details can be resolved, it is clearly an error, so we return false
   if (!details) {
