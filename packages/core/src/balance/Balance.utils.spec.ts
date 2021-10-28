@@ -168,12 +168,12 @@ describe('balanceNumberToString', () => {
     expect(() =>
       balanceNumberToString(({ toString: 'blurt' } as unknown) as BN)
     ).toThrowError()
-    expect(() => balanceNumberToString({} as BigInt)).toThrowError()
+    expect(() => balanceNumberToString({} as bigint)).toThrowError()
     expect(() =>
-      balanceNumberToString(([] as unknown) as BigInt)
+      balanceNumberToString(([] as unknown) as bigint)
     ).toThrowError()
     expect(() =>
-      balanceNumberToString(({ toLocaleString: 'blurt' } as unknown) as BigInt)
+      balanceNumberToString(({ toLocaleString: 'blurt' } as unknown) as bigint)
     ).toThrowError()
   })
 })
@@ -332,11 +332,12 @@ describe('fromFemtoKilt', () => {
     )
   })
   it('handles invalid input', () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(() => fromFemtoKilt(undefined!)).toThrowError()
     expect(() => fromFemtoKilt({} as BN)).toThrowError()
     expect(() => fromFemtoKilt(([] as unknown) as BN)).toThrowError()
-    expect(() => fromFemtoKilt({} as BigInt)).toThrowError()
-    expect(() => fromFemtoKilt(([] as unknown) as BigInt)).toThrowError()
+    expect(() => fromFemtoKilt({} as bigint)).toThrowError()
+    expect(() => fromFemtoKilt(([] as unknown) as bigint)).toThrowError()
   })
 })
 
