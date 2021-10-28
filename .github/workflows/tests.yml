@@ -211,7 +211,7 @@ jobs:
           IMAGE_TAG: ${{ matrix.image }}
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker run -d --rm -p 9944:9944 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --dev --ws-port 9944 --ws-external
+          docker run -d --rm -p 9945:9945 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --dev --ws-port 9945 --ws-external
           sleep 5s
       - name: run bundle test
         run: |

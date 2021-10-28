@@ -22,7 +22,7 @@
     <script async>
       // init sdk kilt config and connect to chain
       const keystore = new Did.DemoKeystore()
-      const init = kilt.init({ address: 'ws://127.0.0.1:9944' })
+      const init = kilt.init({ address: 'ws://127.0.0.1:9945' })
       const blockchain = init.then(() => kilt.connect())
 
       blockchain.then((chain) => {
