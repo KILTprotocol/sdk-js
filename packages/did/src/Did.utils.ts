@@ -14,6 +14,7 @@ import type {
   KeystoreSigner,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
+  IDidResolvedDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
@@ -358,7 +359,7 @@ export async function verifyDidSignature({
   resolver?: IDidResolver
   keyRelationship?: VerificationKeyRelationship
 }): Promise<VerificationResult> {
-  const { identifier, type, version } = parseDidUrl(keyId)
+  const { identifier } = parseDidUrl(keyId)
 
   // If the identifier could not be parsed, it is a malformed URL
   if (!identifier) {
@@ -367,8 +368,7 @@ export async function verifyDidSignature({
     )
   }
   // Resolve DID details regardless of the DID type
-  const did = getKiltDidFromIdentifier(keyId, type, version)
-  const details = await resolver.resolveDoc(did)
+  const details = (await resolver.resolve(keyId)) as IDidResolvedDetails | null
   // If no details can be resolved, it is clearly an error, so we return false
   if (!details) {
     return {
