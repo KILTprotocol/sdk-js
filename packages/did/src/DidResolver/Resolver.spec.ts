@@ -12,7 +12,7 @@
  */
 
 import { TypeRegistry } from '@kiltprotocol/chain-helpers'
-import { KeyRelationship } from '@kiltprotocol/types'
+import { IDidServiceEndpoint, KeyRelationship } from '@kiltprotocol/types'
 import type { IDidResolvedDetails } from '@kiltprotocol/types'
 import { Keyring } from '@polkadot/api'
 import type { KeyringPair } from '@polkadot/keyring/types'
@@ -49,12 +49,30 @@ jest.mock('../Did.chain', () => {
       lastTxCounter: TypeRegistry.createType('u64', 10),
     })
   )
+  const queryServiceEndpoint = jest.fn(
+    async (
+      did: string,
+      serviceId: string
+    ): Promise<IDidServiceEndpoint | null> => ({
+      id: `${did}#${serviceId}`,
+      types: [`type-${serviceId}`],
+      urls: [`url-${serviceId}`],
+    })
+  )
+  const queryServiceEndpoints = jest.fn(
+    async (did: string): Promise<IDidServiceEndpoint[]> => [
+      (await queryServiceEndpoint(did, 'id-1')) as IDidServiceEndpoint,
+      (await queryServiceEndpoint(did, 'id-2')) as IDidServiceEndpoint,
+    ]
+  )
   return {
     queryByDID,
     queryById: jest.fn(
       async (id: string): Promise<IDidChainRecordJSON | null> =>
         queryByDID(`did:kilt:${id}`)
     ),
+    queryServiceEndpoint,
+    queryServiceEndpoints,
   }
 })
 
@@ -93,6 +111,27 @@ it('has the right keys', async () => {
   ])
 })
 
+it('has the right service endpoints', async () => {
+  const didRecord = await DefaultResolver.resolveDoc(fullDid)
+  expect(didRecord?.details.getEndpoints()).toStrictEqual([
+    {
+      id: `${fullDid}#id-1`,
+      types: ['type-id-1'],
+      urls: ['url-id-1'],
+    },
+    {
+      id: `${fullDid}#id-2`,
+      types: ['type-id-2'],
+      urls: ['url-id-2'],
+    },
+  ])
+  expect(didRecord?.details.getEndpointById(`${fullDid}#id-1`)).toStrictEqual({
+    id: `${fullDid}#id-1`,
+    types: ['type-id-1'],
+    urls: ['url-id-1'],
+  })
+})
+
 const mnemonic = 'testMnemonic'
 
 describe('Light DID tests', () => {
@@ -100,6 +139,7 @@ describe('Light DID tests', () => {
   let keypair: KeyringPair
   let publicAuthKey: INewPublicKey
   let encryptionKey: INewPublicKey
+  let serviceEndpoints: IDidServiceEndpoint[]
 
   it('Correctly resolves a light DID created with only an ed25519 authentication key', async () => {
     keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
@@ -143,7 +183,7 @@ describe('Light DID tests', () => {
     )
   })
 
-  it('Correctly resolves a light DID created with only an authentication and an encryption key', async () => {
+  it('Correctly resolves a light DID created with an authentication, an encryption key, and some service endpoints', async () => {
     keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
     publicAuthKey = {
       publicKey: keypair.publicKey,
@@ -155,9 +195,27 @@ describe('Light DID tests', () => {
       ),
       type: 'x25519',
     }
+    serviceEndpoints = [
+      {
+        id: 'id-1',
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+      {
+        id: 'id-2',
+        types: ['type-2'],
+        urls: ['url-2'],
+      },
+      {
+        id: 'id-3',
+        types: ['type-3'],
+        urls: ['url-3'],
+      },
+    ]
     const lightDID = new LightDidDetails({
       authenticationKey: publicAuthKey,
       encryptionKey,
+      serviceEndpoints,
     })
     const resolutionResult = (await DefaultResolver.resolve(
       lightDID.did
@@ -177,5 +235,23 @@ describe('Light DID tests', () => {
     expect(derivedEncryptionPublicKey!.publicKeyHex).toEqual(
       '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     )
+    const derivedServiceEndpoints = resolutionResult.details.getEndpoints()
+    expect(derivedServiceEndpoints).toStrictEqual([
+      {
+        id: `${lightDID.did}#id-1`,
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+      {
+        id: `${lightDID.did}#id-2`,
+        types: ['type-2'],
+        urls: ['url-2'],
+      },
+      {
+        id: `${lightDID.did}#id-3`,
+        types: ['type-3'],
+        urls: ['url-3'],
+      },
+    ])
   })
 })

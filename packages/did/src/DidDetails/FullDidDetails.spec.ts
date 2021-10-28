@@ -80,8 +80,8 @@ describe('functional tests', () => {
 
   it('creates FullDidDetails', () => {
     const dd = new FullDidDetails(didDetails)
-    expect(dd.did).toEqual(did)
-    expect(dd.identifier).toEqual(identifier)
+    expect(dd.did).toStrictEqual(did)
+    expect(dd.identifier).toStrictEqual(identifier)
     expect(dd.getKeys()).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -140,15 +140,19 @@ describe('functional tests', () => {
 
   it('gets keys via role', () => {
     let dd = new FullDidDetails(didDetails)
-    expect(dd.getKeyIds(KeyRelationship.authentication)).toEqual([keys[0].id])
-    expect(dd.getKeys(KeyRelationship.authentication)).toEqual([keys[0]])
-    expect(dd.getKeyIds(KeyRelationship.keyAgreement)).toEqual(
+    expect(dd.getKeyIds(KeyRelationship.authentication)).toStrictEqual([
+      keys[0].id,
+    ])
+    expect(dd.getKeys(KeyRelationship.authentication)).toStrictEqual([keys[0]])
+    expect(dd.getKeyIds(KeyRelationship.keyAgreement)).toStrictEqual(
       didDetails.keyRelationships![KeyRelationship.keyAgreement]
     )
     expect(
       dd.getKeys(KeyRelationship.keyAgreement).map((key) => key.id)
-    ).toEqual(didDetails.keyRelationships![KeyRelationship.keyAgreement])
-    expect(dd.getKeyIds(KeyRelationship.assertionMethod)).toEqual([keys[3].id])
+    ).toStrictEqual(didDetails.keyRelationships![KeyRelationship.keyAgreement])
+    expect(dd.getKeyIds(KeyRelationship.assertionMethod)).toStrictEqual([
+      keys[3].id,
+    ])
 
     dd = new FullDidDetails({
       ...didDetails,
@@ -156,38 +160,40 @@ describe('functional tests', () => {
     })
     expect(
       dd.getKeys(KeyRelationship.authentication).map((key) => key.id)
-    ).toEqual([keys[3].id])
-    expect(dd.getKeyIds('none')).toEqual(keys.slice(0, 3).map((key) => key.id))
+    ).toStrictEqual([keys[3].id])
+    expect(dd.getKeyIds('none')).toStrictEqual(
+      keys.slice(0, 3).map((key) => key.id)
+    )
   })
 
   it('get the rights service endpoints', () => {
     const dd = new FullDidDetails(didDetails)
-    expect(dd.getEndpoints()).toEqual(serviceEndpoints)
-    expect(dd.getEndpointById(`${dd.did}#service-1`)).toEqual(
+    expect(dd.getEndpoints()).toStrictEqual(serviceEndpoints)
+    expect(dd.getEndpointById(`${dd.did}#service-1`)).toStrictEqual(
       serviceEndpoints[0]
     )
-    expect(dd.getEndpointById(`${dd.did}#service-2`)).toEqual(
+    expect(dd.getEndpointById(`${dd.did}#service-2`)).toStrictEqual(
       serviceEndpoints[1]
     )
     expect(dd.getEndpointById(`${dd.did}#service-3`)).toBeUndefined()
-    expect(dd.getEndpointsByType('type-1')).toEqual([serviceEndpoints[0]])
-    expect(dd.getEndpointsByType('type-2')).toEqual([serviceEndpoints[1]])
+    expect(dd.getEndpointsByType('type-1')).toStrictEqual([serviceEndpoints[0]])
+    expect(dd.getEndpointsByType('type-2')).toStrictEqual([serviceEndpoints[1]])
     expect(dd.getEndpointsByType('type-3')).toHaveLength(0)
   })
 
   it('returns the next nonce', () => {
     let dd = new FullDidDetails(didDetails)
-    expect(dd.getNextTxIndex().toString()).toEqual(
+    expect(dd.getNextTxIndex().toString()).toStrictEqual(
       didDetails.lastTxIndex.addn(1).toString()
     )
-    expect(dd.getNextTxIndex().toString()).toEqual(
+    expect(dd.getNextTxIndex().toString()).toStrictEqual(
       didDetails.lastTxIndex.addn(2).toString()
     )
     dd = new FullDidDetails(didDetails)
-    expect(dd.getNextTxIndex(false).toString()).toEqual(
+    expect(dd.getNextTxIndex(false).toString()).toStrictEqual(
       didDetails.lastTxIndex.addn(1).toString()
     )
-    expect(dd.getNextTxIndex(false).toString()).toEqual(
+    expect(dd.getNextTxIndex(false).toString()).toStrictEqual(
       didDetails.lastTxIndex.addn(1).toString()
     )
   })
