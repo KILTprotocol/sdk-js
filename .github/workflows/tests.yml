@@ -174,7 +174,7 @@ jobs:
         required: ['optional']
         include:
           - image: 'latest-develop'
-            required: 'optional'
+            required: 'required'
 
     continue-on-error: ${{ matrix.required == 'optional' }}
     steps:
@@ -200,8 +200,6 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16.x'
-      - run: yarn install
-      - run: yarn build
       - run: basename /packages/sdk-js/dist/
       - name: prepare bundle test
         timeout-minutes: 60
