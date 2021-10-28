@@ -296,6 +296,7 @@ export class RequestForAttestation implements IRequestForAttestation {
     return verified
   }
 
+  /* istanbul ignore next */
   public async verifySignature(
     resolverOpts: {
       resolver?: IDidResolver
@@ -337,6 +338,7 @@ export class RequestForAttestation implements IRequestForAttestation {
     return this.addSignature(signature, keyId, challenge)
   }
 
+  /* istanbul ignore next */
   public async signWithKey(
     signer: KeystoreSigner<string>,
     key: IDidKeyDetails,
