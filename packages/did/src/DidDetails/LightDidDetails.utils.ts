@@ -16,6 +16,7 @@ const SERVICES_KEY_MAP_KEY = 's'
  *
  * @param root0
  * @param root0.encryptionKey
+ * @param root0.serviceEndpoints
  * @returns The Base64-encoded and CBOR-serialized off-chain DID optional details.
  */
 export function serializeAndEncodeAdditionalLightDidDetails({

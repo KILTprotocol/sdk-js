@@ -12,7 +12,11 @@
  */
 
 import { TypeRegistry } from '@kiltprotocol/chain-helpers'
-import { IDidServiceEndpoint, KeyRelationship, KeyringPair } from '@kiltprotocol/types'
+import {
+  IDidServiceEndpoint,
+  KeyRelationship,
+  KeyringPair,
+} from '@kiltprotocol/types'
 import type { IDidResolvedDetails } from '@kiltprotocol/types'
 import { Keyring } from '@kiltprotocol/utils'
 import { hexToU8a, u8aToHex } from '@polkadot/util'
