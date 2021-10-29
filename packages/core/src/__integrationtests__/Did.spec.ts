@@ -30,9 +30,8 @@ import {
   IDidServiceEndpoint,
   KeyringPair,
   KeystoreSigner,
-  IDidKeyDetails,
 } from '@kiltprotocol/types'
-import { BN, u8aToHex } from '@polkadot/util'
+import { BN } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
 
 import { CType } from '../ctype'
@@ -181,7 +180,7 @@ describe('write and didDeleteTx', () => {
 
     submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: 2,
+      txCounter: 1,
       call,
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
@@ -212,7 +211,7 @@ describe('write and didDeleteTx', () => {
 
     const submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: 3,
+      txCounter: 1,
       call,
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
@@ -504,23 +503,15 @@ describe('DID migration', () => {
     const details = await DidChain.queryDidDetails(did)
 
     expect(details).not.toBeNull()
+    expect(details?.authenticationKey).toBeDefined()
     expect(details?.keyAgreementKeys).toHaveLength(1)
-    expect(details?.keyAgreementKeys[0]).toMatchObject<Partial<IDidKeyDetails>>(
-      {
-        controller: did,
-        publicKeyHex: u8aToHex(didEncryptionKeyDetails.publicKey),
-        type: 'x25519',
-      }
-    )
     // The returned service endpoints will have the initial ID, prepended with the full DID identifier.
     await expect(DidChain.queryServiceEndpoints(did)).resolves.toMatchObject<
       IDidServiceEndpoint[]
     >([
       {
         ...serviceEndpoints[0],
-        id: `${DidUtils.getIdentifierFromKiltDid(did)}#${
-          serviceEndpoints[0].id
-        }`,
+        id: `${did}#${serviceEndpoints[0].id}`,
       },
     ])
 

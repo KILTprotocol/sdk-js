@@ -64,6 +64,7 @@ export async function writeNewDidFromDidDetails(
     didIdentifier: getIdentifierFromKiltDid(didDetails.did),
     submitter,
     keys,
+    endpoints: didDetails.getEndpoints(),
   })
 }
 

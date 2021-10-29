@@ -531,6 +531,11 @@ export async function upgradeDid(
     signer,
     submitter,
     newDidPublicKeys,
-    lightDid.getEndpoints()
+    lightDid.getEndpoints().map((service) => {
+      // We are sure a fragment exists.
+      const id = parseDidUrl(service.id).fragment as string
+      // We remove the service ID prefix (did:light:...) before writing it on chain.
+      return { ...service, id }
+    })
   )
 }
