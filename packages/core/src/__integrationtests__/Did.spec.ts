@@ -321,7 +321,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     })
   ).resolves.not.toThrow()
   await expect(
-    DidChain.queryServiceEndpoint(`${did}#new-endpoint`)
+    DidChain.queryServiceEndpoint(`${did}#${newEndpoint.id}`)
   ).resolves.toMatchObject<IDidServiceEndpoint>({
     ...newEndpoint,
     id: `${did}#${newEndpoint.id}`,
@@ -351,7 +351,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // There should not be any endpoint with the given ID now.
   await expect(
-    DidChain.queryServiceEndpoint(`${did}#new-endpoint`)
+    DidChain.queryServiceEndpoint(`${did}#${newEndpoint.id}`)
   ).resolves.toBeNull()
 
   // Claim the deposit back
@@ -511,7 +511,9 @@ describe('DID migration', () => {
     ).resolves.toMatchObject<IDidServiceEndpoint[]>([
       {
         ...serviceEndpoints[0],
-        id: `${DidUtils.getIdentifierFromKiltDid(did)}#serviceEndpoints[0].id`,
+        id: `${DidUtils.getIdentifierFromKiltDid(did)}#${
+          serviceEndpoints[0].id
+        }`,
       },
     ])
 

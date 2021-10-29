@@ -63,8 +63,7 @@ describe('Messaging', () => {
       },
       resolveKey,
       resolveDoc,
-      resolveServiceEndpoint: (_didUri: string) => Promise.resolve(null),
-    }
+    } as IDidResolver
   })
 
   it('verify message encryption and signing', async () => {

@@ -58,26 +58,24 @@ describe('Claim', () => {
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
-  const mockResolver: IDidResolver = {
-    resolve: async (didUri: string) => {
-      if (didUri === claimerIdentity.did) {
-        return { details: claimerIdentity }
+  const mockResolver: IDidResolver = (() => {
+    const resolve = async (didUri: string) => {
+      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+      const didWithoutFragment = didUri.split('#')[0]
+      switch (didWithoutFragment) {
+        case claimerIdentity.did:
+          return { details: claimerIdentity }
+        case attesterIdentity.did:
+          return { details: attesterIdentity }
+        default:
+          return null
       }
-      if (didUri === attesterIdentity.did) {
-        return { details: attesterIdentity }
-      }
-      return null
-    },
-    resolveDoc: async (didUri: string) => {
-      if (didUri === claimerIdentity.did) {
-        return { details: claimerIdentity }
-      }
-      if (didUri === attesterIdentity.did) {
-        return { details: attesterIdentity }
-      }
-      return null
-    },
-  } as IDidResolver
+    }
+    return {
+      resolve,
+      resolveDoc: resolve,
+    } as IDidResolver
+  })()
 
   beforeAll(async () => {
     keystore = new DemoKeystore()
