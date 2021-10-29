@@ -503,7 +503,7 @@ describe('DID authorization', () => {
     await expect(ctype.verifyStored()).resolves.toEqual(true)
   }, 30_000)
 
-  it('authorizes batch with DID signature', async () => {
+  it.skip('authorizes batch with DID signature', async () => {
     const ctype1 = CType.fromSchema({
       title: UUID.generate(),
       properties: {},
