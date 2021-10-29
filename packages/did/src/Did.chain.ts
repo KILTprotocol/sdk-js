@@ -17,6 +17,7 @@ import type {
   IDidKeyDetails,
   IDidServiceEndpoint,
   KeystoreSigningOptions,
+  IDidDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
@@ -37,48 +38,67 @@ import {
   encodeDidAuthorizedCallOperation,
   encodeDidCreationOperation,
   getKiltDidFromIdentifier,
-  getIdentifierFromKiltDid,
   formatPublicKey,
   encodeServiceEndpoint,
+  parseDidUrl,
 } from './Did.utils'
 
-// ### QUERYING
+// ### RAW QUERYING (lowest layer)
 
+// Query a full DID given the identifier (a KILT address for v1).
+// Interacts with the Did storage map.
 export async function queryDidEncoded(
   didIdentifier: IIdentity['address']
 ): Promise<Option<IDidChainRecordCodec>> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.query.did.did<Option<IDidChainRecordCodec>>(
-    didIdentifier
-  )
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.query.did.did<Option<IDidChainRecordCodec>>(didIdentifier)
 }
 
+// Query a DID service given the DID identifier and the service ID.
+// Interacts with the ServiceEndpoints storage double map.
 export async function queryServiceEncoded(
   didIdentifier: IIdentity['address'],
   serviceId: IDidServiceEndpoint['id']
 ): Promise<Option<IServiceEndpointChainRecordCodec>> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  return blockchain.api.query.did.serviceEndpoints<
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.query.did.serviceEndpoints<
     Option<IServiceEndpointChainRecordCodec>
   >(didIdentifier, serviceId)
 }
 
+// Query all services for a DID given the DID identifier.
+// Interacts with the ServiceEndpoints storage double map.
 export async function queryAllServicesEncoded(
   didIdentifier: IIdentity['address']
 ): Promise<IServiceEndpointChainRecordCodec[]> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const endpoints = await blockchain.api.query.did.serviceEndpoints.entries<
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const endpoints = await api.query.did.serviceEndpoints.entries<
     Option<IServiceEndpointChainRecordCodec>
   >(didIdentifier)
   return endpoints.map(([, value]) => value.unwrap())
 }
 
-function assembleKeyId(keyId: Codec, did: string): string {
+// Query the # of services stored under a DID without fetching all the services.
+// Interacts with the DidEndpointsCount storage map.
+export async function queryEndpointsCountsEncoded(
+  didIdentifier: IIdentity['address']
+): Promise<u32> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.query.did.didEndpointsCount<u32>(didIdentifier)
+}
+
+// ### DECODED QUERYING (builds on top of raw querying)
+
+// This should not be part of this layer, as it has knowledge of DID URI.
+// This level should only be concerned with IDs.
+// Building DID URIs from IDs should be a concern of a higher level, so
+// we might want to refactor this in the future when time pressure is off.
+function assembleKeyId(keyId: Codec, did: IDidDetails['did']): string {
   return `${did}#${keyId.toHex()}`
 }
 
 function decodeDidPublicKeyDetails(
-  did: string,
+  did: IDidDetails['did'],
   keyId: Hash,
   keyDetails: DidPublicKeyDetails
 ): IDidKeyDetails {
@@ -92,9 +112,10 @@ function decodeDidPublicKeyDetails(
   }
 }
 
+// Same reasoning as `assembleKeyId`.
 function decodeDidChainRecord(
   didDetail: IDidChainRecordCodec,
-  did: string
+  did: IDidDetails['did']
 ): IDidChainRecordJSON {
   const publicKeys: IDidKeyDetails[] = Array.from(
     didDetail.publicKeys.entries()
@@ -128,9 +149,10 @@ function decodeDidChainRecord(
   return didRecord
 }
 
+// Same reasoning as `assembleKeyId`.
 function decodeServiceChainRecord(
   serviceDetails: IServiceEndpointChainRecordCodec,
-  did: string
+  did: IDidDetails['did']
 ): IDidServiceEndpoint {
   const decodedId = hexToString(serviceDetails.id.toString())
   return {
@@ -142,76 +164,105 @@ function decodeServiceChainRecord(
   }
 }
 
-export async function queryById(
+async function queryById(
   didIdentifier: IIdentity['address']
 ): Promise<IDidChainRecordJSON | null> {
   const result = await queryDidEncoded(didIdentifier)
-  if (result.isSome) {
-    return decodeDidChainRecord(
-      result.unwrap(),
-      getKiltDidFromIdentifier(didIdentifier, 'full')
+  if (result.isNone) {
+    return null
+  }
+  return decodeDidChainRecord(
+    result.unwrap(),
+    getKiltDidFromIdentifier(didIdentifier, 'full')
+  )
+}
+
+// Query full DID details given the DID URI.
+export async function queryDidDetails(
+  didUri: IDidDetails['did']
+): Promise<IDidChainRecordJSON | null> {
+  const { identifier, fragment } = parseDidUrl(didUri)
+  if (fragment) {
+    throw new Error(`The provided URI ${didUri} must not contain any fragment.`)
+  }
+  return queryById(identifier)
+}
+
+// Query a given key given the DID identifier and the key ID.
+export async function queryDidKey(
+  keyUri: IDidKeyDetails['id']
+): Promise<IDidKeyDetails | null> {
+  const { identifier, fragment } = parseDidUrl(keyUri)
+  if (!fragment) {
+    throw new Error(
+      `The provided URI ${keyUri} does not contain a valid fragment for key ID.`
     )
   }
-  return null
-}
-
-export async function queryByDID(
-  did: IDidChainRecordJSON['did']
-): Promise<IDidChainRecordJSON | null> {
-  // we will have to extract the id part from the did string
-  const didId = getIdentifierFromKiltDid(did)
-  return queryById(didId)
-}
-
-export async function queryKey(
-  did: string,
-  keyId: string
-): Promise<IDidKeyDetails | null> {
-  const encoded = await queryDidEncoded(getIdentifierFromKiltDid(did))
-  if (encoded.isNone) return null
-  const keyIdU8a = Crypto.coToUInt8(keyId)
-  let key: IDidKeyDetails | null = null
-  encoded.unwrap().publicKeys.forEach((keyDetails, id) => {
-    if (id.eq(keyIdU8a)) {
-      key = decodeDidPublicKeyDetails(did, id, keyDetails)
-    }
-  })
-  return key
-}
-
-export async function queryServiceEndpoint(
-  did: string,
-  serviceId: string
-): Promise<IDidServiceEndpoint | null> {
-  const encoded = await queryServiceEncoded(
-    getIdentifierFromKiltDid(did),
-    serviceId
+  const didDetails = await queryById(identifier)
+  if (!didDetails) {
+    return null
+  }
+  return (
+    didDetails.publicKeys
+      .filter((key) => {
+        return key.id === keyUri
+      })
+      .pop() || null
   )
-  if (encoded.isNone) return null
-
-  return decodeServiceChainRecord(encoded.unwrap(), did)
 }
 
 export async function queryServiceEndpoints(
-  did: string
+  didUri: IDidDetails['did']
 ): Promise<IDidServiceEndpoint[]> {
-  const encoded = await queryAllServicesEncoded(getIdentifierFromKiltDid(did))
-  return encoded.map((e) => decodeServiceChainRecord(e, did))
+  const { identifier, fragment } = parseDidUrl(didUri)
+  if (fragment) {
+    throw new Error(`The provided URI ${didUri} must not contain any fragment.`)
+  }
+  const encoded = await queryAllServicesEncoded(identifier)
+  return encoded.map((e) => decodeServiceChainRecord(e, didUri))
 }
 
-export async function queryEndpointsCounts(did: string): Promise<number> {
+export async function queryServiceEndpoint(
+  serviceUri: IDidServiceEndpoint['id']
+): Promise<IDidServiceEndpoint | null> {
+  const { identifier, fragment } = parseDidUrl(serviceUri)
+  if (!fragment) {
+    throw new Error(
+      `The provided URI ${serviceUri} does not contain a valid fragment for service ID.`
+    )
+  }
+  const serviceEncoded = await queryServiceEncoded(identifier, fragment)
+  if (serviceEncoded.isNone) return null
+
+  return decodeServiceChainRecord(
+    serviceEncoded.unwrap(),
+    getKiltDidFromIdentifier(identifier, 'full')
+  )
+}
+
+export async function queryEndpointsCounts(
+  didUri: IDidDetails['did']
+): Promise<number> {
+  const { identifier, fragment } = parseDidUrl(didUri)
+  if (fragment) {
+    throw new Error(`The provided URI ${didUri} must not contain any fragment.`)
+  }
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const count = await blockchain.api.query.did.didEndpointsCount<u32>(
-    getIdentifierFromKiltDid(did)
+    identifier
   )
   return count.toNumber()
 }
 
-export async function queryLastTxIndex(did: string): Promise<BN> {
-  const identifier = getIdentifierFromKiltDid(did)
+export async function queryLastTxIndex(
+  didUri: IDidDetails['did']
+): Promise<BN> {
+  const { identifier, fragment } = parseDidUrl(didUri)
+  if (fragment) {
+    throw new Error(`The provided URI ${didUri} must not contain any fragment.`)
+  }
   const encoded = await queryDidEncoded(identifier)
-  if (encoded.isNone) return new BN(0)
-  return encoded.unwrap().lastTxCounter.toBn()
+  return encoded.isSome ? encoded.unwrap().lastTxCounter.toBn() : new BN(0)
 }
 
 // ### EXTRINSICS
@@ -227,8 +278,8 @@ export async function generateCreateTx({
 }: IDidCreationOptions & KeystoreSigningOptions): Promise<
   SubmittableExtrinsic
 > {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = encodeDidCreationOperation(blockchain.api.registry, {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = encodeDidCreationOperation(api.registry, {
     didIdentifier,
     submitter,
     keys,
@@ -240,7 +291,7 @@ export async function generateCreateTx({
     publicKey: Crypto.coToUInt8(signingPublicKey),
     alg,
   })
-  return blockchain.api.tx.did.create(encoded, {
+  return api.tx.did.create(encoded, {
     [signature.alg]: signature.data,
   })
 }
@@ -316,9 +367,9 @@ export async function getAddKeyExtrinsic(
 export async function getAddEndpointExtrinsic(
   endpoint: IDidServiceEndpoint
 ): Promise<Extrinsic> {
-  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encoded = encodeServiceEndpoint(blockchain.api.registry, endpoint)
-  return blockchain.api.tx.did.addServiceEndpoint(encoded)
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const encoded = encodeServiceEndpoint(api.registry, endpoint)
+  return api.tx.did.addServiceEndpoint(encoded)
 }
 
 export async function getRemoveEndpointExtrinsic(
@@ -328,30 +379,19 @@ export async function getRemoveEndpointExtrinsic(
   return api.tx.did.removeServiceEndpoint(endpointId)
 }
 
-export async function getDeleteDidExtrinsic({
-  endpointsCount,
-  did,
-}: {
-  endpointsCount?: number
-  did?: string
-}): Promise<Extrinsic> {
-  if (!endpointsCount && !did) {
-    throw new Error('One of enpointsCount or did must be specified.')
-  }
-  const number = endpointsCount || (await queryEndpointsCounts(did!))
+export async function getDeleteDidExtrinsic(
+  endpointsCount: number
+): Promise<Extrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  return api.tx.did.delete(number)
+  return api.tx.did.delete(endpointsCount)
 }
 
 export async function getReclaimDepositExtrinsic(
-  identifier: IIdentity['address'],
-  endpointsCount?: number
+  didIdentifier: IIdentity['address'],
+  endpointsCount: number
 ): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const number =
-    endpointsCount ||
-    (await queryEndpointsCounts(getKiltDidFromIdentifier(identifier!, 'full')))
-  return api.tx.did.reclaimDeposit(identifier, number)
+  return api.tx.did.reclaimDeposit(didIdentifier, endpointsCount)
 }
 
 // The block number can either be provided by the DID subject,

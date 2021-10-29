@@ -18,7 +18,7 @@ import { FullDidDetails } from '../DidDetails/FullDidDetails'
 import { decodeAndDeserializeAdditionalLightDidDetails } from '../DidDetails/LightDidDetails.utils'
 import {
   queryById,
-  queryKey,
+  queryKeyById,
   queryServiceEndpoint,
   queryServiceEndpoints,
 } from '../Did.chain'
@@ -132,7 +132,7 @@ export async function resolve(
       // If a fragment is present, try to resolve to either a key or a service endpoint.
       if (fragment) {
         return (
-          queryKey(baseDid, fragment) ||
+          queryKeyById(baseDid, fragment) ||
           queryServiceEndpoint(baseDid, fragment) ||
           null
         )
@@ -223,7 +223,7 @@ export async function resolveKey(
 
   switch (type) {
     case 'full':
-      return queryKey(did, fragment)
+      return queryKeyById(did, fragment)
     case 'light': {
       const resolvedDetails = await resolveDoc(didUri)
       if (!resolvedDetails) {

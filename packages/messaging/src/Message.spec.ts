@@ -63,6 +63,7 @@ describe('Messaging', () => {
       },
       resolveKey,
       resolveDoc,
+      resolveServiceEndpoint: (_didUri: string) => Promise.resolve(null),
     }
   })
 

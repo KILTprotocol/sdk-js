@@ -363,7 +363,7 @@ function verifyDidSignatureFromDetails({
   }
 }
 
-// Verify a DID signature given the key ID of the signature
+// Verify a DID signature given the key ID of the signature.
 export async function verifyDidSignature({
   message,
   signature,
@@ -377,15 +377,18 @@ export async function verifyDidSignature({
   resolver?: IDidResolver
   keyRelationship?: VerificationKeyRelationship
 }): Promise<VerificationResult> {
-  const { identifier, type, version } = parseDidUrl(keyId)
+  const { identifier, type, version, encodedDetails } = parseDidUrl(keyId)
   // If the identifier could not be parsed, it is a malformed URL
   if (!identifier) {
     throw new Error(
       `Invalid key ID provided for signature verification  - ${keyId}`
     )
   }
-  // Resolve DID details regardless of the DID type
-  const did = getKiltDidFromIdentifier(identifier, type, version)
+  // Resolve DID details regardless of the DID type, optionally concatenating it with the encoded details.
+  const identifierToResolve = identifier.concat(
+    encodedDetails ? `:${encodedDetails}` : ''
+  )
+  const did = getKiltDidFromIdentifier(identifierToResolve, type, version)
   const details = await resolver.resolveDoc(did)
   // If no details can be resolved, it is clearly an error, so we return false
   if (!details) {
