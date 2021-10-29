@@ -211,7 +211,7 @@ describe('write and didDeleteTx', () => {
 
     const submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: 1,
+      txCounter: 2,
       call,
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
@@ -523,6 +523,22 @@ describe('DID migration', () => {
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
 
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
+    // Verify service endpoints for light DID resolution
+    expect(resolutionResult?.details.getEndpoints()).toMatchObject(
+      serviceEndpoints.map((service) => {
+        return { ...service, id: `${lightDidDetails.did}#${service.id}` }
+      })
+    )
+    // Verify service endpints for full DID resolution
+    const fullDid = await resolveDoc(resolutionResult!.metadata!.canonicalId)
+
+    expect(fullDid?.details).toBeDefined()
+
+    expect(fullDid!.details.getEndpoints()).toMatchObject(
+      serviceEndpoints.map((service) => {
+        return { ...service, id: `${did}#${service.id}` }
+      })
+    )
   })
 })
 

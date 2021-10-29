@@ -32,7 +32,7 @@ export type FullDidDetailsCreationOpts = {
   // The full DID URI, following the scheme did:kilt:<kilt_address>
   did: string
   keys: IDidKeyDetails[]
-  keyRelationships?: MapKeyToRelationship
+  keyRelationships: MapKeyToRelationship
   lastTxIndex: BN
   serviceEndpoints?: IDidServiceEndpoint[]
 }
