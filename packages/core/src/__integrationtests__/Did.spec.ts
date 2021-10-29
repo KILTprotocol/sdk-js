@@ -30,8 +30,9 @@ import {
   IDidServiceEndpoint,
   KeyringPair,
   KeystoreSigner,
+  IDidKeyDetails,
 } from '@kiltprotocol/types'
-import { BN } from '@polkadot/util'
+import { BN, u8aToHex } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
 
 import { CType } from '../ctype'
@@ -148,9 +149,7 @@ describe('write and didDeleteTx', () => {
       DidChain.queryServiceEndpoint(`${emptyDid}#non-existing-service-id`)
     ).resolves.toBeNull
     // Should return 0
-    await expect(
-      DidChain.queryEndpointsCounts(`${emptyDid}#non-existing-service-id`)
-    ).resolves.toBe(0)
+    await expect(DidChain.queryEndpointsCounts(emptyDid)).resolves.toBe(0)
   }, 30_000)
 
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
@@ -182,7 +181,7 @@ describe('write and didDeleteTx', () => {
 
     submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: 1,
+      txCounter: 2,
       call,
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
@@ -198,7 +197,7 @@ describe('write and didDeleteTx', () => {
         reSign: true,
       })
     ).rejects.toThrow()
-  })
+  }, 30_000)
 
   it('deletes DID from previous step', async () => {
     const did = DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
@@ -213,7 +212,7 @@ describe('write and didDeleteTx', () => {
 
     const submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: 1,
+      txCounter: 3,
       call,
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
@@ -321,7 +320,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     })
   ).resolves.not.toThrow()
   await expect(
-    DidChain.queryServiceEndpoint(`${did}#new-endpoint`)
+    DidChain.queryServiceEndpoint(`${did}#${newEndpoint.id}`)
   ).resolves.toMatchObject<IDidServiceEndpoint>({
     ...newEndpoint,
     id: `${did}#${newEndpoint.id}`,
@@ -351,7 +350,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // There should not be any endpoint with the given ID now.
   await expect(
-    DidChain.queryServiceEndpoint(`${did}#new-endpoint`)
+    DidChain.queryServiceEndpoint(`${did}#${newEndpoint.id}`)
   ).resolves.toBeNull()
 
   // Claim the deposit back
@@ -460,13 +459,13 @@ describe('DID migration', () => {
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
   })
 
-  it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
+  it.only('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
     const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
       alg: SigningAlgorithms.Ed25519,
     })
     const didEncryptionKeyDetails = await keystore.generateKeypair({
       seed:
-        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+        '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
       alg: EncryptionAlgorithms.NaclBox,
     })
     const serviceEndpoints: IDidServiceEndpoint[] = [
@@ -502,16 +501,26 @@ describe('DID migration', () => {
       })
     ).resolves.not.toThrow()
 
-    await expect(
-      DidChain.queryById(DidUtils.getIdentifierFromKiltDid(did))
-    ).resolves.not.toBeNull()
+    const details = await DidChain.queryDidDetails(did)
+
+    expect(details).not.toBeNull()
+    expect(details?.keyAgreementKeys).toHaveLength(1)
+    expect(details?.keyAgreementKeys[0]).toMatchObject<Partial<IDidKeyDetails>>(
+      {
+        controller: did,
+        publicKeyHex: u8aToHex(didEncryptionKeyDetails.publicKey),
+        type: 'x25519',
+      }
+    )
     // The returned service endpoints will have the initial ID, prepended with the full DID identifier.
-    await expect(
-      DidChain.queryServiceEndpoints(DidUtils.getIdentifierFromKiltDid(did))
-    ).resolves.toMatchObject<IDidServiceEndpoint[]>([
+    await expect(DidChain.queryServiceEndpoints(did)).resolves.toMatchObject<
+      IDidServiceEndpoint[]
+    >([
       {
         ...serviceEndpoints[0],
-        id: `${DidUtils.getIdentifierFromKiltDid(did)}#serviceEndpoints[0].id`,
+        id: `${DidUtils.getIdentifierFromKiltDid(did)}#${
+          serviceEndpoints[0].id
+        }`,
       },
     ])
 
