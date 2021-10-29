@@ -125,9 +125,7 @@ describe('write and didDeleteTx', () => {
       },
     ])
     await expect(
-      DidChain.queryServiceEndpoint(
-        `${DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')}#test-id-1`
-      )
+      DidChain.queryServiceEndpoint(`${did}#test-id-1`)
     ).resolves.toMatchObject<IDidServiceEndpoint>({
       id: `${did}#test-id-1`,
       types: ['test-type-1'],
@@ -149,15 +147,19 @@ describe('write and didDeleteTx', () => {
     await expect(
       DidChain.queryServiceEndpoint(`${emptyDid}#non-existing-service-id`)
     ).resolves.toBeNull
+    // Should return 0
+    await expect(
+      DidChain.queryEndpointsCounts(`${emptyDid}#non-existing-service-id`)
+    ).resolves.toBe(0)
   }, 30_000)
 
-  it('fails to delete the DID using a different submitter than the one specified in the DID operation', async () => {
+  it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
     const otherAccount = devBob
 
-    // 10 is an example value. It is not used here since we are testing the error
-    const call = await DidChain.getDeleteDidExtrinsic(10)
+    // 10 is an example value. It is not used here since we are testing another error
+    let call = await DidChain.getDeleteDidExtrinsic(10)
 
-    const submittable = await DidChain.generateDidAuthenticatedTx({
+    let submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
       txCounter: 1,
       call,
@@ -168,6 +170,28 @@ describe('write and didDeleteTx', () => {
       submitter: otherAccount.address,
     })
 
+    await expect(
+      BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    ).rejects.toThrow()
+
+    // We use 1 here and this should fail as there are two service endpoints stored.
+    call = await DidChain.getDeleteDidExtrinsic(1)
+
+    submittable = await DidChain.generateDidAuthenticatedTx({
+      didIdentifier,
+      txCounter: 1,
+      call,
+      signer: keystore as KeystoreSigner<string>,
+      signingPublicKey: key.publicKey,
+      alg: key.type,
+      // We use the expected submitter's account
+      submitter: paymentAccount.address,
+    })
+
+    // Will fail because count provided is too low
     await expect(
       BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -425,6 +449,71 @@ describe('DID migration', () => {
     await expect(
       DidChain.queryById(DidUtils.getIdentifierFromKiltDid(did))
     ).resolves.not.toBeNull()
+
+    const resolutionResult = await resolveDoc(lightDidDetails.did)
+
+    expect(resolutionResult).not.toBeNull()
+
+    expect(resolutionResult?.metadata).toBeDefined()
+    expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+
+    expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
+  })
+
+  it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
+    const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
+      alg: SigningAlgorithms.Ed25519,
+    })
+    const didEncryptionKeyDetails = await keystore.generateKeypair({
+      seed:
+        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      alg: EncryptionAlgorithms.NaclBox,
+    })
+    const serviceEndpoints: IDidServiceEndpoint[] = [
+      {
+        id: 'id-1',
+        types: ['type-1'],
+        urls: ['url-1'],
+      },
+    ]
+    const lightDidDetails = new LightDidDetails({
+      authenticationKey: {
+        publicKey: didEd25519AuthenticationKeyDetails.publicKey,
+        type: DemoKeystore.getKeypairTypeForAlg(
+          didEd25519AuthenticationKeyDetails.alg
+        ),
+      },
+      encryptionKey: {
+        publicKey: didEncryptionKeyDetails.publicKey,
+        type: DemoKeystore.getKeypairTypeForAlg(didEncryptionKeyDetails.alg),
+      },
+      serviceEndpoints,
+    })
+    const { extrinsic, did } = await DidUtils.upgradeDid(
+      lightDidDetails,
+      paymentAccount.address,
+      keystore
+    )
+
+    await expect(
+      BlockchainUtils.signAndSubmitTx(extrinsic, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    ).resolves.not.toThrow()
+
+    await expect(
+      DidChain.queryById(DidUtils.getIdentifierFromKiltDid(did))
+    ).resolves.not.toBeNull()
+    // The returned service endpoints will have the initial ID, prepended with the full DID identifier.
+    await expect(
+      DidChain.queryServiceEndpoints(DidUtils.getIdentifierFromKiltDid(did))
+    ).resolves.toMatchObject<IDidServiceEndpoint[]>([
+      {
+        ...serviceEndpoints[0],
+        id: `${DidUtils.getIdentifierFromKiltDid(did)}#serviceEndpoints[0].id`,
+      },
+    ])
 
     const resolutionResult = await resolveDoc(lightDidDetails.did)
 
