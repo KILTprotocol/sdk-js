@@ -9,7 +9,7 @@
  * @group unit/balance
  */
 
-import { Keyring, SubmittableResult } from '@polkadot/api'
+import { SubmittableResult } from '@polkadot/api'
 import { GenericAccountIndex as AccountIndex } from '@polkadot/types/generic/AccountIndex'
 import type { AccountData, AccountInfo } from '@polkadot/types/interfaces'
 import { BN } from '@polkadot/util'
@@ -18,8 +18,8 @@ import {
   BlockchainUtils,
 } from '@kiltprotocol/chain-helpers'
 
-import type { Balances } from '@kiltprotocol/types'
-import { KeyringPair } from '@polkadot/keyring/types'
+import type { Balances, KeyringPair } from '@kiltprotocol/types'
+import { Keyring } from '@kiltprotocol/utils'
 import {
   getBalances,
   listenToBalanceChanges,

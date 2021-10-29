@@ -16,11 +16,11 @@ import { ConfigService } from '@kiltprotocol/config'
 import type {
   IIdentity,
   ISubmittableResult,
+  KeyringPair,
   ReSignOpts,
   SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
-import type { KeyringPair } from '@polkadot/keyring/types'
 import { ErrorHandler, ExtrinsicError, ExtrinsicErrors } from '../errorhandling'
 import { makeSubscriptionPromise } from './SubscriptionPromise'
 import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'

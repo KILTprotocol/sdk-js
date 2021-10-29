@@ -262,6 +262,7 @@ describe('Messaging Utilities', () => {
       resolve: async (did: string) => {
         return resolveKey(did) || resolveDoc(did)
       },
+      resolveServiceEndpoint: async (did: string) => Promise.resolve(null),
     }
 
     rawCTypeWithMultipleProperties = {

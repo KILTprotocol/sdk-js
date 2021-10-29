@@ -27,10 +27,10 @@ import {
 } from '@kiltprotocol/chain-helpers'
 import {
   KeyRelationship,
-  KeystoreSigner,
   IDidServiceEndpoint,
+  KeyringPair,
+  KeystoreSigner,
 } from '@kiltprotocol/types'
-import { KeyringPair } from '@polkadot/keyring/types'
 import { BN } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
 
@@ -105,7 +105,7 @@ describe('write and didDeleteTx', () => {
       })
     ).resolves.not.toThrow()
 
-    await expect(DidChain.queryByDID(did)).resolves.toMatchObject<
+    await expect(DidChain.queryDidDetails(did)).resolves.toMatchObject<
       Partial<DidTypes.IDidChainRecordJSON>
     >({
       did,
@@ -126,8 +126,7 @@ describe('write and didDeleteTx', () => {
     ])
     await expect(
       DidChain.queryServiceEndpoint(
-        DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
-        'test-id-1'
+        `${DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')}#test-id-1`
       )
     ).resolves.toMatchObject<IDidServiceEndpoint>({
       id: `${did}#test-id-1`,
@@ -148,7 +147,7 @@ describe('write and didDeleteTx', () => {
     ).resolves.toHaveLength(0)
     // Should return null
     await expect(
-      DidChain.queryServiceEndpoint(emptyDid, 'non-existing-service-id')
+      DidChain.queryServiceEndpoint(`${emptyDid}#non-existing-service-id`)
     ).resolves.toBeNull
   }, 30_000)
 
@@ -156,7 +155,7 @@ describe('write and didDeleteTx', () => {
     const otherAccount = devBob
 
     // 10 is an example value. It is not used here since we are testing the error
-    const call = await DidChain.getDeleteDidExtrinsic({ endpointsCount: 10 })
+    const call = await DidChain.getDeleteDidExtrinsic(10)
 
     const submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
@@ -185,7 +184,8 @@ describe('write and didDeleteTx', () => {
       did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
     })
 
-    const call = await DidChain.getDeleteDidExtrinsic({ did })
+    const storedEndpointsCount = await DidChain.queryEndpointsCounts(did)
+    const call = await DidChain.getDeleteDidExtrinsic(storedEndpointsCount)
 
     const submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
@@ -297,7 +297,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     })
   ).resolves.not.toThrow()
   await expect(
-    DidChain.queryServiceEndpoint(did, 'new-endpoint')
+    DidChain.queryServiceEndpoint(`${did}#new-endpoint`)
   ).resolves.toMatchObject<IDidServiceEndpoint>({
     ...newEndpoint,
     id: `${did}#${newEndpoint.id}`,
@@ -327,12 +327,14 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
 
   // There should not be any endpoint with the given ID now.
   await expect(
-    DidChain.queryServiceEndpoint(did, 'new-endpoint')
+    DidChain.queryServiceEndpoint(`${did}#new-endpoint`)
   ).resolves.toBeNull()
 
   // Claim the deposit back
+  const storedEndpointsCount = await DidChain.queryEndpointsCounts(did)
   const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
-    didIdentifier
+    didIdentifier,
+    storedEndpointsCount
   )
   await expect(
     BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
@@ -542,7 +544,10 @@ describe('DID authorization', () => {
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
     const did = DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
-    const deleteCall = await DidChain.getDeleteDidExtrinsic({ did })
+    const storedEndpointsCount = await DidChain.queryEndpointsCounts(did)
+    const deleteCall = await DidChain.getDeleteDidExtrinsic(
+      storedEndpointsCount
+    )
     const tx = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
       txCounter: lastTxIndex.addn(1),

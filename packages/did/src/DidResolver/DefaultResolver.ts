@@ -10,6 +10,7 @@ import type {
   IDidKeyDetails,
   IDidResolvedDetails,
   IDidServiceEndpoint,
+  IDidDetails,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
@@ -17,10 +18,10 @@ import { LightDidDetails } from '../DidDetails/LightDidDetails'
 import { FullDidDetails } from '../DidDetails/FullDidDetails'
 import { decodeAndDeserializeAdditionalLightDidDetails } from '../DidDetails/LightDidDetails.utils'
 import {
-  queryById,
-  queryKeyById,
   queryServiceEndpoint,
   queryServiceEndpoints,
+  queryById,
+  queryDidKey,
 } from '../Did.chain'
 import {
   getKiltDidFromIdentifier,
@@ -64,12 +65,12 @@ async function queryFullDetailsFromIdentifier(
     ]
   }
 
-  const endpoints = await queryServiceEndpoints(
-    getKiltDidFromIdentifier(identifier, 'full')
-  )
+  const didUri = getKiltDidFromIdentifier(identifier, 'full', version)
+
+  const endpoints = await queryServiceEndpoints(didUri)
 
   return new FullDidDetails({
-    did: getKiltDidFromIdentifier(identifier, 'full', version),
+    did: didUri,
     keys: publicKeys,
     keyRelationships,
     lastTxIndex: lastTxCounter.toBn(),
@@ -77,7 +78,7 @@ async function queryFullDetailsFromIdentifier(
   })
 }
 
-function buildLightDetailsFromMatch({
+function buildLightDetailsFromUriRegexMatch({
   identifier,
   version,
   encodedDetails,
@@ -113,96 +114,53 @@ function buildLightDetailsFromMatch({
 }
 
 /**
- * Resolve a DID URI (including a key ID).
+ * Resolve a DID URI to the details of the DID subject.
  *
- * @param didUri The DID URI to resolve.
- * @returns The DID, key details or service details depending on the input URI. If not resource can be resolved, null is returned.
+ * The URI can also identify a key or a service, but it will be ignored during resolution.
+ *
+ * @param did The subject's identifier.
+ * @returns The details associated with the DID subject.
  */
-export async function resolve(
-  didUri: string
-): Promise<IDidResolvedDetails | IDidKeyDetails | IDidServiceEndpoint | null> {
-  const { identifier, type, version, fragment, encodedDetails } = parseDidUrl(
-    didUri
-  )
-
-  const baseDid = getKiltDidFromIdentifier(identifier, type)
+export async function resolveDoc(
+  did: IDidDetails['did']
+): Promise<IDidResolvedDetails | null> {
+  const { identifier, type, version, encodedDetails } = parseDidUrl(did)
 
   switch (type) {
     case 'full': {
-      // If a fragment is present, try to resolve to either a key or a service endpoint.
-      if (fragment) {
-        return (
-          queryKeyById(baseDid, fragment) ||
-          queryServiceEndpoint(baseDid, fragment) ||
-          null
-        )
-      }
-      // Otherwise, return the full information, including keys and service endpoints.
       const details = await queryFullDetailsFromIdentifier(identifier, version)
       return { details } as IDidResolvedDetails
     }
     case 'light': {
       let details: LightDidDetails
       try {
-        details = buildLightDetailsFromMatch({
+        details = buildLightDetailsFromUriRegexMatch({
           identifier,
           version,
           encodedDetails,
         })
       } catch {
-        throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
+        throw SDKErrors.ERROR_INVALID_DID_FORMAT(did)
       }
-      // If a fragment is present, try to resolve to either a key or a service endpoint.
-      if (fragment) {
-        return (
-          details?.getKey(fragment) ||
-          details?.getEndpointById(fragment) ||
-          null
-        )
-      }
-      // Otherwise, try to fetch any migration info and return the full light DID details.
       const didResolvedDetails: IDidResolvedDetails = {
         details,
       }
-
+      // LightDID identifier has two leading characters indicating the authentication key type.
+      const fullDidIdentifier = identifier.substring(2)
       const fullDidDetails = await queryFullDetailsFromIdentifier(
-        identifier.substring(2)
+        fullDidIdentifier
       )
       // If a full DID with same identifier is present, add resolution metadata linking to that.
       if (fullDidDetails) {
         didResolvedDetails.metadata = {
-          canonicalId: getKiltDidFromIdentifier(
-            identifier.substring(2),
-            'full'
-          ),
+          canonicalId: getKiltDidFromIdentifier(fullDidIdentifier, 'full'),
         }
       }
-
       return didResolvedDetails
     }
     default:
-      throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
+      throw SDKErrors.ERROR_UNSUPPORTED_DID(did)
   }
-}
-
-/**
- * Resolve a DID URI (including a key) to the details of the DID subject.
- *
- * @param did The subject's or the key identifier.
- * @returns The details associated with the DID subject.
- */
-export async function resolveDoc(
-  did: string
-): Promise<IDidResolvedDetails | null> {
-  const { fragment } = parseDidUrl(did)
-
-  let didToResolve = did
-  if (fragment) {
-    // eslint-disable-next-line prefer-destructuring
-    didToResolve = didToResolve.split('#')[0]
-  }
-
-  return resolve(didToResolve) as Promise<IDidResolvedDetails | null>
 }
 
 /**
@@ -212,18 +170,18 @@ export async function resolveDoc(
  * @returns The details associated with the key.
  */
 export async function resolveKey(
-  didUri: string
+  didUri: IDidKeyDetails['id']
 ): Promise<IDidKeyDetails | null> {
-  const { did, fragment, type } = parseDidUrl(didUri)
+  const { fragment, type } = parseDidUrl(didUri)
 
-  // A fragment IS expected to resolve a key
+  // A fragment IS expected to resolve a key.
   if (!fragment) {
     throw SDKErrors.ERROR_INVALID_DID_FORMAT
   }
 
   switch (type) {
     case 'full':
-      return queryKeyById(did, fragment)
+      return queryDidKey(didUri)
     case 'light': {
       const resolvedDetails = await resolveDoc(didUri)
       if (!resolvedDetails) {
@@ -243,29 +201,46 @@ export async function resolveKey(
  * @returns The details associated with the service endpoint.
  */
 export async function resolveServiceEndpoint(
-  didUri: string
+  didUri: IDidServiceEndpoint['id']
 ): Promise<IDidServiceEndpoint | null> {
-  const { did, fragment, type } = parseDidUrl(didUri)
+  const { fragment, type } = parseDidUrl(didUri)
 
-  // A fragment IS expected to resolve a key
+  // A fragment IS expected to resolve a service endpoint.
   if (!fragment) {
     throw SDKErrors.ERROR_INVALID_DID_FORMAT
   }
 
   switch (type) {
     case 'full': {
-      return queryServiceEndpoint(did, fragment)
+      return queryServiceEndpoint(didUri)
     }
     case 'light': {
       const resolvedDetails = await resolveDoc(didUri)
       if (!resolvedDetails) {
         throw SDKErrors.ERROR_INVALID_DID_FORMAT(didUri)
       }
-      return resolvedDetails.details.getEndpointById(fragment) || null
+      return resolvedDetails.details.getEndpointById(didUri) || null
     }
     default:
       throw SDKErrors.ERROR_UNSUPPORTED_DID(didUri)
   }
+}
+
+/**
+ * Resolve a DID URI (including a key ID or a service ID).
+ *
+ * @param didUri The DID URI to resolve.
+ * @returns The DID, key details or service details depending on the input URI. If not resource can be resolved, null is returned.
+ */
+export async function resolve(
+  didUri: string
+): Promise<IDidResolvedDetails | IDidKeyDetails | IDidServiceEndpoint | null> {
+  const { fragment } = parseDidUrl(didUri)
+
+  if (fragment) {
+    return resolveKey(didUri) || resolveServiceEndpoint(didUri) || null
+  }
+  return resolveDoc(didUri)
 }
 
 export const DefaultResolver: IDidResolver = {

@@ -164,7 +164,7 @@ function decodeServiceChainRecord(
   }
 }
 
-async function queryById(
+export async function queryById(
   didIdentifier: IIdentity['address']
 ): Promise<IDidChainRecordJSON | null> {
   const result = await queryDidEncoded(didIdentifier)

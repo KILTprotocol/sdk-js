@@ -45,7 +45,7 @@ export interface IDidResolver {
    * @returns A promise of a [[IDidResolvedDetails]] object representing the DID document or null if the DID
    * cannot be resolved.
    */
-  resolveDoc: (did: string) => Promise<IDidResolvedDetails | null>
+  resolveDoc: (did: IDidDetails['did']) => Promise<IDidResolvedDetails | null>
   /**
    * Resolves a DID URI identifying a public key associated with a DID.
    *
@@ -54,7 +54,7 @@ export interface IDidResolver {
    * @returns A promise of a [[IDidKeyDetails]] object representing the DID public key or null if
    * the DID or key URI cannot be resolved.
    */
-  resolveKey: (didUri: string) => Promise<IDidKeyDetails | null>
+  resolveKey: (didUri: IDidKeyDetails['id']) => Promise<IDidKeyDetails | null>
   /**
    * Resolves a DID URI identifying a service endpoint associated with a DID.
    *
@@ -64,6 +64,6 @@ export interface IDidResolver {
    * the DID or service endpoint URI cannot be resolved.
    */
   resolveServiceEndpoint: (
-    didUri: string
+    didUri: IDidServiceEndpoint['id']
   ) => Promise<IDidServiceEndpoint | null>
 }
