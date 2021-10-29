@@ -74,7 +74,7 @@ describe('write and didDeleteTx', () => {
         reSign: true,
       })
     ).rejects.toThrow()
-  }, 30_000)
+  }, 60_000)
 
   it('writes a new DID record to chain', async () => {
     const tx = await DidChain.generateCreateTx({
@@ -150,7 +150,7 @@ describe('write and didDeleteTx', () => {
     ).resolves.toBeNull
     // Should return 0
     await expect(DidChain.queryEndpointsCounts(emptyDid)).resolves.toBe(0)
-  }, 30_000)
+  }, 60_000)
 
   it('fails to delete the DID using a different submitter than the one specified in the DID operation or using a services count that is too low', async () => {
     const otherAccount = devBob
@@ -197,7 +197,7 @@ describe('write and didDeleteTx', () => {
         reSign: true,
       })
     ).rejects.toThrow()
-  }, 30_000)
+  }, 60_000)
 
   it('deletes DID from previous step', async () => {
     const did = DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
@@ -228,7 +228,7 @@ describe('write and didDeleteTx', () => {
     ).resolves.not.toThrow()
 
     await expect(DidChain.queryById(didIdentifier)).resolves.toBe(null)
-  }, 30_000)
+  }, 60_000)
 })
 
 it('creates and updates DID, and then reclaims the deposit back', async () => {
@@ -459,7 +459,7 @@ describe('DID migration', () => {
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
   })
 
-  it.only('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
+  it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
     const didEd25519AuthenticationKeyDetails = await keystore.generateKeypair({
       alg: SigningAlgorithms.Ed25519,
     })
@@ -568,7 +568,7 @@ describe('DID authorization', () => {
     >({
       did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
     })
-  }, 30_000)
+  }, 60_000)
 
   beforeEach(async () => {
     lastTxIndex = await DidChain.queryLastTxIndex(
@@ -601,7 +601,7 @@ describe('DID authorization', () => {
     ).resolves.not.toThrow()
 
     await expect(ctype.verifyStored()).resolves.toEqual(true)
-  }, 30_000)
+  }, 60_000)
 
   it.skip('authorizes batch with DID signature', async () => {
     const ctype1 = CType.fromSchema({
@@ -638,7 +638,7 @@ describe('DID authorization', () => {
 
     await expect(ctype1.verifyStored()).resolves.toEqual(true)
     await expect(ctype2.verifyStored()).resolves.toEqual(true)
-  }, 30_000)
+  }, 60_000)
 
   it('no longer authorizes ctype creation after DID deletion', async () => {
     const did = DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
@@ -687,7 +687,7 @@ describe('DID authorization', () => {
     ).rejects.toThrow()
 
     await expect(ctype.verifyStored()).resolves.toEqual(false)
-  }, 40_000)
+  }, 60_000)
 })
 
 afterAll(async () => disconnect())
