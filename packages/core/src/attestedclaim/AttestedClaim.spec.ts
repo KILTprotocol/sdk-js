@@ -135,25 +135,27 @@ describe('RequestForAttestation', () => {
 
   let mockResolver: IDidResolver = {
     resolve: async (didUri: string) => {
-      if (didUri === identityAlice.did) {
+      const didWithoutFragment = didUri.split('#')[0]
+      if (didWithoutFragment === identityAlice.did) {
         return { details: identityAlice }
       }
-      if (didUri === identityBob.did) {
+      if (didWithoutFragment === identityBob.did) {
         return { details: identityBob }
       }
-      if (didUri === identityCharlie.did) {
+      if (didWithoutFragment === identityCharlie.did) {
         return { details: identityCharlie }
       }
       return null
     },
     resolveDoc: async (didUri: string) => {
-      if (didUri === identityAlice.did) {
+      const didWithoutFragment = didUri.split('#')[0]
+      if (didWithoutFragment === identityAlice.did) {
         return { details: identityAlice }
       }
-      if (didUri === identityBob.did) {
+      if (didWithoutFragment === identityBob.did) {
         return { details: identityBob }
       }
-      if (didUri === identityCharlie.did) {
+      if (didWithoutFragment === identityCharlie.did) {
         return { details: identityCharlie }
       }
       return null
@@ -225,31 +227,33 @@ describe('RequestForAttestation', () => {
     const identityDave = await createLightDidFromSeed(keystore, '//Dave')
     mockResolver = {
       resolveDoc: async (didUri: string) => {
-        if (didUri === identityAlice.did) {
+        const didWithoutFragment = didUri.split('#')[0]
+        if (didWithoutFragment === identityAlice.did) {
           return { details: identityAlice }
         }
-        if (didUri === identityBob.did) {
+        if (didWithoutFragment === identityBob.did) {
           return { details: identityBob }
         }
-        if (didUri === identityCharlie.did) {
+        if (didWithoutFragment === identityCharlie.did) {
           return { details: identityCharlie }
         }
-        if (didUri === identityDave.did) {
+        if (didWithoutFragment === identityDave.did) {
           return { details: identityDave }
         }
         return null
       },
       resolve: async (didUri: string) => {
-        if (didUri === identityAlice.did) {
+        const didWithoutFragment = didUri.split('#')[0]
+        if (didWithoutFragment === identityAlice.did) {
           return { details: identityAlice }
         }
-        if (didUri === identityBob.did) {
+        if (didWithoutFragment === identityBob.did) {
           return { details: identityBob }
         }
-        if (didUri === identityCharlie.did) {
+        if (didWithoutFragment === identityCharlie.did) {
           return { details: identityCharlie }
         }
-        if (didUri === identityDave.did) {
+        if (didWithoutFragment === identityDave.did) {
           return { details: identityDave }
         }
         return null
@@ -372,41 +376,43 @@ describe('create presentation', () => {
 
   const mockResolver: IDidResolver = {
     resolve: async (didUri: string) => {
-      if (didUri === migratedClaimerLightDid.did) {
+      const didWithoutFragment = didUri.split('#')[0]
+      if (didWithoutFragment === migratedClaimerLightDid.did) {
         return {
           details: migratedClaimerLightDid,
           metadata: { canonicalId: migratedClaimerFullDid.did },
         }
       }
-      if (didUri === unmigratedClaimerLightDid.did) {
+      if (didWithoutFragment === unmigratedClaimerLightDid.did) {
         return {
           details: unmigratedClaimerLightDid,
         }
       }
-      if (didUri === migratedClaimerFullDid.did) {
+      if (didWithoutFragment === migratedClaimerFullDid.did) {
         return { details: migratedClaimerFullDid }
       }
-      if (didUri === attester.did) {
+      if (didWithoutFragment === attester.did) {
         return { details: attester }
       }
       return null
     },
     resolveDoc: async (didUri: string) => {
-      if (didUri === migratedClaimerLightDid.did) {
+      const didWithoutFragment = didUri.split('#')[0]
+      if (didWithoutFragment === migratedClaimerLightDid.did) {
         return {
           details: migratedClaimerLightDid,
           metadata: { canonicalId: migratedClaimerFullDid.did },
         }
       }
-      if (didUri === unmigratedClaimerLightDid.did) {
+      if (didWithoutFragment === unmigratedClaimerLightDid.did) {
         return {
           details: unmigratedClaimerLightDid,
         }
       }
-      if (didUri === migratedClaimerFullDid.did) {
+      if (didWithoutFragment === migratedClaimerFullDid.did) {
         return { details: migratedClaimerFullDid }
       }
-      if (didUri === attester.did) {
+      if (didWithoutFragment === attester.did) {
         return { details: attester }
       }
       return null

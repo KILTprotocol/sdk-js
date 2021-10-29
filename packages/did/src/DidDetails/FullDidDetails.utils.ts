@@ -40,6 +40,7 @@ const mapping: SectionMapping<
     default: KeyRelationship.authentication,
     create: 'paymentAccount',
     submitDidCall: 'paymentAccount',
+    reclaimDeposit: 'paymentAccount',
   },
   default: { default: 'paymentAccount' },
 }

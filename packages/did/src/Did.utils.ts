@@ -14,7 +14,7 @@ import type {
   KeystoreSigner,
   SubmittableExtrinsic,
   VerificationKeyRelationship,
-  IDidResolvedDetails,
+  IDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
@@ -32,6 +32,7 @@ import type {
   INewPublicKey,
   PublicKeyRoleAssignment,
   IDidParsingResult,
+  IServiceEndpointChainRecordCodec,
 } from './types'
 import { generateCreateTx } from './Did.chain'
 import { LightDidDetails } from '.'
@@ -228,7 +229,7 @@ export function isINewPublicKey(key: unknown): key is INewPublicKey {
 
 export function encodeDidCreationOperation(
   registry: Registry,
-  { didIdentifier, submitter, keys = {} }: IDidCreationOptions
+  { didIdentifier, submitter, keys = {}, endpoints = [] }: IDidCreationOptions
 ): DidCreationDetails {
   const {
     [KeyRelationship.assertionMethod]: assertionMethodKey,
@@ -246,6 +247,10 @@ export function encodeDidCreationOperation(
     newDelegationKey: delegationKey
       ? formatPublicKey(delegationKey)
       : undefined,
+    newServiceDetails: endpoints.map((service) => {
+      const { id, urls } = service
+      return { id, urls, serviceTypes: service.types }
+    }),
   }
   return new (registry.getOrThrow<DidCreationDetails>(
     'DidDidDetailsDidCreationDetails'
@@ -270,6 +275,19 @@ export function encodeDidAuthorizedCallOperation(
     call,
     blockNumber,
     submitter,
+  })
+}
+
+export function encodeServiceEndpoint(
+  registry: Registry,
+  endpoint: IDidServiceEndpoint
+): IServiceEndpointChainRecordCodec {
+  return new (registry.getOrThrow<IServiceEndpointChainRecordCodec>(
+    'DidServiceEndpointsDidEndpoint'
+  ))(registry, {
+    id: endpoint.id,
+    serviceTypes: endpoint.types,
+    urls: endpoint.urls,
   })
 }
 
@@ -345,7 +363,7 @@ function verifyDidSignatureFromDetails({
   }
 }
 
-// Verify a DID signature given the key ID of the signature
+// Verify a DID signature given the key ID of the signature.
 export async function verifyDidSignature({
   message,
   signature,
@@ -359,16 +377,8 @@ export async function verifyDidSignature({
   resolver?: IDidResolver
   keyRelationship?: VerificationKeyRelationship
 }): Promise<VerificationResult> {
-  const { identifier } = parseDidUrl(keyId)
-
-  // If the identifier could not be parsed, it is a malformed URL
-  if (!identifier) {
-    throw new Error(
-      `Invalid key ID provided for signature verification  - ${keyId}`
-    )
-  }
-  // Resolve DID details regardless of the DID type
-  const details = (await resolver.resolve(keyId)) as IDidResolvedDetails | null
+  // resolveDoc can accept a key ID, but it will always return the DID details.
+  const details = await resolver.resolveDoc(keyId)
   // If no details can be resolved, it is clearly an error, so we return false
   if (!details) {
     return {
@@ -400,6 +410,28 @@ export async function writeDidFromPublicKeys(
     keys: publicKeys,
     alg: getSignatureAlgForKeyType(authenticationKey.type),
     signingPublicKey: authenticationKey.publicKey,
+  })
+  return { extrinsic, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
+}
+
+export async function writeDidFromPublicKeysAndServices(
+  signer: KeystoreSigner,
+  submitter: IIdentity['address'],
+  publicKeys: PublicKeyRoleAssignment,
+  endpoints: IDidServiceEndpoint[]
+): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
+  const { [KeyRelationship.authentication]: authenticationKey } = publicKeys
+  if (!authenticationKey)
+    throw Error(`${KeyRelationship.authentication} key is required`)
+  const didIdentifier = encodeAddress(authenticationKey.publicKey, 38)
+  const extrinsic = await generateCreateTx({
+    signer,
+    submitter,
+    didIdentifier,
+    keys: publicKeys,
+    alg: getSignatureAlgForKeyType(authenticationKey.type),
+    signingPublicKey: authenticationKey.publicKey,
+    endpoints,
   })
   return { extrinsic, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
 }
@@ -495,5 +527,10 @@ export async function upgradeDid(
     }
   }
 
-  return writeDidFromPublicKeys(signer, submitter, newDidPublicKeys)
+  return writeDidFromPublicKeysAndServices(
+    signer,
+    submitter,
+    newDidPublicKeys,
+    lightDid.getEndpoints()
+  )
 }

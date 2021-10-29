@@ -14,6 +14,7 @@ import type {
   ApiOrMetadata,
   CallMeta,
   IIdentity,
+  IDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
@@ -27,12 +28,13 @@ import {
 } from '../Did.utils'
 import { DidDetails } from './DidDetails'
 
-export interface FullDidDetailsCreationOpts {
+export type FullDidDetailsCreationOpts = {
   // The full DID URI, following the scheme did:kilt:<kilt_address>
   did: string
   keys: IDidKeyDetails[]
-  keyRelationships: MapKeyToRelationship
+  keyRelationships?: MapKeyToRelationship
   lastTxIndex: BN
+  serviceEndpoints?: IDidServiceEndpoint[]
 }
 
 function errorCheck({
@@ -83,16 +85,18 @@ export class FullDidDetails extends DidDetails {
     keys,
     keyRelationships = {},
     lastTxIndex,
+    serviceEndpoints = [],
   }: FullDidDetailsCreationOpts) {
     errorCheck({
       did,
       keys,
       keyRelationships,
       lastTxIndex,
+      serviceEndpoints,
     })
 
     const id = getIdentifierFromKiltDid(did)
-    super(did, id)
+    super(did, id, serviceEndpoints)
 
     this.keys = new Map(keys.map((key) => [key.id, key]))
     this.lastTxIndex = lastTxIndex
