@@ -11,6 +11,7 @@
 import { Crypto } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/util-crypto'
 import {
+  assembleDidFragment,
   getEncodingForSigningKeyType,
   getKiltDidFromIdentifier,
 } from '../Did.utils'
@@ -60,7 +61,7 @@ export class LightDidDetails extends DidDetails {
       did,
       id,
       serviceEndpoints.map((service) => {
-        return { ...service, id: `${did}#${service.id}` }
+        return { ...service, id: assembleDidFragment(did, service.id) }
       })
     )
 

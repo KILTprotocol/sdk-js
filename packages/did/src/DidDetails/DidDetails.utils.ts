@@ -23,6 +23,7 @@ import {
   getKiltDidFromIdentifier,
   getSignatureAlgForKeyType,
   getIdentifierFromKiltDid,
+  assembleDidFragment,
 } from '../Did.utils'
 
 /**
@@ -98,7 +99,7 @@ export function deriveDidPublicKey<T extends string>(
     controller ||
     getKiltDidFromIdentifier(Crypto.encodeAddress(publicKeyU8a, 38), 'full')
   return {
-    id: `${did}#${keyIdentifier}`,
+    id: assembleDidFragment(did, keyIdentifier),
     controller: did,
     type,
     publicKeyHex,

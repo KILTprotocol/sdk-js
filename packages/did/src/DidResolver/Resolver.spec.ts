@@ -24,6 +24,7 @@ import { LightDidDetails } from '../DidDetails'
 import type { INewPublicKey } from '../types'
 import { IDidChainRecordJSON } from '../types'
 import { DefaultResolver } from './DefaultResolver'
+import { assembleDidFragment } from '../Did.utils'
 
 jest.mock('../Did.chain', () => {
   const queryByDID = jest.fn(
@@ -33,7 +34,7 @@ jest.mock('../Did.chain', () => {
       keyAgreementKeys: [`${did}#x25519`],
       publicKeys: [
         {
-          id: `${did}#auth`,
+          id: assembleDidFragment(did, 'auth'),
           type: 'ed25519',
           controller: did,
           publicKeyHex:
@@ -41,7 +42,7 @@ jest.mock('../Did.chain', () => {
           includedAt: 200,
         },
         {
-          id: `${did}#x25519`,
+          id: assembleDidFragment(did, 'x25519'),
           type: 'x25519',
           controller: did,
           publicKeyHex:
@@ -57,7 +58,7 @@ jest.mock('../Did.chain', () => {
       did: string,
       serviceId: string
     ): Promise<IDidServiceEndpoint | null> => ({
-      id: `${did}#${serviceId}`,
+      id: assembleDidFragment(did, serviceId),
       types: [`type-${serviceId}`],
       urls: [`url-${serviceId}`],
     })

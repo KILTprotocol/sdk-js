@@ -41,6 +41,7 @@ import {
   formatPublicKey,
   encodeServiceEndpoint,
   parseDidUrl,
+  assembleDidFragment,
 } from './Did.utils'
 
 // ### RAW QUERYING (lowest layer)
@@ -156,7 +157,7 @@ function decodeServiceChainRecord(
 ): IDidServiceEndpoint {
   const decodedId = hexToString(serviceDetails.id.toString())
   return {
-    id: `${did}#${decodedId}`,
+    id: assembleDidFragment(did, decodedId),
     types: serviceDetails.serviceTypes.map((type) =>
       hexToString(type.toString())
     ),

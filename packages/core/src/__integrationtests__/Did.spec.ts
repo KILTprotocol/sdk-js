@@ -114,12 +114,12 @@ describe('write and didDeleteTx', () => {
       IDidServiceEndpoint[]
     >([
       {
-        id: `${did}#test-id-1`,
+        id: DidUtils.assembleDidFragment(did, 'test-id-1'),
         types: ['test-type-1'],
         urls: ['test-url-1'],
       },
       {
-        id: `${did}#test-id-2`,
+        id: DidUtils.assembleDidFragment(did, 'test-id-2'),
         types: ['test-type-2'],
         urls: ['test-url-2'],
       },
@@ -127,7 +127,7 @@ describe('write and didDeleteTx', () => {
     await expect(
       DidChain.queryServiceEndpoint(`${did}#test-id-1`)
     ).resolves.toMatchObject<IDidServiceEndpoint>({
-      id: `${did}#test-id-1`,
+      id: DidUtils.assembleDidFragment(did, 'test-id-1'),
       types: ['test-type-1'],
       urls: ['test-url-1'],
     })
@@ -322,7 +322,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     DidChain.queryServiceEndpoint(`${did}#${newEndpoint.id}`)
   ).resolves.toMatchObject<IDidServiceEndpoint>({
     ...newEndpoint,
-    id: `${did}#${newEndpoint.id}`,
+    id: DidUtils.assembleDidFragment(did, newEndpoint.id),
   })
 
   // Delete the added service endpoint
@@ -511,7 +511,7 @@ describe('DID migration', () => {
     >([
       {
         ...serviceEndpoints[0],
-        id: `${did}#${serviceEndpoints[0].id}`,
+        id: DidUtils.assembleDidFragment(did, serviceEndpoints[0].id),
       },
     ])
 
@@ -536,7 +536,7 @@ describe('DID migration', () => {
 
     expect(fullDid!.details.getEndpoints()).toMatchObject(
       serviceEndpoints.map((service) => {
-        return { ...service, id: `${did}#${service.id}` }
+        return { ...service, id: DidUtils.assembleDidFragment(did, service.id) }
       })
     )
   })

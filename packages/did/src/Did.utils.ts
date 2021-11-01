@@ -503,6 +503,13 @@ export async function getDidAuthenticationSignature(
   return { keyId, signature: Crypto.u8aToHex(signature) }
 }
 
+export function assembleDidFragment(
+  didUri: IDidDetails['did'],
+  fragmentId: string
+): string {
+  return `${didUri}#${fragmentId}`
+}
+
 // This function is tested in the DID integration tests, in the `DID migration` test case.
 export async function upgradeDid(
   lightDid: LightDidDetails,
