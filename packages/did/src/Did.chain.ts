@@ -234,10 +234,9 @@ export async function queryServiceEndpoint(
   const serviceEncoded = await queryServiceEncoded(identifier, fragment)
   if (serviceEncoded.isNone) return null
 
-  return decodeServiceChainRecord(
-    serviceEncoded.unwrap(),
-    getKiltDidFromIdentifier(identifier, 'full')
-  )
+  const didUri = getKiltDidFromIdentifier(identifier, 'full')
+
+  return decodeServiceChainRecord(serviceEncoded.unwrap(), didUri)
 }
 
 export async function queryEndpointsCounts(
