@@ -276,7 +276,7 @@ describe('Light DID Document exporting tests', () => {
   let encryptionDidKeyDetails: INewPublicKey | undefined
   let serviceEndpoints: IDidServiceEndpoint[]
 
-  it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, an x25519 encryption key, and some service endpoints', () => {
+  it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, an x25519 encryption key, and two service endpoints', () => {
     encryptionDidKeyDetails = {
       publicKey: encPublicKey,
       type: 'x25519',
