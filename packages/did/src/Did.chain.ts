@@ -72,10 +72,10 @@ export async function queryAllServicesEncoded(
   didIdentifier: IIdentity['address']
 ): Promise<IServiceEndpointChainRecordCodec[]> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const endpoints = await api.query.did.serviceEndpoints.entries<
+  const encodedEndpoints = await api.query.did.serviceEndpoints.entries<
     Option<IServiceEndpointChainRecordCodec>
   >(didIdentifier)
-  return endpoints.map(([, value]) => value.unwrap())
+  return encodedEndpoints.map(([, encodedValue]) => encodedValue.unwrap())
 }
 
 // Query the # of services stored under a DID without fetching all the services.
