@@ -6,10 +6,45 @@
  */
 
 import { encode as cborEncode, decode as cborDecode } from 'cbor'
+import { SDKErrors } from '@kiltprotocol/utils'
 import type { LightDidDetailsCreationOpts } from '../types'
+import { getEncodingForSigningKeyType, parseDidUrl } from '../Did.utils'
 
 const ENCRYPTION_KEY_MAP_KEY = 'e'
 const SERVICES_KEY_MAP_KEY = 's'
+
+export function checkLightDidCreationOptions(
+  options: LightDidDetailsCreationOpts
+): void {
+  // Check authentication key type
+  const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
+    options.authenticationKey.type
+  )
+  if (!authenticationKeyTypeEncoding) {
+    throw SDKErrors.ERROR_UNSUPPORTED_KEY
+  }
+
+  // Check service endpoints
+  if (!options.serviceEndpoints) {
+    return
+  }
+
+  options.serviceEndpoints?.forEach((service) => {
+    try {
+      parseDidUrl(service.id)
+      throw new Error(
+        `Invalid service ID provided: ${service.id}. The service ID should be a simple identifier and not a complete DID URI.`
+      )
+      // A service ID cannot have a reserved ID that is used for key IDs.
+      if (service.id === 'authentication' || service.id === 'encryption') {
+        throw new Error(
+          `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
+        )
+      }
+      // eslint-disable-next-line no-empty
+    } catch {}
+  })
+}
 
 /**
  * Serialize the optional encryption key of an off-chain DID using the CBOR serialization algorithm and encoding the result in Base64 format.

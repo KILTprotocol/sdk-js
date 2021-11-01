@@ -15,7 +15,8 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
 import type { IDidKeyDetails, IDidServiceEndpoint } from '@kiltprotocol/types'
 import { mapCallToKeyRelationship } from './FullDidDetails.utils'
-import { FullDidDetails, FullDidDetailsCreationOpts } from './FullDidDetails'
+import { FullDidDetails } from './FullDidDetails'
+import type { FullDidDetailsCreationOpts } from '../types'
 
 describe('functional tests', () => {
   const identifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'

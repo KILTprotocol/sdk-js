@@ -12,11 +12,12 @@
 import { IDidServiceEndpoint, KeyRelationship } from '@kiltprotocol/types'
 import { BN, hexToU8a } from '@polkadot/util'
 import type { IDidKeyDetails } from '@kiltprotocol/types'
-import type { INewPublicKey, LightDidDetailsCreationOpts } from '../types'
-import {
-  FullDidDetails,
+import type {
+  INewPublicKey,
+  LightDidDetailsCreationOpts,
   FullDidDetailsCreationOpts,
-} from '../DidDetails/FullDidDetails'
+} from '../types'
+import { FullDidDetails } from '../DidDetails/FullDidDetails'
 import { LightDidDetails } from '../DidDetails/LightDidDetails'
 import { exportToDidDocument } from './DidDocumentExporter'
 

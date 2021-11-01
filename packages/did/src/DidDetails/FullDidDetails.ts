@@ -14,11 +14,9 @@ import type {
   ApiOrMetadata,
   CallMeta,
   IIdentity,
-  IDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
-import { MapKeyToRelationship } from '../types'
 import { generateDidAuthenticatedTx, queryLastTxIndex } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './FullDidDetails.utils'
 import {
@@ -27,15 +25,7 @@ import {
   parseDidUrl,
 } from '../Did.utils'
 import { DidDetails } from './DidDetails'
-
-export type FullDidDetailsCreationOpts = {
-  // The full DID URI, following the scheme did:kilt:<kilt_address>
-  did: string
-  keys: IDidKeyDetails[]
-  keyRelationships: MapKeyToRelationship
-  lastTxIndex: BN
-  serviceEndpoints?: IDidServiceEndpoint[]
-}
+import type { FullDidDetailsCreationOpts } from '../types'
 
 function errorCheck({
   did,
@@ -74,6 +64,7 @@ function errorCheck({
   })
 }
 
+// eslint-disable-next-line import/prefer-default-export
 export class FullDidDetails extends DidDetails {
   /// The latest version for KILT full DIDs.
   public static readonly FULL_DID_LATEST_VERSION = 1
