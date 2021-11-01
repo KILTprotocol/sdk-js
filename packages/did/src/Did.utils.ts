@@ -411,7 +411,8 @@ export async function writeDidFromPublicKeys(
     alg: getSignatureAlgForKeyType(authenticationKey.type),
     signingPublicKey: authenticationKey.publicKey,
   })
-  return { extrinsic, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
+  const did = getKiltDidFromIdentifier(didIdentifier, 'full')
+  return { extrinsic, did }
 }
 
 export async function writeDidFromPublicKeysAndServices(
@@ -433,7 +434,8 @@ export async function writeDidFromPublicKeysAndServices(
     signingPublicKey: authenticationKey.publicKey,
     endpoints,
   })
-  return { extrinsic, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
+  const did = getKiltDidFromIdentifier(didIdentifier, 'full')
+  return { extrinsic, did }
 }
 
 export function writeDidFromIdentity(
