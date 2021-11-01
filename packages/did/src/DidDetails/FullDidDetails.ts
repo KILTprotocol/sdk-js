@@ -17,7 +17,7 @@ import type {
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
-import { generateDidAuthenticatedTx, queryLastTxIndex } from '../Did.chain'
+import { generateDidAuthenticatedTx, queryLastTxCounter } from '../Did.chain'
 import { getKeysForCall, getKeysForExtrinsic } from './FullDidDetails.utils'
 import {
   getSignatureAlgForKeyType,
@@ -178,7 +178,7 @@ export class FullDidDetails extends DidDetails {
    * @returns The last used nonce.
    */
   public async refreshTxIndex(): Promise<this> {
-    this.lastTxIndex = await queryLastTxIndex(this.did)
+    this.lastTxIndex = await queryLastTxCounter(this.did)
     return this
   }
 }

@@ -254,7 +254,7 @@ export async function queryEndpointsCounts(
   return count.toNumber()
 }
 
-export async function queryLastTxIndex(
+export async function queryLastTxCounter(
   didUri: IDidDetails['did']
 ): Promise<BN> {
   const { identifier, fragment } = parseDidUrl(didUri)

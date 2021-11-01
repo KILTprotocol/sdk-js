@@ -578,7 +578,7 @@ describe('DID authorization', () => {
   }, 60_000)
 
   beforeEach(async () => {
-    lastTxIndex = await DidChain.queryLastTxIndex(
+    lastTxIndex = await DidChain.queryLastTxCounter(
       DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
     )
   })
