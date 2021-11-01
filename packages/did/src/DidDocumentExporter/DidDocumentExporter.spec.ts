@@ -20,14 +20,13 @@ import type {
 import { FullDidDetails } from '../DidDetails/FullDidDetails'
 import { LightDidDetails } from '../DidDetails/LightDidDetails'
 import { exportToDidDocument } from './DidDocumentExporter'
-import { assembleDidFragment } from '../Did.utils'
 
 describe('Full DID Document exporting tests', () => {
   const identifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
   const did = `did:kilt:${identifier}`
   const keys: IDidKeyDetails[] = [
     {
-      id: assembleDidFragment(did, '1'),
+      id: `${did}#1`,
       controller: did,
       includedAt: 100,
       type: 'ed25519',
@@ -35,7 +34,7 @@ describe('Full DID Document exporting tests', () => {
         '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     },
     {
-      id: assembleDidFragment(did, '2'),
+      id: `${did}#2`,
       controller: did,
       includedAt: 250,
       type: 'x25519',
@@ -43,7 +42,7 @@ describe('Full DID Document exporting tests', () => {
         '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     },
     {
-      id: assembleDidFragment(did, '3'),
+      id: `${did}#3`,
       controller: did,
       includedAt: 250,
       type: 'x25519',
@@ -51,7 +50,7 @@ describe('Full DID Document exporting tests', () => {
         '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
     },
     {
-      id: assembleDidFragment(did, '4'),
+      id: `${did}#4`,
       controller: did,
       includedAt: 200,
       type: 'sr25519',
@@ -61,12 +60,12 @@ describe('Full DID Document exporting tests', () => {
   ]
   const serviceEndpoints: IDidServiceEndpoint[] = [
     {
-      id: assembleDidFragment(did, 'id-1'),
+      id: `${did}#id-1`,
       types: ['type-1'],
       urls: ['url-1'],
     },
     {
-      id: assembleDidFragment(did, 'id-2'),
+      id: `${did}#id-2`,
       types: ['type-2'],
       urls: ['url-2'],
     },
@@ -85,7 +84,7 @@ describe('Full DID Document exporting tests', () => {
 
   it('exports the expected application/json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', () => {
     const ecdsaKey: IDidKeyDetails = {
-      id: assembleDidFragment(did, '5'),
+      id: `${did}#5`,
       controller: did,
       includedAt: 200,
       type: 'ecdsa',
@@ -174,7 +173,7 @@ describe('Full DID Document exporting tests', () => {
 
   it('exports the expected application/ld+json W3C DID Document with an Ed25519 authentication key, two x25519 encryption keys, an Sr25519 assertion key, an Ecdsa delegation key, and two service endpoints', () => {
     const ecdsaKey: IDidKeyDetails = {
-      id: assembleDidFragment(did, '5'),
+      id: `${did}#5`,
       controller: did,
       includedAt: 200,
       type: 'ecdsa',
