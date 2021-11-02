@@ -27,7 +27,7 @@ const SEP = '_'
 
 async function setup(): Promise<{
   claimerLightDid: Did.LightDidDetails
-  attesterOnChainDid: Did.FullDidDetails
+  attesterFullDid: Did.FullDidDetails
   attester: KeyringPair
   claim: Claim
   ctype: CType
@@ -65,7 +65,7 @@ async function setup(): Promise<{
 
   // Build an on chain DID for the attester to make transactions on the KILT chain, using our demo keystore
   const keystore = new Kilt.Did.DemoKeystore()
-  const attesterOnChainDid = await Kilt.Did.createOnChainDidFromSeed(
+  const attesterFullDid = await Kilt.Did.createOnChainDidFromSeed(
     attester,
     keystore,
     attesterMnemonic,
@@ -74,7 +74,7 @@ async function setup(): Promise<{
   )
 
   // Will print `did:kilt:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar`.
-  console.log(attesterOnChainDid.did)
+  console.log(attesterFullDid.did)
 
   // ------------------------- CType    ----------------------------------------
   // First build a schema
@@ -100,7 +100,7 @@ async function setup(): Promise<{
   const rawCtype: ICType = {
     schema: ctypeSchema,
     hash: ctypeHash,
-    owner: attesterOnChainDid.did,
+    owner: attesterFullDid.did,
   }
 
   // Build the CType object
@@ -113,7 +113,7 @@ async function setup(): Promise<{
     await ctype
       .store()
       .then((tx) =>
-        attesterOnChainDid.authorizeExtrinsic(tx, keystore, attester.address)
+        attesterFullDid.authorizeExtrinsic(tx, keystore, attester.address)
       )
       .then((tx) =>
         Kilt.BlockchainUtils.signAndSubmitTx(tx, attester, {
@@ -175,13 +175,13 @@ async function setup(): Promise<{
   )
 
   console.log('Claimer', claimerLightDid.did, '\n')
-  console.log('Attester', attesterOnChainDid.did, '\n')
+  console.log('Attester', attesterFullDid.did, '\n')
   console.log('Ctype', ctype, '\n')
   console.log('Claim', claim, '\n')
 
   return {
     claimerLightDid,
-    attesterOnChainDid,
+    attesterFullDid,
     attester,
     ctype,
     claim,
@@ -191,7 +191,7 @@ async function setup(): Promise<{
 
 async function doAttestation(
   claimerLightDid: Did.LightDidDetails,
-  attesterOnChainDid: Did.FullDidDetails,
+  attesterFullDid: Did.FullDidDetails,
   attester: KeyringPair,
   claim: Claim,
   keystore: Did.DemoKeystore
@@ -214,13 +214,13 @@ async function doAttestation(
       content: { requestForAttestation },
     },
     claimerLightDid.did,
-    attesterOnChainDid.did
+    attesterFullDid.did
   )
 
   const claimerEncryptionKey = claimerLightDid.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
-  const attesterEncryptionKey = attesterOnChainDid.getKeys(
+  const attesterEncryptionKey = attesterFullDid.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
 
@@ -239,7 +239,7 @@ async function doAttestation(
   const reqAttestationDec = await Kilt.Message.decrypt(
     encryptMessage,
     keystore,
-    { senderDetails: claimerLightDid, receiverDetails: attesterOnChainDid }
+    { senderDetails: claimerLightDid, receiverDetails: attesterFullDid }
   )
 
   const claimersRequest = Kilt.RequestForAttestation.fromRequest(
@@ -256,13 +256,13 @@ async function doAttestation(
 
   const attestation = Kilt.Attestation.fromRequestAndDid(
     claimersRequest,
-    attesterOnChainDid.did
+    attesterFullDid.did
   )
   console.log('the attestation: ', attestation)
   await attestation
     .store()
     .then((tx) =>
-      attesterOnChainDid.authorizeExtrinsic(tx, keystore, attester.address)
+      attesterFullDid.authorizeExtrinsic(tx, keystore, attester.address)
     )
     .then((tx) =>
       Kilt.BlockchainUtils.signAndSubmitTx(tx, attester, {
@@ -276,7 +276,7 @@ async function doAttestation(
       type: Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
       content: { attestation },
     },
-    attesterOnChainDid.did,
+    attesterFullDid.did,
     claimerLightDid.did
   )
 
@@ -292,7 +292,7 @@ async function doAttestation(
   const submitAttestationDec = await Kilt.Message.decrypt(
     submitAttestationEnc,
     keystore,
-    { senderDetails: attesterOnChainDid, receiverDetails: claimerLightDid }
+    { senderDetails: attesterFullDid, receiverDetails: claimerLightDid }
   )
 
   const credential = Kilt.AttestedClaim.fromRequestAndAttestation(
@@ -429,7 +429,7 @@ async function doVerification(
 async function example(): Promise<boolean> {
   const {
     claimerLightDid,
-    attesterOnChainDid,
+    attesterFullDid,
     claim,
     attester,
     keystore,
@@ -437,7 +437,7 @@ async function example(): Promise<boolean> {
 
   const { credential } = await doAttestation(
     claimerLightDid,
-    attesterOnChainDid,
+    attesterFullDid,
     attester,
     claim,
     keystore

@@ -135,7 +135,7 @@ async function main(): Promise<void> {
   console.log(requestForAttestation)
 
   /* Before we can send the request for an attestation to an Attester, we should first fetch the on chain did and create an encryption key. */
-  const attesterOnChainDid = (await Kilt.Did.resolveDoc(
+  const attesterFullDid = (await Kilt.Did.resolveDoc(
     fullDid.did
   )) as IDidResolvedDetails
 
@@ -149,13 +149,13 @@ async function main(): Promise<void> {
   const message = new Kilt.Message(
     messageBody,
     claimerLightDid.did,
-    attesterOnChainDid.details.did
+    attesterFullDid.details.did
   )
 
   /* The complete `message` looks as follows: */
   console.log(message)
 
-  const attesterEncryptionKey = attesterOnChainDid.details.getKeys(
+  const attesterEncryptionKey = attesterFullDid.details.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
 
@@ -182,7 +182,7 @@ async function main(): Promise<void> {
     /* The Attester creates the attestation based on the IRequestForAttestation object she received: */
     const attestation = Kilt.Attestation.fromRequestAndDid(
       extractedRequestForAttestation,
-      attesterOnChainDid.details.did
+      attesterFullDid.details.did
     )
 
     /* The complete `attestation` object looks as follows: */
@@ -215,7 +215,7 @@ async function main(): Promise<void> {
     }
     const messageBack = new Kilt.Message(
       messageBodyBack,
-      attesterOnChainDid.details.did,
+      attesterFullDid.details.did,
       claimerLightDid.did
     )
 

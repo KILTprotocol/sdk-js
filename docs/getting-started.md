@@ -295,9 +295,9 @@ await Kilt.BlockchainUtils.signAndSubmitTx(extrinsic, attester, {
 })
 
 // The resolved full DID
-const attesterOnChainDid = await Did.DefaultResolver.resolveDoc(did)
+const attesterFullDid = await Did.DefaultResolver.resolveDoc(did)
 
-console.log('Full DID', attesterOnChainDid.details)
+console.log('Full DID', attesterFullDid.details)
 
 // Example of a full did:
 {
@@ -356,7 +356,7 @@ To store the CTYPE on the blockchain with the attester, you have to call:
 ```typescript
 const tx = await ctype.store()
 
-const authorizedExtrinsic = await attesterOnChainDid.authorizeExtrinsic(
+const authorizedExtrinsic = await attesterFullDid.authorizeExtrinsic(
   tx,
   keystore,
   attester.address
@@ -503,7 +503,7 @@ const messageBody: MessageBody = {
 const message = new Kilt.Message(
   messageBody,
   claimerLightDid.did,
-  attesterOnChainDid.did
+  attesterFullDid.did
 )
 ```
 
@@ -532,7 +532,7 @@ After the message has been created the key agreement of both the claimer and att
 const claimerEncryptionKey = claimerLightDid.getKeys(
   KeyRelationship.keyAgreement
 )[0] as IDidKeyDetails<string>
-const attesterEncryptionKey = attesterOnChainDid.getKeys(
+const attesterEncryptionKey = attesterFullDid.getKeys(
   KeyRelationship.keyAgreement
 )[0] as IDidKeyDetails<string>
 ```
@@ -552,7 +552,7 @@ The messaging system is transport agnostic.
 ```typescript
 const decrypted = Kilt.Message.decrypt(encrypted, keystore, {
   senderDetails: claimerLightDid,
-  receiverDetails: attesterOnChainDid,
+  receiverDetails: attesterFullDid,
 })
 ```
 
@@ -573,7 +573,7 @@ The Attester creates the attestation based on the IRequestForAttestation object 
 ```typescript
 const attestation = Kilt.Attestation.fromRequestAndDid(
   extractedRequestForAttestation,
-  attesterOnChainDid.did
+  attesterFullDid.did
 )
 ```
 
@@ -593,7 +593,7 @@ Now the Attester must store the attestation on the blockchain, which also costs 
 
 ```typescript
 const tx = await attestation.store()
-const authorizedExtrinsic = attesterOnChainDid.authorizeExtrinsic(
+const authorizedExtrinsic = attesterFullDid.authorizeExtrinsic(
   tx,
   keystore,
   attester.address
@@ -661,7 +661,7 @@ const messageBodyBack: MessageBody = {
 }
 const messageBack = new Kilt.Message(
   messageBodyBack,
-  attesterOnChainDid.did,
+  attesterFullDid.did,
   claimerLightDid.did
 )
 ```
