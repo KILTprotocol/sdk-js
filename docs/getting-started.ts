@@ -81,7 +81,7 @@ async function main(): Promise<void> {
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
   const account = keyring.addFromMnemonic(accountMnemonic)
 
-  const onChainDid = await Kilt.Did.createOnChainDidFromSeed(
+  const fullDid = await Kilt.Did.createOnChainDidFromSeed(
     account,
     keystore,
     accountMnemonic,
@@ -90,11 +90,7 @@ async function main(): Promise<void> {
   )
 
   tx = await ctype.store()
-  authorizedTx = await onChainDid.authorizeExtrinsic(
-    tx,
-    keystore,
-    account.address
-  )
+  authorizedTx = await fullDid.authorizeExtrinsic(tx, keystore, account.address)
   await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, account, {
     resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
     reSign: true,
@@ -140,7 +136,7 @@ async function main(): Promise<void> {
 
   /* Before we can send the request for an attestation to an Attester, we should first fetch the on chain did and create an encryption key. */
   const attesterOnChainDid = (await Kilt.Did.resolveDoc(
-    onChainDid.did
+    fullDid.did
   )) as IDidResolvedDetails
 
   /* Creating an encryption key */
@@ -194,7 +190,7 @@ async function main(): Promise<void> {
 
     /* Now the Attester can store and authorize the attestation on the blockchain, which also costs tokens: */
     tx = await attestation.store()
-    authorizedTx = await onChainDid.authorizeExtrinsic(
+    authorizedTx = await fullDid.authorizeExtrinsic(
       tx,
       keystore,
       account.address
