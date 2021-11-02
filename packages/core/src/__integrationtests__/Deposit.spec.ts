@@ -1,0 +1,459 @@
+/**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/* eslint-disable no-console */
+
+import {
+  createLightDidFromSeed,
+  createOnChainDidFromSeed,
+  DemoKeystore,
+  DidChain,
+  FullDidDetails,
+} from '@kiltprotocol/did'
+import {
+  IRequestForAttestation,
+  ISubmittableResult,
+  KeyRelationship,
+  KeystoreSigner,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
+import { KeyringPair } from '@polkadot/keyring/types'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { randomAsHex } from '@polkadot/util-crypto'
+import {
+  setup,
+  LightActor,
+  ctypeCreator,
+  createFullDid,
+  getDidDeposit,
+  createAttestation,
+  getAttestationDeposit,
+  createMinimalFullDidFromLightDid,
+  WS_ADDRESS,
+  devFaucet,
+} from './utils'
+import { Balance } from '../balance'
+import Attestation from '../attestation/Attestation'
+import Claim from '../claim/Claim'
+import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import { disconnect, init } from '../kilt'
+
+let tx: SubmittableExtrinsic
+let authorizedTx: SubmittableExtrinsic
+
+async function checkDeleteFullDid(
+  identity: KeyringPair,
+  fullDid: FullDidDetails,
+  keystore: DemoKeystore
+): Promise<boolean> {
+  const deleteDid = await DidChain.getDeleteDidExtrinsic()
+
+  const balanceBeforeDeleting = await Balance.getBalances(
+    identity.address
+  ).then((balance) => balance)
+
+  console.log(
+    'free balance before deleting:',
+    balanceBeforeDeleting.free.toString()
+  )
+  console.log(
+    'reserved balance before deleting:',
+    balanceBeforeDeleting.reserved.toString()
+  )
+
+  tx = await DidChain.generateDidAuthenticatedTx({
+    didIdentifier: identity.address,
+    txCounter: fullDid.getNextTxIndex(),
+    call: deleteDid,
+    signer: keystore as KeystoreSigner<string>,
+    signingPublicKey: fullDid.getKeys(KeyRelationship.authentication)[0]
+      .publicKeyHex,
+    alg: fullDid.getKeys(KeyRelationship.authentication)[0].type,
+    submitter: identity.address,
+  })
+
+  const didBeforeDepositRemoval = await getDidDeposit(identity.address)
+
+  console.log('There should be deposit', didBeforeDepositRemoval.toString())
+
+  await BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: BlockchainUtils.IS_FINALIZED,
+  })
+
+  const didDeposit = await getDidDeposit(identity.address)
+
+  console.log('There should be no deposit', didDeposit.toString())
+
+  const balanceAfterDeleting = await Balance.getBalances(identity.address).then(
+    (balance) => balance
+  )
+
+  console.log(
+    'free balance After deleting:',
+    balanceAfterDeleting.free.toString()
+  )
+  console.log(
+    'reserved balance After deleting:',
+    balanceAfterDeleting.reserved.toString()
+  )
+
+  if (balanceAfterDeleting.reserved.toNumber() === didDeposit.toNumber()) {
+    return true
+  }
+  return false
+}
+
+async function checkReclaimFullDid(identity: KeyringPair): Promise<boolean> {
+  tx = await DidChain.getReclaimDepositExtrinsic(identity.address)
+
+  const balanceBeforeRevoking = await Balance.getBalances(
+    identity.address
+  ).then((balance) => balance)
+
+  console.log('balance before Revoking', balanceBeforeRevoking.toString())
+
+  const didDeposit = await getDidDeposit(identity.address)
+
+  console.log('There should be deposit', didDeposit.toString())
+
+  await BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: BlockchainUtils.IS_FINALIZED,
+  })
+
+  const didAfterDepositRemoval = await getDidDeposit(identity.address)
+
+  console.log('There should be no deposit', didAfterDepositRemoval.toString())
+  const balanceAfterRevoking = await Balance.getBalances(identity.address).then(
+    (balance) => balance
+  )
+
+  console.log('balance after Revoking', balanceAfterRevoking.toString())
+
+  if (
+    balanceAfterRevoking.reserved.toNumber() ===
+    didAfterDepositRemoval.toNumber()
+  ) {
+    return true
+  }
+  return false
+}
+
+async function checkRemoveFullDidAttestation(
+  identity: KeyringPair,
+  fullDid: FullDidDetails,
+  keystore: DemoKeystore,
+  requestForAttestation: IRequestForAttestation
+): Promise<boolean> {
+  await createAttestation(identity, requestForAttestation, fullDid, keystore)
+  const balanceBeforeRemoving = await Balance.getBalances(
+    identity.address
+  ).then((balance) => balance)
+  const attestation = Attestation.fromRequestAndDid(
+    requestForAttestation,
+    fullDid.did
+  )
+  console.log('balance before Removing', balanceBeforeRemoving.toString())
+
+  tx = await attestation.remove(0)
+  authorizedTx = await fullDid.authorizeExtrinsic(
+    tx,
+    keystore,
+    identity.address
+  )
+
+  const attestationDepositBefore = await getAttestationDeposit(
+    attestation.claimHash
+  )
+
+  console.log('There should be deposit', attestationDepositBefore.toString())
+
+  await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
+    resolveOn: BlockchainUtils.IS_FINALIZED,
+  })
+  const attestationDepositAfter = await getAttestationDeposit(
+    attestation.claimHash
+  )
+
+  console.log(
+    'There should be less deposit',
+    attestationDepositAfter.toString()
+  )
+
+  const balanceAfterRemoving = await Balance.getBalances(identity.address).then(
+    (balance) => balance
+  )
+
+  console.log('balance after Removing', balanceAfterRemoving.toString())
+
+  return true
+}
+
+async function checkReclaimFullDidAttestation(
+  identity: KeyringPair,
+  fullDid: FullDidDetails,
+  keystore: DemoKeystore,
+  requestForAttestation: IRequestForAttestation
+): Promise<boolean> {
+  await createAttestation(identity, requestForAttestation, fullDid, keystore)
+  const balanceBeforeReclaiming = await Balance.getBalances(
+    identity.address
+  ).then((balance) => balance)
+  const attestation = Attestation.fromRequestAndDid(
+    requestForAttestation,
+    fullDid.did
+  )
+  console.log('balance before Reclaiming', balanceBeforeReclaiming.toString())
+
+  tx = await attestation.reclaimDeposit()
+
+  console.log('reclaim full attestation transaction fee:')
+
+  const attestationDepositBefore = await getAttestationDeposit(
+    attestation.claimHash
+  )
+
+  console.log('There should be deposit', attestationDepositBefore.toString())
+
+  await BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: BlockchainUtils.IS_FINALIZED,
+  })
+  const attestationDepositAfter = await getAttestationDeposit(
+    attestation.claimHash
+  )
+
+  console.log('There should be deposit', attestationDepositAfter.toString())
+
+  const balanceAfterDeleting = await Balance.getBalances(identity.address).then(
+    (balance) => balance
+  )
+
+  console.log('balance after Deleting', balanceAfterDeleting.toString())
+
+  return true
+}
+
+async function checkDeletedDidReclaimAttestation(
+  identity: KeyringPair,
+  fullDid: FullDidDetails,
+  keystore: DemoKeystore,
+  requestForAttestation: IRequestForAttestation
+): Promise<ISubmittableResult> {
+  await createAttestation(identity, requestForAttestation, fullDid, keystore)
+  const balanceBeforeReclaiming = await Balance.getBalances(
+    identity.address
+  ).then((balance) => balance)
+  const attestation = Attestation.fromRequestAndDid(
+    requestForAttestation,
+    fullDid.did
+  )
+
+  const deleteDid = await DidChain.getDeleteDidExtrinsic()
+
+  tx = await DidChain.generateDidAuthenticatedTx({
+    didIdentifier: identity.address,
+    txCounter: fullDid.getNextTxIndex(),
+    call: deleteDid,
+    signer: keystore as KeystoreSigner<string>,
+    signingPublicKey: fullDid.getKeys(KeyRelationship.authentication)[0]
+      .publicKeyHex,
+    alg: fullDid.getKeys(KeyRelationship.authentication)[0].type,
+    submitter: identity.address,
+  })
+
+  await BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: BlockchainUtils.IS_FINALIZED,
+  })
+
+  console.log('balance before Reclaiming', balanceBeforeReclaiming.toString())
+
+  tx = await attestation.reclaimDeposit()
+
+  const attestationDepositBefore = await getAttestationDeposit(
+    attestation.claimHash
+  )
+
+  console.log('There should be deposit', attestationDepositBefore.toString())
+
+  return BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: BlockchainUtils.IS_FINALIZED,
+  })
+}
+let keystore: DemoKeystore
+let testIdentities: KeyringPair[]
+let testMnemonics: string[]
+let claimer: LightActor
+let requestForAttestation: RequestForAttestation
+
+beforeAll(async () => {
+  /* Initialize KILT SDK and set up node endpoint */
+  await init({ address: WS_ADDRESS })
+  ;({ keystore, testIdentities, testMnemonics, claimer } = await setup())
+  const attester = await createOnChainDidFromSeed(
+    devFaucet,
+    keystore,
+    randomAsHex()
+  )
+  const ctype = await ctypeCreator(attester, keystore, testIdentities[0])
+
+  const rawClaim = {
+    name: 'claimer',
+    age: 69,
+  }
+
+  const claim = Claim.fromCTypeAndClaimContents(
+    ctype,
+    rawClaim,
+    claimer.light.did
+  )
+
+  requestForAttestation = RequestForAttestation.fromClaim(claim)
+  await requestForAttestation.signWithDid(keystore, claimer.light)
+})
+
+describe('checking the deposits', async () => {
+  it('test case one', async () => {
+    const testDidOne = await createFullDid(
+      testIdentities[0],
+      testMnemonics[0],
+      keystore
+    )
+    if (!testDidOne) throw new Error('Creation of Test Full Did one failed')
+
+    const testCaseOne = await checkDeleteFullDid(
+      testIdentities[0],
+      testDidOne,
+      keystore
+    )
+
+    if (!testCaseOne) throw new Error('Test case one failed')
+  })
+  it('test case two', async () => {
+    const testDidTwo = await createFullDid(
+      testIdentities[1],
+      testMnemonics[1],
+      keystore
+    )
+    if (!testDidTwo) throw new Error('Creation of Test Full Did two failed')
+    await checkReclaimFullDid(testIdentities[1])
+  })
+  it('test case three', async () => {
+    const testDidThree = await createFullDid(
+      testIdentities[2],
+      testMnemonics[2],
+      keystore
+    )
+    if (!testDidThree) throw new Error('Creation of Test Full Did three failed')
+    await checkRemoveFullDidAttestation(
+      testIdentities[2],
+      testDidThree,
+      keystore,
+      requestForAttestation
+    )
+  })
+  it('test case four', async () => {
+    const testDidFour = await createFullDid(
+      testIdentities[3],
+      testMnemonics[3],
+      keystore
+    )
+    if (!testDidFour) throw new Error('Creation of Test Full Did four failed')
+
+    await checkReclaimFullDidAttestation(
+      testIdentities[3],
+      testDidFour,
+      keystore,
+      requestForAttestation
+    )
+  })
+  it('test case five', async () => {
+    const testDidFive = await createLightDidFromSeed(keystore, testMnemonics[4])
+
+    if (!testDidFive) throw new Error('Creation of Test Light Did five failed')
+    const testFullDidFive = await createMinimalFullDidFromLightDid(
+      testIdentities[4],
+      testDidFive,
+      keystore
+    )
+
+    console.log('creation of the testFullDidFive')
+    await checkDeleteFullDid(testIdentities[4], testFullDidFive, keystore)
+  })
+  it('test case six', async () => {
+    const testDidSix = await createLightDidFromSeed(keystore, testMnemonics[5])
+    if (!testDidSix) throw new Error('Creation of Test Light Did six failed')
+
+    await createMinimalFullDidFromLightDid(
+      testIdentities[5],
+      testDidSix,
+      keystore
+    )
+
+    await checkReclaimFullDid(testIdentities[5])
+  })
+  it('test case seven', async () => {
+    const testDidSeven = await createLightDidFromSeed(
+      keystore,
+      testMnemonics[6]
+    )
+    if (!testDidSeven)
+      throw new Error('Creation of Test Light Did seven failed')
+    const testFullDidSeven = await createMinimalFullDidFromLightDid(
+      testIdentities[6],
+      testDidSeven,
+      keystore
+    )
+
+    await checkRemoveFullDidAttestation(
+      testIdentities[6],
+      testFullDidSeven,
+      keystore,
+      requestForAttestation
+    )
+  })
+  it('test case eight', async () => {
+    const testDidEight = await createLightDidFromSeed(
+      keystore,
+      testMnemonics[7]
+    )
+    if (!testDidEight)
+      throw new Error('Creation of Test Light Did eight failed')
+
+    const testFullDidEight = await createMinimalFullDidFromLightDid(
+      testIdentities[7],
+      testDidEight,
+      keystore
+    )
+
+    await checkReclaimFullDidAttestation(
+      testIdentities[7],
+      testFullDidEight,
+      keystore,
+      requestForAttestation
+    )
+  })
+  it('test case nine', async () => {
+    const testDidNine = await createLightDidFromSeed(keystore, testMnemonics[8])
+    if (!testDidNine) throw new Error('Creation of Test Light Did Nine failed')
+
+    const testFullDidNine = await createMinimalFullDidFromLightDid(
+      testIdentities[8],
+      testDidNine,
+      keystore
+    )
+
+    await checkDeletedDidReclaimAttestation(
+      testIdentities[8],
+      testFullDidNine,
+      keystore,
+      requestForAttestation
+    )
+  })
+})
+
+afterAll(() => {
+  disconnect()
+})
