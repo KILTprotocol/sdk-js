@@ -29,23 +29,30 @@ export function checkLightDidCreationOptions(
     return
   }
 
+  // Checks that for all service IDs have regular strings as their ID and not a full DID.
+  // Plus, we forbid a service ID to be `authentication` or `encryption` as that would create confusion
+  // when upgrading to a full DID.
   options.serviceEndpoints?.forEach((service) => {
+    let isServiceIdADid = true
     try {
       // parseDidUrl throws if the service ID is not a proper DID URI, which is exactly what we expect here.
-      // So this block will throw if a valid DID URI is provided for a service ID, otherwise the error
-      // thrown by parseDidUrl is caught and ignored.
       parseDidUrl(service.id)
+    } catch {
+      // Here if parseDidUrl throws -> service.id is NOT a DID.
+      isServiceIdADid = false
+    }
+
+    if (isServiceIdADid) {
       throw new Error(
         `Invalid service ID provided: ${service.id}. The service ID should be a simple identifier and not a complete DID URI.`
       )
-      // A service ID cannot have a reserved ID that is used for key IDs.
-      if (service.id === 'authentication' || service.id === 'encryption') {
-        throw new Error(
-          `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
-        )
-      }
-      // eslint-disable-next-line no-empty
-    } catch {}
+    }
+    // A service ID cannot have a reserved ID that is used for key IDs.
+    if (service.id === 'authentication' || service.id === 'encryption') {
+      throw new Error(
+        `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
+      )
+    }
   })
 }
 
