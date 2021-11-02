@@ -19,7 +19,7 @@ did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar
 
 Beyond the standard prefix `did:kilt:`, the `light:` component indicates that this DID is a light DID, hence it can be resolved and utilized offline.
 
-Light DIDs optionally support the specification of an **encryption key** (of one of the supported key types), which is serialised, encoded and added at the end of the DID, like the following:
+Light DIDs optionally support the specification of an **encryption key** (of one of the supported key types) and some service endpoints, which are both serialised, encoded and added at the end of the DID, like the following:
 
 ```
 did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5
@@ -65,7 +65,7 @@ const lightDID = new LightDidDetails({
 console.log(lightDID.did)
 ```
 
-For cases in which also an encryption key needs to be added to a light DID:
+For cases in which also an encryption key and some service endpoints need to be added to a light DID:
 
 ```typescript
 const keystore = new DemoKeystore()
@@ -86,6 +86,14 @@ const encryptionKeyPublicDetails = await keystore.generateKeypair({
   seed: encryptionSeed,
 })
 
+const serviceEndpoints: IDidServiceEndpoint[] = [
+  {
+    id: 'my-service',
+    types: ['CollatorCredential'],
+    urls: ['http://example.domain.org'],
+  },
+]
+
 // Generate the KILT light DID with the information generated.
 const lightDID = new LightDidDetails({
   authenticationKey: {
@@ -96,15 +104,16 @@ const lightDID = new LightDidDetails({
     publicKey: encryptionKeyPublicDetails.publicKey,
     type: DemoKeystore.getKeypairTypeForAlg(encryptionKeyPublicDetails.alg),
   },
+  serviceEndpoints,
 })
 
-// Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5`.
+// Will print `did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:omFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5YXOBo2JpZHNteS1zZXJ2aWNlLWVuZHBvaW50ZXR5cGVzgnZDb2xsYXRvckNyZWRlbnRpYWxUeXBlbVNvY2lhbEtZQ1R5cGVkdXJsc4J1aHR0cHM6Ly9teV9kb21haW4ub3JnbXJhbmRvbV9kb21haW4`.
 console.log(lightDID.did)
 ```
 
 ## Full DIDs
 
-As mentioned above, the creation of a full DID requires interaction with the KILT blockchain. Therefore, it is necessary for the DID creation operation to be submitted by a KILT address with enough funds to pay the transaction fees and the required deposit (0,1 KILT).
+As mentioned above, the creation of a full DID requires interaction with the KILT blockchain. Therefore, it is necessary for the DID creation operation to be submitted by a KILT address with enough funds to pay the transaction fees and the required deposit.
 While transaction fees are "burned" during the creation operation, the deposit is returned once and if the DID is deleted from the blockchain: this is to incentivise users to clean the data from the blockchain once such data is not needed anymore.
 
 By design, DID signatures and Substrate signatures are decoupled, meaning that the encoded and signed DID creation operation can then be signed and submitted by a different KILT account than the DID subject. We think this opens the path for a wider range of use cases in which, for instance, a service provider might be willing to offer a DID-as-a-Service option for its customers.
@@ -117,7 +126,7 @@ did:kilt:4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e
 
 Here, there is no `light:` component, which indicates that the DID is a full DID and that the keys associated with it must not be derived from the DID identifier but must be retrieved from the KILT blockchain.
 
-Beyond an authentication key and encryption key, a full DID also supports an **attestation key**, which must be used to write CTypes and attestations on the blockchain, and a **delegation key**, which must be used to write delegations on the blockchain.
+Beyond an authentication key, an encryption key, and service endpoints, a full DID also supports an **attestation key**, which must be used to write CTypes and attestations on the blockchain, and a **delegation key**, which must be used to write delegations on the blockchain.
 
 ### Creating and anchoring a full DID
 
@@ -300,6 +309,27 @@ await BlockchainUtils.signAndSubmitTx(
     resolveOn,
   }
 )
+
+// Remove the service endpoint with id `my-service` added upon creation in the previous section.
+const didRemoveExtrinsic = await DidChain.getRemoveEndpointExtrinsic(
+  'my-service'
+)
+
+// Sign the DID operation using the new authentication key.
+const didSignedRemoveExtrinsic = await fullDID.authorizeExtrinsic(
+  didRemoveExtrinsic,
+  keystore as KeystoreSigner<string>,
+  aliceKiltAccount.address
+)
+
+// Submit the signed operation as before.
+await BlockchainUtils.signAndSubmitTx(
+  didSignedRemoveExtrinsic,
+  aliceKiltAccount,
+  {
+    resolveOn,
+  }
+)
 ```
 
 ## Deleting a full DID
@@ -307,8 +337,10 @@ await BlockchainUtils.signAndSubmitTx(
 Once not needed anymore, it is recommended to remove the DID details from the KILT blockchain. The following snippet shows how to do it:
 
 ```typescript
-// Create a DID deletion operation.
-const didDeletionExtrinsic = await getDeleteDidExtrinsic()
+// Create a DID deletion operation. We specify the number of endpoints currently stored under the DID because
+// of the upper computation limit required by the blockchain runtime.
+const endpointsCountForDid = await queryEndpointsCounts(fullDid.did)
+const didDeletionExtrinsic = await getDeleteDidExtrinsic(endpointsCountForDid)
 
 // Sign the DID deletion operation using the DID authentication key.
 // This results in an unsigned extrinsic that can be then signed and submitted to the KILT blockchain by the account
@@ -330,15 +362,19 @@ await BlockchainUtils.signAndSubmitTx(
 
 ### Claiming back a DID deposit
 
-As the creation of a full DID requires a deposit that will lock 0,1 KILT from the balance of the creation tx submitter (which, once again, might differ from the DID subject), the deposit owner is allowed to claim the deposit back by deleting the DID associated with its deposit. This is the reason why full DID creation operations require the tx submitter to be included and signed by the DID subject: to make sure that only the DID subject themselves and the authorised account are ever able to delete the DID information from the chain.
+As the creation of a full DID requires a deposit that will lock from the balance of the creation tx submitter (which, once again, might differ from the DID subject), the deposit owner is allowed to claim the deposit back by deleting the DID associated with its deposit. This is the reason why full DID creation operations require the tx submitter to be included and signed by the DID subject: to make sure that only the DID subject themselves and the authorised account are ever able to delete the DID information from the chain.
 
 Claiming back the deposit of a DID is semantically equivalent to deleting the DID, with the difference that the extrinsic to claim the deposit can only be called by the deposit owner and does not require a valid signature by the DID subject:
 
 ```typescript
-import { generateReclaimDepositExtrinsic } from '@kiltprotocol/did/src/Did.chain'
+import { getReclaimDepositExtrinsic } from '@kiltprotocol/did/src/Did.chain'
 
-// Generate the submittable extrinsic to claim the deposit back, by including the DID identifier for which the deposit needs to be returned.
-const depositClaimExtrinsic = await generateReclaimDepositExtrinsic(fullDID.did)
+// Generate the submittable extrinsic to claim the deposit back, by including the DID identifier for which the deposit needs to be returned and the count of service endpoints to provide an upper bound to the computation of the extrinsic execution.
+const endpointsCountForDid = await queryEndpointsCounts(fullDid.did)
+const depositClaimExtrinsic = await getReclaimDepositExtrinsic(
+  fullDID.did,
+  endpointsCountForDid
+)
 
 // The submission will fail if `aliceKiltAccount` is not the owner of the deposit associated with the given DID identifier.
 await BlockchainUtils.signAndSubmitTx(depositClaimExtrinsic, aliceKiltAccount, {
