@@ -14,19 +14,19 @@ import { BN, formatBalance } from '@polkadot/util'
 import type {
   BalanceNumber,
   BalanceOptions,
-  metricPrefix,
+  MetricPrefix,
 } from '@kiltprotocol/types'
 
 export const KILT_COIN = new BN(1)
 
-export const prefixes = new Map<metricPrefix, number>([
+export const Prefixes = new Map<MetricPrefix, number>([
   ['femto', -15],
   ['pico', -12],
   ['nano', -9],
   ['micro', -6],
   ['milli', -3],
   ['centi', -2],
-  ['kilt', 0],
+  ['KILT', 0],
   ['kilo', 3],
   ['mega', 6],
   ['mill', 6],
@@ -57,6 +57,9 @@ export function formatKiltBalance(
 export function convertToTxUnit(balance: BN, power: number): BN {
   return new BN(balance).mul(new BN(10).pow(new BN(15 + power)))
 }
+
+export const TRANSACTION_FEE = convertToTxUnit(new BN(125), -9)
+
 /**
  * Safely converts the given [[BalanceNumber]] to a string, using the supplied methods,
  * or it given a string checks for valid number representation.
@@ -84,7 +87,7 @@ export function balanceNumberToString(input: BalanceNumber): string {
   throw new Error('could not convert to String')
 }
 /**
- * Converts the given [[BalanceNumber]] to the femto Kilt equivalent.
+ * Converts the given [[BalanceNumber]] to the femto KILT equivalent.
  *
  * @param input [[BalanceNumber]] to convert.
  * @param unit Metric prefix of the given [[BalanceNumber]].
@@ -93,15 +96,15 @@ export function balanceNumberToString(input: BalanceNumber): string {
  */
 export function toFemtoKilt(
   input: BalanceNumber,
-  unit: metricPrefix = 'kilt'
+  unit: MetricPrefix = 'KILT'
 ): BN {
   const stringRepresentation = balanceNumberToString(input)
 
-  if (!prefixes.has(unit)) {
+  if (!Prefixes.has(unit)) {
     throw new Error('Unknown metric prefix')
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const unitVal = prefixes.get(unit)!
+  const unitVal = Prefixes.get(unit)!
   const negative = stringRepresentation.substring(0, 1) === '-'
 
   const [integer, fraction] = negative
@@ -142,7 +145,6 @@ export function fromFemtoKilt(
   }).format(Number(number))
   return `${localeNumber} ${rest.join(' ')}`
 }
-export const TRANSACTION_FEE = convertToTxUnit(new BN(125), -9)
 
 export default {
   KILT_COIN,

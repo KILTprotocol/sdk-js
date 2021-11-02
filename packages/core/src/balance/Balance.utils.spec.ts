@@ -13,7 +13,7 @@ import { BN } from '@polkadot/util'
 import type {
   BalanceNumber,
   BalanceOptions,
-  metricPrefix,
+  MetricPrefix,
 } from '@kiltprotocol/types'
 import {
   formatKiltBalance,
@@ -247,7 +247,7 @@ describe('toFemtoKilt', () => {
       toFemtoKilt(([] as unknown) as BalanceNumber).toString()
     ).toThrowError()
     expect(() =>
-      toFemtoKilt(1, 'nono' as metricPrefix).toString()
+      toFemtoKilt(1, 'nono' as MetricPrefix).toString()
     ).toThrowError()
   })
   it('handles edge cases', () => {

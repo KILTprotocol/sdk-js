@@ -32,14 +32,14 @@ export interface BalanceOptions {
 
 export type BalanceNumber = Exclude<AnyNumber, Uint8Array>
 
-export type metricPrefix =
+export type MetricPrefix =
   | 'femto'
   | 'pico'
   | 'nano'
   | 'micro'
   | 'milli'
   | 'centi'
-  | 'kilt'
+  | 'KILT'
   | 'kilo'
   | 'mega'
   | 'mill'
