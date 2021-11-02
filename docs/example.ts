@@ -351,7 +351,7 @@ async function doVerification(
   const claimerEncryptionKey = claimerLightDid.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
-  const verifierKeyAgreement = verifierLightDid.getKeys(
+  const verifierEncryptionKey = verifierLightDid.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
   // ------------------------- Verifier ----------------------------------------
@@ -365,7 +365,7 @@ async function doVerification(
   )
 
   const verifierAcceptedClaimsMessageEnc = await verifierAcceptedClaimsMessage.encrypt(
-    verifierKeyAgreement,
+    verifierEncryptionKey,
     claimerEncryptionKey,
     keystore
   )
@@ -400,7 +400,7 @@ async function doVerification(
   // Claimer encrypts the claims message to the verifier
   const claimerSubmitClaimsMessageEnc = await claimerSubmitClaimsMessage.encrypt(
     claimerEncryptionKey,
-    verifierKeyAgreement,
+    verifierEncryptionKey,
     keystore
   )
 
