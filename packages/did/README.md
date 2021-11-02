@@ -65,7 +65,7 @@ const lightDID = new LightDidDetails({
 console.log(lightDID.did)
 ```
 
-For cases in which also an encryption key and some services need to be added to a light DID:
+For cases in which also an encryption key and some service endpoints need to be added to a light DID:
 
 ```typescript
 const keystore = new DemoKeystore()
