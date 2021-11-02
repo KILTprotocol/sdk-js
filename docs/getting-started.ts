@@ -324,7 +324,7 @@ async function main(): Promise<void> {
           claims[0]
         )
         const isValid = await verifiablePresentation.verify()
-        console.log('Verifcation success?', isValid)
+        console.log('Verification success?', isValid)
         console.log('Attested claims from verifier perspective:\n', claims)
       }
     }

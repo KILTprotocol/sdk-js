@@ -172,13 +172,13 @@ const keystore = new Kilt.Did.DemoKeystore()
 // Signing keypair
 const claimerSigningKeypair = await keystore.generateKeypair({
   alg: Kilt.Did.SigningAlgorithms.Ed25519,
-  seed: generateClaimerMnemonic,
+  seed: claimerMnemonic,
 })
 
 // Encryption keypair
 const claimerEncryptionKeypair = await keystore.generateKeypair({
   alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
-  seed: generateClaimerMnemonic,
+  seed: claimerMnemonic,
 })
 ```
 
