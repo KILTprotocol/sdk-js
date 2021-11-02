@@ -79,8 +79,8 @@ export class Blockchain implements IBlockchainApi {
    * @returns Signed [[SubmittableExtrinsic]].
    */
   public async signTx(
-    signer: KeyringPair | IIdentity,
     tx: SubmittableExtrinsic,
+    signer: KeyringPair | IIdentity,
     tip?: AnyNumber
   ): Promise<SubmittableExtrinsic> {
     const signKeyringPair = (signer as IIdentity).signKeyringPair || signer
@@ -114,7 +114,7 @@ export class Blockchain implements IBlockchainApi {
         reason.message === SDKErrors.ERROR_TRANSACTION_RECOVERABLE().message &&
         signer
       ) {
-        return submitSignedTx(await this.reSignTx(signer, tx), opts)
+        return submitSignedTx(await this.reSignTx(tx, signer), opts)
       }
       throw reason
     }
@@ -156,8 +156,8 @@ export class Blockchain implements IBlockchainApi {
    * @returns Original Tx, injected with signature payload with updated nonce.
    */
   public async reSignTx(
-    signer: KeyringPair | IIdentity,
-    tx: SubmittableExtrinsic
+    tx: SubmittableExtrinsic,
+    signer: KeyringPair | IIdentity
   ): Promise<SubmittableExtrinsic> {
     const signKeyringPair = (signer as IIdentity).signKeyringPair || signer
     this.accountNonces.delete(signKeyringPair.address)

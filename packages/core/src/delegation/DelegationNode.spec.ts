@@ -16,7 +16,7 @@ import {
   IDelegationHierarchyDetails,
   Permission,
 } from '@kiltprotocol/types'
-import { encodeAddress } from '@polkadot/keyring'
+import { encodeAddress } from '@polkadot/util-crypto'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DelegationNode } from './DelegationNode'
 import { permissionsAsBitset, errorCheck } from './DelegationNode.utils'

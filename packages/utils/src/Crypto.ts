@@ -14,7 +14,6 @@
  * @module Crypto
  */
 
-import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import type { KeyringPair } from '@kiltprotocol/types'
 import {
   isString,
@@ -24,7 +23,12 @@ import {
   u8aToString,
   u8aToU8a,
 } from '@polkadot/util'
-import { blake2AsHex, signatureVerify } from '@polkadot/util-crypto'
+import {
+  blake2AsHex,
+  signatureVerify,
+  decodeAddress,
+  encodeAddress,
+} from '@polkadot/util-crypto'
 import { blake2AsU8a } from '@polkadot/util-crypto/blake2/asU8a'
 import { naclDecrypt } from '@polkadot/util-crypto/nacl/decrypt'
 import { naclEncrypt } from '@polkadot/util-crypto/nacl/encrypt'
