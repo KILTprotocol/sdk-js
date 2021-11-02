@@ -34,12 +34,14 @@ import {
 import { Crypto, SDKErrors, UUID } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import { DidTypes, DidUtils } from '@kiltprotocol/did'
+import { BN } from '@polkadot/util'
 import type { DelegationHierarchyDetailsRecord } from './DelegationDecoder'
 import { query as queryAttestation } from '../attestation/Attestation.chain'
 import {
   getChildren,
   getAttestationHashes,
   query,
+  queryDepositAmount,
   remove,
   revoke,
   storeAsDelegation,
@@ -423,5 +425,14 @@ export default class DelegationNode implements IDelegationNode {
     const result = await query(delegationId)
     log.info(`result: ${JSON.stringify(result)}`)
     return result
+  }
+
+  /**
+   * [STATIC] Query and return the amount of KILTs (in femto notation) needed to deposit in order to create a delegation.
+   *
+   * @returns The amount of femtoKILTs required to deposit to create the delegation.
+   */
+  public static queryDepositAmount(): Promise<BN> {
+    return queryDepositAmount()
   }
 }

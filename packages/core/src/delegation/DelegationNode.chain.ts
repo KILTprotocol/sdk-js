@@ -10,13 +10,14 @@
  * @module DelegationNode
  */
 
-import type { Option, Vec } from '@polkadot/types'
+import type { Option, Vec, U128 } from '@polkadot/types'
 import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidTypes, DidUtils } from '@kiltprotocol/did'
+import { BN } from '@polkadot/util'
 import { decodeDelegationNode, IChainDelegationNode } from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
 import { permissionsAsBitset } from './DelegationNode.utils'
@@ -178,4 +179,14 @@ export async function getAttestationHashes(
     Option<Vec<Hash>>
   >(id)
   return decodeDelegatedAttestations(encodedHashes)
+}
+
+async function queryRawDepositAmount(): Promise<U128> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.consts.delegation.deposit as U128
+}
+
+export async function queryDepositAmount(): Promise<BN> {
+  const encodedDeposit = await queryRawDepositAmount()
+  return encodedDeposit.toBn()
 }

@@ -10,7 +10,7 @@
  * @module DID
  */
 
-import type { Option, u32 } from '@polkadot/types'
+import type { Option, u32, U128 } from '@polkadot/types'
 import type {
   IIdentity,
   SubmittableExtrinsic,
@@ -86,6 +86,11 @@ export async function queryEndpointsCountsEncoded(
 ): Promise<u32> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.didEndpointsCount<u32>(didIdentifier)
+}
+
+async function queryDepositAmountEncoded(): Promise<U128> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.consts.did.deposit as U128
 }
 
 // ### DECODED QUERYING (builds on top of raw querying)
@@ -257,6 +262,11 @@ export async function queryLastTxCounter(
   }
   const encoded = await queryDidEncoded(identifier)
   return encoded.isSome ? encoded.unwrap().lastTxCounter.toBn() : new BN(0)
+}
+
+export async function queryDepositAmount(): Promise<BN> {
+  const encodedDeposit = await queryDepositAmountEncoded()
+  return encodedDeposit.toBn()
 }
 
 // ### EXTRINSICS
