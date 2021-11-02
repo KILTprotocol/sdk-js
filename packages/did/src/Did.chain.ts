@@ -203,13 +203,7 @@ export async function queryDidKey(
   if (!didDetails) {
     return null
   }
-  return (
-    didDetails.publicKeys
-      .filter((key) => {
-        return key.id === keyUri
-      })
-      .pop() || null
-  )
+  return didDetails.publicKeys.find((key) => key.id === keyUri) || null
 }
 
 export async function queryServiceEndpoints(
