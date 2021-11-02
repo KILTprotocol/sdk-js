@@ -45,6 +45,13 @@ beforeAll(async () => {
   paymentAccount = devAlice
 })
 
+it('fetches the correct deposit amount', async () => {
+  const depositAmount = await DidChain.queryDepositAmount()
+  expect(depositAmount.toString()).toStrictEqual(
+    new BN(2000000000000000).toString()
+  )
+})
+
 describe('write and didDeleteTx', () => {
   let didIdentifier: string
   let key: DidTypes.INewPublicKey
