@@ -113,7 +113,7 @@ function createMinimalFullDidFromLightDid(
     keys: [
       {
         ...authKey,
-        id: `${did}#authentication`,
+        id: DidUtils.assembleDidFragment(did, 'authentication'),
         controller: did,
         publicKeyHex: u8aToHex(authKey.publicKey),
       },
@@ -132,33 +132,30 @@ describe('RequestForAttestation', () => {
   let identityCharlie: IDidDetails
   let legitimation: AttestedClaim
   let compressedLegitimation: CompressedAttestedClaim
+  let identityDave: IDidDetails
 
-  let mockResolver: IDidResolver = {
-    resolve: async (didUri: string) => {
-      if (didUri === identityAlice.did) {
-        return { details: identityAlice }
+  const mockResolver: IDidResolver = (() => {
+    const resolve = async (didUri: string) => {
+      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+      const didWithoutFragment = didUri.split('#')[0]
+      switch (didWithoutFragment) {
+        case identityAlice.did:
+          return { details: identityAlice }
+        case identityBob.did:
+          return { details: identityBob }
+        case identityCharlie.did:
+          return { details: identityCharlie }
+        case identityDave.did:
+          return { details: identityDave }
+        default:
+          return null
       }
-      if (didUri === identityBob.did) {
-        return { details: identityBob }
-      }
-      if (didUri === identityCharlie.did) {
-        return { details: identityCharlie }
-      }
-      return null
-    },
-    resolveDoc: async (didUri: string) => {
-      if (didUri === identityAlice.did) {
-        return { details: identityAlice }
-      }
-      if (didUri === identityBob.did) {
-        return { details: identityBob }
-      }
-      if (didUri === identityCharlie.did) {
-        return { details: identityCharlie }
-      }
-      return null
-    },
-  } as IDidResolver
+    }
+    return {
+      resolve,
+      resolveDoc: resolve,
+    } as IDidResolver
+  })()
 
   beforeAll(async () => {
     keystore = new DemoKeystore()
@@ -222,39 +219,8 @@ describe('RequestForAttestation', () => {
     ).resolves.toBe(true)
   })
   it('verify attested claims signed by a light DID', async () => {
-    const identityDave = await createLightDidFromSeed(keystore, '//Dave')
-    mockResolver = {
-      resolveDoc: async (didUri: string) => {
-        if (didUri === identityAlice.did) {
-          return { details: identityAlice }
-        }
-        if (didUri === identityBob.did) {
-          return { details: identityBob }
-        }
-        if (didUri === identityCharlie.did) {
-          return { details: identityCharlie }
-        }
-        if (didUri === identityDave.did) {
-          return { details: identityDave }
-        }
-        return null
-      },
-      resolve: async (didUri: string) => {
-        if (didUri === identityAlice.did) {
-          return { details: identityAlice }
-        }
-        if (didUri === identityBob.did) {
-          return { details: identityBob }
-        }
-        if (didUri === identityCharlie.did) {
-          return { details: identityCharlie }
-        }
-        if (didUri === identityDave.did) {
-          return { details: identityDave }
-        }
-        return null
-      },
-    } as IDidResolver
+    identityDave = await createLightDidFromSeed(keystore, '//Dave')
+
     const attestedClaim = await buildAttestedClaim(
       identityDave,
       identityAlice,
@@ -370,48 +336,31 @@ describe('create presentation', () => {
   let reqForAtt: RequestForAttestation
   let attestation: Attestation
 
-  const mockResolver: IDidResolver = {
-    resolve: async (didUri: string) => {
-      if (didUri === migratedClaimerLightDid.did) {
-        return {
-          details: migratedClaimerLightDid,
-          metadata: { canonicalId: migratedClaimerFullDid.did },
-        }
+  const mockResolver: IDidResolver = (() => {
+    const resolve = async (didUri: string) => {
+      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+      const didWithoutFragment = didUri.split('#')[0]
+      switch (didWithoutFragment) {
+        case migratedClaimerLightDid.did:
+          return {
+            details: migratedClaimerLightDid,
+            metadata: { canonicalId: migratedClaimerFullDid.did },
+          }
+        case unmigratedClaimerLightDid.did:
+          return { details: unmigratedClaimerLightDid }
+        case migratedClaimerFullDid.did:
+          return { details: migratedClaimerFullDid }
+        case attester.did:
+          return { details: attester }
+        default:
+          return null
       }
-      if (didUri === unmigratedClaimerLightDid.did) {
-        return {
-          details: unmigratedClaimerLightDid,
-        }
-      }
-      if (didUri === migratedClaimerFullDid.did) {
-        return { details: migratedClaimerFullDid }
-      }
-      if (didUri === attester.did) {
-        return { details: attester }
-      }
-      return null
-    },
-    resolveDoc: async (didUri: string) => {
-      if (didUri === migratedClaimerLightDid.did) {
-        return {
-          details: migratedClaimerLightDid,
-          metadata: { canonicalId: migratedClaimerFullDid.did },
-        }
-      }
-      if (didUri === unmigratedClaimerLightDid.did) {
-        return {
-          details: unmigratedClaimerLightDid,
-        }
-      }
-      if (didUri === migratedClaimerFullDid.did) {
-        return { details: migratedClaimerFullDid }
-      }
-      if (didUri === attester.did) {
-        return { details: attester }
-      }
-      return null
-    },
-  } as IDidResolver
+    }
+    return {
+      resolve,
+      resolveDoc: resolve,
+    } as IDidResolver
+  })()
 
   beforeAll(async () => {
     keystore = new DemoKeystore()

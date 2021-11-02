@@ -10,9 +10,9 @@
  */
 
 import * as string from '@polkadot/util/string'
-import { Keyring } from '@polkadot/keyring'
-import type { KeyringPair } from '@polkadot/keyring/types'
+import type { KeyringPair } from '@kiltprotocol/types'
 import nacl from 'tweetnacl'
+import { Keyring } from './index'
 import * as Crypto from './Crypto'
 
 const messageStr = 'This is a test'

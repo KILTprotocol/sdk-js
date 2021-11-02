@@ -63,7 +63,7 @@ describe('Messaging', () => {
       },
       resolveKey,
       resolveDoc,
-    }
+    } as IDidResolver
   })
 
   it('verify message encryption and signing', async () => {

@@ -1,11 +1,11 @@
 /* eslint-disable */
 
-import Keyring from '@polkadot/keyring'
 import { KeyringPair } from '@polkadot/keyring/types'
-import { mnemonicGenerate, randomAsU8a } from '@polkadot/util-crypto'
 import { BN, hexToU8a } from '@polkadot/util'
 import Attestation from '../attestation/Attestation'
 import { AttestationDetails } from '../attestation'
+import { Keyring } from '@kiltprotocol/utils'
+import { randomAsU8a, mnemonicGenerate } from '@polkadot/util-crypto'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import {

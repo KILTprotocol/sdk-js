@@ -95,6 +95,17 @@ function exportToJsonDidDocument(details: IDidDetails): IDidDocument {
     result.capabilityDelegation = delegationKeyIds
   }
 
+  const serviceEndpoints = details.getEndpoints()
+  if (serviceEndpoints.length) {
+    result.service = serviceEndpoints.map((service) => {
+      return {
+        id: service.id,
+        type: service.types,
+        serviceEndpoints: service.urls,
+      }
+    })
+  }
+
   return result as IDidDocument
 }
 

@@ -262,7 +262,7 @@ describe('Messaging Utilities', () => {
       resolve: async (did: string) => {
         return resolveKey(did) || resolveDoc(did)
       },
-    }
+    } as IDidResolver
 
     rawCTypeWithMultipleProperties = {
       $id: Crypto.hashStr('kilt:ctype:0x2'),

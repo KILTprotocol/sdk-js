@@ -5,7 +5,6 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { Keyring } from '@polkadot/keyring'
 import {
   randomAsU8a,
   cryptoWaitReady,
@@ -17,16 +16,16 @@ import {
   blake2AsHex,
   encodeAddress,
 } from '@polkadot/util-crypto'
-import { Crypto } from '@kiltprotocol/utils'
+import { Crypto, Keyring } from '@kiltprotocol/utils'
 import {
   KeyRelationship,
+  KeyringPair,
   Keystore,
   KeystoreSigningData,
   NaclBoxCapable,
   RequestData,
   ResponseData,
 } from '@kiltprotocol/types'
-import { KeyringPair } from '@polkadot/keyring/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import { u8aEq } from '@polkadot/util'
