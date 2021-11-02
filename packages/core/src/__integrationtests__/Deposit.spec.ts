@@ -323,13 +323,9 @@ describe('checking the deposits', async () => {
     )
     if (!testDidOne) throw new Error('Creation of Test Full Did one failed')
 
-    const testCaseOne = await checkDeleteFullDid(
-      testIdentities[0],
-      testDidOne,
-      keystore
-    )
-
-    if (!testCaseOne) throw new Error('Test case one failed')
+    expect(
+      await checkDeleteFullDid(testIdentities[0], testDidOne, keystore)
+    ).resolves.toBe(true)
   })
   it('test case two', async () => {
     const testDidTwo = await createFullDid(
@@ -338,7 +334,7 @@ describe('checking the deposits', async () => {
       keystore
     )
     if (!testDidTwo) throw new Error('Creation of Test Full Did two failed')
-    await checkReclaimFullDid(testIdentities[1])
+    expect(await checkReclaimFullDid(testIdentities[1])).resolves.toBe(true)
   })
   it('test case three', async () => {
     const testDidThree = await createFullDid(
@@ -347,12 +343,15 @@ describe('checking the deposits', async () => {
       keystore
     )
     if (!testDidThree) throw new Error('Creation of Test Full Did three failed')
-    await checkRemoveFullDidAttestation(
-      testIdentities[2],
-      testDidThree,
-      keystore,
-      requestForAttestation
-    )
+
+    expect(
+      await checkRemoveFullDidAttestation(
+        testIdentities[2],
+        testDidThree,
+        keystore,
+        requestForAttestation
+      )
+    ).resolves.toBe(true)
   })
   it('test case four', async () => {
     const testDidFour = await createFullDid(
@@ -362,12 +361,14 @@ describe('checking the deposits', async () => {
     )
     if (!testDidFour) throw new Error('Creation of Test Full Did four failed')
 
-    await checkReclaimFullDidAttestation(
-      testIdentities[3],
-      testDidFour,
-      keystore,
-      requestForAttestation
-    )
+    expect(
+      await checkReclaimFullDidAttestation(
+        testIdentities[3],
+        testDidFour,
+        keystore,
+        requestForAttestation
+      )
+    ).resolves.toBe(true)
   })
   it('test case five', async () => {
     const testDidFive = await createLightDidFromSeed(keystore, testMnemonics[4])
@@ -379,8 +380,9 @@ describe('checking the deposits', async () => {
       keystore
     )
 
-    console.log('creation of the testFullDidFive')
-    await checkDeleteFullDid(testIdentities[4], testFullDidFive, keystore)
+    expect(
+      await checkDeleteFullDid(testIdentities[4], testFullDidFive, keystore)
+    ).resolves.toBe(true)
   })
   it('test case six', async () => {
     const testDidSix = await createLightDidFromSeed(keystore, testMnemonics[5])
@@ -392,7 +394,7 @@ describe('checking the deposits', async () => {
       keystore
     )
 
-    await checkReclaimFullDid(testIdentities[5])
+    expect(await checkReclaimFullDid(testIdentities[5])).resolves.toBe(true)
   })
   it('test case seven', async () => {
     const testDidSeven = await createLightDidFromSeed(
@@ -407,12 +409,14 @@ describe('checking the deposits', async () => {
       keystore
     )
 
-    await checkRemoveFullDidAttestation(
-      testIdentities[6],
-      testFullDidSeven,
-      keystore,
-      requestForAttestation
-    )
+    expect(
+      await checkRemoveFullDidAttestation(
+        testIdentities[6],
+        testFullDidSeven,
+        keystore,
+        requestForAttestation
+      )
+    ).resolves.toBe(true)
   })
   it('test case eight', async () => {
     const testDidEight = await createLightDidFromSeed(
@@ -428,12 +432,14 @@ describe('checking the deposits', async () => {
       keystore
     )
 
-    await checkReclaimFullDidAttestation(
-      testIdentities[7],
-      testFullDidEight,
-      keystore,
-      requestForAttestation
-    )
+    expect(
+      await checkReclaimFullDidAttestation(
+        testIdentities[7],
+        testFullDidEight,
+        keystore,
+        requestForAttestation
+      )
+    ).resolves.toBe(true)
   })
   it('test case nine', async () => {
     const testDidNine = await createLightDidFromSeed(keystore, testMnemonics[8])
@@ -444,13 +450,14 @@ describe('checking the deposits', async () => {
       testDidNine,
       keystore
     )
-
-    await checkDeletedDidReclaimAttestation(
-      testIdentities[8],
-      testFullDidNine,
-      keystore,
-      requestForAttestation
-    )
+    expect(
+      await checkDeletedDidReclaimAttestation(
+        testIdentities[8],
+        testFullDidNine,
+        keystore,
+        requestForAttestation
+      )
+    ).resolves.toBe(true)
   })
 })
 
