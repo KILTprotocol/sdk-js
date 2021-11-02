@@ -31,6 +31,9 @@ export function checkLightDidCreationOptions(
 
   options.serviceEndpoints?.forEach((service) => {
     try {
+      // parseDidUrl throws if the service ID is not a proper DID URI, which is exactly what we expect here.
+      // So this block will throw if a valid DID URI is provided for a service ID, otherwise the error
+      // thrown by parseDidUrl is caught and ignored.
       parseDidUrl(service.id)
       throw new Error(
         `Invalid service ID provided: ${service.id}. The service ID should be a simple identifier and not a complete DID URI.`
