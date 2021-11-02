@@ -163,11 +163,6 @@ export async function ctypeCreator(
 }
 
 export async function setup(): Promise<ISetup> {
-  /* Creating the key ring store */
-  const keyring = new Keyring({
-    ss58Format: 38,
-    type: 'sr25519',
-  })
   // Initialize the demo keystore
   const keystore = new DemoKeystore()
   // Create the group of mnemonics for the script
