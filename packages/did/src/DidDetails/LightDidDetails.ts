@@ -14,7 +14,6 @@ import {
   assembleDidFragment,
   getEncodingForSigningKeyType,
   getKiltDidFromIdentifier,
-  parseDidUrl,
 } from '../Did.utils'
 import type { LightDidDetailsCreationOpts } from '../types'
 import { DidDetails } from './DidDetails'

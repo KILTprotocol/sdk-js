@@ -14,7 +14,6 @@ import type {
   ApiOrMetadata,
   CallMeta,
   IIdentity,
-  IDidServiceEndpoint,
 } from '@kiltprotocol/types'
 import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
