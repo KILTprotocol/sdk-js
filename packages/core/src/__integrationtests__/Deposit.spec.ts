@@ -50,7 +50,7 @@ async function checkDeleteFullDid(
   fullDid: FullDidDetails,
   keystore: DemoKeystore
 ): Promise<boolean> {
-  const deleteDid = await DidChain.getDeleteDidExtrinsic()
+  const deleteDid = await DidChain.getDeleteDidExtrinsic(0)
 
   const balanceBeforeDeleting = await Balance.getBalances(
     identity.address
@@ -108,7 +108,7 @@ async function checkDeleteFullDid(
 }
 
 async function checkReclaimFullDid(identity: KeyringPair): Promise<boolean> {
-  tx = await DidChain.getReclaimDepositExtrinsic(identity.address)
+  tx = await DidChain.getReclaimDepositExtrinsic(identity.address, 0)
 
   const balanceBeforeRevoking = await Balance.getBalances(
     identity.address
@@ -251,7 +251,7 @@ async function checkDeletedDidReclaimAttestation(
     fullDid.did
   )
 
-  const deleteDid = await DidChain.getDeleteDidExtrinsic()
+  const deleteDid = await DidChain.getDeleteDidExtrinsic(0)
 
   tx = await DidChain.generateDidAuthenticatedTx({
     didIdentifier: identity.address,
