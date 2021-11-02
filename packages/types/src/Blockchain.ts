@@ -34,8 +34,8 @@ export interface IBlockchainApi {
   getStats(): Promise<BlockchainStats>
   listenToBlocks(listener: (header: Header) => void): Promise<() => void>
   signTx(
-    signer: KeyringPair | IIdentity,
     tx: SubmittableExtrinsic,
+    signer: KeyringPair | IIdentity,
     tip?: AnyNumber
   ): Promise<SubmittableExtrinsic>
   submitSignedTxWithReSign(
@@ -45,7 +45,7 @@ export interface IBlockchainApi {
   ): Promise<ISubmittableResult>
   getNonce(accountAddress: string): Promise<BN>
   reSignTx(
-    signer: KeyringPair | IIdentity,
-    tx: SubmittableExtrinsic
+    tx: SubmittableExtrinsic,
+    signer: KeyringPair | IIdentity
   ): Promise<SubmittableExtrinsic>
 }

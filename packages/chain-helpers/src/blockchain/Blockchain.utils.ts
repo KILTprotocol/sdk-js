@@ -176,7 +176,7 @@ export async function signAndSubmitTx(
   }: Partial<SubscriptionPromise.Options> & Partial<ReSignOpts> = {}
 ): Promise<ISubmittableResult> {
   const chain = await getConnectionOrConnect()
-  const signedTx = await chain.signTx(signer, tx, tip)
+  const signedTx = await chain.signTx(tx, signer, tip)
   return reSign
     ? chain.submitSignedTxWithReSign(signedTx, signer, opts)
     : submitSignedTx(signedTx, opts)

@@ -31,6 +31,7 @@ import {
   IS_USURPED,
   parseSubscriptionOptions,
   submitSignedTx,
+  signAndSubmitTx,
 } from './Blockchain.utils'
 
 jest.mock('../blockchainApiConnection/BlockchainApiConnection')
@@ -241,7 +242,7 @@ describe('Tx logic', () => {
         .spyOn(chain, 'getNonce')
         .mockResolvedValue(new BN(1))
       const deleteEntrySpy = jest.spyOn(chain['accountNonces'], 'delete')
-      const reSigned = await chain.reSignTx(alice, submittable)
+      const reSigned = await chain.reSignTx(submittable, alice)
       expect(deleteEntrySpy).toHaveBeenCalledWith(alice.address)
       expect(reSigned.method.data).toEqual(submittable.method.data)
       expect(getNonceSpy).toHaveBeenCalledWith(alice.address)
@@ -303,7 +304,40 @@ describe('Tx logic', () => {
       ).rejects.toThrow(SDKErrors.ERROR_TRANSACTION_RECOVERABLE())
     }, 20_000)
   })
+  describe('Blockchain.utils exported function signAndSubmit', () => {
+    it('signs tx and calls depending on reSign flag and opts', async () => {
+      jest.mock('blockchain')
+      const submittable: SubmittableExtrinsic = ({
+        signature: {
+          toHuman: jest.fn(),
+        },
+        addSignature: jest.fn(),
+        signAsync: jest.fn(),
+        nonce: { toHuman: jest.fn() },
+        method: { data: 'unchanged', toHex: jest.fn() },
+      } as unknown) as SubmittableExtrinsic
+      setDefault()
+      const chain = new Blockchain(api)
+      const chainSignTxSpy = jest
+        .spyOn(chain, 'signTx')
+        .mockImplementation(async (Tx, id, tip) => Tx)
+      const submitSignedTxWithReSignSpy = jest
+        .spyOn(chain, 'submitSignedTxWithReSign')
+        .mockImplementation(
+          async (Tx, id, tip) => (Tx as unknown) as ISubmittableResult
+        )
 
+      await expect(
+        signAndSubmitTx(submittable, alice, { reSign: false, tip: 1 })
+      ).rejects.not.toThrow()
+      expect(chainSignTxSpy).toHaveBeenCalledTimes(1)
+      expect(chainSignTxSpy).toHaveBeenCalledWith(submittable, alice, 1)
+      expect(submitSignedTxWithReSignSpy).toHaveBeenCalledTimes(0)
+      // await signAndSubmitTx(tx, alice, { reSign: true, tip: 1 })
+      // expect(chainSignTxSpy).toHaveBeenCalledTimes(2)
+      // expect(submitSignedTxWithReSignSpy).toHaveBeenCalledTimes(1)
+    }, 20000)
+  })
   describe('Blockchain class method submitSignedTx', () => {
     it('Retries to send up to two times if recoverable error is caught', async () => {
       setDefault({ isUsurped: true })
@@ -312,7 +346,7 @@ describe('Tx logic', () => {
       tx.signAsync(alice.signKeyringPair)
       const reSignSpy = jest
         .spyOn(chain, 'reSignTx')
-        .mockImplementation(async (id, Tx) => {
+        .mockImplementation(async (Tx, id) => {
           return Tx
         })
       await expect(chain.submitSignedTxWithReSign(tx, alice)).rejects.toThrow(
