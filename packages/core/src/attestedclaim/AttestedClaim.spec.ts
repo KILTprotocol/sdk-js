@@ -113,7 +113,7 @@ function createMinimalFullDidFromLightDid(
     keys: [
       {
         ...authKey,
-        id: `${did}#authentication`,
+        id: DidUtils.assembleDidFragment(did, 'authentication'),
         controller: did,
         publicKeyHex: u8aToHex(authKey.publicKey),
       },

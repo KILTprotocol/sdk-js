@@ -41,6 +41,7 @@ import {
   formatPublicKey,
   encodeServiceEndpoint,
   parseDidUrl,
+  assembleDidFragment,
 } from './Did.utils'
 
 // ### RAW QUERYING (lowest layer)
@@ -72,10 +73,10 @@ export async function queryAllServicesEncoded(
   didIdentifier: IIdentity['address']
 ): Promise<IServiceEndpointChainRecordCodec[]> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const endpoints = await api.query.did.serviceEndpoints.entries<
+  const encodedEndpoints = await api.query.did.serviceEndpoints.entries<
     Option<IServiceEndpointChainRecordCodec>
   >(didIdentifier)
-  return endpoints.map(([, value]) => value.unwrap())
+  return encodedEndpoints.map(([, encodedValue]) => encodedValue.unwrap())
 }
 
 // Query the # of services stored under a DID without fetching all the services.
@@ -156,7 +157,7 @@ function decodeServiceChainRecord(
 ): IDidServiceEndpoint {
   const decodedId = hexToString(serviceDetails.id.toString())
   return {
-    id: `${did}#${decodedId}`,
+    id: assembleDidFragment(did, decodedId),
     types: serviceDetails.serviceTypes.map((type) =>
       hexToString(type.toString())
     ),
@@ -202,13 +203,7 @@ export async function queryDidKey(
   if (!didDetails) {
     return null
   }
-  return (
-    didDetails.publicKeys
-      .filter((key) => {
-        return key.id === keyUri
-      })
-      .pop() || null
-  )
+  return didDetails.publicKeys.find((key) => key.id === keyUri) || null
 }
 
 export async function queryServiceEndpoints(
@@ -234,10 +229,9 @@ export async function queryServiceEndpoint(
   const serviceEncoded = await queryServiceEncoded(identifier, fragment)
   if (serviceEncoded.isNone) return null
 
-  return decodeServiceChainRecord(
-    serviceEncoded.unwrap(),
-    getKiltDidFromIdentifier(identifier, 'full')
-  )
+  const didUri = getKiltDidFromIdentifier(identifier, 'full')
+
+  return decodeServiceChainRecord(serviceEncoded.unwrap(), didUri)
 }
 
 export async function queryEndpointsCounts(
@@ -254,7 +248,7 @@ export async function queryEndpointsCounts(
   return count.toNumber()
 }
 
-export async function queryLastTxIndex(
+export async function queryLastTxCounter(
   didUri: IDidDetails['did']
 ): Promise<BN> {
   const { identifier, fragment } = parseDidUrl(didUri)

@@ -13,6 +13,7 @@ import type {
   IDidServiceEndpoint,
   KeyRelationship,
 } from '@kiltprotocol/types'
+import { BN } from '@polkadot/util'
 import type { AnyNumber } from '@polkadot/types/types'
 import type {
   BTreeMap,
@@ -220,5 +221,14 @@ export type LightDidDetailsCreationOpts = {
    * RequestForAttestation.fromRequest(parsedRequest);
    * ```
    */
+  serviceEndpoints?: IDidServiceEndpoint[]
+}
+
+export type FullDidDetailsCreationOpts = {
+  // The full DID URI, following the scheme did:kilt:<kilt_address>
+  did: string
+  keys: IDidKeyDetails[]
+  keyRelationships: MapKeyToRelationship
+  lastTxIndex: BN
   serviceEndpoints?: IDidServiceEndpoint[]
 }

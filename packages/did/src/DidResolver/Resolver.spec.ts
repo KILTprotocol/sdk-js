@@ -186,7 +186,7 @@ describe('Light DID tests', () => {
     )
   })
 
-  it('Correctly resolves a light DID created with an authentication, an encryption key, and some service endpoints', async () => {
+  it('Correctly resolves a light DID created with an authentication, an encryption key, and three service endpoints', async () => {
     keypair = keyring.addFromMnemonic(mnemonic, undefined, 'ed25519')
     publicAuthKey = {
       publicKey: keypair.publicKey,

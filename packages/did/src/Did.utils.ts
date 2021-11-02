@@ -411,7 +411,8 @@ export async function writeDidFromPublicKeys(
     alg: getSignatureAlgForKeyType(authenticationKey.type),
     signingPublicKey: authenticationKey.publicKey,
   })
-  return { extrinsic, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
+  const did = getKiltDidFromIdentifier(didIdentifier, 'full')
+  return { extrinsic, did }
 }
 
 export async function writeDidFromPublicKeysAndServices(
@@ -433,7 +434,8 @@ export async function writeDidFromPublicKeysAndServices(
     signingPublicKey: authenticationKey.publicKey,
     endpoints,
   })
-  return { extrinsic, did: getKiltDidFromIdentifier(didIdentifier, 'full') }
+  const did = getKiltDidFromIdentifier(didIdentifier, 'full')
+  return { extrinsic, did }
 }
 
 export function writeDidFromIdentity(
@@ -503,6 +505,13 @@ export async function getDidAuthenticationSignature(
   return { keyId, signature: Crypto.u8aToHex(signature) }
 }
 
+export function assembleDidFragment(
+  didUri: IDidDetails['did'],
+  fragmentId: string
+): string {
+  return `${didUri}#${fragmentId}`
+}
+
 // This function is tested in the DID integration tests, in the `DID migration` test case.
 export async function upgradeDid(
   lightDid: LightDidDetails,
@@ -527,10 +536,17 @@ export async function upgradeDid(
     }
   }
 
+  const adjustedServiceEndpoints = lightDid.getEndpoints().map((service) => {
+    // We are sure a fragment exists.
+    const id = parseDidUrl(service.id).fragment as string
+    // We remove the service ID prefix (did:light:...) before writing it on chain.
+    return { ...service, id }
+  })
+
   return writeDidFromPublicKeysAndServices(
     signer,
     submitter,
     newDidPublicKeys,
-    lightDid.getEndpoints()
+    adjustedServiceEndpoints
   )
 }

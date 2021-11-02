@@ -8,49 +8,20 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable import/prefer-default-export */
 
-import { SDKErrors, Crypto } from '@kiltprotocol/utils'
+import { Crypto } from '@kiltprotocol/utils'
 import { encodeAddress } from '@polkadot/util-crypto'
 import {
+  assembleDidFragment,
   getEncodingForSigningKeyType,
   getKiltDidFromIdentifier,
   parseDidUrl,
 } from '../Did.utils'
 import type { LightDidDetailsCreationOpts } from '../types'
 import { DidDetails } from './DidDetails'
-import { serializeAndEncodeAdditionalLightDidDetails } from './LightDidDetails.utils'
-
-function checkLightDidCreationOptions(
-  options: LightDidDetailsCreationOpts
-): void {
-  // Check authentication key type
-  const authenticationKeyTypeEncoding = getEncodingForSigningKeyType(
-    options.authenticationKey.type
-  )
-  if (!authenticationKeyTypeEncoding) {
-    throw SDKErrors.ERROR_UNSUPPORTED_KEY
-  }
-
-  // Check service endpoints
-  if (!options.serviceEndpoints) {
-    return
-  }
-
-  options.serviceEndpoints?.forEach((service) => {
-    try {
-      parseDidUrl(service.id)
-      throw new Error(
-        `Invalid service ID provided: ${service.id}. The service ID should be a simple identifier and not a complete DID URI.`
-      )
-      // A service ID cannot have a reserved ID that is used for key IDs.
-      if (service.id === 'authentication' || service.id === 'encryption') {
-        throw new Error(
-          `Cannot specify a service ID with the name ${service.id} as it is a reserved keyword.`
-        )
-      }
-      // eslint-disable-next-line no-empty
-    } catch {}
-  })
-}
+import {
+  serializeAndEncodeAdditionalLightDidDetails,
+  checkLightDidCreationOptions,
+} from './LightDidDetails.utils'
 
 export class LightDidDetails extends DidDetails {
   /// The latest version for KILT light DIDs.
@@ -91,7 +62,7 @@ export class LightDidDetails extends DidDetails {
       did,
       id,
       serviceEndpoints.map((service) => {
-        return { ...service, id: `${did}#${service.id}` }
+        return { ...service, id: assembleDidFragment(did, service.id) }
       })
     )
 

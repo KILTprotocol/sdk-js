@@ -15,14 +15,16 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { BN } from '@polkadot/util'
 import type { IDidKeyDetails, IDidServiceEndpoint } from '@kiltprotocol/types'
 import { mapCallToKeyRelationship } from './FullDidDetails.utils'
-import { FullDidDetails, FullDidDetailsCreationOpts } from './FullDidDetails'
+import { FullDidDetails } from './FullDidDetails'
+import type { FullDidDetailsCreationOpts } from '../types'
+import { assembleDidFragment } from '../Did.utils'
 
 describe('functional tests', () => {
   const identifier = '4rp4rcDHP71YrBNvDhcH5iRoM3YzVoQVnCZvQPwPom9bjo2e'
   const did = `did:kilt:${identifier}`
   const keys: IDidKeyDetails[] = [
     {
-      id: `${did}#1`,
+      id: assembleDidFragment(did, '1'),
       controller: did,
       includedAt: 100,
       type: 'ed25519',
@@ -30,7 +32,7 @@ describe('functional tests', () => {
         '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     },
     {
-      id: `${did}#2`,
+      id: assembleDidFragment(did, '2'),
       controller: did,
       includedAt: 250,
       type: 'x25519',
@@ -38,7 +40,7 @@ describe('functional tests', () => {
         '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     },
     {
-      id: `${did}#3`,
+      id: assembleDidFragment(did, '3'),
       controller: did,
       includedAt: 250,
       type: 'x25519',
@@ -46,7 +48,7 @@ describe('functional tests', () => {
         '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
     },
     {
-      id: `${did}#4`,
+      id: assembleDidFragment(did, '4'),
       controller: did,
       includedAt: 200,
       type: 'sr25519',
@@ -56,12 +58,12 @@ describe('functional tests', () => {
   ]
   const serviceEndpoints: IDidServiceEndpoint[] = [
     {
-      id: `${did}#service-1`,
+      id: assembleDidFragment(did, 'service-1'),
       types: ['type-1'],
       urls: ['url-1'],
     },
     {
-      id: `${did}#service-2`,
+      id: assembleDidFragment(did, 'service-2'),
       types: ['type-2'],
       urls: ['url-2'],
     },

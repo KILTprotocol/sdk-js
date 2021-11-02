@@ -30,9 +30,8 @@ import {
   IDidServiceEndpoint,
   KeyringPair,
   KeystoreSigner,
-  IDidKeyDetails,
 } from '@kiltprotocol/types'
-import { BN, u8aToHex } from '@polkadot/util'
+import { BN } from '@polkadot/util'
 import { disconnect, init } from '../kilt'
 
 import { CType } from '../ctype'
@@ -115,12 +114,12 @@ describe('write and didDeleteTx', () => {
       IDidServiceEndpoint[]
     >([
       {
-        id: `${did}#test-id-1`,
+        id: DidUtils.assembleDidFragment(did, 'test-id-1'),
         types: ['test-type-1'],
         urls: ['test-url-1'],
       },
       {
-        id: `${did}#test-id-2`,
+        id: DidUtils.assembleDidFragment(did, 'test-id-2'),
         types: ['test-type-2'],
         urls: ['test-url-2'],
       },
@@ -128,7 +127,7 @@ describe('write and didDeleteTx', () => {
     await expect(
       DidChain.queryServiceEndpoint(`${did}#test-id-1`)
     ).resolves.toMatchObject<IDidServiceEndpoint>({
-      id: `${did}#test-id-1`,
+      id: DidUtils.assembleDidFragment(did, 'test-id-1'),
       types: ['test-type-1'],
       urls: ['test-url-1'],
     })
@@ -181,7 +180,7 @@ describe('write and didDeleteTx', () => {
 
     submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: 2,
+      txCounter: 1,
       call,
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
@@ -212,7 +211,7 @@ describe('write and didDeleteTx', () => {
 
     const submittable = await DidChain.generateDidAuthenticatedTx({
       didIdentifier,
-      txCounter: 3,
+      txCounter: 2,
       call,
       signer: keystore as KeystoreSigner<string>,
       signingPublicKey: key.publicKey,
@@ -323,7 +322,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
     DidChain.queryServiceEndpoint(`${did}#${newEndpoint.id}`)
   ).resolves.toMatchObject<IDidServiceEndpoint>({
     ...newEndpoint,
-    id: `${did}#${newEndpoint.id}`,
+    id: DidUtils.assembleDidFragment(did, newEndpoint.id),
   })
 
   // Delete the added service endpoint
@@ -504,23 +503,15 @@ describe('DID migration', () => {
     const details = await DidChain.queryDidDetails(did)
 
     expect(details).not.toBeNull()
+    expect(details?.authenticationKey).toBeDefined()
     expect(details?.keyAgreementKeys).toHaveLength(1)
-    expect(details?.keyAgreementKeys[0]).toMatchObject<Partial<IDidKeyDetails>>(
-      {
-        controller: did,
-        publicKeyHex: u8aToHex(didEncryptionKeyDetails.publicKey),
-        type: 'x25519',
-      }
-    )
     // The returned service endpoints will have the initial ID, prepended with the full DID identifier.
     await expect(DidChain.queryServiceEndpoints(did)).resolves.toMatchObject<
       IDidServiceEndpoint[]
     >([
       {
         ...serviceEndpoints[0],
-        id: `${DidUtils.getIdentifierFromKiltDid(did)}#${
-          serviceEndpoints[0].id
-        }`,
+        id: DidUtils.assembleDidFragment(did, serviceEndpoints[0].id),
       },
     ])
 
@@ -532,6 +523,22 @@ describe('DID migration', () => {
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
 
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
+    // Verify service endpoints for light DID resolution
+    expect(resolutionResult?.details.getEndpoints()).toMatchObject(
+      serviceEndpoints.map((service) => {
+        return { ...service, id: `${lightDidDetails.did}#${service.id}` }
+      })
+    )
+    // Verify service endpints for full DID resolution
+    const fullDid = await resolveDoc(resolutionResult!.metadata!.canonicalId)
+
+    expect(fullDid?.details).toBeDefined()
+
+    expect(fullDid!.details.getEndpoints()).toMatchObject(
+      serviceEndpoints.map((service) => {
+        return { ...service, id: DidUtils.assembleDidFragment(did, service.id) }
+      })
+    )
   })
 })
 
@@ -571,7 +578,7 @@ describe('DID authorization', () => {
   }, 60_000)
 
   beforeEach(async () => {
-    lastTxIndex = await DidChain.queryLastTxIndex(
+    lastTxIndex = await DidChain.queryLastTxCounter(
       DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full')
     )
   })
