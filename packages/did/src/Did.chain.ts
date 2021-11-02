@@ -10,7 +10,7 @@
  * @module DID
  */
 
-import type { Option, u32, U128 } from '@polkadot/types'
+import type { Option, u32, U128, GenericAccountId } from '@polkadot/types'
 import type {
   IIdentity,
   SubmittableExtrinsic,
@@ -53,6 +53,17 @@ export async function queryDidEncoded(
 ): Promise<Option<IDidChainRecordCodec>> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.did<Option<IDidChainRecordCodec>>(didIdentifier)
+}
+
+// Query ALL deleted DIDs, which can get quite time consuming.
+export async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID identifier.
+  return api.query.did.didBlacklist
+    .keys<GenericAccountId[]>()
+    .then((entries) =>
+      entries.map(({ args: [encodedDidIdentifier] }) => encodedDidIdentifier)
+    )
 }
 
 // Query a DID service given the DID identifier and the service ID.
@@ -267,6 +278,24 @@ export async function queryLastTxCounter(
 export async function queryDepositAmount(): Promise<BN> {
   const encodedDeposit = await queryDepositAmountEncoded()
   return encodedDeposit.toBn()
+}
+
+export async function queryDeletedDids(): Promise<Array<IIdentity['address']>> {
+  const encodedIdentifiers = await queryDeletedDidsEncoded()
+  return encodedIdentifiers.map((id) => id.toHuman())
+}
+
+// TODO: This function currently fetches ALL the deleted DIDs and then checks if the provided one is inside, which becomes very inefficient if a lot of DIDs have been deleted.
+// It has to do with how the storage is encoded in javascript, which makes it impossible to distinguish between a value that is not present and a value that is present but has, indeed, a null value.
+// This will need to change when we find a more efficient way to distinguish between the two cases or when we update the storage to make it easier to distinguish between the two cases, e.g., by using a bool instead of a ().
+// https://github.com/polkadot-js/api/issues/4146 for the @polkadot/api issue and https://github.com/paritytech/scale-info/issues/134 for the scale-info issue.
+export async function queryDidDeletionStatus(
+  didUri: IDidDetails['did']
+): Promise<boolean> {
+  const { identifier } = parseDidUrl(didUri)
+
+  const deletedDids = new Set<IDidDetails['did']>(await queryDeletedDids())
+  return deletedDids.has(identifier)
 }
 
 // ### EXTRINSICS
