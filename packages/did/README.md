@@ -19,7 +19,7 @@ did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar
 
 Beyond the standard prefix `did:kilt:`, the `light:` component indicates that this DID is a light DID, hence it can be resolved and utilized offline.
 
-Light DIDs optionally support the specification of an **encryption key** (of one of the supported key types) and some service, which are both serialised, encoded and added at the end of the DID, like the following:
+Light DIDs optionally support the specification of an **encryption key** (of one of the supported key types) and some service endpoints, which are both serialised, encoded and added at the end of the DID, like the following:
 
 ```
 did:kilt:light:014sxSYXakw1ZXBymzT9t3Yw91mUaqKST5bFUEjGEpvkTuckar:oWFlomlwdWJsaWNLZXlYILu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7ZHR5cGVmeDI1NTE5
