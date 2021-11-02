@@ -49,14 +49,13 @@ async function setup(): Promise<{
     type: 'ed25519',
   })
   // generate a Mnemonic for the attester
-  // const generateAttesterMnemonic = Kilt.Utils.UUID.generate()
   const attesterMnemonic =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
 
   // or we just use unsafe precalculated keys (just for demo purposes!):
   const attester = keyring.addFromMnemonic(
     attesterMnemonic,
-    // using ed25519 bc this identity has test coins from the start on the development chain spec
+    // using ed25519 bc this account has test coins from the start on the development chain spec
     { signingKeyPairType: 'ed25519' }
   )
   console.log(
@@ -70,7 +69,7 @@ async function setup(): Promise<{
     attester,
     keystore,
     attesterMnemonic,
-    // using ed25519 as key type because this is how the endowed identity is set up
+    // using ed25519 as key type because this is how the endowed account is set up
     Kilt.Did.SigningAlgorithms.Ed25519
   )
 
@@ -109,7 +108,7 @@ async function setup(): Promise<{
   // Store ctype on blockchain
   // signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria, set tip value, or activate re-sign-re-send capabilities.
   // ! This costs tokens !
-  // Also note, that the completely same ctype can only be stored once on the blockchain.
+  // Also note, that the same ctype can only be stored once on the blockchain.
   try {
     await ctype
       .store()
@@ -130,12 +129,11 @@ async function setup(): Promise<{
   }
 
   // ------------------------- Claimer  ----------------------------------------
-  // How to generate an Identity
-  // const mnemonic = Kilt.Utils.UUID.generate()
+  // How to generate an account and subsequently a derived DID from the account.
   const claimerMnemonic =
     'wish rather clinic rather connect culture frown like quote effort cart faculty'
 
-  // Create a light DID from the generated authentication key.
+  // Generate authentication and encryption keys used to derive a light DID from them.
   const claimerSigningKeypair = await keystore.generateKeypair({
     alg: Kilt.Did.SigningAlgorithms.Ed25519,
     seed: claimerMnemonic,
@@ -144,7 +142,7 @@ async function setup(): Promise<{
     alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
     seed: claimerMnemonic,
   })
-  // Create a light DID from the generated authentication key.
+  // Using the generated authentication and encryption keys to derive a light DID.
   const claimerLightDid = new Kilt.Did.LightDidDetails({
     authenticationKey: {
       publicKey: claimerSigningKeypair.publicKey,
@@ -160,9 +158,9 @@ async function setup(): Promise<{
     },
   })
 
-  // At this point the generated Identity has no tokens.
+  // At this point the generated account has no tokens.
   // If you want to interact with the blockchain, you will have to get some.
-  // Contact faucet@kilt.io and provide the address of the identity
+  // Contact faucet@kilt.io and provide the address of the account
   // All tokens generated are play tokens and hold no value
 
   const rawClaim = {
@@ -219,24 +217,24 @@ async function doAttestation(
     attesterOnChainDid.did
   )
 
-  const claimerKeyAgreement = claimerLightDid.getKeys(
+  const claimerEncryptionKey = claimerLightDid.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
-  const attesterKeyAgreement = attesterOnChainDid.getKeys(
+  const attesterEncryptionKey = attesterOnChainDid.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
 
   // The message can be encrypted as follows
   const encryptMessage = await claimerRequestMessage.encrypt(
-    claimerKeyAgreement,
-    attesterKeyAgreement,
+    claimerEncryptionKey,
+    attesterEncryptionKey,
     keystore
   )
 
   // claimer sends [[encrypted]] to the attester
   // ------------------------- Attester ----------------------------------------
   // When the Attester receives the message, she can decrypt it,
-  // internally checks the sender is the owner of the identity
+  // internally checks the sender is the owner of the account
   // and checks the hash and signature of the message
   const reqAttestationDec = await Kilt.Message.decrypt(
     encryptMessage,
@@ -254,7 +252,7 @@ async function doAttestation(
   }
 
   // Attester can check if the signature of the claimer matches the request for attestation object
-  claimersRequest.verifySignature()
+  await claimersRequest.verifySignature()
 
   const attestation = Kilt.Attestation.fromRequestAndDid(
     claimersRequest,
@@ -283,13 +281,13 @@ async function doAttestation(
   )
 
   const submitAttestationEnc = await attesterAttestationMessage.encrypt(
-    attesterKeyAgreement,
-    claimerKeyAgreement,
+    attesterEncryptionKey,
+    claimerEncryptionKey,
     keystore
   )
 
   // ------------------------- CLAIMER -----------------------------------------
-  // internally, the decrypt checks the sender is the owner of the identity
+  // internally, the decrypt checks the sender is the owner of the account
   // and checks the hash and signature of the message
   const submitAttestationDec = await Kilt.Message.decrypt(
     submitAttestationEnc,
@@ -334,7 +332,7 @@ async function doVerification(
     alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
     seed: verifierMnemonic,
   })
-  // Create a light DID from the generated authentication key.
+  // Generate authentication and encryption keys used to derive a light DID from them.
   const verifierLightDid = new Kilt.Did.LightDidDetails({
     authenticationKey: {
       publicKey: verifierSigningKeypair.publicKey,
@@ -350,7 +348,7 @@ async function doVerification(
     },
   })
 
-  const claimerKeyAgreement = claimerLightDid.getKeys(
+  const claimerEncryptionKey = claimerLightDid.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
   const verifierKeyAgreement = verifierLightDid.getKeys(
@@ -368,7 +366,7 @@ async function doVerification(
 
   const verifierAcceptedClaimsMessageEnc = await verifierAcceptedClaimsMessage.encrypt(
     verifierKeyAgreement,
-    claimerKeyAgreement,
+    claimerEncryptionKey,
     keystore
   )
 
@@ -401,13 +399,13 @@ async function doVerification(
   )
   // Claimer encrypts the claims message to the verifier
   const claimerSubmitClaimsMessageEnc = await claimerSubmitClaimsMessage.encrypt(
-    claimerKeyAgreement,
+    claimerEncryptionKey,
     verifierKeyAgreement,
     keystore
   )
 
   // ------------------------- Verifier ----------------------------------------
-  // The verifier needs the public identity of the attester. Either he already has a list of trusted
+  // The verifier needs the public account of the attester. Either he already has a list of trusted
   // attesters or he needs to resolve them differently. A Decentralized Identity (DID) would be an
   // option for that.
 
@@ -419,10 +417,10 @@ async function doVerification(
   const presentationMessage = (verifierSubmitClaimsMessageDec.body as ISubmitClaimsForCTypes)
     .content
 
-  const verifierablePresentation = Kilt.AttestedClaim.fromAttestedClaim(
+  const verifiablePresentation = Kilt.AttestedClaim.fromAttestedClaim(
     presentationMessage[0]
   )
-  const verified = await verifierablePresentation.verify({ challenge })
+  const verified = await verifiablePresentation.verify({ challenge })
   console.log('Received claims: ', JSON.stringify(presentationMessage[0]))
   console.log('All valid? ', verified)
 }

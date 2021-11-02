@@ -25,7 +25,7 @@ async function main(): Promise<void> {
   /* 1. Initialize KILT SDK and set up node endpoint */
   await Kilt.init({ address: NODE_URL })
 
-  /* 2. How to generate an Identity with light DIDs */
+  /* 2. How to generate an account with light DIDs */
   // Initialize a keyring
   const keyring = new Kilt.Utils.Keyring({
     ss58Format: 38,
@@ -34,15 +34,15 @@ async function main(): Promise<void> {
   // Initialize the demo keystore
   const keystore = new Kilt.Did.DemoKeystore()
   // Create a mnemonic seed
-  const generateClaimerMnemonic = mnemonicGenerate()
+  const claimerMnemonic = mnemonicGenerate()
   // Generate a new keypair for authentication with the generated seed
   const claimerSigningKeypair = await keystore.generateKeypair({
     alg: Kilt.Did.SigningAlgorithms.Ed25519,
-    seed: generateClaimerMnemonic,
+    seed: claimerMnemonic,
   })
   const claimerEncryptionKeypair = await keystore.generateKeypair({
     alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
-    seed: generateClaimerMnemonic,
+    seed: claimerMnemonic,
   })
   // Create a light DID from the generated authentication key.
   const claimerLightDid = new Kilt.Did.LightDidDetails({
@@ -59,7 +59,7 @@ async function main(): Promise<void> {
       ),
     },
   })
-  // Will print `did:kilt:light:014rXt3vRYupKgtUJgjGjQG45PBa6uDbDzF48iFn96F9RYrBMB:oWFlomlwdWJsaWNLZXlYIABgPwMAHGu5yMbBpdiiFH2djWzJqbSpUc0ymDIVlqV0ZHR5cGVmeDI1NTE5`.
+  // Example `did:kilt:light:014rXt3vRYupKgtUJgjGjQG45PBa6uDbDzF48iFn96F9RYrBMB:oWFlomlwdWJsaWNLZXlYIABgPwMAHGu5yMbBpdiiFH2djWzJqbSpUc0ymDIVlqV0ZHR5cGVmeDI1NTE5`.
   console.log(claimerLightDid.did)
 
   /* 3.1. Building a CTYPE */
@@ -77,31 +77,31 @@ async function main(): Promise<void> {
     type: 'object',
   })
   /* To store the CTYPE on the blockchain, you have to call: */
-  const identityMnemonic =
+  const accountMnemonic =
     'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-  const identity = keyring.addFromMnemonic(identityMnemonic)
+  const account = keyring.addFromMnemonic(accountMnemonic)
 
-  const onChainDidIdentity = await Kilt.Did.createOnChainDidFromSeed(
-    identity,
+  const onChainDid = await Kilt.Did.createOnChainDidFromSeed(
+    account,
     keystore,
-    identityMnemonic,
-    // using ed25519 as key type because this is how the endowed identity is set up
+    accountMnemonic,
+    // using ed25519 as key type because this is how the endowed account is set up
     Kilt.Did.SigningAlgorithms.Ed25519
   )
 
   tx = await ctype.store()
-  authorizedTx = await onChainDidIdentity.authorizeExtrinsic(
+  authorizedTx = await onChainDid.authorizeExtrinsic(
     tx,
     keystore,
-    identity.address
+    account.address
   )
-  await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
+  await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, account, {
     resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
     reSign: true,
   })
 
   /* signAndSubmitTx can be passed SubscriptionPromise.Options, to control resolve and reject criteria, set tip value, or activate re-sign-re-send capabilities:
-  // await Kilt.BlockchainUtils.signAndSubmitTx(tx, identity, {
+  // await Kilt.BlockchainUtils.signAndSubmitTx(tx, account, {
   //   resolveOn: Kilt.BlockchainUtils.IS_FINALIZED,
   //   rejectOn: Kilt.BlockchainUtils.IS_ERROR,
   //   reSign: true,
@@ -110,7 +110,7 @@ async function main(): Promise<void> {
 
   /* or manually step by step */
   // const chain = Kilt.connect()
-  // chain.signTx(identity, tx, 10_000)
+  // chain.signTx(account, tx, 10_000)
   // await Kilt.BlockchainUtils.submitSignedTx(tx)
 
   /* At the end of the process, the `CType` object should contain the following. */
@@ -140,7 +140,7 @@ async function main(): Promise<void> {
 
   /* Before we can send the request for an attestation to an Attester, we should first fetch the on chain did and create an encryption key. */
   const attesterOnChainDid = (await Kilt.Did.resolveDoc(
-    onChainDidIdentity.did
+    onChainDid.did
   )) as IDidResolvedDetails
 
   /* Creating an encryption key */
@@ -159,22 +159,22 @@ async function main(): Promise<void> {
   /* The complete `message` looks as follows: */
   console.log(message)
 
-  const attesterKeyAgreement = attesterOnChainDid.details.getKeys(
+  const attesterEncryptionKey = attesterOnChainDid.details.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
 
-  const claimerKeyAgreement = claimerLightDid.getKeys(
+  const claimerEncryptionKey = claimerLightDid.getKeys(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
 
   /* The message can be encrypted as follows: */
   const encryptedMessage = await message.encrypt(
-    claimerKeyAgreement,
-    attesterKeyAgreement,
+    claimerEncryptionKey,
+    attesterEncryptionKey,
     keystore
   )
 
-  /* Therefore, **during decryption** both the **sender identity and the validity of the message are checked automatically**. */
+  /* Therefore, **during decryption** both the **sender account and the validity of the message are checked automatically**. */
   const decrypted = await Kilt.Message.decrypt(encryptedMessage, keystore)
   /* At this point the Attester has the original request for attestation object: */
   if (
@@ -194,12 +194,12 @@ async function main(): Promise<void> {
 
     /* Now the Attester can store and authorize the attestation on the blockchain, which also costs tokens: */
     tx = await attestation.store()
-    authorizedTx = await onChainDidIdentity.authorizeExtrinsic(
+    authorizedTx = await onChainDid.authorizeExtrinsic(
       tx,
       keystore,
-      identity.address
+      account.address
     )
-    await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
+    await Kilt.BlockchainUtils.signAndSubmitTx(authorizedTx, account, {
       resolveOn: Kilt.BlockchainUtils.IS_IN_BLOCK,
       reSign: true,
     })
@@ -238,15 +238,15 @@ async function main(): Promise<void> {
 
       /* 6. Verify a Claim */
 
-      /* As in the attestation, you need a second identity to act as the verifier: */
-      const generateVerifierMnemonic = Kilt.Utils.UUID.generate()
+      /* As in the attestation, you need a second account to act as the verifier: */
+      const verifierMnemonic = mnemonicGenerate()
       const verifierSigningKeypair = await keystore.generateKeypair({
         alg: Kilt.Did.SigningAlgorithms.Ed25519,
-        seed: generateVerifierMnemonic,
+        seed: verifierMnemonic,
       })
       const verifierEncryptionKeypair = await keystore.generateKeypair({
         alg: Kilt.Did.EncryptionAlgorithms.NaclBox,
-        seed: generateVerifierMnemonic,
+        seed: verifierMnemonic,
       })
       // Create the verifier's light DID from the generated authentication key.
       const verifierLightDID = new Kilt.Did.LightDidDetails({
@@ -298,18 +298,18 @@ async function main(): Promise<void> {
         verifierLightDID.did
       )
 
-      const verifierKeyAgreement = verifierLightDID.getKeys(
+      const verifierEncryptionKey = verifierLightDID.getKeys(
         KeyRelationship.keyAgreement
       )[0] as IDidKeyDetails<string>
 
       /* The message can be encrypted as follows: */
       const encryptedMessageForVerifier = await messageForVerifier.encrypt(
-        claimerKeyAgreement,
-        verifierKeyAgreement,
+        claimerEncryptionKey,
+        verifierEncryptionKey,
         keystore
       )
 
-      /* Therefore, **during decryption** both the **sender identity and the validity of the message are checked automatically**. */
+      /* Therefore, **during decryption** both the **sender account and the validity of the message are checked automatically**. */
       const decryptedMessageForVerifier = await Kilt.Message.decrypt(
         encryptedMessageForVerifier,
         keystore
@@ -324,8 +324,10 @@ async function main(): Promise<void> {
         const claims = decryptedMessageForVerifier.body.content
         console.log('before verifying', credentialForVerifier)
 
-        const verifyingClaim = Kilt.AttestedClaim.fromAttestedClaim(claims[0])
-        const isValid = await verifyingClaim.verify()
+        const verifiablePresentation = Kilt.AttestedClaim.fromAttestedClaim(
+          claims[0]
+        )
+        const isValid = await verifiablePresentation.verify()
         console.log('Verifcation success?', isValid)
         console.log('Attested claims from verifier perspective:\n', claims)
       }
