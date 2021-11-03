@@ -91,7 +91,7 @@ export function balanceNumberToString(input: BalanceNumber): string {
  *
  * @param input [[BalanceNumber]] to convert.
  * @param unit Metric prefix of the given [[BalanceNumber]].
- * @returns Exact BN representation in femtoKilt, to use in tx and calculations.
+ * @returns Exact BN representation in femtoKilt, to use in transactions and calculations.
  * @throws Unknown metricPrefix, or if the input has too many decimal places for it's unit.
  */
 export function toFemtoKilt(
