@@ -251,14 +251,3 @@ export function decompressQuoteAgreement(
     rootHash: quoteAgreement[8],
   }
 }
-
-export default {
-  compressCost,
-  decompressCost,
-  decompressQuote,
-  decompressQuoteAgreement,
-  decompressAttesterSignedQuote,
-  compressQuote,
-  compressQuoteAgreement,
-  compressAttesterSignedQuote,
-}

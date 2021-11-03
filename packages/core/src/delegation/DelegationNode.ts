@@ -60,7 +60,7 @@ type NewDelegationNodeInput = Required<
 type NewDelegationRootInput = Pick<IDelegationNode, 'account' | 'permissions'> &
   DelegationHierarchyDetailsRecord
 
-export default class DelegationNode implements IDelegationNode {
+export class DelegationNode implements IDelegationNode {
   public readonly id: IDelegationNode['id']
   public readonly hierarchyId: IDelegationNode['hierarchyId']
   public readonly parentId?: IDelegationNode['parentId']

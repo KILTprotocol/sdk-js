@@ -34,10 +34,10 @@ import {
   reclaimDeposit,
   queryDepositAmount,
 } from './Attestation.chain'
-import AttestationUtils from './Attestation.utils'
-import DelegationNode from '../delegation/DelegationNode'
+import * as AttestationUtils from './Attestation.utils'
+import * as DelegationNode from '../delegation/DelegationNode'
 
-export default class Attestation implements IAttestation {
+export class Attestation implements IAttestation {
   /**
    * [STATIC] [ASYNC] Queries the chain for a given attestation, by `claimHash`.
    *

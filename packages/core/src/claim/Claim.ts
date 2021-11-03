@@ -26,9 +26,9 @@ import type {
   IDidDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import ICType from '../ctype/CType'
-import CTypeUtils from '../ctype/CType.utils'
-import ClaimUtils from './Claim.utils'
+import { CType as ICType } from '../ctype/CType'
+import * as CTypeUtils from '../ctype/CType.utils'
+import * as ClaimUtils from './Claim.utils'
 
 function verifyClaim(
   claimContents: IClaim['contents'],
@@ -37,7 +37,7 @@ function verifyClaim(
   return CTypeUtils.verifyClaimStructure(claimContents, cTypeSchema)
 }
 
-export default class Claim implements IClaim {
+export class Claim implements IClaim {
   /**
    * Instantiates a new Claim from the given [[IClaim]] and [[schema]].
    *

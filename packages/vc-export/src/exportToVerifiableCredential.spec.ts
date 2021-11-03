@@ -14,9 +14,9 @@ import { Attestation, AttestedClaim, CType } from '@kiltprotocol/core'
 import { DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
-import toVC from './exportToVerifiableCredential'
-import verificationUtils, { AttestationStatus } from './verificationUtils'
-import claimerUtils, { makePresentation } from './presentationUtils'
+import * as toVC from './exportToVerifiableCredential'
+import * as verificationUtils from './verificationUtils'
+import * as claimerUtils from './presentationUtils'
 import type { VerifiableCredential } from './types'
 import {
   KILT_VERIFIABLECREDENTIAL_TYPE,
@@ -302,7 +302,7 @@ describe('proofs', () => {
     expect(result.errors).toEqual([])
     expect(result).toMatchObject({
       verified: true,
-      status: AttestationStatus.valid,
+      status: verificationUtils.AttestationStatus.valid,
     })
   })
 
@@ -331,13 +331,13 @@ describe('proofs', () => {
 
     it('rejects selecting non-existent properties for presentation', async () => {
       await expect(
-        makePresentation(VC, ['name', 'age', 'profession'])
+        claimerUtils.makePresentation(VC, ['name', 'age', 'profession'])
       ).rejects.toThrow()
 
-      const presentation = await makePresentation(VC, ['name'])
+      const presentation = await claimerUtils.makePresentation(VC, ['name'])
 
       await expect(
-        makePresentation(
+        claimerUtils.makePresentation(
           presentation.verifiableCredential as VerifiableCredential,
           ['premium']
         )
@@ -373,7 +373,7 @@ describe('proofs', () => {
         verificationUtils.verifyAttestedProof(VC, VC.proof[1])
       ).resolves.toMatchObject({
         verified: false,
-        status: AttestationStatus.invalid,
+        status: verificationUtils.AttestationStatus.invalid,
       })
     })
 
@@ -403,7 +403,7 @@ describe('proofs', () => {
       )
       expect(result).toMatchObject({
         verified: false,
-        status: AttestationStatus.invalid,
+        status: verificationUtils.AttestationStatus.invalid,
       })
     })
 
@@ -421,7 +421,7 @@ describe('proofs', () => {
       )
       expect(result).toMatchObject({
         verified: false,
-        status: AttestationStatus.invalid,
+        status: verificationUtils.AttestationStatus.invalid,
       })
     })
 
@@ -439,7 +439,7 @@ describe('proofs', () => {
       )
       expect(result).toMatchObject({
         verified: false,
-        status: AttestationStatus.revoked,
+        status: verificationUtils.AttestationStatus.revoked,
       })
     })
   })

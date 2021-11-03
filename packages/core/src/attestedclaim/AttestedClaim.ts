@@ -27,11 +27,11 @@ import type {
   IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import Attestation from '../attestation/Attestation'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import AttestedClaimUtils from './AttestedClaim.utils'
+import { Attestation } from '../attestation/Attestation'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import * as AttestedClaimUtils from './AttestedClaim.utils'
 
-export default class AttestedClaim implements IAttestedClaim {
+export class AttestedClaim implements IAttestedClaim {
   /**
    * [STATIC] Builds an instance of [[AttestedClaim]], from a simple object with the same properties.
    * Used for deserialization.

@@ -5,8 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import BalanceUtils from './Balance.utils'
+import * as BalanceUtils from './Balance.utils'
 import * as Balance from './Balance.chain'
 
 export { Balance, BalanceUtils }
-export default Balance

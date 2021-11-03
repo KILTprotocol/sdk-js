@@ -6,7 +6,7 @@
  */
 
 import * as Quote from './Quote'
+import * as QuoteUtils from './Quote.utils'
+import { QuoteSchema } from './QuoteSchema'
 
-export default Quote
-export { default as QuoteUtils } from './Quote.utils'
-export { default as QuoteSchema } from './QuoteSchema'
+export { Quote, QuoteUtils, QuoteSchema }

@@ -33,9 +33,9 @@ import type {
 import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DefaultResolver, DidUtils } from '@kiltprotocol/did'
-import ClaimUtils from '../claim/Claim.utils'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
-import RequestForAttestationUtils from './RequestForAttestation.utils'
+import * as ClaimUtils from '../claim/Claim.utils'
+import { AttestedClaim } from '../attestedclaim/AttestedClaim'
+import * as RequestForAttestationUtils from './RequestForAttestation.utils'
 
 function makeSigningData(
   input: IRequestForAttestation,
@@ -57,7 +57,7 @@ export type Options = {
   delegationId?: IDelegationNode['id']
 }
 
-export default class RequestForAttestation implements IRequestForAttestation {
+export class RequestForAttestation implements IRequestForAttestation {
   /**
    * [STATIC] Builds an instance of [[RequestForAttestation]], from a simple object with the same properties.
    * Used for deserialization.

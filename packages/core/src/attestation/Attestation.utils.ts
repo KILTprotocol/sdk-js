@@ -85,9 +85,3 @@ export function decompress(attestation: CompressedAttestation): IAttestation {
     delegationId: attestation[4],
   }
 }
-
-export default {
-  decompress,
-  compress,
-  errorCheck,
-}

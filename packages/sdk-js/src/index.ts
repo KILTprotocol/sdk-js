@@ -14,14 +14,4 @@ import * as Utils from '@kiltprotocol/utils'
 
 export * from '@kiltprotocol/core'
 export * from '@kiltprotocol/types'
-export { Message, Messaging, BlockchainUtils, ChainHelpers, Utils, Did }
-
-export default {
-  ...core,
-  Message,
-  Messaging,
-  BlockchainUtils,
-  ChainHelpers,
-  Did,
-  Utils,
-}
+export { core, Message, Messaging, BlockchainUtils, ChainHelpers, Utils, Did }

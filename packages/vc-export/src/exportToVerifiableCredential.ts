@@ -147,5 +147,3 @@ export function fromAttestedClaim(
 
   return VC
 }
-
-export default { fromAttestedClaim }

@@ -5,8 +5,8 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import KiltIntegritySuite from './KiltIntegritySuite'
-import KiltSignatureSuite from './KiltSignatureSuite'
-import KiltAttestedSuite from './KiltAttestedSuite'
+import * as KiltIntegritySuite from './KiltIntegritySuite'
+import * as KiltSignatureSuite from './KiltSignatureSuite'
+import * as KiltAttestedSuite from './KiltAttestedSuite'
 
 export { KiltIntegritySuite, KiltSignatureSuite, KiltAttestedSuite }

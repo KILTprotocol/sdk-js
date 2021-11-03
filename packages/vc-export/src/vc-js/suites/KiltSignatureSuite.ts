@@ -14,10 +14,10 @@ import type {
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
 import type { SelfSignedProof } from '../../types'
 import { verifySelfSignedProof } from '../../verificationUtils'
-import KiltAbstractSuite from './KiltAbstractSuite'
+import { KiltAbstractSuite } from './KiltAbstractSuite'
 import { KILT_SELF_SIGNED_PROOF_TYPE } from '../../constants'
 
-export default class KiltSignatureSuite extends KiltAbstractSuite {
+export class KiltSignatureSuite extends KiltAbstractSuite {
   constructor() {
     super({ type: KILT_SELF_SIGNED_PROOF_TYPE, verificationMethod: '<none>' })
   }
@@ -51,7 +51,7 @@ export default class KiltSignatureSuite extends KiltAbstractSuite {
           error: errors[0],
         }
       return { verified }
-    } catch (e) {
+    } catch (e: any) {
       return { verified: false, error: e }
     }
   }

@@ -15,10 +15,10 @@ import type { JsonLdObj } from 'jsonld/jsonld-spec'
 import type { CredentialDigestProof } from '../../types'
 
 import { verifyCredentialDigestProof } from '../../verificationUtils'
-import KiltAbstractSuite from './KiltAbstractSuite'
+import { KiltAbstractSuite } from './KiltAbstractSuite'
 import { KILT_CREDENTIAL_DIGEST_PROOF_TYPE } from '../../constants'
 
-export default class KiltDisclosureSuite extends KiltAbstractSuite {
+export class KiltDisclosureSuite extends KiltAbstractSuite {
   constructor() {
     // vc-js complains when there is no verificationMethod
     super({
@@ -55,7 +55,7 @@ export default class KiltDisclosureSuite extends KiltAbstractSuite {
           error: errors[0],
         }
       return { verified }
-    } catch (e) {
+    } catch (e: any) {
       return { verified: false, error: e }
     }
   }

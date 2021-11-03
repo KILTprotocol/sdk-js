@@ -6,7 +6,7 @@
  */
 
 import * as suites from './suites'
-import documentLoader from './documentLoader'
-import context from './context'
+import * as documentLoader from './documentLoader'
+import * as context from './context'
 
 export { suites, documentLoader, context }

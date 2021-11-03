@@ -15,9 +15,9 @@ import jsonld from 'jsonld'
 import { DidUtils } from '@kiltprotocol/did'
 import { Crypto } from '@kiltprotocol/utils'
 import { randomAsHex } from '@polkadot/util-crypto'
-import Suite from './KiltSignatureSuite'
+import { KiltSignatureSuite as Suite } from './KiltSignatureSuite'
 import credential from '../examples/example-vc.json'
-import kiltDocumentLoader from '../documentLoader'
+import { documentLoader as kiltDocumentLoader } from '../documentLoader'
 import type {
   VerifiableCredential,
   SelfSignedProof,

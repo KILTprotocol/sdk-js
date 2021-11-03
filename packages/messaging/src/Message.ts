@@ -42,7 +42,7 @@ import {
   verifyRequiredCTypeProperties,
 } from './Message.utils'
 
-export default class Message implements IMessage {
+export class Message implements IMessage {
   /**
    * [STATIC] Lists all possible body types of [[Message]].
    */
