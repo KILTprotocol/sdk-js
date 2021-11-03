@@ -344,7 +344,10 @@ describe('create presentation', () => {
         case migratedClaimerLightDid.did:
           return {
             details: migratedClaimerLightDid,
-            metadata: { canonicalId: migratedClaimerFullDid.did },
+            metadata: {
+              canonicalId: migratedClaimerFullDid.did,
+              deleted: false,
+            },
           }
         case unmigratedClaimerLightDid.did:
           return { details: unmigratedClaimerLightDid }

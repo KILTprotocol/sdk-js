@@ -430,6 +430,7 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
   })
@@ -469,6 +470,7 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
   })
@@ -536,6 +538,7 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
     // Verify service endpoints for light DID resolution
@@ -546,6 +549,7 @@ describe('DID migration', () => {
     )
     // Verify service endpints for full DID resolution
     const fullDid = await resolveDoc(resolutionResult!.metadata!.canonicalId)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(fullDid?.details).toBeDefined()
 

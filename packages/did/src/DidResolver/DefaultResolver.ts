@@ -22,6 +22,7 @@ import {
   queryServiceEndpoints,
   queryById,
   queryDidKey,
+  queryDidDeletionStatus,
 } from '../Did.chain'
 import {
   getKiltDidFromIdentifier,
@@ -147,15 +148,28 @@ export async function resolveDoc(
       }
       // LightDID identifier has two leading characters indicating the authentication key type.
       const fullDidIdentifier = identifier.substring(2)
+      const fullDidUri = getKiltDidFromIdentifier(fullDidIdentifier, 'full')
+
       const fullDidDetails = await queryFullDetailsFromIdentifier(
         fullDidIdentifier
       )
       // If a full DID with same identifier is present, add resolution metadata linking to that.
       if (fullDidDetails) {
         didResolvedDetails.metadata = {
-          canonicalId: getKiltDidFromIdentifier(fullDidIdentifier, 'full'),
+          canonicalId: fullDidUri,
+          deleted: false,
+        }
+      } else {
+        // If no full DID details are found but the full DID has been deleted, return the info in the resolution metadata.
+        const isFullDidDeleted = await queryDidDeletionStatus(fullDidUri)
+        if (isFullDidDeleted) {
+          didResolvedDetails.metadata = {
+            canonicalId: fullDidUri,
+            deleted: true,
+          }
         }
       }
+      // If no full DID details nor deletion info is found, the light DID is un-migrated, so no resolution metadata is returned.
       return didResolvedDetails
     }
     default:
