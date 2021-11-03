@@ -48,6 +48,7 @@ export interface IDidKeyDetails<T extends string = string> {
   /**
    * The DID with which this public key is associated.
    */
+  // eslint-disable-next-line no-use-before-define
   controller: IDidDetails['did']
   /**
    * The public key material encoded as hex.
