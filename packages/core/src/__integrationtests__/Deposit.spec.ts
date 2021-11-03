@@ -23,12 +23,11 @@ import {
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
+import { Keyring } from '@kiltprotocol/utils'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import { randomAsHex } from '@polkadot/util-crypto'
+import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
 import {
-  setup,
-  LightActor,
   getDidDeposit,
   createAttestation,
   getAttestationDeposit,
@@ -36,6 +35,7 @@ import {
   WS_ADDRESS,
   devFaucet,
   DriversLicense,
+  initialTransfer,
 } from './utils'
 import { Balance } from '../balance'
 import Attestation from '../attestation/Attestation'
@@ -57,15 +57,6 @@ async function checkDeleteFullDid(
     identity.address
   ).then((balance) => balance)
 
-  console.log(
-    'free balance before deleting:',
-    balanceBeforeDeleting.free.toString()
-  )
-  console.log(
-    'reserved balance before deleting:',
-    balanceBeforeDeleting.reserved.toString()
-  )
-
   tx = await DidChain.generateDidAuthenticatedTx({
     didIdentifier: identity.address,
     txCounter: fullDid.getNextTxIndex(),
@@ -79,8 +70,6 @@ async function checkDeleteFullDid(
 
   const didBeforeDepositRemoval = await getDidDeposit(identity.address)
 
-  console.log('There should be deposit', didBeforeDepositRemoval.toString())
-
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
@@ -93,16 +82,10 @@ async function checkDeleteFullDid(
     (balance) => balance
   )
 
-  console.log(
-    'free balance After deleting:',
-    balanceAfterDeleting.free.toString()
-  )
-  console.log(
-    'reserved balance After deleting:',
-    balanceAfterDeleting.reserved.toString()
-  )
-
-  if (balanceAfterDeleting.reserved.toNumber() === didDeposit.toNumber()) {
+  if (
+    balanceBeforeDeleting.reserved.toNumber() - didDeposit.toNumber() ===
+    balanceAfterDeleting.reserved.toNumber()
+  ) {
     return true
   }
   return false
@@ -283,16 +266,37 @@ async function checkDeletedDidReclaimAttestation(
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 }
-let keystore: DemoKeystore
-let testIdentities: KeyringPair[]
-let testMnemonics: string[]
-let claimer: LightActor
+
+const testIdentities: KeyringPair[] = []
+const testMnemonics: string[] = []
+const keystore = new DemoKeystore()
 let requestForAttestation: RequestForAttestation
 
 beforeAll(async () => {
   /* Initialize KILT SDK and set up node endpoint */
   await init({ address: WS_ADDRESS })
-  ;({ keystore, testIdentities, testMnemonics, claimer } = await setup())
+  const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
+
+  for (let i = 0; i < 9; i += 1) {
+    testMnemonics.push(mnemonicGenerate())
+  }
+  /* Generating all the identities from the keyring  */
+  testMnemonics.forEach((val) =>
+    testIdentities.push(keyring.addFromMnemonic(val))
+  ) // Sending tokens to all accounts
+  const testAddresses = testIdentities.map((val) => val.address)
+
+  await initialTransfer(devFaucet, testAddresses)
+  // Initialize the demo keystore
+  // Create the group of mnemonics for the script
+  const claimerMnemonic = mnemonicGenerate()
+
+  /* Generating the claimerLightDid and testOneLightDid from the demo keystore with the generated seed both with sr25519 */
+  const claimerLightDid = await createLightDidFromSeed(
+    keystore,
+    claimerMnemonic
+  )
+
   const attester = await createOnChainDidFromSeed(
     devFaucet,
     keystore,
@@ -315,11 +319,11 @@ beforeAll(async () => {
   const claim = Claim.fromCTypeAndClaimContents(
     DriversLicense,
     rawClaim,
-    claimer.light.did
+    claimerLightDid.did
   )
 
   requestForAttestation = RequestForAttestation.fromClaim(claim)
-  await requestForAttestation.signWithDid(keystore, claimer.light)
+  await requestForAttestation.signWithDid(keystore, claimerLightDid)
 })
 
 describe('checking the deposits', async () => {

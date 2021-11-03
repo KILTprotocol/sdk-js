@@ -5,11 +5,10 @@ import { BN, hexToU8a } from '@polkadot/util'
 import Attestation from '../attestation/Attestation'
 import { AttestationDetails } from '../attestation'
 import { Keyring } from '@kiltprotocol/utils'
-import { randomAsU8a, mnemonicGenerate } from '@polkadot/util-crypto'
+import { randomAsU8a } from '@polkadot/util-crypto'
 import CType from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 import {
-  createLightDidFromSeed,
   DefaultResolver,
   DemoKeystore,
   DidChain,
@@ -30,18 +29,6 @@ import {
 
 import { DecoderUtils } from '@kiltprotocol/utils'
 import { Option } from '@polkadot/types'
-
-export type LightActor = {
-  light: LightDidDetails
-  identity: KeyringPair
-}
-
-export interface ISetup {
-  claimer: LightActor
-  keystore: DemoKeystore
-  testIdentities: KeyringPair[]
-  testMnemonics: string[]
-}
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 export const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(100)
@@ -118,55 +105,6 @@ export async function initialTransfer(
       )
     )
   )
-}
-
-export async function setup(): Promise<ISetup> {
-  // Initialize the demo keystore
-  const keystore = new DemoKeystore()
-  // Create the group of mnemonics for the script
-  const generateClaimerMnemonic = mnemonicGenerate()
-
-  // Creating test mnemonics
-  const testMnemonics: string[] = []
-
-  for (let i = 0; i < 9; i += 1) {
-    testMnemonics.push(mnemonicGenerate())
-  }
-
-  /* Generating all the identities from the keyring  */
-  const testIdentities: KeyringPair[] = []
-  testMnemonics.forEach((val) =>
-    testIdentities.push(keyring.addFromMnemonic(val))
-  )
-
-  const claimerIdentity = keyring.addFromMnemonic(generateClaimerMnemonic)
-
-  /* First check to see if the faucet has balance */
-  const faucetBalance = await Balance.getBalances(devFaucet.address).then(
-    (balance) => balance
-  )
-  if (!faucetBalance) throw new Error('The faucetBalance is empty')
-
-  // Sending tokens to all accounts
-  const testAddresses = testIdentities.map((val) => val.address)
-
-  await initialTransfer(devFaucet, testAddresses)
-
-  /* Generating the claimerLightDid and testOneLightDid from the demo keystore with the generated seed both with sr25519 */
-  const claimerLightDid = await createLightDidFromSeed(
-    keystore,
-    generateClaimerMnemonic
-  )
-
-  return {
-    keystore,
-    claimer: {
-      light: claimerLightDid,
-      identity: claimerIdentity,
-    },
-    testIdentities,
-    testMnemonics,
-  }
 }
 
 export async function getDidDeposit(didIdentifier: string): Promise<BN> {
