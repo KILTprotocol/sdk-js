@@ -303,7 +303,7 @@ beforeAll(async () => {
   await requestForAttestation.signWithDid(keystore, claimerLightDid)
 })
 
-describe('checking the deposits', async () => {
+describe('Different deposits scenarios', async () => {
   it('Check if deleting full DID returns deposit', async () => {
     const testDidOne = await createOnChainDidFromSeed(
       testIdentities[0],
@@ -315,7 +315,7 @@ describe('checking the deposits', async () => {
     expect(
       await checkDeleteFullDid(testIdentities[0], testDidOne, keystore)
     ).resolves.toBe(true)
-  })
+  }, 30_000)
   it('Check if reclaiming full DID returns deposit', async () => {
     const testDidTwo = await createOnChainDidFromSeed(
       testIdentities[1],
@@ -324,7 +324,7 @@ describe('checking the deposits', async () => {
     )
     if (!testDidTwo) throw new Error('Creation of Test Full Did two failed')
     expect(await checkReclaimFullDid(testIdentities[1])).resolves.toBe(true)
-  })
+  }, 30_000)
   it('Check if removing an attestation from a full DID returns deposit', async () => {
     const testDidThree = await createOnChainDidFromSeed(
       testIdentities[2],
@@ -341,7 +341,7 @@ describe('checking the deposits', async () => {
         requestForAttestation
       )
     ).resolves.toBe(true)
-  })
+  }, 30_000)
   it('Check if reclaiming an attestation from a full DID returns the deposit', async () => {
     const testDidFour = await createOnChainDidFromSeed(
       testIdentities[3],
@@ -358,7 +358,7 @@ describe('checking the deposits', async () => {
         requestForAttestation
       )
     ).resolves.toBe(true)
-  })
+  }, 30_000)
   it('Check if deleting from a migrated a light DID to a full DID returns deposit', async () => {
     const testDidFive = await createLightDidFromSeed(keystore, testMnemonics[4])
 
@@ -372,7 +372,7 @@ describe('checking the deposits', async () => {
     expect(
       await checkDeleteFullDid(testIdentities[4], testFullDidFive, keystore)
     ).resolves.toBe(true)
-  })
+  }, 30_000)
   it('Check if reclaiming from a migrated a light DID to a full DID returns deposit', async () => {
     const testDidSix = await createLightDidFromSeed(keystore, testMnemonics[5])
     if (!testDidSix) throw new Error('Creation of Test Light Did six failed')
@@ -384,7 +384,7 @@ describe('checking the deposits', async () => {
     )
 
     expect(await checkReclaimFullDid(testIdentities[5])).resolves.toBe(true)
-  })
+  }, 30_000)
   it('Check if removing an attestation from a migrated a light DID to a full DID returns the deposit', async () => {
     const testDidSeven = await createLightDidFromSeed(
       keystore,
@@ -406,7 +406,7 @@ describe('checking the deposits', async () => {
         requestForAttestation
       )
     ).resolves.toBe(true)
-  })
+  }, 30_000)
   it('Check if reclaiming an attestation from a migrated a light DID to a full DID returns the deposit', async () => {
     const testDidEight = await createLightDidFromSeed(
       keystore,
@@ -429,7 +429,7 @@ describe('checking the deposits', async () => {
         requestForAttestation
       )
     ).resolves.toBe(true)
-  })
+  }, 30_000)
   it('Check if deleting a full DID and reclaiming an attestation returns the deposit', async () => {
     const testDidNine = await createLightDidFromSeed(keystore, testMnemonics[8])
     if (!testDidNine) throw new Error('Creation of Test Light Did Nine failed')
@@ -447,7 +447,7 @@ describe('checking the deposits', async () => {
         requestForAttestation
       )
     ).resolves.toBe(true)
-  })
+  }, 30_000)
 })
 
 afterAll(() => {
