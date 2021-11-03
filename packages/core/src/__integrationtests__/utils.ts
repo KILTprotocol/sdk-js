@@ -26,7 +26,6 @@ import {
   IRequestForAttestation,
   KeyRelationship,
   KeystoreSigner,
-  SubmittableExtrinsic,
 } from '@kiltprotocol/types'
 
 import { DecoderUtils } from '@kiltprotocol/utils'
