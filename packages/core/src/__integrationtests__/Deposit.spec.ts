@@ -53,10 +53,6 @@ async function checkDeleteFullDid(
 ): Promise<boolean> {
   const deleteDid = await DidChain.getDeleteDidExtrinsic(0)
 
-  const balanceBeforeDeleting = await Balance.getBalances(
-    identity.address
-  ).then((balance) => balance)
-
   tx = await DidChain.generateDidAuthenticatedTx({
     didIdentifier: identity.address,
     txCounter: fullDid.getNextTxIndex(),
@@ -68,15 +64,14 @@ async function checkDeleteFullDid(
     submitter: identity.address,
   })
 
-  const didBeforeDepositRemoval = await getDidDeposit(identity.address)
+  const balanceBeforeDeleting = await Balance.getBalances(
+    identity.address
+  ).then((balance) => balance)
+  const didDeposit = await getDidDeposit(identity.address)
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
-
-  const didDeposit = await getDidDeposit(identity.address)
-
-  console.log('There should be no deposit', didDeposit.toString())
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address).then(
     (balance) => balance
@@ -98,28 +93,19 @@ async function checkReclaimFullDid(identity: KeyringPair): Promise<boolean> {
     identity.address
   ).then((balance) => balance)
 
-  console.log('balance before Revoking', balanceBeforeRevoking.toString())
-
   const didDeposit = await getDidDeposit(identity.address)
-
-  console.log('There should be deposit', didDeposit.toString())
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 
-  const didAfterDepositRemoval = await getDidDeposit(identity.address)
-
-  console.log('There should be no deposit', didAfterDepositRemoval.toString())
   const balanceAfterRevoking = await Balance.getBalances(identity.address).then(
     (balance) => balance
   )
 
-  console.log('balance after Revoking', balanceAfterRevoking.toString())
-
   if (
-    balanceAfterRevoking.reserved.toNumber() ===
-    didAfterDepositRemoval.toNumber()
+    balanceBeforeRevoking.reserved.toNumber() - didDeposit.toNumber() ===
+    balanceAfterRevoking.reserved.toNumber()
   ) {
     return true
   }
@@ -140,7 +126,6 @@ async function checkRemoveFullDidAttestation(
     requestForAttestation,
     fullDid.did
   )
-  console.log('balance before Removing', balanceBeforeRemoving.toString())
 
   tx = await attestation.remove(0)
   authorizedTx = await fullDid.authorizeExtrinsic(
@@ -149,31 +134,24 @@ async function checkRemoveFullDidAttestation(
     identity.address
   )
 
-  const attestationDepositBefore = await getAttestationDeposit(
-    attestation.claimHash
-  )
-
-  console.log('There should be deposit', attestationDepositBefore.toString())
+  const attestationDeposit = await getAttestationDeposit(attestation.claimHash)
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
-  const attestationDepositAfter = await getAttestationDeposit(
-    attestation.claimHash
-  )
-
-  console.log(
-    'There should be less deposit',
-    attestationDepositAfter.toString()
-  )
 
   const balanceAfterRemoving = await Balance.getBalances(identity.address).then(
     (balance) => balance
   )
 
-  console.log('balance after Removing', balanceAfterRemoving.toString())
-
-  return true
+  if (
+    balanceBeforeRemoving.reserved.toNumber() -
+      attestationDeposit.toNumber() ===
+    balanceAfterRemoving.reserved.toNumber()
+  ) {
+    return true
+  }
+  return false
 }
 
 async function checkReclaimFullDidAttestation(
@@ -190,34 +168,27 @@ async function checkReclaimFullDidAttestation(
     requestForAttestation,
     fullDid.did
   )
-  console.log('balance before Reclaiming', balanceBeforeReclaiming.toString())
 
   tx = await attestation.reclaimDeposit()
 
-  console.log('reclaim full attestation transaction fee:')
-
-  const attestationDepositBefore = await getAttestationDeposit(
-    attestation.claimHash
-  )
-
-  console.log('There should be deposit', attestationDepositBefore.toString())
+  const attestationDeposit = await getAttestationDeposit(attestation.claimHash)
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
-  const attestationDepositAfter = await getAttestationDeposit(
-    attestation.claimHash
-  )
-
-  console.log('There should be deposit', attestationDepositAfter.toString())
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address).then(
     (balance) => balance
   )
 
-  console.log('balance after Deleting', balanceAfterDeleting.toString())
-
-  return true
+  if (
+    balanceBeforeReclaiming.reserved.toNumber() -
+      attestationDeposit.toNumber() ===
+    balanceAfterDeleting.reserved.toNumber()
+  ) {
+    return true
+  }
+  return false
 }
 
 async function checkDeletedDidReclaimAttestation(
@@ -225,11 +196,12 @@ async function checkDeletedDidReclaimAttestation(
   fullDid: FullDidDetails,
   keystore: DemoKeystore,
   requestForAttestation: IRequestForAttestation
-): Promise<ISubmittableResult> {
+): Promise<boolean> {
   await createAttestation(identity, requestForAttestation, fullDid, keystore)
-  const balanceBeforeReclaiming = await Balance.getBalances(
-    identity.address
-  ).then((balance) => balance)
+  const balanceBefore = await Balance.getBalances(identity.address).then(
+    (balance) => balance
+  )
+
   const attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
@@ -252,19 +224,25 @@ async function checkDeletedDidReclaimAttestation(
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 
-  console.log('balance before Reclaiming', balanceBeforeReclaiming.toString())
-
   tx = await attestation.reclaimDeposit()
 
-  const attestationDepositBefore = await getAttestationDeposit(
-    attestation.claimHash
-  )
+  const attestationDeposit = await getAttestationDeposit(attestation.claimHash)
 
-  console.log('There should be deposit', attestationDepositBefore.toString())
-
-  return BlockchainUtils.signAndSubmitTx(tx, identity, {
+  await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
+
+  const balanceAfter = await Balance.getBalances(identity.address).then(
+    (balance) => balance
+  )
+
+  if (
+    balanceBefore.reserved.toNumber() - attestationDeposit.toNumber() ===
+    balanceAfter.reserved.toNumber()
+  ) {
+    return true
+  }
+  return false
 }
 
 const testIdentities: KeyringPair[] = []
