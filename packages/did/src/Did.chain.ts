@@ -55,7 +55,7 @@ export async function queryDidEncoded(
   return api.query.did.did<Option<IDidChainRecordCodec>>(didIdentifier)
 }
 
-// Query ALL deleted DIDs, which can get quite time consuming.
+// Query ALL deleted DIDs, which can be very time consuming if the number of deleted DIDs gets large.
 export async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID identifier.

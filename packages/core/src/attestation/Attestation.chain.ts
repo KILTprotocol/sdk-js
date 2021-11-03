@@ -151,18 +151,17 @@ export async function reclaimDeposit(
   log.debug(
     () => `Claiming deposit for the attestation with claim hash ${claimHash}`
   )
-  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.reclaimDeposit(
-    claimHash
-  )
+  const tx: SubmittableExtrinsic =
+    blockchain.api.tx.attestation.reclaimDeposit(claimHash)
   return tx
 }
 
-async function queryRawDepositAmount(): Promise<U128> {
+async function queryDepositAmountEncoded(): Promise<U128> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.consts.attestation.deposit as U128
 }
 
 export async function queryDepositAmount(): Promise<BN> {
-  const encodedDeposit = await queryRawDepositAmount()
+  const encodedDeposit = await queryDepositAmountEncoded()
   return encodedDeposit.toBn()
 }
