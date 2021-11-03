@@ -175,6 +175,7 @@ describe('balanceNumberToString', () => {
     expect(() =>
       balanceNumberToString(({ toLocaleString: 'blurt' } as unknown) as bigint)
     ).toThrowError()
+    expect(balanceNumberToString(BigInt('12345678900'))).toEqual('12345678900')
   })
 })
 describe('toFemtoKilt', () => {
