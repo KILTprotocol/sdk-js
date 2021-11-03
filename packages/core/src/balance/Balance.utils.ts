@@ -78,17 +78,16 @@ export function balanceNumberToString(input: BalanceNumber): string {
   }
   if (
     typeof input === 'number' ||
-    (typeof input === 'object' &&
-      ((input instanceof BN && input.toString) ||
-        (input instanceof BigInt && input.toLocaleString)))
+    (typeof input === 'bigint' && input.toString) ||
+    (typeof input === 'object' && input instanceof BN && input.toString)
   ) {
     return input.toString()
   }
   throw new Error('could not convert to String')
 }
+
 /**
  * Converts the given [[BalanceNumber]] to the femto KILT equivalent.
- *
  * @param input [[BalanceNumber]] to convert.
  * @param unit Metric prefix of the given [[BalanceNumber]].
  * @returns Exact BN representation in femtoKilt, to use in transactions and calculations.
@@ -124,6 +123,7 @@ export function toFemtoKilt(
 
   return resultingBN.mul(new BN(negative ? -1 : 1))
 }
+
 /**
  * Converts the given [[BalanceNumber]] to a human readable number with metric prefix and Unit.
  * This function uses the polkadot formatBalance function,
