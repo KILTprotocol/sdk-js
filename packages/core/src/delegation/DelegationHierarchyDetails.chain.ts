@@ -26,7 +26,6 @@ import {
  * @param rootId
  * @internal
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function query(
   rootId: IDelegationNode['id']
 ): Promise<IDelegationHierarchyDetails | null> {

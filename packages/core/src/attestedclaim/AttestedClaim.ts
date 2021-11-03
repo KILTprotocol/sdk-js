@@ -123,7 +123,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @returns A promise containing whether this attested claim is valid.
    * @example ```javascript
    * attestedClaim.verify().then((isVerified) => {
-   * // `isVerified` is true if the attestation is verified, false otherwise
+   *   // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```
    */

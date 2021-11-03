@@ -97,7 +97,7 @@ export default class Message implements IMessage {
    * Uses [[Message.ensureHashAndSignature]] and [[Message.ensureOwnerIsSender]] internally.
    *
    * @param encrypted The encrypted message.
-   * @param keystore
+   * @param keystore The keystore used to perform the cryptographic operations.
    * @param resolutionOptions
    * @param resolutionOptions.senderDetails
    * @param resolutionOptions.receiverDetails
@@ -128,7 +128,10 @@ export default class Message implements IMessage {
     } = encrypted
 
     // if we don't have the sender DID & receiver details already, fetch it via resolver
-    const resolveKey = async (keyId: string, didDetails?: IDidDetails) => {
+    const resolveKey = async (
+      keyId: string,
+      didDetails?: IDidDetails
+    ): Promise<IDidKeyDetails> => {
       // check if key is currently associated with DID
       const keyDetails =
         didDetails?.getKey(keyId) || (await resolver.resolveKey(keyId))

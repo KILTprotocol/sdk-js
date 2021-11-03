@@ -183,9 +183,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *   age: 29,
    * };
    * const claim = Claim.fromCTypeAndClaimContents(ctype, rawClaim, alice);
-   * const reqForAtt = RequestForAttestation.fromClaim(
-   *   claim,
-   * );
+   * const reqForAtt = RequestForAttestation.fromClaim(claim);
    * reqForAtt.removeClaimProperties(['name']);
    * // reqForAtt does not contain `name` in its claimHashTree and its claim contents anymore.
    * ```
@@ -252,10 +250,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
    * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner or if the light DID is used after it has been upgraded.
    * @returns Whether the signature is correct.
    * @example ```javascript
-   * const reqForAtt = RequestForAttestation.fromClaim(
-   * claim,
-   * );
-   * await reqForAtt.signWithDid(myKeystore, myDidDetails)
+   * const reqForAtt = RequestForAttestation.fromClaim(claim);
+   * await reqForAtt.signWithDid(myKeystore, myDidDetails);
    * RequestForAttestation.verifySignature(reqForAtt); // returns `true` if the signature is correct
    * ```
    */

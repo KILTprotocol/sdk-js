@@ -79,6 +79,8 @@ module.exports = {
     ],
     'jsdoc/check-alignment': 'off',
     'license-header/header': ['error', './license-header.js'],
+    'import/prefer-default-export': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
   },
   overrides: [
     {
@@ -88,7 +90,6 @@ module.exports = {
       },
       rules: {
         '@typescript-eslint/no-object-literal-type-assertion': 'off',
-        '@typescript-eslint/no-explicit-any': 'off',
         'no-underscore-dangle': 'off',
         'global-require': 'off',
         'jsdoc/check-tag-names': [
@@ -98,6 +99,8 @@ module.exports = {
           },
         ],
         '@typescript-eslint/no-var-requires': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
       },
     },
   ],
