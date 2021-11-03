@@ -386,7 +386,7 @@ export async function verifyDidSignature({
       verified: false,
     }
   }
-  // Returns false also if the full DID has been deleted.
+  // Returns false also if the migrated full DID has been deleted.
   if (details.metadata?.deleted) {
     return {
       verified: false,

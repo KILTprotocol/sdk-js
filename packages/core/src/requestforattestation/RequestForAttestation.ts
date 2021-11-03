@@ -279,7 +279,6 @@ export default class RequestForAttestation implements IRequestForAttestation {
       keyRelationship: KeyRelationship.authentication,
       resolver,
     })
-    // Return false if the full DID has been deleted, so no need to check for that case afterwards.
     if (!verified) {
       return false
     }
@@ -290,6 +289,9 @@ export default class RequestForAttestation implements IRequestForAttestation {
       if (input.claim.owner !== didDetails?.did) {
         throw SDKErrors.ERROR_IDENTITY_MISMATCH()
       }
+      // Light DID migrated and then deleted should become unusable.
+    } else if (ownerResolutionResult?.metadata.deleted) {
+      return false
     } else {
       const canonicalDid = ownerResolutionResult.metadata.canonicalId
       // If the DID that signed the presentation is different than the expected canonical one, it is an error as well.
