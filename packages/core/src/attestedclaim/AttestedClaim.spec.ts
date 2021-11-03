@@ -133,6 +133,8 @@ describe('RequestForAttestation', () => {
   let legitimation: AttestedClaim
   let compressedLegitimation: CompressedAttestedClaim
   let identityDave: IDidDetails
+  let migratedAndDeletedLightDid: IDidDetails
+  let migratedAndDeletedFullDid: IDidDetails
 
   const mockResolver: IDidResolver = (() => {
     const resolve = async (didUri: string) => {
@@ -147,6 +149,16 @@ describe('RequestForAttestation', () => {
           return { details: identityCharlie }
         case identityDave.did:
           return { details: identityDave }
+        case migratedAndDeletedLightDid.did:
+          return {
+            details: migratedAndDeletedLightDid,
+            metadata: {
+              canonicalId: migratedAndDeletedFullDid.did,
+              deleted: true,
+            },
+          }
+        case migratedAndDeletedFullDid.did:
+          return null
         default:
           return null
       }
@@ -244,6 +256,39 @@ describe('RequestForAttestation', () => {
     ).resolves.toBe(true)
   })
 
+  it('fail to verify attested claims signed by a light DID after it has been migrated and deleted', async () => {
+    migratedAndDeletedLightDid = await createLightDidFromSeed(
+      keystore,
+      '//MigratedLight'
+    )
+    migratedAndDeletedFullDid = await createLocalDemoDidFromSeed(
+      keystore,
+      '//MigratedFull'
+    )
+
+    const attestedClaim = await buildAttestedClaim(
+      migratedAndDeletedLightDid,
+      identityAlice,
+      {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+      },
+      [legitimation],
+      keystore
+    )
+
+    ;(query as jest.Mock).mockResolvedValue(attestedClaim.attestation)
+
+    // check proof on complete data
+    expect(AttestedClaim.verifyData(attestedClaim)).toBeTruthy()
+    await expect(
+      AttestedClaim.verify(attestedClaim, {
+        resolver: mockResolver,
+      })
+    ).resolves.toBeFalsy()
+  })
+
   it('compresses and decompresses the attested claims object', () => {
     expect(AttestedClaimUtils.compress(legitimation)).toEqual(
       compressedLegitimation
@@ -331,6 +376,8 @@ describe('create presentation', () => {
   let migratedClaimerLightDid: IDidDetails
   let migratedClaimerFullDid: IDidDetails
   let unmigratedClaimerLightDid: IDidDetails
+  let migratedThenDeletedClaimerLightDid: IDidDetails
+  let migratedThenDeletedClaimerFullDid: IDidDetails
   let attester: IDidDetails
   let ctype: CType
   let reqForAtt: RequestForAttestation
@@ -349,6 +396,16 @@ describe('create presentation', () => {
               deleted: false,
             },
           }
+        case migratedThenDeletedClaimerLightDid.did:
+          return {
+            details: migratedThenDeletedClaimerLightDid,
+            metadata: {
+              canonicalId: migratedThenDeletedClaimerFullDid.did,
+              deleted: true,
+            },
+          }
+        case migratedThenDeletedClaimerFullDid.did:
+          return null
         case unmigratedClaimerLightDid.did:
           return { details: unmigratedClaimerLightDid }
         case migratedClaimerFullDid.did:
@@ -390,6 +447,13 @@ describe('create presentation', () => {
         ),
         publicKey: newKeyForMigratedClaimerDid.publicKey,
       }
+    )
+    migratedThenDeletedClaimerLightDid = await createLightDidFromSeed(
+      keystore,
+      '//MigratedThenDeletedClaimer'
+    )
+    migratedThenDeletedClaimerFullDid = createMinimalFullDidFromLightDid(
+      migratedThenDeletedClaimerLightDid as LightDidDetails
     )
 
     const rawCType: ICType['schema'] = {
@@ -581,6 +645,52 @@ describe('create presentation', () => {
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       '"Addresses expected to be equal mismatched"'
     )
+  })
+
+  it('should fail to create a valid presentation using a light DID after it has been migrated and deleted', async () => {
+    const rawCType: ICType['schema'] = {
+      $id: 'kilt:ctype:0x1',
+      $schema: 'http://kilt-protocol.org/draft-01/ctype#',
+      title: 'credential',
+      properties: {
+        name: { type: 'string' },
+      },
+      type: 'object',
+    }
+    ctype = CType.fromSchema(rawCType, attester.did)
+
+    // cannot be used since the variable needs to be established in the outer scope
+    reqForAtt = RequestForAttestation.fromClaim(
+      Claim.fromCTypeAndClaimContents(
+        ctype,
+        {
+          name: 'Peter',
+          age: 12,
+        },
+        // Use of light DID in the claim.
+        migratedThenDeletedClaimerLightDid.did
+      )
+    )
+
+    attestation = Attestation.fromRequestAndDid(reqForAtt, attester.did)
+    ;(query as jest.Mock).mockResolvedValue(attestation)
+
+    const cred = AttestedClaim.fromRequestAndAttestation(reqForAtt, attestation)
+
+    const challenge = UUID.generate()
+    const att = await cred.createPresentation({
+      selectedAttributes: ['name'],
+      signer: keystore,
+      // Still using the light DID, which should fail since it has been migrated and then deleted
+      claimerDid: migratedThenDeletedClaimerLightDid,
+      challenge,
+    })
+    expect(att.getAttributes()).toEqual(new Set(['name']))
+    await expect(
+      AttestedClaim.verify(att, {
+        resolver: mockResolver,
+      })
+    ).resolves.toBeFalsy()
   })
 
   it('should get attribute keys', async () => {
