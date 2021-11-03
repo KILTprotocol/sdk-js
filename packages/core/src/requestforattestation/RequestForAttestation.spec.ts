@@ -22,12 +22,12 @@ import type {
   DidSignature,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import Attestation from '../attestation/Attestation'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
-import CType from '../ctype/CType'
+import { Attestation } from '../attestation/Attestation'
+import { AttestedClaim } from '../attestedclaim/AttestedClaim'
+import { CType } from '../ctype/CType'
 
-import RequestForAttestation from './RequestForAttestation'
-import RequestForAttestationUtils from './RequestForAttestation.utils'
+import { RequestForAttestation } from './RequestForAttestation'
+import * as RequestForAttestationUtils from './RequestForAttestation.utils'
 
 import '../../../../testingTools/jestErrorCodeMatcher'
 
@@ -336,8 +336,8 @@ describe('RequestForAttestation', () => {
       builtRequestIncompleteClaimHashTree.claimNonceMap
     )[0]
     delete builtRequestIncompleteClaimHashTree.claimNonceMap[deletedKey]
-    // @ts-expect-error
     builtRequestIncompleteClaimHashTree.rootHash =
+      // @ts-expect-error
       RequestForAttestation.calculateRootHash(
         builtRequestIncompleteClaimHashTree
       )
@@ -355,8 +355,8 @@ describe('RequestForAttestation', () => {
     builtRequestMalformedSignature.claimerSignature = {
       signature: Crypto.hashStr('aaa'),
     } as DidSignature
-    // @ts-expect-error
     builtRequestMalformedSignature.rootHash =
+      // @ts-expect-error
       RequestForAttestation.calculateRootHash(builtRequestMalformedSignature)
     const builtRequestMalformedHashes = {
       ...buildRequestForAttestation(
@@ -380,8 +380,8 @@ describe('RequestForAttestation', () => {
         delete builtRequestMalformedHashes.claimNonceMap[hash]
       }
     )
-    // @ts-expect-error
     builtRequestMalformedHashes.rootHash =
+      // @ts-expect-error
       RequestForAttestation.calculateRootHash(builtRequestMalformedHashes)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)

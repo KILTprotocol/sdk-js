@@ -9,7 +9,12 @@
  * @group integration/delegation
  */
 
-import type { ICType, IDelegationNode, KeyringPair } from '@kiltprotocol/types'
+import type {
+  ICType,
+  IDelegationNode,
+  KeyringPair,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
@@ -19,12 +24,12 @@ import {
 } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'
-import Attestation from '../attestation/Attestation'
-import Claim from '../claim/Claim'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import { Attestation } from '../attestation/Attestation'
+import { Claim } from '../claim/Claim'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import { AttestedClaim } from '..'
 import { disconnect, init } from '../kilt'
-import DelegationNode from '../delegation/DelegationNode'
+import { DelegationNode } from '../delegation/DelegationNode'
 import { CtypeOnChain, DriversLicense, devFaucet, WS_ADDRESS } from './utils'
 import { getAttestationHashes } from '../delegation/DelegationNode.chain'
 
@@ -46,10 +51,10 @@ async function writeHierarchy(
 
   await rootNode
     .store()
-    .then((tx) =>
+    .then((tx: SubmittableExtrinsic) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
-    .then((tx) =>
+    .then((tx: SubmittableExtrinsic) =>
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
@@ -75,10 +80,10 @@ async function addDelegation(
   const signature = await delegationNode.delegeeSign(delegee, signer)
   await delegationNode
     .store(signature)
-    .then((tx) =>
+    .then((tx: SubmittableExtrinsic) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
-    .then((tx) =>
+    .then((tx: SubmittableExtrinsic) =>
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
@@ -100,10 +105,10 @@ beforeAll(async () => {
 
   if (!(await CtypeOnChain(DriversLicense))) {
     await DriversLicense.store()
-      .then((tx) =>
+      .then((tx: SubmittableExtrinsic) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
-      .then((tx) =>
+      .then((tx: SubmittableExtrinsic) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -176,10 +181,10 @@ describe('and attestation rights have been delegated', () => {
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await attestation
       .store()
-      .then((tx) =>
+      .then((tx: SubmittableExtrinsic) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
-      .then((tx) =>
+      .then((tx: SubmittableExtrinsic) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -196,8 +201,8 @@ describe('and attestation rights have been delegated', () => {
     // revoke attestation through root
     await attClaim.attestation
       .revoke(1)
-      .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
-      .then((tx) =>
+      .then((tx: SubmittableExtrinsic) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
+      .then((tx: SubmittableExtrinsic) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -231,10 +236,10 @@ describe('revocation', () => {
     await expect(
       delegationA
         .revoke(delegator.did)
-        .then((tx) =>
+        .then((tx: SubmittableExtrinsic) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx) =>
+        .then((tx: SubmittableExtrinsic) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -247,10 +252,10 @@ describe('revocation', () => {
     await expect(
       delegationA
         .remove()
-        .then((tx) =>
+        .then((tx: SubmittableExtrinsic) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx) =>
+        .then((tx: SubmittableExtrinsic) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -274,10 +279,10 @@ describe('revocation', () => {
     await expect(
       delegationRoot
         .revoke(firstDelegee.did)
-        .then((tx) =>
+        .then((tx: SubmittableExtrinsic) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx) =>
+        .then((tx: SubmittableExtrinsic) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -289,10 +294,10 @@ describe('revocation', () => {
     await expect(
       delegationA
         .revoke(firstDelegee.did)
-        .then((tx) =>
+        .then((tx: SubmittableExtrinsic) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx) =>
+        .then((tx: SubmittableExtrinsic) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -320,10 +325,10 @@ describe('revocation', () => {
     await expect(
       delegationRoot
         .revoke(delegator.did)
-        .then((tx) =>
+        .then((tx: SubmittableExtrinsic) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx) =>
+        .then((tx: SubmittableExtrinsic) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,

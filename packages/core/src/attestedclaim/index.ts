@@ -5,5 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export { default } from './AttestedClaim'
-export { default as AttestedClaimUtils } from './AttestedClaim.utils'
+import { AttestedClaim } from './AttestedClaim'
+import * as AttestedClaimUtils from './AttestedClaim.utils'
+
+export { AttestedClaim, AttestedClaimUtils }

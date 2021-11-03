@@ -49,7 +49,7 @@ import {
 } from './DelegationNode.chain'
 import { query as queryDetails } from './DelegationHierarchyDetails.chain'
 import * as DelegationNodeUtils from './DelegationNode.utils'
-import Attestation from '../attestation/Attestation'
+import { Attestation } from '../attestation/Attestation'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 

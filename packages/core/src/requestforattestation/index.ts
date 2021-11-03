@@ -5,5 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export { default } from './RequestForAttestation'
-export { default as RequestForAttestationUtils } from './RequestForAttestation.utils'
+import { RequestForAttestation } from './RequestForAttestation'
+import * as RequestForAttestationUtils from './RequestForAttestation.utils'
+
+export { RequestForAttestation, RequestForAttestationUtils }

@@ -19,11 +19,11 @@ import type {
   ICTypeSchema,
   CompressedCTypeSchema,
 } from '@kiltprotocol/types'
-import Claim from '../claim/Claim'
-import requestForAttestation from '../requestforattestation/RequestForAttestation'
-import CType from './CType'
-import CTypeUtils from './CType.utils'
-import Kilt from '../kilt/Kilt'
+import { Claim } from '../claim/Claim'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import { CType } from './CType'
+import * as CTypeUtils from './CType.utils'
+import * as Kilt from '../kilt/Kilt'
 import { getOwner, isStored } from './CType.chain'
 
 jest.mock('./CType.chain')
@@ -243,8 +243,8 @@ describe('blank ctypes', () => {
     const claimA1 = Claim.fromCTypeAndClaimContents(ctype1, {}, didAlice)
     const claimA2 = Claim.fromCTypeAndClaimContents(ctype2, {}, didAlice)
 
-    expect(requestForAttestation.fromClaim(claimA1).rootHash).not.toEqual(
-      requestForAttestation.fromClaim(claimA2).rootHash
+    expect(RequestForAttestation.fromClaim(claimA1).rootHash).not.toEqual(
+      RequestForAttestation.fromClaim(claimA2).rootHash
     )
   })
   it('typeguard returns true or false for complete or incomplete CTypes', () => {

@@ -11,7 +11,7 @@
 
 import { BN } from '@polkadot/util'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
-import type { KeyringPair } from '@kiltprotocol/types'
+import type { KeyringPair, SubmittableExtrinsic } from '@kiltprotocol/types'
 import {
   createOnChainDidFromSeed,
   DemoKeystore,
@@ -41,11 +41,12 @@ beforeAll(async () => {
 
 it('records an unknown extrinsic error when transferring less than the existential amount to new identity', async () => {
   await expect(
-    makeTransfer(addressFromRandom(), new BN(1)).then((tx) =>
-      BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
-        resolveOn: BlockchainUtils.IS_IN_BLOCK,
-        reSign: true,
-      })
+    makeTransfer(addressFromRandom(), new BN(1)).then(
+      (tx: SubmittableExtrinsic) =>
+        BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
+        })
     )
   ).rejects.toThrowErrorWithCode(ExtrinsicErrors.UNKNOWN_ERROR.code)
 }, 30_000)

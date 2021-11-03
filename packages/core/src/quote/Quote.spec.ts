@@ -31,11 +31,11 @@ import {
   createLocalDemoDidFromSeed,
   SigningAlgorithms,
 } from '@kiltprotocol/did'
-import CType from '../ctype/CType'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import { CType } from '../ctype/CType'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import * as Quote from './Quote'
-import QuoteUtils from './Quote.utils'
-import QuoteSchema from './QuoteSchema'
+import * as QuoteUtils from './Quote.utils'
+import { QuoteSchema } from './QuoteSchema'
 
 describe('Claim', () => {
   let claimerIdentity: IDidDetails

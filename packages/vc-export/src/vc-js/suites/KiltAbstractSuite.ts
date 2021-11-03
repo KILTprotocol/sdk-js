@@ -15,7 +15,7 @@ import {
 import type { JsonLdObj } from 'jsonld/jsonld-spec'
 import jsonld from 'jsonld'
 import type { VerifiableCredential, Proof, IPublicKeyRecord } from '../../types'
-import * as defaultDocumentLoader from '../documentLoader'
+import { documentLoader as defaultDocumentLoader } from '../documentLoader'
 import {
   KILT_CREDENTIAL_CONTEXT_URL,
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,

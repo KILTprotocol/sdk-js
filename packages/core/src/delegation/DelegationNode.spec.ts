@@ -18,7 +18,7 @@ import {
 } from '@kiltprotocol/types'
 import { encodeAddress } from '@polkadot/keyring'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import DelegationNode from './DelegationNode'
+import { DelegationNode } from './DelegationNode'
 import { permissionsAsBitset, errorCheck } from './DelegationNode.utils'
 
 let hierarchiesDetails: Record<string, IDelegationHierarchyDetails> = {}
@@ -27,7 +27,7 @@ let nodes: Record<string, DelegationNode> = {}
 jest.mock('./DelegationNode.chain', () => {
   return {
     getChildren: jest.fn(async (node: DelegationNode) =>
-      node.childrenIds.map((id) => nodes[id] || null)
+      node.childrenIds.map((id: IDelegationNode['id']) => nodes[id] || null)
     ),
     query: jest.fn(async (id: string) => nodes[id] || null),
     storeAsRoot: jest.fn(async (node: DelegationNode) => {
@@ -270,8 +270,8 @@ describe('DelegationNode', () => {
     it('mocks work', async () => {
       expect(topNode.id).toEqual(a1)
       await expect(
-        topNode.getChildren().then((children) => {
-          return children.map((childNode) => childNode.id)
+        topNode.getChildren().then((children: DelegationNode[]) => {
+          return children.map((childNode: DelegationNode) => childNode.id)
         })
       ).resolves.toStrictEqual(topNode.childrenIds)
       await expect(nodes[d1].getChildren()).resolves.toStrictEqual([])
@@ -604,7 +604,7 @@ describe('DelegationHierarchy', () => {
     await aDelegationRootNode.revoke(didAlice)
     const fetchedNodeRevocationStatus = DelegationNode.query(
       ROOT_IDENTIFIER
-    ).then((node) => node?.revoked)
+    ).then((node: DelegationNode | null) => node?.revoked)
     await expect(fetchedNodeRevocationStatus).resolves.not.toBeNull()
     await expect(fetchedNodeRevocationStatus).resolves.toEqual(true)
   })

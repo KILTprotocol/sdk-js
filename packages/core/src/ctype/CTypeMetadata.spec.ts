@@ -13,9 +13,9 @@
 
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { ICType, ICTypeMetadata } from '@kiltprotocol/types'
-import CType from './CType'
-import CTypeUtils from './CType.utils'
-import CTypeMetadata from './CTypeMetadata'
+import { CType } from './CType'
+import * as CTypeUtils from './CType.utils'
+import { CTypeMetadata } from './CTypeMetadata'
 import { MetadataModel } from './CTypeSchema'
 
 describe('CType', () => {

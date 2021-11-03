@@ -6,7 +6,8 @@
  */
 
 /* eslint-disable no-console */
-import Kilt, { KeyRelationship } from '@kiltprotocol/sdk-js'
+import * as Kilt from '@kiltprotocol/sdk-js'
+import { KeyRelationship } from '@kiltprotocol/sdk-js'
 import type {
   AttestedClaim,
   Claim,
@@ -79,8 +80,7 @@ async function setup(): Promise<{
   // ------------------------- CType    ----------------------------------------
   // First build a schema
   const ctypeSchema: ICType['schema'] = {
-    $id:
-      'kilt:ctype:0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
+    $id: 'kilt:ctype:0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     properties: {
       name: {
@@ -364,11 +364,12 @@ async function doVerification(
     claimerLightDid.did
   )
 
-  const verifierAcceptedClaimsMessageEnc = await verifierAcceptedClaimsMessage.encrypt(
-    verifierEncryptionKey,
-    claimerEncryptionKey,
-    keystore
-  )
+  const verifierAcceptedClaimsMessageEnc =
+    await verifierAcceptedClaimsMessage.encrypt(
+      verifierEncryptionKey,
+      claimerEncryptionKey,
+      keystore
+    )
 
   // ------------------------- Claimer -----------------------------------------
   // The claimer receives a message from the verifier of the accepted ctypes
@@ -378,7 +379,8 @@ async function doVerification(
     { senderDetails: verifierLightDid, receiverDetails: claimerLightDid }
   )
 
-  const ctypeHash = (verifierAcceptedClaimsMessageDec.body as IAcceptClaimsForCTypes)
+  const ctypeHash = (
+    verifierAcceptedClaimsMessageDec.body as IAcceptClaimsForCTypes
     .content[0]
   console.log('claimer checks the ctypeHash matches', ctypeHash)
 

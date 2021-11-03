@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import TypeRegistry, { KILT_TYPES } from './TypeRegistry'
+import { KILT_TYPES } from './TypeRegistry'
 
 export * as BlockchainApiConnection from './BlockchainApiConnection'
-export { TypeRegistry, KILT_TYPES }
+export { KILT_TYPES }

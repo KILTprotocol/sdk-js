@@ -88,7 +88,7 @@ import {
 } from '@kiltprotocol/did'
 import * as MessageUtils from './Message.utils'
 
-import Message from './Message'
+import { Message } from './Message'
 
 import '../../../testingTools/jestErrorCodeMatcher'
 

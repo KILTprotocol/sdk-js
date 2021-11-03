@@ -35,7 +35,7 @@ import {
   queryDepositAmount,
 } from './Attestation.chain'
 import * as AttestationUtils from './Attestation.utils'
-import * as DelegationNode from '../delegation/DelegationNode'
+import { DelegationNode } from '../delegation/DelegationNode'
 
 export class Attestation implements IAttestation {
   /**

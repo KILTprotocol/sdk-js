@@ -17,7 +17,7 @@ import {
   verifySchemaWithErrors,
 } from './CType.utils'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
-import CType from '.'
+import { CType } from '.'
 import { getOwner, isStored } from './CType.chain'
 
 jest.mock('./CType.chain')

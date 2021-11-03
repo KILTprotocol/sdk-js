@@ -22,8 +22,8 @@ import type {
   SubscriptionPromise,
 } from '@kiltprotocol/types'
 import { getConnectionOrConnect } from '../blockchainApiConnection/BlockchainApiConnection'
-import TYPE_REGISTRY from '../blockchainApiConnection/TypeRegistry'
-import Blockchain from './Blockchain'
+import { TYPE_REGISTRY } from '../blockchainApiConnection/TypeRegistry'
+import { Blockchain } from './Blockchain'
 import {
   EXTRINSIC_FAILED,
   IS_ERROR,

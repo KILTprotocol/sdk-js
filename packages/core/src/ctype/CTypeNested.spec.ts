@@ -10,9 +10,9 @@
  */
 
 import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
-import CType from './CType'
-import Claim from '../claim/Claim'
-import CTypeUtils from './CType.utils'
+import { CType } from './CType'
+import { Claim } from '../claim/Claim'
+import * as CTypeUtils from './CType.utils'
 
 describe('Nested CTypes', () => {
   const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'

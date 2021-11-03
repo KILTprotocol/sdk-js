@@ -19,7 +19,7 @@ import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidTypes, DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
 import { decodeDelegationNode, IChainDelegationNode } from './DelegationDecoder'
-import DelegationNode from './DelegationNode'
+import { DelegationNode } from './DelegationNode'
 import { permissionsAsBitset } from './DelegationNode.utils'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
@@ -137,7 +137,7 @@ export async function getChildren(
 ): Promise<DelegationNode[]> {
   log.info(` :: getChildren('${delegationNode.id}')`)
   const childrenNodes = await Promise.all(
-    delegationNode.childrenIds.map(async (childId) => {
+    delegationNode.childrenIds.map(async (childId: IDelegationNode['id']) => {
       const childNode = await query(childId)
       if (!childNode) {
         throw SDKErrors.ERROR_DELEGATION_ID_MISSING

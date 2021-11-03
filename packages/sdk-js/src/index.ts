@@ -6,7 +6,8 @@
  */
 
 import * as core from '@kiltprotocol/core'
-import Message, * as Messaging from '@kiltprotocol/messaging'
+import { Message } from '@kiltprotocol/messaging'
+import * as Messaging from '@kiltprotocol/messaging'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import * as ChainHelpers from '@kiltprotocol/chain-helpers'
 import * as Did from '@kiltprotocol/did'
