@@ -119,13 +119,8 @@ export default class Message implements IMessage {
       resolver?: IDidResolver
     } = {}
   ): Promise<IMessage> {
-    const {
-      senderKeyId,
-      receiverKeyId,
-      ciphertext,
-      nonce,
-      receivedAt,
-    } = encrypted
+    const { senderKeyId, receiverKeyId, ciphertext, nonce, receivedAt } =
+      encrypted
 
     // if we don't have the sender DID & receiver details already, fetch it via resolver
     const resolveKey = async (

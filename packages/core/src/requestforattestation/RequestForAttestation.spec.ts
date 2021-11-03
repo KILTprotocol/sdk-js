@@ -337,9 +337,10 @@ describe('RequestForAttestation', () => {
     )[0]
     delete builtRequestIncompleteClaimHashTree.claimNonceMap[deletedKey]
     // @ts-expect-error
-    builtRequestIncompleteClaimHashTree.rootHash = RequestForAttestation.calculateRootHash(
-      builtRequestIncompleteClaimHashTree
-    )
+    builtRequestIncompleteClaimHashTree.rootHash =
+      RequestForAttestation.calculateRootHash(
+        builtRequestIncompleteClaimHashTree
+      )
     const builtRequestMalformedSignature = {
       ...buildRequestForAttestation(
         identityBob,
@@ -355,9 +356,8 @@ describe('RequestForAttestation', () => {
       signature: Crypto.hashStr('aaa'),
     } as DidSignature
     // @ts-expect-error
-    builtRequestMalformedSignature.rootHash = RequestForAttestation.calculateRootHash(
-      builtRequestMalformedSignature
-    )
+    builtRequestMalformedSignature.rootHash =
+      RequestForAttestation.calculateRootHash(builtRequestMalformedSignature)
     const builtRequestMalformedHashes = {
       ...buildRequestForAttestation(
         identityBob,
@@ -381,9 +381,8 @@ describe('RequestForAttestation', () => {
       }
     )
     // @ts-expect-error
-    builtRequestMalformedHashes.rootHash = RequestForAttestation.calculateRootHash(
-      builtRequestMalformedHashes
-    )
+    builtRequestMalformedHashes.rootHash =
+      RequestForAttestation.calculateRootHash(builtRequestMalformedHashes)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestNoLegitimations)
     ).toThrowError(SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED())

@@ -79,7 +79,8 @@ const KeypairTypeForAlg: Record<string, string> = {
  * Unsafe Keystore for Demo Purposes. Do not use to store sensible key material!
  */
 export class DemoKeystore
-  implements Keystore<SigningAlgorithms, EncryptionAlgorithms>, NaclBoxCapable {
+  implements Keystore<SigningAlgorithms, EncryptionAlgorithms>, NaclBoxCapable
+{
   private signingKeyring: Keyring = new Keyring()
   private encryptionKeypairs: Map<string, NaclKeypair> = new Map()
 

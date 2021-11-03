@@ -239,9 +239,8 @@ describe('Messaging Utilities', () => {
     }
 
     const resolveKey = async (keyId: string) => {
-      const { identifier, type, version, fragment } = DidUtils.parseDidUrl(
-        keyId
-      )
+      const { identifier, type, version, fragment } =
+        DidUtils.parseDidUrl(keyId)
       const didSubject = DidUtils.getKiltDidFromIdentifier(
         identifier,
         type,
@@ -816,16 +815,16 @@ describe('Messaging Utilities', () => {
     ).toEqual(informCreateDelegationBody)
   })
   it('Checks the MessageBody Types through the compress and decompress switch funciton', async () => {
-    const compressedMalformed = (['', []] as unknown) as CompressedMessageBody
+    const compressedMalformed = ['', []] as unknown as CompressedMessageBody
 
     expect(() =>
       MessageUtils.decompressMessage(compressedMalformed)
     ).toThrowError(SDKErrors.ERROR_MESSAGE_BODY_MALFORMED())
 
-    const malformed = ({
+    const malformed = {
       content: '',
       type: 'Message.BodyType',
-    } as unknown) as MessageBody
+    } as unknown as MessageBody
 
     expect(() => MessageUtils.compressMessage(malformed)).toThrowError(
       SDKErrors.ERROR_MESSAGE_BODY_MALFORMED()

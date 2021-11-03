@@ -93,10 +93,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
     claim: IClaim,
     { legitimations, delegationId }: Options = {}
   ): RequestForAttestation {
-    const {
-      hashes: claimHashes,
-      nonceMap: claimNonceMap,
-    } = ClaimUtils.hashClaimContents(claim)
+    const { hashes: claimHashes, nonceMap: claimNonceMap } =
+      ClaimUtils.hashClaimContents(claim)
 
     const rootHash = RequestForAttestation.calculateRootHash({
       legitimations,
@@ -391,9 +389,8 @@ export default class RequestForAttestation implements IRequestForAttestation {
   public static decompress(
     reqForAtt: CompressedRequestForAttestation
   ): RequestForAttestation {
-    const decompressedRequestForAttestation = RequestForAttestationUtils.decompress(
-      reqForAtt
-    )
+    const decompressedRequestForAttestation =
+      RequestForAttestationUtils.decompress(reqForAtt)
     return RequestForAttestation.fromRequest(decompressedRequestForAttestation)
   }
 

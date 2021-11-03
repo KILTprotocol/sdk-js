@@ -49,6 +49,270 @@ export enum MessageBodyType {
   INFORM_CREATE_DELEGATION = 'inform-create-delegation',
 }
 
+export type CompressedDelegationData = [
+  IDelegationNode['account'],
+  IDelegationNode['id'],
+  IDelegationNode['id'],
+  IDelegationNode['permissions'],
+  boolean
+]
+
+interface IMessageBodyBase {
+  content: any
+  type: MessageBodyType
+}
+
+export interface IRequestTerms extends IMessageBodyBase {
+  content: PartialClaim
+  type: MessageBodyType.REQUEST_TERMS
+}
+export interface ISubmitTerms extends IMessageBodyBase {
+  content: ITerms
+  type: MessageBodyType.SUBMIT_TERMS
+}
+export interface IRejectTerms extends IMessageBodyBase {
+  content: {
+    claim: PartialClaim
+    legitimations: IAttestedClaim[]
+    delegationId?: IDelegationNode['id']
+  }
+  type: MessageBodyType.REJECT_TERMS
+}
+
+export interface IRejectAttestationForClaim extends IMessageBodyBase {
+  content: IRequestForAttestation['rootHash']
+  type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM
+}
+
+export interface ISubmitClaimsForCTypes extends IMessageBodyBase {
+  content: IAttestedClaim[]
+  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
+}
+
+export interface IAcceptClaimsForCTypes extends IMessageBodyBase {
+  content: Array<ICType['hash']>
+  type: MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES
+}
+export interface IRejectClaimsForCTypes extends IMessageBodyBase {
+  content: Array<ICType['hash']>
+  type: MessageBodyType.REJECT_CLAIMS_FOR_CTYPES
+}
+
+export type CompressedSubmitTerms = [
+  MessageBodyType.SUBMIT_TERMS,
+  CompressedTerms
+]
+export type CompressedSubmitAttestationForClaim = [
+  MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+  CompressedAttestation
+]
+export type CompressedRejectAttestationForClaim = [
+  MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
+  IRequestForAttestation['rootHash']
+]
+export type CompressedSubmitClaimsForCTypes = [
+  MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+  CompressedAttestedClaim[]
+]
+export type CompressedAcceptClaimsForCTypes = [
+  MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES,
+  Array<ICType['hash']>
+]
+export type CompressedRejectClaimsForCTypes = [
+  MessageBodyType.REJECT_CLAIMS_FOR_CTYPES,
+  Array<ICType['hash']>
+]
+export type CompressedRejectAcceptDelegation = [
+  MessageBodyType.REJECT_ACCEPT_DELEGATION,
+  CompressedDelegationData
+]
+
+export interface IRequestAttestationForClaimContent {
+  requestForAttestation: IRequestForAttestation
+  quote?: IQuoteAgreement
+  prerequisiteClaims?: Array<IClaim | PartialClaim>
+}
+
+export interface IRequestAttestationForClaim extends IMessageBodyBase {
+  content: IRequestAttestationForClaimContent
+  type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+}
+
+export interface ISubmitAttestationForClaimContent {
+  attestation: IAttestation
+}
+
+export interface ISubmitAttestationForClaim extends IMessageBodyBase {
+  content: ISubmitAttestationForClaimContent
+  type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+}
+
+export interface IRequestClaimsForCTypesContent {
+  cTypeHash: ICType['hash']
+  acceptedAttester?: Array<IDidDetails['did']>
+  requiredProperties?: string[]
+}
+
+export interface IRequestClaimsForCTypes extends IMessageBodyBase {
+  content: IRequestClaimsForCTypesContent[]
+  type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
+}
+
+export interface IDelegationData {
+  account: IDelegationNode['account']
+  id: IDelegationNode['id']
+  parentId: IDelegationNode['id']
+  permissions: IDelegationNode['permissions']
+  isPCR: boolean
+}
+export interface IRejectAcceptDelegation extends IMessageBodyBase {
+  content: IDelegationData
+  type: MessageBodyType.REJECT_ACCEPT_DELEGATION
+}
+export interface IRequestDelegationApproval {
+  delegationData: IDelegationData
+  metaData?: AnyJson
+  signatures: {
+    inviter: DidSignature
+  }
+}
+
+export interface IRequestAcceptDelegation extends IMessageBodyBase {
+  content: IRequestDelegationApproval
+  type: MessageBodyType.REQUEST_ACCEPT_DELEGATION
+}
+
+export interface ISubmitDelegationApproval {
+  delegationData: IDelegationData
+  signatures: {
+    inviter: DidSignature
+    invitee: DidSignature
+  }
+}
+export interface ISubmitAcceptDelegation extends IMessageBodyBase {
+  content: ISubmitDelegationApproval
+  type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION
+}
+
+export interface IInformDelegationCreation {
+  delegationId: IDelegationNode['id']
+  isPCR: boolean
+}
+export interface IInformCreateDelegation extends IMessageBodyBase {
+  content: IInformDelegationCreation
+  type: MessageBodyType.INFORM_CREATE_DELEGATION
+}
+
+export type CompressedInformDelegationCreation = [
+  IInformDelegationCreation['delegationId'],
+  IInformDelegationCreation['isPCR']
+]
+
+export type CompressedInformCreateDelegation = [
+  MessageBodyType.INFORM_CREATE_DELEGATION,
+  CompressedInformDelegationCreation
+]
+
+export type CompressedPartialClaim = [
+  IClaim['cTypeHash'],
+  IClaim['owner'] | undefined,
+  IClaimContents | undefined
+]
+export type CompressedRequestTerms = [
+  MessageBodyType.REQUEST_TERMS,
+  CompressedPartialClaim
+]
+
+export type CompressedRejectedTerms = [
+  CompressedPartialClaim,
+  CompressedAttestedClaim[],
+  IDelegationNode['id'] | undefined
+]
+export type CompressedRejectTerms = [
+  MessageBodyType.REJECT_TERMS,
+  CompressedRejectedTerms
+]
+
+export type CompressedRequestClaimsForCTypesContent = [
+  ICType['hash'],
+  Array<IDidDetails['did']> | undefined,
+  string[] | undefined
+]
+
+export type CompressedRequestClaimsForCTypes = [
+  MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+  CompressedRequestClaimsForCTypesContent[]
+]
+
+export type CompressedRequestAttestationForClaimContent = [
+  CompressedRequestForAttestation,
+  CompressedQuoteAgreed | undefined,
+  Array<CompressedPartialClaim | CompressedClaim> | undefined
+]
+
+export type CompressedRequestAttestationForClaim = [
+  MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+  CompressedRequestAttestationForClaimContent
+]
+
+export type CompressedRequestDelegationApproval = [
+  CompressedDelegationData,
+  [DidSignature['signature'], DidSignature['keyId']],
+  AnyJson
+]
+export type CompressedRequestAcceptDelegation = [
+  MessageBodyType.REQUEST_ACCEPT_DELEGATION,
+  CompressedRequestDelegationApproval
+]
+
+export type CompressedSubmitDelegationApproval = [
+  CompressedDelegationData,
+  [DidSignature['signature'], DidSignature['keyId']],
+  [DidSignature['signature'], DidSignature['keyId']]
+]
+export type CompressedSubmitAcceptDelegation = [
+  MessageBodyType.SUBMIT_ACCEPT_DELEGATION,
+  CompressedSubmitDelegationApproval
+]
+
+export type MessageBody =
+  | IRequestTerms
+  | ISubmitTerms
+  | IRejectTerms
+  //
+  | IRequestAttestationForClaim
+  | ISubmitAttestationForClaim
+  | IRejectAttestationForClaim
+  //
+  | IRequestClaimsForCTypes
+  | ISubmitClaimsForCTypes
+  | IAcceptClaimsForCTypes
+  | IRejectClaimsForCTypes
+  //
+  | IRequestAcceptDelegation
+  | ISubmitAcceptDelegation
+  | IRejectAcceptDelegation
+  | IInformCreateDelegation
+
+export type CompressedMessageBody =
+  | CompressedRequestTerms
+  | CompressedSubmitTerms
+  | CompressedRejectTerms
+  //
+  | CompressedRequestAttestationForClaim
+  | CompressedSubmitAttestationForClaim
+  | CompressedRejectAttestationForClaim
+  //
+  | CompressedRequestClaimsForCTypes
+  | CompressedSubmitClaimsForCTypes
+  | CompressedAcceptClaimsForCTypes
+  | CompressedRejectClaimsForCTypes
+  //
+  | CompressedRequestAcceptDelegation
+  | CompressedSubmitAcceptDelegation
+  | CompressedRejectAcceptDelegation
+  | CompressedInformCreateDelegation
+
 /**
  * - `body` - The body of the message, see [[MessageBody]].
  * - `createdAt` - The timestamp of the message construction.
@@ -89,262 +353,3 @@ export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
   ciphertext: string
   nonce: string
 }
-
-interface IMessageBodyBase {
-  content: any
-  type: MessageBodyType
-}
-
-export interface IRequestTerms extends IMessageBodyBase {
-  content: PartialClaim
-  type: MessageBodyType.REQUEST_TERMS
-}
-export interface ISubmitTerms extends IMessageBodyBase {
-  content: ITerms
-  type: MessageBodyType.SUBMIT_TERMS
-}
-export interface IRejectTerms extends IMessageBodyBase {
-  content: {
-    claim: PartialClaim
-    legitimations: IAttestedClaim[]
-    delegationId?: IDelegationNode['id']
-  }
-  type: MessageBodyType.REJECT_TERMS
-}
-
-export interface IRequestAttestationForClaim extends IMessageBodyBase {
-  content: IRequestAttestationForClaimContent
-  type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
-}
-export interface ISubmitAttestationForClaim extends IMessageBodyBase {
-  content: ISubmitAttestationForClaimContent
-  type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
-}
-export interface IRejectAttestationForClaim extends IMessageBodyBase {
-  content: IRequestForAttestation['rootHash']
-  type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM
-}
-
-export interface IRequestClaimsForCTypes extends IMessageBodyBase {
-  content: IRequestClaimsForCTypesContent[]
-  type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
-}
-
-export interface ISubmitClaimsForCTypes extends IMessageBodyBase {
-  content: IAttestedClaim[]
-  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
-}
-
-export interface IAcceptClaimsForCTypes extends IMessageBodyBase {
-  content: Array<ICType['hash']>
-  type: MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES
-}
-export interface IRejectClaimsForCTypes extends IMessageBodyBase {
-  content: Array<ICType['hash']>
-  type: MessageBodyType.REJECT_CLAIMS_FOR_CTYPES
-}
-
-export interface IRequestAcceptDelegation extends IMessageBodyBase {
-  content: IRequestDelegationApproval
-  type: MessageBodyType.REQUEST_ACCEPT_DELEGATION
-}
-export interface ISubmitAcceptDelegation extends IMessageBodyBase {
-  content: ISubmitDelegationApproval
-  type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION
-}
-export interface IRejectAcceptDelegation extends IMessageBodyBase {
-  content: IDelegationData
-  type: MessageBodyType.REJECT_ACCEPT_DELEGATION
-}
-export interface IInformCreateDelegation extends IMessageBodyBase {
-  content: IInformDelegationCreation
-  type: MessageBodyType.INFORM_CREATE_DELEGATION
-}
-
-export type CompressedRequestTerms = [
-  MessageBodyType.REQUEST_TERMS,
-  CompressedPartialClaim
-]
-export type CompressedSubmitTerms = [
-  MessageBodyType.SUBMIT_TERMS,
-  CompressedTerms
-]
-export type CompressedRejectTerms = [
-  MessageBodyType.REJECT_TERMS,
-  CompressedRejectedTerms
-]
-export type CompressedRequestAttestationForClaim = [
-  MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
-  CompressedRequestAttestationForClaimContent
-]
-export type CompressedSubmitAttestationForClaim = [
-  MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
-  CompressedAttestation
-]
-export type CompressedRejectAttestationForClaim = [
-  MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
-  IRequestForAttestation['rootHash']
-]
-export type CompressedRequestClaimsForCTypes = [
-  MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
-  CompressedRequestClaimsForCTypesContent[]
-]
-export type CompressedSubmitClaimsForCTypes = [
-  MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
-  CompressedAttestedClaim[]
-]
-export type CompressedAcceptClaimsForCTypes = [
-  MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES,
-  Array<ICType['hash']>
-]
-export type CompressedRejectClaimsForCTypes = [
-  MessageBodyType.REJECT_CLAIMS_FOR_CTYPES,
-  Array<ICType['hash']>
-]
-export type CompressedRequestAcceptDelegation = [
-  MessageBodyType.REQUEST_ACCEPT_DELEGATION,
-  CompressedRequestDelegationApproval
-]
-export type CompressedSubmitAcceptDelegation = [
-  MessageBodyType.SUBMIT_ACCEPT_DELEGATION,
-  CompressedSubmitDelegationApproval
-]
-export type CompressedRejectAcceptDelegation = [
-  MessageBodyType.REJECT_ACCEPT_DELEGATION,
-  CompressedDelegationData
-]
-export type CompressedInformCreateDelegation = [
-  MessageBodyType.INFORM_CREATE_DELEGATION,
-  CompressedInformDelegationCreation
-]
-
-export interface IRequestAttestationForClaimContent {
-  requestForAttestation: IRequestForAttestation
-  quote?: IQuoteAgreement
-  prerequisiteClaims?: Array<IClaim | PartialClaim>
-}
-// Seems this can be removed
-export interface ISubmitAttestationForClaimContent {
-  attestation: IAttestation
-}
-
-export interface IRequestClaimsForCTypesContent {
-  cTypeHash: ICType['hash']
-  acceptedAttester?: Array<IDidDetails['did']>
-  requiredProperties?: string[]
-}
-
-export interface IDelegationData {
-  account: IDelegationNode['account']
-  id: IDelegationNode['id']
-  parentId: IDelegationNode['id']
-  permissions: IDelegationNode['permissions']
-  isPCR: boolean
-}
-export interface IRequestDelegationApproval {
-  delegationData: IDelegationData
-  metaData?: AnyJson
-  signatures: {
-    inviter: DidSignature
-  }
-}
-
-export interface ISubmitDelegationApproval {
-  delegationData: IDelegationData
-  signatures: {
-    inviter: DidSignature
-    invitee: DidSignature
-  }
-}
-
-export interface IInformDelegationCreation {
-  delegationId: IDelegationNode['id']
-  isPCR: boolean
-}
-
-export type CompressedPartialClaim = [
-  IClaim['cTypeHash'],
-  IClaim['owner'] | undefined,
-  IClaimContents | undefined
-]
-
-export type CompressedRejectedTerms = [
-  CompressedPartialClaim,
-  CompressedAttestedClaim[],
-  IDelegationNode['id'] | undefined
-]
-
-export type CompressedRequestClaimsForCTypesContent = [
-  ICType['hash'],
-  Array<IDidDetails['did']> | undefined,
-  string[] | undefined
-]
-
-export type CompressedRequestAttestationForClaimContent = [
-  CompressedRequestForAttestation,
-  CompressedQuoteAgreed | undefined,
-  Array<CompressedPartialClaim | CompressedClaim> | undefined
-]
-
-export type CompressedDelegationData = [
-  IDelegationNode['account'],
-  IDelegationNode['id'],
-  IDelegationNode['id'],
-  IDelegationNode['permissions'],
-  boolean
-]
-
-export type CompressedRequestDelegationApproval = [
-  CompressedDelegationData,
-  [DidSignature['signature'], DidSignature['keyId']],
-  AnyJson
-]
-
-export type CompressedSubmitDelegationApproval = [
-  CompressedDelegationData,
-  [DidSignature['signature'], DidSignature['keyId']],
-  [DidSignature['signature'], DidSignature['keyId']]
-]
-
-export type CompressedInformDelegationCreation = [
-  IInformDelegationCreation['delegationId'],
-  IInformDelegationCreation['isPCR']
-]
-
-export type MessageBody =
-  | IRequestTerms
-  | ISubmitTerms
-  | IRejectTerms
-  //
-  | IRequestAttestationForClaim
-  | ISubmitAttestationForClaim
-  | IRejectAttestationForClaim
-  //
-  | IRequestClaimsForCTypes
-  | ISubmitClaimsForCTypes
-  | IAcceptClaimsForCTypes
-  | IRejectClaimsForCTypes
-  //
-  | IRequestAcceptDelegation
-  | ISubmitAcceptDelegation
-  | IRejectAcceptDelegation
-  | IInformCreateDelegation
-
-export type CompressedMessageBody =
-  | CompressedRequestTerms
-  | CompressedSubmitTerms
-  | CompressedRejectTerms
-  //
-  | CompressedRequestAttestationForClaim
-  | CompressedSubmitAttestationForClaim
-  | CompressedRejectAttestationForClaim
-  //
-  | CompressedRequestClaimsForCTypes
-  | CompressedSubmitClaimsForCTypes
-  | CompressedAcceptClaimsForCTypes
-  | CompressedRejectClaimsForCTypes
-  //
-  | CompressedRequestAcceptDelegation
-  | CompressedSubmitAcceptDelegation
-  | CompressedRejectAcceptDelegation
-  | CompressedInformCreateDelegation

@@ -43,8 +43,8 @@ describe('Attestation', () => {
   let testcontents: any
   let testClaim: Claim
   let requestForAttestation: RequestForAttestation
-  const blockchainApi = require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection')
-    .__mocked_api
+  const blockchainApi =
+    require('@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection').__mocked_api
 
   beforeAll(async () => {
     rawCTypeSchema = {

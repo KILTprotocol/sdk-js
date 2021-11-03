@@ -322,9 +322,8 @@ export async function generateCreateTx({
   submitter,
   keys = {},
   endpoints = [],
-}: IDidCreationOptions & KeystoreSigningOptions): Promise<
-  SubmittableExtrinsic
-> {
+}: IDidCreationOptions &
+  KeystoreSigningOptions): Promise<SubmittableExtrinsic> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const encoded = encodeDidCreationOperation(api.registry, {
     didIdentifier,
@@ -452,9 +451,8 @@ export async function generateDidAuthenticatedTx({
   call,
   submitter,
   blockNumber,
-}: AuthenticationTxCreationInput & KeystoreSigningOptions): Promise<
-  SubmittableExtrinsic
-> {
+}: AuthenticationTxCreationInput &
+  KeystoreSigningOptions): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const block = blockNumber || (await blockchain.api.query.system.number())
   const signableCall = encodeDidAuthorizedCallOperation(
@@ -467,7 +465,8 @@ export async function generateDidAuthenticatedTx({
       method: call.method.toHex(),
       version: call.version,
       specVersion: blockchain.api.runtimeVersion.specVersion.toString(),
-      transactionVersion: blockchain.api.runtimeVersion.transactionVersion.toString(),
+      transactionVersion:
+        blockchain.api.runtimeVersion.transactionVersion.toString(),
       genesisHash: blockchain.api.genesisHash.toHex(),
       nonce: signableCall.txCounter.toHex(),
       address: Crypto.encodeAddress(signableCall.did),

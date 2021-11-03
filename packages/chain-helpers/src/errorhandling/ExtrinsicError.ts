@@ -143,7 +143,6 @@ export const ExtrinsicErrors = {
 
 /**
  * @internal
- * PalletIndex reflects the numerical index of a pallet assigned in the chain's metadata.
  */
 export enum PalletIndex {
   CType = 9,

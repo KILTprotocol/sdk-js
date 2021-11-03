@@ -37,8 +37,8 @@ jest.mock('../blockchainApiConnection/BlockchainApiConnection')
 
 describe('queries', () => {
   beforeAll(() => {
-    const api = require('../blockchainApiConnection/BlockchainApiConnection')
-      .__mocked_api
+    const api =
+      require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api
     api.rpc.system.version.mockResolvedValue(new Text(TYPE_REGISTRY, '1.0.0'))
     api.rpc.system.chain.mockResolvedValue(new Text(TYPE_REGISTRY, 'mockchain'))
     api.rpc.system.name.mockResolvedValue(new Text(TYPE_REGISTRY, 'KILT node'))
@@ -71,10 +71,10 @@ describe('queries', () => {
 describe('Tx logic', () => {
   let alice: IIdentity
   let bob: IIdentity
-  const api = require('../blockchainApiConnection/BlockchainApiConnection')
-    .__mocked_api
-  const setDefault = require('../blockchainApiConnection/BlockchainApiConnection')
-    .__setDefaultResult
+  const api =
+    require('../blockchainApiConnection/BlockchainApiConnection').__mocked_api
+  const setDefault =
+    require('../blockchainApiConnection/BlockchainApiConnection').__setDefaultResult
   const dispatchNonceRetrieval = async (address: string): Promise<BN> => {
     const chain = await getConnectionOrConnect()
     return chain.getNonce(address)
@@ -216,14 +216,14 @@ describe('Tx logic', () => {
   })
 
   describe('reSignTx', () => {
-    const submittable: SubmittableExtrinsic = ({
+    const submittable: SubmittableExtrinsic = {
       signature: {
         toHuman: jest.fn(),
       },
       addSignature: jest.fn(),
       nonce: { toHuman: jest.fn() },
       method: { data: 'unchanged', toHex: jest.fn() },
-    } as unknown) as SubmittableExtrinsic
+    } as unknown as SubmittableExtrinsic
 
     it('fetches updated Nonce and applies updated signature to Extrinsic', async () => {
       api.createType = jest
@@ -231,11 +231,11 @@ describe('Tx logic', () => {
         .mockReturnValue({
           sign: jest.fn().mockReturnValue({ signature: 'signature' }),
         })
-        .mockReturnValueOnce(({
+        .mockReturnValueOnce({
           toPayload: jest
             .fn()
-            .mockReturnValue(({} as unknown) as SignerPayloadJSON),
-        } as unknown) as SignerPayload)
+            .mockReturnValue({} as unknown as SignerPayloadJSON),
+        } as unknown as SignerPayload)
       const chain = new Blockchain(api)
       const getNonceSpy = jest
         .spyOn(chain, 'getNonce')

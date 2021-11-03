@@ -30,11 +30,12 @@ export async function query(
   rootId: IDelegationNode['id']
 ): Promise<IDelegationHierarchyDetails | null> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const decoded: DelegationHierarchyDetailsRecord | null = decodeDelegationHierarchyDetails(
-    await blockchain.api.query.delegation.delegationHierarchies<
-      Option<IChainDelegationHierarchyDetails>
-    >(rootId)
-  )
+  const decoded: DelegationHierarchyDetailsRecord | null =
+    decodeDelegationHierarchyDetails(
+      await blockchain.api.query.delegation.delegationHierarchies<
+        Option<IChainDelegationHierarchyDetails>
+      >(rootId)
+    )
   if (!decoded) {
     return null
   }

@@ -105,7 +105,7 @@ describe('CType', () => {
     }
     const faultySchemaCtype: ICType = {
       ...claimCtype,
-      schema: ({ ...rawCType, properties: null } as unknown) as ICTypeSchema,
+      schema: { ...rawCType, properties: null } as unknown as ICTypeSchema,
     }
     const invalidAddressCtype: ICType = {
       ...claimCtype,
@@ -115,11 +115,11 @@ describe('CType', () => {
 
     // This tst is not possible as it throws the error for malformed object first
     // TODO: Discuss whether the specific check in the errorCheck is obsolete and therefore should be removed
-    const faultyAddressTypeCType: ICType = ({
+    const faultyAddressTypeCType: ICType = {
       schema: claimCtype.schema,
       hash: claimCtype.hash,
       owner: '4262626426',
-    } as any) as ICType
+    } as any as ICType
 
     const wrongSchemaIdCType: ICType = {
       ...claimCtype,

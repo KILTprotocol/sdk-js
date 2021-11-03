@@ -91,10 +91,10 @@ describe('Claim', () => {
       SigningAlgorithms.Ed25519
     )
 
-    invalidCost = ({
+    invalidCost = {
       gross: 233,
       tax: { vat: 3.3 },
-    } as unknown) as ICostBreakdown
+    } as unknown as ICostBreakdown
     date = new Date(2019, 11, 10)
 
     cTypeSchema = {
@@ -126,7 +126,7 @@ describe('Claim', () => {
       termsAndConditions: 'Lots of these',
     } as IQuote
 
-    invalidPropertiesQuoteData = ({
+    invalidPropertiesQuoteData = {
       cTypeHash: '0x12345678',
       cost: {
         gross: 233,
@@ -136,7 +136,7 @@ describe('Claim', () => {
       timeframe: date,
       currency: 'Euro',
       termsAndConditions: 'Lots of these',
-    } as unknown) as IQuote
+    } as unknown as IQuote
 
     validQuoteData = {
       attesterDid: attesterIdentity.did,
