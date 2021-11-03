@@ -18,7 +18,6 @@ import {
 } from '@kiltprotocol/did'
 import {
   IRequestForAttestation,
-  ISubmittableResult,
   KeyRelationship,
   KeystoreSigner,
   SubmittableExtrinsic,
