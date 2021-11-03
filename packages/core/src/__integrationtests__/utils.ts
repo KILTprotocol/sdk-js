@@ -110,7 +110,7 @@ export async function initialTransfer(
 export async function getDidDeposit(didIdentifier: string): Promise<BN> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const result = await api.query.did.did<Option<any>>(didIdentifier)
-  DecoderUtils.assertCodecIsType(result, ['Option<DidDetails>'])
+  DecoderUtils.assertCodecIsType(result, ['Option<DidDidDetails>'])
   return result.isSome ? result.unwrap().deposit.amount.toBn() : new BN(0)
 }
 
@@ -120,7 +120,9 @@ export async function getAttestationDeposit(claimHash: string): Promise<BN> {
     Option<AttestationDetails>
   >(claimHash)
 
-  DecoderUtils.assertCodecIsType(result, ['Option<AttestationDetails>'])
+  DecoderUtils.assertCodecIsType(result, [
+    'Option<AttestationAttestationsAttestationDetails>',
+  ])
   return result.isSome ? result.unwrap().deposit.amount.toBn() : new BN(0)
 }
 
