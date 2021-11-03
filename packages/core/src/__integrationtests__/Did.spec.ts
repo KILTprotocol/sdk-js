@@ -240,9 +240,7 @@ describe('write and didDeleteTx', () => {
     await expect(DidChain.queryById(didIdentifier)).resolves.toBe(null)
 
     // Check that DID is now blacklisted.
-    await expect(DidChain.queryDeletedDids()).resolves.toStrictEqual([
-      didIdentifier,
-    ])
+    await expect(DidChain.queryDeletedDids()).resolves.toStrictEqual([did])
     await expect(DidChain.queryDidDeletionStatus(did)).resolves.toBeTruthy()
   }, 60_000)
 })
