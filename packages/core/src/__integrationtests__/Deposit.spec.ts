@@ -29,14 +29,13 @@ import { randomAsHex } from '@polkadot/util-crypto'
 import {
   setup,
   LightActor,
-  ctypeCreator,
-  createFullDid,
   getDidDeposit,
   createAttestation,
   getAttestationDeposit,
   createMinimalFullDidFromLightDid,
   WS_ADDRESS,
   devFaucet,
+  DriversLicense,
 } from './utils'
 import { Balance } from '../balance'
 import Attestation from '../attestation/Attestation'
@@ -299,7 +298,14 @@ beforeAll(async () => {
     keystore,
     randomAsHex()
   )
-  const ctype = await ctypeCreator(attester, keystore, testIdentities[0])
+  tx = await DriversLicense.store()
+  authorizedTx = await attester.authorizeExtrinsic(
+    tx,
+    keystore,
+    devFaucet.address
+  )
+  await BlockchainUtils.signAndSubmitTx(authorizedTx, devFaucet)
+  await DriversLicense.verifyStored()
 
   const rawClaim = {
     name: 'claimer',
@@ -307,7 +313,7 @@ beforeAll(async () => {
   }
 
   const claim = Claim.fromCTypeAndClaimContents(
-    ctype,
+    DriversLicense,
     rawClaim,
     claimer.light.did
   )
@@ -318,10 +324,10 @@ beforeAll(async () => {
 
 describe('checking the deposits', async () => {
   it('test case one', async () => {
-    const testDidOne = await createFullDid(
+    const testDidOne = await createOnChainDidFromSeed(
       testIdentities[0],
-      testMnemonics[0],
-      keystore
+      keystore,
+      testMnemonics[0]
     )
     if (!testDidOne) throw new Error('Creation of Test Full Did one failed')
 
@@ -330,19 +336,19 @@ describe('checking the deposits', async () => {
     ).resolves.toBe(true)
   })
   it('test case two', async () => {
-    const testDidTwo = await createFullDid(
+    const testDidTwo = await createOnChainDidFromSeed(
       testIdentities[1],
-      testMnemonics[1],
-      keystore
+      keystore,
+      testMnemonics[1]
     )
     if (!testDidTwo) throw new Error('Creation of Test Full Did two failed')
     expect(await checkReclaimFullDid(testIdentities[1])).resolves.toBe(true)
   })
   it('test case three', async () => {
-    const testDidThree = await createFullDid(
+    const testDidThree = await createOnChainDidFromSeed(
       testIdentities[2],
-      testMnemonics[2],
-      keystore
+      keystore,
+      testMnemonics[2]
     )
     if (!testDidThree) throw new Error('Creation of Test Full Did three failed')
 
@@ -356,10 +362,10 @@ describe('checking the deposits', async () => {
     ).resolves.toBe(true)
   })
   it('test case four', async () => {
-    const testDidFour = await createFullDid(
+    const testDidFour = await createOnChainDidFromSeed(
       testIdentities[3],
-      testMnemonics[3],
-      keystore
+      keystore,
+      testMnemonics[3]
     )
     if (!testDidFour) throw new Error('Creation of Test Full Did four failed')
 

@@ -14,10 +14,8 @@ import {
   DemoKeystore,
   DidChain,
   DidUtils,
-  EncryptionAlgorithms,
   FullDidDetails,
   LightDidDetails,
-  SigningAlgorithms,
 } from '@kiltprotocol/did'
 import { Balance } from '../balance'
 import {
@@ -25,7 +23,6 @@ import {
   BlockchainUtils,
 } from '@kiltprotocol/chain-helpers'
 import {
-  CTypeSchemaWithoutId,
   IRequestForAttestation,
   KeyRelationship,
   KeystoreSigner,
@@ -110,15 +107,11 @@ export const IsOfficialLicenseAuthority = CType.fromSchema({
 
 export async function initialTransfer(
   faucet: KeyringPair,
-  addresses: Array<string | undefined>
+  addresses: Array<string>
 ): Promise<void> {
-  const initialAccountAmount = new BN(10 ** 13).muln(10000)
-  const filtered = addresses.filter(
-    (val) => typeof val !== undefined
-  ) as string[]
   await Promise.all(
-    filtered.map((address) =>
-      Balance.makeTransfer(address, initialAccountAmount).then((tx) =>
+    addresses.map((address) =>
+      Balance.makeTransfer(address, ENDOWMENT).then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, faucet, {
           resolveOn: BlockchainUtils.IS_FINALIZED,
           reSign: true,
@@ -126,40 +119,6 @@ export async function initialTransfer(
       )
     )
   )
-  console.log('fail')
-}
-
-export async function ctypeCreator(
-  did: FullDidDetails,
-  keystore: DemoKeystore,
-  identity: KeyringPair
-): Promise<CType> {
-  const rawCType: CTypeSchemaWithoutId = {
-    $schema: 'http://kilt-protocol.org/draft-01/ctype#',
-    title: 'Drivers License',
-    properties: {
-      name: {
-        type: 'string',
-      },
-      age: {
-        type: 'integer',
-      },
-    },
-    type: 'object',
-  }
-  const ctype = CType.fromSchema(rawCType)
-  const stored = await ctype.verifyStored()
-  if (stored) return ctype
-
-  const tx = await ctype.store()
-  const authorizedTx = await did.authorizeExtrinsic(
-    tx,
-    keystore,
-    identity.address
-  )
-  await BlockchainUtils.signAndSubmitTx(authorizedTx, identity)
-
-  return ctype
 }
 
 export async function setup(): Promise<ISetup> {
@@ -175,12 +134,6 @@ export async function setup(): Promise<ISetup> {
     testMnemonics.push(mnemonicGenerate())
   }
 
-  // the testing locally this should be //Alice
-  const faucetMnemonic =
-    'print limb expire raw ecology regular crumble slot lab opera fold adjust'
-  // const faucetMnemonic =
-  //   'receive clutch item involve chaos clutch furnace arrest claw isolate okay together'
-
   /* Generating all the identities from the keyring  */
   const testIdentities: KeyringPair[] = []
   testMnemonics.forEach((val) =>
@@ -188,22 +141,17 @@ export async function setup(): Promise<ISetup> {
   )
 
   const claimerIdentity = keyring.addFromMnemonic(generateClaimerMnemonic)
-  const faucetIdentity = keyring.createFromUri(faucetMnemonic, {
-    type: 'sr25519',
-  })
 
   /* First check to see if the faucet has balance */
-  const faucetBalance = await Balance.getBalances(faucetIdentity.address).then(
+  const faucetBalance = await Balance.getBalances(devFaucet.address).then(
     (balance) => balance
   )
   if (!faucetBalance) throw new Error('The faucetBalance is empty')
 
-  /* The faucet balance */
-  console.log('The current faucet balance', faucetBalance.free.toString())
   // Sending tokens to all accounts
   const testAddresses = testIdentities.map((val) => val.address)
 
-  await initialTransfer(faucetIdentity, testAddresses)
+  await initialTransfer(devFaucet, testAddresses)
 
   /* Generating the claimerLightDid and testOneLightDid from the demo keystore with the generated seed both with sr25519 */
   const claimerLightDid = await createLightDidFromSeed(
@@ -222,61 +170,11 @@ export async function setup(): Promise<ISetup> {
   }
 }
 
-export async function buildDidAndTxFromSeed(
-  paymentAccount: KeyringPair,
-  keystore: DemoKeystore,
-  mnemonicOrHexSeed: string,
-  signingKeyType = SigningAlgorithms.Ed25519
-): Promise<{ extrinsic: SubmittableExtrinsic; did: string }> {
-  const makeKey = (
-    seed: string,
-    alg: SigningAlgorithms | EncryptionAlgorithms
-  ) =>
-    keystore
-      .generateKeypair({
-        alg,
-        seed,
-      })
-      .then((key) => ({
-        ...key,
-        type: DemoKeystore.getKeypairTypeForAlg(alg),
-      }))
-
-  const keys = {
-    [KeyRelationship.authentication]: await makeKey(
-      mnemonicOrHexSeed,
-      signingKeyType
-    ),
-    [KeyRelationship.assertionMethod]: await makeKey(
-      `${mnemonicOrHexSeed}//assertionMethod`,
-      signingKeyType
-    ),
-    [KeyRelationship.capabilityDelegation]: await makeKey(
-      `${mnemonicOrHexSeed}//capabilityDelegation`,
-      signingKeyType
-    ),
-    [KeyRelationship.keyAgreement]: await makeKey(
-      `${mnemonicOrHexSeed}//keyAgreement`,
-      EncryptionAlgorithms.NaclBox
-    ),
-  }
-
-  return DidUtils.writeDidFromPublicKeys(keystore, paymentAccount.address, keys)
-}
-
-export async function getTxFee(tx: SubmittableExtrinsic): Promise<BN> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const { partialFee } = await api.rpc.payment.queryInfo(tx.toHex())
-
-  return partialFee.toBn()
-}
-
 export async function getDidDeposit(didIdentifier: string): Promise<BN> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   const result = await api.query.did.did<Option<any>>(didIdentifier)
   DecoderUtils.assertCodecIsType(result, ['Option<DidDetails>'])
-  if (result.isSome) return result.unwrap().deposit.amount.toBn()
-  return new BN(0)
+  return result.isSome ? result.unwrap().deposit.amount.toBn() : new BN(0)
 }
 
 export async function getAttestationDeposit(claimHash: string): Promise<BN> {
@@ -286,41 +184,7 @@ export async function getAttestationDeposit(claimHash: string): Promise<BN> {
   >(claimHash)
 
   DecoderUtils.assertCodecIsType(result, ['Option<AttestationDetails>'])
-  if (result.isSome) return result.unwrap().deposit.amount.toBn()
-
-  return new BN(0)
-}
-
-export async function createFullDid(
-  identity: KeyringPair,
-  mnemonic: string,
-  keystore: DemoKeystore
-): Promise<FullDidDetails> {
-  const testAccountBalanceBeforeDidCreation = await Balance.getBalances(
-    identity.address
-  ).then((balance) => balance)
-
-  console.log(
-    'balance before creating a DID on chain',
-    testAccountBalanceBeforeDidCreation.toString()
-  )
-
-  /* Generating the attesterFullDid and faucetFullDid from the demo keystore with the generated seed both with sr25519 */
-  const { extrinsic, did } = await buildDidAndTxFromSeed(
-    identity,
-    keystore,
-    mnemonic,
-    SigningAlgorithms.Sr25519
-  )
-
-  await BlockchainUtils.signAndSubmitTx(extrinsic, identity, {
-    reSign: true,
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-  })
-
-  const queried = await DefaultResolver.resolveDoc(did)
-
-  return queried?.details as FullDidDetails
+  return result.isSome ? result.unwrap().deposit.amount.toBn() : new BN(0)
 }
 
 export async function createAttestation(
