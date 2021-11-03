@@ -143,16 +143,14 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      body.content.forEach(
-        (requestClaimsForCTypes: IRequestClaimsForCTypesContent): void => {
+      Object.entries(body.content.cTypes).forEach(
+        ([cTypeHash, { trustedAttesters, requiredProperties }]): void => {
           DataUtils.validateHash(
-            requestClaimsForCTypes.cTypeHash,
+            cTypeHash,
             'request claims for ctypes cTypeHash invalid'
           )
-          requestClaimsForCTypes.acceptedAttester?.map((did) =>
-            DidUtils.validateKiltDid(did)
-          )
-          requestClaimsForCTypes.requiredProperties?.map((requiredProps) => {
+          trustedAttesters?.map((did) => DidUtils.validateKiltDid(did))
+          requiredProperties?.map((requiredProps) => {
             if (typeof requiredProps !== 'string')
               throw new TypeError(
                 'required properties is expected to be a string'
@@ -336,11 +334,12 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      compressedContents = body.content.map(
-        (val): CompressedRequestClaimsForCTypesContent => {
-          return [val.cTypeHash, val.acceptedAttester, val.requiredProperties]
-        }
-      )
+      const compressedCtypes: CompressedRequestClaimsForCTypesContent[0] = Object.entries(
+        body.content.cTypes
+      ).map(([cTypeHash, { trustedAttesters, requiredProperties }]) => {
+        return [cTypeHash, trustedAttesters, requiredProperties]
+      })
+      compressedContents = [compressedCtypes, body.content.challenge]
       break
     }
     case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
@@ -478,17 +477,17 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      decompressedContents = body[1].map(
-        (
-          val: CompressedRequestClaimsForCTypesContent
-        ): IRequestClaimsForCTypesContent => {
-          return {
-            cTypeHash: val[0],
-            acceptedAttester: val[1],
-            requiredProperties: val[2],
-          }
+      const decompressedCtypes: IRequestClaimsForCTypesContent['cTypes'] = {}
+      body[1][0].forEach((val) => {
+        decompressedCtypes[val[0]] = {
+          trustedAttesters: val[1],
+          requiredProperties: val[2],
         }
-      )
+      })
+      decompressedContents = {
+        cTypes: decompressedCtypes,
+        challenge: body[1][1],
+      }
       break
     }
     case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {

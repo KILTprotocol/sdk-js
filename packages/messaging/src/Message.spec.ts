@@ -70,7 +70,9 @@ describe('Messaging', () => {
     const message = new Message(
       {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
+        content: {
+          cTypes: { [`kilt:ctype:${Crypto.hashStr('0x12345678')}`]: {} },
+        },
       },
       identityAlice.did,
       identityBob.did
@@ -135,7 +137,9 @@ describe('Messaging', () => {
     const message = new Message(
       {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
+        content: {
+          cTypes: { [`kilt:ctype:${Crypto.hashStr('0x12345678')}`]: {} },
+        },
       },
       wrongSender,
       identityBob.did

@@ -38,6 +38,9 @@ export enum MessageBodyType {
   SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
   REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
 
+  REQUEST_PAYMENT = 'request-payment',
+  CONFIRM_PAYMENT = 'confirm-payment',
+
   REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
   SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes-classic',
   ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
@@ -125,8 +128,18 @@ export interface IRejectAttestationForClaim extends IMessageBodyBase {
   type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM
 }
 
+export interface IRequestPayment extends IMessageBodyBase {
+  content: IRequestPaymentContent
+  type: MessageBodyType.REQUEST_PAYMENT
+}
+
+export interface IConfirmPayment extends IMessageBodyBase {
+  content: IConfirmPaymentContent
+  type: MessageBodyType.CONFIRM_PAYMENT
+}
+
 export interface IRequestClaimsForCTypes extends IMessageBodyBase {
-  content: IRequestClaimsForCTypesContent[]
+  content: IRequestClaimsForCTypesContent
   type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
 }
 
@@ -187,7 +200,7 @@ export type CompressedRejectAttestationForClaim = [
 ]
 export type CompressedRequestClaimsForCTypes = [
   MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
-  CompressedRequestClaimsForCTypesContent[]
+  CompressedRequestClaimsForCTypesContent
 ]
 export type CompressedSubmitClaimsForCTypes = [
   MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
@@ -223,15 +236,34 @@ export interface IRequestAttestationForClaimContent {
   quote?: IQuoteAgreement
   prerequisiteClaims?: Array<IClaim | PartialClaim>
 }
-// Seems this can be removed
+
 export interface ISubmitAttestationForClaimContent {
   attestation: IAttestation
 }
 
+export interface IRequestPaymentContent {
+  // Same as the `rootHash` value of the `'request-attestation'` message */
+  claimHash: string
+}
+
+export interface IConfirmPaymentContent {
+  // Same as the `rootHash` value of the `'request-attestation'` message
+  claimHash: string
+  // Hash of the payment transaction */
+  txHash: string
+  // hash of the block which includes the payment transaction
+  blockHash: string
+}
+
 export interface IRequestClaimsForCTypesContent {
-  cTypeHash: ICType['hash']
-  acceptedAttester?: Array<IDidDetails['did']>
-  requiredProperties?: string[]
+  cTypes: Record<
+    ICType['hash'],
+    {
+      trustedAttesters?: Array<IDidDetails['did']>
+      requiredProperties?: string[]
+    }
+  >
+  challenge?: string
 }
 
 export interface IDelegationData {
@@ -275,9 +307,14 @@ export type CompressedRejectedTerms = [
 ]
 
 export type CompressedRequestClaimsForCTypesContent = [
-  ICType['hash'],
-  Array<IDidDetails['did']> | undefined,
-  string[] | undefined
+  Array<
+    [
+      ICType['hash'],
+      Array<IDidDetails['did']> | undefined,
+      string[] | undefined
+    ]
+  >,
+  string?
 ]
 
 export type CompressedRequestAttestationForClaimContent = [

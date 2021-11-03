@@ -473,15 +473,18 @@ describe('Messaging Utilities', () => {
     ]
     // Request Claims for CTypes content
     requestClaimsForCTypesContent = {
-      cTypeHash: claim.cTypeHash,
-      acceptedAttester: [identityAlice.did],
-      requiredProperties: ['id', 'name'],
+      cTypes: {
+        [claim.cTypeHash]: {
+          trustedAttesters: [identityAlice.did],
+          requiredProperties: ['id', 'name'],
+        },
+      },
+      challenge: '1234',
     }
     // Compressed Request claims for CType content
     compressedRequestClaimsForCTypesContent = [
-      claim.cTypeHash,
-      [identityAlice.did],
-      ['id', 'name'],
+      [[claim.cTypeHash, [identityAlice.did], ['id', 'name']]],
+      '1234',
     ]
     // Submit claims for CType content
     submitClaimsForCTypesContent = [legitimation]
@@ -642,16 +645,13 @@ describe('Messaging Utilities', () => {
       type: Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM,
     }
     requestClaimsForCTypesBody = {
-      content: [requestClaimsForCTypesContent, requestClaimsForCTypesContent],
+      content: requestClaimsForCTypesContent,
       type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
     }
 
     compressedRequestClaimsForCTypesBody = [
       Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-      [
-        compressedRequestClaimsForCTypesContent,
-        compressedRequestClaimsForCTypesContent,
-      ],
+      compressedRequestClaimsForCTypesContent,
     ]
 
     submitClaimsForCTypesBody = {
@@ -1065,7 +1065,10 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAttestationForClaimBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
-    requestClaimsForCTypesBody.content[0].cTypeHash = 'this is not a cTypeHash'
+    requestClaimsForCTypesBody.content.cTypes = {
+      ...requestClaimsForCTypesBody.content.cTypes,
+      'this is not a cTypeHash': {},
+    }
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestClaimsForCTypesBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
