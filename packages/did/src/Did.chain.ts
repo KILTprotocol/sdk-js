@@ -280,9 +280,11 @@ export async function queryDepositAmount(): Promise<BN> {
   return encodedDeposit.toBn()
 }
 
-export async function queryDeletedDids(): Promise<Array<IIdentity['address']>> {
+export async function queryDeletedDids(): Promise<Array<IDidDetails['did']>> {
   const encodedIdentifiers = await queryDeletedDidsEncoded()
-  return encodedIdentifiers.map((id) => id.toHuman())
+  return encodedIdentifiers.map((id) =>
+    getKiltDidFromIdentifier(id.toHuman(), 'full')
+  )
 }
 
 // TODO: This function currently fetches ALL the deleted DIDs and then checks if the provided one is inside, which becomes very inefficient if a lot of DIDs have been deleted.
@@ -292,10 +294,7 @@ export async function queryDeletedDids(): Promise<Array<IIdentity['address']>> {
 export async function queryDidDeletionStatus(
   didUri: IDidDetails['did']
 ): Promise<boolean> {
-  const { identifier } = parseDidUrl(didUri)
-
-  const deletedDids = new Set<IDidDetails['did']>(await queryDeletedDids())
-  return deletedDids.has(identifier)
+  return (await queryDeletedDids()).includes(didUri)
 }
 
 // ### EXTRINSICS
