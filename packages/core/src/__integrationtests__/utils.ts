@@ -31,7 +31,7 @@ import { DecoderUtils } from '@kiltprotocol/utils'
 import { Option } from '@polkadot/types'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
-export const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(100)
+export const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(1000)
 
 export const WS_ADDRESS = 'ws://127.0.0.1:9944'
 // Dev Faucet account seed phrase
