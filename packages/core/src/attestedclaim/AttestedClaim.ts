@@ -120,7 +120,7 @@ export class AttestedClaim implements IAttestedClaim {
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @returns A promise containing whether the provided attested claim is valid.
    * @example ```javascript
-   * attestedClaim.verify().then((isVerified) => {
+   * AttestedClaim.verify(attestedClaim).then((isVerified) => {
    *   // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```
@@ -160,7 +160,7 @@ export class AttestedClaim implements IAttestedClaim {
    * @param attestedClaim - The attested claim to verify.
    * @returns Whether the attested claim's data is valid.
    * @example ```javascript
-   * const verificationResult = attestedClaim.verifyData();
+   * const verificationResult = AttestedClaim.verifyData(attestedClaim);
    * ```
    */
   public static verifyData(attestedClaim: IAttestedClaim): boolean {

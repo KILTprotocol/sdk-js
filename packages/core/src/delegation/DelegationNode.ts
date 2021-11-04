@@ -264,10 +264,10 @@ export class DelegationNode implements IDelegationNode {
    * const signature:string = await myNewDelegation.delegeeSign(myDidDetails, myKeyStore)
    *
    * // produce the extrinsic that stores the delegation node on the Kilt chain
-   * const extrinsic = newDelegationNode.store(signature)
+   * const extrinsic = await newDelegationNode.store(signature)
    *
    * // now the delegating DID must sign as well
-   * const submittable = delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore, submitterAccount)
+   * const submittable = await delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore, submitterAccount)
    *
    * // and we can put it on chain
    * await submittable.signAndSend()
