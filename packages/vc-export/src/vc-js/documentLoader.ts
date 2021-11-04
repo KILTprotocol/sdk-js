@@ -7,10 +7,10 @@
 
 import type { RemoteDocument, Url } from 'jsonld/jsonld-spec'
 import vcjs from 'vc-js'
-import * as kiltContexts from './context'
+import { validationContexts } from './context'
 
 export async function documentLoader(url: Url): Promise<RemoteDocument> {
-  const context = kiltContexts[url]
+  const context = validationContexts[url]
   if (context)
     return { contextUrl: undefined, documentUrl: url, document: context }
   return vcjs.defaultDocumentLoader(url)
