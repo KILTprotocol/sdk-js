@@ -86,14 +86,6 @@ export type DelegationNodeRecord = Omit<IDelegationNode, 'id'>
 
 export type DelegationNodeId = Hash
 
-export interface IChainDelegationNode extends Struct {
-  readonly hierarchyRootId: DelegationNodeId
-  readonly parent: Option<DelegationNodeId>
-  readonly children: Vec<DelegationNodeId>
-  readonly details: IChainDelegationDetails
-  readonly deposit: Deposit
-}
-
 type DelegationOwnerIdentifier = AccountId
 
 interface IPermissions extends Struct {
@@ -104,6 +96,14 @@ export interface IChainDelegationDetails extends Struct {
   readonly owner: DelegationOwnerIdentifier
   readonly revoked: Bool
   readonly permissions: IPermissions
+}
+
+export interface IChainDelegationNode extends Struct {
+  readonly hierarchyRootId: DelegationNodeId
+  readonly parent: Option<DelegationNodeId>
+  readonly children: Vec<DelegationNodeId>
+  readonly details: IChainDelegationDetails
+  readonly deposit: Deposit
 }
 
 export function decodeDelegationNode(

@@ -201,7 +201,9 @@ describe('and attestation rights have been delegated', () => {
     // revoke attestation through root
     await attClaim.attestation
       .revoke(1)
-      .then((tx: SubmittableExtrinsic) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
+      .then((tx: SubmittableExtrinsic) =>
+        root.authorizeExtrinsic(tx, signer, paymentAccount.address)
+      )
       .then((tx: SubmittableExtrinsic) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,

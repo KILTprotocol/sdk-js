@@ -9,7 +9,12 @@
  * @group integration/attestation
  */
 
-import type { IAttestedClaim, IClaim, KeyringPair, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type {
+  IAttestedClaim,
+  IClaim,
+  KeyringPair,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import {
   createOnChainDidFromSeed,

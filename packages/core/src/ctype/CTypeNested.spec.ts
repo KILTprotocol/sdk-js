@@ -10,7 +10,7 @@
  */
 
 import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
-import { CType } from './CType'
+import { CType } from './CType'
 import { Claim } from '../claim/Claim'
 import * as CTypeUtils from './CType.utils'
 

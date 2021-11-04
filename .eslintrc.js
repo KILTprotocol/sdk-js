@@ -81,6 +81,7 @@ module.exports = {
     'license-header/header': ['error', './license-header.js'],
     'import/prefer-default-export': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    'no-shadow': 'off',
   },
   overrides: [
     {
@@ -102,7 +103,7 @@ module.exports = {
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/explicit-function-return-type': 'off',
       },
-    },
+    }
   ],
   settings: {
     'import/resolver': {
