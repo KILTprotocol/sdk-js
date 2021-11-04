@@ -324,7 +324,7 @@ describe('Different deposits scenarios', () => {
       testMnemonics[1]
     )
     if (!testDidTwo) throw new Error('Creation of Test Full Did two failed')
-    expect(await checkReclaimFullDid(testIdentities[1])).resolves.toBe(true)
+    await expect(checkReclaimFullDid(testIdentities[1])).resolves.toBe(true)
   }, 60_000)
   it('Check if removing an attestation from a full DID returns deposit', async () => {
     const testDidThree = await createOnChainDidFromSeed(
