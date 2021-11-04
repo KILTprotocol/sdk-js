@@ -35,6 +35,7 @@ import {
   devFaucet,
   DriversLicense,
   initialTransfer,
+  CtypeOnChain,
 } from './utils'
 import { Balance } from '../balance'
 import Attestation from '../attestation/Attestation'
@@ -280,14 +281,22 @@ beforeAll(async () => {
     keystore,
     randomAsHex()
   )
-  tx = await DriversLicense.store()
-  authorizedTx = await attester.authorizeExtrinsic(
-    tx,
-    keystore,
-    devFaucet.address
-  )
-  await BlockchainUtils.signAndSubmitTx(authorizedTx, devFaucet)
-  await DriversLicense.verifyStored()
+
+  const ctypeExists = await CtypeOnChain(DriversLicense)
+  if (!ctypeExists) {
+    await attester
+      .authorizeExtrinsic(
+        await DriversLicense.store(),
+        keystore,
+        devFaucet.address
+      )
+      .then((val) =>
+        BlockchainUtils.signAndSubmitTx(val, devFaucet, {
+          resolveOn: BlockchainUtils.IS_IN_BLOCK,
+          reSign: true,
+        })
+      )
+  }
 
   const rawClaim = {
     name: 'claimer',
