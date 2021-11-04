@@ -115,12 +115,10 @@ export class AttestedClaim implements IAttestedClaim {
    * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
    *
    * @param attestedClaim - The attested claim to check for validity.
-   * @param verificationOpts
-   * @param verificationOpts.claimerDid - The claimer's DID.
-   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
-   * Defaults to the DefaultResolver.
+   * @param verificationOpts The additional options to use upon attested claim verification.
+   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in. Defaults to the DefaultResolver.
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
-   * @returns A promise containing whether this attested claim is valid.
+   * @returns A promise containing whether the provided attested claim is valid.
    * @example ```javascript
    * attestedClaim.verify().then((isVerified) => {
    *   // `isVerified` is true if the attestation is verified, false otherwise
@@ -221,7 +219,7 @@ export class AttestedClaim implements IAttestedClaim {
    * Creates a public presentation which can be sent to a verifier.
    * This presentation is signed.
    *
-   * @param presentationOptions
+   * @param presentationOptions The additional options to use upon presentation generation.
    * @param presentationOptions.signer Keystore signer to sign the presentation.
    * @param presentationOptions.claimerSigningKey If passed, this key is used for signing.
    * @param presentationOptions.claimerDid If no signing key is passed, the authentication key is fetched from the claimerDid (mandatory in that case).

@@ -253,8 +253,8 @@ export class DelegationNode implements IDelegationNode {
    *
    * This is required to anchor the delegation node on chain in order to enforce the delegee's consent.
    *
-   * @param delegeeDid
-   * @param signer
+   * @param delegeeDid The DID of the delegee.
+   * @param signer The keystore responsible for signing the delegation creation details for the delegee.
    * @example
    * ```
    * // Sign the hash of the delegation node...
@@ -272,7 +272,7 @@ export class DelegationNode implements IDelegationNode {
    * // and we can put it on chain
    * await submittable.signAndSend()
    * ```
-   * @returns The signature over the delegation **as a hex string**.
+   * @returns The DID signature over the delegation **as a hex string**.
    */
   public async delegeeSign(
     delegeeDid: IDidDetails,

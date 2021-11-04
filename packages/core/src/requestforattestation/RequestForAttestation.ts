@@ -238,12 +238,12 @@ export class RequestForAttestation implements IRequestForAttestation {
   /**
    * [STATIC] [ASYNC] Verifies the signature of the [[RequestForAttestation]] object.
    * It supports migrated DIDs, meaning that if the original claim within the [[RequestForAttestation]] included a light DID that was afterwards upgraded,
-   * the signature over the presentation must be generated with the full DID in order for the verification to be successful.
+   * the signature over the presentation **must** be generated with the full DID in order for the verification to be successful.
+   * On the other hand, a light DID that has been migrated and then deleted from the chain will not be allowed to generate valid presentations anymore.
    *
-   * @param input - [[RequestForAttestation]].
-   * @param verificationOpts
-   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity.
-   * Defaults to the DefaultResolver.
+   * @param input - The [[RequestForAttestation]].
+   * @param verificationOpts Additional options to retrieve the details from the identifiers inside the request for attestation.
+   * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity. Defaults to the [[DefaultResolver]].
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @throws [[ERROR_IDENTITY_MISMATCH]] if the DidDetails do not match the claim owner or if the light DID is used after it has been upgraded.
    * @returns Whether the signature is correct.

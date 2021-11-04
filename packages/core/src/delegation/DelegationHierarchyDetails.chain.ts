@@ -23,8 +23,10 @@ import {
  */
 
 /**
- * @param rootId
- * @internal
+ * Query a delegation hierarchy node from the blockchain given its identifier.
+ *
+ * @param rootId The root delegation node ID to query.
+ * @returns Either the retrieved [[IDelegationHierarchyDetails]] or null.
  */
 export async function query(
   rootId: IDelegationNode['id']

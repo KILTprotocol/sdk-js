@@ -277,11 +277,13 @@ export class DemoKeystore
 }
 
 /**
- * Creates DidDetails for use in local testing. Will not work on-chain bc identifiers are generated ad-hoc.
+ * Creates an instance of [[FullDidDetails]] for local use, e.g., in testing. Will not work on-chain because identifiers are generated ad-hoc.
  *
- * @param keystore
- * @param mnemonicOrHexSeed
- * @param signingKeyType
+ * @param keystore The keystore to generate and store the DID private keys.
+ * @param mnemonicOrHexSeed The mnemonic phrase or HEX seed for key generation.
+ * @param signingKeyType One of the supported [[SigningAlgorithms]] to generate the DID authentication key.
+ *
+ * @returns A promise resolving to a [[FullDidDetails]] object. The resulting object is NOT stored on chain.
  */
 export async function createLocalDemoDidFromSeed(
   keystore: DemoKeystore,

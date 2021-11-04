@@ -59,9 +59,9 @@ export function checkLightDidCreationOptions(
 /**
  * Serialize the optional encryption key of an off-chain DID using the CBOR serialization algorithm and encoding the result in Base64 format.
  *
- * @param root0
- * @param root0.encryptionKey
- * @param root0.serviceEndpoints
+ * @param details The light DID details to encode.
+ * @param details.encryptionKey The DID encryption key.
+ * @param details.serviceEndpoints The DID service endpoints.
  * @returns The Base64-encoded and CBOR-serialized off-chain DID optional details.
  */
 export function serializeAndEncodeAdditionalLightDidDetails({

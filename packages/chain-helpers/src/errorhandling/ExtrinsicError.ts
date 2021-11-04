@@ -14,9 +14,6 @@
 
 import type { ModuleError } from './ErrorHandler'
 
-/**
- * @internal
- */
 export class ExtrinsicError extends Error {
   public errorCode: number
 
@@ -26,9 +23,6 @@ export class ExtrinsicError extends Error {
   }
 }
 
-/**
- * @internal
- */
 export const ExtrinsicErrors = {
   CType: {
     ERROR_CTYPE_NOT_FOUND: { code: 11000, message: 'CType not found' },
@@ -141,9 +135,6 @@ export const ExtrinsicErrors = {
   UNKNOWN_ERROR: { code: -1, message: 'an unknown extrinsic error ocurred' },
 }
 
-/**
- * @internal
- */
 export enum PalletIndex {
   CType = 9,
   Attestation = 10,
@@ -151,9 +142,6 @@ export enum PalletIndex {
   DID = 12,
 }
 
-/**
- * @internal
- */
 export interface IPalletToExtrinsicErrors {
   [key: number]: {
     [key: number]: {
@@ -163,9 +151,6 @@ export interface IPalletToExtrinsicErrors {
   }
 }
 
-/**
- * @internal
- */
 export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
   [PalletIndex.CType]: {
     0: ExtrinsicErrors.CType.ERROR_CTYPE_NOT_FOUND,
@@ -209,10 +194,11 @@ export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
 }
 
 /**
- * @internal
- * @param p The parameter object.
- * @param p.index The index of the KILT pallet in the metadata.
- * @param p.error The index of the position of the pallet's error definition inside the chain code.
+ * Returns a descriptive Substrate error given the pallet index and the error code.
+ *
+ * @param details The error details.
+ * @param details.index The index of the KILT pallet as specified in the runtime.
+ * @param details.error The index of the error definition inside the pallet.
  * @returns A new corresponding [[ExtrinsicError]].
  */
 export function errorForPallet({
