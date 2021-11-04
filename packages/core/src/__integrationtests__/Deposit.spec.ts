@@ -315,7 +315,6 @@ beforeAll(async () => {
 
 describe('Different deposits scenarios', () => {
   let testDidOne: FullDidDetails
-  let testDidTwo: FullDidDetails
   let testDidThree: FullDidDetails
   let testDidFour: FullDidDetails
   let testFullDidFive: FullDidDetails
@@ -336,10 +335,13 @@ describe('Different deposits scenarios', () => {
       createLightDidFromSeed(keystore, testMnemonics[7]),
       createLightDidFromSeed(keystore, testMnemonics[8]),
     ])
-
+    await createOnChainDidFromSeed(
+      testIdentities[1],
+      keystore,
+      testMnemonics[1]
+    )
     ;[
       testDidOne,
-      testDidTwo,
       testDidThree,
       testDidFour,
       testFullDidFive,
@@ -348,7 +350,6 @@ describe('Different deposits scenarios', () => {
       testFullDidNine,
     ] = await Promise.all([
       createOnChainDidFromSeed(testIdentities[0], keystore, testMnemonics[0]),
-      createOnChainDidFromSeed(testIdentities[1], keystore, testMnemonics[1]),
       createOnChainDidFromSeed(testIdentities[2], keystore, testMnemonics[2]),
       createOnChainDidFromSeed(testIdentities[3], keystore, testMnemonics[3]),
       createMinimalFullDidFromLightDid(
