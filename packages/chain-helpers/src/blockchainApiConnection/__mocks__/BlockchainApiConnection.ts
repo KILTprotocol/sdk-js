@@ -136,7 +136,7 @@ class MockSubmittableExtrinsic {
 
 function __getMockSubmittableExtrinsic(): SubmittableExtrinsic {
   const result: ISubmittableResult = TxResultsQueue.shift() || defaultTxResult
-  return (new MockSubmittableExtrinsic(result) as any) as SubmittableExtrinsic
+  return new MockSubmittableExtrinsic(result) as any as SubmittableExtrinsic
 }
 
 function __makeSubmittableResult(

@@ -60,10 +60,18 @@ export class Attestation implements IAttestation {
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * Attestation.revoke('0xd8024cdc147c4fa9221cd177', 3).then(() => {
-   *   // the attestation revocation tx was created, sign and send it!
-   *   BlockchainUtils.signAndSendTx(tx, identity);
-   * });
+   * Attestation.revoke('0xd8024cdc147c4fa9221cd177', 3).then(
+   *   (revocationExtrinsic) => {
+   *     // The attestation revocation tx was created, and it can now be signed by the attestation owner.
+   *     const attestationOwnerDid = did;
+   *     attestationOwnerDid
+   *       .authorizeExtrinsic(revocationExtrinsic, keystore, submitter.address)
+   *       .then((authorizedExtrinsic) => {
+   *         // The DID-authorized tx is ready to be submitted!
+   *         BlockchainUtils.signAndSendTx(authorizedExtrinsic, submitter);
+   *       });
+   *   }
+   * );
    * ```
    */
   public static async revoke(
@@ -79,6 +87,18 @@ export class Attestation implements IAttestation {
    * @param claimHash - The hash of the claim that corresponds to the attestation to remove.
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   * @example ```javascript
+   * Attestation.remove('0xd8024cdc147c4fa9221cd177', 3).then((removalExtrinsic) => {
+   *   // The attestation removal tx was created, and it can now be signed by the attestation owner.
+   *   const attestationOwnerDid = did;
+   *   attestationOwnerDid
+   *     .authorizeExtrinsic(removalExtrinsic, keystore, submitter.address)
+   *     .then((authorizedExtrinsic) => {
+   *       // The DID-authorized tx is ready to be submitted!
+   *       BlockchainUtils.signAndSendTx(authorizedExtrinsic, submitter);
+   *     });
+   * });
+   * ```
    */
   public static async remove(
     claimHash: string,
@@ -94,6 +114,14 @@ export class Attestation implements IAttestation {
    *
    * @param claimHash - The hash of the claim that corresponds to the attestation to remove and its deposit to be returned to the original payer.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   * @example ```javascript
+   * Attestation.reclaimDeposit('0xd8024cdc147c4fa9221cd177').then(
+   *   (claimExtrinsic) => {
+   *     // The deposit claiming tx was created, and it can now be submitted by the attestation deposit payer ONLY.
+   *     BlockchainUtils.signAndSendTx(claimExtrinsic, submitter);
+   *   }
+   * );
+   * ```
    */
   public static async reclaimDeposit(
     claimHash: string
@@ -209,10 +237,25 @@ export class Attestation implements IAttestation {
    *
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * // Use `store` to store an attestation on chain, and to create an `AttestedClaim` upon success:
-   * attestation.store().then(() => {
-   *   // the attestation store tx was successfully prepared, so now we can sign and send it and subsequently create an `AttestedClaim`.
+   * Attestation.store().then((creationExtrinsic) => {
+   *   // The attestation creation tx was created, and it can now be signed by a DID owner.
+   *   const attestationOwnerDid = did;
+   *   attestationOwnerDid
+   *     .authorizeExtrinsic(creationExtrinsic, keystore, submitter.address)
+   *     .then((authorizedExtrinsic) => {
+   *       // The DID-authorized tx is ready to be submitted!
+   *       BlockchainUtils.signAndSendTx(authorizedExtrinsic, submitter);
+   *     });
    * });
+   * // The attestation creation tx was created, and it can now be signed by a DID owner.
+   * const attestationOwnerDid = did;
+   * const authorizedExtrinsic = await attestationOwnerDid.authorizeExtrinsic(
+   *   creationExtrinsic,
+   *   keystore,
+   *   submitter.address
+   * );
+   * // The DID-authorized tx is ready to be submitted!
+   * BlockchainUtils.signAndSendTx(authorizedExtrinsic, submitter);
    * ```
    */
   public async store(): Promise<SubmittableExtrinsic> {
@@ -225,9 +268,15 @@ export class Attestation implements IAttestation {
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * attestation.revoke(3).then((tx) => {
-   *   // the attestation revocation tx was created, sign and send it!
-   *   BlockchainUtils.signAndSendTx(tx, identity);
+   * attestation.revoke(3).then((revocationExtrinsic) => {
+   *   // The attestation revocation tx was created, and it can now be signed by the attestation owner.
+   *   const attestationOwnerDid = did;
+   *   attestationOwnerDid
+   *     .authorizeExtrinsic(revocationExtrinsic, keystore, submitter.address)
+   *     .then((authorizedExtrinsic) => {
+   *       // The DID-authorized tx is ready to be submitted!
+   *       BlockchainUtils.signAndSendTx(authorizedExtrinsic, submitter);
+   *     });
    * });
    * ```
    */
@@ -240,6 +289,18 @@ export class Attestation implements IAttestation {
    *
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   * @example ```javascript
+   * attestation.remove(3).then((removalExtrinsic) => {
+   *   // The attestation removal tx was created, and it can now be signed by the attestation owner.
+   *   const attestationOwnerDid = did;
+   *   attestationOwnerDid
+   *     .authorizeExtrinsic(removalExtrinsic, keystore, submitter.address)
+   *     .then((authorizedExtrinsic) => {
+   *       // The DID-authorized tx is ready to be submitted!
+   *       BlockchainUtils.signAndSendTx(authorizedExtrinsic, submitter);
+   *     });
+   * });
+   * ```
    */
   public async remove(maxDepth: number): Promise<SubmittableExtrinsic> {
     return remove(this.claimHash, maxDepth)
@@ -251,6 +312,12 @@ export class Attestation implements IAttestation {
    * This call can only be successfully executed if the submitter of the transaction is the original payer of the attestation deposit.
    *
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   * @example ```javascript
+   * attestation.reclaimDeposit().then((claimExtrinsic) => {
+   *   // The deposit claiming tx was created, and it can now be submitted by the attestation deposit payer ONLY.
+   *   BlockchainUtils.signAndSendTx(claimExtrinsic, submitter);
+   * });
+   * ```
    */
   public async reclaimDeposit(): Promise<SubmittableExtrinsic> {
     return reclaimDeposit(this.claimHash)

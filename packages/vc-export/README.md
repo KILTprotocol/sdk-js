@@ -85,11 +85,8 @@ import vcjs from 'vc-js'
 import jsigs from 'jsonld-signatures'
 
 // 1. set up suites
-const {
-  KiltIntegritySuite,
-  KiltSignatureSuite,
-  KiltAttestedSuite,
-} = vcjsSuites.suites
+const { KiltIntegritySuite, KiltSignatureSuite, KiltAttestedSuite } =
+  vcjsSuites.suites
 const signatureSuite = new KiltSignatureSuite()
 const integritySuite = new KiltIntegritySuite()
 // the KiltAttestedSuite requires a connection object that allows access to the KILT blockchain, which we can obtain via the KILT sdk

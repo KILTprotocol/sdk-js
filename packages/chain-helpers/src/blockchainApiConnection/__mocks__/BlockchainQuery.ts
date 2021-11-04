@@ -56,7 +56,7 @@ const chainQueryReturnTuples: {
   },
   portablegabi: {
     // AccumulatorList: account-id -> [accumulators]?
-    accumulatorList: ('Vec<u8>' as unknown) as Constructor,
+    accumulatorList: 'Vec<u8>' as unknown as Constructor,
     // AccumulatorCount: account-id -> counter
     accumulatorCount: U64,
     // AccountState: account-id -> state
