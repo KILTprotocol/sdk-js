@@ -256,13 +256,11 @@ export interface IConfirmPaymentContent {
 }
 
 export interface IRequestClaimsForCTypesContent {
-  cTypes: Record<
-    ICType['hash'],
-    {
-      trustedAttesters?: Array<IDidDetails['did']>
-      requiredProperties?: string[]
-    }
-  >
+  cTypes: Array<{
+    cTypeHash: ICType['hash']
+    trustedAttesters?: Array<IDidDetails['did']>
+    requiredProperties?: string[]
+  }>
   challenge?: string
 }
 

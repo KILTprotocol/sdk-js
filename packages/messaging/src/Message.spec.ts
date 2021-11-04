@@ -71,7 +71,7 @@ describe('Messaging', () => {
       {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
         content: {
-          cTypes: { [`kilt:ctype:${Crypto.hashStr('0x12345678')}`]: {} },
+          cTypes: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
         },
       },
       identityAlice.did,
@@ -138,7 +138,7 @@ describe('Messaging', () => {
       {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
         content: {
-          cTypes: { [`kilt:ctype:${Crypto.hashStr('0x12345678')}`]: {} },
+          cTypes: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
         },
       },
       wrongSender,

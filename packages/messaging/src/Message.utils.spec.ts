@@ -473,12 +473,13 @@ describe('Messaging Utilities', () => {
     ]
     // Request Claims for CTypes content
     requestClaimsForCTypesContent = {
-      cTypes: {
-        [claim.cTypeHash]: {
+      cTypes: [
+        {
+          cTypeHash: claim.cTypeHash,
           trustedAttesters: [identityAlice.did],
           requiredProperties: ['id', 'name'],
         },
-      },
+      ],
       challenge: '1234',
     }
     // Compressed Request claims for CType content
@@ -1065,10 +1066,8 @@ describe('Messaging Utilities', () => {
     expect(() =>
       MessageUtils.errorCheckMessageBody(rejectAttestationForClaimBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
-    requestClaimsForCTypesBody.content.cTypes = {
-      ...requestClaimsForCTypesBody.content.cTypes,
-      'this is not a cTypeHash': {},
-    }
+    requestClaimsForCTypesBody.content.cTypes[0].cTypeHash =
+      'this is not a cTypeHash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestClaimsForCTypesBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())

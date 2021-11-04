@@ -143,8 +143,8 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      Object.entries(body.content.cTypes).forEach(
-        ([cTypeHash, { trustedAttesters, requiredProperties }]): void => {
+      body.content.cTypes.forEach(
+        ({ cTypeHash, trustedAttesters, requiredProperties }): void => {
           DataUtils.validateHash(
             cTypeHash,
             'request claims for ctypes cTypeHash invalid'
@@ -334,11 +334,11 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      const compressedCtypes: CompressedRequestClaimsForCTypesContent[0] = Object.entries(
-        body.content.cTypes
-      ).map(([cTypeHash, { trustedAttesters, requiredProperties }]) => {
-        return [cTypeHash, trustedAttesters, requiredProperties]
-      })
+      const compressedCtypes: CompressedRequestClaimsForCTypesContent[0] = body.content.cTypes.map(
+        ({ cTypeHash, trustedAttesters, requiredProperties }) => {
+          return [cTypeHash, trustedAttesters, requiredProperties]
+        }
+      )
       compressedContents = [compressedCtypes, body.content.challenge]
       break
     }
@@ -477,15 +477,12 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       break
     }
     case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      const decompressedCtypes: IRequestClaimsForCTypesContent['cTypes'] = {}
-      body[1][0].forEach((val) => {
-        decompressedCtypes[val[0]] = {
+      decompressedContents = {
+        cTypes: body[1][0].map((val) => ({
+          cTypeHash: val[0],
           trustedAttesters: val[1],
           requiredProperties: val[2],
-        }
-      })
-      decompressedContents = {
-        cTypes: decompressedCtypes,
+        })),
         challenge: body[1][1],
       }
       break

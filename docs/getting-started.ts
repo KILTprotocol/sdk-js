@@ -263,9 +263,7 @@ async function main(): Promise<void> {
       /* 6.1. Request presentation for CTYPE */
       const messageBodyForClaimer: MessageBody = {
         type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-        content: {
-          cTypes: { [ctype.hash]: {} },
-        },
+        content: { cTypes: [{ cTypeHash: ctype.hash }] },
       }
       const messageForClaimer = new Kilt.Message(
         messageBodyForClaimer,
