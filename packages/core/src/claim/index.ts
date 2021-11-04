@@ -5,7 +5,5 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { Claim } from './Claim'
-import * as ClaimUtils from './Claim.utils'
-
-export { Claim, ClaimUtils }
+export { Claim } from './Claim'
+export * as ClaimUtils from './Claim.utils'

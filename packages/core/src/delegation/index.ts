@@ -5,7 +5,5 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DelegationNode } from './DelegationNode'
-import * as DelegationNodeUtils from './DelegationNode.utils'
-
-export { DelegationNode, DelegationNodeUtils }
+export { DelegationNode } from './DelegationNode'
+export * as DelegationNodeUtils from './DelegationNode.utils'

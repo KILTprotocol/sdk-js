@@ -5,7 +5,5 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { Attestation } from './Attestation'
-import * as AttestationUtils from './Attestation.utils'
-
-export { Attestation, AttestationUtils }
+export { Attestation } from './Attestation'
+export * as AttestationUtils from './Attestation.utils'

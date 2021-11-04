@@ -5,6 +5,4 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import * as ConfigService from './ConfigService'
-
-export { ConfigService }
+export * as ConfigService from './ConfigService'

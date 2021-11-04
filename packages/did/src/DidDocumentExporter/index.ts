@@ -10,6 +10,4 @@
  * @module DID
  */
 
-import { DidDocumentExporter, exportToDidDocument } from './DidDocumentExporter'
-
-export { DidDocumentExporter, exportToDidDocument }
+export { DidDocumentExporter, exportToDidDocument } from './DidDocumentExporter'

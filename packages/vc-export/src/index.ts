@@ -5,12 +5,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import * as verification from './verificationUtils'
-import * as presentation from './presentationUtils'
-import { fromAttestedClaim } from './exportToVerifiableCredential'
-import * as vcjsSuites from './vc-js'
-
 import type * as types from './types'
 
-export { verification, presentation, fromAttestedClaim, vcjsSuites }
+export * as verification from './verificationUtils'
+export * as presentation from './presentationUtils'
+export { fromAttestedClaim } from './exportToVerifiableCredential'
+export * as vcjsSuites from './vc-js'
+
 export type { types }

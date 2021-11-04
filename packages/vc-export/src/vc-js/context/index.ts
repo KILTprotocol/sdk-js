@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants'
 import context from './context.json'
 
-export { KILT_CREDENTIAL_CONTEXT_URL, context }
+export { KILT_CREDENTIAL_CONTEXT_URL } from '../../constants'
+export { context }
