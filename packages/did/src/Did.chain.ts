@@ -66,6 +66,20 @@ export async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
     )
 }
 
+// Returns the raw representation of the storage entry for the given DID identifier.
+export async function queryDidDeletionStatusEncoded(
+  didIdentifier: IIdentity['address']
+): Promise<Uint8Array> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const encodedStorageKey = await api.query.did.didBlacklist.key(didIdentifier)
+  return (
+    api.rpc.state
+      .queryStorageAt<Codec[]>([encodedStorageKey])
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      .then((encodedValue) => encodedValue.pop()!.toU8a())
+  )
+}
+
 // Query a DID service given the DID identifier and the service ID.
 // Interacts with the ServiceEndpoints storage double map.
 export async function queryServiceEncoded(
@@ -287,14 +301,15 @@ export async function queryDeletedDids(): Promise<Array<IDidDetails['did']>> {
   )
 }
 
-// TODO: This function currently fetches ALL the deleted DIDs and then checks if the provided one is inside, which becomes very inefficient if a lot of DIDs have been deleted.
-// It has to do with how the storage is encoded in javascript, which makes it impossible to distinguish between a value that is not present and a value that is present but has, indeed, a null value.
-// This will need to change when we find a more efficient way to distinguish between the two cases or when we update the storage to make it easier to distinguish between the two cases, e.g., by using a bool instead of a ().
-// https://github.com/polkadot-js/api/issues/4146 for the @polkadot/api issue and https://github.com/paritytech/scale-info/issues/134 for the scale-info issue.
 export async function queryDidDeletionStatus(
   didUri: IDidDetails['did']
 ): Promise<boolean> {
-  return (await queryDeletedDids()).includes(didUri)
+  const { identifier } = parseDidUrl(didUri)
+  const encodedDeletionStorageEntry = await queryDidDeletionStatusEncoded(
+    identifier
+  )
+  // The result is a 1-byte array where the only element is 1 if the DID has been deleted, and 0 otherwise.
+  return encodedDeletionStorageEntry[0] === 1
 }
 
 // ### EXTRINSICS
