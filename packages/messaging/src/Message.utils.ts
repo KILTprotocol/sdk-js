@@ -40,7 +40,7 @@ import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { isHex, isJsonObject } from '@polkadot/util'
 import { DidUtils } from '@kiltprotocol/did'
 
-import Message from '.'
+import { Message } from './Message'
 
 // Had to add the check as differs from the delegation types
 export function errorCheckDelegationData(
