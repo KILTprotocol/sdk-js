@@ -17,7 +17,7 @@ import type {
   ICType,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/src/blockchainApiConnection/__mocks__/BlockchainQuery'
 import { DidUtils } from '@kiltprotocol/did'
 import { Claim } from '../claim/Claim'
 import { CType } from '../ctype/CType'
