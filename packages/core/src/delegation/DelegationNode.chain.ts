@@ -102,12 +102,11 @@ export async function revoke(
   maxRevocations: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic =
-    blockchain.api.tx.delegation.revokeDelegation(
-      delegationId,
-      maxDepth,
-      maxRevocations
-    )
+  const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.revokeDelegation(
+    delegationId,
+    maxDepth,
+    maxRevocations
+  )
   return tx
 }
 
@@ -122,8 +121,10 @@ export async function remove(
   maxRevocations: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const tx: SubmittableExtrinsic =
-    blockchain.api.tx.delegation.removeDelegation(delegationId, maxRevocations)
+  const tx: SubmittableExtrinsic = blockchain.api.tx.delegation.removeDelegation(
+    delegationId,
+    maxRevocations
+  )
   return tx
 }
 
@@ -168,10 +169,9 @@ export async function getAttestationHashes(
   id: IDelegationNode['id']
 ): Promise<string[]> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
-  const encodedHashes =
-    await blockchain.api.query.attestation.delegatedAttestations<
-      Option<Vec<Hash>>
-    >(id)
+  const encodedHashes = await blockchain.api.query.attestation.delegatedAttestations<
+    Option<Vec<Hash>>
+  >(id)
   return decodeDelegatedAttestations(encodedHashes)
 }
 

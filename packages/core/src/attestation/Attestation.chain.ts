@@ -151,8 +151,9 @@ export async function reclaimDeposit(
   log.debug(
     () => `Claiming deposit for the attestation with claim hash ${claimHash}`
   )
-  const tx: SubmittableExtrinsic =
-    blockchain.api.tx.attestation.reclaimDeposit(claimHash)
+  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.reclaimDeposit(
+    claimHash
+  )
   return tx
 }
 
