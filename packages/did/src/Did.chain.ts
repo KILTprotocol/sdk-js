@@ -67,7 +67,7 @@ export async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
 }
 
 // Returns the raw representation of the storage entry for the given DID identifier.
-export async function queryDidDeletionStatusEncoded(
+async function queryDidDeletionStatusEncoded(
   didIdentifier: IIdentity['address']
 ): Promise<Uint8Array> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
