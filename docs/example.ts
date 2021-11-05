@@ -417,7 +417,7 @@ async function doVerification(
   const presentationMessage = (verifierSubmitClaimsMessageDec.body as ISubmitClaimsForCTypes)
     .content
 
-  const verifiablePresentation = Kilt.AttestedClaim.fromAttestedClaim(
+  const verifiablePresentation = Kilt.AttestedClaim.fromCredential(
     presentationMessage[0]
   )
   const verified = await verifiablePresentation.verify({ challenge })

@@ -9,7 +9,7 @@
  * @group integration/attestation
  */
 
-import type { IAttestedClaim, IClaim, KeyringPair } from '@kiltprotocol/types'
+import type { ICredential, IClaim, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import {
   createOnChainDidFromSeed,
@@ -20,7 +20,7 @@ import { Crypto } from '@kiltprotocol/utils'
 import { randomAsHex } from '@polkadot/util-crypto'
 import Attestation from '../attestation/Attestation'
 import { revoke, remove } from '../attestation/Attestation.chain'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
+import Credential from '../credential/Credential'
 import { disconnect, init } from '../kilt'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
@@ -153,7 +153,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           reSign: true,
         })
       )
-    const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
+    const aClaim = Credential.fromRequestAndAttestation(request, attestation)
     expect(aClaim.verifyData()).toBe(true)
     await expect(aClaim.verify()).resolves.toBe(true)
 
@@ -199,7 +199,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           })
         )
     ).rejects.toThrow()
-    const aClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
+    const aClaim = Credential.fromRequestAndAttestation(request, attestation)
 
     await expect(aClaim.verify()).resolves.toBeFalsy()
   }, 60_000)
@@ -246,7 +246,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   describe('when there is an attested claim on-chain', () => {
-    let attClaim: AttestedClaim
+    let attClaim: Credential
 
     beforeAll(async () => {
       const content: IClaim['contents'] = { name: 'Rolfi', age: 18 }
@@ -269,7 +269,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             reSign: true,
           })
         )
-      attClaim = AttestedClaim.fromRequestAndAttestation(request, attestation)
+      attClaim = Credential.fromRequestAndAttestation(request, attestation)
       await expect(attClaim.verify()).resolves.toBe(true)
     }, 60_000)
 
@@ -300,12 +300,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       const request = RequestForAttestation.fromClaim(claim)
       await request.signWithDid(signer, claimer)
-      const fakeAttClaim: IAttestedClaim = {
+      const fakeAttClaim: ICredential = {
         request,
         attestation: attClaim.attestation,
       }
 
-      await expect(AttestedClaim.verify(fakeAttClaim)).resolves.toBeFalsy()
+      await expect(Credential.verify(fakeAttClaim)).resolves.toBeFalsy()
     }, 15_000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
@@ -405,7 +405,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       const request2 = RequestForAttestation.fromClaim(iBelieveICanDrive, {
         legitimations: [
-          AttestedClaim.fromRequestAndAttestation(
+          Credential.fromRequestAndAttestation(
             request1,
             licenseAuthorizationGranted
           ),
@@ -426,7 +426,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             reSign: true,
           })
         )
-      const license = AttestedClaim.fromRequestAndAttestation(
+      const license = Credential.fromRequestAndAttestation(
         request2,
         LicenseGranted
       )

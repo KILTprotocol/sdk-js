@@ -222,7 +222,7 @@ async function main(): Promise<void> {
 
     /* After receiving the message, the Claimer just needs to save it and can use it later for verification: */
     if (messageBack.body.type === Kilt.Message.BodyType.SUBMIT_ATTESTATION) {
-      const myAttestedClaim = Kilt.AttestedClaim.fromAttestedClaim({
+      const myAttestedClaim = Kilt.AttestedClaim.fromCredential({
         ...messageBack.body.content,
         request: requestForAttestation,
       })
@@ -269,7 +269,7 @@ async function main(): Promise<void> {
       /* Now the claimer can send a message to verifier including the attested claim: */
       console.log('Requested from verifier:', messageForClaimer.body.content)
 
-      const copiedCredential = Kilt.AttestedClaim.fromAttestedClaim(
+      const copiedCredential = Kilt.AttestedClaim.fromCredential(
         JSON.parse(JSON.stringify(myAttestedClaim))
       )
 
@@ -315,7 +315,7 @@ async function main(): Promise<void> {
         const claims = decryptedMessageForVerifier.body.content
         console.log('before verifying', credentialForVerifier)
 
-        const verifiablePresentation = Kilt.AttestedClaim.fromAttestedClaim(
+        const verifiablePresentation = Kilt.AttestedClaim.fromCredential(
           claims[0]
         )
         const isValid = await verifiablePresentation.verify()

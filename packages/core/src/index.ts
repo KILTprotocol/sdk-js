@@ -6,7 +6,7 @@
  */
 
 import Attestation, { AttestationUtils } from './attestation'
-import AttestedClaim, { AttestedClaimUtils } from './attestedclaim'
+import Credential, { CredentialUtils } from './credential'
 import { Balance, BalanceUtils } from './balance'
 import Claim, { ClaimUtils } from './claim'
 import { CType, CTypeMetadata, CTypeSchema, CTypeUtils } from './ctype'
@@ -33,8 +33,8 @@ export {
   RequestForAttestationUtils,
   Attestation,
   AttestationUtils,
-  AttestedClaim,
-  AttestedClaimUtils,
+  Credential,
+  CredentialUtils,
   DelegationNode,
   DelegationNodeUtils,
   Quote,

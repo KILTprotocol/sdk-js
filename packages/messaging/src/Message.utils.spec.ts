@@ -27,7 +27,7 @@ import type {
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
   IRequestClaimsForCTypes,
-  IAttestedClaim,
+  ICredential,
   IRequestAcceptDelegation,
   ISubmitAcceptDelegation,
   IRejectAcceptDelegation,
@@ -59,7 +59,7 @@ import type {
   CompressedInformCreateDelegation,
   CompressedInformDelegationCreation,
   CompressedMessageBody,
-  CompressedAttestedClaim,
+  CompressedCredential,
   CompressedSubmitClaimsForCTypes,
   ISubmitClaimsForCTypes,
   CompressedAttestation,
@@ -74,7 +74,7 @@ import type {
 import { SDKErrors, Crypto } from '@kiltprotocol/utils'
 import {
   Attestation,
-  AttestedClaim,
+  Credential,
   Claim,
   CType,
   Quote,
@@ -93,12 +93,12 @@ import Message from './Message'
 import '../../../testingTools/jestErrorCodeMatcher'
 
 // TODO: Duplicated code, would be nice to have as a seperated test package with similar helpers
-async function buildAttestedClaim(
+async function buildCredential(
   claimer: IDidDetails,
   attester: IDidDetails,
   contents: IClaim['contents'],
-  legitimations: AttestedClaim[]
-): Promise<AttestedClaim> {
+  legitimations: Credential[]
+): Promise<Credential> {
   // create claim
 
   const rawCType: ICType['schema'] = {
@@ -128,11 +128,11 @@ async function buildAttestedClaim(
     attester.did
   )
   // combine to attested claim
-  const attestedClaim = AttestedClaim.fromRequestAndAttestation(
+  const credential = Credential.fromRequestAndAttestation(
     requestForAttestation,
     testAttestation
   )
-  return attestedClaim
+  return credential
 }
 
 describe('Messaging Utilities', () => {
@@ -150,9 +150,9 @@ describe('Messaging Utilities', () => {
   let quoteData: IQuote
   let quoteAttesterSigned: IQuoteAttesterSigned
   let bothSigned: IQuoteAgreement
-  let compressedLegitimation: CompressedAttestedClaim
+  let compressedLegitimation: CompressedCredential
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
-  let legitimation: AttestedClaim
+  let legitimation: Credential
   let compressedQuoteAgreement: CompressedQuoteAgreed
   let requestTermsBody: IRequestTerms
   let requestTermsContent: PartialClaim
@@ -183,10 +183,10 @@ describe('Messaging Utilities', () => {
   let compressedRequestClaimsForCTypesBody: CompressedRequestClaimsForCTypes
   let compressedRequestClaimsForCTypesContent: CompressedRequestClaimsForCTypesContent
   let submitClaimsForCTypesBody: ISubmitClaimsForCTypes
-  let submitClaimsForCTypesContent: IAttestedClaim[]
+  let submitClaimsForCTypesContent: ICredential[]
   let acceptClaimsForCTypesBody: IAcceptClaimsForCTypes
   let compressedSubmitClaimsForCTypesBody: CompressedSubmitClaimsForCTypes
-  let compressedSubmitClaimsForCTypesContent: CompressedAttestedClaim[]
+  let compressedSubmitClaimsForCTypesContent: CompressedCredential[]
   let rejectClaimsForCTypesBody: IRejectClaimsForCTypes
   let requestAcceptDelegationBody: IRequestAcceptDelegation
   let requestAcceptDelegationContent: IRequestDelegationApproval
@@ -299,7 +299,7 @@ describe('Messaging Utilities', () => {
       identityAlice.did
     )
     // Legitimation
-    legitimation = await buildAttestedClaim(identityAlice, identityBob, {}, [])
+    legitimation = await buildCredential(identityAlice, identityBob, {}, [])
     // Compressed Legitimation
     compressedLegitimation = [
       [

@@ -6,19 +6,19 @@
  */
 
 /**
- * In KILT, an [[AttestedClaim]] is a **credential**, which a Claimer can store locally and share with Verifiers as they wish.
+ * In KILT, an [[Credential]] is a **credential**, which a Claimer can store locally and share with Verifiers as they wish.
  *
- * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[AttestedClaim]] object.
- * This [[AttestedClaim]] also contains the original request for attestation.
+ * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[Credential]] object.
+ * This [[Credential]] also contains the original request for attestation.
  * RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
  *
  * @packageDocumentation
- * @module AttestedClaim
+ * @module Credential
  */
 
 import type {
-  IAttestedClaim,
-  CompressedAttestedClaim,
+  ICredential,
+  CompressedCredential,
   IAttestation,
   IRequestForAttestation,
   IDidDetails,
@@ -29,57 +29,55 @@ import type {
 import { SDKErrors } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import AttestedClaimUtils from './AttestedClaim.utils'
+import CredentialUtils from './Credential.utils'
 
-export default class AttestedClaim implements IAttestedClaim {
+export default class Credential implements ICredential {
   /**
-   * [STATIC] Builds an instance of [[AttestedClaim]], from a simple object with the same properties.
+   * [STATIC] Builds an instance of [[Credential]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param attestedClaimInput - The base object from which to create the attested claim.
-   * @returns A new instantiated [[AttestedClaim]] object.
+   * @param credentialInput - The base object from which to create the attested claim.
+   * @returns A new instantiated [[Credential]] object.
    * @example ```javascript
-   * // create an AttestedClaim object, so we can call methods on it (`serialized` is a serialized AttestedClaim object)
-   * AttestedClaim.fromAttestedClaim(JSON.parse(serialized));
+   * // create an Credential object, so we can call methods on it (`serialized` is a serialized Credential object)
+   * Credential.fromCredential(JSON.parse(serialized));
    * ```
    */
-  public static fromAttestedClaim(
-    attestedClaimInput: IAttestedClaim
-  ): AttestedClaim {
-    return new AttestedClaim(attestedClaimInput)
+  public static fromCredential(credentialInput: ICredential): Credential {
+    return new Credential(credentialInput)
   }
 
   /**
-   * [STATIC] Builds a new instance of [[AttestedClaim]], from all required properties.
+   * [STATIC] Builds a new instance of [[Credential]], from all required properties.
    *
    * @param request - The request for attestation for the claim that was attested.
    * @param attestation - The attestation for the claim by the attester.
-   * @returns A new [[AttestedClaim]] object.
+   * @returns A new [[Credential]] object.
    * @example ```javascript
-   * // create an AttestedClaim object after receiving the attestation from the attester
-   * AttestedClaim.fromRequestAndAttestation(request, attestation);
+   * // create an Credential object after receiving the attestation from the attester
+   * Credential.fromRequestAndAttestation(request, attestation);
    * ```
    */
   public static fromRequestAndAttestation(
     request: IRequestForAttestation,
     attestation: IAttestation
-  ): AttestedClaim {
-    return new AttestedClaim({
+  ): Credential {
+    return new Credential({
       request,
       attestation,
     })
   }
 
   /**
-   *  [STATIC] Custom Type Guard to determine input being of type IAttestedClaim using the AttestedClaimUtils errorCheck.
+   *  [STATIC] Custom Type Guard to determine input being of type ICredential using the CredentialUtils errorCheck.
    *
-   * @param input The potentially only partial IAttestedClaim.
+   * @param input The potentially only partial ICredential.
    *
-   * @returns Boolean whether input is of type IAttestedClaim.
+   * @returns Boolean whether input is of type ICredential.
    */
-  public static isIAttestedClaim(input: unknown): input is IAttestedClaim {
+  public static isICredential(input: unknown): input is ICredential {
     try {
-      AttestedClaimUtils.errorCheck(input as IAttestedClaim)
+      CredentialUtils.errorCheck(input as ICredential)
     } catch (error) {
       return false
     }
@@ -90,20 +88,18 @@ export default class AttestedClaim implements IAttestedClaim {
   public attestation: Attestation
 
   /**
-   * Builds a new [[AttestedClaim]] instance.
+   * Builds a new [[Credential]] instance.
    *
-   * @param attestedClaimInput - The base object with all required input, from which to create the attested claim.
+   * @param credentialInput - The base object with all required input, from which to create the attested claim.
    * @example ```javascript
-   * // Create an `AttestedClaim` upon successful `Attestation` creation:
-   * const credential = new AttestedClaim(attestedClaimInput);
+   * // Create an `Credential` upon successful `Attestation` creation:
+   * const credential = new Credential(credentialInput);
    * ```
    */
-  public constructor(attestedClaimInput: IAttestedClaim) {
-    AttestedClaimUtils.errorCheck(attestedClaimInput)
-    this.request = RequestForAttestation.fromRequest(attestedClaimInput.request)
-    this.attestation = Attestation.fromAttestation(
-      attestedClaimInput.attestation
-    )
+  public constructor(credentialInput: ICredential) {
+    CredentialUtils.errorCheck(credentialInput)
+    this.request = RequestForAttestation.fromRequest(credentialInput.request)
+    this.attestation = Attestation.fromAttestation(credentialInput.attestation)
   }
 
   /**
@@ -114,7 +110,7 @@ export default class AttestedClaim implements IAttestedClaim {
    *
    * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
    *
-   * @param attestedClaim - The attested claim to check for validity.
+   * @param credential - The attested claim to check for validity.
    * @param verificationOpts
    * @param verificationOpts.claimerDid - The claimer's DID.
    * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
@@ -122,25 +118,25 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
    * @returns A promise containing whether this attested claim is valid.
    * @example ```javascript
-   * attestedClaim.verify().then((isVerified) => {
+   * credential.verify().then((isVerified) => {
    * // `isVerified` is true if the attestation is verified, false otherwise
    * });
    * ```
    */
   public static async verify(
-    attestedClaim: IAttestedClaim,
+    credential: ICredential,
     verificationOpts: {
       resolver?: IDidResolver
       challenge?: string
     } = {}
   ): Promise<boolean> {
     return (
-      AttestedClaim.verifyData(attestedClaim) &&
+      Credential.verifyData(credential) &&
       (await RequestForAttestation.verifySignature(
-        attestedClaim.request,
+        credential.request,
         verificationOpts
       )) &&
-      Attestation.checkValidity(attestedClaim.attestation)
+      Attestation.checkValidity(credential.attestation)
     )
   }
 
@@ -150,7 +146,7 @@ export default class AttestedClaim implements IAttestedClaim {
       challenge?: string
     } = {}
   ): Promise<boolean> {
-    return AttestedClaim.verify(this, verificationOpts)
+    return Credential.verify(this, verificationOpts)
   }
 
   /**
@@ -159,41 +155,36 @@ export default class AttestedClaim implements IAttestedClaim {
    * and
    * * the hash of the [[RequestForAttestation]] object for the attested claim, and the hash of the [[Claim]] for the attested claim are the same.
    *
-   * @param attestedClaim - The attested claim to verify.
+   * @param credential - The attested claim to verify.
    * @returns Whether the attested claim's data is valid.
    * @example ```javascript
-   * const verificationResult = attestedClaim.verifyData();
+   * const verificationResult = credential.verifyData();
    * ```
    */
-  public static verifyData(attestedClaim: IAttestedClaim): boolean {
-    if (
-      attestedClaim.request.claim.cTypeHash !==
-      attestedClaim.attestation.cTypeHash
-    )
+  public static verifyData(credential: ICredential): boolean {
+    if (credential.request.claim.cTypeHash !== credential.attestation.cTypeHash)
       return false
     return (
-      attestedClaim.request.rootHash === attestedClaim.attestation.claimHash &&
-      RequestForAttestation.verifyData(attestedClaim.request)
+      credential.request.rootHash === credential.attestation.claimHash &&
+      RequestForAttestation.verifyData(credential.request)
     )
   }
 
   public verifyData(): boolean {
-    return AttestedClaim.verifyData(this)
+    return Credential.verifyData(this)
   }
 
   /**
-   *  [STATIC] Verifies the data of each element of the given Array of IAttestedClaims.
+   *  [STATIC] Verifies the data of each element of the given Array of ICredentials.
    *
-   * @param legitimations Array of IAttestedClaims to validate.
-   * @throws [[ERROR_LEGITIMATIONS_UNVERIFIABLE]] when one of the IAttestedClaims data is unable to be verified.
+   * @param legitimations Array of ICredentials to validate.
+   * @throws [[ERROR_LEGITIMATIONS_UNVERIFIABLE]] when one of the ICredentials data is unable to be verified.
    *
-   * @returns Boolean whether each element of the given Array of IAttestedClaims is verifiable.
+   * @returns Boolean whether each element of the given Array of ICredentials is verifiable.
    */
-  public static validateLegitimations(
-    legitimations: IAttestedClaim[]
-  ): boolean {
-    legitimations.forEach((legitimation: IAttestedClaim) => {
-      if (!AttestedClaim.verifyData(legitimation)) {
+  public static validateLegitimations(legitimations: ICredential[]): boolean {
+    legitimations.forEach((legitimation: ICredential) => {
+      if (!Credential.verifyData(legitimation)) {
         throw SDKErrors.ERROR_LEGITIMATIONS_UNVERIFIABLE()
       }
     })
@@ -228,7 +219,7 @@ export default class AttestedClaim implements IAttestedClaim {
    * @param presentationOptions.challenge Challenge which will be part of the presentation signature.
    * @param presentationOptions.selectedAttributes All properties of the claim which have been requested by the verifier and therefore must be publicly presented.
    * If not specified, all attributes are shown. If set to an empty array, we hide all attributes inside the claim for the presentation.
-   * @returns A deep copy of the AttestedClaim with all but `publicAttributes` removed.
+   * @returns A deep copy of the Credential with all but `publicAttributes` removed.
    */
   public async createPresentation({
     selectedAttributes,
@@ -242,8 +233,8 @@ export default class AttestedClaim implements IAttestedClaim {
     claimerDid?: IDidDetails
     challenge?: string
     selectedAttributes?: string[]
-  }): Promise<AttestedClaim> {
-    const attClaim = new AttestedClaim(
+  }): Promise<Credential> {
+    const attClaim = new Credential(
       // clone the attestation and request for attestation because properties will be deleted later.
       // TODO: find a nice way to clone stuff
       JSON.parse(JSON.stringify(this))
@@ -272,26 +263,22 @@ export default class AttestedClaim implements IAttestedClaim {
   }
 
   /**
-   * Compresses an [[AttestedClaim]] object.
+   * Compresses an [[Credential]] object.
    *
-   * @returns An array that contains the same properties of an [[AttestedClaim]].
+   * @returns An array that contains the same properties of an [[Credential]].
    */
-  public compress(): CompressedAttestedClaim {
-    return AttestedClaimUtils.compress(this)
+  public compress(): CompressedCredential {
+    return CredentialUtils.compress(this)
   }
 
   /**
-   * [STATIC] Builds an [[AttestedClaim]] from the decompressed array.
+   * [STATIC] Builds an [[Credential]] from the decompressed array.
    *
-   * @param attestedClaim The [[CompressedAttestedClaim]] that should get decompressed.
-   * @returns A new [[AttestedClaim]] object.
+   * @param credential The [[CompressedCredential]] that should get decompressed.
+   * @returns A new [[Credential]] object.
    */
-  public static decompress(
-    attestedClaim: CompressedAttestedClaim
-  ): AttestedClaim {
-    const decompressedAttestedClaim = AttestedClaimUtils.decompress(
-      attestedClaim
-    )
-    return AttestedClaim.fromAttestedClaim(decompressedAttestedClaim)
+  public static decompress(credential: CompressedCredential): Credential {
+    const decompressedCredential = CredentialUtils.decompress(credential)
+    return Credential.fromCredential(decompressedCredential)
   }
 }

@@ -7,7 +7,7 @@
 
 import verification from './verificationUtils'
 import presentation from './presentationUtils'
-import { fromAttestedClaim } from './exportToVerifiableCredential'
+import { fromCredential } from './exportToVerifiableCredential'
 import * as vcjsSuites from './vc-js'
 
 import type * as types from './types'
@@ -15,9 +15,9 @@ import type * as types from './types'
 export default {
   verification,
   presentation,
-  fromAttestedClaim,
+  fromCredential,
   vcjsSuites,
 }
 
-export { verification, presentation, fromAttestedClaim, vcjsSuites }
+export { verification, presentation, fromCredential, vcjsSuites }
 export type { types }

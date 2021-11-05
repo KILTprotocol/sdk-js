@@ -13,7 +13,7 @@
 import type { AnyJson } from '@polkadot/types/types'
 import type { DidSignature, IDidDetails, IDidKeyDetails } from './DidDetails'
 import type { CompressedAttestation, IAttestation } from './Attestation'
-import type { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'
+import type { CompressedCredential, ICredential } from './Credential'
 import type { IClaim, IClaimContents, PartialClaim } from './Claim'
 import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
@@ -127,7 +127,7 @@ export interface ISubmitTerms extends IMessageBodyBase {
 export interface IRejectTerms extends IMessageBodyBase {
   content: {
     claim: PartialClaim
-    legitimations: IAttestedClaim[]
+    legitimations: ICredential[]
     delegationId?: IDelegationNode['id']
   }
   type: MessageBodyType.REJECT_TERMS
@@ -162,7 +162,7 @@ export interface IRequestClaimsForCTypes extends IMessageBodyBase {
 }
 
 export interface ISubmitClaimsForCTypes extends IMessageBodyBase {
-  content: IAttestedClaim[]
+  content: ICredential[]
   type: MessageBodyType.SUBMIT_CREDENTIAL
 }
 
@@ -222,7 +222,7 @@ export type CompressedRequestClaimsForCTypes = [
 ]
 export type CompressedSubmitClaimsForCTypes = [
   MessageBodyType.SUBMIT_CREDENTIAL,
-  CompressedAttestedClaim[]
+  CompressedCredential[]
 ]
 export type CompressedAcceptClaimsForCTypes = [
   MessageBodyType.ACCEPT_CREDENTIAL,
@@ -317,7 +317,7 @@ export type CompressedPartialClaim = [
 
 export type CompressedRejectedTerms = [
   CompressedPartialClaim,
-  CompressedAttestedClaim[],
+  CompressedCredential[],
   IDelegationNode['id'] | undefined
 ]
 

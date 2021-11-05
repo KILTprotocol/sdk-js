@@ -21,7 +21,7 @@ import { randomAsHex } from '@polkadot/util-crypto'
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import { AttestedClaim } from '..'
+import { Credential } from '..'
 import { disconnect, init } from '../kilt'
 import DelegationNode from '../delegation/DelegationNode'
 import { CtypeOnChain, DriversLicense, devFaucet, WS_ADDRESS } from './utils'
@@ -178,10 +178,7 @@ describe('and attestation rights have been delegated', () => {
         })
       )
 
-    const attClaim = AttestedClaim.fromRequestAndAttestation(
-      request,
-      attestation
-    )
+    const attClaim = Credential.fromRequestAndAttestation(request, attestation)
     expect(attClaim.verifyData()).toBeTruthy()
     await expect(attClaim.verify()).resolves.toBeTruthy()
 

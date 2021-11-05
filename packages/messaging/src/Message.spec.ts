@@ -10,7 +10,7 @@
  */
 
 import type {
-  IAttestedClaim,
+  ICredential,
   IEncryptedMessage,
   IQuote,
   IDidResolvedDetails,
@@ -233,13 +233,13 @@ describe('Messaging', () => {
       new Message(submitAttestationBody, identityBob.did, identityAlice.did)
     )
 
-    const attestedClaim: IAttestedClaim = {
+    const credential: ICredential = {
       request: content,
       attestation: submitAttestationBody.content.attestation,
     }
 
     const submitClaimsForCTypeBody: ISubmitClaimsForCTypes = {
-      content: [attestedClaim],
+      content: [credential],
       type: Message.BodyType.SUBMIT_CREDENTIAL,
     }
 

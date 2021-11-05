@@ -75,7 +75,7 @@ export enum ErrorCode {
   ERROR_NONCE_HASH_INVALID = 30002,
   ERROR_LEGITIMATIONS_UNVERIFIABLE = 30003,
   ERROR_SIGNATURE_UNVERIFIABLE = 30004,
-  ERROR_ATTESTEDCLAIM_UNVERIFIABLE = 30005,
+  ERROR_CREDENTIAL_UNVERIFIABLE = 30005,
   ERROR_CLAIM_UNVERIFIABLE = 30006,
   ERROR_CTYPE_HASH_INVALID = 30007,
   ERROR_MNEMONIC_PHRASE_INVALID = 30008,
@@ -507,10 +507,10 @@ export const ERROR_SIGNATURE_UNVERIFIABLE: () => SDKError = () => {
     'Signature could not be verified'
   )
 }
-export const ERROR_ATTESTEDCLAIM_UNVERIFIABLE: () => SDKError = () => {
+export const ERROR_CREDENTIAL_UNVERIFIABLE: () => SDKError = () => {
   return new SDKError(
-    ErrorCode.ERROR_ATTESTEDCLAIM_UNVERIFIABLE,
-    'AttestedClaim could not be verified'
+    ErrorCode.ERROR_CREDENTIAL_UNVERIFIABLE,
+    'Credential could not be verified'
   )
 }
 
