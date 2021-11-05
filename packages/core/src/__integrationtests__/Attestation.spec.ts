@@ -16,6 +16,7 @@ import {
   DemoKeystore,
   FullDidDetails,
 } from '@kiltprotocol/did'
+import { BN } from '@polkadot/util'
 import { Crypto } from '@kiltprotocol/utils'
 import { randomAsHex } from '@polkadot/util-crypto'
 import Attestation from '../attestation/Attestation'
@@ -56,6 +57,13 @@ beforeAll(async () => {
 beforeEach(async () => {
   await Promise.all(
     [attester, anotherAttester, claimer].map((i) => i.refreshTxIndex())
+  )
+})
+
+it('fetches the correct deposit amount', async () => {
+  const depositAmount = await Attestation.queryDepositAmount()
+  expect(depositAmount.toString()).toStrictEqual(
+    new BN(1000000000000000).toString()
   )
 })
 

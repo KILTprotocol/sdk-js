@@ -18,6 +18,7 @@ import {
   FullDidDetails,
 } from '@kiltprotocol/did'
 import { randomAsHex } from '@polkadot/util-crypto'
+import { BN } from '@polkadot/util'
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
@@ -113,6 +114,13 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await Promise.all([attester, root, claimer].map((i) => i.refreshTxIndex()))
+})
+
+it('fetches the correct deposit amount', async () => {
+  const depositAmount = await DelegationNode.queryDepositAmount()
+  expect(depositAmount.toString()).toStrictEqual(
+    new BN(1000000000000000).toString()
+  )
 })
 
 it('should be possible to delegate attestation rights', async () => {

@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/did",
-  "version": "0.24.0-10",
+  "version": "0.24.0-12",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
