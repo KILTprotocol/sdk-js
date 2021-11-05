@@ -58,7 +58,7 @@ export default class Message implements IMessage {
    */
   public static ensureOwnerIsSender({ body, sender }: IMessage): void {
     switch (body.type) {
-      case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM:
+      case Message.BodyType.REQUEST_ATTESTATION:
         {
           const requestAttestation = body
           if (
@@ -69,7 +69,7 @@ export default class Message implements IMessage {
           }
         }
         break
-      case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM:
+      case Message.BodyType.SUBMIT_ATTESTATION:
         {
           const submitAttestation = body
           if (submitAttestation.content.attestation.owner !== sender) {
@@ -77,7 +77,7 @@ export default class Message implements IMessage {
           }
         }
         break
-      case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES:
+      case Message.BodyType.SUBMIT_CREDENTIAL:
         {
           const submitClaimsForCtype: ISubmitClaimsForCTypes = body
           submitClaimsForCtype.content.forEach((claim) => {

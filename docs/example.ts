@@ -210,7 +210,7 @@ async function doAttestation(
   // The claimer can send a message to the attester requesting to do the attestation
   const claimerRequestMessage = new Kilt.Message(
     {
-      type: Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      type: Kilt.Message.BodyType.REQUEST_ATTESTATION,
       content: { requestForAttestation },
     },
     claimerLightDid.did,
@@ -273,7 +273,7 @@ async function doAttestation(
   // And send a message back
   const attesterAttestationMessage = new Kilt.Message(
     {
-      type: Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      type: Kilt.Message.BodyType.SUBMIT_ATTESTATION,
       content: { attestation },
     },
     attesterFullDid.did,
@@ -357,7 +357,7 @@ async function doVerification(
   // ------------------------- Verifier ----------------------------------------
   const verifierAcceptedClaimsMessage = new Kilt.Message(
     {
-      type: Kilt.Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES,
+      type: Kilt.Message.BodyType.ACCEPT_CREDENTIAL,
       content: [credential.request.claim.cTypeHash],
     },
     verifierLightDid.did,
@@ -391,7 +391,7 @@ async function doVerification(
   })
   const claimerSubmitClaimsMessage = new Kilt.Message(
     {
-      type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      type: Kilt.Message.BodyType.SUBMIT_CREDENTIAL,
       content: [presentation],
     },
     claimerLightDid.did,

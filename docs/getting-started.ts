@@ -144,7 +144,7 @@ async function main(): Promise<void> {
   /* First, we create the request for an attestation message in which the Claimer automatically encodes the message with the public key of the Attester: */
   const messageBody: MessageBody = {
     content: { requestForAttestation },
-    type: Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+    type: Kilt.Message.BodyType.REQUEST_ATTESTATION,
   }
   const message = new Kilt.Message(
     messageBody,
@@ -173,9 +173,7 @@ async function main(): Promise<void> {
   /* Therefore, **during decryption** both the **sender account and the validity of the message are checked automatically**. */
   const decrypted = await Kilt.Message.decrypt(encryptedMessage, keystore)
   /* At this point the Attester has the original request for attestation object: */
-  if (
-    decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
-  ) {
+  if (decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION) {
     const extractedRequestForAttestation: IRequestForAttestation =
       decrypted.body.content.requestForAttestation
 
@@ -211,7 +209,7 @@ async function main(): Promise<void> {
     /* The Attester has to send the `attestedClaim` object back to the Claimer in the following message: */
     const messageBodyBack: MessageBody = {
       content: attestedClaim,
-      type: Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      type: Kilt.Message.BodyType.SUBMIT_ATTESTATION,
     }
     const messageBack = new Kilt.Message(
       messageBodyBack,
@@ -223,10 +221,7 @@ async function main(): Promise<void> {
     console.log(messageBack)
 
     /* After receiving the message, the Claimer just needs to save it and can use it later for verification: */
-    if (
-      messageBack.body.type ===
-      Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM
-    ) {
+    if (messageBack.body.type === Kilt.Message.BodyType.SUBMIT_ATTESTATION) {
       const myAttestedClaim = Kilt.AttestedClaim.fromAttestedClaim({
         ...messageBack.body.content,
         request: requestForAttestation,
@@ -262,7 +257,7 @@ async function main(): Promise<void> {
 
       /* 6.1. Request presentation for CTYPE */
       const messageBodyForClaimer: MessageBody = {
-        type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        type: Kilt.Message.BodyType.REQUEST_CREDENTIAL,
         content: { cTypes: [{ cTypeHash: ctype.hash }] },
       }
       const messageForClaimer = new Kilt.Message(
@@ -286,7 +281,7 @@ async function main(): Promise<void> {
 
       const messageBodyForVerifier: MessageBody = {
         content: [credentialForVerifier],
-        type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+        type: Kilt.Message.BodyType.SUBMIT_CREDENTIAL,
       }
       const messageForVerifier = new Kilt.Message(
         messageBodyForVerifier,
@@ -315,7 +310,7 @@ async function main(): Promise<void> {
       /* When verifying the claimer's message, the verifier has to use their session which was created during the CTYPE request: */
       if (
         decryptedMessageForVerifier.body.type ===
-        Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
+        Kilt.Message.BodyType.SUBMIT_CREDENTIAL
       ) {
         const claims = decryptedMessageForVerifier.body.content
         console.log('before verifying', credentialForVerifier)

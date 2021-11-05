@@ -34,17 +34,17 @@ export enum MessageBodyType {
   SUBMIT_TERMS = 'submit-terms',
   REJECT_TERMS = 'reject-terms',
 
-  REQUEST_ATTESTATION_FOR_CLAIM = 'request-attestation-for-claim',
-  SUBMIT_ATTESTATION_FOR_CLAIM = 'submit-attestation-for-claim',
-  REJECT_ATTESTATION_FOR_CLAIM = 'reject-attestation-for-claim',
+  REQUEST_ATTESTATION = 'request-attestation',
+  SUBMIT_ATTESTATION = 'submit-attestation',
+  REJECT_ATTESTATION = 'reject-attestation',
 
   REQUEST_PAYMENT = 'request-payment',
   CONFIRM_PAYMENT = 'confirm-payment',
 
-  REQUEST_CLAIMS_FOR_CTYPES = 'request-claims-for-ctypes',
-  SUBMIT_CLAIMS_FOR_CTYPES = 'submit-claims-for-ctypes-classic',
-  ACCEPT_CLAIMS_FOR_CTYPES = 'accept-claims-for-ctypes',
-  REJECT_CLAIMS_FOR_CTYPES = 'reject-claims-for-ctypes',
+  REQUEST_CREDENTIAL = 'request-credential',
+  SUBMIT_CREDENTIAL = 'submit-credential',
+  ACCEPT_CREDENTIAL = 'accept-credential',
+  REJECT_CREDENTIAL = 'reject-credential',
 
   REQUEST_ACCEPT_DELEGATION = 'request-accept-delegation',
   SUBMIT_ACCEPT_DELEGATION = 'submit-accept-delegation',
@@ -117,15 +117,15 @@ export interface IRejectTerms extends IMessageBodyBase {
 
 export interface IRequestAttestationForClaim extends IMessageBodyBase {
   content: IRequestAttestationForClaimContent
-  type: MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM
+  type: MessageBodyType.REQUEST_ATTESTATION
 }
 export interface ISubmitAttestationForClaim extends IMessageBodyBase {
   content: ISubmitAttestationForClaimContent
-  type: MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+  type: MessageBodyType.SUBMIT_ATTESTATION
 }
 export interface IRejectAttestationForClaim extends IMessageBodyBase {
   content: IRequestForAttestation['rootHash']
-  type: MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM
+  type: MessageBodyType.REJECT_ATTESTATION
 }
 
 export interface IRequestPayment extends IMessageBodyBase {
@@ -140,21 +140,21 @@ export interface IConfirmPayment extends IMessageBodyBase {
 
 export interface IRequestClaimsForCTypes extends IMessageBodyBase {
   content: IRequestClaimsForCTypesContent
-  type: MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES
+  type: MessageBodyType.REQUEST_CREDENTIAL
 }
 
 export interface ISubmitClaimsForCTypes extends IMessageBodyBase {
   content: IAttestedClaim[]
-  type: MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES
+  type: MessageBodyType.SUBMIT_CREDENTIAL
 }
 
 export interface IAcceptClaimsForCTypes extends IMessageBodyBase {
   content: Array<ICType['hash']>
-  type: MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES
+  type: MessageBodyType.ACCEPT_CREDENTIAL
 }
 export interface IRejectClaimsForCTypes extends IMessageBodyBase {
   content: Array<ICType['hash']>
-  type: MessageBodyType.REJECT_CLAIMS_FOR_CTYPES
+  type: MessageBodyType.REJECT_CREDENTIAL
 }
 
 export interface IRequestAcceptDelegation extends IMessageBodyBase {
@@ -187,31 +187,31 @@ export type CompressedRejectTerms = [
   CompressedRejectedTerms
 ]
 export type CompressedRequestAttestationForClaim = [
-  MessageBodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+  MessageBodyType.REQUEST_ATTESTATION,
   CompressedRequestAttestationForClaimContent
 ]
 export type CompressedSubmitAttestationForClaim = [
-  MessageBodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+  MessageBodyType.SUBMIT_ATTESTATION,
   CompressedAttestation
 ]
 export type CompressedRejectAttestationForClaim = [
-  MessageBodyType.REJECT_ATTESTATION_FOR_CLAIM,
+  MessageBodyType.REJECT_ATTESTATION,
   IRequestForAttestation['rootHash']
 ]
 export type CompressedRequestClaimsForCTypes = [
-  MessageBodyType.REQUEST_CLAIMS_FOR_CTYPES,
+  MessageBodyType.REQUEST_CREDENTIAL,
   CompressedRequestClaimsForCTypesContent
 ]
 export type CompressedSubmitClaimsForCTypes = [
-  MessageBodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+  MessageBodyType.SUBMIT_CREDENTIAL,
   CompressedAttestedClaim[]
 ]
 export type CompressedAcceptClaimsForCTypes = [
-  MessageBodyType.ACCEPT_CLAIMS_FOR_CTYPES,
+  MessageBodyType.ACCEPT_CREDENTIAL,
   Array<ICType['hash']>
 ]
 export type CompressedRejectClaimsForCTypes = [
-  MessageBodyType.REJECT_CLAIMS_FOR_CTYPES,
+  MessageBodyType.REJECT_CREDENTIAL,
   Array<ICType['hash']>
 ]
 export type CompressedRequestAcceptDelegation = [

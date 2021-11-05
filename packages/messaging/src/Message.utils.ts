@@ -26,7 +26,6 @@ import type {
   CompressedMessageBody,
   MessageBody,
   CompressedRequestClaimsForCTypesContent,
-  IRequestClaimsForCTypesContent,
   ICType,
   IMessage,
   PartialClaim,
@@ -120,7 +119,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       )
       break
     }
-    case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.REQUEST_ATTESTATION: {
       RequestForAttestationUtils.errorCheck(body.content.requestForAttestation)
       if (body.content.quote) {
         Quote.validateQuoteSchema(QuoteSchema, body.content.quote)
@@ -132,17 +131,17 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       }
       break
     }
-    case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.SUBMIT_ATTESTATION: {
       AttestationUtils.errorCheck(body.content.attestation)
       break
     }
-    case Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.REJECT_ATTESTATION: {
       if (!isHex(body.content)) {
         throw SDKErrors.ERROR_HASH_MALFORMED()
       }
       break
     }
-    case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.REQUEST_CREDENTIAL: {
       body.content.cTypes.forEach(
         ({ cTypeHash, trustedAttesters, requiredProperties }): void => {
           DataUtils.validateHash(
@@ -160,13 +159,13 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       )
       break
     }
-    case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.SUBMIT_CREDENTIAL: {
       body.content.map((attestedClaim) =>
         AttestedClaimUtils.errorCheck(attestedClaim)
       )
       break
     }
-    case Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.ACCEPT_CREDENTIAL: {
       body.content.map((cTypeHash) =>
         DataUtils.validateHash(
           cTypeHash,
@@ -175,7 +174,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       )
       break
     }
-    case Message.BodyType.REJECT_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.REJECT_CREDENTIAL: {
       body.content.map((cTypeHash) =>
         DataUtils.validateHash(
           cTypeHash,
@@ -315,7 +314,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.REQUEST_ATTESTATION: {
       compressedContents = [
         RequestForAttestationUtils.compress(body.content.requestForAttestation),
         body.content.quote
@@ -329,11 +328,11 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       ]
       break
     }
-    case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.SUBMIT_ATTESTATION: {
       compressedContents = AttestationUtils.compress(body.content.attestation)
       break
     }
-    case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.REQUEST_CREDENTIAL: {
       const compressedCtypes: CompressedRequestClaimsForCTypesContent[0] = body.content.cTypes.map(
         ({ cTypeHash, trustedAttesters, requiredProperties }) => {
           return [cTypeHash, trustedAttesters, requiredProperties]
@@ -342,7 +341,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       compressedContents = [compressedCtypes, body.content.challenge]
       break
     }
-    case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.SUBMIT_CREDENTIAL: {
       compressedContents = body.content.map(
         (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
           Array.isArray(attestedClaim)
@@ -455,7 +454,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       }
       break
     }
-    case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.REQUEST_ATTESTATION: {
       decompressedContents = {
         requestForAttestation: RequestForAttestationUtils.decompress(
           body[1][0]
@@ -470,13 +469,13 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
 
       break
     }
-    case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.SUBMIT_ATTESTATION: {
       decompressedContents = {
         attestation: AttestationUtils.decompress(body[1]),
       }
       break
     }
-    case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.REQUEST_CREDENTIAL: {
       decompressedContents = {
         cTypes: body[1][0].map((val) => ({
           cTypeHash: val[0],
@@ -487,7 +486,7 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       }
       break
     }
-    case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.SUBMIT_CREDENTIAL: {
       decompressedContents = body[1].map(
         (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
           !Array.isArray(attestedClaim)

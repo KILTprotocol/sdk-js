@@ -69,7 +69,7 @@ describe('Messaging', () => {
   it('verify message encryption and signing', async () => {
     const message = new Message(
       {
-        type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        type: Message.BodyType.REQUEST_CREDENTIAL,
         content: {
           cTypes: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
         },
@@ -136,7 +136,7 @@ describe('Messaging', () => {
 
     const message = new Message(
       {
-        type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        type: Message.BodyType.REQUEST_CREDENTIAL,
         content: {
           cTypes: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
         },
@@ -200,7 +200,7 @@ describe('Messaging', () => {
         quote: bothSigned,
         prerequisiteClaims: [] as IClaim[],
       },
-      type: Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.REQUEST_ATTESTATION,
     }
 
     Message.ensureOwnerIsSender(
@@ -224,7 +224,7 @@ describe('Messaging', () => {
       content: {
         attestation,
       },
-      type: Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.SUBMIT_ATTESTATION,
     }
     expect(() =>
       Message.ensureOwnerIsSender(
@@ -242,7 +242,7 @@ describe('Messaging', () => {
 
     const submitClaimsForCTypeBody: ISubmitClaimsForCTypes = {
       content: [attestedClaim],
-      type: Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.SUBMIT_CREDENTIAL,
     }
 
     Message.ensureOwnerIsSender(

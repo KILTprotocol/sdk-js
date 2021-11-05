@@ -623,56 +623,56 @@ describe('Messaging Utilities', () => {
 
     requestAttestationBody = {
       content: requestAttestationContent,
-      type: Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.REQUEST_ATTESTATION,
     }
 
     compressedRequestAttestationBody = [
-      Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+      Message.BodyType.REQUEST_ATTESTATION,
       compressedRequestAttestationContent,
     ]
 
     submitAttestationBody = {
       content: submitAttestationContent,
-      type: Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.SUBMIT_ATTESTATION,
     }
 
     compressedSubmitAttestationBody = [
-      Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+      Message.BodyType.SUBMIT_ATTESTATION,
       compressedSubmitAttestationContent,
     ]
 
     rejectAttestationForClaimBody = {
       content: requestAttestationContent.requestForAttestation.rootHash,
-      type: Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM,
+      type: Message.BodyType.REJECT_ATTESTATION,
     }
     requestClaimsForCTypesBody = {
       content: requestClaimsForCTypesContent,
-      type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.REQUEST_CREDENTIAL,
     }
 
     compressedRequestClaimsForCTypesBody = [
-      Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
+      Message.BodyType.REQUEST_CREDENTIAL,
       compressedRequestClaimsForCTypesContent,
     ]
 
     submitClaimsForCTypesBody = {
       content: submitClaimsForCTypesContent,
-      type: Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.SUBMIT_CREDENTIAL,
     }
 
     compressedSubmitClaimsForCTypesBody = [
-      Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+      Message.BodyType.SUBMIT_CREDENTIAL,
       compressedSubmitClaimsForCTypesContent,
     ]
 
     acceptClaimsForCTypesBody = {
       content: [claim.cTypeHash],
-      type: Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.ACCEPT_CREDENTIAL,
     }
 
     rejectClaimsForCTypesBody = {
       content: [claim.cTypeHash],
-      type: Message.BodyType.REJECT_CLAIMS_FOR_CTYPES,
+      type: Message.BodyType.REJECT_CREDENTIAL,
     }
 
     requestAcceptDelegationBody = {
