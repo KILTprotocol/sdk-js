@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module PresentationUtils
  */
@@ -107,17 +114,20 @@ export async function removeProperties(
 }
 
 /**
- * Creates a Verifiable Presentation from a KILT Verifiable Credential and allows removing properties while doing so. Does not currently sign the presentation or allow adding a challenge to be signed.
+ * Creates a Verifiable Presentation from a KILT Verifiable Credential and allows removing properties while doing so.
+ * Does not currently sign the presentation or allow adding a challenge to be signed.
  *
  * @param VC The KILT Verifiable Credential as exported with the SDK utils.
- * @param showProperties An array of properties to reveal.
+ * @param showProperties An optional array of properties to reveal. If omitted, show all properties.
  * @returns A Verifiable Presentation containing the original VC with its proofs, but not extra signatures.
  */
 export async function makePresentation(
   VC: VerifiableCredential,
-  showProperties: string[]
+  showProperties?: string[]
 ): Promise<VerifiablePresentation> {
-  const copied = await removeProperties(VC, showProperties)
+  const copied: VerifiableCredential = showProperties
+    ? await removeProperties(VC, showProperties)
+    : JSON.parse(JSON.stringify(VC))
   return {
     '@context': [DEFAULT_VERIFIABLECREDENTIAL_CONTEXT],
     type: [DEFAULT_VERIFIABLEPRESENTATION_TYPE],

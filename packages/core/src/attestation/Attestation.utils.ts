@@ -1,10 +1,18 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module AttestationUtils
  */
 
 import type { IAttestation, CompressedAttestation } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import { DidUtils } from '@kiltprotocol/did'
 
 /**
  *  Checks whether the input meets all the required criteria of an [[IAttestation]] object.
@@ -30,7 +38,7 @@ export function errorCheck(input: IAttestation): void {
   }
   if (!input.owner) {
     throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
-  } else DataUtils.validateAddress(input.owner, 'owner')
+  } else DidUtils.validateKiltDid(input.owner)
 
   if (typeof input.revoked !== 'boolean') {
     throw SDKErrors.ERROR_REVOCATION_BIT_MISSING()

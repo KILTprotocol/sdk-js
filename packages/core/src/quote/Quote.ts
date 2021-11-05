@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * [[Quote]] constructs a framework for Attesters to make an offer for building a [[Claim]] on a [[CType]] in which it includes a price and other terms & conditions upon which a claimer can agree.
  *
  * A [[Quote]] object represents a legal **offer** for the closure of a contract attesting a [[Claim]] from the [[CType]] specified within the offer.
@@ -11,12 +18,16 @@
 
 import Ajv from 'ajv'
 import type {
+  IDidDetails,
   IQuote,
+  IDidResolver,
   IQuoteAgreement,
   IQuoteAttesterSigned,
+  KeystoreSigner,
 } from '@kiltprotocol/types'
-import { Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import Identity from '../identity/Identity'
+import { KeyRelationship } from '@kiltprotocol/types'
+import { Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { DidUtils, DefaultResolver } from '@kiltprotocol/did'
 import QuoteSchema from './QuoteSchema'
 
 /**
@@ -61,15 +72,17 @@ export function validateQuoteSchema(
  * @returns A [[Quote]] object signed by an Attester.
  */
 
-export function fromAttesterSignedInput(
-  deserializedQuote: IQuoteAttesterSigned
-): IQuoteAttesterSigned {
+export async function fromAttesterSignedInput(
+  deserializedQuote: IQuoteAttesterSigned,
+  resolver: IDidResolver = DefaultResolver
+): Promise<IQuoteAttesterSigned> {
   const { attesterSignature, ...basicQuote } = deserializedQuote
-  DataUtils.validateSignature(
-    Crypto.hashObjectAsStr(basicQuote),
-    attesterSignature,
-    deserializedQuote.attesterAddress
-  )
+  await DidUtils.verifyDidSignature({
+    ...attesterSignature,
+    message: Crypto.hashObjectAsStr(basicQuote),
+    keyRelationship: KeyRelationship.authentication,
+    resolver,
+  })
   if (!validateQuoteSchema(QuoteSchema, basicQuote)) {
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
@@ -89,11 +102,16 @@ export function fromAttesterSignedInput(
  * @returns A signed [[Quote]] object.
  */
 
-export function createAttesterSignature(
+export async function createAttesterSignature(
   quoteInput: IQuote,
-  attesterIdentity: Identity
-): IQuoteAttesterSigned {
-  const signature = attesterIdentity.signStr(Crypto.hashObjectAsStr(quoteInput))
+  attesterIdentity: IDidDetails,
+  signer: KeystoreSigner
+): Promise<IQuoteAttesterSigned> {
+  const signature = await DidUtils.getDidAuthenticationSignature(
+    Crypto.hashObjectAsStr(quoteInput),
+    attesterIdentity,
+    signer
+  )
   return {
     ...quoteInput,
     attesterSignature: signature,
@@ -110,14 +128,15 @@ export function createAttesterSignature(
  * @returns A [[Quote]] object ready to be signed via [[createAttesterSignature]].
  */
 
-export function fromQuoteDataAndIdentity(
+export async function fromQuoteDataAndIdentity(
   quoteInput: IQuote,
-  identity: Identity
-): IQuoteAttesterSigned {
+  attesterIdentity: IDidDetails,
+  signer: KeystoreSigner
+): Promise<IQuoteAttesterSigned> {
   if (!validateQuoteSchema(QuoteSchema, quoteInput)) {
     throw SDKErrors.ERROR_QUOTE_MALFORMED()
   }
-  return createAttesterSignature(quoteInput, identity)
+  return createAttesterSignature(quoteInput, attesterIdentity, signer)
 }
 
 /**
@@ -130,20 +149,35 @@ export function fromQuoteDataAndIdentity(
  * @returns A [[Quote]] agreement signed by both the Attester and Claimer.
  */
 
-export function createQuoteAgreement(
-  claimerIdentity: Identity,
+export async function createQuoteAgreement(
   attesterSignedQuote: IQuoteAttesterSigned,
-  requestRootHash: string
-): IQuoteAgreement {
+  requestRootHash: string,
+  attesterIdentity: IDidDetails['did'],
+  claimerIdentity: IDidDetails,
+  signer: KeystoreSigner,
+  resolver: IDidResolver = DefaultResolver
+): Promise<IQuoteAgreement> {
   const { attesterSignature, ...basicQuote } = attesterSignedQuote
-  DataUtils.validateSignature(
-    Crypto.hashObjectAsStr(basicQuote),
-    attesterSignature,
-    attesterSignedQuote.attesterAddress
+
+  if (attesterIdentity !== attesterSignedQuote.attesterDid)
+    throw SDKErrors.ERROR_DID_IDENTIFIER_MISMATCH(
+      attesterIdentity,
+      attesterSignedQuote.attesterDid
+    )
+
+  await DidUtils.verifyDidSignature({
+    ...attesterSignature,
+    message: Crypto.hashObjectAsStr(basicQuote),
+    keyRelationship: KeyRelationship.authentication,
+    resolver,
+  })
+
+  const signature = await DidUtils.getDidAuthenticationSignature(
+    Crypto.hashObjectAsStr(attesterSignedQuote),
+    claimerIdentity,
+    signer
   )
-  const signature = claimerIdentity.signStr(
-    Crypto.hashObjectAsStr(attesterSignedQuote)
-  )
+
   return {
     ...attesterSignedQuote,
     rootHash: requestRootHash,

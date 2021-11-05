@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
  * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as an [[AttestedClaim]] ("Credential").
  *
@@ -13,14 +20,19 @@
 
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type {
-  IPublicIdentity,
   IAttestation,
+  IDelegationHierarchyDetails,
   IRequestForAttestation,
   CompressedAttestation,
 } from '@kiltprotocol/types'
-import { revoke, query, store } from './Attestation.chain'
+import {
+  revoke,
+  query,
+  store,
+  remove,
+  reclaimDeposit,
+} from './Attestation.chain'
 import AttestationUtils from './Attestation.utils'
-import DelegationRootNode from '../delegation/DelegationRootNode'
 import DelegationNode from '../delegation/DelegationNode'
 
 export default class Attestation implements IAttestation {
@@ -60,6 +72,34 @@ export default class Attestation implements IAttestation {
   }
 
   /**
+   * [STATIC] [ASYNC] Removes an attestation. Also available as an instance method.
+   *
+   * @param claimHash - The hash of the claim that corresponds to the attestation to remove.
+   * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   */
+  public static async remove(
+    claimHash: string,
+    maxDepth: number
+  ): Promise<SubmittableExtrinsic> {
+    return remove(claimHash, maxDepth)
+  }
+
+  /**
+   * [STATIC] [ASYNC] Reclaims the deposit of an attestation and removes the attestation. Also available as an instance method.
+   *
+   * This call can only be successfully executed if the submitter of the transaction is the original payer of the attestation deposit.
+   *
+   * @param claimHash - The hash of the claim that corresponds to the attestation to remove and its deposit to be returned to the original payer.
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   */
+  public static async reclaimDeposit(
+    claimHash: string
+  ): Promise<SubmittableExtrinsic> {
+    return reclaimDeposit(claimHash)
+  }
+
+  /**
    * [STATIC] Builds an instance of [[Attestation]], from a simple object with the same properties.
    * Used for deserialization.
    *
@@ -78,22 +118,22 @@ export default class Attestation implements IAttestation {
    * [STATIC] Builds a new instance of an [[Attestation]], from a complete set of input required for an attestation.
    *
    * @param request - The base request for attestation.
-   * @param attesterPublicIdentity - The attesters public identity, used to attest the underlying claim.
+   * @param attesterDid - The attester's did, used to attest to the underlying claim.
    * @returns A new [[Attestation]] object.
    * @example ```javascript
    * // create a complete new attestation from the `RequestForAttestation` and all other needed properties
-   * Attestation.fromRequestAndPublicIdentity(request, attesterPublicIdentity);
+   * Attestation.fromRequestAndDid(request, attesterDid);
    * ```
    */
-  public static fromRequestAndPublicIdentity(
+  public static fromRequestAndDid(
     request: IRequestForAttestation,
-    attesterPublicIdentity: IPublicIdentity
+    attesterDid: string
   ): Attestation {
     return new Attestation({
       claimHash: request.rootHash,
       cTypeHash: request.claim.cTypeHash,
       delegationId: request.delegationId,
-      owner: attesterPublicIdentity.address,
+      owner: attesterDid,
       revoked: false,
     })
   }
@@ -102,24 +142,25 @@ export default class Attestation implements IAttestation {
    * [STATIC] [ASYNC] Tries to query the delegationId and if successful query the rootId.
    *
    * @param delegationId - The Id of the Delegation stored in [[Attestation]].
-   * @returns A promise of either null if querying was not successful or the affiliated [[DelegationRootNode]].
+   * @returns A promise of either null if querying was not successful or the affiliated [[DelegationNode]].
    */
-  public static async getDelegationRoot(
+  public static async getDelegationDetails(
     delegationId: IAttestation['delegationId'] | null
-  ): Promise<DelegationRootNode | null> {
-    if (delegationId) {
-      const delegationNode: DelegationNode | null = await DelegationNode.query(
-        delegationId
-      )
-      if (delegationNode) {
-        return delegationNode.getRoot()
-      }
+  ): Promise<IDelegationHierarchyDetails | null> {
+    if (!delegationId) {
+      return null
     }
-    return null
+    const delegationNode: DelegationNode | null = await DelegationNode.query(
+      delegationId
+    )
+    if (!delegationNode) {
+      return null
+    }
+    return delegationNode.getHierarchyDetails()
   }
 
-  public async getDelegationRoot(): Promise<DelegationRootNode | null> {
-    return Attestation.getDelegationRoot(this.delegationId)
+  public async getDelegationDetails(): Promise<IDelegationHierarchyDetails | null> {
+    return Attestation.getDelegationDetails(this.delegationId)
   }
 
   /**
@@ -162,7 +203,7 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * [ASYNC] Stores the attestation on chain.
+   * [ASYNC] Prepares an extrinsic to store the attestation on chain.
    *
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
@@ -177,7 +218,7 @@ export default class Attestation implements IAttestation {
   }
 
   /**
-   * [ASYNC] Revokes the attestation. Also available as a static method.
+   * [ASYNC] Prepares an extrinisc to revoke the attestation. Also available as a static method.
    *
    * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
@@ -190,6 +231,27 @@ export default class Attestation implements IAttestation {
    */
   public async revoke(maxDepth: number): Promise<SubmittableExtrinsic> {
     return revoke(this.claimHash, maxDepth)
+  }
+
+  /**
+   * [ASYNC] Prepares an extrinsic to remove the attestation. Also available as a static method.
+   *
+   * @param maxDepth - The number of levels to walk up the delegation hierarchy until the delegation node is found.
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   */
+  public async remove(maxDepth: number): Promise<SubmittableExtrinsic> {
+    return remove(this.claimHash, maxDepth)
+  }
+
+  /**
+   * [STATIC] [ASYNC] Reclaims the deposit of an attestation and removes the attestation. Also available as an instance method.
+   *
+   * This call can only be successfully executed if the submitter of the transaction is the original payer of the attestation deposit.
+   *
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   */
+  public async reclaimDeposit(): Promise<SubmittableExtrinsic> {
+    return reclaimDeposit(this.claimHash)
   }
 
   /**

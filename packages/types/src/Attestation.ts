@@ -1,16 +1,23 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module IAttestation
  */
+import type { IDidDetails } from './DidDetails'
 import type { ICType } from './CType'
-import type { IDelegationBaseNode } from './Delegation'
-import type { IPublicIdentity } from './PublicIdentity'
+import type { IDelegationNode } from './Delegation'
 
 export interface IAttestation {
   claimHash: string
   cTypeHash: ICType['hash']
-  owner: IPublicIdentity['address']
-  delegationId: IDelegationBaseNode['id'] | null
+  owner: IDidDetails['did']
+  delegationId: IDelegationNode['id'] | null
   revoked: boolean
 }
 

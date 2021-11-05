@@ -1,16 +1,24 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/claim
  */
 
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { IClaim, CompressedClaim, ICType } from '@kiltprotocol/types'
 import CType from '../ctype/CType'
-import Identity from '../identity/Identity'
 import Claim from './Claim'
 import ClaimUtils from './Claim.utils'
 
+import '../../../../testingTools/jestErrorCodeMatcher'
+
 describe('Claim', () => {
-  let identityAlice: Identity
+  let did: string
   let claimContents: any
   let rawCType: ICType['schema']
   let testCType: CType
@@ -18,7 +26,7 @@ describe('Claim', () => {
   let compressedClaim: CompressedClaim
 
   beforeAll(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
+    did = 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs'
 
     claimContents = {
       name: 'Bob',
@@ -34,13 +42,9 @@ describe('Claim', () => {
       type: 'object',
     }
 
-    testCType = CType.fromSchema(rawCType, identityAlice.address)
+    testCType = CType.fromSchema(rawCType)
 
-    claim = Claim.fromCTypeAndClaimContents(
-      testCType,
-      claimContents,
-      identityAlice.address
-    )
+    claim = Claim.fromCTypeAndClaimContents(testCType, claimContents, did)
     compressedClaim = [
       claim.cTypeHash,
       claim.owner,
@@ -99,7 +103,7 @@ describe('Claim', () => {
 
   it('should throw an error on faulty constructor input', () => {
     const cTypeHash = testCType.hash
-    const ownerAddress = identityAlice.signKeyringPair.address
+    const ownerAddress = did
 
     const everything = {
       cTypeHash,
@@ -127,18 +131,16 @@ describe('Claim', () => {
 
     expect(() => ClaimUtils.errorCheck(everything)).not.toThrow()
 
-    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowError(
+    expect(() => ClaimUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
       SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
     )
 
-    expect(() => ClaimUtils.errorCheck(malformedCTypeHash)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(
-        malformedCTypeHash.cTypeHash,
-        'Claim CType'
-      )
-    )
-    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowError(
-      SDKErrors.ERROR_ADDRESS_INVALID(malformedAddress.owner, 'Claim owner')
+    expect(() =>
+      ClaimUtils.errorCheck(malformedCTypeHash)
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
+
+    expect(() => ClaimUtils.errorCheck(malformedAddress)).toThrowErrorWithCode(
+      SDKErrors.ERROR_ADDRESS_INVALID()
     )
   })
 })

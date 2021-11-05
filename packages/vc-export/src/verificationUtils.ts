@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module VerificationUtils
  */
@@ -7,19 +14,21 @@ import { u8aConcat, hexToU8a, u8aToHex } from '@polkadot/util'
 import { signatureVerify, blake2AsHex } from '@polkadot/util-crypto'
 import jsonld from 'jsonld'
 import Ajv from 'ajv'
-import { Attestation, CTypeSchema, Did } from '@kiltprotocol/core'
+import { Attestation, CTypeSchema } from '@kiltprotocol/core'
 import { Crypto } from '@kiltprotocol/utils'
+import { DocumentLoader } from 'jsonld-signatures'
+import { VerificationKeyTypesMap } from '@kiltprotocol/types'
 import {
   KILT_SELF_SIGNED_PROOF_TYPE,
   KILT_ATTESTED_PROOF_TYPE,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
-  KeyTypesMap,
 } from './constants'
 import type {
   VerifiableCredential,
   SelfSignedProof,
   AttestedProof,
   CredentialDigestProof,
+  IPublicKeyRecord,
 } from './types'
 import { fromCredentialIRI } from './exportToVerifiableCredential'
 
@@ -49,16 +58,18 @@ const PROOF_MALFORMED_ERROR = (reason: string): Error =>
  * Verifies a KILT self signed proof (claimer signature) against a KILT style Verifiable Credential.
  * This entails computing the root hash from the hashes contained in the `protected` section of the credentialSubject.
  * The resulting hash is then verified against the signature and public key contained in the proof (the latter
- * could be a DID reference in the future). It is also expected to by identical to the credential id.
+ * could be a DID URI). It is also expected to by identical to the credential id.
  *
  * @param credential Verifiable Credential to verify proof against.
  * @param proof KILT self signed proof object.
+ * @param documentLoader Must be able to KILT DID fragments (i.e. The key reference).
  * @returns Object indicating whether proof could be verified.
  */
-export function verifySelfSignedProof(
+export async function verifySelfSignedProof(
   credential: VerifiableCredential,
-  proof: SelfSignedProof
-): VerificationResult {
+  proof: SelfSignedProof,
+  documentLoader: DocumentLoader
+): Promise<VerificationResult> {
   const result: VerificationResult = { verified: true, errors: [] }
   try {
     // check proof
@@ -66,25 +77,38 @@ export function verifySelfSignedProof(
     if (type !== KILT_SELF_SIGNED_PROOF_TYPE)
       throw new Error('Proof type mismatch')
     if (!proof.signature) throw PROOF_MALFORMED_ERROR('signature missing')
-    const { verificationMethod } = proof
-    if (
-      !(
-        typeof verificationMethod === 'object' &&
-        verificationMethod.publicKeyHex
-      )
-    ) {
-      throw PROOF_MALFORMED_ERROR(
-        'proof must contain public key; resolve did key references beforehand'
+    let { verificationMethod } = proof
+    // we always fetch the verification method to make sure the key is in fact associated with the did
+    if (typeof verificationMethod !== 'string') {
+      verificationMethod = verificationMethod.id
+    }
+    if (!verificationMethod) {
+      throw new Error('verificationMethod not understood')
+    }
+    const dereferenced = documentLoader
+      ? await documentLoader(verificationMethod)
+      : undefined
+    if (!dereferenced?.document) {
+      throw new Error(
+        'verificationMethod could not be dereferenced; did you select an appropriate document loader?'
       )
     }
+    verificationMethod = dereferenced.document as IPublicKeyRecord
+
+    const credentialOwner =
+      credential.credentialSubject.id || credential.credentialSubject['@id']
+    if (!verificationMethod.controller === credentialOwner)
+      throw new Error('credential subject is not owner of signing key')
     const keyType = verificationMethod.type || verificationMethod['@type']
-    if (!Object.values(KeyTypesMap).includes(keyType))
+    if (!Object.values(VerificationKeyTypesMap).includes(keyType))
       throw PROOF_MALFORMED_ERROR(
         `signature type unknown; expected one of ${JSON.stringify(
-          Object.values(KeyTypesMap)
+          Object.values(VerificationKeyTypesMap)
         )}, got "${verificationMethod.type}"`
       )
     const signerPubKey = verificationMethod.publicKeyHex
+    if (!signerPubKey)
+      throw new Error('signer key is missing publicKeyHex property')
 
     const rootHash = fromCredentialIRI(credential.id)
     // validate signature over root hash
@@ -95,7 +119,10 @@ export function verifySelfSignedProof(
       signerPubKey
     )
     if (
-      !(verification.isValid && KeyTypesMap[verification.crypto] === keyType)
+      !(
+        verification.isValid &&
+        VerificationKeyTypesMap[verification.crypto] === keyType
+      )
     ) {
       throw new Error('signature could not be verified')
     }
@@ -126,13 +153,11 @@ export async function verifyAttestedProof(
     const type = proof['@type'] || proof.type
     if (type !== KILT_ATTESTED_PROOF_TYPE)
       throw new Error('Proof type mismatch')
-    const { attesterAddress } = proof
-    if (typeof attesterAddress !== 'string' || !attesterAddress)
-      throw PROOF_MALFORMED_ERROR('attester address not understood')
-    if (attesterAddress !== Did.getAddressFromIdentifier(credential.issuer))
-      throw PROOF_MALFORMED_ERROR(
-        'attester address not matching credential issuer'
-      )
+    const { attester } = proof
+    if (typeof attester !== 'string' || !attester)
+      throw PROOF_MALFORMED_ERROR('attester DID not understood')
+    if (attester !== credential.issuer)
+      throw PROOF_MALFORMED_ERROR('attester DID not matching credential issuer')
     if (typeof credential.id !== 'string' || !credential.id)
       throw CREDENTIAL_MALFORMED_ERROR(
         'claim id (=claim hash) missing / invalid'
@@ -161,14 +186,11 @@ export async function verifyAttestedProof(
       )
     }
     // if data on proof does not correspond to data on chain, proof is incorrect
-    if (
-      onChain.owner !== attesterAddress ||
-      onChain.delegationId !== delegationId
-    ) {
+    if (onChain.owner !== attester || onChain.delegationId !== delegationId) {
       status = AttestationStatus.invalid
       throw new Error(
         `proof not matching on-chain data: proof ${{
-          attester: attesterAddress,
+          attester,
           delegation: delegationId,
         }}`
       )

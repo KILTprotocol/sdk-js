@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module ClaimUtils
  */
@@ -11,8 +18,8 @@ import type {
   CompressedPartialClaim,
 } from '@kiltprotocol/types'
 import { jsonabc, DataUtils, Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { DidUtils } from '@kiltprotocol/did'
 import { getIdForCTypeHash } from '../ctype/CType.utils'
-import Did from '../did'
 
 const VC_VOCAB = 'https://www.w3.org/2018/credentials#'
 
@@ -33,7 +40,7 @@ function JsonLDcontents(
   if (!cTypeHash) SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   const vocabulary = `${getIdForCTypeHash(cTypeHash)}#`
   const result: Record<string, unknown> = {}
-  if (owner) result['@id'] = Did.getIdentifierFromAddress(owner)
+  if (owner) result['@id'] = owner
   if (!expanded) {
     return {
       ...result,
@@ -187,7 +194,7 @@ export function errorCheck(input: IClaim | PartialClaim): void {
     throw SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
   }
   if (input.owner) {
-    DataUtils.validateAddress(input.owner, 'Claim owner')
+    DidUtils.validateKiltDid(input.owner)
   }
   if (input.contents !== undefined) {
     Object.entries(input.contents).forEach(([key, value]) => {

@@ -1,13 +1,9 @@
 {
   "extends": "./tsconfig.build.json",
-  "exclude": [
-    "docs/**/*"
-  ],
   "compilerOptions": {
     "baseUrl": "./packages",
     "sourceMap": true,
     "paths": {
-      "@kiltprotocol/actors-api": ["actors_api/src"],
       "@kiltprotocol/chain-helpers": ["chain-helpers/src"],
       "@kiltprotocol/config": ["config/src"],
       "@kiltprotocol/core": ["core/src"],
@@ -15,7 +11,9 @@
       "@kiltprotocol/sdk-js": ["sdk-js/src"],
       "@kiltprotocol/types": ["types/src"],
       "@kiltprotocol/utils": ["utils/src"],
-      "@kiltprotocol/vc-export": ["vc-export/src"]
+      "@kiltprotocol/vc-export": ["vc-export/src"],
+      "@kiltprotocol/did": ["did/src"],
+      "@kiltprotocol/docs": ["docs/src"]
     }
   },
   "skipLibCheck": true

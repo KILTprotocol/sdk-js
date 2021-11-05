@@ -1,5 +1,12 @@
 /**
- * When [[DelegationNode]]s or [[DelegationRootNode]]s are written on the blockchain, they're encoded.
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * When a [[DelegationNode]] or a [[DelegationHierarchy]] is written on the blockchain, it is encoded.
  * DelegationDecoder helps to decode them when they're queried from the chain.
  *
  * The DelegationDecoder methods transform a Codec type into an object of a KILT type.
@@ -11,45 +18,48 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
+import type {
+  Deposit,
+  IDelegationNode,
+  IDelegationHierarchyDetails,
+} from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import type { Option } from '@polkadot/types'
-import type { IDelegationRootNode } from '@kiltprotocol/types'
-import type { Struct } from '@polkadot/types/codec'
+import type { Struct, Vec } from '@polkadot/types/codec'
 import type { AccountId, Hash } from '@polkadot/types/interfaces/runtime'
-import type { u32 } from '@polkadot/types/primitive'
+import type { Bool, u32 } from '@polkadot/types/primitive'
 import { DecoderUtils } from '@kiltprotocol/utils'
-import { DelegationNode } from '..'
+import { DidUtils } from '@kiltprotocol/did'
 
 export type CodecWithId<C> = {
   id: string
   codec: C
 }
 
-export type RootDelegationRecord = Pick<
-  IDelegationRootNode,
-  'cTypeHash' | 'account' | 'revoked'
+export type DelegationHierarchyDetailsRecord = Pick<
+  IDelegationHierarchyDetails,
+  'cTypeHash'
 >
 
-export interface IChainDelegationRoot extends Struct {
-  readonly ctypeHash: Hash
-  readonly owner: AccountId
-  readonly revoked: boolean
+export type CtypeHash = Hash
+
+export interface IChainDelegationHierarchyDetails extends Struct {
+  readonly ctypeHash: CtypeHash
 }
 
-export function decodeRootDelegation(
-  encoded: Option<IChainDelegationRoot>
-): RootDelegationRecord | null {
-  DecoderUtils.assertCodecIsType(encoded, ['Option<DelegationRoot>'])
-  if (encoded.isSome) {
-    const delegationRoot = encoded.unwrap()
-    // TODO: check that root is none
-    return {
-      cTypeHash: delegationRoot.ctypeHash.toString(),
-      account: delegationRoot.owner.toString(),
-      revoked: delegationRoot.revoked.valueOf(),
-    }
+export function decodeDelegationHierarchyDetails(
+  encoded: Option<IChainDelegationHierarchyDetails>
+): DelegationHierarchyDetailsRecord | null {
+  DecoderUtils.assertCodecIsType(encoded, [
+    'Option<DelegationDelegationHierarchyDelegationHierarchyDetails>',
+  ])
+  if (encoded.isNone) {
+    return null
   }
-  return null
+  const delegationHierarchyDetails = encoded.unwrap()
+  return {
+    cTypeHash: delegationHierarchyDetails.ctypeHash.toHex(),
+  }
 }
 
 /**
@@ -72,37 +82,54 @@ function decodePermissions(bitset: number): Permission[] {
   return permissions
 }
 
-export type DelegationNodeRecord = Pick<
-  DelegationNode,
-  'rootId' | 'parentId' | 'account' | 'permissions' | 'revoked'
->
+export type DelegationNodeRecord = Omit<IDelegationNode, 'id'>
 
 export type DelegationNodeId = Hash
 
 export interface IChainDelegationNode extends Struct {
-  readonly rootId: DelegationNodeId
+  readonly hierarchyRootId: DelegationNodeId
   readonly parent: Option<DelegationNodeId>
-  readonly owner: AccountId
-  readonly permissions: u32
-  readonly revoked: boolean
+  readonly children: Vec<DelegationNodeId>
+  readonly details: IChainDelegationDetails
+  readonly deposit: Deposit
+}
+
+type DelegationOwnerIdentifier = AccountId
+
+interface IPermissions extends Struct {
+  bits: u32
+}
+
+export interface IChainDelegationDetails extends Struct {
+  readonly owner: DelegationOwnerIdentifier
+  readonly revoked: Bool
+  readonly permissions: IPermissions
 }
 
 export function decodeDelegationNode(
   encoded: Option<IChainDelegationNode>
 ): DelegationNodeRecord | null {
-  DecoderUtils.assertCodecIsType(encoded, ['Option<DelegationNode>'])
-  if (encoded.isSome) {
-    const delegationNode = encoded.unwrap()
-
-    return {
-      rootId: delegationNode.rootId.toString(),
-      parentId: delegationNode.parent.isSome
-        ? delegationNode.parent.toString()
-        : undefined,
-      account: delegationNode.owner.toString(),
-      permissions: decodePermissions(delegationNode.permissions.toNumber()),
-      revoked: delegationNode.revoked.valueOf(),
-    }
+  DecoderUtils.assertCodecIsType(encoded, [
+    'Option<DelegationDelegationHierarchyDelegationNode>',
+  ])
+  if (encoded.isNone) {
+    return null
   }
-  return null
+  const delegationNode = encoded.unwrap()
+
+  return {
+    hierarchyId: delegationNode.hierarchyRootId.toHex(),
+    parentId: delegationNode.parent.isSome
+      ? delegationNode.parent.toHex()
+      : undefined,
+    childrenIds: [...delegationNode.children].map((id) => id.toHex()),
+    account: DidUtils.getKiltDidFromIdentifier(
+      delegationNode.details.owner.toString(),
+      'full'
+    ),
+    permissions: decodePermissions(
+      delegationNode.details.permissions.bits.toNumber()
+    ),
+    revoked: delegationNode.details.revoked.valueOf(),
+  }
 }

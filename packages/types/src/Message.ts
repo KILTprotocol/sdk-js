@@ -1,9 +1,17 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module IMessage
  */
 
 import type { AnyJson } from '@polkadot/types/types'
+import type { DidSignature, IDidDetails, IDidKeyDetails } from './DidDetails'
 import type { CompressedAttestation, IAttestation } from './Attestation'
 import type { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'
 import type {
@@ -13,8 +21,7 @@ import type {
   PartialClaim,
 } from './Claim'
 import type { ICType } from './CType'
-import type { IDelegationBaseNode, IDelegationNode } from './Delegation'
-import type { IPublicIdentity } from './PublicIdentity'
+import type { IDelegationNode } from './Delegation'
 import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote'
 import type {
   CompressedRequestForAttestation,
@@ -55,9 +62,8 @@ export enum MessageBodyType {
 export interface IMessage {
   body: MessageBody
   createdAt: number
-  receiverAddress: IPublicIdentity['address']
-  senderAddress: IPublicIdentity['address']
-  senderBoxPublicKey: IPublicIdentity['boxPublicKeyAsHex']
+  sender: IDidDetails['did']
+  receiver: IDidDetails['did']
   messageId?: string
   receivedAt?: number
   inReplyTo?: IMessage['messageId']
@@ -65,27 +71,25 @@ export interface IMessage {
 }
 
 /**
- * Removes the [[MessageBody]], parent-id and references from the [[Message]] and adds
- * four new fields: message, nonce, hash and signature.
- * - `message` - The encrypted body of the message.
- * - `nonce` - The encryption nonce.
- * - `hash` - The hash of the concatenation of message + nonce + createdAt.
- * - `signature` - The sender's signature on the hash.
+ * Everything which is part of the encrypted and protected part of the [[IMessage]].
  */
-export type IEncryptedMessage = Pick<
-  IMessage,
-  | 'createdAt'
-  | 'receiverAddress'
-  | 'senderAddress'
-  | 'senderBoxPublicKey'
-  | 'messageId'
-  | 'receivedAt'
-> & {
+export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
+
+/**
+ * Removes the plaintext [[IEncryptedMessageContents]] from an [[IMessage]] and instead includes them in encrypted form.
+ * This adds the following fields:
+ * - `ciphertext` - The encrypted message content.
+ * - `nonce` - The encryption nonce.
+ * - `receiverKeyId` - The identifier of a DID-associated public key to which to encrypt.
+ * - `senderKeyId` - The identifier of a DID-associated private key with which to which to encrypt.
+ */
+export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
+  receiverKeyId: IDidKeyDetails['id']
+  senderKeyId: IDidKeyDetails['id']
   ciphertext: string
   nonce: string
-  hash: string
-  signature: string
 }
+
 interface IMessageBodyBase {
   content: any
   type: MessageBodyType
@@ -103,7 +107,7 @@ export interface IRejectTerms extends IMessageBodyBase {
   content: {
     claim: PartialClaim
     legitimations: IAttestedClaim[]
-    delegationId?: IDelegationBaseNode['id']
+    delegationId?: IDelegationNode['id']
   }
   type: MessageBodyType.REJECT_TERMS
 }
@@ -226,13 +230,13 @@ export interface ISubmitAttestationForClaimContent {
 
 export interface IRequestClaimsForCTypesContent {
   cTypeHash: ICType['hash']
-  acceptedAttester?: Array<IPublicIdentity['address']>
+  acceptedAttester?: Array<IDidDetails['did']>
   requiredProperties?: string[]
 }
 
 export interface IDelegationData {
-  account: IDelegationBaseNode['account']
-  id: IDelegationBaseNode['id']
+  account: IDelegationNode['account']
+  id: IDelegationNode['id']
   parentId: IDelegationNode['id']
   permissions: IDelegationNode['permissions']
   isPCR: boolean
@@ -241,20 +245,20 @@ export interface IRequestDelegationApproval {
   delegationData: IDelegationData
   metaData?: AnyJson
   signatures: {
-    inviter: string
+    inviter: DidSignature
   }
 }
 
 export interface ISubmitDelegationApproval {
   delegationData: IDelegationData
   signatures: {
-    inviter: string
-    invitee: string
+    inviter: DidSignature
+    invitee: DidSignature
   }
 }
 
 export interface IInformDelegationCreation {
-  delegationId: IDelegationBaseNode['id']
+  delegationId: IDelegationNode['id']
   isPCR: boolean
 }
 
@@ -267,12 +271,12 @@ export type CompressedPartialClaim = [
 export type CompressedRejectedTerms = [
   CompressedPartialClaim,
   CompressedAttestedClaim[],
-  IDelegationBaseNode['id'] | undefined
+  IDelegationNode['id'] | undefined
 ]
 
 export type CompressedRequestClaimsForCTypesContent = [
   ICType['hash'],
-  Array<IPublicIdentity['address']> | undefined,
+  Array<IDidDetails['did']> | undefined,
   string[] | undefined
 ]
 
@@ -283,8 +287,8 @@ export type CompressedRequestAttestationForClaimContent = [
 ]
 
 export type CompressedDelegationData = [
-  IDelegationBaseNode['account'],
-  IDelegationBaseNode['id'],
+  IDelegationNode['account'],
+  IDelegationNode['id'],
   IDelegationNode['id'],
   IDelegationNode['permissions'],
   boolean
@@ -292,13 +296,14 @@ export type CompressedDelegationData = [
 
 export type CompressedRequestDelegationApproval = [
   CompressedDelegationData,
-  string,
+  [DidSignature['signature'], DidSignature['keyId']],
   AnyJson
 ]
 
 export type CompressedSubmitDelegationApproval = [
   CompressedDelegationData,
-  [string, string]
+  [DidSignature['signature'], DidSignature['keyId']],
+  [DidSignature['signature'], DidSignature['keyId']]
 ]
 
 export type CompressedInformDelegationCreation = [

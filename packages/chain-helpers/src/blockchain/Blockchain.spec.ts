@@ -1,14 +1,20 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/blockchain
  */
 
 /* eslint-disable dot-notation */
-import { SDKErrors } from '@kiltprotocol/utils'
+import { SDKErrors, Keyring } from '@kiltprotocol/utils'
 import { Text } from '@polkadot/types'
 import type { SignerPayload } from '@polkadot/types/interfaces/types'
 import type { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
-import BN from 'bn.js'
-import { Keyring } from '@polkadot/keyring'
+import { BN } from '@polkadot/util'
 import type {
   IIdentity,
   ISubmittableResult,

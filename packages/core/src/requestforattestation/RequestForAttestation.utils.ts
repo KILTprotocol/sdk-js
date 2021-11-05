@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module RequestForAttestationUtils
  */
@@ -10,6 +17,7 @@ import type {
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
+import { DidUtils } from '@kiltprotocol/did'
 import AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
 import ClaimUtils from '../claim/Claim.utils'
 import RequestForAttestation from './RequestForAttestation'
@@ -28,6 +36,9 @@ export function errorCheck(input: IRequestForAttestation): void {
     throw SDKErrors.ERROR_CLAIM_NOT_PROVIDED()
   } else {
     ClaimUtils.errorCheck(input.claim)
+  }
+  if (!input.claim.owner) {
+    throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
   }
   if (!input.legitimations && !Array.isArray(input.legitimations)) {
     throw SDKErrors.ERROR_LEGITIMATIONS_NOT_PROVIDED()
@@ -51,6 +62,8 @@ export function errorCheck(input: IRequestForAttestation): void {
   if (typeof input.delegationId !== 'string' && !input.delegationId === null) {
     throw SDKErrors.ERROR_DELEGATION_ID_TYPE
   }
+  if (input.claimerSignature)
+    DidUtils.validateDidSignature(input.claimerSignature)
   RequestForAttestation.verifyData(input as IRequestForAttestation)
 }
 

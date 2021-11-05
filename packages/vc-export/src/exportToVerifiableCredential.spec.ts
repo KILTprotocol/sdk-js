@@ -1,9 +1,19 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/vc-export
  */
 
 import type { IRequestForAttestation } from '@kiltprotocol/types'
-import { Attestation, AttestedClaim, CType, Did } from '@kiltprotocol/core'
+import { Attestation, AttestedClaim, CType } from '@kiltprotocol/core'
+import { DidUtils } from '@kiltprotocol/did'
+import { Crypto } from '@kiltprotocol/utils'
+import { DocumentLoader } from 'jsonld-signatures'
 import toVC from './exportToVerifiableCredential'
 import verificationUtils, { AttestationStatus } from './verificationUtils'
 import claimerUtils, { makePresentation } from './presentationUtils'
@@ -35,7 +45,7 @@ const ctype = CType.fromCType({
     $id:
       'kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
   },
-  owner: '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+  owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
   hash: '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
 })
 
@@ -47,7 +57,7 @@ const credential = AttestedClaim.fromAttestedClaim({
         name: 'Kurt',
         premium: true,
       },
-      owner: '4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
+      owner: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs',
       cTypeHash:
         '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
     },
@@ -71,8 +81,11 @@ const credential = AttestedClaim.fromAttestedClaim({
     delegationId: null,
     rootHash:
       '0x24195dd6313c0bb560f3043f839533b54bcd32d602dd848471634b0345ec88ad',
-    claimerSignature:
-      '0x00c374b5314d7192224bd620047f740c029af118eb5645a4662f76a2e3d70a877290f9a96cb9ee9ccc6c6bce24a0cf132a07edb603d0d0632f84210d528d2a7701',
+    claimerSignature: {
+      signature:
+        '0x00c374b5314d7192224bd620047f740c029af118eb5645a4662f76a2e3d70a877290f9a96cb9ee9ccc6c6bce24a0cf132a07edb603d0d0632f84210d528d2a7701',
+      keyId: 'did:kilt:4r1WkS3t8rbCb11H8t3tJvGVCynwDXSUBiuGB6sLRHzCLCjs#key1',
+    },
   },
   attestation: {
     claimHash:
@@ -80,7 +93,7 @@ const credential = AttestedClaim.fromAttestedClaim({
     cTypeHash:
       '0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf',
     delegationId: null,
-    owner: '4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
+    owner: 'did:kilt:4sejigvu6STHdYmmYf2SuN92aNp8TbrsnBBDUj7tMrJ9Z3cG',
     revoked: false,
   },
 })
@@ -113,7 +126,7 @@ it('exports includes ctype as schema', () => {
       '@id': ctype.schema.$id,
       name: ctype.schema.title,
       '@type': 'JsonSchemaValidator2018',
-      author: ctype.owner ? Did.getIdentifierFromAddress(ctype.owner) : null,
+      author: ctype.owner || null,
       schema: ctype.schema,
     },
   })
@@ -169,13 +182,10 @@ it('VC has correct format (full example)', () => {
       {
         signature: expect.any(String),
         type: 'KILTSelfSigned2020',
-        verificationMethod: {
-          publicKeyHex: expect.any(String),
-          type: 'Ed25519VerificationKey2018',
-        },
+        verificationMethod: expect.any(String),
       },
       {
-        attesterAddress: expect.any(String),
+        attester: expect.any(String),
         type: 'KILTAttestation2020',
       },
       {
@@ -189,14 +199,35 @@ it('VC has correct format (full example)', () => {
 
 describe('proofs', () => {
   let VC: VerifiableCredential
+  let documentLoader: DocumentLoader
   beforeAll(() => {
     VC = toVC.fromAttestedClaim(credential)
+    const keyId: string = VC.proof[0].verificationMethod
+    const publicKeyHex = Crypto.u8aToHex(
+      Crypto.decodeAddress(DidUtils.parseDidUrl(keyId).identifier)
+    )
+    const verificationMethod = {
+      id: keyId,
+      publicKeyHex,
+      type: 'Ed25519VerificationKey2018',
+      controller: VC.credentialSubject['@id'] as string,
+    }
+    documentLoader = (url) => {
+      if (url === keyId) {
+        return Promise.resolve({
+          documentUrl: url,
+          document: verificationMethod,
+        })
+      }
+      return Promise.reject(Error('not found'))
+    }
   })
 
-  it('it verifies self-signed proof', () => {
-    expect(
-      verificationUtils.verifySelfSignedProof(VC, VC.proof[0])
-    ).toMatchObject({
+  it('it verifies self-signed proof', async () => {
+    // verify
+    await expect(
+      verificationUtils.verifySelfSignedProof(VC, VC.proof[0], documentLoader)
+    ).resolves.toMatchObject({
       verified: true,
     })
   })
@@ -249,7 +280,7 @@ describe('proofs', () => {
       'verifiableCredential.credentialSubject',
       {
         '@context': expect.any(Object),
-        '@id': Did.getIdentifierFromAddress(owner),
+        '@id': owner,
         name: contents.name,
       }
     )
@@ -282,9 +313,9 @@ describe('proofs', () => {
     })
 
     it('errors on proof mismatch', async () => {
-      expect(
-        verificationUtils.verifySelfSignedProof(VC, VC.proof[1])
-      ).toMatchObject({
+      await expect(
+        verificationUtils.verifySelfSignedProof(VC, VC.proof[1], documentLoader)
+      ).resolves.toMatchObject({
         verified: false,
       })
       await expect(
@@ -314,14 +345,14 @@ describe('proofs', () => {
       ).rejects.toThrow()
     })
 
-    it('it detects tampering with credential digest', () => {
+    it('it detects tampering with credential digest', async () => {
       VC.id = `${VC.id.slice(0, 10)}1${VC.id.slice(11)}`
-      expect(
-        verificationUtils.verifySelfSignedProof(VC, VC.proof[0])
-      ).toMatchObject({
+      await expect(
+        verificationUtils.verifySelfSignedProof(VC, VC.proof[0], documentLoader)
+      ).resolves.toMatchObject({
         verified: false,
       })
-      return expect(
+      await expect(
         verificationUtils.verifyCredentialDigestProof(VC, VC.proof[2])
       ).resolves.toMatchObject({
         verified: false,

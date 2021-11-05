@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/attestation
  */
 
@@ -11,13 +18,15 @@ import type {
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { mockChainQueryReturn } from '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/__mocks__/BlockchainQuery'
+import { DidUtils } from '@kiltprotocol/did'
 import Claim from '../claim/Claim'
 import CType from '../ctype/CType'
-import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import Attestation from './Attestation'
 import AttestationUtils from './Attestation.utils'
 import Kilt from '../kilt/Kilt'
+
+import '../../../../testingTools/jestErrorCodeMatcher'
 
 jest.mock(
   '@kiltprotocol/chain-helpers/lib/blockchainApiConnection/BlockchainApiConnection'
@@ -25,8 +34,10 @@ jest.mock(
 
 describe('Attestation', () => {
   Kilt.config({ address: 'ws://testString' })
-  let identityAlice: Identity
-  let identityBob: Identity
+  const identityAlice =
+    'did:kilt:4nwPAmtsK5toZfBM9WvmAe4Fa3LyZ3X3JHt7EUFfrcPPAZAm'
+  const identityBob =
+    'did:kilt:4nxhWrDR27YzC5z4soRcz31MaeFn287JRqiE5y4u7jBEdgP2'
   let rawCTypeSchema: ICType['schema']
   let testCType: CType
   let testcontents: any
@@ -36,9 +47,6 @@ describe('Attestation', () => {
     .__mocked_api
 
   beforeAll(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
-    identityBob = Identity.buildFromURI('//Bob')
-
     rawCTypeSchema = {
       $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -49,33 +57,31 @@ describe('Attestation', () => {
       type: 'object',
     }
 
-    testCType = CType.fromSchema(rawCTypeSchema, identityAlice.address)
+    testCType = CType.fromSchema(rawCTypeSchema, identityAlice)
 
     testcontents = {}
     testClaim = Claim.fromCTypeAndClaimContents(
       testCType,
       testcontents,
-      identityBob.address
-    )
-    requestForAttestation = RequestForAttestation.fromClaimAndIdentity(
-      testClaim,
       identityBob
     )
+    requestForAttestation = RequestForAttestation.fromClaim(testClaim)
   })
 
   it('stores attestation', async () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'attestations', [
         testCType.hash,
-        identityAlice.address,
+        DidUtils.getIdentifierFromKiltDid(identityAlice),
         null,
         false,
+        [DidUtils.getIdentifierFromKiltDid(identityAlice), 10],
       ])
     )
 
-    const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
+    const attestation: Attestation = Attestation.fromRequestAndDid(
       requestForAttestation,
-      identityAlice.getPublicIdentity()
+      identityAlice
     )
     expect(await Attestation.checkValidity(attestation)).toBeTruthy()
   })
@@ -89,7 +95,7 @@ describe('Attestation', () => {
       claimHash: requestForAttestation.rootHash,
       cTypeHash: testCType.hash,
       delegationId: null,
-      owner: identityAlice.address,
+      owner: identityAlice,
       revoked: false,
     })
     expect(await Attestation.checkValidity(attestation)).toBeFalsy()
@@ -99,23 +105,24 @@ describe('Attestation', () => {
     blockchainApi.query.attestation.attestations.mockReturnValue(
       mockChainQueryReturn('attestation', 'attestations', [
         testCType.hash,
-        identityAlice.address,
+        DidUtils.getIdentifierFromKiltDid(identityAlice),
         null,
         true,
+        [DidUtils.getIdentifierFromKiltDid(identityAlice), 10],
       ])
     )
 
-    const attestation: Attestation = Attestation.fromRequestAndPublicIdentity(
+    const attestation: Attestation = Attestation.fromRequestAndDid(
       requestForAttestation,
-      identityAlice.getPublicIdentity()
+      identityAlice
     )
     expect(await attestation.checkValidity()).toBeFalsy()
   })
 
   it('compresses and decompresses the attestation object', () => {
-    const attestation = Attestation.fromRequestAndPublicIdentity(
+    const attestation = Attestation.fromRequestAndDid(
       requestForAttestation,
-      identityAlice.getPublicIdentity()
+      identityAlice
     )
 
     const compressedAttestation: CompressedAttestation = [
@@ -140,9 +147,9 @@ describe('Attestation', () => {
   })
 
   it('Negative test for compresses and decompresses the attestation object', () => {
-    const attestation = Attestation.fromRequestAndPublicIdentity(
+    const attestation = Attestation.fromRequestAndDid(
       requestForAttestation,
-      identityAlice.getPublicIdentity()
+      identityAlice
     )
 
     const compressedAttestation: CompressedAttestation = [
@@ -153,7 +160,7 @@ describe('Attestation', () => {
       attestation.delegationId,
     ]
     compressedAttestation.pop()
-    // @ts-expect-error
+    // @ts-ignore
     delete attestation.claimHash
 
     expect(() => {
@@ -181,7 +188,7 @@ describe('Attestation', () => {
     const everything = {
       claimHash,
       cTypeHash,
-      owner: identityAlice.signKeyringPair.address,
+      owner: identityAlice,
       revoked: false,
       delegationId: null,
     }
@@ -189,7 +196,7 @@ describe('Attestation', () => {
     const noClaimHash = {
       claimHash: '',
       cTypeHash,
-      owner: identityAlice.signKeyringPair.address,
+      owner: identityAlice,
       revoked: false,
       delegationId: null,
     } as IAttestation
@@ -197,7 +204,7 @@ describe('Attestation', () => {
     const noCTypeHash = {
       claimHash,
       cTypeHash: '',
-      owner: identityAlice.signKeyringPair.address,
+      owner: identityAlice,
       revoked: false,
       delegationId: null,
     } as IAttestation
@@ -213,7 +220,7 @@ describe('Attestation', () => {
     const noRevocationBit = {
       claimHash,
       cTypeHash,
-      owner: identityAlice.signKeyringPair.address,
+      owner: identityAlice,
       revoked: false,
       delegationId: null,
     } as IAttestation
@@ -222,7 +229,7 @@ describe('Attestation', () => {
     const malformedClaimHash = {
       claimHash: claimHash.slice(0, 20) + claimHash.slice(21),
       cTypeHash,
-      owner: identityAlice.signKeyringPair.address,
+      owner: identityAlice,
       revoked: false,
       delegationId: null,
     } as IAttestation
@@ -230,7 +237,7 @@ describe('Attestation', () => {
     const malformedCTypeHash = {
       claimHash,
       cTypeHash: cTypeHash.slice(0, 20) + cTypeHash.slice(21),
-      owner: identityAlice.signKeyringPair.address,
+      owner: identityAlice,
       revoked: false,
       delegationId: null,
     } as IAttestation
@@ -238,45 +245,45 @@ describe('Attestation', () => {
     const malformedAddress = {
       claimHash,
       cTypeHash,
-      owner: identityAlice.signKeyringPair.address.replace('8', 'D'),
+      owner: identityAlice.replace('4', 'D'),
       revoked: false,
       delegationId: null,
     } as IAttestation
 
-    expect(() => AttestationUtils.errorCheck(noClaimHash)).toThrow(
+    expect(() => AttestationUtils.errorCheck(noClaimHash)).toThrowErrorWithCode(
       SDKErrors.ERROR_CLAIM_HASH_NOT_PROVIDED()
     )
 
-    expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowError(
+    expect(() => AttestationUtils.errorCheck(noCTypeHash)).toThrowErrorWithCode(
       SDKErrors.ERROR_CTYPE_HASH_NOT_PROVIDED()
     )
 
-    expect(() => AttestationUtils.errorCheck(malformedOwner)).toThrowError(
-      SDKErrors.ERROR_OWNER_NOT_PROVIDED()
-    )
+    expect(() =>
+      AttestationUtils.errorCheck(malformedOwner)
+    ).toThrowErrorWithCode(SDKErrors.ERROR_OWNER_NOT_PROVIDED())
 
-    expect(() => AttestationUtils.errorCheck(noRevocationBit)).toThrowError(
-      SDKErrors.ERROR_REVOCATION_BIT_MISSING()
-    )
+    expect(() =>
+      AttestationUtils.errorCheck(noRevocationBit)
+    ).toThrowErrorWithCode(SDKErrors.ERROR_REVOCATION_BIT_MISSING())
 
     expect(() => AttestationUtils.errorCheck(everything)).not.toThrow()
 
-    expect(() => AttestationUtils.errorCheck(malformedClaimHash)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(malformedClaimHash.claimHash, 'Claim')
-    )
+    expect(() =>
+      AttestationUtils.errorCheck(malformedClaimHash)
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
 
-    expect(() => AttestationUtils.errorCheck(malformedCTypeHash)).toThrowError(
-      SDKErrors.ERROR_HASH_MALFORMED(malformedCTypeHash.cTypeHash, 'CType')
-    )
+    expect(() =>
+      AttestationUtils.errorCheck(malformedCTypeHash)
+    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
 
-    expect(() => AttestationUtils.errorCheck(malformedAddress)).toThrowError(
-      SDKErrors.ERROR_ADDRESS_INVALID(malformedAddress.owner, 'owner')
-    )
+    expect(() =>
+      AttestationUtils.errorCheck(malformedAddress)
+    ).toThrowErrorWithCode(SDKErrors.ERROR_ADDRESS_INVALID())
   })
   it('Typeguard should return true on complete Attestations', () => {
-    const attestation = Attestation.fromRequestAndPublicIdentity(
+    const attestation = Attestation.fromRequestAndDid(
       requestForAttestation,
-      identityAlice.getPublicIdentity()
+      identityAlice
     )
     expect(Attestation.isIAttestation(attestation)).toBeTruthy()
     expect(

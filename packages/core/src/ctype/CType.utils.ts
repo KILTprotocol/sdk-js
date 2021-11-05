@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module CTypeUtils
  */
@@ -9,9 +16,11 @@ import type {
   IClaim,
   CompressedCType,
   CompressedCTypeSchema,
+  CTypeSchemaWithoutId,
 } from '@kiltprotocol/types'
-import { jsonabc, Crypto, DataUtils, SDKErrors } from '@kiltprotocol/utils'
-import { getOwner } from './CType.chain'
+import { jsonabc, Crypto, SDKErrors } from '@kiltprotocol/utils'
+import { DidUtils } from '@kiltprotocol/did'
+import { getOwner, isStored } from './CType.chain'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 
 export function verifySchemaWithErrors(
@@ -61,7 +70,7 @@ export function verifyClaimStructure(
 }
 
 export async function verifyStored(ctype: ICType): Promise<boolean> {
-  return typeof (await getOwner(ctype.hash)) === 'string'
+  return isStored(ctype.hash)
 }
 
 export async function verifyOwner(ctype: ICType): Promise<boolean> {
@@ -69,28 +78,35 @@ export async function verifyOwner(ctype: ICType): Promise<boolean> {
   return owner ? owner === ctype.owner : false
 }
 
-type schemaPropsForHashing = {
-  $schema: ICType['schema']['$schema']
-  properties: ICType['schema']['properties']
-  title: ICType['schema']['title']
-  type: ICType['schema']['type']
+export function getSchemaPropertiesForHash(
+  ctypeSchema: CTypeSchemaWithoutId | ICType['schema']
+): Partial<ICType['schema']> {
+  // We need to remove the CType ID from the CType before storing it on the blockchain
+  // otherwise the resulting hash will be different, as the hash on chain would contain the CType ID,
+  // which is itself a hash of the CType schema.
+  const schemaWithoutId: Partial<ICType['schema']> =
+    '$id' in ctypeSchema
+      ? (ctypeSchema as ICType['schema'])
+      : (ctypeSchema as CTypeSchemaWithoutId)
+  const shallowCopy = { ...schemaWithoutId }
+  delete shallowCopy.$id
+  return shallowCopy
 }
 
-export function getHashForSchema(schema: schemaPropsForHashing): string {
-  const hashVal = {
-    $schema: schema.$schema,
-    properties: schema.properties,
-    title: schema.title,
-    type: schema.type,
-  }
-  return Crypto.hashObjectAsStr(hashVal)
+export function getHashForSchema(
+  schema: CTypeSchemaWithoutId | ICType['schema']
+): string {
+  const preparedSchema = getSchemaPropertiesForHash(schema)
+  return Crypto.hashObjectAsStr(preparedSchema)
 }
 
 export function getIdForCTypeHash(hash: string): string {
   return `kilt:ctype:${hash}`
 }
 
-export function getIdForSchema(schema: schemaPropsForHashing): string {
+export function getIdForSchema(
+  schema: CTypeSchemaWithoutId | ICType['schema']
+): string {
   return getIdForCTypeHash(getHashForSchema(schema))
 }
 
@@ -117,11 +133,7 @@ export function errorCheck(input: ICType): void {
       input.schema.$id
     )
   }
-  if (
-    typeof input.owner === 'string'
-      ? !DataUtils.validateAddress(input.owner, 'CType owner')
-      : !(input.owner === null)
-  ) {
+  if (!(input.owner === null || DidUtils.validateKiltDid(input.owner))) {
     throw SDKErrors.ERROR_CTYPE_OWNER_TYPE()
   }
 }
@@ -260,5 +272,6 @@ export default {
   verifyOwner,
   getHashForSchema,
   getIdForSchema,
+  getSchemaPropertiesForHash,
   validateNestedSchemas,
 }

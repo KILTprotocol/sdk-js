@@ -1,3 +1,10 @@
+/**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
 /* eslint-disable import/prefer-default-export */
 /**
  * @packageDocumentation
@@ -7,7 +14,7 @@
 /**
  * Dummy comment needed for correct doc display, do not remove.
  */
-import type { IPublicIdentity } from '@kiltprotocol/types'
+import type { IIdentity } from '@kiltprotocol/types'
 import { checkAddress } from '@polkadot/util-crypto'
 import { SDKErrors } from '.'
 import { verify } from './Crypto'
@@ -22,7 +29,7 @@ import { verify } from './Crypto'
  * @returns Boolean whether the given address string checks out against the Format.
  */
 export function validateAddress(
-  address: IPublicIdentity['address'],
+  address: IIdentity['address'],
   name: string
 ): boolean {
   if (typeof address !== 'string') {
@@ -69,7 +76,7 @@ export function validateHash(hash: string, name: string): boolean {
 export function validateSignature(
   data: string,
   signature: string,
-  signer: IPublicIdentity['address']
+  signer: IIdentity['address']
 ): boolean {
   if (
     typeof data !== 'string' ||

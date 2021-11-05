@@ -1,15 +1,21 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/ctype
  */
 
 import type { ICType, IClaim, IClaimContents } from '@kiltprotocol/types'
 import CType from './CType'
-import Identity from '../identity/Identity'
 import Claim from '../claim/Claim'
 import CTypeUtils from './CType.utils'
 
 describe('Nested CTypes', () => {
-  let identityAlice: Identity
+  const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
   let passportCType: ICType['schema']
   let kycCType: ICType['schema']
   let passport: CType
@@ -24,8 +30,6 @@ describe('Nested CTypes', () => {
   let nestedDeepData: Claim
 
   beforeAll(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
-
     passportCType = {
       $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -52,9 +56,9 @@ describe('Nested CTypes', () => {
       type: 'object',
     }
 
-    passport = CType.fromSchema(passportCType, identityAlice.address)
+    passport = CType.fromSchema(passportCType, didAlice)
 
-    kyc = CType.fromSchema(kycCType, identityAlice.address)
+    kyc = CType.fromSchema(kycCType, didAlice)
 
     claimContents = {
       fullName: 'Archer Macdonald',
@@ -129,22 +133,22 @@ describe('Nested CTypes', () => {
       },
     }
 
-    nestedCType = CType.fromSchema(nested, identityAlice.address)
+    nestedCType = CType.fromSchema(nested, didAlice)
 
-    deeplyNestedCType = CType.fromSchema(nestedDeeply, identityAlice.address)
+    deeplyNestedCType = CType.fromSchema(nestedDeeply, didAlice)
 
     nestedData = Claim.fromNestedCTypeClaim(
       nestedCType,
       [passport.schema, kyc.schema],
       claimContents,
-      identityAlice.address
+      didAlice
     )
 
     nestedDeepData = Claim.fromNestedCTypeClaim(
       deeplyNestedCType,
       [passport.schema, kyc.schema],
       claimDeepContents,
-      identityAlice.address
+      didAlice
     )
   })
 
@@ -163,7 +167,7 @@ describe('Nested CTypes', () => {
         nestedCType,
         [passport.schema, kyc.schema],
         claimContents,
-        identityAlice.address
+        didAlice
       )
     ).toThrowError(
       new Error('Nested claim data does not validate against CType')
@@ -193,7 +197,7 @@ describe('Nested CTypes', () => {
         deeplyNestedCType,
         [passport.schema, kyc.schema],
         claimDeepContents,
-        identityAlice.address
+        didAlice
       )
     ).toThrowError(
       new Error('Nested claim data does not validate against CType')

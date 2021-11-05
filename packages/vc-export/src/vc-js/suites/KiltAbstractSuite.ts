@@ -1,3 +1,10 @@
+/**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
 /* eslint-disable class-methods-use-this */
 import {
   DocumentLoader,
@@ -73,6 +80,7 @@ export default abstract class KiltAbstractSuite extends suites.LinkedDataProof {
     return type instanceof Array ? type.includes(this.type) : type === this.type
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async createProof(options: {
     document: JsonLdObj
     purpose?: purposes.ProofPurpose

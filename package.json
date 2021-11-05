@@ -2,16 +2,18 @@
   "repository": "https://github.com/kiltprotocol/sdk-js",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "docs/*"
   ],
   "license": "BSD-4-Clause",
   "scripts": {
+    "check": "tsc -p tsconfig.json --noEmit",
     "build": "yarn workspaces foreach -pt --no-private run build",
     "build:docs": "typedoc --theme default --out docs/api && touch docs/.nojekyll",
     "bundle": "yarn workspace @kiltprotocol/sdk-js run bundle",
     "clean": "yarn workspaces foreach -p --no-private run clean",
     "clean:docs": "rm -rf docs/api",
-    "version": "yarn workspaces foreach version",
+    "prepublish": "yarn workspaces foreach -p --no-private exec cp -f ../../LICENSE .",
     "publish": "yarn workspaces foreach -pt --no-private npm publish",
     "lint": "eslint packages --format=codeframe",
     "lint:fix": "yarn lint --fix",
@@ -46,6 +48,7 @@
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jsdoc": "^30.0.3",
     "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-license-header": "^0.2.0",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-tsc": "^1.2.0",
     "husky": "^4.2.5",
@@ -58,7 +61,8 @@
     "ts-node": "^9.1.1",
     "typedoc": "^0.19",
     "typedoc-plugin-external-module-name": "^4.0.6",
-    "typescript": "4.0"
+    "typescript": "^4.2.2"
   },
-  "version": "0.21.1-11"
+  "version": "0.24.0-10",
+  "packageManager": "yarn@2.4.3"
 }

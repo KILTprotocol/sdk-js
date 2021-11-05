@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/quote
  */
 
@@ -10,22 +17,30 @@ import type {
   CompressedQuote,
   CompressedQuoteAgreed,
   CompressedQuoteAttesterSigned,
+  IDidResolver,
   ICostBreakdown,
   IQuote,
   IQuoteAgreement,
   IQuoteAttesterSigned,
+  IDidDetails,
 } from '@kiltprotocol/types'
 import { Crypto } from '@kiltprotocol/utils'
+import {
+  DemoKeystore,
+  DidUtils,
+  createLocalDemoDidFromSeed,
+  SigningAlgorithms,
+} from '@kiltprotocol/did'
 import CType from '../ctype/CType'
-import Identity from '../identity/Identity'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import * as Quote from './Quote'
 import QuoteUtils from './Quote.utils'
 import QuoteSchema from './QuoteSchema'
 
 describe('Claim', () => {
-  let claimerIdentity: Identity
-  let attesterIdentity: Identity
+  let claimerIdentity: IDidDetails
+  let attesterIdentity: IDidDetails
+  let keystore: DemoKeystore
   let invalidCost: ICostBreakdown
   let date: Date
   let cTypeSchema: ICType['schema']
@@ -43,13 +58,39 @@ describe('Claim', () => {
   let compressedResultAttesterSignedQuote: CompressedQuoteAttesterSigned
   let compressedResultQuoteAgreement: CompressedQuoteAgreed
 
+  const mockResolver: IDidResolver = (() => {
+    const resolve = async (didUri: string) => {
+      // For the mock resolver, we need to match the base URI, so we delete the fragment, if present.
+      const didWithoutFragment = didUri.split('#')[0]
+      switch (didWithoutFragment) {
+        case claimerIdentity.did:
+          return { details: claimerIdentity }
+        case attesterIdentity.did:
+          return { details: attesterIdentity }
+        default:
+          return null
+      }
+    }
+    return {
+      resolve,
+      resolveDoc: resolve,
+    } as IDidResolver
+  })()
+
   beforeAll(async () => {
-    claimerIdentity = Identity.buildFromURI('//Alice', {
-      signingKeyPairType: 'ed25519',
-    })
-    attesterIdentity = Identity.buildFromURI('//Bob', {
-      signingKeyPairType: 'ed25519',
-    })
+    keystore = new DemoKeystore()
+
+    claimerIdentity = await createLocalDemoDidFromSeed(
+      keystore,
+      '//Alice',
+      SigningAlgorithms.Ed25519
+    )
+    attesterIdentity = await createLocalDemoDidFromSeed(
+      keystore,
+      '//Bob',
+      SigningAlgorithms.Ed25519
+    )
+
     invalidCost = ({
       gross: 233,
       tax: { vat: 3.3 },
@@ -66,16 +107,16 @@ describe('Claim', () => {
       type: 'object',
     }
 
-    testCType = CType.fromSchema(cTypeSchema, claimerIdentity.address)
+    testCType = CType.fromSchema(cTypeSchema)
 
     claim = {
       cTypeHash: testCType.hash,
       contents: {},
-      owner: claimerIdentity.address,
+      owner: claimerIdentity.did,
     }
 
     // build request for attestation with legitimations
-    request = RequestForAttestation.fromClaimAndIdentity(claim, claimerIdentity)
+    request = RequestForAttestation.fromClaim(claim)
 
     invalidCostQuoteData = {
       cTypeHash: '0x12345678',
@@ -98,7 +139,7 @@ describe('Claim', () => {
     } as unknown) as IQuote
 
     validQuoteData = {
-      attesterAddress: attesterIdentity.address,
+      attesterDid: attesterIdentity.did,
       cTypeHash: '0x12345678',
       cost: {
         gross: 233,
@@ -109,20 +150,24 @@ describe('Claim', () => {
       timeframe: new Date('12-04-2020'),
       termsAndConditions: 'Lots of these',
     }
-    validAttesterSignedQuote = Quote.createAttesterSignature(
+    validAttesterSignedQuote = await Quote.createAttesterSignature(
       validQuoteData,
-      attesterIdentity
+      attesterIdentity,
+      keystore
     )
-    quoteBothAgreed = Quote.createQuoteAgreement(
-      claimerIdentity,
+    quoteBothAgreed = await Quote.createQuoteAgreement(
       validAttesterSignedQuote,
-      request.rootHash
+      request.rootHash,
+      attesterIdentity.did,
+      claimerIdentity,
+      keystore,
+      mockResolver
     )
     invalidPropertiesQuote = invalidPropertiesQuoteData
     invalidCostQuote = invalidCostQuoteData
 
     compressedQuote = [
-      validQuoteData.attesterAddress,
+      validQuoteData.attesterDid,
       validQuoteData.cTypeHash,
       [
         validQuoteData.cost.gross,
@@ -135,7 +180,7 @@ describe('Claim', () => {
     ]
 
     compressedResultAttesterSignedQuote = [
-      validQuoteData.attesterAddress,
+      validQuoteData.attesterDid,
       validQuoteData.cTypeHash,
       [
         validQuoteData.cost.gross,
@@ -145,11 +190,14 @@ describe('Claim', () => {
       validQuoteData.currency,
       validQuoteData.termsAndConditions,
       validQuoteData.timeframe,
-      validAttesterSignedQuote.attesterSignature,
+      [
+        validAttesterSignedQuote.attesterSignature.signature,
+        validAttesterSignedQuote.attesterSignature.keyId,
+      ],
     ]
 
     compressedResultQuoteAgreement = [
-      validQuoteData.attesterAddress,
+      validQuoteData.attesterDid,
       validQuoteData.cTypeHash,
       [
         validQuoteData.cost.gross,
@@ -159,36 +207,56 @@ describe('Claim', () => {
       validQuoteData.currency,
       validQuoteData.termsAndConditions,
       validQuoteData.timeframe,
-      validAttesterSignedQuote.attesterSignature,
-      quoteBothAgreed.claimerSignature,
+      [
+        validAttesterSignedQuote.attesterSignature.signature,
+        validAttesterSignedQuote.attesterSignature.keyId,
+      ],
+      [
+        quoteBothAgreed.claimerSignature.signature,
+        quoteBothAgreed.claimerSignature.keyId,
+      ],
       quoteBothAgreed.rootHash,
     ]
   })
 
-  it('tests created quote data against given data', () => {
-    expect(validQuoteData.attesterAddress).toEqual(attesterIdentity.address)
-    expect(quoteBothAgreed.claimerSignature).toEqual(
-      claimerIdentity.signStr(Crypto.hashObjectAsStr(validAttesterSignedQuote))
-    )
+  it('tests created quote data against given data', async () => {
+    expect(validQuoteData.attesterDid).toEqual(attesterIdentity.did)
+    await expect(
+      DidUtils.getDidAuthenticationSignature(
+        Crypto.hashObjectAsStr(validAttesterSignedQuote),
+        claimerIdentity,
+        keystore
+      )
+    ).resolves.toEqual(quoteBothAgreed.claimerSignature)
+
     expect(
       Crypto.verify(
         Crypto.hashObjectAsStr({
-          attesterAddress: validQuoteData.attesterAddress,
+          attesterDid: validQuoteData.attesterDid,
           cTypeHash: validQuoteData.cTypeHash,
           cost: validQuoteData.cost,
           currency: validQuoteData.currency,
           timeframe: validQuoteData.timeframe,
           termsAndConditions: validQuoteData.termsAndConditions,
         }),
-        validAttesterSignedQuote.attesterSignature,
-        validAttesterSignedQuote.attesterAddress
+        validAttesterSignedQuote.attesterSignature.signature,
+        attesterIdentity.getKey(
+          validAttesterSignedQuote.attesterSignature.keyId
+        )?.publicKeyHex || ''
       )
     ).toBeTruthy()
-    expect(Quote.fromAttesterSignedInput(validAttesterSignedQuote)).toEqual(
-      validAttesterSignedQuote
-    )
     expect(
-      Quote.fromQuoteDataAndIdentity(validQuoteData, attesterIdentity)
+      await Quote.fromAttesterSignedInput(
+        validAttesterSignedQuote,
+        mockResolver
+      )
+    ).toEqual(validAttesterSignedQuote)
+    expect(
+      await Quote.fromQuoteDataAndIdentity(
+        validQuoteData,
+        attesterIdentity,
+        keystore
+      )
     ).toEqual(validAttesterSignedQuote)
   })
   it('validates created quotes against QuoteSchema', () => {

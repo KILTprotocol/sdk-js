@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * Blockchain Api Connection enables the building and accessing of the KILT [[Blockchain]] connection. In which it keeps one connection open and allows to reuse the connection for all [[Blockchain]] related tasks.
  *
  * Other modules can access the [[Blockchain]] as such: `const blockchain = await getConnectionOrConnect()`.
@@ -89,11 +96,14 @@ export async function connected(): Promise<boolean> {
  * @returns If there was a cached and connected connection, or not.
  */
 export async function disconnect(): Promise<boolean> {
-  const isConnected = await connected()
-  if (isConnected) {
-    const resolved = await instance
-    await resolved?.api.disconnect()
-  }
+  const oldInstance = instance
   clearCache()
+
+  if (!oldInstance) return false
+
+  const resolved = await oldInstance
+  const { isConnected } = resolved.api
+  await resolved.api.disconnect()
+
   return isConnected
 }

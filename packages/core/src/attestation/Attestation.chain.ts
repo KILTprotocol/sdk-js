@@ -1,13 +1,25 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module Attestation
  */
 import { Option, Struct } from '@polkadot/types'
-import type { IAttestation, SubmittableExtrinsic } from '@kiltprotocol/types'
+import type {
+  IAttestation,
+  Deposit,
+  SubmittableExtrinsic,
+} from '@kiltprotocol/types'
 import { DecoderUtils } from '@kiltprotocol/utils'
 import type { AccountId, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
+import { DidUtils } from '@kiltprotocol/did'
 import Attestation from './Attestation'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
@@ -20,19 +32,15 @@ const log = ConfigService.LoggingFactory.getLogger('Attestation')
 export async function store(
   attestation: IAttestation
 ): Promise<SubmittableExtrinsic> {
-  const txParams = {
-    claimHash: attestation.claimHash,
-    ctypeHash: attestation.cTypeHash,
-    delegationId: attestation.delegationId,
-  }
+  const { claimHash, cTypeHash, delegationId } = attestation
   log.debug(() => `Create tx for 'attestation.add'`)
 
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
 
   const tx = blockchain.api.tx.attestation.add(
-    txParams.claimHash,
-    txParams.ctypeHash,
-    txParams.delegationId
+    claimHash,
+    cTypeHash,
+    delegationId
   )
   return tx
 }
@@ -40,24 +48,30 @@ export async function store(
 /**
  * @internal
  */
-export interface IChainAttestation extends Struct {
+export interface AttestationDetails extends Struct {
   readonly ctypeHash: Hash
   readonly attester: AccountId
   readonly delegationId: Option<DelegationNodeId>
   readonly revoked: boolean
+  readonly deposit: Deposit
 }
 
 function decode(
-  encoded: Option<IChainAttestation>,
+  encoded: Option<AttestationDetails>,
   claimHash: string // all the other decoders do not use extra data; they just return partial types
 ): Attestation | null {
-  DecoderUtils.assertCodecIsType(encoded, ['Option<Attestation>'])
+  DecoderUtils.assertCodecIsType(encoded, [
+    'Option<AttestationAttestationsAttestationDetails>',
+  ])
   if (encoded.isSome) {
     const chainAttestation = encoded.unwrap()
     const attestation: IAttestation = {
       claimHash,
       cTypeHash: chainAttestation.ctypeHash.toString(),
-      owner: chainAttestation.attester.toString(),
+      owner: DidUtils.getKiltDidFromIdentifier(
+        chainAttestation.attester.toString(),
+        'full'
+      ),
       delegationId:
         chainAttestation.delegationId.unwrapOr(null)?.toString() || null,
       revoked: chainAttestation.revoked.valueOf(),
@@ -69,11 +83,13 @@ function decode(
 }
 
 // return types reflect backwards compatibility with mashnet-node v 0.22
-async function queryRaw(claimHash: string): Promise<Option<IChainAttestation>> {
+async function queryRaw(
+  claimHash: string
+): Promise<Option<AttestationDetails>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   const result = await blockchain.api.query.attestation.attestations<
-    Option<IChainAttestation>
+    Option<AttestationDetails>
   >(claimHash)
   return result
 }
@@ -101,6 +117,41 @@ export async function revoke(
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash,
     maxDepth
+  )
+  return tx
+}
+
+/**
+ * @param claimHash
+ * @param maxDepth
+ * @internal
+ */
+export async function remove(
+  claimHash: string,
+  maxDepth: number
+): Promise<SubmittableExtrinsic> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  log.debug(() => `Removing attestation with claim hash ${claimHash}`)
+  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.remove(
+    claimHash,
+    maxDepth
+  )
+  return tx
+}
+
+/**
+ * @param claimHash
+ * @internal
+ */
+export async function reclaimDeposit(
+  claimHash: string
+): Promise<SubmittableExtrinsic> {
+  const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
+  log.debug(
+    () => `Claiming deposit for the attestation with claim hash ${claimHash}`
+  )
+  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.reclaimDeposit(
+    claimHash
   )
   return tx
 }

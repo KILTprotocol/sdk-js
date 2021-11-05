@@ -1,9 +1,17 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module IQuote
  */
 
 import type { ICType } from './CType'
+import type { DidSignature } from './DidDetails'
 
 export interface ICostBreakdown {
   tax: Record<string, unknown>
@@ -11,7 +19,7 @@ export interface ICostBreakdown {
   gross: number
 }
 export interface IQuote {
-  attesterAddress: string
+  attesterDid: string
   cTypeHash: ICType['hash']
   cost: ICostBreakdown
   currency: string
@@ -19,12 +27,12 @@ export interface IQuote {
   termsAndConditions: string
 }
 export interface IQuoteAttesterSigned extends IQuote {
-  attesterSignature: string
+  attesterSignature: DidSignature
 }
 
 export interface IQuoteAgreement extends IQuoteAttesterSigned {
   rootHash: string
-  claimerSignature: string
+  claimerSignature: DidSignature
 }
 
 export type CompressedCostBreakdown = [
@@ -34,7 +42,7 @@ export type CompressedCostBreakdown = [
 ]
 
 export type CompressedQuote = [
-  IQuote['attesterAddress'],
+  IQuote['attesterDid'],
   IQuote['cTypeHash'],
   CompressedCostBreakdown,
   IQuote['currency'],
@@ -43,23 +51,18 @@ export type CompressedQuote = [
 ]
 
 export type CompressedQuoteAttesterSigned = [
-  CompressedQuote[0],
-  CompressedQuote[1],
-  CompressedQuote[2],
-  CompressedQuote[3],
-  CompressedQuote[4],
-  CompressedQuote[5],
-  IQuoteAttesterSigned['attesterSignature']
+  ...CompressedQuote,
+  [
+    IQuoteAttesterSigned['attesterSignature']['signature'],
+    IQuoteAttesterSigned['attesterSignature']['keyId']
+  ]
 ]
 
 export type CompressedQuoteAgreed = [
-  CompressedQuote[0],
-  CompressedQuote[1],
-  CompressedQuote[2],
-  CompressedQuote[3],
-  CompressedQuote[4],
-  CompressedQuote[5],
-  CompressedQuoteAttesterSigned[6],
-  IQuoteAgreement['claimerSignature'],
+  ...CompressedQuoteAttesterSigned,
+  [
+    IQuoteAgreement['claimerSignature']['signature'],
+    IQuoteAgreement['claimerSignature']['keyId']
+  ],
   IQuoteAgreement['rootHash']
 ]

@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * Blockchain bridges that connects the SDK and the KILT Blockchain.
  *
  * Communicates with the chain via WebSockets and can [[listenToBlocks]]. It exposes the [[signTx]] function that performs the necessary tx signing.
@@ -10,17 +17,18 @@
 import type { ApiPromise } from '@polkadot/api'
 import type { Header } from '@polkadot/types/interfaces/types'
 import type { AnyJson, AnyNumber, Codec } from '@polkadot/types/types'
-import { Text } from '@polkadot/types'
+import type { Text } from '@polkadot/types'
 import type { SignerPayloadJSON } from '@polkadot/types/types/extrinsic'
-import BN from 'bn.js'
+import { BN } from '@polkadot/util'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { ConfigService } from '@kiltprotocol/config'
 import type {
+  BlockchainStats,
   IIdentity,
   ISubmittableResult,
-  SubmittableExtrinsic,
   IBlockchainApi,
-  BlockchainStats,
+  KeyringPair,
+  SubmittableExtrinsic,
   SubscriptionPromise,
 } from '@kiltprotocol/types'
 import { submitSignedTx } from './Blockchain.utils'
@@ -63,27 +71,24 @@ export default class Blockchain implements IBlockchainApi {
   }
 
   /**
-   * [ASYNC] Signs the SubmittableExtrinsic with the given identity.
+   * [ASYNC] Signs the SubmittableExtrinsic with the given identity or keyring pair.
    *
-   * @param identity The [[Identity]] to sign the tx with.
-   * @param tx The unsigned SubmittableExtrinsic.
+   * @param signer The [[Identity]] or [[KeyringPair]] to sign the tx with.
+   * @param tx The unsigned [[SubmittableExtrinsic]].
    * @param tip The amount of Femto-KILT to tip the validator.
-   * @returns Signed SubmittableExtrinsic.
-   *
+   * @returns Signed [[SubmittableExtrinsic]].
    */
   public async signTx(
-    identity: IIdentity,
+    signer: KeyringPair | IIdentity,
     tx: SubmittableExtrinsic,
     tip?: AnyNumber
   ): Promise<SubmittableExtrinsic> {
-    const nonce = await this.getNonce(identity.address)
-    const signed: SubmittableExtrinsic = await identity.signSubmittableExtrinsic(
-      tx,
+    const signKeyringPair = (signer as IIdentity).signKeyringPair || signer
+    const nonce = await this.getNonce(signKeyringPair.address)
+    return tx.signAsync(signKeyringPair, {
       nonce,
-      tip
-    )
-
-    return signed
+      tip,
+    })
   }
 
   /**
@@ -94,22 +99,22 @@ export default class Blockchain implements IBlockchainApi {
    * Transaction fees will apply whenever a transaction fee makes it into a block, even if extrinsics fail to execute correctly!
    *
    * @param tx The SubmittableExtrinsic to be submitted. Most transactions need to be signed, this must be done beforehand.
-   * @param identity Optional [[Identity]] to potentially re-sign the tx with.
+   * @param signer Optional [[Identity]] or [[KeyringPair]] to potentially re-sign the tx with.
    * @param opts Optional partial criteria for resolving/rejecting the promise.
    * @returns A promise which can be used to track transaction status.
    * If resolved, this promise returns the eventually resolved ISubmittableResult.
    */
   async submitSignedTxWithReSign(
     tx: SubmittableExtrinsic,
-    identity: IIdentity,
+    signer?: KeyringPair | IIdentity,
     opts?: Partial<SubscriptionPromise.Options>
   ): Promise<ISubmittableResult> {
     const retry = async (reason: Error): Promise<ISubmittableResult> => {
       if (
         reason.message === SDKErrors.ERROR_TRANSACTION_RECOVERABLE().message &&
-        identity
+        signer
       ) {
-        return submitSignedTx(await this.reSignTx(identity, tx), opts)
+        return submitSignedTx(await this.reSignTx(signer, tx), opts)
       }
       throw reason
     }
@@ -146,17 +151,17 @@ export default class Blockchain implements IBlockchainApi {
   /**
    * [ASYNC] Re-signs the given SubmittableExtrinsic with an updated Nonce.
    *
-   * @param identity The [[Identity]] to re-sign the Tx with.
+   * @param signer The [[Identity]] or [[KeyringPair]] to re-sign the tx with.
    * @param tx The tx with recoverable Error that failed.
    * @returns Original Tx, injected with signature payload with updated nonce.
-   *
    */
   public async reSignTx(
-    identity: IIdentity,
+    signer: KeyringPair | IIdentity,
     tx: SubmittableExtrinsic
   ): Promise<SubmittableExtrinsic> {
-    this.accountNonces.delete(identity.address)
-    const nonce: BN = await this.getNonce(identity.address)
+    const signKeyringPair = (signer as IIdentity).signKeyringPair || signer
+    this.accountNonces.delete(signKeyringPair.address)
+    const nonce: BN = await this.getNonce(signKeyringPair.address)
     const signerPayload: SignerPayloadJSON = this.api
       .createType('SignerPayload', {
         method: tx.method.toHex(),
@@ -168,12 +173,12 @@ export default class Blockchain implements IBlockchainApi {
       })
       .toPayload()
     tx.addSignature(
-      identity.address,
+      signKeyringPair.address,
       this.api
         .createType('ExtrinsicPayload', signerPayload, {
           version: this.api.extrinsicVersion,
         })
-        .sign(identity.signKeyringPair).signature,
+        .sign(signKeyringPair).signature,
       signerPayload
     )
     return tx

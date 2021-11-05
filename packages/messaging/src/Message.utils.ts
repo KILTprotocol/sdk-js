@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module MessageUtils
  */
@@ -28,6 +35,7 @@ import type {
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { isHex, isJsonObject } from '@polkadot/util'
+import { DidUtils } from '@kiltprotocol/did'
 
 import Message from '.'
 
@@ -47,7 +55,7 @@ export function errorCheckDelegationData(
 
   if (!account) {
     throw SDKErrors.ERROR_OWNER_NOT_PROVIDED()
-  } else DataUtils.validateAddress(account, 'delegationNode owner')
+  } else DidUtils.validateKiltDid(account)
 
   if (typeof isPCR !== 'boolean') {
     throw new TypeError('isPCR is expected to be a boolean')
@@ -141,11 +149,8 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
             requestClaimsForCTypes.cTypeHash,
             'request claims for ctypes cTypeHash invalid'
           )
-          requestClaimsForCTypes.acceptedAttester?.map((address) =>
-            DataUtils.validateAddress(
-              address,
-              'request claims for ctypes attester approved addresses invalid'
-            )
+          requestClaimsForCTypes.acceptedAttester?.map((did) =>
+            DidUtils.validateKiltDid(did)
           )
           requestClaimsForCTypes.requiredProperties?.map((requiredProps) => {
             if (typeof requiredProps !== 'string')
@@ -183,9 +188,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
     }
     case Message.BodyType.REQUEST_ACCEPT_DELEGATION: {
       errorCheckDelegationData(body.content.delegationData)
-      if (!isHex(body.content.signatures.inviter)) {
-        throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
-      }
+      DidUtils.validateDidSignature(body.content.signatures.inviter)
       if (!isJsonObject(body.content.metaData)) {
         throw SDKErrors.ERROR_OBJECT_MALFORMED()
       }
@@ -193,12 +196,8 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
     }
     case Message.BodyType.SUBMIT_ACCEPT_DELEGATION: {
       errorCheckDelegationData(body.content.delegationData)
-      if (
-        !isHex(body.content.signatures.invitee) ||
-        !isHex(body.content.signatures.inviter)
-      ) {
-        throw SDKErrors.ERROR_SIGNATURE_DATA_TYPE()
-      }
+      DidUtils.validateDidSignature(body.content.signatures.inviter)
+      DidUtils.validateDidSignature(body.content.signatures.invitee)
       break
     }
 
@@ -226,10 +225,9 @@ export function errorCheckMessage(message: IMessage): boolean | void {
     body,
     messageId,
     createdAt,
-    receiverAddress,
-    senderAddress,
+    receiver,
+    sender,
     receivedAt,
-    senderBoxPublicKey,
     inReplyTo,
   } = message
   if (messageId && typeof messageId !== 'string') {
@@ -241,11 +239,8 @@ export function errorCheckMessage(message: IMessage): boolean | void {
   if (receivedAt && typeof receivedAt !== 'number') {
     throw new TypeError('received at is expected to be a number')
   }
-  DataUtils.validateAddress(receiverAddress, 'receiver address')
-  DataUtils.validateAddress(senderAddress, 'sender address')
-  if (!isHex(senderBoxPublicKey)) {
-    throw SDKErrors.ERROR_ADDRESS_INVALID()
-  }
+  DidUtils.validateKiltDid(receiver)
+  DidUtils.validateKiltDid(sender)
   if (inReplyTo && typeof inReplyTo !== 'string') {
     throw new TypeError('in reply to is expected to be a string')
   }
@@ -280,9 +275,9 @@ export function verifyRequiredCTypeProperties(
 }
 
 /**
- * Compresses a [[Message]] depending on the message body type.
+ * Compresses a [[MessageBody]] depending on the message body type.
  *
- * @param body The body of the [[Message]] which depends on the [[MessageBodyType]] that needs to be compressed.
+ * @param body The body of the [[IMessage]] which depends on the [[MessageBodyType]] that needs to be compressed.
  *
  * @returns Returns the compressed message optimised for sending.
  */
@@ -366,7 +361,10 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
           body.content.delegationData.permissions,
           body.content.delegationData.isPCR,
         ],
-        body.content.signatures.inviter,
+        [
+          body.content.signatures.inviter.signature,
+          body.content.signatures.inviter.keyId,
+        ],
         body.content.metaData,
       ]
       break
@@ -380,7 +378,14 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
           body.content.delegationData.permissions,
           body.content.delegationData.isPCR,
         ],
-        [body.content.signatures.inviter, body.content.signatures.invitee],
+        [
+          body.content.signatures.inviter.signature,
+          body.content.signatures.inviter.keyId,
+        ],
+        [
+          body.content.signatures.invitee.signature,
+          body.content.signatures.invitee.keyId,
+        ],
       ]
       break
     }
@@ -405,9 +410,9 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
 }
 
 /**
- * [STATIC] Takes a compressed [[Message]] and decompresses it depending on the message body type.
+ * [STATIC] Takes a compressed [[MessageBody]] and decompresses it depending on the message body type.
  *
- * @param body The body of the compressed [[Message]] which depends on the [[MessageBodyType]] that needs to be decompressed.
+ * @param body The body of the compressed [[IMessage]] which depends on the [[MessageBodyType]] that needs to be decompressed.
  *
  * @returns Returns the compressed message back to its original form and more human readable.
  */
@@ -505,7 +510,9 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
           permissions: body[1][0][3],
           isPCR: body[1][0][4],
         },
-        signatures: { inviter: body[1][1] },
+        signatures: {
+          inviter: { signature: body[1][1][0], keyId: body[1][1][1] },
+        },
         metaData: body[1][2],
       }
       break
@@ -520,8 +527,8 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
           isPCR: body[1][0][4],
         },
         signatures: {
-          inviter: body[1][1][0],
-          invitee: body[1][1][1],
+          inviter: { signature: body[1][1][0], keyId: body[1][1][1] },
+          invitee: { signature: body[1][2][0], keyId: body[1][2][1] },
         },
       }
       break

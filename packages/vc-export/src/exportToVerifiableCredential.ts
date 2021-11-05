@@ -1,19 +1,23 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module VCExport
  */
 
-import { decodeAddress } from '@polkadot/keyring'
-import { isHex, u8aToHex } from '@polkadot/util'
+import { isHex } from '@polkadot/util'
 import type { AnyJson } from '@polkadot/types/types'
-import { Did, ClaimUtils } from '@kiltprotocol/core'
+import { ClaimUtils } from '@kiltprotocol/core'
 import type { IAttestedClaim, ICType } from '@kiltprotocol/types'
-import { signatureVerify } from '@polkadot/util-crypto'
 import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
   JSON_SCHEMA_TYPE,
-  KeyTypesMap,
   KILT_ATTESTED_PROOF_TYPE,
   KILT_CREDENTIAL_DIGEST_PROOF_TYPE,
   KILT_SELF_SIGNED_PROOF_TYPE,
@@ -72,7 +76,7 @@ export function fromAttestedClaim(
     Record<string, AnyJson>
   >
 
-  const issuer = Did.getIdentifierFromAddress(input.attestation.owner)
+  const issuer = input.attestation.owner
 
   // add current date bc we have no issuance date on credential
   // TODO: could we get this from block time or something?
@@ -87,7 +91,7 @@ export function fromAttestedClaim(
       '@type': JSON_SCHEMA_TYPE,
       name: schema.title,
       schema,
-      author: owner ? Did.getIdentifierFromAddress(owner) : undefined,
+      author: owner || undefined,
     }
   }
 
@@ -113,31 +117,22 @@ export function fromAttestedClaim(
   }
 
   // add self-signed proof
-  // infer key type
-  const keyType: string | undefined =
-    KeyTypesMap[signatureVerify('', claimerSignature, claim.owner).crypto]
-  if (!keyType)
-    throw new TypeError(
-      `Unknown signature type on credential.\nCurrently this handles ${JSON.stringify(
-        Object.keys(KeyTypesMap)
-      )}\nReceived: ${keyType}`
-    )
-  const sSProof: SelfSignedProof = {
-    type: KILT_SELF_SIGNED_PROOF_TYPE,
-    proofPurpose: 'assertionMethod',
-    verificationMethod: {
-      type: keyType,
-      publicKeyHex: u8aToHex(decodeAddress(claim.owner)),
-    },
-    signature: claimerSignature,
+  if (claimerSignature) {
+    const sSProof: SelfSignedProof = {
+      type: KILT_SELF_SIGNED_PROOF_TYPE,
+      proofPurpose: 'assertionMethod',
+      verificationMethod: claimerSignature.keyId,
+      signature: claimerSignature.signature,
+      challenge: claimerSignature.challenge,
+    }
+    VC.proof.push(sSProof)
   }
-  VC.proof.push(sSProof)
 
   // add attestation proof
   const attProof: AttestedProof = {
     type: KILT_ATTESTED_PROOF_TYPE,
     proofPurpose: 'assertionMethod',
-    attesterAddress: input.attestation.owner,
+    attester: input.attestation.owner,
   }
   VC.proof.push(attProof)
 

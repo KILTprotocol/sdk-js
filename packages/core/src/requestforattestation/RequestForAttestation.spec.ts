@@ -1,11 +1,17 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/requestforattestation
  */
 
 /* eslint-disable dot-notation */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { hexToU8a } from '@polkadot/util'
 import type {
   IClaim,
   IClaimContents,
@@ -13,12 +19,12 @@ import type {
   ICType,
   CompressedRequestForAttestation,
   IRequestForAttestation,
+  DidSignature,
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import Attestation from '../attestation/Attestation'
 import AttestedClaim from '../attestedclaim/AttestedClaim'
 import CType from '../ctype/CType'
-import Identity from '../identity/Identity'
 
 import RequestForAttestation from './RequestForAttestation'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
@@ -26,13 +32,11 @@ import RequestForAttestationUtils from './RequestForAttestation.utils'
 import '../../../../testingTools/jestErrorCodeMatcher'
 
 function buildRequestForAttestation(
-  claimer: Identity,
+  claimerDid: string,
   contents: IClaimContents,
   legitimations: AttestedClaim[]
 ): RequestForAttestation {
   // create claim
-
-  const identityAlice = Identity.buildFromURI('//Alice')
 
   const rawCType: ICType['schema'] = {
     $id: 'kilt:ctype:0x2',
@@ -44,27 +48,27 @@ function buildRequestForAttestation(
     type: 'object',
   }
 
-  const testCType: CType = CType.fromSchema(
-    rawCType,
-    identityAlice.signKeyringPair.address
-  )
+  const testCType: CType = CType.fromSchema(rawCType)
 
   const claim: IClaim = {
     cTypeHash: testCType.hash,
     contents,
-    owner: claimer.address,
+    owner: claimerDid,
   }
   // build request for attestation with legitimations
-  const request = RequestForAttestation.fromClaimAndIdentity(claim, claimer, {
+  const request = RequestForAttestation.fromClaim(claim, {
     legitimations,
   })
   return request
 }
 
 describe('RequestForAttestation', () => {
-  let identityAlice: Identity
-  let identityBob: Identity
-  let identityCharlie: Identity
+  const identityAlice =
+    'did:kilt:4nv4phaKc4EcwENdRERuMF79ZSSB5xvnAk3zNySSbVbXhSwS'
+  const identityBob =
+    'did:kilt:4s5d7QHWSX9xx4DLafDtnTHK87n5e9G3UoKRrCDQ2gnrzYmZ'
+  const identityCharlie =
+    'did:kilt:4rVHmxSCxGTEv6rZwQUvZa6HTis4haefXPuEqj4zGafug7xL'
   let legitimationRequest: RequestForAttestation
   let legitimationAttestation: Attestation
   let legitimation: AttestedClaim
@@ -72,14 +76,11 @@ describe('RequestForAttestation', () => {
   let legitimationCharlie: AttestedClaim
 
   beforeEach(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
-    identityBob = Identity.buildFromURI('//Bob')
-    identityCharlie = Identity.buildFromURI('//Charlie')
     legitimationRequest = buildRequestForAttestation(identityAlice, {}, [])
     // build attestation
-    legitimationAttestation = Attestation.fromRequestAndPublicIdentity(
+    legitimationAttestation = Attestation.fromRequestAndDid(
       legitimationRequest,
-      identityCharlie.getPublicIdentity()
+      identityCharlie
     )
     // combine to attested claim
     legitimation = new AttestedClaim({
@@ -88,9 +89,9 @@ describe('RequestForAttestation', () => {
     })
 
     // build attestation
-    legitimationAttestationCharlie = Attestation.fromRequestAndPublicIdentity(
+    legitimationAttestationCharlie = Attestation.fromRequestAndDid(
       legitimationRequest,
-      identityCharlie.getPublicIdentity()
+      identityCharlie
     )
     // combine to attested claim
     legitimationCharlie = new AttestedClaim({
@@ -98,6 +99,8 @@ describe('RequestForAttestation', () => {
       attestation: legitimationAttestationCharlie,
     })
   })
+
+  it.todo('signing and verification')
 
   it('verify request for attestation', async () => {
     const request = buildRequestForAttestation(
@@ -136,19 +139,10 @@ describe('RequestForAttestation', () => {
     }).toThrow()
   })
 
-  it('hides the claim owner', async () => {
-    const request = buildRequestForAttestation(identityBob, {}, [])
-    request.removeClaimOwner()
-    expect(Object.keys(request.claimNonceMap)).toHaveLength(
-      request.claimHashes.length - 1
-    )
-    expect(request.claim.owner).toBeUndefined()
-  })
-
   it('compresses and decompresses the request for attestation object', async () => {
-    const legitimationAttestationBob = Attestation.fromRequestAndPublicIdentity(
+    const legitimationAttestationBob = Attestation.fromRequestAndDid(
       legitimationRequest,
-      identityBob.getPublicIdentity()
+      identityBob
     )
     const legitimationBob = new AttestedClaim({
       request: legitimationRequest,
@@ -357,13 +351,9 @@ describe('RequestForAttestation', () => {
         []
       ),
     } as IRequestForAttestation
-    const signatureAsBytes = hexToU8a(
-      builtRequestMalformedSignature.claimerSignature
-    )
-    signatureAsBytes[5] += 1
-    builtRequestMalformedSignature.claimerSignature = Crypto.u8aToHex(
-      signatureAsBytes
-    )
+    builtRequestMalformedSignature.claimerSignature = {
+      signature: Crypto.hashStr('aaa'),
+    } as DidSignature
     // @ts-expect-error
     builtRequestMalformedSignature.rootHash = RequestForAttestation.calculateRootHash(
       builtRequestMalformedSignature
@@ -405,7 +395,7 @@ describe('RequestForAttestation', () => {
     ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedSignature)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE())
+    ).toThrowError(SDKErrors.ERROR_SIGNATURE_DATA_TYPE())
     expect(() =>
       RequestForAttestationUtils.errorCheck(builtRequestMalformedHashes)
     ).toThrowErrorWithCode(SDKErrors.ErrorCode.ERROR_NO_PROOF_FOR_STATEMENT)

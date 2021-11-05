@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * Crypto provides KILT with the utility types and methods useful for cryptographic operations, such as signing/verifying, encrypting/decrypting and hashing.
  *
  * The utility types and methods are wrappers for existing Polkadot functions and imported throughout KILT's protocol for various cryptographic needs.
@@ -8,7 +15,7 @@
  */
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
-import type { KeyringPair } from '@polkadot/keyring/types'
+import type { KeyringPair } from '@kiltprotocol/types'
 import {
   isString,
   stringToU8a,
@@ -217,6 +224,29 @@ export function hashStr(value: CryptoInput): string {
 }
 
 /**
+ * Stringifies numbers, booleans, and objects. Object keys are sorted to yield consistent hashing.
+ *
+ * @param value Object or value to be hashed.
+ * @returns Stringified representation of the given object.
+ */
+export function encodeObjectAsStr(
+  value: Record<string, any> | string | number | boolean
+): string {
+  const input =
+    // eslint-disable-next-line no-nested-ternary
+    typeof value === 'object' && value !== null
+      ? JSON.stringify(jsonabc.sortObj(value))
+      : // eslint-disable-next-line no-nested-ternary
+      typeof value === 'number' && value !== null
+      ? value.toString()
+      : typeof value === 'boolean' && value !== null
+      ? JSON.stringify(value)
+      : value
+
+  return input
+}
+
+/**
  * Hashes numbers, booleans, and objects by stringifying them. Object keys are sorted to yield consistent hashing.
  *
  * @param value Object or value to be hashed.
@@ -227,20 +257,11 @@ export function hashObjectAsStr(
   value: Record<string, any> | string | number | boolean,
   nonce?: string
 ): string {
-  let input =
-    // eslint-disable-next-line no-nested-ternary
-    typeof value === 'object' && value !== null
-      ? JSON.stringify(jsonabc.sortObj(value))
-      : // eslint-disable-next-line no-nested-ternary
-      typeof value === 'number' && value !== null
-      ? value.toString()
-      : typeof value === 'boolean' && value !== null
-      ? JSON.stringify(value)
-      : value
+  let objectAsStr = encodeObjectAsStr(value)
   if (nonce) {
-    input = nonce + input
+    objectAsStr = nonce + objectAsStr
   }
-  return hashStr(input)
+  return hashStr(objectAsStr)
 }
 
 /**

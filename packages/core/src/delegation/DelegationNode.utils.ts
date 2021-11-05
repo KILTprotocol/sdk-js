@@ -1,12 +1,22 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @packageDocumentation
  * @module DelegationNodeUtils
  */
 
-import type { IAttestation, IDelegationNode } from '@kiltprotocol/types'
+import type {
+  IAttestation,
+  IDelegationNode,
+  IDidDetails,
+} from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import { isHex } from '@polkadot/util'
-import Identity from '../identity'
 import DelegationNode from './DelegationNode'
 
 /**
@@ -31,23 +41,18 @@ export function permissionsAsBitset(delegation: IDelegationNode): Uint8Array {
 }
 
 export async function countNodeDepth(
-  attester: Identity,
+  attester: IDidDetails['did'],
   attestation: IAttestation
 ): Promise<number> {
   let delegationTreeTraversalSteps = 0
 
   // if the attester is not the owner, we need to check the delegation tree
-  if (
-    attestation.owner !== attester.address &&
-    attestation.delegationId !== null
-  ) {
+  if (attestation.owner !== attester && attestation.delegationId !== null) {
     delegationTreeTraversalSteps += 1
     const delegationNode = await DelegationNode.query(attestation.delegationId)
 
     if (typeof delegationNode !== 'undefined' && delegationNode !== null) {
-      const { steps, node } = await delegationNode.findAncestorOwnedBy(
-        attester.address
-      )
+      const { steps, node } = await delegationNode.findAncestorOwnedBy(attester)
       delegationTreeTraversalSteps += steps
       if (node === null) {
         throw SDKErrors.ERROR_UNAUTHORIZED(
@@ -55,7 +60,7 @@ export async function countNodeDepth(
         )
       }
     }
-  } else if (attestation.owner !== attester.address) {
+  } else if (attestation.owner !== attester) {
     throw SDKErrors.ERROR_UNAUTHORIZED(
       'Attester is not athorized to revoke this attestation. (not the owner, no delegations)'
     )
@@ -65,7 +70,7 @@ export async function countNodeDepth(
 }
 
 export function errorCheck(delegationNodeInput: IDelegationNode): void {
-  const { permissions, rootId, parentId } = delegationNodeInput
+  const { permissions, hierarchyId: rootId, parentId } = delegationNodeInput
 
   if (permissions.length === 0 || permissions.length > 3) {
     throw SDKErrors.ERROR_UNAUTHORIZED(

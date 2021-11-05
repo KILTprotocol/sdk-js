@@ -1,11 +1,18 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/utils
  */
 
 import * as string from '@polkadot/util/string'
-import { Keyring } from '@polkadot/keyring'
-import type { KeyringPair } from '@polkadot/keyring/types'
+import type { KeyringPair } from '@kiltprotocol/types'
 import nacl from 'tweetnacl'
+import { Keyring } from './index'
 import * as Crypto from './Crypto'
 
 const messageStr = 'This is a test'

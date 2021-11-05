@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * Claims are a core building block of the KILT SDK. A claim represents **something an entity claims about itself**. Once created, a claim can be used to create a [[RequestForAttestation]].
  *
  * A claim object has:
@@ -14,9 +21,9 @@
 import type {
   IClaim,
   CompressedClaim,
-  IPublicIdentity,
   CompressedPartialClaim,
   PartialClaim,
+  IDidDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
 import ICType from '../ctype/CType'
@@ -66,7 +73,7 @@ export default class Claim implements IClaim {
     cTypeInput: ICType,
     nestedCType: Array<ICType['schema']>,
     claimContents: IClaim['contents'],
-    claimOwner: IPublicIdentity['address']
+    claimOwner: IDidDetails['did']
   ): Claim {
     if (
       !CTypeUtils.validateNestedSchemas(
@@ -97,7 +104,7 @@ export default class Claim implements IClaim {
   public static fromCTypeAndClaimContents(
     ctypeInput: ICType,
     claimContents: IClaim['contents'],
-    claimOwner: IPublicIdentity['address']
+    claimOwner: string
   ): Claim {
     if (ctypeInput.schema) {
       if (!verifyClaim(claimContents, ctypeInput.schema)) {

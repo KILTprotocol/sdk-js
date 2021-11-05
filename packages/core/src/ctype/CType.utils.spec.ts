@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/ctype
  */
 
@@ -11,7 +18,7 @@ import {
 } from './CType.utils'
 import { CTypeModel, CTypeWrapperModel } from './CTypeSchema'
 import CType from '.'
-import { Identity } from '..'
+import { getOwner, isStored } from './CType.chain'
 
 jest.mock('./CType.chain')
 
@@ -72,10 +79,8 @@ describe('CTypeUtils', () => {
 })
 
 describe('CType registration verification', () => {
-  const getOwnerMock = require('./CType.chain').getOwner
-
-  let identityAlice: Identity
-  let identityBob: Identity
+  const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
+  const didBob = 'did:kilt:4rDeMGr3Hi4NfxRUp8qVyhvgW3BSUBLneQisGa9ASkhh2sXB'
 
   const rawCType = {
     $id: 'kilt:ctype:0x2',
@@ -87,30 +92,27 @@ describe('CType registration verification', () => {
     type: 'object',
   } as ICType['schema']
 
-  beforeAll(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
-    identityBob = Identity.buildFromURI('//Bob')
-  }, 30_000)
-
   describe('when CType is not registered', () => {
     beforeAll(() => {
-      getOwnerMock.mockReturnValue(null)
+      ;(getOwner as jest.Mock).mockReturnValue(null)
+      ;(isStored as jest.Mock).mockReturnValue(false)
     })
 
     it('does not verify registration when not registered', async () => {
-      const ctype = CType.fromSchema(rawCType, identityAlice.address)
+      const ctype = CType.fromSchema(rawCType, didAlice)
       await expect(ctype.verifyStored()).resolves.toBeFalsy()
     })
 
     it('does not verify owner when not registered', async () => {
-      const ctype = CType.fromSchema(rawCType, identityAlice.address)
+      const ctype = CType.fromSchema(rawCType, didAlice)
       await expect(ctype.verifyOwner()).resolves.toBeFalsy()
     })
   })
 
   describe('when CType is registered', () => {
     beforeAll(() => {
-      getOwnerMock.mockReturnValue(identityAlice.address)
+      ;(getOwner as jest.Mock).mockReturnValue(didAlice)
+      ;(isStored as jest.Mock).mockReturnValue(true)
     })
 
     it('verifies registration when owner not set', async () => {
@@ -119,22 +121,22 @@ describe('CType registration verification', () => {
     })
 
     it('verifies registration when owner matches', async () => {
-      const ctype = CType.fromSchema(rawCType, identityAlice.address)
+      const ctype = CType.fromSchema(rawCType, didAlice)
       await expect(ctype.verifyStored()).resolves.toBeTruthy()
     })
 
     it('verifies registration when owner does not match', async () => {
-      const ctype = CType.fromSchema(rawCType, identityBob.address)
+      const ctype = CType.fromSchema(rawCType, didBob)
       await expect(ctype.verifyStored()).resolves.toBeTruthy()
     })
 
     it('verifies owner when owner matches', async () => {
-      const ctype = CType.fromSchema(rawCType, identityAlice.address)
+      const ctype = CType.fromSchema(rawCType, didAlice)
       await expect(ctype.verifyOwner()).resolves.toBeTruthy()
     })
 
     it('does not verify owner when owner does not match', async () => {
-      const ctype = CType.fromSchema(rawCType, identityBob.address)
+      const ctype = CType.fromSchema(rawCType, didBob)
       await expect(ctype.verifyOwner()).resolves.toBeFalsy()
     })
   })

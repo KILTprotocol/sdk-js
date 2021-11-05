@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/messaging
  */
 
@@ -7,24 +14,56 @@ import type {
   IClaim,
   IEncryptedMessage,
   IQuote,
+  IDidResolvedDetails,
+  IDidKeyDetails,
   IRequestAttestationForClaim,
   ISubmitAttestationForClaim,
-  IRequestClaimsForCTypes,
   ISubmitClaimsForCTypes,
+  IDidDetails,
+  IDidResolver,
 } from '@kiltprotocol/types'
+import { KeyRelationship } from '@kiltprotocol/types'
+
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
-import { Identity, Quote, RequestForAttestation } from '@kiltprotocol/core'
+import { Quote, RequestForAttestation } from '@kiltprotocol/core'
+import { createLocalDemoDidFromSeed, DemoKeystore } from '@kiltprotocol/did'
 import Message from './Message'
 
 describe('Messaging', () => {
-  let identityAlice: Identity
-  let identityBob: Identity
+  let mockResolver: IDidResolver
+  let keystore: DemoKeystore
+  let identityAlice: IDidDetails
+  let identityBob: IDidDetails
   let date: Date
 
   beforeAll(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
-    identityBob = Identity.buildFromURI('//Bob')
     date = new Date(2019, 11, 10)
+    keystore = new DemoKeystore()
+    identityAlice = await createLocalDemoDidFromSeed(keystore, '//Alice')
+    identityBob = await createLocalDemoDidFromSeed(keystore, '//Bob')
+
+    const resolveDoc = async (
+      did: string
+    ): Promise<IDidResolvedDetails | null> => {
+      if (did.startsWith(identityAlice.did)) {
+        return { details: identityAlice }
+      }
+      if (did.startsWith(identityBob.did)) {
+        return { details: identityBob }
+      }
+      return null
+    }
+    const resolveKey = async (did: string): Promise<IDidKeyDetails | null> => {
+      const details = await resolveDoc(did)
+      return details?.details.getKey(did) || null
+    }
+    mockResolver = {
+      resolve: async (did) => {
+        return (await resolveKey(did)) || resolveDoc(did)
+      },
+      resolveKey,
+      resolveDoc,
+    } as IDidResolver
   })
 
   it('verify message encryption and signing', async () => {
@@ -33,99 +72,101 @@ describe('Messaging', () => {
         type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
         content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
       },
-      identityAlice.getPublicIdentity(),
-      identityBob.getPublicIdentity()
+      identityAlice.did,
+      identityBob.did
     )
-    const encryptedMessage = message.encrypt(
-      identityAlice,
-      identityBob.getPublicIdentity()
+    const encryptedMessage = await message.encrypt(
+      identityAlice.getKeys(KeyRelationship.keyAgreement)[0],
+      identityBob.getKeys(KeyRelationship.keyAgreement)[0],
+      keystore
     )
 
-    const decryptedMessage = Message.decrypt(encryptedMessage, identityBob)
+    const decryptedMessage = await Message.decrypt(encryptedMessage, keystore, {
+      resolver: mockResolver,
+    })
     expect(JSON.stringify(message.body)).toEqual(
       JSON.stringify(decryptedMessage.body)
     )
 
-    const encryptedMessageWrongHash: IEncryptedMessage = JSON.parse(
-      JSON.stringify(encryptedMessage)
-    ) as IEncryptedMessage
-    encryptedMessageWrongHash.hash = Crypto.hashStr('0x00000000')
-    expect(() =>
-      Message.decrypt(encryptedMessageWrongHash, identityBob)
-    ).toThrowError(
-      SDKErrors.ERROR_NONCE_HASH_INVALID(
-        {
-          hash: encryptedMessageWrongHash.hash,
-          nonce: encryptedMessageWrongHash.nonce,
-        },
-        'Message'
-      )
-    )
-
-    const encryptedMessageWrongSignature: IEncryptedMessage = JSON.parse(
-      JSON.stringify(encryptedMessage)
-    ) as IEncryptedMessage
-    encryptedMessageWrongSignature.signature = encryptedMessageWrongSignature.signature.substr(
-      0,
-      encryptedMessageWrongSignature.signature.length - 4
-    )
-    encryptedMessageWrongSignature.signature += '1234'
-    expect(() =>
-      Message.decrypt(encryptedMessageWrongSignature, identityBob)
-    ).toThrowError(SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE())
-
     const encryptedMessageWrongContent: IEncryptedMessage = JSON.parse(
       JSON.stringify(encryptedMessage)
     ) as IEncryptedMessage
-    encryptedMessageWrongContent.ciphertext = Crypto.hashStr('1234')
-    const hashStrWrongContent: string = Crypto.hashStr(
-      encryptedMessageWrongContent.ciphertext +
-        encryptedMessageWrongContent.nonce +
-        encryptedMessageWrongContent.createdAt
+    const messedUpContent = Crypto.coToUInt8(
+      encryptedMessageWrongContent.ciphertext
     )
-    encryptedMessageWrongContent.hash = hashStrWrongContent
-    encryptedMessageWrongContent.signature = identityAlice.signStr(
-      hashStrWrongContent
-    )
-    expect(() =>
-      Message.decrypt(encryptedMessageWrongContent, identityBob)
-    ).toThrowError(SDKErrors.ERROR_DECODING_MESSAGE())
+    messedUpContent.set(Crypto.hash('1234'), 10)
+    encryptedMessageWrongContent.ciphertext = Crypto.u8aToHex(messedUpContent)
 
-    const encryptedWrongBody: Crypto.EncryptedAsymmetricString = identityAlice.encryptAsymmetricAsStr(
-      '{ wrong JSON',
-      identityBob.getBoxPublicKey()
-    )
-    const ts: number = Date.now()
-    const hashStrBadContent: string = Crypto.hashStr(
-      encryptedWrongBody.box + encryptedWrongBody.nonce + ts
-    )
+    await expect(() =>
+      Message.decrypt(encryptedMessageWrongContent, keystore, {
+        resolver: mockResolver,
+      })
+    ).rejects.toThrowError(SDKErrors.ERROR_DECODING_MESSAGE())
+
+    const encryptedWrongBody = await keystore.encrypt({
+      alg: 'x25519-xsalsa20-poly1305',
+      data: Crypto.coToUInt8('{ wrong JSON'),
+      publicKey: Crypto.coToUInt8(
+        identityAlice.getKeys(KeyRelationship.keyAgreement)[0].publicKeyHex
+      ),
+      peerPublicKey: Crypto.coToUInt8(
+        identityBob.getKeys(KeyRelationship.keyAgreement)[0].publicKeyHex
+      ),
+    })
     const encryptedMessageWrongBody: IEncryptedMessage = {
-      createdAt: ts,
-      receiverAddress: encryptedMessage.receiverAddress,
-      senderAddress: encryptedMessage.senderAddress,
-      ciphertext: encryptedWrongBody.box,
-      nonce: encryptedWrongBody.nonce,
-      hash: hashStrBadContent,
-      signature: identityAlice.signStr(hashStrBadContent),
-      senderBoxPublicKey: encryptedMessage.senderBoxPublicKey,
-    } as IEncryptedMessage
-    expect(() =>
-      Message.decrypt(encryptedMessageWrongBody, identityBob)
-    ).toThrowError(SDKErrors.ERROR_PARSING_MESSAGE())
+      ciphertext: Crypto.u8aToHex(encryptedWrongBody.data),
+      nonce: Crypto.u8aToHex(encryptedWrongBody.nonce),
+      senderKeyId: identityAlice.getKeys(KeyRelationship.keyAgreement)[0].id,
+      receiverKeyId: identityBob.getKeys(KeyRelationship.keyAgreement)[0].id,
+    }
+    await expect(() =>
+      Message.decrypt(encryptedMessageWrongBody, keystore, {
+        resolver: mockResolver,
+      })
+    ).rejects.toThrowError(SDKErrors.ERROR_PARSING_MESSAGE())
   })
 
-  it('verifies the message sender is the owner', () => {
-    const content = RequestForAttestation.fromClaimAndIdentity(
+  it('verifies the sender is the sender key owner', async () => {
+    const wrongSender = `did:kilt:${Crypto.encodeAddress(
+      new Uint8Array(32),
+      38
+    )}`
+
+    const message = new Message(
       {
-        cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
-        owner: identityAlice.address,
-        contents: {},
+        type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
+        content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
       },
-      identityAlice
+      wrongSender,
+      identityBob.did
     )
 
+    const forgedAliceKey = {
+      ...identityAlice.getKeys(KeyRelationship.keyAgreement)[0],
+    }
+    forgedAliceKey.controller = wrongSender
+
+    const encryptedMessage = await message.encrypt(
+      forgedAliceKey,
+      identityBob.getKeys(KeyRelationship.keyAgreement)[0],
+      keystore
+    )
+    await expect(
+      Message.decrypt(encryptedMessage, keystore, {
+        resolver: mockResolver,
+      })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`"Error parsing message body"`)
+  })
+
+  it('verifies the message sender is the owner', async () => {
+    const content = RequestForAttestation.fromClaim({
+      cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
+      owner: identityAlice.did,
+      contents: {},
+    })
+
     const quoteData: IQuote = {
-      attesterAddress: identityAlice.address,
+      attesterDid: identityAlice.did,
       cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
       cost: {
         tax: { vat: 3.3 },
@@ -136,14 +177,18 @@ describe('Messaging', () => {
       termsAndConditions: 'https://coolcompany.io/terms.pdf',
       timeframe: date,
     }
-    const quoteAttesterSigned = Quote.createAttesterSignature(
+    const quoteAttesterSigned = await Quote.createAttesterSignature(
       quoteData,
-      identityAlice
-    )
-    const bothSigned = Quote.createQuoteAgreement(
       identityAlice,
+      keystore
+    )
+    const bothSigned = await Quote.createQuoteAgreement(
       quoteAttesterSigned,
-      content.rootHash
+      content.rootHash,
+      identityAlice.did,
+      identityBob,
+      keystore,
+      mockResolver
     )
     const requestAttestationBody: IRequestAttestationForClaim = {
       content: {
@@ -155,19 +200,11 @@ describe('Messaging', () => {
     }
 
     Message.ensureOwnerIsSender(
-      new Message(
-        requestAttestationBody,
-        identityAlice.getPublicIdentity(),
-        identityBob.getPublicIdentity()
-      )
+      new Message(requestAttestationBody, identityAlice.did, identityBob.did)
     )
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(
-          requestAttestationBody,
-          identityBob.getPublicIdentity(),
-          identityAlice.getPublicIdentity()
-        )
+        new Message(requestAttestationBody, identityBob.did, identityAlice.did)
       )
     ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Claim', 'Sender'))
 
@@ -175,7 +212,7 @@ describe('Messaging', () => {
       delegationId: null,
       claimHash: requestAttestationBody.content.requestForAttestation.rootHash,
       cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}`,
-      owner: identityBob.getPublicIdentity().address,
+      owner: identityBob.did,
       revoked: false,
     }
 
@@ -187,19 +224,11 @@ describe('Messaging', () => {
     }
     expect(() =>
       Message.ensureOwnerIsSender(
-        new Message(
-          submitAttestationBody,
-          identityAlice.getPublicIdentity(),
-          identityBob.getPublicIdentity()
-        )
+        new Message(submitAttestationBody, identityAlice.did, identityBob.did)
       )
     ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Attestation', 'Sender'))
     Message.ensureOwnerIsSender(
-      new Message(
-        submitAttestationBody,
-        identityBob.getPublicIdentity(),
-        identityAlice.getPublicIdentity()
-      )
+      new Message(submitAttestationBody, identityBob.did, identityAlice.did)
     )
 
     const attestedClaim: IAttestedClaim = {
@@ -213,117 +242,16 @@ describe('Messaging', () => {
     }
 
     Message.ensureOwnerIsSender(
-      new Message(
-        submitClaimsForCTypeBody,
-        identityAlice.getPublicIdentity(),
-        identityBob.getPublicIdentity()
-      )
+      new Message(submitClaimsForCTypeBody, identityAlice.did, identityBob.did)
     )
     expect(() =>
       Message.ensureOwnerIsSender(
         new Message(
           submitClaimsForCTypeBody,
-          identityBob.getPublicIdentity(),
-          identityAlice.getPublicIdentity()
+          identityBob.did,
+          identityAlice.did
         )
       )
     ).toThrowError(SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender'))
-  })
-  describe('ensureHashAndSignature', () => {
-    let messageBody: IRequestClaimsForCTypes
-    let encrypted: IEncryptedMessage
-    let encryptedHash: string
-
-    beforeAll(async () => {
-      identityAlice = Identity.buildFromURI('//Alice')
-      identityBob = Identity.buildFromURI('//Bob')
-
-      messageBody = {
-        content: [{ cTypeHash: `kilt:ctype:${Crypto.hashStr('0x12345678')}` }],
-
-        type: Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
-      }
-      encrypted = new Message(
-        messageBody,
-        identityAlice.getPublicIdentity(),
-        identityBob.getPublicIdentity()
-      ).encrypt(identityAlice, identityBob.getPublicIdentity())
-      encryptedHash = encrypted.hash
-    })
-
-    it('verifies no error is thrown when executed correctly', () => {
-      expect(() =>
-        Message.ensureHashAndSignature(encrypted, identityAlice.address)
-      ).not.toThrowError()
-    })
-    it('expects hash error', () => {
-      // replicate the message but change the content
-      const unencryptedMessage = new Message(
-        {
-          ...messageBody,
-          content: [
-            {
-              cTypeHash: messageBody.content[0].cTypeHash,
-            },
-            ...messageBody.content,
-          ],
-        },
-        identityAlice.getPublicIdentity(),
-        identityBob.getPublicIdentity()
-      )
-      unencryptedMessage.body.content[0].cTypeHash = `${messageBody.content[0].cTypeHash[0]}9`
-      const encrypted2 = unencryptedMessage.encrypt(
-        identityAlice,
-        identityBob.getPublicIdentity()
-      )
-      const { ciphertext: msg, nonce, createdAt } = encrypted2
-
-      // check correct encrypted but with message from encrypted2
-      expect(() =>
-        Message.ensureHashAndSignature(
-          {
-            ...encrypted,
-            ciphertext: msg,
-          },
-          identityBob.address
-        )
-      ).toThrowError(
-        SDKErrors.ERROR_NONCE_HASH_INVALID(
-          { hash: encryptedHash, nonce: encrypted.nonce },
-          'Message'
-        )
-      )
-
-      // check correct encrypted but with nonce from encrypted2
-      expect(() =>
-        Message.ensureHashAndSignature(
-          { ...encrypted, nonce },
-          identityBob.address
-        )
-      ).toThrowError(
-        SDKErrors.ERROR_NONCE_HASH_INVALID(
-          { hash: encryptedHash, nonce },
-          'Message'
-        )
-      )
-
-      // check correct encrypted but with createdAt from encrypted2
-      expect(() =>
-        Message.ensureHashAndSignature(
-          { ...encrypted, createdAt },
-          identityBob.address
-        )
-      ).toThrowError(
-        SDKErrors.ERROR_NONCE_HASH_INVALID(
-          { hash: encryptedHash, nonce: encrypted.nonce },
-          'Message'
-        )
-      )
-    })
-    it('expects signature error', async () => {
-      expect(() =>
-        Message.ensureHashAndSignature(encrypted, identityBob.address)
-      ).toThrowError(SDKErrors.ERROR_SIGNATURE_UNVERIFIABLE())
-    })
   })
 })

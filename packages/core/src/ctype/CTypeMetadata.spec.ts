@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/ctype
  */
 
@@ -6,22 +13,19 @@
 
 import { SDKErrors } from '@kiltprotocol/utils'
 import type { ICType, ICTypeMetadata } from '@kiltprotocol/types'
-import Identity from '../identity/Identity'
 import CType from './CType'
 import CTypeUtils from './CType.utils'
 import CTypeMetadata from './CTypeMetadata'
 import { MetadataModel } from './CTypeSchema'
 
 describe('CType', () => {
-  let identityAlice: Identity
+  const didAlice = 'did:kilt:4p6K4tpdZtY3rNqM2uorQmsS6d3woxtnWMHjtzGftHmDb41N'
   let rawCType: ICType['schema']
   let ctype: ICType
   let ctypeMetadata: ICTypeMetadata['metadata']
   let metadata: CTypeMetadata
 
   beforeAll(async () => {
-    identityAlice = Identity.buildFromURI('//Alice')
-
     rawCType = {
       $id: 'kilt:ctype:0x1',
       $schema: 'http://kilt-protocol.org/draft-01/ctype#',
@@ -32,7 +36,7 @@ describe('CType', () => {
       },
       type: 'object',
     }
-    ctype = CType.fromSchema(rawCType, identityAlice.signKeyringPair.address)
+    ctype = CType.fromSchema(rawCType, didAlice)
 
     ctypeMetadata = {
       title: { default: 'Title' },

@@ -1,8 +1,15 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group unit/balance
  */
 
-import BN from 'bn.js'
+import { BN } from '@polkadot/util'
 import type { BalanceOptions } from '@kiltprotocol/types'
 import {
   formatKiltBalance,

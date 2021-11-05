@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * SDKErrors are KILT-specific errors, with associated codes and descriptions.
  *
  * @packageDocumentation
@@ -36,6 +43,11 @@ export enum ErrorCode {
   ERROR_IDENTITY_NOT_PE_ENABLED = 10016,
   ERROR_WS_ADDRESS_NOT_SET = 10017,
   ERROR_DELEGATION_ID_MISSING = 10018,
+  ERROR_HIERARCHY_DETAILS_MISSING = 10019,
+  ERROR_DELEGATION_SIGNATURE_MISSING = 10020,
+  ERROR_DELEGATION_PARENT_MISSING = 10021,
+  ERROR_INVALID_ROOT_NODE = 10022,
+  ERROR_INVALID_DELEGATION_NODE = 10023,
 
   // Data type is wrong or malformed
   ERROR_ADDRESS_TYPE = 20001,
@@ -52,10 +64,11 @@ export enum ErrorCode {
   ERROR_CLAIM_HASHTREE_MISMATCH = 20014,
   ERROR_PE_MISMATCH = 20015,
   ERROR_DID_IDENTIFIER_MISMATCH = 20016,
-  ERROR_ROOT_NODE_QUERY = 20017,
-  ERROR_INVALID_DID_PREFIX = 20018,
+  ERROR_HIERARCHY_QUERY = 20017,
+  ERROR_INVALID_DID_FORMAT = 20018,
   ERROR_MESSAGE_BODY_MALFORMED = 20019,
   ERROR_NODE_QUERY = 20020,
+  ERROR_UNSUPPORTED_DID = 20021,
 
   // Data is invalid
   ERROR_ADDRESS_INVALID = 30001,
@@ -71,6 +84,7 @@ export enum ErrorCode {
   ERROR_NESTED_CLAIM_UNVERIFIABLE = 30011,
   ERROR_INVALID_PROOF_FOR_STATEMENT = 30012,
   ERROR_CTYPE_PROPERTIES_NOT_MATCHING = 30013,
+  ERROR_UNSUPPORTED_KEY = 30014,
 
   // Compression / Decompressions
   ERROR_DECOMPRESSION_ARRAY = 40001,
@@ -160,6 +174,15 @@ export const ERROR_CTYPE_PROPERTIES_NOT_MATCHING: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CTYPE_PROPERTIES_NOT_MATCHING,
     'Required properties do not match CType properties'
+  )
+}
+
+export const ERROR_UNSUPPORTED_KEY: (keyType: string) => SDKError = (
+  keyType: string
+) => {
+  return new SDKError(
+    ErrorCode.ERROR_UNSUPPORTED_KEY,
+    `The provided key type "${keyType}" is currently not supported.`
   )
 }
 
@@ -272,6 +295,41 @@ export const ERROR_DELEGATION_ID_MISSING: () => SDKError = () => {
   )
 }
 
+export const ERROR_HIERARCHY_DETAILS_MISSING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_HIERARCHY_DETAILS_MISSING,
+    'Delegation hierarchy details missing'
+  )
+}
+
+export const ERROR_DELEGATION_SIGNATURE_MISSING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_DELEGATION_SIGNATURE_MISSING,
+    "Delegatee's signature missing"
+  )
+}
+
+export const ERROR_DELEGATION_PARENT_MISSING: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_DELEGATION_PARENT_MISSING,
+    'Delegation parentId missing'
+  )
+}
+
+export const ERROR_INVALID_ROOT_NODE: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_INVALID_ROOT_NODE,
+    'The given node is not a valid root node'
+  )
+}
+
+export const ERROR_INVALID_DELEGATION_NODE: () => SDKError = () => {
+  return new SDKError(
+    ErrorCode.ERROR_INVALID_DELEGATION_NODE,
+    'The given node is not a valid delegation node'
+  )
+}
+
 export const ERROR_CLAIM_CONTENTS_MALFORMED: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_CLAIM_CONTENTS_MALFORMED,
@@ -341,7 +399,7 @@ export const ERROR_CLAIM_HASHTREE_MISMATCH: (key?: string) => SDKError = (
 export const ERROR_SIGNATURE_DATA_TYPE: () => SDKError = () => {
   return new SDKError(
     ErrorCode.ERROR_SIGNATURE_DATA_TYPE,
-    'Property non existent'
+    'Signature malformed'
   )
 }
 export const ERROR_DID_IDENTIFIER_MISMATCH: (
@@ -359,11 +417,11 @@ export const ERROR_PE_MISMATCH: () => SDKError = () => {
     'Verifier requested public presentation, but privacy enhancement was forced.'
   )
 }
-export const ERROR_ROOT_NODE_QUERY: (rootId: string) => SDKError = (
+export const ERROR_HIERARCHY_QUERY: (rootId: string) => SDKError = (
   rootId: string
 ) => {
   return new SDKError(
-    ErrorCode.ERROR_ROOT_NODE_QUERY,
+    ErrorCode.ERROR_HIERARCHY_QUERY,
     `Could not find root node with id ${rootId}`
   )
 }
@@ -375,12 +433,20 @@ export const ERROR_NODE_QUERY: (nodeId: string) => SDKError = (
     `Could not find node with id ${nodeId}`
   )
 }
-export const ERROR_INVALID_DID_PREFIX: (identifier: string) => SDKError = (
+export const ERROR_INVALID_DID_FORMAT: (identifier: string) => SDKError = (
   identifier: string
 ) => {
   return new SDKError(
-    ErrorCode.ERROR_INVALID_DID_PREFIX,
-    `Not a KILT did: ${identifier}`
+    ErrorCode.ERROR_INVALID_DID_FORMAT,
+    `Not a valid KILT did: ${identifier}`
+  )
+}
+export const ERROR_UNSUPPORTED_DID: (input: string) => SDKError = (
+  input: string
+) => {
+  return new SDKError(
+    ErrorCode.ERROR_UNSUPPORTED_DID,
+    `The DID ${input} is not supported.`
   )
 }
 

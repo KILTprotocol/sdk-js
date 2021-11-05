@@ -1,15 +1,21 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * @group integration/blockchain
  */
 
 import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics/types'
-import BN from 'bn.js/'
+import { BN } from '@polkadot/util'
 import { SDKErrors } from '@kiltprotocol/utils'
-import type { IBlockchainApi } from '@kiltprotocol/types'
+import type { IBlockchainApi, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { makeTransfer } from '../balance/Balance.chain'
-import Identity from '../identity/Identity'
-import { wannabeFaucet, wannabeCharlie, WS_ADDRESS } from './utils'
+import { devFaucet, devCharlie, WS_ADDRESS, keypairFromRandom } from './utils'
 import { config, connect, disconnect } from '../kilt'
 
 let blockchain: IBlockchainApi
@@ -19,13 +25,13 @@ beforeAll(async () => {
 })
 
 describe('Chain returns specific errors, that we check for', () => {
-  let faucet: Identity
-  let testIdentity: Identity
-  let charlie: Identity
+  let faucet: KeyringPair
+  let testIdentity: KeyringPair
+  let charlie: KeyringPair
   beforeAll(async () => {
-    faucet = wannabeFaucet
-    testIdentity = Identity.buildFromURI(Identity.generateMnemonic())
-    charlie = wannabeCharlie
+    faucet = devFaucet
+    testIdentity = keypairFromRandom()
+    charlie = devCharlie
     const tx = await makeTransfer(testIdentity.address, new BN(10000), 0)
     await BlockchainUtils.signAndSubmitTx(tx, faucet, {
       resolveOn: BlockchainUtils.IS_FINALIZED,
@@ -57,7 +63,7 @@ describe('Chain returns specific errors, that we check for', () => {
       .createType('ExtrinsicPayload', signer.toPayload(), {
         version: blockchain.api.extrinsicVersion,
       })
-      .sign(testIdentity.signKeyringPair)
+      .sign(testIdentity)
     tx.addSignature(testIdentity.address, signature, signer.toPayload())
 
     const errorSigner: SignerPayload = blockchain.api.createType(
@@ -82,7 +88,7 @@ describe('Chain returns specific errors, that we check for', () => {
       .createType('ExtrinsicPayload', errorSigner.toPayload(), {
         version: blockchain.api.extrinsicVersion,
       })
-      .sign(testIdentity.signKeyringPair)
+      .sign(testIdentity)
     errorTx.addSignature(
       testIdentity.address,
       errorSignature,
@@ -123,7 +129,7 @@ describe('Chain returns specific errors, that we check for', () => {
       .createType('ExtrinsicPayload', signer.toPayload(), {
         version: blockchain.api.extrinsicVersion,
       })
-      .sign(testIdentity.signKeyringPair)
+      .sign(testIdentity)
     tx.addSignature(testIdentity.address, signature, signer.toPayload())
 
     const errorSigner: SignerPayload = blockchain.api.createType(
@@ -151,7 +157,7 @@ describe('Chain returns specific errors, that we check for', () => {
       .createType('ExtrinsicPayload', errorSigner.toPayload(), {
         version: blockchain.api.extrinsicVersion,
       })
-      .sign(testIdentity.signKeyringPair)
+      .sign(testIdentity)
     errorTx.addSignature(
       testIdentity.address,
       errorSignature,

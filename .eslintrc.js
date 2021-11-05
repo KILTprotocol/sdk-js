@@ -1,3 +1,4 @@
+/* eslint-disable license-header/header */
 module.exports = {
   env: {
     browser: true,
@@ -20,7 +21,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint', 'prettier', 'jsdoc'],
+  plugins: ['@typescript-eslint', 'prettier', 'jsdoc', 'license-header'],
   rules: {
     'import/no-cycle': 2,
     'import/extensions': [
@@ -55,7 +56,7 @@ module.exports = {
         default: 'array-simple',
       },
     ],
-    '@typescript-eslint/ban-ts-comment' : 'warn',
+    '@typescript-eslint/ban-ts-comment': 'warn',
     'jsdoc/require-description': 'warn',
     'jsdoc/require-description-complete-sentence': 'warn',
     'jsdoc/no-types': 'warn',
@@ -77,6 +78,7 @@ module.exports = {
       },
     ],
     'jsdoc/check-alignment': 'off',
+    'license-header/header': ['error', './license-header.js'],
   },
   overrides: [
     {

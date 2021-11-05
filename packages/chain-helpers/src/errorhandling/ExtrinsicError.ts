@@ -1,4 +1,11 @@
 /**
+ * Copyright 2018-2021 BOTLabs GmbH.
+ *
+ * This source code is licensed under the BSD 4-Clause "Original" license
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * ExtrinsicErrors are KILT-specific errors, with associated codes and descriptions.
  *
  * @packageDocumentation
@@ -73,26 +80,52 @@ export const ExtrinsicErrors = {
       code: 13002,
       message: 'delegation not found',
     },
-    ERROR_ROOT_ALREADY_EXISTS: { code: 13003, message: 'root already exist' },
-    ERROR_ROOT_NOT_FOUND: { code: 13004, message: 'root not found' },
+    ERROR_DELEGATE_NOT_FOUND: {
+      code: 13003,
+      message: 'delegate not found',
+    },
+    ERROR_HIERARCHY_ALREADY_EXISTS: {
+      code: 13004,
+      message: 'hierarchy already exist',
+    },
+    ERROR_HIERARCHY_NOT_FOUND: { code: 13005, message: 'hierarchy not found' },
     ERROR_MAX_DELEGATION_SEARCH_DEPTH_REACHED: {
-      code: 13005,
+      code: 13006,
       message: 'maximum delegation search depth reached',
     },
-    ERROR_NOT_OWNER_OF_PARENT: { code: 13006, message: 'not owner of parent' },
-    ERROR_NOT_OWNER_OF_ROOT: { code: 13007, message: 'not owner of root' },
-    ERROR_PARENT_NOT_FOUND: { code: 13008, message: 'parent not found' },
+    ERROR_NOT_OWNER_OF_PARENT: { code: 13007, message: 'not owner of parent' },
+    ERROR_NOT_OWNER_OF_HIERARCHY: {
+      code: 13008,
+      message: 'not owner of hierarchy',
+    },
+    ERROR_PARENT_NOT_FOUND: { code: 13009, message: 'parent not found' },
+    ERROR_PARENT_REVOKED: {
+      code: 13010,
+      message: 'parent delegation revoked',
+    },
     ERROR_NOT_PERMITTED_TO_REVOKE: {
-      code: 13009,
+      code: 13011,
       message: 'not permitted to revoke',
     },
     ERROR_NOT_AUTHORIZED_TO_DELEGATE: {
-      code: 13010,
+      code: 13012,
       message: 'not authorized to delegate',
     },
     ERROR_EXCEEDED_REVOCATION_BOUNDS: {
-      code: 13011,
+      code: 13013,
       message: 'exceeded revocation bounds',
+    },
+    ERROR_EXCEEDED_MAX_REVOCATIONS_ALLOWED: {
+      code: 13014,
+      message: 'exceeded max revocations allowed',
+    },
+    ERROR_EXCEEDED_MAX_PARENT_CHECKS_ALLOWED: {
+      code: 13015,
+      message: 'exceeded max parent checks allowed',
+    },
+    INTERNAL_ERROR: {
+      code: 13016,
+      message: 'an internal delegation module error occured',
     },
     UNKNOWN_ERROR: {
       code: 13100,
@@ -156,15 +189,20 @@ export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
     0: ExtrinsicErrors.Delegation.ERROR_DELEGATION_ALREADY_EXISTS,
     1: ExtrinsicErrors.Delegation.ERROR_BAD_DELEGATION_SIGNATURE,
     2: ExtrinsicErrors.Delegation.ERROR_DELEGATION_NOT_FOUND,
-    3: ExtrinsicErrors.Delegation.ERROR_ROOT_ALREADY_EXISTS,
-    4: ExtrinsicErrors.Delegation.ERROR_ROOT_NOT_FOUND,
-    5: ExtrinsicErrors.Delegation.ERROR_MAX_DELEGATION_SEARCH_DEPTH_REACHED,
-    6: ExtrinsicErrors.Delegation.ERROR_NOT_OWNER_OF_PARENT,
-    7: ExtrinsicErrors.Delegation.ERROR_NOT_OWNER_OF_ROOT,
-    8: ExtrinsicErrors.Delegation.ERROR_PARENT_NOT_FOUND,
-    9: ExtrinsicErrors.Delegation.ERROR_NOT_PERMITTED_TO_REVOKE,
-    10: ExtrinsicErrors.Delegation.ERROR_NOT_AUTHORIZED_TO_DELEGATE,
-    11: ExtrinsicErrors.Delegation.ERROR_EXCEEDED_REVOCATION_BOUNDS,
+    3: ExtrinsicErrors.Delegation.ERROR_DELEGATE_NOT_FOUND,
+    4: ExtrinsicErrors.Delegation.ERROR_HIERARCHY_ALREADY_EXISTS,
+    5: ExtrinsicErrors.Delegation.ERROR_HIERARCHY_NOT_FOUND,
+    6: ExtrinsicErrors.Delegation.ERROR_MAX_DELEGATION_SEARCH_DEPTH_REACHED,
+    7: ExtrinsicErrors.Delegation.ERROR_NOT_OWNER_OF_PARENT,
+    8: ExtrinsicErrors.Delegation.ERROR_NOT_OWNER_OF_HIERARCHY,
+    9: ExtrinsicErrors.Delegation.ERROR_PARENT_NOT_FOUND,
+    10: ExtrinsicErrors.Delegation.ERROR_PARENT_REVOKED,
+    11: ExtrinsicErrors.Delegation.ERROR_NOT_PERMITTED_TO_REVOKE,
+    12: ExtrinsicErrors.Delegation.ERROR_NOT_AUTHORIZED_TO_DELEGATE,
+    13: ExtrinsicErrors.Delegation.ERROR_EXCEEDED_REVOCATION_BOUNDS,
+    14: ExtrinsicErrors.Delegation.ERROR_EXCEEDED_MAX_REVOCATIONS_ALLOWED,
+    15: ExtrinsicErrors.Delegation.ERROR_EXCEEDED_MAX_PARENT_CHECKS_ALLOWED,
+    16: ExtrinsicErrors.Delegation.INTERNAL_ERROR,
     [-1]: ExtrinsicErrors.Delegation.UNKNOWN_ERROR,
   },
   [PalletIndex.DID]: {

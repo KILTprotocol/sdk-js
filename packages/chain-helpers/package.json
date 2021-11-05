@@ -1,6 +1,6 @@
 {
   "name": "@kiltprotocol/chain-helpers",
-  "version": "0.21.1-11",
+  "version": "0.24.0-10",
   "description": "",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
@@ -22,17 +22,17 @@
   "homepage": "https://github.com/KILTprotocol/sdk-js#readme",
   "devDependencies": {
     "rimraf": "^3.0.2",
-    "typescript": "4.0"
+    "typescript": "^4.2.2"
   },
   "dependencies": {
     "@kiltprotocol/config": "workspace:*",
-    "@kiltprotocol/type-definitions": "0.1.5",
+    "@kiltprotocol/type-definitions": "0.1.23",
     "@kiltprotocol/types": "workspace:*",
     "@kiltprotocol/utils": "workspace:*",
-    "@polkadot/api": "^4.12.1",
-    "@polkadot/keyring": "^6.6.1",
-    "@polkadot/types": "^4.12.1",
-    "bn.js": "^4.11.9",
+    "@polkadot/api": "6.4.2",
+    "@polkadot/keyring": "7.5.1",
+    "@polkadot/types": "6.4.2",
+    "@polkadot/util": "7.5.1",
     "typescript-logging": "^0.6.4"
   }
 }
