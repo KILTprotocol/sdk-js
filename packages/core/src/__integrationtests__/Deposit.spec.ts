@@ -370,7 +370,12 @@ describe('Different deposits scenarios', () => {
         testMnemonics[0],
         SigningAlgorithms.Sr25519
       ),
-      createOnChainDidFromSeed(testIdentities[1], keystore, testMnemonics[1]),
+      createOnChainDidFromSeed(
+        testIdentities[1],
+        keystore,
+        testMnemonics[1],
+        SigningAlgorithms.Sr25519
+      ),
       createOnChainDidFromSeed(
         testIdentities[2],
         keystore,
