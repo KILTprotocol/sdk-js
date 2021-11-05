@@ -166,7 +166,6 @@ export interface IPalletToExtrinsicErrors {
 
 /**
  * @internal
- * This dictionary holds all [[ExtrinsicError]]s, divided by pallets.
  */
 export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
   [PalletIndex.CType]: {
@@ -212,12 +211,9 @@ export const PalletToExtrinsicErrors: IPalletToExtrinsicErrors = {
 
 /**
  * @internal
- * Maps a [[ModuleError]] to its corresponding [[ExtrinsicError]].
- *
  * @param p The parameter object.
  * @param p.index The index of the KILT pallet in the metadata.
  * @param p.error The index of the position of the pallet's error definition inside the chain code.
- *
  * @returns A new corresponding [[ExtrinsicError]].
  */
 export function errorForPallet({

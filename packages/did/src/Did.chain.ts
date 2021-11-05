@@ -10,7 +10,7 @@
  * @module DID
  */
 
-import type { Option, u32 } from '@polkadot/types'
+import type { Option, u32, U128, GenericAccountId } from '@polkadot/types'
 import type {
   IIdentity,
   SubmittableExtrinsic,
@@ -55,6 +55,31 @@ export async function queryDidEncoded(
   return api.query.did.did<Option<IDidChainRecordCodec>>(didIdentifier)
 }
 
+// Query ALL deleted DIDs, which can be very time consuming if the number of deleted DIDs gets large.
+export async function queryDeletedDidsEncoded(): Promise<GenericAccountId[]> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  // Query all the storage keys, and then only take the relevant property, i.e., the encoded DID identifier.
+  return api.query.did.didBlacklist
+    .keys<GenericAccountId[]>()
+    .then((entries) =>
+      entries.map(({ args: [encodedDidIdentifier] }) => encodedDidIdentifier)
+    )
+}
+
+// Returns the raw representation of the storage entry for the given DID identifier.
+async function queryDidDeletionStatusEncoded(
+  didIdentifier: IIdentity['address']
+): Promise<Uint8Array> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  const encodedStorageKey = await api.query.did.didBlacklist.key(didIdentifier)
+  return (
+    api.rpc.state
+      .queryStorageAt<Codec[]>([encodedStorageKey])
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      .then((encodedValue) => encodedValue.pop()!.toU8a())
+  )
+}
+
 // Query a DID service given the DID identifier and the service ID.
 // Interacts with the ServiceEndpoints storage double map.
 export async function queryServiceEncoded(
@@ -86,6 +111,11 @@ export async function queryEndpointsCountsEncoded(
 ): Promise<u32> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
   return api.query.did.didEndpointsCount<u32>(didIdentifier)
+}
+
+async function queryDepositAmountEncoded(): Promise<U128> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.consts.did.deposit as U128
 }
 
 // ### DECODED QUERYING (builds on top of raw querying)
@@ -257,6 +287,29 @@ export async function queryLastTxCounter(
   }
   const encoded = await queryDidEncoded(identifier)
   return encoded.isSome ? encoded.unwrap().lastTxCounter.toBn() : new BN(0)
+}
+
+export async function queryDepositAmount(): Promise<BN> {
+  const encodedDeposit = await queryDepositAmountEncoded()
+  return encodedDeposit.toBn()
+}
+
+export async function queryDeletedDids(): Promise<Array<IDidDetails['did']>> {
+  const encodedIdentifiers = await queryDeletedDidsEncoded()
+  return encodedIdentifiers.map((id) =>
+    getKiltDidFromIdentifier(id.toHuman(), 'full')
+  )
+}
+
+export async function queryDidDeletionStatus(
+  didUri: IDidDetails['did']
+): Promise<boolean> {
+  const { identifier } = parseDidUrl(didUri)
+  const encodedDeletionStorageEntry = await queryDidDeletionStatusEncoded(
+    identifier
+  )
+  // The result is a 1-byte array where the only element is 1 if the DID has been deleted, and 0 otherwise.
+  return encodedDeletionStorageEntry[0] === 1
 }
 
 // ### EXTRINSICS

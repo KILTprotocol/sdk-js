@@ -25,12 +25,14 @@ import type {
   IRequestForAttestation,
   CompressedAttestation,
 } from '@kiltprotocol/types'
+import { BN } from '@polkadot/util'
 import {
   revoke,
   query,
   store,
   remove,
   reclaimDeposit,
+  queryDepositAmount,
 } from './Attestation.chain'
 import AttestationUtils from './Attestation.utils'
 import DelegationNode from '../delegation/DelegationNode'
@@ -303,5 +305,14 @@ export default class Attestation implements IAttestation {
   public static decompress(attestation: CompressedAttestation): Attestation {
     const decompressedAttestation = AttestationUtils.decompress(attestation)
     return Attestation.fromAttestation(decompressedAttestation)
+  }
+
+  /**
+   * [STATIC] Query and return the amount of KILTs (in femto notation) needed to deposit in order to create an attestation.
+   *
+   * @returns The amount of femtoKILTs required to deposit to create the attestation.
+   */
+  public static queryDepositAmount(): Promise<BN> {
+    return queryDepositAmount()
   }
 }

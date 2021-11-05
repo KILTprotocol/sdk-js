@@ -45,6 +45,13 @@ beforeAll(async () => {
   paymentAccount = devAlice
 })
 
+it('fetches the correct deposit amount', async () => {
+  const depositAmount = await DidChain.queryDepositAmount()
+  expect(depositAmount.toString()).toStrictEqual(
+    new BN(2000000000000000).toString()
+  )
+})
+
 describe('write and didDeleteTx', () => {
   let didIdentifier: string
   let key: DidTypes.INewPublicKey
@@ -219,6 +226,10 @@ describe('write and didDeleteTx', () => {
       submitter: paymentAccount.address,
     })
 
+    // Check that DID is not blacklisted.
+    await expect(DidChain.queryDeletedDids()).resolves.toStrictEqual([])
+    await expect(DidChain.queryDidDeletionStatus(did)).resolves.toBeFalsy()
+
     await expect(
       BlockchainUtils.signAndSubmitTx(submittable, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
@@ -227,6 +238,10 @@ describe('write and didDeleteTx', () => {
     ).resolves.not.toThrow()
 
     await expect(DidChain.queryById(didIdentifier)).resolves.toBe(null)
+
+    // Check that DID is now blacklisted.
+    await expect(DidChain.queryDeletedDids()).resolves.toStrictEqual([did])
+    await expect(DidChain.queryDidDeletionStatus(did)).resolves.toBeTruthy()
   }, 60_000)
 })
 
@@ -256,7 +271,7 @@ it('creates and updates DID, and then reclaims the deposit back', async () => {
   await expect(DidChain.queryById(didIdentifier)).resolves.toMatchObject<
     Partial<DidTypes.IDidChainRecordJSON>
   >({
-    did: DidUtils.getKiltDidFromIdentifier(didIdentifier, 'full'),
+    did,
   })
 
   const newKeypair = await keystore.generateKeypair({

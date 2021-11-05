@@ -10,13 +10,14 @@
  * @module DelegationNode
  */
 
-import type { Option, Vec } from '@polkadot/types'
+import type { Option, Vec, U128 } from '@polkadot/types'
 import type { IDelegationNode, SubmittableExtrinsic } from '@kiltprotocol/types'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import type { Hash } from '@polkadot/types/interfaces'
 import { DecoderUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidTypes, DidUtils } from '@kiltprotocol/did'
+import { BN } from '@polkadot/util'
 import { decodeDelegationNode, IChainDelegationNode } from './DelegationDecoder'
 import DelegationNode from './DelegationNode'
 import { permissionsAsBitset } from './DelegationNode.utils'
@@ -90,9 +91,6 @@ export async function query(
 
 /**
  * @internal
- *
- * Revokes part of a delegation tree at specified node, also revoking all nodes below.
- *
  * @param delegationId The id of the node in the delegation tree at which to revoke.
  * @param maxDepth How many nodes may be traversed upwards in the hierarchy when searching for a node owned by `identity`. Each traversal will add to the transaction fee. Therefore a higher number will increase the fees locked until the transaction is complete. A number lower than the actual required traversals will result in a failed extrinsic (node will not be revoked).
  * @param maxRevocations How many delegation nodes may be revoked during the process. Each revocation adds to the transaction fee. A higher number will require more fees to be locked while an insufficiently high number will lead to premature abortion of the revocation process, leaving some nodes unrevoked. Revocations will first be performed on child nodes, therefore the current node is only revoked when this is accurate.
@@ -114,9 +112,6 @@ export async function revoke(
 
 /**
  * @internal
- *
- * Revokes and removes part of a delegation tree at specified node, also removing all nodes below.
- *
  * @param delegationId The id of the node in the delegation tree at which to remove.
  * @param maxRevocations How many delegation nodes may be removed during the process. Each removal adds to the transaction fee. A higher number will require more fees to be locked while an insufficiently high number will lead to premature abortion of the removal process, leaving some nodes unremoved. Removals will first be performed on child nodes, therefore the current node is only removed when this is accurate.
  * @returns An unsigned SubmittableExtrinsic ready to be signed and dispatched.
@@ -178,4 +173,14 @@ export async function getAttestationHashes(
     Option<Vec<Hash>>
   >(id)
   return decodeDelegatedAttestations(encodedHashes)
+}
+
+async function queryDepositAmountEncoded(): Promise<U128> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.consts.delegation.deposit as U128
+}
+
+export async function queryDepositAmount(): Promise<BN> {
+  const encodedDeposit = await queryDepositAmountEncoded()
+  return encodedDeposit.toBn()
 }

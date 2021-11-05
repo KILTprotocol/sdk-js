@@ -9,7 +9,7 @@
  * @packageDocumentation
  * @module Attestation
  */
-import { Option, Struct } from '@polkadot/types'
+import { Option, Struct, U128 } from '@polkadot/types'
 import type {
   IAttestation,
   Deposit,
@@ -20,6 +20,7 @@ import type { AccountId, Hash } from '@polkadot/types/interfaces'
 import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DidUtils } from '@kiltprotocol/did'
+import { BN } from '@polkadot/util'
 import Attestation from './Attestation'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
@@ -154,4 +155,14 @@ export async function reclaimDeposit(
     claimHash
   )
   return tx
+}
+
+async function queryDepositAmountEncoded(): Promise<U128> {
+  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
+  return api.consts.attestation.deposit as U128
+}
+
+export async function queryDepositAmount(): Promise<BN> {
+  const encodedDeposit = await queryDepositAmountEncoded()
+  return encodedDeposit.toBn()
 }
