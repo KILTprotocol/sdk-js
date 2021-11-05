@@ -11,7 +11,6 @@
 
 import type {
   IAttestedClaim,
-  IClaim,
   IEncryptedMessage,
   IQuote,
   IDidResolvedDetails,
@@ -198,7 +197,6 @@ describe('Messaging', () => {
       content: {
         requestForAttestation: content,
         quote: bothSigned,
-        prerequisiteClaims: [] as IClaim[],
       },
       type: Message.BodyType.REQUEST_ATTESTATION,
     }

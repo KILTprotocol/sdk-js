@@ -25,7 +25,6 @@ export interface ITerms {
   legitimations: IAttestedClaim[]
   delegationId?: IDelegationNode['id']
   quote?: IQuoteAttesterSigned
-  prerequisiteClaims?: ICType['hash']
   cTypes?: ICType[]
 }
 
@@ -34,6 +33,5 @@ export type CompressedTerms = [
   CompressedAttestedClaim[],
   IDelegationNode['id'] | undefined,
   CompressedQuoteAttesterSigned | undefined,
-  ICType['hash'] | undefined,
   CompressedCType[] | undefined
 ]

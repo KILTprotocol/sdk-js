@@ -400,7 +400,6 @@ describe('Messaging Utilities', () => {
       legitimations: [legitimation],
       delegationId: undefined,
       quote: quoteAttesterSigned,
-      prerequisiteClaims: undefined,
       cTypes: undefined,
     }
     // Compressed Submit Terms Contentƒ
@@ -409,7 +408,6 @@ describe('Messaging Utilities', () => {
       [compressedLegitimation],
       undefined,
       compressedResultAttesterSignedQuote,
-      undefined,
       undefined,
     ]
     // Reject terms Content
@@ -430,7 +428,6 @@ describe('Messaging Utilities', () => {
     requestAttestationContent = {
       requestForAttestation: legitimation.request,
       quote: bothSigned,
-      prerequisiteClaims: undefined,
     }
 
     // Compressed Request attestation content
@@ -449,7 +446,6 @@ describe('Messaging Utilities', () => {
         legitimation.request.delegationId,
       ],
       compressedQuoteAgreement,
-      undefined,
     ]
 
     // Submit Attestation content
@@ -1031,10 +1027,6 @@ describe('Messaging Utilities', () => {
     requestTermsBody.content.cTypeHash = 'this is not a ctype hash'
     expect(() =>
       MessageUtils.errorCheckMessageBody(requestTermsBody)
-    ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
-    submitTermsBody.content.prerequisiteClaims = 'this is not a delegation id'
-    expect(() =>
-      MessageUtils.errorCheckMessageBody(submitTermsBody)
     ).toThrowErrorWithCode(SDKErrors.ERROR_HASH_MALFORMED())
     submitTermsBody.content.delegationId = 'this is not a delegation id'
     expect(() =>

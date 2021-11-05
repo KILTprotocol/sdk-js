@@ -14,12 +14,7 @@ import type { AnyJson } from '@polkadot/types/types'
 import type { DidSignature, IDidDetails, IDidKeyDetails } from './DidDetails'
 import type { CompressedAttestation, IAttestation } from './Attestation'
 import type { CompressedAttestedClaim, IAttestedClaim } from './AttestedClaim'
-import type {
-  CompressedClaim,
-  IClaim,
-  IClaimContents,
-  PartialClaim,
-} from './Claim'
+import type { IClaim, IClaimContents, PartialClaim } from './Claim'
 import type { ICType } from './CType'
 import type { IDelegationNode } from './Delegation'
 import type { CompressedQuoteAgreed, IQuoteAgreement } from './Quote'
@@ -234,7 +229,6 @@ export type CompressedInformCreateDelegation = [
 export interface IRequestAttestationForClaimContent {
   requestForAttestation: IRequestForAttestation
   quote?: IQuoteAgreement
-  prerequisiteClaims?: Array<IClaim | PartialClaim>
 }
 
 export interface ISubmitAttestationForClaimContent {
@@ -317,8 +311,7 @@ export type CompressedRequestClaimsForCTypesContent = [
 
 export type CompressedRequestAttestationForClaimContent = [
   CompressedRequestForAttestation,
-  CompressedQuoteAgreed | undefined,
-  Array<CompressedPartialClaim | CompressedClaim> | undefined
+  CompressedQuoteAgreed | undefined
 ]
 
 export type CompressedDelegationData = [
