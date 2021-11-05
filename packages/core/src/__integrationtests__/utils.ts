@@ -91,7 +91,7 @@ export const IsOfficialLicenseAuthority = CType.fromSchema({
   type: 'object',
 })
 
-export async function initialTransfer(
+export async function endowAccounts(
   faucet: KeyringPair,
   addresses: Array<string>
 ): Promise<void> {

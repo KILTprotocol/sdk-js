@@ -35,7 +35,7 @@ import {
   WS_ADDRESS,
   devFaucet,
   DriversLicense,
-  initialTransfer,
+  endowAccounts,
   CtypeOnChain,
 } from './utils'
 import { Balance } from '../balance'
@@ -249,7 +249,7 @@ beforeAll(async () => {
   ) // Sending tokens to all accounts
   const testAddresses = testIdentities.map((val) => val.address)
 
-  await initialTransfer(devFaucet, testAddresses)
+  await endowAccounts(devFaucet, testAddresses)
   // Create the group of mnemonics for the script
   const claimerMnemonic = mnemonicGenerate()
 
