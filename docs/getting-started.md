@@ -754,7 +754,7 @@ const copiedCredential = myAttestedClaim.createPresentation({
 })
 
 const messageBodyForVerifier: MessageBody = {
-  content: [credentialCopy],
+  content: [copiedCredential],
   type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
 }
 const messageForVerifier = new Kilt.Message(
@@ -771,7 +771,7 @@ const encrypted = messageForVerifier.encrypt(
 
 ### 6.2. Verify presentation
 
-When verifying the claimer's message, the verifier checks that 3 important requirements are met:
+When verifying the claimer's message, the verifier checks that three important requirements are met:
 
 - The credential is valid, i.e. it has been registered to the public ledger, has not been revoked, and the data has not been tampered with.
 - The attester who registered the credential is one that this verifier trusts.
