@@ -20,7 +20,7 @@
 import type {
   CompressedMessageBody,
   IMessage,
-  ISubmitClaimsForCTypes,
+  ISubmitCredential,
   IEncryptedMessage,
   MessageBody,
   ICType,
@@ -79,7 +79,7 @@ export default class Message implements IMessage {
         break
       case Message.BodyType.SUBMIT_CREDENTIAL:
         {
-          const submitClaimsForCtype: ISubmitClaimsForCTypes = body
+          const submitClaimsForCtype: ISubmitCredential = body
           submitClaimsForCtype.content.forEach((claim) => {
             if (claim.request.claim.owner !== sender) {
               throw SDKErrors.ERROR_IDENTITY_MISMATCH('Claims', 'Sender')

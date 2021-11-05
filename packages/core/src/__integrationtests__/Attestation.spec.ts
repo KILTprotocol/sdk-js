@@ -245,7 +245,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     )
   }, 60_000)
 
-  describe('when there is an attested claim on-chain', () => {
+  describe('when there is a credential on-chain', () => {
     let attClaim: Credential
 
     beforeAll(async () => {

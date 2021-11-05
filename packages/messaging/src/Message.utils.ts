@@ -25,7 +25,7 @@ import type {
   CompressedCredential,
   CompressedMessageBody,
   MessageBody,
-  CompressedRequestClaimsForCTypesContent,
+  CompressedRequestCredentialContent,
   ICType,
   IMessage,
   IDelegationData,
@@ -131,7 +131,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
         ({ cTypeHash, trustedAttesters, requiredProperties }): void => {
           DataUtils.validateHash(
             cTypeHash,
-            'request claims for ctypes cTypeHash invalid'
+            'request credential cTypeHash invalid'
           )
           trustedAttesters?.map((did) => DidUtils.validateKiltDid(did))
           requiredProperties?.map((requiredProps) => {
@@ -152,7 +152,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       body.content.map((cTypeHash) =>
         DataUtils.validateHash(
           cTypeHash,
-          'accept claims for ctypes message ctype hash invalid'
+          'accept credential message ctype hash invalid'
         )
       )
       break
@@ -161,7 +161,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       body.content.map((cTypeHash) =>
         DataUtils.validateHash(
           cTypeHash,
-          'rejected claims for ctypes ctype hashes invalid'
+          'rejected credential ctype hashes invalid'
         )
       )
       break
@@ -308,7 +308,7 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     case Message.BodyType.REQUEST_CREDENTIAL: {
-      const compressedCtypes: CompressedRequestClaimsForCTypesContent[0] = body.content.cTypes.map(
+      const compressedCtypes: CompressedRequestCredentialContent[0] = body.content.cTypes.map(
         ({ cTypeHash, trustedAttesters, requiredProperties }) => {
           return [cTypeHash, trustedAttesters, requiredProperties]
         }

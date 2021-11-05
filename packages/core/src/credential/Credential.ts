@@ -36,7 +36,7 @@ export default class Credential implements ICredential {
    * [STATIC] Builds an instance of [[Credential]], from a simple object with the same properties.
    * Used for deserialization.
    *
-   * @param credentialInput - The base object from which to create the attested claim.
+   * @param credentialInput - The base object from which to create the credential.
    * @returns A new instantiated [[Credential]] object.
    * @example ```javascript
    * // create an Credential object, so we can call methods on it (`serialized` is a serialized Credential object)
@@ -90,7 +90,7 @@ export default class Credential implements ICredential {
   /**
    * Builds a new [[Credential]] instance.
    *
-   * @param credentialInput - The base object with all required input, from which to create the attested claim.
+   * @param credentialInput - The base object with all required input, from which to create the credential.
    * @example ```javascript
    * // Create an `Credential` upon successful `Attestation` creation:
    * const credential = new Credential(credentialInput);
@@ -103,20 +103,20 @@ export default class Credential implements ICredential {
   }
 
   /**
-   * (ASYNC) Verifies whether the attested claim is valid. It is valid if:
+   * (ASYNC) Verifies whether the credential is valid. It is valid if:
    * * the data is valid (see [[verifyData]]);
    * and
-   * * the [[Attestation]] object for this attested claim is valid (see [[Attestation.checkValidity]], where the **chain** is queried).
+   * * the [[Attestation]] object for this credential is valid (see [[Attestation.checkValidity]], where the **chain** is queried).
    *
-   * Upon presentation of an attested claim, a verifier would call this [[verify]] function.
+   * Upon presentation of a credential, a verifier would call this [[verify]] function.
    *
-   * @param credential - The attested claim to check for validity.
+   * @param credential - The credential to check for validity.
    * @param verificationOpts
    * @param verificationOpts.claimerDid - The claimer's DID.
    * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
    * Defaults to the DefaultResolver.
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
-   * @returns A promise containing whether this attested claim is valid.
+   * @returns A promise containing whether this credential is valid.
    * @example ```javascript
    * credential.verify().then((isVerified) => {
    * // `isVerified` is true if the attestation is verified, false otherwise
@@ -150,13 +150,13 @@ export default class Credential implements ICredential {
   }
 
   /**
-   * Verifies whether the data of the given attested claim is valid. It is valid if:
-   * * the [[RequestForAttestation]] object associated with this attested claim has valid data (see [[RequestForAttestation.verifyData]]);
+   * Verifies whether the data of the given credential is valid. It is valid if:
+   * * the [[RequestForAttestation]] object associated with this credential has valid data (see [[RequestForAttestation.verifyData]]);
    * and
-   * * the hash of the [[RequestForAttestation]] object for the attested claim, and the hash of the [[Claim]] for the attested claim are the same.
+   * * the hash of the [[RequestForAttestation]] object for the credential, and the hash of the [[Claim]] for the credential are the same.
    *
-   * @param credential - The attested claim to verify.
-   * @returns Whether the attested claim's data is valid.
+   * @param credential - The credential to verify.
+   * @returns Whether the credential's data is valid.
    * @example ```javascript
    * const verificationResult = credential.verifyData();
    * ```

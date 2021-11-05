@@ -82,7 +82,7 @@ describe('RequestForAttestation', () => {
       legitimationRequest,
       identityCharlie
     )
-    // combine to attested claim
+    // combine to credential
     legitimation = new Credential({
       request: legitimationRequest,
       attestation: legitimationAttestation,
@@ -93,7 +93,7 @@ describe('RequestForAttestation', () => {
       legitimationRequest,
       identityCharlie
     )
-    // combine to attested claim
+    // combine to credential
     legitimationCharlie = new Credential({
       request: legitimationRequest,
       attestation: legitimationAttestationCharlie,

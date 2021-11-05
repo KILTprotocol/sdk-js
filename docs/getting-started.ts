@@ -198,17 +198,17 @@ async function main(): Promise<void> {
       reSign: true,
     })
 
-    /* The request for attestation is fulfilled with the attestation, but it needs to be combined into the `AttestedClaim` object before sending it back to the Claimer: */
-    const attestedClaim = Kilt.AttestedClaim.fromRequestAndAttestation(
+    /* The request for attestation is fulfilled with the attestation, but it needs to be combined into the `Credential` object before sending it back to the Claimer: */
+    const credential = Kilt.Credential.fromRequestAndAttestation(
       extractedRequestForAttestation,
       attestation
     )
-    /* The complete `attestedClaim` object looks as follows: */
-    console.log(attestedClaim)
+    /* The complete `credential` object looks as follows: */
+    console.log(credential)
 
-    /* The Attester has to send the `attestedClaim` object back to the Claimer in the following message: */
+    /* The Attester has to send the `credential` object back to the Claimer in the following message: */
     const messageBodyBack: MessageBody = {
-      content: attestedClaim,
+      content: credential,
       type: Kilt.Message.BodyType.SUBMIT_ATTESTATION,
     }
     const messageBack = new Kilt.Message(
@@ -222,7 +222,7 @@ async function main(): Promise<void> {
 
     /* After receiving the message, the Claimer just needs to save it and can use it later for verification: */
     if (messageBack.body.type === Kilt.Message.BodyType.SUBMIT_ATTESTATION) {
-      const myAttestedClaim = Kilt.AttestedClaim.fromCredential({
+      const myCredential = Kilt.Credential.fromCredential({
         ...messageBack.body.content,
         request: requestForAttestation,
       })
@@ -266,11 +266,11 @@ async function main(): Promise<void> {
         claimerLightDid.did
       )
 
-      /* Now the claimer can send a message to verifier including the attested claim: */
+      /* Now the claimer can send a message to verifier including the credential: */
       console.log('Requested from verifier:', messageForClaimer.body.content)
 
-      const copiedCredential = Kilt.AttestedClaim.fromCredential(
-        JSON.parse(JSON.stringify(myAttestedClaim))
+      const copiedCredential = Kilt.Credential.fromCredential(
+        JSON.parse(JSON.stringify(myCredential))
       )
 
       const credentialForVerifier = await copiedCredential.createPresentation({
@@ -315,12 +315,10 @@ async function main(): Promise<void> {
         const claims = decryptedMessageForVerifier.body.content
         console.log('before verifying', credentialForVerifier)
 
-        const verifiablePresentation = Kilt.AttestedClaim.fromCredential(
-          claims[0]
-        )
+        const verifiablePresentation = Kilt.Credential.fromCredential(claims[0])
         const isValid = await verifiablePresentation.verify()
         console.log('Verification success?', isValid)
-        console.log('Attested claims from verifier perspective:\n', claims)
+        console.log('Credential from verifier perspective:\n', claims)
       }
     }
   }

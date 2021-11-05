@@ -67,7 +67,7 @@ export function compress(credential: ICredential): CompressedCredential {
 
 export function decompress(credential: CompressedCredential): ICredential {
   if (!Array.isArray(credential) || credential.length !== 2) {
-    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Attested Claim')
+    throw SDKErrors.ERROR_DECOMPRESSION_ARRAY('Credential')
   }
   return {
     request: RequestForAttestationUtils.decompress(credential[0]),

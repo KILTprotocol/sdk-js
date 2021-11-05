@@ -8,15 +8,15 @@
 /* eslint-disable no-console */
 import Kilt, { KeyRelationship } from '@kiltprotocol/sdk-js'
 import type {
-  AttestedClaim,
+  Credential,
   Claim,
   CType,
   ICType,
   Did,
-  IAcceptClaimsForCTypes,
-  IRequestAttestationForClaim,
-  ISubmitAttestationForClaim,
-  ISubmitClaimsForCTypes,
+  IAcceptCredential,
+  IRequestAttestation,
+  ISubmitAttestation,
+  ISubmitCredential,
   IDidKeyDetails,
 } from '@kiltprotocol/sdk-js'
 import { KeyringPair } from '@polkadot/keyring/types'
@@ -196,7 +196,7 @@ async function doAttestation(
   claim: Claim,
   keystore: Did.DemoKeystore
 ): Promise<{
-  credential: AttestedClaim
+  credential: Credential
 }> {
   console.log(
     ((s) => s.padEnd(40 + s.length / 2, SEP).padStart(80, SEP))(' ATTESTATION ')
@@ -243,7 +243,7 @@ async function doAttestation(
   )
 
   const claimersRequest = Kilt.RequestForAttestation.fromRequest(
-    (reqAttestationDec.body as IRequestAttestationForClaim).content
+    (reqAttestationDec.body as IRequestAttestation).content
       .requestForAttestation
   )
   // Attester can check the data and verify the data has not been tampered with
@@ -295,16 +295,15 @@ async function doAttestation(
     { senderDetails: attesterFullDid, receiverDetails: claimerLightDid }
   )
 
-  const credential = Kilt.AttestedClaim.fromRequestAndAttestation(
+  const credential = Kilt.Credential.fromRequestAndAttestation(
     // The claimer has access to the request for attestation
     requestForAttestation,
-    (submitAttestationDec.body as ISubmitAttestationForClaim).content
-      .attestation
+    (submitAttestationDec.body as ISubmitAttestation).content.attestation
   )
 
   console.log('RFA Message', reqAttestationDec.body, '\n')
   console.log('Submit attestation:', submitAttestationDec.body, '\n')
-  console.log('AttestedClaim', credential, '\n')
+  console.log('Credential', credential, '\n')
 
   return {
     credential,
@@ -313,7 +312,7 @@ async function doAttestation(
 
 async function doVerification(
   claimerLightDid: Did.LightDidDetails,
-  credential: AttestedClaim,
+  credential: Credential,
   keystore: Did.DemoKeystore
 ): Promise<void> {
   console.log(
@@ -378,7 +377,7 @@ async function doVerification(
     { senderDetails: verifierLightDid, receiverDetails: claimerLightDid }
   )
 
-  const ctypeHash = (verifierAcceptedClaimsMessageDec.body as IAcceptClaimsForCTypes)
+  const ctypeHash = (verifierAcceptedClaimsMessageDec.body as IAcceptCredential)
     .content[0]
   console.log('claimer checks the ctypeHash matches', ctypeHash)
 
@@ -414,10 +413,10 @@ async function doVerification(
     keystore,
     { senderDetails: claimerLightDid, receiverDetails: verifierLightDid }
   )
-  const presentationMessage = (verifierSubmitClaimsMessageDec.body as ISubmitClaimsForCTypes)
+  const presentationMessage = (verifierSubmitClaimsMessageDec.body as ISubmitCredential)
     .content
 
-  const verifiablePresentation = Kilt.AttestedClaim.fromCredential(
+  const verifiablePresentation = Kilt.Credential.fromCredential(
     presentationMessage[0]
   )
   const verified = await verifiablePresentation.verify({ challenge })

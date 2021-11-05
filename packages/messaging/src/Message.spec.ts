@@ -15,9 +15,9 @@ import type {
   IQuote,
   IDidResolvedDetails,
   IDidKeyDetails,
-  IRequestAttestationForClaim,
-  ISubmitAttestationForClaim,
-  ISubmitClaimsForCTypes,
+  IRequestAttestation,
+  ISubmitAttestation,
+  ISubmitCredential,
   IDidDetails,
   IDidResolver,
 } from '@kiltprotocol/types'
@@ -193,7 +193,7 @@ describe('Messaging', () => {
       keystore,
       mockResolver
     )
-    const requestAttestationBody: IRequestAttestationForClaim = {
+    const requestAttestationBody: IRequestAttestation = {
       content: {
         requestForAttestation: content,
         quote: bothSigned,
@@ -218,7 +218,7 @@ describe('Messaging', () => {
       revoked: false,
     }
 
-    const submitAttestationBody: ISubmitAttestationForClaim = {
+    const submitAttestationBody: ISubmitAttestation = {
       content: {
         attestation,
       },
@@ -238,7 +238,7 @@ describe('Messaging', () => {
       attestation: submitAttestationBody.content.attestation,
     }
 
-    const submitClaimsForCTypeBody: ISubmitClaimsForCTypes = {
+    const submitClaimsForCTypeBody: ISubmitCredential = {
       content: [credential],
       type: Message.BodyType.SUBMIT_CREDENTIAL,
     }

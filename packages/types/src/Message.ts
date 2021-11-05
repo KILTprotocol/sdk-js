@@ -133,15 +133,15 @@ export interface IRejectTerms extends IMessageBodyBase {
   type: MessageBodyType.REJECT_TERMS
 }
 
-export interface IRequestAttestationForClaim extends IMessageBodyBase {
-  content: IRequestAttestationForClaimContent
+export interface IRequestAttestation extends IMessageBodyBase {
+  content: IRequestAttestationContent
   type: MessageBodyType.REQUEST_ATTESTATION
 }
-export interface ISubmitAttestationForClaim extends IMessageBodyBase {
-  content: ISubmitAttestationForClaimContent
+export interface ISubmitAttestation extends IMessageBodyBase {
+  content: ISubmitAttestationContent
   type: MessageBodyType.SUBMIT_ATTESTATION
 }
-export interface IRejectAttestationForClaim extends IMessageBodyBase {
+export interface IRejectAttestation extends IMessageBodyBase {
   content: IRequestForAttestation['rootHash']
   type: MessageBodyType.REJECT_ATTESTATION
 }
@@ -156,21 +156,21 @@ export interface IConfirmPayment extends IMessageBodyBase {
   type: MessageBodyType.CONFIRM_PAYMENT
 }
 
-export interface IRequestClaimsForCTypes extends IMessageBodyBase {
-  content: IRequestClaimsForCTypesContent
+export interface IRequestCredential extends IMessageBodyBase {
+  content: IRequestCredentialContent
   type: MessageBodyType.REQUEST_CREDENTIAL
 }
 
-export interface ISubmitClaimsForCTypes extends IMessageBodyBase {
+export interface ISubmitCredential extends IMessageBodyBase {
   content: ICredential[]
   type: MessageBodyType.SUBMIT_CREDENTIAL
 }
 
-export interface IAcceptClaimsForCTypes extends IMessageBodyBase {
+export interface IAcceptCredential extends IMessageBodyBase {
   content: Array<ICType['hash']>
   type: MessageBodyType.ACCEPT_CREDENTIAL
 }
-export interface IRejectClaimsForCTypes extends IMessageBodyBase {
+export interface IRejectCredential extends IMessageBodyBase {
   content: Array<ICType['hash']>
   type: MessageBodyType.REJECT_CREDENTIAL
 }
@@ -204,31 +204,31 @@ export type CompressedRejectTerms = [
   MessageBodyType.REJECT_TERMS,
   CompressedRejectedTerms
 ]
-export type CompressedRequestAttestationForClaim = [
+export type CompressedRequestAttestation = [
   MessageBodyType.REQUEST_ATTESTATION,
-  CompressedRequestAttestationForClaimContent
+  CompressedRequestAttestationContent
 ]
-export type CompressedSubmitAttestationForClaim = [
+export type CompressedSubmitAttestation = [
   MessageBodyType.SUBMIT_ATTESTATION,
   CompressedAttestation
 ]
-export type CompressedRejectAttestationForClaim = [
+export type CompressedRejectAttestation = [
   MessageBodyType.REJECT_ATTESTATION,
   IRequestForAttestation['rootHash']
 ]
-export type CompressedRequestClaimsForCTypes = [
+export type CompressedRequestCredentials = [
   MessageBodyType.REQUEST_CREDENTIAL,
-  CompressedRequestClaimsForCTypesContent
+  CompressedRequestCredentialContent
 ]
-export type CompressedSubmitClaimsForCTypes = [
+export type CompressedSubmitCredentials = [
   MessageBodyType.SUBMIT_CREDENTIAL,
   CompressedCredential[]
 ]
-export type CompressedAcceptClaimsForCTypes = [
+export type CompressedAcceptCredential = [
   MessageBodyType.ACCEPT_CREDENTIAL,
   Array<ICType['hash']>
 ]
-export type CompressedRejectClaimsForCTypes = [
+export type CompressedRejectCredential = [
   MessageBodyType.REJECT_CREDENTIAL,
   Array<ICType['hash']>
 ]
@@ -249,12 +249,12 @@ export type CompressedInformCreateDelegation = [
   CompressedInformDelegationCreation
 ]
 
-export interface IRequestAttestationForClaimContent {
+export interface IRequestAttestationContent {
   requestForAttestation: IRequestForAttestation
   quote?: IQuoteAgreement
 }
 
-export interface ISubmitAttestationForClaimContent {
+export interface ISubmitAttestationContent {
   attestation: IAttestation
 }
 
@@ -272,7 +272,7 @@ export interface IConfirmPaymentContent {
   blockHash: string
 }
 
-export interface IRequestClaimsForCTypesContent {
+export interface IRequestCredentialContent {
   cTypes: Array<{
     cTypeHash: ICType['hash']
     trustedAttesters?: Array<IDidDetails['did']>
@@ -321,7 +321,7 @@ export type CompressedRejectedTerms = [
   IDelegationNode['id'] | undefined
 ]
 
-export type CompressedRequestClaimsForCTypesContent = [
+export type CompressedRequestCredentialContent = [
   Array<
     [
       ICType['hash'],
@@ -332,7 +332,7 @@ export type CompressedRequestClaimsForCTypesContent = [
   string?
 ]
 
-export type CompressedRequestAttestationForClaimContent = [
+export type CompressedRequestAttestationContent = [
   CompressedRequestForAttestation,
   CompressedQuoteAgreed | undefined
 ]
@@ -370,14 +370,14 @@ export type MessageBody =
   | ISubmitTerms
   | IRejectTerms
   //
-  | IRequestAttestationForClaim
-  | ISubmitAttestationForClaim
-  | IRejectAttestationForClaim
+  | IRequestAttestation
+  | ISubmitAttestation
+  | IRejectAttestation
   //
-  | IRequestClaimsForCTypes
-  | ISubmitClaimsForCTypes
-  | IAcceptClaimsForCTypes
-  | IRejectClaimsForCTypes
+  | IRequestCredential
+  | ISubmitCredential
+  | IAcceptCredential
+  | IRejectCredential
   //
   | IRequestAcceptDelegation
   | ISubmitAcceptDelegation
@@ -389,14 +389,14 @@ export type CompressedMessageBody =
   | CompressedSubmitTerms
   | CompressedRejectTerms
   //
-  | CompressedRequestAttestationForClaim
-  | CompressedSubmitAttestationForClaim
-  | CompressedRejectAttestationForClaim
+  | CompressedRequestAttestation
+  | CompressedSubmitAttestation
+  | CompressedRejectAttestation
   //
-  | CompressedRequestClaimsForCTypes
-  | CompressedSubmitClaimsForCTypes
-  | CompressedAcceptClaimsForCTypes
-  | CompressedRejectClaimsForCTypes
+  | CompressedRequestCredentials
+  | CompressedSubmitCredentials
+  | CompressedAcceptCredential
+  | CompressedRejectCredential
   //
   | CompressedRequestAcceptDelegation
   | CompressedSubmitAcceptDelegation
