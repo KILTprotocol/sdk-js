@@ -10,12 +10,13 @@ import type { IDidDetails, IDidKeyDetails } from './DidDetails'
 
 export type IDidResolutionDocumentMetadata = {
   canonicalId: string
+  deleted: boolean
 }
 
 /**
  * The result of a DID resolution.
  *
- * It includes the DID details, and any optional document metadata as specified in the [W3C standard](https://www.w3.org/TR/did-core/#did-document-metadata).
+ * It includes the DID details, and optional document resolution metadata.
  */
 export type IDidResolvedDetails = {
   details: IDidDetails

@@ -430,6 +430,7 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
   })
@@ -469,6 +470,7 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
   })
@@ -536,6 +538,7 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
     // Verify service endpoints for light DID resolution
@@ -546,6 +549,7 @@ describe('DID migration', () => {
     )
     // Verify service endpints for full DID resolution
     const fullDid = await resolveDoc(resolutionResult!.metadata!.canonicalId)
+    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
 
     expect(fullDid?.details).toBeDefined()
 
@@ -554,7 +558,37 @@ describe('DID migration', () => {
         return { ...service, id: DidUtils.assembleDidFragment(did, service.id) }
       })
     )
-  })
+
+    // Remove and claim the deposit back
+    const fullDidIdentifier = DidUtils.getIdentifierFromKiltDid(did)
+    const storedEndpointsCount = await DidChain.queryEndpointsCounts(did)
+    const reclaimDepositTx = await DidChain.getReclaimDepositExtrinsic(
+      fullDidIdentifier,
+      storedEndpointsCount
+    )
+    await expect(
+      BlockchainUtils.signAndSubmitTx(reclaimDepositTx, paymentAccount, {
+        resolveOn: BlockchainUtils.IS_IN_BLOCK,
+        reSign: true,
+      })
+    ).resolves.not.toThrow()
+
+    // Check that the resolver now correctly resolves a migrated-then-deleted light DID.
+    const didResolutionResultAfterDeletion = await resolveDoc(
+      lightDidDetails.did
+    )
+
+    // Check that the returned light DID is the same as the queried one.
+    expect(didResolutionResultAfterDeletion?.details.did).toStrictEqual(
+      lightDidDetails.did
+    )
+    // Check that the full DID is still returned albeit already deleted.
+    expect(
+      didResolutionResultAfterDeletion?.metadata?.canonicalId
+    ).toStrictEqual(did)
+    // Check that the deletion flag is set to true.
+    expect(didResolutionResultAfterDeletion?.metadata?.deleted).toBeTruthy()
+  }, 60_000)
 })
 
 describe('DID authorization', () => {

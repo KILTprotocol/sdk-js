@@ -364,6 +364,7 @@ function verifyDidSignatureFromDetails({
 }
 
 // Verify a DID signature given the key ID of the signature.
+// A signature verification returns false if a migrated and then deleted DID is used.
 export async function verifyDidSignature({
   message,
   signature,
@@ -373,7 +374,7 @@ export async function verifyDidSignature({
 }: {
   message: string | Uint8Array
   signature: string | Uint8Array
-  keyId: string
+  keyId: IDidKeyDetails['id']
   resolver?: IDidResolver
   keyRelationship?: VerificationKeyRelationship
 }): Promise<VerificationResult> {
@@ -381,6 +382,12 @@ export async function verifyDidSignature({
   const details = await resolver.resolveDoc(keyId)
   // If no details can be resolved, it is clearly an error, so we return false
   if (!details) {
+    return {
+      verified: false,
+    }
+  }
+  // Returns false also if the migrated full DID has been deleted.
+  if (details.metadata?.deleted) {
     return {
       verified: false,
     }
