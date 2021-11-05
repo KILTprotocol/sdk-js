@@ -113,7 +113,7 @@ export interface IReject extends IMessageBodyBase {
     /** Optional human-readable description of the rejection. */
     message?: string
   }
-  type: MessageBodyType
+  type: MessageBodyType.REJECT
 }
 
 export interface IRequestTerms extends IMessageBodyBase {
