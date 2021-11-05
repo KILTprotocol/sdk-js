@@ -430,17 +430,17 @@ describe('Different deposits scenarios', () => {
       )
     ).resolves.toBe(true)
   }, 120_000)
-  it('Check if deleting from a migrated a light DID to a full DID returns deposit', async () => {
+  it('Check if deleting from a migrated light DID to a full DID returns deposit', async () => {
     await expect(
       checkDeleteFullDid(testIdentities[4], testFullDidFive, keystore)
     ).resolves.toBe(true)
   }, 120_000)
-  it('Check if reclaiming from a migrated a light DID to a full DID returns deposit', async () => {
+  it('Check if reclaiming from a migrated light DID to a full DID returns deposit', async () => {
     await expect(
       checkReclaimFullDid(testIdentities[5], testFullDidSix)
     ).resolves.toBe(true)
   }, 120_000)
-  it('Check if removing an attestation from a migrated a light DID to a full DID returns the deposit', async () => {
+  it('Check if removing an attestation from a migrated light DID to a full DID returns the deposit', async () => {
     await expect(
       checkRemoveFullDidAttestation(
         testIdentities[6],
@@ -450,7 +450,7 @@ describe('Different deposits scenarios', () => {
       )
     ).resolves.toBe(true)
   }, 120_000)
-  it('Check if reclaiming an attestation from a migrated a light DID to a full DID returns the deposit', async () => {
+  it('Check if reclaiming an attestation from a migrated light DID to a full DID returns the deposit', async () => {
     await expect(
       checkReclaimFullDidAttestation(
         testIdentities[7],
