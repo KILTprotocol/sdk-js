@@ -139,10 +139,12 @@ describe('convertToTxUnit', () => {
     )
   })
 })
+
 describe('balanceNumberToString', () => {
   it('verifies string input for valid number representation', () => {
     expect(() => balanceNumberToString('1.1')).not.toThrowError()
     expect(() => balanceNumberToString('.1')).not.toThrowError()
+    expect(() => balanceNumberToString('-.1')).not.toThrowError()
     expect(() => balanceNumberToString('462246261.14462264')).not.toThrowError()
     expect(() =>
       balanceNumberToString('-462246261.14462264')
