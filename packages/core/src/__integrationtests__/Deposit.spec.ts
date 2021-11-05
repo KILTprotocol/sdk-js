@@ -23,14 +23,13 @@ import {
   KeystoreSigner,
   SubmittableExtrinsic,
 } from '@kiltprotocol/types'
-import { Keyring } from '@kiltprotocol/utils'
+import { DecoderUtils, Keyring } from '@kiltprotocol/utils'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
+import { BN } from '@polkadot/util'
 import {
-  getDidDeposit,
   createAttestation,
-  getAttestationDeposit,
   createMinimalFullDidFromLightDid,
   WS_ADDRESS,
   devFaucet,
@@ -43,6 +42,7 @@ import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
 import { disconnect, init } from '../kilt'
+import { queryRaw } from '../attestation/Attestation.chain'
 
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
@@ -73,7 +73,11 @@ async function checkDeleteFullDid(
     identity.address
   ).then((balance) => balance)
 
-  const didDeposit = await getDidDeposit(identity.address)
+  const didResult = await DidChain.queryDidEncoded(identity.address)
+  DecoderUtils.assertCodecIsType(didResult, ['Option<DidDidDetails>'])
+  const didDeposit = didResult.isSome
+    ? didResult.unwrap().deposit.amount.toBn()
+    : new BN(0)
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
@@ -103,7 +107,11 @@ async function checkReclaimFullDid(
     identity.address
   ).then((balance) => balance)
 
-  const didDeposit = await getDidDeposit(identity.address)
+  const didResult = await DidChain.queryDidEncoded(identity.address)
+  DecoderUtils.assertCodecIsType(didResult, ['Option<DidDidDetails>'])
+  const didDeposit = didResult.isSome
+    ? didResult.unwrap().deposit.amount.toBn()
+    : new BN(0)
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
@@ -140,8 +148,14 @@ async function checkRemoveFullDidAttestation(
     keystore,
     identity.address
   )
+  const attestationResult = await queryRaw(identity.address)
+  DecoderUtils.assertCodecIsType(attestationResult, [
+    'Option<AttestationAttestationsAttestationDetails>',
+  ])
 
-  const attestationDeposit = await getAttestationDeposit(attestation.claimHash)
+  const attestationDeposit = attestationResult.isSome
+    ? attestationResult.unwrap().deposit.amount.toBn()
+    : new BN(0)
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
@@ -175,7 +189,14 @@ async function checkReclaimFullDidAttestation(
 
   tx = await attestation.reclaimDeposit()
 
-  const attestationDeposit = await getAttestationDeposit(attestation.claimHash)
+  const attestationResult = await queryRaw(identity.address)
+  DecoderUtils.assertCodecIsType(attestationResult, [
+    'Option<AttestationAttestationsAttestationDetails>',
+  ])
+
+  const attestationDeposit = attestationResult.isSome
+    ? attestationResult.unwrap().deposit.amount.toBn()
+    : new BN(0)
 
   await BlockchainUtils.signAndSubmitTx(tx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,

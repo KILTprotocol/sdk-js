@@ -16,18 +16,12 @@ import {
   LightDidDetails,
 } from '@kiltprotocol/did'
 import { Balance } from '../balance'
-import {
-  BlockchainApiConnection,
-  BlockchainUtils,
-} from '@kiltprotocol/chain-helpers'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
   IRequestForAttestation,
   KeyRelationship,
   KeystoreSigner,
 } from '@kiltprotocol/types'
-
-import { DecoderUtils } from '@kiltprotocol/utils'
-import { Option } from '@polkadot/types'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 export const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(1000)
@@ -104,25 +98,6 @@ export async function endowAccounts(
       )
     )
   )
-}
-
-export async function getDidDeposit(didIdentifier: string): Promise<BN> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const result = await api.query.did.did<Option<any>>(didIdentifier)
-  DecoderUtils.assertCodecIsType(result, ['Option<DidDidDetails>'])
-  return result.isSome ? result.unwrap().deposit.amount.toBn() : new BN(0)
-}
-
-export async function getAttestationDeposit(claimHash: string): Promise<BN> {
-  const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const result = await api.query.attestation.attestations<Option<any>>(
-    claimHash
-  )
-
-  DecoderUtils.assertCodecIsType(result, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
-  return result.isSome ? result.unwrap().deposit.amount.toBn() : new BN(0)
 }
 
 export async function createAttestation(
