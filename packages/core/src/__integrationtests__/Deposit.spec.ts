@@ -83,13 +83,10 @@ async function checkDeleteFullDid(
     (balance) => balance
   )
 
-  if (
+  return (
     balanceBeforeDeleting.reserved.toNumber() - didDeposit.toNumber() ===
     balanceAfterDeleting.reserved.toNumber()
-  ) {
-    return true
-  }
-  return false
+  )
 }
 
 async function checkReclaimFullDid(
@@ -116,13 +113,10 @@ async function checkReclaimFullDid(
     (balance) => balance
   )
 
-  if (
+  return (
     balanceBeforeRevoking.reserved.toNumber() - didDeposit.toNumber() ===
     balanceAfterRevoking.reserved.toNumber()
-  ) {
-    return true
-  }
-  return false
+  )
 }
 
 async function checkRemoveFullDidAttestation(
@@ -157,14 +151,11 @@ async function checkRemoveFullDidAttestation(
     (balance) => balance
   )
 
-  if (
+  return (
     balanceBeforeRemoving.reserved.toNumber() -
       attestationDeposit.toNumber() ===
     balanceAfterRemoving.reserved.toNumber()
-  ) {
-    return true
-  }
-  return false
+  )
 }
 
 async function checkReclaimFullDidAttestation(
@@ -194,14 +185,11 @@ async function checkReclaimFullDidAttestation(
     (balance) => balance
   )
 
-  if (
+  return (
     balanceBeforeReclaiming.reserved.toNumber() -
       attestationDeposit.toNumber() ===
     balanceAfterDeleting.reserved.toNumber()
-  ) {
-    return true
-  }
-  return false
+  )
 }
 
 async function checkDeletedDidReclaimAttestation(
