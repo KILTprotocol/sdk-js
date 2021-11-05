@@ -178,12 +178,15 @@ describe('and attestation rights have been delegated', () => {
         })
       )
 
-    const attClaim = Credential.fromRequestAndAttestation(request, attestation)
-    expect(attClaim.verifyData()).toBeTruthy()
-    await expect(attClaim.verify()).resolves.toBeTruthy()
+    const credential = Credential.fromRequestAndAttestation(
+      request,
+      attestation
+    )
+    expect(credential.verifyData()).toBeTruthy()
+    await expect(credential.verify()).resolves.toBeTruthy()
 
     // revoke attestation through root
-    await attClaim.attestation
+    await credential.attestation
       .revoke(1)
       .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
       .then((tx) =>
@@ -192,7 +195,7 @@ describe('and attestation rights have been delegated', () => {
           reSign: true,
         })
       )
-    await expect(attClaim.verify()).resolves.toBeFalsy()
+    await expect(credential.verify()).resolves.toBeFalsy()
   }, 75_000)
 })
 

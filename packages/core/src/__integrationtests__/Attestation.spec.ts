@@ -153,9 +153,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           reSign: true,
         })
       )
-    const aClaim = Credential.fromRequestAndAttestation(request, attestation)
-    expect(aClaim.verifyData()).toBe(true)
-    await expect(aClaim.verify()).resolves.toBe(true)
+    const credential = Credential.fromRequestAndAttestation(
+      request,
+      attestation
+    )
+    expect(credential.verifyData()).toBe(true)
+    await expect(credential.verify()).resolves.toBe(true)
 
     // Claim the deposit back by submitting the reclaimDeposit extrinsic with the deposit payer's account.
     await attestation.reclaimDeposit().then((tx) =>
@@ -199,9 +202,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           })
         )
     ).rejects.toThrow()
-    const aClaim = Credential.fromRequestAndAttestation(request, attestation)
+    const credential = Credential.fromRequestAndAttestation(
+      request,
+      attestation
+    )
 
-    await expect(aClaim.verify()).resolves.toBeFalsy()
+    await expect(credential.verify()).resolves.toBeFalsy()
   }, 60_000)
 
   it('should not be possible to attest a claim on a Ctype that is not on chain', async () => {
@@ -246,7 +252,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
   }, 60_000)
 
   describe('when there is a credential on-chain', () => {
-    let attClaim: Credential
+    let credential: Credential
 
     beforeAll(async () => {
       const content: IClaim['contents'] = { name: 'Rolfi', age: 18 }
@@ -269,13 +275,13 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             reSign: true,
           })
         )
-      attClaim = Credential.fromRequestAndAttestation(request, attestation)
-      await expect(attClaim.verify()).resolves.toBe(true)
+      credential = Credential.fromRequestAndAttestation(request, attestation)
+      await expect(credential.verify()).resolves.toBe(true)
     }, 60_000)
 
     it('should not be possible to attest the same claim twice', async () => {
       await expect(
-        attClaim.attestation
+        credential.attestation
           .store()
           .then((call) =>
             attester.authorizeExtrinsic(call, signer, tokenHolder.address)
@@ -300,17 +306,17 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       )
       const request = RequestForAttestation.fromClaim(claim)
       await request.signWithDid(signer, claimer)
-      const fakeAttClaim: ICredential = {
+      const fakecredential: ICredential = {
         request,
-        attestation: attClaim.attestation,
+        attestation: credential.attestation,
       }
 
-      await expect(Credential.verify(fakeAttClaim)).resolves.toBeFalsy()
+      await expect(Credential.verify(fakecredential)).resolves.toBeFalsy()
     }, 15_000)
 
     it('should not be possible for the claimer to revoke an attestation', async () => {
       await expect(
-        revoke(attClaim.getHash(), 0)
+        revoke(credential.getHash(), 0)
           .then((call) =>
             claimer.authorizeExtrinsic(call, signer, tokenHolder.address)
           )
@@ -321,12 +327,12 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             })
           )
       ).rejects.toThrowError('not permitted')
-      await expect(attClaim.verify()).resolves.toBe(true)
+      await expect(credential.verify()).resolves.toBe(true)
     }, 45_000)
 
     it('should be possible for the attester to revoke an attestation', async () => {
-      await expect(attClaim.verify()).resolves.toBe(true)
-      await revoke(attClaim.getHash(), 0)
+      await expect(credential.verify()).resolves.toBe(true)
+      await revoke(credential.getHash(), 0)
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
@@ -336,11 +342,11 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
             reSign: true,
           })
         )
-      await expect(attClaim.verify()).resolves.toBeFalsy()
+      await expect(credential.verify()).resolves.toBeFalsy()
     }, 40_000)
 
     it('should be possible for the deposit payer to remove an attestation', async () => {
-      await remove(attClaim.getHash(), 0)
+      await remove(credential.getHash(), 0)
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )

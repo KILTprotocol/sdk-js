@@ -234,7 +234,7 @@ export default class Credential implements ICredential {
     challenge?: string
     selectedAttributes?: string[]
   }): Promise<Credential> {
-    const attClaim = new Credential(
+    const credential = new Credential(
       // clone the attestation and request for attestation because properties will be deleted later.
       // TODO: find a nice way to clone stuff
       JSON.parse(JSON.stringify(this))
@@ -248,18 +248,18 @@ export default class Credential implements ICredential {
       : []
 
     // remove these attributes
-    attClaim.request.removeClaimProperties(excludedClaimProperties)
+    credential.request.removeClaimProperties(excludedClaimProperties)
 
     if (claimerDid) {
-      await attClaim.request.signWithDid(signer, claimerDid, challenge)
+      await credential.request.signWithDid(signer, claimerDid, challenge)
     } else if (claimerSigningKey) {
-      await attClaim.request.signWithKey(signer, claimerSigningKey, challenge)
+      await credential.request.signWithKey(signer, claimerSigningKey, challenge)
     } else {
       throw new Error(
         'Either a key or claimer did details are required for signing'
       )
     }
-    return attClaim
+    return credential
   }
 
   /**
