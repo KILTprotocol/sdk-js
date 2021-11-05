@@ -25,6 +25,9 @@ import type {
 import type { CompressedTerms, ITerms } from './Terms'
 
 export enum MessageBodyType {
+  ERROR = 'error',
+  REJECT = 'reject',
+
   REQUEST_TERMS = 'request-terms',
   SUBMIT_TERMS = 'submit-terms',
   REJECT_TERMS = 'reject-terms',
@@ -90,6 +93,26 @@ export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
 
 interface IMessageBodyBase {
   content: any
+  type: MessageBodyType
+}
+
+export interface IError extends IMessageBodyBase {
+  content: {
+    /** Optional machine-readable type of the error. */
+    name?: string
+    /** Optional human-readable description of the error. */
+    message?: string
+  }
+  type: MessageBodyType.ERROR
+}
+
+export interface IReject extends IMessageBodyBase {
+  content: {
+    /** Optional machine-readable type of the rejection. */
+    name?: string
+    /** Optional human-readable description of the rejection. */
+    message?: string
+  }
   type: MessageBodyType
 }
 
