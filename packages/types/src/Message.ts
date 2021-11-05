@@ -363,6 +363,9 @@ export type CompressedInformDelegationCreation = [
 ]
 
 export type MessageBody =
+  | IError
+  | IReject
+  //
   | IRequestTerms
   | ISubmitTerms
   | IRejectTerms
