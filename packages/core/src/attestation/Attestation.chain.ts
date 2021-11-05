@@ -48,7 +48,7 @@ export async function store(
 /**
  * @internal
  */
-export interface AttestationDetails extends Struct {
+interface AttestationDetails extends Struct {
   readonly ctypeHash: Hash
   readonly attester: AccountId
   readonly delegationId: Option<DelegationNodeId>

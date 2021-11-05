@@ -3,7 +3,6 @@
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BN, hexToU8a } from '@polkadot/util'
 import Attestation from '../attestation/Attestation'
-import { AttestationDetails } from '../attestation'
 import { Keyring } from '@kiltprotocol/utils'
 import { randomAsU8a } from '@polkadot/util-crypto'
 import CType from '../ctype/CType'
@@ -116,9 +115,9 @@ export async function getDidDeposit(didIdentifier: string): Promise<BN> {
 
 export async function getAttestationDeposit(claimHash: string): Promise<BN> {
   const { api } = await BlockchainApiConnection.getConnectionOrConnect()
-  const result = await api.query.attestation.attestations<
-    Option<AttestationDetails>
-  >(claimHash)
+  const result = await api.query.attestation.attestations<Option<any>>(
+    claimHash
+  )
 
   DecoderUtils.assertCodecIsType(result, [
     'Option<AttestationAttestationsAttestationDetails>',
