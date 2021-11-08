@@ -354,7 +354,7 @@ async function doVerification(
     KeyRelationship.keyAgreement
   )[0] as IDidKeyDetails<string>
   // ------------------------- Verifier ----------------------------------------
-  const verifierAcceptedClaimsMessage = new Kilt.Message(
+  const verifierAcceptedCredentialsMessage = new Kilt.Message(
     {
       type: Kilt.Message.BodyType.ACCEPT_CREDENTIAL,
       content: [credential.request.claim.cTypeHash],
@@ -363,7 +363,7 @@ async function doVerification(
     claimerLightDid.did
   )
 
-  const verifierAcceptedClaimsMessageEnc = await verifierAcceptedClaimsMessage.encrypt(
+  const verifierAcceptedCredentialsMessageEnc = await verifierAcceptedCredentialsMessage.encrypt(
     verifierEncryptionKey,
     claimerEncryptionKey,
     keystore
@@ -371,13 +371,13 @@ async function doVerification(
 
   // ------------------------- Claimer -----------------------------------------
   // The claimer receives a message from the verifier of the accepted ctypes
-  const verifierAcceptedClaimsMessageDec = await Kilt.Message.decrypt(
-    verifierAcceptedClaimsMessageEnc,
+  const verifierAcceptedCredentialsMessageDec = await Kilt.Message.decrypt(
+    verifierAcceptedCredentialsMessageEnc,
     keystore,
     { senderDetails: verifierLightDid, receiverDetails: claimerLightDid }
   )
 
-  const ctypeHash = (verifierAcceptedClaimsMessageDec.body as IAcceptCredential)
+  const ctypeHash = (verifierAcceptedCredentialsMessageDec.body as IAcceptCredential)
     .content[0]
   console.log('claimer checks the ctypeHash matches', ctypeHash)
 
@@ -388,7 +388,7 @@ async function doVerification(
     claimerDid: claimerLightDid,
     challenge,
   })
-  const claimerSubmitClaimsMessage = new Kilt.Message(
+  const claimerSubmitCredentialsMessage = new Kilt.Message(
     {
       type: Kilt.Message.BodyType.SUBMIT_CREDENTIAL,
       content: [presentation],
@@ -396,8 +396,8 @@ async function doVerification(
     claimerLightDid.did,
     verifierLightDid.did
   )
-  // Claimer encrypts the claims message to the verifier
-  const claimerSubmitClaimsMessageEnc = await claimerSubmitClaimsMessage.encrypt(
+  // Claimer encrypts the credentials message to the verifier
+  const claimerSubmitCredentialsMessageEnc = await claimerSubmitCredentialsMessage.encrypt(
     claimerEncryptionKey,
     verifierEncryptionKey,
     keystore
@@ -408,12 +408,12 @@ async function doVerification(
   // attesters or he needs to resolve them differently. A Decentralized Identity (DID) would be an
   // option for that.
 
-  const verifierSubmitClaimsMessageDec = await Kilt.Message.decrypt(
-    claimerSubmitClaimsMessageEnc,
+  const verifierSubmitCredentialsMessageDec = await Kilt.Message.decrypt(
+    claimerSubmitCredentialsMessageEnc,
     keystore,
     { senderDetails: claimerLightDid, receiverDetails: verifierLightDid }
   )
-  const presentationMessage = (verifierSubmitClaimsMessageDec.body as ISubmitCredential)
+  const presentationMessage = (verifierSubmitCredentialsMessageDec.body as ISubmitCredential)
     .content
 
   const verifiablePresentation = Kilt.Credential.fromCredential(
