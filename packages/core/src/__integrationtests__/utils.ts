@@ -4,7 +4,7 @@ import { Keyring } from '@kiltprotocol/utils'
 import type { KeyringPair } from '@kiltprotocol/types'
 import { randomAsU8a } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'
-import CType from '../ctype/CType'
+import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)

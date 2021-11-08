@@ -31,12 +31,12 @@ import {
 } from '@kiltprotocol/did'
 import { BN, hexToU8a, u8aToHex } from '@polkadot/util'
 import { UUID } from '@kiltprotocol/utils'
-import Attestation from '../attestation/Attestation'
-import Claim from '../claim/Claim'
-import CType from '../ctype/CType'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import Credential from './Credential'
-import CredentialUtils from './Credential.utils'
+import { Attestation } from '../attestation/Attestation'
+import { Claim } from '../claim/Claim'
+import { CType } from '../ctype/CType'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import { Credential } from './Credential'
+import * as CredentialUtils from './Credential.utils'
 import { query } from '../attestation/Attestation.chain'
 
 jest.mock('../attestation/Attestation.chain')

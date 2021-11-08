@@ -19,13 +19,13 @@ import {
 import { BN } from '@polkadot/util'
 import { Crypto } from '@kiltprotocol/utils'
 import { randomAsHex } from '@polkadot/util-crypto'
-import Attestation from '../attestation/Attestation'
+import { Attestation } from '../attestation/Attestation'
 import { revoke, remove } from '../attestation/Attestation.chain'
-import Credential from '../credential/Credential'
+import { Credential } from '../credential/Credential'
 import { disconnect, init } from '../kilt'
-import Claim from '../claim/Claim'
-import CType from '../ctype/CType'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
+import { Claim } from '../claim/Claim'
+import { CType } from '../ctype/CType'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
 import {
   CtypeOnChain,
   DriversLicense,

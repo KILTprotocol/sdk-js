@@ -6,7 +6,9 @@
  */
 
 /* eslint-disable no-console */
-import Kilt, { KeyRelationship } from '@kiltprotocol/sdk-js'
+
+import * as Kilt from '@kiltprotocol/sdk-js'
+import { KeyRelationship } from '@kiltprotocol/sdk-js'
 import type {
   Credential,
   Claim,
@@ -79,8 +81,7 @@ async function setup(): Promise<{
   // ------------------------- CType    ----------------------------------------
   // First build a schema
   const ctypeSchema: ICType['schema'] = {
-    $id:
-      'kilt:ctype:0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
+    $id: 'kilt:ctype:0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
     $schema: 'http://kilt-protocol.org/draft-01/ctype#',
     properties: {
       name: {
@@ -363,11 +364,12 @@ async function doVerification(
     claimerLightDid.did
   )
 
-  const verifierAcceptedCredentialsMessageEnc = await verifierAcceptedCredentialsMessage.encrypt(
-    verifierEncryptionKey,
-    claimerEncryptionKey,
-    keystore
-  )
+  const verifierAcceptedCredentialsMessageEnc =
+    await verifierAcceptedCredentialsMessage.encrypt(
+      verifierEncryptionKey,
+      claimerEncryptionKey,
+      keystore
+    )
 
   // ------------------------- Claimer -----------------------------------------
   // The claimer receives a message from the verifier of the accepted ctypes
@@ -377,8 +379,8 @@ async function doVerification(
     { senderDetails: verifierLightDid, receiverDetails: claimerLightDid }
   )
 
-  const ctypeHash = (verifierAcceptedCredentialsMessageDec.body as IAcceptCredential)
-    .content[0]
+  const ctypeHash =
+    verifierAcceptedCredentialsMessageDec.body as IAcceptCredential
   console.log('claimer checks the ctypeHash matches', ctypeHash)
 
   const challenge = Kilt.Utils.UUID.generate()
@@ -397,11 +399,12 @@ async function doVerification(
     verifierLightDid.did
   )
   // Claimer encrypts the credentials message to the verifier
-  const claimerSubmitCredentialsMessageEnc = await claimerSubmitCredentialsMessage.encrypt(
-    claimerEncryptionKey,
-    verifierEncryptionKey,
-    keystore
-  )
+  const claimerSubmitCredentialsMessageEnc =
+    await claimerSubmitCredentialsMessage.encrypt(
+      claimerEncryptionKey,
+      verifierEncryptionKey,
+      keystore
+    )
 
   // ------------------------- Verifier ----------------------------------------
   // The verifier needs the public account of the attester. Either he already has a list of trusted
@@ -413,8 +416,9 @@ async function doVerification(
     keystore,
     { senderDetails: claimerLightDid, receiverDetails: verifierLightDid }
   )
-  const presentationMessage = (verifierSubmitCredentialsMessageDec.body as ISubmitCredential)
-    .content
+  const presentationMessage = (
+    verifierSubmitCredentialsMessageDec.body as ISubmitCredential
+  ).content
 
   const verifiablePresentation = Kilt.Credential.fromCredential(
     presentationMessage[0]
@@ -426,13 +430,8 @@ async function doVerification(
 
 // do an attestation and a verification
 async function example(): Promise<boolean> {
-  const {
-    claimerLightDid,
-    attesterFullDid,
-    claim,
-    attester,
-    keystore,
-  } = await setup()
+  const { claimerLightDid, attesterFullDid, claim, attester, keystore } =
+    await setup()
 
   const { credential } = await doAttestation(
     claimerLightDid,

@@ -5,5 +5,5 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export { default } from './Credential'
-export { default as CredentialUtils } from './Credential.utils'
+export { Credential } from './Credential'
+export * as CredentialUtils from './Credential.utils'

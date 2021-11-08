@@ -12,9 +12,9 @@
 import jsigs, { purposes } from 'jsonld-signatures'
 import vcjs from 'vc-js'
 import jsonld from 'jsonld'
-import Suite from './KiltIntegritySuite'
+import { KiltDisclosureSuite as Suite } from './KiltIntegritySuite'
 import credential from '../examples/example-vc.json'
-import documentLoader from '../documentLoader'
+import { documentLoader } from '../documentLoader'
 import type { CredentialDigestProof, VerifiableCredential } from '../../types'
 import { KILT_CREDENTIAL_DIGEST_PROOF_TYPE } from '../../constants'
 

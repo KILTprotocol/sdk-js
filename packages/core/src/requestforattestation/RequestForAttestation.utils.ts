@@ -18,9 +18,9 @@ import type {
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
-import CredentialUtils from '../credential/Credential.utils'
-import ClaimUtils from '../claim/Claim.utils'
-import RequestForAttestation from './RequestForAttestation'
+import * as CredentialUtils from '../credential/Credential.utils'
+import * as ClaimUtils from '../claim/Claim.utils'
+import { RequestForAttestation } from './RequestForAttestation'
 
 /**
  *  Checks whether the input meets all the required criteria of an IRequestForAttestation object.
@@ -140,12 +140,4 @@ export function decompress(
     legitimations: decompressLegitimation(reqForAtt[5]),
     delegationId: reqForAtt[6],
   }
-}
-
-export default {
-  errorCheck,
-  decompress,
-  decompressLegitimation,
-  compress,
-  compressLegitimation,
 }

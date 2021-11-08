@@ -38,7 +38,7 @@ const log = ConfigService.LoggingFactory.getLogger('Blockchain')
 // Code taken from
 // https://polkadot.js.org/api/api/classes/_promise_index_.apipromise.html
 
-export default class Blockchain implements IBlockchainApi {
+export class Blockchain implements IBlockchainApi {
   public static asArray(queryResult: Codec): AnyJson[] {
     const json = queryResult.toJSON()
     if (json instanceof Array) return json

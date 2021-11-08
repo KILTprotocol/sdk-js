@@ -97,6 +97,15 @@ export enum ErrorCode {
   ERROR_TIMEOUT = -2,
 }
 
+export class SDKError extends Error {
+  public errorCode: ErrorCode
+
+  public constructor(errorCode: ErrorCode, message: string) {
+    super(message)
+    this.errorCode = errorCode
+  }
+}
+
 export function isSDKError(input: unknown): input is SDKError {
   return (
     ((i: unknown): i is Error & Partial<SDKError> => i instanceof Error)(
@@ -105,15 +114,6 @@ export function isSDKError(input: unknown): input is SDKError {
     input.errorCode !== undefined &&
     input.errorCode in ErrorCode
   )
-}
-
-export class SDKError extends Error {
-  public errorCode: ErrorCode
-
-  public constructor(errorCode: ErrorCode, message: string) {
-    super(message)
-    this.errorCode = errorCode
-  }
 }
 
 export const ERROR_TRANSACTION_RECOVERABLE: () => SDKError = () => {
@@ -258,28 +258,26 @@ export const ERROR_HASH_TYPE: () => SDKError = () => {
   return new SDKError(ErrorCode.ERROR_HASH_TYPE, 'Hash of wrong type')
 }
 
-export const ERROR_HASH_MALFORMED: (
-  hash?: string,
-  type?: string
-) => SDKError = (hash?: string, type?: string) => {
-  if (hash && type) {
-    return new SDKError(
-      ErrorCode.ERROR_HASH_MALFORMED,
-      `Provided ${type} hash invalid or malformed \nHash: ${hash}`
-    )
-  }
-  if (hash) {
-    return new SDKError(
-      ErrorCode.ERROR_HASH_MALFORMED,
-      `Provided hash invalid or malformed \nHash: ${hash}`
-    )
-  }
+export const ERROR_HASH_MALFORMED: (hash?: string, type?: string) => SDKError =
+  (hash?: string, type?: string) => {
+    if (hash && type) {
+      return new SDKError(
+        ErrorCode.ERROR_HASH_MALFORMED,
+        `Provided ${type} hash invalid or malformed \nHash: ${hash}`
+      )
+    }
+    if (hash) {
+      return new SDKError(
+        ErrorCode.ERROR_HASH_MALFORMED,
+        `Provided hash invalid or malformed \nHash: ${hash}`
+      )
+    }
 
-  return new SDKError(
-    ErrorCode.ERROR_HASH_MALFORMED,
-    `Provided hash invalid or malformed`
-  )
-}
+    return new SDKError(
+      ErrorCode.ERROR_HASH_MALFORMED,
+      `Provided hash invalid or malformed`
+    )
+  }
 
 export const ERROR_DELEGATION_ID_TYPE: () => SDKError = () => {
   return new SDKError(
@@ -361,17 +359,16 @@ export const ERROR_QUOTE_MALFORMED: () => SDKError = () => {
   )
 }
 
-export const ERROR_CLAIM_NONCE_MAP_MALFORMED: (
-  statement?: string
-) => SDKError = (statement) => {
-  let message = ''
-  if (statement) {
-    message = `Nonce map malformed or incomplete: no nonce for statement "${statement}"`
-  } else {
-    message = `Nonce map malformed or incomplete`
+export const ERROR_CLAIM_NONCE_MAP_MALFORMED: (statement?: string) => SDKError =
+  (statement) => {
+    let message = ''
+    if (statement) {
+      message = `Nonce map malformed or incomplete: no nonce for statement "${statement}"`
+    } else {
+      message = `Nonce map malformed or incomplete`
+    }
+    return new SDKError(ErrorCode.ERROR_CLAIM_NONCE_MAP_MALFORMED, message)
   }
-  return new SDKError(ErrorCode.ERROR_CLAIM_NONCE_MAP_MALFORMED, message)
-}
 
 export const ERROR_MESSAGE_BODY_MALFORMED: () => SDKError = () => {
   return new SDKError(

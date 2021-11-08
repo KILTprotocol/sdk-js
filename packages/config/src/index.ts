@@ -5,7 +5,4 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import * as ConfigService from './ConfigService'
-
-// eslint-disable-next-line import/prefer-default-export
-export { ConfigService }
+export * as ConfigService from './ConfigService'

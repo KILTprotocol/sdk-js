@@ -21,14 +21,16 @@ import { ConfigService } from '@kiltprotocol/config'
 import { BlockchainApiConnection } from '@kiltprotocol/chain-helpers'
 import { DidUtils } from '@kiltprotocol/did'
 import { BN } from '@polkadot/util'
-import Attestation from './Attestation'
+import { Attestation } from './Attestation'
 import type { DelegationNodeId } from '../delegation/DelegationDecoder'
 
 const log = ConfigService.LoggingFactory.getLogger('Attestation')
 
 /**
- * @param attestation
- * @internal
+ * Generate the extrinsic to store the provided [[IAttestation]].
+ *
+ * @param attestation The attestation to write on the blockchain.
+ * @returns The [[SubmittableExtrinsic]] for the `add` call.
  */
 export async function store(
   attestation: IAttestation
@@ -46,9 +48,6 @@ export async function store(
   return tx
 }
 
-/**
- * @internal
- */
 export interface AttestationDetails extends Struct {
   readonly ctypeHash: Hash
   readonly attester: AccountId
@@ -96,8 +95,10 @@ async function queryRaw(
 }
 
 /**
- * @param claimHash
- * @internal
+ * Query an attestation from the blockchain given the claim hash it attests.
+ *
+ * @param claimHash The hash of the claim attested in the attestation.
+ * @returns Either the retrieved [[Attestation]] or null.
  */
 export async function query(claimHash: string): Promise<Attestation | null> {
   const encoded = await queryRaw(claimHash)
@@ -105,44 +106,50 @@ export async function query(claimHash: string): Promise<Attestation | null> {
 }
 
 /**
- * @param claimHash
- * @param maxDepth
- * @internal
+ * Generate the extrinsic to revoke a given attestation. The submitter can be the owner of the attestation or an authorized delegator thereof.
+ *
+ * @param claimHash The attestation claim hash.
+ * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the revocation.
+ * @returns The [[SubmittableExtrinsic]] for the `revoke` call.
  */
 export async function revoke(
   claimHash: string,
-  maxDepth: number
+  maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Revoking attestations with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.revoke(
     claimHash,
-    maxDepth
+    maxParentChecks
   )
   return tx
 }
 
 /**
- * @param claimHash
- * @param maxDepth
- * @internal
+ * Generate the extrinsic to remove a given attestation. The submitter can be the owner of the attestation or an authorized delegator thereof.
+ *
+ * @param claimHash The attestation claim hash.
+ * @param maxParentChecks The max number of lookup to perform up the hierarchy chain to verify the authorisation of the caller to perform the removal.
+ * @returns The [[SubmittableExtrinsic]] for the `remove` call.
  */
 export async function remove(
   claimHash: string,
-  maxDepth: number
+  maxParentChecks: number
 ): Promise<SubmittableExtrinsic> {
   const blockchain = await BlockchainApiConnection.getConnectionOrConnect()
   log.debug(() => `Removing attestation with claim hash ${claimHash}`)
   const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.remove(
     claimHash,
-    maxDepth
+    maxParentChecks
   )
   return tx
 }
 
 /**
- * @param claimHash
- * @internal
+ * Generate the extrinsic to delete a given attestation and reclaim back its deposit. The submitter **must** be the KILT account that initially paid for the deposit.
+ *
+ * @param claimHash The attestation claim hash.
+ * @returns The [[SubmittableExtrinsic]] for the `reclaimDeposit` call.
  */
 export async function reclaimDeposit(
   claimHash: string
@@ -151,9 +158,8 @@ export async function reclaimDeposit(
   log.debug(
     () => `Claiming deposit for the attestation with claim hash ${claimHash}`
   )
-  const tx: SubmittableExtrinsic = blockchain.api.tx.attestation.reclaimDeposit(
-    claimHash
-  )
+  const tx: SubmittableExtrinsic =
+    blockchain.api.tx.attestation.reclaimDeposit(claimHash)
   return tx
 }
 

@@ -30,20 +30,19 @@ type SectionMapping<V extends string> = Record<string, MethodMapping<V>>
 // Call::Attestation(_) => Some(did::DidVerificationKeyRelationship::AssertionMethod),
 // Call::Ctype(_) => Some(did::DidVerificationKeyRelationship::AssertionMethod),
 // Call::Delegation(_) => Some(did::DidVerificationKeyRelationship::CapabilityDelegation),
-const mapping: SectionMapping<
-  VerificationKeyRelationship | 'paymentAccount'
-> = {
-  attestation: { default: KeyRelationship.assertionMethod },
-  ctype: { default: KeyRelationship.assertionMethod },
-  delegation: { default: KeyRelationship.capabilityDelegation },
-  did: {
-    default: KeyRelationship.authentication,
-    create: 'paymentAccount',
-    submitDidCall: 'paymentAccount',
-    reclaimDeposit: 'paymentAccount',
-  },
-  default: { default: 'paymentAccount' },
-}
+const mapping: SectionMapping<VerificationKeyRelationship | 'paymentAccount'> =
+  {
+    attestation: { default: KeyRelationship.assertionMethod },
+    ctype: { default: KeyRelationship.assertionMethod },
+    delegation: { default: KeyRelationship.capabilityDelegation },
+    did: {
+      default: KeyRelationship.authentication,
+      create: 'paymentAccount',
+      submitDidCall: 'paymentAccount',
+      reclaimDeposit: 'paymentAccount',
+    },
+    default: { default: 'paymentAccount' },
+  }
 
 // internally maps call.section & call.method to a key relationship - or indicates a payment account (substrate key holding tokens) must be used
 export function mapCallToKeyRelationship(

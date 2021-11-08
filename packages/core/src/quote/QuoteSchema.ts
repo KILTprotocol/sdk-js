@@ -10,7 +10,7 @@
  * @module QuoteSchema
  */
 
-const QuoteSchema = {
+export const QuoteSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'kilt:quote:v1',
   type: 'object',
@@ -57,5 +57,3 @@ const QuoteSchema = {
     'timeframe',
   ],
 }
-
-export default QuoteSchema

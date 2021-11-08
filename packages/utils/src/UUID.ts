@@ -25,7 +25,3 @@ import { hashStr } from './Crypto'
 export function generate(): string {
   return hashStr(uuid())
 }
-
-export default {
-  generate,
-}

@@ -6,7 +6,8 @@
  */
 
 /* eslint-disable no-console */
-import Kilt, { KeyRelationship } from '@kiltprotocol/sdk-js'
+import * as Kilt from '@kiltprotocol/sdk-js'
+import { KeyRelationship } from '@kiltprotocol/sdk-js'
 import type {
   SubmittableExtrinsic,
   IRequestForAttestation,

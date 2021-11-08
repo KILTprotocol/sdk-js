@@ -5,6 +5,7 @@
       "semi": true
     }],
     "@typescript-eslint/no-unused-vars": "off",
-    "license-header/header": "off"
+    "license-header/header": "off",
+    "no-use-before-define": "off"
   }
 }

@@ -31,7 +31,7 @@ describe('ErrorHandler', () => {
       },
     }
     const submittableResult = {
-      events: ([evtRecord] as unknown) as EventRecord[],
+      events: [evtRecord] as unknown as EventRecord[],
     } as ISubmittableResult
 
     expect(ErrorHandler.extrinsicFailed(submittableResult)).toBeTruthy()
@@ -51,7 +51,7 @@ describe('ErrorHandler', () => {
       },
     }
     const submittableResult = {
-      events: ([evtRecord] as unknown) as EventRecord[],
+      events: [evtRecord] as unknown as EventRecord[],
     } as ISubmittableResult
 
     expect(ErrorHandler.extrinsicFailed(submittableResult)).toBeFalsy()
@@ -73,7 +73,7 @@ describe('ErrorHandler', () => {
       },
     }
     const submittableResult = {
-      events: ([errorEventRecord] as unknown) as EventRecord[],
+      events: [errorEventRecord] as unknown as EventRecord[],
       dispatchError,
     } as ISubmittableResult
 

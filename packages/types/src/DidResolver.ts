@@ -27,11 +27,9 @@ export interface IDidResolver {
   /**
    * Resolves a DID or DID URI and returns the respective resource.
    *
-   * @param didUri A DID string or DID URI (DID + # + fragment) identifying a DID document or DID
-   * public key.
-   * @returns A promise of a [[IDidResolvedDetails]] object if the didUri is a DID, or [[IDidKeyDetails]]
-   * if didUri contains a fragment (i.e. did:kilt:<identifier>#<fragment>), null
-   * if a resource cannot be resolved.
+   * @param didUri A DID string or DID URI (DID + # + fragment) identifying a DID document or DID public key.
+   * @returns A promise of a [[IDidResolvedDetails]] object if the didUri is a DID, [[IDidKeyDetails]] or [[IDidServiceEndpoint]]
+   * if didUri contains a fragment (i.e., did:kilt:<identifier>#<fragment>) null if a resource cannot be resolved.
    */
   resolve: (
     didUri: string

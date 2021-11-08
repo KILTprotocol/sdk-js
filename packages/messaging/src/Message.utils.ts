@@ -34,7 +34,7 @@ import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { isHex, isJsonObject } from '@polkadot/util'
 import { DidUtils } from '@kiltprotocol/did'
 
-import Message from '.'
+import { Message } from './Message'
 
 // Had to add the check as differs from the delegation types
 export function errorCheckDelegationData(
@@ -134,7 +134,7 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
             'request credential cTypeHash invalid'
           )
           trustedAttesters?.map((did) => DidUtils.validateKiltDid(did))
-          requiredProperties?.map((requiredProps) => {
+          requiredProperties?.forEach((requiredProps) => {
             if (typeof requiredProps !== 'string')
               throw new TypeError(
                 'required properties is expected to be a string'
@@ -308,11 +308,12 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       break
     }
     case Message.BodyType.REQUEST_CREDENTIAL: {
-      const compressedCtypes: CompressedRequestCredentialContent[0] = body.content.cTypes.map(
-        ({ cTypeHash, trustedAttesters, requiredProperties }) => {
-          return [cTypeHash, trustedAttesters, requiredProperties]
-        }
-      )
+      const compressedCtypes: CompressedRequestCredentialContent[0] =
+        body.content.cTypes.map(
+          ({ cTypeHash, trustedAttesters, requiredProperties }) => {
+            return [cTypeHash, trustedAttesters, requiredProperties]
+          }
+        )
       compressedContents = [compressedCtypes, body.content.challenge]
       break
     }

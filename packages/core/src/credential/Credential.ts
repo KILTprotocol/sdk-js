@@ -27,11 +27,11 @@ import type {
   IDidKeyDetails,
 } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import Attestation from '../attestation/Attestation'
-import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import CredentialUtils from './Credential.utils'
+import { Attestation } from '../attestation/Attestation'
+import { RequestForAttestation } from '../requestforattestation/RequestForAttestation'
+import * as CredentialUtils from './Credential.utils'
 
-export default class Credential implements ICredential {
+export class Credential implements ICredential {
   /**
    * [STATIC] Builds an instance of [[Credential]], from a simple object with the same properties.
    * Used for deserialization.
@@ -111,15 +111,14 @@ export default class Credential implements ICredential {
    * Upon presentation of a credential, a verifier would call this [[verify]] function.
    *
    * @param credential - The credential to check for validity.
-   * @param verificationOpts
-   * @param verificationOpts.claimerDid - The claimer's DID.
+   * @param verificationOpts The additional options to use upon attested credential verification.
    * @param verificationOpts.resolver - The resolver used to resolve the claimer's identity if it is not passed in.
    * Defaults to the DefaultResolver.
    * @param verificationOpts.challenge - The expected value of the challenge. Verification will fail in case of a mismatch.
-   * @returns A promise containing whether this credential is valid.
+   * @returns A promise containing whether the provided credential is valid.
    * @example ```javascript
-   * credential.verify().then((isVerified) => {
-   * // `isVerified` is true if the attestation is verified, false otherwise
+   * Credential.verify().then((isVerified) => {
+   *   // `isVerified` is true if the credential is verified, false otherwise
    * });
    * ```
    */
@@ -158,7 +157,7 @@ export default class Credential implements ICredential {
    * @param credential - The credential to verify.
    * @returns Whether the credential's data is valid.
    * @example ```javascript
-   * const verificationResult = credential.verifyData();
+   * const verificationResult = Credential.verifyData(credential);
    * ```
    */
   public static verifyData(credential: ICredential): boolean {
@@ -212,7 +211,7 @@ export default class Credential implements ICredential {
    * Creates a public presentation which can be sent to a verifier.
    * This presentation is signed.
    *
-   * @param presentationOptions
+   * @param presentationOptions The additional options to use upon presentation generation.
    * @param presentationOptions.signer Keystore signer to sign the presentation.
    * @param presentationOptions.claimerSigningKey If passed, this key is used for signing.
    * @param presentationOptions.claimerDid If no signing key is passed, the authentication key is fetched from the claimerDid (mandatory in that case).

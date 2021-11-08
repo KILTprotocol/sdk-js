@@ -258,20 +258,3 @@ export function validateNestedSchemas(
   }
   return !!result
 }
-
-export default {
-  compress,
-  compressSchema,
-  decompressSchema,
-  decompress,
-  errorCheck,
-  verifyClaimStructure,
-  verifySchema,
-  verifySchemaWithErrors,
-  verifyStored,
-  verifyOwner,
-  getHashForSchema,
-  getIdForSchema,
-  getSchemaPropertiesForHash,
-  validateNestedSchemas,
-}

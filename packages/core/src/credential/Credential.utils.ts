@@ -12,9 +12,9 @@
 
 import type { ICredential, CompressedCredential } from '@kiltprotocol/types'
 import { SDKErrors } from '@kiltprotocol/utils'
-import AttestationUtils from '../attestation/Attestation.utils'
-import RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
-import Credential from './Credential'
+import * as AttestationUtils from '../attestation/Attestation.utils'
+import * as RequestForAttestationUtils from '../requestforattestation/RequestForAttestation.utils'
+import { Credential } from './Credential'
 
 /**
  *  Checks whether the input meets all the required criteria of an ICredential object.
@@ -73,10 +73,4 @@ export function decompress(credential: CompressedCredential): ICredential {
     request: RequestForAttestationUtils.decompress(credential[0]),
     attestation: AttestationUtils.decompress(credential[1]),
   }
-}
-
-export default {
-  decompress,
-  compress,
-  errorCheck,
 }

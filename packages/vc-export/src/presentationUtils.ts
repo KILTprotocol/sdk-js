@@ -136,9 +136,3 @@ export async function makePresentation(
     proof: [],
   }
 }
-
-export default {
-  makePresentation,
-  removeProperties,
-  updateCredentialDigestProof,
-}

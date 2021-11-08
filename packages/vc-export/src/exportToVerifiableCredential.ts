@@ -147,5 +147,3 @@ export function fromCredential(
 
   return VC
 }
-
-export default { fromCredential }

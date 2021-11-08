@@ -117,7 +117,7 @@ export type KeystoreSigner<A extends string = any> = Pick<
   'sign'
 >
 
-export interface KeystoreSigningOptions<A extends string = string> {
+export interface KeystoreSigningOptions<A extends string = any> {
   signer: KeystoreSigner<A>
   signingPublicKey: string | Uint8Array
   alg: A

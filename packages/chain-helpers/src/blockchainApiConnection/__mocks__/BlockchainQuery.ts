@@ -1,7 +1,7 @@
 import { Option, U8aFixed, U64, Vec, U8 } from '@polkadot/types'
 import type { Codec } from '@polkadot/types/types'
 import type { Constructor } from '@polkadot/util/types'
-import TYPE_REGISTRY from '../TypeRegistry'
+import { TYPE_REGISTRY } from '../TypeRegistry'
 
 const chainProperties = TYPE_REGISTRY.createType('ChainProperties', {
   ss58Format: 38,
@@ -56,7 +56,7 @@ const chainQueryReturnTuples: {
   },
   portablegabi: {
     // AccumulatorList: account-id -> [accumulators]?
-    accumulatorList: ('Vec<u8>' as unknown) as Constructor,
+    accumulatorList: 'Vec<u8>' as unknown as Constructor,
     // AccumulatorCount: account-id -> counter
     accumulatorCount: U64,
     // AccountState: account-id -> state

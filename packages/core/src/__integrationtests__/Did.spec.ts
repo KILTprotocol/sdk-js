@@ -391,8 +391,7 @@ describe('DID migration', () => {
       alg: SigningAlgorithms.Ed25519,
     })
     const didEncryptionKeyDetails = await keystore.generateKeypair({
-      seed:
-        '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      seed: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
       alg: EncryptionAlgorithms.NaclBox,
     })
     const lightDidDetails = new LightDidDetails({
@@ -480,8 +479,7 @@ describe('DID migration', () => {
       alg: SigningAlgorithms.Ed25519,
     })
     const didEncryptionKeyDetails = await keystore.generateKeypair({
-      seed:
-        '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+      seed: '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
       alg: EncryptionAlgorithms.NaclBox,
     })
     const serviceEndpoints: IDidServiceEndpoint[] = [

@@ -49,7 +49,7 @@ import {
 } from './DelegationNode.chain'
 import { query as queryDetails } from './DelegationHierarchyDetails.chain'
 import * as DelegationNodeUtils from './DelegationNode.utils'
-import Attestation from '../attestation/Attestation'
+import { Attestation } from '../attestation/Attestation'
 
 const log = ConfigService.LoggingFactory.getLogger('DelegationNode')
 
@@ -60,7 +60,7 @@ type NewDelegationNodeInput = Required<
 type NewDelegationRootInput = Pick<IDelegationNode, 'account' | 'permissions'> &
   DelegationHierarchyDetailsRecord
 
-export default class DelegationNode implements IDelegationNode {
+export class DelegationNode implements IDelegationNode {
   public readonly id: IDelegationNode['id']
   public readonly hierarchyId: IDelegationNode['hierarchyId']
   public readonly parentId?: IDelegationNode['parentId']
@@ -253,8 +253,8 @@ export default class DelegationNode implements IDelegationNode {
    *
    * This is required to anchor the delegation node on chain in order to enforce the delegee's consent.
    *
-   * @param delegeeDid
-   * @param signer
+   * @param delegeeDid The DID of the delegee.
+   * @param signer The keystore responsible for signing the delegation creation details for the delegee.
    * @example
    * ```
    * // Sign the hash of the delegation node...
@@ -264,15 +264,15 @@ export default class DelegationNode implements IDelegationNode {
    * const signature:string = await myNewDelegation.delegeeSign(myDidDetails, myKeyStore)
    *
    * // produce the extrinsic that stores the delegation node on the Kilt chain
-   * const extrinsic = newDelegationNode.store(signature)
+   * const extrinsic = await newDelegationNode.store(signature)
    *
    * // now the delegating DID must sign as well
-   * const submittable = delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore, submitterAccount)
+   * const submittable = await delegator.authorizeExtrinsic(extrinsic, delegtorsKeystore, submitterAccount)
    *
    * // and we can put it on chain
    * await submittable.signAndSend()
    * ```
-   * @returns The signature over the delegation **as a hex string**.
+   * @returns The DID signature over the delegation **as a hex string**.
    */
   public async delegeeSign(
     delegeeDid: IDidDetails,

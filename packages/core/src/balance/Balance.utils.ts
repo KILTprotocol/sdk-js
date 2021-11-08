@@ -38,11 +38,3 @@ export function asFemtoKilt(balance: BN): BN {
 }
 
 export const TRANSACTION_FEE = convertToTxUnit(new BN(125), -9)
-
-export default {
-  KILT_COIN,
-  TRANSACTION_FEE,
-  formatKiltBalance,
-  asFemtoKilt,
-  convertToTxUnit,
-}

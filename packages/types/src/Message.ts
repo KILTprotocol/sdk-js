@@ -50,46 +50,13 @@ export enum MessageBodyType {
   INFORM_CREATE_DELEGATION = 'inform-create-delegation',
 }
 
-/**
- * - `body` - The body of the message, see [[MessageBody]].
- * - `createdAt` - The timestamp of the message construction.
- * - `receiverAddress` - The public SS58 address of the receiver.
- * - `senderAddress` - The public SS58 address of the sender.
- * - `senderBoxPublicKex` - The public encryption key of the sender.
- * - `messageId` - The message id.
- * - `inReplyTo` - The id of the parent-message.
- * - `references` - The references or the in-reply-to of the parent-message followed by the message-id of the parent-message.
- */
-export interface IMessage {
-  body: MessageBody
-  createdAt: number
-  sender: IDidDetails['did']
-  receiver: IDidDetails['did']
-  messageId?: string
-  receivedAt?: number
-  inReplyTo?: IMessage['messageId']
-  references?: Array<IMessage['messageId']>
-}
-
-/**
- * Everything which is part of the encrypted and protected part of the [[IMessage]].
- */
-export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
-
-/**
- * Removes the plaintext [[IEncryptedMessageContents]] from an [[IMessage]] and instead includes them in encrypted form.
- * This adds the following fields:
- * - `ciphertext` - The encrypted message content.
- * - `nonce` - The encryption nonce.
- * - `receiverKeyId` - The identifier of a DID-associated public key to which to encrypt.
- * - `senderKeyId` - The identifier of a DID-associated private key with which to which to encrypt.
- */
-export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
-  receiverKeyId: IDidKeyDetails['id']
-  senderKeyId: IDidKeyDetails['id']
-  ciphertext: string
-  nonce: string
-}
+export type CompressedDelegationData = [
+  IDelegationNode['account'],
+  IDelegationNode['id'],
+  IDelegationNode['id'],
+  IDelegationNode['permissions'],
+  boolean
+]
 
 interface IMessageBodyBase {
   content: any
@@ -133,34 +100,6 @@ export interface IRejectTerms extends IMessageBodyBase {
   type: MessageBodyType.REJECT_TERMS
 }
 
-export interface IRequestAttestation extends IMessageBodyBase {
-  content: IRequestAttestationContent
-  type: MessageBodyType.REQUEST_ATTESTATION
-}
-export interface ISubmitAttestation extends IMessageBodyBase {
-  content: ISubmitAttestationContent
-  type: MessageBodyType.SUBMIT_ATTESTATION
-}
-export interface IRejectAttestation extends IMessageBodyBase {
-  content: IRequestForAttestation['rootHash']
-  type: MessageBodyType.REJECT_ATTESTATION
-}
-
-export interface IRequestPayment extends IMessageBodyBase {
-  content: IRequestPaymentContent
-  type: MessageBodyType.REQUEST_PAYMENT
-}
-
-export interface IConfirmPayment extends IMessageBodyBase {
-  content: IConfirmPaymentContent
-  type: MessageBodyType.CONFIRM_PAYMENT
-}
-
-export interface IRequestCredential extends IMessageBodyBase {
-  content: IRequestCredentialContent
-  type: MessageBodyType.REQUEST_CREDENTIAL
-}
-
 export interface ISubmitCredential extends IMessageBodyBase {
   content: ICredential[]
   type: MessageBodyType.SUBMIT_CREDENTIAL
@@ -175,38 +114,9 @@ export interface IRejectCredential extends IMessageBodyBase {
   type: MessageBodyType.REJECT_CREDENTIAL
 }
 
-export interface IRequestAcceptDelegation extends IMessageBodyBase {
-  content: IRequestDelegationApproval
-  type: MessageBodyType.REQUEST_ACCEPT_DELEGATION
-}
-export interface ISubmitAcceptDelegation extends IMessageBodyBase {
-  content: ISubmitDelegationApproval
-  type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION
-}
-export interface IRejectAcceptDelegation extends IMessageBodyBase {
-  content: IDelegationData
-  type: MessageBodyType.REJECT_ACCEPT_DELEGATION
-}
-export interface IInformCreateDelegation extends IMessageBodyBase {
-  content: IInformDelegationCreation
-  type: MessageBodyType.INFORM_CREATE_DELEGATION
-}
-
-export type CompressedRequestTerms = [
-  MessageBodyType.REQUEST_TERMS,
-  CompressedPartialClaim
-]
 export type CompressedSubmitTerms = [
   MessageBodyType.SUBMIT_TERMS,
   CompressedTerms
-]
-export type CompressedRejectTerms = [
-  MessageBodyType.REJECT_TERMS,
-  CompressedRejectedTerms
-]
-export type CompressedRequestAttestation = [
-  MessageBodyType.REQUEST_ATTESTATION,
-  CompressedRequestAttestationContent
 ]
 export type CompressedSubmitAttestation = [
   MessageBodyType.SUBMIT_ATTESTATION,
@@ -215,10 +125,6 @@ export type CompressedSubmitAttestation = [
 export type CompressedRejectAttestation = [
   MessageBodyType.REJECT_ATTESTATION,
   IRequestForAttestation['rootHash']
-]
-export type CompressedRequestCredentials = [
-  MessageBodyType.REQUEST_CREDENTIAL,
-  CompressedRequestCredentialContent
 ]
 export type CompressedSubmitCredentials = [
   MessageBodyType.SUBMIT_CREDENTIAL,
@@ -232,21 +138,9 @@ export type CompressedRejectCredential = [
   MessageBodyType.REJECT_CREDENTIAL,
   Array<ICType['hash']>
 ]
-export type CompressedRequestAcceptDelegation = [
-  MessageBodyType.REQUEST_ACCEPT_DELEGATION,
-  CompressedRequestDelegationApproval
-]
-export type CompressedSubmitAcceptDelegation = [
-  MessageBodyType.SUBMIT_ACCEPT_DELEGATION,
-  CompressedSubmitDelegationApproval
-]
 export type CompressedRejectAcceptDelegation = [
   MessageBodyType.REJECT_ACCEPT_DELEGATION,
   CompressedDelegationData
-]
-export type CompressedInformCreateDelegation = [
-  MessageBodyType.INFORM_CREATE_DELEGATION,
-  CompressedInformDelegationCreation
 ]
 
 export interface IRequestAttestationContent {
@@ -254,8 +148,23 @@ export interface IRequestAttestationContent {
   quote?: IQuoteAgreement
 }
 
+export interface IRequestAttestation extends IMessageBodyBase {
+  content: IRequestAttestationContent
+  type: MessageBodyType.REQUEST_ATTESTATION
+}
+
 export interface ISubmitAttestationContent {
   attestation: IAttestation
+}
+
+export interface ISubmitAttestation extends IMessageBodyBase {
+  content: ISubmitAttestationContent
+  type: MessageBodyType.SUBMIT_ATTESTATION
+}
+
+export interface IRejectAttestation extends IMessageBodyBase {
+  content: IRequestForAttestation['rootHash']
+  type: MessageBodyType.REJECT_ATTESTATION
 }
 
 export interface IRequestPaymentContent {
@@ -272,6 +181,11 @@ export interface IConfirmPaymentContent {
   blockHash: string
 }
 
+export interface IConfirmPayment extends IMessageBodyBase {
+  content: IConfirmPaymentContent
+  type: MessageBodyType.CONFIRM_PAYMENT
+}
+
 export interface IRequestCredentialContent {
   cTypes: Array<{
     cTypeHash: ICType['hash']
@@ -281,12 +195,26 @@ export interface IRequestCredentialContent {
   challenge?: string
 }
 
+export interface IRequestCredential extends IMessageBodyBase {
+  content: IRequestCredentialContent
+  type: MessageBodyType.REQUEST_CREDENTIAL
+}
+
+export interface IRequestPayment extends IMessageBodyBase {
+  content: IRequestPaymentContent
+  type: MessageBodyType.REQUEST_PAYMENT
+}
+
 export interface IDelegationData {
   account: IDelegationNode['account']
   id: IDelegationNode['id']
   parentId: IDelegationNode['id']
   permissions: IDelegationNode['permissions']
   isPCR: boolean
+}
+export interface IRejectAcceptDelegation extends IMessageBodyBase {
+  content: IDelegationData
+  type: MessageBodyType.REJECT_ACCEPT_DELEGATION
 }
 export interface IRequestDelegationApproval {
   delegationData: IDelegationData
@@ -296,6 +224,11 @@ export interface IRequestDelegationApproval {
   }
 }
 
+export interface IRequestAcceptDelegation extends IMessageBodyBase {
+  content: IRequestDelegationApproval
+  type: MessageBodyType.REQUEST_ACCEPT_DELEGATION
+}
+
 export interface ISubmitDelegationApproval {
   delegationData: IDelegationData
   signatures: {
@@ -303,22 +236,48 @@ export interface ISubmitDelegationApproval {
     invitee: DidSignature
   }
 }
+export interface ISubmitAcceptDelegation extends IMessageBodyBase {
+  content: ISubmitDelegationApproval
+  type: MessageBodyType.SUBMIT_ACCEPT_DELEGATION
+}
 
 export interface IInformDelegationCreation {
   delegationId: IDelegationNode['id']
   isPCR: boolean
 }
+export interface IInformCreateDelegation extends IMessageBodyBase {
+  content: IInformDelegationCreation
+  type: MessageBodyType.INFORM_CREATE_DELEGATION
+}
+
+export type CompressedInformDelegationCreation = [
+  IInformDelegationCreation['delegationId'],
+  IInformDelegationCreation['isPCR']
+]
+
+export type CompressedInformCreateDelegation = [
+  MessageBodyType.INFORM_CREATE_DELEGATION,
+  CompressedInformDelegationCreation
+]
 
 export type CompressedPartialClaim = [
   IClaim['cTypeHash'],
   IClaim['owner'] | undefined,
   IClaimContents | undefined
 ]
+export type CompressedRequestTerms = [
+  MessageBodyType.REQUEST_TERMS,
+  CompressedPartialClaim
+]
 
 export type CompressedRejectedTerms = [
   CompressedPartialClaim,
   CompressedCredential[],
   IDelegationNode['id'] | undefined
+]
+export type CompressedRejectTerms = [
+  MessageBodyType.REJECT_TERMS,
+  CompressedRejectedTerms
 ]
 
 export type CompressedRequestCredentialContent = [
@@ -332,17 +291,19 @@ export type CompressedRequestCredentialContent = [
   string?
 ]
 
+export type CompressedRequestCredentials = [
+  MessageBodyType.REQUEST_CREDENTIAL,
+  CompressedRequestCredentialContent
+]
+
 export type CompressedRequestAttestationContent = [
   CompressedRequestForAttestation,
   CompressedQuoteAgreed | undefined
 ]
 
-export type CompressedDelegationData = [
-  IDelegationNode['account'],
-  IDelegationNode['id'],
-  IDelegationNode['id'],
-  IDelegationNode['permissions'],
-  boolean
+export type CompressedRequestAttestation = [
+  MessageBodyType.REQUEST_ATTESTATION,
+  CompressedRequestAttestationContent
 ]
 
 export type CompressedRequestDelegationApproval = [
@@ -350,16 +311,19 @@ export type CompressedRequestDelegationApproval = [
   [DidSignature['signature'], DidSignature['keyId']],
   AnyJson
 ]
+export type CompressedRequestAcceptDelegation = [
+  MessageBodyType.REQUEST_ACCEPT_DELEGATION,
+  CompressedRequestDelegationApproval
+]
 
 export type CompressedSubmitDelegationApproval = [
   CompressedDelegationData,
   [DidSignature['signature'], DidSignature['keyId']],
   [DidSignature['signature'], DidSignature['keyId']]
 ]
-
-export type CompressedInformDelegationCreation = [
-  IInformDelegationCreation['delegationId'],
-  IInformDelegationCreation['isPCR']
+export type CompressedSubmitAcceptDelegation = [
+  MessageBodyType.SUBMIT_ACCEPT_DELEGATION,
+  CompressedSubmitDelegationApproval
 ]
 
 export type MessageBody =
@@ -402,3 +366,44 @@ export type CompressedMessageBody =
   | CompressedSubmitAcceptDelegation
   | CompressedRejectAcceptDelegation
   | CompressedInformCreateDelegation
+
+/**
+ * - `body` - The body of the message, see [[MessageBody]].
+ * - `createdAt` - The timestamp of the message construction.
+ * - `receiverAddress` - The public SS58 address of the receiver.
+ * - `senderAddress` - The public SS58 address of the sender.
+ * - `senderBoxPublicKex` - The public encryption key of the sender.
+ * - `messageId` - The message id.
+ * - `inReplyTo` - The id of the parent-message.
+ * - `references` - The references or the in-reply-to of the parent-message followed by the message-id of the parent-message.
+ */
+export interface IMessage {
+  body: MessageBody
+  createdAt: number
+  sender: IDidDetails['did']
+  receiver: IDidDetails['did']
+  messageId?: string
+  receivedAt?: number
+  inReplyTo?: IMessage['messageId']
+  references?: Array<IMessage['messageId']>
+}
+
+/**
+ * Everything which is part of the encrypted and protected part of the [[IMessage]].
+ */
+export type IEncryptedMessageContents = Omit<IMessage, 'receivedAt'>
+
+/**
+ * Removes the plaintext [[IEncryptedMessageContents]] from an [[IMessage]] and instead includes them in encrypted form.
+ * This adds the following fields:
+ * - `ciphertext` - The encrypted message content.
+ * - `nonce` - The encryption nonce.
+ * - `receiverKeyId` - The identifier of a DID-associated public key to which to encrypt.
+ * - `senderKeyId` - The identifier of a DID-associated private key with which to which to encrypt.
+ */
+export type IEncryptedMessage = Pick<IMessage, 'receivedAt'> & {
+  receiverKeyId: IDidKeyDetails['id']
+  senderKeyId: IDidKeyDetails['id']
+  ciphertext: string
+  nonce: string
+}

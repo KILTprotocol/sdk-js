@@ -6,7 +6,6 @@
  */
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable import/prefer-default-export */
 
 import type {
   IDidDetails,
