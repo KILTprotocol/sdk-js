@@ -65,7 +65,7 @@ export class DelegationNode implements IDelegationNode {
   public readonly id: IDelegationNode['id']
   public readonly hierarchyId: IDelegationNode['hierarchyId']
   public readonly parentId?: IDelegationNode['parentId']
-  public readonly childrenIds: Array<IDelegationNode['id']> = []
+  private childrenIdentifiers: Array<IDelegationNode['id']> = []
   public readonly account: IDidDetails['did']
   public readonly permissions: IDelegationNode['permissions']
   private hierarchyDetails?: IDelegationHierarchyDetails
@@ -88,11 +88,15 @@ export class DelegationNode implements IDelegationNode {
     this.id = id
     this.hierarchyId = hierarchyId
     this.parentId = parentId
-    this.childrenIds = childrenIds
+    this.childrenIdentifiers = childrenIds
     this.account = account
     this.permissions = permissions
     this.revoked = revoked
     DelegationNodeUtils.errorCheck(this)
+  }
+
+  public get childrenIds(): Array<IDelegationNode['id']> {
+    return this.childrenIdentifiers
   }
 
   /**
@@ -196,6 +200,11 @@ export class DelegationNode implements IDelegationNode {
    * @returns Promise containing the children as an array of [[DelegationNode]], which is empty if there are no children.
    */
   public async getChildren(): Promise<DelegationNode[]> {
+    const refreshedNodeDetails = await query(this.id)
+    // Updates the children info with the latest information available on chain.
+    if (refreshedNodeDetails) {
+      this.childrenIdentifiers = refreshedNodeDetails.childrenIds
+    }
     return getChildren(this)
   }
 
