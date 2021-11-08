@@ -69,9 +69,7 @@ async function checkDeleteFullDid(
     submitter: identity.address,
   })
 
-  const balanceBeforeDeleting = await Balance.getBalances(
-    identity.address
-  ).then((balance) => balance)
+  const balanceBeforeDeleting = await Balance.getBalances(identity.address)
 
   const didResult = await DidChain.queryDidEncoded(identity.address)
   DecoderUtils.assertCodecIsType(didResult, ['Option<DidDidDetails>'])
@@ -83,13 +81,11 @@ async function checkDeleteFullDid(
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 
-  const balanceAfterDeleting = await Balance.getBalances(identity.address).then(
-    (balance) => balance
-  )
+  const balanceAfterDeleting = await Balance.getBalances(identity.address)
 
   return (
-    balanceBeforeDeleting.reserved.toNumber() - didDeposit.toNumber() ===
-    balanceAfterDeleting.reserved.toNumber()
+    balanceBeforeDeleting.reserved.sub(didDeposit) ===
+    balanceAfterDeleting.reserved
   )
 }
 
@@ -103,9 +99,7 @@ async function checkReclaimFullDid(
     storedEndpointsCount
   )
 
-  const balanceBeforeRevoking = await Balance.getBalances(
-    identity.address
-  ).then((balance) => balance)
+  const balanceBeforeRevoking = await Balance.getBalances(identity.address)
 
   const didResult = await DidChain.queryDidEncoded(identity.address)
   DecoderUtils.assertCodecIsType(didResult, ['Option<DidDidDetails>'])
@@ -117,13 +111,11 @@ async function checkReclaimFullDid(
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 
-  const balanceAfterRevoking = await Balance.getBalances(identity.address).then(
-    (balance) => balance
-  )
+  const balanceAfterRevoking = await Balance.getBalances(identity.address)
 
   return (
-    balanceBeforeRevoking.reserved.toNumber() - didDeposit.toNumber() ===
-    balanceAfterRevoking.reserved.toNumber()
+    balanceBeforeRevoking.reserved.sub(didDeposit) ===
+    balanceAfterRevoking.reserved
   )
 }
 
@@ -149,9 +141,7 @@ async function checkRemoveFullDidAttestation(
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 
-  const balanceBeforeRemoving = await Balance.getBalances(
-    identity.address
-  ).then((balance) => balance)
+  const balanceBeforeRemoving = await Balance.getBalances(identity.address)
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
@@ -176,14 +166,11 @@ async function checkRemoveFullDidAttestation(
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 
-  const balanceAfterRemoving = await Balance.getBalances(identity.address).then(
-    (balance) => balance
-  )
+  const balanceAfterRemoving = await Balance.getBalances(identity.address)
 
   return (
-    balanceBeforeRemoving.reserved.toNumber() -
-      attestationDeposit.toNumber() ===
-    balanceAfterRemoving.reserved.toNumber()
+    balanceBeforeRemoving.reserved.sub(attestationDeposit) ===
+    balanceAfterRemoving.reserved
   )
 }
 
@@ -209,9 +196,7 @@ async function checkReclaimFullDidAttestation(
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 
-  const balanceBeforeReclaiming = await Balance.getBalances(
-    identity.address
-  ).then((balance) => balance)
+  const balanceBeforeReclaiming = await Balance.getBalances(identity.address)
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
@@ -232,14 +217,11 @@ async function checkReclaimFullDidAttestation(
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 
-  const balanceAfterDeleting = await Balance.getBalances(identity.address).then(
-    (balance) => balance
-  )
+  const balanceAfterDeleting = await Balance.getBalances(identity.address)
 
   return (
-    balanceBeforeReclaiming.reserved.toNumber() -
-      attestationDeposit.toNumber() ===
-    balanceAfterDeleting.reserved.toNumber()
+    balanceBeforeReclaiming.reserved.sub(attestationDeposit) ===
+    balanceAfterDeleting.reserved
   )
 }
 
