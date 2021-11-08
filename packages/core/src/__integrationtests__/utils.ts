@@ -2,7 +2,6 @@
 
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BN, hexToU8a } from '@polkadot/util'
-import Attestation from '../attestation/Attestation'
 import { Keyring } from '@kiltprotocol/utils'
 import { randomAsU8a } from '@polkadot/util-crypto'
 import CType from '../ctype/CType'
@@ -17,11 +16,7 @@ import {
 } from '@kiltprotocol/did'
 import { Balance } from '../balance'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
-import {
-  IRequestForAttestation,
-  KeyRelationship,
-  KeystoreSigner,
-} from '@kiltprotocol/types'
+import { KeyRelationship, KeystoreSigner } from '@kiltprotocol/types'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
 export const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(1000)
