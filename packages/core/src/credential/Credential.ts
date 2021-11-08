@@ -6,7 +6,7 @@
  */
 
 /**
- * In KILT, a [[Credential]] is a **credential**, which a Claimer can store locally and share with Verifiers as they wish.
+ * In KILT, a [[Credential]] is an attested claim, which a Claimer can store locally and share with Verifiers as they wish.
  *
  * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in a [[Credential]] object.
  * This [[Credential]] also contains the original request for attestation.
