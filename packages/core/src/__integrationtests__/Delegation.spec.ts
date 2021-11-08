@@ -339,6 +339,37 @@ describe('revocation', () => {
   }, 60_000)
 })
 
+describe.only('Deposit claiming', () => {
+  it('deposit payer should be able to claim back its own deposit and delete any children', async () => {
+    const rootNode = await writeHierarchy(root, DriversLicense.hash)
+    const delegatedNode = await addDelegation(
+      rootNode.id,
+      rootNode.id,
+      root,
+      root
+    )
+    const subDelegatedNode = await addDelegation(
+      rootNode.id,
+      delegatedNode.id,
+      root,
+      root
+    )
+
+    await expect(DelegationNode.query(delegatedNode.id)).resolves.not.toBeNull()
+    await expect(
+      DelegationNode.query(subDelegatedNode.id)
+    ).resolves.not.toBeNull()
+
+    const depositClaimTx = await delegatedNode.reclaimDeposit()
+    await BlockchainUtils.signAndSubmitTx(depositClaimTx, paymentAccount, {
+      resolveOn: BlockchainUtils.IS_IN_BLOCK,
+    })
+
+    await expect(DelegationNode.query(delegatedNode.id)).resolves.toBeNull()
+    await expect(DelegationNode.query(subDelegatedNode.id)).resolves.toBeNull()
+  }, 60_000)
+})
+
 describe('handling queries to data not on chain', () => {
   it('DelegationNode query on empty', async () => {
     return expect(DelegationNode.query(randomAsHex(32))).resolves.toBeNull()

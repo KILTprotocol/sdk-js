@@ -46,6 +46,7 @@ import {
   revoke,
   storeAsDelegation,
   storeAsRoot,
+  reclaimDeposit,
 } from './DelegationNode.chain'
 import { query as queryDetails } from './DelegationHierarchyDetails.chain'
 import * as DelegationNodeUtils from './DelegationNode.utils'
@@ -410,6 +411,19 @@ export class DelegationNode implements IDelegationNode {
     const childCount = await this.subtreeNodeCount()
     log.debug(`:: remove(${this.id}) with maxRevocations=${childCount}`)
     return remove(this.id, childCount)
+  }
+
+  /**
+   * [ASYNC] Reclaims the deposit of a delegation and removes the delegation and all its children.
+   *
+   * This call can only be successfully executed if the submitter of the transaction is the original payer of the delegationdeposit.
+   *
+   * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
+   */
+  public async reclaimDeposit(): Promise<SubmittableExtrinsic> {
+    const childCount = await this.subtreeNodeCount()
+    log.debug(`:: reclaimDeposit(${this.id}) with maxRemovals=${childCount}`)
+    return reclaimDeposit(this.id, childCount)
   }
 
   /**
