@@ -86,7 +86,7 @@ export function compressLegitimation(
  *
  * @param leg A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
  *
- * @returns An object that has the same properties as an [[Credential]].
+ * @returns An object that has the same properties as a [[Credential]].
  */
 
 function decompressLegitimation(leg: CompressedCredential[]): ICredential[] {

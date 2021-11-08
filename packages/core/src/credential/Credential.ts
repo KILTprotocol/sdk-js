@@ -39,7 +39,7 @@ export default class Credential implements ICredential {
    * @param credentialInput - The base object from which to create the credential.
    * @returns A new instantiated [[Credential]] object.
    * @example ```javascript
-   * // create an Credential object, so we can call methods on it (`serialized` is a serialized Credential object)
+   * // create n Credential object, so we can call methods on it (`serialized` is a serialized Credential object)
    * Credential.fromCredential(JSON.parse(serialized));
    * ```
    */
@@ -265,14 +265,14 @@ export default class Credential implements ICredential {
   /**
    * Compresses a [[Credential]] object.
    *
-   * @returns An array that contains the same properties of an [[Credential]].
+   * @returns An array that contains the same properties of a [[Credential]].
    */
   public compress(): CompressedCredential {
     return CredentialUtils.compress(this)
   }
 
   /**
-   * [STATIC] Builds an [[Credential]] from the decompressed array.
+   * [STATIC] Builds a [[Credential]] from the decompressed array.
    *
    * @param credential The [[CompressedCredential]] that should get decompressed.
    * @returns A new [[Credential]] object.

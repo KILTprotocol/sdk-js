@@ -40,11 +40,11 @@ export function errorCheck(input: ICredential): void {
 }
 
 /**
- *  Compresses an [[Credential]] object into an array for storage and/or messaging.
+ *  Compresses a [[Credential]] object into an array for storage and/or messaging.
  *
- * @param credential An [[Credential]] that will be sorted and stripped for messaging or storage.
+ * @param credential A [[Credential]] that will be sorted and stripped for messaging or storage.
  *
- * @returns An ordered array of an [[Credential]] that comprises of an [[Attestation]] and [[RequestForAttestation]] arrays.
+ * @returns An ordered array of a [[Credential]] that comprises of an [[Attestation]] and [[RequestForAttestation]] arrays.
  */
 
 export function compress(credential: ICredential): CompressedCredential {
@@ -57,12 +57,12 @@ export function compress(credential: ICredential): CompressedCredential {
 }
 
 /**
- *  Decompresses an [[Credential]] array from storage and/or message into an object.
+ *  Decompresses a [[Credential]] array from storage and/or message into an object.
  *
  * @param credential A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
  * @throws [[ERROR_DECOMPRESSION_ARRAY]] when credential is not an Array or it's length is unequal 2.
  *
- * @returns An object that has the same properties as an [[Credential]].
+ * @returns An object that has the same properties as a [[Credential]].
  */
 
 export function decompress(credential: CompressedCredential): ICredential {
