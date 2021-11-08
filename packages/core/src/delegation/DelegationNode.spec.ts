@@ -27,7 +27,7 @@ let nodes: Record<string, DelegationNode> = {}
 jest.mock('./DelegationNode.chain', () => {
   return {
     getChildren: jest.fn(async (node: DelegationNode) =>
-      node.childrenIds.map((id: IDelegationNode['id']) => nodes[id] || null)
+      node.childrenIds.map((id) => nodes[id] || null)
     ),
     query: jest.fn(async (id: string) => nodes[id] || null),
     storeAsRoot: jest.fn(async (node: DelegationNode) => {
