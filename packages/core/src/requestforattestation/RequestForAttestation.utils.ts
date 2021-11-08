@@ -11,14 +11,14 @@
  */
 
 import type {
-  IAttestedClaim,
-  CompressedAttestedClaim,
+  ICredential,
+  CompressedCredential,
   CompressedRequestForAttestation,
   IRequestForAttestation,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
 import { DidUtils } from '@kiltprotocol/did'
-import * as AttestedClaimUtils from '../attestedclaim/AttestedClaim.utils'
+import * as CredentialUtils from '../credential/Credential.utils'
 import * as ClaimUtils from '../claim/Claim.utils'
 import { RequestForAttestation } from './RequestForAttestation'
 
@@ -68,31 +68,29 @@ export function errorCheck(input: IRequestForAttestation): void {
 }
 
 /**
- *  Compresses [[AttestedClaim]]s which are made up from an [[Attestation]] and [[RequestForAttestation]] for storage and/or message.
+ *  Compresses [[Credential]]s which are made up from an [[Attestation]] and [[RequestForAttestation]] for storage and/or message.
  *
  * @param leg An array of [[Attestation]] and [[RequestForAttestation]] objects.
  *
- * @returns An ordered array of [[AttestedClaim]]s.
+ * @returns An ordered array of [[Credential]]s.
  */
 
 export function compressLegitimation(
-  leg: IAttestedClaim[]
-): CompressedAttestedClaim[] {
-  return leg.map(AttestedClaimUtils.compress)
+  leg: ICredential[]
+): CompressedCredential[] {
+  return leg.map(CredentialUtils.compress)
 }
 
 /**
- *  Decompresses [[AttestedClaim]]s which are an [[Attestation]] and [[RequestForAttestation]] from storage and/or message.
+ *  Decompresses [[Credential]]s which are an [[Attestation]] and [[RequestForAttestation]] from storage and/or message.
  *
  * @param leg A compressed [[Attestation]] and [[RequestForAttestation]] array that is reverted back into an object.
  *
- * @returns An object that has the same properties as an [[AttestedClaim]].
+ * @returns An object that has the same properties as a [[Credential]].
  */
 
-function decompressLegitimation(
-  leg: CompressedAttestedClaim[]
-): IAttestedClaim[] {
-  return leg.map(AttestedClaimUtils.decompress)
+function decompressLegitimation(leg: CompressedCredential[]): ICredential[] {
+  return leg.map(CredentialUtils.decompress)
 }
 
 /**

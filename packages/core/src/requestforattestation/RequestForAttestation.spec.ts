@@ -15,7 +15,7 @@
 import type {
   IClaim,
   IClaimContents,
-  CompressedAttestedClaim,
+  CompressedCredential,
   ICType,
   CompressedRequestForAttestation,
   IRequestForAttestation,
@@ -23,7 +23,7 @@ import type {
 } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { Attestation } from '../attestation/Attestation'
-import { AttestedClaim } from '../attestedclaim/AttestedClaim'
+import { Credential } from '../credential/Credential'
 import { CType } from '../ctype/CType'
 
 import { RequestForAttestation } from './RequestForAttestation'
@@ -34,7 +34,7 @@ import '../../../../testingTools/jestErrorCodeMatcher'
 function buildRequestForAttestation(
   claimerDid: string,
   contents: IClaimContents,
-  legitimations: AttestedClaim[]
+  legitimations: Credential[]
 ): RequestForAttestation {
   // create claim
 
@@ -71,9 +71,9 @@ describe('RequestForAttestation', () => {
     'did:kilt:4rVHmxSCxGTEv6rZwQUvZa6HTis4haefXPuEqj4zGafug7xL'
   let legitimationRequest: RequestForAttestation
   let legitimationAttestation: Attestation
-  let legitimation: AttestedClaim
+  let legitimation: Credential
   let legitimationAttestationCharlie: Attestation
-  let legitimationCharlie: AttestedClaim
+  let legitimationCharlie: Credential
 
   beforeEach(async () => {
     legitimationRequest = buildRequestForAttestation(identityAlice, {}, [])
@@ -82,8 +82,8 @@ describe('RequestForAttestation', () => {
       legitimationRequest,
       identityCharlie
     )
-    // combine to attested claim
-    legitimation = new AttestedClaim({
+    // combine to credential
+    legitimation = new Credential({
       request: legitimationRequest,
       attestation: legitimationAttestation,
     })
@@ -93,8 +93,8 @@ describe('RequestForAttestation', () => {
       legitimationRequest,
       identityCharlie
     )
-    // combine to attested claim
-    legitimationCharlie = new AttestedClaim({
+    // combine to credential
+    legitimationCharlie = new Credential({
       request: legitimationRequest,
       attestation: legitimationAttestationCharlie,
     })
@@ -144,7 +144,7 @@ describe('RequestForAttestation', () => {
       legitimationRequest,
       identityBob
     )
-    const legitimationBob = new AttestedClaim({
+    const legitimationBob = new Credential({
       request: legitimationRequest,
       attestation: legitimationAttestationBob,
     })
@@ -158,7 +158,7 @@ describe('RequestForAttestation', () => {
       [legitimationCharlie, legitimationBob]
     )
 
-    const compressedLegitimationCharlie: CompressedAttestedClaim = [
+    const compressedLegitimationCharlie: CompressedCredential = [
       [
         [
           legitimationCharlie.request.claim.cTypeHash,
@@ -181,7 +181,7 @@ describe('RequestForAttestation', () => {
       ],
     ]
 
-    const compressedLegitimationBob: CompressedAttestedClaim = [
+    const compressedLegitimationBob: CompressedCredential = [
       [
         [
           legitimationBob.request.claim.cTypeHash,

@@ -6,7 +6,7 @@
  */
 
 export { Attestation, AttestationUtils } from './attestation'
-export { AttestedClaim, AttestedClaimUtils } from './attestedclaim'
+export { Credential, CredentialUtils } from './credential'
 export { Balance, BalanceUtils } from './balance'
 export { Claim, ClaimUtils } from './claim'
 export { CType, CTypeMetadata, CTypeSchema, CTypeUtils } from './ctype'

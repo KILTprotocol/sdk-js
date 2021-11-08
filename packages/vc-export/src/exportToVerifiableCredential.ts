@@ -13,7 +13,7 @@
 import { isHex } from '@polkadot/util'
 import type { AnyJson } from '@polkadot/types/types'
 import { ClaimUtils } from '@kiltprotocol/core'
-import type { IAttestedClaim, ICType } from '@kiltprotocol/types'
+import type { ICredential, ICType } from '@kiltprotocol/types'
 import {
   DEFAULT_VERIFIABLECREDENTIAL_CONTEXT,
   DEFAULT_VERIFIABLECREDENTIAL_TYPE,
@@ -54,8 +54,8 @@ export function toCredentialIRI(rootHash: string): string {
   return KILT_CREDENTIAL_IRI_PREFIX + rootHash
 }
 
-export function fromAttestedClaim(
-  input: IAttestedClaim,
+export function fromCredential(
+  input: ICredential,
   ctype?: ICType
 ): VerifiableCredential {
   const {

@@ -12,7 +12,7 @@
 
 import {
   AttestationUtils,
-  AttestedClaimUtils,
+  CredentialUtils,
   ClaimUtils,
   CTypeUtils,
   Quote,
@@ -21,16 +21,13 @@ import {
   RequestForAttestationUtils,
 } from '@kiltprotocol/core'
 import type {
-  IAttestedClaim,
-  CompressedAttestedClaim,
+  ICredential,
+  CompressedCredential,
   CompressedMessageBody,
   MessageBody,
-  CompressedRequestClaimsForCTypesContent,
-  IRequestClaimsForCTypesContent,
+  CompressedRequestCredentialContent,
   ICType,
   IMessage,
-  PartialClaim,
-  IClaim,
   IDelegationData,
 } from '@kiltprotocol/types'
 import { DataUtils, SDKErrors } from '@kiltprotocol/utils'
@@ -84,8 +81,8 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
     }
     case Message.BodyType.SUBMIT_TERMS: {
       ClaimUtils.errorCheck(body.content.claim)
-      body.content.legitimations.map((attestedClaim: IAttestedClaim) =>
-        AttestedClaimUtils.errorCheck(attestedClaim)
+      body.content.legitimations.map((credential: ICredential) =>
+        CredentialUtils.errorCheck(credential)
       )
       if (body.content.delegationId) {
         DataUtils.validateHash(
@@ -95,12 +92,6 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
       }
       if (body.content.quote) {
         Quote.validateQuoteSchema(QuoteSchema, body.content.quote)
-      }
-      if (body.content.prerequisiteClaims) {
-        DataUtils.validateHash(
-          body.content.prerequisiteClaims,
-          'Submit terms pre-requisite claims invalid'
-        )
       }
       if (body.content.cTypes) {
         body.content.cTypes.map((val) => CTypeUtils.errorCheck(val))
@@ -115,75 +106,62 @@ export function errorCheckMessageBody(body: MessageBody): boolean | void {
           'Reject terms delegation id hash'
         )
       }
-      body.content.legitimations.map((val) =>
-        AttestedClaimUtils.errorCheck(val)
-      )
+      body.content.legitimations.map((val) => CredentialUtils.errorCheck(val))
       break
     }
-    case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.REQUEST_ATTESTATION: {
       RequestForAttestationUtils.errorCheck(body.content.requestForAttestation)
       if (body.content.quote) {
         Quote.validateQuoteSchema(QuoteSchema, body.content.quote)
       }
-      if (body.content.prerequisiteClaims) {
-        body.content.prerequisiteClaims.map((claim: IClaim | PartialClaim) =>
-          ClaimUtils.errorCheck(claim)
-        )
-      }
       break
     }
-    case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.SUBMIT_ATTESTATION: {
       AttestationUtils.errorCheck(body.content.attestation)
       break
     }
-    case Message.BodyType.REJECT_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.REJECT_ATTESTATION: {
       if (!isHex(body.content)) {
         throw SDKErrors.ERROR_HASH_MALFORMED()
       }
       break
     }
-    case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      body.content.forEach(
-        (requestClaimsForCTypes: IRequestClaimsForCTypesContent): void => {
+    case Message.BodyType.REQUEST_CREDENTIAL: {
+      body.content.cTypes.forEach(
+        ({ cTypeHash, trustedAttesters, requiredProperties }): void => {
           DataUtils.validateHash(
-            requestClaimsForCTypes.cTypeHash,
-            'request claims for ctypes cTypeHash invalid'
+            cTypeHash,
+            'request credential cTypeHash invalid'
           )
-          requestClaimsForCTypes.acceptedAttester?.map((did) =>
-            DidUtils.validateKiltDid(did)
-          )
-          requestClaimsForCTypes.requiredProperties?.forEach(
-            (requiredProps) => {
-              if (typeof requiredProps !== 'string')
-                throw new TypeError(
-                  'required properties is expected to be a string'
-                )
-            }
-          )
+          trustedAttesters?.map((did) => DidUtils.validateKiltDid(did))
+          requiredProperties?.forEach((requiredProps) => {
+            if (typeof requiredProps !== 'string')
+              throw new TypeError(
+                'required properties is expected to be a string'
+              )
+          })
         }
       )
       break
     }
-    case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
-      body.content.map((attestedClaim) =>
-        AttestedClaimUtils.errorCheck(attestedClaim)
-      )
+    case Message.BodyType.SUBMIT_CREDENTIAL: {
+      body.content.map((credential) => CredentialUtils.errorCheck(credential))
       break
     }
-    case Message.BodyType.ACCEPT_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.ACCEPT_CREDENTIAL: {
       body.content.map((cTypeHash) =>
         DataUtils.validateHash(
           cTypeHash,
-          'accept claims for ctypes message ctype hash invalid'
+          'accept credential message ctype hash invalid'
         )
       )
       break
     }
-    case Message.BodyType.REJECT_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.REJECT_CREDENTIAL: {
       body.content.map((cTypeHash) =>
         DataUtils.validateHash(
           cTypeHash,
-          'rejected claims for ctypes ctype hashes invalid'
+          'rejected credential ctype hashes invalid'
         )
       )
       break
@@ -295,16 +273,15 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
       compressedContents = [
         ClaimUtils.compress(body.content.claim),
         body.content.legitimations.map(
-          (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
-            Array.isArray(attestedClaim)
-              ? attestedClaim
-              : AttestedClaimUtils.compress(attestedClaim)
+          (credential: ICredential | CompressedCredential) =>
+            Array.isArray(credential)
+              ? credential
+              : CredentialUtils.compress(credential)
         ),
         body.content.delegationId,
         body.content.quote
           ? QuoteUtils.compressAttesterSignedQuote(body.content.quote)
           : undefined,
-        body.content.prerequisiteClaims,
         body.content.cTypes?.map((val) => CTypeUtils.compress(val)),
       ]
       break
@@ -312,45 +289,40 @@ export function compressMessage(body: MessageBody): CompressedMessageBody {
     case Message.BodyType.REJECT_TERMS: {
       compressedContents = [
         ClaimUtils.compress(body.content.claim),
-        body.content.legitimations.map((val) =>
-          AttestedClaimUtils.compress(val)
-        ),
+        body.content.legitimations.map((val) => CredentialUtils.compress(val)),
         body.content.delegationId || undefined,
       ]
       break
     }
-    case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.REQUEST_ATTESTATION: {
       compressedContents = [
         RequestForAttestationUtils.compress(body.content.requestForAttestation),
         body.content.quote
           ? QuoteUtils.compressQuoteAgreement(body.content.quote)
           : undefined,
-        body.content.prerequisiteClaims
-          ? body.content.prerequisiteClaims.map((claim) =>
-              ClaimUtils.compress(claim)
-            )
-          : undefined,
       ]
       break
     }
-    case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.SUBMIT_ATTESTATION: {
       compressedContents = AttestationUtils.compress(body.content.attestation)
       break
     }
-    case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      compressedContents = body.content.map(
-        (val): CompressedRequestClaimsForCTypesContent => {
-          return [val.cTypeHash, val.acceptedAttester, val.requiredProperties]
-        }
-      )
+    case Message.BodyType.REQUEST_CREDENTIAL: {
+      const compressedCtypes: CompressedRequestCredentialContent[0] =
+        body.content.cTypes.map(
+          ({ cTypeHash, trustedAttesters, requiredProperties }) => {
+            return [cTypeHash, trustedAttesters, requiredProperties]
+          }
+        )
+      compressedContents = [compressedCtypes, body.content.challenge]
       break
     }
-    case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.SUBMIT_CREDENTIAL: {
       compressedContents = body.content.map(
-        (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
-          Array.isArray(attestedClaim)
-            ? attestedClaim
-            : AttestedClaimUtils.compress(attestedClaim)
+        (credential: ICredential | CompressedCredential) =>
+          Array.isArray(credential)
+            ? credential
+            : CredentialUtils.compress(credential)
       )
       break
     }
@@ -433,17 +405,16 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
       decompressedContents = {
         claim: ClaimUtils.decompress(body[1][0]),
         legitimations: body[1][1].map(
-          (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
-            !Array.isArray(attestedClaim)
-              ? attestedClaim
-              : AttestedClaimUtils.decompress(attestedClaim)
+          (credential: ICredential | CompressedCredential) =>
+            !Array.isArray(credential)
+              ? credential
+              : CredentialUtils.decompress(credential)
         ),
         delegationId: body[1][2],
         quote: body[1][3]
           ? QuoteUtils.decompressAttesterSignedQuote(body[1][3])
           : undefined,
-        prerequisiteClaims: body[1][4],
-        cTypes: body[1][5]?.map((val) => CTypeUtils.decompress(val)),
+        cTypes: body[1][4]?.map((val) => CTypeUtils.decompress(val)),
       }
 
       break
@@ -451,14 +422,12 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
     case Message.BodyType.REJECT_TERMS: {
       decompressedContents = {
         claim: ClaimUtils.decompress(body[1][0]),
-        legitimations: body[1][1].map((val) =>
-          AttestedClaimUtils.decompress(val)
-        ),
+        legitimations: body[1][1].map((val) => CredentialUtils.decompress(val)),
         delegationId: body[1][2] ? body[1][2] : undefined,
       }
       break
     }
-    case Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.REQUEST_ATTESTATION: {
       decompressedContents = {
         requestForAttestation: RequestForAttestationUtils.decompress(
           body[1][0]
@@ -466,39 +435,33 @@ export function decompressMessage(body: CompressedMessageBody): MessageBody {
         quote: body[1][1]
           ? QuoteUtils.decompressQuoteAgreement(body[1][1])
           : undefined,
-        prerequisiteClaims: body[1][2]
-          ? body[1][2].map((claim) => ClaimUtils.decompress(claim))
-          : undefined,
       }
 
       break
     }
-    case Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM: {
+    case Message.BodyType.SUBMIT_ATTESTATION: {
       decompressedContents = {
         attestation: AttestationUtils.decompress(body[1]),
       }
       break
     }
-    case Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES: {
-      decompressedContents = body[1].map(
-        (
-          val: CompressedRequestClaimsForCTypesContent
-        ): IRequestClaimsForCTypesContent => {
-          return {
-            cTypeHash: val[0],
-            acceptedAttester: val[1],
-            requiredProperties: val[2],
-          }
-        }
-      )
+    case Message.BodyType.REQUEST_CREDENTIAL: {
+      decompressedContents = {
+        cTypes: body[1][0].map((val) => ({
+          cTypeHash: val[0],
+          trustedAttesters: val[1],
+          requiredProperties: val[2],
+        })),
+        challenge: body[1][1],
+      }
       break
     }
-    case Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES: {
+    case Message.BodyType.SUBMIT_CREDENTIAL: {
       decompressedContents = body[1].map(
-        (attestedClaim: IAttestedClaim | CompressedAttestedClaim) =>
-          !Array.isArray(attestedClaim)
-            ? attestedClaim
-            : AttestedClaimUtils.decompress(attestedClaim)
+        (credential: ICredential | CompressedCredential) =>
+          !Array.isArray(credential)
+            ? credential
+            : CredentialUtils.decompress(credential)
       )
 
       break

@@ -13,7 +13,7 @@ It provides you with tools to export your existing KILT credentials to the widel
 ## Contents
 
 - exporting
-  - `fromAttestedClaim()`: translates `AttestedClaim` to `VerifiableCredential`
+  - `fromCredential()`: translates `Credential` to `VerifiableCredential`
 - presentation utils
   - `makePresentation()`: creates `VerifiablePresentation` ()
   - `removeProperties()`: derives a new `VerifiableCredential` from an existing one with a reduced set of disclosed attributes
@@ -33,20 +33,20 @@ It provides you with tools to export your existing KILT credentials to the widel
 
 ## Examples
 
-### Presenting a KILT `AttestedClaim` as a `VerifiableCredential`
+### Presenting a KILT `Credential` as a `VerifiableCredential`
 
 Given we are in possession of an attested KILT claim and the associated KILT identity:
 
 ```typescript
 import Kilt from '@kiltprotocol/sdk-js'
-import type { AttestedClaim, Identity } from '@kiltprotocol/sdk-js'
+import type { Credential, Identity } from '@kiltprotocol/sdk-js'
 import VCUtils from '@kiltprotocol/vc-export'
 
-let credential: AttestedClaim
+let credential: Credential
 let identity: Identity
 
 // turn the KILT credential into a VerifiableCredential
-const VC = VCUtils.fromAttestedClaim(credential)
+const VC = VCUtils.fromCredential(credential)
 
 // produce a reduced copy of the VC where only selected attributes are disclosed
 const nameOnly = await VCUtils.presentation.removeProperties(VC, ['name'])

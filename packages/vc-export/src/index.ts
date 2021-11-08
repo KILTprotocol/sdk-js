@@ -9,7 +9,7 @@ import type * as types from './types'
 
 export * as verification from './verificationUtils'
 export * as presentation from './presentationUtils'
-export { fromAttestedClaim } from './exportToVerifiableCredential'
+export { fromCredential } from './exportToVerifiableCredential'
 export * as vcjsSuites from './vc-js'
 
 export type { types }
