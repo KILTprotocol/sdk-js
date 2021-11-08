@@ -83,6 +83,7 @@ module.exports = {
     'import/no-default-export': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
     'no-shadow': 'off',
+    '@typescript-eslint/no-shadow': 'error',
   },
   overrides: [
     {
