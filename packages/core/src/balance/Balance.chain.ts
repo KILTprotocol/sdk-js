@@ -86,8 +86,6 @@ export async function listenToBalanceChanges(
 
   return blockchain.api.query.system.account(
     accountAddress,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     ({ data: { free, reserved, miscFrozen, feeFrozen } }) => {
       const balancesChange = {
         free: free.sub(previousBalances.free),
