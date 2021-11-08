@@ -29,7 +29,6 @@ import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import { mnemonicGenerate, randomAsHex } from '@polkadot/util-crypto'
 import { BN } from '@polkadot/util'
 import {
-  createAttestation,
   createMinimalFullDidFromLightDid,
   WS_ADDRESS,
   devFaucet,
@@ -46,6 +45,7 @@ import { queryRaw } from '../attestation/Attestation.chain'
 
 let tx: SubmittableExtrinsic
 let authorizedTx: SubmittableExtrinsic
+let attestation: Attestation
 let storedEndpointsCount: number
 
 async function checkDeleteFullDid(
@@ -133,11 +133,26 @@ async function checkRemoveFullDidAttestation(
   keystore: DemoKeystore,
   requestForAttestation: IRequestForAttestation
 ): Promise<boolean> {
-  await createAttestation(identity, requestForAttestation, fullDid, keystore)
+  attestation = Attestation.fromRequestAndDid(
+    requestForAttestation,
+    fullDid.did
+  )
+
+  tx = await attestation.store()
+  authorizedTx = await fullDid.authorizeExtrinsic(
+    tx,
+    keystore,
+    identity.address
+  )
+
+  await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
+    resolveOn: BlockchainUtils.IS_FINALIZED,
+  })
+
   const balanceBeforeRemoving = await Balance.getBalances(
     identity.address
   ).then((balance) => balance)
-  const attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
   )
@@ -178,11 +193,26 @@ async function checkReclaimFullDidAttestation(
   keystore: DemoKeystore,
   requestForAttestation: IRequestForAttestation
 ): Promise<boolean> {
-  await createAttestation(identity, requestForAttestation, fullDid, keystore)
+  attestation = Attestation.fromRequestAndDid(
+    requestForAttestation,
+    fullDid.did
+  )
+
+  tx = await attestation.store()
+  authorizedTx = await fullDid.authorizeExtrinsic(
+    tx,
+    keystore,
+    identity.address
+  )
+
+  await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
+    resolveOn: BlockchainUtils.IS_FINALIZED,
+  })
+
   const balanceBeforeReclaiming = await Balance.getBalances(
     identity.address
   ).then((balance) => balance)
-  const attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
   )
@@ -219,10 +249,25 @@ async function checkDeletedDidReclaimAttestation(
   keystore: DemoKeystore,
   requestForAttestation: IRequestForAttestation
 ): Promise<void> {
-  await createAttestation(identity, requestForAttestation, fullDid, keystore)
+  attestation = Attestation.fromRequestAndDid(
+    requestForAttestation,
+    fullDid.did
+  )
+
+  tx = await attestation.store()
+  authorizedTx = await fullDid.authorizeExtrinsic(
+    tx,
+    keystore,
+    identity.address
+  )
+
+  await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
+    resolveOn: BlockchainUtils.IS_FINALIZED,
+  })
+
   storedEndpointsCount = await DidChain.queryEndpointsCounts(fullDid.did)
 
-  const attestation = Attestation.fromRequestAndDid(
+  attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
     fullDid.did
   )

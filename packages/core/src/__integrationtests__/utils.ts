@@ -100,29 +100,6 @@ export async function endowAccounts(
   )
 }
 
-export async function createAttestation(
-  identity: KeyringPair,
-  requestForAttestation: IRequestForAttestation,
-  fullDid: FullDidDetails,
-  keystore: DemoKeystore
-): Promise<void> {
-  const attestation = Attestation.fromRequestAndDid(
-    requestForAttestation,
-    fullDid.did
-  )
-
-  const tx = await attestation.store()
-  const authorizedTx = await fullDid.authorizeExtrinsic(
-    tx,
-    keystore,
-    identity.address
-  )
-
-  await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
-    resolveOn: BlockchainUtils.IS_FINALIZED,
-  })
-}
-
 export async function createMinimalFullDidFromLightDid(
   identity: KeyringPair,
   lightDidForId: LightDidDetails,
