@@ -16,7 +16,7 @@ import { Crypto } from '@kiltprotocol/utils'
 import { DocumentLoader } from 'jsonld-signatures'
 import * as toVC from './exportToVerifiableCredential'
 import * as verificationUtils from './verificationUtils'
-import * as claimerUtils from './presentationUtils'
+import * as presentationUtils from './presentationUtils'
 import type { VerifiableCredential } from './types'
 import {
   KILT_VERIFIABLECREDENTIAL_TYPE,
@@ -272,7 +272,7 @@ describe('proofs', () => {
   })
 
   it('makes presentation', async () => {
-    const presentation = await claimerUtils.makePresentation(VC, ['name'])
+    const presentation = await presentationUtils.makePresentation(VC, ['name'])
     const { contents, owner } = credential.request.claim
     expect(presentation).toHaveProperty(
       'verifiableCredential.credentialSubject',
@@ -331,13 +331,13 @@ describe('proofs', () => {
 
     it('rejects selecting non-existent properties for presentation', async () => {
       await expect(
-        claimerUtils.makePresentation(VC, ['name', 'age', 'profession'])
+        presentationUtils.makePresentation(VC, ['name', 'age', 'profession'])
       ).rejects.toThrow()
 
-      const presentation = await claimerUtils.makePresentation(VC, ['name'])
+      const presentation = await presentationUtils.makePresentation(VC, ['name'])
 
       await expect(
-        claimerUtils.makePresentation(
+        presentationUtils.makePresentation(
           presentation.verifiableCredential as VerifiableCredential,
           ['premium']
         )
