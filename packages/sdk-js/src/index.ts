@@ -5,7 +5,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-export * as Kilt from '@kiltprotocol/core'
+export * from '@kiltprotocol/core'
 export { Message } from '@kiltprotocol/messaging'
 export * as Messaging from '@kiltprotocol/messaging'
 export { BlockchainUtils } from '@kiltprotocol/chain-helpers'
