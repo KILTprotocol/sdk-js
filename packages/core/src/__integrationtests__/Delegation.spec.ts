@@ -9,12 +9,7 @@
  * @group integration/delegation
  */
 
-import type {
-  ICType,
-  IDelegationNode,
-  KeyringPair,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import type { ICType, IDelegationNode, KeyringPair } from '@kiltprotocol/types'
 import { Permission } from '@kiltprotocol/types'
 import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
 import {
@@ -51,10 +46,10 @@ async function writeHierarchy(
 
   await rootNode
     .store()
-    .then((tx: SubmittableExtrinsic) =>
+    .then((tx) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
-    .then((tx: SubmittableExtrinsic) =>
+    .then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
@@ -80,10 +75,10 @@ async function addDelegation(
   const signature = await delegationNode.delegeeSign(delegee, signer)
   await delegationNode
     .store(signature)
-    .then((tx: SubmittableExtrinsic) =>
+    .then((tx) =>
       delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
     )
-    .then((tx: SubmittableExtrinsic) =>
+    .then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
@@ -105,10 +100,10 @@ beforeAll(async () => {
 
   if (!(await CtypeOnChain(DriversLicense))) {
     await DriversLicense.store()
-      .then((tx: SubmittableExtrinsic) =>
+      .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
-      .then((tx: SubmittableExtrinsic) =>
+      .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -181,10 +176,10 @@ describe('and attestation rights have been delegated', () => {
     const attestation = Attestation.fromRequestAndDid(request, attester.did)
     await attestation
       .store()
-      .then((tx: SubmittableExtrinsic) =>
+      .then((tx) =>
         attester.authorizeExtrinsic(tx, signer, paymentAccount.address)
       )
-      .then((tx: SubmittableExtrinsic) =>
+      .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -201,10 +196,8 @@ describe('and attestation rights have been delegated', () => {
     // revoke attestation through root
     await attClaim.attestation
       .revoke(1)
-      .then((tx: SubmittableExtrinsic) =>
-        root.authorizeExtrinsic(tx, signer, paymentAccount.address)
-      )
-      .then((tx: SubmittableExtrinsic) =>
+      .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
+      .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -238,10 +231,10 @@ describe('revocation', () => {
     await expect(
       delegationA
         .revoke(delegator.did)
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -254,10 +247,10 @@ describe('revocation', () => {
     await expect(
       delegationA
         .remove()
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -281,10 +274,10 @@ describe('revocation', () => {
     await expect(
       delegationRoot
         .revoke(firstDelegee.did)
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -296,10 +289,10 @@ describe('revocation', () => {
     await expect(
       delegationA
         .revoke(firstDelegee.did)
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           firstDelegee.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -327,10 +320,10 @@ describe('revocation', () => {
     await expect(
       delegationRoot
         .revoke(delegator.did)
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           delegator.authorizeExtrinsic(tx, signer, paymentAccount.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,

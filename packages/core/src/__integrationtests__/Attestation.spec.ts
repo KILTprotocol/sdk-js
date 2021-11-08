@@ -9,12 +9,7 @@
  * @group integration/attestation
  */
 
-import type {
-  IAttestedClaim,
-  IClaim,
-  KeyringPair,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import type { IAttestedClaim, IClaim, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import {
   createOnChainDidFromSeed,
@@ -81,10 +76,10 @@ describe('handling attestations that do not exist', () => {
   it('Attestation.revoke', async () => {
     return expect(
       Attestation.revoke(claimHash, 0)
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           attester.authorizeExtrinsic(tx, signer, tokenHolder.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -96,10 +91,10 @@ describe('handling attestations that do not exist', () => {
   it('Attestation.remove', async () => {
     return expect(
       Attestation.remove(claimHash, 0)
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           attester.authorizeExtrinsic(tx, signer, tokenHolder.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -119,7 +114,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           signer,
           tokenHolder.address
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -160,7 +155,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
       .then((call) =>
         attester.authorizeExtrinsic(call, signer, tokenHolder.address)
       )
-      .then((tx: SubmittableExtrinsic) =>
+      .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -171,7 +166,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
     await expect(aClaim.verify()).resolves.toBe(true)
 
     // Claim the deposit back by submitting the reclaimDeposit extrinsic with the deposit payer's account.
-    await attestation.reclaimDeposit().then((tx: SubmittableExtrinsic) =>
+    await attestation.reclaimDeposit().then((tx) =>
       BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
         resolveOn: BlockchainUtils.IS_IN_BLOCK,
         reSign: true,
@@ -205,7 +200,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, bobbyBroke.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -247,7 +242,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -276,7 +271,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -293,7 +288,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           .then((call) =>
             attester.authorizeExtrinsic(call, signer, tokenHolder.address)
           )
-          .then((tx: SubmittableExtrinsic) =>
+          .then((tx) =>
             BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
               resolveOn: BlockchainUtils.IS_IN_BLOCK,
               reSign: true,
@@ -327,7 +322,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           .then((call) =>
             claimer.authorizeExtrinsic(call, signer, tokenHolder.address)
           )
-          .then((tx: SubmittableExtrinsic) =>
+          .then((tx) =>
             BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
               resolveOn: BlockchainUtils.IS_IN_BLOCK,
               reSign: true,
@@ -343,7 +338,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -357,7 +352,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -373,7 +368,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
           .then((call) =>
             attester.authorizeExtrinsic(call, signer, tokenHolder.address)
           )
-          .then((tx: SubmittableExtrinsic) =>
+          .then((tx) =>
             BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
               resolveOn: BlockchainUtils.IS_IN_BLOCK,
               reSign: true,
@@ -404,7 +399,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           anotherAttester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -433,7 +428,7 @@ describe('When there is an attester, claimer and ctype drivers license', () => {
         .then((call) =>
           attester.authorizeExtrinsic(call, signer, tokenHolder.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, tokenHolder, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,

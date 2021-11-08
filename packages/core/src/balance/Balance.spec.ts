@@ -18,11 +18,7 @@ import {
   BlockchainUtils,
 } from '@kiltprotocol/chain-helpers'
 
-import type {
-  Balances,
-  KeyringPair,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import type { Balances, KeyringPair } from '@kiltprotocol/types'
 import { Keyring } from '@kiltprotocol/utils'
 import {
   getBalances,
@@ -92,9 +88,8 @@ describe('Balance', () => {
   })
 
   it('should make transfer', async () => {
-    const status = await makeTransfer(bob.address, new BN(100)).then(
-      (tx: SubmittableExtrinsic) =>
-        BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
+    const status = await makeTransfer(bob.address, new BN(100)).then((tx) =>
+      BlockchainUtils.signAndSubmitTx(tx, alice, { reSign: true })
     )
     expect(status).toBeInstanceOf(SubmittableResult)
     expect(status.isFinalized).toBeTruthy()

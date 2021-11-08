@@ -9,11 +9,7 @@
  * @group integration/ctype
  */
 
-import type {
-  ICType,
-  KeyringPair,
-  SubmittableExtrinsic,
-} from '@kiltprotocol/types'
+import type { ICType, KeyringPair } from '@kiltprotocol/types'
 import { BlockchainUtils, ExtrinsicErrors } from '@kiltprotocol/chain-helpers'
 import {
   FullDidDetails,
@@ -67,7 +63,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await expect(
       ctype
         .store()
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           ctypeCreator.authorizeExtrinsic(
             tx,
             keystore,
@@ -75,7 +71,7 @@ describe('When there is an CtypeCreator and a verifier', () => {
             false
           )
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, bobbyBroke, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
@@ -89,10 +85,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     await ctype
       .store()
-      .then((tx: SubmittableExtrinsic) =>
+      .then((tx) =>
         ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
-      .then((tx: SubmittableExtrinsic) =>
+      .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -110,10 +106,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
     const ctype = makeCType()
     await ctype
       .store()
-      .then((tx: SubmittableExtrinsic) =>
+      .then((tx) =>
         ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
       )
-      .then((tx: SubmittableExtrinsic) =>
+      .then((tx) =>
         BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
           resolveOn: BlockchainUtils.IS_IN_BLOCK,
           reSign: true,
@@ -122,10 +118,10 @@ describe('When there is an CtypeCreator and a verifier', () => {
     await expect(
       ctype
         .store()
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           ctypeCreator.authorizeExtrinsic(tx, keystore, paymentAccount.address)
         )
-        .then((tx: SubmittableExtrinsic) =>
+        .then((tx) =>
           BlockchainUtils.signAndSubmitTx(tx, paymentAccount, {
             resolveOn: BlockchainUtils.IS_IN_BLOCK,
             reSign: true,
