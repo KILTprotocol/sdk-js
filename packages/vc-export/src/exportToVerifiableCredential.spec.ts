@@ -334,7 +334,9 @@ describe('proofs', () => {
         presentationUtils.makePresentation(VC, ['name', 'age', 'profession'])
       ).rejects.toThrow()
 
-      const presentation = await presentationUtils.makePresentation(VC, ['name'])
+      const presentation = await presentationUtils.makePresentation(VC, [
+        'name',
+      ])
 
       await expect(
         presentationUtils.makePresentation(
