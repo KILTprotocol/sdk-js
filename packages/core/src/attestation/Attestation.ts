@@ -63,7 +63,6 @@ export class Attestation implements IAttestation {
    * Attestation.revoke('0xd8024cdc147c4fa9221cd177', 3).then(
    *   (revocationExtrinsic) => {
    *     // The attestation revocation tx was created, and it can now be signed by the attestation owner.
-   *     const attestationOwnerDid = did;
    *     attestationOwnerDid
    *       .authorizeExtrinsic(revocationExtrinsic, keystore, submitter.address)
    *       .then((authorizedExtrinsic) => {
@@ -90,7 +89,6 @@ export class Attestation implements IAttestation {
    * @example ```javascript
    * Attestation.remove('0xd8024cdc147c4fa9221cd177', 3).then((removalExtrinsic) => {
    *   // The attestation removal tx was created, and it can now be signed by the attestation owner.
-   *   const attestationOwnerDid = did;
    *   attestationOwnerDid
    *     .authorizeExtrinsic(removalExtrinsic, keystore, submitter.address)
    *     .then((authorizedExtrinsic) => {
@@ -239,7 +237,6 @@ export class Attestation implements IAttestation {
    * @example ```javascript
    * Attestation.store().then((creationExtrinsic) => {
    *   // The attestation creation tx was created, and it can now be signed by a DID owner.
-   *   const attestationOwnerDid = did;
    *   attestationOwnerDid
    *     .authorizeExtrinsic(creationExtrinsic, keystore, submitter.address)
    *     .then((authorizedExtrinsic) => {
@@ -270,7 +267,6 @@ export class Attestation implements IAttestation {
    * @example ```javascript
    * attestation.revoke(3).then((revocationExtrinsic) => {
    *   // The attestation revocation tx was created, and it can now be signed by the attestation owner.
-   *   const attestationOwnerDid = did;
    *   attestationOwnerDid
    *     .authorizeExtrinsic(revocationExtrinsic, keystore, submitter.address)
    *     .then((authorizedExtrinsic) => {
@@ -292,7 +288,6 @@ export class Attestation implements IAttestation {
    * @example ```javascript
    * attestation.remove(3).then((removalExtrinsic) => {
    *   // The attestation removal tx was created, and it can now be signed by the attestation owner.
-   *   const attestationOwnerDid = did;
    *   attestationOwnerDid
    *     .authorizeExtrinsic(removalExtrinsic, keystore, submitter.address)
    *     .then((authorizedExtrinsic) => {
