@@ -7,7 +7,7 @@
 
 /**
  * An [[Attestation]] certifies a [[Claim]], sent by a claimer in the form of a [[RequestForAttestation]]. [[Attestation]]s are **written on the blockchain** and are **revocable**.
- * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as an [[AttestedClaim]] ("Credential").
+ * Note: once an [[Attestation]] is stored, it can be sent to and stored with the claimer as a [[Credential]].
  *
  * An [[Attestation]] can be queried from the chain. It's stored on-chain in a map:
  * * the key is the hash of the corresponding claim;
@@ -209,9 +209,9 @@ export default class Attestation implements IAttestation {
    *
    * @returns A promise containing the unsigned SubmittableExtrinsic (submittable transaction).
    * @example ```javascript
-   * // Use `store` to store an attestation on chain, and to create an `AttestedClaim` upon success:
+   * // Use `store` to store an attestation on chain, and to create an `Credential` upon success:
    * attestation.store().then(() => {
-   *   // the attestation store tx was successfully prepared, so now we can sign and send it and subsequently create an `AttestedClaim`.
+   *   // the attestation store tx was successfully prepared, so now we can sign and send it and subsequently create an `Credential`.
    * });
    * ```
    */

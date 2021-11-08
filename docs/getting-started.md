@@ -498,7 +498,7 @@ import Kilt, { MessageBody } from '@kiltprotocol/sdk-js'
 
 const messageBody: MessageBody = {
   content: { requestForAttestation },
-  type: Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM,
+  type: Kilt.Message.BodyType.REQUEST_ATTESTATION,
 }
 const message = new Kilt.Message(
   messageBody,
@@ -513,7 +513,7 @@ The complete `message` looks as follows:
 Message {
   body: {
     content: { requestForAttestation: [RequestForAttestation] },
-    type: 'request-attestation-for-claim'
+    type: 'request-attestation'
   },
   createdAt: 1595252779597,
   receiverAddress: '4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F',
@@ -561,7 +561,7 @@ At this point the Attester has the original request for attestation object:
 
 ```typescript
 if (
-  decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION_FOR_CLAIM
+  decrypted.body.type === Kilt.Message.BodyType.REQUEST_ATTESTATION
 ) {
   const extractedRequestForAttestation: IRequestForAttestation =
     decrypted.body.content.requestForAttestation
@@ -604,19 +604,19 @@ await Kilt.BlockchainUtils.signAndSubmitTx(authorizedExtrinsic, attester, {
 })
 ```
 
-The request for attestation is fulfilled with the attestation, but it needs to be combined into the `AttestedClaim` object before sending it back to the Claimer:
+The request for attestation is fulfilled with the attestation, but it needs to be combined into the `Credential` object before sending it back to the Claimer:
 
 ```typescript
-const attestedClaim = Kilt.AttestedClaim.fromRequestAndAttestation(
+const credential = Kilt.Credential.fromRequestAndAttestation(
   extractedRequestForAttestation,
   attestation
 )
 ```
 
-The complete `attestedClaim` object looks as follows:
+The complete `credential` object looks as follows:
 
 ```typescript
-AttestedClaim {
+Credential {
   request: RequestForAttestation {
     claim: Claim {
       cTypeHash: '0x3b53bd9a535164136d2df46d0b7146b17b9821490bc46d4dfac7e06811631803',
@@ -652,12 +652,12 @@ AttestedClaim {
 }
 ```
 
-The Attester has to send the `attestedClaim` object back to the Claimer in the following message:
+The Attester has to send the `credential` object back to the Claimer in the following message:
 
 ```typescript
 const messageBodyBack: MessageBody = {
-  content: attestedClaim,
-  type: Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM,
+  content: credential,
+  type: Kilt.Message.BodyType.SUBMIT_ATTESTATION,
 }
 const messageBack = new Kilt.Message(
   messageBodyBack,
@@ -671,11 +671,11 @@ The complete `messageBack` message then looks as follows:
 ```typescript
 Message {
   body: {
-    content: AttestedClaim {
+    content: Credential {
       request: [RequestForAttestation],
       attestation: [Attestation]
     },
-    type: 'submit-attestation-for-claim'
+    type: 'submit-attestation'
   },
   createdAt: 1595254601814,
   receiverAddress: '4tJbxxKqYRv3gDvY66BKyKzZheHEH8a27VBiMfeGX2iQrire',
@@ -691,11 +691,11 @@ Message {
 After receiving the message, the Claimer just needs to save it and use it later for verification:
 
 ```typescript
-let myAttestedClaim: AttestedClaim
+let myCredential: Credential
 if (
-  messageBack.body.type === Kilt.Message.BodyType.SUBMIT_ATTESTATION_FOR_CLAIM
+  messageBack.body.type === Kilt.Message.BodyType.SUBMIT_ATTESTATION
 ) {
-  myAttestedClaim = Kilt.AttestedClaim.fromAttestedClaim({
+  myCredential = Kilt.Credential.fromCredential({
     ...messageBack.body.content,
     request: requestForAttestation,
   })
@@ -725,7 +725,7 @@ const verifierLightDid = new Kilt.Did.LightDidDetails({
 ```
 
 Before a claimer sends any data to a verifier, the verifier needs to initiate the verification process by requesting a presentation for a specific CTYPE.
-Therefore, the verifier knows which properties are included in the attested claim.
+Therefore, the verifier knows which properties are included in the credential.
 A claimer can also hide selected properties from their credential.
 This is an **important feature for the privacy of a claimer** as this enables them to only show necessary properties for a specific verification.
 
@@ -733,7 +733,7 @@ This is an **important feature for the privacy of a claimer** as this enables th
 
 ```typescript
 const messageBodyForClaimer: MessageBody = {
-  type: Kilt.Message.BodyType.REQUEST_CLAIMS_FOR_CTYPES,
+  type: Kilt.Message.BodyType.REQUEST_CREDENTIAL,
   content: { ctypes: [ctype.hash] },
 }
 const messageForClaimer = new Kilt.Message(
@@ -743,11 +743,11 @@ const messageForClaimer = new Kilt.Message(
 )
 ```
 
-Now the claimer can send a message to the verifier including the attested claim.
+Now the claimer can send a message to the verifier including the credential.
 They may choose to create a copy and selected properties from it:
 
 ```typescript
-const copiedCredential = myAttestedClaim.createPresentation({
+const copiedCredential = myCredential.createPresentation({
   selectedAttributes: ['name'],
   signer: keystore,
   claimerDid: claimerLightDid,
@@ -755,7 +755,7 @@ const copiedCredential = myAttestedClaim.createPresentation({
 
 const messageBodyForVerifier: MessageBody = {
   content: [copiedCredential],
-  type: Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES,
+  type: Kilt.Message.BodyType.SUBMIT_CREDENTIAL,
 }
 const messageForVerifier = new Kilt.Message(
   messageBodyForVerifier,
@@ -767,17 +767,17 @@ const messageForVerifier = new Kilt.Message(
 ### 6.2. Verify presentation
 
 When verifying the claimer's message, the verifier has to use their session which was created during the CTYPE request.
-The result will be a boolean indicating the result of the verification and the attested claim(s) which are either sent in their entirety OR have been stripped off of the properties that the verifier did not request to verify.
+The result will be a boolean indicating the result of the verification and the credential(s) which are either sent in their entirety OR have been stripped off of the properties that the verifier did not request to verify.
 
 ```typescript
 if (
   messageForVerifier.body.type ===
-  Kilt.Message.BodyType.SUBMIT_CLAIMS_FOR_CTYPES
+  Kilt.Message.BodyType.SUBMIT_CREDENTIAL
 ) {
   const claims = messageForVerifier.body.content
-  const isValid = await Kilt.AttestedClaim.fromAttestedClaim(claims[0]).verify()
+  const isValid = await Kilt.Credential.fromCredential(claims[0]).verify()
   console.log('Verifcation success?', isValid)
-  console.log('Attested claims from verifier perspective:\n', claims)
+  console.log('Credentials from verifier perspective:\n', claims)
 }
 ```
 

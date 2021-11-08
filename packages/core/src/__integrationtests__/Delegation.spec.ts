@@ -22,7 +22,7 @@ import { BN } from '@polkadot/util'
 import Attestation from '../attestation/Attestation'
 import Claim from '../claim/Claim'
 import RequestForAttestation from '../requestforattestation/RequestForAttestation'
-import { AttestedClaim } from '..'
+import { Credential } from '..'
 import { disconnect, init } from '../kilt'
 import DelegationNode from '../delegation/DelegationNode'
 import { CtypeOnChain, DriversLicense, devFaucet, WS_ADDRESS } from './utils'
@@ -186,15 +186,15 @@ describe('and attestation rights have been delegated', () => {
         })
       )
 
-    const attClaim = AttestedClaim.fromRequestAndAttestation(
+    const credential = Credential.fromRequestAndAttestation(
       request,
       attestation
     )
-    expect(attClaim.verifyData()).toBeTruthy()
-    await expect(attClaim.verify()).resolves.toBeTruthy()
+    expect(credential.verifyData()).toBeTruthy()
+    await expect(credential.verify()).resolves.toBeTruthy()
 
     // revoke attestation through root
-    await attClaim.attestation
+    await credential.attestation
       .revoke(1)
       .then((tx) => root.authorizeExtrinsic(tx, signer, paymentAccount.address))
       .then((tx) =>
@@ -203,7 +203,7 @@ describe('and attestation rights have been delegated', () => {
           reSign: true,
         })
       )
-    await expect(attClaim.verify()).resolves.toBeFalsy()
+    await expect(credential.verify()).resolves.toBeFalsy()
   }, 75_000)
 })
 

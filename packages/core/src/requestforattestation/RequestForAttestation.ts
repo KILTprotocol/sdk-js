@@ -23,7 +23,7 @@ import type {
   Hash,
   IDelegationNode,
   IClaim,
-  IAttestedClaim,
+  ICredential,
   IDidKeyDetails,
   KeystoreSigner,
   IDidDetails,
@@ -34,7 +34,7 @@ import { KeyRelationship } from '@kiltprotocol/types'
 import { Crypto, SDKErrors } from '@kiltprotocol/utils'
 import { DefaultResolver, DidUtils } from '@kiltprotocol/did'
 import ClaimUtils from '../claim/Claim.utils'
-import AttestedClaim from '../attestedclaim/AttestedClaim'
+import Credential from '../credential/Credential'
 import RequestForAttestationUtils from './RequestForAttestation.utils'
 
 function makeSigningData(
@@ -53,7 +53,7 @@ function getHashRoot(leaves: Uint8Array[]): Uint8Array {
 }
 
 export type Options = {
-  legitimations?: AttestedClaim[]
+  legitimations?: Credential[]
   delegationId?: IDelegationNode['id']
 }
 
@@ -82,7 +82,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
    *
    * @param claim An `IClaim` object the request for attestation is built for.
    * @param option Container for different options that can be passed to this method.
-   * @param option.legitimations Array of [[AttestedClaim]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
+   * @param option.legitimations Array of [[Credential]] objects of the Attester which the Claimer requests to include into the attestation as legitimations.
    * @param option.delegationId The id of the DelegationNode of the Attester, which should be used in the attestation.
    * @returns A new [[RequestForAttestation]] object.
    * @example ```javascript
@@ -134,7 +134,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
   }
 
   public claim: IClaim
-  public legitimations: AttestedClaim[]
+  public legitimations: Credential[]
   public claimerSignature?: DidSignature & { challenge?: string }
   public claimHashes: string[]
   public claimNonceMap: Record<string, string>
@@ -161,7 +161,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       requestForAttestationInput.legitimations.length
     ) {
       this.legitimations = requestForAttestationInput.legitimations.map(
-        (legitimation) => AttestedClaim.fromAttestedClaim(legitimation)
+        (legitimation) => Credential.fromCredential(legitimation)
       )
     } else {
       this.legitimations = []
@@ -230,7 +230,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
       throw verificationResult.errors[0] || SDKErrors.ERROR_CLAIM_UNVERIFIABLE()
 
     // check legitimations
-    AttestedClaim.validateLegitimations(input.legitimations)
+    Credential.validateLegitimations(input.legitimations)
 
     return true
   }
@@ -358,7 +358,7 @@ export default class RequestForAttestation implements IRequestForAttestation {
 
   private static getHashLeaves(
     claimHashes: Hash[],
-    legitimations: IAttestedClaim[],
+    legitimations: ICredential[],
     delegationId: IDelegationNode['id'] | null
   ): Uint8Array[] {
     const result: Uint8Array[] = []
