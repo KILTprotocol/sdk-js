@@ -101,8 +101,6 @@ export async function queryAllServicesEncoded(
   const encodedEndpoints = await api.query.did.serviceEndpoints.entries<
     Option<IServiceEndpointChainRecordCodec>
   >(didIdentifier)
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   return encodedEndpoints.map(([, encodedValue]) => encodedValue.unwrap())
 }
 
