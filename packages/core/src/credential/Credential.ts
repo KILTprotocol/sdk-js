@@ -6,9 +6,9 @@
  */
 
 /**
- * In KILT, an [[Credential]] is a **credential**, which a Claimer can store locally and share with Verifiers as they wish.
+ * In KILT, a [[Credential]] is a **credential**, which a Claimer can store locally and share with Verifiers as they wish.
  *
- * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in an [[Credential]] object.
+ * Once a [[RequestForAttestation]] has been made, the [[Attestation]] can be built and the Attester submits it wrapped in a [[Credential]] object.
  * This [[Credential]] also contains the original request for attestation.
  * RequestForAttestation also exposes a [[createPresentation]] method, that can be used by the claimer to hide some specific information from the verifier for more privacy.
  *
@@ -54,7 +54,7 @@ export default class Credential implements ICredential {
    * @param attestation - The attestation for the claim by the attester.
    * @returns A new [[Credential]] object.
    * @example ```javascript
-   * // create an Credential object after receiving the attestation from the attester
+   * // create a Credential object after receiving the attestation from the attester
    * Credential.fromRequestAndAttestation(request, attestation);
    * ```
    */
@@ -92,7 +92,7 @@ export default class Credential implements ICredential {
    *
    * @param credentialInput - The base object with all required input, from which to create the credential.
    * @example ```javascript
-   * // Create an `Credential` upon successful `Attestation` creation:
+   * // Create a `Credential` upon successful `Attestation` creation:
    * const credential = new Credential(credentialInput);
    * ```
    */
@@ -263,7 +263,7 @@ export default class Credential implements ICredential {
   }
 
   /**
-   * Compresses an [[Credential]] object.
+   * Compresses a [[Credential]] object.
    *
    * @returns An array that contains the same properties of an [[Credential]].
    */
