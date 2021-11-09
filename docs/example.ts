@@ -379,8 +379,9 @@ async function doVerification(
     { senderDetails: verifierLightDid, receiverDetails: claimerLightDid }
   )
 
-  const ctypeHash =
+  const ctypeHash = (
     verifierAcceptedCredentialsMessageDec.body as IAcceptCredential
+  ).content[0]
   console.log('claimer checks the ctypeHash matches', ctypeHash)
 
   const challenge = Kilt.Utils.UUID.generate()
