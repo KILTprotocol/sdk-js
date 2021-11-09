@@ -1,14 +1,25 @@
 /* eslint-disable */
 
+import { KeyringPair } from '@polkadot/keyring/types'
+import { BN, hexToU8a } from '@polkadot/util'
 import { Keyring } from '@kiltprotocol/utils'
-import type { KeyringPair } from '@kiltprotocol/types'
 import { randomAsU8a } from '@polkadot/util-crypto'
-import { BN } from '@polkadot/util'
 import { CType } from '../ctype/CType'
 import { getOwner } from '../ctype/CType.chain'
+import {
+  DefaultResolver,
+  DemoKeystore,
+  DidChain,
+  DidUtils,
+  FullDidDetails,
+  LightDidDetails,
+} from '@kiltprotocol/did'
+import { Balance } from '../balance'
+import { BlockchainUtils } from '@kiltprotocol/chain-helpers'
+import { KeyRelationship, KeystoreSigner } from '@kiltprotocol/types'
 
 export const EXISTENTIAL_DEPOSIT = new BN(10 ** 13)
-export const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(100)
+export const ENDOWMENT = EXISTENTIAL_DEPOSIT.muln(1000)
 
 export const WS_ADDRESS = 'ws://127.0.0.1:9944'
 // Dev Faucet account seed phrase
@@ -67,3 +78,69 @@ export const IsOfficialLicenseAuthority = CType.fromSchema({
   },
   type: 'object',
 })
+
+export async function endowAccounts(
+  faucet: KeyringPair,
+  addresses: Array<string>
+): Promise<void> {
+  await Promise.all(
+    addresses.map((address) =>
+      Balance.makeTransfer(address, ENDOWMENT).then((tx) =>
+        BlockchainUtils.signAndSubmitTx(tx, faucet, {
+          resolveOn: BlockchainUtils.IS_FINALIZED,
+          reSign: true,
+        }).catch((e) => console.log(e))
+      )
+    )
+  )
+}
+
+export async function createMinimalFullDidFromLightDid(
+  identity: KeyringPair,
+  lightDidForId: LightDidDetails,
+  keystore: DemoKeystore
+): Promise<FullDidDetails> {
+  const { extrinsic, did } = await DidUtils.upgradeDid(
+    lightDidForId,
+    identity.address,
+    keystore
+  )
+
+  await BlockchainUtils.signAndSubmitTx(extrinsic, identity, {
+    resolveOn: BlockchainUtils.IS_FINALIZED,
+  })
+
+  const queried = await DefaultResolver.resolveDoc(did)
+  if (!queried) throw new Error('Light Did to full did not made')
+
+  const key = {
+    publicKey: hexToU8a(
+      queried.details.getKeys(KeyRelationship.authentication)[0].publicKeyHex
+    ),
+    type: queried.details.getKeys(KeyRelationship.authentication)[0].type,
+  }
+
+  const addExtrinsic = await DidChain.getSetKeyExtrinsic(
+    KeyRelationship.assertionMethod,
+    key
+  )
+
+  const tx = await DidChain.generateDidAuthenticatedTx({
+    didIdentifier: identity.address,
+    txCounter: (queried.details as FullDidDetails).getNextTxIndex(),
+    call: addExtrinsic,
+    signer: keystore as KeystoreSigner<string>,
+    signingPublicKey: queried.details.getKeys(KeyRelationship.authentication)[0]
+      .publicKeyHex,
+    alg: queried.details.getKeys(KeyRelationship.authentication)[0].type,
+    submitter: identity.address,
+  })
+
+  await BlockchainUtils.signAndSubmitTx(tx, identity, {
+    resolveOn: BlockchainUtils.IS_FINALIZED,
+  })
+
+  const refetchedDid = await DefaultResolver.resolveDoc(did)
+  if (!refetchedDid) throw new Error('Light Did to full did not made')
+  return refetchedDid.details as FullDidDetails
+}

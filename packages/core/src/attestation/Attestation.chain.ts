@@ -83,7 +83,7 @@ function decode(
 }
 
 // return types reflect backwards compatibility with mashnet-node v 0.22
-async function queryRaw(
+export async function queryRaw(
   claimHash: string
 ): Promise<Option<AttestationDetails>> {
   log.debug(() => `Query chain for attestations with claim hash ${claimHash}`)
