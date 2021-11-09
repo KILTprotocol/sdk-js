@@ -47,6 +47,7 @@ jest.mock('./DelegationNode.chain', () => {
       ) => {
         nodes[nodeId] = new DelegationNode({
           ...nodes[nodeId],
+          childrenIds: nodes[nodeId].childrenIds,
           revoked: true,
         })
       }
