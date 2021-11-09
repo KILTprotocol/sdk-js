@@ -83,10 +83,9 @@ async function checkDeleteFullDid(
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address)
 
-  return (
-    balanceBeforeDeleting.reserved.sub(didDeposit) ===
-    balanceAfterDeleting.reserved
-  )
+  return balanceBeforeDeleting.reserved
+    .sub(didDeposit)
+    .eq(balanceAfterDeleting.reserved)
 }
 
 async function checkReclaimFullDid(
@@ -113,10 +112,9 @@ async function checkReclaimFullDid(
 
   const balanceAfterRevoking = await Balance.getBalances(identity.address)
 
-  return (
-    balanceBeforeRevoking.reserved.sub(didDeposit) ===
-    balanceAfterRevoking.reserved
-  )
+  return balanceBeforeRevoking.reserved
+    .sub(didDeposit)
+    .eq(balanceAfterRevoking.reserved)
 }
 
 async function checkRemoveFullDidAttestation(
@@ -141,6 +139,15 @@ async function checkRemoveFullDidAttestation(
     resolveOn: BlockchainUtils.IS_FINALIZED,
   })
 
+  const attestationResult = await queryRaw(attestation.claimHash)
+  DecoderUtils.assertCodecIsType(attestationResult, [
+    'Option<AttestationAttestationsAttestationDetails>',
+  ])
+
+  const attestationDeposit = attestationResult.isSome
+    ? attestationResult.unwrap().deposit.amount.toBn()
+    : new BN(0)
+
   const balanceBeforeRemoving = await Balance.getBalances(identity.address)
   attestation = Attestation.fromRequestAndDid(
     requestForAttestation,
@@ -153,14 +160,6 @@ async function checkRemoveFullDidAttestation(
     keystore,
     identity.address
   )
-  const attestationResult = await queryRaw(identity.address)
-  DecoderUtils.assertCodecIsType(attestationResult, [
-    'Option<AttestationAttestationsAttestationDetails>',
-  ])
-
-  const attestationDeposit = attestationResult.isSome
-    ? attestationResult.unwrap().deposit.amount.toBn()
-    : new BN(0)
 
   await BlockchainUtils.signAndSubmitTx(authorizedTx, identity, {
     resolveOn: BlockchainUtils.IS_FINALIZED,
@@ -168,10 +167,9 @@ async function checkRemoveFullDidAttestation(
 
   const balanceAfterRemoving = await Balance.getBalances(identity.address)
 
-  return (
-    balanceBeforeRemoving.reserved.sub(attestationDeposit) ===
-    balanceAfterRemoving.reserved
-  )
+  return balanceBeforeRemoving.reserved
+    .sub(attestationDeposit)
+    .eq(balanceAfterRemoving.reserved)
 }
 
 async function checkReclaimFullDidAttestation(
@@ -204,7 +202,7 @@ async function checkReclaimFullDidAttestation(
 
   tx = await attestation.reclaimDeposit()
 
-  const attestationResult = await queryRaw(identity.address)
+  const attestationResult = await queryRaw(attestation.claimHash)
   DecoderUtils.assertCodecIsType(attestationResult, [
     'Option<AttestationAttestationsAttestationDetails>',
   ])
@@ -219,10 +217,9 @@ async function checkReclaimFullDidAttestation(
 
   const balanceAfterDeleting = await Balance.getBalances(identity.address)
 
-  return (
-    balanceBeforeReclaiming.reserved.sub(attestationDeposit) ===
-    balanceAfterDeleting.reserved
-  )
+  return balanceBeforeReclaiming.reserved
+    .sub(attestationDeposit)
+    .eq(balanceAfterDeleting.reserved)
 }
 
 async function checkDeletedDidReclaimAttestation(
@@ -287,7 +284,8 @@ let requestForAttestation: RequestForAttestation
 beforeAll(async () => {
   /* Initialize KILT SDK and set up node endpoint */
   await init({ address: WS_ADDRESS })
-  const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'ed25519' })
+  const keyring: Keyring = new Keyring({ ss58Format: 38, type: 'sr25519' })
+
   for (let i = 0; i < 9; i += 1) {
     testMnemonics.push(mnemonicGenerate())
   }
@@ -446,18 +444,18 @@ describe('Different deposits scenarios', () => {
         keystore
       ),
     ])
-  }, 300_000)
+  }, 240_000)
 
   it('Check if deleting full DID returns deposit', async () => {
     await expect(
       checkDeleteFullDid(testIdentities[0], testFullDidOne, keystore)
     ).resolves.toBe(true)
-  }, 120_000)
+  }, 45_000)
   it('Check if reclaiming full DID returns deposit', async () => {
     await expect(
       checkReclaimFullDid(testIdentities[1], testFullDidTwo)
     ).resolves.toBe(true)
-  }, 120_000)
+  }, 45_000)
   it('Check if removing an attestation from a full DID returns deposit', async () => {
     await expect(
       checkRemoveFullDidAttestation(
@@ -467,7 +465,7 @@ describe('Different deposits scenarios', () => {
         requestForAttestation
       )
     ).resolves.toBe(true)
-  }, 120_000)
+  }, 90_000)
   it('Check if reclaiming an attestation from a full DID returns the deposit', async () => {
     await expect(
       checkReclaimFullDidAttestation(
@@ -477,17 +475,17 @@ describe('Different deposits scenarios', () => {
         requestForAttestation
       )
     ).resolves.toBe(true)
-  }, 120_000)
+  }, 90_000)
   it('Check if deleting from a migrated light DID to a full DID returns deposit', async () => {
     await expect(
       checkDeleteFullDid(testIdentities[4], testFullDidFive, keystore)
     ).resolves.toBe(true)
-  }, 120_000)
+  }, 90_000)
   it('Check if reclaiming from a migrated light DID to a full DID returns deposit', async () => {
     await expect(
       checkReclaimFullDid(testIdentities[5], testFullDidSix)
     ).resolves.toBe(true)
-  }, 120_000)
+  }, 90_000)
   it('Check if removing an attestation from a migrated light DID to a full DID returns the deposit', async () => {
     await expect(
       checkRemoveFullDidAttestation(
@@ -497,7 +495,7 @@ describe('Different deposits scenarios', () => {
         requestForAttestation
       )
     ).resolves.toBe(true)
-  }, 120_000)
+  }, 90_000)
   it('Check if reclaiming an attestation from a migrated light DID to a full DID returns the deposit', async () => {
     await expect(
       checkReclaimFullDidAttestation(
@@ -507,7 +505,7 @@ describe('Different deposits scenarios', () => {
         requestForAttestation
       )
     ).resolves.toBe(true)
-  }, 120_000)
+  }, 90_000)
   it('Check if deleting a full DID and reclaiming an attestation returns the deposit', async () => {
     await expect(
       checkDeletedDidReclaimAttestation(
