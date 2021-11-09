@@ -429,9 +429,9 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
-    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
+    expect(resolutionResult?.metadata?.deactivated).toBeFalsy()
 
-    expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
+    expect(resolutionResult?.details?.did).toStrictEqual(lightDidDetails.did)
   })
 
   it('migrates light DID with sr25519 auth key', async () => {
@@ -469,9 +469,9 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
-    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
+    expect(resolutionResult?.metadata?.deactivated).toBeFalsy()
 
-    expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
+    expect(resolutionResult?.details?.did).toStrictEqual(lightDidDetails.did)
   })
 
   it('migrates light DID with ed25519 auth key, encryption key, and service endpoints', async () => {
@@ -536,22 +536,24 @@ describe('DID migration', () => {
 
     expect(resolutionResult?.metadata).toBeDefined()
     expect(resolutionResult?.metadata?.canonicalId).toStrictEqual(did)
-    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
+    expect(resolutionResult?.metadata?.deactivated).toBeFalsy()
 
-    expect(resolutionResult?.details.did).toStrictEqual(lightDidDetails.did)
+    expect(resolutionResult?.details?.did).toStrictEqual(lightDidDetails.did)
     // Verify service endpoints for light DID resolution
-    expect(resolutionResult?.details.getEndpoints()).toMatchObject(
+    expect(resolutionResult?.details?.getEndpoints()).toMatchObject(
       serviceEndpoints.map((service) => {
         return { ...service, id: `${lightDidDetails.did}#${service.id}` }
       })
     )
     // Verify service endpints for full DID resolution
-    const fullDid = await resolveDoc(resolutionResult!.metadata!.canonicalId)
-    expect(resolutionResult?.metadata?.deleted).toBeFalsy()
+    const fullDid = await resolveDoc(
+      resolutionResult!.metadata.canonicalId as string
+    )
+    expect(resolutionResult?.metadata?.deactivated).toBeFalsy()
 
     expect(fullDid?.details).toBeDefined()
 
-    expect(fullDid!.details.getEndpoints()).toMatchObject(
+    expect(fullDid?.details?.getEndpoints()).toMatchObject(
       serviceEndpoints.map((service) => {
         return { ...service, id: DidUtils.assembleDidFragment(did, service.id) }
       })
@@ -577,7 +579,7 @@ describe('DID migration', () => {
     )
 
     // Check that the returned light DID is the same as the queried one.
-    expect(didResolutionResultAfterDeletion?.details.did).toStrictEqual(
+    expect(didResolutionResultAfterDeletion?.details?.did).toStrictEqual(
       lightDidDetails.did
     )
     // Check that the full DID is still returned albeit already deleted.
@@ -585,7 +587,7 @@ describe('DID migration', () => {
       didResolutionResultAfterDeletion?.metadata?.canonicalId
     ).toStrictEqual(did)
     // Check that the deletion flag is set to true.
-    expect(didResolutionResultAfterDeletion?.metadata?.deleted).toBeTruthy()
+    expect(didResolutionResultAfterDeletion?.metadata?.deactivated).toBeTruthy()
   }, 60_000)
 })
 

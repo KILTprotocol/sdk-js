@@ -8,9 +8,18 @@
 import { IDidServiceEndpoint } from '.'
 import type { IDidDetails, IDidKeyDetails } from './DidDetails'
 
+/**
+ * DID resolution metadata that includes a subset of the properties defined in the [W3C proposed standard](https://www.w3.org/TR/did-core/#did-resolution).
+ */
 export type IDidResolutionDocumentMetadata = {
-  canonicalId: string
-  deleted: boolean
+  /**
+   * If present, it indicates that the resolved by DID should be treated as if it were the DID as specified in this property.
+   */
+  canonicalId?: string
+  /**
+   * A boolean flag indicating wheather the resolved DID has been deactivated.
+   */
+  deactivated: boolean
 }
 
 /**
@@ -19,8 +28,14 @@ export type IDidResolutionDocumentMetadata = {
  * It includes the DID details, and optional document resolution metadata.
  */
 export type IDidResolvedDetails = {
-  details: IDidDetails
-  metadata?: IDidResolutionDocumentMetadata
+  /**
+   * The resolved DID details. It is undefined if the DID has been deleted.
+   */
+  details?: IDidDetails
+  /**
+   * The DID resolution metadata.
+   */
+  metadata: IDidResolutionDocumentMetadata
 }
 
 export interface IDidResolver {

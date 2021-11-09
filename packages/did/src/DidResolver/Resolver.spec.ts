@@ -93,15 +93,15 @@ it('resolves stuff', async () => {
 
 it('has the right keys', async () => {
   const didRecord = await DefaultResolver.resolveDoc(fullDid)
-  expect(didRecord?.details.getKeyIds()).toStrictEqual([
+  expect(didRecord?.details?.getKeyIds()).toStrictEqual([
     `${fullDid}#auth`,
     `${fullDid}#x25519`,
   ])
   expect(
-    didRecord?.details.getKeyIds(KeyRelationship.authentication)
+    didRecord?.details?.getKeyIds(KeyRelationship.authentication)
   ).toStrictEqual([`${fullDid}#auth`])
   expect(
-    didRecord?.details.getKeys(KeyRelationship.keyAgreement)
+    didRecord?.details?.getKeys(KeyRelationship.keyAgreement)
   ).toStrictEqual([
     {
       id: `${fullDid}#x25519`,
@@ -116,7 +116,7 @@ it('has the right keys', async () => {
 
 it('has the right service endpoints', async () => {
   const didRecord = await DefaultResolver.resolveDoc(fullDid)
-  expect(didRecord?.details.getEndpoints()).toStrictEqual([
+  expect(didRecord?.details?.getEndpoints()).toStrictEqual([
     {
       id: `${fullDid}#id-1`,
       types: ['type-id-1'],
@@ -128,7 +128,7 @@ it('has the right service endpoints', async () => {
       urls: ['url-id-2'],
     },
   ])
-  expect(didRecord?.details.getEndpointById(`${fullDid}#id-1`)).toStrictEqual({
+  expect(didRecord?.details?.getEndpointById(`${fullDid}#id-1`)).toStrictEqual({
     id: `${fullDid}#id-1`,
     types: ['type-id-1'],
     urls: ['url-id-1'],
@@ -156,7 +156,7 @@ describe('Light DID tests', () => {
     const resolutionResult = (await DefaultResolver.resolve(
       lightDID.did
     )) as IDidResolvedDetails
-    const derivedAuthenticationPublicKey = resolutionResult.details.getKey(
+    const derivedAuthenticationPublicKey = resolutionResult.details?.getKey(
       `${lightDID.did}#authentication`
     )
     expect(derivedAuthenticationPublicKey).toBeDefined()
@@ -177,7 +177,7 @@ describe('Light DID tests', () => {
     const resolutionResult = (await DefaultResolver.resolve(
       lightDID.did
     )) as IDidResolvedDetails
-    const derivedAuthenticationPublicKey = resolutionResult.details.getKey(
+    const derivedAuthenticationPublicKey = resolutionResult.details?.getKey(
       `${lightDID.did}#authentication`
     )
     expect(derivedAuthenticationPublicKey).toBeDefined()
@@ -224,21 +224,21 @@ describe('Light DID tests', () => {
       lightDID.did
     )) as IDidResolvedDetails
 
-    const derivedAuthenticationPublicKey = resolutionResult.details.getKey(
+    const derivedAuthenticationPublicKey = resolutionResult.details?.getKey(
       `${lightDID.did}#authentication`
     )
     expect(derivedAuthenticationPublicKey).toBeDefined()
     expect(derivedAuthenticationPublicKey!.publicKeyHex).toEqual(
       u8aToHex(publicAuthKey.publicKey)
     )
-    const derivedEncryptionPublicKey = resolutionResult.details.getKey(
+    const derivedEncryptionPublicKey = resolutionResult.details?.getKey(
       `${lightDID.did}#encryption`
     )
     expect(derivedEncryptionPublicKey).toBeDefined()
     expect(derivedEncryptionPublicKey!.publicKeyHex).toEqual(
       '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     )
-    const derivedServiceEndpoints = resolutionResult.details.getEndpoints()
+    const derivedServiceEndpoints = resolutionResult.details?.getEndpoints()
     expect(derivedServiceEndpoints).toStrictEqual([
       {
         id: `${lightDID.did}#id-1`,

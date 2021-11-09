@@ -388,8 +388,8 @@ export async function verifyDidSignature({
       verified: false,
     }
   }
-  // Returns false also if the migrated full DID has been deleted.
-  if (details.metadata?.deleted) {
+  // Returns false also if the the DID has been deleted.
+  if (details.metadata.deactivated) {
     return {
       verified: false,
     }
@@ -399,7 +399,8 @@ export async function verifyDidSignature({
     signature,
     keyId,
     keyRelationship,
-    didDetails: details.details,
+    // We are sure details.details exists as we have checked that the DID has not been deleted.
+    didDetails: details.details as IDidDetails,
   })
 }
 

@@ -284,7 +284,7 @@ export class RequestForAttestation implements IRequestForAttestation {
         throw SDKErrors.ERROR_IDENTITY_MISMATCH()
       }
       // Light DID migrated and then deleted should become unusable.
-    } else if (ownerResolutionResult?.metadata.deleted) {
+    } else if (ownerResolutionResult?.metadata.deactivated) {
       return false
     } else {
       const canonicalDid = ownerResolutionResult.metadata.canonicalId
