@@ -381,26 +381,39 @@ export async function verifyDidSignature({
   keyRelationship?: VerificationKeyRelationship
 }): Promise<VerificationResult> {
   // resolveDoc can accept a key ID, but it will always return the DID details.
-  const details = await resolver.resolveDoc(keyId)
-  // If no details can be resolved, it is clearly an error, so we return false
-  if (!details) {
+  const resolutionDetails = await resolver.resolveDoc(keyId)
+  // Verification fails if the DID does not exist at all.
+  if (!resolutionDetails) {
     return {
       verified: false,
     }
   }
-  // Returns false also if the the DID has been deleted.
-  if (details.metadata.deactivated) {
+  // Verification also fails if the DID has been deleted.
+  if (resolutionDetails.metadata.deactivated) {
     return {
       verified: false,
     }
   }
+  // Verification also fails if the signer is a migrated light DID.
+  if (resolutionDetails.metadata.canonicalId) {
+    return {
+      verified: false,
+    }
+  }
+  // Otherwise, the details used are either the migrated full DID details or the light DID details.
+  const didDetails = (
+    resolutionDetails.metadata.canonicalId
+      ? (await resolver.resolveDoc(resolutionDetails.metadata.canonicalId))
+          ?.details
+      : resolutionDetails.details
+  ) as IDidDetails
+
   return verifyDidSignatureFromDetails({
     message,
     signature,
     keyId,
     keyRelationship,
-    // We are sure details.details exists as we have checked that the DID has not been deleted.
-    didDetails: details.details as IDidDetails,
+    didDetails,
   })
 }
 
